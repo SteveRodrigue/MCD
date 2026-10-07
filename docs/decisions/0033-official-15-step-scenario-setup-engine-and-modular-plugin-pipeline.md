@@ -182,3 +182,9 @@ graph TD
 * Completely unifies scenario creation across test suites, interactive UI matches, and headless Monte Carlo simulations.
 * Enables mixing and matching all official modular sets across all 3 Core Set villains (Rhino, Klaw, Ultron).
 * Centralizes player deck compilation, nemesis set-aside placement, and obligation shuffling in a single tested pipeline.
+
+---
+
+## Addendum (2026-10-07, Issue #283): player Setup abilities are step 16, after the mulligans
+
+Appendix II resolves the mulligans (step 15) before the player "Setup" abilities (step 16). `setupGame` therefore stops after step 14 (hands drawn) in `MULLIGAN_PHASE`; the last `RESOLVE_MULLIGAN` (or `setupGame` itself with `skipMulligan`) enters `setupState.stage` `PLAYER_SETUP`. `beginPlayerSetup` queues the `SETUP` abilities of every identity (starting form) and tableau card in player order (`setupState.pendingSetupAbilities`); `advancePlayerSetup` runs them one at a time through `executeEffect`, stops at a decision prompt, and `dispatchAction` calls it again after each answer. When the queue is empty the phase becomes `PLAYER_PHASE`. Player abilities stay suspended only during `SCENARIO_SETUP`. There is no second, setup-only implementation of SEARCH.

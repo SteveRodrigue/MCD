@@ -13,12 +13,13 @@ import {
   DifficultyMode,
   Keyword,
   hasKeyword,
+  PendingSetupAbility,
 } from '@engine/models';
 import { cardCatalog } from '../../data/importer/card-loader';
 import { ScenarioRegistry } from '../scenarios';
-import { matchesCardFilter } from '../filters/card-filter';
+import { executeEffect, hasPendingSequence } from '../effects';
+import { peekDecisionPrompt } from '../pipeline/prompt-queue';
 import { createCardInstance, resetInstanceCounter } from './card-instance';
-import { getStepEffectParams } from '../../data/supplemental/schema';
 
 export { createCardInstance, resetInstanceCounter };
 
@@ -31,7 +32,6 @@ export interface PlayerSetupConfig {
   obligation?: NormalizedCard;
   obligations?: NormalizedCard[];
   nemesisCards?: NormalizedCard[];
-  chosenSetupCardCode?: string;
 }
 
 export interface GameSetupOptions {
@@ -77,12 +77,13 @@ export function defaultShuffle<T>(array: T[]): T[] {
  * 12. Shuffle encounter deck.
  * 13. Run the scenario plugin setup (villain, main scheme, encounter deck, When Revealed).
  * 14. Players draw starting hand equal to Alter-Ego hand size.
- * 15. Mulligan: sets setupState to MULLIGAN_PHASE (unless skipMulligan is true).
- * 16. Resolve player Setup abilities.
+ * 15. Mulligan: sets setupState to MULLIGAN_PHASE (interactive, unless skipMulligan is true).
+ * 16. Resolve player Setup abilities (after the mulligans, `beginPlayerSetup`).
  *
- * The whole call runs in SETUP_PHASE with setupState.stage SCENARIO_SETUP, so no
+ * Steps 1 to 14 run in SETUP_PHASE with setupState.stage SCENARIO_SETUP, so no
  * player-controlled ability can trigger. Afterwards the phase is SETUP_PHASE
- * (MULLIGAN_PHASE) or PLAYER_PHASE (skipMulligan: Round 1 begins).
+ * (MULLIGAN_PHASE) or, with skipMulligan, step 16 runs at once: PLAYER_PHASE (Round 1 begins),
+ * or SETUP_PHASE (PLAYER_SETUP) while a Setup ability waits for a decision.
  */
 export function setupGame(options: GameSetupOptions): GameState {
   const shuffle = options.shuffleFn || defaultShuffle;
@@ -286,110 +287,120 @@ export function setupGame(options: GameSetupOptions): GameState {
     player.hand.push(...player.deck.splice(0, options.players[i].alterEgo.handSize));
   }
 
-  // 9. Step 16: Resolve Player Setup Abilities (RR v1.8 p. 27)
-  state = step16_resolvePlayerSetupAbilities(state, options);
-
-  // 10. Setup ends: mulligan (step 15, interactive) or the first player phase.
+  // 9. Step 15 (mulligans, interactive) comes first; step 16 (player Setup abilities) follows it.
   if (skipMulligan) {
-    state.phase = GamePhase.PLAYER_PHASE;
-    state.setupState = undefined;
-  } else {
-    state.setupState = { stage: 'MULLIGAN_PHASE', mulliganCompleted: {} };
+    state.setupState = { stage: 'PLAYER_SETUP', mulliganCompleted: {} };
+    return beginPlayerSetup(state);
   }
+  state.setupState = { stage: 'MULLIGAN_PHASE', mulliganCompleted: {} };
 
   return state;
 }
 
 /**
- * Step 16: Resolve Player Setup Abilities (RR v1.8 Appendix II).
- * In player order, each player resolves any "Setup" instructions on their identity card and obligations.
+ * Step 16: Resolve Player Setup Abilities (RR v1.8 Appendix II), after the mulligans of step 15.
+ * Lists, in player order starting with the first player, every SETUP ability of the cards a
+ * player has in play at the start of the game: the identity in its starting form and the tableau.
  */
-export function step16_resolvePlayerSetupAbilities(
-  state: GameState,
-  options: GameSetupOptions,
-): GameState {
-  const shuffle = options.shuffleFn || defaultShuffle;
+export function collectPlayerSetupAbilities(state: GameState): PendingSetupAbility[] {
+  const first = Math.max(0, Math.min(state.firstPlayerIndex ?? 0, state.players.length - 1));
+  const inOrder = [...state.players.slice(first), ...state.players.slice(0, first)];
+  const pending: PendingSetupAbility[] = [];
 
-  for (let i = 0; i < state.players.length; i++) {
-    const player = state.players[i];
-    const pConfig = options.players[i];
-
-    // Check alterEgo and hero cards for printed SETUP abilities
-    const cardsToCheck = [
-      player.alterEgo,
-      player.hero,
-      ...(player.tableau || []).map((t) => t.card),
+  for (const player of inOrder) {
+    const cardsInPlay: { card: NormalizedCard; instanceId?: string }[] = [
+      { card: player.activeFormCard },
+      ...player.tableau.map((t) => ({ card: t.card, instanceId: t.instanceId })),
     ];
-    for (const card of cardsToCheck) {
-      const abilities = card.enrichment?.abilities || [];
-      const setupAbilities = abilities.filter((a) => a.timing === 'SETUP');
-
-      for (const ability of setupAbilities) {
-        for (const step of ability.steps || []) {
-          if (step.effect === 'SEARCH' || step.effect === 'SEARCH_AND_SELECT') {
-            const stepParams = getStepEffectParams(step);
-            const filter = (stepParams.filter || {}) as Record<string, any>;
-            const selectedDestination = (stepParams.selectedDestination as string) || 'HAND';
-            const shuffleAfter = stepParams.shuffleAfter !== false;
-
-            // Find matching candidate cards in player.deck
-            let candidateIndices: number[] = [];
-            for (let cIdx = 0; cIdx < player.deck.length; cIdx++) {
-              const deckCard = player.deck[cIdx];
-              const filterMatch = matchesCardFilter(deckCard.card, filter, { player });
-              const codeMatch =
-                !pConfig?.chosenSetupCardCode || deckCard.card.code === pConfig.chosenSetupCardCode;
-
-              if (filterMatch && codeMatch) {
-                candidateIndices.push(cIdx);
-              }
-            }
-
-            // If no match with chosenSetupCardCode, fallback to any matching filter
-            if (candidateIndices.length === 0 && pConfig?.chosenSetupCardCode) {
-              for (let cIdx = 0; cIdx < player.deck.length; cIdx++) {
-                const deckCard = player.deck[cIdx];
-                if (matchesCardFilter(deckCard.card, filter, { player })) {
-                  candidateIndices.push(cIdx);
-                }
-              }
-            }
-
-            if (candidateIndices.length > 0) {
-              const chosenIdx = candidateIndices[0];
-              const [selectedCard] = player.deck.splice(chosenIdx, 1);
-
-              if (selectedDestination === 'TABLEAU') {
-                player.tableau.push(selectedCard);
-              } else {
-                player.hand.push(selectedCard);
-              }
-
-              if (shuffleAfter) {
-                player.deck = shuffle(player.deck);
-              }
-
-              state.log.push({
-                id: `log_${Date.now()}_setup_${selectedCard.instanceId}`,
-                timestamp: Date.now(),
-                round: 1,
-                phase: state.phase,
-                category: 'ability',
-                actor: { name: player.name, type: player.currentForm },
-                key: 'character.setup.resolved',
-                params: {
-                  player: player.name,
-                  card: selectedCard.card.name,
-                  destination: selectedDestination,
-                },
-                onomatopoeia: `SETUP: ${selectedCard.card.name.toUpperCase()} READY!`,
-              });
-            }
-          }
-        }
+    for (const { card, instanceId } of cardsInPlay) {
+      for (const ability of card.enrichment?.abilities ?? []) {
+        if (ability.timing !== 'SETUP') continue;
+        pending.push({
+          playerId: player.id,
+          abilityId: ability.id,
+          sourceCardCode: card.code,
+          sourceInstanceId: instanceId,
+        });
       }
     }
   }
+  return pending;
+}
 
-  return state;
+/**
+ * Enters the player setup stage (step 16) and resolves every Setup ability through the normal
+ * effect pipeline. An ability that needs a choice (T'Challa's Foresight) stops the setup at its
+ * decision prompt; `advancePlayerSetup` continues once it is answered.
+ */
+export function beginPlayerSetup(state: GameState): GameState {
+  state.phase = GamePhase.SETUP_PHASE;
+  state.setupState = {
+    stage: 'PLAYER_SETUP',
+    mulliganCompleted: state.setupState?.mulliganCompleted ?? {},
+    pendingSetupAbilities: collectPlayerSetupAbilities(state),
+  };
+  return advancePlayerSetup(state);
+}
+
+/**
+ * Resolves the next pending Setup abilities until one asks the player for a decision or none is
+ * left; then Round 1 begins (RR v1.8 Appendix II: "The game is now ready to begin").
+ */
+export function advancePlayerSetup(state: GameState): GameState {
+  let current = state;
+
+  while (current.setupState?.stage === 'PLAYER_SETUP') {
+    if (peekDecisionPrompt(current) || hasPendingSequence(current)) return current;
+
+    const next = current.setupState.pendingSetupAbilities?.shift();
+    if (!next) {
+      const mulliganDone = current.players.every(
+        (p) => current.setupState?.mulliganCompleted[p.id],
+      );
+      current.phase = GamePhase.PLAYER_PHASE;
+      if (mulliganDone) {
+        current.setupState.stage = 'GAME_READY';
+        current.setupState.pendingSetupAbilities = undefined;
+        current.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: 1,
+          phase: GamePhase.PLAYER_PHASE,
+          key: 'phase.player_phase.start',
+          params: { round: 1 },
+          onomatopoeia: 'HEROES ACT!',
+        });
+      } else {
+        current.setupState = undefined;
+      }
+      return current;
+    }
+
+    const player = current.players.find((p) => p.id === next.playerId);
+    if (!player) continue;
+    const source = next.sourceInstanceId
+      ? player.tableau.find((t) => t.instanceId === next.sourceInstanceId)
+      : undefined;
+    const card = source?.card ?? player.activeFormCard;
+    const ability = card.enrichment?.abilities?.find((a) => a.id === next.abilityId);
+    if (!ability) continue;
+
+    const result = executeEffect(current, ability, {
+      playerId: player.id,
+      sourceCardInstance: source,
+    });
+    current = result.state;
+    current.log.push({
+      id: `log_${Date.now()}_setup_${next.abilityId}`,
+      timestamp: Date.now(),
+      round: 1,
+      phase: current.phase,
+      category: 'ability',
+      actor: { name: player.name, type: player.currentForm },
+      key: 'character.setup.resolved',
+      params: { player: player.name, card: card.name },
+      onomatopoeia: `SETUP: ${card.name.toUpperCase()} READY!`,
+    });
+  }
+  return current;
 }

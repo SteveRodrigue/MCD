@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T00:06:17.040Z` | **Total Verified Vanilla Cards:** **11**
+> **Generated:** `2026-10-07T01:26:32.038Z` | **Total Verified Vanilla Cards:** **12**
 
 These cards require zero declarative engine hooks (e.g. vanilla resources, base stats only, or passive encounter cards without triggers).
 
@@ -10,6 +10,7 @@ These cards require zero declarative engine hooks (e.g. vanilla resources, base 
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `01014` | **Energy Absorption** | `resource` | `hero` | `core` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01044` | **Vibranium** | `resource` | `hero` | `core` | No abilities required (Vanilla / Base Stats / Standard Resource) |
+| `01076` | **Luke Cage** | `ally` | `protection` | `core` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01088` | **Energy** | `resource` | `basic` | `core` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01089` | **Genius** | `resource` | `basic` | `core` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01090` | **Strength** | `resource` | `basic` | `core` | No abilities required (Vanilla / Base Stats / Standard Resource) |

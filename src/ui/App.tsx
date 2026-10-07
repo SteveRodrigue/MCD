@@ -154,6 +154,21 @@ export const AppContent: React.FC = () => {
     setGameState(nextState);
   };
 
+  const handleResolveSetupPrompt = (playerId: string, selectedOptionId: string) => {
+    if (!gameState) return;
+    const { state: nextState } = dispatchAction(gameState, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId,
+      selectedOptionId,
+    });
+    nextState.options = {
+      ...nextState.options,
+      autoResolveUnambiguous: settings.autoResolveUnambiguous,
+      villainPhaseStepping: settings.villainPhasePacing !== 'instant',
+    };
+    setGameState(nextState);
+  };
+
   const handleStartScenario = () => {
     if (!gameState) return;
     let currentState = gameState;
@@ -176,7 +191,10 @@ export const AppContent: React.FC = () => {
     };
 
     setGameState(currentState);
-    setStage('IN_GAME');
+    // A player Setup ability may still wait for a decision: the mulligan screen shows it first.
+    if (currentState.setupState?.stage !== 'PLAYER_SETUP') {
+      setStage('IN_GAME');
+    }
   };
 
   const handleDispatchAction = (action: any) => {
@@ -227,6 +245,7 @@ export const AppContent: React.FC = () => {
               gameState={gameState}
               onResolveHeroMulligan={handleResolveHeroMulligan}
               onStartScenario={handleStartScenario}
+              onResolvePrompt={handleResolveSetupPrompt}
             />
           )}
 

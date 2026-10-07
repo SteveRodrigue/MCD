@@ -89,6 +89,8 @@ import {
   initializeCardUses,
   findInPlayCardInstance,
 } from '../state/state-validator';
+import { advancePlayerSetup, collectPlayerSetupAbilities } from '../state/game-setup';
+import { applyToughnessOnEntry } from '../state/card-instance';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 import {
   resolveEntityByInstanceId,
@@ -228,14 +230,17 @@ export function dispatchAction(
   action: GameAction,
 ): { state: GameState; result: ActionResult } {
   const outcome = dispatchSingleAction(state, action);
-  if (
-    !outcome.result.success ||
-    !hasPendingSequence(outcome.state) ||
-    peekDecisionPrompt(outcome.state)
-  ) {
-    return outcome;
+  if (!outcome.result.success) return outcome;
+
+  let next = outcome.state;
+  if (hasPendingSequence(next) && !peekDecisionPrompt(next)) {
+    next = resumePendingSequence(next);
   }
-  return { state: resumePendingSequence(outcome.state), result: outcome.result };
+  // Player Setup abilities (step 16) continue once the decision they waited for is answered.
+  if (next.setupState?.stage === 'PLAYER_SETUP') {
+    next = advancePlayerSetup(next);
+  }
+  return next === outcome.state ? outcome : { state: next, result: outcome.result };
 }
 
 function dispatchSingleAction(
@@ -305,17 +310,9 @@ function dispatchSingleAction(
       // 5. Check if all players have completed mulligan
       const allDone = nextState.players.every((p) => nextState.setupState?.mulliganCompleted[p.id]);
       if (allDone) {
-        nextState.setupState.stage = 'GAME_READY';
-        nextState.phase = GamePhase.PLAYER_PHASE;
-        nextState.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: 1,
-          phase: GamePhase.PLAYER_PHASE,
-          key: 'phase.player_phase.start',
-          params: { round: 1 },
-          onomatopoeia: 'HEROES ACT!',
-        });
+        // Step 16 follows the mulligans; `dispatchAction` resolves the Setup abilities.
+        nextState.setupState.stage = 'PLAYER_SETUP';
+        nextState.setupState.pendingSetupAbilities = collectPlayerSetupAbilities(nextState);
       }
 
       return { state: nextState, result: { success: true, onomatopoeia } };
@@ -1549,6 +1546,7 @@ function dispatchSingleAction(
           resourcesSpent,
         });
       } else if (cardType === CardType.ALLY) {
+        applyToughnessOnEntry(playedCardInstance);
         player.allies.push(playedCardInstance);
         // Dispatch CARD_PLAYED trigger (ally was played — cost paid or waived per ADR-0047)
         dispatchTrigger(nextState, 'CARD_PLAYED', {
@@ -3293,6 +3291,7 @@ function dispatchSingleAction(
           chosenCard.exhausted = false;
 
           if (chosenCard.card.type === CardType.ALLY) {
+            applyToughnessOnEntry(chosenCard);
             targetPlayer.allies.push(chosenCard);
           } else {
             targetPlayer.tableau.push(chosenCard);

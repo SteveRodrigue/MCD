@@ -1,9 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { HeroCard, AlterEgoCard, GameState, GamePhase } from '../../src/engine/models';
+import { dispatchAction, peekDecisionPrompt } from '../../src/engine/pipeline';
 
-describe('Scenario Setup Step 14: Resolve Character Setup Abilities (RR v1.8 p. 27, Issue #16)', () => {
+/**
+ * RR v1.8 Appendix II: step 15 resolves mulligans, then step 16 resolves the "Setup" abilities of
+ * the player cards in play (#283: the Foresight ability of T'Challa must let the player choose,
+ * after the mulligan).
+ */
+describe('Player Setup abilities (RR v1.8 Appendix II step 16, #283)', () => {
   const bpIdentity = {
     hero: cardCatalog.getCard('01040a') as HeroCard,
     alterEgo: cardCatalog.getCard('01040b') as AlterEgoCard,
@@ -18,69 +24,143 @@ describe('Scenario Setup Step 14: Resolve Character Setup Abilities (RR v1.8 p. 
     cardCatalog.getCard('01046')!, // Energy Daggers (Upgrade)
     cardCatalog.getCard('01047')!, // Panther Claws (Upgrade)
     cardCatalog.getCard('01048')!, // Tactical Genius (Upgrade)
-    cardCatalog.getCard('01049')!, // Panther Suit (Upgrade)
+    cardCatalog.getCard('01049')!, // Vibranium Suit (Upgrade)
   ];
 
-  it("automatically resolves T'Challa setup ability (01040b) putting 1 Black Panther upgrade into hand", () => {
+  const bp = (deckCards = bpDeckCards) => ({
+    id: 'p1',
+    name: 'Black Panther',
+    hero: bpIdentity.hero,
+    alterEgo: bpIdentity.alterEgo,
+    deckCards,
+  });
+
+  function answer(state: GameState, selectedOptionId: string): GameState {
+    const prompt = peekDecisionPrompt(state)!;
+    return dispatchAction(state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: prompt.playerId,
+      selectedOptionId,
+    }).state;
+  }
+
+  /** The prompt option that offers the deck card with this printed code. */
+  function optionFor(state: GameState, code: string): string {
+    const prompt = peekDecisionPrompt(state)!;
+    const instance = state.players
+      .flatMap((p) => p.deck)
+      .find((c) => c.card.code === code && prompt.options.some((o) => o.id === c.instanceId));
+    return instance!.instanceId;
+  }
+
+  it("asks which Black Panther upgrade to add (T'Challa 01040b), then the game begins", () => {
+    let state = setupGame({
+      scenarioId: 'rhino',
+      players: [bp()],
+      shuffleFn: (arr) => arr,
+      skipMulligan: true,
+    });
+
+    const prompt = peekDecisionPrompt(state);
+    expect(prompt).toBeDefined();
+    expect(prompt!.playerId).toBe('p1');
+    expect(prompt!.options).toHaveLength(4);
+    expect(state.phase).toBe(GamePhase.SETUP_PHASE);
+    expect(state.setupState?.stage).toBe('PLAYER_SETUP');
+    expect(state.players[0].hand).toHaveLength(6);
+
+    state = answer(state, optionFor(state, '01047'));
+
+    const player = state.players[0];
+    expect(peekDecisionPrompt(state)).toBeUndefined();
+    expect(player.hand).toHaveLength(7);
+    expect(player.hand.some((c) => c.card.code === '01047')).toBe(true);
+    expect(player.deck).toHaveLength(8);
+    expect(player.tableau).toHaveLength(0);
+    expect(state.phase).toBe(GamePhase.PLAYER_PHASE);
+    expect(state.setupState).toBeUndefined();
+  });
+
+  it('adds the only candidate without a prompt', () => {
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        bp([...Array(14).fill(cardCatalog.getCard('01044')!), cardCatalog.getCard('01049')!]),
+      ],
+      shuffleFn: (arr) => arr,
+      skipMulligan: true,
+    });
+
+    expect(peekDecisionPrompt(state)).toBeUndefined();
+    expect(state.players[0].hand.some((c) => c.card.code === '01049')).toBe(true);
+    expect(state.phase).toBe(GamePhase.PLAYER_PHASE);
+  });
+
+  it('does nothing when the deck holds no Black Panther upgrade', () => {
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [bp(Array(15).fill(cardCatalog.getCard('01044')!))],
+      shuffleFn: (arr) => arr,
+      skipMulligan: true,
+    });
+
+    expect(peekDecisionPrompt(state)).toBeUndefined();
+    expect(state.players[0].hand).toHaveLength(6);
+    expect(state.phase).toBe(GamePhase.PLAYER_PHASE);
+  });
+
+  it('resolves Setup after the mulligan, so the fetched upgrade cannot be mulliganed', () => {
+    let state = setupGame({
+      scenarioId: 'rhino',
+      players: [bp()],
+      shuffleFn: (arr) => arr,
+    });
+
+    expect(state.setupState?.stage).toBe('MULLIGAN_PHASE');
+    expect(peekDecisionPrompt(state)).toBeUndefined();
+    expect(state.players[0].hand).toHaveLength(6);
+
+    state = dispatchAction(state, {
+      type: 'RESOLVE_MULLIGAN',
+      playerId: 'p1',
+      discardCardInstanceIds: [],
+    }).state;
+
+    expect(state.setupState?.stage).toBe('PLAYER_SETUP');
+    expect(state.phase).toBe(GamePhase.SETUP_PHASE);
+    expect(peekDecisionPrompt(state)!.options).toHaveLength(4);
+
+    state = answer(state, optionFor(state, '01046'));
+    expect(state.players[0].hand.some((c) => c.card.code === '01046')).toBe(true);
+    expect(state.phase).toBe(GamePhase.PLAYER_PHASE);
+  });
+
+  it('leaves heroes without Setup abilities unaffected (Spider-Man 01001b)', () => {
     const state = setupGame({
       scenarioId: 'rhino',
       players: [
         {
           id: 'p1',
-          name: 'Black Panther',
-          hero: bpIdentity.hero,
-          alterEgo: bpIdentity.alterEgo,
-          deckCards: bpDeckCards,
+          name: 'Spider-Man',
+          hero: smIdentity.hero,
+          alterEgo: smIdentity.alterEgo,
+          deckCards: Array(15).fill(cardCatalog.getCard('01005')!),
         },
       ],
       shuffleFn: (arr) => arr,
       skipMulligan: true,
     });
 
-    const player = state.players[0];
-
-    // 1. T'Challa Alter-Ego hand size is 6. Hand took 6 cards from the 15-card deck.
-    // 2. Step 14 searched deck for 1 Black Panther upgrade and put it into hand (RR v1.8 Foresight).
-    // Therefore, hand should contain 7 cards including exactly 1 Black Panther upgrade!
-    expect(player.tableau.length).toBe(0);
-    const bpUpgrade = player.hand.find((c) => c.card.traits?.includes('Black Panther'));
-    expect(bpUpgrade).toBeDefined();
-    expect(['01046', '01047', '01048', '01049']).toContain(bpUpgrade!.card.code);
-
-    // Total cards accounted for = hand (7) + tableau (0) + deck (8) = 15 total cards
-    expect(player.hand.length).toBe(7);
-    expect(player.deck.length).toBe(8);
+    expect(state.players[0].tableau).toHaveLength(0);
+    expect(state.players[0].hand).toHaveLength(6);
+    expect(state.phase).toBe(GamePhase.PLAYER_PHASE);
   });
 
-  it('supports selecting a specific setup card via chosenSetupCardCode', () => {
-    const state = setupGame({
-      scenarioId: 'rhino',
-      players: [
-        {
-          id: 'p1',
-          name: 'Black Panther',
-          hero: bpIdentity.hero,
-          alterEgo: bpIdentity.alterEgo,
-          deckCards: bpDeckCards,
-          chosenSetupCardCode: '01047', // Panther Claws specifically
-        } as any,
-      ],
-      shuffleFn: (arr) => arr,
-      skipMulligan: true,
-    });
-
-    const player = state.players[0];
-    expect(player.tableau.length).toBe(0);
-    const chosenCard = player.hand.find((c) => c.card.code === '01047');
-    expect(chosenCard).toBeDefined();
-    expect(chosenCard!.card.name).toBe('Panther Claws');
-  });
-
-  it('resolves canonical SEARCH setup abilities during Step 14', () => {
-    const canonicalAlterEgo = {
-      ...bpIdentity.alterEgo,
+  it('resolves the SETUP abilities of each player in player order, one prompt at a time', () => {
+    const searchSetup = {
+      ...smIdentity.alterEgo,
       enrichment: {
-        ...bpIdentity.alterEgo.enrichment,
+        ...smIdentity.alterEgo.enrichment,
         abilities: [
           {
             id: 'canonical_setup_search',
@@ -90,8 +170,9 @@ describe('Scenario Setup Step 14: Resolve Character Setup Abilities (RR v1.8 p. 
                 effect: 'SEARCH' as const,
                 effectParams: {
                   source: 'PLAYER_DECK',
-                  filter: { traits: ['Black Panther'], types: ['upgrade'] },
-                  selectedDestination: 'TABLEAU',
+                  filter: { types: ['resource'] },
+                  selectedDestination: 'HAND',
+                  shuffleAfter: true,
                 },
               },
             ],
@@ -100,82 +181,37 @@ describe('Scenario Setup Step 14: Resolve Character Setup Abilities (RR v1.8 p. 
       },
     } as AlterEgoCard;
 
-    const state = setupGame({
-      scenarioId: 'rhino',
-      players: [
-        {
-          id: 'p1',
-          name: 'Black Panther',
-          hero: bpIdentity.hero,
-          alterEgo: canonicalAlterEgo,
-          deckCards: bpDeckCards,
-        },
-      ],
-      shuffleFn: (arr) => arr,
-      skipMulligan: true,
-    });
-
-    expect(state.players[0].tableau).toHaveLength(1);
-    expect(state.players[0].tableau[0].card.traits).toContain('Black Panther');
-  });
-
-  it('leaves heroes without Setup abilities unaffected (Spider-Man 01001b)', () => {
-    const smDeckCards = Array(15).fill(cardCatalog.getCard('01005')!); // Web-Shooter
-
-    const state = setupGame({
+    let state = setupGame({
       scenarioId: 'rhino',
       players: [
         {
           id: 'p1',
           name: 'Spider-Man',
           hero: smIdentity.hero,
-          alterEgo: smIdentity.alterEgo,
-          deckCards: smDeckCards,
+          alterEgo: searchSetup,
+          deckCards: [
+            ...Array(8).fill(cardCatalog.getCard('01005')!),
+            cardCatalog.getCard('01044')!,
+            cardCatalog.getCard('01044')!,
+            ...Array(5).fill(cardCatalog.getCard('01005')!),
+          ],
         },
+        { ...bp(), id: 'p2' },
       ],
       shuffleFn: (arr) => arr,
       skipMulligan: true,
     });
 
-    const player = state.players[0];
-    // Peter Parker has handSize 6, no Setup ability. Tableau has 0 cards.
-    expect(player.tableau.length).toBe(0);
-    expect(player.hand.length).toBe(6);
-    expect(player.deck.length).toBe(9);
-  });
+    expect(peekDecisionPrompt(state)!.playerId).toBe('p1');
+    expect(state.players[1].hand).toHaveLength(6);
 
-  it('resolves setup abilities in player order across multiple players', () => {
-    const smDeckCards = Array(15).fill(cardCatalog.getCard('01005')!);
+    state = answer(state, peekDecisionPrompt(state)!.options[0].id);
 
-    const state = setupGame({
-      scenarioId: 'rhino',
-      players: [
-        {
-          id: 'p1',
-          name: 'Spider-Man',
-          hero: smIdentity.hero,
-          alterEgo: smIdentity.alterEgo,
-          deckCards: smDeckCards,
-        },
-        {
-          id: 'p2',
-          name: 'Black Panther',
-          hero: bpIdentity.hero,
-          alterEgo: bpIdentity.alterEgo,
-          deckCards: bpDeckCards,
-          chosenSetupCardCode: '01046', // Energy Daggers
-        } as any,
-      ],
-      shuffleFn: (arr) => arr,
-      skipMulligan: true,
-    });
+    expect(peekDecisionPrompt(state)!.playerId).toBe('p2');
+    expect(state.phase).toBe(GamePhase.SETUP_PHASE);
 
-    // Player 1 (Spider-Man): 0 tableau
-    expect(state.players[0].tableau.length).toBe(0);
-
-    // Player 2 (Black Panther): 1 Energy Daggers in hand
-    expect(state.players[1].tableau.length).toBe(0);
-    const bpCard = state.players[1].hand.find((c) => c.card.code === '01046');
-    expect(bpCard).toBeDefined();
+    state = answer(state, optionFor(state, '01048'));
+    expect(state.players[1].hand.some((c) => c.card.code === '01048')).toBe(true);
+    expect(state.phase).toBe(GamePhase.PLAYER_PHASE);
   });
 });

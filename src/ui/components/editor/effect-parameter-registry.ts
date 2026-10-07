@@ -127,22 +127,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         allowDynamic: true,
         description: 'Dynamic bonus calculated from game state or discarded cards',
       },
-      {
-        key: 'kickerResource',
-        label: 'Kicker Resource',
-        type: 'text',
-        description: 'Resource type that triggers a kicker bonus',
-      },
-      {
-        key: 'overkillOnCondition',
-        label: 'Overkill On Condition',
-        type: 'boolean',
-      },
-      {
-        key: 'overkillOnPhysical',
-        label: 'Overkill On Physical',
-        type: 'boolean',
-      },
     ],
   },
   DISTRIBUTE_AMOUNT: {
@@ -623,6 +607,20 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         label: 'Duration (empty = while the source card is in play)',
         type: 'select',
         options: DURATION_OPTIONS,
+      },
+    ],
+  },
+  GRANT_ATTACK_KEYWORD: {
+    effect: 'GRANT_ATTACK_KEYWORD',
+    description:
+      'The attack of this ability gains a keyword (e.g. "this attack gains overkill"). Ends with the ability. Put it before the damage step and gate it.',
+    parameters: [
+      {
+        key: 'keyword',
+        label: 'Keyword',
+        type: 'select',
+        options: KEYWORD_OPTIONS,
+        defaultValue: 'Overkill',
       },
     ],
   },

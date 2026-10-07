@@ -1124,54 +1124,44 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           expect(CardAbilitySchema.safeParse(ability).success).toBe(true);
         });
 
-        it('Validates Photonic Blast (01013) full ability data tree with kickerResource and IF_CONDITION_MET', () => {
+        it('Validates Photonic Blast (01013) full ability data tree with IF_RESOURCE_MATCH', () => {
           const ability = {
             id: 'photonic_blast',
             timing: 'HERO_ACTION',
-            cost: {
-              discardSelf: true,
-            },
             steps: [
               {
                 id: 'damage_step',
                 effect: 'DEAL_DAMAGE',
-                effectParams: {
-                  amount: 5,
-                  target: 'CHOSEN_ENEMY',
-                  kickerResource: 'energy',
-                },
+                effectParams: { amount: 5, target: 'CHOSEN_ENEMY' },
               },
               {
                 id: 'bonus_draw_step',
                 effect: 'DRAW',
-                gate: 'IF_CONDITION_MET',
-                effectParams: {
-                  targetStepId: 'damage_step',
-                  count: 1,
-                },
+                gate: 'IF_RESOURCE_MATCH',
+                gateParams: { resource: 'energy', count: 1 },
+                effectParams: { count: 1 },
               },
             ],
           };
           expect(CardAbilitySchema.safeParse(ability).success).toBe(true);
         });
 
-        it('Validates Relentless Assault (01053) full ability data tree with kickerResource', () => {
+        it('Validates Relentless Assault (01053) full ability data tree with GRANT_ATTACK_KEYWORD', () => {
           const ability = {
             id: 'relentless_assault',
             timing: 'HERO_ACTION',
-            cost: {
-              discardSelf: true,
-            },
             steps: [
               {
-                id: 'strike_step',
+                id: 'relentless_assault_overkill',
+                effect: 'GRANT_ATTACK_KEYWORD',
+                gate: 'IF_RESOURCE_MATCH',
+                gateParams: { resource: 'physical', count: 1 },
+                effectParams: { keyword: 'Overkill' },
+              },
+              {
+                id: 'relentless_assault_damage',
                 effect: 'DEAL_DAMAGE',
-                effectParams: {
-                  amount: 5,
-                  target: 'CHOSEN_MINION',
-                  kickerResource: 'physical',
-                  overkillOnCondition: true,
-                },
+                effectParams: { amount: 5, target: 'CHOSEN_MINION' },
               },
             ],
           };

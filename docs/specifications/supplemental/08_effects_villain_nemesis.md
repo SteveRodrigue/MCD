@@ -159,6 +159,8 @@ Per ADR-0029, monolithic `SPAWN_NEMESIS` has been fully decomposed into a compos
 | `target`     | `TargetSelector` | No       | -       | Host the card attaches to (`VILLAIN`, `CHOSEN_ENEMY`, `CHOSEN_ALLY`, ...). |
 | `maxPerHost` | `number`         | No       | no limit | Maximum copies (same code or name) of this card on one host; hosts at the limit are not offered as a choice (e.g. *Inspired* `01074`, one per ally). |
 
+> **Timing of the attach ability (#259):** the card attaches when it is played from hand. The ability's `timing` (`ACTION`, `HERO_ACTION`, ...) only names the identity form the card needs to be played (`HERO_` needs Hero form). Once the card is in play it offers no action: `canInitiateAbility` refuses an ability with an `ATTACH_TO_HOST` step on a card already in play, so `USE_CARD_ABILITY` and the tableau buttons cannot attach it again.
+
 > **Encounter attachments (`CardType.ATTACHMENT`):** "Attach to Rhino." is intrinsic to the card type. The engine attaches a revealed encounter attachment to the villain unconditionally (`villain-phase.ts`), so do **not** declare it as a `WHEN_REVEALED` ability: that would create a cancellable window that RR v1.8 does not grant (*Armored Rhino Suit* `01098`, *Charge* `01099`, *Enhanced Ivory Horn* `01100`; Issue #175). Declare only the card's own abilities.
 
 ---

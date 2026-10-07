@@ -2079,13 +2079,23 @@
           ],
           "steps": [
             {
+              "id": "relentless_assault_overkill",
+              "effect": "GRANT_ATTACK_KEYWORD",
+              "gate": "IF_RESOURCE_MATCH",
+              "gateParams": {
+                "resource": "physical",
+                "count": 1
+              },
+              "effectParams": {
+                "keyword": "Overkill"
+              }
+            },
+            {
+              "id": "relentless_assault_damage",
               "effect": "DEAL_DAMAGE",
               "effectParams": {
                 "amount": 5,
-                "target": "CHOSEN_MINION",
-                "kickerResource": "physical",
-                "overkillOnCondition": true,
-                "overkillOnPhysical": true
+                "target": "CHOSEN_MINION"
               }
             }
           ]

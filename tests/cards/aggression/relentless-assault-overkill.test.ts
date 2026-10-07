@@ -230,4 +230,86 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
     expect(activePrompt?.options[0]?.cardCode).toBe('01097b');
     expect(activePrompt?.options[1]?.cardCode).toBe('01109');
   });
+
+  function payment(type: 'physical' | 'energy' | 'mental' | 'wild', count = 1) {
+    return createCardInstance({
+      ...cardCatalog.getCard(type === 'energy' ? '01014' : '01005')!,
+      resources: makeResources(type, count),
+    });
+  }
+
+  function playAssault(paying: ReturnType<typeof payment>[], minionInstanceId: string) {
+    const p1 = state.players[0];
+    const assault = createCardInstance(cardCatalog.getCard('01053')!);
+    p1.hand = [assault, ...paying];
+    return dispatchAction(state, {
+      type: 'PLAY_CARD',
+      playerId: p1.id,
+      cardInstanceId: assault.instanceId,
+      targetInstanceId: minionInstanceId,
+      paymentCardInstanceIds: paying.map((c) => c.instanceId),
+    });
+  }
+
+  it('Player pays with a Wild resource: the attack gains Overkill', () => {
+    const p1 = state.players[0];
+    const initialVillainHp = state.villain.health;
+    const minion = createCardInstance(cardCatalog.getCard('01110')!);
+    p1.engagedMinions.push(minion);
+
+    const res = playAssault([payment('wild', 2)], minion.instanceId);
+
+    expect(res.result.success).toBe(true);
+    expect(res.state.players[0].engagedMinions.length).toBe(0);
+    expect(res.state.villain.health).toBe(initialVillainHp - 3);
+  });
+
+  it('The Overkill granted by a physical payment ends with the attack: a base attack and a later energy-paid Relentless Assault have none', () => {
+    const p1 = state.players[0];
+    const initialVillainHp = state.villain.health;
+    const m1 = createCardInstance(cardCatalog.getCard('01110')!);
+    const m2 = createCardInstance(cardCatalog.getCard('01110')!);
+    const m3 = createCardInstance(cardCatalog.getCard('01110')!);
+    p1.engagedMinions.push(m1, m2, m3);
+    // Strong enough for a base attack to leave excess damage on a 2 HP minion.
+    p1.activeFormCard = { ...spiderManHero, attack: 4 } as HeroCard;
+
+    // 1. Physical payment: Overkill, 3 excess damage to the villain.
+    const first = playAssault([payment('physical', 2)], m1.instanceId);
+    expect(first.result.success).toBe(true);
+    expect(first.state.villain.health).toBe(initialVillainHp - 3);
+    state = first.state;
+
+    // 2. A base attack right after: 4 damage on a 2 HP minion, no Overkill.
+    const base = dispatchAction(state, {
+      type: 'BASIC_ATTACK',
+      playerId: 'p1',
+      targetType: 'minion',
+      targetInstanceId: m2.instanceId,
+    });
+    expect(base.result.success).toBe(true);
+    expect(base.state.players[0].engagedMinions.some((m) => m.instanceId === m2.instanceId)).toBe(
+      false,
+    );
+    expect(base.state.villain.health).toBe(initialVillainHp - 3);
+    state = base.state;
+
+    // 3. Relentless Assault paid with energy only: no Overkill.
+    const third = playAssault([payment('energy', 2)], m3.instanceId);
+    expect(third.result.success).toBe(true);
+    expect(third.state.players[0].engagedMinions.length).toBe(0);
+    expect(third.state.villain.health).toBe(initialVillainHp - 3);
+
+    // Nothing persists on the card, the player or the game state.
+    expect(JSON.stringify(third.state)).not.toContain('grantedAttackKeywords');
+  });
+
+  it('declares the Overkill as its own gated step before the damage step', () => {
+    const steps = (cardCatalog.getCard('01053') as any).enrichment.abilities[0].steps;
+    expect(steps.map((st: any) => st.effect)).toEqual(['GRANT_ATTACK_KEYWORD', 'DEAL_DAMAGE']);
+    expect(steps[0].gate).toBe('IF_RESOURCE_MATCH');
+    expect(steps[0].gateParams).toEqual({ resource: 'physical', count: 1 });
+    expect(steps[0].effectParams).toEqual({ keyword: 'Overkill' });
+    expect(steps[1].effectParams).toEqual({ amount: 5, target: 'CHOSEN_MINION' });
+  });
 });

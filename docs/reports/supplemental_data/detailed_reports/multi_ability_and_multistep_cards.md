@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T22:17:48.801Z`
+> **Generated:** `2026-10-07T22:55:03.480Z`
 
 ## 1. Cards with Multiple Abilities (2+ Declared Abilities — 17 Cards)
 
@@ -26,7 +26,7 @@
 | `01173` | **Electric Whip Attack** | `treachery` | `core_encounter` | **2** | • `electric_whip_attack_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `electric_whip_attack_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01178` | **Kree Manipulator** | `treachery` | `core_encounter` | **2** | • `kree_manipulator_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `kree_manipulator_boost` (`BOOST` / `BOOST`, **1 step**) |
 
-## 2. Multi-Step Execution Pipelines (2+ Steps — 31 Pipelines Across 31 Cards)
+## 2. Multi-Step Execution Pipelines (2+ Steps — 32 Pipelines Across 32 Cards)
 
 | Card Code | Card Name | Pack | Ability ID | Timing | Steps | Pipeline Execution Sequence |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -38,6 +38,7 @@
 | `01031` | **Repulsor Blast (event)** | `core` | `repulsor_blast` | `HERO_ACTION` | **2** | `[1] DISCARD ➔ [2] DEAL_DAMAGE` |
 | `01037` | **Mark V Helmet (upgrade)** | `core` | `mark_v_helmet` | `HERO_ACTION` | **2** | `[1] REMOVE_THREAT ➔ [2] REMOVE_THREAT` |
 | `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` | `FORCED_RESPONSE` | **4** | `[1] DISCARD ➔ [2] DEAL_DAMAGE ➔ [3] DEAL_DAMAGE ➔ [4] DISCARD` |
+| `01053` | **Relentless Assault (event)** | `core` | `relentless_assault` | `HERO_ACTION` | **2** | `[1] GRANT_ATTACK_KEYWORD ➔ [2] DEAL_DAMAGE` |
 | `01061` | **Great Responsibility (event)** | `core` | `great_responsibility_interrupt` | `HERO_INTERRUPT` | **2** | `[1] PREVENT_THREAT ➔ [2] DEAL_DAMAGE` |
 | `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` | `HERO_INTERRUPT` | **2** | `[1] CANCEL_WHEN_REVEALED ➔ [2] VILLAIN_ATTACKS` |
 | `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` | `WHEN_REVEALED` | **2** | `[1] HEAL_DAMAGE ➔ [2] SURGE` |

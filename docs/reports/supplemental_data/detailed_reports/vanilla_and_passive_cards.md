@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T22:17:48.801Z` | **Total Verified Vanilla Cards:** **12**
+> **Generated:** `2026-10-07T22:55:03.480Z` | **Total Verified Vanilla Cards:** **12**
 
 These cards require zero declarative engine hooks (e.g. vanilla resources, base stats only, or passive encounter cards without triggers).
 

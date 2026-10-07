@@ -153,6 +153,11 @@ export interface EffectExecutionContext {
   /** The first enemy a labelled attack damaged; ATTACK_RESOLVED is dispatched for it, once. */
   attackedEnemy?: { targetType: 'villain' | 'minion'; instanceId: string };
   attackResolvedDispatched?: boolean;
+  /**
+   * Keywords the resolving ability granted to its own attack (`GRANT_ATTACK_KEYWORD`). Lives on
+   * this context only, so it ends with the ability and never reaches a card, a player or the state.
+   */
+  grantedAttackKeywords?: string[];
   isFinalStep?: boolean;
   discardedCards?: CardInstance[];
   assignments?: Record<string, number>;
@@ -1199,6 +1204,9 @@ export function executeSequence(
     }
     if (stepContext.damageAmount !== undefined) {
       context.damageAmount = stepContext.damageAmount;
+    }
+    if (stepContext.grantedAttackKeywords) {
+      context.grantedAttackKeywords = stepContext.grantedAttackKeywords;
     }
     if (stepContext.attackedEnemy && !context.attackedEnemy) {
       context.attackedEnemy = stepContext.attackedEnemy;
@@ -2329,26 +2337,10 @@ export function executeStep(
           if (!minion) continue;
 
           // Overkill: excess damage over the minion goes to the villain (RR v1.8 glossary O)
-          const kickerResource: string | undefined =
-            (step.effectParams?.kickerResource as string | undefined) ||
-            (step.effectParams?.overkillOnPhysical ? 'physical' : undefined);
-          const kickerMet = kickerResource
-            ? Boolean(
-                context.resourcesSpent?.some((r) => {
-                  const lower = String(r).toLowerCase();
-                  return lower === kickerResource.toLowerCase() || lower === 'wild';
-                }),
-              )
-            : false;
-          const hasConditionalOverkill = Boolean(
-            step.effectParams?.overkillOnPhysical || step.effectParams?.overkillOnCondition,
-          );
           const hasOverkill = Boolean(
-            (hasConditionalOverkill && kickerMet) ||
-            step.effectParams?.keyword === 'Overkill' ||
-            (!hasConditionalOverkill &&
-              ((context.sourceCardInstance?.card as any)?.keywords?.includes('Overkill') ||
-                (context.sourceCardInstance?.card.raw as any)?.keywords?.includes('Overkill'))),
+            context.grantedAttackKeywords?.some((k) => k.toLowerCase() === 'overkill') ||
+            (context.sourceCardInstance?.card as any)?.keywords?.includes('Overkill') ||
+            (context.sourceCardInstance?.card.raw as any)?.keywords?.includes('Overkill'),
           );
 
           const minionHp = (minion.card as MinionCard).health || 1;
@@ -3552,6 +3544,20 @@ export function executeStep(
       }
 
       // These are declarative constant/trigger primitives evaluated dynamically by stat-calculator and combat pipelines
+      return { state, success: true };
+    }
+
+    case 'GRANT_ATTACK_KEYWORD': {
+      // "This attack gains <keyword>": kept on the running ability's context, so it ends with it.
+      const keyword = step.effectParams?.keyword as string | undefined;
+      if (!keyword) {
+        return {
+          state,
+          success: false,
+          error: 'GRANT_ATTACK_KEYWORD requires effectParams.keyword',
+        };
+      }
+      context.grantedAttackKeywords = [...(context.grantedAttackKeywords ?? []), keyword];
       return { state, success: true };
     }
 

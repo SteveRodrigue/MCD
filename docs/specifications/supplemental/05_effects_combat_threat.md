@@ -9,7 +9,7 @@
 - **References:** [`effects/index.ts:L43`](../../../src/engine/effects/index.ts#L43)
 - **Description:** Deals flat or dynamically calculated damage to target enemy or character. Handles Tough status removal, overkill, and character defeat.
 - **Always through the damage pipeline (#247, ADR-0078):** every target kind (chosen minion, villain, `ENGAGED_ENEMIES`, `ALL_ENEMIES`, `ALL_CHARACTERS`, the identity selectors, `ALL_HEROES`, the `ALL_HEROES_AND_ALLIES` assignment) builds its target list and calls `applyDamageToTarget` once per target. So Tough, damage shields ("would be dealt" / "would be taken"), defeat triggers, Overkill, excess damage and the hero-defeat loss are applied the same way for every target, and `isAttack` (from `effectParams.isAttack` or the context) decides Retaliate and attack-only shields. The step's prompts (choose a player, explosion distribution) are unchanged.
-- **Overkill:** when the step has Overkill (`overkill`, `overkillOnCondition` with its kicker met, or the Overkill keyword) and the target is a minion that is defeated, the damage beyond the minion's remaining hit points is dealt to the active villain through the pipeline (so the villain's Tough and shields apply).
+- **Overkill:** when the step has Overkill (granted by `GRANT_ATTACK_KEYWORD` earlier in the same ability, or the printed Overkill keyword) and the target is a minion that is defeated, the damage beyond the minion's remaining hit points is dealt to the active villain through the pipeline (so the villain's Tough and shields apply).
 - **Excess and defeat:** the pipeline result carries `excessDamage` and `targetDefeated`; a chosen-minion step with `condition: "EXCESS_DAMAGE_DEALT"` reads the first, `condition: "TARGET_DEFEATED"` the second.
 - **Hero defeat:** a hero reduced to 0 hit points is eliminated (`eliminatePlayer`, ADR-0079), in the pipeline only. The remaining heroes keep playing; the game is lost when the last hero is eliminated.
 
@@ -34,9 +34,28 @@
 | `ranged`           | `boolean`                      | No       | `false`          | Ignores Retaliate keywords on the target.                                                |
 | `finisherBonus`    | `number`                       | No       | -                | Bonus damage when ability resolves as final step in a sequence (e.g. *Wakanda Forever!*). |
 | `dynamicBonus`     | `number \| DynamicValueSource` | No       | -                | Dynamic bonus damage added to amount (e.g. *Supersonic Punch* `01032`).                  |
-| `kickerResource`   | `string`                       | No       | -                | Resource type (`physical`, `mental`, `energy`) that arms the Overkill of this step when it was spent (or paid with a wild resource) on the card (`context.resourcesSpent`). Chosen-minion steps only. |
-| `overkillOnPhysical` | `boolean`                    | No       | `false`          | Shorthand for `kickerResource: "physical"`. |
-| `overkillOnCondition` | `boolean`                   | No       | `false`          | Marks the Overkill as conditional (it applies only when the kicker is met, and the card's printed Overkill keyword no longer applies unconditionally); the kicker is the resource named by `kickerResource`. |
+
+---
+
+### `GRANT_ATTACK_KEYWORD`
+
+- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts) (`context.grantedAttackKeywords`), #259
+- **Description:** "This attack gains <keyword>." Records the keyword on the running ability's context, so the `DEAL_DAMAGE` steps after it in the same ability use it (today: `Overkill`). It lives on that context only: it ends with the ability and never reaches a card, a player or the game state, so the next attack, by any card, starts from printed keywords. It survives a prompt that pauses the ability. Put it **before** the damage step and gate it with an existing gate (e.g. `IF_RESOURCE_MATCH` for "if you paid for this card using a [physical] resource").
+
+```json
+{
+  "effect": "GRANT_ATTACK_KEYWORD",
+  "gate": "IF_RESOURCE_MATCH",
+  "gateParams": { "resource": "physical", "count": 1 },
+  "effectParams": { "keyword": "Overkill" }
+}
+```
+
+| Parameter | Type     | Required | Default | Description                                  |
+| :-------- | :------- | :------- | :------ | :------------------------------------------- |
+| `keyword` | `string` | Yes      | -       | Keyword the attack gains (e.g. `"Overkill"`). |
+
+Example: _Relentless Assault_ `01053` (this step, then `DEAL_DAMAGE` 5 to `CHOSEN_MINION`).
 
 ---
 

@@ -1,321 +1,255 @@
-# Plan: Scenarios, Card Plugins, and Campaign Architecture
+# Plan: Content Plugins — Scenarios, Card Hooks, and Campaigns
 
-**Status:** Prepared / Backlogged (Awaiting Execution)
-
----
-
-## 1. Overview & Architectural Vision
-
-This plan establishes a unified **Content Plugin & Clean Overlay Architecture** for Marvel Champions Digital (MCD), organizing the game into three first-class plugin types:
-1. **Card Plugins & Scripts:** Declarative rules enrichment and scriptable behaviors attached directly to cards.
-2. **Scenario Plugins:** Declarative scenario definitions with a universal `BaseScenarioPlugin` lifecycle runner.
-3. **Campaign Plugins:** Sequenced meta-controllers chaining 2+ scenarios together with persistent campaign log state, between-game deck upgrades, and branching rewards.
-
-### Core Architectural Principles
-
-1. **Pristine Upstream Layer (`data/upstream/`):**
-   - Remains 100% untouched and canonical (external zzorba/marvelsdb-json-data clone/submodule).
-   - Serves as the immutable source of raw cards, sets, packs, and factions.
-   - Upstream repository structure is never modified or polluted with MCD engine files.
-
-2. **Clean Overlay Layer (`plugins/`):**
-   - Pack-as-a-Package overlays that augment upstream data without duplicating or altering zzorba structures.
-   - `plugins/official/<pack>/`: Houses MCD rules enrichment (`cards/supplemental.json`), complex card scripts (`cards/scripts/`), scenario manifests (`scenarios/<id>/definition.json`), and campaign manifests (`campaigns/<id>/definition.json`). Official artwork continues to be served via the standard cache/MarvelCDB pipeline.
-   - `plugins/custom/<mod>/`: Community or custom packs that define:
-     - `cards/raw.json`: **Mandatory**. Strictly adheres to the upstream zzorba card schema (`RawUpstreamCard` / `data/upstream/schema/card_schema.json`). Base card stats (cost, traits, stats) are never conflated with supplemental rules.
-     - `cards/supplemental.json`: **Mandatory**. MCD rules enrichment (abilities, triggers, effects).
-     - `assets/cards/`: **Card Image Storage**. Houses custom card artwork (e.g. `<cardCode>.png` or `<cardCode>.jpg`).
-     - `scenarios/<id>/`: Custom scenario definitions and optional plugins.
-     - `campaigns/<id>/`: Custom campaign definitions chaining custom or official scenarios.
-
-3. **Universal `BaseScenarioPlugin`:**
-   - Encapsulates ~80% of boilerplate currently duplicated across Rhino, Klaw, and Ultron plugins.
-   - Strictly implements canonical Marvel Champions Rules Reference v1.8 scenario lifecycle:
-     - Steps 1–15 game setup (Villain HP scaling $HP \times P$, Main Scheme target threat $Target \times P$, encounter deck construction & shuffling).
-     - Villain defeat & sequential stage transitions (I $\to$ II $\to$ III), attachment/status card carryover according to title match, and revealing the new stage.
-     - Main scheme completion & stage progression (1B $\to$ 2A/2B) or villain victory.
-     - Evaluates standard win/loss conditions.
-   - Standard scenarios (e.g. Rhino) require **only `definition.json`**; custom `plugin.ts` files are purely optional and only created when overriding game phases (e.g. custom villain rotation or special win/loss rules).
-
-4. **Unified `CardScriptRegistry` & Card Plugins:**
-   - Stage Setup (1A) and stage transition triggers (e.g. Rhino II, Klaw II, Ultron Drones) belong on the cards themselves, not inside scenario plugins.
-   - Standard abilities live declaratively in `cards/supplemental.json`.
-   - Complex/scripted card behaviors (e.g. Wakanda Forever sequence ordering, Ultron drone generation, Klaw minion discarding) register in a unified `CardScriptRegistry` keyed by `cardCode` (and ability ID).
-
-5. **Campaign Plugins (Chaining Scenarios):**
-   - Chains 2 or more scenarios sequentially (e.g. *The Rise of Red Skull*, *The Mad Titan's Shadow*, *Sinister Motives*).
-   - Manages persistent campaign state (`CampaignState`):
-     - Campaign Log (recorded achievements, victory milestones, defeat penalties, delay counters).
-     - Hero deck adjustments between scenarios (awarded campaign pool cards, upgrades, obligations).
-     - Persistent damage or threat carryover where specified by campaign rules.
-   - Declarative manifest (`campaigns/<id>/definition.json`) defines scenario order, setup steps, and transition rules.
-   - Optional `plugin.ts` implements custom intermission mechanics (e.g. market deck drafting in *Galaxy's Most Wanted* or gauntlet rules in *The Mad Titan's Shadow*).
-
-6. **Auto-Discovery via `import.meta.glob`:**
-   - Scenarios, cards, scripts, and campaigns are automatically discovered and registered at build/test time via Vite `import.meta.glob`, eliminating manual registration boilerplate in central index files.
-
-7. **Tooling Alignment:**
-   - Card Supplemental Editor middleware (`src/tools/editor/api-middleware.ts`) is updated to read raw cards from `data/upstream/` and persist supplemental overlays into `plugins/official/<pack>/cards/` or `plugins/custom/<mod>/cards/`.
+**Status:** Backlogged — revised after `/grill-me` review (2026-10-07). Awaiting ADR + Phase A scheduling.
+**Roadmap alignment:** Gate 1 (Rhino Release) is active. Phase A is a **Gate 2 enabler** (Klaw & Ultron). Phase B follows Phase A. Phase C (campaigns) is **Gate 4+** and starts with research only.
 
 ---
 
-## 2. Target Directory Structure
+## 0. Decision Log (from review)
+
+| #   | Topic                 | Decision                                                                                                                                                                                                                                                                                                                                  |
+| --- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q1  | Scope                 | Split into **Phase A** (BaseScenarioPlugin + declarative stage reveals), **Phase B** (`plugins/` relocation + discovery), **Phase C** (campaigns, research-first).                                                                                                                                                                        |
+| Q2  | Code extension point  | Engine primitives first, but mods and official content **need a code hook** for truly unique card abilities / scenario rules. Without one, creators would have to patch the engine or be limited to existing primitives. The existing `special-registry` + `EXECUTE_SPECIAL` becomes that hook (generalized, not duplicated).              |
+| Q3  | Mod delivery          | **Build-time only.** Custom mods live in `plugins/custom/` and are compiled into the bundle (trusted, type-checked, gated). Runtime mod loading is out of scope (future ADR).                                                                                                                                                             |
+| Q4  | Discovery & loading   | **Codegen**, not `import.meta.glob` (which does not exist under `tsx`; it would break `npm run simulate`, `card:extract`, etc.). Two tiers: an eager lightweight catalog for browsing, plus lazy `() => import()` loaders per pack. An async `loadContentForGame(selection)` runs before the engine's `createGame`, which stays synchronous. |
+| Q5  | Location              | **Uniform:** official content moves to `plugins/official/<pack>/` (dogfoods the mod API). AGENTS.md, skills, scripts, editor and docs are updated in the same change. No dual paths.                                                                                                                                                      |
+| Q6  | File granularity      | Supplemental files **mirror upstream 1:1** (`cards/core.json`, `cards/core_encounter.json`). Scripts always live at pack level in `cards/scripts/<cardCode>-<slug>.ts`. Scenario folders hold only `definition.json`, an optional `plugin.ts`, and `README.md`.                                                                          |
+| Q7  | Identity & collisions | Codegen **hard-fails** on duplicate card codes, scenario ids or campaign ids. Custom mods may enrich **only their own** `raw.json` cards (no overriding official supplemental). Custom codes use a mod prefix (`<modId>-0001`), enforced by JSON schema.                                                                                     |
+| Q8  | Correctness           | File a GitHub issue for the live Rhino bugs. Fix them in Phase A with failing tests written first. The base plugin reads HP and exclusions only from data, uses a seedable shuffle, and does not build ids from `Date.now()`.                                                                                                              |
+| Q9  | Plugin API            | Single public barrel `src/engine/plugin-api/index.ts` (alias `@plugin-api`). ESLint forbids `plugins/**` from importing any other engine path. `manifest.json` declares `apiVersion`, which codegen checks.                                                                                                                               |
+| Q10 | Override model        | **Composition:** `defineScenarioPlugin({ hooks })` with partial overrides. Each hook is `(state, ctx, next)`, and `next()` runs the default behavior.                                                                                                                                                                                      |
+| Q11 | Safety net            | **Golden-parity gate:** seeded Rhino snapshots + a seeded 100-game simulation summary must match before/after, except the intentional Q8 fixes, which get dedicated tests.                                                                                                                                                                |
+| Q12 | Governance            | One new ADR, **"Content Plugin Architecture"** (amends ADR-0033), written before Phase A. Campaigns get their own ADR when Phase C is scheduled.                                                                                                                                                                                         |
+| Q13 | Campaigns             | Phase C starts with a **campaign-rulebook survey**: convert the campaign rulebooks and logs in `references/` into structured Markdown under `references/campaigns/`. Interfaces are derived from that survey. The earlier draft interfaces are withdrawn.                                                                                  |
+| Q14 | Editor scope          | Phase B: the editor reads and writes supplemental data for official **and** custom packs. Authoring custom `raw.json` cards and uploading art are a separate future backlog item.                                                                                                                                                         |
+
+---
+
+## 1. Architectural Principles
+
+1. **Pristine upstream (`data/upstream/`)**: the canonical zzorba dataset. It is never modified and never receives MCD files.
+2. **Overlay plugins (`plugins/`)**: pack-as-a-package overlays. Official and custom content use the **same** structure, loader and API.
+3. **Declarative first, code hook second**: card behavior is expressed in supplemental JSON using generic primitives. A code hook (`registerSpecialHandler`, scenario `plugin.ts`) is allowed only for genuinely unique mechanics, and its README/PR must say why no primitive fits.
+4. **Headless engine stays synchronous and pure**: content loading (async, lazy) happens _outside_ the engine. The engine receives an already-loaded content bundle.
+5. **Stable mod contract**: plugins only see `@plugin-api`. Engine internals can change freely behind it.
+6. **One source of truth per fact**: stage HP, stage order, exclusions and set codes live in `definition.json` / the catalog. They are never repeated in code.
+
+---
+
+## 2. Target Directory Structure (Phase B end-state)
 
 ```text
-data/
-  upstream/                      # PRISTINE: Canonical zzorba dataset (untouched)
-    packs.json
-    sets.json
-    pack/
-      core.json
-      core_encounter.json
-      ...
+data/upstream/                         # PRISTINE zzorba dataset (unchanged)
 plugins/
   official/
     core/
-      manifest.json              # { "id": "core", "name": "Core Set", "type": "core" }
+      manifest.json                    # { id, name, type, apiVersion }
       cards/
-        supplemental.json        # Rules enrichment for core cards & encounters
+        core.json                      # Supplemental, mirrors data/upstream/pack/core.json
+        core_encounter.json            # Supplemental, mirrors upstream core_encounter.json
         scripts/
-          wakanda-forever.ts     # Script for card 01043 / WAKANDA_FOREVER
+          01043-wakanda-forever.ts     # registerSpecialHandler via @plugin-api
+          01140-ultron-drones.ts
       scenarios/
-        rhino/
-          definition.json        # Manifest (villain stages, threat, modular sets)
-          README.md
-        klaw/
-          definition.json
-          cards/scripts/         # Scripts for Defense Network (01125), Immortal Klaw (01127)
-          README.md
-        ultron/
-          definition.json
-          cards/scripts/
-            ultron-drones.ts     # Script for Ultron's Drones environment (01140)
-          README.md
-    the_rise_of_red_skull/
-      manifest.json
-      cards/
-        supplemental.json
-      scenarios/
-        crossbones/
-          definition.json
-        absorbing_man/
-          definition.json
-        taskmaster/
-          definition.json
-        zola/
-          definition.json
-        red_skull/
-          definition.json
-      campaigns/
-        the_rise_of_red_skull/
-          definition.json        # Chained: crossbones -> absorbing_man -> taskmaster -> zola -> red_skull
-          plugin.ts              # Optional: Intermission rules, tech upgrade deck, delay tokens
+        rhino/  definition.json, README.md            # no plugin.ts
+        klaw/   definition.json, plugin.ts?, README.md
+        ultron/ definition.json, plugin.ts?, README.md
+    <other official packs mirror the same layout>
   custom/
-    <community-mod>/
-      manifest.json
-      assets/
-        cards/                   # MANDATORY for cards with art: <cardCode>.png / .jpg
+    <modId>/
+      manifest.json                    # { id, name, type: "custom", apiVersion, author, version }
       cards/
-        raw.json                 # MANDATORY: Upstream zzorba schema (RawUpstreamCard[])
-        supplemental.json        # MANDATORY: MCD rules enrichment (CardEnrichment)
-        scripts/                 # Optional: Custom TS card scripts
-      scenarios/
-        <scenario-id>/
-          definition.json
-          plugin.ts              # Optional: Custom scenario lifecycle hooks
-      campaigns/
-        <campaign-id>/
-          definition.json        # Chained scenario IDs + progression rules
-          plugin.ts              # Optional: Custom campaign rules
+        raw.json                       # REQUIRED if mod adds cards; RawUpstreamCard[]; codes "<modId>-NNNN"
+        <modId>.json                   # Supplemental for the mod's own cards only
+        scripts/
+      assets/cards/<code>.png|jpg
+      scenarios/<scenarioId>/definition.json, plugin.ts?
+src/
+  engine/plugin-api/index.ts           # The ONLY engine import surface for plugins/**
+  generated/plugin-index.ts            # Codegen output (gitignored)
 ```
 
 ---
 
 ## 3. Rules Reference v1.8 Verification
 
-1. **Villain Defeat (RR v1.8 / Glossary: Villain Defeat):**
-   - When villain stage hit points reach 0: remove stage from the game.
-   - If next sequential stage exists in scenario stages:
-     - Set HP dial to $HP \times P$ per stage definition.
-     - Reveal new stage (cannot be canceled).
-     - **Title match rule:** If new stage has the same title as defeated stage, status cards, counters, and attachments carry over. If title differs, attachments and status cards do not carry over.
-     - Excess damage dealt to defeat previous stage does not carry over.
-     - Revealing the new stage invokes its `WHEN_REVEALED` effect via standard engine ability execution.
-   - If final stage defeated: HEROES win the game.
+Sources: `references/rules/glossary/V.md#villain-defeat`, Main Scheme, Appendix (Setup). Cross-check the Timing & Triggers and Combat clusters in `TOPIC_MAP.md`.
 
-2. **Main Scheme Completion (RR v1.8 / Glossary: Main Scheme):**
-   - When threat reaches target threat: advance to next sequential stage (e.g. 1B $\to$ 2A/2B).
-   - If final stage completed: VILLAIN wins the game.
+1. **Villain Defeat**
+   - When HP reaches 0, remove the stage. Reveal the next sequential stage for the current difficulty (this cannot be canceled). Set HP to `healthPerPlayer[stage] × P`. Excess damage does not carry over.
+   - **Same title:** treated as the same character (e.g. Retaliate). Attachments, upgrades, status cards, counters and non-damage tokens **carry over**. If the villain was defeated while activating, the **activation resumes** with the new stage.
+   - **Different title:** none of the above carries over. An in-progress activation **ends without resolving**.
+   - The reveal fires the new stage's `WHEN_REVEALED` supplemental ability through the standard effect pipeline.
+   - If the final stage is defeated, the heroes win.
+2. **Main Scheme**: when threat reaches the target, advance to the next stage. Its `WHEN_REVEALED`/setup fires and target threat is rescaled. If the final stage completes, the villain wins.
+3. **Setup (Steps 1–15)**: the base plugin plugs into the existing `game-setup.ts` pipeline (ADR-0033). It does not duplicate it. The encounter deck is built from the scenario set + Standard (+ Expert) + modular sets − definition-declared exclusions, and is shuffled with the injected `shuffleFn`.
 
-3. **Step 1–15 Scenario Setup (RR v1.8 / Appendix II: Setup):**
-   - Villain Stage 1 placed with starting HP dial ($HP \times P$).
-   - Main Scheme 1A revealed $\to$ executes its `SETUP` ability (placing environments, side schemes, or starting minions).
-   - Encounter deck assembled: Scenario encounter set + Standard set + (Expert set if Expert) + Selected Modular sets - Exclusions (Villains, Main Schemes) $\to$ shuffled into `state.encounterDeck`.
+**Known live deviations (Q8, go to the GitHub issue):**
 
-4. **Campaign Progression Rules (Official Campaign Rulebooks):**
-   - Scenarios are played in strict sequential order.
-   - Upon scenario victory: players record health/threat/counters into Campaign Log, earn upgrades/assets, and proceed to the next scenario.
-   - Upon scenario defeat: depending on difficulty mode (Standard Campaign vs Expert Campaign), players restart the current scenario or suffer campaign loss.
+- `RhinoScenarioPlugin.advanceToStage` clears `statusCards`/`attachments` on I→II although the titles match.
+- Stage HP is hardcoded (`numPlayers * 15`, `* 16`) instead of read from `definition.json`.
+- Shuffles use a `Math.random` sort (biased, not seedable) and ignore the `shuffleFn` that `game-setup.ts` already supports.
+- The Rhino II/III `WHEN_REVEALED` effects are re-implemented imperatively even though `core_encounter.json` (01095/01096) already declares them.
 
 ---
 
-## 4. Component Architecture & Interfaces
+## 4. Phase A — BaseScenarioPlugin & Declarative Stage Reveals (Gate 2 enabler)
 
-### 4.1. Universal `BaseScenarioPlugin`
-**File:** `src/engine/scenarios/base-scenario-plugin.ts`
-- Implements `ScenarioPlugin` interface.
-- Constructor accepts `definition: ScenarioDefinition`.
-- Default implementations:
-  - `onGameSetup(state, options)`: Validates difficulty, sets up active villain, sets up active main scheme, builds encounter deck using catalog set expansions, shuffles deck, and triggers Stage 1A setup.
-  - `onVillainDefeated(state, defeatedVillainInstanceId)`: Detects next stage for current difficulty, replaces villain card, carries over status/attachments if titles match, resets HP, and reveals new stage card (firing its `WHEN_REVEALED` ability). If final stage, marks `state.winner = 'HEROES'`.
-  - `onMainSchemeCompleted(state, completedSchemeInstanceId)`: Advances main scheme stage or marks `state.winner = 'VILLAIN'`.
-  - `evaluateWinLossConditions(state)`: Standard evaluation (all heroes defeated $\to$ villain wins).
-  - Optional hooks (`onVillainPhaseStep1`, `onVillainPhaseStep2`) default to standard engine pipeline behavior.
+### A0. Prerequisites
 
-### 4.2. Unified `CardScriptRegistry` & Card Plugins
-**File:** `src/engine/cards/card-script-registry.ts`
-- Unifies `src/engine/specials/special-registry.ts` with scenario and encounter card scripts.
-- Interface:
-  ```typescript
-  export interface CardScript {
-    cardCode?: string;
-    abilityId?: string;
-    validatePlayCondition?: (state: GameState, context: EffectExecutionContext) => boolean;
-    execute: (state: GameState, context: EffectExecutionContext, payload?: any) => EffectResult;
-  }
-  ```
-- Functions: `registerCardScript(script: CardScript)`, `getCardScript(codeOrId: string)`.
-- Replaces hardcoded scenario plugin methods for:
-  - Wakanda Forever (`01043`)
-  - Rhino II When Revealed (`01095` $\to$ Search & reveal *Breakin' & Takin'*)
-  - Klaw 1A Setup (`01124a` $\to$ Search & reveal *Defense Network*, discard until minion found)
-  - Ultron 1A Setup / Drones (`01136a` / `01140` $\to$ Spawn drone minion instances from player decks)
+- Write the ADR **"Content Plugin Architecture"** (next free number, amends ADR-0033), recording decisions Q2–Q12.
+- File the GitHub issue for the Rhino deviations listed in §3.
+- **Seedable RNG:** all engine randomness goes through one injectable RNG/`shuffleFn`. This is required for the golden-parity gate; today about 18 `Math.random` call sites exist in `effects/`, the pipeline and `deck-utils`. Ids come from a deterministic counter or the RNG, not `Date.now()`.
+- Capture **golden baselines** with the current code: seeded Rhino setup and stage-transition snapshots (Standard, Expert, Skirmish; 1–4 players), plus a seeded 100-game simulation summary.
 
-### 4.3. Campaign Plugin System
-**File:** `src/engine/campaigns/types.ts` & `src/engine/campaigns/base-campaign-plugin.ts`
-- **Manifest Schema (`definition.json`):**
-  ```typescript
-  export interface CampaignDefinition {
-    id: string;
-    name: string;
-    author?: string;
-    version?: string;
-    scenarios: Array<{
-      scenarioId: string;
-      title: string;
-      recommendedModularSets?: string[];
-      setupOverrides?: Record<string, any>;
-    }>;
-    campaignLogSchema: {
-      numericTrackers?: string[];
-      booleanFlags?: string[];
-      awardedCards?: string[];
-    };
-  }
-  ```
-- **Campaign State & Lifecycle:**
-  ```typescript
-  export interface CampaignState {
-    campaignId: string;
-    currentScenarioIndex: number;
-    difficulty: DifficultyMode;
-    campaignLog: Record<string, any>;
-    playerDecks: Record<string, string[]>;
-    history: Array<{
-      scenarioId: string;
-      victory: boolean;
-      rounds: number;
-      recordedState: Record<string, any>;
-    }>;
-  }
+### A1. `@plugin-api` barrel
 
-  export interface CampaignPlugin {
-    definition: CampaignDefinition;
-    onCampaignStart(state: CampaignState): CampaignState;
-    onScenarioCompleted(
-      state: CampaignState,
-      scenarioResult: { scenarioId: string; victory: boolean; gameState: GameState },
-    ): {
-      state: CampaignState;
-      nextScenarioId?: string;
-      campaignVictory?: boolean;
-      campaignDefeat?: boolean;
-    };
-  }
-  ```
+`src/engine/plugin-api/index.ts` exports:
 
-### 4.4. Auto-Discovery & Loaders
-**Files:** `src/engine/scenarios/loader.ts`, `src/engine/campaigns/loader.ts`, `src/data/supplemental/index.ts`
-- Uses Vite's `import.meta.glob`:
-  - `import.meta.glob('/plugins/**/scenarios/**/definition.json', { eager: true })`
-  - `import.meta.glob('/plugins/**/scenarios/**/plugin.ts', { eager: true })`
-  - `import.meta.glob('/plugins/**/campaigns/**/definition.json', { eager: true })`
-  - `import.meta.glob('/plugins/**/campaigns/**/plugin.ts', { eager: true })`
-  - `import.meta.glob('/plugins/**/cards/supplemental.json', { eager: true })`
-  - `import.meta.glob('/plugins/**/cards/scripts/*.ts', { eager: true })`
-  - `import.meta.glob('/plugins/custom/**/cards/raw.json', { eager: true })`
-- Automatically registers and aliases cards, scenarios, and campaigns.
+- Hook types: `ScenarioHooks`, `ScenarioHookContext`, `defineScenarioPlugin`, `ScenarioDefinition`.
+- `registerSpecialHandler` / `SpecialAbilityHandler` (the existing registry, now public). Handlers may be keyed by `cardCode` and/or ability id.
+- Read-only catalog access, `executeEffect`, the RNG/shuffle, card-instance creation, and log helpers.
+- `PLUGIN_API_VERSION`.
+- ESLint `no-restricted-imports` on `plugins/**/*.ts`: only `@plugin-api` is allowed from the engine.
 
-### 4.5. Asset Pipeline & Custom Card Images
-**File:** `vite.config.ts` & Asset Serving Middleware
-- In development mode, the card image middleware intercepts `/cards/:fileName` requests.
-- **Lookup Order:**
-  1. Check `plugins/custom/**/assets/cards/${fileName}` on local disk (serving custom community card art).
-  2. Check official local disk cache (`cache/cards/${fileName}`).
-  3. If missing from cache, download official asset on-demand from MarvelCDB / remote URLs.
-- In production builds (`npm run build`), static assets from `plugins/custom/**/assets/cards/` are packaged directly into `dist/cards/` alongside cached official assets.
+### A2. Base scenario behavior + composition
 
-### 4.6. Card Supplemental Editor Middleware
-**File:** `src/tools/editor/api-middleware.ts`
-- Update `CardSupplementalService`:
-  - `upstreamDir`: `data/upstream/` (canonical raw cards).
-  - `supplementalPackDir`: points to `plugins/official/<pack>/cards/` (or `plugins/custom/<mod>/cards/`).
-  - Automatically loads and saves `supplemental.json` in the respective plugin package.
+`src/engine/scenarios/base-scenario-plugin.ts` holds the default implementations. `defineScenarioPlugin(definition, hooks?)` composes them:
+
+```ts
+type Hook<A extends unknown[], R> = (state: GameState, ctx: ScenarioHookContext, next: () => R, ...args: A) => R;
+```
+
+- `onGameSetup`: active villain stage, main scheme stage (from definition), encounter deck (scenario set + standard/expert + modular − `encounterDeckExclusions`), shuffle via `ctx.shuffle`. Then reveal the starting villain stage and main scheme, which fires their `WHEN_REVEALED`/`SETUP` supplemental abilities. This means Expert Rhino II's _Breakin' & Takin'_ search runs via data, not code.
+- `onVillainDefeated`: the full §3.1 behavior (title-match carryover, activation resume/end).
+- `onMainSchemeCompleted`: stage advance or villain victory.
+- `evaluateWinLossConditions`: standard checks.
+- Villain-phase hooks default to the existing pipeline.
+
+### A3. `ScenarioDefinition` additions (removing hardcoded values)
+
+- `encounterSetCode` (replaces the hardcoded `'rhino'`).
+- `mainSchemeSetup.stages` as card codes/stage ids used for lookups (replaces the hardcoded `'1B'`).
+- `encounterDeckExclusions?: string[]` (replaces the hardcoded `01094…01097b`), with villain and main-scheme types excluded by default.
+- `flavor?: { setupKey?, victoryKey?, defeatKey? }`: i18n keys for onomatopoeia instead of string literals.
+- A JSON schema for `definition.json`, validated by codegen (Phase B) and by tests (Phase A).
+
+### A4. Migrations
+
+- **Rhino:** no `plugin.ts`. Delete `RhinoScenarioPlugin`. Verify that the 01095/01096 supplemental data fully covers the stage reveal effects and fill any primitive gaps generically.
+- **Klaw / Ultron:** move card-specific logic into supplemental data, or into `registerSpecialHandler` scripts when no primitive fits. Any remaining scenario-rule logic becomes thin `defineScenarioPlugin` hook overrides that call `next()`.
+- Phase A keeps the current file locations (`src/engine/scenarios/built-in/`). Relocation is Phase B.
+
+### A5. Phase A tests
+
+- Golden-parity tests (A0 baselines): exact match, except the Q8 deltas.
+- Q8 regression tests, written first and failing before the fix:
+  - same-title carryover of status, attachments and counters;
+  - different-title clearing;
+  - activation resume vs end;
+  - HP read from the definition.
+- Composition tests: an override that calls `next()` wraps the default; an override that does not call `next()` replaces it.
+- `definition.json` schema validation for all scenarios.
 
 ---
 
-## 5. Migration Execution Steps
+## 5. Phase B — `plugins/` Relocation, Codegen Discovery, Tooling
 
-1. **Step 1: Engine Foundation**
-   - Create `src/engine/scenarios/base-scenario-plugin.ts`.
-   - Create `src/engine/cards/card-script-registry.ts`.
-   - Create `src/engine/campaigns/` (types, `base-campaign-plugin.ts`, loader, registry).
-   - Update `src/engine/pipeline/scenario-helpers.ts` to trigger card reveals during stage advancement.
+### B1. Codegen: `npm run plugins:generate`
 
-2. **Step 2: Root `plugins/` Setup & Auto-Discovery**
-   - Create root `plugins/official/core/` directory structure.
-   - Migrate `src/data/supplemental/pack/core.json` and `core_encounter.json` to `plugins/official/core/cards/supplemental.json`.
-   - Move `wakanda-forever.ts` to `plugins/official/core/cards/scripts/wakanda-forever.ts`.
-   - Implement Vite `import.meta.glob` auto-discovery in `src/data/supplemental/index.ts`, `src/engine/scenarios/loader.ts`, and `src/engine/campaigns/loader.ts`.
+- Runs in the `predev`/`prebuild`/`pretest`/`presimulate` hooks, alongside `schema:generate`.
+- Scans `plugins/{official,custom}/*/manifest.json` and writes `src/generated/plugin-index.ts` (gitignored):
+  - **Tier 1, eager catalog:** pack manifests, scenario headers (id, name, villain, difficulties, recommended modulars), and hero entries for selection screens.
+  - **Tier 2, lazy loaders:** `{ [packId]: () => import(...) }` for raw cards, supplemental and scripts; `{ [scenarioId]: () => import(plugin.ts) }`.
+- **Validation (hard fail):**
+  - duplicate card codes, scenario ids or campaign ids;
+  - a custom supplemental entry targeting a code not in that mod's `raw.json`;
+  - a custom code missing the `<modId>-` prefix;
+  - an `apiVersion` mismatch;
+  - a JSON schema violation.
 
-3. **Step 3: Scenario Refactoring**
-   - Move Rhino, Klaw, Ultron definitions to `plugins/official/core/scenarios/`.
-   - Migrate Rhino to pure `definition.json` (delete 379 lines of duplicate code in `RhinoScenarioPlugin`!).
-   - Extract Klaw & Ultron card scripts to `plugins/official/core/cards/scripts/`.
-   - Streamline or eliminate custom `plugin.ts` files for Klaw and Ultron.
+### B2. Async content loading outside the engine
 
-4. **Step 4: Tooling & Editor Updates**
-   - Update `src/tools/editor/api-middleware.ts` paths.
-   - Update `vite.config.ts` asset serving middleware for `plugins/custom/**/assets/cards/`.
-   - Update `tsconfig.json` `include` and `paths` (`@plugins/*`).
+- `loadContentForGame({ scenarioId, modularSetCodes, heroIds })`, in `src/data/`, not the engine:
+  - resolves the packs needed;
+  - awaits the lazy loaders;
+  - registers the cards, supplemental data and special handlers;
+  - returns a content bundle.
+- Then the synchronous `createGame` runs. The UI shows a comic-style loading splash between pressing **Start Game** and the board.
+- Node scripts (`simulate`, `card:extract`, `cache:cards`) use the same loader, since dynamic `import()` works under `tsx`.
 
-5. **Step 5: Verification & Cleanup**
-   - Run full quality gates: `rtk npm test`, `rtk vitest run`, `rtk npm run lint`.
-   - Remove obsolete files in `src/engine/scenarios/built-in/` and old supplemental pack paths.
+### B3. Relocation (single change, no dual paths)
+
+- `src/data/supplemental/pack/*.json` → `plugins/official/<pack>/cards/<same-name>.json`, mirroring upstream.
+- `src/engine/specials/wakanda-forever.ts` → `plugins/official/core/cards/scripts/01043-wakanda-forever.ts`.
+- `src/engine/scenarios/built-in/*` → `plugins/official/core/scenarios/*`.
+- Replace the static imports in `card-loader.ts`, `supplemental/index.ts`, `scripts/simulate-games.ts` and `scripts/cache-card-images.ts` with the loader.
+- Update `tsconfig.json` (`include`, `@plugin-api`), the ESLint config and the Vitest config.
+- **Docs and agent tooling in the same change:**
+  - AGENTS.md: the principle "card-specific behavior declarative in `src/data/supplemental/`" becomes `plugins/<scope>/<pack>/cards/`.
+  - Skills: `card-integration-protocol`, `single-card-supplemental`, `bug-fix` and any skill that references the old paths.
+  - Scripts: `scripts/extract-card.ts`, `scripts/validate-card.ts`, `tools/audit/*`, `tools/generate-supplemental-schema.ts`.
+  - README/ADR cross-links.
+
+### B4. Card Supplemental Editor (UI impact)
+
+- `src/tools/editor/api-middleware.ts`: the pack list spans `plugins/official/*` and `plugins/custom/*`. Reads come from `data/upstream/` (official) or `cards/raw.json` (custom). Writes go to the matching `plugins/<scope>/<pack>/cards/<file>.json`.
+- Pack picker UI: group by Official / Custom and keep the pop-art styling. Custom raw-card authoring and art upload are **out of scope** (separate backlog item, Q14).
+
+### B5. Assets
+
+- Dev middleware `/cards/:fileName` lookup order:
+  1. `plugins/custom/*/assets/cards/` (no collisions possible thanks to the Q7 prefixes);
+  2. `cache/cards/`;
+  3. on-demand MarvelCDB download.
+- Production: a Vite plugin copies `plugins/custom/*/assets/cards/*` into `dist/cards/`.
+
+### B6. Phase B tests
+
+- Codegen: a fixture mod for each hard-fail rule; a happy path producing a deterministic index.
+- `loadContentForGame` loads only the selected packs (assert untouched loaders).
+- `custom-scenario.test.ts`: a fixture mod in `tests/fixtures/plugins/custom/` (not in the real `plugins/custom/`) with raw cards, supplemental, a scenario and a script hook, played through setup and one stage transition.
+- Lint test: a fixture plugin importing `@engine/effects` fails ESLint.
+- Editor API: `/api/supplemental/packs`, `/card/:code` GET/POST round-trip for an official and a custom pack.
+- Assets: custom art resolves before the cache.
+- `npm run simulate` still passes the 100-game gate.
 
 ---
 
-## 6. Testing & Quality Gates
+## 6. Phase C — Campaigns (Gate 4+, research-first)
 
-1. **Unit & Engine Tests:**
-   - `tests/engine/scenario-plugin.test.ts`: Verify `BaseScenarioPlugin` correctly loads and runs Rhino.
-   - `tests/engine/scenario-plugins-klaw-ultron.test.ts`: Verify Klaw and Ultron multi-stage transitions and drone spawning.
-   - `tests/engine/scenario-setup-15-steps.test.ts`: Verify encounter deck construction across Standard, Expert, and Skirmish.
-   - `tests/engine/custom-scenario.test.ts`: Verify custom community scenario loading from `plugins/custom/`.
-   - `tests/engine/campaign-plugin.test.ts` (New): Verify multi-scenario chaining, state persistence, and log tracking.
-2. **Editor API Tests:**
-   - Verify `/api/packs`, `/api/cards/:code`, and `/api/supplemental/:code` read and write accurately to `plugins/`.
-3. **Asset Serving Tests:**
-   - Verify custom cards resolve artwork from `plugins/custom/**/assets/cards/` before falling back to official cache.
-4. **Data Integrity:**
-   - Validate JSON schemas across all `plugins/**/supplemental.json`, `plugins/**/definition.json`, and `plugins/custom/**/raw.json`.
+### C1. Campaign-rulebook survey (first deliverable, no code)
+
+- Convert the campaign rulebooks and campaign logs in `references/` into structured Markdown under `references/campaigns/<box>/`, following the `references/rules/` conventions (setup, between-scenario steps, log fields, defeat/retry rules, expert campaign differences):
+  - `mc10` The Rise of Red Skull
+  - `mc16` Galaxy's Most Wanted
+  - `mc21` The Mad Titan's Shadow
+  - `mc27` Sinister Motives
+  - `mc32` Mutant Genesis
+  - `mc40` NeXt Evolution
+  - `mc45` Age of Apocalypse
+  - `mc50` Agents of S.H.I.E.L.D.
+- Add a lookup path (extend `scripts/lookup-rule.py` or add a sibling) and update the Rules Reference Inspection Policy in AGENTS.md to cover campaign references.
+- Produce a **pattern matrix**: which mechanics are common to all campaigns (ordered scenarios, log flags/counters, card awards, persistent hit points) and which are campaign-specific (e.g. the GMW ship/market, AoA's structure, MTS specifics).
+
+### C2. Requirements (constraints already fixed)
+
+- Rides the same plugin model: `plugins/<scope>/<pack>/campaigns/<id>/definition.json` + an optional `plugin.ts`, discovered by codegen, with access only through `@plugin-api`.
+- Campaign state lives **outside** the headless game engine as a meta-layer. Each scenario is a normal `createGame` with campaign-derived setup inputs, and its result feeds back into the campaign state.
+- Typed state only: no `Record<string, any>`. The log schema is derived from C1.
+
+### C3. Open questions (resolved by C1 + campaign ADR)
+
+- Persistence and save format: local storage, export/import file, versioning.
+- Deck modification model between scenarios: awards, obligations, upgrades, plus Card Editor/UI impact.
+- Defeat handling per campaign (retry vs. continue with penalties) and expert campaign variants.
+- How much of each campaign-specific mechanic should be declarative vs. a `plugin.ts` hook.
+
+---
+
+## 7. Quality Gates (every phase)
+
+- `rtk npm test`, `rtk npm run lint`, `npm run simulate` (100-game gate), `npm run plugins:generate` (Phase B+).
+- No skipped/todo tests, no legacy aliases or duplicate paths left behind (AGENTS.md).
+- Each phase gets its own implementation plan derived from this backlog doc, and waits for user approval before any code is written.

@@ -177,6 +177,20 @@ describe('TriggerFilterSection', () => {
     await user.selectOptions(screen.getByTestId('trigger-defender-type-0'), '');
     expect(handleChange).toHaveBeenLastCalledWith(undefined);
   });
+  it('selects attackedBy', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(<StatefulTriggerFilterSection initial={{}} isExpanded={true} onChange={handleChange} />);
+
+    await user.selectOptions(screen.getByTestId('trigger-attacked-by-0'), 'YOUR_HERO');
+    expect(handleChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ attackedBy: 'YOUR_HERO' }),
+    );
+
+    await user.selectOptions(screen.getByTestId('trigger-attacked-by-0'), '');
+    expect(handleChange).toHaveBeenLastCalledWith(undefined);
+  });
   it('selects ENEMY as target entity type and defeatedByAttackOf', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();

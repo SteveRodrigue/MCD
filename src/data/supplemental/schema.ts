@@ -373,6 +373,7 @@ export const TriggerFilterSchema = z
     targetScope: z.enum(['HOST', 'SELF', 'OTHER', 'ANY']).optional(),
     targetForm: z.enum(['HERO', 'ALTER_EGO']).optional(),
     targetType: z.enum(['VILLAIN', 'MINION', 'ENEMY', 'SCHEME', 'CHARACTER', 'ALLY']).optional(),
+    attackedBy: z.enum(['YOUR_HERO', 'THIS_CARD']).optional(),
     defeatedByAttackOf: z.enum(['YOUR_HERO', 'THIS_CARD']).optional(),
     isEngaged: z.boolean().optional(),
     defenderType: z.enum(['HERO', 'ALLY']).optional(),

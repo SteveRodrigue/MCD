@@ -1256,6 +1256,7 @@ export function step7_resolvePostAttackAndRetaliate(
     targetPlayerId: attackContext.targetPlayerId,
     damageAmount: attackContext.finalDamage,
     acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
+    attackSource: { kind: 'ENEMY', instanceId: attackerInstanceId },
   });
 
   // Step 7 Retaliate: If defending character survived and has Retaliate X, deal X damage back to attacker (RR v1.8 p. 24, ADR-0054)

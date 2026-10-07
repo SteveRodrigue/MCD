@@ -160,6 +160,23 @@ export const TriggerFilterSection: React.FC<TriggerFilterSectionProps> = ({
             </select>
           </div>
 
+          {/* attackedBy */}
+          <div>
+            <label className="block text-[9px] uppercase font-bold text-gray-600 mb-0.5">
+              Attacked By
+            </label>
+            <select
+              data-testid={`trigger-attacked-by-${abilityIndex}`}
+              value={currentFilter.attackedBy || ''}
+              onChange={(e) => handleFieldChange('attackedBy', e.target.value || undefined)}
+              className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+            >
+              <option value="">Any</option>
+              <option value="YOUR_HERO">Your hero</option>
+              <option value="THIS_CARD">This card</option>
+            </select>
+          </div>
+
           {/* defeatedByAttackOf */}
           <div>
             <label className="block text-[9px] uppercase font-bold text-gray-600 mb-0.5">

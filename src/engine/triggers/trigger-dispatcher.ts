@@ -190,6 +190,17 @@ export function matchesTriggerFilter(
     }
   }
 
+  if (filter.attackedBy) {
+    // "After your hero attacks ..." / "After <this card> attacks ..." (RR v1.8 glossary Y).
+    const source = context.attackSource;
+    if (!source) return false;
+    if (filter.attackedBy === 'YOUR_HERO') {
+      if (source.kind !== 'HERO' || !player || source.playerId !== player.id) return false;
+    } else if (filter.attackedBy === 'THIS_CARD') {
+      if (!cardInst || source.instanceId !== cardInst.instanceId) return false;
+    }
+  }
+
   if (filter.defenderType) {
     if (context.defenderType !== filter.defenderType) {
       return false;
@@ -234,6 +245,15 @@ export interface DefeatSource {
   byAttack: boolean;
 }
 
+/** Who made an attack, carried on the ATTACK_RESOLVED context (`triggerFilter.attackedBy`). */
+export interface AttackSource {
+  kind: 'HERO' | 'ALLY' | 'ENEMY';
+  /** The player whose hero or ally attacked. */
+  playerId?: string;
+  /** The attacking ally or enemy card. */
+  instanceId?: string;
+}
+
 export interface TriggerContext {
   targetPlayerId: string;
   sourceInstanceId?: string;
@@ -269,6 +289,8 @@ export interface TriggerContext {
   targetMaxHp?: number;
   /** For DEFEATED / CHARACTER_DEFEATED: what defeated the character. */
   defeatSource?: DefeatSource;
+  /** For ATTACK_RESOLVED: who made the attack. */
+  attackSource?: AttackSource;
   /** Active chain of trigger nodes leading to this invocation (ADR-0053) */
   triggerChain?: TriggerCallNode[];
   triggerDepth?: number;
@@ -853,6 +875,16 @@ export function dispatchTrigger(
             };
             const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
 
+            // RR v1.8 Forced: a forced ability that requires a target and has no valid one does
+            // not initiate, and no cost is paid.
+            if (
+              !abilityHasValidTarget(state, controller, ability, cardInst, {
+                targetType: context.targetType,
+                targetInstanceId: context.targetInstanceId,
+              })
+            ) {
+              continue;
+            }
             if (ability.cost) {
               const costCheck = canPayAbilityCost(state, controller, ability, cardInst);
               if (!costCheck.allowed) continue;
@@ -885,7 +917,14 @@ export function dispatchTrigger(
             const costCheck = canPayAbilityCost(state, controller, ability, cardInst);
             if (!costCheck.allowed) continue;
             // RR v1.8 "Target": an ability that requires a target needs at least one valid target.
-            if (!abilityHasValidTarget(state, controller, ability, cardInst)) continue;
+            if (
+              !abilityHasValidTarget(state, controller, ability, cardInst, {
+                targetType: context.targetType,
+                targetInstanceId: context.targetInstanceId,
+              })
+            ) {
+              continue;
+            }
 
             if (
               ability.limit === 'ONCE_PER_ROUND' &&

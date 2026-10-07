@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-10-07T20:32:15.338Z`  
+> **Generated:** `2026-10-07T22:17:48.801Z`  
 > **Source Packs Scanned:** `core, core_encounter, cw_encounter, mts`
 
 ---
@@ -58,7 +58,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | :--- | :---: | :---: | :---: | :--- |
 | **Ability Timings** | **15** | 19 | 100.0% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md) |
 | **Trigger Windows** | **20** | 30 | 100.0% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md#2-trigger-windows-triggertypeschema) |
-| **Trigger Filters** | **9** | - | - | `attackerKind` (1), `targetPlayerScope` (3), `damageSource` (1), `targetScope` (1), `sourceCardCode` (1), `targetType` (3), `defeatedByAttackOf` (2), `defenderType` (1), `threatSource` (1) |
+| **Trigger Filters** | **10** | - | - | `attackerKind` (1), `targetPlayerScope` (3), `damageSource` (1), `targetScope` (1), `attackedBy` (1), `sourceCardCode` (1), `targetType` (3), `defeatedByAttackOf` (2), `defenderType` (1), `threatSource` (1) |
 | **Cost Primitives** | **9** | - | - | `discardSelf` (13), `resourceCost` (9), `exhaustSelf` (20), `spendCounters` (5), `resources` (2), `heal` (1), `discardCard` (2), `damageHero` (1), `damageSelf` (1) |
 | **Multi-Ability Cards (2+)** | **17** | - | - | [View 17 Cards](detailed_reports/multi_ability_and_multistep_cards.md) |
 

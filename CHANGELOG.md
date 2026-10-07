@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine + Data + Card Editor + Docs): Superhuman Strength `01028` reacts only to an attack by your hero ([Issue #257](https://github.com/SteveRodrigue/MCD/issues/257))**
+  - Schema: `triggerFilter.attackedBy` (`YOUR_HERO` / `THIS_CARD`) reads the new `context.attackSource` that every `ATTACK_RESOLVED` dispatch sets (hero basic attack, ally attack, `(attack)`-labelled ability, enemy attack). Before, an ally's or an enemy's attack stunned and discarded the upgrade. `01028` declares `YOUR_HERO` (confidence 95). Tigra `01051` needed no change (`defeatedByAttackOf`, #247); its tests already cover another ally's kill.
+  - Forced abilities now follow RR v1.8 Forced / Target: one whose step targets "that enemy" (`TRIGGERING_ENEMY` / `TRIGGERING_MINION`) does not initiate, and pays no cost, when that enemy has no valid target (defeated by the attack, already Stunned, Stalwart). `abilityHasValidTarget` takes the triggering event's target and runs it through `canAffect`; the forced branch of the dispatcher calls it before paying the cost (it never did). Superhuman Strength is no longer discarded when it stuns nothing.
+  - Card Editor select, spec `02`, ADR-0078 addendum, regenerated `schema.json`. Tests: `tests/engine/superhuman-strength-attacker.test.ts`, `chase-them-down.test.ts`, `TriggerFilterSection.test.tsx`.
+
 - **Fix (Engine + Data + Card Editor + Docs): Backflip `01003` reacts only to damage from an attack ([Issue #256](https://github.com/SteveRodrigue/MCD/issues/256))**
   - Schema: `triggerFilter.damageSource` (`'ATTACK'`), evaluated in `matchesTriggerFilter`; the attack path in `combat-pipeline.ts` sends it with `DAMAGE_WOULD_BE_TAKEN`. Backflip declares it, so non-attack damage (a future dispatch, #268) cannot offer it. Cosmic Flight `01017` stays unrestricted.
   - Card Editor select, spec `02`, regenerated `schema.json`. Tests: `tests/engine/backflip-attack-only.test.ts`, `trigger-filter-members.test.ts`, `TriggerFilterSection.test.tsx`.

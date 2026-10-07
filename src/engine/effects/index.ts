@@ -66,7 +66,11 @@ import {
   getEffectiveHandSize,
   hasEntityKeyword,
 } from '../pipeline/stat-calculator';
-import { dispatchTrigger, matchesTriggerFilter } from '../triggers/trigger-dispatcher';
+import {
+  dispatchTrigger,
+  matchesTriggerFilter,
+  type AttackSource,
+} from '../triggers/trigger-dispatcher';
 import { TriggerCallNode } from '../errors/infinite-loop-error';
 import { getSpecialHandler } from '../specials/special-registry';
 import '../specials/wakanda-forever';
@@ -1289,15 +1293,17 @@ function finishLabelledAttack(state: GameState, context: EffectExecutionContext)
   const enemy = context.attackedEnemy;
   if (!context.labelledAttack || !enemy || context.attackResolvedDispatched) return;
   context.attackResolvedDispatched = true;
+  const attackSource: AttackSource = { kind: 'HERO', playerId: context.playerId };
   dispatchTrigger(
     state,
     'ATTACK_RESOLVED',
     enemy.targetType === 'villain'
-      ? { targetPlayerId: context.playerId, targetType: 'villain' }
+      ? { targetPlayerId: context.playerId, targetType: 'villain', attackSource }
       : {
           targetPlayerId: context.playerId,
           targetType: 'minion',
           targetInstanceId: enemy.instanceId,
+          attackSource,
         },
   );
 }

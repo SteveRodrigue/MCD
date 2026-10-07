@@ -10,7 +10,7 @@ import type {
 import { StatusCard } from '../models';
 import { getEffectiveMaxHealth, hasEntityKeyword } from '../pipeline/stat-calculator';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
-import { getEligibleTargets, type ResolvedTarget } from './target-resolver';
+import { getEligibleTargets, resolveTargets, type ResolvedTarget } from './target-resolver';
 import type { EffectExecutionContext } from './index';
 
 /**
@@ -188,23 +188,56 @@ export function chooseStepTarget(
   return { kind: 'PROMPTED' };
 }
 
+/** Selectors naming the enemy or minion the triggering event was about ("that enemy"). */
+const EVENT_TARGET_SELECTORS: ReadonlySet<string> = new Set([
+  'TRIGGERING_ENEMY',
+  'TRIGGERING_MINION',
+]);
+
+const stepEventSelector = (step: AbilityStep): string | undefined => {
+  const target = step.effectParams?.target;
+  return typeof target === 'string' && EVENT_TARGET_SELECTORS.has(target) ? target : undefined;
+};
+
 const stepsNeedingChoice = (ability: CardAbility): AbilityStep[] =>
-  (ability.steps ?? []).filter((s) => stepTargetSelector(s) !== undefined);
+  (ability.steps ?? []).filter(
+    (s) => stepTargetSelector(s) !== undefined || stepEventSelector(s) !== undefined,
+  );
+
+/** The target a triggering event named, for abilities whose steps target "that enemy". */
+export interface EventTarget {
+  targetType?: string;
+  targetInstanceId?: string;
+}
 
 /**
  * RR v1.8 "Target" / "Initiating Abilities" step 2: an ability that requires a target can only be
  * initiated if it has at least one valid target. An ability with any step that needs no chosen
- * target can always be initiated.
+ * target can always be initiated. A step on the enemy the triggering event named ("that enemy",
+ * `TRIGGERING_ENEMY`) needs that enemy to be in play and affectable (defeated, already stunned or
+ * Stalwart: no valid target); callers that pass no event target skip that check.
  */
 export function abilityHasValidTarget(
   state: GameState,
   player: PlayerState,
   ability: CardAbility,
   sourceCardInstance?: CardInstance,
+  eventTarget?: EventTarget,
 ): boolean {
   const choiceSteps = stepsNeedingChoice(ability);
   if (choiceSteps.length === 0 || choiceSteps.length < (ability.steps ?? []).length) return true;
-  return choiceSteps.some(
-    (step) => getValidStepTargets(state, player, step, { sourceCardInstance }).length > 0,
-  );
+  return choiceSteps.some((step) => {
+    const eventSelector = stepEventSelector(step);
+    if (!eventSelector) {
+      return getValidStepTargets(state, player, step, { sourceCardInstance }).length > 0;
+    }
+    // Callers without a triggering event (a prompt answered later) cannot judge "that enemy".
+    if (!eventTarget?.targetInstanceId && !eventTarget?.targetType) return true;
+    return resolveTargets(state, eventSelector, {
+      playerId: player.id,
+      sourceCardInstance,
+      eventTargetType: eventTarget?.targetType,
+      eventTargetInstanceId: eventTarget?.targetInstanceId,
+    }).some((t) => canAffect(state, step, t));
+  });
 }

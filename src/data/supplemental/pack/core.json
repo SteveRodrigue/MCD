@@ -1037,6 +1037,9 @@
           "id": "superhuman_strength_stun",
           "timing": "FORCED_RESPONSE",
           "trigger": "ATTACK_RESOLVED",
+          "triggerFilter": {
+            "attackedBy": "YOUR_HERO"
+          },
           "cost": {
             "discardSelf": true
           },
@@ -1057,7 +1060,7 @@
         "reviewedAt": "2026-10-05T14:30",
         "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 80,
+        "confidence": 95,
         "originalText": "She-Hulk gets +2 ATK.\n<b>Forced Response</b>: After She-Hulk attacks, discard Superhuman Strength → stun the attacked enemy."
       }
     },

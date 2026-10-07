@@ -505,6 +505,7 @@ function dispatchSingleAction(
         dispatchTrigger(nextState, 'ATTACK_RESOLVED', {
           targetPlayerId: player.id,
           targetType: 'villain',
+          attackSource: { kind: 'HERO', playerId: player.id },
         });
 
         const onomatopoeia = damageRes.result.onomatopoeia || 'POW!';
@@ -557,6 +558,7 @@ function dispatchSingleAction(
           targetPlayerId: player.id,
           targetType: 'minion',
           targetInstanceId: action.targetInstanceId,
+          attackSource: { kind: 'HERO', playerId: player.id },
         });
 
         const onomatopoeia = damageRes.result.onomatopoeia || 'POW!';
@@ -688,6 +690,7 @@ function dispatchSingleAction(
         sourceInstanceId: action.allyInstanceId,
         sourceCardCode: ally.card.code,
         attackerCard: ally,
+        attackSource: { kind: 'ALLY', playerId: player.id, instanceId: ally.instanceId },
       });
 
       const onomatopoeia = 'ALLY ATTACK!';

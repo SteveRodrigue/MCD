@@ -138,6 +138,13 @@
                         "ALLY"
                       ]
                     },
+                    "attackedBy": {
+                      "type": "string",
+                      "enum": [
+                        "YOUR_HERO",
+                        "THIS_CARD"
+                      ]
+                    },
                     "defeatedByAttackOf": {
                       "type": "string",
                       "enum": [

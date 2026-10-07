@@ -348,7 +348,7 @@
       "abilities": [
         {
           "id": "rechannel",
-          "timing": "HERO_ACTION",
+          "timing": "ACTION",
           "cost": {
             "resources": [
               "energy"
@@ -384,7 +384,7 @@
       "abilities": [
         {
           "id": "commander",
-          "timing": "ALTER_EGO_ACTION",
+          "timing": "ACTION",
           "limit": "ONCE_PER_ROUND",
           "steps": [
             {
@@ -722,7 +722,7 @@
       "abilities": [
         {
           "id": "she_hulk_form_change",
-          "timing": "HERO_RESPONSE",
+          "timing": "RESPONSE",
           "trigger": "FORM_CHANGED",
           "steps": [
             {
@@ -749,7 +749,7 @@
       "abilities": [
         {
           "id": "i_object",
-          "timing": "ALTER_EGO_INTERRUPT",
+          "timing": "INTERRUPT",
           "trigger": "THREAT_WOULD_BE_PLACED",
           "limit": "ONCE_PER_ROUND",
           "steps": [
@@ -1101,7 +1101,7 @@
       "abilities": [
         {
           "id": "futurist",
-          "timing": "ALTER_EGO_ACTION",
+          "timing": "ACTION",
           "limit": "ONCE_PER_ROUND",
           "steps": [
             {

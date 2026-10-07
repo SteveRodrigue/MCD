@@ -178,7 +178,7 @@ See [README.md](README.md) (session start, plan anatomy, owner preferences, wher
 
 ## 5. Open decisions waiting for the owner
 
-- [#261](https://github.com/SteveRodrigue/MCD/issues/261): core player cards questions (B4 canonical defeat trigger, C9 Alpha Flight Station form, C10 identity timing convention, C13 `maxPerDeck`, Repulsor Blast single hit or two).
+- [#261](https://github.com/SteveRodrigue/MCD/issues/261): 🟢 **Decided and applied 2026-10-07** (uncommitted): `DEFEATED` alias removed, identity timings plain, Alpha Flight Station `01010b` only, deck limits from upstream `deck_limit`, Repulsor Blast one instance. Close the issue after the commit.
 - [#233](https://github.com/SteveRodrigue/MCD/issues/233): how many upgrades/supports did the revealing player control when Caught Off Guard showed no prompt?
 - 2 moderate Dependabot alerts on `main` are not reviewed yet (`dependabot` skill).
 - Next ready item: item 14 once you decide (see below); otherwise the Tier 2 issues of section 3.4 ([#255](https://github.com/SteveRodrigue/MCD/issues/255) to [#257](https://github.com/SteveRodrigue/MCD/issues/257), [#259](https://github.com/SteveRodrigue/MCD/issues/259)).

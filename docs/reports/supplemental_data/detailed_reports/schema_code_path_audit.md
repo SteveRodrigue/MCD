@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T12:08:39.991Z` | **Overall Coverage:** **100.0%**
+> **Generated:** `2026-10-07T12:19:27.374Z` | **Overall Coverage:** **100.0%**
 
 This matrix audits every schema primitive defined in `src/data/supplemental/schema.ts` across 3 dimensions:
 1. **In Schema**: Is the enum option formally defined in schema.ts?
@@ -194,18 +194,18 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 | Primitive Value | In Engine Code Path? | Cards Declaring | Status | Health Rationale / Code Location |
 | :--- | :---: | :---: | :---: | :--- |
 | `FORCED_INTERRUPT` | ✅ Yes | **3** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 3 card(s). |
-| `INTERRUPT` | ✅ Yes | **4** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 4 card(s). |
+| `INTERRUPT` | ✅ Yes | **5** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 5 card(s). |
 | `HERO_INTERRUPT` | ✅ Yes | **4** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 4 card(s). |
-| `ALTER_EGO_INTERRUPT` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 1 card(s). |
-| `HERO_ACTION` | ✅ Yes | **26** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 26 card(s). |
-| `ALTER_EGO_ACTION` | ✅ Yes | **8** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 8 card(s). |
-| `ACTION` | ✅ Yes | **16** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 16 card(s). |
+| `ALTER_EGO_INTERRUPT` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/` timing evaluation paths; 0 cards currently declare this. |
+| `HERO_ACTION` | ✅ Yes | **25** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 25 card(s). |
+| `ALTER_EGO_ACTION` | ✅ Yes | **6** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 6 card(s). |
+| `ACTION` | ✅ Yes | **19** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 19 card(s). |
 | `RESOURCE` | ✅ Yes | **6** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 6 card(s). |
 | `HERO_RESOURCE` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 1 card(s). |
 | `ALTER_EGO_RESOURCE` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/` timing evaluation paths; 0 cards currently declare this. |
 | `FORCED_RESPONSE` | ✅ Yes | **18** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 18 card(s). |
-| `RESPONSE` | ✅ Yes | **12** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 12 card(s). |
-| `HERO_RESPONSE` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 1 card(s). |
+| `RESPONSE` | ✅ Yes | **13** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 13 card(s). |
+| `HERO_RESPONSE` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/` timing evaluation paths; 0 cards currently declare this. |
 | `ALTER_EGO_RESPONSE` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/` timing evaluation paths; 0 cards currently declare this. |
 | `CONSTANT` | ✅ Yes | **20** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 20 card(s). |
 | `SPECIAL` | ✅ Yes | **4** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 4 card(s). |

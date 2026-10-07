@@ -2,9 +2,9 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T12:08:39.991Z`
+> **Generated:** `2026-10-07T12:19:27.374Z`
 
-## 1. Ability Timings (`TimingTypeSchema` — 17/19 In Use)
+## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
 ### <a id="when-revealed"></a>`WHEN_REVEALED` (31 Cards)
 
@@ -42,13 +42,12 @@
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
 
-### <a id="hero-action"></a>`HERO_ACTION` (26 Cards)
+### <a id="hero-action"></a>`HERO_ACTION` (25 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01005` | **Swinging Web Kick (event)** | `core` | `swinging_web_kick` |
 | `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_attach` |
-| `01010a` | **Captain Marvel (hero)** | `core` | `rechannel` |
 | `01012` | **Crisis Interdiction (event)** | `core` | `crisis_interdiction` |
 | `01013` | **Photonic Blast (event)** | `core` | `photonic_blast` |
 | `01018` | **Energy Channel (upgrade)** | `core` | `energy_channel_blast` |
@@ -96,6 +95,30 @@
 | `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
 | `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_retaliate` |
 
+### <a id="action"></a>`ACTION` (19 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_attach` |
+| `01010a` | **Captain Marvel (hero)** | `core` | `rechannel` |
+| `01010b` | **Carol Danvers (alter_ego)** | `core` | `commander` |
+| `01015` | **Alpha Flight Station (support)** | `core` | `alpha_flight_station` |
+| `01018` | **Energy Channel (upgrade)** | `core` | `energy_channel_add` |
+| `01020` | **Hellcat (ally)** | `core` | `hellcat_return` |
+| `01025` | **Split Personality (event)** | `core` | `split_personality` |
+| `01029b` | **Tony Stark (alter_ego)** | `core` | `futurist` |
+| `01030` | **War Machine (ally)** | `core` | `war_machine_action` |
+| `01056` | **Tac Team (support)** | `core` | `tac_team_action` |
+| `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
+| `01068` | **Vision (ally)** | `core` | `vision_boost` |
+| `01069` | **Get Ready (event)** | `core` | `get_ready_action` |
+| `01071` | **Make the Call (event)** | `core` | `make_the_call` |
+| `01074` | **Inspired (upgrade)** | `core` | `inspired_attach` |
+| `01080` | **Med Team (support)** | `core` | `med_team_heal` |
+| `01086` | **First Aid (event)** | `core` | `first_aid` |
+| `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
+| `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
+
 ### <a id="forced-response"></a>`FORCED_RESPONSE` (17 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -118,32 +141,12 @@
 | `01194` | **Unknown Card #01194** | `core_encounter` | `masterplan_when_revealed` |
 | `01195` | **Unknown Card #01195** | `core_encounter` | `under_fire_when_revealed` |
 
-### <a id="action"></a>`ACTION` (16 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_attach` |
-| `01015` | **Alpha Flight Station (support)** | `core` | `alpha_flight_station` |
-| `01018` | **Energy Channel (upgrade)** | `core` | `energy_channel_add` |
-| `01020` | **Hellcat (ally)** | `core` | `hellcat_return` |
-| `01025` | **Split Personality (event)** | `core` | `split_personality` |
-| `01030` | **War Machine (ally)** | `core` | `war_machine_action` |
-| `01056` | **Tac Team (support)** | `core` | `tac_team_action` |
-| `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
-| `01068` | **Vision (ally)** | `core` | `vision_boost` |
-| `01069` | **Get Ready (event)** | `core` | `get_ready_action` |
-| `01071` | **Make the Call (event)** | `core` | `make_the_call` |
-| `01074` | **Inspired (upgrade)** | `core` | `inspired_attach` |
-| `01080` | **Med Team (support)** | `core` | `med_team_heal` |
-| `01086` | **First Aid (event)** | `core` | `first_aid` |
-| `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
-| `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
-
-### <a id="response"></a>`RESPONSE` (12 Cards)
+### <a id="response"></a>`RESPONSE` (13 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01011` | **Spider-Woman (ally)** | `core` | `spider_woman_enters_play` |
+| `01019a` | **She-Hulk (hero)** | `core` | `she_hulk_form_change` |
 | `01024` | **One-Two Punch (event)** | `core` | `one_two_punch_response` |
 | `01041` | **Shuri (ally)** | `core` | `shuri_enters_play` |
 | `01051` | **Tigra (ally)** | `core` | `tigra_defeat_heal` |
@@ -156,15 +159,13 @@
 | `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 
-### <a id="alter-ego-action"></a>`ALTER_EGO_ACTION` (8 Cards)
+### <a id="alter-ego-action"></a>`ALTER_EGO_ACTION` (6 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01006` | **Aunt May (support)** | `core` | `aunt_may` |
-| `01010b` | **Carol Danvers (alter_ego)** | `core` | `commander` |
 | `01023` | **Legal Practice (event)** | `core` | `legal_practice_action` |
 | `01026` | **Superhuman Law Division (support)** | `core` | `superhuman_law_division` |
-| `01029b` | **Tony Stark (alter_ego)** | `core` | `futurist` |
 | `01034` | **Stark Tower (support)** | `core` | `stark_tower_retrieve` |
 | `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
 | `01045` | **The Golden City (support)** | `core` | `golden_city` |
@@ -191,6 +192,16 @@
 | `01072` | **The Power of Leadership (resource)** | `core` | `power_of_leadership` |
 | `01079` | **The Power of Protection (resource)** | `core` | `power_of_protection` |
 
+### <a id="interrupt"></a>`INTERRUPT` (5 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
+| `01003` | **Backflip (event)** | `core` | `backflip` |
+| `01019b` | **Jennifer Walters (alter_ego)** | `core` | `i_object` |
+| `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
+| `01085` | **Emergency (event)** | `core` | `emergency_interrupt` |
+
 ### <a id="hero-interrupt"></a>`HERO_INTERRUPT` (4 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -199,15 +210,6 @@
 | `01017` | **Cosmic Flight (upgrade)** | `core` | `cosmic_flight_prevent` |
 | `01061` | **Great Responsibility (event)** | `core` | `great_responsibility_interrupt` |
 | `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
-
-### <a id="interrupt"></a>`INTERRUPT` (4 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
-| `01003` | **Backflip (event)** | `core` | `backflip` |
-| `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
-| `01085` | **Emergency (event)** | `core` | `emergency_interrupt` |
 
 ### <a id="special"></a>`SPECIAL` (4 Cards)
 
@@ -226,23 +228,11 @@
 | `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
 | `01098` | **Armored Rhino Suit (attachment)** | `core_encounter` | `armored_rhino_suit_shield` |
 
-### <a id="alter-ego-interrupt"></a>`ALTER_EGO_INTERRUPT` (1 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01019b` | **Jennifer Walters (alter_ego)** | `core` | `i_object` |
-
 ### <a id="hero-resource"></a>`HERO_RESOURCE` (1 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01008` | **Web-Shooter (upgrade)** | `core` | `web_shooter_resource` |
-
-### <a id="hero-response"></a>`HERO_RESPONSE` (1 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01019a` | **She-Hulk (hero)** | `core` | `she_hulk_form_change` |
 
 ### <a id="setup"></a>`SETUP` (1 Cards)
 

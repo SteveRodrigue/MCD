@@ -131,6 +131,23 @@ describe('lifecycle triggers, hero/alter-ego timings and STATUS_REMOVED (#276)',
       expect(fired(support)).toBe(1);
     });
 
+    it('ALTER_EGO_INTERRUPT on a non-identity card only resolves while the player is in alter-ego form (#261)', () => {
+      support = withAbility(counterAbility('ego_int', 'ALTER_EGO_INTERRUPT', 'PLAYER_PHASE_BEGAN'));
+      state.players[0].currentForm = 'hero';
+      dispatchTrigger(state, 'PLAYER_PHASE_BEGAN', {
+        targetPlayerId: 'p1',
+        acceptOptionalTriggers: true,
+      });
+      expect(fired(support)).toBe(0);
+
+      state.players[0].currentForm = 'alter_ego';
+      dispatchTrigger(state, 'PLAYER_PHASE_BEGAN', {
+        targetPlayerId: 'p1',
+        acceptOptionalTriggers: true,
+      });
+      expect(fired(support)).toBe(1);
+    });
+
     it('ALTER_EGO_RESOURCE identity ability only generates a resource in alter-ego form', () => {
       const player = state.players[0];
       const alterEgo = player.alterEgo;

@@ -96,6 +96,11 @@ export interface ResolveDecisionPromptAction {
   type: 'RESOLVE_DECISION_PROMPT';
   playerId: string;
   selectedOptionId: string;
+  /**
+   * Answer of a multi-select prompt (`PendingDecisionPrompt.selection`): the chosen option ids,
+   * possibly none. `selectedOptionId` is then the id of the Confirm button.
+   */
+  selectedOptionIds?: string[];
   assignments?: Record<string, number>;
   paymentCardInstanceIds?: string[];
   generatorInstanceIds?: string[];

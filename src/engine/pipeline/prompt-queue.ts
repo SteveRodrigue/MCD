@@ -225,6 +225,34 @@ function hasQueuedRevealPrompts(state: GameState, encounterInstanceId: string): 
   );
 }
 
+/**
+ * Validates the answer of a multi-select prompt (`selection`): ids of the prompt, no repeated id,
+ * a count in `min..max`, no two options with the same card name when `distinctBy` is `NAME`.
+ * A single-choice prompt only needs a known option id. Returns an error message, or undefined.
+ */
+export function validateSearchSelection(
+  prompt: PendingDecisionPrompt,
+  chosenIds: string[],
+): string | undefined {
+  const known = new Map(prompt.options.map((o) => [o.id, o]));
+  if (new Set(chosenIds).size !== chosenIds.length) return 'A card was chosen twice';
+  for (const id of chosenIds) {
+    if (!known.has(id)) return `Invalid option id '${id}'`;
+  }
+  const { selection } = prompt;
+  if (!selection) return chosenIds.length === 1 ? undefined : 'Choose exactly one option';
+  if (chosenIds.length < selection.min || chosenIds.length > selection.max) {
+    return `Choose between ${selection.min} and ${selection.max} cards`;
+  }
+  if (selection.distinctBy === 'NAME') {
+    const names = chosenIds.map(
+      (id) => (known.get(id)!.params as { cardName?: string } | undefined)?.cardName ?? id,
+    );
+    if (new Set(names).size !== names.length) return 'Choose cards with different names';
+  }
+  return undefined;
+}
+
 export function peekDecisionPrompt(state: GameState): PendingDecisionPrompt | undefined {
   return state.pendingDecisionQueue && state.pendingDecisionQueue.length > 0
     ? state.pendingDecisionQueue[0]

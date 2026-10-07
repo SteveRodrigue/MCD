@@ -27,6 +27,11 @@ import { InfiniteLoopError, TriggerCallNode } from '../errors/infinite-loop-erro
 
 export const MAX_TRIGGER_DEPTH = 15;
 
+/** A Forced Interrupt / Forced Response resolves at once; every other timing is the player's choice. */
+function isForcedTiming(timing: string): boolean {
+  return timing === 'FORCED_INTERRUPT' || timing === 'FORCED_RESPONSE';
+}
+
 const TRIGGER_EQUIVALENTS: Record<string, string[]> = {
   ENEMY_INITIATES_ATTACK: ['VILLAIN_INITIATES_ATTACK'],
   DAMAGE_WOULD_BE_TAKEN: ['TAKE_ATTACK_DAMAGE', 'TAKE_DAMAGE'],
@@ -505,7 +510,7 @@ function scanHandReactions(
       });
       if (!ability) continue;
 
-      const isForced = ability.timing.startsWith('FORCED_');
+      const isForced = isForcedTiming(ability.timing);
 
       if (isForced || context.acceptOptionalTriggers === true) {
         const node: TriggerCallNode = {
@@ -675,7 +680,7 @@ export function dispatchTrigger(
         continue;
       }
 
-      const isForced = ability.timing.startsWith('FORCED_');
+      const isForced = isForcedTiming(ability.timing);
       if (isForced || context.acceptOptionalTriggers === true) {
         const node: TriggerCallNode = {
           trigger,
@@ -864,7 +869,7 @@ export function dispatchTrigger(
             }
           }
 
-          const isForced = ability.timing.startsWith('FORCED_');
+          const isForced = isForcedTiming(ability.timing);
           if (isForced || context.acceptOptionalTriggers === true) {
             const node: TriggerCallNode = {
               trigger,

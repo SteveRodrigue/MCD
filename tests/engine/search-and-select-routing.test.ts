@@ -100,13 +100,14 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     );
 
     expect(effectRes.success).toBe(true);
-    // instTech is presented alongside Pass option on voluntary action (Issue #115)
+    // The default minimumTake is 1: a mandatory single pick, no pass option, no multi-select
     expect(
       peekDecisionPrompt(effectRes.state)?.options.some((o) => o.id === instTech.instanceId),
     ).toBe(true);
     expect(peekDecisionPrompt(effectRes.state)?.options.some((o) => o.id === 'pass_search')).toBe(
-      true,
+      false,
     );
+    expect(peekDecisionPrompt(effectRes.state)?.selection).toBeUndefined();
 
     // Player selects the Tech card
     const resolveRes = dispatchAction(effectRes.state, {

@@ -213,7 +213,9 @@ describe('StepPipelineEditor', () => {
       />,
     );
     expect(screen.getByTestId('step-param-shuffleAfter-0-0')).toBeDefined();
-    expect(screen.getByTestId('step-param-isVoluntary-0-0')).toBeDefined();
+    expect(screen.getByTestId('step-param-minimumTake-0-0')).toBeDefined();
+    expect(screen.getByTestId('step-param-distinctBy-0-0')).toBeDefined();
+    expect(screen.queryByTestId('step-param-isVoluntary-0-0')).toBeNull();
     expect(screen.getByTestId('step-param-promptTitle-0-0')).toBeDefined();
 
     // DRAW

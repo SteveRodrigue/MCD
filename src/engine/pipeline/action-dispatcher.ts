@@ -79,6 +79,7 @@ import {
   enqueueDecisionPrompt,
   peekDecisionPrompt,
   popDecisionPrompt,
+  validateSearchSelection,
 } from './prompt-queue';
 import {
   resolveDefenderDeclaration,
@@ -3088,17 +3089,20 @@ function dispatchSingleAction(
 
       if (
         activePrompt &&
-        activePrompt.options.some(
-          (o) =>
-            o.effect === 'SEARCH_AND_SELECT_RESOLUTION' || o.effect === 'SEARCH_AND_SELECT_PASS',
-        )
+        activePrompt.options.some((o) => o.effect === 'SEARCH_AND_SELECT_RESOLUTION')
       ) {
+        // The chosen cards: a multi-select prompt answers with `selectedOptionIds` (possibly none)
+        const chosenIds: string[] = activePrompt.selection
+          ? (action.selectedOptionIds ?? [])
+          : [action.selectedOptionId];
+        const selectionError = validateSearchSelection(activePrompt, chosenIds);
+        if (selectionError) {
+          return { state, result: { success: false, error: selectionError } };
+        }
         const { state: poppedState } = popDecisionPrompt(nextState);
-        const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
-        const params = (selectedOption?.params || activePrompt.options[0]?.params) as any;
+        const params = activePrompt.options[0]?.params as any;
 
         const lookedCards: CardInstance[] = params?.lookedCards || [];
-        const chosenInstanceId: string = action.selectedOptionId;
         const sourceZone: string = params?.sourceZone || 'PLAYER_DECK';
         const sourceZones: string[] = Array.isArray(params?.sourceZones)
           ? params.sourceZones
@@ -3115,11 +3119,7 @@ function dispatchSingleAction(
             ? poppedState.players.find((p) => p.id === params.targetPlayerId)
             : undefined) || poppedState.players.find((p) => p.id === action.playerId)!;
 
-        if (
-          !selectedOption ||
-          selectedOption.id === 'pass_search' ||
-          selectedOption.effect === 'SEARCH_AND_SELECT_PASS'
-        ) {
+        if (chosenIds.length === 0) {
           if (isLookCountSpliced) {
             routeCardInstances(
               poppedState,
@@ -3153,40 +3153,43 @@ function dispatchSingleAction(
           return { state: poppedState, result: { success: true, onomatopoeia: 'PASSED' } };
         }
 
-        // Selected Option
-        let chosenCard: CardInstance | undefined;
-        let chosenCardZone = sourceZone;
+        // Selected cards
+        const chosenCards: { card: CardInstance; zone: string }[] = [];
         let unchosenCards: CardInstance[] = [];
 
         if (isLookCountSpliced) {
-          chosenCard = lookedCards.find((c) => c.instanceId === chosenInstanceId);
-          unchosenCards = lookedCards.filter((c) => c.instanceId !== chosenInstanceId);
+          for (const id of chosenIds) {
+            const card = lookedCards.find((c) => c.instanceId === id);
+            if (card) chosenCards.push({ card, zone: sourceZone });
+          }
+          unchosenCards = lookedCards.filter((c) => !chosenIds.includes(c.instanceId));
         } else {
-          // Full search across pile: find and splice chosen card from source zones
-          const searchZones = [sourceZone, ...sourceZones.filter((z) => z !== sourceZone)];
-          for (const zone of searchZones) {
-            let pile: CardInstance[] = targetPlayer.deck;
-            if (zone === 'PLAYER_DISCARD') pile = targetPlayer.discard;
-            else if (zone === 'PLAYER_HAND') pile = targetPlayer.hand;
-            else if (zone === 'ENCOUNTER_DECK') pile = poppedState.encounterDeck;
-            else if (zone === 'ENCOUNTER_DISCARD') pile = poppedState.encounterDiscard;
+          // Full search across pile: find and splice each chosen card from the source zones
+          for (const id of chosenIds) {
+            const searchZones = [sourceZone, ...sourceZones.filter((z) => z !== sourceZone)];
+            for (const zone of searchZones) {
+              let pile: CardInstance[] = targetPlayer.deck;
+              if (zone === 'PLAYER_DISCARD') pile = targetPlayer.discard;
+              else if (zone === 'PLAYER_HAND') pile = targetPlayer.hand;
+              else if (zone === 'ENCOUNTER_DECK') pile = poppedState.encounterDeck;
+              else if (zone === 'ENCOUNTER_DISCARD') pile = poppedState.encounterDiscard;
 
-            const matchIdx = pile.findIndex((c) => c.instanceId === chosenInstanceId);
-            if (matchIdx !== -1) {
-              chosenCard = pile.splice(matchIdx, 1)[0];
-              chosenCardZone = zone;
-              break;
+              const matchIdx = pile.findIndex((c) => c.instanceId === id);
+              if (matchIdx !== -1) {
+                chosenCards.push({ card: pile.splice(matchIdx, 1)[0], zone });
+                break;
+              }
             }
           }
         }
 
-        if (chosenCard) {
+        for (const { card, zone } of chosenCards) {
           routeCardInstances(
             poppedState,
             targetPlayer,
-            [chosenCard],
+            [card],
             selectedDestination,
-            chosenCardZone,
+            zone,
             params?.target,
           );
         }
@@ -3220,7 +3223,7 @@ function dispatchSingleAction(
           key: 'card.searched.selected',
           params: {
             player: targetPlayer.name,
-            card: chosenCard?.card.name || selectedOption.label,
+            card: chosenCards.map((c) => c.card.card.name).join(', '),
           },
           onomatopoeia: 'SELECTED!',
         });

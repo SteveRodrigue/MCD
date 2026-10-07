@@ -1292,7 +1292,7 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         type: 'boolean',
         defaultValue: true,
         description:
-          'Automatically resolve without a decision prompt when matching candidate count <= takeCount',
+          'Automatically resolve without a decision prompt when the number of candidates is <= Minimum Cards to Take (nothing left to choose)',
       },
       {
         key: 'shuffleAfter',
@@ -1302,11 +1302,19 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         description: 'Shuffle the searched deck after completing the search',
       },
       {
-        key: 'isVoluntary',
-        label: 'Voluntary (May Choose)',
-        type: 'boolean',
-        defaultValue: false,
-        description: 'Player may decline to take any cards (RR v1.8 p. 19)',
+        key: 'minimumTake',
+        label: 'Minimum Cards to Take',
+        type: 'number',
+        defaultValue: 1,
+        description:
+          'Fewest cards the player must take (0 = "up to" Take Count). With fewer candidates than this, all are taken.',
+      },
+      {
+        key: 'distinctBy',
+        label: 'Distinct By',
+        type: 'select',
+        options: ['NAME'] as const,
+        description: 'NAME: no two chosen cards may share a card name',
       },
       {
         key: 'promptTitle',

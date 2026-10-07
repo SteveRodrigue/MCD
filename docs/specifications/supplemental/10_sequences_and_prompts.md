@@ -281,6 +281,9 @@ Do not write `"condition": "UNDEFENDED_ATTACK"` inside `effectParams`: nothing r
 > [!NOTE]
 > The `promptId` field on `PendingDecisionPrompt` is **not** used by `resolveDecisionPrompt` for disambiguation — the resolver always pops the head of the `pendingDecisionQueue`. The `promptId` is retained in the queue for log tracing.
 
+### Multi-select card prompt (`SEARCH`, #260)
+
+A `SEARCH` that lets the player take several cards (`takeCount` > 1) or none (`minimumTake` 0) opens a prompt with `selection: { min, max, distinctBy? }`; one option per candidate (`params.cardName`, `params.cardCode`). The answer is `RESOLVE_DECISION_PROMPT` with `selectedOptionIds` (possibly empty) and `selectedOptionId: 'confirm_selection'`. The engine rejects a count outside `min..max`, an unknown or repeated id, and two cards with the same name when `distinctBy` is `NAME` (`validateSearchSelection`). A single mandatory pick (`minimumTake` 1, one card) keeps the one-click flow with no `selection`. The UI is `SelectCardsModal` (card tiles, counter, Confirm). A search with no candidate writes the log key `card.search.nothingFound`, opens no prompt and still shuffles a searched deck.
 ### `sourceCardInstanceId` Binding (ADR-0062)
 
 When `PLAYER_CHOICE` is executed from a `USE_CARD_ABILITY` action on an in-play ally, `executeEffect` attaches `context.sourceCardInstance` to the prompt via `sourceCardInstanceId`. When the prompt is resolved via `resolveDecisionPrompt`, `prompt-queue.ts` looks up the ally by instanceId in `player.allies` and `player.tableau` and forwards it as `sourceCardInstance` into the synthetic ability execution. This guarantees that `target: "SELF"` in a `MODIFY_STAT` option correctly pushes the modifier onto the triggering ally's `activeStatModifiers`.

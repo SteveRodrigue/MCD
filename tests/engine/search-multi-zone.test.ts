@@ -297,7 +297,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
     expect(player.hand.length).toBe(2);
   });
 
-  it('voluntary player action search provides "Pass" option, while forced trigger enforces selection', () => {
+  it('minimumTake 0 opens a multi-select prompt that may stay empty, the default minimumTake 1 enforces a pick', () => {
     const state = setupGame({
       scenarioId: 'rhino',
       players: [
@@ -323,7 +323,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
     const inst2 = createCardInstance(techCard);
     player.deck = [inst1, inst2];
 
-    // Voluntary Action ability (timing: 'HERO_ACTION')
+    // minimumTake 0 (timing does not matter any more)
     const actionResult = executeEffect(
       state,
       {
@@ -335,6 +335,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
             effectParams: {
               source: 'PLAYER_DECK',
               takeCount: 1,
+              minimumTake: 0,
               filter: { trait: 'Tech' },
               autoSelectIfUnambiguous: false,
             },
@@ -346,9 +347,10 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
 
     const prompt1 = actionResult.state.pendingDecisionQueue?.[0];
     expect(prompt1).toBeDefined();
-    expect(prompt1?.options.some((o) => o.id === 'pass_search')).toBe(true);
+    expect(prompt1?.selection).toEqual({ min: 0, max: 1 });
+    expect(prompt1?.options.some((o) => o.id === 'pass_search')).toBe(false);
 
-    // Forced trigger ability (timing: 'WHEN_REVEALED')
+    // Default minimumTake (1), forced trigger ability (timing: 'WHEN_REVEALED')
     state.pendingDecisionQueue = [];
     const forcedResult = executeEffect(
       state,
@@ -373,6 +375,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
 
     const prompt2 = forcedResult.state.pendingDecisionQueue?.[0];
     expect(prompt2).toBeDefined();
+    expect(prompt2?.selection).toBeUndefined();
     expect(prompt2?.options.some((o) => o.id === 'pass_search')).toBe(false);
   });
 

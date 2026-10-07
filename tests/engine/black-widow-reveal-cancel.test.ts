@@ -152,6 +152,56 @@ describe('Black Widow 01075 cancels any revealed encounter card (#255)', () => {
     expect(accepted.players[0].dealtEncounterCards.map((c) => c.card.code)).toEqual([FALSE_ALARM]);
   });
 
+  it('is not offered when Black Widow is exhausted: the minion enters play', () => {
+    p1().allies[0].exhausted = true;
+    deal(HYDRA_MERCENARY);
+
+    const after = step4_revealEncounterCards(state);
+
+    expect(peekDecisionPrompt(after)).toBeUndefined();
+    expect(after.players[0].engagedMinions.some((m) => m.card.code === HYDRA_MERCENARY)).toBe(true);
+  });
+
+  it('is not offered when no card can pay a mental or wild resource', () => {
+    p1().hand = [
+      createCardInstance({
+        code: 'test_physical',
+        name: 'Physical Card',
+        type: 'event',
+        cost: 1,
+        resources: { physical: 1, total: 1 },
+      } as any),
+    ];
+    deal(HYDRA_MERCENARY);
+
+    const after = step4_revealEncounterCards(state);
+
+    expect(peekDecisionPrompt(after)).toBeUndefined();
+    expect(after.players[0].engagedMinions.some((m) => m.card.code === HYDRA_MERCENARY)).toBe(true);
+    expect(after.players[0].allies[0].exhausted).toBeFalsy();
+  });
+
+  it('a card with a wild resource pays for the ability', () => {
+    p1().hand = [
+      createCardInstance({
+        code: 'test_wild',
+        name: 'Wild Card',
+        type: 'event',
+        cost: 1,
+        resources: { wild: 1, total: 1 },
+      } as any),
+    ];
+    state.encounterDeck = [createCardInstance(cardCatalog.getCard(FALSE_ALARM)!)];
+    deal(HYDRA_MERCENARY);
+
+    const accepted = acceptBlackWidow(step4_revealEncounterCards(state));
+
+    expect(accepted.encounterDiscard.some((c) => c.card.code === HYDRA_MERCENARY)).toBe(true);
+    expect(accepted.players[0].engagedMinions).toHaveLength(0);
+    expect(accepted.players[0].allies[0].exhausted).toBe(true);
+    expect(accepted.players[0].hand).toHaveLength(0);
+  });
+
   it('Enhanced Spider-Sense (treachery only) is not offered for a minion', () => {
     p1().allies = [];
     p1().hand = [createCardInstance(cardCatalog.getCard(ENHANCED_SPIDER_SENSE)!), mentalCard()];

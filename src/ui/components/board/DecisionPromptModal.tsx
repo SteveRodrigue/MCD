@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  Sparkles,
   HelpCircle,
   CheckCircle2,
   XCircle,
@@ -13,8 +12,8 @@ import {
 import { PendingDecisionPrompt } from '../../../engine/models';
 import { cardCatalog } from '../../../data/importer/card-loader';
 import { CardView } from '../cards/CardView';
+import { PromptCardPanel } from './PromptCardPanel';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
-import { FormattedCardText } from '../cards/FormattedCardText';
 import { WakandaForeverModal } from './WakandaForeverModal';
 import { DistributeAmountModal } from './DistributeAmountModal';
 
@@ -55,8 +54,6 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
   }
 
   const isForced = !prompt.isVoluntary;
-  const hasTriggerProvenance =
-    Boolean(prompt.triggerSourceName) && prompt.triggerSourceName !== prompt.sourceCardName;
 
   const triggerCard =
     prompt.triggerSourceCard ||
@@ -80,6 +77,15 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
       triggerCard.type === 'villain' ||
       triggerCard.type === 'environment' ||
       triggerCard.type === 'obligation');
+
+  const hostCard =
+    prompt.isVoluntary && prompt.sourceCardCode
+      ? cardCatalog.getCard(prompt.sourceCardCode)
+      : undefined;
+  const abilityCard =
+    hostCard && !(showTriggerCardShowcase && triggerCard?.code === hostCard.code)
+      ? hostCard
+      : undefined;
 
   const headerBadgeLabel = isEncounterCard ? 'TRIGGERING ENCOUNTER CARD' : 'TRIGGERING CARD';
 
@@ -140,52 +146,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
           </div>
         </div>
 
-        {/* 2. Provenance & Trigger Banner (Shows Trigger Source -> Ability Host) */}
-        <div className="relative px-5 py-2.5 bg-amber-100 border-b-2 border-comic-black flex flex-wrap items-center justify-between gap-2 text-slate-900">
-          <div className="flex items-center gap-2 flex-wrap text-xs font-bold">
-            {prompt.sourceCardCode && (
-              <CardArtThumbnail
-                cardCode={prompt.sourceCardCode}
-                cardName={prompt.sourceCardName}
-                size="sm"
-              />
-            )}
-
-            {hasTriggerProvenance ? (
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {prompt.triggerSourceCode && (
-                  <CardArtThumbnail
-                    cardCode={prompt.triggerSourceCode}
-                    cardName={prompt.triggerSourceName}
-                    size="sm"
-                  />
-                )}
-                <span className="text-[10px] font-black uppercase bg-slate-200 px-2 py-0.5 rounded border border-comic-black text-slate-700">
-                  TRIGGER: {prompt.triggerSourceName}
-                </span>
-                <ArrowRight className="w-3.5 h-3.5 text-comic-black shrink-0" />
-                <span className="text-[10px] font-black uppercase bg-comic-yellow px-2 py-0.5 rounded border border-comic-black text-comic-black">
-                  ABILITY: {prompt.sourceCardName}
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-comic-red" />
-                <span className="text-xs font-black uppercase tracking-wide">
-                  SOURCE: {prompt.sourceCardName}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {prompt.triggerType && (
-            <span className="font-mono text-[10px] font-bold px-2 py-0.5 bg-comic-black text-comic-yellow rounded border border-comic-black uppercase">
-              {prompt.triggerType}
-            </span>
-          )}
-        </div>
-
-        {/* 3. Modal Body */}
+        {/* 2. Modal Body */}
         <div className="relative p-5 sm:p-6 space-y-4 max-h-[70vh] overflow-y-auto">
           {/* Question Title & Description */}
           <div className="space-y-1">
@@ -330,40 +291,11 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
             )}
           </div>
 
-          {/* Triggering Card Showcase */}
+          {/* Triggering card, then the card that hosts the ability */}
           {showTriggerCardShowcase && triggerCard && (
-            <div className="bg-amber-50/90 border-2 border-comic-black rounded-xl p-3 shadow-comic-sm space-y-2">
-              <div className="flex items-center justify-between border-b border-comic-black/20 pb-1.5">
-                <span className="text-[10px] font-comic font-black uppercase bg-comic-red text-white px-2 py-0.5 rounded border border-comic-black shadow-comic-xs">
-                  {headerBadgeLabel}
-                </span>
-                <span className="text-[10px] font-mono font-bold uppercase bg-slate-200 text-slate-800 px-1.5 py-0.5 rounded border border-comic-black/40">
-                  {triggerCard.type}
-                </span>
-              </div>
-
-              <div className="flex items-start gap-3 pt-0.5">
-                <div className="shrink-0">
-                  <CardView card={triggerCard} size="sm" enableHoverZoom={true} />
-                </div>
-                <div className="flex-1 min-w-0 space-y-1.5">
-                  <h4 className="font-comic font-black text-sm uppercase text-comic-black truncate">
-                    {triggerCard.name}
-                  </h4>
-                  {triggerCard.traits && triggerCard.traits.length > 0 && (
-                    <p className="text-[10px] font-bold text-slate-600 italic">
-                      {triggerCard.traits.join('. ')}.
-                    </p>
-                  )}
-                  {triggerCard.text && (
-                    <div className="text-xs text-slate-800 bg-white/90 border border-comic-black/30 rounded-lg p-2 max-h-28 overflow-y-auto">
-                      <FormattedCardText text={triggerCard.text} />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <PromptCardPanel label={headerBadgeLabel} card={triggerCard} />
           )}
+          {abilityCard && <PromptCardPanel label="ABILITY CARD" card={abilityCard} />}
 
           {/* Visual Scryed/Revealed Cards Gallery */}
           {prompt.revealedCards && prompt.revealedCards.length > 0 && (

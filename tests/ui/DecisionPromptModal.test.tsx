@@ -28,13 +28,13 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
 
     render(<DecisionPromptModal prompt={prompt} onSelectOption={onSelectOption} />);
 
-    // 1. Verify Provenance Banner thumbnail for triggerSourceCode (False Alarm)
-    const thumbnails = screen.getAllByAltText('False Alarm');
-    expect(thumbnails.length).toBeGreaterThan(0);
+    // 1. The provenance banner is gone: the two panels carry the information
+    expect(screen.queryByText(/TRIGGER: False Alarm/i)).toBeNull();
+    expect(screen.queryByText(/ABILITY: Enhanced Spider-Sense/i)).toBeNull();
 
-    // 2. Verify Provenance Banner labels
-    expect(screen.getByText(/TRIGGER: False Alarm/i)).toBeDefined();
-    expect(screen.getByText(/ABILITY: Enhanced Spider-Sense/i)).toBeDefined();
+    // 2. Both panels are shown
+    expect(screen.getByText('ABILITY CARD')).toBeDefined();
+    expect(screen.getByText('Enhanced Spider-Sense', { selector: 'h4' })).toBeDefined();
 
     // 3. Verify Triggering Card Showcase in modal body
     expect(screen.getByText(/TRIGGERING ENCOUNTER CARD/i)).toBeDefined();
@@ -48,6 +48,79 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
     fireEvent.click(yesButton);
 
     expect(onSelectOption).toHaveBeenCalledWith('yes');
+  });
+
+  it('shows the ability card panel with the host card name, traits and printed text unchanged', () => {
+    const blackWidow = cardCatalog.getCard('01075')!;
+    const prompt: PendingDecisionPrompt = {
+      promptId: 'prompt_test_ability_panel',
+      playerId: 'p1',
+      title: 'Do you want to use the following ability from Black Widow?',
+      description: 'Cancel the revealed card.',
+      sourceCardName: 'Black Widow',
+      sourceCardCode: '01075',
+      options: [
+        { id: 'yes', label: 'Yes', effect: 'EXECUTE_OPTIONAL_TRIGGER' },
+        { id: 'pass', label: 'No', effect: 'PASS' },
+      ],
+      isVoluntary: true,
+    };
+
+    render(<DecisionPromptModal prompt={prompt} onSelectOption={vi.fn()} />);
+
+    expect(screen.getByText('ABILITY CARD')).toBeDefined();
+    expect(screen.getByText('Black Widow', { selector: 'h4' })).toBeDefined();
+    expect(screen.getByText(`${blackWidow.traits!.join('. ')}.`)).toBeDefined();
+    // The printed text is shown whole: no height cap on the text box
+    const textBox = screen.getByText(/reveal another card/i).closest('div.bg-white\\/90');
+    expect(textBox).not.toBeNull();
+    expect(textBox!.className).not.toContain('max-h');
+    expect(blackWidow.text).toContain('reveal another card');
+  });
+
+  it('a reveal interrupt shows the revealed card and the ability card', () => {
+    const hydra = cardCatalog.getCard('01101')!;
+    const prompt: PendingDecisionPrompt = {
+      promptId: 'prompt_test_reveal_interrupt',
+      playerId: 'p1',
+      title: 'Do you want to use the following ability from Black Widow?',
+      description: 'Cancel the revealed card.',
+      sourceCardName: 'Black Widow',
+      sourceCardCode: '01075',
+      triggerSourceName: hydra.name,
+      triggerSourceCode: hydra.code,
+      triggerSourceCard: hydra,
+      triggerType: 'ENCOUNTER_CARD_REVEALED',
+      options: [
+        { id: 'yes', label: 'Yes', effect: 'EXECUTE_OPTIONAL_TRIGGER' },
+        { id: 'pass', label: 'No', effect: 'PASS' },
+      ],
+      isVoluntary: true,
+    };
+
+    render(<DecisionPromptModal prompt={prompt} onSelectOption={vi.fn()} />);
+
+    expect(screen.getByText('TRIGGERING ENCOUNTER CARD')).toBeDefined();
+    expect(screen.getByText('Hydra Mercenary', { selector: 'h4' })).toBeDefined();
+    expect(screen.getByText('ABILITY CARD')).toBeDefined();
+    expect(screen.getByText('Black Widow', { selector: 'h4' })).toBeDefined();
+  });
+
+  it('renders no ability panel when the prompt has no ability host card', () => {
+    const prompt: PendingDecisionPrompt = {
+      promptId: 'prompt_test_no_host',
+      playerId: 'p1',
+      title: 'Pick one',
+      description: '',
+      sourceCardName: 'Unknown Source',
+      options: [{ id: 'pass', label: 'No', effect: 'PASS' }],
+      isVoluntary: true,
+    };
+
+    render(<DecisionPromptModal prompt={prompt} onSelectOption={vi.fn()} />);
+
+    expect(screen.queryByText('ABILITY CARD')).toBeNull();
+    expect(screen.queryByText('TRIGGERING CARD')).toBeNull();
   });
 
   it('renders cost badge on options that require resource payment', () => {

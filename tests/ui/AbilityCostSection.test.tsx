@@ -178,12 +178,9 @@ describe('AbilityCostSection', () => {
       }),
     );
 
-    await user.selectOptions(screen.getByTestId('cost-discard-card-from-0'), 'DECK');
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        discardCard: expect.objectContaining({ from: 'DECK' }),
-      }),
-    );
+    // Only the hand is a supported source of a discard cost.
+    const fromSelect = screen.getByTestId('cost-discard-card-from-0') as HTMLSelectElement;
+    expect(Array.from(fromSelect.options).map((o) => o.value)).toEqual(['HAND']);
 
     // Remove discardCard
     await user.click(screen.getByTestId('cost-discard-card-toggle-0'));
@@ -317,16 +314,16 @@ describe('AbilityCostSection', () => {
     );
   });
 
-  it('configures exhaustCard TargetSelector', async () => {
+  it('configures exhaustCard (only SELF_IDENTITY is a valid cost)', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
 
     render(<StatefulAbilityCostSection initial={{}} onChange={handleChange} />);
 
-    await user.selectOptions(screen.getByTestId('cost-exhaust-card-0'), 'CHOSEN_ALLY');
+    await user.selectOptions(screen.getByTestId('cost-exhaust-card-0'), 'SELF_IDENTITY');
     expect(handleChange).toHaveBeenCalledWith(
       expect.objectContaining({
-        exhaustCard: 'CHOSEN_ALLY',
+        exhaustCard: 'SELF_IDENTITY',
       }),
     );
   });

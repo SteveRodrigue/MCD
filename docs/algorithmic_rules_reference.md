@@ -287,4 +287,4 @@ The engine pipeline dispatches discrete lifecycle triggers and performs atomic l
 | `SPAWN_NEMESIS` | `ACTIVE_PLAYER` | Isolates player nemesis set from set-aside pool and puts minion/scheme into play (*Shadow of the Past* `01190`). |
 | `VILLAIN_SCHEMES` | `ACTIVE_PLAYER` | Immediate villain scheme activation against player (*Advance* `01186`). |
 | `VILLAIN_ATTACKS` | `ACTIVE_PLAYER` | Immediate villain attack activation against player (*Assault* `01187`). |
-| `ALLY_LIMIT_BONUS` | `SELF_IDENTITY` \| `ALL_PLAYERS` | Increases maximum ally limit by $N$ (*The Triskelion* `01073`). |
+| `MODIFY_ALLY_LIMIT` | `SELF_IDENTITY` \| `ALL_PLAYERS` | Increases maximum ally limit by $N$ (*The Triskelion* `01073`). |

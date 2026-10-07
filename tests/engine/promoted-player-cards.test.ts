@@ -148,7 +148,7 @@ describe('Promoted Core Player Cards', () => {
               timing: 'CONSTANT',
               steps: [
                 {
-                  effect: 'ALLY_LIMIT_BONUS',
+                  effect: 'MODIFY_ALLY_LIMIT',
                   effectParams: { amount: 1 },
                 },
               ],

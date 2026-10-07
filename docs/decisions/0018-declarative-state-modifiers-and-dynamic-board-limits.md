@@ -33,7 +33,7 @@ All player limits and board parameters are derived dynamically from state querie
 
 - **Ally Limit (`getPlayerAllyLimit`):**
   - Base: $3$ allies.
-  - Queries in-play cards for `timing: "CONSTANT"`, `effect: "ALLY_LIMIT_BONUS"`.
+  - Queries in-play cards for `timing: "CONSTANT"`, `effect: "MODIFY_ALLY_LIMIT"`.
   - When a card granting an ally limit bonus leaves play (e.g. _The Triskelion_ is discarded), if the player exceeds their new limit, the engine enforces immediate discard down to legal capacity.
 - **Hand Size Limit (`getPlayerHandSizeLimit`):**
   - Base: active identity printed `handSize`.

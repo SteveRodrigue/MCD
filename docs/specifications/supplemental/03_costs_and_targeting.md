@@ -28,7 +28,7 @@ The optional `cost` object defines mandatory prerequisites that must be satisfie
 | Field           | Type                               | Example                                                 | Description                                                                                |
 | :-------------- | :--------------------------------- | :------------------------------------------------------ | :----------------------------------------------------------------------------------------- |
 | `exhaustSelf`   | `boolean`                          | `true`                                                  | Card must be currently ready and exhausts upon activation.                                 |
-| `exhaustCard`   | `TargetSelector`                   | `"SELF_IDENTITY"`                                       | A specific target card must exhaust (e.g. exhaust your hero).                              |
+| `exhaustCard`   | `'SELF_IDENTITY'`                  | `"SELF_IDENTITY"`                                       | The identity must exhaust (only `SELF_IDENTITY` is read; exhausting another character as a cost is not implemented).                              |
 | `discardSelf`   | `boolean`                          | `true`                                                  | Card instance is discarded to owner's discard pile as a cost.                              |
 | `damageHero`    | `number`                           | `1`                                                     | Direct damage the hero identity must suffer as a cost (e.g. _War Machine_).                |
 | `damageSelf`    | `number`                           | `1`                                                     | Direct damage the card instance itself must suffer as a cost.                              |
@@ -37,7 +37,7 @@ The optional `cost` object defines mandatory prerequisites that must be satisfie
 | `requirePrinted`| `boolean`                          | `true`                                                  | When true, resources paid must match printed icons on cards (RR v1.8 p. 15).                |
 
 > **Typed-cost eligibility:** for a typed cost (`resources` or a typed `resourceCost`), the payment modal disables hand cards and generators with no icon of that type. A Wild icon qualifies unless `requirePrinted` is `true`. See ADR-0072 addendum (Issues #180, #129).
-| `discardCard`   | `object`                           | `{"count": 1, "from": "HAND", "filter": { ... }}`       | Card(s) discarded from `"HAND"`, `"DECK"`, or `"PLAY"`. Supports `maxCount` and `filter`.  |
+| `discardCard`   | `object`                           | `{"count": 1, "from": "HAND", "filter": { ... }}`       | Card(s) discarded from `"HAND"` (the only source the cost engine implements). Supports `maxCount` and `filter`.  |
 | `spendCounters` | `object`                           | `{"amount": 1, "counterType": "web", "target": "SELF"}` | Decrements counters from the card instance or player identity.                             |
 | `heal`          | `object`                           | `{"amount": 1, "target": "SELF"}`                       | Damage must be healed as an atomic prerequisite cost (RR v1.8 p. 11, 16).                  |
 
@@ -124,7 +124,7 @@ Per RR v1.8 p. 11 ("Damage"), p. 13 ("Identity"), p. 14 ("Indirect Damage"), p. 
 
 1. **Zero Duplicate Invariant:** `ALL_IDENTITIES` is completely excluded from the schema. `ALL_PLAYERS` is the sole canonical selector for targeting every player at the table.
 2. **Dual-Domain Execution for `ALL_PLAYERS` (RR v1.8 p. 11 & p. 20):**
-   - For player-state effects (`DRAW`, `DISCARD`, `ALLY_LIMIT_BONUS`, `MODIFY_HAND_SIZE`): Operates on player hands, decks, or board counters.
+   - For player-state effects (`DRAW`, `DISCARD`, `MODIFY_ALLY_LIMIT`, `MODIFY_HAND_SIZE`): Operates on player hands, decks, or board counters.
    - For physical character effects (`DEAL_DAMAGE`, `HEAL_DAMAGE`, `ADD_STATUS`): Operates directly on each player's identity (in whichever form they currently are).
 3. **Strict Form Gating on `HERO` and `ALL_HEROES`:**
    - Any ability targeting `HERO` or `ALL_HEROES` strictly filters `player.currentForm === 'hero'`. Alter-Egos are immune.

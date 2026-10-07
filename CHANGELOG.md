@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Data + Engine + Card Editor + Docs): core player cards Tier 1 data accuracy, canonical stat names ([Issue #258](https://github.com/SteveRodrigue/MCD/issues/258))**
+  - Data (`core.json`): Indomitable `01082` is a `RESPONSE` that readies `SELF_HERO` (confidence 50 to 95); Jennifer Walters `01019b` ability id `i_object`; prompt strings of Tony Stark Futurist, T'Challa Foresight and Nick Fury match the printed text; Vision `01068` options use `THWART` / `ATTACK`. Energy Channel `01018` had no cap left after #231; Luke Cage (#253) was fixed by #283.
+  - Engine: a stat modifier is `ATTACK`, `THWART`, `DEFENSE` or `RECOVERY` only. The aliases `ATK`, `THW`, `DEF`, `REC`, `RECOVER` are removed from `ActiveStatModifier`, the stat calculator, `MODIFY_STAT`, the Card Editor and the specs. The unused `PLAYER_CHOICE` shortcut (`context.choice`, `effectParams.stat`, string `options`) is removed: a choice is a list of option objects, like Nick Fury and Vision. `tests/data/core-player-tier1.test.ts`, Vision ATTACK test.
+
 - **Fix (Importer + Engine + Docs): keyword tags only for printed keywords; Crisis is an icon count ([Issue #243](https://github.com/SteveRodrigue/MCD/issues/243))**
   - `parseKeywords` tags a keyword only when the card prints it as its own sentence (`hasPrintedKeyword`, now used for all 15 text keywords); `getPrintedKeywordValue` reads `Retaliate N` / `Incite N` from a printed sentence. A card that only grants a keyword ("this attack gains ranged.", "Klaw gains retaliate 1.") no longer carries it. In the core sets 4 phantom tags were removed (`01053`, `01099` Overkill; `01119`, `01153` Retaliate); every printed tag is unchanged.
   - Crisis is an icon, not a keyword: `Keyword.CRISIS`, the schema/Card Editor `Crisis` keyword option and the `hasCrisis` card fields are removed. `getCrisisIconCount(card)` reads `scheme_crisis` (2 or more icons supported), `countCrisisIconsInPlay(state)` sums every icon in play, and `hasCrisisInPlay` is "at least one" (RR Crisis Icon). Card text is never read for icons.

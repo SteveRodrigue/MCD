@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T01:54:50.056Z` | **Active Target Selectors In Use:** **29/43**
+> **Generated:** `2026-10-07T11:58:46.018Z` | **Active Target Selectors In Use:** **29/43**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -25,7 +25,7 @@
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 | `01087` | **Haymaker (event)** | `core` | `haymaker` |
 
-### <a id="self-identity"></a>`SELF_IDENTITY` (13 Cards, 13 Declarations)
+### <a id="self-identity"></a>`SELF_IDENTITY` (12 Cards, 12 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -36,7 +36,6 @@
 | `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_aerial` |
 | `01061` | **Great Responsibility (event)** | `core` | `great_responsibility_interrupt` |
 | `01073` | **The Triskelion (support)** | `core` | `triskelion_ally_limit` |
-| `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
 | `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
@@ -99,6 +98,14 @@
 | `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
 
+### <a id="self-hero"></a>`SELF_HERO` (3 Cards, 3 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
+
 ### <a id="all-enemies"></a>`ALL_ENEMIES` (2 Cards, 2 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -140,13 +147,6 @@
 | :--- | :--- | :--- | :--- |
 | `01046` | **Energy Daggers (upgrade)** | `core` | `energy_daggers_special` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed` |
-
-### <a id="self-hero"></a>`SELF_HERO` (2 Cards, 2 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
 
 ### <a id="this-side-scheme"></a>`THIS_SIDE_SCHEME` (2 Cards, 2 Declarations)
 

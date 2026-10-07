@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T01:54:50.056Z`
+> **Generated:** `2026-10-07T11:58:46.018Z`
 
 ## 1. Ability Timings (`TimingTypeSchema` — 17/19 In Use)
 
@@ -139,7 +139,7 @@
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 
-### <a id="response"></a>`RESPONSE` (11 Cards)
+### <a id="response"></a>`RESPONSE` (12 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -153,6 +153,7 @@
 | `01066` | **Hawkeye (ally)** | `core` | `hawkeye_arrow_response` |
 | `01067` | **Maria Hill (ally)** | `core` | `maria_hill_enters_play` |
 | `01077` | **Counter-Punch (event)** | `core` | `counter_punch_response` |
+| `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 
 ### <a id="alter-ego-action"></a>`ALTER_EGO_ACTION` (8 Cards)
@@ -190,7 +191,7 @@
 | `01072` | **The Power of Leadership (resource)** | `core` | `power_of_leadership` |
 | `01079` | **The Power of Protection (resource)** | `core` | `power_of_protection` |
 
-### <a id="hero-interrupt"></a>`HERO_INTERRUPT` (5 Cards)
+### <a id="hero-interrupt"></a>`HERO_INTERRUPT` (4 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -198,7 +199,6 @@
 | `01017` | **Cosmic Flight (upgrade)** | `core` | `cosmic_flight_prevent` |
 | `01061` | **Great Responsibility (event)** | `core` | `great_responsibility_interrupt` |
 | `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
-| `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
 
 ### <a id="interrupt"></a>`INTERRUPT` (4 Cards)
 
@@ -230,7 +230,7 @@
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01019b` | **Jennifer Walters (alter_ego)** | `core` | `jennifer_walters_thwart` |
+| `01019b` | **Jennifer Walters (alter_ego)** | `core` | `i_object` |
 
 ### <a id="hero-resource"></a>`HERO_RESOURCE` (1 Cards)
 
@@ -338,7 +338,7 @@
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01019b` | **Jennifer Walters (alter_ego)** | `core` | `jennifer_walters_thwart` |
+| `01019b` | **Jennifer Walters (alter_ego)** | `core` | `i_object` |
 | `01061` | **Great Responsibility (event)** | `core` | `great_responsibility_interrupt` |
 | `01085` | **Emergency (event)** | `core` | `emergency_interrupt` |
 

@@ -155,7 +155,7 @@ describe('UI Dynamic Board Stats Display Contract (Issue #103)', () => {
         exhausted: false,
         activeStatModifiers: [
           {
-            stat: 'THW' as const,
+            stat: 'THWART' as const,
             amount: 2,
             duration: 'PHASE' as const,
             sourceCardName: 'Vision',

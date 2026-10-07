@@ -137,9 +137,32 @@ describe('Feature Delivery: Vision (01068) Once-Per-Round Limit & Temporary Stat
 
     expect(updatedVision.activeStatModifiers).toBeDefined();
     expect(updatedVision.activeStatModifiers?.length).toBe(1);
-    expect(updatedVision.activeStatModifiers?.[0].stat).toBe('THW');
+    expect(updatedVision.activeStatModifiers?.[0].stat).toBe('THWART');
     expect(updatedVision.activeStatModifiers?.[0].amount).toBe(2);
     expect(updatedVision.activeStatModifiers?.[0].duration).toBe('PHASE');
+  });
+
+  it('3b. Selecting +2 ATK gives Vision +2 ATK (4 ATK, 1 THW) for this phase', () => {
+    const player = gameState.players[0];
+    player.hand.push(createCardInstance(energyCard));
+    const visionAbility = visionInstance.card.enrichment!.abilities![0];
+
+    gameState = dispatchAction(gameState, {
+      type: 'USE_CARD_ABILITY',
+      playerId: player.id,
+      abilityId: visionAbility.id,
+      cardInstanceId: visionInstance.instanceId,
+      paymentCardInstanceIds: [player.hand[0].instanceId],
+    }).state;
+    gameState = resolveDecisionPrompt(gameState, player.id, 'boost_atk').state;
+
+    const updatedVision = gameState.players[0].allies.find(
+      (a) => a.instanceId === visionInstance.instanceId,
+    )!;
+    const stats = getEffectiveAllyStats(gameState, updatedVision);
+    expect(stats.attack).toBe(4);
+    expect(stats.thwart).toBe(1);
+    expect(updatedVision.activeStatModifiers?.[0].stat).toBe('ATTACK');
   });
 
   it('4. Enforces limit ONCE_PER_ROUND: cannot trigger a second time in same round', () => {

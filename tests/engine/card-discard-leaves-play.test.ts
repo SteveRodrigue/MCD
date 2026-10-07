@@ -235,7 +235,7 @@ describe('Universal Card State Reset on Discard / Leaves Play (Issue #157, RR v1
     ally.exhausted = true;
     ally.statusCards = [StatusCard.STUNNED];
     ally.tokens = { damage: 1 };
-    ally.activeStatModifiers = [{ stat: 'ATK', amount: 1, duration: 'ROUND' }];
+    ally.activeStatModifiers = [{ stat: 'ATTACK', amount: 1, duration: 'ROUND' }];
 
     player1.allies = [ally];
 
@@ -272,7 +272,7 @@ describe('Universal Card State Reset on Discard / Leaves Play (Issue #157, RR v1
     upgrade.exhausted = true;
     upgrade.tokens = { counters: 2 };
     upgrade.counters = { web: 2 };
-    upgrade.activeStatModifiers = [{ stat: 'THW', amount: 2, duration: 'ROUND' }];
+    upgrade.activeStatModifiers = [{ stat: 'THWART', amount: 2, duration: 'ROUND' }];
     upgrade.statusCards = [StatusCard.CONFUSED];
 
     player1.tableau = [upgrade];
@@ -369,7 +369,7 @@ describe('Universal Card State Reset on Discard / Leaves Play (Issue #157, RR v1
     webShooter.exhausted = true;
     webShooter.tokens = { damage: 3, counters: 10 };
     webShooter.statusCards = [StatusCard.STUNNED];
-    webShooter.activeStatModifiers = [{ stat: 'THW', amount: -2, duration: 'ROUND' }];
+    webShooter.activeStatModifiers = [{ stat: 'THWART', amount: -2, duration: 'ROUND' }];
 
     player1.setAsideCards = [webShooter];
 
@@ -408,7 +408,7 @@ describe('Universal Card State Reset on Discard / Leaves Play (Issue #157, RR v1
     card.tokens = { damage: 4, threat: 2, counters: 5 };
     card.counters = { charge: 3 };
     card.statusCards = [StatusCard.TOUGH, StatusCard.CONFUSED];
-    card.activeStatModifiers = [{ stat: 'ATK', amount: 2, duration: 'ROUND' }];
+    card.activeStatModifiers = [{ stat: 'ATTACK', amount: 2, duration: 'ROUND' }];
     card.attachments = [createCardInstance('att_1', 'att_c', 'Att', CardType.UPGRADE)];
     card.cardsUnderneath = [createCardInstance('under_1', 'und_c', 'Under', CardType.EVENT)];
 

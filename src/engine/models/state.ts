@@ -80,7 +80,7 @@ export type Duration = 'PHASE' | 'ROUND' | 'TURN';
 
 export interface ActiveStatModifier {
   id?: string;
-  stat: 'THW' | 'ATK' | 'DEF' | 'REC' | 'ATTACK' | 'THWART' | 'DEFENSE' | 'RECOVER' | 'RECOVERY';
+  stat: 'ATTACK' | 'THWART' | 'DEFENSE' | 'RECOVERY';
   amount: number;
   duration: Duration;
   sourceCardName?: string;

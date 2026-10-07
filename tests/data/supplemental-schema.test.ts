@@ -1082,7 +1082,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
         it('Validates Jennifer Walters - I Object! (01019b) full ability data tree', () => {
           const ability = {
-            id: 'jennifer_walters_thwart',
+            id: 'i_object',
             timing: 'ALTER_EGO_INTERRUPT',
             trigger: 'THREAT_WOULD_BE_PLACED',
             limit: 'ONCE_PER_ROUND',

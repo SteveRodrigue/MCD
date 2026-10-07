@@ -126,7 +126,7 @@ describe('Setup order: opening hands drawn after the scenario setup (Issue #240)
     expect(peekDecisionPrompt(state)).toBeUndefined();
     const bakeIn = state.sideSchemes.find((s) => s.card.code === '01107')!;
     expect(bakeIn.threat).toBe(breakinAndTakinThreat(state));
-    expect(state.players[0].usedAbilitiesThisRound?.['jennifer_walters_thwart']).toBeUndefined();
+    expect(state.players[0].usedAbilitiesThisRound?.['i_object']).toBeUndefined();
   });
 
   it("Expert: Breakin & Takin's own When Revealed still resolves and Rhino's setup log is intact", () => {

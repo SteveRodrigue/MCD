@@ -139,7 +139,6 @@ export interface EffectExecutionContext {
   damageAmount?: number;
   interceptedValue?: number;
   remainingInterceptedValue?: number;
-  choice?: string;
   isAttack?: boolean;
   /**
    * The resolving ability is labelled "(attack)": its damage is an attack by the player's identity
@@ -3400,14 +3399,14 @@ export function executeStep(
         const atkBonus =
           (stepParams.atkBonus as number) ||
           (step.effectParams?.atkBonus as number) ||
-          (stepParams.stat === 'ATK'
+          (stepParams.stat === 'ATTACK'
             ? resolveNumericAmount(stepParams.amount, context, 0, { state, player })
             : 0) ||
           0;
         const thwBonus =
           (stepParams.thwBonus as number) ||
           (step.effectParams?.thwBonus as number) ||
-          (stepParams.stat === 'THW'
+          (stepParams.stat === 'THWART'
             ? resolveNumericAmount(stepParams.amount, context, 0, { state, player })
             : 0) ||
           0;
@@ -3450,15 +3449,15 @@ export function executeStep(
         }
         const recipient = state.players.find((p) => p.id === chosenPlayerId) || player;
 
-        const pushBonuses = (mods: { stat: 'ATK' | 'THW'; amount: number }[], into: any) => {
+        const pushBonuses = (mods: { stat: 'ATTACK' | 'THWART'; amount: number }[], into: any) => {
           if (!into.activeStatModifiers) into.activeStatModifiers = [];
           for (const m of mods) {
             into.activeStatModifiers.push({ ...m, duration, sourceCardName, sourceCardCode });
           }
         };
-        const mods: { stat: 'ATK' | 'THW'; amount: number }[] = [];
-        if (atkBonus) mods.push({ stat: 'ATK', amount: atkBonus });
-        if (thwBonus) mods.push({ stat: 'THW', amount: thwBonus });
+        const mods: { stat: 'ATTACK' | 'THWART'; amount: number }[] = [];
+        if (atkBonus) mods.push({ stat: 'ATTACK', amount: atkBonus });
+        if (thwBonus) mods.push({ stat: 'THWART', amount: thwBonus });
 
         // The recipient's identity (hero or alter-ego) and allies
         pushBonuses(mods, recipient);
@@ -3478,7 +3477,7 @@ export function executeStep(
         targetParam === 'CHOSEN_CHARACTER' ||
         targetParam === 'CHOSEN_ALLY'
       ) {
-        const stat = (stepParams.stat as any) || (step.effectParams?.stat as any) || 'ATK';
+        const stat = (stepParams.stat as any) || (step.effectParams?.stat as any) || 'ATTACK';
         const amount = (stepParams.amount as number) || (step.effectParams?.amount as number) || 1;
 
         // Resolve target card instance
@@ -3713,36 +3712,7 @@ export function executeStep(
     }
 
     case 'PLAYER_CHOICE': {
-      if (context.choice || step.effectParams?.stat) {
-        const amount = (step.effectParams?.amount as number) || 2;
-        const chosenStat =
-          (context.choice as string) || (step.effectParams?.stat as string) || 'ATK';
-        return executeEffect(
-          state,
-          {
-            effect: 'MODIFY_STAT',
-            effectParams: {
-              stat: chosenStat,
-              amount,
-              duration: 'PHASE',
-              target: 'SELF',
-            },
-          },
-          context,
-        );
-      }
-
-      let options = (step.effectParams?.options as any[]) || [];
-      if (options.length > 0 && typeof options[0] === 'string') {
-        const amt = (step.effectParams?.amount as number) || 2;
-        options = options.map((opt: string) => ({
-          id: opt,
-          label: `+${amt} ${opt}`,
-          description: `Boost ${opt} by ${amt} until end of phase`,
-          effect: 'MODIFY_STAT',
-          params: { stat: opt, amount: amt, duration: 'PHASE', target: 'SELF' },
-        }));
-      }
+      const options = ((step.effectParams?.options as any[]) || []).map((opt: any) => ({ ...opt }));
       const title =
         (step.effectParams?.title as string) ||
         (step.effectParams?.promptTitle as string) ||
@@ -3750,8 +3720,6 @@ export function executeStep(
       const description = (step.effectParams?.description as string) || '';
       const sourceCardName = context.sourceCardInstance?.card.name || step.id || 'Card Ability';
       const promptId = `prompt_${Date.now()}_${step.id || 'choice'}`;
-      // Clone options so per-prompt availability (gate/cost) never mutates shared card data
-      options = options.map((opt: any) => ({ ...opt }));
       state = enqueueDecisionPrompt(state, {
         promptId,
         playerId: context.playerId || player.id,

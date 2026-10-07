@@ -256,14 +256,14 @@ Do not write `"condition": "UNDEFENDED_ATTACK"` inside `effectParams`: nothing r
         "label": "+2 THW",
         "description": "Vision gets +2 THW until the end of the phase.",
         "effect": "MODIFY_STAT",
-        "params": { "stat": "THW", "amount": 2, "duration": "PHASE", "target": "SELF" }
+        "params": { "stat": "THWART", "amount": 2, "duration": "PHASE", "target": "SELF" }
       },
       {
         "id": "boost_atk",
         "label": "+2 ATK",
         "description": "Vision gets +2 ATK until the end of the phase.",
         "effect": "MODIFY_STAT",
-        "params": { "stat": "ATK", "amount": 2, "duration": "PHASE", "target": "SELF" }
+        "params": { "stat": "ATTACK", "amount": 2, "duration": "PHASE", "target": "SELF" }
       }
     ]
   }

@@ -85,7 +85,7 @@ describe('State Lifecycle Duration & Zone Cleanup', () => {
 
     p1.activeStatModifiers = [
       {
-        stat: 'ATK',
+        stat: 'ATTACK',
         amount: 2,
         duration: 'TURN',
         sourceCardName: 'Test Turn Attack',
@@ -111,7 +111,7 @@ describe('State Lifecycle Duration & Zone Cleanup', () => {
     const upgradeInst = createCardInstance(cardCatalog.getCard('01092')!);
     upgradeInst.activeStatModifiers = [
       {
-        stat: 'ATK',
+        stat: 'ATTACK',
         amount: 1,
         duration: 'PHASE',
         sourceCardName: 'Phase Buff',

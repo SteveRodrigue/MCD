@@ -175,7 +175,7 @@ describe('threat interrupt prompts change the placed threat (Issue #266)', () =>
 
     const after = accept(state);
     expect(threat(after)).toBe(before + 1);
-    expect(after.players[0].usedAbilitiesThisRound?.['jennifer_walters_thwart']).toBe(1);
+    expect(after.players[0].usedAbilitiesThisRound?.['i_object']).toBe(1);
 
     executeEffect(after, addThreat, { playerId: 'p1' });
     expect(peekDecisionPrompt(after)).toBeUndefined();
@@ -336,7 +336,7 @@ describe('threat interrupt prompts change the placed threat (Issue #266)', () =>
 
     const after = accept(accept(state));
     expect(threat(after)).toBe(before + 1);
-    expect(after.players[0].usedAbilitiesThisRound?.['jennifer_walters_thwart']).toBe(1);
+    expect(after.players[0].usedAbilitiesThisRound?.['i_object']).toBe(1);
     expect(discardCodes(after, 0)).toContain(EMERGENCY);
   });
 

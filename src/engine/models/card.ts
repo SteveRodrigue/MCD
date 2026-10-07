@@ -109,7 +109,6 @@ export interface NormalizedCard {
   errata?: string;
   isLandscape: boolean;
   orientation: 'portrait' | 'landscape';
-  hasCrisis?: boolean;
   scheme_crisis?: number;
   enrichment?: import('./abilities').CardEnrichment;
   meta?: Record<string, unknown>;
@@ -192,7 +191,6 @@ export interface SideSchemeCard extends NormalizedCard {
   type: CardType.SIDE_SCHEME;
   baseThreat: number;
   baseThreatFixed?: boolean;
-  hasCrisis: boolean;
   hasHazard: boolean;
   hasAcceleration: boolean;
   hasAmplify: boolean;

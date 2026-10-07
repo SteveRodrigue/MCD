@@ -6,7 +6,11 @@ import {
   hasKeyword,
   getActiveMainScheme,
 } from '../../../engine/models';
-import { canAllyThwart, canBasicThwart } from '../../../engine/pipeline/legality-checker';
+import {
+  canAllyThwart,
+  canBasicThwart,
+  getCrisisIconCount,
+} from '../../../engine/pipeline/legality-checker';
 
 export interface SchemeTarget {
   id: string;
@@ -67,7 +71,7 @@ export function getValidThwartTargets(
           : { allowed: false, reason: 'Ally not specified' };
 
     const sideCard = sideScheme.card as SideSchemeCard;
-    const hasCrisis = !!(sideCard?.hasCrisis || hasKeyword(sideScheme.card, Keyword.CRISIS));
+    const hasCrisis = getCrisisIconCount(sideScheme.card) > 0;
     const hasHazard = !!(sideCard?.hasHazard || hasKeyword(sideScheme.card, Keyword.HAZARD));
     const hasAcceleration = !!(
       sideCard?.hasAcceleration || hasKeyword(sideScheme.card, Keyword.ACCELERATION)

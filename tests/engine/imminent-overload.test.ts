@@ -12,7 +12,11 @@ import {
   step4_revealEncounterCards,
   getActiveMainScheme,
 } from '@engine/index';
-import { canBasicThwart, hasCrisisInPlay } from '@engine/pipeline/legality-checker';
+import {
+  canBasicThwart,
+  hasCrisisInPlay,
+  getCrisisIconCount,
+} from '@engine/pipeline/legality-checker';
 
 /**
  * Imminent Overload (01171), Iron Man nemesis side scheme. Printed: Base threat 3 (fixed, not
@@ -58,7 +62,7 @@ describe('Imminent Overload (01171) (Issue #132)', () => {
   it('data: acceleration icon, fixed base threat 3, and no Crisis icon', () => {
     const card = cardCatalog.getCard('01171') as SideSchemeCard;
     expect(card.hasAcceleration).toBe(true);
-    expect(card.hasCrisis).toBe(false);
+    expect(getCrisisIconCount(card)).toBe(0);
     expect(card.baseThreat).toBe(3);
     expect(card.baseThreatFixed).toBe(true);
   });

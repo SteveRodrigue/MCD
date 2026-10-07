@@ -44,7 +44,6 @@ export enum ResourceType {
 export enum Keyword {
   GUARD = 'Guard',
   PATROL = 'Patrol',
-  CRISIS = 'Crisis',
   HAZARD = 'Hazard',
   AMPLIFY = 'Amplify',
   ACCELERATION = 'Acceleration',

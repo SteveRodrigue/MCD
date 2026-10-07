@@ -180,7 +180,7 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
           code: '01109',
           name: 'Bomb Scare',
           type: CardType.SIDE_SCHEME,
-          hasCrisis: true,
+          scheme_crisis: 1,
         } as any,
       });
 

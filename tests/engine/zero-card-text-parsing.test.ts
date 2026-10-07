@@ -75,13 +75,13 @@ describe('Zero Card Text Parsing Contract (ADR-0019)', () => {
         keywords: [],
         text: '',
         enrichment: {
-          keywords: [Keyword.CRISIS],
+          keywords: [Keyword.RANGED],
         } as any,
       });
       const inst = makeMockInstance(cardWithEnrichment);
 
-      expect(hasKeyword(cardWithEnrichment, Keyword.CRISIS)).toBe(true);
-      expect(hasKeyword(inst, Keyword.CRISIS)).toBe(true);
+      expect(hasKeyword(cardWithEnrichment, Keyword.RANGED)).toBe(true);
+      expect(hasKeyword(inst, Keyword.RANGED)).toBe(true);
     });
 
     it('resolves parameterized keyword values without reading text', () => {
@@ -169,10 +169,10 @@ describe('Zero Card Text Parsing Contract (ADR-0019)', () => {
       expect(mainSchemeThwartCheck.reason).toContain('Patrol');
     });
 
-    it('blocks main scheme thwart when a side scheme has Keyword.CRISIS and empty card.text', () => {
+    it('blocks main scheme thwart when a side scheme has a Crisis icon and empty card.text', () => {
       const crisisSchemeCard = makeMockCard({
         type: CardType.SIDE_SCHEME,
-        keywords: [Keyword.CRISIS],
+        scheme_crisis: 1,
         text: '', // No 'Crisis' in text!
       });
       const crisisScheme = makeMockInstance(crisisSchemeCard);

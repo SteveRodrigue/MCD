@@ -96,7 +96,7 @@ The destination is the chosen enemy of the ability and the source is the acting 
 ### `REMOVE_THREAT`
 
 - **References:** [`effects/index.ts:L120`](../../../src/engine/effects/index.ts#L120)
-- **Description:** Removes threat from Main Scheme, Side Scheme, or chosen scheme. Enforces Crisis keyword restrictions and Patrol: when the resolving player is engaged with a Patrol minion, the main scheme is never a target of a player card effect (same filter as Crisis, for every scheme selector including `ALL_SCHEMES`).
+- **Description:** Removes threat from Main Scheme, Side Scheme, or chosen scheme. Enforces Crisis icon restrictions and Patrol: when the resolving player is engaged with a Patrol minion, the main scheme is never a target of a player card effect (same filter as Crisis, for every scheme selector including `ALL_SCHEMES`).
 - **"From each scheme instead if you have Aerial"** (Mark V Helmet `01037`): there is no `aerialAllSchemes` parameter. Use two steps, `target: "CHOSEN_SCHEME"` gated `IF_CONDITION_NOT_MET` and `target: "ALL_SCHEMES"` gated `IF_CONDITION_MET`, both with `condition: "TARGET_TRAIT_MATCH"` and `gateParams: { trait: "Aerial" }` (see [10. Sequences & Modals](10_sequences_and_prompts.md#choosing-between-if_condition_met-if_condition_not_met-and-if_failed)).
 
 ```json

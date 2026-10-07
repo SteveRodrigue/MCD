@@ -113,12 +113,16 @@ describe('Obligation recipient resolution (Issue #158, RR v1.8 Obligation)', () 
         encounterCards: cardCatalog.getCardsBySet('rhino'),
         skipMulligan: true,
       });
+      // Stack the top of the shuffled deck with an inert minion: the extra card is known (#217)
+      const extra = createCardInstance(cardCatalog.getCard('01101')!);
+      solo.encounterDeck.unshift(extra);
       const deckBefore = solo.encounterDeck.length;
       solo.players[0].dealtEncounterCards.push(createCardInstance(cardCatalog.getCard('01175')!));
       const next = step4_revealEncounterCards(solo);
       expect(next.removedFromGame.some((c) => c.card.code === '01175')).toBe(true);
       expect(next.players[0].obligations).toEqual([]);
-      expect(next.encounterDeck.length).toBeLessThan(deckBefore);
+      expect(next.encounterDeck).toHaveLength(deckBefore - 1);
+      expect(next.players[0].engagedMinions.map((m) => m.instanceId)).toContain(extra.instanceId);
       assertCardConservation(next);
     });
   });

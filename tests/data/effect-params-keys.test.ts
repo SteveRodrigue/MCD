@@ -127,4 +127,49 @@ describe('effectParams key guard (#230)', () => {
       'REMOVE_THREAT.multiplier',
     ]);
   });
+
+  it('rejects the decorative keys retired in #232', () => {
+    const card = {
+      code: '99996',
+      abilities: [
+        {
+          steps: [
+            { effect: 'ATTACHMENT_DAMAGE_SHIELD', effectParams: { maxAbsorb: 5, mode: 'X', target: 'SELF' } },
+            { effect: 'TRANSFER_DAMAGE', effectParams: { amount: 1, from: 'SELF', to: 'CHOSEN_ENEMY' } },
+            { effect: 'PREVENT_DAMAGE', effectParams: { target: 'SELF' } },
+            { effect: 'RETURN_TO_HAND', effectParams: { target: 'SELF' } },
+            { effect: 'VILLAIN_ATTACKS', effectParams: { target: 'SELF_IDENTITY' } },
+          ],
+        },
+      ],
+    };
+    const v = findUnknownEffectParamKeys(card, '99996');
+    expect(v.map((x) => `${x.effect}.${x.key}`).sort()).toEqual([
+      'ATTACHMENT_DAMAGE_SHIELD.mode',
+      'ATTACHMENT_DAMAGE_SHIELD.target',
+      'PREVENT_DAMAGE.target',
+      'RETURN_TO_HAND.target',
+      'TRANSFER_DAMAGE.from',
+      'TRANSFER_DAMAGE.to',
+      'VILLAIN_ATTACKS.target',
+    ]);
+  });
+
+  it('every ATTACHMENT_DAMAGE_SHIELD step in the packs declares a numeric maxAbsorb (#232)', () => {
+    const missing: string[] = [];
+    const walk = (node: unknown, code: string): void => {
+      if (Array.isArray(node)) return node.forEach((n) => walk(n, code));
+      if (node === null || typeof node !== 'object') return;
+      const obj = node as Record<string, unknown>;
+      if (obj.effect === 'ATTACHMENT_DAMAGE_SHIELD') {
+        const max = (obj.effectParams as Record<string, unknown> | undefined)?.maxAbsorb;
+        if (typeof max !== 'number') missing.push(code);
+      }
+      Object.values(obj).forEach((v) => walk(v, code));
+    };
+    for (const file of PACK_FILES) {
+      for (const c of loadPack(file)) walk(c, String((c as { code?: string }).code));
+    }
+    expect(missing).toEqual([]);
+  });
 });

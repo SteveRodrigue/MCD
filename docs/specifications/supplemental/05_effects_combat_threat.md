@@ -34,6 +34,9 @@
 | `ranged`           | `boolean`                      | No       | `false`          | Ignores Retaliate keywords on the target.                                                |
 | `finisherBonus`    | `number`                       | No       | -                | Bonus damage when ability resolves as final step in a sequence (e.g. *Wakanda Forever!*). |
 | `dynamicBonus`     | `number \| DynamicValueSource` | No       | -                | Dynamic bonus damage added to amount (e.g. *Supersonic Punch* `01032`).                  |
+| `kickerResource`   | `string`                       | No       | -                | Resource type (`physical`, `mental`, `energy`) that arms the Overkill of this step when it was spent (or paid with a wild resource) on the card (`context.resourcesSpent`). Chosen-minion steps only. |
+| `overkillOnPhysical` | `boolean`                    | No       | `false`          | Shorthand for `kickerResource: "physical"`. |
+| `overkillOnCondition` | `boolean`                   | No       | `false`          | Marks the Overkill as conditional (it applies only when the kicker is met, and the card's printed Overkill keyword no longer applies unconditionally); the kicker is the resource named by `kickerResource`. |
 
 ---
 
@@ -73,9 +76,7 @@
   "effect": "TRANSFER_DAMAGE",
   "effectParams": {
     "amount": 1,
-    "finisherBonus": 1,
-    "from": "SELF",
-    "to": "CHOSEN_ENEMY"
+    "finisherBonus": 1
   }
 }
 ```
@@ -85,8 +86,8 @@
 | `amount`        | `number \| DynamicValueSource` | Yes      | `1`              | Base damage amount moved.                                                                   |
 | `finisherBonus` | `number`                       | No       | -                | Bonus damage transferred when ability resolves as final step in a sequence (e.g. *Wakanda Forever!*). |
 | `dynamicBonus`  | `number \| DynamicValueSource` | No       | -                | Dynamic bonus damage added to amount.                                                       |
-| `from`          | `TargetSelector`               | No       | `"SELF"`         | Source character from which damage is healed.                                               |
-| `to`            | `TargetSelector`               | No       | `"CHOSEN_ENEMY"` | Destination enemy receiving direct damage.                                                  |
+
+The destination is the chosen enemy of the ability and the source is the acting identity; there are no `from` / `to` parameters (removed in #232).
 
 ---
 
@@ -115,6 +116,7 @@
 | `finisherBonus`    | `number`                       | No       | -               | Bonus threat removed when ability resolves as final step in a sequence (e.g. *Wakanda Forever!*). |
 | `dynamicBonus`     | `number \| DynamicValueSource` | No       | -               | Dynamic bonus threat added to amount.                                                       |
 | `ignoresCrisis`    | `boolean`                      | No       | `false`         | Removes threat from the Main Scheme even if a Crisis icon is in play.                       |
+| `distinctFrom`     | `"PREVIOUS_TARGET"`            | No       | -               | With a chosen scheme: the scheme chosen by the previous step is excluded, so the player must pick a different one ("from a different scheme"). Also readable as a step-level `distinctFrom`. |
 
 ---
 
@@ -167,8 +169,7 @@
 {
   "effect": "PREVENT_DAMAGE",
   "effectParams": {
-    "amount": 3,
-    "target": "SELF"
+    "amount": 3
   }
 }
 ```
@@ -176,7 +177,8 @@
 | Parameter | Type                                    | Required | Default  | Description                                                                                |
 | :-------- | :-------------------------------------- | :------- | :------- | :----------------------------------------------------------------------------------------- |
 | `amount`  | `number \| 'ALL' \| DynamicValueSource` | No       | `ALL`    | Amount of incoming damage to consume. If omitted or `'ALL'`, consumes all remaining damage.|
-| `target`  | `TargetSelector`                        | No       | `"SELF"` | Protected character target.                                                                |
+
+The protected character is always the one the interrupt is about (the damage in the window); there is no `target` parameter (removed in #232).
 
 ---
 

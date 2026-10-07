@@ -144,6 +144,12 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 }
 ```
 
+| Parameter  | Type                       | Required | Default  | Description |
+| :--------- | :------------------------- | :------- | :------- | :---------- |
+| `resource` | `string`                   | No       | `"wild"` | Resource type contributed. |
+| `amount`   | `number`                   | No       | `1`      | Resources contributed (alias `count`). |
+| `fromCard` | card selector (`locateCard`) | No     | -        | Generates the resources printed on the located card instead of `resource` / `amount`. The step fails with `NO CARD LOCATED!` when the selector finds nothing. |
+
 ---
 
 ### `REDUCE_NEXT_CARD_COST`

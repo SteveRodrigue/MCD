@@ -196,13 +196,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         type: 'number',
         placeholder: 'e.g. 3 or blank for all',
       },
-      {
-        key: 'target',
-        label: 'Protected Target',
-        type: 'select',
-        options: TARGET_OPTIONS,
-        defaultValue: 'SELF',
-      },
     ],
   },
   HEAL_DAMAGE: {
@@ -248,18 +241,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         type: 'number',
         allowDynamic: true,
         description: 'Dynamic bonus calculated from game state or discarded cards',
-      },
-      {
-        key: 'from',
-        label: 'Source Target',
-        type: 'select',
-        options: TARGET_OPTIONS,
-      },
-      {
-        key: 'to',
-        label: 'Destination Target',
-        type: 'select',
-        options: TARGET_OPTIONS,
       },
     ],
   },
@@ -901,14 +882,7 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   RETURN_TO_HAND: {
     effect: 'RETURN_TO_HAND',
     description: 'Return target card in play or attached facedown cards back to owner hand.',
-    parameters: [
-      {
-        key: 'target',
-        label: 'Target Card',
-        type: 'select',
-        options: TARGET_OPTIONS,
-      },
-    ],
+    parameters: [],
   },
   ATTACHMENT_DAMAGE_SHIELD: {
     effect: 'ATTACHMENT_DAMAGE_SHIELD',
@@ -919,19 +893,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         label: 'Max Damage Absorbed',
         type: 'number',
         placeholder: 'e.g. 4',
-      },
-      {
-        key: 'target',
-        label: 'Host Target',
-        type: 'select',
-        options: TARGET_OPTIONS,
-        defaultValue: 'VILLAIN',
-      },
-      {
-        key: 'mode',
-        label: 'Mode',
-        type: 'text',
-        description: 'Pseudo-primitive key kept for existing card data (#231 / #232)',
       },
     ],
   },
@@ -1129,15 +1090,7 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   VILLAIN_ATTACKS: {
     effect: 'VILLAIN_ATTACKS',
     description: 'Induce the Villain to immediately initiate an attack against player.',
-    parameters: [
-      {
-        key: 'target',
-        label: 'Target Player',
-        type: 'select',
-        options: TARGET_OPTIONS,
-        defaultValue: 'SELF',
-      },
-    ],
+    parameters: [],
   },
   ENEMY_ATTACKS: {
     effect: 'ENEMY_ATTACKS',

@@ -107,16 +107,14 @@
             {
               "id": "prevent_all_damage",
               "effect": "PREVENT_DAMAGE",
-              "effectParams": {
-                "target": "SELF"
-              }
+              "effectParams": {}
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-10-02T00:01:58Z",
+        "updatedAt": "2026-10-07T12:00",
         "reviewedAt": "2026-10-02T00:01:58Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -783,16 +781,14 @@
           "steps": [
             {
               "effect": "RETURN_TO_HAND",
-              "effectParams": {
-                "target": "SELF"
-              }
+              "effectParams": {}
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-07T12:00",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -1911,9 +1907,7 @@
               "effect": "TRANSFER_DAMAGE",
               "effectParams": {
                 "amount": 1,
-                "finisherBonus": 1,
-                "from": "SELF",
-                "to": "CHOSEN_ENEMY"
+                "finisherBonus": 1
               }
             }
           ]
@@ -1921,7 +1915,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-10-05T12:00",
+        "updatedAt": "2026-10-07T12:00",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -2883,16 +2877,14 @@
             {
               "id": "step_2_attack",
               "effect": "VILLAIN_ATTACKS",
-              "effectParams": {
-                "target": "SELF_IDENTITY"
-              }
+              "effectParams": {}
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-07T12:00",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",

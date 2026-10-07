@@ -73,6 +73,7 @@ export interface PlayCardAction {
   cardInstanceId: string;
   paymentCardInstanceIds: string[]; // Hand cards to discard for resources
   generatorInstanceIds?: string[]; // In-play cards to exhaust or remove counters from (e.g. Web-Shooter, Helicarrier)
+  discardCardInstanceIds?: string[]; // Hand cards discarded as the declared cost of an event (e.g. Legal Practice)
   targetInstanceId?: string; // For targeted events or attachments
   sourceZone?:
     'HAND' | 'PLAYER_DISCARD' | 'ANY_PLAYER_DISCARD' | 'DECK_TOP' | 'ATTACHED' | 'TUCKED';

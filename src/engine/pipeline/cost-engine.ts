@@ -23,6 +23,36 @@ export interface AbilityPaymentOptions {
   generatorInstanceIds?: string[];
   discardCardInstanceIds?: string[];
   targetInstanceId?: string;
+  /** The event being played from hand: it is not part of the hand a discard cost can use. */
+  playedCardInstanceId?: string;
+}
+
+/**
+ * The cost of an event ability that is not paid by the play itself: resources are paid with the
+ * card cost and the event always ends in the discard pile, so only the other parts remain
+ * (for example a hand discard).
+ */
+export function getEventAbilityExtraCost(ability: CardAbility): CardAbility | undefined {
+  if (!ability.cost) return undefined;
+  const extra = { ...ability.cost };
+  delete extra.resourceCost;
+  delete extra.resources;
+  delete extra.discardSelf;
+  delete extra.requirePrinted;
+  return Object.keys(extra).length > 0 ? { ...ability, cost: extra } : undefined;
+}
+
+/**
+ * How many cards a hand discard cost takes: `count` exactly, or `maxCount` as "up to" with a
+ * floor of one card (a play that discards nothing changes no game state).
+ */
+export function getDiscardCostBounds(discardCost: { count?: number; maxCount?: number }): {
+  min: number;
+  max: number;
+} {
+  if (discardCost.maxCount) return { min: 1, max: discardCost.maxCount };
+  const count = discardCost.count || 1;
+  return { min: count, max: count };
 }
 
 /**
@@ -326,24 +356,24 @@ export function canPayAbilityCost(
   // 5. Hand Card Discard Cost Validation
   if (cost.discardCard) {
     const fromZone = cost.discardCard.from;
-    const requiredCount = cost.discardCard.count || 1;
-    const maxCount = (cost.discardCard as any).maxCount;
+    const bounds = getDiscardCostBounds(cost.discardCard);
 
     if (fromZone === 'HAND') {
-      if (player.hand.length === 0) {
+      const handCards = player.hand.filter((c) => c.instanceId !== options?.playedCardInstanceId);
+      if (handCards.length === 0) {
         return { allowed: false, reason: 'No cards in hand to discard as cost.' };
       }
-      if (!maxCount && player.hand.length < requiredCount) {
+      if (handCards.length < bounds.min) {
         return {
           allowed: false,
           reason: 'Insufficient cards in hand to discard as cost.',
         };
       }
       if (cost.discardCard.filter) {
-        const matchingCount = player.hand.filter((c) =>
+        const matchingCount = handCards.filter((c) =>
           matchesCardFilter(c.card, cost.discardCard!.filter, { player, state }),
         ).length;
-        if (matchingCount < requiredCount) {
+        if (matchingCount < bounds.min) {
           return {
             allowed: false,
             reason: 'No cards in hand matching required discard filter.',
@@ -352,7 +382,7 @@ export function canPayAbilityCost(
       }
       if (options?.discardCardInstanceIds) {
         for (const id of options.discardCardInstanceIds) {
-          const cardInst = player.hand.find((c) => c.instanceId === id);
+          const cardInst = handCards.find((c) => c.instanceId === id);
           if (!cardInst) {
             return {
               allowed: false,
@@ -369,16 +399,16 @@ export function canPayAbilityCost(
             };
           }
         }
-        if (maxCount && options.discardCardInstanceIds.length > maxCount) {
+        if (options.discardCardInstanceIds.length > bounds.max) {
           return {
             allowed: false,
-            reason: `Too many cards selected to discard as cost (up to ${maxCount}, selected ${options.discardCardInstanceIds.length}).`,
+            reason: `Too many cards selected to discard as cost (up to ${bounds.max}, selected ${options.discardCardInstanceIds.length}).`,
           };
         }
-        if (!maxCount && options.discardCardInstanceIds.length < requiredCount) {
+        if (options.discardCardInstanceIds.length < bounds.min) {
           return {
             allowed: false,
-            reason: `Insufficient cards selected to discard as cost (Requires ${requiredCount}, selected ${options.discardCardInstanceIds.length}).`,
+            reason: `Insufficient cards selected to discard as cost (Requires ${bounds.min}, selected ${options.discardCardInstanceIds.length}).`,
           };
         }
       }
@@ -696,7 +726,6 @@ export function executeAbilityCost(
   // 4. Discard Cards as Cost
   if (cost.discardCard) {
     const fromZone = cost.discardCard.from;
-    const maxCount = (cost.discardCard as any).maxCount;
     const specifiedIds = options?.discardCardInstanceIds || [];
 
     if (fromZone === 'HAND') {
@@ -720,14 +749,7 @@ export function executeAbilityCost(
           discardedCards.push(discarded);
           discardedCount++;
         }
-      } else if (maxCount) {
-        // Discard all available hand cards up to maxCount
-        const countToDiscard = Math.min(player.hand.length, maxCount);
-        const discarded = player.hand.splice(0, countToDiscard);
-        player.discard.push(...discarded);
-        discardedCards.push(...discarded);
-        discardedCount += countToDiscard;
-      } else {
+      } else if (!cost.discardCard.maxCount) {
         const countToDiscard = Math.min(player.hand.length, cost.discardCard.count || 1);
         const discarded = player.hand.splice(0, countToDiscard);
         player.discard.push(...discarded);

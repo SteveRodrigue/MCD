@@ -26,6 +26,7 @@ import {
   isResourceAbility,
   isAbilityPlayableInForm,
   getEffectiveCardCost,
+  getDiscardCostBounds,
 } from '../../../engine/pipeline/cost-engine';
 import { getEffectiveMaxHealth } from '../../../engine/pipeline/stat-calculator';
 import { matchesCardFilter } from '../../../engine/filters/card-filter';
@@ -50,7 +51,10 @@ interface CardPaymentModalProps {
     /** The ability's amount is the number of resources spent (`RESOURCES_SPENT`), e.g. Energy Channel. */
     scalesWithResources?: boolean;
     title?: string;
+    /** Most cards the discard cost takes. */
     discardCount?: number;
+    /** Fewest cards the discard cost takes (defaults to `discardCount`; "up to N" costs use 1). */
+    discardMin?: number;
     discardFilter?: UniversalCardFilter;
   };
   player: PlayerState;
@@ -470,22 +474,45 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     return totalGenerated >= cost;
   }, [abilityCost?.resourceType, committedMatching, totalGenerated, cost]);
 
+  // The discard cost: given by the ability being used, or declared on the event being played.
+  const discardCost = useMemo(() => {
+    if (abilityCost?.discardCount && abilityCost.discardCount > 0) {
+      return {
+        max: abilityCost.discardCount,
+        min: abilityCost.discardMin ?? abilityCost.discardCount,
+        filter: abilityCost.discardFilter,
+      };
+    }
+    if (abilityCost || !cardToPlay || cardToPlay.card.type !== CardType.EVENT) return undefined;
+    for (const ability of cardToPlay.card.enrichment?.abilities || []) {
+      const declared = ability.cost?.discardCard;
+      if (declared?.from === 'HAND' && declared.mode !== 'RANDOM') {
+        return { ...getDiscardCostBounds(declared), filter: declared.filter };
+      }
+    }
+    return undefined;
+  }, [abilityCost, cardToPlay]);
+
   const isDiscardCostCovered = useMemo(() => {
-    if (!abilityCost?.discardCount || abilityCost.discardCount <= 0) return true;
-    return selectedDiscardCardIds.length === abilityCost.discardCount;
-  }, [abilityCost?.discardCount, selectedDiscardCardIds.length]);
+    if (!discardCost) return true;
+    return (
+      selectedDiscardCardIds.length >= discardCost.min &&
+      selectedDiscardCardIds.length <= discardCost.max
+    );
+  }, [discardCost, selectedDiscardCardIds.length]);
 
   const isCostCovered = isResourceCostCovered && isDiscardCostCovered;
 
   const availableDiscardCards = useMemo(() => {
-    if (!abilityCost?.discardCount || abilityCost.discardCount <= 0) return [];
+    if (!discardCost) return [];
     return player.hand.filter((c) => {
-      if (abilityCost.discardFilter) {
-        return matchesCardFilter(c.card, abilityCost.discardFilter, { player, state: gameState });
+      if (c.instanceId === cardToPlay?.instanceId) return false;
+      if (discardCost.filter) {
+        return matchesCardFilter(c.card, discardCost.filter, { player, state: gameState });
       }
       return true;
     });
-  }, [abilityCost?.discardCount, abilityCost?.discardFilter, player, gameState]);
+  }, [discardCost, cardToPlay?.instanceId, player, gameState]);
 
   // Potential Targets (Enemies, Schemes, or Minion Hosts)
   const cardAbilities = card?.enrichment?.abilities || [];
@@ -699,7 +726,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
 
   const toggleDiscardCard = (instanceId: string) => {
     if (selectedHandCardIds.includes(instanceId)) return;
-    const required = abilityCost?.discardCount || 1;
+    const required = discardCost?.max || 1;
     setSelectedDiscardCardIds((prev) => {
       if (prev.includes(instanceId)) {
         return prev.filter((id) => id !== instanceId);
@@ -806,9 +833,10 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                           : 'Res'}
                     </span>
                   </>
-                ) : abilityCost?.discardCount ? (
+                ) : discardCost ? (
                   <span className="text-sm font-black uppercase px-2.5 py-1 bg-comic-red text-white rounded border border-comic-black shadow-comic-xs">
-                    Discard {abilityCost.discardCount}
+                    Discard {discardCost.min < discardCost.max ? 'up to ' : ''}
+                    {discardCost.max}
                   </span>
                 ) : (
                   <span className="text-3xl font-black text-comic-green">0</span>
@@ -845,24 +873,24 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
           )}
 
           {/* Discard Hand Cards as Cost Section */}
-          {abilityCost?.discardCount && abilityCost.discardCount > 0 && (
+          {discardCost && (
             <div className="space-y-3 p-4 bg-comic-red/5 border-2 border-comic-red/30 rounded-lg">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-black uppercase text-comic-black tracking-wider flex items-center space-x-1.5">
                   <AlertTriangle className="w-4 h-4 text-comic-red" />
                   <span>
-                    Choose {abilityCost.discardCount} Card{abilityCost.discardCount > 1 ? 's' : ''}{' '}
-                    to Discard as Cost:
+                    Choose {discardCost.min < discardCost.max ? 'up to ' : ''}
+                    {discardCost.max} Card{discardCost.max > 1 ? 's' : ''} to Discard as Cost:
                   </span>
                 </h3>
                 <span
                   className={`text-xs font-black px-2 py-0.5 rounded border border-comic-black ${
-                    selectedDiscardCardIds.length === abilityCost.discardCount
+                    isDiscardCostCovered
                       ? 'bg-comic-green text-white'
                       : 'bg-comic-paper text-comic-black'
                   }`}
                 >
-                  Selected: {selectedDiscardCardIds.length} / {abilityCost.discardCount}
+                  Selected: {selectedDiscardCardIds.length} / {discardCost.max}
                 </span>
               </div>
 

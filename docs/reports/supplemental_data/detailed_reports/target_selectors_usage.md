@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T22:55:03.480Z` | **Active Target Selectors In Use:** **29/43**
+> **Generated:** `2026-10-07T23:16:55.027Z` | **Active Target Selectors In Use:** **29/43**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -24,23 +24,6 @@
 | `01058` | **Daredevil (ally)** | `core` | `daredevil_after_thwart` |
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 | `01087` | **Haymaker (event)** | `core` | `haymaker` |
-
-### <a id="self-identity"></a>`SELF_IDENTITY` (12 Cards, 12 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01006` | **Aunt May (support)** | `core` | `aunt_may` |
-| `01010a` | **Captain Marvel (hero)** | `core` | `rechannel` |
-| `01024` | **One-Two Punch (event)** | `core` | `one_two_punch_response` |
-| `01035` | **Arc Reactor (upgrade)** | `core` | `arc_reactor_ready` |
-| `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_aerial` |
-| `01061` | **Great Responsibility (event)** | `core` | `great_responsibility_interrupt` |
-| `01073` | **The Triskelion (support)** | `core` | `triskelion_ally_limit` |
-| `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
-| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
-| `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
-| `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
-| `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
 
 ### <a id="chosen-scheme"></a>`CHOSEN_SCHEME` (10 Cards, 11 Declarations)
 
@@ -73,6 +56,31 @@
 | `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
+### <a id="self-identity"></a>`SELF_IDENTITY` (10 Cards, 10 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01006` | **Aunt May (support)** | `core` | `aunt_may` |
+| `01010a` | **Captain Marvel (hero)** | `core` | `rechannel` |
+| `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_aerial` |
+| `01061` | **Great Responsibility (event)** | `core` | `great_responsibility_interrupt` |
+| `01073` | **The Triskelion (support)** | `core` | `triskelion_ally_limit` |
+| `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
+| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
+| `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
+| `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
+| `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
+
+### <a id="self-hero"></a>`SELF_HERO` (5 Cards, 5 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01024` | **One-Two Punch (event)** | `core` | `one_two_punch_response` |
+| `01035` | **Arc Reactor (upgrade)** | `core` | `arc_reactor_ready` |
+| `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
+
 ### <a id="chosen-player"></a>`CHOSEN_PLAYER` (4 Cards, 4 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -98,14 +106,6 @@
 | `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
 | `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
-
-### <a id="self-hero"></a>`SELF_HERO` (3 Cards, 3 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
 
 ### <a id="all-enemies"></a>`ALL_ENEMIES` (2 Cards, 2 Declarations)
 

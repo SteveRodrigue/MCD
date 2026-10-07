@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-07
 > **Repository state:** `main`; #255 and its follow-up (any player, queued cancels) are committed and pushed. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 2,307 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 2,317 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -62,6 +62,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #256 | Backflip `01003`: `triggerFilter.damageSource: 'ATTACK'` (evaluated; the attack path sends it); Card Editor select, spec `02` | `git log --grep "#256"` |
 | #257 | Superhuman Strength `01028`: `triggerFilter.attackedBy: 'YOUR_HERO'` reads the new `context.attackSource` set by every `ATTACK_RESOLVED` dispatch (ADR-0078 addendum); forced abilities with no valid target do not initiate or pay (Superhuman Strength keeps its upgrade when the enemy dies, is stunned or Stalwart); Tigra `01051` needed no change | `git log --grep "#257"` |
 | #259 (Relentless Assault, attach timing) | `GRANT_ATTACK_KEYWORD` (ephemeral, ability context): `01053` = gated Overkill grant + 5 damage, three `DEAL_DAMAGE` Overkill params removed; `USE_CARD_ABILITY` no longer re-runs the attach ability of an attached upgrade; the `TARGET_TRAIT_MATCH` / gate redesign is split into [#289](https://github.com/SteveRodrigue/MCD/issues/289) and [#290](https://github.com/SteveRodrigue/MCD/issues/290) (uncommitted) | `git log --grep "#259"` |
+| #260 (8 of 9 cards) | One-Two Punch / Arc Reactor `SELF_HERO`, `READY` without target is a no-op (hidden identity fallback removed), Nick Fury single round-end path; Get Ready and She-Hulk verified (confidence 95). **Ancestral Knowledge `01042` remains** (voluntary-by-default SEARCH modal, "different" by name): `plan_issue_260_core_player_reverify.md`, awaiting approval (uncommitted) | `git log --grep "#260"` |
 
 ---
 

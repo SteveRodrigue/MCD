@@ -3569,7 +3569,6 @@ export function executeStep(
 
     case 'READY': {
       const targetParam = (step.effectParams?.target as string) || 'SELF_IDENTITY';
-      let readyTargetName = player.name;
 
       const readyFilter = (step.effectParams?.filter || step.filter) as
         Record<string, any> | undefined;
@@ -3579,38 +3578,34 @@ export function executeStep(
         readyFilter,
         player,
       );
-      if (targets.length === 0 && readyFilter) {
+      if (targets.length === 0) {
+        // No target is a no-op, never an identity fallback
         return { state, success: true, mutatedState: false, onomatopoeia: 'NOTHING TO READY' };
       }
-      if (targets.length === 0) {
-        player.exhausted = false;
-        readyTargetName = player.activeFormCard?.name || player.name;
-      } else {
-        const names: string[] = [];
-        for (const t of targets) {
-          if (t.kind === 'character') {
-            if (t.entityType === 'hero' || t.entityType === 'alter_ego') {
-              (t.entity as PlayerState).exhausted = false;
-              names.push(
-                (t.entity as PlayerState).activeFormCard?.name || (t.entity as PlayerState).name,
-              );
-            } else if (t.entityType === 'villain') {
-              (t.entity as VillainState).exhausted = false;
-              names.push((t.entity as VillainState).card?.name || 'Villain');
-            } else {
-              (t.entity as CardInstance).exhausted = false;
-              names.push((t.entity as CardInstance).card?.name || 'Character');
-            }
-          } else if (t.kind === 'card') {
-            t.entity.exhausted = false;
-            names.push(t.entity.card?.name || 'Card');
-          } else if (t.kind === 'player') {
-            t.entity.exhausted = false;
-            names.push(t.entity.activeFormCard?.name || t.entity.name);
+      const names: string[] = [];
+      for (const t of targets) {
+        if (t.kind === 'character') {
+          if (t.entityType === 'hero' || t.entityType === 'alter_ego') {
+            (t.entity as PlayerState).exhausted = false;
+            names.push(
+              (t.entity as PlayerState).activeFormCard?.name || (t.entity as PlayerState).name,
+            );
+          } else if (t.entityType === 'villain') {
+            (t.entity as VillainState).exhausted = false;
+            names.push((t.entity as VillainState).card?.name || 'Villain');
+          } else {
+            (t.entity as CardInstance).exhausted = false;
+            names.push((t.entity as CardInstance).card?.name || 'Character');
           }
+        } else if (t.kind === 'card') {
+          t.entity.exhausted = false;
+          names.push(t.entity.card?.name || 'Card');
+        } else if (t.kind === 'player') {
+          t.entity.exhausted = false;
+          names.push(t.entity.activeFormCard?.name || t.entity.name);
         }
-        readyTargetName = names.join(', ') || player.name;
       }
+      const readyTargetName = names.join(', ');
 
       state.log.push({
         id: `log_${Date.now()}`,

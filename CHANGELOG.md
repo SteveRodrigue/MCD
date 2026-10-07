@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine + Data): re-verification of the low-confidence core player cards ([Issue #260](https://github.com/SteveRodrigue/MCD/issues/260), Ancestral Knowledge excluded)**
+  - One-Two Punch `01024` and Arc Reactor `01035` ready `SELF_HERO` ("ready She-Hulk" / "ready Iron Man"); confidence 95 for them, Get Ready `01069` and She-Hulk `01019a` (verified by tests).
+  - `READY` with no resolved target is a no-op; the hidden fallback that readied the acting player is removed. Round-end discard of Nick Fury no longer has a second pattern-based path in `round-upkeep.ts` (the `ROUND_ENDED` trigger discards him once).
+  - Tests: `tests/engine/core-player-reverify.test.ts`. Ancestral Knowledge `01042` (voluntary "up to 3 different cards") stays open in the plan file.
+
 - **Fix (Engine + Data + Card Editor + Docs): Relentless Assault `01053` declares its Overkill as a gated step; an attached upgrade no longer offers its attach ability ([Issue #259](https://github.com/SteveRodrigue/MCD/issues/259))**
   - New effect `GRANT_ATTACK_KEYWORD` ("this attack gains <keyword>"): the keyword lives on the running ability's context (`grantedAttackKeywords`) and ends with it; `DEAL_DAMAGE` reads it for Overkill. `01053` is now `GRANT_ATTACK_KEYWORD` `Overkill` gated `IF_RESOURCE_MATCH` physical, then `DEAL_DAMAGE` 5 (always) to a chosen minion. Removed: `kickerResource`, `overkillOnPhysical`, `overkillOnCondition` and the unconditional `keyword` read of `DEAL_DAMAGE` (params table, Card Editor, spec `05`, schema tests).
   - Bug found by the attach-timing check: `USE_CARD_ABILITY` on an attached Spider-Tracer or Webbed Up ran the attach ability again. `canInitiateAbility` now refuses an `ATTACH_TO_HOST` ability on a card in play (spec `08`). The `TARGET_TRAIT_MATCH` rename is split into [#289](https://github.com/SteveRodrigue/MCD/issues/289) and [#290](https://github.com/SteveRodrigue/MCD/issues/290).

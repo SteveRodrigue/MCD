@@ -744,7 +744,7 @@
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 90,
+        "confidence": 95,
         "originalText": "\"Do You Even Lift?\" — <b>Response</b>: After you change to this form, deal 2 damage to an enemy."
       }
     },
@@ -910,7 +910,7 @@
             {
               "effect": "READY",
               "effectParams": {
-                "target": "SELF_IDENTITY"
+                "target": "SELF_HERO"
               }
             }
           ]
@@ -922,7 +922,7 @@
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 50,
+        "confidence": 95,
         "originalText": "<b>Response</b>: After you make a basic attack <i>(using your ATK)</i>, ready She-Hulk."
       }
     },
@@ -1332,7 +1332,7 @@
             {
               "effect": "READY",
               "effectParams": {
-                "target": "SELF_IDENTITY"
+                "target": "SELF_HERO"
               }
             }
           ]
@@ -1344,7 +1344,7 @@
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 50,
+        "confidence": 95,
         "originalText": "<b>Hero Action</b>: Exhaust Arc Reactor → ready Iron Man."
       }
     },
@@ -2630,7 +2630,7 @@
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 50,
+        "confidence": 95,
         "originalText": "<b>Action</b>: Ready an ally."
       }
     },

@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-10-07T22:55:03.480Z`  
+> **Generated:** `2026-10-07T23:16:55.027Z`  
 > **Source Packs Scanned:** `core, core_encounter, cw_encounter, mts`
 
 ---
@@ -69,13 +69,13 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | Top Target Selectors | Occurrences | Cards Count | Link to Details |
 | :--- | :---: | :---: | :--- |
 | `CHOSEN_ENEMY` | **16** | 16 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-enemy) |
-| `SELF_IDENTITY` | **12** | 12 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self-identity) |
 | `SELF` | **11** | 11 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self) |
 | `CHOSEN_SCHEME` | **11** | 10 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-scheme) |
+| `SELF_IDENTITY` | **10** | 10 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self-identity) |
+| `SELF_HERO` | **5** | 5 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self-hero) |
 | `CHOSEN_PLAYER` | **4** | 4 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-player) |
 | `VILLAIN` | **4** | 4 | [Inspect Cards](detailed_reports/target_selectors_usage.md#villain) |
 | `MAIN_SCHEME` | **4** | 3 | [Inspect Cards](detailed_reports/target_selectors_usage.md#main-scheme) |
-| `SELF_HERO` | **3** | 3 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self-hero) |
 | `CHOSEN_MINION` | **2** | 2 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-minion) |
 | `ALL_ENEMIES` | **2** | 2 | [Inspect Cards](detailed_reports/target_selectors_usage.md#all-enemies) |
 

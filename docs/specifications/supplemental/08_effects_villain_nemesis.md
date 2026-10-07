@@ -5,7 +5,7 @@
 ## 1. Villain Extra Activations
 
 ### `VILLAIN_SCHEMES`
-* **Status:** 🟢 `IMPLEMENTED (v1.0)` (*Advance* `01186`)
+* **References:** *Advance* `01186`
 * **Description:** Forces the active villain to immediately execute a scheme activation against the player, drawing boost cards and placing threat.
 
 ```json
@@ -18,7 +18,7 @@
 ---
 
 ### `VILLAIN_ATTACKS`
-* **Status:** 🟢 `IMPLEMENTED (v1.0)` (*Assault* `01187`)
+* **References:** *Assault* `01187`
 * **Description:** The villain currently in play (scenario-dependent, so no card code) attacks the resolving player, with boost cards. In Hero form it attacks; in Alter-Ego form the card gains Surge.
 * **Use it when** the printed text says "the villain attacks you". Use `ENEMY_ATTACKS` when a *specific* enemy must attack.
 
@@ -34,7 +34,7 @@
 ---
 
 ### `ENEMY_ATTACKS`
-* **Status:** 🟢 `IMPLEMENTED (v1.0)` ([Issue #223](https://github.com/SteveRodrigue/MCD/issues/223), *Titania's Fury* `01164`)
+* **References:** [Issue #223](https://github.com/SteveRodrigue/MCD/issues/223), *Titania's Fury* `01164`
 * **Description:** The specific enemy with card code `enemy` attacks the resolving player: a minion engaged with any player, or a villain in play (the way to name one villain in a multi-villain scenario). It runs the normal attack pipeline (Stun, `HOST_WOULD_ATTACK` interrupts, Spider-Sense, defender declaration, boost cards for a villain).
 * **Parameters:** `enemy` (card code, required); `target`: `SELF_HERO` (default, "your hero": in Alter-Ego form there is no hero, so no attack) or `SELF_IDENTITY`.
 * **Result:** `success` and `mutatedState` are `true` only if the attack happened. The step fails when the enemy is not in play, is Stunned (the Stun is cleared), the attack is cancelled, or the player has no hero. `targetId` is the enemy's instance id whenever it is in play, so `PREVIOUS_TARGET` reaches it. Gate "if X did not attack" steps with `IF_FAILED` and `gateParams.targetStepId` (an in-between step would otherwise replace the previous result).
@@ -71,7 +71,7 @@
 ---
 
 ### `VILLAIN_AND_ENGAGED_MINIONS_ATTACK`
-* **Status:** 🟢 `IMPLEMENTED (v1.0)` (*Gang-Up* `01189`)
+* **References:** *Gang-Up* `01189`
 * **Description:** In Hero form, causes villain and every minion engaged with player to attack in sequence; in Alter-Ego, card gains Surge.
 
 ---
@@ -142,7 +142,7 @@ Per ADR-0029, monolithic `SPAWN_NEMESIS` has been fully decomposed into a compos
 ## 3. Host Attachments
 
 ### `ATTACH_TO_HOST`
-* **Status:** 🟢 `IMPLEMENTED (v1.0)` (*Webbed Up* `01009`, *Spider-Tracer* `01007`, *Inspired* `01074`)
+* **References:** *Webbed Up* `01009`, *Spider-Tracer* `01007`, *Inspired* `01074`
 * **Description:** Attaches an upgrade/attachment to a character host with interception hooks.
 
 ```json
@@ -163,7 +163,7 @@ Per ADR-0029, monolithic `SPAWN_NEMESIS` has been fully decomposed into a compos
 ## 4. Encounter Cancellation & Interrupts
 
 ### `CANCEL_WHEN_REVEALED`
-* **Status:** 🟢 `IMPLEMENTED (v1.0)` (*Enhanced Spider-Sense* `01004`)
+* **References:** *Enhanced Spider-Sense* `01004`
 * **Description:** Interrupts and cancels the "When Revealed" effect of an encounter card revealed from the encounter deck (RR v1.8 p. 7, 16, 31). Treachery cards have their When Revealed effects cancelled and are discarded to the encounter discard pile with onomatopoeia `'CANCELLED!'`. Minions, attachments, and side schemes have their When Revealed effects suppressed, but still enter play normally.
 
 ```json
@@ -177,7 +177,7 @@ Per ADR-0029, monolithic `SPAWN_NEMESIS` has been fully decomposed into a compos
 
 ### `SURGE` and the Surge keyword
 
-* **Status:** 🟢 `IMPLEMENTED (v1.0)` (#218; [`pipeline/surge.ts`](../../../src/engine/pipeline/surge.ts), [`resolveActiveEncounterCardAfterInterrupt`](../../../src/engine/pipeline/villain-phase.ts))
+* **References:** #218; [`pipeline/surge.ts`](../../../src/engine/pipeline/surge.ts), [`resolveActiveEncounterCardAfterInterrupt`](../../../src/engine/pipeline/villain-phase.ts)
 * **Rule (RR v1.8 "Surge"):** Surge is equivalent to *When Revealed: deal yourself 1 facedown encounter card*. The player resolving the card is dealt the top card of the encounter deck (deck exhaustion applies: reshuffle and acceleration). The extra card is revealed only after the original card, including any pending choice, has fully resolved.
 * **Printed Surge** is detected by the importer, not declared in supplemental data: a card prints the keyword when a whole sentence of a text line is `Surge` (`Surge.`, `Surge <i>(reminder)</i>`, `Surge .`, bare `Surge`). Text that only mentions the word ("this card gains surge.") does not (`hasPrintedKeyword`, `card-loader.ts`). Do **not** add a `SURGE` step to a card that prints the keyword: the engine already surges it.
 * **Conditional surge** ("If ..., this card gains surge") is the `SURGE` effect (or `DISCARD` with `fallback: "SURGE"`), usually behind a gate (`IF_AMOUNT_ZERO`, `IF_ALREADY_HAS_STATUS`, `IF_CARD_IN_PLAY`):

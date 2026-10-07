@@ -6,7 +6,7 @@
 
 ### `DRAW`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
+- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts)
 - **Description:** Draws N cards from target player's draw deck into hand, with optional hand size boundary limits. Handles deck reshuffle and acceleration token penalties.
 
 ```json
@@ -40,7 +40,7 @@
 
 ### `MODIFY_HAND_SIZE`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` (Issue [#9](https://github.com/SteveRodrigue/MCD/issues/9), reworked for _Iron Man_ `01029a` in WP2 / [#227](https://github.com/SteveRodrigue/MCD/issues/227); [`getEffectiveHandSize`](../../../src/engine/pipeline/stat-calculator.ts))
+- **References:** Issue [#9](https://github.com/SteveRodrigue/MCD/issues/9), reworked for _Iron Man_ `01029a` in WP2 / [#227](https://github.com/SteveRodrigue/MCD/issues/227); [`getEffectiveHandSize`](../../../src/engine/pipeline/stat-calculator.ts)
 - **Description:** Continuous aura (`CONSTANT`) adding to the live effective hand size during end-of-phase draw/discard and UI rendering. `amount` is a number or a `DynamicValueSource` (see [08. Dynamic Formulas](./09_dynamic_formulas.md)); printed caps are declared with the formula's `clamp.max`. The resulting hand size is never negative; the Rules Reference sets no other bound.
 
 ```json
@@ -79,7 +79,7 @@
 
 ### `DISCARD`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts) / Issue [#66](https://github.com/SteveRodrigue/MCD/issues/66))
+- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts) / Issue [#66](https://github.com/SteveRodrigue/MCD/issues/66)
 - **Description:** Moves cards from a specified source zone (`HAND`, `DECK`, `ENCOUNTER_DECK`, `TABLEAU`, `HOST`, `SELF`, `CARDS_UNDER_HOST`) directly to the discard pile (or encounter discard pile for encounter cards) per RR v1.8 p. 10. Supports random hand selection, filtering, iterative milling, and fallback actions (e.g. Surge when no valid target in tableau).
 
 ```json
@@ -179,7 +179,7 @@ Supported `discardAttribute` inspection modes:
 
 ### `SEARCH`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts) / ADR-0030, ADR-0058 / _Tony Stark_ `01029b` Futurist / _T'Challa_ `01040b` Foresight / _Shuri_ `01041`)
+- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts) / ADR-0030, ADR-0058 / _Tony Stark_ `01029b` Futurist / _T'Challa_ `01040b` Foresight / _Shuri_ `01041`
 - **Description:** Universal declarative search and card discovery primitive. Inspects cards from a source zone (`PLAYER_DECK`, `PLAYER_DISCARD`, `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`, `PLAYER_HAND`), filters candidates matching criteria (`targetCardCode`, `trait`, `type`, etc.), and presents an interactive `PendingDecisionPrompt` allowing the player to select up to `takeCount` cards into `selectedDestination` (`HAND`, `TABLEAU`, `DECK_SHUFFLE`, etc.), routing unselected looked cards to `unselectedDestination` (`DISCARD`, `DECK_BOTTOM`, etc.) with optional post-search shuffle (`shuffleAfter`) and automatic resolution for unambiguous matches (`autoSelectIfUnambiguous`).
 
 #### Parameters
@@ -276,7 +276,7 @@ Supported `discardAttribute` inspection modes:
 
 ### `PUT_INTO_PLAY`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` (ADR-0029 / _Shadow of the Past_ `01190`, _Rhino Stage II_ `01095`, _Make the Call_ `01071`)
+- **References:** ADR-0029 / _Shadow of the Past_ `01190`, _Rhino Stage II_ `01095`, _Make the Call_ `01071`
 - **Description:** Transfers matching cards from a source zone into play at the specified destination, resolving the standard entrance lifecycle (attaching Toughness, calculating starting threat for side schemes, Quickstrike, the `MINION_ENTERS_PLAY` trigger). Uses [**04. Universal Card Filter**](./04_universal_card_filter.md).
 - **Parameters:**
   - `from` / `to`: source zone (`SET_ASIDE`, `DISCARD`, `HAND`, `DECK`) and destination (`TABLEAU`, `ENGAGED_WITH_PLAYER`, `SIDE_SCHEMES`).
@@ -302,7 +302,7 @@ Supported `discardAttribute` inspection modes:
 
 ### `SHUFFLE_INTO_DECK`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` (ADR-0029 / _Shadow of the Past_ `01190`, _Ancestral Knowledge_ `01042`)
+- **References:** ADR-0029 / _Shadow of the Past_ `01190`, _Ancestral Knowledge_ `01042`
 - **Description:** Collects matching cards from a specified source zone (`from`: `"SET_ASIDE" | "DISCARD" | "HAND"`), places them into the target deck (`toDeck`: `"ENCOUNTER_DECK" | "PLAYER_DECK"`), and shuffles the deck. Uses [**04. Universal Card Filter**](./04_universal_card_filter.md).
 
 ```json
@@ -322,7 +322,7 @@ Supported `discardAttribute` inspection modes:
 
 ### `PLAY_FROM_ZONE`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([ADR-0047](../../decisions/0047-playing-cards-from-non-hand-zones.md) / Issue [#25](https://github.com/SteveRodrigue/MCD/issues/25) - _Make the Call_ `01071`)
+- **References:** [ADR-0047](../../decisions/0047-playing-cards-from-non-hand-zones.md) / Issue [#25](https://github.com/SteveRodrigue/MCD/issues/25) - _Make the Call_ `01071`
 - **Description:** Enables playing a card from a non-hand zone (e.g. `PLAYER_DISCARD`, `ANY_PLAYER_DISCARD`, `PLAYER_DECK`, `ATTACHED`, `TUCKED`) matching filter constraints, with optional cost mode (`PRINTED_COST`, `FREE`, `REDUCED`).
 
 ```json
@@ -344,7 +344,7 @@ Supported `discardAttribute` inspection modes:
 
 ### `REMOVE_FROM_GAME`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` (Issue #158 / core obligations: _Affairs of State_ `01155`, _Eviction Notice_ `01165`, _Family Emergency_ `01175`)
+- **References:** Issue #158 / core obligations: _Affairs of State_ `01155`, _Eviction Notice_ `01165`, _Family Emergency_ `01175`
 - **Description:** Removes the source card from the game (RR v1.8 "Removed from the Game"). The card leaves every other zone and ends only in `state.removedFromGame`; it does not go to a discard pile and triggers no discard effects. Target is the source card (`SELF`).
 
 ```json
@@ -366,7 +366,7 @@ Ordering on defeat (ADR-0034 addendum): the scheme's "When Defeated" abilities r
 
 ### `CHANGE_FORM` (alias `FLIP_FORM`)
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)`; `form` and `optional` added in Issue #158.
+- **References:** Issue #158 (`form` and `optional` added).
 - **Description:** Flips the identity to its other form. `effectParams.form` (`"hero"` | `"alter_ego"`) names the wanted form: if the identity is already in it, the step is a no-op. `effectParams.optional: true` queues a **voluntary** prompt ("Flip to <form>?") instead of flipping immediately. Flipping by a card ability does **not** count against the once-per-turn voluntary form change (RR v1.8 "Form").
 
 ```json

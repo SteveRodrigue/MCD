@@ -1,6 +1,6 @@
 # Universal Card Filter Specification
 
-- **Module Status:** 🟢 `IMPLEMENTED (v1.0)` ([`src/engine/filters/card-filter.ts`](../../../src/engine/filters/card-filter.ts) / [ADR-0046](../../decisions/0046-universal-declarative-card-filtering-architecture.md))
+- **References:** [`src/engine/filters/card-filter.ts`](../../../src/engine/filters/card-filter.ts) / [ADR-0046](../../decisions/0046-universal-declarative-card-filtering-architecture.md)
 - **Schema Authority:** [`src/data/supplemental/schema.ts`](../../../src/data/supplemental/schema.ts) (`UniversalCardFilterSchema`, `CardCriteriaSchema`)
 - **Rules Authority:** Marvel Champions Rules Reference (RR v1.8 p. 19 "Look at", p. 26 "Search", p. 28 "Target")
 

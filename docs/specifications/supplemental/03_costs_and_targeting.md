@@ -1,7 +1,6 @@
 # 03. Ability Costs, Targeting & FilterSchema
 
 > [!NOTE]
-> **Status:** 🟢 `IMPLEMENTED (v1.0)`  
 > Validated via [`AbilityCostSchema`](../../../src/data/supplemental/schema.ts#L154), [`TargetSelectorSchema`](../../../src/data/supplemental/schema.ts#L80), and [`FilterSchema`](../../../src/data/supplemental/schema.ts#L101).
 
 ---

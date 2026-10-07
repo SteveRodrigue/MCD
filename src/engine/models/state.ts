@@ -149,9 +149,20 @@ export enum GamePhase {
   VILLAIN_PHASE = 'VILLAIN_PHASE',
 }
 
+/** A player Setup ability (RR v1.8 Appendix II step 16) that has not been resolved yet. */
+export interface PendingSetupAbility {
+  playerId: string;
+  abilityId: string;
+  sourceCardCode: string;
+  /** Set when the source is a tableau card; absent for the identity card. */
+  sourceInstanceId?: string;
+}
+
 export interface SetupState {
-  stage: 'SCENARIO_SETUP' | 'MULLIGAN_PHASE' | 'GAME_READY';
+  stage: 'SCENARIO_SETUP' | 'MULLIGAN_PHASE' | 'PLAYER_SETUP' | 'GAME_READY';
   mulliganCompleted: Record<string, boolean>; // playerId -> boolean
+  /** Step 16 queue, in player order; resolved one ability at a time (decisions pause it). */
+  pendingSetupAbilities?: PendingSetupAbility[];
 }
 
 export enum VillainPhaseStep {

@@ -1,4 +1,4 @@
-import { CardInstance, NormalizedCard } from '@engine/models';
+import { CardInstance, NormalizedCard, Keyword, StatusCard, hasKeyword } from '@engine/models';
 
 let instanceCounter = 0;
 
@@ -36,4 +36,16 @@ export function createCardInstance(card: NormalizedCard, ownerId?: string): Card
     attachments: [],
     ownerId,
   };
+}
+
+/**
+ * Toughness: "This character enters play with a tough status card." Call it once for every
+ * ally or minion that enters play (played, put into play, revealed), after its state is reset.
+ */
+export function applyToughnessOnEntry(instance: CardInstance): void {
+  if (!hasKeyword(instance.card, Keyword.TOUGH)) return;
+  if (!instance.statusCards) instance.statusCards = [];
+  if (!instance.statusCards.includes(StatusCard.TOUGH)) {
+    instance.statusCards.push(StatusCard.TOUGH);
+  }
 }

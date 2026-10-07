@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T00:06:17.040Z` | **Active Target Selectors In Use:** **29/43**
+> **Generated:** `2026-10-07T01:26:32.038Z` | **Active Target Selectors In Use:** **29/43**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -25,26 +25,6 @@
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 | `01087` | **Haymaker (event)** | `core` | `haymaker` |
 
-### <a id="self"></a>`SELF` (15 Cards, 15 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
-| `01003` | **Backflip (event)** | `core` | `backflip` |
-| `01018` | **Energy Channel (upgrade)** | `core` | `energy_channel_add` |
-| `01020` | **Hellcat (ally)** | `core` | `hellcat_return` |
-| `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
-| `01051` | **Tigra (ally)** | `core` | `tigra_defeat_heal` |
-| `01076` | **Luke Cage (ally)** | `core` | `luke_cage_tough` |
-| `01096` | **Rhino (villain)** | `core_encounter` | `rhino_stage_iii_tough` |
-| `01102` | **Sandman (minion)** | `core_encounter` | `sandman_toughness` |
-| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
-| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_response` |
-| `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
-| `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
-| `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_response` |
-| `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
-
 ### <a id="self-identity"></a>`SELF_IDENTITY` (14 Cards, 14 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -63,6 +43,23 @@
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
 | `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
 | `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
+
+### <a id="self"></a>`SELF` (12 Cards, 12 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
+| `01003` | **Backflip (event)** | `core` | `backflip` |
+| `01018` | **Energy Channel (upgrade)** | `core` | `energy_channel_add` |
+| `01020` | **Hellcat (ally)** | `core` | `hellcat_return` |
+| `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
+| `01051` | **Tigra (ally)** | `core` | `tigra_defeat_heal` |
+| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
+| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_response` |
+| `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
+| `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
+| `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_response` |
+| `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
 
 ### <a id="chosen-scheme"></a>`CHOSEN_SCHEME` (10 Cards, 11 Declarations)
 

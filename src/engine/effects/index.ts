@@ -1,3 +1,4 @@
+import { applyToughnessOnEntry } from '../state/card-instance';
 import { evaluateStepGate } from '../pipeline/step-gate-evaluator';
 import {
   GameState,
@@ -3962,18 +3963,13 @@ export function executeStep(
           [CardType.ALLY, CardType.SUPPORT, CardType.UPGRADE].includes(cardInst.card.type)
         ) {
           if (cardInst.card.type === CardType.ALLY || toZone === 'ALLIES') {
+            applyToughnessOnEntry(cardInst);
             player.allies.push(cardInst);
           } else {
             player.tableau.push(cardInst);
           }
         } else if (toZone === 'ENGAGED_WITH_PLAYER' || cardInst.card.type === CardType.MINION) {
-          const hasToughness = hasKeyword(cardInst.card, Keyword.TOUGH);
-          if (hasToughness) {
-            if (!cardInst.statusCards) cardInst.statusCards = [];
-            if (!cardInst.statusCards.includes(StatusCard.TOUGH)) {
-              cardInst.statusCards.push(StatusCard.TOUGH);
-            }
-          }
+          applyToughnessOnEntry(cardInst);
 
           player.engagedMinions.push(cardInst as MinionCard & CardInstance);
 
@@ -5346,6 +5342,7 @@ export function executeStep(
 
           // Move into controller's tableau / allies
           if (chosenCard.card.type === CardType.ALLY) {
+            applyToughnessOnEntry(chosenCard);
             player.allies.push(chosenCard);
           } else {
             player.tableau.push(chosenCard);

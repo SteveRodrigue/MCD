@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Play, Users, Check, Crown } from 'lucide-react';
-import { GameState, CardInstance } from '../../../engine';
+import { GameState, CardInstance, peekDecisionPrompt } from '../../../engine';
 import { CardView } from '../cards/CardView';
+import { DecisionPromptModal } from '../board/DecisionPromptModal';
 
 interface MulliganScreenProps {
   gameState: GameState;
   onResolveHeroMulligan: (playerId: string, discardIds: string[]) => void;
   onStartScenario: () => void;
+  /** Answers a decision of a player Setup ability (RR v1.8 Appendix II step 16). */
+  onResolvePrompt: (playerId: string, selectedOptionId: string) => void;
 }
 
 export const MulliganScreen: React.FC<MulliganScreenProps> = ({
   gameState,
   onResolveHeroMulligan,
   onStartScenario,
+  onResolvePrompt,
 }) => {
   const [activeSeatIndex, setActiveSeatIndex] = useState<number>(0);
   const [discardsByPlayer, setDiscardsByPlayer] = useState<Record<string, string[]>>({});
@@ -24,6 +28,9 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
   const isCurrentHeroCompleted = Boolean(mulliganCompletedMap[activePlayer.id]);
   const completedCount = gameState.players.filter((p) => mulliganCompletedMap[p.id]).length;
   const allCompleted = completedCount === totalSeats;
+
+  const setupPrompt = peekDecisionPrompt(gameState);
+  const isResolvingSetup = gameState.setupState?.stage === 'PLAYER_SETUP';
 
   const currentSelectedDiscards = discardsByPlayer[activePlayer.id] || [];
 
@@ -235,7 +242,8 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
         {/* Main "Start Scenario" Action Button */}
         <button
           onClick={onStartScenario}
-          className={`py-4 px-8 border-comic border-comic-black font-comic text-2xl tracking-wider shadow-comic transition-all flex items-center justify-center gap-3 group cursor-pointer ${
+          disabled={isResolvingSetup}
+          className={`py-4 px-8 border-comic border-comic-black font-comic text-2xl tracking-wider shadow-comic transition-all flex items-center justify-center gap-3 group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
             allCompleted
               ? 'bg-comic-yellow text-comic-red hover:bg-amber-300 animate-pulse active:translate-x-1 active:translate-y-1'
               : 'bg-emerald-500 text-white hover:bg-emerald-400 active:translate-x-1 active:translate-y-1'
@@ -253,6 +261,14 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
           </span>
         </button>
       </div>
+
+      {/* Player Setup abilities that need a decision (e.g. Foresight of T'Challa) */}
+      <DecisionPromptModal
+        prompt={setupPrompt}
+        onSelectOption={(optionId) => {
+          if (setupPrompt) onResolvePrompt(setupPrompt.playerId, optionId);
+        }}
+      />
     </div>
   );
 };

@@ -1,3 +1,4 @@
+import { applyToughnessOnEntry } from '../state/card-instance';
 import {
   GameState,
   GamePhase,
@@ -649,13 +650,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
 
   if (card.type === CardType.MINION) {
     // Check Toughness keyword
-    const hasToughness = hasKeyword(card, Keyword.TOUGH);
-    if (hasToughness) {
-      if (!cardInstance.statusCards) cardInstance.statusCards = [];
-      if (!cardInstance.statusCards.includes(StatusCard.TOUGH)) {
-        cardInstance.statusCards.push(StatusCard.TOUGH);
-      }
-    }
+    applyToughnessOnEntry(cardInstance);
 
     // Enters play engaged with this player
     player.engagedMinions.push(cardInstance);

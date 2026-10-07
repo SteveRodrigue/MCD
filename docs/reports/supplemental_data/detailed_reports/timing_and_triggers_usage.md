@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T00:06:17.040Z`
+> **Generated:** `2026-10-07T01:26:32.038Z`
 
 ## 1. Ability Timings (`TimingTypeSchema` — 17/19 In Use)
 
@@ -209,15 +209,6 @@
 | `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
 | `01085` | **Emergency (event)** | `core` | `emergency_interrupt` |
 
-### <a id="setup"></a>`SETUP` (4 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
-| `01076` | **Luke Cage (ally)** | `core` | `luke_cage_tough` |
-| `01096` | **Rhino (villain)** | `core_encounter` | `rhino_stage_iii_tough` |
-| `01102` | **Sandman (minion)** | `core_encounter` | `sandman_toughness` |
-
 ### <a id="special"></a>`SPECIAL` (4 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -252,6 +243,12 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01019a` | **She-Hulk (hero)** | `core` | `she_hulk_form_change` |
+
+### <a id="setup"></a>`SETUP` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
 
 ## 2. Trigger Windows (`TriggerTypeSchema` — 19/29 In Use)
 

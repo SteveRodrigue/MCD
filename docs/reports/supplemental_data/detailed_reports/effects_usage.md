@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T00:06:17.040Z` | **Active Effects In Use:** **44/55**
+> **Generated:** `2026-10-07T01:26:32.038Z` | **Active Effects In Use:** **44/55**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
@@ -35,25 +35,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
 
-### <a id="add-status"></a>`ADD_STATUS` (14 Cards, 17 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
-| `01011` | **Spider-Woman (ally)** | `core` | `spider_woman_enters_play` |
-| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
-| `01076` | **Luke Cage (ally)** | `core` | `luke_cage_tough` |
-| `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
-| `01096` | **Rhino (villain)** | `core_encounter` | `rhino_stage_iii_when_revealed`, `rhino_stage_iii_tough` |
-| `01102` | **Sandman (minion)** | `core_encounter` | `sandman_toughness` |
-| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
-| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
-| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_response` |
-| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed`, `heart_shaped_herb_boost` |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed`, `sweeping_swoop_boost` |
-| `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_response` |
-| `01194` | **Unknown Card #01194** | `core_encounter` | `masterplan_when_revealed` |
-
 ### <a id="discard"></a>`DISCARD` (15 Cards, 16 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -73,6 +54,23 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01188` | **Caught Off Guard (treachery)** | `core_encounter` | `caught_off_guard_when_revealed` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 | `01195` | **Unknown Card #01195** | `core_encounter` | `under_fire_when_revealed` |
+
+### <a id="add-status"></a>`ADD_STATUS` (12 Cards, 14 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
+| `01011` | **Spider-Woman (ally)** | `core` | `spider_woman_enters_play` |
+| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
+| `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
+| `01096` | **Rhino (villain)** | `core_encounter` | `rhino_stage_iii_when_revealed` |
+| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
+| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
+| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_response` |
+| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed`, `heart_shaped_herb_boost` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed`, `sweeping_swoop_boost` |
+| `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_response` |
+| `01194` | **Unknown Card #01194** | `core_encounter` | `masterplan_when_revealed` |
 
 ### <a id="modify-stat"></a>`MODIFY_STAT` (11 Cards, 13 Step Occurrences)
 

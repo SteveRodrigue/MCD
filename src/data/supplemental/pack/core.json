@@ -2812,21 +2812,7 @@
       }
     },
     "01076": {
-      "abilities": [
-        {
-          "id": "luke_cage_tough",
-          "timing": "SETUP",
-          "steps": [
-            {
-              "effect": "ADD_STATUS",
-              "effectParams": {
-                "status": "TOUGH",
-                "target": "SELF"
-              }
-            }
-          ]
-        }
-      ],
+      "noSupplementalNeeded": true,
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-09-14T18:37:00Z",

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine + UI + Data): player Setup abilities choose and resolve after the mulligan ([Issue #283](https://github.com/SteveRodrigue/MCD/issues/283))**
+  - T'Challa's Foresight (`01040b`) took the first Black Panther upgrade of the deck without asking. Setup abilities now run through the normal effect pipeline (`beginPlayerSetup` / `advancePlayerSetup`, new `setupState.stage` `PLAYER_SETUP`), so the SEARCH prompt appears (auto-select only when there is one candidate), players resolve in player order and one prompt at a time. They run after the mulligans (RR v1.8 Appendix II steps 15 then 16), not before. The hand-rolled search copy and the unused `chosenSetupCardCode` are removed. The mulligan screen shows the prompt and keeps "Start" disabled until setup is done.
+  - Data: the invented `SETUP` ability of Luke Cage `01076` (an ally printing only Toughness) is removed (owner decision); the entry is `noSupplementalNeeded`. `tests/data/setup-ability-owners.test.ts` forbids `SETUP` on cards played from hand.
+  - Toughness works for allies like for minions: one helper, `applyToughnessOnEntry`, gives the tough status card when an ally or minion enters play (played from hand, put into play, revealed, search-and-play); the two copied minion blocks are gone. Luke Cage `01076` enters play tough. Sandman `01102` loses the same dead `SETUP` ability (the keyword already did the work); Rhino stage III `01096` loses its dead `SETUP` too (his scenario plugin applies Tough). `tests/data/setup-ability-owners.test.ts` now allows `SETUP` on identity cards only. `tests/engine/toughness-on-entry.test.ts`.
+
 - **Refactor (Engine + Data + Card Editor): `DEAL_DAMAGE.overkill` removed ([Issue #276](https://github.com/SteveRodrigue/MCD/issues/276) follow-up)**
   - No card set it and no test exercised it. Overkill comes from the printed Overkill keyword or from `overkillOnCondition` / `overkillOnPhysical` (Relentless Assault `01053`). Engine line, `EFFECT_PARAM_KEYS`, the Card Editor parameter, the spec and ADR-0058 row follow.
 

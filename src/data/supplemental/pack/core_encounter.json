@@ -66,19 +66,6 @@
               }
             }
           ]
-        },
-        {
-          "id": "rhino_stage_iii_tough",
-          "timing": "SETUP",
-          "steps": [
-            {
-              "effect": "ADD_STATUS",
-              "effectParams": {
-                "status": "TOUGH",
-                "target": "SELF"
-              }
-            }
-          ]
         }
       ],
       "audit": {
@@ -250,19 +237,6 @@
     },
     "01102": {
       "abilities": [
-        {
-          "id": "sandman_toughness",
-          "timing": "SETUP",
-          "steps": [
-            {
-              "effect": "ADD_STATUS",
-              "effectParams": {
-                "status": "TOUGH",
-                "target": "SELF"
-              }
-            }
-          ]
-        },
         {
           "id": "sandman_attack_discard",
           "timing": "FORCED_RESPONSE",

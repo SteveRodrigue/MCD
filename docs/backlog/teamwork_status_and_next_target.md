@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
 > **Last updated:** 2026-10-07
-> **Repository state:** `main`, last work commit `09714de` (#276, schema member guard and cleanups). Check `git log -1` and `git status` first.
+> **Repository state:** `main`, last work commit is the #283 commit (`git log --grep "#283"`), after `09714de` (#276). Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 2,180 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 2,186 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -49,6 +49,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #231 | `scaling` / `multiplier` / `maxBonus` retired: Jessica Jones, Legal Practice, Energy Channel use `ENTITY_COUNT` / `DISCARDED_CARDS` / `RESOURCES_SPENT`; cost results (`discardedCards`, `resourcesSpent`) in the effect context; "up to N" discard cap enforced; `uses.max` removed (dead); Legal Practice played from hand is broken: [#277](https://github.com/SteveRodrigue/MCD/issues/277) | `git log --grep "#231"` |
 | #246 | Player elimination: a defeated hero eliminates that player only, the group loses with the last hero; per-player icon counts the starting players; game-over screen (ADR-0079) | `git log --grep "#246"` |
 | #276 | Schema member guard: 20 members removed (7 conditions and triggers, 8 effects, 5 `effectParams` keys, `exhaustCard` and `discardCard.from` narrowed), textual reader and engine-test proof, behaviour tests for every member that had none; `KNOWN_GAPS` tied to #280 / #281 | `git log --grep "#276"` |
+| #283 | Player Setup abilities: step 16 after the mulligans, through the effect pipeline (`PLAYER_SETUP`), T'Challa asks which upgrade; mulligan screen shows the prompt; Luke Cage `01076` invented `SETUP` removed and Toughness for allies (`applyToughnessOnEntry`; part of #253) (ADR-0033 addendum) | `git log --grep "#283"` |
 | Triage of #282, #283 | 2 new Dev Mode reports: #283 T'Challa setup prompt (P1, queued as 3i), #282 removed-from-game pile (P2) | GitHub only |
 
 ---
@@ -102,7 +103,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 | 3g | Webbed Up `01009` does not trigger / replace properly when villain is already Stunned | [#250](https://github.com/SteveRodrigue/MCD/issues/250) | replacement timing bug | 🟢 **Closed** 2026-10-06, not a bug: status cards have timing priority (RR Status Cards), Test 3 asserts it |
 | 3h | Lead from the Front `01070` did not prompt to choose a player | [#251](https://github.com/SteveRodrigue/MCD/issues/251) | missing player choice prompt | 🟢 **Done** 2026-10-06; `MODIFY_STAT` `targetPlayer: CHOSEN_PLAYER`, `ALL_CONTROLLED_CHARACTERS` |
 | — | Caught Off Guard "no prompt" (needs the reporter's detail), Card Editor delete feature | [#233](https://github.com/SteveRodrigue/MCD/issues/233), [#237](https://github.com/SteveRodrigue/MCD/issues/237) | waiting / enhancement | |
-| 3i | T'Challa `01040b` (Black Panther): no prompt to choose an upgrade on setup (Dev Mode report, 2 players Black Panther + She-Hulk, rhino, standard) | [#283](https://github.com/SteveRodrigue/MCD/issues/283) | **P1, Gate 1** (Black Panther is one of the 5 core heroes); untriaged: reproduce, then check the `01040b` setup `SEARCH` (Foresight) and `autoSelectIfUnambiguous` | 🟡 Open, new 2026-10-07 |
+| 3i | T'Challa `01040b` (Black Panther): no prompt to choose an upgrade on setup | [#283](https://github.com/SteveRodrigue/MCD/issues/283) | **P1, Gate 1** | 🟢 **Done** 2026-10-07; Setup abilities resolve after the mulligan through `executeEffect` (`PLAYER_SETUP`), Luke Cage `01076` invented `SETUP` removed |
 | 4b | Legal Practice `01023` played from hand pays no discard cost and removes no threat | [#277](https://github.com/SteveRodrigue/MCD/issues/277) | **P1**, card does nothing in a real game | 🟡 Open; found while doing #231 |
 | 4 | Genetically Enhanced `01163` (invented `bonusAttack`) | [#228](https://github.com/SteveRodrigue/MCD/issues/228) | blocks the guard test | 🟢 **Circuit-breaker applied** 2026-10-06 (stripped, ambiguity report, tie: first player chooses); **She-Hulk nemesis card, Gate 1:** not playable until #209 (now Gate 1), a highest-printed-HP selector (tie: first player chooses), a +3 HP modifier and the surge fallback exist; issue stays open, P1 |
 
@@ -174,7 +175,7 @@ See [README.md](README.md) (session start, plan anatomy, owner preferences, wher
 - [#261](https://github.com/SteveRodrigue/MCD/issues/261): core player cards questions (B4 canonical defeat trigger, C9 Alpha Flight Station form, C10 identity timing convention, C13 `maxPerDeck`, Repulsor Blast single hit or two).
 - [#233](https://github.com/SteveRodrigue/MCD/issues/233): how many upgrades/supports did the revealing player control when Caught Off Guard showed no prompt?
 - 2 moderate Dependabot alerts on `main` are not reviewed yet (`dependabot` skill).
-- Next ready item: [#283](https://github.com/SteveRodrigue/MCD/issues/283) (T'Challa setup prompt, P1 and Gate 1; triage first). Then P1 [#277](https://github.com/SteveRodrigue/MCD/issues/277) Legal Practice played from hand, then [#232](https://github.com/SteveRodrigue/MCD/issues/232) (documentation gaps, ad-hoc selector strings; partly subsumed by #276). Legal Practice's `audit.confidence` stays 0 until #277 is fixed.
+- Next ready item: P1 [#277](https://github.com/SteveRodrigue/MCD/issues/277) Legal Practice played from hand (its `audit.confidence` stays 0 until fixed), then [#232](https://github.com/SteveRodrigue/MCD/issues/232) (documentation gaps, ad-hoc selector strings; partly subsumed by #276).
 - Whether to schedule item 14 (data read-through) and #243 before the remaining Tier 1 cosmetics.
 
 ---

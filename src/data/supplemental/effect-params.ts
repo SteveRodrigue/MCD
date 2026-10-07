@@ -24,7 +24,7 @@ export const EFFECT_PARAM_KEYS: Record<EffectType, readonly string[]> = {
   CANCEL_WHEN_REVEALED: [],
   CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER: [],
   CHANGE_FORM: ['form', 'optional'],
-  DEAL_DAMAGE: ['amount', 'dynamicBonus', 'finisherBonus', 'kickerResource', 'overkill', 'overkillOnCondition', 'overkillOnPhysical', 'target', 'targetPlayer'],
+  DEAL_DAMAGE: ['amount', 'dynamicBonus', 'finisherBonus', 'kickerResource', 'overkillOnCondition', 'overkillOnPhysical', 'target', 'targetPlayer'],
   DECLARE_DEFENDER: [],
   DISCARD: ['count', 'fallback', 'filter', 'matchingDestination', 'mode', 'source', 'target', 'untilFilter'],
   DISTRIBUTE_AMOUNT: ['allocationDomain', 'budget', 'capRule', 'targetScope'],

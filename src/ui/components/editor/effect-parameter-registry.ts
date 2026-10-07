@@ -116,13 +116,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
           "Which player's engaged enemies are hit when Target is Engaged Enemies (prompts in multiplayer)",
       },
       {
-        key: 'overkill',
-        label: 'Overkill',
-        type: 'boolean',
-        defaultValue: false,
-        description: 'Excess damage routes to Villain (RR v1.8 p. 22)',
-      },
-      {
         key: 'finisherBonus',
         label: 'Finisher Bonus Damage',
         type: 'number',

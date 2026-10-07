@@ -469,7 +469,7 @@ export function getCardRestrictedWeight(card: NormalizedCard): number {
 /**
  * Computes the active restricted card limit for a player dynamically (RR v1.8 p. 25 / ADR-0018).
  * Base: 2 restricted cards max.
- * Modifiers: Scans in-play cards for CONSTANT abilities with RESTRICTED_LIMIT_BONUS (e.g. Side Holster).
+ * Modifiers: Scans in-play cards for CONSTANT abilities with MODIFY_RESTRICTED_LIMIT (e.g. Side Holster).
  */
 export function getPlayerRestrictedLimit(state: GameState, playerId: string): number {
   const BASE_RESTRICTED_LIMIT = 2;
@@ -481,7 +481,7 @@ export function getPlayerRestrictedLimit(state: GameState, playerId: string): nu
   for (const item of player.tableau) {
     const abilities = item.card.enrichment?.abilities || [];
     for (const ab of abilities) {
-      const limitStep = ab.steps?.find((s) => s.effect === 'RESTRICTED_LIMIT_BONUS');
+      const limitStep = ab.steps?.find((s) => s.effect === 'MODIFY_RESTRICTED_LIMIT');
       if (ab.timing === 'CONSTANT' && limitStep) {
         bonus += Number(getStepEffectParams(limitStep).amount) || 1;
       }
@@ -658,7 +658,7 @@ export function checkUniqueCardPlayable(
 /**
  * Computes the active maximum ally limit for a player dynamically (ADR-0018).
  * Base: 3 allies (RR v1.8 p. 3).
- * Modifiers: Scans in-play cards for CONSTANT abilities with ALLY_LIMIT_BONUS.
+ * Modifiers: Scans in-play cards for CONSTANT abilities with MODIFY_ALLY_LIMIT.
  */
 export function getPlayerAllyLimit(state: GameState, playerId: string): number {
   const player = getPlayer(state, playerId);

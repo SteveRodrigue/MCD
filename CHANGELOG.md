@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Test (Engine + Data + Card Editor): every schema member is exercised by a test ([Issue #276](https://github.com/SteveRodrigue/MCD/issues/276), part 4)**
+  - New tests: `lifecycle-trigger-abilities` (ROUND_BEGAN, PLAYER_PHASE_BEGAN/ENDED, VILLAIN_PHASE_BEGAN, STATUS_REMOVED, HERO/ALTER_EGO_RESPONSE, ALTER_EGO_RESOURCE), `trigger-filter-members` (scopes, forms, isEngaged, threatSource, attackerCardFilter), `ability-members-batch3` (zone PLAY, ONCE_PER_PHASE, damageHero, EXECUTE_SPECIAL, REMOVE_COUNTERS, target selectors, IF_ZERO_HEALED, ALREADY_HAS_STATUS, playRequirements). `tests/data/schema-member-coverage.test.ts` now also fails on any member with no engine-level test (card evidence counts); `Toughness`, `errata`, `victoryPoints` and authoring metadata stay exempt.
+  - **Narrowed to what the engine implements:** `cost.exhaustCard` is only `SELF_IDENTITY` (42 other selectors were never read; the `exhaustHero` alias goes), `cost.discardCard.from` is only `HAND` (`DECK` and `PLAY` had no code). Card Editor selects and specs follow. Duplicate effect names removed to follow the `MODIFY_*` family and ADR-0058: `ALLY_LIMIT_BONUS` (same code as `MODIFY_ALLY_LIMIT`) and `RESTRICTED_LIMIT_BONUS`, now `MODIFY_RESTRICTED_LIMIT` (the engine and its tests are renamed).
+
 - **Refactor (Data + Card Editor): five unread `effectParams` keys removed, table folded into the guard ([Issue #276](https://github.com/SteveRodrigue/MCD/issues/276), part 3)**
   - Removed (0 cards, no reader): `DISTRIBUTE_AMOUNT.allowPartialIfCapacityLow`, `GENERATE_RESOURCE.sourceMode`, `MODIFY_HAND_SIZE.applicableForm` and `maxHandSize`, `SPEND_COUNTERS.discardWhenEmpty` (also from `SpendCountersParamsSchema`). The Source Mode toggle of the GENERATE_RESOURCE editor stays as a UI-only control; it no longer pretends to be a parameter.
   - `tests/data/schema-member-coverage.test.ts` now checks all 150 `effectParams` pairs for a reader; `tools/audit/effect-params-read-check.ts` (36 false positives) is deleted.

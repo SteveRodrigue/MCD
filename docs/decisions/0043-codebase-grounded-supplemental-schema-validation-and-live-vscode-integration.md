@@ -98,3 +98,4 @@ ADR-0043 guaranteed parity for effect types. The same rule now covers **every** 
 - **No allow-list.** The only entries are `KNOWN_GAPS`, owner-approved and tied to an issue; the test fails as soon as an entry gets a reader.
 - **Limit:** the check is textual. The runtime proof (fake pack and read tracking) is [#279](https://github.com/SteveRodrigue/MCD/issues/279).
 - **Removed:** step conditions `TARGET_ALREADY_EXHAUSTED`, `TARGET_FORM_MATCH`, `RESOURCE_KICKER_MET`, `COUNTER_THRESHOLD_MET`; triggers `BOOST_STAR_RESOLVED`, `MAIN_SCHEME_ADVANCED`, `RESOURCE_SPENT`.
+- **Test proof:** the same test fails on any member that no test under `tests/` (outside `tests/data`, importing the engine) mentions, or whose shipped declaring cards no such test mentions by code. The `effectParams` table (`EFFECT_PARAM_KEYS`) has the reader proof only. `ability.errata`, `victoryPoints` and `Toughness` stay in `KNOWN_GAPS` (#280, #281).

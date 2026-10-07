@@ -203,7 +203,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       player.currentForm = 'hero';
       player.activeFormCard = spiderManHero;
 
-      // Create Side Holster upgrade card that grants RESTRICTED_LIMIT_BONUS +1
+      // Create Side Holster upgrade card that grants MODIFY_RESTRICTED_LIMIT +1
       const sideHolster: NormalizedCard = {
         ...cardCatalog.getCard('01005')!,
         code: 'side_holster',
@@ -216,7 +216,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
               timing: 'CONSTANT',
               steps: [
                 {
-                  effect: 'RESTRICTED_LIMIT_BONUS',
+                  effect: 'MODIFY_RESTRICTED_LIMIT',
                   effectParams: { amount: 1 },
                 },
               ],

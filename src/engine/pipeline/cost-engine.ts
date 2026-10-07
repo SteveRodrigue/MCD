@@ -270,7 +270,7 @@ export function canPayAbilityCost(
     }
   }
 
-  if (cost.exhaustCard === 'SELF_IDENTITY' || (cost as any).exhaustHero) {
+  if (cost.exhaustCard === 'SELF_IDENTITY') {
     if (player.exhausted) {
       return { allowed: false, reason: 'Identity is already exhausted.' };
     }
@@ -597,7 +597,7 @@ export function executeAbilityCost(
     }
   }
 
-  if (cost.exhaustCard === 'SELF_IDENTITY' || (cost as any).exhaustHero) {
+  if (cost.exhaustCard === 'SELF_IDENTITY') {
     player.exhausted = true;
   }
 

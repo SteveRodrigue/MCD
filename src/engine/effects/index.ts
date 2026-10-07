@@ -5471,7 +5471,6 @@ export function executeStep(
       };
     }
 
-    case 'ALLY_LIMIT_BONUS':
     case 'MODIFY_RESTRICTED_LIMIT':
     case 'MODIFY_ALLY_LIMIT': {
       // Evaluated as constant modifier in legality-checker getPlayerAllyLimit

@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-06
 > **Repository state:** `main`, last work commit `d40febb` (#266, pausable threat placement). Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 2,137 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 2,180 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -48,6 +48,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #225 | `executeSequence` stops on a step that fails with an `error` (also `forEachPlayer`), logs `engine.stepError`; Dev Mode banner and combat log entry; outcomes without an error keep `IF_FAILED` working (ADR-0019 addendum) | `git log --grep "#225"` |
 | #231 | `scaling` / `multiplier` / `maxBonus` retired: Jessica Jones, Legal Practice, Energy Channel use `ENTITY_COUNT` / `DISCARDED_CARDS` / `RESOURCES_SPENT`; cost results (`discardedCards`, `resourcesSpent`) in the effect context; "up to N" discard cap enforced; `uses.max` removed (dead); Legal Practice played from hand is broken: [#277](https://github.com/SteveRodrigue/MCD/issues/277) | `git log --grep "#231"` |
 | #246 | Player elimination: a defeated hero eliminates that player only, the group loses with the last hero; per-player icon counts the starting players; game-over screen (ADR-0079) | `git log --grep "#246"` |
+| #276 | Schema member guard: 20 members removed (7 conditions and triggers, 8 effects, 5 `effectParams` keys, `exhaustCard` and `discardCard.from` narrowed), textual reader and engine-test proof, behaviour tests for every member that had none; `KNOWN_GAPS` tied to #280 / #281 | `git log --grep "#276"` |
 
 ---
 
@@ -119,7 +120,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 | :-- | :-- | :-- | :-- |
 | 10 | WP5: guard test, unknown `effectParams` key fails the data test (the `target` slice is already done) | [#230](https://github.com/SteveRodrigue/MCD/issues/230) | 🟢 **Done** 2026-10-06; table `src/data/supplemental/effect-params.ts`, guard `tests/data/effect-params-keys.test.ts`; `REMOVE_THREAT.aerialAllSchemes` left out (owner decision) |
 | 11 | WP6: retire `PER_SIDE_SCHEME` / `PER_DISCARDED_CARD` / `PER_RESOURCE_SPENT` pseudo-primitives | [#231](https://github.com/SteveRodrigue/MCD/issues/231) | 🟢 **Done** 2026-10-06 |
-| 11b | **P1, in progress:** every schema member needs a reader in code and a test, enforced by a failing data test (`uses.max` was dead for weeks; removed 2026-10-06). **Part 1 done (uncommitted until the owner asks):** reader guard `tests/data/schema-member-coverage.test.ts`, 7 members removed; **part 2 next:** 7 effects (`TRIGGER_WAKANDA_UPGRADES`, `MODIFY_COUNTER`, `DEAL_ADDITIONAL_BOOST_CARD`, `CANCEL_TREACHERY_AND_VILLAIN_ATTACKS`, `CANCEL_WHEN_REVEALED_AND_ATTACK`, `COST_REDUCER`, `SEARCH_AND_PLAY_UPGRADE`), the behaviour-test half for 53 members, the 36 `effectParams` keys with no textual reader; plan `plan_issue_276_schema_reader_guard.md`. Follow-ups: [#278](https://github.com/SteveRodrigue/MCD/issues/278) comparison condition, [#279](https://github.com/SteveRodrigue/MCD/issues/279) fake pack, [#280](https://github.com/SteveRodrigue/MCD/issues/280) Toughness, [#281](https://github.com/SteveRodrigue/MCD/issues/281) errata / victoryPoints | #231 |
+| 11b | Every schema member needs a reader in code and a test, enforced by `tests/data/schema-member-coverage.test.ts` (#276) | [#276](https://github.com/SteveRodrigue/MCD/issues/276) | 🟢 **Done** 2026-10-06; follow-ups: [#278](https://github.com/SteveRodrigue/MCD/issues/278) comparison condition, [#279](https://github.com/SteveRodrigue/MCD/issues/279) fake pack and runtime proof, [#280](https://github.com/SteveRodrigue/MCD/issues/280) Toughness, [#281](https://github.com/SteveRodrigue/MCD/issues/281) errata / victoryPoints |
 | 12 | WP7: documentation gaps, decorative keys, ad-hoc selector strings (`HERO`, `IDENTITY`, `ALTER_EGO`), `TRIGGERING_HERO` overlap | [#232](https://github.com/SteveRodrigue/MCD/issues/232) | WP5; partly subsumed by #276 |
 
 ### 3.4 Core player cards review
@@ -170,7 +171,7 @@ See [README.md](README.md) (session start, plan anatomy, owner preferences, wher
 - [#261](https://github.com/SteveRodrigue/MCD/issues/261): core player cards questions (B4 canonical defeat trigger, C9 Alpha Flight Station form, C10 identity timing convention, C13 `maxPerDeck`, Repulsor Blast single hit or two).
 - [#233](https://github.com/SteveRodrigue/MCD/issues/233): how many upgrades/supports did the revealing player control when Caught Off Guard showed no prompt?
 - 2 moderate Dependabot alerts on `main` are not reviewed yet (`dependabot` skill).
-- Next ready item: item 11b, [#276](https://github.com/SteveRodrigue/MCD/issues/276) (every schema member needs a reader and a test). Also P1: [#277](https://github.com/SteveRodrigue/MCD/issues/277) Legal Practice played from hand (its `audit.confidence` stays 0 until fixed).
+- Next ready item: [#232](https://github.com/SteveRodrigue/MCD/issues/232) (documentation gaps, ad-hoc selector strings; partly subsumed by #276). Also P1: [#277](https://github.com/SteveRodrigue/MCD/issues/277) Legal Practice played from hand (its `audit.confidence` stays 0 until fixed).
 - Whether to schedule item 14 (data read-through) and #243 before the remaining Tier 1 cosmetics.
 
 ---

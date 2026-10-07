@@ -1,6 +1,5 @@
 import React from 'react';
 import { Shield, Coins, AlertCircle, ChevronDown, ChevronRight } from 'lucide-react';
-import { TargetSelectorSchema } from '../../../data/supplemental/schema';
 import { UniversalCardFilterBuilder } from './UniversalCardFilterBuilder';
 
 export interface AbilityCostSectionProps {
@@ -152,11 +151,7 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
             className="bg-white border border-black px-1 py-0.5 text-xs rounded font-bold"
           >
             <option value="">(None)</option>
-            {TargetSelectorSchema.options.map((tgt) => (
-              <option key={tgt} value={tgt}>
-                {tgt}
-              </option>
-            ))}
+            <option value="SELF_IDENTITY">SELF_IDENTITY</option>
           </select>
         </div>
 
@@ -465,15 +460,13 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
                       handleCostUpdate({
                         discardCard: {
                           ...currentCost.discardCard,
-                          from: e.target.value as 'HAND' | 'DECK' | 'PLAY',
+                          from: e.target.value as 'HAND',
                         },
                       });
                     }}
                     className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
                   >
                     <option value="HAND">HAND</option>
-                    <option value="DECK">DECK</option>
-                    <option value="PLAY">PLAY</option>
                   </select>
                 </div>
                 <div>

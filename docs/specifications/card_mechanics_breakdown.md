@@ -128,7 +128,7 @@ For each card, mechanics are broken down using the following standard schema:
 
 - **MarvelCDB Link:** [https://marvelcdb.com/card/01073](https://marvelcdb.com/card/01073)
 - **Official Printed Text:** _"Play only if your identity has the [[Avenger]] trait. Max 1 per player. You get +1 ally limit."_
-- **Ability Timing & Trigger:** `CONSTANT` ➔ `ALLY_LIMIT_BONUS` (+1)
+- **Ability Timing & Trigger:** `CONSTANT` ➔ `MODIFY_ALLY_LIMIT` (+1)
 - **Step-by-Step Resolution:**
   1. **Play Requirement:** Controller must possess the `Avenger` trait.
   2. **Active State:** While in play, dynamically increases controller's ally limit from 3 to 4 (`getPlayerAllyLimit`).

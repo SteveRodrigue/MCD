@@ -193,7 +193,6 @@ export const EffectTypeSchema = z.enum([
   'ADD_STATUS',
   'ADD_THREAT',
   'ADD_TRAIT',
-  'ALLY_LIMIT_BONUS',
   'ATTACHMENT_DAMAGE_SHIELD',
   'ATTACH_FACEDOWN_CARDS_FROM_HAND',
   'ATTACH_TO_HOST',
@@ -215,9 +214,9 @@ export const EffectTypeSchema = z.enum([
   'GRANT_KEYWORD',
   'HEAL_DAMAGE',
   'MODIFY_ALLY_LIMIT',
-  'MODIFY_RESTRICTED_LIMIT',
   'MODIFY_HAND_SIZE',
   'MODIFY_MAX_HEALTH',
+  'MODIFY_RESTRICTED_LIMIT',
   'MODIFY_STAT',
   'PLACE_CARD_UNDER_HOST',
   'PLAYER_CHOICE',
@@ -231,7 +230,6 @@ export const EffectTypeSchema = z.enum([
   'REMOVE_COUNTERS_MATCHING_FILTER',
   'REMOVE_FROM_GAME',
   'REMOVE_THREAT',
-  'RESTRICTED_LIMIT_BONUS',
   'RETURN_TO_HAND',
   'REVEAL_ENCOUNTER_CARD',
   'SEARCH',
@@ -550,7 +548,7 @@ export type GenerateResourceParams = z.infer<typeof GenerateResourceParamsSchema
 export const AbilityCostSchema = z
   .object({
     exhaustSelf: z.boolean().optional(),
-    exhaustCard: TargetSelectorSchema.optional(),
+    exhaustCard: z.literal('SELF_IDENTITY').optional(),
     discardSelf: z.boolean().optional(),
     resources: z.array(ResourceTypeSchema).optional(),
     resourceCost: z.union([z.number(), z.record(z.string(), z.number())]).optional(),
@@ -569,7 +567,7 @@ export const AbilityCostSchema = z
       .object({
         count: z.number().optional(),
         maxCount: z.number().optional(),
-        from: z.enum(['HAND', 'DECK', 'PLAY']),
+        from: z.literal('HAND'),
         filter: UniversalCardFilterSchema.optional(),
         mode: z.enum(['CHOSEN', 'RANDOM']).optional(),
       })

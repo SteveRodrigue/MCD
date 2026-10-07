@@ -128,7 +128,7 @@ The full mapping contract follows. These tables are copied from Sections 1.1–1
 | :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------- |
 | **`MODIFY_STAT`**             | `{ stat: 'ATK' \| 'THW' \| 'DEF' \| 'REC' \| 'SCHEME', amount: number \| DynamicValueSource, target: TargetSelector, duration?: 'UNTIL_END_OF_PHASE' \| 'UNTIL_END_OF_ROUND' }` | `MODIFY_STAT`, `BOOST_STAT_CHOICE`, `BUFF_ALL_FRIENDLY_CHARACTERS` |
 | **`MODIFY_ALLY_LIMIT`**       | `{ amount: number, target?: TargetSelector }`                                                                                                                                   | `MODIFY_ALLY_LIMIT`, `ALLY_LIMIT_BONUS`                            |
-| **`MODIFY_RESTRICTED_LIMIT`** | `{ amount: number, target?: TargetSelector }`                                                                                                                                   | `RESTRICTED_LIMIT_BONUS`                                           |
+| **`MODIFY_RESTRICTED_LIMIT`** | `{ amount: number, target?: TargetSelector }` | _(former `RESTRICTED_LIMIT_BONUS`)_ |
 | **`PLAYER_CHOICE`**           | `{ options: Array<{ label: string, steps: AbilityStep[] }> }`                                                                                                                   | `PLAYER_CHOICE`, `NICK_FURY_CHOICE`                                |
 | *(Superseded)* `FORM_BRANCH`  | *Replaced with flat `gate: "IF_FORM"` steps (`gateParams: { form: "HERO" \| "ALTER_EGO" }`)*                                                                                    | `HERO_FORM_BRANCH`, `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE`          |
 
@@ -266,3 +266,5 @@ The two aliases consolidated into `PUT_INTO_PLAY` by this ADR were still in `Eff
 ## Addendum (2026-10-06, #276)
 
 `MAIN_SCHEME_ADVANCED` was removed from `TriggerTypeSchema`: the engine never fired it (see the ADR-0043 addendum).
+
+`ALLY_LIMIT_BONUS` and `RESTRICTED_LIMIT_BONUS` were removed (#276): they were duplicates of the canonical `MODIFY_ALLY_LIMIT` and `MODIFY_RESTRICTED_LIMIT` named in this ADR (same code path, same `MODIFY_*` naming family). The engine now reads `MODIFY_RESTRICTED_LIMIT` (it had still read the legacy name).

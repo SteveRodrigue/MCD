@@ -534,7 +534,7 @@ export function getEffectiveMaxHealth(player: PlayerState, _state?: GameState): 
 /**
  * Computes dynamic effective Ally Limit for a player (RR v1.8 p. 3 'Ally Limit', ADR-0018).
  * Base: 3 allies.
- * Modifiers: Scans in-play cards for CONSTANT abilities with ALLY_LIMIT_BONUS or MODIFY_ALLY_LIMIT.
+ * Modifiers: Scans in-play cards for CONSTANT abilities with MODIFY_ALLY_LIMIT.
  */
 export function getEffectiveAllyLimit(player: PlayerState, state?: GameState): number {
   const BASE_ALLY_LIMIT = 3;
@@ -547,7 +547,7 @@ export function getEffectiveAllyLimit(player: PlayerState, state?: GameState): n
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
           const stepParams = getStepEffectParams(step);
-          if (step.effect === 'ALLY_LIMIT_BONUS' || step.effect === 'MODIFY_ALLY_LIMIT') {
+          if (step.effect === 'MODIFY_ALLY_LIMIT') {
             bonus += Number(stepParams.amount) || 1;
           }
         }
@@ -565,10 +565,7 @@ export function getEffectiveAllyLimit(player: PlayerState, state?: GameState): n
           if (ab.timing === 'CONSTANT') {
             for (const step of ab.steps || []) {
               const stepParams = getStepEffectParams(step);
-              if (
-                (step.effect === 'ALLY_LIMIT_BONUS' || step.effect === 'MODIFY_ALLY_LIMIT') &&
-                stepParams.target === 'ALL_PLAYERS'
-              ) {
+              if (step.effect === 'MODIFY_ALLY_LIMIT' && stepParams.target === 'ALL_PLAYERS') {
                 bonus += Number(stepParams.amount) || 1;
               }
             }

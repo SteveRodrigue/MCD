@@ -737,20 +737,8 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       },
     ],
   },
-  ALLY_LIMIT_BONUS: {
-    effect: 'ALLY_LIMIT_BONUS',
-    description: 'Grant bonus ally limit slots to player tableau.',
-    parameters: [
-      {
-        key: 'amount',
-        label: 'Bonus Ally Slots',
-        type: 'number',
-        defaultValue: 1,
-      },
-    ],
-  },
-  RESTRICTED_LIMIT_BONUS: {
-    effect: 'RESTRICTED_LIMIT_BONUS',
+  MODIFY_RESTRICTED_LIMIT: {
+    effect: 'MODIFY_RESTRICTED_LIMIT',
     description: 'Grant additional restricted item slots (Side Holster).',
     parameters: [
       {
@@ -1287,11 +1275,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         description: 'Dynamic bonus card draw calculated from identity, traits, or game state',
       },
     ],
-  },
-  MODIFY_RESTRICTED_LIMIT: {
-    effect: 'MODIFY_RESTRICTED_LIMIT',
-    description: 'Modify the restricted card limit.',
-    parameters: [{ key: 'amount', label: 'Amount', type: 'number' }],
   },
   SEARCH: {
     effect: 'SEARCH',

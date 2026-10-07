@@ -8,6 +8,10 @@ import {
   formatUnreadMember,
   readReaderSources,
   readAuthoringSources,
+  readEngineTestSources,
+  findUntestedMembers,
+  formatUntestedMember,
+  isAuthoringMember,
   KNOWN_GAPS,
 } from '../../tools/audit/schema-member-coverage';
 
@@ -50,6 +54,17 @@ describe('schema member coverage (#276)', () => {
       ]);
     });
 
+    it('names a member that no engine-importing test mentions', () => {
+      const untested = findUntestedMembers(
+        inventorySchemaMembers(dummy),
+        "expect(card.alpha).toBe(1); const k = 'ONE';",
+      );
+      expect(untested.map(formatUntestedMember)).toEqual([
+        'Schema member kind: no test under tests/ (outside tests/data) that imports the engine mentions it',
+        'Schema member kind=TWO: no test under tests/ (outside tests/data) that imports the engine mentions it',
+      ]);
+    });
+
     it('accepts property access, optional chaining, destructuring and enum literals', () => {
       const unread = findUnreadMembers(
         inventorySchemaMembers(dummy),
@@ -64,6 +79,13 @@ describe('schema member coverage (#276)', () => {
       (member) => !(member.id in KNOWN_GAPS),
     );
     expect(unread.map(formatUnreadMember)).toEqual([]);
+  });
+
+  it('every schema member is exercised by a test that runs engine code', () => {
+    const untested = findUntestedMembers(members, readEngineTestSources(ROOT), ROOT).filter(
+      (member) => !isAuthoringMember(member) && !(member.id in KNOWN_GAPS),
+    );
+    expect(untested.map(formatUntestedMember)).toEqual([]);
   });
 
   it('every allowed effectParams key has a reader in the engine or the UI', () => {

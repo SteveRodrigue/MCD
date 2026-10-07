@@ -184,51 +184,7 @@
                     },
                     "exhaustCard": {
                       "type": "string",
-                      "enum": [
-                        "SELF",
-                        "SELF_IDENTITY",
-                        "SELF_HERO",
-                        "ACTIVE_PLAYER",
-                        "ALL_PLAYERS",
-                        "DEFENDING_PLAYER",
-                        "ALL_HEROES",
-                        "ALL_HEROES_AND_ALLIES",
-                        "TRIGGERING_HERO",
-                        "DAMAGED_CHARACTER",
-                        "CHOSEN_PLAYER",
-                        "VILLAIN",
-                        "MAIN_SCHEME",
-                        "CHOSEN_SCHEME",
-                        "CHOSEN_ENEMY",
-                        "ALL_ENEMIES",
-                        "ENGAGED_ENEMIES",
-                        "ENGAGED_MINIONS",
-                        "CHOSEN_MINION",
-                        "CHOSEN_ENGAGED_MINION",
-                        "ALL_MINIONS",
-                        "CHOSEN_ALLY",
-                        "CHOSEN_CONTROLLED_ALLY",
-                        "ALL_CONTROLLED_ALLIES",
-                        "ALL_CONTROLLED_TABLEAU",
-                        "ALL_ALLIES",
-                        "CHOSEN_CHARACTER",
-                        "CHOSEN_CONTROLLED_CHARACTER",
-                        "ALL_CONTROLLED_CHARACTERS",
-                        "CHOSEN_FRIENDLY_CHARACTER",
-                        "ALL_FRIENDLY_CHARACTERS",
-                        "ALL_CHARACTERS",
-                        "CHOSEN_SIDE_SCHEME",
-                        "THIS_SIDE_SCHEME",
-                        "ALL_SIDE_SCHEMES",
-                        "ALL_SCHEMES",
-                        "TRIGGERING_SCHEME",
-                        "PREVIOUS_TARGET",
-                        "PREVIOUS_SELECTED_CARD",
-                        "TRIGGERING_MINION",
-                        "TRIGGERING_ENEMY",
-                        "HOST",
-                        "HOST_ENEMY"
-                      ]
+                      "const": "SELF_IDENTITY"
                     },
                     "discardSelf": {
                       "type": "boolean"
@@ -303,11 +259,7 @@
                         },
                         "from": {
                           "type": "string",
-                          "enum": [
-                            "HAND",
-                            "DECK",
-                            "PLAY"
-                          ]
+                          "const": "HAND"
                         },
                         "filter": {
                           "$ref": "#/$defs/__schema0"
@@ -394,7 +346,6 @@
                           "ADD_STATUS",
                           "ADD_THREAT",
                           "ADD_TRAIT",
-                          "ALLY_LIMIT_BONUS",
                           "ATTACHMENT_DAMAGE_SHIELD",
                           "ATTACH_FACEDOWN_CARDS_FROM_HAND",
                           "ATTACH_TO_HOST",
@@ -416,9 +367,9 @@
                           "GRANT_KEYWORD",
                           "HEAL_DAMAGE",
                           "MODIFY_ALLY_LIMIT",
-                          "MODIFY_RESTRICTED_LIMIT",
                           "MODIFY_HAND_SIZE",
                           "MODIFY_MAX_HEALTH",
+                          "MODIFY_RESTRICTED_LIMIT",
                           "MODIFY_STAT",
                           "PLACE_CARD_UNDER_HOST",
                           "PLAYER_CHOICE",
@@ -432,7 +383,6 @@
                           "REMOVE_COUNTERS_MATCHING_FILTER",
                           "REMOVE_FROM_GAME",
                           "REMOVE_THREAT",
-                          "RESTRICTED_LIMIT_BONUS",
                           "RETURN_TO_HAND",
                           "REVEAL_ENCOUNTER_CARD",
                           "SEARCH",

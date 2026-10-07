@@ -14,6 +14,7 @@ import {
   peekDecisionPrompt,
   resolveDecisionPrompt,
   step4_revealEncounterCards,
+  resolveDefenderDeclaration,
 } from '@engine/index';
 import { canCancelEncounterReveal } from '@engine/pipeline/encounter-cancel';
 
@@ -25,6 +26,7 @@ const CROWD_CONTROL = '01108'; // side scheme without When Revealed
 const ARMORED_RHINO_SUIT = '01098'; // attachment without When Revealed
 const FALSE_ALARM = '01112'; // treachery
 const ENHANCED_SPIDER_SENSE = '01004'; // treachery only
+const GET_BEHIND_ME = '01078'; // cancels, then the villain attacks "you"
 const DECK_FILLER = '01005';
 
 // Ad-hoc catalog: core + ONLY the proof card 21054 (the live loader does not load mts).
@@ -146,6 +148,266 @@ describe('Black Widow 01075 cancels any revealed encounter card (#255)', () => {
 
     expect(peekDecisionPrompt(after)).toBeUndefined();
     expect(after.players[0].engagedMinions.some((m) => m.card.code === HYDRA_MERCENARY)).toBe(true);
+  });
+});
+
+describe('Black Widow 01075 offers, surge and other players (#255)', () => {
+  const EXHAUSTION = '01191'; // Surge keyword, When Revealed: exhaust your identity
+
+  const mentalCard = () =>
+    createCardInstance({
+      code: 'test_mental',
+      name: 'Mental Card',
+      type: 'event',
+      cost: 1,
+      resources: { mental: 1, total: 1 },
+    } as any);
+
+  const twoPlayerGame = (): GameState => {
+    resetInstanceCounter();
+    const game = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Spider-Man',
+          hero: cardCatalog.getCard('01001a') as HeroCard,
+          alterEgo: cardCatalog.getCard('01001b') as AlterEgoCard,
+          deckCards: Array(10).fill(cardCatalog.getCard(DECK_FILLER)!),
+        },
+        {
+          id: 'p2',
+          name: 'Iron Man',
+          hero: cardCatalog.getCard('01029a') as HeroCard,
+          alterEgo: cardCatalog.getCard('01029b') as AlterEgoCard,
+          deckCards: Array(10).fill(cardCatalog.getCard(DECK_FILLER)!),
+        },
+      ],
+      villain: cardCatalog.getCard('01094') as any,
+      mainScheme: cardCatalog.getCard('01097b') as any,
+      encounterCards: cardCatalog.getCardsBySet('rhino'),
+      skipMulligan: true,
+    });
+    for (const p of game.players) {
+      p.currentForm = 'hero';
+      p.activeFormCard = p.hero;
+    }
+    return game;
+  };
+
+  it('declining on a first card with Surge keeps it, then Black Widow is offered the surged card', () => {
+    const state = twoPlayerGame();
+    const [p1] = state.players;
+    p1.hand = [mentalCard()];
+    p1.allies.push(createCardInstance(cardCatalog.getCard(BLACK_WIDOW)!));
+    state.players[1].hand = [];
+    state.encounterDeck = [createCardInstance(cardCatalog.getCard(HYDRA_MERCENARY)!)];
+    p1.dealtEncounterCards.push(createCardInstance(cardCatalog.getCard(EXHAUSTION)!));
+
+    // First card (Surge): Black Widow is offered and declined
+    const firstPrompt = step4_revealEncounterCards(state);
+    expect(peekDecisionPrompt(firstPrompt)?.sourceCardName).toBe('Black Widow');
+    expect(peekDecisionPrompt(firstPrompt)?.triggerSourceName).toBe('Exhaustion');
+    const declined = resolveDecisionPrompt(firstPrompt, 'p1', 'pass').state;
+
+    // The first card resolved and surged: the identity is exhausted, Hydra Mercenary is dealt
+    expect(declined.players[0].exhausted).toBe(true);
+    expect(declined.encounterDiscard.some((c) => c.card.code === EXHAUSTION)).toBe(true);
+    expect(declined.players[0].dealtEncounterCards.map((c) => c.card.code)).toEqual([
+      HYDRA_MERCENARY,
+    ]);
+    expect(declined.players[0].allies[0].exhausted).toBeFalsy();
+
+    // The surged card is revealed: Black Widow is offered again
+    const secondPrompt = step4_revealEncounterCards(declined);
+    expect(peekDecisionPrompt(secondPrompt)?.sourceCardName).toBe('Black Widow');
+    expect(peekDecisionPrompt(secondPrompt)?.triggerSourceName).toBe('Hydra Mercenary');
+  });
+
+  it('Black Widow in player 1 tableau is offered when a card of player 2 is revealed', () => {
+    const state = twoPlayerGame();
+    const [p1, p2] = state.players;
+    p1.hand = [mentalCard()];
+    p1.allies.push(createCardInstance(cardCatalog.getCard(BLACK_WIDOW)!));
+    p2.hand = [];
+    state.encounterDeck = [createCardInstance(cardCatalog.getCard(FALSE_ALARM)!)];
+    p2.dealtEncounterCards.push(createCardInstance(cardCatalog.getCard(HYDRA_MERCENARY)!));
+
+    const paused = step4_revealEncounterCards(state);
+
+    const prompt = peekDecisionPrompt(paused);
+    expect(prompt?.sourceCardName).toBe('Black Widow');
+    expect(prompt?.playerId).toBe('p1');
+    expect(prompt?.triggerSourceName).toBe('Hydra Mercenary');
+
+    // Accepting: player 1 pays; the card of player 2 is discarded. The active player does not
+    // change: the replacement is revealed by player 2, who is resolving the encounter cards.
+    const accepted = resolveDecisionPrompt(
+      paused,
+      'p1',
+      prompt!.options.find((o) => o.id !== 'pass')!.id,
+    ).state;
+    expect(accepted.encounterDiscard.some((c) => c.card.code === HYDRA_MERCENARY)).toBe(true);
+    expect(accepted.players[1].engagedMinions).toHaveLength(0);
+    expect(accepted.players[0].allies[0].exhausted).toBe(true);
+    expect(accepted.players[0].hand).toHaveLength(0);
+    expect(accepted.players[1].dealtEncounterCards.map((c) => c.card.code)).toEqual([FALSE_ALARM]);
+    expect(accepted.players[0].dealtEncounterCards).toHaveLength(0);
+  });
+
+  it('Enhanced Spider-Sense (no "you" in its trigger) in player 2 hand cancels a treachery of player 1', () => {
+    const state = twoPlayerGame();
+    const [p1, p2] = state.players;
+    p1.hand = [];
+    p2.hand = [createCardInstance(cardCatalog.getCard(ENHANCED_SPIDER_SENSE)!), mentalCard()];
+    p1.dealtEncounterCards.push(createCardInstance(cardCatalog.getCard(FALSE_ALARM)!));
+
+    const paused = step4_revealEncounterCards(state);
+
+    const prompt = peekDecisionPrompt(paused);
+    expect(prompt?.sourceCardName).toBe('Enhanced Spider-Sense');
+    expect(prompt?.playerId).toBe('p2');
+    expect(prompt?.triggerSourceName).toBe('False Alarm');
+
+    const accepted = resolveDecisionPrompt(
+      paused,
+      'p2',
+      prompt!.options.find((o) => o.id !== 'pass')!.id,
+    ).state;
+    expect(accepted.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
+    expect(accepted.encounterDiscard.some((c) => c.card.code === FALSE_ALARM)).toBe(true);
+    expect(accepted.players[1].discard.some((c) => c.card.code === ENHANCED_SPIDER_SENSE)).toBe(
+      true,
+    );
+  });
+  it('Get Behind Me! played by player 2 on a treachery of player 1: the villain attacks player 2', () => {
+    const state = twoPlayerGame();
+    const [p1, p2] = state.players;
+    p1.hand = [];
+    p2.hand = [createCardInstance(cardCatalog.getCard(GET_BEHIND_ME)!), mentalCard()];
+    p1.dealtEncounterCards.push(createCardInstance(cardCatalog.getCard(FALSE_ALARM)!));
+    const p1Hp = p1.health;
+    const p2Hp = p2.health;
+
+    const paused = step4_revealEncounterCards(state);
+    const prompt = peekDecisionPrompt(paused);
+    expect(prompt?.sourceCardName).toBe('Get Behind Me!');
+    expect(prompt?.playerId).toBe('p2');
+
+    const accepted = resolveDecisionPrompt(
+      paused,
+      'p2',
+      prompt!.options.find((o) => o.id !== 'pass')!.id,
+    ).state;
+
+    // The treachery is cancelled and the attack is declared against player 2
+    expect(accepted.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
+    const defense = peekDecisionPrompt(accepted);
+    expect(defense?.playerId).toBe('p2');
+    const resolved = resolveDefenderDeclaration(accepted, { type: 'UNDEFENDED', playerId: 'p2' });
+    expect(resolved.players[1].health).toBeLessThan(p2Hp);
+    expect(resolved.players[0].health).toBe(p1Hp);
+  });
+});
+
+describe('Several cancel abilities queued for the same reveal (#255)', () => {
+  const mentalCard = () =>
+    createCardInstance({
+      code: 'test_mental',
+      name: 'Mental Card',
+      type: 'event',
+      cost: 1,
+      resources: { mental: 1, total: 1 },
+    } as any);
+
+  // Player 1: Black Widow in play, Enhanced Spider-Sense in hand. Player 2: Get Behind Me! in hand.
+  // Player 1 reveals a treachery (False Alarm).
+  const threeCancelsGame = (): GameState => {
+    resetInstanceCounter();
+    const mk = (id: string, hero: string, alterEgo: string) => ({
+      id,
+      name: id,
+      hero: cardCatalog.getCard(hero) as HeroCard,
+      alterEgo: cardCatalog.getCard(alterEgo) as AlterEgoCard,
+      deckCards: Array(10).fill(cardCatalog.getCard(DECK_FILLER)!),
+    });
+    const game = setupGame({
+      scenarioId: 'rhino',
+      players: [mk('p1', '01001a', '01001b'), mk('p2', '01029a', '01029b')],
+      villain: cardCatalog.getCard('01094') as any,
+      mainScheme: cardCatalog.getCard('01097b') as any,
+      encounterCards: cardCatalog.getCardsBySet('rhino'),
+      skipMulligan: true,
+    });
+    for (const p of game.players) {
+      p.currentForm = 'hero';
+      p.activeFormCard = p.hero;
+    }
+    const [p1, p2] = game.players;
+    p1.allies.push(createCardInstance(cardCatalog.getCard(BLACK_WIDOW)!));
+    p1.hand = [
+      createCardInstance(cardCatalog.getCard(ENHANCED_SPIDER_SENSE)!),
+      mentalCard(),
+      mentalCard(),
+    ];
+    p2.hand = [createCardInstance(cardCatalog.getCard(GET_BEHIND_ME)!), mentalCard(), mentalCard()];
+    game.encounterDeck = [];
+    p1.dealtEncounterCards.push(createCardInstance(cardCatalog.getCard(FALSE_ALARM)!));
+    return game;
+  };
+
+  const sources = (s: GameState) => (s.pendingDecisionQueue ?? []).map((p) => p.sourceCardName);
+  const yesOf = (s: GameState) => peekDecisionPrompt(s)!.options.find((o) => o.id !== 'pass')!.id;
+
+  it('queues the three cancels in order', () => {
+    const paused = step4_revealEncounterCards(threeCancelsGame());
+
+    expect(sources(paused)).toEqual(['Black Widow', 'Enhanced Spider-Sense', 'Get Behind Me!']);
+  });
+
+  it('accepting Black Widow removes the other cancel prompts of the same card', () => {
+    const paused = step4_revealEncounterCards(threeCancelsGame());
+
+    const after = resolveDecisionPrompt(paused, 'p1', yesOf(paused)).state;
+
+    expect(peekDecisionPrompt(after)).toBeUndefined();
+    expect(after.encounterDiscard.some((c) => c.card.code === FALSE_ALARM)).toBe(true);
+    // Only Black Widow's payment left the hand of player 1; player 2 kept Get Behind Me!
+    expect(after.players[0].discard).toHaveLength(1);
+    expect(after.players[1].hand.some((c) => c.card.code === GET_BEHIND_ME)).toBe(true);
+  });
+
+  it('passing Black Widow then accepting Enhanced Spider-Sense leaves no Get Behind Me!', () => {
+    const paused = step4_revealEncounterCards(threeCancelsGame());
+    const afterPass = resolveDecisionPrompt(paused, 'p1', 'pass').state;
+    expect(sources(afterPass)).toEqual(['Enhanced Spider-Sense', 'Get Behind Me!']);
+
+    const after = resolveDecisionPrompt(afterPass, 'p1', yesOf(afterPass)).state;
+
+    expect(peekDecisionPrompt(after)).toBeUndefined();
+    expect(after.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
+    expect(after.players[1].hand.some((c) => c.card.code === GET_BEHIND_ME)).toBe(true);
+  });
+
+  it('passing both first cancels still offers Get Behind Me!', () => {
+    const paused = step4_revealEncounterCards(threeCancelsGame());
+    const afterBw = resolveDecisionPrompt(paused, 'p1', 'pass').state;
+    const afterSs = resolveDecisionPrompt(afterBw, 'p1', 'pass').state;
+
+    expect(peekDecisionPrompt(afterSs)?.sourceCardName).toBe('Get Behind Me!');
+  });
+
+  it('auto-accept cancels once and pays once', () => {
+    const game = threeCancelsGame();
+
+    const after = step4_revealEncounterCards(game, { acceptOptionalTriggers: true });
+
+    const [p1, p2] = after.players;
+    expect(after.encounterDiscard.some((c) => c.card.code === FALSE_ALARM)).toBe(true);
+    // Black Widow paid with one card; no other cancel was played
+    expect(p1.allies[0].exhausted).toBe(true);
+    expect(p1.discard).toHaveLength(1);
+    expect(p2.hand.some((c) => c.card.code === GET_BEHIND_ME)).toBe(true);
   });
 });
 

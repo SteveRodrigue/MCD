@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
 > **Last updated:** 2026-10-07
-> **Repository state:** `main`, last commit is #261; #255 is done in the working tree, not committed yet. Check `git log -1` and `git status` first.
+> **Repository state:** `main`; #255 and its follow-up (any player, queued cancels) are committed and pushed. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 2,265 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 2,274 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -57,6 +57,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #258 | Core player cards Tier 1: Indomitable Response / `SELF_HERO`, Jennifer id `i_object`, prompt strings, Vision `THWART` / `ATTACK`; stat aliases `ATK` / `THW` / `DEF` / `REC` and the `PLAYER_CHOICE` shortcut removed; closes #253 (done by #283) | `git log --grep "#258"` |
 | #254 | `EXECUTE_WAKANDA_FOREVER` removed; `01043a-d` use `EXECUTE_SPECIAL` with a required `specialId` (ADR-0038 addendum) | `git log --grep "#254"` |
 | #255 | Black Widow `01075` reacts to any revealed encounter card (interrupt window for every card, cancelled card discarded); step flag `cannotBeCanceled`, `canCancelEncounterReveal`, proof card Eternity `21054` (ADR-0019 addendum); whole-card flag [#286](https://github.com/SteveRodrigue/MCD/issues/286) | `git log --grep "#255"` |
+| #255 follow-up | Every player's in-play cards and hand cards (`01075`, `01004`, `01078`) can react to a reveal; the replacement card goes to the active player; several queued cancels: accepting one removes the others, a card resolves only after all its prompts are answered; fixed queue order, ordering by the first player is [#287](https://github.com/SteveRodrigue/MCD/issues/287) | `git log --grep "#255"` |
 
 ---
 
@@ -134,7 +135,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 
 ### 3.4 Core player cards review
 
-Tier 1 (#258, #253) is done. Tier 2 (#254, #255 done): [#256](https://github.com/SteveRodrigue/MCD/issues/256) (Backflip attack filter), [#257](https://github.com/SteveRodrigue/MCD/issues/257) (Tigra and Superhuman Strength attacker guard), [#259](https://github.com/SteveRodrigue/MCD/issues/259) (Relentless Assault, player-trait condition, attach timing); Emergency is [#240](https://github.com/SteveRodrigue/MCD/issues/240), Lead from the Front is [#251](https://github.com/SteveRodrigue/MCD/issues/251). Re-verification of low-confidence entries: [#260](https://github.com/SteveRodrigue/MCD/issues/260). Owner questions: [#261](https://github.com/SteveRodrigue/MCD/issues/261).
+Tier 1 (#258, #253) is done. Tier 2 (#254, #255 done; new: [#286](https://github.com/SteveRodrigue/MCD/issues/286) whole-card "cannot be canceled", [#287](https://github.com/SteveRodrigue/MCD/issues/287) ordering of simultaneous abilities): [#256](https://github.com/SteveRodrigue/MCD/issues/256) (Backflip attack filter), [#257](https://github.com/SteveRodrigue/MCD/issues/257) (Tigra and Superhuman Strength attacker guard), [#259](https://github.com/SteveRodrigue/MCD/issues/259) (Relentless Assault, player-trait condition, attach timing); Emergency is [#240](https://github.com/SteveRodrigue/MCD/issues/240), Lead from the Front is [#251](https://github.com/SteveRodrigue/MCD/issues/251). Re-verification of low-confidence entries: [#260](https://github.com/SteveRodrigue/MCD/issues/260). Owner questions: [#261](https://github.com/SteveRodrigue/MCD/issues/261).
 
 ### 3.5 Importer and data quality
 
@@ -184,6 +185,8 @@ See [README.md](README.md) (session start, plan anatomy, owner preferences, wher
 - 2 moderate Dependabot alerts on `main` are not reviewed yet (`dependabot` skill).
 - Next ready item: item 14 once you decide (see below); otherwise the Tier 2 issues of section 3.4 ([#256](https://github.com/SteveRodrigue/MCD/issues/256), [#257](https://github.com/SteveRodrigue/MCD/issues/257), [#259](https://github.com/SteveRodrigue/MCD/issues/259)).
 - Whether to schedule item 14 (data read-through) before the remaining Tier 1 cosmetics.
+- **Waiting for approval:** [plan_issue_255b_reveal_interrupt_modal.md](plan_issue_255b_reveal_interrupt_modal.md): generic decision modal with a TRIGGERING panel and an ABILITY panel (`sm` icon, full printed text), provenance banner removed. Approved layout, plan not yet approved to implement.
+- **Owner decision, Surge:** should a printed Surge still resolve when a cancel only removes the When Revealed text (option B, supported by the Spider-Man Noir FAQ) or stay cancelled (option A, today)? File the issue once decided.
 
 ---
 

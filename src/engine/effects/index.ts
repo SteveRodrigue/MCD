@@ -5114,9 +5114,13 @@ export function executeStep(
     case 'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER': {
       const cancelRes = cancelActiveEncounterReveal(state, true);
       if (cancelRes) return cancelRes;
+      // The active player does not change: the replacement goes to the player resolving the
+      // cancelled card, whoever controls the card that cancelled it.
+      const revealingPlayer =
+        state.players.find((p) => p.id === state.activeEncounterContext?.targetPlayerId) ?? player;
       const replacement = drawEncounterCard(state);
       if (replacement) {
-        player.dealtEncounterCards.push(replacement);
+        revealingPlayer.dealtEncounterCards.push(replacement);
       }
       return {
         state,

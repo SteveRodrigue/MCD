@@ -1,6 +1,6 @@
 # Plan: reveal interrupt modal for `ENCOUNTER_CARD_REVEALED` (follow-up of #255)
 
-**Status:** mockup added, awaiting owner approval. No code written. UI impact: yes (decision modal). Card Editor impact: none.
+**Status:** approved by the owner (2026-10-07), delegated for implementation. UI impact: yes (decision modal). Card Editor impact: none. The "Implementation notes" below remove the open choices.
 
 ## Requested behaviour
 
@@ -75,9 +75,21 @@ UI (`tests/ui/DecisionPromptModal.test.tsx`, extended):
 5. A reveal interrupt shows both panels: the revealed card and the ability card.
 6. A prompt with no ability host card renders no empty panel.
 
+## Implementation notes (for whoever implements)
+
+All changes are in `src/ui/components/board/DecisionPromptModal.tsx` unless stated.
+1. **Shared panel:** new component `PromptCardPanel` in `src/ui/components/board/PromptCardPanel.tsx`. Props: `label` (badge text), `card` (`NormalizedCard`). Renders the badge, the card type chip, a `CardView size="sm" enableHoverZoom`, the name, the traits (`traits.join('. ') + '.'`) and the full `card.text` through `FormattedCardText`, with no `max-h` cap. Move the markup of the current triggering panel (L334-366) into it; do not duplicate it.
+2. **Triggering panel:** keep the existing conditions (`showTriggerCardShowcase`, `headerBadgeLabel`), render through `PromptCardPanel`.
+3. **Ability panel:** shown when `prompt.isVoluntary` and the host card resolves: `cardCatalog.getCard(prompt.sourceCardCode)` (the prompt already carries `sourceCardCode`; identity cards resolve too). Label "ABILITY CARD". Hidden when `sourceCardCode` is missing or unknown, and when it is the same card as the triggering panel (no duplicate).
+4. **Banner removal:** delete the whole block "2. Provenance & Trigger Banner" (`hasTriggerProvenance` and its JSX, L143 onward) and its now unused imports (`ArrowRight`, `Sparkles` if unused). Keep the header, title, description and options.
+5. **Delegating modals untouched:** Wakanda Forever, `DISTRIBUTE_POINTS` return early before this code; do not change them.
+6. **Existing test to update:** `tests/ui/DecisionPromptModal.test.tsx` first test asserts the banner text (`TRIGGER: False Alarm`, `ABILITY: Enhanced Spider-Sense`, L36-37) and the thumbnail alt text; replace those assertions by the two panels (TRIGGERING ENCOUNTER CARD and ABILITY CARD with Enhanced Spider-Sense's printed text). Search `tests/ui` for other uses of the banner text before deleting it.
+7. **Engine tests 1-3 setup:** copy the setup of the first `describe` in `tests/engine/black-widow-reveal-cancel.test.ts`. (1) set `allies[0].exhausted = true`; (2) hand with no card providing mental/wild (use a `{ physical: 1 }` card); (3) hand with a `{ wild: 1, total: 1 }` card; accept through `resolveDecisionPrompt` as the other tests do. No engine source change is expected; if a test fails, stop and report.
+8. **Gates:** `npm test`, `npm run typecheck`, `npm run lint`, `npx prettier --check "src/**/*.{ts,tsx}" "tests/**/*.{ts,tsx}"`; CHANGELOG entry; spec 10 (prompt layout: the two panels, banner removed); status file. Do not commit; the owner asks.
+
 ## Files
 
-`src/ui/components/board/DecisionPromptModal.tsx` (plus a small shared card-panel component in the same folder), the two test files, spec 10, `CHANGELOG.md`, status file.
+`src/ui/components/board/DecisionPromptModal.tsx`, new `src/ui/components/board/PromptCardPanel.tsx`, `tests/ui/DecisionPromptModal.test.tsx`, `tests/engine/black-widow-reveal-cancel.test.ts`, spec 10, `CHANGELOG.md`, status file.
 
 ## Open decisions
 

@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T22:17:48.801Z`
+> **Generated:** `2026-10-07T22:55:03.480Z`
 
 ## 1. Condition Gates (`ConditionGateSchema` — 11/14 In Use)
 
@@ -26,12 +26,13 @@
 | `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 
-### <a id="if-resource-match"></a>`IF_RESOURCE_MATCH` (2 Cards)
+### <a id="if-resource-match"></a>`IF_RESOURCE_MATCH` (3 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01013` | **Photonic Blast (event)** | `core` | `photonic_blast` |
 | `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
+| `01053` | **Relentless Assault (event)** | `core` | `relentless_assault` |
 
 ### <a id="if-failed"></a>`IF_FAILED` (2 Cards)
 

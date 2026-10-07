@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T22:17:48.801Z` | **Active Effects In Use:** **45/54**
+> **Generated:** `2026-10-07T22:55:03.480Z` | **Active Effects In Use:** **46/55**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
@@ -360,6 +360,12 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
+
+### <a id="grant-attack-keyword"></a>`GRANT_ATTACK_KEYWORD` (1 Cards, 1 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01053` | **Relentless Assault (event)** | `core` | `relentless_assault` |
 
 ### <a id="modify-ally-limit"></a>`MODIFY_ALLY_LIMIT` (1 Cards, 1 Step Occurrences)
 

@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-07
 > **Repository state:** `main`; #255 and its follow-up (any player, queued cancels) are committed and pushed. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 2,302 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 2,307 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -61,6 +61,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #255 follow-up (modal) | Generic decision modal: TRIGGERING panel plus ABILITY CARD panel (`PromptCardPanel`, `sm` icon, full printed text), provenance banner removed; engine gating (exhausted, no mental/wild) pinned by tests | `git log --grep "#255"` |
 | #256 | Backflip `01003`: `triggerFilter.damageSource: 'ATTACK'` (evaluated; the attack path sends it); Card Editor select, spec `02` | `git log --grep "#256"` |
 | #257 | Superhuman Strength `01028`: `triggerFilter.attackedBy: 'YOUR_HERO'` reads the new `context.attackSource` set by every `ATTACK_RESOLVED` dispatch (ADR-0078 addendum); forced abilities with no valid target do not initiate or pay (Superhuman Strength keeps its upgrade when the enemy dies, is stunned or Stalwart); Tigra `01051` needed no change | `git log --grep "#257"` |
+| #259 (Relentless Assault, attach timing) | `GRANT_ATTACK_KEYWORD` (ephemeral, ability context): `01053` = gated Overkill grant + 5 damage, three `DEAL_DAMAGE` Overkill params removed; `USE_CARD_ABILITY` no longer re-runs the attach ability of an attached upgrade; the `TARGET_TRAIT_MATCH` / gate redesign is split into [#289](https://github.com/SteveRodrigue/MCD/issues/289) and [#290](https://github.com/SteveRodrigue/MCD/issues/290) (uncommitted) | `git log --grep "#259"` |
 
 ---
 
@@ -138,7 +139,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 
 ### 3.4 Core player cards review
 
-Tier 1 (#258, #253) is done. Tier 2 (#254, #255 done; new: [#286](https://github.com/SteveRodrigue/MCD/issues/286) whole-card "cannot be canceled", [#287](https://github.com/SteveRodrigue/MCD/issues/287) ordering of simultaneous abilities): [#256](https://github.com/SteveRodrigue/MCD/issues/256) (Backflip attack filter, done), [#257](https://github.com/SteveRodrigue/MCD/issues/257) (Tigra and Superhuman Strength attacker guard, done), [#259](https://github.com/SteveRodrigue/MCD/issues/259) (Relentless Assault, player-trait condition, attach timing); Emergency is [#240](https://github.com/SteveRodrigue/MCD/issues/240), Lead from the Front is [#251](https://github.com/SteveRodrigue/MCD/issues/251). Re-verification of low-confidence entries: [#260](https://github.com/SteveRodrigue/MCD/issues/260). Owner questions: [#261](https://github.com/SteveRodrigue/MCD/issues/261).
+Tier 1 (#258, #253) is done. Tier 2 (#254, #255 done; new: [#286](https://github.com/SteveRodrigue/MCD/issues/286) whole-card "cannot be canceled", [#287](https://github.com/SteveRodrigue/MCD/issues/287) ordering of simultaneous abilities): [#256](https://github.com/SteveRodrigue/MCD/issues/256) (Backflip attack filter, done), [#257](https://github.com/SteveRodrigue/MCD/issues/257) (Tigra and Superhuman Strength attacker guard, done), [#259](https://github.com/SteveRodrigue/MCD/issues/259) (Relentless Assault and attach timing done; the player-trait condition moved to #289 / #290, design analysis first); Emergency is [#240](https://github.com/SteveRodrigue/MCD/issues/240), Lead from the Front is [#251](https://github.com/SteveRodrigue/MCD/issues/251). Re-verification of low-confidence entries: [#260](https://github.com/SteveRodrigue/MCD/issues/260). Owner questions: [#261](https://github.com/SteveRodrigue/MCD/issues/261).
 
 ### 3.5 Importer and data quality
 

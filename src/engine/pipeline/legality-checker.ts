@@ -27,6 +27,7 @@ import {
 import { matchesCardFilter } from '../filters/card-filter';
 import { getEffectiveAllyLimit, hasPlayerTrait } from './stat-calculator';
 import { getStepEffectParams } from '../../data/supplemental/schema';
+import { findInPlayCardInstance } from '../state/state-validator';
 import { locateCard, readCardResources } from '../queries/card-inspector';
 import { getEligibleTargets } from '../effects/target-resolver';
 
@@ -1264,6 +1265,16 @@ export function canInitiateAbility(
   }
   if (ability.timing.startsWith('ALTER_EGO_') && player.currentForm !== 'alter_ego') {
     return { allowed: false, reason: 'Can only use this ability in Alter-Ego form.' };
+  }
+
+  // An "Attach to ..." ability runs when the card is played; its timing only names the form the
+  // card needs. Once the card is in play it offers no action of its own (#259).
+  if (
+    sourceCardInst &&
+    ability.steps?.some((s) => s.effect === 'ATTACH_TO_HOST') &&
+    findInPlayCardInstance(state, sourceCardInst.instanceId)
+  ) {
+    return { allowed: false, reason: 'This card attaches when it is played.' };
   }
 
   // 3. Limit Validation (ONCE_PER_ROUND, ONCE_PER_PHASE)

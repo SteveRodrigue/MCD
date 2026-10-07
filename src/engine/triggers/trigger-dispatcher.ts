@@ -202,6 +202,12 @@ export function matchesTriggerFilter(
     }
   }
 
+  if (filter.damageSource) {
+    if (context.damageSource !== filter.damageSource) {
+      return false;
+    }
+  }
+
   if (filter.isEngaged !== undefined) {
     const actualEngaged =
       Boolean(context.targetType) &&
@@ -255,6 +261,8 @@ export interface TriggerContext {
   defenderType?: 'HERO' | 'ALLY' | 'UNDEFENDED';
   /** What placed the threat, for THREAT_WOULD_BE_PLACED (e.g. 'VILLAIN_SCHEME' for Emergency). */
   threatSource?: NonNullable<TriggerFilter['threatSource']>;
+  /** What dealt the damage, for DAMAGE_WOULD_BE_TAKEN (Backflip: 'ATTACK'). Absent never matches. */
+  damageSource?: NonNullable<TriggerFilter['damageSource']>;
   targetCardCode?: string;
   targetName?: string;
   targetCurrentHp?: number;

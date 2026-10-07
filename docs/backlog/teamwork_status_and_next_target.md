@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-07
 > **Repository state:** `main`; #255 and its follow-up (any player, queued cancels) are committed and pushed. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 2,274 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 2,289 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -59,6 +59,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #255 | Black Widow `01075` reacts to any revealed encounter card (interrupt window for every card, cancelled card discarded); step flag `cannotBeCanceled`, `canCancelEncounterReveal`, proof card Eternity `21054` (ADR-0019 addendum); whole-card flag [#286](https://github.com/SteveRodrigue/MCD/issues/286) | `git log --grep "#255"` |
 | #255 follow-up | Every player's in-play cards and hand cards (`01075`, `01004`, `01078`) can react to a reveal; the replacement card goes to the active player; several queued cancels: accepting one removes the others, a card resolves only after all its prompts are answered; fixed queue order, ordering by the first player is [#287](https://github.com/SteveRodrigue/MCD/issues/287) | `git log --grep "#255"` |
 | #255 follow-up (modal) | Generic decision modal: TRIGGERING panel plus ABILITY CARD panel (`PromptCardPanel`, `sm` icon, full printed text), provenance banner removed; engine gating (exhausted, no mental/wild) pinned by tests | `git log --grep "#255"` |
+| #256 | Backflip `01003`: `triggerFilter.damageSource: 'ATTACK'` (evaluated; the attack path sends it); Card Editor select, spec `02` | `git log --grep "#256"` |
 
 ---
 
@@ -136,7 +137,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 
 ### 3.4 Core player cards review
 
-Tier 1 (#258, #253) is done. Tier 2 (#254, #255 done; new: [#286](https://github.com/SteveRodrigue/MCD/issues/286) whole-card "cannot be canceled", [#287](https://github.com/SteveRodrigue/MCD/issues/287) ordering of simultaneous abilities): [#256](https://github.com/SteveRodrigue/MCD/issues/256) (Backflip attack filter), [#257](https://github.com/SteveRodrigue/MCD/issues/257) (Tigra and Superhuman Strength attacker guard), [#259](https://github.com/SteveRodrigue/MCD/issues/259) (Relentless Assault, player-trait condition, attach timing); Emergency is [#240](https://github.com/SteveRodrigue/MCD/issues/240), Lead from the Front is [#251](https://github.com/SteveRodrigue/MCD/issues/251). Re-verification of low-confidence entries: [#260](https://github.com/SteveRodrigue/MCD/issues/260). Owner questions: [#261](https://github.com/SteveRodrigue/MCD/issues/261).
+Tier 1 (#258, #253) is done. Tier 2 (#254, #255 done; new: [#286](https://github.com/SteveRodrigue/MCD/issues/286) whole-card "cannot be canceled", [#287](https://github.com/SteveRodrigue/MCD/issues/287) ordering of simultaneous abilities): [#256](https://github.com/SteveRodrigue/MCD/issues/256) (Backflip attack filter, done), [#257](https://github.com/SteveRodrigue/MCD/issues/257) (Tigra and Superhuman Strength attacker guard), [#259](https://github.com/SteveRodrigue/MCD/issues/259) (Relentless Assault, player-trait condition, attach timing); Emergency is [#240](https://github.com/SteveRodrigue/MCD/issues/240), Lead from the Front is [#251](https://github.com/SteveRodrigue/MCD/issues/251). Re-verification of low-confidence entries: [#260](https://github.com/SteveRodrigue/MCD/issues/260). Owner questions: [#261](https://github.com/SteveRodrigue/MCD/issues/261).
 
 ### 3.5 Importer and data quality
 

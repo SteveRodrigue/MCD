@@ -19,7 +19,7 @@ Prompt: `Continue work on Marvel Champions Digital. Follow docs/backlog/README.m
 
 ## Plan anatomy
 
-Printed card text; original data; proposed data; why (rules analysis, evidence with file references); engine and schema changes; Card Editor and documentation impact; tests (written first); files; open decisions. Status line at the top. Worked example: `git show 8f20d39:docs/backlog/plan_issue_238_highway_robbery.md`.
+Printed card text; original data; proposed data (both as fenced ```` ```json ```` blocks copied from `npm run card:get -- <code>`, pretty-printed, the changed lines marked or shown as a before/after pair; never prose or inline code); why (rules analysis, evidence with file references); engine and schema changes; Card Editor and documentation impact; tests (written first); files; open decisions. Status line at the top. Worked example: `git show 8f20d39:docs/backlog/plan_issue_238_highway_robbery.md`.
 
 ## Owner preferences (not in AGENTS.md)
 

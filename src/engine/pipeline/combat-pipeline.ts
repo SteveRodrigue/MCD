@@ -878,6 +878,7 @@ export function step6_calculateAndApplyAttackDamage(
     const defenseResult = dispatchTrigger(state, 'DAMAGE_WOULD_BE_TAKEN', {
       targetPlayerId: player.id,
       damageAmount: rawDamage,
+      damageSource: 'ATTACK',
       attackerCardCode,
       attackerName,
       defenderType,

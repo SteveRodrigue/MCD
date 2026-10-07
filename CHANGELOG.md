@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine + Data + Card Editor + Docs): Backflip `01003` reacts only to damage from an attack ([Issue #256](https://github.com/SteveRodrigue/MCD/issues/256))**
+  - Schema: `triggerFilter.damageSource` (`'ATTACK'`), evaluated in `matchesTriggerFilter`; the attack path in `combat-pipeline.ts` sends it with `DAMAGE_WOULD_BE_TAKEN`. Backflip declares it, so non-attack damage (a future dispatch, #268) cannot offer it. Cosmic Flight `01017` stays unrestricted.
+  - Card Editor select, spec `02`, regenerated `schema.json`. Tests: `tests/engine/backflip-attack-only.test.ts`, `trigger-filter-members.test.ts`, `TriggerFilterSection.test.tsx`.
+
 - **Feature (UI + Docs): decision prompt shows the triggering card and the ability card ([Issue #255](https://github.com/SteveRodrigue/MCD/issues/255) follow-up)**
   - `DecisionPromptModal`: every optional ability prompt shows two panels, TRIGGERING (card that caused it, e.g. the revealed encounter card) and ABILITY CARD (the card hosting the ability: `sm` icon, name, traits, full printed text, no height cap). Both use the new shared `PromptCardPanel`. The provenance banner ("TRIGGER: X -> ABILITY: Y", thumbnails, trigger type chip) is removed. No engine change; eligibility (Black Widow exhausted, no mental or wild resource to pay) was already enforced and is now pinned by tests in `tests/engine/black-widow-reveal-cancel.test.ts`; UI tests in `tests/ui/DecisionPromptModal.test.tsx`.
 

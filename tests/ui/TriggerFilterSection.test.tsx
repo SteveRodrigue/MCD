@@ -229,6 +229,19 @@ describe('TriggerFilterSection', () => {
     await user.selectOptions(screen.getByTestId('trigger-threat-source-0'), '');
     expect(handleChange).toHaveBeenLastCalledWith(undefined);
   });
+  it('selects damageSource', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(<StatefulTriggerFilterSection initial={{}} isExpanded={true} onChange={handleChange} />);
+
+    await user.selectOptions(screen.getByTestId('trigger-damage-source-0'), 'ATTACK');
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ damageSource: 'ATTACK' }));
+
+    await user.selectOptions(screen.getByTestId('trigger-damage-source-0'), '');
+    expect(handleChange).toHaveBeenLastCalledWith(undefined);
+  });
+
   it('shows the Counter-Punch (01077) trigger filter as configured', () => {
     render(
       <TriggerFilterSection

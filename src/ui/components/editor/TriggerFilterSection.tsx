@@ -194,6 +194,22 @@ export const TriggerFilterSection: React.FC<TriggerFilterSectionProps> = ({
             </select>
           </div>
 
+          {/* damageSource */}
+          <div>
+            <label className="block text-[9px] uppercase font-bold text-gray-600 mb-0.5">
+              Damage Source
+            </label>
+            <select
+              data-testid={`trigger-damage-source-${abilityIndex}`}
+              value={currentFilter.damageSource || ''}
+              onChange={(e) => handleFieldChange('damageSource', e.target.value || undefined)}
+              className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+            >
+              <option value="">Any</option>
+              <option value="ATTACK">Attack</option>
+            </select>
+          </div>
+
           {/* threatSource */}
           <div>
             <label className="block text-[9px] uppercase font-bold text-gray-600 mb-0.5">

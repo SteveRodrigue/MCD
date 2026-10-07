@@ -807,13 +807,19 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
           cardToPlay={playingCard}
           player={player}
           gameState={gameState}
-          onConfirmPlay={(paymentHandCardIds, generatorCardIds, targetInstanceId) => {
+          onConfirmPlay={(
+            paymentHandCardIds,
+            generatorCardIds,
+            targetInstanceId,
+            selectedDiscardCardIds,
+          ) => {
             onDispatchAction({
               type: 'PLAY_CARD',
               playerId: player.id,
               cardInstanceId: playingCard.instanceId,
               paymentCardInstanceIds: paymentHandCardIds,
               generatorInstanceIds: generatorCardIds,
+              discardCardInstanceIds: selectedDiscardCardIds,
               targetInstanceId,
             });
             setPlayingCard(null);

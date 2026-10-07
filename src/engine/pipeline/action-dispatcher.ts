@@ -41,7 +41,9 @@ import {
   canInitiateAbility,
 } from './legality-checker';
 import {
+  canPayAbilityCost,
   executeAbilityCost,
+  getEventAbilityExtraCost,
   executeResourceCostPayment,
   checkAndDiscardZeroCounterCard,
   getApplicableCostReductions,
@@ -218,6 +220,39 @@ function resolveAttackedVillain(
   if (found) return found;
   // States without a villains collection only have the legacy pointer (#215).
   return getVillainsInPlay(state).length === 0 ? getActiveVillain(state) : undefined;
+}
+
+/**
+ * Resolves the abilities of an event that was just played: pays the declared extra cost first
+ * (so its results feed the steps), then executes the effects.
+ */
+function resolveEventAbilities(
+  state: GameState,
+  player: PlayerState,
+  playedCardInstance: CardInstance,
+  context: {
+    chosenTargetType?: Parameters<typeof executeEffect>[2]['chosenTargetType'];
+    chosenTargetInstanceId?: string;
+    resourcesSpent?: string[];
+    discardCardInstanceIds?: string[];
+  },
+): void {
+  for (const ability of playedCardInstance.card.enrichment?.abilities || []) {
+    const extraCost = getEventAbilityExtraCost(ability);
+    const discardedCards = extraCost
+      ? executeAbilityCost(state, player, extraCost, playedCardInstance, {
+          discardCardInstanceIds: context.discardCardInstanceIds,
+        }).discardedCards
+      : undefined;
+    executeEffect(state, ability, {
+      playerId: player.id,
+      chosenTargetType: context.chosenTargetType,
+      chosenTargetInstanceId: context.chosenTargetInstanceId,
+      sourceCardInstance: playedCardInstance,
+      resourcesSpent: context.resourcesSpent,
+      discardedCards,
+    });
+  }
 }
 
 /**
@@ -827,6 +862,22 @@ function dispatchSingleAction(
                 : `Target card not found in ${sourceZone}`,
           },
         };
+      }
+
+      // An event pays its declared extra cost (a hand discard) when played: refuse the play
+      // before anything changes when that cost cannot be paid (RR v1.8 "Costs").
+      if (targetCard.card.type === CardType.EVENT) {
+        for (const ability of targetCard.card.enrichment?.abilities || []) {
+          const extraCost = getEventAbilityExtraCost(ability);
+          if (!extraCost) continue;
+          const costCheck = canPayAbilityCost(nextState, player, extraCost, targetCard, {
+            discardCardInstanceIds: action.discardCardInstanceIds ?? [],
+            playedCardInstanceId: targetCard.instanceId,
+          });
+          if (!costCheck.allowed) {
+            return { state, result: { success: false, error: costCheck.reason } };
+          }
+        }
       }
 
       // Check Restricted Keyword limit replacement trigger (RR v1.8 p. 25, ADR-0018, ADR-0032)
@@ -1644,6 +1695,7 @@ function dispatchSingleAction(
                   playedCardInstance,
                   ownerId: action.playerId,
                   resourcesSpent,
+                  discardCardInstanceIds: action.discardCardInstanceIds,
                 },
               };
             });
@@ -1685,15 +1737,12 @@ function dispatchSingleAction(
         }
 
         // Execute declarative event abilities
-        for (const ability of abilities) {
-          executeEffect(nextState, ability, {
-            playerId: action.playerId,
-            chosenTargetType: targetType,
-            chosenTargetInstanceId: eventTargetId,
-            sourceCardInstance: playedCardInstance,
-            resourcesSpent,
-          });
-        }
+        resolveEventAbilities(nextState, player, playedCardInstance, {
+          chosenTargetType: targetType,
+          chosenTargetInstanceId: eventTargetId,
+          resourcesSpent,
+          discardCardInstanceIds: action.discardCardInstanceIds,
+        });
         player.discard.push(playedCardInstance);
         dispatchTrigger(nextState, 'CARD_PLAYED', {
           targetPlayerId: action.playerId,
@@ -2802,10 +2851,10 @@ function dispatchSingleAction(
           activePrompt.options[0]?.params?.playedCardInstance) as CardInstance | undefined;
         const resourcesSpent = (selectedOption?.params?.resourcesSpent ||
           activePrompt.options[0]?.params?.resourcesSpent) as string[] | undefined;
+        const discardCardInstanceIds = (selectedOption?.params?.discardCardInstanceIds ||
+          activePrompt.options[0]?.params?.discardCardInstanceIds) as string[] | undefined;
 
         if (playedCardInstance) {
-          const abilities = playedCardInstance.card.enrichment?.abilities || [];
-
           let targetType:
             | 'villain'
             | 'minion'
@@ -2825,15 +2874,12 @@ function dispatchSingleAction(
             } else if (resolved.kind === 'player') targetType = 'identity';
           }
 
-          for (const ability of abilities) {
-            executeEffect(poppedState, ability, {
-              playerId: ownerId,
-              chosenTargetType: targetType,
-              chosenTargetInstanceId: chosenTargetId,
-              sourceCardInstance: playedCardInstance,
-              resourcesSpent,
-            });
-          }
+          resolveEventAbilities(poppedState, targetPlayer, playedCardInstance, {
+            chosenTargetType: targetType,
+            chosenTargetInstanceId: chosenTargetId,
+            resourcesSpent,
+            discardCardInstanceIds,
+          });
           targetPlayer.discard.push(playedCardInstance);
           dispatchTrigger(poppedState, 'CARD_PLAYED', {
             targetPlayerId: ownerId,

@@ -142,8 +142,8 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
     // Execute Rhino Stage II When Revealed ability from its enrichment
     const ability = rhinoStage2Card.enrichment?.abilities?.find(
       (a: any) => a.id === 'rhino_stage_ii_when_revealed',
-    )!;
-    expect(ability).toBeDefined();
+    );
+    if (!ability) throw new Error('Rhino Stage II When Revealed ability not found');
 
     const result = executeEffect(state, ability, { playerId: 'p1' });
     expect(result.success).toBe(true);

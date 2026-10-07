@@ -31,6 +31,7 @@ import {
   LegalActionItem,
 } from '../../../engine/pipeline/legal-actions-generator';
 import { getEffectiveHandSize } from '../../../engine/pipeline/stat-calculator';
+import { getDiscardCostBounds } from '../../../engine/pipeline/cost-engine';
 import { peekDecisionPrompt } from '../../../engine/pipeline';
 
 interface GameBoardProps {
@@ -538,8 +539,11 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
                           : ab.cost.resources && ab.cost.resources.length > 0
                             ? ab.cost.resources.length
                             : 0;
-                    const discardCount =
-                      ab.cost.discardCard?.from === 'HAND' ? ab.cost.discardCard.count || 1 : 0;
+                    const discardBounds =
+                      ab.cost.discardCard?.from === 'HAND'
+                        ? getDiscardCostBounds(ab.cost.discardCard)
+                        : undefined;
+                    const discardCount = discardBounds?.max ?? 0;
                     const discardFilter = ab.cost.discardCard?.filter;
                     const scalesWithResources = ab.steps?.some(
                       (s) =>
@@ -555,6 +559,7 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
                         scalesWithResources,
                         title: pendingPaymentAction.headline,
                         discardCount,
+                        discardMin: discardBounds?.min,
                         discardFilter,
                       };
                     }
@@ -620,6 +625,7 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
                   cardInstanceId: paymentModalCard.instanceId,
                   paymentCardInstanceIds: paymentHandCardIds,
                   generatorInstanceIds: generatorCardIds,
+                  discardCardInstanceIds: selectedDiscardCardIds,
                   targetInstanceId,
                 });
               }

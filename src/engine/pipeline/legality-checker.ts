@@ -19,6 +19,7 @@ import {
   isResourceAbility,
   isAbilityPlayableInForm,
   canPayAbilityCost,
+  getEventAbilityExtraCost,
   AbilityPaymentOptions,
   getEffectiveCardCost,
   getAvailableResources,
@@ -1741,6 +1742,18 @@ export function canPlayCard(
   const unicityCheck = checkUniqueCardPlayable(state, card);
   if (!unicityCheck.allowed) {
     return unicityCheck;
+  }
+
+  // An event's declared extra cost (a hand discard) must be payable with the other cards in hand
+  if (card.type === CardType.EVENT) {
+    for (const ability of abilities) {
+      const extraCost = getEventAbilityExtraCost(ability);
+      if (!extraCost) continue;
+      const extraCheck = canPayAbilityCost(state, player, extraCost, targetCardInstance, {
+        playedCardInstanceId: cardInstanceId,
+      });
+      if (!extraCheck.allowed) return { allowed: false, reason: extraCheck.reason };
+    }
   }
 
   // Cost payment validation

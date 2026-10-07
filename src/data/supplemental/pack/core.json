@@ -1120,7 +1120,6 @@
                 "unselectedDestination": "DISCARD",
                 "shuffleAfter": false,
                 "promptTitle": "Futurist: Choose 1 card to add to your hand",
-                "isVoluntary": false,
                 "autoSelectIfUnambiguous": true
               }
             }
@@ -1622,12 +1621,11 @@
                   "PLAYER_DISCARD"
                 ],
                 "target": "SELF",
-                "fromTop": false,
-                "takeCount": 3,
-                "autoSelectIfUnambiguous": true,
                 "lookCount": "ALL",
-                "selectedDestination": "DECK_SHUFFLE",
-                "unselectedDestination": "DISCARD"
+                "takeCount": 3,
+                "minimumTake": 0,
+                "distinctBy": "NAME",
+                "selectedDestination": "DECK_SHUFFLE"
               }
             }
           ]

@@ -56,7 +56,7 @@ export const EFFECT_PARAM_KEYS: Record<EffectType, readonly string[]> = {
   MODIFY_RESTRICTED_LIMIT: ['amount'],
   RETURN_TO_HAND: [],
   REVEAL_ENCOUNTER_CARD: [],
-  SEARCH: ['autoSelectIfUnambiguous', 'filter', 'fromTop', 'isVoluntary', 'lookCount', 'promptTitle', 'selectedDestination', 'shuffleAfter', 'source', 'takeCount', 'target', 'unselectedDestination'],
+  SEARCH: ['autoSelectIfUnambiguous', 'distinctBy', 'filter', 'fromTop', 'lookCount', 'minimumTake', 'promptTitle', 'selectedDestination', 'shuffleAfter', 'source', 'takeCount', 'target', 'unselectedDestination'],
   SHUFFLE_INTO_DECK: ['count', 'filter', 'from', 'toDeck'],
   SPEND_COUNTERS: ['amount', 'counterType', 'target'],
   SURGE: [],

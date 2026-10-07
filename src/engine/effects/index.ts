@@ -4709,24 +4709,12 @@ export function executeStep(
           ? (step.effectParams.shuffleAfter as boolean)
           : isFullSearch;
 
-      const timing = context.ability?.timing;
-      const trigger = context.ability?.trigger;
-      const isAction =
-        timing === 'ACTION' || timing === 'HERO_ACTION' || timing === 'ALTER_EGO_ACTION';
-      const isForced =
-        timing === 'WHEN_REVEALED' ||
-        timing === 'FORCED_RESPONSE' ||
-        timing === 'FORCED_INTERRUPT' ||
-        trigger === 'WHEN_REVEALED';
-
-      let isVoluntary = false;
-      if (isForced) {
-        isVoluntary = false;
-      } else if (step.effectParams?.isVoluntary !== undefined) {
-        isVoluntary = Boolean(step.effectParams.isVoluntary);
-      } else if (isAction) {
-        isVoluntary = true;
-      }
+      const distinctByName = step.effectParams?.distinctBy === 'NAME';
+      const rawMinimumTake = step.effectParams?.minimumTake;
+      const minimumTake =
+        rawMinimumTake === undefined
+          ? 1
+          : Math.max(0, resolveNumericAmount(rawMinimumTake, context, 1, { state, player }));
 
       const promptTitle =
         (step.effectParams?.promptTitle as string) ||
@@ -4911,6 +4899,21 @@ export function executeStep(
       }
 
       if (matchingCandidates.length === 0) {
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          category: 'ability',
+          actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
+          key: 'card.search.nothingFound',
+          params: {
+            player: targetPlayer.name,
+            source: context.sourceCardInstance?.card.name || promptTitle,
+            zone: sourceZones.join(', '),
+          },
+          onomatopoeia: 'NOTHING FOUND!',
+        });
         if (isLookCountSpliced) {
           if (unselectedDestination === 'DISCARD') {
             routeCards(lookedCards, 'DISCARD');
@@ -4924,20 +4927,28 @@ export function executeStep(
         return {
           state,
           success: true,
-          mutatedState: false,
+          mutatedState: true,
           onomatopoeia: 'NO MATCHING TARGET FOUND',
         };
       }
 
-      const effectiveTakeCount = isTakeAll ? matchingCandidates.length : countToTake;
+      // Candidates the player can choose among: one per card name when the search is `distinctBy`.
+      const eligibleCandidates = distinctByName
+        ? matchingCandidates.filter(
+            (c, i) => matchingCandidates.findIndex((o) => o.card.name === c.card.name) === i,
+          )
+        : matchingCandidates;
+      const effectiveTakeCount = Math.min(
+        isTakeAll ? matchingCandidates.length : countToTake,
+        eligibleCandidates.length,
+      );
+      const effectiveMinimum = Math.min(minimumTake, effectiveTakeCount);
+      // Nothing left to choose: the player must take every eligible card
       const shouldAutoSelect =
-        isTakeAll ||
-        (!step.effectParams?.isVoluntary &&
-          allowAutoSelect &&
-          matchingCandidates.length <= effectiveTakeCount);
+        isTakeAll || (allowAutoSelect && eligibleCandidates.length <= effectiveMinimum);
 
       if (shouldAutoSelect) {
-        const selectedCards = matchingCandidates.slice(0, effectiveTakeCount);
+        const selectedCards = eligibleCandidates.slice(0, effectiveTakeCount);
         const selectedIds = new Set(selectedCards.map((card) => card.instanceId));
         const unselectedCards = lookedCards.filter((card) => !selectedIds.has(card.instanceId));
 
@@ -4965,6 +4976,8 @@ export function executeStep(
         };
       }
 
+      // A single mandatory pick keeps the one-click flow; anything else is a multi-select prompt
+      const isMultiSelect = !(effectiveMinimum === 1 && effectiveTakeCount === 1);
       const options: DecisionPromptOption[] = matchingCandidates.map((c) => ({
         id: c.instanceId,
         label: `${c.card.name} (${c.card.type}${c.card.cost !== undefined ? `, Cost: ${c.card.cost}` : ''})`,
@@ -4972,6 +4985,8 @@ export function executeStep(
         effect: 'SEARCH_AND_SELECT_RESOLUTION',
         params: {
           chosenInstanceId: c.instanceId,
+          cardName: c.card.name,
+          cardCode: c.card.code,
           targetPlayerId: targetPlayer.id,
           lookedCards,
           lookedCardInstanceIds: lookedCards.map((l) => l.instanceId),
@@ -4985,35 +5000,26 @@ export function executeStep(
         },
       }));
 
-      if (isVoluntary) {
-        options.push({
-          id: 'pass_search',
-          label: 'Pass / Do not select',
-          description: 'Pass and do not choose any card',
-          effect: 'SEARCH_AND_SELECT_PASS',
-          params: {
-            targetPlayerId: targetPlayer.id,
-            lookedCards,
-            lookedCardInstanceIds: lookedCards.map((l) => l.instanceId),
-            sourceZone: sourceZones[0],
-            sourceZones,
-            unselectedDestination,
-            shuffleAfter: shuffleAfter && sourceZones.some((z) => z.includes('DECK')),
-            isLookCountSpliced,
-          },
-        });
-      }
-
       const prompt: PendingDecisionPrompt = {
         promptId: `prompt_search_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         playerId: context.playerId || player.id,
         title: promptTitle,
-        description: `Select up to ${effectiveTakeCount} card(s):`,
+        description:
+          effectiveMinimum === effectiveTakeCount
+            ? `Select ${effectiveTakeCount} card(s):`
+            : `Select ${effectiveMinimum === 0 ? 'up to' : `${effectiveMinimum} to`} ${effectiveTakeCount} card(s):`,
         sourceCardName: context.sourceCardInstance?.card.name || 'Search & Select',
         sourceCardCode: context.sourceCardInstance?.card.code,
         sourceCardInstanceId: context.sourceCardInstance?.instanceId,
         options,
-        isVoluntary,
+        isVoluntary: false,
+        ...(isMultiSelect && {
+          selection: {
+            min: effectiveMinimum,
+            max: effectiveTakeCount,
+            ...(distinctByName && { distinctBy: 'NAME' as const }),
+          },
+        }),
       };
 
       const enqueuedState = enqueueDecisionPrompt(state, prompt);

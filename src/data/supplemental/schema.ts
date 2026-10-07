@@ -711,7 +711,8 @@ export const SearchAndSelectParamsSchema = z
       .nullable()
       .optional(),
     shuffleAfter: z.boolean().optional(),
-    isVoluntary: z.boolean().optional(),
+    minimumTake: z.number().int().nonnegative().optional().default(1),
+    distinctBy: z.literal('NAME').optional(),
     autoSelectIfUnambiguous: z.boolean().optional().default(true),
     promptTitle: z.string().optional(),
   })

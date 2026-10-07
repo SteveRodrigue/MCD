@@ -16,6 +16,7 @@ import { PromptCardPanel } from './PromptCardPanel';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 import { WakandaForeverModal } from './WakandaForeverModal';
 import { DistributeAmountModal } from './DistributeAmountModal';
+import { SelectCardsModal } from './SelectCardsModal';
 
 interface DecisionPromptModalProps {
   prompt?: PendingDecisionPrompt;
@@ -49,6 +50,18 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
         prompt={prompt}
         onConfirm={(assignments) => onSelectOption('confirm_distribution', { assignments })}
         onCancel={prompt.distributionConfig?.canCancel ? () => onSelectOption('cancel') : undefined}
+      />
+    );
+  }
+
+  // Delegate a pick of several cards (SEARCH takeCount / minimumTake) to the multi-select modal
+  if (prompt.selection) {
+    return (
+      <SelectCardsModal
+        prompt={prompt}
+        onConfirm={(selectedOptionIds) =>
+          onSelectOption('confirm_selection', { selectedOptionIds })
+        }
       />
     );
   }

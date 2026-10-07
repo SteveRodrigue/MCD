@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine + Data + UI + Card Editor + Docs): Ancestral Knowledge `01042` chooses "up to 3 different cards" ([Issue #260](https://github.com/SteveRodrigue/MCD/issues/260))**
+  - `SEARCH` took one card per prompt and auto-took every candidate when there were 3 or fewer. New multi-select prompt (`selection`, `selectedOptionIds`, `validateSearchSelection`) and modal `SelectCardsModal`. `SEARCH` params: `takeCount` is the maximum, new `minimumTake` (default 1; `0` = "up to"), new `distinctBy: 'NAME'`; auto-select only when nothing is left to choose. Removed: `SEARCH.isVoluntary` (Futurist `01029b` line deleted), the Action-timing voluntary default and the `pass_search` option; `fromTop: false` and the default `autoSelectIfUnambiguous` leave `01042`.
+  - A search that finds nothing logs `card.search.nothingFound`. Forced timings are read by `isForcedTiming` (`FORCED_INTERRUPT` / `FORCED_RESPONSE`) instead of a prefix test.
+  - Card Editor (`minimumTake`, `distinctBy`), specs `06` and `10`, ADR-0032 addendum, regenerated `schema.json`. Tests: `ancestral-knowledge-shuffle.test.ts` (rewritten), `core-player-reverify.test.ts`, `SelectCardsModal.test.tsx`.
+
 - **Fix (Engine + Data): re-verification of the low-confidence core player cards ([Issue #260](https://github.com/SteveRodrigue/MCD/issues/260), Ancestral Knowledge excluded)**
   - One-Two Punch `01024` and Arc Reactor `01035` ready `SELF_HERO` ("ready She-Hulk" / "ready Iron Man"); confidence 95 for them, Get Ready `01069` and She-Hulk `01019a` (verified by tests).
   - `READY` with no resolved target is a no-op; the hidden fallback that readied the acting player is removed. Round-end discard of Nick Fury no longer has a second pattern-based path in `round-upkeep.ts` (the `ROUND_ENDED` trigger discards him once).

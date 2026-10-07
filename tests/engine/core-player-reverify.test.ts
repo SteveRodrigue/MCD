@@ -172,3 +172,19 @@ describe('Nick Fury 01084 round end (#260)', () => {
     expect(next.players[0].discard.filter((c) => c.instanceId === fury.instanceId)).toHaveLength(1);
   });
 });
+
+describe('SEARCH selection model data (#260)', () => {
+  it('Ancestral Knowledge 01042 is "up to 3 different cards"', () => {
+    const params = ability('01042', 'ancestral_knowledge_action').steps[0].effectParams;
+    expect(params).toMatchObject({ takeCount: 3, minimumTake: 0, distinctBy: 'NAME' });
+    expect(params).not.toHaveProperty('fromTop');
+    expect(params).not.toHaveProperty('isVoluntary');
+  });
+
+  it('no SEARCH step declares isVoluntary; minimumTake defaults to 1 in the schema', async () => {
+    const { SearchAndSelectParamsSchema } = await import('../../src/data/supplemental/schema');
+    expect(SearchAndSelectParamsSchema.parse({}).minimumTake).toBe(1);
+    expect(SearchAndSelectParamsSchema.safeParse({ isVoluntary: true }).success).toBe(false);
+    expect(SearchAndSelectParamsSchema.safeParse({ distinctBy: 'CODE' }).success).toBe(false);
+  });
+});

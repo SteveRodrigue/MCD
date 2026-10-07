@@ -125,3 +125,9 @@ Every optional response or interrupt prompt generated for a player includes a st
 * Unblocks 10+ interrupt/response ambiguity cards (*Great Responsibility*, *Emergency*, *Get Behind Me!*, *One-Two Punch*, *Counter-Punch*, *Energy Channel*, *Black Widow*, etc.).
 * Enables multiplayer simultaneous trigger resolution strictly matching Rules Reference v1.8 p. 16.
 * 100% serializable state for save/load and replay inspection.
+
+---
+
+## Addendum (2026-10-07, #260): multi-select prompt
+
+`PendingDecisionPrompt.selection { min, max, distinctBy }` and `RESOLVE_DECISION_PROMPT.selectedOptionIds` model "choose up to N different cards". `SEARCH` declares the bounds with `takeCount` (max), `minimumTake` (default 1) and `distinctBy: 'NAME'`; the hidden "Action timings are voluntary" default and `SEARCH.isVoluntary` are removed, and the `SEARCH_AND_SELECT_PASS` option is replaced by confirming an empty choice when `minimumTake` is 0. Auto-resolution applies only when nothing is left to choose. Forced timing (`FORCED_INTERRUPT`, `FORCED_RESPONSE`) is read through one explicit `isForcedTiming` in the trigger dispatcher instead of a `FORCED_` prefix test.

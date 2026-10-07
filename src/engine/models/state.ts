@@ -396,6 +396,11 @@ export interface PendingDecisionPrompt {
   isFinalStep?: boolean;
   revealedCards?: RevealedCardDisplay[];
   isVoluntary?: boolean;
+  /**
+   * Multi-select prompt: the player confirms between `min` and `max` options (`SEARCH` with
+   * `takeCount` / `minimumTake`). `distinctBy: 'NAME'` forbids two options with the same card name.
+   */
+  selection?: { min: number; max: number; distinctBy?: 'NAME' };
   parentFrameId?: string;
   queuePosition?: number;
   totalQueued?: number;

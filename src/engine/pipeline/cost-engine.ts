@@ -256,7 +256,7 @@ export function canPayAbilityCost(
   }
 
   // 2. Exhaustion Cost Validation
-  const isExhaustSelf = cost.exhaustSelf || (cost as any).exhaust;
+  const isExhaustSelf = cost.exhaustSelf;
   if (isExhaustSelf) {
     if (sourceCardInst) {
       if (sourceCardInst.exhausted) {
@@ -287,7 +287,7 @@ export function canPayAbilityCost(
   }
 
   // 3b. Self-Damage Cost Validation (e.g. War Machine 01070 dealing 2 damage to self)
-  const selfDamage = cost.damageSelf || (cost as any).selfDamage;
+  const selfDamage = cost.damageSelf;
   if (selfDamage && selfDamage > 0) {
     if (!sourceCardInst) {
       if (player.health <= selfDamage) {
@@ -588,7 +588,7 @@ export function executeAbilityCost(
   }
 
   // 1. Exhaustion
-  const isExhaustSelf = cost.exhaustSelf || (cost as any).exhaust;
+  const isExhaustSelf = cost.exhaustSelf;
   if (isExhaustSelf) {
     if (sourceCardInst) {
       sourceCardInst.exhausted = true;
@@ -636,7 +636,7 @@ export function executeAbilityCost(
   }
 
   // 2b. Direct Damage Cost to Self / Ally (e.g. War Machine 01070)
-  const selfDamage = cost.damageSelf || (cost as any).selfDamage;
+  const selfDamage = cost.damageSelf;
   if (selfDamage && selfDamage > 0) {
     if (sourceCardInst) {
       sourceCardInst.tokens = {

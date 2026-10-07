@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Importer + Engine + Docs): keyword tags only for printed keywords; Crisis is an icon count ([Issue #243](https://github.com/SteveRodrigue/MCD/issues/243))**
+  - `parseKeywords` tags a keyword only when the card prints it as its own sentence (`hasPrintedKeyword`, now used for all 15 text keywords); `getPrintedKeywordValue` reads `Retaliate N` / `Incite N` from a printed sentence. A card that only grants a keyword ("this attack gains ranged.", "Klaw gains retaliate 1.") no longer carries it. In the core sets 4 phantom tags were removed (`01053`, `01099` Overkill; `01119`, `01153` Retaliate); every printed tag is unchanged.
+  - Crisis is an icon, not a keyword: `Keyword.CRISIS`, the schema/Card Editor `Crisis` keyword option and the `hasCrisis` card fields are removed. `getCrisisIconCount(card)` reads `scheme_crisis` (2 or more icons supported), `countCrisisIconsInPlay(state)` sums every icon in play, and `hasCrisisInPlay` is "at least one" (RR Crisis Icon). Card text is never read for icons.
+
 - **Refactor (Engine + Data + Card Editor + Docs): decorative `effectParams` keys removed, no hidden shield default ([Issue #232](https://github.com/SteveRodrigue/MCD/issues/232))**
   - Removed keys the engine never read: `ATTACHMENT_DAMAGE_SHIELD.mode` / `.target`, `TRANSFER_DAMAGE.from` / `.to`, and `target` on `PREVENT_DAMAGE`, `RETURN_TO_HAND`, `VILLAIN_ATTACKS` (cards `01003`, `01020`, `01049`, `01078`, `01098`; behaviour unchanged). `EFFECT_PARAM_KEYS` and the Card Editor registry follow, and the "allowed for now" exceptions are gone.
   - `ATTACHMENT_DAMAGE_SHIELD.maxAbsorb` is required: the silent default of 5 and the undocumented `threshold` alias are removed (the pipeline throws on a shield without it; a data test checks every pack). The unread `attackOnly` shield filter (no card, no test) is removed with its unused parameter.

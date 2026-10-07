@@ -1,16 +1,20 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { cardCatalog } from '../../src/data/importer/card-loader';
+import { cardCatalog, normalizeRawCard } from '../../src/data/importer/card-loader';
 import {
   GameState,
   HeroCard,
   AlterEgoCard,
   SideSchemeCard,
   CardType,
-  Keyword,
   CardInstance,
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { canBasicThwart, hasCrisisInPlay } from '@engine/pipeline/legality-checker';
+import {
+  canBasicThwart,
+  hasCrisisInPlay,
+  getCrisisIconCount,
+  countCrisisIconsInPlay,
+} from '@engine/pipeline/legality-checker';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { executeSequence } from '@engine/effects';
 import { resolveActiveEncounterCardAfterInterrupt } from '@engine/pipeline/villain-phase';
@@ -45,11 +49,11 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
     state.players[0].activeFormCard = spiderManHero;
   });
 
-  it('1) Crowd Control (01108) data invariant: base threat 2, hasCrisis true, no When Revealed ability', () => {
+  it('1) Crowd Control (01108) data invariant: base threat 2, one Crisis icon, no When Revealed ability', () => {
     const crowdControl = cardCatalog.getCard('01108') as SideSchemeCard;
     expect(crowdControl).toBeDefined();
     expect(crowdControl.baseThreat).toBe(2);
-    expect(crowdControl.hasCrisis).toBe(true);
+    expect(getCrisisIconCount(crowdControl)).toBe(1);
     expect(crowdControl.enrichment?.abilities).toEqual([]);
   });
 
@@ -98,9 +102,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
         code: 'test-att-crisis',
         name: 'Team Leader',
         type: CardType.ATTACHMENT,
-        hasCrisis: true,
         scheme_crisis: 1,
-        keywords: [Keyword.CRISIS],
         traits: ['Title'],
         resources: { physical: 0, energy: 0, mental: 0, wild: 0 },
       } as any,
@@ -125,9 +127,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
         code: 'test-env-crisis',
         name: 'Crisis Zone',
         type: CardType.ENVIRONMENT,
-        hasCrisis: true,
         scheme_crisis: 1,
-        keywords: [Keyword.CRISIS],
         traits: ['Location'],
         resources: { physical: 0, energy: 0, mental: 0, wild: 0 },
       } as any,
@@ -152,9 +152,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
         code: '44051',
         name: 'Ambush',
         type: CardType.UPGRADE,
-        hasCrisis: true,
         scheme_crisis: 1,
-        keywords: [Keyword.CRISIS],
         traits: ['Condition'],
         resources: { physical: 0, energy: 0, mental: 0, wild: 0 },
       } as any,
@@ -377,5 +375,69 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
     expect(twoPlayerState.sideSchemes[0].card.code).toBe('01108');
     // Exactly 2 threat per player * 2 players = 4 threat (no phantom When Revealed addition)
     expect(twoPlayerState.sideSchemes[0].threat).toBe(4);
+  });
+});
+
+describe('Crisis icon count (#243): an icon is counted from scheme_crisis, never read from text', () => {
+  const raw = (overrides: Record<string, unknown>) =>
+    ({
+      code: 'x1',
+      name: 'Test',
+      type_code: 'side_scheme',
+      faction_code: 'encounter',
+      pack_code: 'test',
+      position: 1,
+      text: '',
+      ...overrides,
+    }) as any;
+
+  it('counts the printed icons: 0 without the field, 1, and 2 for a card with two icons', () => {
+    expect(getCrisisIconCount(normalizeRawCard(raw({})))).toBe(0);
+    expect(getCrisisIconCount(normalizeRawCard(raw({ scheme_crisis: 1 })))).toBe(1);
+    expect(getCrisisIconCount(normalizeRawCard(raw({ scheme_crisis: 2 })))).toBe(2);
+  });
+
+  it.each([
+    'Remove 4 threat from a scheme. If you are Angel, this thwart ignores the crisis icon ([crisis]) and the patrol keyword.',
+    '<b>Forced Interrupt</b>: remove all threat from it <i>(ignoring any crisis ([crisis]) icons)</i>.',
+    'Deal 1 damage to each enemy for each [crisis], [acceleration], [amplify], and [hazard] in play.',
+    'Crisis.',
+  ])('text that mentions crisis does not print an icon: %s', (text) => {
+    const card = normalizeRawCard(raw({ type_code: 'event', text }));
+    expect(getCrisisIconCount(card)).toBe(0);
+    expect(card.keywords.map(String)).not.toContain('Crisis');
+  });
+
+  it('counts every icon in play: 2 on one card and 1 on another make 3, and legality only needs one', () => {
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Player 1',
+          hero: cardCatalog.getCard('01001a') as HeroCard,
+          alterEgo: cardCatalog.getCard('01001b') as AlterEgoCard,
+          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+        },
+      ],
+      villain: cardCatalog.getCard('01094') as any,
+      mainScheme: cardCatalog.getCard('01097b') as any,
+      encounterCards: cardCatalog.getCardsBySet('rhino'),
+      skipMulligan: true,
+    });
+    expect(countCrisisIconsInPlay(state)).toBe(0);
+    expect(hasCrisisInPlay(state)).toBe(false);
+
+    const twoIcons = createCardInstance({
+      ...(cardCatalog.getCard('01108') as SideSchemeCard),
+      scheme_crisis: 2,
+    });
+    state.sideSchemes = [{ ...twoIcons, threat: 2 } as any];
+    expect(countCrisisIconsInPlay(state)).toBe(2);
+    expect(hasCrisisInPlay(state)).toBe(true);
+
+    const oneMore = createCardInstance(cardCatalog.getCard('01108') as SideSchemeCard);
+    state.players[0].tableau = [oneMore];
+    expect(countCrisisIconsInPlay(state)).toBe(3);
   });
 });

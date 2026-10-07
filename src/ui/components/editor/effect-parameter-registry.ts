@@ -33,7 +33,6 @@ export const KEYWORD_OPTIONS = [
   'Ranged',
   'Quickstrike',
   'Guard',
-  'Crisis',
   'Hazard',
   'Acceleration',
   'Toughness',

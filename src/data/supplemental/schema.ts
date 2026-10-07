@@ -288,7 +288,6 @@ export const KeywordSchema = z.enum([
   'Ranged',
   'Retaliate',
   'Toughness',
-  'Crisis',
   'Hazard',
   'Acceleration',
 ]);

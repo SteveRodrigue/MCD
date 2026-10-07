@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-07
 > **Repository state:** `main`, last work commit is the #277 commit (`git log --grep "#277"`), after the #283 commit. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 2,198 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 2,235 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -52,6 +52,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #283 | Player Setup abilities: step 16 after the mulligans, through the effect pipeline (`PLAYER_SETUP`), T'Challa asks which upgrade; mulligan screen shows the prompt; Luke Cage `01076` invented `SETUP` removed and Toughness for allies (`applyToughnessOnEntry`; part of #253) (ADR-0033 addendum) | `git log --grep "#283"` |
 | #277 | Legal Practice `01023` played from hand: an event pays its declared extra cost on `PLAY_CARD` (`resolveEventAbilities`, shared with the target-choice resolution), `maxCount` = choose 1 to N (`getDiscardCostBounds`), payment modal "up to N", confidence 95 | `git log --grep "#277"` |
 | #232 | Decorative `effectParams` keys removed (`ATTACHMENT_DAMAGE_SHIELD.mode/target`, `TRANSFER_DAMAGE.from/to`, `target` of `PREVENT_DAMAGE` / `RETURN_TO_HAND` / `VILLAIN_ATTACKS`), `maxAbsorb` required (no default, `threshold` alias and `attackOnly` removed), specs document every honored key | `git log --grep "#232"` |
+| #243 | Keyword tags only for printed keywords (`hasPrintedKeyword` for all text keywords, `getPrintedKeywordValue`); Crisis is an icon count (`getCrisisIconCount`, `countCrisisIconsInPlay`), `Keyword.CRISIS` and `hasCrisis` removed; 4 core phantom tags removed | `git log --grep "#243"` |
 | Triage of #282, #283 | 2 new Dev Mode reports: #283 T'Challa setup prompt (P1, queued as 3i), #282 removed-from-game pile (P2) | GitHub only |
 
 ---
@@ -136,7 +137,7 @@ Tier 1 data: [#258](https://github.com/SteveRodrigue/MCD/issues/258) (C2 to C5, 
 
 | # | Item | Issue | Notes |
 | :-- | :-- | :-- | :-- |
-| 13 | Keyword tags are detected by substring for 15 keywords (hundreds of phantom tags across all packs) | [#243](https://github.com/SteveRodrigue/MCD/issues/243) | high impact; reuse `hasPrintedKeyword`; run the corpus comparison as a test |
+| 13 | Keyword tags are detected by substring for 15 keywords (hundreds of phantom tags across all packs) | [#243](https://github.com/SteveRodrigue/MCD/issues/243) | 🟢 **Done** 2026-10-07; core sets: 4 phantom tags removed, other packs tested on real texts; Crisis counted from `scheme_crisis` |
 | 14 | One-off read-through of every core encounter card's data against its printed text | _(not filed)_ | recommended after the items above; the key audit cannot catch semantic errors (found `01173`, `01178`, `01112`, `01158` this way) |
 
 ### 3.6 Smaller engine defects
@@ -178,8 +179,8 @@ See [README.md](README.md) (session start, plan anatomy, owner preferences, wher
 - [#261](https://github.com/SteveRodrigue/MCD/issues/261): core player cards questions (B4 canonical defeat trigger, C9 Alpha Flight Station form, C10 identity timing convention, C13 `maxPerDeck`, Repulsor Blast single hit or two).
 - [#233](https://github.com/SteveRodrigue/MCD/issues/233): how many upgrades/supports did the revealing player control when Caught Off Guard showed no prompt?
 - 2 moderate Dependabot alerts on `main` are not reviewed yet (`dependabot` skill).
-- Next ready item: [#243](https://github.com/SteveRodrigue/MCD/issues/243) (keyword tags by substring), or item 14 once you decide (see below).
-- Whether to schedule item 14 (data read-through) and #243 before the remaining Tier 1 cosmetics.
+- Next ready item: item 14 once you decide (see below); otherwise the Tier 1 data issues of section 3.4 ([#258](https://github.com/SteveRodrigue/MCD/issues/258), [#253](https://github.com/SteveRodrigue/MCD/issues/253)).
+- Whether to schedule item 14 (data read-through) before the remaining Tier 1 cosmetics.
 
 ---
 

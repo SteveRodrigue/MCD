@@ -315,7 +315,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       const crowdControlCard = catalog.getCard('01108') as SideSchemeCard; // Crowd Control with Crisis
       gameState.sideSchemes.push({
         instanceId: 'side_scheme_crisis',
-        card: { ...crowdControlCard, hasCrisis: true },
+        card: crowdControlCard,
         threat: 2,
       });
 

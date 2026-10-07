@@ -92,88 +92,80 @@ import { supplementalRegistry } from '../supplemental';
 import { CardEnrichment, Keyword } from '@engine/models';
 
 /**
+ * The sentences of a card text that stand on their own: split by line and `<hr />`, italic reminder
+ * text and bold tags removed, then split at periods. A keyword is printed when it is one of them.
+ */
+function* printedSentences(text: string | undefined): Generator<string> {
+  if (!text) return;
+  for (const line of text.split(/\r?\n|<hr\s*\/?>/i)) {
+    const stripped = line.replace(/<i>[\s\S]*?<\/i>/gi, '').replace(/<\/?b>/gi, '');
+    for (const sentence of stripped.split('.')) {
+      yield sentence.trim().toLowerCase();
+    }
+  }
+}
+
+function printedKeywordPattern(keyword: string): RegExp {
+  return new RegExp(`^${keyword.toLowerCase().replace(/[^a-z]/g, '')}(\\s+(\\d+))?$`);
+}
+
+/**
  * True when the card prints `keyword` as its own sentence of a text line (`Surge.`,
  * `Surge <i>(reminder)</i>`, `Surge .`, a bare `Surge`, `Toughness.` on a second line), ignoring
  * italic reminder text and bold tags. A card that merely mentions the word to grant it ("this card
  * gains surge.") does not print the keyword. Optional trailing number (`Retaliate 2`).
  */
 export function hasPrintedKeyword(text: string | undefined, keyword: string): boolean {
-  if (!text) return false;
-  const pattern = new RegExp(`^${keyword.toLowerCase().replace(/[^a-z]/g, '')}(\\s+\\d+)?$`);
-  for (const line of text.split(/\r?\n|<hr\s*\/?>/i)) {
-    const stripped = line.replace(/<i>[\s\S]*?<\/i>/gi, '').replace(/<\/?b>/gi, '');
-    for (const sentence of stripped.split('.')) {
-      if (pattern.test(sentence.trim().toLowerCase())) return true;
-    }
+  const pattern = printedKeywordPattern(keyword);
+  for (const sentence of printedSentences(text)) {
+    if (pattern.test(sentence)) return true;
   }
   return false;
 }
 
 /**
- * Parses printed and supplemental keywords for a card.
+ * The number of a printed parameterized keyword (`Retaliate 2.` gives 2), or undefined when the
+ * keyword is not printed or is printed without a number.
+ */
+export function getPrintedKeywordValue(text: string | undefined, keyword: string): number | undefined {
+  const pattern = printedKeywordPattern(keyword);
+  for (const sentence of printedSentences(text)) {
+    const match = pattern.exec(sentence);
+    if (match?.[2] !== undefined) return parseInt(match[2], 10);
+  }
+  return undefined;
+}
+
+/**
+ * Parses printed and supplemental keywords for a card. A keyword counts only when the card prints it
+ * (#243). The Crisis icon is not a keyword: it is counted from `scheme_crisis` (`getCrisisIconCount`).
  */
 export function parseKeywords(raw: RawUpstreamCard, enrichment?: CardEnrichment): Keyword[] {
   const keywords = new Set<Keyword>();
-  const text = (raw.text || '').toLowerCase();
+  const printed = (keyword: string) => hasPrintedKeyword(raw.text, keyword);
 
-  if (text.includes('restricted.') || text.includes('<b>restricted</b>') || (raw as any).restricted) {
-    keywords.add(Keyword.RESTRICTED);
-  }
-  if (text.includes('permanent.') || text.includes('<b>permanent</b>') || raw.permanent) {
-    keywords.add(Keyword.PERMANENT);
-  }
-  if (text.includes('guard.') || text.includes('<b>guard</b>') || text.includes('guard <i>')) {
-    keywords.add(Keyword.GUARD);
-  }
-  if (text.includes('patrol.') || text.includes('<b>patrol</b>') || text.includes('patrol <i>')) {
-    keywords.add(Keyword.PATROL);
-  }
-  if (
-    text.includes('crisis.') ||
-    text.includes('<b>crisis</b>') ||
-    text.includes('crisis <i>') ||
-    text.includes('crisis icon') ||
-    text.includes('[crisis]') ||
-    raw.scheme_crisis
-  ) {
-    keywords.add(Keyword.CRISIS);
-  }
-  if (text.includes('hazard.') || text.includes('<b>hazard</b>') || text.includes('hazard <i>') || raw.scheme_hazard) {
-    keywords.add(Keyword.HAZARD);
-  }
-  if (text.includes('overkill.') || text.includes('<b>overkill</b>') || text.includes('overkill <i>')) {
-    keywords.add(Keyword.OVERKILL);
-  }
-  if (text.includes('piercing.') || text.includes('<b>piercing</b>') || text.includes('piercing <i>')) {
-    keywords.add(Keyword.PIERCING);
-  }
-  if (text.includes('quickstrike.') || text.includes('<b>quickstrike</b>') || text.includes('quickstrike <i>')) {
-    keywords.add(Keyword.QUICKSTRIKE);
-  }
-  if (text.includes('ranged.') || text.includes('<b>ranged</b>') || text.includes('ranged <i>')) {
-    keywords.add(Keyword.RANGED);
-  }
-  const retaliateMatch = text.match(/\bretaliate\s+(\d+)\b/i);
-  if (retaliateMatch) {
-    keywords.add(`Retaliate ${retaliateMatch[1]}` as any);
-  } else if (text.includes('retaliate') || text.includes('<b>retaliate</b>')) {
+  if (printed('restricted') || (raw as any).restricted) keywords.add(Keyword.RESTRICTED);
+  if (printed('permanent') || raw.permanent) keywords.add(Keyword.PERMANENT);
+  if (printed('guard')) keywords.add(Keyword.GUARD);
+  if (printed('patrol')) keywords.add(Keyword.PATROL);
+  if (printed('hazard') || raw.scheme_hazard) keywords.add(Keyword.HAZARD);
+  if (printed('overkill')) keywords.add(Keyword.OVERKILL);
+  if (printed('piercing')) keywords.add(Keyword.PIERCING);
+  if (printed('quickstrike')) keywords.add(Keyword.QUICKSTRIKE);
+  if (printed('ranged')) keywords.add(Keyword.RANGED);
+  const retaliate = getPrintedKeywordValue(raw.text, 'retaliate');
+  if (retaliate !== undefined) {
+    keywords.add(`Retaliate ${retaliate}` as any);
+  } else if (printed('retaliate')) {
     keywords.add(Keyword.RETALIATE);
   }
-  if (hasPrintedKeyword(raw.text, 'surge')) {
-    keywords.add(Keyword.SURGE);
-  }
-  if (text.includes('toughness.') || text.includes('<b>toughness</b>') || text.includes('toughness <i>')) {
-    keywords.add(Keyword.TOUGH);
-  }
-  if (text.includes('stalwart.') || text.includes('<b>stalwart</b>') || text.includes('stalwart <i>')) {
-    keywords.add(Keyword.STALWART);
-  }
-  if (text.includes('steady.') || text.includes('<b>steady</b>') || text.includes('steady <i>')) {
-    keywords.add(Keyword.STEADY);
-  }
-  const inciteMatch = text.match(/\bincite\s+(\d+)\b/i);
-  if (inciteMatch) {
-    keywords.add(`Incite ${inciteMatch[1]}` as any);
+  if (printed('surge')) keywords.add(Keyword.SURGE);
+  if (printed('toughness')) keywords.add(Keyword.TOUGH);
+  if (printed('stalwart')) keywords.add(Keyword.STALWART);
+  if (printed('steady')) keywords.add(Keyword.STEADY);
+  const incite = getPrintedKeywordValue(raw.text, 'incite');
+  if (incite !== undefined) {
+    keywords.add(`Incite ${incite}` as any);
     keywords.add(Keyword.INCITE);
   }
 
@@ -231,7 +223,6 @@ export function normalizeRawCard(
     traits: enrichment?.traits !== undefined ? enrichment.traits : parseTraits(raw.traits),
     printedTraits: raw.traits,
     keywords: parseKeywords(raw, enrichment),
-    hasCrisis: Boolean(((raw.scheme_crisis || 0) > 0) || parseKeywords(raw, enrichment).includes(Keyword.CRISIS)),
     scheme_crisis: raw.scheme_crisis ?? undefined,
     resources: parseResources(raw),
     setCode: raw.set_code,
@@ -314,7 +305,6 @@ export function normalizeRawCard(
         type: CardType.SIDE_SCHEME,
         baseThreat: raw.base_threat ?? 0,
         baseThreatFixed: !!raw.base_threat_fixed,
-        hasCrisis: (raw.scheme_crisis || 0) > 0,
         hasHazard: (raw.scheme_hazard || 0) > 0,
         hasAcceleration: (raw.scheme_acceleration || 0) > 0,
         hasAmplify: (raw.scheme_amplify || 0) > 0,
@@ -326,7 +316,6 @@ export function normalizeRawCard(
         type: CardType.PLAYER_SIDE_SCHEME,
         baseThreat: raw.base_threat ?? 0,
         baseThreatFixed: !!raw.base_threat_fixed,
-        hasCrisis: base.hasCrisis ?? false,
       } as PlayerSideSchemeCard;
     }
     case CardType.ALLY: {

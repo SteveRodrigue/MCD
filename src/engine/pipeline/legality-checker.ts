@@ -35,18 +35,16 @@ export function getPlayer(state: GameState, playerId: string): PlayerState | und
 }
 
 /**
- * Checks if a specific card has an active Crisis icon (RR v1.8 p. 11).
+ * The number of Crisis icons printed on a card (RR v1.8 p. 11). Crisis is an icon, not a keyword:
+ * the count is the card's `scheme_crisis`, and card text is never read for it (#243).
  */
-export function cardHasCrisisIcon(card?: NormalizedCard): boolean {
-  if (!card) return false;
-  return Boolean(
-    card.hasCrisis || (card.scheme_crisis || 0) > 0 || hasKeyword(card, Keyword.CRISIS),
-  );
+export function getCrisisIconCount(card?: NormalizedCard): number {
+  return card?.scheme_crisis ?? 0;
 }
 
 /**
- * Checks whether at least one Crisis icon is currently in play across ALL in-play cards
- * (RR v1.8 p. 11 "Crisis", p. 15 "In Play and Out of Play").
+ * Counts the Crisis icons currently in play across ALL in-play cards (RR v1.8 p. 11 "Crisis",
+ * p. 15 "In Play and Out of Play"). Each icon counts, so a card with two icons adds 2.
  *
  * In-play zones evaluated:
  * - Side schemes and their attachments
@@ -55,59 +53,68 @@ export function cardHasCrisisIcon(card?: NormalizedCard): boolean {
  * - Villain and villain attachments
  * - Players' tableaus (supports, upgrades), allies (+ attachments), engaged minions (+ attachments), and identity attachments.
  */
-export function hasCrisisInPlay(state: GameState): boolean {
+export function countCrisisIconsInPlay(state: GameState): number {
+  let count = 0;
   // 1. Side schemes & attachments
   for (const s of state.sideSchemes || []) {
-    if (cardHasCrisisIcon(s.card)) return true;
+    count += getCrisisIconCount(s.card);
     for (const att of s.attachments || []) {
-      if (cardHasCrisisIcon(att.card)) return true;
+      count += getCrisisIconCount(att.card);
     }
   }
 
   // 2. Main scheme & attachments
   for (const mainScheme of getMainSchemesInPlay(state)) {
-    if (cardHasCrisisIcon(mainScheme.card)) return true;
+    count += getCrisisIconCount(mainScheme.card);
     for (const att of mainScheme.attachments || []) {
-      if (cardHasCrisisIcon(att.card)) return true;
+      count += getCrisisIconCount(att.card);
     }
   }
 
   // 3. Environments
   for (const env of state.environments || []) {
-    if (cardHasCrisisIcon(env.card)) return true;
+    count += getCrisisIconCount(env.card);
   }
 
   // 4. Villain & attachments
   for (const villain of getVillainsInPlay(state)) {
-    if (cardHasCrisisIcon(villain.card)) return true;
+    count += getCrisisIconCount(villain.card);
     for (const att of villain.attachments || []) {
-      if (cardHasCrisisIcon(att.card)) return true;
+      count += getCrisisIconCount(att.card);
     }
   }
 
   // 5. Players: tableaus, allies, engaged minions, identity attachments
   for (const p of state.players || []) {
     for (const t of p.tableau || []) {
-      if (cardHasCrisisIcon(t.card)) return true;
+      count += getCrisisIconCount(t.card);
     }
     for (const a of p.allies || []) {
-      if (cardHasCrisisIcon(a.card)) return true;
+      count += getCrisisIconCount(a.card);
       for (const att of a.attachments || []) {
-        if (cardHasCrisisIcon(att.card)) return true;
+        count += getCrisisIconCount(att.card);
       }
     }
     for (const m of p.engagedMinions || []) {
-      if (cardHasCrisisIcon(m.card)) return true;
+      count += getCrisisIconCount(m.card);
       for (const att of m.attachments || []) {
-        if (cardHasCrisisIcon(att.card)) return true;
+        count += getCrisisIconCount(att.card);
       }
     }
     for (const att of p.attachments || []) {
-      if (cardHasCrisisIcon(att.card)) return true;
+      count += getCrisisIconCount(att.card);
     }
   }
 
-  return false;
+  return count;
+}
+
+/**
+ * True while at least one Crisis icon is in play: player cards cannot remove threat from the
+ * main scheme (RR v1.8 p. 11 "Crisis"). One icon is enough; more icons change nothing here.
+ */
+export function hasCrisisInPlay(state: GameState): boolean {
+  return countCrisisIconsInPlay(state) > 0;
 }
 
 /**
@@ -1042,7 +1049,7 @@ export function evaluateCharacterTargetRequirement(
  * Checks whether any valid scheme with threat can currently have threat removed (RR v1.8 p. 11, 20, 29, 30).
  * Accounts for:
  * - Scheme threat > 0
- * - Crisis Keyword: Prevents removing threat from main scheme while a Crisis side scheme is in play
+ * - Crisis icon: Prevents removing threat from main scheme while a Crisis side scheme is in play
  * - Patrol Keyword: Prevents a player from removing threat from main scheme while engaged with a Patrol minion
  */
 export function hasEligibleThreatRemovalTarget(

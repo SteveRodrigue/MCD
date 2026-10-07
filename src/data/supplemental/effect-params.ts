@@ -7,9 +7,6 @@ import type { EffectType } from './schema';
  * The Card Editor registry (src/ui/components/editor/effect-parameter-registry.ts)
  * must expose exactly these keys per effect; tests/ui/effect-parameter-registry.test.ts enforces it.
  * `AbilityStepSchema.effectParams` stays a free-form record; this table is validated by a data test only.
- *
- * Pseudo-primitive keys (ATTACHMENT_DAMAGE_SHIELD.mode, TRANSFER_DAMAGE.from/to, and `target`
- * on a few effects) are allowed for now and are tracked for removal in #232.
  */
 export const EFFECT_PARAM_KEYS: Record<EffectType, readonly string[]> = {
   ADD_ACCELERATION: ['amount'],
@@ -17,7 +14,7 @@ export const EFFECT_PARAM_KEYS: Record<EffectType, readonly string[]> = {
   ADD_STATUS: ['status', 'target'],
   ADD_THREAT: ['amount', 'cardCode', 'condition', 'perPlayer', 'target'],
   ADD_TRAIT: ['duration', 'target', 'trait'],
-  ATTACHMENT_DAMAGE_SHIELD: ['maxAbsorb', 'mode', 'target'], // includes pseudo-primitive keys (#231 / #232)
+  ATTACHMENT_DAMAGE_SHIELD: ['maxAbsorb'],
   ATTACH_FACEDOWN_CARDS_FROM_HAND: [],
   ATTACH_TO_HOST: ['maxPerHost', 'target'],
   CANCEL_ATTACK: [],
@@ -46,7 +43,7 @@ export const EFFECT_PARAM_KEYS: Record<EffectType, readonly string[]> = {
   PLACE_CARD_UNDER_HOST: [],
   PLAYER_CHOICE: ['description', 'isVoluntary', 'options', 'title'],
   PLAY_FROM_ZONE: ['control', 'costMode', 'costReduction', 'destination', 'filter', 'promptTitle', 'source'],
-  PREVENT_DAMAGE: ['amount', 'target'],
+  PREVENT_DAMAGE: ['amount'],
   PREVENT_THREAT: ['amount', 'target'],
   PUT_INTO_PLAY: ['filter', 'from', 'reveal', 'target', 'to'],
   READY: ['filter', 'target'],
@@ -57,15 +54,15 @@ export const EFFECT_PARAM_KEYS: Record<EffectType, readonly string[]> = {
   REMOVE_STATUS: ['status', 'target'],
   REMOVE_THREAT: ['amount', 'distinctFrom', 'dynamicBonus', 'finisherBonus', 'target'],
   MODIFY_RESTRICTED_LIMIT: ['amount'],
-  RETURN_TO_HAND: ['target'],
+  RETURN_TO_HAND: [],
   REVEAL_ENCOUNTER_CARD: [],
   SEARCH: ['autoSelectIfUnambiguous', 'filter', 'fromTop', 'isVoluntary', 'lookCount', 'promptTitle', 'selectedDestination', 'shuffleAfter', 'source', 'takeCount', 'target', 'unselectedDestination'],
   SHUFFLE_INTO_DECK: ['count', 'filter', 'from', 'toDeck'],
   SPEND_COUNTERS: ['amount', 'counterType', 'target'],
   SURGE: [],
-  TRANSFER_DAMAGE: ['amount', 'dynamicBonus', 'finisherBonus', 'from', 'to'], // includes pseudo-primitive keys (#231 / #232)
+  TRANSFER_DAMAGE: ['amount', 'dynamicBonus', 'finisherBonus'],
   VILLAIN_AND_ENGAGED_MINIONS_ATTACK: [],
-  VILLAIN_ATTACKS: ['target'],
+  VILLAIN_ATTACKS: [],
   VILLAIN_SCHEMES: ['target'],
 };
 

@@ -112,7 +112,6 @@
             {
               "effect": "ATTACHMENT_DAMAGE_SHIELD",
               "effectParams": {
-                "mode": "PREVENT_ALL_AND_DISCARD",
                 "maxAbsorb": 5
               }
             }
@@ -121,7 +120,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-10-04T21:30",
+        "updatedAt": "2026-10-07T12:00",
         "reviewedAt": "2026-10-04T21:30",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",

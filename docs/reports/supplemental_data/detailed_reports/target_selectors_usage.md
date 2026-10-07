@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T01:26:32.038Z` | **Active Target Selectors In Use:** **29/43**
+> **Generated:** `2026-10-07T01:54:50.056Z` | **Active Target Selectors In Use:** **29/43**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -25,7 +25,7 @@
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 | `01087` | **Haymaker (event)** | `core` | `haymaker` |
 
-### <a id="self-identity"></a>`SELF_IDENTITY` (14 Cards, 14 Declarations)
+### <a id="self-identity"></a>`SELF_IDENTITY` (13 Cards, 13 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -36,30 +36,12 @@
 | `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_aerial` |
 | `01061` | **Great Responsibility (event)** | `core` | `great_responsibility_interrupt` |
 | `01073` | **The Triskelion (support)** | `core` | `triskelion_ally_limit` |
-| `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
 | `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
 | `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
 | `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
 | `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
-
-### <a id="self"></a>`SELF` (12 Cards, 12 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
-| `01003` | **Backflip (event)** | `core` | `backflip` |
-| `01018` | **Energy Channel (upgrade)** | `core` | `energy_channel_add` |
-| `01020` | **Hellcat (ally)** | `core` | `hellcat_return` |
-| `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
-| `01051` | **Tigra (ally)** | `core` | `tigra_defeat_heal` |
-| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
-| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_response` |
-| `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
-| `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
-| `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_response` |
-| `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
 
 ### <a id="chosen-scheme"></a>`CHOSEN_SCHEME` (10 Cards, 11 Declarations)
 
@@ -75,6 +57,21 @@
 | `01060` | **For Justice! (event)** | `core` | `for_justice` |
 | `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
 | `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
+
+### <a id="self"></a>`SELF` (10 Cards, 10 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
+| `01018` | **Energy Channel (upgrade)** | `core` | `energy_channel_add` |
+| `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
+| `01051` | **Tigra (ally)** | `core` | `tigra_defeat_heal` |
+| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
+| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_response` |
+| `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
+| `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
+| `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_response` |
+| `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
 
 ### <a id="chosen-player"></a>`CHOSEN_PLAYER` (4 Cards, 4 Declarations)
 

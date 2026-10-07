@@ -126,7 +126,6 @@ function resolveDamageShieldForHost(
   damageAmount: number,
   hostName: string,
   stepTiming: 'DAMAGE_WOULD_BE_DEALT' | 'DAMAGE_WOULD_BE_TAKEN',
-  isAttack?: boolean,
 ): { remainingDamage: number; shieldAbsorption?: ShieldAbsorptionInfo } {
   if (!hostAttachments || hostAttachments.length === 0 || damageAmount <= 0) {
     return { remainingDamage: damageAmount };
@@ -139,12 +138,7 @@ function resolveDamageShieldForHost(
       if (a.trigger && a.trigger !== stepTiming && a.trigger !== 'DAMAGE_WOULD_BE_TAKEN') {
         return false;
       }
-      return a.steps?.some((s) => {
-        if (s.effect !== 'ATTACHMENT_DAMAGE_SHIELD') return false;
-        const attackOnly = (s.effectParams as any)?.attackOnly;
-        if (attackOnly && !isAttack) return false;
-        return true;
-      });
+      return a.steps?.some((s) => s.effect === 'ATTACHMENT_DAMAGE_SHIELD');
     });
   });
 
@@ -157,8 +151,12 @@ function resolveDamageShieldForHost(
     a.steps?.some((s) => s.effect === 'ATTACHMENT_DAMAGE_SHIELD'),
   );
   const step = ability?.steps?.find((s) => s.effect === 'ATTACHMENT_DAMAGE_SHIELD');
-  const threshold =
-    (step?.effectParams as any)?.maxAbsorb ?? (step?.effectParams as any)?.threshold ?? 5;
+  const threshold = step?.effectParams?.maxAbsorb;
+  if (typeof threshold !== 'number') {
+    throw new Error(
+      `ATTACHMENT_DAMAGE_SHIELD on ${shieldCard.card.code} needs a numeric effectParams.maxAbsorb`,
+    );
+  }
 
   if (!shieldCard.tokens) {
     shieldCard.tokens = {};
@@ -238,7 +236,6 @@ export function applyDamageToTarget(
       currentDamage,
       target.name,
       'DAMAGE_WOULD_BE_DEALT',
-      isAttack,
     );
     if (shieldRes.shieldAbsorption) {
       currentDamage = shieldRes.remainingDamage;
@@ -286,7 +283,6 @@ export function applyDamageToTarget(
       currentDamage,
       target.name,
       'DAMAGE_WOULD_BE_TAKEN',
-      isAttack,
     );
     if (shieldRes.shieldAbsorption) {
       currentDamage = shieldRes.remainingDamage;

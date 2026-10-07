@@ -19,17 +19,17 @@
 
 ### `VILLAIN_ATTACKS`
 * **References:** *Assault* `01187`
-* **Description:** The villain currently in play (scenario-dependent, so no card code) attacks the resolving player, with boost cards. In Hero form it attacks; in Alter-Ego form the card gains Surge.
+* **Description:** The villain currently in play (scenario-dependent, so no card code) attacks the resolving player, with boost cards. In Hero form it attacks.
 * **Use it when** the printed text says "the villain attacks you". Use `ENEMY_ATTACKS` when a *specific* enemy must attack.
 
 ```json
 {
   "effect": "VILLAIN_ATTACKS",
-  "effectParams": {
-    "alterEgoSurge": true
-  }
+  "effectParams": {}
 }
 ```
+
+No parameters. (`alterEgoSurge` was documented but never read, removed in #232; the Surge of *Assault* is its printed keyword.)
 
 ---
 
@@ -149,14 +149,34 @@ Per ADR-0029, monolithic `SPAWN_NEMESIS` has been fully decomposed into a compos
 {
   "effect": "ATTACH_TO_HOST",
   "effectParams": {
-    "target": "VILLAIN",
-    "intercept": "ATTACK",
-    "onIntercept": "DISCARD_AND_STUN"
+    "target": "VILLAIN"
   }
 }
 ```
 
+| Parameter    | Type             | Required | Default | Description |
+| :----------- | :--------------- | :------- | :------ | :---------- |
+| `target`     | `TargetSelector` | No       | -       | Host the card attaches to (`VILLAIN`, `CHOSEN_ENEMY`, `CHOSEN_ALLY`, ...). |
+| `maxPerHost` | `number`         | No       | no limit | Maximum copies (same code or name) of this card on one host; hosts at the limit are not offered as a choice (e.g. *Inspired* `01074`, one per ally). |
+
 > **Encounter attachments (`CardType.ATTACHMENT`):** "Attach to Rhino." is intrinsic to the card type. The engine attaches a revealed encounter attachment to the villain unconditionally (`villain-phase.ts`), so do **not** declare it as a `WHEN_REVEALED` ability: that would create a cancellable window that RR v1.8 does not grant (*Armored Rhino Suit* `01098`, *Charge* `01099`, *Enhanced Ivory Horn* `01100`; Issue #175). Declare only the card's own abilities.
+
+---
+
+### `ATTACHMENT_DAMAGE_SHIELD`
+* **References:** *Armored Rhino Suit* `01098`, [`damage-pipeline.ts`](../../../src/engine/pipeline/damage-pipeline.ts)
+* **Description:** Declares a damage shield on an attachment. The step itself does nothing when executed: the damage pipeline finds it on the host's attachments ("would be dealt" / "would be taken" windows), puts the absorbed damage on the attachment as damage tokens and discards the attachment once its damage reaches `maxAbsorb`.
+
+```json
+{
+  "effect": "ATTACHMENT_DAMAGE_SHIELD",
+  "effectParams": { "maxAbsorb": 5 }
+}
+```
+
+| Parameter   | Type     | Required | Default | Description |
+| :---------- | :------- | :------- | :------ | :---------- |
+| `maxAbsorb` | `number` | **Yes**  | -       | Damage the attachment absorbs before it is discarded. No default: a shield without it throws, and a data test checks every pack. |
 
 ---
 

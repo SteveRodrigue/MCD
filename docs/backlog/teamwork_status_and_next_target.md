@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-07
 > **Repository state:** `main`, last work commit is the #277 commit (`git log --grep "#277"`), after the #283 commit. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 2,194 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 2,198 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -51,6 +51,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #276 | Schema member guard: 20 members removed (7 conditions and triggers, 8 effects, 5 `effectParams` keys, `exhaustCard` and `discardCard.from` narrowed), textual reader and engine-test proof, behaviour tests for every member that had none; `KNOWN_GAPS` tied to #280 / #281 | `git log --grep "#276"` |
 | #283 | Player Setup abilities: step 16 after the mulligans, through the effect pipeline (`PLAYER_SETUP`), T'Challa asks which upgrade; mulligan screen shows the prompt; Luke Cage `01076` invented `SETUP` removed and Toughness for allies (`applyToughnessOnEntry`; part of #253) (ADR-0033 addendum) | `git log --grep "#283"` |
 | #277 | Legal Practice `01023` played from hand: an event pays its declared extra cost on `PLAY_CARD` (`resolveEventAbilities`, shared with the target-choice resolution), `maxCount` = choose 1 to N (`getDiscardCostBounds`), payment modal "up to N", confidence 95 | `git log --grep "#277"` |
+| #232 | Decorative `effectParams` keys removed (`ATTACHMENT_DAMAGE_SHIELD.mode/target`, `TRANSFER_DAMAGE.from/to`, `target` of `PREVENT_DAMAGE` / `RETURN_TO_HAND` / `VILLAIN_ATTACKS`), `maxAbsorb` required (no default, `threshold` alias and `attackOnly` removed), specs document every honored key | `git log --grep "#232"` |
 | Triage of #282, #283 | 2 new Dev Mode reports: #283 T'Challa setup prompt (P1, queued as 3i), #282 removed-from-game pile (P2) | GitHub only |
 
 ---
@@ -125,7 +126,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 | 10 | WP5: guard test, unknown `effectParams` key fails the data test (the `target` slice is already done) | [#230](https://github.com/SteveRodrigue/MCD/issues/230) | 🟢 **Done** 2026-10-06; table `src/data/supplemental/effect-params.ts`, guard `tests/data/effect-params-keys.test.ts`; `REMOVE_THREAT.aerialAllSchemes` left out (owner decision) |
 | 11 | WP6: retire `PER_SIDE_SCHEME` / `PER_DISCARDED_CARD` / `PER_RESOURCE_SPENT` pseudo-primitives | [#231](https://github.com/SteveRodrigue/MCD/issues/231) | 🟢 **Done** 2026-10-06 |
 | 11b | Every schema member needs a reader in code and a test, enforced by `tests/data/schema-member-coverage.test.ts` (#276) | [#276](https://github.com/SteveRodrigue/MCD/issues/276) | 🟢 **Done** 2026-10-06; follow-ups: [#278](https://github.com/SteveRodrigue/MCD/issues/278) comparison condition, [#279](https://github.com/SteveRodrigue/MCD/issues/279) fake pack and runtime proof, [#280](https://github.com/SteveRodrigue/MCD/issues/280) Toughness, [#281](https://github.com/SteveRodrigue/MCD/issues/281) errata / victoryPoints |
-| 12 | WP7: documentation gaps, decorative keys, ad-hoc selector strings (`HERO`, `IDENTITY`, `ALTER_EGO`), `TRIGGERING_HERO` overlap | [#232](https://github.com/SteveRodrigue/MCD/issues/232) | WP5; partly subsumed by #276 |
+| 12 | WP7: documentation gaps, decorative keys, ad-hoc selector strings (`HERO`, `IDENTITY`, `ALTER_EGO`), `TRIGGERING_HERO` overlap | [#232](https://github.com/SteveRodrigue/MCD/issues/232) | 🟢 **Done** 2026-10-07 (keys and docs); selector strings and `TRIGGERING_HERO` were already handled by #222 / #241 / #276 |
 
 ### 3.4 Core player cards review
 
@@ -148,6 +149,7 @@ Tier 1 data: [#258](https://github.com/SteveRodrigue/MCD/issues/258) (C2 to C5, 
 - **Moved to Gate 1 (2026-10-06):** [#209](https://github.com/SteveRodrigue/MCD/issues/209) conditional encounter attachments, needed by Genetically Enhanced `01163` (She-Hulk nemesis, [#228](https://github.com/SteveRodrigue/MCD/issues/228)). Schedule it with items 5 to 8 of section 3.2; the other 41 cards stay outside Gate 1.
 - **Other features and cleanups:** [#262](https://github.com/SteveRodrigue/MCD/issues/262) Biomechanical Upgrades `01185` (needs #209 and a defeat replacement interrupt), [#208](https://github.com/SteveRodrigue/MCD/issues/208) player-deck obligations, [#109](https://github.com/SteveRodrigue/MCD/issues/109) observer-scoped reaction triggers, [#37](https://github.com/SteveRodrigue/MCD/issues/37) Alliance payment and Team-Up, [#126](https://github.com/SteveRodrigue/MCD/issues/126), [#127](https://github.com/SteveRodrigue/MCD/issues/127), [#27](https://github.com/SteveRodrigue/MCD/issues/27).
 - **Follow-ups of #276 (none in Gate 1):** [#278](https://github.com/SteveRodrigue/MCD/issues/278) generic value-comparison condition (first needed by Absorbing Man in The Rise of the Red Skull, roadmap Gate 4 "Official Pack Integration Pipeline"), [#279](https://github.com/SteveRodrigue/MCD/issues/279) fake card pack with runtime read tracking, [#280](https://github.com/SteveRodrigue/MCD/issues/280) `Toughness` vs `Tough` keyword (with Luke Cage data), [#281](https://github.com/SteveRodrigue/MCD/issues/281) consume `errata` / `victoryPoints`, [#284](https://github.com/SteveRodrigue/MCD/issues/284) remove `REDUCE_NEXT_CARD_COST.cardFilter` unless a card needs it. `KNOWN_GAPS` in `tools/audit/schema-member-coverage.ts` ties #280 and #281 to the guard.
+- **Not scheduled (owner, 2026-10-07):** [#285](https://github.com/SteveRodrigue/MCD/issues/285) reverse guard for effect parameters: every key the engine reads must be in the table, the spec and the editor; triage 16 engine-read keys missing from the table; no hidden defaults; no `as any` on `effectParams`.
 - **Phase 6, [#100](https://github.com/SteveRodrigue/MCD/issues/100):** the full supplemental data pass, postponed until Phase 5 is finished and the engine contract is stable.
 - **Known gap outside Gate 1:** [#265](https://github.com/SteveRodrigue/MCD/issues/265), 53 core encounter cards with rules text and no supplemental entry (Klaw, Ultron, Masters of Evil, Under Attack, Legions of Hydra, Doomsday Chair sets: `01113` to `01154` except `01121`, `01180` to `01184`). `01121` Weapons Runner is modelled since #244 (an exception in `tests/data/card-loader.test.ts`); `01185` is #262.
 
@@ -176,7 +178,7 @@ See [README.md](README.md) (session start, plan anatomy, owner preferences, wher
 - [#261](https://github.com/SteveRodrigue/MCD/issues/261): core player cards questions (B4 canonical defeat trigger, C9 Alpha Flight Station form, C10 identity timing convention, C13 `maxPerDeck`, Repulsor Blast single hit or two).
 - [#233](https://github.com/SteveRodrigue/MCD/issues/233): how many upgrades/supports did the revealing player control when Caught Off Guard showed no prompt?
 - 2 moderate Dependabot alerts on `main` are not reviewed yet (`dependabot` skill).
-- Next ready item: [#232](https://github.com/SteveRodrigue/MCD/issues/232) (documentation gaps, ad-hoc selector strings; partly subsumed by #276).
+- Next ready item: [#243](https://github.com/SteveRodrigue/MCD/issues/243) (keyword tags by substring), or item 14 once you decide (see below).
 - Whether to schedule item 14 (data read-through) and #243 before the remaining Tier 1 cosmetics.
 
 ---

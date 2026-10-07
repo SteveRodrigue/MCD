@@ -131,7 +131,6 @@ describe('Canonical 9-Step Damage Pipeline (damage-pipeline.ts)', () => {
                   effect: 'ATTACHMENT_DAMAGE_SHIELD',
                   effectParams: {
                     maxAbsorb: 5,
-                    target: 'ATTACHED_IDENTITY',
                   },
                 },
               ],
@@ -179,5 +178,47 @@ describe('Canonical 9-Step Damage Pipeline (damage-pipeline.ts)', () => {
     expect(player.health).toBe(initialPlayerHp);
     expect(player.attachments.length).toBe(0);
     expect(player.discard.some((c) => c.instanceId === 'player_shield_1')).toBe(true);
+  });
+
+  it.each([
+    ['no maxAbsorb', {}],
+    ['only the retired threshold alias', { threshold: 5 }],
+  ])('a damage shield with %s is a data error, not a hidden default (#232)', (_label, params) => {
+    const player = state.players[0];
+    player.attachments = [
+      {
+        instanceId: 'bad_shield',
+        ownerId: player.id,
+        card: {
+          code: 'mock_bad_shield',
+          name: 'Bad Shield',
+          type: 'upgrade',
+          enrichment: {
+            abilities: [
+              {
+                id: 'bad_shield',
+                timing: 'FORCED_INTERRUPT',
+                trigger: 'DAMAGE_WOULD_BE_TAKEN',
+                steps: [{ effect: 'ATTACHMENT_DAMAGE_SHIELD', effectParams: params }],
+              },
+            ],
+          },
+        } as any,
+      },
+    ];
+
+    expect(() =>
+      applyDamageToTarget(state, {
+        target: {
+          type: 'player',
+          entity: player,
+          name: player.name,
+          attachments: player.attachments,
+          statusCards: player.statusCards,
+        },
+        amount: 3,
+        isAttack: true,
+      }),
+    ).toThrow(/maxAbsorb/);
   });
 });

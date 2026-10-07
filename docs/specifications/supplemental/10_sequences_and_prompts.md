@@ -20,7 +20,7 @@ Under **ADR-0060**, parameters configuring conditional step gates and parameters
 
 - `tests/data/effect-params-keys.test.ts` walks every supplemental pack (including nested `PLAYER_CHOICE` option steps) and fails on a key that is not in the table for its effect, naming the card, effect, and key.
 - The Card Editor registry (`effect-parameter-registry.ts`) exposes exactly the table's keys per effect; `tests/ui/effect-parameter-registry.test.ts` enforces equality.
-- Pseudo-primitive keys (`ATTACHMENT_DAMAGE_SHIELD.mode`, `TRANSFER_DAMAGE.from/to`, and `target` on a few effects) are allowed for now and tracked for removal in #232. `scaling`, `multiplier` and `maxBonus` were retired in #231: scaled amounts are dynamic formulas (`09_dynamic_formulas.md`).
+- The decorative keys `ATTACHMENT_DAMAGE_SHIELD.mode` / `.target`, `TRANSFER_DAMAGE.from` / `.to`, and `target` on `PREVENT_DAMAGE`, `RETURN_TO_HAND`, `VILLAIN_ATTACKS` were removed in #232 (the engine never read them). `scaling`, `multiplier` and `maxBonus` were retired in #231: scaled amounts are dynamic formulas (`09_dynamic_formulas.md`).
 - `tests/data/schema-member-coverage.test.ts` fails on any table key that nothing reads in `src/engine/` or `src/ui/` (#276; it replaced the report-only `effect-params-read-check.ts`).
 
 ### Conditional Gates:

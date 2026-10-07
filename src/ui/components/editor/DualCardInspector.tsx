@@ -34,7 +34,7 @@ interface DualCardInspectorProps {
 function formatCostSummary(cost: any): string {
   if (!cost) return '';
   const parts: string[] = [];
-  if (cost.exhaustSelf || (cost as any).exhaust) parts.push('Exhaust Self');
+  if (cost.exhaustSelf) parts.push('Exhaust Self');
   if (cost.exhaustCard) parts.push(`Exhaust ${cost.exhaustCard}`);
   if (cost.discardSelf) parts.push('Discard Self');
   if (cost.damageSelf) parts.push(`Take ${cost.damageSelf} DMG`);

@@ -268,3 +268,7 @@ The two aliases consolidated into `PUT_INTO_PLAY` by this ADR were still in `Eff
 `MAIN_SCHEME_ADVANCED` was removed from `TriggerTypeSchema`: the engine never fired it (see the ADR-0043 addendum).
 
 `ALLY_LIMIT_BONUS` and `RESTRICTED_LIMIT_BONUS` were removed (#276): they were duplicates of the canonical `MODIFY_ALLY_LIMIT` and `MODIFY_RESTRICTED_LIMIT` named in this ADR (same code path, same `MODIFY_*` naming family). The engine now reads `MODIFY_RESTRICTED_LIMIT` (it had still read the legacy name).
+
+## Addendum (2026-10-07, #261)
+
+The trigger-name alias `ENEMY_DEFEATED_BY_HERO_ATTACK` (consolidated into `DEFEATED` by this ADR) is removed from the dispatcher's `TRIGGER_EQUIVALENTS`; no card or schema member used it. "Who defeated it and how" is declared with `triggerFilter` (`targetType`, `defeatedByAttackOf`), as Chase Them Down `01052` does.

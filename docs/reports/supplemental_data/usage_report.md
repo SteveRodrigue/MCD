@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-10-07T12:08:39.991Z`  
+> **Generated:** `2026-10-07T12:19:27.374Z`  
 > **Source Packs Scanned:** `core, core_encounter, cw_encounter`
 
 ---
@@ -20,7 +20,7 @@
 | **Condition Gates Code Path Coverage** | **100.0%** | **14/14** | [11 In Use](detailed_reports/condition_gates_usage.md) |
 | **Step Conditions Code Path Coverage** | **100.0%** | **9/9** | [3 In Use](detailed_reports/condition_gates_usage.md) |
 | **Trigger Types Code Path Coverage** | **100.0%** | **29/29** | [19 In Use](detailed_reports/timing_and_triggers_usage.md) |
-| **Timing Types Code Path Coverage** | **100.0%** | **19/19** | [17 In Use](detailed_reports/timing_and_triggers_usage.md) |
+| **Timing Types Code Path Coverage** | **100.0%** | **19/19** | [15 In Use](detailed_reports/timing_and_triggers_usage.md) |
 | **Total Abilities Declared** | **162** | - | Total individual ability definitions declared |
 | **Multi-Step Pipelines (2+ Steps)** | [30](detailed_reports/multi_ability_and_multistep_cards.md) | - | Abilities decomposed into sequenced execution pipelines |
 | **Cards with Multiple Abilities (2+)** | [17](detailed_reports/multi_ability_and_multistep_cards.md) | - | Cards declaring more than 1 distinct ability header |
@@ -55,7 +55,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 
 | Component | In Use | Schema Total | Coverage | Detailed Report |
 | :--- | :---: | :---: | :---: | :--- |
-| **Ability Timings** | **17** | 19 | 100.0% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md) |
+| **Ability Timings** | **15** | 19 | 100.0% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md) |
 | **Trigger Windows** | **19** | 29 | 100.0% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md#2-trigger-windows-triggertypeschema) |
 | **Trigger Filters** | **8** | - | - | `attackerKind` (1), `targetPlayerScope` (3), `targetScope` (1), `sourceCardCode` (1), `targetType` (3), `defeatedByAttackOf` (2), `defenderType` (1), `threatSource` (1) |
 | **Cost Primitives** | **9** | - | - | `discardSelf` (13), `resourceCost` (9), `exhaustSelf` (20), `spendCounters` (5), `resources` (2), `heal` (1), `discardCard` (2), `damageHero` (1), `damageSelf` (1) |
@@ -138,4 +138,4 @@ Every schema primitive is verified for a matching engine handler. Check the comp
 | **Gates** | 14 | 3 | 🟢 0 |
 | **Step Conditions** | 9 | 6 | 🟢 0 |
 | **Triggers** | 29 | 10 | 🟢 0 |
-| **Timings** | 19 | 2 | 🟢 0 |
+| **Timings** | 19 | 4 | 🟢 0 |

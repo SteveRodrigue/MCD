@@ -31,6 +31,8 @@ The `timing` field specifies when an ability can be initiated or how it intercep
 | `'SETUP'`               | Scenario Setup      | Player identity (and tableau) cards only: executed at step 16 of game setup, after the mulligans (e.g. _T'Challa_ upgrade search, which asks the player to choose).                                                                                                                                                | Setup Phase    |
 | `'BOOST'`               | Boost Resolution    | Triggered when card is flipped as a Villain or Minion boost card.                                                                                                                                                       | Step 2/3 Boost |
 
+**Identity ability timings (#261).** An ability printed on an identity card (hero or alter-ego side) uses the plain timing as printed: `ACTION`, `INTERRUPT`, `RESPONSE`. The engine reads identity abilities from the active form card only, so the side already gates the form. Do not write `HERO_*` / `ALTER_EGO_*` on identity cards. The qualified timings are for non-identity cards that print a form requirement (e.g. an event printed _Hero Action_).
+
 ---
 
 ## 2. Event Trigger Windows (`trigger`)
@@ -67,7 +69,7 @@ When an ability is an Interrupt or Response, `trigger` binds it to an engine dis
 | `'PLAYER_PHASE_ENDED'`     | All players have ended their turns.                                                                                                                                                                                                                           | `player-phase.ts`                                   |
 | `'VILLAIN_PHASE_BEGAN'`    | Villain phase begins (Step 1 place threat).                                                                                                                                                                                                                   | `villain-phase.ts`                                  |
 | `'VILLAIN_PHASE_ENDED'`    | Villain phase completes (Step 6b after Step 5 token pass).                                                                                                                                                                                                    | `round-upkeep.ts` (`step6_endVillainPhaseAndRound`) |
-| `'DEFEATED'`               | Side/Player Side Scheme reduced to 0 threat - resolves 'When Defeated' rewards declared on the scheme card (e.g. _Highway Robbery_ `01166`, ADR-0034).                                                                                                        | `action-dispatcher.ts` (`BASIC_THWART`)             |
+| `'DEFEATED'`               | Any entity is defeated (character, scheme, attachment). The canonical defeat trigger: narrow it with `triggerFilter` (`targetType`, `defeatedByAttackOf`), never with a more specific trigger name. Scheme defeats resolve 'When Defeated' rewards (e.g. _Highway Robbery_ `01166`, ADR-0034); _Chase Them Down_ `01052` uses `targetType: 'ENEMY'` + `defeatedByAttackOf: 'YOUR_HERO'` (#261).
 
 ### Trigger context: event target vs. chosen target (#234, ADR-0077)
 

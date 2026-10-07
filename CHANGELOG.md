@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Refactor (Engine + Data + Docs): owner decisions on the core player cards ([Issue #261](https://github.com/SteveRodrigue/MCD/issues/261))**
+  - `DEFEATED` is the only defeat trigger: the `ENEMY_DEFEATED_BY_HERO_ATTACK` alias is removed from `TRIGGER_EQUIVALENTS` (nothing used it); who defeated what stays in `triggerFilter` (Chase Them Down `01052`). ADR-0058 addendum, spec `02` row updated.
+  - Identity abilities use the plain printed timing: Rechannel `01010a`, Commander `01010b`, Futurist `01029b` are `ACTION`, "Do You Even Lift?" `01019a` is `RESPONSE`, "I Object!" `01019b` is `INTERRUPT` (the faceup side already gates the form). Spec `02` documents the convention; `HERO_*` / `ALTER_EGO_*` stay for non-identity cards. Guard test `tests/engine/identity-ability-timing.test.ts`; `ALTER_EGO_INTERRUPT` keeps its behaviour test in `lifecycle-trigger-abilities.test.ts`.
+  - Decided, no code change: Alpha Flight Station `01015` matches `01010b` only (literal reading, Banner/Hulk errata precedent); deck limits come from the upstream `deck_limit` read by future deck validation, not a supplemental `maxPerDeck` (spec `01` exception extended to "Max N per deck" text); Repulsor Blast `01031` is one simultaneous damage instance per the FAQ (regression test already in `repulsor-blast.test.ts`).
+
 - **Refactor (Engine + Data + Card Editor + Docs): card-named effect `EXECUTE_WAKANDA_FOREVER` removed ([Issue #254](https://github.com/SteveRodrigue/MCD/issues/254))**
   - `EXECUTE_WAKANDA_FOREVER` is deleted (schema, `schema.json`, engine, Card Editor); `01043a` to `01043d` use the generic `EXECUTE_SPECIAL` with `specialId: "WAKANDA_FOREVER"`. `EXECUTE_SPECIAL` no longer defaults `specialId` to a card: a missing `specialId` fails the step. Its keys `specialId` and `sequenceOrder` are in the `effectParams` table and the editor. The four `01043a-d` entries stay (one per upstream code). `tests/engine/execute-special.test.ts`.
 

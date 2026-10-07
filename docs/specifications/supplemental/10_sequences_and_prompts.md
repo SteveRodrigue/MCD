@@ -4,7 +4,7 @@
 
 ## 1. Unified Action Step Sequencing (`steps: []`) & Conditional Gates
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` (ADR-0028, ADR-0030, ADR-0060 / _Split Personality_ `01025`, _Hard to Keep Down_ `01104`, _I'm Tough_ `01105`, _Photonic Blast_ `01013`, _Hulk_ `01050`, _Under Fire_ `01193`)
+- **References:** ADR-0028, ADR-0030, ADR-0060 / _Split Personality_ `01025`, _Hard to Keep Down_ `01104`, _I'm Tough_ `01105`, _Photonic Blast_ `01013`, _Hulk_ `01050`, _Under Fire_ `01193`
 - **Description:** Decomposes all card abilities into an ordered execution pipeline of discrete, reusable atomic `AbilityStep` primitives, with optional conditional gating (`gate: ...`), separated gate parameters (`gateParams: { ... }`), effect execution parameters (`effectParams: { ... }`), and contextual data-flow passing (`target: "PREVIOUS_TARGET"`).
 
 ### Parameter Separation (`gateParams` vs `effectParams`, ADR-0060)
@@ -240,7 +240,7 @@ Do not write `"condition": "UNDEFENDED_ATTACK"` inside `effectParams`: nothing r
 
 ## 2. Interactive Decision Prompts (`PLAYER_CHOICE`)
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`DecisionPromptModal.tsx`](../../../src/ui/components/board/DecisionPromptModal.tsx) / _Nick Fury_ `01084` / _Hydra Bomber_ `01110` / _Exhaustion_ `01191` / _Vision_ `01068`)
+- **References:** [`DecisionPromptModal.tsx`](../../../src/ui/components/board/DecisionPromptModal.tsx) / _Nick Fury_ `01084` / _Hydra Bomber_ `01110` / _Exhaustion_ `01191` / _Vision_ `01068`
 - **Description:** Renders a Pop-Art comic decision modal, blocking state execution until the player resolves their choice. When a `PLAYER_CHOICE` prompt originates from an in-play ally or tableau card, the `sourceCardInstanceId` field on `PendingDecisionPrompt` is forwarded into `executeEffect` so that `MODIFY_STAT` with `target: "SELF"` resolves correctly against the ability-triggering card instance.
 - **Results of earlier steps:** the cards discarded by the steps that ran before the choice in the same ability are kept on the prompt (`PendingDecisionPrompt.discardedCards`) and handed back to the chosen option, so an option amount can read them with `{ "from": "DISCARDED_CARDS", "discardAttribute": "BOOST_ICONS", "offset": 1 }` (_Ritual Combat_ `01159`: "X is 1 more than the number of boost icons on the discarded encounter card").
 

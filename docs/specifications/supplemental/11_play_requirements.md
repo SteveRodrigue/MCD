@@ -8,9 +8,9 @@
 
 ---
 
-## 🏷️ Implementation Status Legend
+## 🏷️ Implementation References
 
-- 🟢 **`IMPLEMENTED (v1.0)`**: Fully wired into `src/engine/pipeline/legality-checker.ts`, validated against `canPlayCard` and `evaluateCardPlayability`, tested via unit/contract tests, and supported in `src/ui/components/editor/AbilityFormBuilder.tsx`.
+- Fully wired into `src/engine/pipeline/legality-checker.ts`, validated against `canPlayCard` and `evaluateCardPlayability`, tested via unit/contract tests, and supported in `src/ui/components/editor/AbilityFormBuilder.tsx`.
 
 ---
 

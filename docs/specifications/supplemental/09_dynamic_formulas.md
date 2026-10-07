@@ -1,7 +1,7 @@
 # 09. Dynamic Formulas & Mathematical Expressions
 
 > [!NOTE]
-> **Status:** 🟢 `IMPLEMENTED (v1.0)` ([ADR-0049](../../decisions/0049-composable-value-transformers-and-event-interception.md), [ADR-0052](../../decisions/0052-centralized-dynamic-formula-and-state-value-evaluator-engine.md), Issue [#36](https://github.com/SteveRodrigue/MCD/issues/36), Issue [#89](https://github.com/SteveRodrigue/MCD/issues/89), Issue [#90](https://github.com/SteveRodrigue/MCD/issues/90) - _Gamma Slam_ `01021`, _Energy Channel_ `01019`, _Counter-Punch_ `01077`, _Great Responsibility_ `01061`)
+> **References:** [ADR-0049](../../decisions/0049-composable-value-transformers-and-event-interception.md), [ADR-0052](../../decisions/0052-centralized-dynamic-formula-and-state-value-evaluator-engine.md), Issue [#36](https://github.com/SteveRodrigue/MCD/issues/36), Issue [#89](https://github.com/SteveRodrigue/MCD/issues/89), Issue [#90](https://github.com/SteveRodrigue/MCD/issues/90) - _Gamma Slam_ `01021`, _Energy Channel_ `01019`, _Counter-Punch_ `01077`, _Great Responsibility_ `01061`
 
 ---
 

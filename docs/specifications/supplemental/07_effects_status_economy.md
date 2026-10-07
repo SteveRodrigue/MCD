@@ -6,7 +6,7 @@
 
 ### `ADD_STATUS`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
+- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts)
 - **Description:** Attaches a `STUNNED`, `CONFUSED`, or `TOUGH` status card to the target character. `target` defaults to `VILLAIN`; Stalwart immunity and Steady thresholds are enforced during application.
 
 ```json
@@ -23,7 +23,7 @@
 
 ### `ADD_TRAIT`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`stat-calculator.ts`](../../../src/engine/pipeline/stat-calculator.ts) / _Cosmic Flight_ `01017` / Issue [#4](https://github.com/SteveRodrigue/MCD/issues/4)); as an effect step: [`effects/index.ts`](../../../src/engine/effects/index.ts) / _Rocket Boots_ `01039` / Issue [#131](https://github.com/SteveRodrigue/MCD/issues/131)
+- **References:** [`stat-calculator.ts`](../../../src/engine/pipeline/stat-calculator.ts) / _Cosmic Flight_ `01017` / Issue [#4](https://github.com/SteveRodrigue/MCD/issues/4)); as an effect step: [`effects/index.ts`](../../../src/engine/effects/index.ts) / _Rocket Boots_ `01039` / Issue [#131](https://github.com/SteveRodrigue/MCD/issues/131
 - **Description:** Dynamically grants a trait (e.g. `Aerial`, `Avenger`, `Gamma`) to the target character (identity, ally, or enemy) as long as the source card remains in play. Typically declared on continuous abilities (`"timing": "CONSTANT"`) or attachments.
 - **As an effect step (Hero Action, Response, ...):** grants the trait to the **resolving player's identity** (`target: "SELF_IDENTITY"`, the only supported target) by recording an `ActiveTraitModifier` on the player. **Default duration: while the source card stays in play** (checked when traits are read, no cleanup needed). With `duration: "PHASE" | "ROUND" | "TURN"` the trait expires like a stat modifier instead (printed "until the end of the phase/round"). A data test (`tests/data/add-trait-duration.test.ts`) fails if the printed text says "until the end of ..." and the step has no `duration`.
 - **Engine Resolution:** Evaluated dynamically via `getEffectivePlayerTraits`, `getEffectiveCardTraits`, and `hasPlayerTrait` in `src/engine/pipeline/stat-calculator.ts`. Dynamically granted traits satisfy card play requirements (`identityTraits` in [**11. Play Requirements**](./11_play_requirements.md)) and conditional ability triggers (`TARGET_TRAIT_MATCH`).
@@ -47,7 +47,7 @@
 
 ### `Toughness` (Keyword, not an effect primitive)
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` (RR v1.8 p. 29)
+- **References:** RR v1.8 p. 29
 - **Description:** Toughness is a passive entry keyword, NOT an effect primitive. When a character with printed Toughness enters play, the engine automatically grants a `TOUGH` status card. Declared in card metadata under `keywords: ["Toughness"]`.
 
 ---
@@ -58,7 +58,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 ### `EXHAUST`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts) / Issue [#65](https://github.com/SteveRodrigue/MCD/issues/65))
+- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts) / Issue [#65](https://github.com/SteveRodrigue/MCD/issues/65)
 - **Description:** Rotates target entity 90 degrees into the exhausted state per RR v1.8 p. 13. A card that is already exhausted cannot be exhausted again. Emits onomatopoeia `'EXHAUSTED!'`.
 - **Target Resolution:**
   - `'SELF'`: Exhausts the host card instance in the player's tableau (`player.tableau`). If executed from an identity event, exhausts player identity (`player.exhausted = true`).
@@ -85,7 +85,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 ### `READY`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts) / Issue [#65](https://github.com/SteveRodrigue/MCD/issues/65))
+- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts) / Issue [#65](https://github.com/SteveRodrigue/MCD/issues/65)
 - **Description:** Rotates an exhausted target upright into the ready state per RR v1.8 p. 23. A card that is already ready cannot be readied again. Emits onomatopoeia `'READY!'`.
 - **Target Resolution:**
   - `'SELF'`: Readies the host card instance in `player.tableau` (e.g. upgrades/supports). If resolved from an identity event, readies player identity.
@@ -131,7 +131,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 ### `GENERATE_RESOURCE`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts) / _Web-Shooter_ `01008`)
+- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts) / _Web-Shooter_ `01008`
 - **Description:** Contributes resources to the active payment window. `resource` defaults to `"wild"` and `amount` defaults to `1`.
 
 ```json
@@ -148,7 +148,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 ### `REDUCE_NEXT_CARD_COST`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` (Issue [#46](https://github.com/SteveRodrigue/MCD/issues/46), [ADR-0061](../../decisions/0061-declarative-next-card-cost-reduction-aura.md) / _Helicarrier_ `01092`)
+- **References:** Issue [#46](https://github.com/SteveRodrigue/MCD/issues/46), [ADR-0061](../../decisions/0061-declarative-next-card-cost-reduction-aura.md) / _Helicarrier_ `01092`
 - **Description:** Applies a temporary cost reduction aura to the next qualifying card played by the targeted player during the specified `duration` (`"PHASE"` or `"ROUND"`). Under RR v1.8, applies to the next card played (including 0-cost cards, which consume the reduction), and stacks additively with other cost modifiers.
 - **Parameters:**
   - `amount`: number (default: 1) — Resource cost reduction.
@@ -169,7 +169,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 ### `DOUBLE_RESOURCE_FOR_ASPECT`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` (Issue [#22](https://github.com/SteveRodrigue/MCD/issues/22) - _The Power of Aggression/Justice/Leadership/Protection_)
+- **References:** Issue [#22](https://github.com/SteveRodrigue/MCD/issues/22) - _The Power of Aggression/Justice/Leadership/Protection_
 - **Description:** Doubles the card's resource output when it is spent towards paying for a card matching `aspect`. Resolved in the payment window ([`legality-checker.ts`](../../../src/engine/pipeline/legality-checker.ts) and `CardPaymentModal.tsx`), not through the `switch (step.effect)` executor.
 - **Declared by:** 4 cards in `core.json` under `"timing": "RESOURCE"`.
 
@@ -188,7 +188,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 ### `ADD_COUNTERS`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts) / _Energy Channel_ `01018`)
+- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts) / _Energy Channel_ `01018`
 - **Description:** Adds counters (e.g. charge, energy, web counters) to the host card or target entity.
 
 ```json
@@ -208,7 +208,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 ### `REMOVE_COUNTERS`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
+- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts)
 - **Description:** Removes counters from the host card or target entity.
 
 ```json
@@ -226,7 +226,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 ### `SPEND_COUNTERS`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
+- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts)
 - **Description:** Spends / decrements counters from the host card or target entity as part of an effect pipeline, with optional discard on empty.
 
 ```json
@@ -244,7 +244,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 ### `ADD_ACCELERATION`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` (Issue #158 / *Legal Work* `01160`)
+- **References:** Issue #158 / *Legal Work* `01160`
 - **Description:** Places acceleration tokens on the main scheme (`GameState.accelerationTokens`): each token adds 1 threat to the main scheme in every villain phase (RR v1.8 "Acceleration"). `amount` accepts a number or a dynamic value source; defaults to `1`.
 
 ```json

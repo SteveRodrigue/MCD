@@ -1,7 +1,6 @@
 # 01. Metadata, Root & Audit Specification
 
 > [!NOTE]
-> **Status:** 🟢 `IMPLEMENTED (v1.0)`  
 > Validated automatically via [`src/data/supplemental/schema.ts`](../../../src/data/supplemental/schema.ts).
 
 ---

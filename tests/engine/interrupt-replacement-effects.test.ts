@@ -210,9 +210,7 @@ describe('Feature #26 Contract Tests: Interrupt Replacement Effects (01078 & 010
 
       // 3 threat reduced by 1 to 2 threat
       expect(triggerRes.threatAmount).toBe(2);
-      expect(triggerRes.state.players[0].usedAbilitiesThisRound?.['jennifer_walters_thwart']).toBe(
-        1,
-      );
+      expect(triggerRes.state.players[0].usedAbilitiesThisRound?.['i_object']).toBe(1);
     });
 
     it('enforces ONCE_PER_ROUND limit: cannot trigger twice in the same round', () => {

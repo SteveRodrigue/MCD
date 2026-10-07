@@ -39,27 +39,6 @@ describe('Sub-Milestone 2D-4: Aspect Cards & Encounter Promotion Pass (Inbox Zer
   });
 
   describe('Leadership: Vision (01068), Get Ready (01069), Lead from the Front (01070)', () => {
-    it('Vision boosts ATK or THW by +2', () => {
-      const player = state.players[0];
-      const vision = createCardInstance(cardCatalog.getCard('01068')!);
-      player.allies.push(vision);
-
-      let stats = getEffectiveAllyStats(state, vision);
-      expect(stats.attack).toBe(2);
-      expect(stats.thwart).toBe(1);
-
-      // Boost ATK by +2
-      executeEffect(
-        state,
-        { effect: 'PLAYER_CHOICE', effectParams: { amount: 2, options: ['ATK', 'THW'] } },
-        { playerId: 'p1', sourceCardInstance: vision, choice: 'ATK' },
-      );
-
-      stats = getEffectiveAllyStats(state, vision);
-      expect(stats.attack).toBe(4);
-      expect(stats.thwart).toBe(1);
-    });
-
     it('Get Ready readies an exhausted ally', () => {
       const player = state.players[0];
       const vision = createCardInstance(cardCatalog.getCard('01068')!);

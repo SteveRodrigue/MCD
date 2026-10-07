@@ -246,12 +246,12 @@ The protected character is always the one the interrupt is about (the damage in 
 
 | Parameter    | Type                                   | Required | Default   | Description                                              |
 | :----------- | :------------------------------------- | :------- | :-------- | :------------------------------------------------------- |
-| `stat`       | `"ATK" \| "THW" \| "DEF" \| "REC"`    | Yes      | `"ATK"`   | The stat to modify.                                       |
+| `stat`       | `"ATTACK" \| "THWART" \| "DEFENSE" \| "RECOVERY"` | Yes | `"ATTACK"` | The stat to modify.                                       |
 | `amount`     | `number \| DynamicValueSource`         | Yes      | `1`       | The additive bonus amount, flat or a formula (`CONSTANT` abilities re-evaluate it on every stat read, e.g. _Jessica Jones_ `01059`: `ENTITY_COUNT` of side schemes). |
 | `duration`   | `"PHASE" \| "ROUND"`                   | Yes      | `"PHASE"` | Expiry window per RR v1.8 timing boundaries.             |
 | `target`     | `TargetSelector`                       | Yes      | `"SELF"`  | Who receives the modifier.                               |
-| `atkBonus`   | `number`                               | No       | -         | Shorthand for `stat: "ATK"` when used with `ALL_CONTROLLED_CHARACTERS`. |
-| `thwBonus`   | `number`                               | No       | -         | Shorthand for `stat: "THW"` when used with `ALL_CONTROLLED_CHARACTERS`. |
+| `atkBonus`   | `number`                               | No       | -         | Shorthand for `stat: "ATTACK"` when used with `ALL_CONTROLLED_CHARACTERS`. |
+| `thwBonus`   | `number`                               | No       | -         | Shorthand for `stat: "THWART"` when used with `ALL_CONTROLLED_CHARACTERS`. |
 | `targetPlayer` | `"SELF" \| "CHOSEN_PLAYER"`         | No       | `"SELF"`  | `CHOSEN_PLAYER` opens a "Choose a Player" prompt in multiplayer (the chosen player's characters get the bonus) and auto-resolves on the resolving player in solo. |
 
 ### Expiry Pipeline
@@ -275,14 +275,14 @@ The protected character is always the one the interrupt is about (the damage in 
         "label": "+2 THW",
         "description": "Vision gets +2 THW until the end of the phase.",
         "effect": "MODIFY_STAT",
-        "params": { "stat": "THW", "amount": 2, "duration": "PHASE", "target": "SELF" }
+        "params": { "stat": "THWART", "amount": 2, "duration": "PHASE", "target": "SELF" }
       },
       {
         "id": "boost_atk",
         "label": "+2 ATK",
         "description": "Vision gets +2 ATK until the end of the phase.",
         "effect": "MODIFY_STAT",
-        "params": { "stat": "ATK", "amount": 2, "duration": "PHASE", "target": "SELF" }
+        "params": { "stat": "ATTACK", "amount": 2, "duration": "PHASE", "target": "SELF" }
       }
     ]
   }

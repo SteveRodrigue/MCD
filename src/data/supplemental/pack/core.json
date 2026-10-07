@@ -748,7 +748,7 @@
     "01019b": {
       "abilities": [
         {
-          "id": "jennifer_walters_thwart",
+          "id": "i_object",
           "timing": "ALTER_EGO_INTERRUPT",
           "trigger": "THREAT_WOULD_BE_PLACED",
           "limit": "ONCE_PER_ROUND",
@@ -1113,7 +1113,7 @@
                 "selectedDestination": "HAND",
                 "unselectedDestination": "DISCARD",
                 "shuffleAfter": false,
-                "promptTitle": "Futurist: Choose 1 Tech card to add to hand",
+                "promptTitle": "Futurist: Choose 1 card to add to your hand",
                 "isVoluntary": false,
                 "autoSelectIfUnambiguous": true
               }
@@ -1549,7 +1549,7 @@
                 "selectedDestination": "HAND",
                 "unselectedDestination": "DECK_SHUFFLE",
                 "shuffleAfter": true,
-                "promptTitle": "King of Wakanda: Choose 1 Black Panther upgrade",
+                "promptTitle": "Foresight: Choose 1 Black Panther upgrade",
                 "autoSelectIfUnambiguous": true
               }
             }
@@ -2551,7 +2551,7 @@
                     "description": "Vision gets +2 THW until the end of the phase.",
                     "effect": "MODIFY_STAT",
                     "params": {
-                      "stat": "THW",
+                      "stat": "THWART",
                       "amount": 2,
                       "duration": "PHASE",
                       "target": "SELF"
@@ -2563,7 +2563,7 @@
                     "description": "Vision gets +2 ATK until the end of the phase.",
                     "effect": "MODIFY_STAT",
                     "params": {
-                      "stat": "ATK",
+                      "stat": "ATTACK",
                       "amount": 2,
                       "duration": "PHASE",
                       "target": "SELF"
@@ -2987,7 +2987,7 @@
       "abilities": [
         {
           "id": "indomitable_ready",
-          "timing": "HERO_INTERRUPT",
+          "timing": "RESPONSE",
           "trigger": "ATTACK_DEFENDED",
           "cost": {
             "discardSelf": true
@@ -2996,7 +2996,7 @@
             {
               "effect": "READY",
               "effectParams": {
-                "target": "SELF_IDENTITY"
+                "target": "SELF_HERO"
               }
             }
           ]
@@ -3008,7 +3008,7 @@
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 50,
+        "confidence": 95,
         "originalText": "<b>Response</b>: After your hero defends, discard indomitable → ready your hero."
       }
     },
@@ -3064,7 +3064,7 @@
                   {
                     "id": "remove_2_threat",
                     "label": "Remove 2 Threat",
-                    "description": "Remove 2 threat from the active main scheme.",
+                    "description": "Remove 2 threat from a scheme.",
                     "effect": "REMOVE_THREAT",
                     "params": {
                       "amount": 2,

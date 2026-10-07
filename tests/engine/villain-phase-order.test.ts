@@ -131,13 +131,13 @@ describe('Villain Phase End Ordering & RR v1.8 Step Alignment (Issue #145)', () 
     // Give P1 phase-duration stat modifier and cost reduction, and usedAbilitiesThisPhase
     gameState.players[0].activeStatModifiers = [
       {
-        stat: 'ATK',
+        stat: 'ATTACK',
         amount: 2,
         duration: 'PHASE',
         sourceCardName: 'test_phase_buff',
       },
       {
-        stat: 'DEF',
+        stat: 'DEFENSE',
         amount: 1,
         duration: 'ROUND',
         sourceCardName: 'test_round_buff',

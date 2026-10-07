@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T01:54:50.056Z` | **Active Effects In Use:** **44/55**
+> **Generated:** `2026-10-07T11:58:46.018Z` | **Active Effects In Use:** **44/55**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
@@ -252,7 +252,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01019b` | **Jennifer Walters (alter_ego)** | `core` | `jennifer_walters_thwart` |
+| `01019b` | **Jennifer Walters (alter_ego)** | `core` | `i_object` |
 | `01061` | **Great Responsibility (event)** | `core` | `great_responsibility_interrupt` |
 | `01085` | **Emergency (event)** | `core` | `emergency_interrupt` |
 

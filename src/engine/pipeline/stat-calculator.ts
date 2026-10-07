@@ -163,8 +163,8 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
 
   // Add active temporary stat modifiers on this ally (e.g. Vision 01068, Lead from the Front 01070)
   for (const mod of ally.activeStatModifiers || []) {
-    if (mod.stat === 'THW' || mod.stat === 'THWART') thwart += mod.amount;
-    if (mod.stat === 'ATK' || mod.stat === 'ATTACK') attack += mod.amount;
+    if (mod.stat === 'THWART') thwart += mod.amount;
+    if (mod.stat === 'ATTACK') attack += mod.amount;
   }
 
   return {
@@ -429,7 +429,7 @@ export function getEffectiveHeroStats(state: GameState, player: PlayerState): Ef
             if (stepParams.stat === 'THWART') thwart += amount;
             if (stepParams.stat === 'ATTACK') attack += amount;
             if (stepParams.stat === 'DEFENSE') defense += amount;
-            if (stepParams.stat === 'RECOVER' || stepParams.stat === 'RECOVERY') recovery += amount;
+            if (stepParams.stat === 'RECOVERY') recovery += amount;
           }
           if (step.effect === 'GRANT_KEYWORD' && stepParams.keyword) {
             keywords.push(stepParams.keyword as string);
@@ -441,11 +441,10 @@ export function getEffectiveHeroStats(state: GameState, player: PlayerState): Ef
 
   // Add active temporary stat modifiers on the player (e.g. Lead from the Front 01070)
   for (const mod of player.activeStatModifiers || []) {
-    if (mod.stat === 'THW' || mod.stat === 'THWART') thwart += mod.amount;
-    if (mod.stat === 'ATK' || mod.stat === 'ATTACK') attack += mod.amount;
-    if (mod.stat === 'DEF' || mod.stat === 'DEFENSE') defense += mod.amount;
-    if (mod.stat === 'REC' || mod.stat === 'RECOVER' || mod.stat === 'RECOVERY')
-      recovery += mod.amount;
+    if (mod.stat === 'THWART') thwart += mod.amount;
+    if (mod.stat === 'ATTACK') attack += mod.amount;
+    if (mod.stat === 'DEFENSE') defense += mod.amount;
+    if (mod.stat === 'RECOVERY') recovery += mod.amount;
   }
 
   return {

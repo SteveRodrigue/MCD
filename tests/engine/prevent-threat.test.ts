@@ -106,7 +106,7 @@ describe('PREVENT_THREAT Primitive Acceptance & Contract Tests (Issue #123, ADR-
       });
 
       expect(firstRes.threatAmount).toBe(2);
-      expect(firstRes.state.players[0].usedAbilitiesThisRound?.['jennifer_walters_thwart']).toBe(1);
+      expect(firstRes.state.players[0].usedAbilitiesThisRound?.['i_object']).toBe(1);
 
       // Second attempt in the same round cannot trigger
       const secondRes = dispatchTrigger(firstRes.state, 'THREAT_WOULD_BE_PLACED', {

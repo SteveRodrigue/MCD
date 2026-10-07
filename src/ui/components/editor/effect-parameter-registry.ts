@@ -26,7 +26,7 @@ export interface EffectDescriptor {
 export const TARGET_OPTIONS = TargetSelectorSchema.options;
 export const RESOURCE_OPTIONS = ResourceTypeSchema.options;
 export const STATUS_OPTIONS = ['STUNNED', 'CONFUSED', 'TOUGH'] as const;
-export const STAT_OPTIONS = ['ATK', 'THW', 'DEF', 'REC', 'ATTACK', 'SCHEME'] as const;
+export const STAT_OPTIONS = ['ATTACK', 'THWART', 'DEFENSE', 'RECOVERY', 'SCHEME'] as const;
 export const KEYWORD_OPTIONS = [
   'Retaliate',
   'Overkill',
@@ -546,14 +546,14 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   // 6. Character Stats & Trait Modifiers
   MODIFY_STAT: {
     effect: 'MODIFY_STAT',
-    description: 'Modify dynamic ATK, THW, DEF, or REC stat on target character.',
+    description: 'Modify dynamic ATTACK, THWART, DEFENSE, or RECOVERY stat on target character.',
     parameters: [
       {
         key: 'stat',
         label: 'Stat',
         type: 'select',
         options: STAT_OPTIONS,
-        defaultValue: 'ATK',
+        defaultValue: 'ATTACK',
       },
       {
         key: 'amount',

@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Refactor (Engine + Data + Card Editor + Docs): card-named effect `EXECUTE_WAKANDA_FOREVER` removed ([Issue #254](https://github.com/SteveRodrigue/MCD/issues/254))**
+  - `EXECUTE_WAKANDA_FOREVER` is deleted (schema, `schema.json`, engine, Card Editor); `01043a` to `01043d` use the generic `EXECUTE_SPECIAL` with `specialId: "WAKANDA_FOREVER"`. `EXECUTE_SPECIAL` no longer defaults `specialId` to a card: a missing `specialId` fails the step. Its keys `specialId` and `sequenceOrder` are in the `effectParams` table and the editor. The four `01043a-d` entries stay (one per upstream code). `tests/engine/execute-special.test.ts`.
+
 - **Fix (Data + Engine + Card Editor + Docs): core player cards Tier 1 data accuracy, canonical stat names ([Issue #258](https://github.com/SteveRodrigue/MCD/issues/258))**
   - Data (`core.json`): Indomitable `01082` is a `RESPONSE` that readies `SELF_HERO` (confidence 50 to 95); Jennifer Walters `01019b` ability id `i_object`; prompt strings of Tony Stark Futurist, T'Challa Foresight and Nick Fury match the printed text; Vision `01068` options use `THWART` / `ATTACK`. Energy Channel `01018` had no cap left after #231; Luke Cage (#253) was fixed by #283.
   - Engine: a stat modifier is `ATTACK`, `THWART`, `DEFENSE` or `RECOVERY` only. The aliases `ATK`, `THW`, `DEF`, `REC`, `RECOVER` are removed from `ActiveStatModifier`, the stat calculator, `MODIFY_STAT`, the Card Editor and the specs. The unused `PLAYER_CHOICE` shortcut (`context.choice`, `effectParams.stat`, string `options`) is removed: a choice is a list of option objects, like Nick Fury and Vision. `tests/data/core-player-tier1.test.ts`, Vision ATTACK test.

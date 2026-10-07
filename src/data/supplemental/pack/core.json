@@ -1654,8 +1654,10 @@
           "timing": "HERO_ACTION",
           "steps": [
             {
-              "effect": "EXECUTE_WAKANDA_FOREVER",
-              "effectParams": {}
+              "effect": "EXECUTE_SPECIAL",
+              "effectParams": {
+                "specialId": "WAKANDA_FOREVER"
+              }
             }
           ]
         }
@@ -1687,8 +1689,10 @@
           "timing": "HERO_ACTION",
           "steps": [
             {
-              "effect": "EXECUTE_WAKANDA_FOREVER",
-              "effectParams": {}
+              "effect": "EXECUTE_SPECIAL",
+              "effectParams": {
+                "specialId": "WAKANDA_FOREVER"
+              }
             }
           ]
         }
@@ -1720,8 +1724,10 @@
           "timing": "HERO_ACTION",
           "steps": [
             {
-              "effect": "EXECUTE_WAKANDA_FOREVER",
-              "effectParams": {}
+              "effect": "EXECUTE_SPECIAL",
+              "effectParams": {
+                "specialId": "WAKANDA_FOREVER"
+              }
             }
           ]
         }
@@ -1753,8 +1759,10 @@
           "timing": "HERO_ACTION",
           "steps": [
             {
-              "effect": "EXECUTE_WAKANDA_FOREVER",
-              "effectParams": {}
+              "effect": "EXECUTE_SPECIAL",
+              "effectParams": {
+                "specialId": "WAKANDA_FOREVER"
+              }
             }
           ]
         }

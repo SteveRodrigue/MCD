@@ -1171,12 +1171,15 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   EXECUTE_SPECIAL: {
     effect: 'EXECUTE_SPECIAL',
     description: 'Execute signature card-specific special logic.',
-    parameters: [],
-  },
-  EXECUTE_WAKANDA_FOREVER: {
-    effect: 'EXECUTE_WAKANDA_FOREVER',
-    description: 'Resolve Black Panther Wakanda Forever multi-upgrade chain.',
-    parameters: [],
+    parameters: [
+      {
+        key: 'specialId',
+        label: 'Special Handler Id',
+        type: 'text',
+        placeholder: 'e.g. WAKANDA_FOREVER',
+      },
+      { key: 'sequenceOrder', label: 'Sequence Order (instance ids)', type: 'json' },
+    ],
   },
   PLAYER_CHOICE: {
     effect: 'PLAYER_CHOICE',

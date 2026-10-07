@@ -70,3 +70,7 @@ Each Special is an **ordered step**, so a step that needs a decision must finish
 - The card-coded fallbacks for `01047`-`01049` were removed: all four upgrades declare a `SPECIAL` ability in supplemental data.
 - Step failures inside `executeSequence` remain swallowed engine-wide (tracked in #225).
 
+## Addendum (Issue #254)
+
+- The card-named alias `EXECUTE_WAKANDA_FOREVER` is removed (ADR-0021). Wakanda Forever! `01043a-d` declare `EXECUTE_SPECIAL` with `effectParams.specialId: "WAKANDA_FOREVER"`.
+- `specialId` is required: there is no default handler. `sequenceOrder` is the optional pre-chosen order consumed by that handler.

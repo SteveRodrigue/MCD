@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T11:58:46.018Z` | **Active Effects In Use:** **44/55**
+> **Generated:** `2026-10-07T12:08:39.991Z` | **Active Effects In Use:** **44/54**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
@@ -214,7 +214,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01072` | **The Power of Leadership (resource)** | `core` | `power_of_leadership` |
 | `01079` | **The Power of Protection (resource)** | `core` | `power_of_protection` |
 
-### <a id="execute-wakanda-forever"></a>`EXECUTE_WAKANDA_FOREVER` (4 Cards, 4 Step Occurrences)
+### <a id="execute-special"></a>`EXECUTE_SPECIAL` (4 Cards, 4 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |

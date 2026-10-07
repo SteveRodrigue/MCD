@@ -228,6 +228,15 @@ The protected character is always the one the interrupt is about (the damage in 
 
 ---
 
+### `EXECUTE_SPECIAL` (Special Ability Handler)
+
+Delegates to a registered handler of `src/engine/specials/` (ADR-0038).
+
+| Key | Required | Meaning |
+| :-- | :-- | :-- |
+| `specialId` | yes | Handler id, e.g. `WAKANDA_FOREVER`. A missing or unknown id fails the step. |
+| `sequenceOrder` | no | Instance ids in the order to resolve, skipping the ordering prompt. |
+
 ## 4. Temporary Stat Modifier Auras (`MODIFY_STAT`)
 
 - **References:** ADR-0062 / _Vision_ `01068` / _Lead from the Front_ `01070`

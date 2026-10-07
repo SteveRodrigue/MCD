@@ -511,19 +511,6 @@ export function resolveDecisionPrompt(
       pendingPlacement.amount = Math.max(0, effectContext.threatAmount);
     }
 
-    if (
-      canInitiate &&
-      optAbility.steps?.some(
-        (s) =>
-          s.effect === 'CANCEL_WHEN_REVEALED' ||
-          s.effect === 'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER',
-      )
-    ) {
-      if (nextState.activeEncounterContext) {
-        nextState.activeEncounterContext.cancelled = true;
-      }
-    }
-
     if (canInitiate) {
       nextState.log.push({
         id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,

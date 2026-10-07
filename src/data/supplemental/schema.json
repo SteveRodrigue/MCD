@@ -57,6 +57,7 @@
                     "CARD_PLAYED",
                     "ENTERS_PLAY",
                     "MINION_ENTERS_PLAY",
+                    "ENCOUNTER_CARD_REVEALED",
                     "TREACHERY_REVEALED",
                     "CHARACTER_DEFEATED",
                     "SCHEME_DEFEATED",
@@ -506,6 +507,9 @@
                           "UNDEFENDED_ATTACK",
                           "ZONE_EMPTY"
                         ]
+                      },
+                      "cannotBeCanceled": {
+                        "type": "boolean"
                       }
                     },
                     "required": [

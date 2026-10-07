@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T12:19:27.374Z` | **Active Target Selectors In Use:** **29/43**
+> **Generated:** `2026-10-07T19:00:29.862Z` | **Active Target Selectors In Use:** **29/43**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -57,7 +57,7 @@
 | `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
 | `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
 
-### <a id="self"></a>`SELF` (10 Cards, 10 Declarations)
+### <a id="self"></a>`SELF` (11 Cards, 11 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -71,6 +71,7 @@
 | `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
 | `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_response` |
 | `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
+| `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
 ### <a id="chosen-player"></a>`CHOSEN_PLAYER` (4 Cards, 4 Declarations)
 

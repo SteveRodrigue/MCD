@@ -19,6 +19,10 @@ import {
   extractResourceCost,
 } from '../pipeline/cost-engine';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
+import {
+  abilityCancelsEncounterReveal,
+  canCancelEncounterReveal,
+} from '../pipeline/encounter-cancel';
 import { InfiniteLoopError, TriggerCallNode } from '../errors/infinite-loop-error';
 
 export const MAX_TRIGGER_DEPTH = 15;
@@ -50,6 +54,18 @@ function displayTriggerName(trigger: string): string {
 
 function displayEffectName(effect: string): string {
   return effect;
+}
+
+/**
+ * An ability that cancels the reveal of an encounter card is not offered when that reveal cannot
+ * be canceled (RR v1.8 Cancel; see `canCancelEncounterReveal`).
+ */
+function revealCannotBeCanceledBy(ability: CardAbility, context: TriggerContext): boolean {
+  return (
+    context.encounterCardInstance !== undefined &&
+    abilityCancelsEncounterReveal(ability) &&
+    !canCancelEncounterReveal(context.encounterCardInstance)
+  );
 }
 
 export function matchesTriggerFilter(
@@ -436,6 +452,7 @@ function scanHandReactions(
           triggersAreEquivalent(a.trigger, trigger) ||
           (spec.alsoTriggers ?? []).some((t) => triggersAreEquivalent(a.trigger, t));
         if (!triggerMatches || a.zone !== 'HAND') return false;
+        if (revealCannotBeCanceledBy(a, context)) return false;
         if (a.timing.startsWith('HERO_') && p.currentForm !== 'hero') return false;
         if (a.timing.startsWith('ALTER_EGO_') && p.currentForm !== 'alter_ego') return false;
         if (!canPayAbilityCost(state, p, a, card).allowed) return false;
@@ -583,6 +600,7 @@ export function dispatchTrigger(
     player && !playerAbilitiesSuspended ? player.activeFormCard?.enrichment?.abilities || [] : [];
   for (const ability of identityAbilities) {
     if (triggersAreEquivalent(ability.trigger, trigger)) {
+      if (revealCannotBeCanceledBy(ability, context)) continue;
       if (
         (ability.timing === 'HERO_INTERRUPT' || ability.timing === 'HERO_RESPONSE') &&
         player.currentForm !== 'hero'
@@ -752,6 +770,7 @@ export function dispatchTrigger(
       const abilities = cardInst.card.enrichment?.abilities || [];
       for (const ability of abilities) {
         if (triggersAreEquivalent(ability.trigger, trigger)) {
+          if (revealCannotBeCanceledBy(ability, context)) continue;
           if (
             (ability.timing === 'HERO_INTERRUPT' || ability.timing === 'HERO_RESPONSE') &&
             controller.currentForm !== 'hero'
@@ -1061,7 +1080,7 @@ export function dispatchTrigger(
 
   // 5. In-hand reactions to an encounter card being revealed (e.g. Enhanced Spider-Sense 01004,
   // Get Behind Me! 01078). Only the targeted player.
-  if (trigger === 'WHEN_REVEALED' || trigger === 'TREACHERY_REVEALED') {
+  if (trigger === 'ENCOUNTER_CARD_REVEALED' || trigger === 'TREACHERY_REVEALED') {
     if (
       scanHandReactions(state, trigger, context, currentChain, [player], {
         resolve: ({ player: p, card, ability, chain }) => {
@@ -1071,9 +1090,6 @@ export function dispatchTrigger(
             triggerChain: chain,
           });
           isCancelled = true;
-          if (state.activeEncounterContext) {
-            state.activeEncounterContext.cancelled = true;
-          }
         },
         promptFields: () => ({
           triggerSourceName:

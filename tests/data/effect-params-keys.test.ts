@@ -5,7 +5,7 @@ import { EffectTypeSchema } from '../../src/data/supplemental/schema';
 import { EFFECT_PARAM_KEYS } from '../../src/data/supplemental/effect-params';
 
 const PACK_DIR = path.resolve(__dirname, '../../src/data/supplemental/pack');
-const PACK_FILES = ['core.json', 'core_encounter.json', 'cw_encounter.json'];
+const PACK_FILES = ['core.json', 'core_encounter.json', 'cw_encounter.json', 'mts.json'];
 
 interface Violation {
   card: string;

@@ -63,6 +63,7 @@ export const TriggerTypeSchema = z.enum([
   'CARD_PLAYED',
   'ENTERS_PLAY',
   'MINION_ENTERS_PLAY',
+  'ENCOUNTER_CARD_REVEALED',
   'TREACHERY_REVEALED',
   'CHARACTER_DEFEATED',
   'SCHEME_DEFEATED',
@@ -801,6 +802,7 @@ export const AbilityStepSchema = z
     gate: ConditionGateSchema.optional(),
     filter: FilterSchema.optional(),
     condition: StepConditionSchema.optional(),
+    cannotBeCanceled: z.boolean().optional(),
   })
   .strict();
 

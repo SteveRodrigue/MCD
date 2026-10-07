@@ -29,6 +29,7 @@ import { initiateEnemyAttack, CombatOptions } from './combat-pipeline';
 export type { CombatOptions };
 import { drawEncounterCard } from './deck-exhaustion';
 import { dealSurgeCard } from './surge';
+import { getResolvingRevealAbilities } from './encounter-cancel';
 import { resolveRevealedObligation } from './obligations';
 export { drawEncounterCard };
 import { peekDecisionPrompt } from './prompt-queue';
@@ -581,7 +582,6 @@ export function step4_revealEncounterCards(
 
     while (player.dealtEncounterCards.length > 0) {
       const cardInstance = player.dealtEncounterCards.shift()!;
-      const card = cardInstance.card;
 
       state.activeEncounterContext = {
         encounterInstanceId: cardInstance.instanceId,
@@ -589,40 +589,13 @@ export function step4_revealEncounterCards(
         targetPlayerId: player.id,
       };
 
-      // 1. Dispatch interrupt trigger for card reveal (WHEN_REVEALED and TREACHERY_REVEALED)
-      const whenRevealedAbilities = (card.enrichment?.abilities || []).filter(
-        (a) => a.trigger === 'WHEN_REVEALED' || a.timing === 'WHEN_REVEALED',
-      );
+      // 1. Interrupt window of the reveal: every encounter card can be interrupted, whether or not
+      // it has a When Revealed ability (Black Widow 01075).
+      const isCancelled = dispatchRevealInterrupts(state, cardInstance, player.id, options);
 
-      let isCancelled = false;
-
-      if (whenRevealedAbilities.length > 0) {
-        // Dispatch WHEN_REVEALED trigger
-        const triggerRes = dispatchTrigger(state, 'WHEN_REVEALED', {
-          targetPlayerId: player.id,
-          encounterCardInstance: cardInstance,
-          acceptOptionalTriggers: options?.acceptOptionalTriggers,
-        });
-        if (triggerRes.cancelled || state.activeEncounterContext?.cancelled) {
-          isCancelled = true;
-        }
-
-        // If card is a Treachery, also dispatch TREACHERY_REVEALED trigger
-        if (!isCancelled && card.type === CardType.TREACHERY) {
-          const treacheryRes = dispatchTrigger(state, 'TREACHERY_REVEALED', {
-            targetPlayerId: player.id,
-            encounterCardInstance: cardInstance,
-            acceptOptionalTriggers: options?.acceptOptionalTriggers,
-          });
-          if (treacheryRes.cancelled || state.activeEncounterContext?.cancelled) {
-            isCancelled = true;
-          }
-        }
-
-        // If a decision prompt was queued for the player to interrupt, halt and wait for choice
-        if (peekDecisionPrompt(state)) {
-          return state;
-        }
+      // If a decision prompt was queued for the player to interrupt, halt and wait for choice
+      if (peekDecisionPrompt(state)) {
+        return state;
       }
 
       resolveActiveEncounterCardAfterInterrupt(state, cardInstance, player, isCancelled);
@@ -637,6 +610,47 @@ export function step4_revealEncounterCards(
 }
 
 /**
+ * Opens the interrupt window of a reveal: ENCOUNTER_CARD_REVEALED for every encounter card, then
+ * TREACHERY_REVEALED for treacheries. Returns true when the reveal was cancelled.
+ */
+function dispatchRevealInterrupts(
+  state: GameState,
+  cardInstance: CardInstance,
+  playerId: string,
+  options?: CombatOptions,
+): boolean {
+  const context = {
+    targetPlayerId: playerId,
+    encounterCardInstance: cardInstance,
+    acceptOptionalTriggers: options?.acceptOptionalTriggers,
+  };
+  let isCancelled = false;
+  const whenRevealed = dispatchTrigger(state, 'ENCOUNTER_CARD_REVEALED', context);
+  if (whenRevealed.cancelled || state.activeEncounterContext?.cancelled) isCancelled = true;
+
+  if (!isCancelled && cardInstance.card.type === CardType.TREACHERY) {
+    const treachery = dispatchTrigger(state, 'TREACHERY_REVEALED', context);
+    if (treachery.cancelled || state.activeEncounterContext?.cancelled) isCancelled = true;
+  }
+  return isCancelled;
+}
+
+/**
+ * Resolves the When Revealed abilities of a card: all of them, or only the effects that cannot be
+ * canceled when the reveal was cancelled.
+ */
+function resolveWhenRevealedAbilities(
+  state: GameState,
+  cardInstance: CardInstance,
+  player: PlayerState,
+  isCancelled: boolean,
+): void {
+  for (const ability of getResolvingRevealAbilities(cardInstance, isCancelled)) {
+    executeEffect(state, ability, { playerId: player.id, sourceCardInstance: cardInstance });
+  }
+}
+
+/**
  * Resolves the effects and final destination of an active encounter card
  * after any When Revealed / Treachery reveal interrupts have resolved.
  */
@@ -647,6 +661,28 @@ export function resolveActiveEncounterCardAfterInterrupt(
   isCancelled: boolean,
 ): void {
   const card = cardInstance.card;
+
+  // "Cancel the effects of that card and discard it" (Black Widow 01075): the card does not enter
+  // play. Effects declared `cannotBeCanceled` still resolve.
+  if (
+    isCancelled &&
+    state.activeEncounterContext?.discardCard &&
+    card.type !== CardType.TREACHERY
+  ) {
+    resolveWhenRevealedAbilities(state, cardInstance, player, true);
+    if (!state.removedFromGame.some((c) => c.instanceId === cardInstance.instanceId)) {
+      state.encounterDiscard.push(cardInstance);
+    }
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      key: 'encounter.reveal.cancelledAndDiscarded',
+      params: { card: card.name },
+      onomatopoeia: 'CANCELLED!',
+    });
+    state.activeEncounterContext = undefined;
+    return;
+  }
 
   if (card.type === CardType.MINION) {
     // Check Toughness keyword
@@ -661,18 +697,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
       params: { player: player.name, minion: card.name },
       onomatopoeia: 'MINION SPAWNS!',
     });
-    const abilities = card.enrichment?.abilities || [];
-    for (const ability of abilities) {
-      if (
-        (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'WHEN_REVEALED') &&
-        !isCancelled
-      ) {
-        executeEffect(state, ability, {
-          playerId: player.id,
-          sourceCardInstance: cardInstance,
-        });
-      }
-    }
+    resolveWhenRevealedAbilities(state, cardInstance, player, isCancelled);
 
     dispatchTrigger(state, 'MINION_ENTERS_PLAY', {
       targetPlayerId: player.id,
@@ -696,18 +721,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
       params: { sideScheme: card.name, threat: baseThreat },
       onomatopoeia: 'SIDE SCHEME!',
     });
-    const abilities = card.enrichment?.abilities || [];
-    for (const ability of abilities) {
-      if (
-        (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'WHEN_REVEALED') &&
-        !isCancelled
-      ) {
-        executeEffect(state, ability, {
-          playerId: player.id,
-          sourceCardInstance: cardInstance,
-        });
-      }
-    }
+    resolveWhenRevealedAbilities(state, cardInstance, player, isCancelled);
   } else if (card.type === CardType.OBLIGATION) {
     resolveRevealedObligation(state, cardInstance, player);
   } else if (card.type === CardType.ATTACHMENT) {
@@ -719,32 +733,14 @@ export function resolveActiveEncounterCardAfterInterrupt(
       params: { attachment: card.name, host: getActiveVillain(state).card.name },
       onomatopoeia: 'ATTACHED!',
     });
-    const abilities = card.enrichment?.abilities || [];
-    for (const ability of abilities) {
-      if (
-        (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'WHEN_REVEALED') &&
-        !isCancelled
-      ) {
-        executeEffect(state, ability, {
-          playerId: player.id,
-          sourceCardInstance: cardInstance,
-        });
-      }
-    }
+    resolveWhenRevealedAbilities(state, cardInstance, player, isCancelled);
   } else {
     // Treachery generic resolution: execute declarative WHEN_REVEALED unless cancelled
-    if (!isCancelled) {
-      const abilities = card.enrichment?.abilities || [];
-      for (const ability of abilities) {
-        if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'WHEN_REVEALED') {
-          executeEffect(state, ability, {
-            playerId: player.id,
-            sourceCardInstance: cardInstance,
-          });
-        }
-      }
+    resolveWhenRevealedAbilities(state, cardInstance, player, isCancelled);
+    // A card that removed itself from the game (Eternity) does not go to the discard pile.
+    if (!state.removedFromGame.some((c) => c.instanceId === cardInstance.instanceId)) {
+      state.encounterDiscard.push(cardInstance);
     }
-    state.encounterDiscard.push(cardInstance);
     state.log.push({
       id: `log_${Date.now()}`,
       timestamp: Date.now(),
@@ -1055,7 +1051,6 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
 
     if (targetPlayer && targetPlayer.dealtEncounterCards.length > 0) {
       const cardInstance = targetPlayer.dealtEncounterCards.shift()!;
-      const card = cardInstance.card;
 
       nextState.activeEncounterContext = {
         encounterInstanceId: cardInstance.instanceId,
@@ -1063,35 +1058,15 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
         targetPlayerId: targetPlayer.id,
       };
 
-      const whenRevealedAbilities = (card.enrichment?.abilities || []).filter(
-        (a) => a.trigger === 'WHEN_REVEALED' || a.timing === 'WHEN_REVEALED',
+      const isCancelled = dispatchRevealInterrupts(
+        nextState,
+        cardInstance,
+        targetPlayer.id,
+        options,
       );
 
-      let isCancelled = false;
-      if (whenRevealedAbilities.length > 0) {
-        const triggerRes = dispatchTrigger(nextState, 'WHEN_REVEALED', {
-          targetPlayerId: targetPlayer.id,
-          encounterCardInstance: cardInstance,
-          acceptOptionalTriggers: options?.acceptOptionalTriggers,
-        });
-        if (triggerRes.cancelled || nextState.activeEncounterContext?.cancelled) {
-          isCancelled = true;
-        }
-
-        if (!isCancelled && card.type === CardType.TREACHERY) {
-          const treacheryRes = dispatchTrigger(nextState, 'TREACHERY_REVEALED', {
-            targetPlayerId: targetPlayer.id,
-            encounterCardInstance: cardInstance,
-            acceptOptionalTriggers: options?.acceptOptionalTriggers,
-          });
-          if (treacheryRes.cancelled || nextState.activeEncounterContext?.cancelled) {
-            isCancelled = true;
-          }
-        }
-
-        if (peekDecisionPrompt(nextState)) {
-          return nextState;
-        }
+      if (peekDecisionPrompt(nextState)) {
+        return nextState;
       }
 
       resolveActiveEncounterCardAfterInterrupt(nextState, cardInstance, targetPlayer, isCancelled);

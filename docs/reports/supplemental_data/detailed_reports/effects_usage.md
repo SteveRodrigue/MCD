@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T12:19:27.374Z` | **Active Effects In Use:** **44/54**
+> **Generated:** `2026-10-07T19:00:29.862Z` | **Active Effects In Use:** **45/54**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
@@ -103,6 +103,22 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
 | `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
 
+### <a id="draw"></a>`DRAW` (11 Cards, 11 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
+| `01010a` | **Captain Marvel (hero)** | `core` | `rechannel` |
+| `01010b` | **Carol Danvers (alter_ego)** | `core` | `commander` |
+| `01013` | **Photonic Blast (event)** | `core` | `photonic_blast` |
+| `01015` | **Alpha Flight Station (support)** | `core` | `alpha_flight_station` |
+| `01025` | **Split Personality (event)** | `core` | `split_personality` |
+| `01027` | **Focused Rage (upgrade)** | `core` | `focused_rage` |
+| `01045` | **The Golden City (support)** | `core` | `golden_city` |
+| `01067` | **Maria Hill (ally)** | `core` | `maria_hill_enters_play` |
+| `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
+| `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
+
 ### <a id="surge"></a>`SURGE` (11 Cards, 11 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -132,21 +148,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
 | `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
-
-### <a id="draw"></a>`DRAW` (10 Cards, 10 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
-| `01010a` | **Captain Marvel (hero)** | `core` | `rechannel` |
-| `01010b` | **Carol Danvers (alter_ego)** | `core` | `commander` |
-| `01013` | **Photonic Blast (event)** | `core` | `photonic_blast` |
-| `01015` | **Alpha Flight Station (support)** | `core` | `alpha_flight_station` |
-| `01025` | **Split Personality (event)** | `core` | `split_personality` |
-| `01027` | **Focused Rage (upgrade)** | `core` | `focused_rage` |
-| `01045` | **The Golden City (support)** | `core` | `golden_city` |
-| `01067` | **Maria Hill (ally)** | `core` | `maria_hill_enters_play` |
-| `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 
 ### <a id="player-choice"></a>`PLAYER_CHOICE` (10 Cards, 10 Step Occurrences)
 
@@ -383,6 +384,12 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
+
+### <a id="remove-from-game"></a>`REMOVE_FROM_GAME` (1 Cards, 1 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
 ### <a id="reveal-encounter-card"></a>`REVEAL_ENCOUNTER_CARD` (1 Cards, 1 Step Occurrences)
 

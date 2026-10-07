@@ -81,6 +81,13 @@ describe('Sub-Milestone 2D-4: Aspect Cards & Encounter Promotion Pass (Inbox Zer
       const player = state.players[0];
       player.dealtEncounterCards = [];
       state.encounterDeck = [createCardInstance(cardCatalog.getCard('01094')!)];
+      // A reveal is in progress: cancelling needs an encounter card to cancel
+      const revealed = createCardInstance(cardCatalog.getCard('01112')!);
+      state.activeEncounterContext = {
+        encounterInstanceId: revealed.instanceId,
+        encounterCard: revealed,
+        targetPlayerId: 'p1',
+      };
 
       const result = executeEffect(
         state,
@@ -90,6 +97,8 @@ describe('Sub-Milestone 2D-4: Aspect Cards & Encounter Promotion Pass (Inbox Zer
 
       expect(result.success).toBe(true);
       expect(player.dealtEncounterCards.length).toBe(1);
+      expect(state.activeEncounterContext?.cancelled).toBe(true);
+      expect(state.activeEncounterContext?.discardCard).toBe(true);
     });
 
     it('Tenacity readies your hero', () => {

@@ -46,6 +46,7 @@ import {
   drawPlayerCard,
 } from '../pipeline/deck-exhaustion';
 import { dealSurgeCard } from '../pipeline/surge';
+import { canCancelEncounterReveal } from '../pipeline/encounter-cancel';
 import { chooseStepTarget } from './target-choice';
 import {
   enqueueDecisionPrompt,
@@ -385,6 +386,22 @@ export function discardCardInstance(
       });
     }
   }
+}
+
+/**
+ * Cancels the reveal in progress: the encounter card's When Revealed effects do not resolve
+ * (steps declared `cannotBeCanceled` still do). With `discardCard` the card is also discarded and
+ * does not enter play. Returns a failed result when there is nothing to cancel.
+ */
+function cancelActiveEncounterReveal(state: GameState, discardCard: boolean): EffectResult | null {
+  const encounter = state.activeEncounterContext;
+  if (!encounter) return { state, success: false, error: 'No encounter card is being revealed' };
+  if (!canCancelEncounterReveal(encounter.encounterCard)) {
+    return { state, success: false, error: 'The reveal of this card cannot be canceled' };
+  }
+  encounter.cancelled = true;
+  if (discardCard) encounter.discardCard = true;
+  return null;
 }
 
 /**
@@ -4368,6 +4385,8 @@ export function executeStep(
     }
 
     case 'CANCEL_WHEN_REVEALED': {
+      const cancelRes = cancelActiveEncounterReveal(state, false);
+      if (cancelRes) return cancelRes;
       const onomatopoeia = 'CANCELLED!';
       state.log.push({
         id: `log_${Date.now()}`,
@@ -5093,6 +5112,8 @@ export function executeStep(
     }
 
     case 'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER': {
+      const cancelRes = cancelActiveEncounterReveal(state, true);
+      if (cancelRes) return cancelRes;
       const replacement = drawEncounterCard(state);
       if (replacement) {
         player.dealtEncounterCards.push(replacement);

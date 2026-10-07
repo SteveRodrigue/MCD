@@ -2788,7 +2788,7 @@
         {
           "id": "black_widow_cancel",
           "timing": "INTERRUPT",
-          "trigger": "TREACHERY_REVEALED",
+          "trigger": "ENCOUNTER_CARD_REVEALED",
           "cost": {
             "exhaustSelf": true,
             "resourceCost": {

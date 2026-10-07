@@ -43,6 +43,7 @@ export type TriggerType =
   | 'CARD_PLAYED'
   | 'ENTERS_PLAY'
   | 'MINION_ENTERS_PLAY'
+  | 'ENCOUNTER_CARD_REVEALED'
   | 'TREACHERY_REVEALED'
   | 'CHARACTER_DEFEATED'
   | 'SCHEME_DEFEATED'
@@ -167,6 +168,8 @@ export interface AbilityStep {
   gate?: ConditionGate;
   filter?: Record<string, unknown>;
   condition?: StepCondition;
+  /** "This effect cannot be canceled": still resolves when the card's reveal is cancelled. */
+  cannotBeCanceled?: boolean;
 }
 
 export interface CardAbility {

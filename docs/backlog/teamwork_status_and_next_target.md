@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
 > **Last updated:** 2026-10-07
-> **Repository state:** `main`, last commit is #243; #258 is done in the working tree, not committed yet. Check `git log -1` and `git status` first.
+> **Repository state:** `main`, last commit is #261; #255 is done in the working tree, not committed yet. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 2,240 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 2,265 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -56,6 +56,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | Triage of #282, #283 | 2 new Dev Mode reports: #283 T'Challa setup prompt (P1, queued as 3i), #282 removed-from-game pile (P2) | GitHub only |
 | #258 | Core player cards Tier 1: Indomitable Response / `SELF_HERO`, Jennifer id `i_object`, prompt strings, Vision `THWART` / `ATTACK`; stat aliases `ATK` / `THW` / `DEF` / `REC` and the `PLAYER_CHOICE` shortcut removed; closes #253 (done by #283) | `git log --grep "#258"` |
 | #254 | `EXECUTE_WAKANDA_FOREVER` removed; `01043a-d` use `EXECUTE_SPECIAL` with a required `specialId` (ADR-0038 addendum) | `git log --grep "#254"` |
+| #255 | Black Widow `01075` reacts to any revealed encounter card (interrupt window for every card, cancelled card discarded); step flag `cannotBeCanceled`, `canCancelEncounterReveal`, proof card Eternity `21054` (ADR-0019 addendum); whole-card flag [#286](https://github.com/SteveRodrigue/MCD/issues/286) | `git log --grep "#255"` |
 
 ---
 
@@ -133,7 +134,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 
 ### 3.4 Core player cards review
 
-Tier 1 (#258, #253) is done. Tier 2 (#254 done): [#255](https://github.com/SteveRodrigue/MCD/issues/255) (Black Widow trigger), [#256](https://github.com/SteveRodrigue/MCD/issues/256) (Backflip attack filter), [#257](https://github.com/SteveRodrigue/MCD/issues/257) (Tigra and Superhuman Strength attacker guard), [#259](https://github.com/SteveRodrigue/MCD/issues/259) (Relentless Assault, player-trait condition, attach timing); Emergency is [#240](https://github.com/SteveRodrigue/MCD/issues/240), Lead from the Front is [#251](https://github.com/SteveRodrigue/MCD/issues/251). Re-verification of low-confidence entries: [#260](https://github.com/SteveRodrigue/MCD/issues/260). Owner questions: [#261](https://github.com/SteveRodrigue/MCD/issues/261).
+Tier 1 (#258, #253) is done. Tier 2 (#254, #255 done): [#256](https://github.com/SteveRodrigue/MCD/issues/256) (Backflip attack filter), [#257](https://github.com/SteveRodrigue/MCD/issues/257) (Tigra and Superhuman Strength attacker guard), [#259](https://github.com/SteveRodrigue/MCD/issues/259) (Relentless Assault, player-trait condition, attach timing); Emergency is [#240](https://github.com/SteveRodrigue/MCD/issues/240), Lead from the Front is [#251](https://github.com/SteveRodrigue/MCD/issues/251). Re-verification of low-confidence entries: [#260](https://github.com/SteveRodrigue/MCD/issues/260). Owner questions: [#261](https://github.com/SteveRodrigue/MCD/issues/261).
 
 ### 3.5 Importer and data quality
 
@@ -181,7 +182,7 @@ See [README.md](README.md) (session start, plan anatomy, owner preferences, wher
 - [#261](https://github.com/SteveRodrigue/MCD/issues/261): 🟢 **Decided and applied 2026-10-07** (uncommitted): `DEFEATED` alias removed, identity timings plain, Alpha Flight Station `01010b` only, deck limits from upstream `deck_limit`, Repulsor Blast one instance. Close the issue after the commit.
 - [#233](https://github.com/SteveRodrigue/MCD/issues/233): how many upgrades/supports did the revealing player control when Caught Off Guard showed no prompt?
 - 2 moderate Dependabot alerts on `main` are not reviewed yet (`dependabot` skill).
-- Next ready item: item 14 once you decide (see below); otherwise the Tier 2 issues of section 3.4 ([#255](https://github.com/SteveRodrigue/MCD/issues/255) to [#257](https://github.com/SteveRodrigue/MCD/issues/257), [#259](https://github.com/SteveRodrigue/MCD/issues/259)).
+- Next ready item: item 14 once you decide (see below); otherwise the Tier 2 issues of section 3.4 ([#256](https://github.com/SteveRodrigue/MCD/issues/256), [#257](https://github.com/SteveRodrigue/MCD/issues/257), [#259](https://github.com/SteveRodrigue/MCD/issues/259)).
 - Whether to schedule item 14 (data read-through) before the remaining Tier 1 cosmetics.
 
 ---

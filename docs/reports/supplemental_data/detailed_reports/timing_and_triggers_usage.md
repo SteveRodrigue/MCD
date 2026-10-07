@@ -2,11 +2,11 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T12:19:27.374Z`
+> **Generated:** `2026-10-07T19:00:29.862Z`
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (31 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (32 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -41,6 +41,7 @@
 | `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
+| `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
 ### <a id="hero-action"></a>`HERO_ACTION` (25 Cards)
 
@@ -240,9 +241,9 @@
 | :--- | :--- | :--- | :--- |
 | `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
 
-## 2. Trigger Windows (`TriggerTypeSchema` — 19/29 In Use)
+## 2. Trigger Windows (`TriggerTypeSchema` — 20/30 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (35 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (36 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -281,6 +282,7 @@
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
 | `01194` | **Unknown Card #01194** | `core_encounter` | `masterplan_when_revealed` |
 | `01195` | **Unknown Card #01195** | `core_encounter` | `under_fire_when_revealed` |
+| `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
 ### <a id="enters-play"></a>`ENTERS_PLAY` (10 Cards)
 
@@ -332,14 +334,6 @@
 | `01061` | **Great Responsibility (event)** | `core` | `great_responsibility_interrupt` |
 | `01085` | **Emergency (event)** | `core` | `emergency_interrupt` |
 
-### <a id="treachery-revealed"></a>`TREACHERY_REVEALED` (3 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01004` | **Enhanced Spider-Sense (event)** | `core` | `enhanced_spider_sense` |
-| `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
-| `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
-
 ### <a id="attack-defended"></a>`ATTACK_DEFENDED` (2 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -368,6 +362,13 @@
 | `01102` | **Sandman (minion)** | `core_encounter` | `sandman_attack_discard` |
 | `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
 
+### <a id="treachery-revealed"></a>`TREACHERY_REVEALED` (2 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01004` | **Enhanced Spider-Sense (event)** | `core` | `enhanced_spider_sense` |
+| `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
+
 ### <a id="basic-attack-performed"></a>`BASIC_ATTACK_PERFORMED` (1 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -379,6 +380,12 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01002` | **Black Cat (ally)** | `core` | `black_cat_when_played` |
+
+### <a id="encounter-card-revealed"></a>`ENCOUNTER_CARD_REVEALED` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
 
 ### <a id="enemy-initiates-attack"></a>`ENEMY_INITIATES_ATTACK` (1 Cards)
 

@@ -226,7 +226,7 @@ export function findUnreadMembers(
   );
 }
 
-const PACK_FILES = ['core.json', 'core_encounter.json', 'cw_encounter.json'];
+const PACK_FILES = ['core.json', 'core_encounter.json', 'cw_encounter.json', 'mts.json'];
 
 /** Card codes of the shipped packs whose supplemental data declares the member (key, or key with that value). */
 export function shippedCardsUsing(member: SchemaMember, root: string): string[] {

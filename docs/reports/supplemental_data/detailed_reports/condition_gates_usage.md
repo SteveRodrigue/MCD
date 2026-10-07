@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T22:55:03.480Z`
+> **Generated:** `2026-10-07T23:16:55.027Z`
 
 ## 1. Condition Gates (`ConditionGateSchema` — 11/14 In Use)
 

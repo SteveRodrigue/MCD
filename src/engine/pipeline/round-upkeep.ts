@@ -1,7 +1,6 @@
 import { GameState, VillainPhaseStep } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
 import { startPlayerPhase } from './player-phase';
-import { discardHostAttachmentsAndTuckedCards, resetCardState } from '../effects';
 
 /**
  * Step 5: Pass First Player Token (RR v1.8 p. 47)
@@ -74,40 +73,6 @@ export function step6_endVillainPhaseAndRound(state: GameState): GameState {
     const playerIdx = (state.firstPlayerIndex + i) % state.players.length;
     const player = state.players[playerIdx];
     dispatchTrigger(state, 'ROUND_ENDED', { targetPlayerId: player.id });
-  }
-
-  // Step 6b: Discard allies with round-end forced discard abilities (e.g. Nick Fury 01084 - ADR-0018)
-  for (const player of state.players) {
-    const endRoundAllies = player.allies.filter((a) => {
-      const abilities = a.card.enrichment?.abilities || [];
-      return abilities.some(
-        (ab) =>
-          (ab.trigger === 'ROUND_ENDED' || ab.timing === 'FORCED_RESPONSE') &&
-          ab.steps?.some(
-            (s) =>
-              s.effect === 'DISCARD_SELF' ||
-              (s.effect === 'DISCARD' && s.effectParams?.source === 'SELF'),
-          ),
-      );
-    });
-    for (const ally of endRoundAllies) {
-      const idx = player.allies.indexOf(ally);
-      if (idx !== -1) {
-        player.allies.splice(idx, 1);
-        discardHostAttachmentsAndTuckedCards(state, ally, player.id);
-        const owner =
-          (ally.ownerId ? state.players.find((p) => p.id === ally.ownerId) : undefined) || player;
-        resetCardState(ally);
-        owner.discard.push(ally);
-        state.log.push({
-          id: `log_${Date.now()}_${ally.instanceId}`,
-          timestamp: Date.now(),
-          key: 'ally.round_end.discarded',
-          params: { ally: ally.card.name, player: player.name },
-          onomatopoeia: 'DISMISSED!',
-        });
-      }
-    }
   }
 
   // Round transition: Increment Round Number

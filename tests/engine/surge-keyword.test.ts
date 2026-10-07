@@ -186,13 +186,27 @@ describe('Surge keyword (#218): reveal 1 additional encounter card after the car
       expect(revealed(a)).toBe(true);
     });
 
-    it('a cancelled When Revealed also cancels Surge (Surge is a When Revealed ability)', () => {
+    it('a cancelled When Revealed text does not cancel the Surge keyword', () => {
       const [a] = deckWithFillers('a');
       const inst = createCardInstance(cardCatalog.getCard('01191')!);
       state.activeEncounterContext = {
         encounterInstanceId: inst.instanceId,
         encounterCard: inst,
         targetPlayerId: 'p1',
+      };
+      resolveActiveEncounterCardAfterInterrupt(state, inst, p1(), true);
+      // The extra card is dealt (revealed later by step 4)
+      expect(p1().dealtEncounterCards).toContain(a);
+    });
+
+    it('a card cancelled and discarded does not surge', () => {
+      const [a] = deckWithFillers('a');
+      const inst = createCardInstance(cardCatalog.getCard('01191')!);
+      state.activeEncounterContext = {
+        encounterInstanceId: inst.instanceId,
+        encounterCard: inst,
+        targetPlayerId: 'p1',
+        discardCard: true,
       };
       resolveActiveEncounterCardAfterInterrupt(state, inst, p1(), true);
       expect(p1().dealtEncounterCards).toHaveLength(0);

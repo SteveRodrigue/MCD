@@ -239,6 +239,7 @@ Not covered yet: a whole card that cannot be canceled (#286) and the global "Tre
 { "effect": "SURGE", "gate": "IF_CARD_IN_PLAY", "gateParams": { "cardCode": "01167" } }
 ```
 
+* **A cancel does not remove the keyword:** cancelling the "When Revealed" effects (`CANCEL_WHEN_REVEALED`, Enhanced Spider-Sense `01004`) cancels the printed text, not a standalone Surge keyword, which still deals the extra card (RR Cancel: only effects are cancelled; FAQ Spider-Man Noir: a keyword resolved on reveal like surge still resolves). "This card gains surge" written inside the When Revealed text is an effect and is cancelled with it. A card cancelled **and discarded** (`CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER`, Black Widow `01075`) does not surge.
 * **At most once per reveal:** the keyword and the effect share one helper that sets a flag on the active encounter context, so a card that prints Surge and also gains it by effect surges once.
 * **Cancelled When Revealed:** Surge is a When Revealed ability, so cancelling the card's When Revealed effects (Enhanced Spider-Sense `01004`, Get Behind Me! `01078`) cancels the surge too.
 * The former card-named composites `HEAL_DAMAGE_WITH_SURGE`, `ADD_STATUS_WITH_SURGE`, `REVEAL_ENCOUNTER_CARD_WITH_SURGE` and `DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE` were removed (unused by every pack, banned by ADR-0021): express them as the ordinary effect plus a gated `SURGE` step.

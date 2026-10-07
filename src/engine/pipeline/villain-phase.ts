@@ -750,10 +750,15 @@ export function resolveActiveEncounterCardAfterInterrupt(
     });
   }
 
-  // Surge keyword: equivalent to "When Revealed: deal yourself 1 facedown encounter card", so a
-  // cancelled When Revealed also cancels it, and a card that already surged by effect does not
-  // surge twice. The extra card is only dealt here; it is revealed after this card has resolved.
-  if (!isCancelled && hasKeyword(card, Keyword.SURGE) && !state.activeEncounterContext?.surged) {
+  // Surge keyword: a keyword outside the "When Revealed" text. Cancelling the When Revealed
+  // effects does not cancel it; only a card that was cancelled and discarded does not surge. A card
+  // that already surged by effect does not surge twice. The extra card is only dealt here; it is
+  // revealed after this card has resolved.
+  if (
+    !state.activeEncounterContext?.discardCard &&
+    hasKeyword(card, Keyword.SURGE) &&
+    !state.activeEncounterContext?.surged
+  ) {
     dealSurgeCard(state, player, card.name);
   }
 

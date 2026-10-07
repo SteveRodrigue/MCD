@@ -266,4 +266,38 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
     // Treachery was cancelled
     expect(resolvedState.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
   });
+  describe('Surge and a cancel of the When Revealed text', () => {
+    const EXHAUSTION = '01191'; // Surge. When Revealed: exhaust your identity
+    const HYDRA_MERCENARY = '01101';
+
+    it('a printed Surge keyword still resolves when only the When Revealed text is cancelled', () => {
+      state.players[0].hand.push(createCardInstance(cardCatalog.getCard('01004')!));
+      state.players[0].hand.push(createCardInstance(cardCatalog.getCard('01005')!));
+      state.encounterDeck = [createCardInstance(cardCatalog.getCard(HYDRA_MERCENARY)!)];
+      state.players[0].dealtEncounterCards.push(
+        createCardInstance(cardCatalog.getCard(EXHAUSTION)!),
+      );
+
+      const after = step4_revealEncounterCards(state, { acceptOptionalTriggers: true });
+
+      // The When Revealed text (exhaust identity) was cancelled, the keyword surged
+      expect(after.players[0].exhausted).toBe(false);
+      expect(after.encounterDiscard.some((c) => c.card.code === EXHAUSTION)).toBe(true);
+      // The surged card was dealt and revealed after the first one: Hydra Mercenary is engaged
+      expect(after.players[0].engagedMinions.map((m) => m.card.code)).toEqual([HYDRA_MERCENARY]);
+    });
+
+    it('"this card gains surge" inside the cancelled When Revealed text does not surge', () => {
+      state.players[0].statusCards = [StatusCard.CONFUSED];
+      state.players[0].hand.push(createCardInstance(cardCatalog.getCard('01004')!));
+      state.players[0].hand.push(createCardInstance(cardCatalog.getCard('01005')!));
+      state.encounterDeck = [createCardInstance(cardCatalog.getCard(HYDRA_MERCENARY)!)];
+      state.players[0].dealtEncounterCards.push(createCardInstance(cardCatalog.getCard('01112')!));
+
+      const after = step4_revealEncounterCards(state, { acceptOptionalTriggers: true });
+
+      expect(after.players[0].engagedMinions).toHaveLength(0);
+      expect(after.encounterDeck.some((c) => c.card.code === HYDRA_MERCENARY)).toBe(true);
+    });
+  });
 });

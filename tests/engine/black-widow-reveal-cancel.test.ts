@@ -139,6 +139,19 @@ describe('Black Widow 01075 cancels any revealed encounter card (#255)', () => {
     expect(after.players[0].allies[0].exhausted).toBeFalsy();
   });
 
+  it('a card discarded by Black Widow does not surge (only the replacement is revealed)', () => {
+    state.encounterDeck = [
+      createCardInstance(cardCatalog.getCard(FALSE_ALARM)!),
+      createCardInstance(cardCatalog.getCard(HYDRA_MERCENARY)!),
+    ];
+    deal('01191'); // Exhaustion: Surge. When Revealed: exhaust your identity
+
+    const accepted = acceptBlackWidow(step4_revealEncounterCards(state));
+
+    expect(accepted.players[0].exhausted).toBe(false);
+    expect(accepted.players[0].dealtEncounterCards.map((c) => c.card.code)).toEqual([FALSE_ALARM]);
+  });
+
   it('Enhanced Spider-Sense (treachery only) is not offered for a minion', () => {
     p1().allies = [];
     p1().hand = [createCardInstance(cardCatalog.getCard(ENHANCED_SPIDER_SENSE)!), mentalCard()];

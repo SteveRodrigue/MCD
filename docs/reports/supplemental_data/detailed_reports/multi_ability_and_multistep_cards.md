@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T12:19:27.374Z`
+> **Generated:** `2026-10-07T19:00:29.862Z`
 
 ## 1. Cards with Multiple Abilities (2+ Declared Abilities — 17 Cards)
 
@@ -26,7 +26,7 @@
 | `01173` | **Electric Whip Attack** | `treachery` | `core_encounter` | **2** | • `electric_whip_attack_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `electric_whip_attack_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01178` | **Kree Manipulator** | `treachery` | `core_encounter` | **2** | • `kree_manipulator_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `kree_manipulator_boost` (`BOOST` / `BOOST`, **1 step**) |
 
-## 2. Multi-Step Execution Pipelines (2+ Steps — 30 Pipelines Across 30 Cards)
+## 2. Multi-Step Execution Pipelines (2+ Steps — 31 Pipelines Across 31 Cards)
 
 | Card Code | Card Name | Pack | Ability ID | Timing | Steps | Pipeline Execution Sequence |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -60,5 +60,6 @@
 | `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` | `WHEN_REVEALED` | **2** | `[1] VILLAIN_AND_ENGAGED_MINIONS_ATTACK ➔ [2] SURGE` |
 | `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` | `WHEN_REVEALED` | **4** | `[1] PUT_INTO_PLAY ➔ [2] PUT_INTO_PLAY ➔ [3] SHUFFLE_INTO_DECK ➔ [4] SURGE` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` | `WHEN_REVEALED` | **2** | `[1] ADD_THREAT ➔ [2] DISCARD` |
+| `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DRAW ➔ [2] REMOVE_FROM_GAME` |
 
 [← Back to Main Usage Report](../usage_report.md)

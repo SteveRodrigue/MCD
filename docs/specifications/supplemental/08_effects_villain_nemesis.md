@@ -185,6 +185,7 @@ Per ADR-0029, monolithic `SPAWN_NEMESIS` has been fully decomposed into a compos
 ### `CANCEL_WHEN_REVEALED`
 * **References:** *Enhanced Spider-Sense* `01004`
 * **Description:** Interrupts and cancels the "When Revealed" effect of an encounter card revealed from the encounter deck (RR v1.8 p. 7, 16, 31). Treachery cards have their When Revealed effects cancelled and are discarded to the encounter discard pile with onomatopoeia `'CANCELLED!'`. Minions, attachments, and side schemes have their When Revealed effects suppressed, but still enter play normally.
+* **Mechanics:** the effect marks the reveal in progress as cancelled (`activeEncounterContext.cancelled`); `resolveActiveEncounterCardAfterInterrupt` then skips every When Revealed step except those declared `cannotBeCanceled` (see below). The interrupt that holds this effect is on `ENCOUNTER_CARD_REVEALED` ("When a card is revealed from the encounter deck", any encounter card) or `TREACHERY_REVEALED` (treacheries only). Neither is the card's own `WHEN_REVEALED` ability.
 
 ```json
 {
@@ -192,6 +193,38 @@ Per ADR-0029, monolithic `SPAWN_NEMESIS` has been fully decomposed into a compos
   "effectParams": {}
 }
 ```
+
+---
+
+### `CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER`
+* **References:** *Black Widow* `01075` (#255)
+* **Description:** "Cancel the effects of that card and discard it. Then, reveal another card from the encounter deck." Same cancel as `CANCEL_WHEN_REVEALED`, plus `activeEncounterContext.discardCard`: a cancelled minion, side scheme, attachment, obligation or environment does **not** enter play and goes to the encounter discard pile; a treachery is discarded as usual. The replacement card is dealt to the revealing player and revealed after the cancelled card has resolved. Trigger it from `ENCOUNTER_CARD_REVEALED`: the interrupt window opens for every encounter card, whether or not the card prints a When Revealed ability.
+
+```json
+{
+  "effect": "CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER",
+  "effectParams": {}
+}
+```
+
+---
+
+### Effects that cannot be canceled: `cannotBeCanceled`
+
+* **References:** *Eternity* `21054` (proof card, partial model, ambiguity report `mts_21054_eternity.md`); #255; card-level flag: #286
+* **Rule (RR v1.8 Cancel, Villain, When Revealed):** an effect printed "This effect cannot be canceled" still resolves when the card's reveal is cancelled; When Revealed abilities on villain and main scheme cards, and the reveal of a villain, cannot be canceled at all.
+* **Declaration:** a step-level boolean `cannotBeCanceled: true` (next to `gate`, `condition`). When the reveal is cancelled, `getResolvingRevealAbilities` keeps only the flagged steps of the card's When Revealed abilities.
+* **One rule:** `canCancelEncounterReveal(cardInstance)` (`src/engine/pipeline/encounter-cancel.ts`) is false for villain and main scheme cards and for a card whose When Revealed steps are all flagged. A cancel ability that cannot cancel is **not offered** (no cost paid for nothing) and, if executed anyway, fails with an error.
+
+```json
+{
+  "effect": "REMOVE_FROM_GAME",
+  "cannotBeCanceled": true,
+  "effectParams": {}
+}
+```
+
+Not covered yet: a whole card that cannot be canceled (#286) and the global "Treacheries cannot be canceled" of *Dark Scepter* `55036`.
 
 ---
 

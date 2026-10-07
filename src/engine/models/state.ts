@@ -426,6 +426,8 @@ export interface EncounterExecutionContext {
   targetPlayerId: string;
   cancelled?: boolean;
   cancellationReason?: string;
+  /** The cancel also discards the card: it does not enter play ("cancel its effects and discard it"). */
+  discardCard?: boolean;
   /** The card already surged during this reveal (keyword or effect): it cannot surge twice. */
   surged?: boolean;
 }

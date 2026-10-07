@@ -456,6 +456,20 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                 </div>
               </div>
 
+              {/* "This effect cannot be canceled" */}
+              <label className="flex items-center gap-1.5 text-[10px] font-bold text-gray-700">
+                <input
+                  type="checkbox"
+                  data-testid={`step-cannot-be-canceled-${abilityIndex}-${sIdx}`}
+                  checked={step.cannotBeCanceled === true}
+                  onChange={(e) =>
+                    handleUpdateStep(sIdx, { cannotBeCanceled: e.target.checked || undefined })
+                  }
+                />
+                This effect cannot be canceled (still resolves when the card&apos;s reveal is
+                cancelled)
+              </label>
+
               {/* Parameterized Gate Subpanels */}
               {step.gate === 'IF_RESOURCE_MATCH' && (
                 <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">

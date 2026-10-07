@@ -118,7 +118,7 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
           {
             id: 'test_cancel_wr_ability',
             timing: 'INTERRUPT',
-            trigger: 'WHEN_REVEALED',
+            trigger: 'ENCOUNTER_CARD_REVEALED',
             zone: 'HAND',
             cost: { discardSelf: true },
             steps: [

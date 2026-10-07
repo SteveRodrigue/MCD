@@ -233,6 +233,13 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
 
       const ability = gbmCard.enrichment!.abilities![0];
       const initialHp = state.players[0].health;
+      // A reveal is in progress: cancelling needs an encounter card to cancel
+      const revealed = createCardInstance(cardCatalog.getCard('01112')!);
+      state.activeEncounterContext = {
+        encounterInstanceId: revealed.instanceId,
+        encounterCard: revealed,
+        targetPlayerId: 'p1',
+      };
 
       const effectRes = executeEffect(state, ability, {
         playerId: 'p1',

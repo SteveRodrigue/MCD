@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T12:19:27.374Z` | **Overall Coverage:** **100.0%**
+> **Generated:** `2026-10-07T19:00:29.862Z` | **Overall Coverage:** **100.0%**
 
 This matrix audits every schema primitive defined in `src/data/supplemental/schema.ts` across 3 dimensions:
 1. **In Schema**: Is the enum option formally defined in schema.ts?
@@ -19,7 +19,7 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 
 | Primitive Value | In Engine Code Path? | Cards Declaring | Status | Health Rationale / Code Location |
 | :--- | :---: | :---: | :---: | :--- |
-| `DRAW` | ✅ Yes | **10** | 🟢 Active | Handled in `src/engine/effects/index.ts` / specialized pipelines; declared by 10 card(s). |
+| `DRAW` | ✅ Yes | **11** | 🟢 Active | Handled in `src/engine/effects/index.ts` / specialized pipelines; declared by 11 card(s). |
 | `ADD_ACCELERATION` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/effects/index.ts` / specialized pipelines; 0 cards currently declare this. |
 | `ADD_COUNTERS` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/effects/index.ts` / specialized pipelines; declared by 1 card(s). |
 | `ADD_STATUS` | ✅ Yes | **14** | 🟢 Active | Handled in `src/engine/effects/index.ts` / specialized pipelines; declared by 14 card(s). |
@@ -59,7 +59,7 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 | `REDUCE_NEXT_CARD_COST` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/effects/index.ts` / specialized pipelines; declared by 1 card(s). |
 | `REMOVE_COUNTERS` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/effects/index.ts` / specialized pipelines; 0 cards currently declare this. |
 | `REMOVE_COUNTERS_MATCHING_FILTER` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/effects/index.ts` / specialized pipelines; 0 cards currently declare this. |
-| `REMOVE_FROM_GAME` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/effects/index.ts` / specialized pipelines; 0 cards currently declare this. |
+| `REMOVE_FROM_GAME` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/effects/index.ts` / specialized pipelines; declared by 1 card(s). |
 | `REMOVE_THREAT` | ✅ Yes | **12** | 🟢 Active | Handled in `src/engine/effects/index.ts` / specialized pipelines; declared by 12 card(s). |
 | `RETURN_TO_HAND` | ✅ Yes | **2** | 🟢 Active | Handled in `src/engine/effects/index.ts` / specialized pipelines; declared by 2 card(s). |
 | `REVEAL_ENCOUNTER_CARD` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/effects/index.ts` / specialized pipelines; declared by 1 card(s). |
@@ -78,7 +78,7 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 
 | Primitive Value | In Engine Code Path? | Cards Declaring | Status | Health Rationale / Code Location |
 | :--- | :---: | :---: | :---: | :--- |
-| `SELF` | ✅ Yes | **10** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 10 card(s). |
+| `SELF` | ✅ Yes | **11** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 11 card(s). |
 | `SELF_IDENTITY` | ✅ Yes | **12** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 12 card(s). |
 | `SELF_HERO` | ✅ Yes | **3** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 3 card(s). |
 | `ACTIVE_PLAYER` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 1 card(s). |
@@ -159,13 +159,14 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 
 | Primitive Value | In Engine Code Path? | Cards Declaring | Status | Health Rationale / Code Location |
 | :--- | :---: | :---: | :---: | :--- |
-| `WHEN_REVEALED` | ✅ Yes | **35** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 35 card(s). |
+| `WHEN_REVEALED` | ✅ Yes | **36** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 36 card(s). |
 | `ENEMY_INITIATES_ATTACK` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 1 card(s). |
 | `DAMAGE_WOULD_BE_TAKEN` | ✅ Yes | **3** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 3 card(s). |
 | `CARD_PLAYED` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 1 card(s). |
 | `ENTERS_PLAY` | ✅ Yes | **10** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 10 card(s). |
 | `MINION_ENTERS_PLAY` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 1 card(s). |
-| `TREACHERY_REVEALED` | ✅ Yes | **3** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 3 card(s). |
+| `ENCOUNTER_CARD_REVEALED` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 1 card(s). |
+| `TREACHERY_REVEALED` | ✅ Yes | **2** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 2 card(s). |
 | `CHARACTER_DEFEATED` | ✅ Yes | **3** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 3 card(s). |
 | `SCHEME_DEFEATED` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/triggers/` & scenario pipelines; 0 cards currently declare this. |
 | `HOST_WOULD_ATTACK` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 1 card(s). |
@@ -210,7 +211,7 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 | `CONSTANT` | ✅ Yes | **20** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 20 card(s). |
 | `SPECIAL` | ✅ Yes | **4** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 4 card(s). |
 | `SETUP` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 1 card(s). |
-| `WHEN_REVEALED` | ✅ Yes | **31** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 31 card(s). |
+| `WHEN_REVEALED` | ✅ Yes | **32** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 32 card(s). |
 | `BOOST` | ✅ Yes | **6** | 🟢 Active | Handled in `src/engine/` timing evaluation paths; declared by 6 card(s). |
 
 [← Back to Main Usage Report](../usage_report.md)

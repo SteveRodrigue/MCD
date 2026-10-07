@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema.json",
+  "cards": {
+    "21054": {
+      "abilities": [
+        {
+          "id": "eternity_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "DRAW",
+              "cannotBeCanceled": true,
+              "effectParams": {
+                "count": 1,
+                "target": "SELF"
+              }
+            },
+            {
+              "effect": "REMOVE_FROM_GAME",
+              "cannotBeCanceled": true,
+              "effectParams": {}
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-10-07T12:00",
+        "updatedAt": "2026-10-07T12:00",
+        "reviewedAt": "2026-10-07T12:00",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 50,
+        "ambiguityFile": "docs/ambiguities/mts_21054_eternity.md",
+        "originalText": "<b>Action</b>: Shuffle this card into the encounter deck (without looking)\n<b>When Revealed</b>: Draw 1 card and remove this card from the game. This effect cannot be canceled."
+      }
+    }
+  }
+}

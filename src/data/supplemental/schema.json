@@ -165,6 +165,12 @@
                         "INCITE",
                         "HAZARD"
                       ]
+                    },
+                    "damageSource": {
+                      "type": "string",
+                      "enum": [
+                        "ATTACK"
+                      ]
                     }
                   },
                   "additionalProperties": false

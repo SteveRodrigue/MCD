@@ -260,6 +260,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
       dispatchTrigger(state, 'DAMAGE_WOULD_BE_TAKEN', {
         targetPlayerId: 'p1',
         damageAmount: 5,
+        damageSource: 'ATTACK',
         targetType: 'hero',
       });
 

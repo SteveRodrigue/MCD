@@ -107,6 +107,14 @@ describe('trigger filter members (#276)', () => {
     });
   });
 
+  describe('damageSource', () => {
+    it('ATTACK matches only damage from an attack (#256)', () => {
+      const filter: TriggerFilter = { damageSource: 'ATTACK' };
+      expect(matchesTriggerFilter(filter, ctx({ damageSource: 'ATTACK' }), player())).toBe(true);
+      expect(matchesTriggerFilter(filter, ctx({}), player())).toBe(false);
+    });
+  });
+
   describe('attackerCardFilter', () => {
     const attacker = (card: Record<string, unknown>) =>
       ({ attackerCard: { card }, targetPlayerId: 'p1' }) as never;

@@ -157,6 +157,7 @@ describe('Universal Event Interception and Scalar Value Binding (ADR-0049 & Issu
       const dispatchRes = dispatchTrigger(gameState, 'DAMAGE_WOULD_BE_TAKEN', {
         targetPlayerId: 'p1',
         damageAmount: 4,
+        damageSource: 'ATTACK',
         acceptOptionalTriggers: true,
       });
 

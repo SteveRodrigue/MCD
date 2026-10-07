@@ -386,6 +386,7 @@ export const TriggerFilterSchema = z
         'HAZARD',
       ])
       .optional(),
+    damageSource: z.enum(['ATTACK']).optional(),
   })
   .strict();
 

@@ -144,6 +144,7 @@ When an ability defines `triggerFilter`, the trigger matcher (`matchesTriggerFil
 | `isEngaged`          | `boolean`                                                                                                | Matches whether the target/source enemy is engaged with the triggering player.                                                                                           | ✅ Yes               |
 | `defenderType`       | `'HERO' \| 'ALLY'`                                                                                       | Matches who defended on `ATTACK_DEFENDED`: `HERO` for "your hero defends" (pair with `targetPlayerScope: 'SELF'`), `ALLY` for an ally defender.                          | ✅ Yes               |
 | `threatSource`       | `'VILLAIN_PHASE_STEP_1' \| 'VILLAIN_SCHEME' \| 'MINION_SCHEME' \| 'CARD_EFFECT' \| 'INCITE' \| 'HAZARD'` | Matches what placed the threat on `THREAT_WOULD_BE_PLACED`. Emergency `01085` uses `VILLAIN_SCHEME` ("when the villain schemes"). Absent from the context never matches. | ✅ Yes               |
+| `damageSource`       | `'ATTACK'` | Matches what dealt the damage on `DAMAGE_WOULD_BE_TAKEN`. The attack path sends `ATTACK`; Backflip `01003` ("damage from an attack") uses it. Absent from the context never matches (#256). | ✅ Yes               |
 
 ### Purged Speculative Orphan Fields (ADR-0069)
 

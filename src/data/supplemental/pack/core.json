@@ -99,6 +99,9 @@
           "id": "backflip",
           "timing": "INTERRUPT",
           "trigger": "DAMAGE_WOULD_BE_TAKEN",
+          "triggerFilter": {
+            "damageSource": "ATTACK"
+          },
           "zone": "HAND",
           "cost": {
             "discardSelf": true

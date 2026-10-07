@@ -8,7 +8,7 @@ import { StatusCard } from '@engine/models';
 const WF_ABILITY = {
   id: 'wf_test',
   timing: 'HERO_ACTION' as const,
-  steps: [{ effect: 'EXECUTE_WAKANDA_FOREVER' as const }],
+  steps: [{ effect: 'EXECUTE_SPECIAL' as const, effectParams: { specialId: 'WAKANDA_FOREVER' } }],
 };
 
 function buildGame(playerCount: 1 | 2) {

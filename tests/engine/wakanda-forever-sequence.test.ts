@@ -53,7 +53,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
       {
         id: 'wf_test',
         timing: 'HERO_ACTION',
-        steps: [{ effect: 'EXECUTE_WAKANDA_FOREVER' }],
+        steps: [{ effect: 'EXECUTE_SPECIAL', effectParams: { specialId: 'WAKANDA_FOREVER' } }],
       },
       { playerId: 'p1', sourceCardInstance: wakandaForever },
     );
@@ -116,8 +116,9 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
         timing: 'HERO_ACTION',
         steps: [
           {
-            effect: 'EXECUTE_WAKANDA_FOREVER',
+            effect: 'EXECUTE_SPECIAL',
             effectParams: {
+              specialId: 'WAKANDA_FOREVER',
               sequenceOrder: [
                 energyDaggers.instanceId,
                 tacticalGenius.instanceId,
@@ -193,8 +194,9 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
         timing: 'HERO_ACTION',
         steps: [
           {
-            effect: 'EXECUTE_WAKANDA_FOREVER',
+            effect: 'EXECUTE_SPECIAL',
             effectParams: {
+              specialId: 'WAKANDA_FOREVER',
               sequenceOrder: [pantherClaws.instanceId, tacticalGenius.instanceId],
             },
           },
@@ -272,7 +274,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
       {
         id: 'wf_test',
         timing: 'HERO_ACTION',
-        steps: [{ effect: 'EXECUTE_WAKANDA_FOREVER' }],
+        steps: [{ effect: 'EXECUTE_SPECIAL', effectParams: { specialId: 'WAKANDA_FOREVER' } }],
       },
       { playerId: 'p1', sourceCardInstance: wakandaForever },
     );
@@ -334,8 +336,9 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
         timing: 'HERO_ACTION',
         steps: [
           {
-            effect: 'EXECUTE_WAKANDA_FOREVER',
+            effect: 'EXECUTE_SPECIAL',
             effectParams: {
+              specialId: 'WAKANDA_FOREVER',
               sequenceOrder: [pantherClaws.instanceId, vibraniumSuit.instanceId],
             },
           },

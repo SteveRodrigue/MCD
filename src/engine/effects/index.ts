@@ -4998,9 +4998,11 @@ export function executeStep(
       };
     }
 
-    case 'EXECUTE_WAKANDA_FOREVER':
     case 'EXECUTE_SPECIAL': {
-      const specialId = (step.effectParams?.specialId as string) || 'WAKANDA_FOREVER';
+      const specialId = step.effectParams?.specialId as string | undefined;
+      if (!specialId) {
+        return { state, success: false, error: 'EXECUTE_SPECIAL requires effectParams.specialId' };
+      }
       const handler = getSpecialHandler(specialId);
       if (!handler) {
         return {

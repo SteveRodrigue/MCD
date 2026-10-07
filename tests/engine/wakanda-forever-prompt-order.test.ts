@@ -50,7 +50,12 @@ function playWakandaForever(state: GameState, order: string[]) {
     {
       id: 'wf_test',
       timing: 'HERO_ACTION',
-      steps: [{ effect: 'EXECUTE_WAKANDA_FOREVER', effectParams: { sequenceOrder: order } }],
+      steps: [
+        {
+          effect: 'EXECUTE_SPECIAL',
+          effectParams: { specialId: 'WAKANDA_FOREVER', sequenceOrder: order },
+        },
+      ],
     } as any,
     { playerId: 'p1', sourceCardInstance: wf },
   );

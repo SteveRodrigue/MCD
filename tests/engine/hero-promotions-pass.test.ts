@@ -255,8 +255,11 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
       const result = executeEffect(
         state,
         {
-          effect: 'EXECUTE_WAKANDA_FOREVER',
-          effectParams: { sequenceOrder: [daggers.instanceId, suit.instanceId, claws.instanceId] },
+          effect: 'EXECUTE_SPECIAL',
+          effectParams: {
+            specialId: 'WAKANDA_FOREVER',
+            sequenceOrder: [daggers.instanceId, suit.instanceId, claws.instanceId],
+          },
         },
         { playerId: 'p1' },
       );

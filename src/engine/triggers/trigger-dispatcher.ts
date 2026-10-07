@@ -58,13 +58,19 @@ function displayEffectName(effect: string): string {
 
 /**
  * An ability that cancels the reveal of an encounter card is not offered when that reveal cannot
- * be canceled (RR v1.8 Cancel; see `canCancelEncounterReveal`).
+ * be canceled (RR v1.8 Cancel; see `canCancelEncounterReveal`) or was already canceled by an
+ * earlier ability: a second cancel would only waste its cost.
  */
-function revealCannotBeCanceledBy(ability: CardAbility, context: TriggerContext): boolean {
+function revealCannotBeCanceledBy(
+  state: GameState,
+  ability: CardAbility,
+  context: TriggerContext,
+): boolean {
   return (
     context.encounterCardInstance !== undefined &&
     abilityCancelsEncounterReveal(ability) &&
-    !canCancelEncounterReveal(context.encounterCardInstance)
+    (!canCancelEncounterReveal(context.encounterCardInstance) ||
+      state.activeEncounterContext?.cancelled === true)
   );
 }
 
@@ -416,6 +422,14 @@ function arePlayerAbilitiesSuspended(state: GameState): boolean {
 }
 
 /** Players in player order starting from the first player (RR v1.8 First Player). */
+/**
+ * Players who may react to a card revealed for `revealing`: the revealing player first, then the
+ * others in seat order. The active player never changes (their cards stay theirs to resolve).
+ */
+function revealReactors(state: GameState, revealing: PlayerState): PlayerState[] {
+  return [revealing, ...playersInTurnOrder(state).filter((p) => p.id !== revealing.id)];
+}
+
 function playersInTurnOrder(state: GameState): PlayerState[] {
   const first = Math.max(0, Math.min(state.firstPlayerIndex ?? 0, state.players.length - 1));
   return [...state.players.slice(first), ...state.players.slice(0, first)];
@@ -452,7 +466,7 @@ function scanHandReactions(
           triggersAreEquivalent(a.trigger, trigger) ||
           (spec.alsoTriggers ?? []).some((t) => triggersAreEquivalent(a.trigger, t));
         if (!triggerMatches || a.zone !== 'HAND') return false;
-        if (revealCannotBeCanceledBy(a, context)) return false;
+        if (revealCannotBeCanceledBy(state, a, context)) return false;
         if (a.timing.startsWith('HERO_') && p.currentForm !== 'hero') return false;
         if (a.timing.startsWith('ALTER_EGO_') && p.currentForm !== 'alter_ego') return false;
         if (!canPayAbilityCost(state, p, a, card).allowed) return false;
@@ -600,7 +614,7 @@ export function dispatchTrigger(
     player && !playerAbilitiesSuspended ? player.activeFormCard?.enrichment?.abilities || [] : [];
   for (const ability of identityAbilities) {
     if (triggersAreEquivalent(ability.trigger, trigger)) {
-      if (revealCannotBeCanceledBy(ability, context)) continue;
+      if (revealCannotBeCanceledBy(state, ability, context)) continue;
       if (
         (ability.timing === 'HERO_INTERRUPT' || ability.timing === 'HERO_RESPONSE') &&
         player.currentForm !== 'hero'
@@ -749,8 +763,12 @@ export function dispatchTrigger(
   }
 
   // 2. Scan tableau, allies & in-play cards
+  // A card revealed for one player can be interrupted by the cards in play of every player
+  // ("When a card is revealed from the encounter deck", Black Widow 01075).
   const playersToScanForInPlay: PlayerState[] =
-    trigger === 'MINION_ENTERS_PLAY'
+    trigger === 'MINION_ENTERS_PLAY' ||
+    trigger === 'ENCOUNTER_CARD_REVEALED' ||
+    trigger === 'TREACHERY_REVEALED'
       ? [player, ...state.players.filter((p) => p.id !== player.id)]
       : [player];
 
@@ -770,7 +788,7 @@ export function dispatchTrigger(
       const abilities = cardInst.card.enrichment?.abilities || [];
       for (const ability of abilities) {
         if (triggersAreEquivalent(ability.trigger, trigger)) {
-          if (revealCannotBeCanceledBy(ability, context)) continue;
+          if (revealCannotBeCanceledBy(state, ability, context)) continue;
           if (
             (ability.timing === 'HERO_INTERRUPT' || ability.timing === 'HERO_RESPONSE') &&
             controller.currentForm !== 'hero'
@@ -1079,10 +1097,10 @@ export function dispatchTrigger(
   }
 
   // 5. In-hand reactions to an encounter card being revealed (e.g. Enhanced Spider-Sense 01004,
-  // Get Behind Me! 01078). Only the targeted player.
+  // Get Behind Me! 01078). Their text has no "you", so any player may react, the revealing one first.
   if (trigger === 'ENCOUNTER_CARD_REVEALED' || trigger === 'TREACHERY_REVEALED') {
     if (
-      scanHandReactions(state, trigger, context, currentChain, [player], {
+      scanHandReactions(state, trigger, context, currentChain, revealReactors(state, player), {
         resolve: ({ player: p, card, ability, chain }) => {
           executeEffect(state, ability, {
             playerId: p.id,

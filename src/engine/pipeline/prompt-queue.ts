@@ -21,6 +21,8 @@ import {
 import { resolveActiveEncounterCardAfterInterrupt } from './villain-phase';
 import { evaluateStepGate } from './step-gate-evaluator';
 import { canPayAbilityCost } from './cost-engine';
+import { abilityCancelsEncounterReveal } from './encounter-cancel';
+import type { TriggerContext } from '../triggers/trigger-dispatcher';
 import { discardResolvedObligation } from './obligations';
 import { finishPendingThreatPlacements } from './threat-pipeline';
 
@@ -186,6 +188,43 @@ export function enqueueDistributionPrompt(
 /**
  * Peek at the active head decision prompt waiting for player response.
  */
+/**
+ * Once the reveal of an encounter card is canceled, the other queued prompts that would cancel
+ * the same reveal are moot: drop them (prompts for other effects stay).
+ */
+function removeMootCancelPrompts(state: GameState, encounterInstanceId: string): void {
+  const queue = state.pendingDecisionQueue;
+  if (!queue) return;
+  state.pendingDecisionQueue = queue.filter(
+    (prompt) =>
+      !prompt.options.some((option) => {
+        const ability = option.params?.ability as CardAbility | undefined;
+        const context = option.params?.context as TriggerContext | undefined;
+        return (
+          option.effect === 'EXECUTE_OPTIONAL_TRIGGER' &&
+          ability !== undefined &&
+          abilityCancelsEncounterReveal(ability) &&
+          context?.encounterCardInstance?.instanceId === encounterInstanceId
+        );
+      }),
+  );
+  state.pendingDecisionQueue.forEach((prompt, i, remaining) => {
+    prompt.queuePosition = i + 1;
+    prompt.totalQueued = remaining.length;
+  });
+}
+
+/** True when a prompt queued for the reveal of this encounter card is still waiting for an answer. */
+function hasQueuedRevealPrompts(state: GameState, encounterInstanceId: string): boolean {
+  return (state.pendingDecisionQueue ?? []).some((prompt) =>
+    prompt.options.some(
+      (option) =>
+        (option.params?.context as TriggerContext | undefined)?.encounterCardInstance
+          ?.instanceId === encounterInstanceId,
+    ),
+  );
+}
+
 export function peekDecisionPrompt(state: GameState): PendingDecisionPrompt | undefined {
   return state.pendingDecisionQueue && state.pendingDecisionQueue.length > 0
     ? state.pendingDecisionQueue[0]
@@ -407,7 +446,11 @@ export function resolveDecisionPrompt(
     });
 
     // If resolving an encounter card interrupt (e.g. WHEN_REVEALED / TREACHERY_REVEALED)
-    if (nextState.activeEncounterContext) {
+    // The card resolves once every interrupt queued for its reveal has been answered.
+    if (
+      nextState.activeEncounterContext &&
+      !hasQueuedRevealPrompts(nextState, nextState.activeEncounterContext.encounterInstanceId)
+    ) {
       const activeCtx = nextState.activeEncounterContext;
       const targetPlayer = nextState.players.find((p) => p.id === activeCtx.targetPlayerId);
       if (targetPlayer && activeCtx.encounterCard) {
@@ -510,6 +553,9 @@ export function resolveDecisionPrompt(
     if (canInitiate && pendingPlacement && effectContext.threatAmount !== undefined) {
       pendingPlacement.amount = Math.max(0, effectContext.threatAmount);
     }
+    if (canInitiate && nextState.activeEncounterContext?.cancelled) {
+      removeMootCancelPrompts(nextState, nextState.activeEncounterContext.encounterInstanceId);
+    }
 
     if (canInitiate) {
       nextState.log.push({
@@ -525,7 +571,11 @@ export function resolveDecisionPrompt(
     }
 
     // If resolving an encounter card interrupt (e.g. WHEN_REVEALED / TREACHERY_REVEALED)
-    if (nextState.activeEncounterContext) {
+    // The card resolves once every interrupt queued for its reveal has been answered.
+    if (
+      nextState.activeEncounterContext &&
+      !hasQueuedRevealPrompts(nextState, nextState.activeEncounterContext.encounterInstanceId)
+    ) {
       const activeCtx = nextState.activeEncounterContext;
       const targetPlayer = nextState.players.find((p) => p.id === activeCtx.targetPlayerId);
       if (targetPlayer && activeCtx.encounterCard) {

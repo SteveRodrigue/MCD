@@ -45,13 +45,13 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(countParam?.allowDynamic).toBe(true);
   });
 
-  it('DEAL_DAMAGE exposes amount, target, and overkill with dynamic capability', () => {
+  it('DEAL_DAMAGE exposes amount and target with dynamic capability, and no plain overkill flag', () => {
     const desc = getEffectDescriptor('DEAL_DAMAGE');
     const paramKeys = desc.parameters.map((p) => p.key);
 
     expect(paramKeys).toContain('amount');
     expect(paramKeys).toContain('target');
-    expect(paramKeys).toContain('overkill');
+    expect(paramKeys).not.toContain('overkill');
 
     const amountParam = desc.parameters.find((p) => p.key === 'amount');
     expect(amountParam?.allowDynamic).toBe(true);

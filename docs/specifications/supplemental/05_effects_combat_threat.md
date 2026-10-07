@@ -19,7 +19,6 @@
   "effectParams": {
     "amount": 8,
     "target": "CHOSEN_ENEMY",
-    "overkill": true,
     "piercing": false,
     "ranged": false
   }
@@ -31,7 +30,6 @@
 | `amount`           | `number \| DynamicValueSource` | Yes      | -                | Base damage value (flat integer or dynamic formula).                                     |
 | `target`           | `TargetSelector`               | Yes      | `"CHOSEN_ENEMY"` | Target recipient.                                                                        |
 | `targetPlayer`     | `'SELF' \| 'CHOSEN_PLAYER'`    | No       | `"SELF"`         | With `target: "ENGAGED_ENEMIES"`: whose engaged minions (plus the Villain) are hit. `CHOSEN_PLAYER` prompts in multiplayer and auto-resolves in solo (e.g. *Energy Daggers* `01046`). |
-| `overkill`         | `boolean`                      | No       | `false`          | Excess minion damage spills over to Villain.                                             |
 | `piercing`         | `boolean`                      | No       | `false`          | Discards Tough status card before dealing damage.                                        |
 | `ranged`           | `boolean`                      | No       | `false`          | Ignores Retaliate keywords on the target.                                                |
 | `finisherBonus`    | `number`                       | No       | -                | Bonus damage when ability resolves as final step in a sequence (e.g. *Wakanda Forever!*). |

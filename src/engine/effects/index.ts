@@ -2321,7 +2321,6 @@ export function executeStep(
             step.effectParams?.overkillOnPhysical || step.effectParams?.overkillOnCondition,
           );
           const hasOverkill = Boolean(
-            (step.effectParams?.overkill && !hasConditionalOverkill) ||
             (hasConditionalOverkill && kickerMet) ||
             step.effectParams?.keyword === 'Overkill' ||
             (!hasConditionalOverkill &&

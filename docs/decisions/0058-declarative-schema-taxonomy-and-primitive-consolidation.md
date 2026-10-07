@@ -106,7 +106,7 @@ The full mapping contract follows. These tables are copied from Sections 1.1–1
 
 | Canonical Effect     | Parameter Schema & Description                                                                             | Replaces                                                              |
 | :------------------- | :--------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------- |
-| **`DEAL_DAMAGE`**    | `{ amount: number \| DynamicValueSource, target: TargetSelector, overkill?: boolean, ranged?: boolean }`   | `DEAL_DAMAGE`, `DEAL_DAMAGE_ALL_ENEMIES`                              |
+| **`DEAL_DAMAGE`**    | `{ amount: number \| DynamicValueSource, target: TargetSelector, ranged?: boolean }`   | `DEAL_DAMAGE`, `DEAL_DAMAGE_ALL_ENEMIES`                              |
 | **`HEAL_DAMAGE`**    | `{ amount: number \| DynamicValueSource, target: TargetSelector }`                                         | `HEAL_DAMAGE`, `HEAL_DAMAGE_WITH_SURGE`                               |
 | **`PREVENT_DAMAGE`** | `{ amount: number \| 'ALL' \| DynamicValueSource, target?: TargetSelector }`                               | `PREVENT_DAMAGE` (threat interception separated per [ADR-0063](0063-deconflate-damage-and-threat-interception-primitives.md)) |
 | **`PREVENT_THREAT`** | `{ amount: number \| 'ALL' \| DynamicValueSource, target?: TargetSelector }`                               | _Separated from `PREVENT_DAMAGE` per [ADR-0063](0063-deconflate-damage-and-threat-interception-primitives.md)_ |

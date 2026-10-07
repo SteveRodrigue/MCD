@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Refactor (Engine + Data + Card Editor): `DEAL_DAMAGE.overkill` removed ([Issue #276](https://github.com/SteveRodrigue/MCD/issues/276) follow-up)**
+  - No card set it and no test exercised it. Overkill comes from the printed Overkill keyword or from `overkillOnCondition` / `overkillOnPhysical` (Relentless Assault `01053`). Engine line, `EFFECT_PARAM_KEYS`, the Card Editor parameter, the spec and ADR-0058 row follow.
+
 - **Refactor (Engine + Card Editor): legacy cost aliases removed**
   - `cost.exhaust` and `cost.selfDamage` (never in the schema, no card) were read as fallbacks of `exhaustSelf` and `damageSelf` in `cost-engine.ts` and `DualCardInspector.tsx`; the `as any` reads are gone.
 

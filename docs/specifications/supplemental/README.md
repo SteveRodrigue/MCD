@@ -14,10 +14,17 @@ Every primitive, trigger, timing, cost, and parameter documented in this specifi
 
 ---
 
+> [!TIP]
+> **🚀 Quick-Start Cheat Sheet:**  
+> For agent workflows, card authoring, and quick lookup of all schema contracts, valid enums, parameter keys, step gates, and target selectors in a single high-density file, see [**Quick Reference (`QUICK_REFERENCE.md`)**](./QUICK_REFERENCE.md).
+
+---
+
 ## 📚 Specification Modules
 
 | Module                                                         | Title                         | Topics Covered                                                                                                           |
 | :------------------------------------------------------------- | :---------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
+| [**⚡ Quick Reference**](./QUICK_REFERENCE.md)                 | All-in-One Cheat Sheet        | High-density reference of all 55 effects, parameter keys, 9 step gates, result facts, timings, triggers, selectors.      |
 | [**01. Metadata & Audit**](./01_metadata_and_audit.md)         | JSON Root & Quality Trail     | `CardEnrichment`, `CardAuditRecord`, `errata` overlays.                                                                  |
 | [**02. Timings & Triggers**](./02_timings_and_triggers.md)     | Lifecycle & Event Windows     | `AbilityTiming` (Action, Interrupt, Response, Constant, etc.), `TriggerType` matrix.                                     |
 | [**03. Costs & Targeting**](./03_costs_and_targeting.md)       | Prerequisites & Selection     | `AbilityCost` (resources, exhaust, damage, discard), `TargetSelector`.                                                   |

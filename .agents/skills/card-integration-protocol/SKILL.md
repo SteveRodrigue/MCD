@@ -81,15 +81,17 @@ flowchart TD
 
 - **Vanilla fork:** If the card has no printed rules text, skip the 8-point checklist and the Step 5-6 audits. Draft the `noSupplementalNeeded: true` entry and continue at Step 7 (peer review still applies).
 - Per **ADR-0018** & **ADR-0019**, never interpret or guess unstated card rules.
-- **MANDATORY SPECIFICATION CONSULTATION & EVOLUTION CHECK:** Before drafting schema, you **MUST** consult the modular specification suite in [`docs/specifications/supplemental/`](../../../docs/specifications/supplemental/README.md) and [`docs/guidelines/`](../../../docs/guidelines/hero_creation_guide.md):
-  - `01_metadata_and_audit.md` (Metadata & Audit standards)
-  - `02_timings_and_triggers.md` (Timings & Triggers matrix)
-  - `03_costs_and_targeting.md` (Costs, TargetSelectors, exhaustive FilterSchema)
-  - `04_universal_card_filter.md` (Universal card filter)
-  - `05_effects_combat_threat.md` / `06_effects_zones_cards.md` / `07_effects_status_economy.md` / `08_effects_villain_nemesis.md` (Effect primitives)
-  - `09_dynamic_formulas.md` (Formulas & Math tokens)
-  - `10_sequences_and_prompts.md` (Multi-action sequences & Decision prompts)
-  - `11_play_requirements.md` (Play requirements)
+- **MANDATORY SPECIFICATION CONSULTATION & EVOLUTION CHECK:** Before drafting schema, you **MUST** consult the supplemental specification suite:
+  - **Quick Reference (Inspect First):** [`docs/specifications/supplemental/QUICK_REFERENCE.md`](../../../docs/specifications/supplemental/QUICK_REFERENCE.md) (single high-density cheat sheet for all 55 effects, allowed `effectParams` keys, 9 canonical step gates, 8 result facts, timings, triggers, and target selectors).
+  - **Modular Guides (For In-Depth Rules/Examples):** [`docs/specifications/supplemental/`](../../../docs/specifications/supplemental/README.md) and [`docs/guidelines/`](../../../docs/guidelines/hero_creation_guide.md):
+    - `01_metadata_and_audit.md` (Metadata & Audit standards)
+    - `02_timings_and_triggers.md` (Timings & Triggers matrix)
+    - `03_costs_and_targeting.md` (Costs, TargetSelectors, exhaustive FilterSchema)
+    - `04_universal_card_filter.md` (Universal card filter)
+    - `05_effects_combat_threat.md` / `06_effects_zones_cards.md` / `07_effects_status_economy.md` / `08_effects_villain_nemesis.md` (Effect primitives)
+    - `09_dynamic_formulas.md` (Formulas & Math tokens)
+    - `10_sequences_and_prompts.md` (Multi-action sequences & Decision prompts)
+    - `11_play_requirements.md` (Play requirements)
 - **Specification Evolution Awareness:** If `docs/specifications/` has evolved or received updates, existing supplemental data may be outdated or could be refactored into cleaner, more canonical forms. Map the card directly against current specifications without assuming existing card JSON is up to date.
 - Before drafting schema, answer the **8-Point Deconstruction Checklist** and record the eight answers as a table in the review artifact:
   1. **Q1 (Trigger & Timing):** What exact event triggers this? Is it optional (`ACTION`/`INTERRUPT`/`RESPONSE`) or mandatory (`FORCED_`/`WHEN_REVEALED`)?

@@ -66,9 +66,16 @@ export function processNextPlayerInCleanupQueue(
     const promptOptions: DecisionPromptOption[] = player.hand.map((c) => ({
       id: `discard_${c.instanceId}`,
       label: `Discard ${c.card.name}`,
-      description: `Discard ${c.card.name} to discard pile`,
+      cardCode: c.card.code,
+      cardName: c.card.name,
+      description: c.card.text || `Discard ${c.card.name} to discard pile`,
       effect: 'PLAYER_PHASE_DISCARD_CARD',
-      params: { cardInstanceId: c.instanceId, playerId: player.id },
+      params: {
+        cardInstanceId: c.instanceId,
+        playerId: player.id,
+        cardCode: c.card.code,
+        cardName: c.card.name,
+      },
     }));
 
     promptOptions.push({

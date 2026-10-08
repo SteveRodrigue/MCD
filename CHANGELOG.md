@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (UI + Engine): Discard and setup choice modals show cards with hover zoom and formatted card text ([Issue #288](https://github.com/SteveRodrigue/MCD/issues/288))**
+  - End of player phase voluntary discard options in `player-phase-cleanup.ts` include `cardCode`, `cardName`, and `description: c.card.text`.
+  - In `DecisionPromptModal` and `SelectCardsModal`, option descriptions and prompt descriptions format card markup via `FormattedCardText`, replacing raw `<b>`, `<i>`, and bracket tokens (`[mental]`, `[wild]`, etc.).
+  - Options with card references render thumbnails with hover zoom preview (`CardView` with `size="sm"` and `enableHoverZoom`) and dynamic cost badges (`Cost: <cost>`).
+  - Tests: `tests/ui/DecisionPromptModal.test.tsx`, `tests/engine/end-of-player-phase-cleanup.test.ts`.
+
 - **Refactor (Engine + Data + UI + Docs): Canonical step gates and typed result facts ([ADR-0080](docs/decisions/0080-step-gates-and-result-facts.md), [Issue #289](https://github.com/SteveRodrigue/MCD/issues/289), [Issue #290](https://github.com/SteveRodrigue/MCD/issues/290))**
   - Consolidated step gates to 9 canonical values in `StepGateSchema`: `THEN`, `IF_RESULT`, `IF_FORM`, `IF_PLAYER_HAS_TRAIT`, `IF_ZONE_EMPTY`, `IF_CARD_IN_PLAY`, `IF_RESOURCE_MATCH`, `IF_UNDEFENDED_ATTACK`, `IF_ACTIVATION_DEALT_DAMAGE`. All gate qualifiers are typed in `gateParams` via `GATE_REGISTRY`.
   - Removed deprecated `ConditionGateSchema`, `StepConditionSchema`, and the `condition` field from `AbilityStepSchema` and UI editors (`StepPipelineEditor`, `AbilityFormBuilder`).

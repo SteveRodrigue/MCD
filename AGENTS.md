@@ -28,7 +28,7 @@ and the post-task procedure is in
 - Do not introduce unapproved legacy shims, aliases, deprecated names, duplicate paths, or temporary shortcuts.
 - Never add skipped or todo tests to hide unfinished work.
 - **Supplemental Card Comments Policy:** The `comment` field resides strictly inside `audit.comment` and is reserved for human/user notes. Agents must never autonomously add or update `audit.comment`. If explicitly instructed by the user to add or update a comment, the agent must clearly state the reason in the review recap and commit message. Card ambiguities or defects must be resolved with user interaction or in `docs/ambiguities/`, never by embedding informal notes in `audit.comment`.
-- **ADHD Mode Notification Policy:** At the start of a new chat session (first turn only), if `i-have-adhd` mode is not active/detected in context, include a brief one-line reminder that the user can activate it with `/i-have-adhd`. Do not repeat this reminder across subsequent turns in the same session.
+- **ADHD Mode Default Policy:** `i-have-adhd` mode is on by default in this project. On Claude Code, the SessionStart hook `.claude/hooks/adhd-default.mjs` injects the skill rules. On other hosts, agents must read `.agents/skills/i-have-adhd/SKILL.md` and apply it from the first turn. It turns off only when the user says "stop adhd mode" or "normal mode".
 
 ## Before implementation
 

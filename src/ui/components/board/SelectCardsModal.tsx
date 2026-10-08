@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { CheckCircle2, Zap } from 'lucide-react';
 import { PendingDecisionPrompt } from '../../../engine/models';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
+import { FormattedCardText } from '../cards/FormattedCardText';
 
 interface SelectCardsModalProps {
   prompt: PendingDecisionPrompt;
@@ -67,7 +68,7 @@ export const SelectCardsModal: React.FC<SelectCardsModalProps> = ({ prompt, onCo
         </div>
 
         <div className="relative px-5 pt-3 text-sm font-bold text-comic-black">
-          {prompt.description}
+          <FormattedCardText text={prompt.description} />
         </div>
 
         <div className="relative p-5 grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-y-auto">
@@ -92,6 +93,11 @@ export const SelectCardsModal: React.FC<SelectCardsModalProps> = ({ prompt, onCo
                 <span className="text-xs font-black uppercase leading-tight text-center text-comic-black">
                   {info?.cardName ?? option.label}
                 </span>
+                {option.description && (
+                  <div className="text-[10px] text-slate-600 text-center line-clamp-3">
+                    <FormattedCardText text={option.description} />
+                  </div>
+                )}
                 {isChosen && <CheckCircle2 className="w-4 h-4 text-comic-red" />}
               </button>
             );

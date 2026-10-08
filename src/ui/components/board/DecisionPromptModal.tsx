@@ -14,6 +14,7 @@ import { cardCatalog } from '../../../data/importer/card-loader';
 import { CardView } from '../cards/CardView';
 import { PromptCardPanel } from './PromptCardPanel';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
+import { FormattedCardText } from '../cards/FormattedCardText';
 import { WakandaForeverModal } from './WakandaForeverModal';
 import { DistributeAmountModal } from './DistributeAmountModal';
 import { SelectCardsModal } from './SelectCardsModal';
@@ -28,6 +29,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
   onSelectOption,
 }) => {
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
+  const [hoveredOptionCardId, setHoveredOptionCardId] = useState<string | null>(null);
 
   if (!prompt) return null;
 
@@ -298,9 +300,9 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
               </div>
             )}
             {prompt.description && (
-              <p className="text-xs sm:text-sm font-bold text-slate-800 bg-amber-50 border-2 border-comic-black/30 p-2.5 rounded-lg shadow-xs">
-                {prompt.description}
-              </p>
+              <div className="text-xs sm:text-sm font-bold text-slate-800 bg-amber-50 border-2 border-comic-black/30 p-2.5 rounded-lg shadow-xs">
+                <FormattedCardText text={prompt.description} />
+              </div>
             )}
           </div>
 
@@ -395,6 +397,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                     : 1);
 
               const optionCardCode = option.cardCode || (optParams?.cardCode as string | undefined);
+              const optionCard = optionCardCode ? cardCatalog.getCard(optionCardCode) : undefined;
 
               return (
                 <button
@@ -427,11 +430,26 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                         {index + 1}
                       </span>
                       {optionCardCode ? (
-                        <CardArtThumbnail
-                          cardCode={optionCardCode}
-                          cardName={option.label}
-                          size="sm"
-                        />
+                        <div
+                          data-testid={`option-card-thumbnail-${option.id}`}
+                          className="relative shrink-0 group/thumb"
+                          onMouseEnter={() => setHoveredOptionCardId(option.id)}
+                          onMouseLeave={() => setHoveredOptionCardId(null)}
+                        >
+                          <CardArtThumbnail
+                            cardCode={optionCardCode}
+                            cardName={option.label}
+                            size="sm"
+                          />
+                          {optionCard && hoveredOptionCardId === option.id && (
+                            <div
+                              data-testid={`card-hover-preview-${optionCard.code}`}
+                              className="absolute left-12 top-1/2 -translate-y-1/2 z-[70] drop-shadow-2xl animate-in fade-in duration-150 pointer-events-none"
+                            >
+                              <CardView card={optionCard} size="sm" enableHoverZoom={true} />
+                            </div>
+                          )}
+                        </div>
                       ) : option.icon === 'punch' || option.id === 'undefended' ? (
                         <div className="p-1 bg-comic-red text-white rounded border border-comic-black shadow-comic-xs flex items-center justify-center">
                           <Swords className="w-4 h-4 text-white" />
@@ -454,6 +472,13 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                           ⚡ COST: {costAmount} {costAmount === 1 ? 'RESOURCE' : 'RESOURCES'}
                         </span>
                       )}
+                      {!requiresPayment &&
+                        !option.label.toLowerCase().includes('cost') &&
+                        optionCard?.cost !== undefined && (
+                          <span className="inline-flex items-center gap-1 font-comic text-[10px] font-black uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-200 border border-comic-black text-slate-950 shadow-xs">
+                            Cost: {optionCard.cost}
+                          </span>
+                        )}
                     </span>
                     {isDisabled ? (
                       <XCircle className="w-5 h-5 text-slate-400" />
@@ -471,9 +496,9 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                     </div>
                   )}
                   {option.description && (
-                    <p className="mt-0.5 text-xs font-bold text-slate-600 group-hover:text-comic-black pl-8">
-                      {option.description}
-                    </p>
+                    <div className="mt-0.5 text-xs font-bold text-slate-600 group-hover:text-comic-black pl-8">
+                      <FormattedCardText text={option.description} />
+                    </div>
                   )}
                 </button>
               );

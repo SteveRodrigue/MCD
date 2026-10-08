@@ -64,11 +64,16 @@ describe('End of Player Phase Clean-Up & Voluntary Hand Discard (Issue #41, RR v
     });
 
     expect(res.result.success).toBe(true);
-    expect(peekDecisionPrompt(res.state)).toBeDefined();
-    expect(peekDecisionPrompt(res.state)?.title).toContain(
-      'End of Player Phase: Voluntary Discard',
-    );
-    expect(peekDecisionPrompt(res.state)?.options.length).toBe(3); // Discard cardA, Discard cardB, Keep All (Done)
+    const prompt = peekDecisionPrompt(res.state);
+    expect(prompt).toBeDefined();
+    expect(prompt?.title).toContain('End of Player Phase: Voluntary Discard');
+    expect(prompt?.options.length).toBe(3); // Discard cardA, Discard cardB, Keep All (Done)
+    expect(prompt?.options[0].cardCode).toBe(cardA.card.code);
+    expect(prompt?.options[0].cardName).toBe(cardA.card.name);
+    expect(prompt?.options[0].description).toBe(cardA.card.text);
+    expect(prompt?.options[1].cardCode).toBe(cardB.card.code);
+    expect(prompt?.options[1].cardName).toBe(cardB.card.name);
+    expect(prompt?.options[1].description).toBe(cardB.card.text);
   });
 
   it('discards selected cards, draws up to printed hand size, and readies player cards', () => {

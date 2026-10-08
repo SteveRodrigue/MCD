@@ -247,4 +247,115 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
     // Verify damage prevented badge
     expect(screen.getByText('Prevents: 3 DMG')).toBeDefined();
   });
+
+  it('voluntary discard options display card thumbnail, name, cost, and formatted printed text without raw markup', async () => {
+    const webShooter = cardCatalog.getCard('01005')!;
+    const prompt: PendingDecisionPrompt = {
+      promptId: 'prompt_cleanup_discard',
+      playerId: 'p1',
+      title: 'End of Player Phase: Voluntary Discard',
+      description:
+        'Spider-Man: Select any cards in your hand you wish to discard before drawing up to hand size:',
+      sourceCardName: 'Spider-Man',
+      isVoluntary: true,
+      options: [
+        {
+          id: 'discard_inst_1',
+          label: `Discard ${webShooter.name}`,
+          cardCode: webShooter.code,
+          cardName: webShooter.name,
+          description:
+            'Uses (3 web counters). <b>Hero Resource</b>: Exhaust Web-Shooter -> generate a [wild] resource.',
+          effect: 'PLAYER_PHASE_DISCARD_CARD',
+          params: { cardInstanceId: 'inst_1', playerId: 'p1' },
+        },
+        {
+          id: 'done_cleanup',
+          label: 'Done / Keep Remaining Cards',
+          description: 'Proceed to refill hand and ready all cards',
+          effect: 'FINISH_PLAYER_CLEANUP',
+          params: { playerId: 'p1' },
+        },
+      ],
+    };
+
+    await act(async () => {
+      render(<DecisionPromptModal prompt={prompt} onSelectOption={vi.fn()} />);
+    });
+
+    // Thumbnail is rendered
+    expect(screen.getByAltText(`Discard ${webShooter.name}`)).toBeDefined();
+
+    // Name and Cost badge
+    expect(screen.getByText(`Discard ${webShooter.name}`)).toBeDefined();
+    expect(screen.getByText(`Cost: ${webShooter.cost}`)).toBeDefined();
+
+    // Formatted printed text without raw <b>, <i>, or [wild]
+    expect(screen.getByText(/Hero Resource/i)).toBeDefined();
+    expect(screen.getByText(/Wild/i)).toBeDefined();
+    expect(screen.queryByText(/<b>/i)).toBeNull();
+    expect(screen.queryByText(/\[wild\]/i)).toBeNull();
+
+    // Hover zoom preview
+    const thumbWrapper = screen.getByTestId('option-card-thumbnail-discard_inst_1');
+    await act(async () => {
+      fireEvent.mouseEnter(thumbWrapper);
+    });
+    expect(screen.getByTestId(`card-hover-preview-${webShooter.code}`)).toBeDefined();
+  });
+
+  it("setup choice options (e.g. T'Challa Foresight upgrade search) display card thumbnail, name, and formatted printed text without raw markup", async () => {
+    const energyDaggers = cardCatalog.getCard('01047')!;
+    const prompt: PendingDecisionPrompt = {
+      promptId: 'prompt_search_foresight',
+      playerId: 'p1',
+      title: 'Foresight: Choose 1 Black Panther upgrade',
+      description: 'Select 1 card(s):',
+      sourceCardName: "T'Challa",
+      sourceCardCode: '01040b',
+      options: [
+        {
+          id: 'inst_upgrade_1',
+          label: `${energyDaggers.name} (${energyDaggers.type}, Cost: ${energyDaggers.cost})`,
+          description:
+            'Black Panther. <i>Upgrade</i>. <b>Hero Action</b>: Spend a [mental] resource -> deal 2 damage.',
+          effect: 'SEARCH_AND_SELECT_RESOLUTION',
+          params: {
+            chosenInstanceId: 'inst_upgrade_1',
+            cardName: energyDaggers.name,
+            cardCode: energyDaggers.code,
+          },
+        },
+      ],
+    };
+
+    await act(async () => {
+      render(<DecisionPromptModal prompt={prompt} onSelectOption={vi.fn()} />);
+    });
+
+    // Thumbnail is rendered
+    expect(
+      screen.getByAltText(
+        `${energyDaggers.name} (${energyDaggers.type}, Cost: ${energyDaggers.cost})`,
+      ),
+    ).toBeDefined();
+
+    // Name and Cost
+    expect(screen.getByText(new RegExp(energyDaggers.name, 'i'))).toBeDefined();
+    expect(screen.getByText(new RegExp(`Cost: ${energyDaggers.cost}`, 'i'))).toBeDefined();
+
+    // Formatted printed text without raw <b>, <i>, or [mental]
+    expect(screen.getByText(/Hero Action/i)).toBeDefined();
+    expect(screen.getByText(/Mental/i)).toBeDefined();
+    expect(screen.queryByText(/<b>/i)).toBeNull();
+    expect(screen.queryByText(/<i>/i)).toBeNull();
+    expect(screen.queryByText(/\[mental\]/i)).toBeNull();
+
+    // Hover zoom preview
+    const thumbWrapper = screen.getByTestId('option-card-thumbnail-inst_upgrade_1');
+    await act(async () => {
+      fireEvent.mouseEnter(thumbWrapper);
+    });
+    expect(screen.getByTestId(`card-hover-preview-${energyDaggers.code}`)).toBeDefined();
+  });
 });

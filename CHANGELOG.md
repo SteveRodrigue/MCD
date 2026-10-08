@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): STAT_VALUE DAMAGE calculates actual damage on villains, minions, allies, and players ([Issue #216](https://github.com/SteveRodrigue/MCD/issues/216))**
+  - Updated `STAT_VALUE` dynamic evaluator (`stat: 'DAMAGE'`) to calculate damage as `maxHealth - health` on villains and identities, and read `tokens.damage` (or `damage`) on minions and allies.
+  - Added support for targeted minions, allies, identities, and secondary villains via `targetInstanceId`, targeted cards via `targetCardCode` (using `locateCard` and `readCardAttribute`), and defaulted to the active villain.
+  - Updated `readCardAttribute(card, 'DAMAGE')` in `card-inspector.ts` to compute `maxHealth - health` when health numbers are present.
+  - Tests: `tests/engine/dynamic-formula-evaluator.test.ts`.
+
 - **Docs + Tooling: Supplemental specification quick reference and sync guard test**
   - Added high-density cheat sheet `docs/specifications/supplemental/QUICK_REFERENCE.md` consolidating the root enrichment anatomy, 19 timings, 30 triggers, 9 canonical step gates with typed parameters, 8 result facts, 55 effect primitives with allowed parameter keys (`effect-params.ts`), 43 target selectors, dynamic bonus values, and universal filter criteria in ~200 lines.
   - Added sync guard test `tests/data/quick-reference-sync.test.ts` asserting 100% enum, effect type, parameter key, gate, fact, and selector coverage between the codebase schema and the quick reference.

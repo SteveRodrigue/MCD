@@ -9,7 +9,7 @@
  */
 
 import type { GameState, PlayerState, CardInstance } from '../models';
-import { getActiveVillain, getActiveMainScheme } from '../models';
+import { getActiveVillain, getActiveMainScheme, getVillainById } from '../models';
 import type { DynamicValueSource } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
 import {
@@ -247,6 +247,11 @@ export function evaluateDynamicAmount(
         }
       } else if (stat === 'DAMAGE') {
         if (state) {
+          const targetCardCode =
+            (amountParam as any).targetCardCode ||
+            (target as any)?.code ||
+            (filter as any)?.code ||
+            (filter as any)?.codes?.[0];
           if (options.targetInstanceId) {
             const minion = state.players
               .flatMap((p: PlayerState) => p.engagedMinions || [])
@@ -254,11 +259,63 @@ export function evaluateDynamicAmount(
                 (m: any) =>
                   m.instanceId === options.targetInstanceId || m.id === options.targetInstanceId,
               );
-            baseValue = minion
-              ? minion.damage || 0
-              : (getActiveVillain(state) as { damage?: number } | undefined)?.damage || 0;
+            if (minion) {
+              baseValue = minion.tokens?.damage ?? (minion as any).damage ?? 0;
+            } else {
+              const ally = state.players
+                .flatMap((p: PlayerState) => p.allies || [])
+                .find(
+                  (a: any) =>
+                    a.instanceId === options.targetInstanceId || a.id === options.targetInstanceId,
+                );
+              if (ally) {
+                baseValue = ally.tokens?.damage ?? (ally as any).damage ?? 0;
+              } else {
+                const targetPlayer = state.players.find(
+                  (p: PlayerState) =>
+                    p.id === options.targetInstanceId ||
+                    (p as any).instanceId === options.targetInstanceId ||
+                    (p as any).identity?.instanceId === options.targetInstanceId,
+                );
+                if (targetPlayer) {
+                  baseValue = Math.max(
+                    0,
+                    (targetPlayer.maxHealth ?? 0) - (targetPlayer.health ?? 0),
+                  );
+                } else {
+                  const targetVillain =
+                    getVillainById(state, options.targetInstanceId) ||
+                    (state.villains || []).find(
+                      (v: any) =>
+                        v.instanceId === options.targetInstanceId ||
+                        v.id === options.targetInstanceId,
+                    );
+                  if (targetVillain) {
+                    baseValue = Math.max(
+                      0,
+                      (targetVillain.maxHealth ?? 0) - (targetVillain.health ?? 0),
+                    );
+                  } else {
+                    const activeVillain = getActiveVillain(state);
+                    baseValue = activeVillain
+                      ? Math.max(0, (activeVillain.maxHealth ?? 0) - (activeVillain.health ?? 0))
+                      : 0;
+                  }
+                }
+              }
+            }
+          } else if (targetCardCode) {
+            const located = locateCard(
+              state,
+              { zone: 'IN_PLAY', cardCode: targetCardCode },
+              { player },
+            );
+            baseValue = located ? readCardAttribute(located, 'DAMAGE') : 0;
           } else {
-            baseValue = (getActiveVillain(state) as { damage?: number } | undefined)?.damage || 0;
+            const activeVillain = getActiveVillain(state);
+            baseValue = activeVillain
+              ? Math.max(0, (activeVillain.maxHealth ?? 0) - (activeVillain.health ?? 0))
+              : 0;
           }
         }
       }

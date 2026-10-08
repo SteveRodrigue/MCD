@@ -34,7 +34,7 @@
 | `limit`          | `"HAND_SIZE" \| "PRINTED_HAND_SIZE"` | No       | Upper boundary constraint. When set without `count`, draws until hand reaches limit. When set with `count`, draws up to `count` without exceeding limit. |
 | `target`         | `TargetSelector`                     | No       | Target player selector (`ACTIVE_PLAYER`, `CHOSEN_PLAYER`, `ALL_PLAYERS`, etc.). Defaults to triggering player.                                           |
 | `targetPlayerId` | `string`                             | No       | Explicit target player identifier.                                                                                                                       |
-| `dynamicBonus`   | `number \| DynamicValueSource`       | No       | Dynamic bonus card draw calculated from identity, traits, or game state (e.g. *Alpha Flight Station* `01015`).                                            |
+| `dynamicBonus`   | `number \| DynamicValueSource`       | No       | Dynamic bonus card draw calculated from identity, traits, or game state (e.g. _Alpha Flight Station_ `01015`).                                           |
 
 ---
 
@@ -63,17 +63,29 @@
 }
 ```
 
-| Parameter | Type                           | Required | Description                                                                                                                                                                    |
-| :-------- | :----------------------------- | :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameter | Type                           | Required | Description                                                                                                                                                                              |
+| :-------- | :----------------------------- | :------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `amount`  | `number \| DynamicValueSource` | Yes      | Hand size modifier. Flat (`+1`, `-1`) or a formula; use `ENTITY_COUNT` with a card filter for "+1 for each ...", `multiplier` for other ratios and `clamp.max` for "to a maximum of +N". |
 
 > **Retired parameters:** `scaling: "PER_MATCHING_CARD"`, `filter`, `multiplier`, `maxHandSize`, `minHandSize` and `applicableForm` were removed. The first three are replaced by the dynamic `amount` above. `maxHandSize` was never read by the engine and `minHandSize` never existed in it. `applicableForm` is redundant: identity abilities are read from the active form card only, so the hero card's ability is inert in alter-ego form.
 >
 > **Retired in #231:** the `scaling` values `PER_SIDE_SCHEME`, `PER_DISCARDED_CARD` and `PER_RESOURCE_SPENT`, with `multiplier` and `maxBonus`, on `MODIFY_STAT`, `REMOVE_THREAT` and `ADD_COUNTERS`. Use `ENTITY_COUNT`, `DISCARDED_CARDS` and `RESOURCES_SPENT` amounts (see `09_dynamic_formulas.md`).
 >
-> **Errata:** the official errata for Iron Man (`references/rules/appendices/05_card_errata.md`) caps the *bonus* at +6 rather than the total at 7 (same result for his printed hand size of 1). Data follows the errata; the ability records the errata text in its `errata` field.
+> **Errata:** the official errata for Iron Man (`references/rules/appendices/05_card_errata.md`) caps the _bonus_ at +6 rather than the total at 7 (same result for his printed hand size of 1). Data follows the errata; the ability records the errata text in its `errata` field.
 
 ---
+
+### `MODIFY_MAX_HEALTH`
+
+Raises (or lowers) the maximum hit points of the character carrying the card, while the card is in play. Declared as a `CONSTANT` ability.
+
+| Param    | Type     | Required | Description                                                                                                 |
+| :------- | :------- | :------- | :---------------------------------------------------------------------------------------------------------- |
+| `amount` | `number` | Yes      | Hit points added to the maximum (Mark V Armor `01036`: `6`; Genetically Enhanced `01163` on a minion: `3`). |
+
+- On a **hero** card in the tableau it adds to the identity's maximum health (`getEffectiveMaxHealth`).
+- On an **attachment of a minion** it adds to that minion's maximum (`getEffectiveMinionHitPoints`), read by damage, healing, targeting and the UI.
+- Losing the card never removes damage; only the ceiling changes. A minion whose damage reaches the new maximum is defeated.
 
 ## 2. Card Attrition & Discard Primitives
 
@@ -96,16 +108,16 @@
 }
 ```
 
-| Parameter     | Type                                                                                          | Required | Description                                                                                                                              |
-| :------------ | :-------------------------------------------------------------------------------------------- | :------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
-| `source`      | `"HAND" \| "DECK" \| "ENCOUNTER_DECK" \| "TABLEAU" \| "HOST" \| "SELF" \| "CARDS_UNDER_HOST"` | No       | Source zone cards leave from (default: `"HAND"`).                                                                                        |
-| `count`       | `number \| "ALL"`                                                                             | No       | Number of cards to discard (default: `1`).                                                                                               |
-| `mode`        | `"CHOSEN" \| "RANDOM" \| "TOP" \| "ALL" \| "UNTIL_MATCH"`                                     | No       | Selection algorithm (`"RANDOM"` for hand penalties, `"TOP"` for deck milling).                                                           |
-| `target`      | `TargetSelector`                                                                              | No       | Player identity or entity executing or affected by the discard.                                                                          |
-| `filter`      | `UniversalCardFilter`                                                                         | No       | Card filtering criteria per [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "types": ["upgrade", "support"] }`). |
-| `untilFilter` | `UniversalCardFilter`                                                                         | No       | Predicate for iterative milling until a matching card is found. See [**04. Universal Card Filter**](./04_universal_card_filter.md).      |
-| `fallback`    | `"SURGE" \| "NONE"`                                                                           | No       | Fallback resolution if no matching cards can be discarded (e.g. _Caught Off Guard_).                                                     |
-| `matchingDestination` | `"HAND" \| "PLAY" \| "DISCARD" \| "REVEAL"` | No | Where the card that ends an `UNTIL_MATCH` goes (default `"DISCARD"`). `"REVEAL"` reveals it (encounter deck only). |
+| Parameter             | Type                                                                                          | Required | Description                                                                                                                              |
+| :-------------------- | :-------------------------------------------------------------------------------------------- | :------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| `source`              | `"HAND" \| "DECK" \| "ENCOUNTER_DECK" \| "TABLEAU" \| "HOST" \| "SELF" \| "CARDS_UNDER_HOST"` | No       | Source zone cards leave from (default: `"HAND"`).                                                                                        |
+| `count`               | `number \| "ALL"`                                                                             | No       | Number of cards to discard (default: `1`).                                                                                               |
+| `mode`                | `"CHOSEN" \| "RANDOM" \| "TOP" \| "ALL" \| "UNTIL_MATCH"`                                     | No       | Selection algorithm (`"RANDOM"` for hand penalties, `"TOP"` for deck milling).                                                           |
+| `target`              | `TargetSelector`                                                                              | No       | Player identity or entity executing or affected by the discard.                                                                          |
+| `filter`              | `UniversalCardFilter`                                                                         | No       | Card filtering criteria per [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "types": ["upgrade", "support"] }`). |
+| `untilFilter`         | `UniversalCardFilter`                                                                         | No       | Predicate for iterative milling until a matching card is found. See [**04. Universal Card Filter**](./04_universal_card_filter.md).      |
+| `fallback`            | `"SURGE" \| "NONE"`                                                                           | No       | Fallback resolution if no matching cards can be discarded (e.g. _Caught Off Guard_).                                                     |
+| `matchingDestination` | `"HAND" \| "PLAY" \| "DISCARD" \| "REVEAL"`                                                   | No       | Where the card that ends an `UNTIL_MATCH` goes (default `"DISCARD"`). `"REVEAL"` reveals it (encounter deck only).                       |
 
 #### `HAND` source: filter, `RANDOM`, each-player targets and results (#219)
 
@@ -135,18 +147,18 @@ The step always returns `discardedCards` (all players, in seat order) and `value
 
 #### 🧭 Decision Guide: `DISCARD` vs. `SEARCH`
 
-| Feature              | `DISCARD` (Attrition & Removal)                                                         | `SEARCH` (Discovery & Retrieval)                                                                                                                     |
-| :------------------- | :-------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rules Reference**  | **"Discard" (p. 10)**                                                                   | **"Search" (p. 26)** & **"Look at" (p. 19)**                                                                                                         |
-| **Primary Intent**   | Destruction, penalty, or milling into discard pile.                                     | Inspection, drafting, or tutoring cards to keep/play.                                                                                                |
+| Feature              | `DISCARD` (Attrition & Removal)                                                         | `SEARCH` (Discovery & Retrieval)                                                                                                                                     |
+| :------------------- | :-------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rules Reference**  | **"Discard" (p. 10)**                                                                   | **"Search" (p. 26)** & **"Look at" (p. 19)**                                                                                                                         |
+| **Primary Intent**   | Destruction, penalty, or milling into discard pile.                                     | Inspection, drafting, or tutoring cards to keep/play.                                                                                                                |
 | **Card Destination** | **Always Discard Pile** (`player.discard` / `encounterDiscard`).                        | **Two-Pile Split**: selected cards go to `selectedDestination` (`HAND`, `TABLEAU`, `DECK_SHUFFLE`), remainder to `unselectedDestination` (`DISCARD`, `DECK_BOTTOM`). |
-| **Example Cards**    | _Caught Off Guard_, _Black Cat_ (01002), _Charge_, Obligations, Treachery hand discard. | _Tony Stark_ (Futurist `01029b`), _Make the Call_, _Ancestral Knowledge_.                                                                            |
+| **Example Cards**    | _Caught Off Guard_, _Black Cat_ (01002), _Charge_, Obligations, Treachery hand discard. | _Tony Stark_ (Futurist `01029b`), _Make the Call_, _Ancestral Knowledge_.                                                                                            |
 
 - **Rule of Thumb:** If any card is kept, drawn into hand, or put into play, use **`SEARCH`**. If all cards are destroyed, milled, or sacrificed, use **`DISCARD`**.
 
 #### 🔄 Downstream Resolution: `DISCARDED_CARDS` Dynamic Value Evaluation
 
-Cards that inspect cards discarded in a preceding step (*"for each ... discarded this way"*) resolve dynamically via `amount: { from: "DISCARDED_CARDS" }` (see [**09. Dynamic Formulas**](./09_dynamic_formulas.md)).
+Cards that inspect cards discarded in a preceding step (_"for each ... discarded this way"_) resolve dynamically via `amount: { from: "DISCARDED_CARDS" }` (see [**09. Dynamic Formulas**](./09_dynamic_formulas.md)).
 
 ```json
 {
@@ -165,6 +177,7 @@ Cards that inspect cards discarded in a preceding step (*"for each ... discarded
 ```
 
 Supported `discardAttribute` inspection modes:
+
 - `COUNT`: Number of matching cards discarded (default).
 - `RESOURCE_ICONS`: Sum of printed resource icons (filtered by `resourceType`, or all printed icons if omitted).
 - `DIFFERENT_RESOURCES`: Count of distinct resource types (`physical`, `energy`, `mental`, `wild`) with $> 0$ icons.
@@ -183,19 +196,19 @@ Supported `discardAttribute` inspection modes:
 
 #### Parameters
 
-| Parameter                 | Type                                    | Required | Default                                 | Description                                                                                                                                                                     |
-| :------------------------ | :-------------------------------------- | :------- | :-------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `source`                  | `SearchZone \| SearchZone[]`            | No       | `"PLAYER_DECK"`                         | Source zone(s) to search (`"PLAYER_DECK"`, `"PLAYER_DISCARD"`, `"ENCOUNTER_DECK"`, `"ENCOUNTER_DISCARD"`, `"PLAYER_HAND"`). Can be an array (e.g. `["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"]`). |
-| `lookCount`               | `number \| "ALL" \| DynamicValueSource` | No       | `undefined`                             | Number of top cards to look at. If `0`, `"ALL"`, or omitted (`undefined`), searches the **entire source zone/pile**. If `1+`, slices top $X$ cards. Cannot be negative.      |
-| `takeCount`               | `number \| "ALL" \| DynamicValueSource` | No       | `1`                                     | Maximum number of matching cards to select. If `0` or `"ALL"`, takes **all matching cards** without a prompt. If `1+`, the player chooses between `minimumTake` and $X$ cards when there is a choice. |
-| `filter`                  | `UniversalCardFilter`                   | No       | `undefined`                             | Canonical filter predicate. See [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "traits": ["Tech"], "types": ["upgrade"] }`, `{ "codes": ["01046"] }`). |
-| `selectedDestination`     | `enum`                                  | No       | `"HAND"`                                | Destination zone for chosen cards (`"HAND"`, `"TABLEAU"`, `"DECK_TOP"`, `"DECK_BOTTOM"`, `"DECK_SHUFFLE"`, `"DISCARD"`, `"ATTACH_TO_TARGET"`, `"REVEAL"`).                                                         |
-| `unselectedDestination`   | `enum`                                  | No       | `null`                                  | Destination for remaining looked cards (`"DISCARD"`, `"DECK_BOTTOM"`, `"DECK_SHUFFLE"`, `"DECK_TOP"`, `"LEAVE_IN_PLACE"`).                                                      |
-| `shuffleAfter`            | `boolean`                               | No       | `true` (if lookCount omitted) / `false` | Whether to shuffle the searched deck(s) after search completion. Automatically shuffles all decks included in `source`.                                                        |
-| `autoSelectIfUnambiguous` | `boolean`                               | No       | `true`                                  | When `true`, automatically resolves without a decision prompt when the number of candidates (distinct names with `distinctBy`) is $\le$ `minimumTake`, i.e. nothing is left to choose.                                                                  |
+| Parameter                 | Type                                    | Required | Default                                 | Description                                                                                                                                                                                                                           |
+| :------------------------ | :-------------------------------------- | :------- | :-------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `source`                  | `SearchZone \| SearchZone[]`            | No       | `"PLAYER_DECK"`                         | Source zone(s) to search (`"PLAYER_DECK"`, `"PLAYER_DISCARD"`, `"ENCOUNTER_DECK"`, `"ENCOUNTER_DISCARD"`, `"PLAYER_HAND"`). Can be an array (e.g. `["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"]`).                                         |
+| `lookCount`               | `number \| "ALL" \| DynamicValueSource` | No       | `undefined`                             | Number of top cards to look at. If `0`, `"ALL"`, or omitted (`undefined`), searches the **entire source zone/pile**. If `1+`, slices top $X$ cards. Cannot be negative.                                                               |
+| `takeCount`               | `number \| "ALL" \| DynamicValueSource` | No       | `1`                                     | Maximum number of matching cards to select. If `0` or `"ALL"`, takes **all matching cards** without a prompt. If `1+`, the player chooses between `minimumTake` and $X$ cards when there is a choice.                                 |
+| `filter`                  | `UniversalCardFilter`                   | No       | `undefined`                             | Canonical filter predicate. See [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "traits": ["Tech"], "types": ["upgrade"] }`, `{ "codes": ["01046"] }`).                                                       |
+| `selectedDestination`     | `enum`                                  | No       | `"HAND"`                                | Destination zone for chosen cards (`"HAND"`, `"TABLEAU"`, `"DECK_TOP"`, `"DECK_BOTTOM"`, `"DECK_SHUFFLE"`, `"DISCARD"`, `"ATTACH_TO_TARGET"`, `"REVEAL"`).                                                                            |
+| `unselectedDestination`   | `enum`                                  | No       | `null`                                  | Destination for remaining looked cards (`"DISCARD"`, `"DECK_BOTTOM"`, `"DECK_SHUFFLE"`, `"DECK_TOP"`, `"LEAVE_IN_PLACE"`).                                                                                                            |
+| `shuffleAfter`            | `boolean`                               | No       | `true` (if lookCount omitted) / `false` | Whether to shuffle the searched deck(s) after search completion. Automatically shuffles all decks included in `source`.                                                                                                               |
+| `autoSelectIfUnambiguous` | `boolean`                               | No       | `true`                                  | When `true`, automatically resolves without a decision prompt when the number of candidates (distinct names with `distinctBy`) is $\le$ `minimumTake`, i.e. nothing is left to choose.                                                |
 | `minimumTake`             | `integer >= 0`                          | No       | `1`                                     | Fewest cards the player must take. `0` = "up to `takeCount`" (Ancestral Knowledge `01042`). With fewer candidates than the minimum, all are taken. A search that "adds a card" is mandatory when a candidate exists (RR v1.8 Search). |
-| `distinctBy`              | `"NAME"`                                | No       | `undefined`                             | The chosen cards must all be different: no two with the same card name. |
-| `promptTitle`             | `string`                                | No       | Contextual                              | Custom user-facing dialog title displayed in the decision prompt modal.                                                                                                         |
+| `distinctBy`              | `"NAME"`                                | No       | `undefined`                             | The chosen cards must all be different: no two with the same card name.                                                                                                                                                               |
+| `promptTitle`             | `string`                                | No       | Contextual                              | Custom user-facing dialog title displayed in the decision prompt modal.                                                                                                                                                               |
 
 #### Example 1: Look & Split (Tony Stark Futurist `01029b`)
 

@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-08T01:06:43.433Z` | **Active Effects In Use:** **46/55**
+> **Generated:** `2026-10-08T02:24:10.747Z` | **Active Effects In Use:** **46/55**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
@@ -55,7 +55,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 | `01195` | **Unknown Card #01195** | `core_encounter` | `under_fire_when_revealed` |
 
-### <a id="add-status"></a>`ADD_STATUS` (12 Cards, 14 Step Occurrences)
+### <a id="add-status"></a>`ADD_STATUS` (13 Cards, 15 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -71,6 +71,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed`, `sweeping_swoop_boost` |
 | `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_response` |
 | `01194` | **Unknown Card #01194** | `core_encounter` | `masterplan_when_revealed` |
+| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
 ### <a id="modify-stat"></a>`MODIFY_STAT` (11 Cards, 13 Step Occurrences)
 
@@ -233,6 +234,15 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
 | `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_retaliate` |
 
+### <a id="modify-max-health"></a>`MODIFY_MAX_HEALTH` (4 Cards, 4 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01036` | **Mark V Armor (upgrade)** | `core` | `mark_v_armor_hp` |
+| `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_hp` |
+| `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
+| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
+
 ### <a id="attach-to-host"></a>`ATTACH_TO_HOST` (3 Cards, 3 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -285,13 +295,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | :--- | :--- | :--- | :--- |
 | `01004` | **Enhanced Spider-Sense (event)** | `core` | `enhanced_spider_sense` |
 | `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
-
-### <a id="modify-max-health"></a>`MODIFY_MAX_HEALTH` (2 Cards, 2 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01036` | **Mark V Armor (upgrade)** | `core` | `mark_v_armor_hp` |
-| `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_hp` |
 
 ### <a id="prevent-damage"></a>`PREVENT_DAMAGE` (2 Cards, 2 Step Occurrences)
 

@@ -57,6 +57,7 @@ import {
 import { beginEnemyAttack, resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
 import {
   applyDamageToTarget,
+  defeatMinionsBeyondHitPoints,
   type DamageRequest,
   type DamageResult,
   type TargetEntityRef,
@@ -65,6 +66,7 @@ import { applyThreatPlacement, applyThwart } from '../pipeline/threat-pipeline';
 import {
   getEffectiveMaxHealth,
   getEffectiveHandSize,
+  getEffectiveMinionHitPoints,
   hasEntityKeyword,
 } from '../pipeline/stat-calculator';
 import {
@@ -378,6 +380,9 @@ export function discardCardInstance(
 
   // 3. Reset card state (leaves play / discard invariant per RR v1.8 p. 15)
   resetCardState(card);
+
+  // A hit point bonus that left with the card may leave a minion with damage at its new maximum.
+  defeatMinionsBeyondHitPoints(state);
 
   // 4. Proper destination routing based on encounter vs. player card ownership
   if (isEncounterCard(card.card)) {
@@ -783,7 +788,7 @@ export function compileDistributionTargets(
     }
     for (const p of state.players) {
       for (const m of p.engagedMinions) {
-        const mHp = (m.card as MinionCard).health || 1;
+        const mHp = getEffectiveMinionHitPoints(state, m);
         const currentDmg = m.tokens?.damage || 0;
         const currentHp = Math.max(0, mHp - currentDmg);
         const mTough = (m.statusCards || []).includes(StatusCard.TOUGH);
@@ -2386,7 +2391,7 @@ export function executeStep(
             (context.sourceCardInstance?.card.raw as any)?.keywords?.includes('Overkill'),
           );
 
-          const minionHp = (minion.card as MinionCard).health || 1;
+          const minionHp = getEffectiveMinionHitPoints(state, minion);
           const damageBefore = minion.tokens?.damage || 0;
           const damageRes = applyAbilityDamage(
             state,
@@ -2587,7 +2592,7 @@ export function executeStep(
                     } else {
                       const currentDmg = minion.tokens?.damage || 0;
                       const newDmg = currentDmg + amount;
-                      const minionHp = (minion.card as MinionCard).health || 1;
+                      const minionHp = getEffectiveMinionHitPoints(state, minion);
                       if (newDmg >= minionHp) {
                         processHostDefeated(state, minion, { player: p });
                         p.engagedMinions.splice(mIdx, 1);

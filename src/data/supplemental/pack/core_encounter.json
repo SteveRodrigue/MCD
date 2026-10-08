@@ -971,13 +971,38 @@
       }
     },
     "01163": {
+      "attachTo": {
+        "host": {
+          "type": "MINION",
+          "superlative": {
+            "stat": "PRINTED_HIT_POINTS",
+            "extreme": "HIGHEST"
+          }
+        },
+        "otherwise": {
+          "type": "SURGE"
+        }
+      },
+      "abilities": [
+        {
+          "id": "genetically_enhanced_hit_points",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "MODIFY_MAX_HEALTH",
+              "effectParams": {
+                "amount": 3
+              }
+            }
+          ]
+        }
+      ],
       "audit": {
-        "updatedAt": "2026-10-06T11:30",
-        "reviewedAt": "2026-10-06T11:30",
+        "updatedAt": "2026-10-07T12:00",
+        "reviewedAt": "2026-10-07T12:00",
         "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 70,
-        "ambiguityFile": "docs/ambiguities/core_encounter_01163_genetically-enhanced.md",
+        "confidence": 95,
         "originalText": "Attach to the minion with the highest printed hit points. If there are no minions in play, this card gains surge.\nAttached minion gets +3 hit points."
       }
     },

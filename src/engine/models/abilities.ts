@@ -1,5 +1,6 @@
 import { Keyword } from './enums';
 import type {
+  AttachTo,
   PlayRequirements,
   StepGate,
   StepFacts,
@@ -219,6 +220,8 @@ export interface CardEnrichment {
   maxPerPlayer?: number;
   /** Optional obligation recipient override (outside the abilities); absent = engine default */
   recipient?: PlayerRecipient;
+  /** Encounter attachment host and fallback (#209); absent = the active villain */
+  attachTo?: AttachTo;
   playUnderAnyPlayerControl?: boolean;
   uses?: CardUsesDefinition;
   /** Explicit keywords on the card (overrides text loader deductions) */

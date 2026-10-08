@@ -2,12 +2,12 @@ import {
   CardInstance,
   GameState,
   Keyword,
-  MinionCard,
   StatusCard,
   hasKeyword,
   getActiveVillain,
 } from '../../../engine/models';
 import { canAllyAttack, canBasicAttack } from '../../../engine/pipeline/legality-checker';
+import { getEffectiveMinionHitPoints } from '../../../engine/pipeline/stat-calculator';
 
 export interface EnemyTarget {
   id: string;
@@ -69,7 +69,7 @@ export function getValidAttackTargets(
             : false;
 
       if (canAtkMinion) {
-        const mMax = (minion.card as MinionCard).health || 1;
+        const mMax = getEffectiveMinionHitPoints(state, minion);
         const mDamage = minion.tokens?.damage || 0;
         const mHealth = Math.max(0, mMax - mDamage);
         const hasGuard = hasKeyword(minion.card, Keyword.GUARD);

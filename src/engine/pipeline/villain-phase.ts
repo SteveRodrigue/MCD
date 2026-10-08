@@ -15,6 +15,7 @@ import {
   cloneGameState,
   getActiveVillain,
   getActiveMainScheme,
+  getFirstPlayer,
   getPerPlayerCount,
 } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
@@ -32,7 +33,9 @@ import { dealSurgeCard } from './surge';
 import { getResolvingRevealAbilities } from './encounter-cancel';
 import { resolveRevealedObligation } from './obligations';
 export { drawEncounterCard };
-import { peekDecisionPrompt } from './prompt-queue';
+import { enqueueDecisionPrompt, peekDecisionPrompt } from './prompt-queue';
+import { resolveAttachmentHost } from './attachment-host';
+import { attachCardToHost } from '../state/state-validator';
 import {
   step5_passFirstPlayerToken,
   step6_endVillainPhaseAndRound,
@@ -651,6 +654,95 @@ function resolveWhenRevealedAbilities(
 }
 
 /**
+ * Attaches a revealed encounter attachment to its host and resolves its When Revealed abilities.
+ * The attachment itself is never cancelled (#175).
+ */
+export function completeEncounterAttachment(
+  state: GameState,
+  cardInstance: CardInstance,
+  hostInstanceId: string,
+  hostName: string,
+  player: PlayerState,
+  isCancelled: boolean,
+): void {
+  attachCardToHost(state, cardInstance, 'ENEMY', hostInstanceId);
+  state.log.push({
+    id: `log_${Date.now()}`,
+    timestamp: Date.now(),
+    key: 'encounter.reveal.attachment',
+    params: { attachment: cardInstance.card.name, host: hostName },
+    onomatopoeia: 'ATTACHED!',
+  });
+  resolveWhenRevealedAbilities(state, cardInstance, player, isCancelled);
+}
+
+/**
+ * A revealed encounter attachment (#209): attaches to the host its `attachTo` declares (the active
+ * villain by default). Several candidates are settled by the first player through a prompt; no
+ * candidate applies the `otherwise` branch, where "gains surge" discards the card and deals the
+ * surge card.
+ */
+function resolveRevealedAttachment(
+  state: GameState,
+  cardInstance: CardInstance,
+  player: PlayerState,
+  isCancelled: boolean,
+): void {
+  const card = cardInstance.card;
+  const resolution = resolveAttachmentHost(state, cardInstance, card.enrichment?.attachTo);
+
+  if (resolution.kind === 'attach') {
+    completeEncounterAttachment(
+      state,
+      cardInstance,
+      resolution.host.instanceId,
+      resolution.host.name,
+      player,
+      isCancelled,
+    );
+  } else if (resolution.kind === 'surge') {
+    state.encounterDiscard.push(cardInstance);
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      key: 'encounter.reveal.attachmentNoHost',
+      params: { attachment: card.name },
+      onomatopoeia: 'NO HOST!',
+    });
+    dealSurgeCard(state, player, card.name);
+  } else {
+    const firstPlayer = getFirstPlayer(state);
+    enqueueDecisionPrompt(state, {
+      promptId: `prompt_attachment_host_${cardInstance.instanceId}`,
+      playerId: firstPlayer.id,
+      title: 'Choose Host',
+      description: `Choose which character ${card.name} attaches to:`,
+      sourceCardName: card.name,
+      sourceCardCode: card.code,
+      sourceCardInstanceId: cardInstance.instanceId,
+      isVoluntary: false,
+      options: resolution.candidates.map((candidate) => ({
+        id: candidate.instanceId,
+        label: candidate.engagedPlayerId
+          ? `${candidate.name} (${state.players.find((p) => p.id === candidate.engagedPlayerId)?.name})`
+          : candidate.name,
+        description: `Attach ${card.name} to ${candidate.name}`,
+        cardCode: candidate.card.code,
+        cardName: candidate.name,
+        effect: 'ATTACH_TO_HOST',
+        params: {
+          isEncounterAttachmentHostChoice: true,
+          attachmentCard: cardInstance,
+          revealingPlayerId: player.id,
+          isCancelled,
+          hostName: candidate.name,
+        },
+      })),
+    });
+  }
+}
+
+/**
  * Resolves the effects and final destination of an active encounter card
  * after any When Revealed / Treachery reveal interrupts have resolved.
  */
@@ -725,15 +817,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
   } else if (card.type === CardType.OBLIGATION) {
     resolveRevealedObligation(state, cardInstance, player);
   } else if (card.type === CardType.ATTACHMENT) {
-    getActiveVillain(state).attachments.push(cardInstance);
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
-      key: 'encounter.reveal.attachment',
-      params: { attachment: card.name, host: getActiveVillain(state).card.name },
-      onomatopoeia: 'ATTACHED!',
-    });
-    resolveWhenRevealedAbilities(state, cardInstance, player, isCancelled);
+    resolveRevealedAttachment(state, cardInstance, player, isCancelled);
   } else {
     // Treachery generic resolution: execute declarative WHEN_REVEALED unless cancelled
     resolveWhenRevealedAbilities(state, cardInstance, player, isCancelled);

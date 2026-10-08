@@ -9,7 +9,7 @@ import {
   CardAbility,
   getActiveVillain,
 } from '@engine/models';
-import { getEffectiveRetaliate } from './stat-calculator';
+import { getEffectiveMinionHitPoints, getEffectiveRetaliate } from './stat-calculator';
 import { handleVillainDefeat } from './scenario-helpers';
 import { eliminatePlayer } from './player-elimination';
 import { dispatchTrigger, type DefeatSource } from '../triggers/trigger-dispatcher';
@@ -46,6 +46,29 @@ export interface DamageRequest {
    */
   dispatchDamageTaken?: boolean;
   triggerChain?: TriggerCallNode[];
+}
+
+/**
+ * Defeats every engaged minion whose damage reached its hit points. A lost hit point bonus (the
+ * attachment leaves play) lowers only the ceiling; the damage stays (RR v1.8 hit points).
+ */
+export function defeatMinionsBeyondHitPoints(state: GameState): void {
+  for (const player of state.players) {
+    for (const minion of [...player.engagedMinions]) {
+      if ((minion.tokens?.damage || 0) < getEffectiveMinionHitPoints(state, minion)) continue;
+      const idx = player.engagedMinions.findIndex((m) => m.instanceId === minion.instanceId);
+      if (idx === -1) continue;
+      player.engagedMinions.splice(idx, 1);
+      processHostDefeated(state, minion);
+      dispatchDefeat(state, {
+        targetPlayerId: player.id,
+        targetInstanceId: minion.instanceId,
+        targetType: 'MINION',
+        defeatSource: { kind: 'EFFECT', byAttack: false },
+      });
+      moveDefeatedCardToPile(state, minion, state.encounterDiscard);
+    }
+  }
 }
 
 export interface ShieldAbsorptionInfo {
@@ -356,7 +379,7 @@ export function applyDamageToTarget(
         const currentDmg = minion.tokens.damage || 0;
         const newDmg = currentDmg + damageTaken;
         minion.tokens.damage = newDmg;
-        const minionHealth = (minion.card as MinionCard).health || 1;
+        const minionHealth = getEffectiveMinionHitPoints(state, minion);
 
         state.log.push({
           id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,

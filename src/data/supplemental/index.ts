@@ -1,5 +1,6 @@
 import { CardEnrichment } from '@engine/models';
 
+import aoaEncounterPackSupplemental from './pack/aoa_encounter.json';
 import corePackSupplemental from './pack/core.json';
 import coreEncounterPackSupplemental from './pack/core_encounter.json';
 import cwEncounterPackSupplemental from './pack/cw_encounter.json';
@@ -15,6 +16,7 @@ export interface PackSupplementalData {
  * Structured pack-by-pack matching upstream zzorba datasets (data/upstream/pack/).
  */
 export const supplementalRegistry: Record<string, CardEnrichment> = {
+  ...(aoaEncounterPackSupplemental.cards as Record<string, CardEnrichment>),
   ...(corePackSupplemental.cards as Record<string, CardEnrichment>),
   ...(coreEncounterPackSupplemental.cards as Record<string, CardEnrichment>),
   ...(cwEncounterPackSupplemental.cards as Record<string, CardEnrichment>),

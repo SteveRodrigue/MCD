@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-07
+> **Last updated:** 2026-10-07 (#209)
 > **Repository state:** `main`; #255 and its follow-up (any player, queued cancels) are committed and pushed. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 2,327 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. No known flaky test (#217 fixed, uncommitted).
+> **Verification baseline:** 🟢 2,411 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. No known flaky test (#217 fixed, uncommitted).
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -64,6 +64,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #259 (Relentless Assault, attach timing) | `GRANT_ATTACK_KEYWORD` (ephemeral, ability context): `01053` = gated Overkill grant + 5 damage, three `DEAL_DAMAGE` Overkill params removed; `USE_CARD_ABILITY` no longer re-runs the attach ability of an attached upgrade; the `TARGET_TRAIT_MATCH` / gate redesign is split into [#289](https://github.com/SteveRodrigue/MCD/issues/289) and [#290](https://github.com/SteveRodrigue/MCD/issues/290) (uncommitted) | `git log --grep "#259"` |
 | #260 | Core player cards re-verified: One-Two Punch / Arc Reactor `SELF_HERO`, `READY` without target is a no-op, Nick Fury single round-end path (`edccdc8`); Ancestral Knowledge `01042` "up to 3 different cards": `SEARCH` `minimumTake` (default 1) / `distinctBy`, multi-select prompt and modal, `SEARCH.isVoluntary` retired, `card.search.nothingFound` log, `isForcedTiming` (ADR-0032 addendum) (uncommitted) | `git log --grep "#260"` |
 | #289, #290 | Step gates and result facts: `step.condition` retired, 9 canonical `StepGate` definitions with strict schemas, `StepResolutionResult.facts` engine pipeline, dynamic `GateParamsPanel`, compact summaries | `e930208` |
+| #209 (uncommitted) | Conditional encounter attachments: card field `attachTo` (`host` / `superlative` / `withoutCopyAttached` / `otherwise` SURGE or host), `resolveAttachmentHost`, first-player prompt on ties, `getEffectiveMinionHitPoints` (8 raw reads replaced), `defeatMinionsBeyondHitPoints`; Genetically Enhanced `01163` modelled (confidence 95), Card Editor panel, ADR-0040 addendum | `git log --grep "#209"` |
 | #288 | Voluntary discard and setup choice modals show cards with thumbnail, hover zoom preview (`CardView`), dynamic cost badge, and formatted card text via `FormattedCardText` (no raw tags or bracket tokens) | uncommitted |
 
 ---
@@ -119,7 +120,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 | — | Caught Off Guard "no prompt" (needs the reporter's detail), Card Editor delete feature | [#233](https://github.com/SteveRodrigue/MCD/issues/233), [#237](https://github.com/SteveRodrigue/MCD/issues/237) | waiting / enhancement | |
 | 3i | T'Challa `01040b` (Black Panther): no prompt to choose an upgrade on setup | [#283](https://github.com/SteveRodrigue/MCD/issues/283) | **P1, Gate 1** | 🟢 **Done** 2026-10-07; Setup abilities resolve after the mulligan through `executeEffect` (`PLAYER_SETUP`), Luke Cage `01076` invented `SETUP` removed |
 | 4b | Legal Practice `01023` played from hand pays no discard cost and removes no threat | [#277](https://github.com/SteveRodrigue/MCD/issues/277) | **P1**, card does nothing in a real game | 🟢 **Done** 2026-10-07; confidence 95 |
-| 4 | Genetically Enhanced `01163` (invented `bonusAttack`) | [#228](https://github.com/SteveRodrigue/MCD/issues/228) | blocks the guard test | 🟢 **Circuit-breaker applied** 2026-10-06 (stripped, ambiguity report, tie: first player chooses); **She-Hulk nemesis card, Gate 1:** not playable until #209 (now Gate 1), a highest-printed-HP selector (tie: first player chooses), a +3 HP modifier and the surge fallback exist; issue stays open, P1 |
+| 4 | Genetically Enhanced `01163` (invented `bonusAttack`) | [#228](https://github.com/SteveRodrigue/MCD/issues/228) | blocks the guard test | 🟢 **Done** 2026-10-07 with #209: `attachTo` (highest printed HP, tie: first player chooses, else surge) + `MODIFY_MAX_HEALTH` +3; close #228 after the commit |
 
 ### 3.2 Engine prerequisites that unblock stripped cards
 
@@ -158,7 +159,7 @@ Tier 1 (#258, #253) is done. Tier 2 (#254, #255 done; new: [#286](https://github
 ### 3.7 Deferred (do not start without the owner)
 
 - **Wrecking Crew (MC03) chain:** [#210](https://github.com/SteveRodrigue/MCD/issues/210), [#211](https://github.com/SteveRodrigue/MCD/issues/211), [#212](https://github.com/SteveRodrigue/MCD/issues/212), [#213](https://github.com/SteveRodrigue/MCD/issues/213), [#214](https://github.com/SteveRodrigue/MCD/issues/214), [#215](https://github.com/SteveRodrigue/MCD/issues/215). No effect on Gate 1.
-- **Moved to Gate 1 (2026-10-06):** [#209](https://github.com/SteveRodrigue/MCD/issues/209) conditional encounter attachments, needed by Genetically Enhanced `01163` (She-Hulk nemesis, [#228](https://github.com/SteveRodrigue/MCD/issues/228)). Schedule it with items 5 to 8 of section 3.2; the other 41 cards stay outside Gate 1.
+- **#209 conditional encounter attachments:** 🟢 done 2026-10-07 for the engine and `01163`. The other 41 cards stay outside Gate 1 (8 need Civil War leaders); each needs its own supplemental approval. The Fittest `45109` was imported (`aoa_encounter.json`) to complement the tests.
 - **Other features and cleanups:** [#262](https://github.com/SteveRodrigue/MCD/issues/262) Biomechanical Upgrades `01185` (needs #209 and a defeat replacement interrupt), [#208](https://github.com/SteveRodrigue/MCD/issues/208) player-deck obligations, [#109](https://github.com/SteveRodrigue/MCD/issues/109) observer-scoped reaction triggers, [#37](https://github.com/SteveRodrigue/MCD/issues/37) Alliance payment and Team-Up, [#126](https://github.com/SteveRodrigue/MCD/issues/126), [#127](https://github.com/SteveRodrigue/MCD/issues/127), [#27](https://github.com/SteveRodrigue/MCD/issues/27).
 - **Follow-ups of #276 (none in Gate 1):** [#278](https://github.com/SteveRodrigue/MCD/issues/278) generic value-comparison condition (first needed by Absorbing Man in The Rise of the Red Skull, roadmap Gate 4 "Official Pack Integration Pipeline"), [#279](https://github.com/SteveRodrigue/MCD/issues/279) fake card pack with runtime read tracking, [#280](https://github.com/SteveRodrigue/MCD/issues/280) `Toughness` vs `Tough` keyword (with Luke Cage data), [#281](https://github.com/SteveRodrigue/MCD/issues/281) consume `errata` / `victoryPoints`, [#284](https://github.com/SteveRodrigue/MCD/issues/284) remove `REDUCE_NEXT_CARD_COST.cardFilter` unless a card needs it. `KNOWN_GAPS` in `tools/audit/schema-member-coverage.ts` ties #280 and #281 to the guard.
 - **Not scheduled (owner, 2026-10-07):** [#285](https://github.com/SteveRodrigue/MCD/issues/285) reverse guard for effect parameters: every key the engine reads must be in the table, the spec and the editor; triage 16 engine-read keys missing from the table; no hidden defaults; no `as any` on `effectParams`.

@@ -982,6 +982,46 @@ export const PlayerRecipientSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('IDENTITY'), codes: z.array(z.string()).min(1) }).strict(),
 ]);
 
+/**
+ * Encounter attachment host (#209): "Attach to X. Otherwise, ...". `VILLAIN` is the active
+ * villain. `MINION` / `ENEMY` (minions, or the villains too) pick among the candidates that match
+ * `filter`; `superlative` keeps the highest / lowest printed value (ties: the first player
+ * chooses); `withoutCopyAttached` skips candidates already carrying a copy of the attachment.
+ */
+export const AttachHostSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('VILLAIN') }).strict(),
+  z
+    .object({
+      type: z.enum(['MINION', 'ENEMY']),
+      filter: UniversalCardFilterSchema.optional(),
+      superlative: z
+        .object({
+          stat: z.enum(['PRINTED_HIT_POINTS', 'PRINTED_ATTACK']),
+          extreme: z.enum(['HIGHEST', 'LOWEST']),
+        })
+        .strict()
+        .optional(),
+      withoutCopyAttached: z.boolean().optional(),
+    })
+    .strict(),
+]);
+
+export type AttachHost = z.infer<typeof AttachHostSchema>;
+
+/**
+ * Where an encounter attachment goes when it is revealed. Absent on a card = the active villain
+ * (as today). `otherwise` applies when `host` has no candidate: `SURGE` discards the card and
+ * deals the surge card; a host attaches there instead.
+ */
+export const AttachToSchema = z
+  .object({
+    host: AttachHostSchema,
+    otherwise: z.union([AttachHostSchema, z.object({ type: z.literal('SURGE') }).strict()]).optional(),
+  })
+  .strict();
+
+export type AttachTo = z.infer<typeof AttachToSchema>;
+
 export const CardEnrichmentSchema = z
   .object({
     abilities: z.array(CardAbilitySchema).optional(),
@@ -993,6 +1033,7 @@ export const CardEnrichmentSchema = z
     thwartCost: z.number().int().nonnegative().optional(),
     maxPerPlayer: z.number().optional(),
     recipient: PlayerRecipientSchema.optional(),
+    attachTo: AttachToSchema.optional(),
     playUnderAnyPlayerControl: z.boolean().optional(),
     uses: CardUsesSchema.optional(),
     victoryPoints: z.number().optional(),

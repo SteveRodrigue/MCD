@@ -109,6 +109,60 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
     onChange({ ...supplemental, recipient: { type: 'IDENTITY', codes } });
   };
 
+  const attachTo = supplemental.attachTo as
+    | {
+        host: {
+          type: string;
+          superlative?: { stat: string; extreme: string };
+          withoutCopyAttached?: boolean;
+        };
+        otherwise?: { type: string };
+      }
+    | undefined;
+  const emitAttachTo = (next: typeof attachTo) => onChange({ ...supplemental, attachTo: next });
+  const handleAttachHostChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const type = e.target.value;
+    const otherwise = attachTo?.otherwise ? { otherwise: attachTo.otherwise } : {};
+    if (!type) {
+      emitAttachTo(undefined);
+    } else if (type === 'VILLAIN') {
+      emitAttachTo({ host: { type }, ...otherwise });
+    } else {
+      emitAttachTo({
+        host: {
+          type,
+          ...(attachTo?.host.superlative ? { superlative: attachTo.host.superlative } : {}),
+          ...(attachTo?.host.withoutCopyAttached ? { withoutCopyAttached: true } : {}),
+        },
+        ...otherwise,
+      });
+    }
+  };
+  const handleAttachSuperlativeChange = (field: 'stat' | 'extreme', value: string) => {
+    if (!attachTo) return;
+    const { superlative, ...host } = attachTo.host;
+    if (field === 'stat' && !value) {
+      emitAttachTo({ ...attachTo, host });
+      return;
+    }
+    const next = {
+      stat: superlative?.stat ?? '',
+      extreme: superlative?.extreme ?? 'HIGHEST',
+      [field]: value,
+    };
+    emitAttachTo({ ...attachTo, host: { ...host, superlative: next } });
+  };
+  const handleAttachWithoutCopyChange = (checked: boolean) => {
+    if (!attachTo) return;
+    const { withoutCopyAttached: _drop, ...host } = attachTo.host;
+    emitAttachTo({ ...attachTo, host: checked ? { ...host, withoutCopyAttached: true } : host });
+  };
+  const handleAttachOtherwiseChange = (value: string) => {
+    if (!attachTo) return;
+    const { otherwise: _drop, ...rest } = attachTo;
+    emitAttachTo(value ? { ...rest, otherwise: { type: value } } : rest);
+  };
+
   const handleConfidenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(e.target.value, 10);
     onChange({
@@ -172,6 +226,7 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
     supplemental.uses ||
     supplemental.maxPerPlayer != null ||
     supplemental.recipient ||
+    supplemental.attachTo ||
     supplemental.restrictedSlots != null,
   );
 
@@ -384,6 +439,69 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
                   placeholder="Hero / alter-ego codes, comma separated (e.g. 01010a, 01010b)"
                   className="mt-1 w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
                 />
+              )}
+            </div>
+          )}
+
+          {(typeCode === 'attachment' || attachTo) && (
+            <div data-testid="attach-to-field">
+              <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+                Encounter Attachment Host
+              </label>
+              <select
+                data-testid="attach-to-host-select"
+                value={attachTo?.host.type ?? ''}
+                onChange={handleAttachHostChange}
+                className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
+              >
+                <option value="">Default (the active villain)</option>
+                <option value="VILLAIN">The active villain</option>
+                <option value="MINION">A minion</option>
+                <option value="ENEMY">An enemy (villain or minion)</option>
+              </select>
+              {attachTo && attachTo.host.type !== 'VILLAIN' && (
+                <div className="mt-1 grid grid-cols-2 gap-1">
+                  <select
+                    data-testid="attach-to-stat-select"
+                    value={attachTo.host.superlative?.stat ?? ''}
+                    onChange={(e) => handleAttachSuperlativeChange('stat', e.target.value)}
+                    className="bg-white border border-black p-1.5 text-xs rounded"
+                  >
+                    <option value="">Any (first player chooses)</option>
+                    <option value="PRINTED_HIT_POINTS">Printed hit points</option>
+                    <option value="PRINTED_ATTACK">Printed ATK</option>
+                  </select>
+                  <select
+                    data-testid="attach-to-extreme-select"
+                    value={attachTo.host.superlative?.extreme ?? 'HIGHEST'}
+                    disabled={!attachTo.host.superlative}
+                    onChange={(e) => handleAttachSuperlativeChange('extreme', e.target.value)}
+                    className="bg-white border border-black p-1.5 text-xs rounded"
+                  >
+                    <option value="HIGHEST">Highest</option>
+                    <option value="LOWEST">Lowest</option>
+                  </select>
+                  <label className="col-span-2 flex items-center gap-2 text-xs">
+                    <input
+                      type="checkbox"
+                      data-testid="attach-to-without-copy"
+                      checked={Boolean(attachTo.host.withoutCopyAttached)}
+                      onChange={(e) => handleAttachWithoutCopyChange(e.target.checked)}
+                    />
+                    Without a copy of this card attached
+                  </label>
+                </div>
+              )}
+              {attachTo && (
+                <select
+                  data-testid="attach-to-otherwise-select"
+                  value={attachTo.otherwise?.type ?? ''}
+                  onChange={(e) => handleAttachOtherwiseChange(e.target.value)}
+                  className="mt-1 w-full bg-white border border-black p-1.5 text-xs rounded"
+                >
+                  <option value="">Otherwise: the villain</option>
+                  <option value="SURGE">Otherwise: this card gains surge</option>
+                </select>
               )}
             </div>
           )}

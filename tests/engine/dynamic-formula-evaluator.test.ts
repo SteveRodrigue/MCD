@@ -52,19 +52,21 @@ describe('Dynamic Formula Evaluator (evaluateDynamicAmount) — RR v1.8 & ADR-00
 
   const createMockState = (playerOverrides?: Partial<PlayerState>): GameState => {
     const player = createMockPlayer(playerOverrides);
+    const mockVillain = {
+      id: 'rhino-1',
+      instanceId: 'rhino-1',
+      card: { code: '01094', name: 'Rhino', hitPoints: 14 } as any,
+      health: 10,
+      maxHealth: 14,
+      tough: false,
+      stunned: false,
+      confused: false,
+      attachments: [],
+    } as any;
     return {
       scenario: { id: 'rhino', name: 'Rhino' } as any,
-      villain: {
-        id: 'rhino-1',
-        card: { code: '01094', name: 'Rhino', hitPoints: 14 } as any,
-        health: 14,
-        maxHealth: 14,
-        tough: false,
-        stunned: false,
-        confused: false,
-        attachments: [],
-        damage: 4,
-      } as any,
+      villain: mockVillain,
+      villains: [mockVillain],
       mainScheme: {
         id: 'main-scheme',
         card: { code: '01097', name: 'The Break-In!' } as any,
@@ -180,10 +182,103 @@ describe('Dynamic Formula Evaluator (evaluateDynamicAmount) — RR v1.8 & ADR-00
       expect(amount).toBe(5);
     });
 
-    it('resolves DAMAGE on villain or target enemy', () => {
+    it('resolves DAMAGE on active villain as maxHealth - health', () => {
       const state = createMockState();
       const amount = evaluateDynamicAmount({ from: 'STAT_VALUE', stat: 'DAMAGE' }, {}, { state });
       expect(amount).toBe(4);
+    });
+
+    it('resolves DAMAGE on full-health villain to 0 when health === maxHealth', () => {
+      const state = createMockState();
+      state.villain.health = 14;
+      state.villain.maxHealth = 14;
+      if (state.villains?.[0]) {
+        state.villains[0].health = 14;
+        state.villains[0].maxHealth = 14;
+      }
+      const amount = evaluateDynamicAmount({ from: 'STAT_VALUE', stat: 'DAMAGE' }, {}, { state });
+      expect(amount).toBe(0);
+    });
+
+    it('resolves DAMAGE on target minion from tokens.damage', () => {
+      const state = createMockState();
+      const minion: CardInstance = {
+        instanceId: 'minion-1',
+        card: { code: '01110', name: 'Hydra Bomber', type: 'minion' } as any,
+        tokens: { damage: 3 },
+      };
+      state.players[0].engagedMinions = [minion];
+
+      const amount = evaluateDynamicAmount(
+        { from: 'STAT_VALUE', stat: 'DAMAGE' },
+        {},
+        { state, targetInstanceId: 'minion-1' },
+      );
+      expect(amount).toBe(3);
+    });
+
+    it('resolves DAMAGE on target ally from tokens.damage', () => {
+      const state = createMockState();
+      const ally: CardInstance = {
+        instanceId: 'ally-1',
+        card: { code: '01022', name: 'Hellcat', type: 'ally' } as any,
+        tokens: { damage: 2 },
+      };
+      state.players[0].allies = [ally];
+
+      const amount = evaluateDynamicAmount(
+        { from: 'STAT_VALUE', stat: 'DAMAGE' },
+        {},
+        { state, targetInstanceId: 'ally-1' },
+      );
+      expect(amount).toBe(2);
+    });
+
+    it('resolves DAMAGE on target player as maxHealth - health', () => {
+      const state = createMockState({ health: 9, maxHealth: 15 });
+      const amount = evaluateDynamicAmount(
+        { from: 'STAT_VALUE', stat: 'DAMAGE' },
+        {},
+        { state, targetInstanceId: state.players[0].id },
+      );
+      expect(amount).toBe(6);
+    });
+
+    it('resolves DAMAGE on target secondary villain in multi-villain scenario', () => {
+      const state = createMockState();
+      const villain1 = state.villains[0];
+      const villain2 = {
+        id: 'crossbones-1',
+        instanceId: 'crossbones-1',
+        card: { code: '04058', name: 'Crossbones' } as any,
+        health: 12,
+        maxHealth: 20,
+      } as any;
+      state.villains = [villain1, villain2];
+
+      const amount = evaluateDynamicAmount(
+        { from: 'STAT_VALUE', stat: 'DAMAGE' },
+        {},
+        { state, targetInstanceId: 'crossbones-1' },
+      );
+      expect(amount).toBe(8);
+    });
+
+    it('resolves DAMAGE on card located via targetCardCode', () => {
+      const state = createMockState();
+      const minion: CardInstance = {
+        instanceId: 'minion-1',
+        card: { code: '01110', name: 'Hydra Bomber', type: 'minion' } as any,
+        tokens: { damage: 2 },
+      };
+      state.players[0].engagedMinions = [minion];
+
+      const amount = evaluateDynamicAmount(
+        { from: 'STAT_VALUE', stat: 'DAMAGE', targetCardCode: '01110' },
+        {},
+        { state, player: state.players[0] },
+      );
+      expect(amount).toBe(2);
     });
   });
 

@@ -265,7 +265,10 @@ export function readCardAttribute(
     }
 
     case 'DAMAGE': {
-      const damage = card?.damage ?? card?.tokens?.damage ?? 0;
+      if (typeof card?.maxHealth === 'number' && typeof card?.health === 'number') {
+        return Math.max(0, card.maxHealth - card.health);
+      }
+      const damage = card?.tokens?.damage ?? card?.damage ?? 0;
       return typeof damage === 'number' ? damage : 0;
     }
 

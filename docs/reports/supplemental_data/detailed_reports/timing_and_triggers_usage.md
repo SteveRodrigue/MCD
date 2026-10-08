@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-08T01:06:43.433Z`
+> **Generated:** `2026-10-08T02:24:10.747Z`
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
@@ -73,7 +73,7 @@
 | `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
 
-### <a id="constant"></a>`CONSTANT` (18 Cards)
+### <a id="constant"></a>`CONSTANT` (20 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -94,7 +94,9 @@
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_atk_bonus` |
 | `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
 | `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
+| `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
 | `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_retaliate` |
+| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
 
 ### <a id="action"></a>`ACTION` (19 Cards)
 
@@ -120,7 +122,7 @@
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 
-### <a id="forced-response"></a>`FORCED_RESPONSE` (17 Cards)
+### <a id="forced-response"></a>`FORCED_RESPONSE` (18 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -141,6 +143,7 @@
 | `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
 | `01194` | **Unknown Card #01194** | `core_encounter` | `masterplan_when_revealed` |
 | `01195` | **Unknown Card #01195** | `core_encounter` | `under_fire_when_revealed` |
+| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
 ### <a id="response"></a>`RESPONSE` (13 Cards)
 
@@ -243,7 +246,7 @@
 
 ## 2. Trigger Windows (`TriggerTypeSchema` — 20/30 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (36 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (37 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -283,6 +286,7 @@
 | `01194` | **Unknown Card #01194** | `core_encounter` | `masterplan_when_revealed` |
 | `01195` | **Unknown Card #01195** | `core_encounter` | `under_fire_when_revealed` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
+| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
 ### <a id="enters-play"></a>`ENTERS_PLAY` (10 Cards)
 

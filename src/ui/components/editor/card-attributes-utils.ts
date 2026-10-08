@@ -36,6 +36,7 @@ export function countMechanicsFields(supplemental: any): number {
   if (supplemental?.uses) count++;
   if (supplemental?.maxPerPlayer != null) count++;
   if (supplemental?.recipient) count++;
+  if (supplemental?.attachTo) count++;
   if (supplemental?.restrictedSlots != null) count++;
   return count;
 }

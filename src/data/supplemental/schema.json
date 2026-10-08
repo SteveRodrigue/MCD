@@ -685,6 +685,158 @@
               }
             ]
           },
+          "attachTo": {
+            "type": "object",
+            "properties": {
+              "host": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "VILLAIN"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "MINION",
+                          "ENEMY"
+                        ]
+                      },
+                      "filter": {
+                        "$ref": "#/$defs/__schema0"
+                      },
+                      "superlative": {
+                        "type": "object",
+                        "properties": {
+                          "stat": {
+                            "type": "string",
+                            "enum": [
+                              "PRINTED_HIT_POINTS",
+                              "PRINTED_ATTACK"
+                            ]
+                          },
+                          "extreme": {
+                            "type": "string",
+                            "enum": [
+                              "HIGHEST",
+                              "LOWEST"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "stat",
+                          "extreme"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "withoutCopyAttached": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "otherwise": {
+                "anyOf": [
+                  {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "VILLAIN"
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "MINION",
+                              "ENEMY"
+                            ]
+                          },
+                          "filter": {
+                            "$ref": "#/$defs/__schema0"
+                          },
+                          "superlative": {
+                            "type": "object",
+                            "properties": {
+                              "stat": {
+                                "type": "string",
+                                "enum": [
+                                  "PRINTED_HIT_POINTS",
+                                  "PRINTED_ATTACK"
+                                ]
+                              },
+                              "extreme": {
+                                "type": "string",
+                                "enum": [
+                                  "HIGHEST",
+                                  "LOWEST"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "stat",
+                              "extreme"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "withoutCopyAttached": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "SURGE"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": [
+              "host"
+            ],
+            "additionalProperties": false
+          },
           "playUnderAnyPlayerControl": {
             "type": "boolean"
           },

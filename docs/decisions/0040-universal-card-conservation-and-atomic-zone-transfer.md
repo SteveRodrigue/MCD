@@ -119,3 +119,9 @@ export function assertCardConservation(state: GameState): void {
 ### Negative / Mitigations
 
 - Invariant checks add minimal scan overhead during test execution ($O(N)$ where $N \le 150$ cards, $\approx 0.05$ ms).
+
+---
+
+## Addendum (2026-10-07, #209): encounter attachment hosts
+
+A revealed encounter attachment no longer attaches to the active villain unconditionally. `resolveAttachmentHost` (`src/engine/pipeline/attachment-host.ts`) reads the optional `attachTo` declaration (see the supplemental spec `01_metadata_and_audit.md`) and returns one of: attach to a single candidate, a tie for the first player to settle through a decision prompt, or surge. Every attach still goes through `attachCardToHost`, so conservation holds; the "gains surge" branch moves the card to the encounter discard pile before it is dealt the surge card. A card without `attachTo` behaves as before (the active villain).

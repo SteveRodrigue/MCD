@@ -5,7 +5,6 @@ import {
   StatusCard,
   CardType,
   AlterEgoCard,
-  MinionCard,
   AllyCard,
   SideSchemeCard,
   PlayerSideSchemeCard,
@@ -64,6 +63,7 @@ import {
   continueVillainPhase,
   executeMinionAttackAgainstPlayer,
   resolveActiveEncounterCardAfterInterrupt,
+  completeEncounterAttachment,
 } from './villain-phase';
 import { initiatePlayerPhaseCleanup, executePlayerCleanup } from './player-phase-cleanup';
 import { handleVillainDefeat } from './scenario-helpers';
@@ -71,6 +71,7 @@ import {
   getEffectiveAllyStats,
   getEffectiveHeroStats,
   getEffectiveMaxHealth,
+  getEffectiveMinionHitPoints,
   hasEntityKeyword,
   consumeEntityStatusCards,
 } from './stat-calculator';
@@ -2313,7 +2314,7 @@ function dispatchSingleAction(
                     } else {
                       const currentDmg = minion.tokens?.damage || 0;
                       const newDmg = currentDmg + amount;
-                      const minionHp = (minion.card as MinionCard).health || 1;
+                      const minionHp = getEffectiveMinionHitPoints(poppedState, minion);
                       if (newDmg >= minionHp) {
                         processHostDefeated(poppedState, minion, { player: p });
                         p.engagedMinions.splice(mIdx, 1);
@@ -2530,6 +2531,32 @@ function dispatchSingleAction(
             };
           }
         }
+      }
+
+      if (
+        activePrompt &&
+        activePrompt.options.some((o) => o.params?.isEncounterAttachmentHostChoice)
+      ) {
+        const { state: poppedState } = popDecisionPrompt(nextState);
+        const selectedOption =
+          activePrompt.options.find((o) => o.id === action.selectedOptionId) ??
+          activePrompt.options[0];
+        const params = selectedOption.params as {
+          attachmentCard: CardInstance;
+          revealingPlayerId: string;
+          isCancelled: boolean;
+          hostName: string;
+        };
+        const revealingPlayer = getPlayer(poppedState, params.revealingPlayerId) || player;
+        completeEncounterAttachment(
+          poppedState,
+          params.attachmentCard,
+          selectedOption.id,
+          params.hostName,
+          revealingPlayer,
+          params.isCancelled,
+        );
+        return { state: poppedState, result: { success: true, onomatopoeia: 'ATTACHED!' } };
       }
 
       if (activePrompt && activePrompt.options.some((o) => o.params?.isAttachmentMinionChoice)) {

@@ -15,7 +15,6 @@ import {
   CardInstance,
   PlayerState,
   GameState,
-  MinionCard,
   CardType,
   getActiveVillain,
   getActiveMainScheme,
@@ -28,7 +27,10 @@ import {
   getEffectiveCardCost,
   getDiscardCostBounds,
 } from '../../../engine/pipeline/cost-engine';
-import { getEffectiveMaxHealth } from '../../../engine/pipeline/stat-calculator';
+import {
+  getEffectiveMaxHealth,
+  getEffectiveMinionHitPoints,
+} from '../../../engine/pipeline/stat-calculator';
 import { matchesCardFilter } from '../../../engine/filters/card-filter';
 import {
   UniversalCardFilter,
@@ -537,14 +539,12 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
           id: m.instanceId,
           name:
             p.id === player.id ? `${m.card.name} (Minion)` : `${m.card.name} (${p.name}'s Minion)`,
-          hp: (m.card as MinionCard).health
-            ? (m.card as MinionCard).health - (m.tokens?.damage || 0)
-            : 0,
+          hp: Math.max(0, getEffectiveMinionHitPoints(gameState, m) - (m.tokens?.damage || 0)),
         });
       });
     });
     return targets;
-  }, [gameState.players, player.id]);
+  }, [gameState, player.id]);
 
   // ONLY event cards execute their abilities immediately upon being played from hand (RR v1.8 p. 12, 23; Issue #94).
   // Supports, Upgrades, Allies, and Resource cards enter play without targets; their abilities trigger/activate later.
@@ -613,9 +613,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
           name:
             p.id === player.id ? `${m.card.name} (Minion)` : `${m.card.name} (${p.name}'s Minion)`,
           type: 'minion',
-          hp: (m.card as MinionCard).health
-            ? (m.card as MinionCard).health - (m.tokens?.damage || 0)
-            : 0,
+          hp: Math.max(0, getEffectiveMinionHitPoints(gameState, m) - (m.tokens?.damage || 0)),
         });
       });
     });

@@ -52,6 +52,30 @@ export function getEffectiveMinionAttack(state: GameState, minion: CardInstance)
   return Math.max(0, attack);
 }
 
+/**
+ * A minion's effective hit points: the printed value plus the CONSTANT `MODIFY_MAX_HEALTH` steps
+ * of the cards attached to it (Genetically Enhanced: "Attached minion gets +3 hit points"). Damage
+ * stays on the minion when a bonus is lost; only the ceiling changes.
+ */
+export function getEffectiveMinionHitPoints(state: GameState, minion: CardInstance): number {
+  const printed = (minion.card as { health?: number }).health || 1;
+  let bonus = 0;
+  for (const attachment of minion.attachments || []) {
+    for (const ab of attachment.card.enrichment?.abilities || []) {
+      if (ab.timing !== 'CONSTANT') continue;
+      for (const step of ab.steps || []) {
+        if (step.effect !== 'MODIFY_MAX_HEALTH') continue;
+        bonus += evaluateDynamicAmount(
+          getStepEffectParams(step).amount as number | DynamicValueSource | undefined,
+          {},
+          { state, sourceCardInstance: attachment, targetCardInstance: minion },
+        );
+      }
+    }
+  }
+  return Math.max(1, printed + bonus);
+}
+
 export interface EffectiveAllyStats {
   thwart: number;
   attack: number;

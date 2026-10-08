@@ -1,0 +1,56 @@
+{
+  "$schema": "../schema.json",
+  "cards": {
+    "45109": {
+      "attachTo": {
+        "host": {
+          "type": "MINION",
+          "superlative": {
+            "stat": "PRINTED_HIT_POINTS",
+            "extreme": "HIGHEST"
+          }
+        },
+        "otherwise": {
+          "type": "SURGE"
+        }
+      },
+      "abilities": [
+        {
+          "id": "the_fittest_hit_points",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "MODIFY_MAX_HEALTH",
+              "effectParams": {
+                "amount": 5
+              }
+            }
+          ]
+        },
+        {
+          "id": "the_fittest_tough",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "effectParams": {
+                "status": "TOUGH",
+                "target": "HOST"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-10-07T13:00",
+        "updatedAt": "2026-10-07T13:00",
+        "reviewedAt": "2026-10-07T13:00",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 95,
+        "originalText": "Attach to the minion with the highest printed hit points and give it a tough status card. Otherwise, this card gains surge.\nAttached enemy gets +5 hit points."
+      }
+    }
+  }
+}

@@ -343,8 +343,7 @@ describe('Condition-Based Modifiers & Ad-Hoc Param Elimination (Bug #67)', () =>
                   },
                   {
                     effect: 'MODIFY_STAT',
-                    gate: 'IF_CONDITION_MET',
-                    condition: 'TARGET_TRAIT_MATCH',
+                    gate: 'IF_PLAYER_HAS_TRAIT',
                     gateParams: { trait: 'Aerial' },
                     effectParams: { stat: 'DEFENSE', amount: 1 },
                   },
@@ -395,8 +394,7 @@ describe('Condition-Based Modifiers & Ad-Hoc Param Elimination (Bug #67)', () =>
                   },
                   {
                     effect: 'MODIFY_STAT',
-                    gate: 'IF_CONDITION_MET',
-                    condition: 'TARGET_TRAIT_MATCH',
+                    gate: 'IF_PLAYER_HAS_TRAIT',
                     gateParams: { trait: 'Aerial' },
                     effectParams: { stat: 'DEFENSE', amount: 1 },
                   },
@@ -432,8 +430,7 @@ describe('Condition-Based Modifiers & Ad-Hoc Param Elimination (Bug #67)', () =>
         },
         {
           effect: 'REMOVE_THREAT' as const,
-          gate: 'IF_CONDITION_MET' as const,
-          condition: 'TARGET_TRAIT_MATCH' as const,
+          gate: 'IF_PLAYER_HAS_TRAIT' as const,
           gateParams: { trait: 'Aerial' },
           effectParams: { amount: 2, target: 'SIDE_SCHEME', targetInstanceId: 'side-1' },
         },
@@ -456,8 +453,7 @@ describe('Condition-Based Modifiers & Ad-Hoc Param Elimination (Bug #67)', () =>
         },
         {
           effect: 'REMOVE_THREAT' as const,
-          gate: 'IF_CONDITION_MET' as const,
-          condition: 'TARGET_TRAIT_MATCH' as const,
+          gate: 'IF_PLAYER_HAS_TRAIT' as const,
           gateParams: { trait: 'Aerial' },
           effectParams: { amount: 2, target: 'SIDE_SCHEME', targetInstanceId: 'side-1' },
         },

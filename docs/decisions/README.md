@@ -53,10 +53,11 @@ graph TD
 graph TD
     ADR46["ADR-0046: Universal Card Filtering"] --> ADR58["ADR-0058: Schema Taxonomy & Primitive Consolidation"]
     ADR48["ADR-0048: Timing vs Trigger Disambiguation"] --> ADR58
-    ADR49["ADR-0049: Value Transformers & Event Interception"] --> ADR58
     ADR58 --> ADR63["ADR-0063: Damage & Threat Interception Separation"]
     ADR58 --> ADR64["ADR-0064: Canonical Target Scopes & Distribution Modal"]
     ADR58 --> ADR69["ADR-0069: Card Editor Field Completeness & Trigger Filter Orphan Purge"]
+    ADR49 --> ADR80["ADR-0080: Canonical Step Gates & Result Facts"]
+    ADR58 --> ADR80
 ```
 
 ### 5. In-Play Trigger Lifecycle
@@ -159,6 +160,7 @@ graph TD
 | [ADR-0077](0077-chosen-target-vs-event-target-and-step-level-target-choice.md) | 2026-10-05 | Chosen Target vs. Event Target, and Step-Level Target Choice | **Accepted** | The effect context separates `chosenTarget*` (player's choice) from `eventTarget*` (triggering event); every single-target `CHOSEN_*` step lets the player choose among valid targets (0/1/2+), optional abilities stay optional and need a valid target, no resolver guesses (refines ADR-0070, Fixes #234). |
 | [ADR-0078](0078-one-damage-pipeline-and-the-attack-label.md) | 2026-10-05 | One Damage Pipeline and the Attack Label | **Accepted** | Every ability and attack damage goes through `applyDamageToTarget` (Overkill, excess, defeat, hero-defeat loss in one place); one `dispatchDefeat` carries `defeatSource` (Refs #247, enemy side #269). The "(attack)" label (`CardAbility.labels`) makes labelled abilities attacks by the hero; defeat Responses (Chase Them Down) and `TRANSFER_DAMAGE` on the pipeline complete #247. |
 | [ADR-0079](0079-player-elimination-removes-the-player-from-state-players.md) | 2026-10-06 | Player Elimination Removes the Player from `state.players` | **Accepted** | A defeated hero eliminates that player only (`eliminatePlayer`); the group loses with the last hero. The per-player icon counts the players who started (`getPerPlayerCount`); loops over players iterate id snapshots; `GameOverScreen` (Refs #246, permanent cards #274). |
+| [ADR-0080](0080-step-gates-and-result-facts.md) | 2026-10-07 | Canonical Step Gates, Typed Result Facts, and Sequential Context Continuity | **Accepted** | Consolidate 17 ad-hoc gates into 9 canonical gates with typed `gateParams` via `GATE_REGISTRY`; replace `conditionMet` with typed `StepFacts`; preserve D18 context continuity across skipped steps (`lastExecutedResult` vs `lastStepResult`) (Fixes #289, #290). |
 
 ---
 

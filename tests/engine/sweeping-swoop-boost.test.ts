@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import {
-  ConditionGateSchema,
+  StepGateSchema,
   TargetSelectorSchema,
   CardAbilitySchema,
 } from '../../src/data/supplemental/schema';
@@ -303,7 +303,7 @@ describe('Sweeping Swoop (01168): boost stuns the friendly character the activat
     });
 
     it('the schema enums include the gate and the selector', () => {
-      expect(ConditionGateSchema.options).toContain('IF_ACTIVATION_DEALT_DAMAGE');
+      expect(StepGateSchema.options).toContain('IF_ACTIVATION_DEALT_DAMAGE');
       expect(TargetSelectorSchema.options).toContain('DAMAGED_CHARACTER');
     });
   });

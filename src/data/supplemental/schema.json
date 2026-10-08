@@ -489,38 +489,19 @@
                       "gate": {
                         "type": "string",
                         "enum": [
-                          "ALWAYS",
                           "THEN",
-                          "IF_PREVIOUS_SUCCESS",
-                          "IF_AMOUNT_ZERO",
-                          "IF_ZERO_HEALED",
-                          "IF_FAILED",
-                          "IF_ALREADY_HAS_STATUS",
-                          "IF_RESOURCE_MATCH",
-                          "IF_CONDITION_MET",
-                          "IF_CONDITION_NOT_MET",
-                          "IF_CARD_IN_PLAY",
-                          "IF_CARD_NOT_IN_PLAY",
+                          "IF_RESULT",
                           "IF_FORM",
+                          "IF_PLAYER_HAS_TRAIT",
+                          "IF_ZONE_EMPTY",
+                          "IF_CARD_IN_PLAY",
+                          "IF_RESOURCE_MATCH",
+                          "IF_UNDEFENDED_ATTACK",
                           "IF_ACTIVATION_DEALT_DAMAGE"
                         ]
                       },
                       "filter": {
                         "$ref": "#/$defs/__schema0"
-                      },
-                      "condition": {
-                        "type": "string",
-                        "enum": [
-                          "SCHEME_EMPTY",
-                          "TARGET_DEFEATED",
-                          "FULLY_HEALED",
-                          "STATUS_APPLIED",
-                          "EXCESS_DAMAGE_DEALT",
-                          "ALREADY_HAS_STATUS",
-                          "TARGET_TRAIT_MATCH",
-                          "UNDEFENDED_ATTACK",
-                          "ZONE_EMPTY"
-                        ]
                       },
                       "cannotBeCanceled": {
                         "type": "boolean"

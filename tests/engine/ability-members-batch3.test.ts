@@ -200,29 +200,42 @@ describe('ability members (#276, batch 3)', () => {
   });
 
   describe('gates and conditions', () => {
-    const step = { effect: 'DRAW', gate: 'IF_ZERO_HEALED' } as AbilityStep;
+    const step = {
+      effect: 'DRAW',
+      gate: 'IF_RESULT',
+      gateParams: { fact: 'amountZero' },
+    } as AbilityStep;
     const ctx = { playerId: 'p1' } as never;
 
-    it('IF_ZERO_HEALED opens only when the previous step healed nothing', () => {
-      const healedNothing = { success: true, mutatedState: false, value: 0 };
-      const healedTwo = { success: true, mutatedState: true, value: 2 };
-      expect(evaluateStepGate('IF_ZERO_HEALED', healedNothing, state, step, ctx)).toBe(true);
-      expect(evaluateStepGate('IF_ZERO_HEALED', healedTwo, state, step, ctx)).toBe(false);
+    it('IF_RESULT with amountZero opens only when the previous step had amountZero', () => {
+      const healedNothing = {
+        success: true,
+        mutatedState: false,
+        value: 0,
+        facts: { amountZero: true },
+      };
+      const healedTwo = {
+        success: true,
+        mutatedState: true,
+        value: 2,
+        facts: { amountZero: false },
+      };
+      expect(evaluateStepGate(step, healedNothing, state, ctx)).toBe(true);
+      expect(evaluateStepGate(step, healedTwo, state, ctx)).toBe(false);
     });
 
-    it('condition ALREADY_HAS_STATUS reports whether the target already had the status', () => {
+    it('ADD_STATUS facts report statusAdded only when newly applied', () => {
       const addStun = {
         effect: 'ADD_STATUS',
-        condition: 'ALREADY_HAS_STATUS',
         effectParams: { status: 'STUNNED', target: 'SELF_IDENTITY' },
       } as never;
 
       const first = executeEffect(state, addStun, { playerId: 'p1' });
-      expect(first.conditionMet).toBe(false);
+      expect(first.facts?.statusAdded).toBe(true);
       expect(player().statusCards).toContain(StatusCard.STUNNED);
 
       const second = executeEffect(state, addStun, { playerId: 'p1' });
-      expect(second.conditionMet).toBe(true);
+      expect(second.facts?.statusAdded).toBe(false);
     });
   });
 

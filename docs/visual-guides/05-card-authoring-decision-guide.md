@@ -69,24 +69,24 @@ supplemental data — see [feature-delivery skill](../../.agents/skills/feature-
 flowchart TD
     Start(["Ability has more than one effect,<br/>or an effect is conditional"]) --> Q1{"Does effect #2 only happen<br/>if effect #1 changed something?<br/>('Then, ...')"}
     Q1 -->|yes| ThenGate["Step 2: gate: THEN"]
-    Q1 -->|no| Q2{"Does effect #2 depend on how<br/>the cost was paid?<br/>(e.g. discarded a [mental] card)"}
+    Q1 -->|no| Q2{"Does effect #2 depend on how<br/>the cost was paid?<br/>(e.g. spent an [energy] resource)"}
     Q2 -->|yes| ResGate["Step 2: gate: IF_RESOURCE_MATCH<br/>+ gateParams"]
-    Q2 -->|no| Q3{"Does effect #2 depend on a<br/>named milestone from step #1?<br/>(scheme cleared, target defeated...)"}
-    Q3 -->|yes| CondGate["Step 1: condition: SCHEME_EMPTY (etc.)<br/>Step 2: gate: IF_CONDITION_MET"]
+    Q2 -->|no| Q3{"Does effect #2 depend on a<br/>milestone from step #1?<br/>(scheme cleared, target defeated...)"}
+    Q3 -->|yes| ResultGate["Step 2: gate: IF_RESULT<br/>gateParams: { fact: 'threatZero', ... }"]
     Q3 -->|no| Q3b{"Does effect #2 depend on a fact about<br/>the player or board? (trait, form)<br/>e.g. if you have Aerial"}
-    Q3b -->|"yes, extra effect"| TraitMet["Step 2: gate: IF_CONDITION_MET<br/>condition: TARGET_TRAIT_MATCH"]
-    Q3b -->|"yes, instead of effect #1"| TraitNot["Step 1: gate: IF_CONDITION_NOT_MET<br/>Step 2: gate: IF_CONDITION_MET<br/>(same condition + gateParams)"]
-    Q3b -->|"no, only if #1 could not resolve"| FailGate["Step 2: gate: IF_FAILED"]
+    Q3b -->|"yes, extra effect"| TraitMet["Step 2: gate: IF_PLAYER_HAS_TRAIT<br/>gateParams: { trait: 'Aerial' }"]
+    Q3b -->|"yes, instead of effect #1"| TraitNot["Step 1: gate: IF_PLAYER_HAS_TRAIT<br/>gateParams: { trait: 'Aerial', negate: true }<br/>Step 2: gate: IF_PLAYER_HAS_TRAIT<br/>gateParams: { trait: 'Aerial' }"]
+    Q3b -->|"no, only if #1 could not resolve"| FailGate["Step 2: gate: THEN<br/>gateParams: { negate: true }"]
     Q3b -->|no| Q4{"Does the player pick between<br/>2+ discrete outcomes?"}
     Q4 -->|yes| Choice["Single step: effect: PLAYER_CHOICE<br/>with options: []"]
-    Q4 -->|no| Plain["Just list effects as separate<br/>steps with gate: ALWAYS (default)"]
+    Q4 -->|no| Plain["Just list effects as separate<br/>steps without a gate"]
 ```
 
-Worked examples (additive `IF_CONDITION_MET` on Crisis Interdiction `01012`, exclusive `IF_CONDITION_NOT_MET` + `IF_CONDITION_MET` on Mark V Helmet `01037`, `IF_FAILED` fallback) and when each applies:
-[10. Sequences & Modals, choosing a gate](../specifications/supplemental/10_sequences_and_prompts.md#choosing-between-if_condition_met-if_condition_not_met-and-if_failed).
+Worked examples (additive `IF_PLAYER_HAS_TRAIT` on Crisis Interdiction `01012`, exclusive `IF_PLAYER_HAS_TRAIT` with `negate` on Mark V Helmet `01037`, `THEN` fallback with `negate`) and when each applies:
+[10. Sequences & Modals, Gating Patterns](../specifications/supplemental/10_sequences_and_prompts.md#gating-patterns-then-if_result-and-if_player_has_trait).
 
-Full gate/condition catalog:
-[10. Sequences & Modals §1](../specifications/supplemental/10_sequences_and_prompts.md#1-unified-action-step-sequencing-steps--conditional-gates).
+Full gate catalog:
+[10. Sequences & Modals §1](../specifications/supplemental/10_sequences_and_prompts.md#conditional-gates-adr-0080).
 
 ---
 

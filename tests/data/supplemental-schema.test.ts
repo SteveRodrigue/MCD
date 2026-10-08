@@ -12,8 +12,7 @@ import {
   TriggerTypeSchema,
   AbilityStepSchema,
   DynamicValueSourceSchema,
-  StepConditionSchema,
-  ConditionGateSchema,
+  StepGateSchema,
   TargetSelectorSchema,
   AddCountersParamsSchema,
   SpendCountersParamsSchema,
@@ -176,7 +175,6 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
                 id: 'step_1',
                 effect: 'DEAL_DAMAGE',
                 effectParams: { amount: 3 },
-                gate: 'ALWAYS',
               },
             ],
           },
@@ -875,45 +873,47 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         expect(DynamicValueSourceSchema.safeParse({ from: 'INTERCEPTED_VALUE', unknownProp: 123 }).success).toBe(false);
       });
 
-      it('Validates all 12 StepConditionSchema contracts', () => {
-        const conditions = [
-          // Core Milestones
-          'SCHEME_EMPTY',
-          'TARGET_DEFEATED',
-          'FULLY_HEALED',
-          'STATUS_APPLIED',
-          'EXCESS_DAMAGE_DEALT',
-          // Entity States
-          'ALREADY_HAS_STATUS',
-          'TARGET_TRAIT_MATCH',
-          // Zone states
-          'ZONE_EMPTY',
+      it('Validates all 9 StepGateSchema gates', () => {
+        const gates = [
+          'THEN',
+          'IF_RESULT',
+          'IF_FORM',
+          'IF_PLAYER_HAS_TRAIT',
+          'IF_ZONE_EMPTY',
+          'IF_CARD_IN_PLAY',
+          'IF_RESOURCE_MATCH',
+          'IF_UNDEFENDED_ATTACK',
+          'IF_ACTIVATION_DEALT_DAMAGE',
         ] as const;
 
-        for (const cond of conditions) {
-          expect(StepConditionSchema.safeParse(cond).success, `Expected condition ${cond} to pass`).toBe(true);
+        for (const gate of gates) {
+          expect(StepGateSchema.safeParse(gate).success, `Expected gate ${gate} to pass`).toBe(true);
         }
 
-        expect(StepConditionSchema.safeParse('UNKNOWN_CONDITION').success).toBe(false);
+        expect(StepGateSchema.safeParse('UNKNOWN_GATE').success).toBe(false);
+        expect(StepGateSchema.safeParse('IF_CONDITION_MET').success).toBe(false);
+        expect(StepGateSchema.safeParse('ALWAYS').success).toBe(false);
       });
 
-      it('Accepts IF_CONDITION_MET in ConditionGateSchema and AbilityStepSchema', () => {
-        expect(ConditionGateSchema.safeParse('IF_CONDITION_MET').success).toBe(true);
+      it('Accepts THEN in StepGateSchema and AbilityStepSchema', () => {
+        expect(StepGateSchema.safeParse('THEN').success).toBe(true);
 
         const step = AbilityStepSchema.safeParse({
           id: 'step_2',
           effect: 'DRAW',
-          gate: 'IF_CONDITION_MET',
+          gate: 'THEN',
+          gateParams: {
+            step: 'step_1',
+          },
           effectParams: {
-            targetStepId: 'step_1',
             count: 1,
           },
         });
         expect(step.success).toBe(true);
       });
 
-      it('Kree Manipulator (01178) boost gates on UNDEFENDED_ATTACK and no longer hides it in effectParams', () => {
-        expect(StepConditionSchema.safeParse('UNDEFENDED_ATTACK').success).toBe(true);
+      it('Kree Manipulator (01178) boost gates on IF_UNDEFENDED_ATTACK and no longer hides it in effectParams', () => {
+        expect(StepGateSchema.safeParse('IF_UNDEFENDED_ATTACK').success).toBe(true);
 
         const pack = JSON.parse(
           fs.readFileSync(path.join(packDir, 'core_encounter.json'), 'utf8'),
@@ -922,8 +922,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         const boost = cards['01178'].abilities.find((a: any) => a.id === 'kree_manipulator_boost');
         const step = boost.steps[0];
         expect(AbilityStepSchema.safeParse(step).success).toBe(true);
-        expect(step.gate).toBe('IF_CONDITION_MET');
-        expect(step.condition).toBe('UNDEFENDED_ATTACK');
+        expect(step.gate).toBe('IF_UNDEFENDED_ATTACK');
         expect(step.gateParams).toEqual({ attackerKind: 'VILLAIN' });
         expect(step.effectParams.condition).toBeUndefined();
       });
@@ -985,15 +984,14 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         }
       });
 
-      it('Accepts IF_CONDITION_NOT_MET in ConditionGateSchema and AbilityStepSchema (Mark V Helmet 01037)', () => {
-        expect(ConditionGateSchema.safeParse('IF_CONDITION_NOT_MET').success).toBe(true);
+      it('Accepts IF_PLAYER_HAS_TRAIT with negate in StepGateSchema and AbilityStepSchema (Mark V Helmet 01037)', () => {
+        expect(StepGateSchema.safeParse('IF_PLAYER_HAS_TRAIT').success).toBe(true);
 
         const step = AbilityStepSchema.safeParse({
           id: 'helmet_chosen_scheme',
           effect: 'REMOVE_THREAT',
-          gate: 'IF_CONDITION_NOT_MET',
-          condition: 'TARGET_TRAIT_MATCH',
-          gateParams: { trait: 'Aerial' },
+          gate: 'IF_PLAYER_HAS_TRAIT',
+          gateParams: { trait: 'Aerial', negate: true },
           effectParams: { amount: 1, target: 'CHOSEN_SCHEME' },
         });
         expect(step.success).toBe(true);

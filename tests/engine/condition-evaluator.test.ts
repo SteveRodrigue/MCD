@@ -10,7 +10,7 @@ import {
 } from '../../src/engine/models';
 import { executeEffect } from '../../src/engine/effects';
 
-describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (ADR-0049, Issue #91)', () => {
+describe('Result Fact Milestone Evaluation & IF_RESULT Sequential Gating (ADR-0080, Issues #289, #290)', () => {
   let state: GameState;
 
   beforeEach(() => {
@@ -95,7 +95,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
     } as any;
   });
 
-  describe('SCHEME_EMPTY & Clear the Area Pattern (REMOVE_THREAT -> IF_CONDITION_MET -> DRAW_CARDS)', () => {
+  describe('threatZero & Clear the Area Pattern (REMOVE_THREAT -> IF_RESULT threatZero -> DRAW)', () => {
     const clearTheAreaAbility = {
       id: 'clear_the_area',
       timing: 'ACTION' as const,
@@ -103,7 +103,6 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
         {
           id: 'remove_threat_step',
           effect: 'REMOVE_THREAT' as const,
-          condition: 'SCHEME_EMPTY' as const,
           effectParams: {
             target: 'MAIN_SCHEME',
             amount: 2,
@@ -112,9 +111,10 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
         {
           id: 'draw_card_if_empty',
           effect: 'DRAW' as const,
-          gate: 'IF_CONDITION_MET' as const,
+          gate: 'IF_RESULT' as const,
           gateParams: {
-            targetStepId: 'remove_threat_step',
+            fact: 'threatZero' as const,
+            step: 'remove_threat_step',
           },
           effectParams: {
             count: 1,
@@ -123,7 +123,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
       ],
     };
 
-    it('Executes DRAW_CARDS when REMOVE_THREAT removes the last threat on the scheme (remainingThreat === 0)', () => {
+    it('Executes DRAW when REMOVE_THREAT removes the last threat on the scheme (threatZero is true)', () => {
       state.mainScheme.threat = 2;
       expect(state.players[0].hand.length).toBe(0);
 
@@ -131,10 +131,10 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
 
       expect(res.success).toBe(true);
       expect(state.mainScheme.threat).toBe(0);
-      expect(state.players[0].hand.length).toBe(1); // Drew 1 card because scheme became empty!
+      expect(state.players[0].hand.length).toBe(1); // Drew 1 card because scheme threat reached 0!
     });
 
-    it('Skips DRAW_CARDS when REMOVE_THREAT leaves threat on the scheme (remainingThreat > 0)', () => {
+    it('Skips DRAW when REMOVE_THREAT leaves threat on the scheme (threatZero is false)', () => {
       state.mainScheme.threat = 4;
       expect(state.players[0].hand.length).toBe(0);
 
@@ -145,7 +145,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
       expect(state.players[0].hand.length).toBe(0); // Did not draw because scheme still had 2 threat!
     });
 
-    it('Dispatches SCHEME_THREAT_REDUCED_TO_ZERO trigger when threat reaches 0', () => {
+    it('Dispatches SCHEME_THREAT_REDUCED_TO_ZERO trigger and records threatZero fact when threat reaches 0', () => {
       const sideScheme: SideSchemeCard = {
         code: '01109',
         name: 'Bomb Scare',
@@ -166,7 +166,6 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
         steps: [
           {
             effect: 'REMOVE_THREAT' as const,
-            condition: 'SCHEME_EMPTY' as const,
             effectParams: {
               target: 'SIDE_SCHEME',
               targetInstanceId: 'ss1',
@@ -178,6 +177,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
 
       const res = executeEffect(state, removeSideThreat as any, { playerId: 'p1' });
       expect(res.success).toBe(true);
+      expect(res.facts?.threatZero).toBe(true);
       // Side scheme with 0 threat is defeated and discarded (RR v1.8 p. 9, 25)
       expect(state.sideSchemes.length).toBe(0);
       expect(state.encounterDiscard.some((c) => c.instanceId === 'ss1')).toBe(true);
@@ -189,7 +189,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
     });
   });
 
-  describe('EXCESS_DAMAGE_DEALT Condition & Scalar Value Passthrough', () => {
+  describe('excessDamage Fact & IF_RESULT Gating', () => {
     beforeEach(() => {
       const minionCard: MinionCard = {
         code: '01110',
@@ -208,7 +208,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
       ];
     });
 
-    it('Sets value to excess damage (> 0) and conditionMet to true when damage exceeds minion HP', () => {
+    it('Sets facts.excessDamage (> 0) and gates DRAW when damage exceeds minion HP', () => {
       const strikeAbility = {
         id: 'strike_overkill',
         timing: 'ACTION' as const,
@@ -216,7 +216,6 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
           {
             id: 'deal_dmg',
             effect: 'DEAL_DAMAGE' as const,
-            condition: 'EXCESS_DAMAGE_DEALT' as const,
             effectParams: {
               amount: 5,
               target: 'MINION',
@@ -225,9 +224,10 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
           {
             id: 'draw_on_excess',
             effect: 'DRAW' as const,
-            gate: 'IF_CONDITION_MET' as const,
+            gate: 'IF_RESULT' as const,
             gateParams: {
-              targetStepId: 'deal_dmg',
+              fact: 'excessDamage' as const,
+              step: 'deal_dmg',
             },
             effectParams: {
               count: 1,
@@ -243,11 +243,12 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
       });
 
       expect(res.success).toBe(true);
+      expect(res.facts?.excessDamage).toBe(3);
       expect(state.players[0].engagedMinions.length).toBe(0);
       expect(state.players[0].hand.length).toBe(1);
     });
 
-    it('Sets value to 0 and conditionMet to false when damage exactly equals minion HP', () => {
+    it('Sets facts.excessDamage to 0 and skips DRAW when damage exactly equals minion HP', () => {
       const strikeAbility = {
         id: 'strike_exact',
         timing: 'ACTION' as const,
@@ -255,7 +256,6 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
           {
             id: 'deal_dmg',
             effect: 'DEAL_DAMAGE' as const,
-            condition: 'EXCESS_DAMAGE_DEALT' as const,
             effectParams: {
               amount: 2,
               target: 'MINION',
@@ -264,9 +264,10 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
           {
             id: 'draw_on_excess',
             effect: 'DRAW' as const,
-            gate: 'IF_CONDITION_MET' as const,
+            gate: 'IF_RESULT' as const,
             gateParams: {
-              targetStepId: 'deal_dmg',
+              fact: 'excessDamage' as const,
+              step: 'deal_dmg',
             },
             effectParams: {
               count: 1,
@@ -282,13 +283,14 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
       });
 
       expect(res.success).toBe(true);
+      expect(res.facts?.excessDamage).toBe(0);
       expect(state.players[0].engagedMinions.length).toBe(0);
       expect(state.players[0].hand.length).toBe(0);
     });
   });
 
-  describe('TARGET_DEFEATED & FULLY_HEALED Conditions', () => {
-    it('Evaluates TARGET_DEFEATED as true when target is defeated', () => {
+  describe('defeated & fullyHealed Facts', () => {
+    it('Evaluates facts.defeated as true when target is defeated', () => {
       const minionCard: MinionCard = {
         code: '01110',
         name: 'Hydra Soldier',
@@ -310,13 +312,13 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
           {
             id: 'attack',
             effect: 'DEAL_DAMAGE' as const,
-            condition: 'TARGET_DEFEATED' as const,
             effectParams: { amount: 2, target: 'MINION' },
           },
           {
             id: 'remove_threat_step',
             effect: 'REMOVE_THREAT' as const,
-            gate: 'IF_CONDITION_MET' as const,
+            gate: 'IF_RESULT' as const,
+            gateParams: { fact: 'defeated' as const },
             effectParams: { amount: 1, target: 'MAIN_SCHEME' },
           },
         ],
@@ -333,7 +335,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
       expect(state.mainScheme.threat).toBe(1);
     });
 
-    it('Evaluates FULLY_HEALED as true when health reaches maxHealth and false otherwise', () => {
+    it('Evaluates facts.fullyHealed as true when health reaches maxHealth and false otherwise', () => {
       state.players[0].health = 8;
       state.players[0].maxHealth = 10;
 
@@ -344,13 +346,13 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
           {
             id: 'heal_step',
             effect: 'HEAL_DAMAGE' as const,
-            condition: 'FULLY_HEALED' as const,
             effectParams: { amount: 2, target: 'SELF' },
           },
           {
             id: 'draw_if_full',
             effect: 'DRAW' as const,
-            gate: 'IF_CONDITION_MET' as const,
+            gate: 'IF_RESULT' as const,
+            gateParams: { fact: 'fullyHealed' as const },
             effectParams: { count: 1 },
           },
         ],
@@ -363,8 +365,8 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
     });
   });
 
-  describe('STATUS_APPLIED & ALREADY_HAS_STATUS Conditions', () => {
-    it('STATUS_APPLIED is true when status placed; false when already possessed', () => {
+  describe('statusAdded Fact', () => {
+    it('statusAdded is true when status placed; false when already possessed', () => {
       state.villain.statusCards = [];
 
       const statusAbility = {
@@ -374,13 +376,13 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
           {
             id: 'apply_status',
             effect: 'ADD_STATUS' as const,
-            condition: 'STATUS_APPLIED' as const,
             effectParams: { status: 'STUNNED', target: 'VILLAIN' },
           },
           {
             id: 'draw_on_applied',
             effect: 'DRAW' as const,
-            gate: 'IF_CONDITION_MET' as const,
+            gate: 'IF_RESULT' as const,
+            gateParams: { fact: 'statusAdded' as const },
             effectParams: { count: 1 },
           },
         ],
@@ -393,6 +395,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
 
       const res2 = executeEffect(state, statusAbility as any, { playerId: 'p1' });
       expect(res2.success).toBe(true);
+      // Second time: status not added (already possessed), so draw step does not run
       expect(state.players[0].hand.length).toBe(1);
     });
   });

@@ -189,15 +189,14 @@ describe('Masterplan 01192 (Issue #245)', () => {
     expect(state.encounterDiscard).toHaveLength(0);
   });
 
-  describe('7. ZONE_EMPTY condition', () => {
-    const gateStep = (zone: string): AbilityStep => ({
+  describe('7. IF_ZONE_EMPTY gate', () => {
+    const gateStep = (zone: any): AbilityStep => ({
       effect: 'DRAW',
-      gate: 'IF_CONDITION_MET',
-      condition: 'ZONE_EMPTY',
+      gate: 'IF_ZONE_EMPTY',
       gateParams: { zone },
     });
-    const isOpen = (zone: string) =>
-      evaluateStepGate('IF_CONDITION_MET', undefined, state, gateStep(zone), { playerId: 'p1' });
+    const isOpen = (zone: any) =>
+      evaluateStepGate(gateStep(zone), undefined, state, { playerId: 'p1' });
 
     it('SIDE_SCHEMES', () => {
       expect(isOpen('SIDE_SCHEMES')).toBe(true);
@@ -230,7 +229,7 @@ describe('Masterplan 01192 (Issue #245)', () => {
         expect(isOpen(zone)).toBe(false);
         state.players[0][key] = [];
         expect(
-          evaluateStepGate('IF_CONDITION_MET', undefined, state, gateStep(zone), {
+          evaluateStepGate(gateStep(zone), undefined, state, {
             playerId: 'p2',
           }),
         ).toBe(false);

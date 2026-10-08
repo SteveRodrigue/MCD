@@ -91,6 +91,31 @@ describe('Compact Step Pipeline Summaries (Task 4.3)', () => {
       expect(generateStepSummary({ effect: 'VILLAIN_ATTACKS', gate: 'IF_FORM' }, 0)).toBe(
         '[IF_FORM: HERO] #1 VILLAIN_ATTACKS',
       );
+
+      // 8. IF_PLAYER_HAS_TRAIT with negation
+      expect(
+        generateStepSummary(
+          {
+            effect: 'REMOVE_THREAT',
+            gate: 'IF_PLAYER_HAS_TRAIT',
+            gateParams: { trait: 'Aerial', negate: true },
+            effectParams: { amount: 2 },
+          },
+          0,
+        ),
+      ).toBe('[IF NOT: IF_PLAYER_HAS_TRAIT (Aerial)] #1 REMOVE_THREAT (2)');
+
+      // 9. IF_RESULT with fact
+      expect(
+        generateStepSummary(
+          {
+            effect: 'SURGE',
+            gate: 'IF_RESULT',
+            gateParams: { result: 'AMOUNT_ZERO' },
+          },
+          1,
+        ),
+      ).toBe('[IF_RESULT: AMOUNT_ZERO] #2 SURGE');
     });
   });
 

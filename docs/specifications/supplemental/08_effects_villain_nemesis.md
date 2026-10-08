@@ -37,7 +37,7 @@ No parameters. (`alterEgoSurge` was documented but never read, removed in #232; 
 * **References:** [Issue #223](https://github.com/SteveRodrigue/MCD/issues/223), *Titania's Fury* `01164`
 * **Description:** The specific enemy with card code `enemy` attacks the resolving player: a minion engaged with any player, or a villain in play (the way to name one villain in a multi-villain scenario). It runs the normal attack pipeline (Stun, `HOST_WOULD_ATTACK` interrupts, Spider-Sense, defender declaration, boost cards for a villain).
 * **Parameters:** `enemy` (card code, required); `target`: `SELF_HERO` (default, "your hero": in Alter-Ego form there is no hero, so no attack) or `SELF_IDENTITY`.
-* **Result:** `success` and `mutatedState` are `true` only if the attack happened. The step fails when the enemy is not in play, is Stunned (the Stun is cleared), the attack is cancelled, or the player has no hero. `targetId` is the enemy's instance id whenever it is in play, so `PREVIOUS_TARGET` reaches it. Gate "if X did not attack" steps with `IF_FAILED` and `gateParams.targetStepId` (an in-between step would otherwise replace the previous result).
+* **Result:** `success` and `mutatedState` are `true` only if the attack happened. The step fails when the enemy is not in play, is Stunned (the Stun is cleared), the attack is cancelled, or the player has no hero. `targetId` is the enemy's instance id whenever it is in play, so `PREVIOUS_TARGET` reaches it. Gate "if X did not attack" steps with `THEN`, `gateParams.step`, and `negate: true` (an in-between step would otherwise replace the previous result).
 
 *Titania's Fury* `01164`: "Titania attacks your hero. If Titania did not attack, heal all damage from Titania and this card gains surge."
 
@@ -52,15 +52,15 @@ No parameters. (`alterEgoSurge` was documented but never read, removed in #232; 
     {
       "id": "titania_heals",
       "effect": "HEAL_DAMAGE",
-      "gate": "IF_FAILED",
-      "gateParams": { "targetStepId": "titania_attacks" },
+      "gate": "THEN",
+      "gateParams": { "step": "titania_attacks", "negate": true },
       "effectParams": { "amount": "ALL", "target": "PREVIOUS_TARGET" }
     },
     {
       "id": "titania_surges",
       "effect": "SURGE",
-      "gate": "IF_FAILED",
-      "gateParams": { "targetStepId": "titania_attacks" }
+      "gate": "THEN",
+      "gateParams": { "step": "titania_attacks", "negate": true }
     }
   ]
 }
@@ -85,7 +85,7 @@ Per ADR-0029, monolithic `SPAWN_NEMESIS` has been fully decomposed into a compos
 1. **Step 1 (`PUT_INTO_PLAY`):** Transfers the player's set-aside nemesis minion into play engaged with the hero.
 2. **Step 2 (`PUT_INTO_PLAY`):** Transfers the player's set-aside nemesis side scheme into play in the side schemes area.
 3. **Step 3 (`SHUFFLE_INTO_DECK`):** Shuffles all remaining set-aside cards matching the player's nemesis set into the encounter deck.
-4. **Step 4 (`SURGE`):** If Step 1 failed to put a nemesis minion into play (e.g. minion is already in play or defeated), the card surges via `gate: "IF_FAILED"`.
+4. **Step 4 (`SURGE`):** If Step 1 failed to put a nemesis minion into play (e.g. minion is already in play or defeated), the card surges via `gate: "THEN", gateParams: { "step": "step_1_spawn_nemesis_minion", "negate": true }`.
 
 ```json
 {
@@ -128,9 +128,10 @@ Per ADR-0029, monolithic `SPAWN_NEMESIS` has been fully decomposed into a compos
     {
       "id": "step_4_fallback_surge",
       "effect": "SURGE",
-      "gate": "IF_FAILED",
+      "gate": "THEN",
       "gateParams": {
-        "targetStepId": "step_1_spawn_nemesis_minion"
+        "step": "step_1_spawn_nemesis_minion",
+        "negate": true
       }
     }
   ]
@@ -235,10 +236,10 @@ Not covered yet: a whole card that cannot be canceled (#286) and the global "Tre
 * **References:** #218; [`pipeline/surge.ts`](../../../src/engine/pipeline/surge.ts), [`resolveActiveEncounterCardAfterInterrupt`](../../../src/engine/pipeline/villain-phase.ts)
 * **Rule (RR v1.8 "Surge"):** Surge is equivalent to *When Revealed: deal yourself 1 facedown encounter card*. The player resolving the card is dealt the top card of the encounter deck (deck exhaustion applies: reshuffle and acceleration). The extra card is revealed only after the original card, including any pending choice, has fully resolved.
 * **Printed Surge** is detected by the importer, not declared in supplemental data: a card prints the keyword when a whole sentence of a text line is `Surge` (`Surge.`, `Surge <i>(reminder)</i>`, `Surge .`, bare `Surge`). Text that only mentions the word ("this card gains surge.") does not (`hasPrintedKeyword`, `card-loader.ts`). Do **not** add a `SURGE` step to a card that prints the keyword: the engine already surges it.
-* **Conditional surge** ("If ..., this card gains surge") is the `SURGE` effect (or `DISCARD` with `fallback: "SURGE"`), usually behind a gate (`IF_AMOUNT_ZERO`, `IF_ALREADY_HAS_STATUS`, `IF_CARD_IN_PLAY`):
+* **Conditional surge** ("If ..., this card gains surge") is the `SURGE` effect (or `DISCARD` with `fallback: "SURGE"`), usually behind a gate (`THEN` with `negate: true`, `IF_RESULT` with `amountZero`, `IF_CARD_IN_PLAY`):
 
 ```json
-{ "effect": "SURGE", "gate": "IF_CARD_IN_PLAY", "gateParams": { "cardCode": "01167" } }
+{ "effect": "SURGE", "gate": "IF_CARD_IN_PLAY", "gateParams": { "cardId": "01167" } }
 ```
 
 * **A cancel does not remove the keyword:** cancelling the "When Revealed" effects (`CANCEL_WHEN_REVEALED`, Enhanced Spider-Sense `01004`) cancels the printed text, not a standalone Surge keyword, which still deals the extra card (RR Cancel: only effects are cancelled; FAQ Spider-Man Noir: a keyword resolved on reveal like surge still resolves). "This card gains surge" written inside the When Revealed text is an effect and is cancelled with it. A card cancelled **and discarded** (`CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER`, Black Widow `01075`) does not surge.

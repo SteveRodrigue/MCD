@@ -9,7 +9,8 @@ import {
   AbilityStep,
   CardType,
   SideSchemeCard,
-  ConditionGate,
+  StepGate,
+  StepFacts,
   StepResolutionResult,
   DecisionPromptOption,
   PendingDecisionPrompt,
@@ -241,7 +242,7 @@ export interface EffectResult {
   value?: number;
   selectedCardInstanceIds?: string[];
   targetId?: string;
-  conditionMet?: boolean;
+  facts?: StepFacts;
   discardedCards?: CardInstance[];
 }
 
@@ -812,14 +813,29 @@ export function compileDistributionTargets(
  * Delegates to the shared evaluator (Issue #122).
  */
 export function shouldExecuteStep(
-  gate: ConditionGate | undefined,
+  stepOrGate: AbilityStep | StepGate | undefined,
   prevResult: StepResolutionResult | undefined,
   state: GameState,
-  step: AbilityStep,
-  context: EffectExecutionContext,
+  stepOrContext: AbilityStep | EffectExecutionContext,
+  contextOrMap?: EffectExecutionContext | Map<string, StepResolutionResult>,
   stepResultsMap?: Map<string, StepResolutionResult>,
 ): boolean {
-  return evaluateStepGate(gate, prevResult, state, step, context, stepResultsMap);
+  if (typeof stepOrGate === 'object' && stepOrGate !== null && 'effect' in stepOrGate) {
+    return evaluateStepGate(
+      stepOrGate as AbilityStep,
+      prevResult,
+      state,
+      stepOrContext as EffectExecutionContext,
+      contextOrMap as Map<string, StepResolutionResult> | undefined,
+    );
+  }
+  return evaluateStepGate(
+    stepOrContext as AbilityStep,
+    prevResult,
+    state,
+    contextOrMap as EffectExecutionContext,
+    stepResultsMap,
+  );
 }
 
 /** How a DEAL_DAMAGE step hands its damage to the pipeline (#247). */
@@ -1127,36 +1143,42 @@ export function executeSequence(
   context: EffectExecutionContext,
   resumeState?: {
     prevResult?: StepResolutionResult;
+    lastExecutedResult?: StepResolutionResult;
     stepResultsMap?: Map<string, StepResolutionResult>;
     onomatopoeias?: string[];
     anyStepMutated?: boolean;
   },
 ): EffectResult {
   let currentState = state;
-  let prevResult: StepResolutionResult | undefined =
+  let lastStepResult: StepResolutionResult | undefined =
     resumeState?.prevResult ?? context.previousResult;
+  let lastExecutedResult: StepResolutionResult | undefined =
+    resumeState?.lastExecutedResult ??
+    (context.previousResult?.skipped ? undefined : context.previousResult);
   let anyStepMutated = resumeState?.anyStepMutated ?? false;
+  let accumulatedFacts: StepFacts = {};
   const stepResultsMap = resumeState?.stepResultsMap ?? new Map<string, StepResolutionResult>();
   const onomatopoeias: string[] = resumeState?.onomatopoeias ? [...resumeState.onomatopoeias] : [];
 
   for (let i = 0; i < steps.length; i++) {
     const step = steps[i];
     const shouldRun = shouldExecuteStep(
-      step.gate,
-      prevResult,
-      currentState,
       step,
+      lastStepResult,
+      currentState,
       context,
       stepResultsMap,
     );
     if (!shouldRun) {
+      const skippedResult: StepResolutionResult = {
+        success: false,
+        mutatedState: false,
+        skipped: true,
+      };
       if (step.id) {
-        stepResultsMap.set(step.id, {
-          success: false,
-          mutatedState: false,
-          conditionMet: false,
-        });
+        stepResultsMap.set(step.id, skippedResult);
       }
+      lastStepResult = skippedResult;
       continue;
     }
 
@@ -1176,14 +1198,14 @@ export function executeSequence(
       sourceCardInstance: (step as any).sourceCardInstance ?? context.sourceCardInstance,
       isFinalStep:
         (step as any).isFinalStep ?? (i === steps.length - 1 ? context.isFinalStep : false),
-      previousResult: prevResult,
+      previousResult: lastExecutedResult,
       distinctFromId: isDistinctFromPrevious
-        ? prevResult?.targetId || context.chosenTargetInstanceId
+        ? lastExecutedResult?.targetId || context.chosenTargetInstanceId
         : context.distinctFromId,
       chosenTargetInstanceId: isDistinctFromPrevious
         ? undefined
         : effectParams.target === 'PREVIOUS_TARGET'
-          ? (prevResult?.targetId ?? context.chosenTargetInstanceId)
+          ? (lastExecutedResult?.targetId ?? context.chosenTargetInstanceId)
           : context.chosenTargetInstanceId,
     };
 
@@ -1229,18 +1251,31 @@ export function executeSequence(
       };
     }
 
-    prevResult = {
+    const amountZero = !stepMutated || (res.value ?? 0) === 0;
+    const stepFacts: StepFacts = {
+      ...res.facts,
+      amountZero,
+    };
+
+    const stepRes: StepResolutionResult = {
       success: res.success,
       mutatedState: stepMutated,
       value: res.value,
-      conditionMet: res.conditionMet,
       targetId:
         res.targetId || res.selectedCardInstanceIds?.[0] || stepContext.chosenTargetInstanceId,
-      discardedCards: res.discardedCards ?? prevResult?.discardedCards,
+      discardedCards: res.discardedCards ?? lastExecutedResult?.discardedCards,
+      facts: stepFacts,
+    };
+
+    lastStepResult = stepRes;
+    lastExecutedResult = stepRes;
+    accumulatedFacts = {
+      ...accumulatedFacts,
+      ...stepFacts,
     };
 
     if (step.id) {
-      stepResultsMap.set(step.id, prevResult);
+      stepResultsMap.set(step.id, stepRes);
     }
 
     if (res.onomatopoeia) {
@@ -1254,9 +1289,9 @@ export function executeSequence(
         remainingSteps: steps.slice(i + 1),
         context: {
           ...context,
-          previousResult: prevResult,
+          previousResult: lastExecutedResult,
         },
-        previousResult: prevResult,
+        previousResult: lastStepResult,
         stepResultsMap: Object.fromEntries(stepResultsMap.entries()),
         onomatopoeias,
         anyStepMutated,
@@ -1266,8 +1301,9 @@ export function executeSequence(
         state: currentState,
         success: true,
         mutatedState: anyStepMutated,
-        value: prevResult?.value,
-        conditionMet: prevResult?.conditionMet,
+        value: lastExecutedResult?.value,
+        facts:
+          Object.keys(accumulatedFacts).length > 0 ? accumulatedFacts : lastExecutedResult?.facts,
         onomatopoeia: onomatopoeias.length > 0 ? onomatopoeias.join(' ➔ ') : 'SEQUENCE PAUSED',
       };
     }
@@ -1277,8 +1313,8 @@ export function executeSequence(
     state: currentState,
     success: true,
     mutatedState: anyStepMutated,
-    value: prevResult?.value,
-    conditionMet: prevResult?.conditionMet,
+    value: lastExecutedResult?.value,
+    facts: Object.keys(accumulatedFacts).length > 0 ? accumulatedFacts : lastExecutedResult?.facts,
     onomatopoeia: onomatopoeias.length > 0 ? onomatopoeias.join(' ➔ ') : 'SEQUENCE RESOLVED!',
   };
 }
@@ -2329,7 +2365,14 @@ export function executeStep(
         step.effectParams?.target === 'TRIGGERING_MINION' ||
         step.effectParams?.target === 'TRIGGERING_ENEMY'
           ? context.eventTargetInstanceId || (step.effectParams?.targetInstanceId as string)
-          : (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId;
+          : (step.effectParams?.targetInstanceId as string) ||
+            context.chosenTargetInstanceId ||
+            (typeof step.effectParams?.target === 'string' &&
+            state.players.some((p) =>
+              p.engagedMinions.some((m) => m.instanceId === step.effectParams?.target),
+            )
+              ? (step.effectParams?.target as string)
+              : undefined);
 
       if (targetMinionId) {
         for (const p of state.players) {
@@ -2372,7 +2415,17 @@ export function executeStep(
               },
               onomatopoeia,
             });
-            return { state, success: true, onomatopoeia };
+            return {
+              state,
+              success: true,
+              mutatedState: false,
+              value: 0,
+              facts: {
+                targetDefeated: false,
+                excessDamage: 0,
+              },
+              onomatopoeia,
+            };
           }
 
           const onomatopoeia = res.targetDefeated ? 'SMASH! MINION DEFEATED!' : 'WHAM!';
@@ -2393,21 +2446,16 @@ export function executeStep(
             onomatopoeia,
           });
 
-          let conditionMet: boolean | undefined;
-          let resValue: number = amount;
-          if (step.condition === 'EXCESS_DAMAGE_DEALT') {
-            conditionMet = res.excessDamage > 0;
-            resValue = res.excessDamage;
-          } else if (step.condition === 'TARGET_DEFEATED') {
-            conditionMet = res.targetDefeated;
-          }
-
           return {
             state,
             success: true,
-            mutatedState: true,
-            value: resValue,
-            conditionMet,
+            mutatedState: res.damageTaken > 0 || res.targetDefeated,
+            value: res.damageTaken,
+            facts: {
+              targetDefeated: Boolean(res.targetDefeated),
+              defeated: Boolean(res.targetDefeated),
+              excessDamage: res.excessDamage || 0,
+            },
             onomatopoeia,
           };
         }
@@ -2424,6 +2472,16 @@ export function executeStep(
       return {
         state,
         success: true,
+        mutatedState:
+          damageRes.result.damageTaken > 0 ||
+          damageRes.result.toughRemoved ||
+          damageRes.result.targetDefeated,
+        value: damageRes.result.damageTaken,
+        facts: {
+          targetDefeated: Boolean(damageRes.result.targetDefeated),
+          defeated: Boolean(damageRes.result.targetDefeated),
+          excessDamage: damageRes.result.excessDamage || 0,
+        },
         onomatopoeia,
       };
     }
@@ -2773,15 +2831,14 @@ export function executeStep(
         onomatopoeia,
       });
 
-      const isFullyHealedResult = isFullyHealed;
-      const conditionMet = step.condition === 'FULLY_HEALED' ? isFullyHealedResult : undefined;
-
       return {
         state,
         success: true,
         mutatedState: healed > 0,
         value: healed,
-        conditionMet,
+        facts: {
+          fullyHealed: isFullyHealed,
+        },
         onomatopoeia,
       };
     }
@@ -3084,14 +3141,15 @@ export function executeStep(
         onomatopoeia,
       });
 
-      const conditionMet = step.condition === 'SCHEME_EMPTY' ? remainingThreat === 0 : undefined;
-
       return {
         state,
         success: true,
         mutatedState: removed > 0,
         value: removed,
-        conditionMet,
+        facts: {
+          schemeEmpty: remainingThreat === 0,
+          threatZero: remainingThreat === 0,
+        },
         onomatopoeia,
         targetId: targetSchemes[0]?.id || targetSchemes[0]?.entity?.instanceId || 'main_scheme',
       };
@@ -3151,7 +3209,16 @@ export function executeStep(
 
       // Nothing to apply the status to (e.g. the damaged ally has left play): no effect, no log.
       if (targetCharacters.length === 0) {
-        return { state, success: true, mutatedState: false, value: 0, conditionMet: false };
+        return {
+          state,
+          success: true,
+          mutatedState: false,
+          value: 0,
+          facts: {
+            statusApplied: false,
+            alreadyHadStatus: false,
+          },
+        };
       }
 
       const firstTarget = targetCharacters[0];
@@ -3214,19 +3281,16 @@ export function executeStep(
         onomatopoeia,
       });
 
-      let conditionMet: boolean = alreadyHadStatus;
-      if (step.condition === 'STATUS_APPLIED') {
-        conditionMet = mutatedState;
-      } else if (step.condition === 'ALREADY_HAS_STATUS') {
-        conditionMet = alreadyHadStatus;
-      }
-
       return {
         state,
         success: true,
         mutatedState,
         value: mutatedState ? 1 : 0,
-        conditionMet,
+        facts: {
+          statusApplied: mutatedState,
+          statusAdded: mutatedState,
+          alreadyHadStatus,
+        },
         onomatopoeia,
       };
     }
@@ -3283,7 +3347,9 @@ export function executeStep(
         success: true,
         mutatedState: removedCount > 0,
         value: removedCount,
-        conditionMet: step.condition === 'STATUS_APPLIED' ? removedCount > 0 : undefined,
+        facts: {
+          statusRemoved: removedCount > 0,
+        },
         onomatopoeia: removedCount > 0 ? 'STATUS REMOVED!' : 'NO STATUS TO REMOVE',
       };
     }

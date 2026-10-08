@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Refactor (Engine + Data + UI + Docs): Canonical step gates and typed result facts ([ADR-0080](docs/decisions/0080-step-gates-and-result-facts.md), [Issue #289](https://github.com/SteveRodrigue/MCD/issues/289), [Issue #290](https://github.com/SteveRodrigue/MCD/issues/290))**
+  - Consolidated step gates to 9 canonical values in `StepGateSchema`: `THEN`, `IF_RESULT`, `IF_FORM`, `IF_PLAYER_HAS_TRAIT`, `IF_ZONE_EMPTY`, `IF_CARD_IN_PLAY`, `IF_RESOURCE_MATCH`, `IF_UNDEFENDED_ATTACK`, `IF_ACTIVATION_DEALT_DAMAGE`. All gate qualifiers are typed in `gateParams` via `GATE_REGISTRY`.
+  - Removed deprecated `ConditionGateSchema`, `StepConditionSchema`, and the `condition` field from `AbilityStepSchema` and UI editors (`StepPipelineEditor`, `AbilityFormBuilder`).
+  - Retired obsolete gate names: `ALWAYS` (implicit when gate is undefined), `IF_PREVIOUS_SUCCESS` (now `THEN`), `IF_AMOUNT_ZERO` (now `IF_RESULT` with `result: 'AMOUNT_ZERO'`), `IF_ZERO_HEALED`, `IF_FAILED`, `IF_ALREADY_HAS_STATUS` (now `IF_RESULT` with `result: 'ALREADY_HAD_STATUS'`), `IF_CONDITION_MET`, `IF_CONDITION_NOT_MET`, and `IF_CARD_NOT_IN_PLAY` (now `IF_CARD_IN_PLAY` with `negate: true`).
+  - Typed result milestones (`ResultFactSchema`): `TARGET_DEFEATED`, `EXCESS_DAMAGE_DEALT`, `FULLY_HEALED`, `SCHEME_EMPTY`, `STATUS_APPLIED`, `ALREADY_HAD_STATUS`, `STATUS_REMOVED`, `AMOUNT_ZERO`. Effects populate facts dynamically; `executeSequence` accumulates facts across steps and returns cumulative facts.
+  - Added `PREVIOUS_EXCESS_DAMAGE` dynamic value source to calculate overkill values from preceding damage steps.
+  - Preserved D18 execution continuity across skipped intermediate steps (`lastExecutedResult` context).
+  - Enforced Zod `superRefine` validation: timing restrictions on CONSTANT abilities, step 0 prohibitions, backward step ID references, and D16 fact-producer compatibility checks.
+  - Migrated 100% of core pack supplemental files (`core.json`, `core_encounter.json`) and regenerated `schema.json`.
+  - Tests: `tests/data/gate-params.test.ts`, `tests/engine/result-facts.test.ts`, plus updated engine and UI test suites.
+
 - **Fix (Engine + Data + UI + Card Editor + Docs): Ancestral Knowledge `01042` chooses "up to 3 different cards" ([Issue #260](https://github.com/SteveRodrigue/MCD/issues/260))**
   - `SEARCH` took one card per prompt and auto-took every candidate when there were 3 or fewer. New multi-select prompt (`selection`, `selectedOptionIds`, `validateSearchSelection`) and modal `SelectCardsModal`. `SEARCH` params: `takeCount` is the maximum, new `minimumTake` (default 1; `0` = "up to"), new `distinctBy: 'NAME'`; auto-select only when nothing is left to choose. Removed: `SEARCH.isVoluntary` (Futurist `01029b` line deleted), the Action-timing voluntary default and the `pass_search` option; `fromTop: false` and the default `autoSelectIfUnambiguous` leave `01042`.
   - A search that finds nothing logs `card.search.nothingFound`. Forced timings are read by `isForcedTiming` (`FORCED_INTERRUPT` / `FORCED_RESPONSE`) instead of a prefix test.

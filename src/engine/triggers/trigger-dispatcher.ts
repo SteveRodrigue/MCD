@@ -126,10 +126,13 @@ export function matchesTriggerFilter(
     const actual =
       context.attackerKind ??
       (context.attackerType ? String(context.attackerType).toUpperCase() : undefined);
-    if (actual === 'ANY_ENEMY') {
+    if (filter.attackerKind === 'ANY_ENEMY') {
+      if (actual !== 'VILLAIN' && actual !== 'MINION' && actual !== 'ANY_ENEMY') {
+        return false;
+      }
+    } else if (actual === 'ANY_ENEMY') {
       return true;
-    }
-    if (actual !== filter.attackerKind) {
+    } else if (actual !== filter.attackerKind) {
       return false;
     }
   }

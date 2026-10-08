@@ -515,14 +515,13 @@ describe('One damage pipeline for ability damage (#247 part 1)', () => {
           {
             id: 'deal_dmg',
             effect: 'DEAL_DAMAGE',
-            condition,
             effectParams: { amount: 0, target: 'MINION' },
           },
           {
             id: 'then_draw',
             effect: 'DRAW',
-            gate: 'IF_CONDITION_MET',
-            gateParams: { targetStepId: 'deal_dmg' },
+            gate: 'IF_RESULT',
+            gateParams: { result: condition, step: 'deal_dmg' },
             effectParams: { count: 1 },
           },
         ],

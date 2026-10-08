@@ -589,7 +589,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
             filter: { resourceIcons: ['energy'] },
           },
         },
-        { effect: 'SURGE', gate: 'IF_AMOUNT_ZERO' },
+        { effect: 'SURGE', gate: 'IF_RESULT', gateParams: { result: 'AMOUNT_ZERO' } },
       ] as any;
 
       const none = createTestGame();

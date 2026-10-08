@@ -346,7 +346,7 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
     );
   });
 
-  it('selects step condition and gate', async () => {
+  it('selects step gate and updates gateParams', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
 
@@ -366,10 +366,10 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
     );
 
     const gateSelect = screen.getByTestId('step-gate-0-0');
-    await user.selectOptions(gateSelect, 'THEN');
+    await user.selectOptions(gateSelect, 'IF_ZONE_EMPTY');
 
-    const conditionSelect = screen.getByTestId('step-condition-0-0');
-    await user.selectOptions(conditionSelect, 'TARGET_DEFEATED');
+    const zoneSelect = screen.getByTestId('gate-param-zone-0-0');
+    await user.selectOptions(zoneSelect, 'SIDE_SCHEMES');
 
     expect(handleChange).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -377,8 +377,10 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
           expect.objectContaining({
             steps: [
               expect.objectContaining({
-                gate: 'THEN',
-                condition: 'TARGET_DEFEATED',
+                gate: 'IF_ZONE_EMPTY',
+                gateParams: expect.objectContaining({
+                  zone: 'SIDE_SCHEMES',
+                }),
               }),
             ],
           }),
@@ -482,7 +484,6 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
         {
           effect: 'DEAL_DAMAGE' as const,
           effectParams: { amount: 4 },
-          condition: 'TARGET_DEFEATED' as const,
         },
       ],
     };

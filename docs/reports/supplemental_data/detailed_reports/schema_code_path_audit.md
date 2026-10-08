@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-07T23:46:10.631Z` | **Overall Coverage:** **100.0%**
+> **Generated:** `2026-10-08T01:06:43.433Z` | **Overall Coverage:** **100.0%**
 
 This matrix audits every schema primitive defined in `src/data/supplemental/schema.ts` across 3 dimensions:
 1. **In Schema**: Is the enum option formally defined in schema.ts?
@@ -123,38 +123,24 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 | `HOST` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/effects/target-resolver.ts`; 0 cards currently declare this. |
 | `HOST_ENEMY` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 1 card(s). |
 
-### 3. Condition Gates (`ConditionGateSchema` — 100.0% Engine Coverage)
+### 3. Condition Gates (`StepGateSchema` — 100.0% Engine Coverage)
 
 | Primitive Value | In Engine Code Path? | Cards Declaring | Status | Health Rationale / Code Location |
 | :--- | :---: | :---: | :---: | :--- |
-| `ALWAYS` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; 0 cards currently declare this. |
-| `THEN` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 1 card(s). |
-| `IF_PREVIOUS_SUCCESS` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; 0 cards currently declare this. |
-| `IF_AMOUNT_ZERO` | ✅ Yes | **2** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 2 card(s). |
-| `IF_ZERO_HEALED` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; 0 cards currently declare this. |
-| `IF_FAILED` | ✅ Yes | **3** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 3 card(s). |
-| `IF_ALREADY_HAS_STATUS` | ✅ Yes | **2** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 2 card(s). |
-| `IF_RESOURCE_MATCH` | ✅ Yes | **5** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 5 card(s). |
-| `IF_CONDITION_MET` | ✅ Yes | **6** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 6 card(s). |
-| `IF_CONDITION_NOT_MET` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 1 card(s). |
-| `IF_CARD_IN_PLAY` | ✅ Yes | **2** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 2 card(s). |
-| `IF_CARD_NOT_IN_PLAY` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 1 card(s). |
+| `THEN` | ✅ Yes | **4** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 4 card(s). |
+| `IF_RESULT` | ✅ Yes | **4** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 4 card(s). |
 | `IF_FORM` | ✅ Yes | **7** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 7 card(s). |
+| `IF_PLAYER_HAS_TRAIT` | ✅ Yes | **4** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 4 card(s). |
+| `IF_ZONE_EMPTY` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 1 card(s). |
+| `IF_CARD_IN_PLAY` | ✅ Yes | **3** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 3 card(s). |
+| `IF_RESOURCE_MATCH` | ✅ Yes | **5** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 5 card(s). |
+| `IF_UNDEFENDED_ATTACK` | ✅ Yes | **2** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 2 card(s). |
 | `IF_ACTIVATION_DEALT_DAMAGE` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 1 card(s). |
 
 ### 4. Step Conditions (`StepConditionSchema` — 100.0% Engine Coverage)
 
 | Primitive Value | In Engine Code Path? | Cards Declaring | Status | Health Rationale / Code Location |
 | :--- | :---: | :---: | :---: | :--- |
-| `SCHEME_EMPTY` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/effects/index.ts` / `step-gate-evaluator.ts`; 0 cards currently declare this. |
-| `TARGET_DEFEATED` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/effects/index.ts` / `step-gate-evaluator.ts`; 0 cards currently declare this. |
-| `FULLY_HEALED` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/effects/index.ts` / `step-gate-evaluator.ts`; 0 cards currently declare this. |
-| `STATUS_APPLIED` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/effects/index.ts` / `step-gate-evaluator.ts`; 0 cards currently declare this. |
-| `EXCESS_DAMAGE_DEALT` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/effects/index.ts` / `step-gate-evaluator.ts`; 0 cards currently declare this. |
-| `ALREADY_HAS_STATUS` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/effects/index.ts` / `step-gate-evaluator.ts`; 0 cards currently declare this. |
-| `TARGET_TRAIT_MATCH` | ✅ Yes | **4** | 🟢 Active | Handled in `src/engine/effects/index.ts` / `step-gate-evaluator.ts`; declared by 4 card(s). |
-| `UNDEFENDED_ATTACK` | ✅ Yes | **2** | 🟢 Active | Handled in `src/engine/effects/index.ts` / `step-gate-evaluator.ts`; declared by 2 card(s). |
-| `ZONE_EMPTY` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/effects/index.ts` / `step-gate-evaluator.ts`; declared by 1 card(s). |
 
 ### 5. Trigger Windows (`TriggerTypeSchema` — 100.0% Engine Coverage)
 

@@ -1,7 +1,6 @@
 import React from 'react';
 import {
-  ConditionGateSchema,
-  StepConditionSchema,
+  StepGateSchema,
   EffectTypeSchema,
   TargetSelectorSchema,
 } from '../../../data/supplemental/schema';
@@ -19,6 +18,7 @@ import {
 import { getEffectDescriptor } from './effect-parameter-registry';
 import { CardLocationSelectorForm } from './CardLocationSelectorForm';
 import { generateStepSummary } from './step-pipeline-utils';
+import { GateParamsPanel } from './GateParamsPanel';
 
 export interface StepPipelineEditorProps {
   steps: any[];
@@ -405,55 +405,30 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                 </div>
               </div>
 
-              {/* Conditional Gate & Step Condition */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {/* Conditional Gate */}
-                <div>
-                  <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                    Conditional Gate (Timing / Flow)
-                  </label>
-                  <select
-                    data-testid={`step-gate-${abilityIndex}-${sIdx}`}
-                    value={step.gate || ''}
-                    onChange={(e) =>
-                      handleUpdateStep(sIdx, {
-                        gate: e.target.value || undefined,
-                      })
-                    }
-                    className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
-                  >
-                    <option value="">None (ALWAYS)</option>
-                    {ConditionGateSchema.options.map((g) => (
-                      <option key={g} value={g}>
-                        {g}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Step Condition */}
-                <div>
-                  <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                    Step Condition (Milestone / State)
-                  </label>
-                  <select
-                    data-testid={`step-condition-${abilityIndex}-${sIdx}`}
-                    value={step.condition || ''}
-                    onChange={(e) =>
-                      handleUpdateStep(sIdx, {
-                        condition: e.target.value || undefined,
-                      })
-                    }
-                    className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
-                  >
-                    <option value="">None (Unconditional)</option>
-                    {StepConditionSchema.options.map((sc) => (
-                      <option key={sc} value={sc}>
-                        {sc}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Conditional Gate */}
+              <div>
+                <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                  Conditional Gate (Timing / Flow)
+                </label>
+                <select
+                  data-testid={`step-gate-${abilityIndex}-${sIdx}`}
+                  value={step.gate || ''}
+                  onChange={(e) => {
+                    const nextGate = e.target.value || undefined;
+                    handleUpdateStep(sIdx, {
+                      gate: nextGate,
+                      gateParams: nextGate !== step.gate ? undefined : gateParams,
+                    });
+                  }}
+                  className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
+                >
+                  <option value="">None (ALWAYS)</option>
+                  {StepGateSchema.options.map((g) => (
+                    <option key={g} value={g}>
+                      {g}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* "This effect cannot be canceled" */}
@@ -470,250 +445,19 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                 cancelled)
               </label>
 
-              {/* Parameterized Gate Subpanels */}
-              {step.gate === 'IF_RESOURCE_MATCH' && (
-                <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
-                  <span className="text-[9px] uppercase font-bold text-yellow-800 block">
-                    Resource Match Gate Parameters
-                  </span>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    <div>
-                      <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                        Resource
-                      </label>
-                      <select
-                        data-testid={`gate-param-resource-${abilityIndex}-${sIdx}`}
-                        value={gateParams.resource || 'energy'}
-                        onChange={(e) => updateGateParam('resource', e.target.value)}
-                        className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
-                      >
-                        <option value="physical">physical</option>
-                        <option value="energy">energy</option>
-                        <option value="mental">mental</option>
-                        <option value="wild">wild</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                        Count
-                      </label>
-                      <input
-                        type="number"
-                        min={1}
-                        data-testid={`gate-param-count-${abilityIndex}-${sIdx}`}
-                        value={gateParams.count !== undefined ? gateParams.count : 1}
-                        onChange={(e) =>
-                          updateGateParam(
-                            'count',
-                            e.target.value !== '' ? parseInt(e.target.value, 10) : undefined,
-                          )
-                        }
-                        className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
-                      />
-                    </div>
-                    <label className="flex items-center gap-1.5 text-xs font-bold text-gray-800 cursor-pointer pt-3">
-                      <input
-                        type="checkbox"
-                        data-testid={`gate-param-printed-${abilityIndex}-${sIdx}`}
-                        checked={Boolean(gateParams.printedResource)}
-                        onChange={(e) =>
-                          updateGateParam('printedResource', e.target.checked || undefined)
-                        }
-                        className="accent-black"
-                      />
-                      <span>Printed Only</span>
-                    </label>
-                    <label className="flex items-center gap-1.5 text-xs font-bold text-gray-800 cursor-pointer pt-3">
-                      <input
-                        type="checkbox"
-                        data-testid={`gate-param-only-${abilityIndex}-${sIdx}`}
-                        checked={Boolean(gateParams.only)}
-                        onChange={(e) => updateGateParam('only', e.target.checked || undefined)}
-                        className="accent-black"
-                      />
-                      <span>Only Match</span>
-                    </label>
-                  </div>
-                </div>
-              )}
-
-              {step.gate === 'IF_ALREADY_HAS_STATUS' && (
-                <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
-                  <span className="text-[9px] uppercase font-bold text-yellow-800 block">
-                    Status Gate Parameters
-                  </span>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                        Status
-                      </label>
-                      <select
-                        data-testid={`gate-param-status-${abilityIndex}-${sIdx}`}
-                        value={gateParams.status || 'TOUGH'}
-                        onChange={(e) => updateGateParam('status', e.target.value)}
-                        className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
-                      >
-                        <option value="TOUGH">TOUGH</option>
-                        <option value="STUNNED">STUNNED</option>
-                        <option value="CONFUSED">CONFUSED</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                        Target
-                      </label>
-                      <input
-                        type="text"
-                        data-testid={`gate-param-target-${abilityIndex}-${sIdx}`}
-                        value={gateParams.target || 'VILLAIN'}
-                        onChange={(e) => updateGateParam('target', e.target.value)}
-                        className="w-full bg-white border border-black p-1 text-xs rounded"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {step.gate === 'IF_FORM' && (
-                <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
-                  <span className="text-[9px] uppercase font-bold text-yellow-800 block">
-                    Form Gate Parameters
-                  </span>
-                  <div>
-                    <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                      Target Form
-                    </label>
-                    <select
-                      data-testid="gate-param-form"
-                      value={gateParams.form || 'HERO'}
-                      onChange={(e) => updateGateParam('form', e.target.value)}
-                      className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
-                    >
-                      <option value="HERO">HERO</option>
-                      <option value="ALTER_EGO">ALTER_EGO</option>
-                    </select>
-                  </div>
-                </div>
-              )}
-
-              {(step.gate === 'IF_CARD_IN_PLAY' || step.gate === 'IF_CARD_NOT_IN_PLAY') && (
-                <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
-                  <span className="text-[9px] uppercase font-bold text-yellow-800 block">
-                    Card Gate Parameters
-                  </span>
-                  <div>
-                    <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                      Card Code
-                    </label>
-                    <input
-                      type="text"
-                      data-testid={`gate-param-cardCode-${abilityIndex}-${sIdx}`}
-                      value={gateParams.cardCode || ''}
-                      onChange={(e) => updateGateParam('cardCode', e.target.value)}
-                      placeholder="e.g. 01109"
-                      className="w-full bg-white border border-black p-1 text-xs rounded"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {(step.gate === 'IF_FAILED' ||
-                step.gate === 'IF_CONDITION_MET' ||
-                step.gate === 'IF_CONDITION_NOT_MET') && (
-                <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
-                  <span className="text-[9px] uppercase font-bold text-yellow-800 block">
-                    {step.gate === 'IF_FAILED'
-                      ? 'Failed Gate Parameters'
-                      : step.gate === 'IF_CONDITION_NOT_MET'
-                        ? 'Condition Not Met Gate Parameters'
-                        : 'Condition Met Gate Parameters'}
-                  </span>
-                  <div>
-                    <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                      Target Step ID (Optional - defaults to preceding step)
-                    </label>
-                    <input
-                      type="text"
-                      data-testid={`gate-param-targetStepId-${abilityIndex}-${sIdx}`}
-                      value={gateParams.targetStepId || ''}
-                      onChange={(e) => updateGateParam('targetStepId', e.target.value)}
-                      placeholder="e.g. step_1_remove_threat"
-                      className="w-full bg-white border border-black p-1 text-xs rounded"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {step.condition === 'TARGET_TRAIT_MATCH' && (
-                <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
-                  <span className="text-[9px] uppercase font-bold text-yellow-800 block">
-                    Trait Condition Parameters
-                  </span>
-                  <div>
-                    <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                      Required Trait
-                    </label>
-                    <input
-                      type="text"
-                      data-testid={`gate-param-trait-${abilityIndex}-${sIdx}`}
-                      value={gateParams.trait || ''}
-                      onChange={(e) => updateGateParam('trait', e.target.value)}
-                      placeholder="e.g. Aerial"
-                      className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {step.condition === 'UNDEFENDED_ATTACK' && (
-                <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
-                  <span className="text-[9px] uppercase font-bold text-yellow-800 block">
-                    Undefended Attack Parameters
-                  </span>
-                  <div>
-                    <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                      Attacker Kind (Optional)
-                    </label>
-                    <select
-                      data-testid={`gate-param-attackerKind-${abilityIndex}-${sIdx}`}
-                      value={gateParams.attackerKind || ''}
-                      onChange={(e) => updateGateParam('attackerKind', e.target.value)}
-                      className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
-                    >
-                      <option value="">Any attacker</option>
-                      <option value="VILLAIN">Villain</option>
-                      <option value="MINION">Minion</option>
-                      <option value="ANY_ENEMY">Any enemy</option>
-                    </select>
-                  </div>
-                </div>
-              )}
-
-              {step.condition === 'ZONE_EMPTY' && (
-                <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
-                  <span className="text-[9px] uppercase font-bold text-yellow-800 block">
-                    Zone Empty Parameters
-                  </span>
-                  <div>
-                    <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                      Zone
-                    </label>
-                    <select
-                      data-testid={`gate-param-zone-${abilityIndex}-${sIdx}`}
-                      value={gateParams.zone || ''}
-                      onChange={(e) => updateGateParam('zone', e.target.value)}
-                      className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
-                    >
-                      <option value="">Select a zone</option>
-                      <option value="SIDE_SCHEMES">Side schemes in play</option>
-                      <option value="ENCOUNTER_DECK">Encounter deck</option>
-                      <option value="ENCOUNTER_DISCARD">Encounter discard pile</option>
-                      <option value="HAND">Hand</option>
-                      <option value="DECK">Deck</option>
-                      <option value="DISCARD">Discard pile</option>
-                    </select>
-                  </div>
-                </div>
+              {/* Parameterized Gate Panel */}
+              {step.gate && (
+                <GateParamsPanel
+                  gate={step.gate}
+                  gateParams={gateParams}
+                  onChange={updateGateParam}
+                  availableStepIds={steps
+                    .slice(0, sIdx)
+                    .map((s: any) => s.id)
+                    .filter(Boolean)}
+                  abilityIndex={abilityIndex}
+                  stepIndex={sIdx}
+                />
               )}
 
               {/* Effect Primitive Selector & Description */}

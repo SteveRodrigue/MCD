@@ -8,7 +8,7 @@ import {
   PlayerSideSchemeCard,
 } from './card';
 import { StatusCard } from './enums';
-import { AbilityStep, AbilityCost, ConditionGate, CardAbility } from './abilities';
+import { AbilityStep, AbilityCost, StepGate, CardAbility } from './abilities';
 
 /**
  * Runtime card instance in a zone (hand, deck, discard, or play)
@@ -210,7 +210,7 @@ export interface DecisionPromptOption {
   /** Optional multi-step effect list run when this option is chosen (PLAYER_CHOICE) */
   steps?: AbilityStep[];
   /** Availability gate re-evaluated whenever the prompt becomes the active head (e.g. IF_FORM) */
-  gate?: ConditionGate;
+  gate?: StepGate;
   gateParams?: Record<string, unknown>;
   /** Cost checked for availability and paid on selection (e.g. exhaustCard: SELF_IDENTITY) */
   cost?: AbilityCost;

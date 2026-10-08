@@ -23,105 +23,109 @@ Under **ADR-0060**, parameters configuring conditional step gates and parameters
 - The decorative keys `ATTACHMENT_DAMAGE_SHIELD.mode` / `.target`, `TRANSFER_DAMAGE.from` / `.to`, and `target` on `PREVENT_DAMAGE`, `RETURN_TO_HAND`, `VILLAIN_ATTACKS` were removed in #232 (the engine never read them). `scaling`, `multiplier` and `maxBonus` were retired in #231: scaled amounts are dynamic formulas (`09_dynamic_formulas.md`).
 - `tests/data/schema-member-coverage.test.ts` fails on any table key that nothing reads in `src/engine/` or `src/ui/` (#276; it replaced the report-only `effect-params-read-check.ts`).
 
-### Conditional Gates:
+### Conditional Gates (ADR-0080):
 
-- `"ALWAYS"` _(Default)_: Executes unconditionally per RR v1.8 p. 2 "Do as much as you can".
-- `"THEN"` / `"IF_PREVIOUS_SUCCESS"`: Executes Step $N$ only if Step $N-1$ mutated the game state (RR v1.8 p. 24 "Then").
-- `"IF_AMOUNT_ZERO"` / `"IF_ZERO_HEALED"`: Executes Step $N$ (e.g. `SURGE`) if Step $N-1$ caused 0 state mutation (e.g. at full health).
-- `"IF_ALREADY_HAS_STATUS"`: Executes Step $N$ if the target already has the status card before applying (`gateParams: { status, target }`).
-- `"IF_CARD_IN_PLAY"`: Executes Step $N$ if the specified card is in play (`gateParams: { cardCode }`).
-- `"IF_CARD_NOT_IN_PLAY"`: Executes Step $N$ if the specified card is not in play (`gateParams: { cardCode }`).
-- `"IF_ACTIVATION_DEALT_DAMAGE"` ([Issue #221](https://github.com/SteveRodrigue/MCD/issues/221), ADR-0019 addendum): true when the enemy activation being resolved dealt final damage greater than 0 to the character it hit (after DEF, Tough and prevention; RR v1.8 Boost, Tough, "This Activation"). It takes no `gateParams`. Closed (the step is skipped) everywhere except a **deferred boost** ability, and for scheme activations (villain and minion attacks only). A boost resolves in step 5, before damage (step 6), so the engine does not run a boost ability that contains a step with this gate at reveal time: it queues it in `AttackExecutionContext.deferredBoostAbilities` and resolves it at the end of `applyCalculatedAttackDamage`, with `activationDamage` set to the final damage and `damagedCharacter` set to the hero or ally that took it. That single call site covers the direct step 6 path and the damage-prevention prompt resume path. Pair it with the `DAMAGED_CHARACTER` target (the hero or ally that took the damage; nothing when that ally was defeated or the hero reached 0 HP, so the step does nothing). Example (_Sweeping Swoop_ `01168`): `{ "effect": "ADD_STATUS", "gate": "IF_ACTIVATION_DEALT_DAMAGE", "effectParams": { "status": "STUNNED", "target": "DAMAGED_CHARACTER" } }`.
-- `"IF_FAILED"`: Executes Step $N$ if Step $N-1$ (or `gateParams.targetStepId`) could not resolve.
-- `"IF_RESOURCE_MATCH"`: Evaluates whether resources spent during action payment (`context.resourcesSpent`) or discarded cards (`context.discardedCards`) match required criteria:
-  - `resource`: Required resource type (`"energy" | "physical" | "mental" | "wild"`). Wild resources always count toward the match.
-  - `count` (or `requiredCount`): Number of matching resources required (default: `1`).
-  - `aspect` (or `reqAspect`): Required aspect if checking aspect resources.
-  - `printedResource` (or `requirePrinted`): When `true`, inspects printed resources on discarded cards (e.g. Hulk `01050`) rather than generated payment resources.
-  - `only` (or `requireOnly`): When `true`, requires 100% of spent resources to match the specified resource type.
-- `"IF_CONDITION_MET"` ([ADR-0049](../../decisions/0049-composable-value-transformers-and-event-interception.md)): Executes Step $N$ only if the explicitly monitored condition (`condition` in Step $N-1$ or targeted by `targetStepId`) evaluated to `true`.
-- `"IF_CONDITION_NOT_MET"`: the exact negation of `IF_CONDITION_MET` for the same `condition` / `gateParams`. Executes Step $N$ only if the condition did **not** hold. Use it for the "otherwise / instead" branch of a printed "if X ... instead" ability (see the comparison below).
+Steps execute conditionally by specifying `gate` from the 9 canonical `StepGate` values, parameterized by typed `gateParams`:
 
-> **Shared evaluator (Issue #122):** every gate is evaluated by `evaluateStepGate` in `src/engine/pipeline/step-gate-evaluator.ts`, used by both the effect pipeline (`shouldExecuteStep`) and the `CONSTANT` stat-calculator loop. State/player gates (`IF_FORM`, `IF_CARD_IN_PLAY`, `IF_CARD_NOT_IN_PLAY`, `IF_ALREADY_HAS_STATUS`, `IF_RESOURCE_MATCH`, `IF_CONDITION_MET` / `IF_CONDITION_NOT_MET` + `TARGET_TRAIT_MATCH`) therefore work on `CONSTANT` steps. Result-based gates (`THEN`, `IF_PREVIOUS_SUCCESS`, `IF_AMOUNT_ZERO`, `IF_ZERO_HEALED`, `IF_FAILED`) need a preceding step, so they never apply to `CONSTANT` steps.
-> Gates on `CONSTANT` `ADD_TRAIT` steps are honored by the trait calculators too (e.g. *Cosmic Flight* `01017` uses `"gate": "IF_FORM", "gateParams": { "form": "hero" }`); state gates (other than `IF_FORM`) need the optional `state` argument and are skipped without it (Issue #154).
+- `"THEN"`: Executes Step $N$ only if the referenced step (or Step $N-1$) completed successfully (not skipped and not failed; RR v1.8 p. 24 "Then"). Use `gateParams: { "negate": true }` for fallbacks ("if Step failed").
+  - `gateParams`: `{ step?: string, negate?: boolean }`.
+- `"IF_RESULT"`: Executes Step $N$ only if the referenced step produced the specified milestone fact.
+  - `gateParams`: `{ fact: ResultFact, step?: string, negate?: boolean }`.
+  - Supported facts: `"defeated"`, `"excessDamage"`, `"amountZero"`, `"threatZero"`, `"fullyHealed"`, `"statusAdded"`, `"statusRemoved"`, `"villainDefeated"`.
+- `"IF_FORM"`: Executes Step $N$ based on identity form (hero vs alter-ego).
+  - `gateParams`: `{ form?: "HERO" | "ALTER_EGO", target?: "INITIATOR" | "TARGET", negate?: boolean }`.
+- `"IF_PLAYER_HAS_TRAIT"`: Executes Step $N$ if the player possesses the specified trait (e.g. `[[AERIAL]]`).
+  - `gateParams`: `{ trait: Trait, negate?: boolean }`.
+- `"IF_ZONE_EMPTY"`: Executes Step $N$ if the specified zone has 0 cards.
+  - `gateParams`: `{ zone: Zone, negate?: boolean }`.
+- `"IF_CARD_IN_PLAY"`: Executes Step $N$ if the specified card is in play. Use `negate: true` for "if not in play".
+  - `gateParams`: `{ cardId: string, negate?: boolean }`.
+- `"IF_RESOURCE_MATCH"`: Evaluates whether resources spent during action payment match required criteria:
+  - `gateParams`: `{ resource: ResourceType, count?: number, negate?: boolean }`.
+- `"IF_UNDEFENDED_ATTACK"`: True when the attack being resolved has no defender.
+  - `gateParams`: `{ attackerKind?: "VILLAIN" | "MINION" | "ANY_ENEMY", negate?: boolean }`.
+- `"IF_ACTIVATION_DEALT_DAMAGE"` ([Issue #221](https://github.com/SteveRodrigue/MCD/issues/221)): True when the enemy activation dealt final damage greater than 0.
+  - `gateParams`: `{ negate?: boolean }`.
 
-### Choosing between `IF_CONDITION_MET`, `IF_CONDITION_NOT_MET` and `IF_FAILED`
+> **Shared evaluator (Issue #122, ADR-0080):** every gate is evaluated by `evaluateStepGate` in `src/engine/pipeline/step-gate-evaluator.ts`, used by both the effect pipeline (`shouldExecuteStep`) and the `CONSTANT` stat-calculator loop. State gates (`IF_FORM`, `IF_PLAYER_HAS_TRAIT`, `IF_ZONE_EMPTY`, `IF_CARD_IN_PLAY`) work on `CONSTANT` steps. Result-based gates (`THEN`, `IF_RESULT`) and context-based gates (`IF_RESOURCE_MATCH`, `IF_UNDEFENDED_ATTACK`, `IF_ACTIVATION_DEALT_DAMAGE`) require execution context or preceding steps, so they never apply to `CONSTANT` steps.
+> Gates on `CONSTANT` `ADD_TRAIT` steps are honored by the trait calculators too (e.g. *Cosmic Flight* `01017` uses `"gate": "IF_FORM", "gateParams": { "form": "HERO" }`); state gates (other than `IF_FORM`) need the optional `state` argument and are skipped without it (Issue #154).
 
-All three skip a step when their test is false, but they test different things.
+### Gating Patterns: THEN, IF_RESULT, and IF_PLAYER_HAS_TRAIT
 
-| Gate | Tests | Printed wording | Typical shape |
-| :-- | :-- | :-- | :-- |
-| `IF_CONDITION_MET` | A **condition** holds: a state check (`TARGET_TRAIT_MATCH` with `gateParams.trait`) or a milestone reported by an earlier step (`SCHEME_EMPTY`, `TARGET_DEFEATED`, ...). | "Then, **if** you have the Aerial trait, ..." (adds an extra effect) | Step 1 runs always; step 2 is gated `IF_CONDITION_MET`. |
-| `IF_CONDITION_NOT_MET` | The **same** condition does **not** hold. | "... **if** X, do A **instead**", "**otherwise**, ..." (replaces the normal effect) | Two steps carrying the **same** `condition` and `gateParams`: the normal one gated `IF_CONDITION_NOT_MET`, the upgraded one gated `IF_CONDITION_MET`. Exactly one runs. |
-| `IF_FAILED` | The **previous step (or `targetStepId`) could not do anything** (`!success` or `!mutatedState`). | "If you **cannot** ..., ", "If no cards were discarded this way, ..." (fallback for a failed effect) | Step 1 is the attempt; step 2 is the fallback, gated `IF_FAILED`. |
+| Pattern | Gate | Typical shape / Wording |
+| :-- | :-- | :-- |
+| **Sequential dependency** | `THEN` | "Then, do X" (Step 2 executes only if Step 1 succeeded). |
+| **Fallback on failure** | `THEN` (`negate: true`) | "If your nemesis minion does not enter play this way, this card gains surge." (`gateParams: { step: "step_1_id", negate: true }`). |
+| **Milestone outcome** | `IF_RESULT` | "If this removes the last threat from that scheme, draw 1 card." (`gateParams: { fact: "threatZero" }`). |
+| **Player trait bonus** | `IF_PLAYER_HAS_TRAIT` | "Then, if you have the Aerial trait, remove 2 threat..." (`gateParams: { trait: "Aerial" }`). |
+| **Exclusive trait branches** | `IF_PLAYER_HAS_TRAIT` | Step 1 has `negate: true` (non-Aerial); Step 2 has no negation (Aerial). |
 
-Rule of thumb: ask what the printed text depends on. A fact about the board or the player (traits, form, a milestone) uses `IF_CONDITION_MET` or `IF_CONDITION_NOT_MET`. Whether the previous effect actually did something uses `IF_FAILED` (or `THEN` for the positive case). Do not use `IF_FAILED` to model an "instead" branch: "nothing was removed" also happens when the upgraded branch resolves with nothing to do, which would wrongly fire the fallback.
-
-**Additive example, `IF_CONDITION_MET`: Crisis Interdiction `01012`** ("Remove 2 threat from a scheme. Then, if you have the Aerial trait, remove 2 threat from a different scheme."):
+**Additive example: Crisis Interdiction `01012`** ("Remove 2 threat from a scheme. Then, if you have the Aerial trait, remove 2 threat from a different scheme."):
 
 ```json
 "steps": [
   { "effect": "REMOVE_THREAT", "effectParams": { "amount": 2, "target": "CHOSEN_SCHEME" } },
   { "effect": "REMOVE_THREAT",
-    "gate": "IF_CONDITION_MET",
-    "condition": "TARGET_TRAIT_MATCH",
+    "gate": "IF_PLAYER_HAS_TRAIT",
     "gateParams": { "trait": "Aerial" },
     "effectParams": { "amount": 2, "target": "CHOSEN_SCHEME", "distinctFrom": "PREVIOUS_TARGET" } }
 ]
 ```
 
-**Exclusive example, `IF_CONDITION_NOT_MET` + `IF_CONDITION_MET`: Mark V Helmet `01037`** ("Remove 1 threat from a scheme (from each scheme instead if you have the Aerial trait)."). Without Aerial only the first step runs; with Aerial only the second one does:
+**Exclusive example: Mark V Helmet `01037`** ("Remove 1 threat from a scheme (from each scheme instead if you have the Aerial trait)."). Without Aerial only the first step runs; with Aerial only the second one does:
 
 ```json
 "steps": [
   { "id": "helmet_chosen_scheme", "effect": "REMOVE_THREAT",
-    "gate": "IF_CONDITION_NOT_MET", "condition": "TARGET_TRAIT_MATCH", "gateParams": { "trait": "Aerial" },
+    "gate": "IF_PLAYER_HAS_TRAIT", "gateParams": { "trait": "Aerial", "negate": true },
     "effectParams": { "amount": 1, "target": "CHOSEN_SCHEME" } },
   { "id": "helmet_all_schemes", "effect": "REMOVE_THREAT",
-    "gate": "IF_CONDITION_MET", "condition": "TARGET_TRAIT_MATCH", "gateParams": { "trait": "Aerial" },
+    "gate": "IF_PLAYER_HAS_TRAIT", "gateParams": { "trait": "Aerial" },
     "effectParams": { "amount": 1, "target": "ALL_SCHEMES" } }
 ]
 ```
 
-Writing it the Crisis Interdiction way (step 1 always, step 2 gated on Aerial) would be wrong here: an Aerial player would remove threat from the chosen scheme and then again from every scheme.
+**Fallback example: Shadow of the Past `01190`:**
+Step 4 gains surge if Step 1 (spawning nemesis minion) did not succeed:
+```json
+{
+  "id": "step_4_fallback_surge",
+  "effect": "SURGE",
+  "gate": "THEN",
+  "gateParams": {
+    "step": "step_1_spawn_nemesis_minion",
+    "negate": true
+  }
+}
+```
 
-**Fallback example, `IF_FAILED`:** "Discard an upgrade or support you control. If no cards were discarded this way, this card gains surge." The discard is the attempt; the surge step is gated on that attempt having done nothing. The gate looks at the *result of an effect*, not at the board.
+> **Chosen-target pre-selection:** before an ability runs, the dispatcher looks ahead for the first `CHOSEN_*` target to ask the player once. Steps whose gate is a state-only gate and is closed right now (`IF_FORM`, `IF_PLAYER_HAS_TRAIT`, `IF_ZONE_EMPTY`, `IF_CARD_IN_PLAY`) are ignored by that look-ahead (`isStepGateClosedByState`), so a closed branch never asks for a target. Result-based gates cannot be known in advance and are not skipped.
 
-> **Chosen-target pre-selection:** before an ability runs, the dispatcher looks ahead for the first `CHOSEN_*` target to ask the player once. Steps whose gate is a state-only gate and is closed right now (`IF_FORM`, `IF_CARD_IN_PLAY`, `IF_CARD_NOT_IN_PLAY`, `IF_CONDITION_MET` / `IF_CONDITION_NOT_MET` with `TARGET_TRAIT_MATCH`) are ignored by that look-ahead (`isStepGateClosedByState`), so a closed branch never asks for a target. Result-based gates cannot be known in advance and are not skipped.
+### Typed Milestone Facts (`StepFacts` under ADR-0080)
 
-### Explicit Condition Contracts (`StepConditionSchema`)
+Under **ADR-0080**, effect primitives automatically emit typed facts into `EffectResult.facts` without needing an explicit `condition` declaration on the producing step:
 
-Under **ADR-0049**, rather than relying on implicit side-effects, an ability step explicitly specifies what condition milestone it evaluates via `condition`:
-
-| Category           | Condition Contract         | Evaluated Milestone                                                    | Context / Primitive                                        |
-| :----------------- | :------------------------- | :--------------------------------------------------------------------- | :--------------------------------------------------------- |
-| **Core Milestone** | `SCHEME_EMPTY`             | Targeted scheme has `remainingThreat === 0` after threat removal.      | `REMOVE_THREAT` (_Clear the Area_ `04049`)                 |
-| **Core Milestone** | `TARGET_DEFEATED`          | Targeted enemy/character reached 0 HP from damage.                     | `DEAL_DAMAGE` (_Relentless Assault_ `01053`)               |
-| **Core Milestone** | `FULLY_HEALED`             | Targeted character's damage reduced to 0 (`health === maxHealth`).     | `HEAL_DAMAGE` (_First Aid_ `01086`)                        |
-| **Core Milestone** | `STATUS_APPLIED`           | Status was placed (target did not already possess it & wasn't immune). | `ADD_STATUS` (_Mockingbird_ `01083`)                       |
-| **Core Milestone** | `EXCESS_DAMAGE_DEALT`      | Damage dealt exceeded remaining HP (Overkill damage).                  | `DEAL_DAMAGE` (_Hand Cannon_)                              |
-| **Entity State**   | `ALREADY_HAS_STATUS`       | Target character already possessed status card prior to application.   | `ADD_STATUS` (_I'm Tough_ `01105`)                         |
-| **Entity State**   | `TARGET_TRAIT_MATCH`       | Targeted entity possesses specified trait (e.g. `[[AERIAL]]`).         | Card filter                                                |
-| **Combat Context** | `UNDEFENDED_ATTACK`        | The attack being resolved has no defender (no hero or ally declared). `gateParams.attackerKind` (`VILLAIN` / `MINION` / `ANY_ENEMY`) optionally restricts who is attacking. False outside an attack. | Boost resolution (_Kree Manipulator_ `01178`, _Electric Whip Attack_ `01173`) |
-| **Threshold**      | `ZONE_EMPTY`               | `gateParams.zone` is empty: `SIDE_SCHEMES`, `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`, or the player zones `HAND`, `DECK`, `DISCARD` (of the player resolving the ability). State-only. | _Masterplan_ `01192` ("If there are no side schemes in play") |
-
-> **Removed in #276 (no reader in the engine, a schema member needs a reader and a test):** `TARGET_ALREADY_EXHAUSTED`, `TARGET_FORM_MATCH` (use the gate `IF_FORM`), `RESOURCE_KICKER_MET` (the kicker is `effectParams.kickerResource`) and `COUNTER_THRESHOLD_MET`. Printed cards that would need an exhausted-result or a counter/hit-point threshold (_Earthquake_ `45143`, _Jolt_ `50133`, the three Chief Officers, Absorbing Man's locations `04080` to `04085`, _Giant-Man_ `12012`) wait for the generic comparison condition in [#278](https://github.com/SteveRodrigue/MCD/issues/278).
+| Result Fact | Emitting Effect Primitive | Milestone Event | Example Cards |
+| :--- | :--- | :--- | :--- |
+| `threatZero` | `REMOVE_THREAT` | Targeted scheme threat reached `0`. | _Clear the Area_ (`04049`), _Turn the Tide_ (`13015`) |
+| `defeated` | `DEAL_DAMAGE` | Targeted character reached 0 HP from damage. | _Relentless Assault_ (`01053`), _Chase Them Down_ (`01052`) |
+| `excessDamage` | `DEAL_DAMAGE` | Damage exceeded remaining HP (numeric amount stored in `facts.excessDamage`). | _Relentless Assault_ (`01053`), _Hand Cannon_ |
+| `fullyHealed` | `HEAL_DAMAGE` | Targeted character damage reduced to 0 (`health === maxHealth`). | _First Aid_ (`01086`), _Aunt May_ (`01006`) |
+| `statusAdded` | `ADD_STATUS` | Status was placed on target. | _Mockingbird_ (`01083`) |
+| `statusRemoved` | `REMOVE_STATUS` | Status was removed from target. | _Get over Here!_ |
+| `amountZero` | `executeSequence` | Effect result `value === 0`. | Zero damage/threat/heal fallbacks |
+| `villainDefeated` | `DEAL_DAMAGE` | Active villain was defeated by damage. | Stage transition abilities |
 
 ### Example: Undefended Attack Boost (_Kree Manipulator_ `01178`)
-
-"[star] **Boost**: If the villain is making an undefended attack, place 1 threat on the main scheme." Whether an attack was defended is a fact about the attack in progress, not the result of an earlier step, so the step carries the condition itself and is gated on it. Boosts are resolved after the defender is declared, and the combat pipeline hands `attackerType` and `defenderType` (`HERO` / `ALLY` / `UNDEFENDED`) to the gate:
 
 ```json
 {
   "effect": "ADD_THREAT",
-  "gate": "IF_CONDITION_MET",
-  "condition": "UNDEFENDED_ATTACK",
+  "gate": "IF_UNDEFENDED_ATTACK",
   "gateParams": { "attackerKind": "VILLAIN" },
   "effectParams": { "amount": 1, "target": "MAIN_SCHEME" }
 }
 ```
-
-Do not write `"condition": "UNDEFENDED_ATTACK"` inside `effectParams`: nothing reads it there and the step would run on every attack. Use `IF_CONDITION_NOT_MET` for the opposite ("if the attack is defended ...").
 
 ### Example: Resource Payment Kicker Pattern (_Photonic Blast_ `01013`)
 
@@ -161,7 +165,6 @@ Do not write `"condition": "UNDEFENDED_ATTACK"` inside `effectParams`: nothing r
     {
       "id": "remove_threat_step",
       "effect": "REMOVE_THREAT",
-      "condition": "SCHEME_EMPTY",
       "effectParams": {
         "target": "CHOSEN_SCHEME",
         "amount": 2
@@ -170,9 +173,10 @@ Do not write `"condition": "UNDEFENDED_ATTACK"` inside `effectParams`: nothing r
     {
       "id": "draw_if_cleared",
       "effect": "DRAW",
-      "gate": "IF_CONDITION_MET",
+      "gate": "IF_RESULT",
       "gateParams": {
-        "targetStepId": "remove_threat_step"
+        "fact": "threatZero",
+        "step": "remove_threat_step"
       },
       "effectParams": {
         "count": 1
@@ -197,14 +201,15 @@ Do not write `"condition": "UNDEFENDED_ATTACK"` inside `effectParams`: nothing r
     },
     {
       "id": "crisis_interdiction_aerial_bonus",
-      "condition": "TARGET_TRAIT_MATCH",
-      "gate": "IF_CONDITION_MET",
+      "effect": "REMOVE_THREAT",
+      "gate": "IF_PLAYER_HAS_TRAIT",
       "gateParams": {
         "trait": "Aerial"
       },
       "effectParams": {
         "amount": 2,
-        "target": "CHOSEN_SCHEME"
+        "target": "CHOSEN_SCHEME",
+        "distinctFrom": "PREVIOUS_TARGET"
       }
     }
   ]

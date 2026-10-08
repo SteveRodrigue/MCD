@@ -50,10 +50,9 @@ export function refreshPromptOptionAvailability(
 
     if (option.gate) {
       const ok = evaluateStepGate(
-        option.gate,
+        { effect: 'RESOLVED', gate: option.gate, gateParams: option.gateParams } as any,
         undefined,
         state,
-        { effect: 'RESOLVED', gate: option.gate, gateParams: option.gateParams },
         { playerId: player.id },
       );
       if (!ok) {

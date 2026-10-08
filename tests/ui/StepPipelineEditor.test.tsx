@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { StepPipelineEditor } from '../../src/ui/components/editor/StepPipelineEditor';
 import { AbilityStepSchema } from '../../src/data/supplemental/schema';
+import { ResultFactSchema } from '../../src/data/supplemental/gate-params';
 
 const StatefulStepPipelineEditor: React.FC<{
   initial: any[];
@@ -382,7 +383,7 @@ describe('StepPipelineEditor', () => {
     );
 
     // Form parameter dropdown is rendered
-    const formSelect = screen.getByTestId('gate-param-form') as HTMLSelectElement;
+    const formSelect = screen.getByTestId('gate-param-form-0-0') as HTMLSelectElement;
     expect(formSelect).toBeDefined();
     expect(formSelect.value).toBe('HERO');
 
@@ -397,7 +398,7 @@ describe('StepPipelineEditor', () => {
       }),
     ]);
   });
-  it('offers IF_CONDITION_NOT_MET and shows its trait and target-step fields', async () => {
+  it('offers IF_PLAYER_HAS_TRAIT and shows its trait field', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
 
@@ -406,8 +407,7 @@ describe('StepPipelineEditor', () => {
         initial={[
           {
             effect: 'REMOVE_THREAT',
-            gate: 'IF_CONDITION_NOT_MET',
-            condition: 'TARGET_TRAIT_MATCH',
+            gate: 'IF_PLAYER_HAS_TRAIT',
             gateParams: { trait: 'Aerial' },
             effectParams: { amount: 1, target: 'CHOSEN_SCHEME' },
           },
@@ -417,17 +417,16 @@ describe('StepPipelineEditor', () => {
     );
 
     const gateSelect = screen.getByTestId('step-gate-0-0') as HTMLSelectElement;
-    expect(gateSelect.value).toBe('IF_CONDITION_NOT_MET');
-    expect(Array.from(gateSelect.options).map((o) => o.value)).toContain('IF_CONDITION_NOT_MET');
-    expect(screen.getByText('Condition Not Met Gate Parameters')).toBeDefined();
-    expect(screen.getByTestId('gate-param-targetStepId-0-0')).toBeDefined();
+    expect(gateSelect.value).toBe('IF_PLAYER_HAS_TRAIT');
+    expect(Array.from(gateSelect.options).map((o) => o.value)).toContain('IF_PLAYER_HAS_TRAIT');
+    expect(screen.getByText('Trait Gate Parameters')).toBeDefined();
     expect((screen.getByTestId('gate-param-trait-0-0') as HTMLInputElement).value).toBe('Aerial');
 
-    await user.selectOptions(gateSelect, 'IF_CONDITION_MET');
+    await user.clear(screen.getByTestId('gate-param-trait-0-0'));
+    await user.type(screen.getByTestId('gate-param-trait-0-0'), 'Avenger');
     expect(handleChange).toHaveBeenLastCalledWith([
-      expect.objectContaining({ gate: 'IF_CONDITION_MET' }),
+      expect.objectContaining({ gateParams: { trait: 'Avenger' } }),
     ]);
-    expect(screen.getByText('Condition Met Gate Parameters')).toBeDefined();
   });
   it('edits MODIFY_HAND_SIZE amount as a dynamic formula (Iron Man 01029a) with no legacy scaling fields', () => {
     render(
@@ -452,7 +451,7 @@ describe('StepPipelineEditor', () => {
     expect(screen.queryByTestId('step-param-scaling-0-0')).toBeNull();
     expect(screen.queryByTestId('step-param-multiplier-0-0')).toBeNull();
   });
-  it('shows an Attacker Kind select for the UNDEFENDED_ATTACK condition and round-trips gateParams', async () => {
+  it('shows an Attacker Kind select for the IF_UNDEFENDED_ATTACK gate and round-trips gateParams', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
 
@@ -461,8 +460,7 @@ describe('StepPipelineEditor', () => {
         initial={[
           {
             effect: 'ADD_THREAT',
-            gate: 'IF_CONDITION_MET',
-            condition: 'UNDEFENDED_ATTACK',
+            gate: 'IF_UNDEFENDED_ATTACK',
             gateParams: { attackerKind: 'VILLAIN' },
             effectParams: { amount: 1, target: 'MAIN_SCHEME' },
           },
@@ -471,9 +469,9 @@ describe('StepPipelineEditor', () => {
       />,
     );
 
-    const condition = screen.getByTestId('step-condition-0-0') as HTMLSelectElement;
-    expect(Array.from(condition.options).map((o) => o.value)).toContain('UNDEFENDED_ATTACK');
-    expect(condition.value).toBe('UNDEFENDED_ATTACK');
+    const gate = screen.getByTestId('step-gate-0-0') as HTMLSelectElement;
+    expect(Array.from(gate.options).map((o) => o.value)).toContain('IF_UNDEFENDED_ATTACK');
+    expect(gate.value).toBe('IF_UNDEFENDED_ATTACK');
 
     const kind = screen.getByTestId('gate-param-attackerKind-0-0') as HTMLSelectElement;
     expect(kind.value).toBe('VILLAIN');
@@ -484,7 +482,7 @@ describe('StepPipelineEditor', () => {
     ]);
   });
 
-  it('shows a Zone select for the ZONE_EMPTY condition and writes gateParams.zone', async () => {
+  it('shows a Zone select for the IF_ZONE_EMPTY gate and writes gateParams.zone', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
 
@@ -493,8 +491,7 @@ describe('StepPipelineEditor', () => {
         initial={[
           {
             effect: 'DISCARD',
-            gate: 'IF_CONDITION_MET',
-            condition: 'ZONE_EMPTY',
+            gate: 'IF_ZONE_EMPTY',
             gateParams: { zone: 'SIDE_SCHEMES' },
             effectParams: { source: 'ENCOUNTER_DECK' },
           },
@@ -502,6 +499,10 @@ describe('StepPipelineEditor', () => {
         onChange={handleChange}
       />,
     );
+
+    const gate = screen.getByTestId('step-gate-0-0') as HTMLSelectElement;
+    expect(Array.from(gate.options).map((o) => o.value)).toContain('IF_ZONE_EMPTY');
+    expect(gate.value).toBe('IF_ZONE_EMPTY');
 
     const zone = screen.getByTestId('gate-param-zone-0-0') as HTMLSelectElement;
     expect(zone.value).toBe('SIDE_SCHEMES');
@@ -520,5 +521,221 @@ describe('StepPipelineEditor', () => {
     expect(handleChange).toHaveBeenLastCalledWith([
       expect.objectContaining({ gateParams: { zone: 'ENCOUNTER_DISCARD' } }),
     ]);
+  });
+
+  it('renders IF_RESULT gate controls with fact options, step picker, and updates state', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(
+      <StatefulStepPipelineEditor
+        initial={[
+          {
+            id: 'step_damage',
+            effect: 'DEAL_DAMAGE',
+          },
+          {
+            id: 'step_surge',
+            effect: 'SURGE',
+            gate: 'IF_RESULT',
+            gateParams: { result: 'AMOUNT_ZERO' },
+          },
+        ]}
+        onChange={handleChange}
+      />,
+    );
+
+    // Expand Step 1 (the IF_RESULT step)
+    await user.click(screen.getByTestId('step-item-0-1'));
+
+    const resultSelect = screen.getByTestId('gate-param-result-0-1') as HTMLSelectElement;
+    expect(resultSelect).toBeDefined();
+    expect(resultSelect.value).toBe('AMOUNT_ZERO');
+
+    // Confirm all ResultFactSchema options are present
+    const renderedOptions = Array.from(resultSelect.options).map((o) => o.value);
+    for (const fact of ResultFactSchema.options) {
+      expect(renderedOptions).toContain(fact);
+    }
+
+    // Step picker is present and contains the earlier step ID
+    const stepSelect = screen.getByTestId('gate-param-step-0-1') as HTMLSelectElement;
+    expect(stepSelect).toBeDefined();
+    expect(Array.from(stepSelect.options).map((o) => o.value)).toContain('step_damage');
+
+    // Change result to TARGET_DEFEATED
+    await user.selectOptions(resultSelect, 'TARGET_DEFEATED');
+    expect(handleChange).toHaveBeenCalledWith([
+      expect.anything(),
+      expect.objectContaining({
+        gate: 'IF_RESULT',
+        gateParams: expect.objectContaining({
+          result: 'TARGET_DEFEATED',
+        }),
+      }),
+    ]);
+  });
+
+  it('renders IF_RESOURCE_MATCH gate controls with text, count, checkboxes, and form qualifier', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(
+      <StatefulStepPipelineEditor
+        initial={[
+          {
+            effect: 'DEAL_DAMAGE',
+            gate: 'IF_RESOURCE_MATCH',
+            gateParams: { resource: 'energy', count: 2, printedResource: true },
+          },
+        ]}
+        onChange={handleChange}
+      />,
+    );
+
+    const resourceInput = screen.getByTestId('gate-param-resource-0-0') as HTMLInputElement;
+    expect(resourceInput).toBeDefined();
+    expect(resourceInput.value).toBe('energy');
+
+    const countInput = screen.getByTestId('gate-param-count-0-0') as HTMLInputElement;
+    expect(countInput).toBeDefined();
+    expect(countInput.value).toBe('2');
+
+    const printedCheckbox = screen.getByTestId(
+      'gate-param-printedResource-0-0',
+    ) as HTMLInputElement;
+    expect(printedCheckbox).toBeDefined();
+    expect(printedCheckbox.checked).toBe(true);
+
+    const onlyCheckbox = screen.getByTestId('gate-param-only-0-0') as HTMLInputElement;
+    expect(onlyCheckbox).toBeDefined();
+    expect(onlyCheckbox.checked).toBe(false);
+
+    const formSelect = screen.getByTestId('gate-param-form-0-0') as HTMLSelectElement;
+    expect(formSelect).toBeDefined();
+
+    // Toggle only checkbox
+    await user.click(onlyCheckbox);
+    expect(handleChange).toHaveBeenCalledWith([
+      expect.objectContaining({
+        gateParams: expect.objectContaining({
+          only: true,
+        }),
+      }),
+    ]);
+  });
+
+  it('toggles gateParams.negate via Negate (NOT) checkbox', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(
+      <StatefulStepPipelineEditor
+        initial={[
+          {
+            effect: 'DRAW',
+            gate: 'THEN',
+            gateParams: {},
+          },
+        ]}
+        onChange={handleChange}
+      />,
+    );
+
+    const negateCheckbox = screen.getByTestId('gate-param-negate-0-0') as HTMLInputElement;
+    expect(negateCheckbox).toBeDefined();
+    expect(negateCheckbox.checked).toBe(false);
+
+    // Check negate
+    await user.click(negateCheckbox);
+    expect(handleChange).toHaveBeenLastCalledWith([
+      expect.objectContaining({
+        gateParams: expect.objectContaining({
+          negate: true,
+        }),
+      }),
+    ]);
+
+    // Uncheck negate
+    await user.click(negateCheckbox);
+    const lastCall = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
+    expect(lastCall[0].gateParams?.negate).toBeUndefined();
+  });
+
+  it('populates step picker with only earlier step IDs in the ability', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(
+      <StatefulStepPipelineEditor
+        initial={[
+          { id: 'first_step', effect: 'DEAL_DAMAGE' },
+          { id: 'second_step', effect: 'DRAW' },
+          {
+            id: 'third_step',
+            effect: 'SURGE',
+            gate: 'IF_RESULT',
+            gateParams: { result: 'AMOUNT_ZERO' },
+          },
+          { id: 'fourth_step', effect: 'HEAL_DAMAGE' },
+        ]}
+        onChange={handleChange}
+      />,
+    );
+
+    // Step 0 is expanded: if it had a step picker (e.g. if gate was THEN), it would only have 'Previous step'
+    // Expand Step 2 (third_step)
+    await user.click(screen.getByTestId('step-item-0-2'));
+
+    const stepPicker = screen.getByTestId('gate-param-step-0-2') as HTMLSelectElement;
+    const optionValues = Array.from(stepPicker.options).map((o) => o.value);
+
+    // Should include previous step placeholder and only preceding step IDs
+    expect(optionValues).toContain(''); // "Previous step"
+    expect(optionValues).toContain('first_step');
+    expect(optionValues).toContain('second_step');
+
+    // Should NOT include third_step (current step) or fourth_step (later step)
+    expect(optionValues).not.toContain('third_step');
+    expect(optionValues).not.toContain('fourth_step');
+
+    // Select second_step
+    await user.selectOptions(stepPicker, 'second_step');
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'third_step',
+          gateParams: expect.objectContaining({
+            step: 'second_step',
+          }),
+        }),
+      ]),
+    );
+
+    // Select Previous step ("") -> should clear step param
+    await user.selectOptions(stepPicker, '');
+    const lastCall = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
+    expect(lastCall[2].gateParams?.step).toBeUndefined();
+  });
+
+  it('confirms Condition dropdown is completely absent from the editor', () => {
+    render(
+      <StepPipelineEditor
+        steps={[
+          {
+            effect: 'DEAL_DAMAGE',
+            gate: 'IF_PLAYER_HAS_TRAIT',
+            gateParams: { trait: 'Aerial' },
+          },
+        ]}
+        abilityIndex={0}
+        onChange={vi.fn()}
+      />,
+    );
+
+    // Assert that the old "Step Condition" label and controls are not rendered anywhere
+    expect(screen.queryByText(/Step Condition/i)).toBeNull();
+    expect(screen.queryByTestId(/step-condition/i)).toBeNull();
+    expect(screen.queryByTestId(/condition-select/i)).toBeNull();
   });
 });

@@ -50,19 +50,21 @@ _Take note of the extracted JSON: `code`, `name`, `type_code`, `traits`, `cost`,
 
 ### Step 3: Map to Modular Declarative Specifications & Schema
 
-Consult the authoritative schema and modular specifications to ensure exact parameter and variable compliance:
+Consult the quick reference cheat sheet and modular specifications to ensure exact parameter and variable compliance:
 
-1. **Authoritative Source of Truth:**
-   - [`src/data/supplemental/schema.ts`](../../../src/data/supplemental/schema.ts) defines the canonical Zod types and enums:
-     - **Timing:** `TimingTypeSchema` (`ACTION`, `HERO_ACTION`, `ALTER_EGO_ACTION`, `INTERRUPT`, `RESPONSE`, `CONSTANT`, `SPECIAL`, `SETUP`, `WHEN_REVEALED`)
-     - **Triggers:** `TriggerTypeSchema` (`WHEN_REVEALED`, `ENEMY_INITIATES_ATTACK`, `DEFEND`, `DAMAGE_TAKEN`, `CHARACTER_DEFEATED`, etc.)
+1. **Primary Quick-Start Reference (Inspect First):**
+   - [`docs/specifications/supplemental/QUICK_REFERENCE.md`](../../../docs/specifications/supplemental/QUICK_REFERENCE.md): Single authoritative, high-density cheat sheet detailing all 55 effect primitives, allowed `effectParams` keys, 9 canonical step gates, 8 result facts, timings, triggers, and target selectors.
+
+2. **Authoritative Source of Truth:**
+   - [`src/data/supplemental/schema.ts`](../../../src/data/supplemental/schema.ts), [`effect-params.ts`](../../../src/data/supplemental/effect-params.ts), and [`gate-params.ts`](../../../src/data/supplemental/gate-params.ts) define the canonical Zod types and enums:
+     - **Timing:** `TimingTypeSchema` (`ACTION`, `HERO_ACTION`, `ALTER_EGO_ACTION`, `INTERRUPT`, `RESPONSE`, `CONSTANT`, `SPECIAL`, `SETUP`, `WHEN_REVEALED`, etc.)
+     - **Triggers:** `TriggerTypeSchema` (`WHEN_REVEALED`, `ENEMY_INITIATES_ATTACK`, `DAMAGE_TAKEN`, `CHARACTER_DEFEATED`, etc.)
      - **Effects:** `EffectTypeSchema` (`DEAL_DAMAGE`, `REMOVE_THREAT`, `DRAW`, `DISCARD`, `SEARCH`, `PUT_INTO_PLAY`, `ADD_STATUS`, `GENERATE_RESOURCE`, etc.)
+     - **Effect Parameter Keys:** `EFFECT_PARAM_KEYS` in `effect-params.ts` strictly defines allowed keys per effect.
+     - **Step Gates & Result Facts (ADR-0080):** `StepGateSchema` (`THEN`, `IF_RESULT`, `IF_FORM`, `IF_PLAYER_HAS_TRAIT`, `IF_ZONE_EMPTY`, `IF_CARD_IN_PLAY`, `IF_RESOURCE_MATCH`, `IF_UNDEFENDED_ATTACK`, `IF_ACTIVATION_DEALT_DAMAGE`) and `ResultFactSchema` (`TARGET_DEFEATED`, `EXCESS_DAMAGE_DEALT`, `FULLY_HEALED`, `SCHEME_EMPTY`, `STATUS_APPLIED`, `ALREADY_HAD_STATUS`, `STATUS_REMOVED`, `AMOUNT_ZERO`).
      - **Target Selectors:** `TargetSelectorSchema` (`CHOSEN_ENEMY`, `CHOSEN_CHARACTER`, `VILLAIN`, `ALL_ENEMIES`, `SELF`, `SELF_IDENTITY`, `CHOSEN_PLAYER`, etc.)
-     - **Step Conditions:** `StepConditionSchema` (`TARGET_DEFEATED`, `EXCESS_DAMAGE_DEALT`, `SCHEME_EMPTY`, `FULLY_HEALED`, etc.)
-     - **Condition Gates:** `ConditionGateSchema` (`IF_FORM`, `IF_RESOURCE_MATCH`, `IF_STATUS`, `IF_TARGET_TYPE`, etc.)
-     - **Durations:** `DurationSchema` (`PHASE`, `ROUND`, `TURN`)
 
-2. **Modular Documentation Guides:**
+3. **Modular Documentation Guides (For In-Depth Rules/Examples):**
    - Timing & Triggers: `docs/specifications/supplemental/02_timings_and_triggers.md`
    - Targeting & Scopes: `docs/specifications/supplemental/03_costs_and_targeting.md`
    - Combat & Threat: `docs/specifications/supplemental/05_effects_combat_threat.md`
@@ -72,8 +74,9 @@ Consult the authoritative schema and modular specifications to ensure exact para
    - Formulas & Math: `docs/specifications/supplemental/09_dynamic_formulas.md`
    - Sequences & Prompts: `docs/specifications/supplemental/10_sequences_and_prompts.md`
    - Universal Card Filter: `docs/specifications/supplemental/04_universal_card_filter.md`
+   - Play Requirements: `docs/specifications/supplemental/11_play_requirements.md`
 
-3. **Drafting Invariants:**
+4. **Drafting Invariants:**
    - **Generic Primitives Only (ADR-0021):** Never invent card-specific effect names (e.g. do not use `DANCE_OF_DEATH_ATTACK`; use generic `DEAL_DAMAGE`).
    - **Exact Enum Values:** All effect, timing, and target strings must match the TypeScript enums in `schema.ts` exactly.
    - **Strict Schema Compliance:** `CardEnrichmentSchema` is strict; undeclared or hallucinated properties will cause validation failure.

@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { getEffectiveHeroStats } from '@engine/pipeline/stat-calculator';
 import { evaluateStepGate, isStepGateClosedByState } from '@engine/pipeline/step-gate-evaluator';
+import { AbilityStep, StepResolutionResult } from '@engine/models/abilities';
 
-describe('Shared step-gate evaluator (Issue #122, RR v1.8 p. 2, 24)', () => {
+describe('Shared step-gate evaluator (ADR-0080, Issues #289, #290)', () => {
   let state: GameState;
   let hero: HeroCard;
 
@@ -33,162 +34,336 @@ describe('Shared step-gate evaluator (Issue #122, RR v1.8 p. 2, 24)', () => {
   });
 
   const ctx = { playerId: 'p1' };
-  const evalGate = (step: any, prev?: any, extra: any = {}) =>
-    evaluateStepGate(step.gate, prev, state, step, { ...ctx, ...extra });
+  const evalGate = (
+    step: AbilityStep,
+    prev?: StepResolutionResult,
+    extra: any = {},
+    stepResultsMap?: Map<string, StepResolutionResult>,
+  ) => evaluateStepGate(step, prev, state, { ...ctx, ...extra }, stepResultsMap);
 
-  it('ALWAYS / no gate always passes', () => {
-    expect(evalGate({ gate: undefined, effect: 'DRAW' })).toBe(true);
-    expect(evalGate({ gate: 'ALWAYS', effect: 'DRAW' })).toBe(true);
+  it('Ungated step always passes', () => {
+    expect(evalGate({ effect: 'DRAW' } as AbilityStep)).toBe(true);
   });
 
-  it('IF_FORM compares the player form', () => {
-    expect(evalGate({ gate: 'IF_FORM', gateParams: { form: 'hero' }, effect: 'DRAW' })).toBe(true);
-    expect(evalGate({ gate: 'IF_FORM', gateParams: { form: 'alter_ego' }, effect: 'DRAW' })).toBe(
-      false,
-    );
-    state.players[0].currentForm = 'alter_ego';
-    expect(evalGate({ gate: 'IF_FORM', gateParams: { form: 'alter-ego' }, effect: 'DRAW' })).toBe(
-      true,
-    );
-  });
+  describe('THEN gate', () => {
+    it('evaluates success and mutatedState on previous step', () => {
+      const ok: StepResolutionResult = { success: true, mutatedState: true };
+      const noMutation: StepResolutionResult = { success: true, mutatedState: false };
+      const failed: StepResolutionResult = { success: false, mutatedState: false };
+      const step: AbilityStep = { effect: 'DRAW', gate: 'THEN' };
 
-  it('IF_CARD_IN_PLAY / IF_CARD_NOT_IN_PLAY look across zones', () => {
-    const inPlay = { gate: 'IF_CARD_IN_PLAY', gateParams: { cardCode: '01064' }, effect: 'DRAW' };
-    const notInPlay = { ...inPlay, gate: 'IF_CARD_NOT_IN_PLAY' };
-    expect(evalGate(inPlay)).toBe(false);
-    expect(evalGate(notInPlay)).toBe(true);
-    state.players[0].tableau.push(createCardInstance(cardCatalog.getCard('01064')!));
-    expect(evalGate(inPlay)).toBe(true);
-    expect(evalGate(notInPlay)).toBe(false);
-  });
-
-  it('IF_ALREADY_HAS_STATUS checks the villain status', () => {
-    const step = {
-      gate: 'IF_ALREADY_HAS_STATUS',
-      gateParams: { status: StatusCard.STUNNED, target: 'VILLAIN' },
-      effect: 'DRAW',
-    };
-    expect(evalGate(step)).toBe(false);
-    state.villain.statusCards.push(StatusCard.STUNNED);
-    expect(evalGate(step)).toBe(true);
-  });
-
-  it('IF_RESOURCE_MATCH uses resources spent, wild matches unless printed is required', () => {
-    const step = { gate: 'IF_RESOURCE_MATCH', gateParams: { resource: 'mental' }, effect: 'DRAW' };
-    expect(evalGate(step, undefined, { resourcesSpent: ['mental'] })).toBe(true);
-    expect(evalGate(step, undefined, { resourcesSpent: ['wild'] })).toBe(true);
-    expect(evalGate(step, undefined, { resourcesSpent: ['physical'] })).toBe(false);
-    const printed = { ...step, gateParams: { resource: 'mental', printedResource: true } };
-    expect(evalGate(printed, undefined, { resourcesSpent: ['wild'] })).toBe(false);
-  });
-
-  it('IF_CONDITION_MET + TARGET_TRAIT_MATCH checks the player traits', () => {
-    const step = (trait: string) => ({
-      gate: 'IF_CONDITION_MET',
-      condition: 'TARGET_TRAIT_MATCH',
-      gateParams: { trait },
-      effect: 'DRAW',
+      expect(evalGate(step, ok)).toBe(true);
+      expect(evalGate(step, noMutation)).toBe(false);
+      expect(evalGate(step, failed)).toBe(false);
+      expect(evalGate(step, undefined)).toBe(false);
     });
-    expect(evalGate(step('Nonexistent Trait'))).toBe(false);
-    const traits = (hero.traits || [])[0];
-    if (traits) expect(evalGate(step(traits))).toBe(true);
-  });
 
-  it('IF_CONDITION_NOT_MET is the exact negation of IF_CONDITION_MET (trait condition)', () => {
-    const step = (gate: string, trait: string) => ({
-      gate,
-      condition: 'TARGET_TRAIT_MATCH',
-      gateParams: { trait },
-      effect: 'DRAW',
+    it('honors negate: true for fallbacks on failed/unmutated steps', () => {
+      const ok: StepResolutionResult = { success: true, mutatedState: true };
+      const failed: StepResolutionResult = { success: false, mutatedState: false };
+      const step: AbilityStep = { effect: 'SURGE', gate: 'THEN', gateParams: { negate: true } };
+
+      expect(evalGate(step, ok)).toBe(false);
+      expect(evalGate(step, failed)).toBe(true);
+      expect(evalGate(step, undefined)).toBe(true);
     });
-    const present = (hero.traits || [])[0] ?? 'Avenger';
-    for (const trait of [present, 'Nonexistent Trait']) {
-      const met = evalGate(step('IF_CONDITION_MET', trait));
-      expect(evalGate(step('IF_CONDITION_NOT_MET', trait))).toBe(!met);
-    }
-    // A granted trait flips both gates together.
-    state.players[0].activeTraitModifiers = [{ trait: 'Aerial', duration: 'PHASE' }];
-    expect(evalGate(step('IF_CONDITION_MET', 'Aerial'))).toBe(true);
-    expect(evalGate(step('IF_CONDITION_NOT_MET', 'Aerial'))).toBe(false);
-  });
 
-  it('IF_CONDITION_NOT_MET also negates a result-based condition when no trait is checked', () => {
-    const met = { success: true, mutatedState: true, conditionMet: true };
-    const notMet = { success: true, mutatedState: true, conditionMet: false };
-    const step = { gate: 'IF_CONDITION_NOT_MET', effect: 'DRAW' };
-    expect(evalGate(step, met)).toBe(false);
-    expect(evalGate(step, notMet)).toBe(true);
-    expect(evalGate(step, undefined)).toBe(true);
-  });
+    it('resolves explicit step reference from stepResultsMap (D12)', () => {
+      const step1Result: StepResolutionResult = { success: false, mutatedState: false };
+      const step2Result: StepResolutionResult = { success: true, mutatedState: true };
+      const map = new Map<string, StepResolutionResult>([
+        ['step_1', step1Result],
+        ['step_2', step2Result],
+      ]);
 
-  it('UNDEFENDED_ATTACK is true only for an attack with no defender, optionally by a given attacker kind', () => {
-    const step = (gate: string, gateParams?: Record<string, unknown>) => ({
-      gate,
-      condition: 'UNDEFENDED_ATTACK',
-      gateParams,
-      effect: 'ADD_THREAT',
+      const fallbackStep: AbilityStep = {
+        effect: 'SURGE',
+        gate: 'THEN',
+        gateParams: { step: 'step_1', negate: true },
+      };
+
+      // Even if immediate prev is step2Result (success), the gate targets step_1 (failed) -> returns true
+      expect(evalGate(fallbackStep, step2Result, {}, map)).toBe(true);
     });
-    const met = (gateParams: Record<string, unknown> | undefined, extra: any) =>
-      evalGate(step('IF_CONDITION_MET', gateParams), undefined, extra);
 
-    expect(met(undefined, { attackerType: 'VILLAIN', defenderType: 'UNDEFENDED' })).toBe(true);
-    expect(met(undefined, { attackerType: 'MINION', defenderType: 'UNDEFENDED' })).toBe(true);
-    expect(met(undefined, { attackerType: 'VILLAIN', defenderType: 'HERO' })).toBe(false);
-    expect(met(undefined, { attackerType: 'VILLAIN', defenderType: 'ALLY' })).toBe(false);
-    // Not an attack at all (for example a scheme activation boost): never undefended.
-    expect(met(undefined, {})).toBe(false);
+    it('evaluates skipped previous step as closed for THEN (D18)', () => {
+      const skippedPrev: StepResolutionResult = {
+        success: false,
+        mutatedState: false,
+        skipped: true,
+      };
+      const step: AbilityStep = { effect: 'DRAW', gate: 'THEN' };
+      expect(evalGate(step, skippedPrev)).toBe(false);
 
-    const villainOnly = { attackerKind: 'VILLAIN' };
-    expect(met(villainOnly, { attackerType: 'VILLAIN', defenderType: 'UNDEFENDED' })).toBe(true);
-    expect(met(villainOnly, { attackerType: 'MINION', defenderType: 'UNDEFENDED' })).toBe(false);
-    expect(
-      met({ attackerKind: 'MINION' }, { attackerType: 'MINION', defenderType: 'UNDEFENDED' }),
-    ).toBe(true);
-    expect(
-      met({ attackerKind: 'ANY_ENEMY' }, { attackerType: 'MINION', defenderType: 'UNDEFENDED' }),
-    ).toBe(true);
-
-    // IF_CONDITION_NOT_MET is the exact negation.
-    expect(
-      evalGate(step('IF_CONDITION_NOT_MET', villainOnly), undefined, {
-        attackerType: 'VILLAIN',
-        defenderType: 'HERO',
-      }),
-    ).toBe(true);
-    expect(evalGate(step('IF_CONDITION_NOT_MET', villainOnly), undefined, {})).toBe(true);
-  });
-
-  it('isStepGateClosedByState reports only state-evaluable gates that are closed now', () => {
-    const trait = (gate: string) => ({
-      gate,
-      condition: 'TARGET_TRAIT_MATCH',
-      gateParams: { trait: 'Aerial' },
-      effect: 'DRAW',
+      const stepNegated: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'THEN',
+        gateParams: { negate: true },
+      };
+      expect(evalGate(stepNegated, skippedPrev)).toBe(true);
     });
-    const closed = (step: any) => isStepGateClosedByState(step, state, ctx);
-    expect(closed(trait('IF_CONDITION_MET'))).toBe(true);
-    expect(closed(trait('IF_CONDITION_NOT_MET'))).toBe(false);
-    expect(closed({ gate: 'IF_FORM', gateParams: { form: 'alter_ego' }, effect: 'DRAW' })).toBe(
-      true,
-    );
-    // Result-based gates and ungated steps are never "closed by state".
-    expect(closed({ gate: 'THEN', effect: 'DRAW' })).toBe(false);
-    expect(closed({ gate: 'IF_CONDITION_MET', effect: 'DRAW' })).toBe(false);
-    expect(closed({ effect: 'DRAW' })).toBe(false);
   });
 
-  it('result-based gates read the previous step result', () => {
-    const ok = { success: true, mutatedState: true };
-    const no = { success: true, mutatedState: false };
-    expect(evalGate({ gate: 'THEN', effect: 'DRAW' }, ok)).toBe(true);
-    expect(evalGate({ gate: 'IF_PREVIOUS_SUCCESS', effect: 'DRAW' }, no)).toBe(false);
-    expect(evalGate({ gate: 'IF_FAILED', effect: 'DRAW' }, no)).toBe(true);
-    expect(evalGate({ gate: 'IF_AMOUNT_ZERO', effect: 'DRAW' }, { ...no, value: 0 })).toBe(true);
-    expect(evalGate({ gate: 'THEN', effect: 'DRAW' }, undefined)).toBe(false);
+  describe('IF_RESULT gate', () => {
+    it('evaluates specific result facts from prevResult', () => {
+      const stepDefeated: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_RESULT',
+        gateParams: { fact: 'defeated' },
+      };
+      expect(
+        evalGate(stepDefeated, { success: true, mutatedState: true, facts: { defeated: true } }),
+      ).toBe(true);
+      expect(
+        evalGate(stepDefeated, { success: true, mutatedState: true, facts: { defeated: false } }),
+      ).toBe(false);
+      expect(evalGate(stepDefeated, { success: true, mutatedState: true })).toBe(false);
+
+      const stepThreatZero: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_RESULT',
+        gateParams: { fact: 'threatZero' },
+      };
+      expect(
+        evalGate(stepThreatZero, {
+          success: true,
+          mutatedState: true,
+          facts: { threatZero: true },
+        }),
+      ).toBe(true);
+
+      const stepAmountZero: AbilityStep = {
+        effect: 'SURGE',
+        gate: 'IF_RESULT',
+        gateParams: { fact: 'amountZero' },
+      };
+      expect(
+        evalGate(stepAmountZero, {
+          success: true,
+          mutatedState: false,
+          facts: { amountZero: true },
+        }),
+      ).toBe(true);
+    });
+
+    it('honors negate: true on IF_RESULT', () => {
+      const step: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_RESULT',
+        gateParams: { fact: 'defeated', negate: true },
+      };
+      expect(evalGate(step, { success: true, mutatedState: true, facts: { defeated: true } })).toBe(
+        false,
+      );
+      expect(
+        evalGate(step, { success: true, mutatedState: true, facts: { defeated: false } }),
+      ).toBe(true);
+      expect(evalGate(step, undefined)).toBe(true);
+    });
+
+    it('resolves explicit step reference from stepResultsMap', () => {
+      const map = new Map<string, StepResolutionResult>([
+        ['step_strike', { success: true, mutatedState: true, facts: { excessDamage: 3 } }],
+      ]);
+      const step: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_RESULT',
+        gateParams: { fact: 'excessDamage', step: 'step_strike' },
+      };
+      expect(evalGate(step, undefined, {}, map)).toBe(true);
+    });
+  });
+
+  describe('IF_FORM gate', () => {
+    it('compares the player identity form with case insensitivity', () => {
+      const heroStep: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_FORM',
+        gateParams: { form: 'HERO' },
+      };
+      const alterEgoStep: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_FORM',
+        gateParams: { form: 'ALTER_EGO' },
+      };
+
+      expect(evalGate(heroStep)).toBe(true);
+      expect(evalGate(alterEgoStep)).toBe(false);
+
+      state.players[0].currentForm = 'alter_ego';
+      expect(evalGate(heroStep)).toBe(false);
+      expect(evalGate(alterEgoStep)).toBe(true);
+    });
+
+    it('honors negate: true', () => {
+      const notHero: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_FORM',
+        gateParams: { form: 'HERO', negate: true },
+      };
+      expect(evalGate(notHero)).toBe(false);
+      state.players[0].currentForm = 'alter_ego';
+      expect(evalGate(notHero)).toBe(true);
+    });
+  });
+
+  describe('IF_PLAYER_HAS_TRAIT gate', () => {
+    it('checks active traits on the player', () => {
+      const avengerStep: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_PLAYER_HAS_TRAIT',
+        gateParams: { trait: 'Avenger' },
+      };
+      const aerialStep: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_PLAYER_HAS_TRAIT',
+        gateParams: { trait: 'Aerial' },
+      };
+
+      expect(evalGate(avengerStep)).toBe(true);
+      expect(evalGate(aerialStep)).toBe(false);
+
+      state.players[0].activeTraitModifiers = [{ trait: 'Aerial', duration: 'PHASE' }];
+      expect(evalGate(aerialStep)).toBe(true);
+    });
+
+    it('honors negate: true', () => {
+      const notAerial: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_PLAYER_HAS_TRAIT',
+        gateParams: { trait: 'Aerial', negate: true },
+      };
+      expect(evalGate(notAerial)).toBe(true);
+      state.players[0].activeTraitModifiers = [{ trait: 'Aerial', duration: 'PHASE' }];
+      expect(evalGate(notAerial)).toBe(false);
+    });
+  });
+
+  describe('IF_CARD_IN_PLAY gate', () => {
+    it('looks across zones for the card id/code', () => {
+      const inPlayStep: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_CARD_IN_PLAY',
+        gateParams: { cardId: '01064' },
+      };
+      const notInPlayStep: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_CARD_IN_PLAY',
+        gateParams: { cardId: '01064', negate: true },
+      };
+
+      expect(evalGate(inPlayStep)).toBe(false);
+      expect(evalGate(notInPlayStep)).toBe(true);
+
+      state.players[0].tableau.push(createCardInstance(cardCatalog.getCard('01064')!));
+      expect(evalGate(inPlayStep)).toBe(true);
+      expect(evalGate(notInPlayStep)).toBe(false);
+    });
+  });
+
+  describe('IF_ZONE_EMPTY gate', () => {
+    it('evaluates whether a zone has 0 cards', () => {
+      const emptySides: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_ZONE_EMPTY',
+        gateParams: { zone: 'SIDE_SCHEMES' },
+      };
+      expect(evalGate(emptySides)).toBe(true);
+
+      state.sideSchemes = [{ instanceId: 'ss1', threat: 3 } as any];
+      expect(evalGate(emptySides)).toBe(false);
+
+      const notEmptySides: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_ZONE_EMPTY',
+        gateParams: { zone: 'SIDE_SCHEMES', negate: true },
+      };
+      expect(evalGate(notEmptySides)).toBe(true);
+    });
+  });
+
+  describe('IF_RESOURCE_MATCH gate', () => {
+    it('evaluates resources spent from context', () => {
+      const step: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_RESOURCE_MATCH',
+        gateParams: { resource: 'mental' },
+      };
+      expect(evalGate(step, undefined, { resourcesSpent: ['mental'] })).toBe(true);
+      expect(evalGate(step, undefined, { resourcesSpent: ['wild'] })).toBe(true);
+      expect(evalGate(step, undefined, { resourcesSpent: ['physical'] })).toBe(false);
+    });
+  });
+
+  describe('IF_UNDEFENDED_ATTACK gate', () => {
+    it('evaluates undefended attack context', () => {
+      const step: AbilityStep = {
+        effect: 'ADD_THREAT',
+        gate: 'IF_UNDEFENDED_ATTACK',
+        gateParams: { attackerKind: 'VILLAIN' },
+      };
+
+      expect(
+        evalGate(step, undefined, { attackerType: 'VILLAIN', defenderType: 'UNDEFENDED' }),
+      ).toBe(true);
+      expect(
+        evalGate(step, undefined, { attackerType: 'MINION', defenderType: 'UNDEFENDED' }),
+      ).toBe(false);
+      expect(evalGate(step, undefined, { attackerType: 'VILLAIN', defenderType: 'HERO' })).toBe(
+        false,
+      );
+
+      const stepNegated: AbilityStep = {
+        effect: 'ADD_THREAT',
+        gate: 'IF_UNDEFENDED_ATTACK',
+        gateParams: { attackerKind: 'VILLAIN', negate: true },
+      };
+      expect(
+        evalGate(stepNegated, undefined, { attackerType: 'VILLAIN', defenderType: 'HERO' }),
+      ).toBe(true);
+    });
+  });
+
+  describe('IF_ACTIVATION_DEALT_DAMAGE gate', () => {
+    it('evaluates whether activation dealt damage > 0', () => {
+      const step: AbilityStep = { effect: 'ADD_STATUS', gate: 'IF_ACTIVATION_DEALT_DAMAGE' };
+      expect(evalGate(step, undefined, { activationDamage: 3 })).toBe(true);
+      expect(evalGate(step, undefined, { activationDamage: 0 })).toBe(false);
+      expect(evalGate(step, undefined, {})).toBe(false);
+    });
+  });
+
+  describe('isStepGateClosedByState', () => {
+    it('reports only state-evaluable gates that are currently closed', () => {
+      const aerialStep: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_PLAYER_HAS_TRAIT',
+        gateParams: { trait: 'Aerial' },
+      };
+      const notAerialStep: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_PLAYER_HAS_TRAIT',
+        gateParams: { trait: 'Aerial', negate: true },
+      };
+      const alterEgoStep: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_FORM',
+        gateParams: { form: 'ALTER_EGO' },
+      };
+      const thenStep: AbilityStep = { effect: 'DRAW', gate: 'THEN' };
+      const ungated: AbilityStep = { effect: 'DRAW' };
+
+      expect(isStepGateClosedByState(aerialStep, state, ctx)).toBe(true);
+      expect(isStepGateClosedByState(notAerialStep, state, ctx)).toBe(false);
+      expect(isStepGateClosedByState(alterEgoStep, state, ctx)).toBe(true);
+      // Result & context gates are never closed by state
+      expect(isStepGateClosedByState(thenStep, state, ctx)).toBe(false);
+      expect(isStepGateClosedByState(ungated, state, ctx)).toBe(false);
+    });
   });
 
   describe('CONSTANT steps honor gates in the stat calculator', () => {
-    function withConstantAttack(gate: any, gateParams: any) {
+    function withConstantAttack(gate?: any, gateParams?: any) {
       const upgrade = createCardInstance(cardCatalog.getCard('01093')!);
       upgrade.card = {
         ...upgrade.card,
@@ -215,8 +390,8 @@ describe('Shared step-gate evaluator (Issue #122, RR v1.8 p. 2, 24)', () => {
 
     it('IF_FORM hero applies in hero form and IF_FORM alter_ego does not', () => {
       const base = getEffectiveHeroStats(state, state.players[0]).attack;
-      expect(withConstantAttack('IF_FORM', { form: 'hero' })).toBe(base + 2);
-      expect(withConstantAttack('IF_FORM', { form: 'alter_ego' })).toBe(base);
+      expect(withConstantAttack('IF_FORM', { form: 'HERO' })).toBe(base + 2);
+      expect(withConstantAttack('IF_FORM', { form: 'ALTER_EGO' })).toBe(base);
     });
 
     it('result-based gates do not apply to CONSTANT steps (no previous step)', () => {

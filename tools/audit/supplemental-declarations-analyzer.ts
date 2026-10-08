@@ -5,10 +5,11 @@ import {
   TimingTypeSchema,
   TriggerTypeSchema,
   TargetSelectorSchema,
-  ConditionGateSchema,
-  StepConditionSchema,
+  StepGateSchema,
   EffectTypeSchema,
 } from '../../src/data/supplemental/schema';
+
+const StepConditionSchema = { options: [] as string[] };
 import { detectDuplicateJsonKeys } from '../../src/data/supplemental/duplicate-key-detector';
 import { auditSchemaEngineCoverage } from './schema-engine-coverage';
 
@@ -864,7 +865,7 @@ export function runDeclarationsAudit() {
   conditionsReportLines.push(`> **Generated:** \`${timestamp}\``);
   conditionsReportLines.push(``);
   conditionsReportLines.push(
-    `## 1. Condition Gates (\`ConditionGateSchema\` — ${gatesUsage.size}/${ConditionGateSchema.options.length} In Use)`,
+    `## 1. Condition Gates (\`StepGateSchema\` — ${gatesUsage.size}/${StepGateSchema.options.length} In Use)`,
   );
   conditionsReportLines.push(``);
 
@@ -1003,8 +1004,8 @@ export function runDeclarationsAudit() {
 
   schemaAuditLines.push(
     ...generateAuditTable(
-      `3. Condition Gates (\`ConditionGateSchema\` — ${coverageAudit.gatesCoverageRate.toFixed(1)}% Engine Coverage)`,
-      ConditionGateSchema.options,
+      `3. Condition Gates (\`StepGateSchema\` — ${coverageAudit.gatesCoverageRate.toFixed(1)}% Engine Coverage)`,
+      StepGateSchema.options,
       gatesUsage,
       coverageAudit.gatesHandledSet,
       '`src/engine/pipeline/step-gate-evaluator.ts`',
@@ -1090,7 +1091,7 @@ export function runDeclarationsAudit() {
     `| **Target Selectors Code Path Coverage** | **${coverageAudit.targetsCoverageRate.toFixed(1)}%** | **${coverageAudit.targetsHandledSet.size}/${TargetSelectorSchema.options.length}** | [${targetsUsage.size} In Use](detailed_reports/target_selectors_usage.md) |`,
   );
   mainReportLines.push(
-    `| **Condition Gates Code Path Coverage** | **${coverageAudit.gatesCoverageRate.toFixed(1)}%** | **${coverageAudit.gatesHandledSet.size}/${ConditionGateSchema.options.length}** | [${gatesUsage.size} In Use](detailed_reports/condition_gates_usage.md) |`,
+    `| **Condition Gates Code Path Coverage** | **${coverageAudit.gatesCoverageRate.toFixed(1)}%** | **${coverageAudit.gatesHandledSet.size}/${StepGateSchema.options.length}** | [${gatesUsage.size} In Use](detailed_reports/condition_gates_usage.md) |`,
   );
   mainReportLines.push(
     `| **Step Conditions Code Path Coverage** | **${coverageAudit.stepConditionsCoverageRate.toFixed(1)}%** | **${coverageAudit.stepConditionsHandledSet.size}/${StepConditionSchema.options.length}** | [${stepConditionsUsage.size} In Use](detailed_reports/condition_gates_usage.md) |`,
@@ -1254,7 +1255,7 @@ export function runDeclarationsAudit() {
   mainReportLines.push(`| Mechanism | In Use | Schema Total | Coverage | Detailed Breakdown |`);
   mainReportLines.push(`| :--- | :---: | :---: | :---: | :--- |`);
   mainReportLines.push(
-    `| **Condition Gates** | **${gatesUsage.size}** | ${ConditionGateSchema.options.length} | ${coverageAudit.gatesCoverageRate.toFixed(1)}% | [View Gates Breakdown](detailed_reports/condition_gates_usage.md#1-condition-gates-conditiongateschema) |`,
+    `| **Condition Gates** | **${gatesUsage.size}** | ${StepGateSchema.options.length} | ${coverageAudit.gatesCoverageRate.toFixed(1)}% | [View Gates Breakdown](detailed_reports/condition_gates_usage.md#1-condition-gates-conditiongateschema) |`,
   );
   mainReportLines.push(
     `| **Step Conditions** | **${stepConditionsUsage.size}** | ${StepConditionSchema.options.length} | ${coverageAudit.stepConditionsCoverageRate.toFixed(1)}% | [View Step Conditions](detailed_reports/condition_gates_usage.md#2-step-conditions-stepconditionschema) |`,
@@ -1335,7 +1336,7 @@ export function runDeclarationsAudit() {
   mainReportLines.push(`## ⚠️ 9. Code Path Verification & Zero-Usage Detection`);
   mainReportLines.push(``);
   mainReportLines.push(
-    `Every schema primitive is verified for a matching engine handler. Check the complete **[Schema Primitives Code Path Matrix](detailed_reports/schema_code_path_audit.md)** for status on all ${EffectTypeSchema.options.length + TargetSelectorSchema.options.length + ConditionGateSchema.options.length + StepConditionSchema.options.length + TriggerTypeSchema.options.length + TimingTypeSchema.options.length} schema definitions.`,
+    `Every schema primitive is verified for a matching engine handler. Check the complete **[Schema Primitives Code Path Matrix](detailed_reports/schema_code_path_audit.md)** for status on all ${EffectTypeSchema.options.length + TargetSelectorSchema.options.length + StepGateSchema.options.length + StepConditionSchema.options.length + TriggerTypeSchema.options.length + TimingTypeSchema.options.length} schema definitions.`,
   );
   mainReportLines.push(``);
   mainReportLines.push(`### Summary of Unhandled or Zero-Usage Primitives:`);
@@ -1350,7 +1351,7 @@ export function runDeclarationsAudit() {
     `| **Targets** | ${TargetSelectorSchema.options.length} | ${TargetSelectorSchema.options.length - targetsUsage.size} | ${coverageAudit.unhandledTargets.length === 0 ? '🟢 0' : `🔴 ${coverageAudit.unhandledTargets.length}`} |`,
   );
   mainReportLines.push(
-    `| **Gates** | ${ConditionGateSchema.options.length} | ${ConditionGateSchema.options.length - gatesUsage.size} | ${coverageAudit.unhandledGates.length === 0 ? '🟢 0' : `🔴 ${coverageAudit.unhandledGates.length}`} |`,
+    `| **Gates** | ${StepGateSchema.options.length} | ${StepGateSchema.options.length - gatesUsage.size} | ${coverageAudit.unhandledGates.length === 0 ? '🟢 0' : `🔴 ${coverageAudit.unhandledGates.length}`} |`,
   );
   mainReportLines.push(
     `| **Step Conditions** | ${StepConditionSchema.options.length} | ${StepConditionSchema.options.length - stepConditionsUsage.size} | ${coverageAudit.unhandledStepConditions.length === 0 ? '🟢 0' : `⚠️ ${coverageAudit.unhandledStepConditions.length} (${coverageAudit.unhandledStepConditions.join(', ')})`} |`,

@@ -28,18 +28,16 @@ flowchart TD
 ## 2. Executing One `steps[]` Array
 
 Each entry in `steps: []` is evaluated independently, in array order, and may reference the
-outcome of a previous step via `condition` / `gate` / `target: "PREVIOUS_TARGET"`.
+outcome of a previous step via `gate` / `target: "PREVIOUS_TARGET"`.
 
 ```mermaid
 flowchart TD
-    Step(["Step N: { effect, gate?, gateParams?, effectParams?, condition? }"]) --> GateCheck{"gate present?"}
-    GateCheck -->|"no (defaults to ALWAYS)"| Run["Run effect primitive<br/>(src/engine/effects/index.ts)"]
-    GateCheck -->|"yes, e.g. THEN, IF_RESOURCE_MATCH,<br/>IF_CONDITION_MET, IF_CONDITION_NOT_MET,<br/>IF_CARD_IN_PLAY"| Eval{"Evaluate gate against<br/>gateParams + prior step outcome"}
-    Eval -->|false| Skip(["Step skipped, no state change"])
+    Step(["Step N: { effect, gate?, gateParams?, effectParams? }"]) --> GateCheck{"gate present?"}
+    GateCheck -->|"no"| Run["Run effect primitive<br/>(src/engine/effects/index.ts)"]
+    GateCheck -->|"yes, e.g. THEN, IF_RESULT, IF_FORM,<br/>IF_PLAYER_HAS_TRAIT, IF_CARD_IN_PLAY"| Eval{"Evaluate gate against<br/>gateParams + prior step outcome"}
+    Eval -->|false| Skip(["Step skipped, record { skipped: true }"])
     Eval -->|true| Run
-    Run --> Condition{"condition declared?<br/>(e.g. SCHEME_EMPTY, TARGET_DEFEATED)"}
-    Condition -->|yes| Record["Record milestone outcome<br/>for a later step's gate to read"]
-    Condition -->|no| Next
+    Run --> Record["Record typed outcome facts<br/>in EffectResult.facts (defeated, threatZero, etc.)"]
     Record --> Next(["Advance to Step N+1"])
     Skip --> Next
 ```

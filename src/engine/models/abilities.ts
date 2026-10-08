@@ -1,12 +1,14 @@
 import { Keyword } from './enums';
 import type {
   PlayRequirements,
-  StepCondition,
+  StepGate,
+  StepFacts,
   TriggerFilter,
   UniversalCardFilter,
 } from '../../data/supplemental/schema';
 export type {
-  StepCondition,
+  StepGate,
+  StepFacts,
   DynamicValueSource,
   DrawCardsLimit,
   DrawCardsParams,
@@ -124,29 +126,14 @@ export interface AbilityCost {
   };
 }
 
-export type ConditionGate =
-  | 'ALWAYS'
-  | 'THEN'
-  | 'IF_PREVIOUS_SUCCESS'
-  | 'IF_AMOUNT_ZERO'
-  | 'IF_ZERO_HEALED'
-  | 'IF_FAILED'
-  | 'IF_ALREADY_HAS_STATUS'
-  | 'IF_RESOURCE_MATCH'
-  | 'IF_CONDITION_MET'
-  | 'IF_CONDITION_NOT_MET'
-  | 'IF_CARD_IN_PLAY'
-  | 'IF_CARD_NOT_IN_PLAY'
-  | 'IF_FORM'
-  | 'IF_ACTIVATION_DEALT_DAMAGE';
-
 export interface StepResolutionResult {
   success: boolean;
   mutatedState: boolean;
   value?: number;
   selectedCardInstanceIds?: string[];
   targetId?: string;
-  conditionMet?: boolean;
+  skipped?: boolean;
+  facts?: StepFacts;
   discardedCards?: import('./state').CardInstance[];
 }
 
@@ -165,9 +152,8 @@ export interface AbilityStep {
   distinctFrom?: 'PREVIOUS_TARGET' | string;
   gateParams?: Record<string, unknown>;
   effectParams?: Record<string, unknown>;
-  gate?: ConditionGate;
+  gate?: StepGate;
   filter?: Record<string, unknown>;
-  condition?: StepCondition;
   /** "This effect cannot be canceled": still resolves when the card's reveal is cancelled. */
   cannotBeCanceled?: boolean;
 }

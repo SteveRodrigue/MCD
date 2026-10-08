@@ -452,8 +452,7 @@
             },
             {
               "effect": "REMOVE_THREAT",
-              "gate": "IF_CONDITION_MET",
-              "condition": "TARGET_TRAIT_MATCH",
+              "gate": "IF_PLAYER_HAS_TRAIT",
               "gateParams": {
                 "trait": "Aerial"
               },
@@ -468,7 +467,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-16T20:25:00Z",
+        "updatedAt": "2026-10-08T00:00:00Z",
         "reviewedAt": "2026-09-16T20:25:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -587,8 +586,7 @@
             },
             {
               "effect": "MODIFY_STAT",
-              "gate": "IF_CONDITION_MET",
-              "condition": "TARGET_TRAIT_MATCH",
+              "gate": "IF_PLAYER_HAS_TRAIT",
               "gateParams": {
                 "trait": "Aerial"
               },
@@ -602,7 +600,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-16T20:25:00Z",
+        "updatedAt": "2026-10-08T00:00:00Z",
         "reviewedAt": "2026-09-16T20:25:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -620,7 +618,7 @@
               "effect": "ADD_TRAIT",
               "gate": "IF_FORM",
               "gateParams": {
-                "form": "hero"
+                "form": "HERO"
               },
               "effectParams": {
                 "trait": "Aerial"
@@ -647,7 +645,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-08T00:00:00Z",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -1384,10 +1382,10 @@
             {
               "id": "helmet_chosen_scheme",
               "effect": "REMOVE_THREAT",
-              "gate": "IF_CONDITION_NOT_MET",
-              "condition": "TARGET_TRAIT_MATCH",
+              "gate": "IF_PLAYER_HAS_TRAIT",
               "gateParams": {
-                "trait": "Aerial"
+                "trait": "Aerial",
+                "negate": true
               },
               "effectParams": {
                 "amount": 1,
@@ -1397,8 +1395,7 @@
             {
               "id": "helmet_all_schemes",
               "effect": "REMOVE_THREAT",
-              "gate": "IF_CONDITION_MET",
-              "condition": "TARGET_TRAIT_MATCH",
+              "gate": "IF_PLAYER_HAS_TRAIT",
               "gateParams": {
                 "trait": "Aerial"
               },
@@ -1412,7 +1409,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-10-04T18:10",
+        "updatedAt": "2026-10-08T00:00:00Z",
         "reviewedAt": "2026-10-04T18:10",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",

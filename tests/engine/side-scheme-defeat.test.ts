@@ -210,14 +210,13 @@ describe('Canonical Side Scheme Defeat & Zero-Threat Scheme Pipeline (Issue #149
 
       const initialHandCount = player.hand.length;
 
-      // Card effect removing 2 threat from MAIN_SCHEME with condition SCHEME_EMPTY
+      // Card effect removing 2 threat from MAIN_SCHEME
       const removeThreatAbility = {
         id: 'clear_the_area_test',
         timing: 'HERO_ACTION' as const,
         steps: [
           {
             effect: 'REMOVE_THREAT' as const,
-            condition: 'SCHEME_EMPTY' as const,
             effectParams: {
               amount: 2,
               target: 'MAIN_SCHEME',
@@ -229,7 +228,7 @@ describe('Canonical Side Scheme Defeat & Zero-Threat Scheme Pipeline (Issue #149
       const result = executeEffect(state, removeThreatAbility as any, { playerId: player.id });
 
       expect(result.success).toBe(true);
-      expect(result.conditionMet).toBe(true);
+      expect(result.facts?.threatZero).toBe(true);
       expect(state.mainScheme.threat).toBe(0);
 
       // Main scheme must remain in play (NOT defeated)

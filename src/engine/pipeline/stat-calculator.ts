@@ -13,7 +13,7 @@ import { parseKeywordItem } from '../models/keyword';
 import { getStepEffectParams, type DynamicValueSource } from '../../data/supplemental/schema';
 import { evaluateDynamicAmount } from '../effects/dynamic-formula-evaluator';
 import { AbilityStep } from '../models/abilities';
-import { evaluateFormGate, evaluateStepGate } from './step-gate-evaluator';
+import { evaluateStepGate } from './step-gate-evaluator';
 import { findInPlayCardInstance } from '../state/state-validator';
 
 export interface EffectiveTraitsResult {
@@ -190,29 +190,17 @@ function dedupeTraits(traits: (string | undefined | null)[]): string[] {
   return result;
 }
 
-const RESULT_BASED_GATES = new Set([
-  'THEN',
-  'IF_PREVIOUS_SUCCESS',
-  'IF_AMOUNT_ZERO',
-  'IF_ZERO_HEALED',
-  'IF_FAILED',
-]);
-
-/**
- * Whether a CONSTANT ability step applies right now. CONSTANT steps have no preceding step, so
- * result-based gates never apply. `IF_FORM` needs only the player; every other gate needs a
- * `GameState` and is skipped when none is supplied (Issues #122, #154).
- */
 function evaluateConstantStepGate(
   step: AbilityStep,
   player: PlayerState,
   state?: GameState,
 ): boolean {
-  if (!step.gate || step.gate === 'ALWAYS') return true;
-  if (RESULT_BASED_GATES.has(step.gate)) return false;
-  if (step.gate === 'IF_FORM') return evaluateFormGate(player, step.gateParams ?? {});
+  if (!step.gate) return true;
+  if (step.gate === 'IF_FORM') {
+    return evaluateStepGate(step, undefined, state as any, { playerId: player.id, player });
+  }
   if (!state) return false;
-  return evaluateStepGate(step.gate, undefined, state, step, { playerId: player.id });
+  return evaluateStepGate(step, undefined, state, { playerId: player.id, player });
 }
 
 function extractAddTraitEffects(
@@ -228,7 +216,7 @@ function extractAddTraitEffects(
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
           if (step.effect === 'ADD_TRAIT') {
-            if (step.gate && step.gate !== 'ALWAYS' && !player) continue;
+            if (step.gate && !player) continue;
             if (player && !evaluateConstantStepGate(step, player, state)) continue;
             const stepParams = getStepEffectParams(step);
             const trait = stepParams.trait as string | undefined;

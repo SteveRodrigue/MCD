@@ -172,9 +172,10 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
         {
           id: 'step_4_fallback_surge',
           effect: 'SURGE',
-          gate: 'IF_FAILED' as const,
+          gate: 'THEN' as const,
           gateParams: {
-            targetStepId: 'step_1_spawn_nemesis_minion',
+            step: 'step_1_spawn_nemesis_minion',
+            negate: true,
           },
         },
       ],
@@ -253,9 +254,10 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
         {
           id: 'step_4_fallback_surge',
           effect: 'SURGE',
-          gate: 'IF_FAILED' as const,
+          gate: 'THEN' as const,
           gateParams: {
-            targetStepId: 'step_1_spawn_nemesis_minion',
+            step: 'step_1_spawn_nemesis_minion',
+            negate: true,
           },
         },
       ],

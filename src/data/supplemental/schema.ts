@@ -140,49 +140,44 @@ export const TargetSelectorSchema = z.enum([
 
 export type TargetSelector = z.infer<typeof TargetSelectorSchema>;
 
-/**
- * Declarative Step Condition Schema across all categories (ADR-0049, RR v1.8 p. 2, 23, 24)
- */
-export const StepConditionSchema = z.enum([
-  // Core Step Milestones
-  'SCHEME_EMPTY',
-  'TARGET_DEFEATED',
-  'FULLY_HEALED',
-  'STATUS_APPLIED',
-  'EXCESS_DAMAGE_DEALT',
+export {
+  IdentityFormSchema,
+  type IdentityForm,
+  ResultFactSchema,
+  type ResultFact,
+  type StepFacts,
+  FACT_PRODUCERS,
+  canEffectProduceFact,
+  StepGateSchema,
+  type StepGate,
+  type GateKind,
+  type GateFieldType,
+  type GateFieldMeta,
+  type GateDefinition,
+  GATE_REGISTRY,
+  ZoneEmptyTargetSchema,
+  type ZoneEmptyTarget,
+  AttackerKindSchema,
+  type AttackerKind,
+  ThenGateParamsSchema,
+  IfResultGateParamsSchema,
+  IfFormGateParamsSchema,
+  IfPlayerHasTraitGateParamsSchema,
+  IfZoneEmptyGateParamsSchema,
+  IfCardInPlayGateParamsSchema,
+  IfResourceMatchGateParamsSchema,
+  IfUndefendedAttackGateParamsSchema,
+  IfActivationDealtDamageGateParamsSchema,
+} from './gate-params';
+import {
+  GATE_REGISTRY,
+  StepGateSchema,
+  type StepGate,
+  type ResultFact,
+  canEffectProduceFact,
+  IdentityFormSchema,
+} from './gate-params';
 
-  // Entity & Board States
-  'ALREADY_HAS_STATUS',
-  'TARGET_TRAIT_MATCH',
-
-  // Combat Context (evaluated against the attack being resolved, e.g. in a boost)
-  'UNDEFENDED_ATTACK',
-
-  // Board & Zone States
-  'ZONE_EMPTY',
-]);
-
-export type StepCondition = z.infer<typeof StepConditionSchema>;
-
-/**
- * Sequential Condition Gate Types (RR v1.8 p. 2, 24)
- */
-export const ConditionGateSchema = z.enum([
-  'ALWAYS',
-  'THEN',
-  'IF_PREVIOUS_SUCCESS',
-  'IF_AMOUNT_ZERO',
-  'IF_ZERO_HEALED',
-  'IF_FAILED',
-  'IF_ALREADY_HAS_STATUS',
-  'IF_RESOURCE_MATCH',
-  'IF_CONDITION_MET',
-  'IF_CONDITION_NOT_MET',
-  'IF_CARD_IN_PLAY',
-  'IF_CARD_NOT_IN_PLAY',
-  'IF_FORM',
-  'IF_ACTIVATION_DEALT_DAMAGE',
-]);
 
 /**
  * Ability Effect Primitives (Codebase-Grounded to active handlers in src/engine/)
@@ -372,7 +367,7 @@ export const TriggerFilterSchema = z
     sourceInstanceId: z.string().optional(),
     targetPlayerScope: z.enum(['SELF', 'OTHER', 'ANY']).optional(),
     targetScope: z.enum(['HOST', 'SELF', 'OTHER', 'ANY']).optional(),
-    targetForm: z.enum(['HERO', 'ALTER_EGO']).optional(),
+    targetForm: IdentityFormSchema.optional(),
     targetType: z.enum(['VILLAIN', 'MINION', 'ENEMY', 'SCHEME', 'CHARACTER', 'ALLY']).optional(),
     attackedBy: z.enum(['YOUR_HERO', 'THIS_CARD']).optional(),
     defeatedByAttackOf: z.enum(['YOUR_HERO', 'THIS_CARD']).optional(),
@@ -484,6 +479,7 @@ export const DynamicValueSourceSchema = z
     from: z.enum([
       'INTERCEPTED_VALUE',
       'PREVIOUS_RESULT',
+      'PREVIOUS_EXCESS_DAMAGE',
       'DISCARDED_CARDS',
       'ENTITY_COUNT',
       'STAT_VALUE',
@@ -779,9 +775,9 @@ export interface AbilityStep {
   distinctFrom?: DistinctFrom;
   gateParams?: Record<string, any>;
   effectParams?: Record<string, any>;
-  gate?: z.infer<typeof ConditionGateSchema>;
+  gate?: StepGate;
   filter?: z.infer<typeof FilterSchema>;
-  condition?: StepCondition;
+  cannotBeCanceled?: boolean;
 }
 
 export function getStepEffectParams(step: { effectParams?: Record<string, any> }): Record<string, any> {
@@ -803,12 +799,43 @@ export const AbilityStepSchema = z
     distinctFrom: DistinctFromSchema.optional(),
     gateParams: z.record(z.string(), z.any()).optional(),
     effectParams: z.record(z.string(), z.any()).optional(),
-    gate: ConditionGateSchema.optional(),
+    gate: StepGateSchema.optional(),
     filter: FilterSchema.optional(),
-    condition: StepConditionSchema.optional(),
     cannotBeCanceled: z.boolean().optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((step, ctx) => {
+    if (!step.gate && step.gateParams && Object.keys(step.gateParams).length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'gateParams cannot be specified without a gate',
+        path: ['gateParams'],
+      });
+      return;
+    }
+    if (step.gate) {
+      const entry = GATE_REGISTRY[step.gate];
+      if (entry) {
+        if (entry.hasRequiredParams && !step.gateParams) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `gate ${step.gate} requires gateParams`,
+            path: ['gateParams'],
+          });
+        } else if (step.gateParams) {
+          const parsed = entry.schema.safeParse(step.gateParams);
+          if (!parsed.success) {
+            for (const issue of parsed.error.issues) {
+              ctx.addIssue({
+                ...issue,
+                path: ['gateParams', ...issue.path],
+              });
+            }
+          }
+        }
+      }
+    }
+  });
 
 /**
  * Card Ability Interface (Trigger / Cost / Timing Header)
@@ -821,6 +848,7 @@ export interface CardAbility {
   zone?: 'HAND' | 'PLAY' | 'DISCARD';
   cost?: AbilityCost;
   limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE';
+  labels?: AbilityLabel[];
   /** The whole step list resolves once per player in player order ("each player ... that player"). */
   forEachPlayer?: boolean;
   errata?: string | null;
@@ -851,7 +879,63 @@ export const CardAbilitySchema: z.ZodType<CardAbility> = z
     errata: z.string().nullable().optional(),
     steps: z.array(AbilityStepSchema).min(1),
   })
-  .strict();
+  .strict()
+  .superRefine((ability, ctx) => {
+    const steps = ability.steps;
+    for (let i = 0; i < steps.length; i++) {
+      const step = steps[i];
+      if (step.gate) {
+        const entry = GATE_REGISTRY[step.gate];
+        if (ability.timing === 'CONSTANT') {
+          if (entry && (entry.kind === 'RESULT' || entry.kind === 'CONTEXT')) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `RESULT or CONTEXT gate '${step.gate}' cannot be used in a CONSTANT ability`,
+              path: ['steps', i, 'gate'],
+            });
+          }
+        }
+
+        if (entry && entry.kind === 'RESULT') {
+          if (i === 0) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `RESULT gate '${step.gate}' cannot be used on the first step (step 0)`,
+              path: ['steps', i, 'gate'],
+            });
+          } else {
+            let referencedStep: AbilityStep | undefined;
+            const targetStepId = step.gateParams?.step as string | undefined;
+            if (targetStepId) {
+              const earlierIndex = steps.slice(0, i).findIndex((s) => s.id === targetStepId);
+              if (earlierIndex === -1) {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: `gateParams.step '${targetStepId}' must name an earlier step with an id in the same ability`,
+                  path: ['steps', i, 'gateParams', 'step'],
+                });
+              } else {
+                referencedStep = steps[earlierIndex];
+              }
+            } else {
+              referencedStep = steps[i - 1];
+            }
+
+            if (step.gate === 'IF_RESULT' && referencedStep) {
+              const resultFact = step.gateParams?.result as ResultFact | undefined;
+              if (resultFact && !canEffectProduceFact(referencedStep.effect, resultFact)) {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: `result fact '${resultFact}' cannot be produced by referenced step effect '${referencedStep.effect}'`,
+                  path: ['steps', i, 'gateParams', 'result'],
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+  });
 
 /**
  * Card Uses Definition Schema (RR v1.8 p. 30 'Uses')
@@ -873,7 +957,7 @@ export type CardUses = z.infer<typeof CardUsesSchema>;
  */
 export const PlayRequirementsSchema = z
   .object({
-    identityForm: z.enum(['HERO', 'ALTER_EGO']).optional(),
+    identityForm: IdentityFormSchema.optional(),
     formTrait: z.string().optional(),
     identityTraits: z.array(z.string()).optional(),
     controlFilter: UniversalCardFilterSchema.optional(),

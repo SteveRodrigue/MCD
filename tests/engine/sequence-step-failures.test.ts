@@ -75,10 +75,15 @@ describe('executeSequence step failures (Issue #225)', () => {
     expect(player().activeTraitModifiers?.map((m) => m.trait)).toEqual(['Tech']);
   });
 
-  it('treats a failure without an error as an outcome: IF_FAILED still runs, no error is logged', () => {
+  it('treats a failure without an error as an outcome: THEN with negate still runs, no error is logged', () => {
     const res = run([
       { effect: 'ENEMY_ATTACKS', effectParams: { enemy: '99999' } },
-      { effect: 'ADD_TRAIT', gate: 'IF_FAILED', effectParams: { trait: 'Tech' } },
+      {
+        effect: 'ADD_TRAIT',
+        gate: 'THEN',
+        gateParams: { negate: true },
+        effectParams: { trait: 'Tech' },
+      },
     ]);
 
     expect(res.success).toBe(true);

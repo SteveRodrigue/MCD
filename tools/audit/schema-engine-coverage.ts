@@ -6,8 +6,7 @@ import {
   TriggerTypeSchema,
   TimingTypeSchema,
   TargetSelectorSchema,
-  ConditionGateSchema,
-  StepConditionSchema,
+  StepGateSchema,
 } from '../../src/data/supplemental/schema';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -101,8 +100,7 @@ export function extractConditionGateEvaluatorCases(evaluatorPath: string): Set<s
   const content = fs.readFileSync(evaluatorPath, 'utf8');
   const gates = new Set<string>();
 
-  // Check gate === 'XYZ' or gate || gate === 'XYZ'
-  const matches = content.matchAll(/gate\s*===?\s*'([A-Z0-9_]+)'/g);
+  const matches = content.matchAll(/(?:gate\s*===?\s*'|case\s+')([A-Z0-9_]+)'/g);
   for (const m of matches) {
     gates.add(m[1]);
   }
@@ -202,9 +200,9 @@ export function auditSchemaEngineCoverage(): DetailedCoverageResult {
   }
   const unhandledTargets = schemaTargets.filter((tgt) => !targetsHandledSet.has(tgt));
 
-  // 3. Condition Gates
+  // 3. Step Gates
   const gateEvaluatorCases = extractConditionGateEvaluatorCases(gateEvaluatorPath);
-  const schemaGates = ConditionGateSchema.options;
+  const schemaGates = StepGateSchema.options;
   const gatesHandledSet = new Set<string>();
 
   for (const g of schemaGates) {
@@ -212,21 +210,12 @@ export function auditSchemaEngineCoverage(): DetailedCoverageResult {
       gatesHandledSet.add(g);
     }
   }
-  const unhandledGates = schemaGates.filter((g) => !gatesHandledSet.has(g));
+  const unhandledGates = schemaGates.filter((g: string) => !gatesHandledSet.has(g));
 
-  // 4. Step Conditions
-  const stepCondCases = extractStepConditionEvaluatorCases(effectsFilePath, gateEvaluatorPath);
-  const schemaStepConditions = StepConditionSchema.options;
+  // 4. Step Conditions (Retired in ADR-0080)
+  const schemaStepConditions: string[] = [];
   const stepConditionsHandledSet = new Set<string>();
-
-  for (const sc of schemaStepConditions) {
-    if (stepCondCases.has(sc)) {
-      stepConditionsHandledSet.add(sc);
-    }
-  }
-  const unhandledStepConditions = schemaStepConditions.filter(
-    (sc) => !stepConditionsHandledSet.has(sc),
-  );
+  const unhandledStepConditions: string[] = [];
 
   // 5. Triggers & Timings
   // The TypeScript copy of the schema enums is not a dispatcher: exclude it (#276).
@@ -276,7 +265,9 @@ export function auditSchemaEngineCoverage(): DetailedCoverageResult {
   const targetsCoverageRate = (targetsHandledSet.size / schemaTargets.length) * 100;
   const gatesCoverageRate = (gatesHandledSet.size / schemaGates.length) * 100;
   const stepConditionsCoverageRate =
-    (stepConditionsHandledSet.size / schemaStepConditions.length) * 100;
+    schemaStepConditions.length > 0
+      ? (stepConditionsHandledSet.size / schemaStepConditions.length) * 100
+      : 100;
   const triggersCoverageRate = (triggersHandledSet.size / schemaTriggers.length) * 100;
   const timingsCoverageRate = (timingsHandledSet.size / schemaTimings.length) * 100;
   const overallCoverageRate = (totalHandledItems / totalSchemaItems) * 100;
@@ -337,21 +328,16 @@ if (process.argv[1] && process.argv[1].endsWith('schema-engine-coverage.ts')) {
     console.log('   Unhandled:', result.unhandledTargets);
   }
 
-  console.log(`\n3. Condition Gates (${ConditionGateSchema.options.length} in schema):`);
+  console.log(`\n3. Step Gates (${StepGateSchema.options.length} in schema):`);
   console.log(
-    `   ${result.unhandledGates.length === 0 ? '✅' : '❌'} Coverage: ${result.gatesCoverageRate.toFixed(1)}% (${result.gatesHandledSet.size}/${ConditionGateSchema.options.length})`,
+    `   ${result.unhandledGates.length === 0 ? '✅' : '❌'} Coverage: ${result.gatesCoverageRate.toFixed(1)}% (${result.gatesHandledSet.size}/${StepGateSchema.options.length})`,
   );
   if (result.unhandledGates.length > 0) {
     console.log('   Unhandled:', result.unhandledGates);
   }
 
-  console.log(`\n4. Step Conditions (${StepConditionSchema.options.length} in schema):`);
-  console.log(
-    `   ${result.unhandledStepConditions.length === 0 ? '✅' : '⚠️'} Coverage: ${result.stepConditionsCoverageRate.toFixed(1)}% (${result.stepConditionsHandledSet.size}/${StepConditionSchema.options.length})`,
-  );
-  if (result.unhandledStepConditions.length > 0) {
-    console.log('   Unhandled in engine:', result.unhandledStepConditions);
-  }
+  console.log(`\n4. Step Conditions (Retired in ADR-0080):`);
+  console.log(`   ✅ Retired (consolidated into StepGateSchema + gateParams)`);
 
   console.log(`\n5. Trigger Types (${TriggerTypeSchema.options.length} in schema):`);
   console.log(

@@ -75,6 +75,9 @@ To guarantee strict determinism and eliminate ambiguity regarding what `INTERCEP
 > **Full Catalog Coverage:** An empirical audit of all 120 upstream Zzorba packs (4,379 cards) confirmed these 9 trigger windows encompass **100% of all 611 Interrupts and 142 "would be" interception cards** across the entire Marvel Champions card pool.
 
 3. **Sequential Pipeline Resolution & Explicit Condition Contracts**:
+   > [!IMPORTANT]
+   > **Superseded by [ADR-0080](0080-step-gates-and-result-facts.md):** The declarative condition specification (`StepConditionSchema`, `conditionMet`, `IF_CONDITION_MET`, `targetStepId`) has been superseded by strongly typed `StepGateSchema` with `gateParams`, and producer-agnostic milestone tracking in `StepFacts` / `ResultFactSchema`.
+
    Downstream steps in `ability.steps` consume `context.interceptedValue` or gate on explicitly declared conditions:
    - **Why implicit `conditionMet` was incomplete:**
      Leaving `conditionMet` as an implicit side-effect in step 1 leaves reviewers and schemas in the dark—there is no declaration of *what* condition is being monitored, evaluated, or checked.

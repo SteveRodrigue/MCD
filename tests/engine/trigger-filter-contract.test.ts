@@ -107,4 +107,29 @@ describe('Universal Trigger Filter Contract Tests (Spider-Sense 01001a & Scope M
       false,
     );
   });
+
+  it('attackerKind matches VILLAIN, MINION, and ANY_ENEMY', () => {
+    const anyEnemyFilter = { attackerKind: 'ANY_ENEMY' as const };
+    const villainFilter = { attackerKind: 'VILLAIN' as const };
+    const minionFilter = { attackerKind: 'MINION' as const };
+
+    expect(
+      matchesTriggerFilter(anyEnemyFilter, { targetPlayerId: 'p1', attackerType: 'VILLAIN' }),
+    ).toBe(true);
+    expect(
+      matchesTriggerFilter(anyEnemyFilter, { targetPlayerId: 'p1', attackerType: 'MINION' }),
+    ).toBe(true);
+    expect(
+      matchesTriggerFilter(villainFilter, { targetPlayerId: 'p1', attackerType: 'VILLAIN' }),
+    ).toBe(true);
+    expect(
+      matchesTriggerFilter(villainFilter, { targetPlayerId: 'p1', attackerType: 'MINION' }),
+    ).toBe(false);
+    expect(
+      matchesTriggerFilter(minionFilter, { targetPlayerId: 'p1', attackerType: 'MINION' }),
+    ).toBe(true);
+    expect(
+      matchesTriggerFilter(minionFilter, { targetPlayerId: 'p1', attackerType: 'VILLAIN' }),
+    ).toBe(false);
+  });
 });

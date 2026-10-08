@@ -66,6 +66,10 @@ export function evaluateDynamicAmount(
       baseValue = context.previousResult?.value ?? 0;
       break;
     }
+    case 'PREVIOUS_EXCESS_DAMAGE': {
+      baseValue = context.previousResult?.facts?.excessDamage ?? 0;
+      break;
+    }
     case 'DISCARDED_CARDS': {
       const discarded: CardInstance[] =
         context.previousResult?.discardedCards || context.discardedCards || [];

@@ -180,7 +180,7 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
     });
   });
 
-  describe('IF_AMOUNT_ZERO Gate (*Hard to Keep Down* 01104)', () => {
+  describe('IF_RESULT amountZero Gate (*Hard to Keep Down* 01104)', () => {
     it('Heals villain when damaged and does NOT trigger surge', () => {
       state.villain.health = 8;
       state.villain.maxHealth = 14;
@@ -198,7 +198,8 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
           {
             id: 'surge_step',
             effect: 'SURGE',
-            gate: 'IF_AMOUNT_ZERO' as const,
+            gate: 'IF_RESULT' as const,
+            gateParams: { fact: 'amountZero' as const },
           },
         ],
       };
@@ -226,7 +227,8 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
           {
             id: 'surge_step',
             effect: 'SURGE',
-            gate: 'IF_AMOUNT_ZERO' as const,
+            gate: 'IF_RESULT' as const,
+            gateParams: { fact: 'amountZero' as const },
           },
         ],
       };
@@ -238,7 +240,7 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
     });
   });
 
-  describe('IF_ALREADY_HAS_STATUS Gate (*"I\'m Tough"* 01105)', () => {
+  describe('IF_RESULT statusAdded Gate (*"I\'m Tough"* 01105)', () => {
     it('Adds Tough status to villain when not tough (no surge)', () => {
       state.villain.statusCards = [];
       const initialDealtCount = state.players[0].dealtEncounterCards.length;
@@ -255,8 +257,8 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
           {
             id: 'surge_step',
             effect: 'SURGE',
-            gate: 'IF_ALREADY_HAS_STATUS' as const,
-            effectParams: { status: 'TOUGH', target: 'VILLAIN' },
+            gate: 'IF_RESULT' as const,
+            gateParams: { fact: 'statusAdded' as const, negate: true },
           },
         ],
       };
@@ -283,8 +285,8 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
           {
             id: 'surge_step',
             effect: 'SURGE',
-            gate: 'IF_ALREADY_HAS_STATUS' as const,
-            effectParams: { status: 'TOUGH', target: 'VILLAIN' },
+            gate: 'IF_RESULT' as const,
+            gateParams: { fact: 'statusAdded' as const, negate: true },
           },
         ],
       };

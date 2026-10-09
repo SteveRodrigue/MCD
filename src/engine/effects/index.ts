@@ -440,6 +440,12 @@ export function processHostDefeated(
   hostCard: CardInstance,
   context?: { player?: PlayerState; sourceCardInstance?: CardInstance },
 ): void {
+  // Facedown boost cards the host held leave play with it (#263).
+  if (hostCard.facedownBoostCards?.length) {
+    state.encounterDiscard.push(...hostCard.facedownBoostCards);
+    delete hostCard.facedownBoostCards;
+  }
+
   const attachments = hostCard.attachments || [];
   const cardsUnderneath = hostCard.cardsUnderneath || [];
   if (attachments.length === 0 && cardsUnderneath.length === 0) return;
@@ -3787,16 +3793,18 @@ export function executeStep(
     }
 
     case 'GIVE_ADDITIONAL_BOOST_CARD': {
-      if (state.activeAttackContext) {
+      // Adds a card to the boost queue of the running activation: an attack or a scheme.
+      const boostResolution = state.activeBoostResolution;
+      if (boostResolution) {
         const extraCard = drawEncounterCard(state);
         if (extraCard) {
-          state.activeAttackContext.boostQueue.push(extraCard);
+          boostResolution.queue.push(extraCard);
           state.log.push({
             id: `log_${Date.now()}`,
             timestamp: Date.now(),
             round: state.roundNumber,
             phase: state.phase,
-            category: 'combat',
+            category: state.activeAttackContext ? 'combat' : 'scheme',
             key: 'villain.boost.added',
             params: { card: extraCard.card.name },
             onomatopoeia: 'CHAIN BOOST ADDED!',

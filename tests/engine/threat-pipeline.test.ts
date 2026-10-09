@@ -410,7 +410,7 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
             code: 'boost_1',
             name: 'Boost Card',
             type: CardType.TREACHERY,
-            boost: 1,
+            boostIcons: 1,
           } as any,
         },
       ];

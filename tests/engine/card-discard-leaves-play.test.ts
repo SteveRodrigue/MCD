@@ -246,7 +246,6 @@ describe('Universal Card State Reset on Discard / Leaves Play (Issue #157, RR v1
       targetPlayerId: 'player_1',
       baseAttack: 5,
       defender: { type: 'ALLY', playerId: 'player_1', allyInstanceId: 'ally_inst' },
-      boostQueue: [],
       totalBoostIcons: 0,
       phase: 'CALCULATE_DAMAGE',
     };

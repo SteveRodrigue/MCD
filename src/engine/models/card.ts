@@ -217,4 +217,5 @@ export interface MinionCard extends NormalizedCard {
   health: number;
   boostIcons?: number;
   boostStar?: boolean;
+  additionalBoostCards?: number;
 }

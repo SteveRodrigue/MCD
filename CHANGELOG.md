@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Refactor (Engine): one boost resolution for every activation ([Issue #263](https://github.com/SteveRodrigue/MCD/issues/263))**
+  - New `src/engine/pipeline/boost-resolution.ts` (`getAdditionalBoostCardCount`, `dealBoostCards`, `resolveBoostCards`) replaces the three copies of the boost loop (villain or minion attack, villain scheme, Villainous minion scheme). One log shape; the extra-boost log now also appears for minion schemes.
+  - `GIVE_ADDITIONAL_BOOST_CARD` works in every activation through `state.activeBoostResolution` (it did nothing in schemes). `AttackExecutionContext.boostQueue` removed.
+  - Enemies hold facedown boost cards (`facedownBoostCards` on `CardInstance` and `VillainState`): resolved first, in the order dealt, before the base card; a defeated minion discards them. The loop runs for any non-empty queue, so a non-Villainous minion given a card resolves it (Deadliest Man Alive `60034` on Bullseye `60033`). The effect that gives the card is [#291](https://github.com/SteveRodrigue/MCD/issues/291).
+  - Debt removed: `drawEncounterCardForCombat` (deck exhaustion now always uses `drawEncounterCard`, including when both piles are empty), the `as any` reads of `additionalBoostCards`, the ability-scan heuristic for extra cards, the `.boost` icon fallback.
+  - Tests: `tests/engine/boost-resolution.test.ts` (34).
+
 - **Fix (Engine): STAT_VALUE DAMAGE calculates actual damage on villains, minions, allies, and players ([Issue #216](https://github.com/SteveRodrigue/MCD/issues/216))**
   - Updated `STAT_VALUE` dynamic evaluator (`stat: 'DAMAGE'`) to calculate damage as `maxHealth - health` on villains and identities, and read `tokens.damage` (or `damage`) on minions and allies.
   - Added support for targeted minions, allies, identities, and secondary villains via `targetInstanceId`, targeted cards via `targetCardCode` (using `locateCard` and `readCardAttribute`), and defaulted to the active villain.

@@ -28,6 +28,11 @@ export interface CardInstance {
   cardsUnderneath?: CardInstance[]; // Out-of-play cards placed/tucked under this card (RR v1.8 p. 6)
   ownerId?: string; // Player ID of card owner for cross-player control / attachments (RR v1.8 p. 11)
   activeStatModifiers?: ActiveStatModifier[]; // Temporary stat modifiers (e.g. Vision 01068)
+  /**
+   * Facedown boost cards this enemy holds for its next activation (#263, #291). They resolve first,
+   * in the order they were dealt, and go to the encounter discard if the enemy leaves play.
+   */
+  facedownBoostCards?: CardInstance[];
 }
 
 export type IdentityFormType = 'hero' | 'alter_ego';
@@ -120,6 +125,8 @@ export interface VillainState {
   statusCards: StatusCard[];
   attachments: CardInstance[];
   cardsUnderneath?: CardInstance[];
+  /** Facedown boost cards held for the villain's next activation (see `CardInstance.facedownBoostCards`). */
+  facedownBoostCards?: CardInstance[];
 }
 
 export interface MainSchemeState {
@@ -265,6 +272,18 @@ export interface DeferredBoostAbility {
   sourceCardInstance: CardInstance;
 }
 
+/**
+ * The boost cards of the running activation (attack or scheme), waiting to be turned up one at a
+ * time (RR v1.8 Boost). Lives on `GameState` so an effect that adds a boost card to the activation
+ * (`GIVE_ADDITIONAL_BOOST_CARD`) reaches the same queue in an attack and in a scheme.
+ */
+export interface BoostResolution {
+  queue: CardInstance[];
+  /** Instance id of the activating enemy ("the villain", "the activating enemy"). */
+  activatorInstanceId: string;
+  targetPlayerId: string;
+}
+
 export interface AttackExecutionContext {
   attackId: string;
   attackerType: 'VILLAIN' | 'MINION';
@@ -274,7 +293,6 @@ export interface AttackExecutionContext {
   targetPlayerId: string;
   phase: CombatPhase;
   baseAttack: number;
-  boostQueue: CardInstance[];
   revealedBoostCards?: CardInstance[];
   totalBoostIcons: number;
   defender?: DefenderDeclaration;
@@ -571,6 +589,8 @@ export interface GameState {
   removedFromGame: CardInstance[];
   accelerationTokens: number;
   activeBoostCard?: CardInstance;
+  /** Set while an activation turns up its boost cards; cleared when the last one resolved. */
+  activeBoostResolution?: BoostResolution;
   activeAttackContext?: AttackExecutionContext;
   activeEncounterContext?: EncounterExecutionContext;
   lastCombatOutcome?: CombatResolutionSummary;

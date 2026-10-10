@@ -249,6 +249,8 @@ describe('Conditional encounter attachments (#209)', () => {
     });
 
     it('with no minion in play it gains surge and gives no tough status card', () => {
+      // Surge reveals the next encounter card; pin the deck so the shuffled one cannot add Tough.
+      state.encounterDeck = [createCardInstance(cardCatalog.getCard(CHARGE)!)];
       const card = reveal('p1', adHocCatalog.getCard(THE_FITTEST)!);
       expect(surged()).toBe(true);
       expect(attachedTo(card)).toBeUndefined();

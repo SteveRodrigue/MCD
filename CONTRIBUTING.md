@@ -66,6 +66,13 @@ Add the declarative effect hook or action reducer in `src/engine/pipeline/` or `
    npm install
    npm test
    ```
+   **Claude Code only:** skills live in `.agents/skills/`, but Claude Code reads `.claude/skills/`. Link them once per clone (the link is not committed):
+   ```powershell
+   New-Item -ItemType Junction -Path .claude\skills -Target .agents\skills   # Windows, no admin needed
+   ```
+   ```bash
+   ln -s ../.agents/skills .claude/skills                                    # macOS / Linux
+   ```
 3. **Commit Messages:**
    Follow Conventional Commits:
    * `feat: add Peter Parker scientist resource generation`

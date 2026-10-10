@@ -30,6 +30,10 @@ and the post-task procedure is in
 - **Supplemental Card Comments Policy:** The `comment` field resides strictly inside `audit.comment` and is reserved for human/user notes. Agents must never autonomously add or update `audit.comment`. If explicitly instructed by the user to add or update a comment, the agent must clearly state the reason in the review recap and commit message. Card ambiguities or defects must be resolved with user interaction or in `docs/ambiguities/`, never by embedding informal notes in `audit.comment`.
 - **ADHD Mode Default Policy:** `i-have-adhd` mode is on by default in this project. On Claude Code, the SessionStart hook `.claude/hooks/adhd-default.mjs` injects the skill rules. On other hosts, agents must read `.agents/skills/i-have-adhd/SKILL.md` and apply it from the first turn. It turns off only when the user says "stop adhd mode" or "normal mode".
 
+## Claude Code setup
+
+Skills live in `.agents/skills/`. Claude Code only reads `.claude/skills/`, so that path must be a link to `.agents/skills`. If it is missing, create it before anything else (setup steps in [`CONTRIBUTING.md`](CONTRIBUTING.md)): `New-Item -ItemType Junction -Path .claude\skills -Target .agents\skills`.
+
 ## Before implementation
 
 For source, test, supplemental-data, dependency, or configuration changes, create or update a reviewable implementation plan with rules/spec analysis, file changes, tests, and open decisions. State UI/Card Editor impact explicitly when relevant, then stop for user approval before implementation. The plan may use the host's user-facing artifact location or a repository-relative plan file; do not overwrite an unrelated existing plan.

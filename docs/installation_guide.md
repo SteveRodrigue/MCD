@@ -8,13 +8,13 @@ This guide provides comprehensive, step-by-step instructions for setting up, ins
 
 Before installing the project, verify that your development environment meets the following minimum requirements:
 
-| Tool           | Minimum Version             | Recommended Version     | Purpose                                                           |
-| :------------- | :-------------------------- | :---------------------- | :---------------------------------------------------------------- |
-| **Node.js**    | `>= 18.0.0`                 | `>= 20.x` or `22.x LTS` | JavaScript/TypeScript runtime                                     |
-| **npm**        | `>= 9.0.0`                  | `>= 10.x`               | Default package manager (bundled with Node.js)                    |
-| **Git**        | `>= 2.30.0`                 | Latest                  | Source control & repository cloning                               |
-| **GitHub CLI** | `>= 2.40.0`                 | Latest (`v2.100.x`)     | Developer tooling, issue triage & next-task evaluation (`gh.exe`) |
-| **OS**         | Windows 10/11, macOS, Linux | Any modern 64-bit OS    | Cross-platform web & desktop target                               |
+| Tool           | Minimum Version             | Recommended Version     | Purpose                                                      |
+| :------------- | :-------------------------- | :---------------------- | :----------------------------------------------------------- |
+| **Node.js**    | `>= 18.0.0`                 | `>= 20.x` or `22.x LTS` | JavaScript/TypeScript runtime                                |
+| **npm**        | `>= 9.0.0`                  | `>= 10.x`               | Default package manager (bundled with Node.js)               |
+| **Git**        | `>= 2.30.0`                 | Latest                  | Source control & repository cloning                          |
+| **GitHub CLI** | `>= 2.40.0`                 | Latest (`v2.100.x`)     | Developer tooling, issue triage & next-task skill (`gh.exe`) |
+| **OS**         | Windows 10/11, macOS, Linux | Any modern 64-bit OS    | Cross-platform web & desktop target                          |
 
 ---
 
@@ -168,7 +168,7 @@ Because headless agent shells have no attached interactive TTY, the process bloc
    If a prompt or browser dialog appears, select **`manager`** and click **Authorize**. Your token is now securely saved in Windows Credential Manager.
 
 3. **Authenticate GitHub CLI (`gh`):**
-   The project's developer tooling (such as `tools/audit/next-task-evaluator.ts` and automated issue triage) relies on `gh`. Run:
+   The project's developer tooling (the `next-task` and issue triage skills) relies on `gh`. Run:
    ```bash
    gh auth login
    ```

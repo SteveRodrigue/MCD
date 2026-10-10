@@ -4,7 +4,7 @@
 > **Repository state:** `main`, everything through #297 (`c588ed4`) committed and pushed. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
 > **Verification baseline:** 🟢 2,505 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
-> **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then take the first open item of section 3.
+> **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
 ---
 
@@ -102,7 +102,7 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 ## 4. Handoff protocol
 
-See [README.md](README.md) (session start, plan anatomy, owner preferences, where to find things). Read sections 1 to 4 of this file, then take the first open row of section 3. Work outside Gate 1 (the other milestones) starts only when the owner asks.
+Run the `next-task` skill (it reads this file). Plan anatomy and owner preferences: [README.md](README.md). Work outside Gate 1 (the other milestones) starts only when the owner asks.
 
 ---
 

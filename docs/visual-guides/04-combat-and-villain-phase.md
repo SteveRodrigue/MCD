@@ -34,7 +34,7 @@ sequenceDiagram
 | 4–5  | `step4_and_5_dealAndResolveBoostCards` | `BOOST`                                          |
 | —    | _(intercept window between 5 and 6)_   | `DAMAGE_WOULD_BE_TAKEN`                          |
 | 6    | `step6_calculateAndApplyAttackDamage`  | `DAMAGE_TAKEN`, `CHARACTER_DEFEATED`, `DEFEATED` |
-| 7    | `step7_resolvePostAttackAndRetaliate`  | `ATTACK_DEFENDED` (hero or ally defended; e.g. Counter-Punch, Indomitable), `ATTACK_RESOLVED` |
+| 7    | `step7_resolvePostAttackAndRetaliate`  | `ATTACK_DEFENDED` (hero or ally defended; e.g. Counter-Punch, Indomitable), `ATTACK_RESOLVED`, `HOST_ATTACK_ENDED` (attachments on the attacker, after Retaliate; e.g. Charge discards itself) |
 
 ---
 

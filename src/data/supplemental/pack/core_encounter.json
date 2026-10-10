@@ -154,6 +154,19 @@
               }
             }
           ]
+        },
+        {
+          "id": "charge_discard",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "HOST_ATTACK_ENDED",
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "SELF"
+              }
+            }
+          ]
         }
       ],
       "audit": {

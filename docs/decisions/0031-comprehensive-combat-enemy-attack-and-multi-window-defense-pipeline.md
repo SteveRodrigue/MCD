@@ -119,3 +119,9 @@ flowchart TD
 * Fully unlocks and implements 8+ Core Set cards (*Backflip*, *Cosmic Flight*, *Indomitable*, *Counter-Punch*, *Armored Vest*, *Get Behind Me!*, *Great Responsibility*, and all Ally blockers).
 * Establishes permanent architecture for 103+ defense cards across all 170 official expansion packs.
 * Prevents damage-related regressions by routing all attacks through a single deterministic combat pipeline.
+
+---
+
+## Addendum: `HOST_ATTACK_ENDED` (#294)
+
+Step 7 (`step7_resolvePostAttackAndRetaliate`) runs every `HOST_ATTACK_ENDED` ability on the attacker's attachments (villain or minion) after Retaliate. Charge `01099` uses it to discard itself declaratively ("At the end of this attack, discard Charge"), replacing the former hardcoded `01099` discard. A Stunned or interrupt-cancelled attack never reaches step 7, so the attachment stays.

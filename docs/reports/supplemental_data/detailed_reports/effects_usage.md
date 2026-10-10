@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-10T02:49:44.637Z` | **Active Effects In Use:** **46/55**
+> **Generated:** `2026-10-10T20:24:51.773Z` | **Active Effects In Use:** **46/55**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
@@ -35,7 +35,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
 
-### <a id="discard"></a>`DISCARD` (14 Cards, 15 Step Occurrences)
+### <a id="discard"></a>`DISCARD` (15 Cards, 16 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -44,6 +44,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01031` | **Repulsor Blast (event)** | `core` | `repulsor_blast` |
 | `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
 | `01084` | **Nick Fury (ally)** | `core` | `nick_fury_round_end_discard` |
+| `01099` | **Charge (attachment)** | `core_encounter` | `charge_discard` |
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
 | `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` |
 | `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |

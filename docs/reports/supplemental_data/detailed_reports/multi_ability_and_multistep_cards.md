@@ -2,9 +2,9 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-08T02:24:10.747Z`
+> **Generated:** `2026-10-10T02:49:44.637Z`
 
-## 1. Cards with Multiple Abilities (2+ Declared Abilities — 18 Cards)
+## 1. Cards with Multiple Abilities (2+ Declared Abilities — 17 Cards)
 
 | Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -22,7 +22,6 @@
 | `01164` | **Titania's Fury** | `treachery` | `core_encounter` | **2** | • `titanias_fury_when_revealed` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **3 steps**)<br/>• `titanias_fury_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01166` | **Highway Robbery** | `side_scheme` | `core_encounter` | **2** | • `highway_robbery_when_revealed` (`WHEN_REVEALED`, **1 step**)<br/>• `highway_robbery_when_defeated` (`FORCED_RESPONSE` / `DEFEATED`, **1 step**) |
 | `01168` | **Sweeping Swoop** | `treachery` | `core_encounter` | **2** | • `sweeping_swoop_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `sweeping_swoop_boost` (`BOOST` / `BOOST`, **1 step**) |
-| `01172` | **Whiplash** | `minion` | `core_encounter` | **2** | • `whiplash_response` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**)<br/>• `whiplash_retaliate` (`CONSTANT`, **1 step**) |
 | `01173` | **Electric Whip Attack** | `treachery` | `core_encounter` | **2** | • `electric_whip_attack_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `electric_whip_attack_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01178` | **Kree Manipulator** | `treachery` | `core_encounter` | **2** | • `kree_manipulator_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `kree_manipulator_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `45109` | **The Fittest** | `attachment` | `aoa_encounter` | **2** | • `the_fittest_hit_points` (`CONSTANT`, **1 step**)<br/>• `the_fittest_tough` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**) |

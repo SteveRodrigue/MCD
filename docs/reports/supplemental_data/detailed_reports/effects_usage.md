@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-08T02:24:10.747Z` | **Active Effects In Use:** **46/55**
+> **Generated:** `2026-10-10T02:49:44.637Z` | **Active Effects In Use:** **46/55**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
@@ -35,7 +35,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
 
-### <a id="discard"></a>`DISCARD` (15 Cards, 16 Step Occurrences)
+### <a id="discard"></a>`DISCARD` (14 Cards, 15 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -45,7 +45,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
 | `01084` | **Nick Fury (ally)** | `core` | `nick_fury_round_end_discard` |
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
-| `01102` | **Sandman (minion)** | `core_encounter` | `sandman_attack_discard` |
 | `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` |
 | `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
@@ -55,7 +54,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 | `01195` | **Unknown Card #01195** | `core_encounter` | `under_fire_when_revealed` |
 
-### <a id="add-status"></a>`ADD_STATUS` (13 Cards, 15 Step Occurrences)
+### <a id="add-status"></a>`ADD_STATUS` (12 Cards, 14 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -69,7 +68,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_response` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed`, `heart_shaped_herb_boost` |
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed`, `sweeping_swoop_boost` |
-| `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_response` |
 | `01194` | **Unknown Card #01194** | `core_encounter` | `masterplan_when_revealed` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
@@ -225,15 +223,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01043c` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_c` |
 | `01043d` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_d` |
 
-### <a id="grant-keyword"></a>`GRANT_KEYWORD` (4 Cards, 4 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01040a` | **Black Panther (hero)** | `core` | `black_panther_retaliate` |
-| `01099` | **Charge (attachment)** | `core_encounter` | `charge_overkill` |
-| `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
-| `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_retaliate` |
-
 ### <a id="modify-max-health"></a>`MODIFY_MAX_HEALTH` (4 Cards, 4 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -258,6 +247,14 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01001b` | **Peter Parker (alter_ego)** | `core` | `scientist` |
 | `01008` | **Web-Shooter (upgrade)** | `core` | `web_shooter_resource` |
 | `01033` | **Pepper Potts (support)** | `core` | `pepper_potts_res` |
+
+### <a id="grant-keyword"></a>`GRANT_KEYWORD` (3 Cards, 3 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01040a` | **Black Panther (hero)** | `core` | `black_panther_retaliate` |
+| `01099` | **Charge (attachment)** | `core_encounter` | `charge_overkill` |
+| `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
 
 ### <a id="prevent-threat"></a>`PREVENT_THREAT` (3 Cards, 3 Step Occurrences)
 

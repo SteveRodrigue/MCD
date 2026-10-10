@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-08T02:24:10.747Z` | **Active Target Selectors In Use:** **30/43**
+> **Generated:** `2026-10-10T02:49:44.637Z` | **Active Target Selectors In Use:** **30/43**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -40,7 +40,7 @@
 | `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
 | `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
 
-### <a id="self"></a>`SELF` (11 Cards, 11 Declarations)
+### <a id="self"></a>`SELF` (10 Cards, 10 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -52,7 +52,6 @@
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_response` |
 | `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
 | `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
-| `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_response` |
 | `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 

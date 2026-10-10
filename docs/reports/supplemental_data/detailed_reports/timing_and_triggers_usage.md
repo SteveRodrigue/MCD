@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-10T21:28:03.542Z`
+> **Generated:** `2026-10-10T21:55:22.702Z`
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
@@ -73,7 +73,7 @@
 | `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
 
-### <a id="constant"></a>`CONSTANT` (19 Cards)
+### <a id="constant"></a>`CONSTANT` (20 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -93,6 +93,7 @@
 | `01099` | **Charge (attachment)** | `core_encounter` | `charge_atk_bonus`, `charge_overkill` |
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_atk_bonus` |
 | `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
+| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
 | `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
 | `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
@@ -121,7 +122,7 @@
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 
-### <a id="forced-response"></a>`FORCED_RESPONSE` (17 Cards)
+### <a id="forced-response"></a>`FORCED_RESPONSE` (16 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -131,7 +132,6 @@
 | `01084` | **Nick Fury (ally)** | `core` | `nick_fury_enters_play`, `nick_fury_round_end_discard` |
 | `01099` | **Charge (attachment)** | `core_encounter` | `charge_discard` |
 | `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` |
-| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_response` |
 | `01160` | **Legal Work (obligation)** | `core_encounter` | `legal_work_resolve` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 | `01165` | **Eviction Notice (obligation)** | `core_encounter` | `eviction_notice_resolve` |
@@ -244,7 +244,7 @@
 
 ## 2. Trigger Windows (`TriggerTypeSchema` — 21/31 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (36 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (35 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -259,7 +259,6 @@
 | `01110` | **Hydra Bomber (minion)** | `core_encounter` | `hydra_bomber_when_revealed` |
 | `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
-| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_response` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed` |
 | `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` |
 | `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |

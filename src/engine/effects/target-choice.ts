@@ -9,6 +9,7 @@ import type {
 } from '../models';
 import { StatusCard } from '../models';
 import { getEffectiveMaxHealth, hasEntityKeyword } from '../pipeline/stat-calculator';
+import { isImmuneToDamage } from '../pipeline/damage-immunity';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
 import { getEligibleTargets, resolveTargets, type ResolvedTarget } from './target-resolver';
 import type { EffectExecutionContext } from './index';
@@ -53,9 +54,19 @@ const isSameScheme = (target: ResolvedTarget, id: string): boolean => {
 };
 
 /** Whether this step's effect can affect the target (RR v1.8 "Target": valid targets only). */
-const canAffect = (state: GameState, step: AbilityStep, target: ResolvedTarget): boolean => {
+const canAffect = (
+  state: GameState,
+  step: AbilityStep,
+  target: ResolvedTarget,
+  sourceCard?: CardInstance,
+): boolean => {
   const entity = target.entity as any;
   switch (step.effect) {
+    case 'DEAL_DAMAGE':
+    case 'TRANSFER_DAMAGE':
+      // RR v1.8 "Targets": a character that cannot take damage (from this source) is not a valid
+      // target of an ability whose only effect is damage (#297).
+      return !(target.kind === 'character' && isImmuneToDamage(state, entity, sourceCard));
     case 'ADD_STATUS': {
       if (target.kind !== 'character') return false;
       const status = String(step.effectParams?.status ?? 'STUNNED').toUpperCase();
@@ -110,7 +121,9 @@ export function getValidStepTargets(
   });
   const excluded = context.distinctFromId;
   return candidates.filter(
-    (t) => !(excluded && isSameScheme(t, excluded)) && canAffect(state, step, t),
+    (t) =>
+      !(excluded && isSameScheme(t, excluded)) &&
+      canAffect(state, step, t, context.sourceCardInstance),
   );
 }
 
@@ -238,6 +251,6 @@ export function abilityHasValidTarget(
       sourceCardInstance,
       eventTargetType: eventTarget?.targetType,
       eventTargetInstanceId: eventTarget?.targetInstanceId,
-    }).some((t) => canAffect(state, step, t));
+    }).some((t) => canAffect(state, step, t, sourceCardInstance));
   });
 }

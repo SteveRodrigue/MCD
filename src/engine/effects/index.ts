@@ -66,6 +66,7 @@ import {
   type DamageResult,
   type TargetEntityRef,
 } from '../pipeline/damage-pipeline';
+import { isImmuneToDamage } from '../pipeline/damage-immunity';
 import { applyThreatPlacement, applyThwart } from '../pipeline/threat-pipeline';
 import {
   getEffectiveMaxHealth,
@@ -5125,6 +5126,17 @@ export function executeStep(
 
       const targetEnemyId =
         (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId;
+      // A character that cannot take this damage is not a valid target: nothing moves (#297).
+      const transferTarget = targetEnemyId
+        ? targetEnemyId === 'villain'
+          ? getActiveVillain(state)
+          : state.players
+              .flatMap((p) => p.engagedMinions)
+              .find((m) => m.instanceId === targetEnemyId)
+        : getActiveVillain(state);
+      if (isImmuneToDamage(state, transferTarget, context.sourceCardInstance)) {
+        return { state, success: false, error: 'Target cannot take damage from this source' };
+      }
       player.health = Math.min(getEffectiveMaxHealth(player, state), player.health + amount);
 
       // The enemy side goes through the damage pipeline like DEAL_DAMAGE (#247): shields, Tough,

@@ -367,6 +367,7 @@
                           "CANCEL_ATTACK",
                           "CANCEL_WHEN_REVEALED",
                           "CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER",
+                          "CANNOT_TAKE_DAMAGE",
                           "CHANGE_FORM",
                           "DEAL_DAMAGE",
                           "DECLARE_DEFENDER",

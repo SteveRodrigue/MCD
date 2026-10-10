@@ -11,6 +11,7 @@ import {
 } from '@engine/models';
 import { getEffectiveMinionHitPoints, getEffectiveRetaliate } from './stat-calculator';
 import { handleVillainDefeat } from './scenario-helpers';
+import { isImmuneToDamage } from './damage-immunity';
 import { eliminatePlayer } from './player-elimination';
 import { dispatchTrigger, type DefeatSource } from '../triggers/trigger-dispatcher';
 import type { TriggerCallNode } from '../errors/infinite-loop-error';
@@ -248,6 +249,39 @@ export function applyDamageToTarget(
   let toughRemoved = false;
   let absorbedByShield: ShieldAbsorptionInfo | undefined;
   let onomatopoeia: string | undefined;
+
+  // ---------------------------------------------------------------------------
+  // STEP 0: a character that cannot take damage from this source ignores it (#297). Before
+  // step 1: no shield, Tough or Retaliate is used.
+  // ---------------------------------------------------------------------------
+  if (
+    amount > 0 &&
+    target.type !== 'player' &&
+    isImmuneToDamage(state, target.entity, request.sourceCardInstance)
+  ) {
+    state.log.push({
+      id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      timestamp: Date.now(),
+      round: state.roundNumber,
+      phase: state.phase,
+      category: 'combat',
+      key: 'damage.prevented.immune',
+      params: { target: target.name },
+      onomatopoeia: 'IMMUNE!',
+    });
+    return {
+      state,
+      result: {
+        initialAmount: amount,
+        damageDealt: 0,
+        damageTaken: 0,
+        toughRemoved: false,
+        targetDefeated: false,
+        excessDamage: 0,
+        onomatopoeia: 'IMMUNE!',
+      },
+    };
+  }
 
   // ---------------------------------------------------------------------------
   // STEP 1: "When would deal / be dealt any amount of damage..." (RR v1.8 Step 1)

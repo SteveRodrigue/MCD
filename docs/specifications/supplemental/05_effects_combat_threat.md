@@ -25,15 +25,15 @@
 }
 ```
 
-| Parameter          | Type                           | Required | Default          | Description                                                                              |
-| :----------------- | :----------------------------- | :------- | :--------------- | :--------------------------------------------------------------------------------------- |
-| `amount`           | `number \| DynamicValueSource` | Yes      | -                | Base damage value (flat integer or dynamic formula).                                     |
-| `target`           | `TargetSelector`               | Yes      | `"CHOSEN_ENEMY"` | Target recipient.                                                                        |
-| `targetPlayer`     | `'SELF' \| 'CHOSEN_PLAYER'`    | No       | `"SELF"`         | With `target: "ENGAGED_ENEMIES"`: whose engaged minions (plus the Villain) are hit. `CHOSEN_PLAYER` prompts in multiplayer and auto-resolves in solo (e.g. *Energy Daggers* `01046`). |
-| `piercing`         | `boolean`                      | No       | `false`          | Discards Tough status card before dealing damage.                                        |
-| `ranged`           | `boolean`                      | No       | `false`          | Ignores Retaliate keywords on the target.                                                |
-| `finisherBonus`    | `number`                       | No       | -                | Bonus damage when ability resolves as final step in a sequence (e.g. *Wakanda Forever!*). |
-| `dynamicBonus`     | `number \| DynamicValueSource` | No       | -                | Dynamic bonus damage added to amount (e.g. *Supersonic Punch* `01032`).                  |
+| Parameter       | Type                           | Required | Default          | Description                                                                                                                                                                           |
+| :-------------- | :----------------------------- | :------- | :--------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `amount`        | `number \| DynamicValueSource` | Yes      | -                | Base damage value (flat integer or dynamic formula).                                                                                                                                  |
+| `target`        | `TargetSelector`               | Yes      | `"CHOSEN_ENEMY"` | Target recipient.                                                                                                                                                                     |
+| `targetPlayer`  | `'SELF' \| 'CHOSEN_PLAYER'`    | No       | `"SELF"`         | With `target: "ENGAGED_ENEMIES"`: whose engaged minions (plus the Villain) are hit. `CHOSEN_PLAYER` prompts in multiplayer and auto-resolves in solo (e.g. _Energy Daggers_ `01046`). |
+| `piercing`      | `boolean`                      | No       | `false`          | Discards Tough status card before dealing damage.                                                                                                                                     |
+| `ranged`        | `boolean`                      | No       | `false`          | Ignores Retaliate keywords on the target.                                                                                                                                             |
+| `finisherBonus` | `number`                       | No       | -                | Bonus damage when ability resolves as final step in a sequence (e.g. _Wakanda Forever!_).                                                                                             |
+| `dynamicBonus`  | `number \| DynamicValueSource` | No       | -                | Dynamic bonus damage added to amount (e.g. _Supersonic Punch_ `01032`).                                                                                                               |
 
 - **`ALL_HEROES_AND_ALLIES` means "each" (#296):** `DEAL_DAMAGE` with this target deals the amount to every hero (alter-ego players are not heroes) and every ally. It never splits the amount; to assign an amount among them use `DISTRIBUTE_AMOUNT`.
 
@@ -41,7 +41,7 @@
 
 ### `DISTRIBUTE_AMOUNT`
 
-- **Description:** Assigns a budget (damage, threat removal, heal, counters, exhaust) among the legal targets of `targetScope` (ADR-0064). Used by *Explosion* `01111`.
+- **Description:** Assigns a budget (damage, threat removal, heal, counters, exhaust) among the legal targets of `targetScope` (ADR-0064). Used by _Explosion_ `01111`.
 - **Who assigns:** an encounter card that names no player leaves the choice to the first player (RR v1.8 First Player); any other source is assigned by the player who resolves it.
 - **No prompt when there is nothing to choose:** no legal target ignores the budget; one legal target takes as much of the budget as it can; two or more queue a `DISTRIBUTE_POINTS` prompt.
 - **Cap:** derived from `allocationDomain` (`DAMAGE`: a character takes at most its remaining hit points). There is no `capRule` parameter. The submitted assignment is validated: the total equals the budget (limited by the capacity of the legal targets), each target is legal and each portion is within its cap; otherwise it is rejected and the prompt stays.
@@ -52,17 +52,43 @@
   "effect": "DISTRIBUTE_AMOUNT",
   "effectParams": {
     "allocationDomain": "DAMAGE",
-    "budget": { "from": "CARD_ATTRIBUTE", "fromCard": { "zone": "IN_PLAY", "cardCode": "01109" }, "attribute": "THREAT" },
+    "budget": {
+      "from": "CARD_ATTRIBUTE",
+      "fromCard": { "zone": "IN_PLAY", "cardCode": "01109" },
+      "attribute": "THREAT"
+    },
     "targetScope": "ALL_HEROES_AND_ALLIES"
   }
 }
 ```
 
-| Parameter          | Type                                                                 | Required | Default                   | Description                                 |
-| :----------------- | :------------------------------------------------------------------- | :------- | :------------------------ | :------------------------------------------ |
-| `allocationDomain` | `"DAMAGE" | "THREAT_REMOVAL" | "HEAL" | "COUNTERS" | "EXHAUST"` | No       | `"DAMAGE"`                | What is distributed.                        |
-| `budget`           | `number | DynamicValueSource`                                       | Yes      | -                         | Total to assign.                            |
-| `targetScope`      | `TargetSelector`                                                     | No       | `"ALL_HEROES_AND_ALLIES"` | Set of targets eligible for the assignment. |
+| Parameter          | Type             | Required            | Default                   | Description                                 |
+| :----------------- | :--------------- | :------------------ | :------------------------ | :------------------------------------------ |
+| `allocationDomain` | `"DAMAGE"        | "THREAT_REMOVAL"    | "HEAL"                    | "COUNTERS"                                  | "EXHAUST"`       | No  | `"DAMAGE"` | What is distributed. |
+| `budget`           | `number          | DynamicValueSource` | Yes                       | -                                           | Total to assign. |
+| `targetScope`      | `TargetSelector` | No                  | `"ALL_HEROES_AND_ALLIES"` | Set of targets eligible for the assignment. |
+
+---
+
+### `CANNOT_TAKE_DAMAGE`
+
+- **References:** [`damage-immunity.ts`](../../../src/engine/pipeline/damage-immunity.ts), [`damage-pipeline.ts`](../../../src/engine/pipeline/damage-pipeline.ts) (step 0), [`target-choice.ts`](../../../src/engine/effects/target-choice.ts), ADR-0078 addendum, #297
+- **Description:** CONSTANT restriction on the host (`target: SELF`): the host cannot take damage. With `sourceCardType` and/or `sourceTrait`, only damage from a card of that type and trait is ignored; damage with no source card (a basic attack) never matches a filter. The damage pipeline checks it before step 1, so no Tough, shield or Retaliate is used and the host is not defeated by it. RR v1.8 Targets: such a character is not a valid target of an ability whose only effect is damage (`DEAL_DAMAGE`, `TRANSFER_DAMAGE`), so the target prompt does not offer it and a transfer to it fails. A board condition (Madame Hydra `01181`, Ultron `01136`) is not supported yet.
+
+```json
+{
+  "effect": "CANNOT_TAKE_DAMAGE",
+  "effectParams": { "target": "SELF", "sourceCardType": "UPGRADE", "sourceTrait": "Black Panther" }
+}
+```
+
+| Parameter        | Type     | Required | Default | Description                                                     |
+| :--------------- | :------- | :------- | :------ | :-------------------------------------------------------------- |
+| `target`         | `"SELF"` | Yes      | -       | The host.                                                       |
+| `sourceCardType` | `string` | No       | any     | Card type of the damage source (`UPGRADE`, `ALLY`, `EVENT`...). |
+| `sourceTrait`    | `string` | No       | any     | Trait of the damage source card.                                |
+
+Example: _Killmonger_ `01157`.
 
 ---
 
@@ -80,8 +106,8 @@
 }
 ```
 
-| Parameter | Type     | Required | Default | Description                                  |
-| :-------- | :------- | :------- | :------ | :------------------------------------------- |
+| Parameter | Type     | Required | Default | Description                                   |
+| :-------- | :------- | :------- | :------ | :-------------------------------------------- |
 | `keyword` | `string` | Yes      | -       | Keyword the attack gains (e.g. `"Overkill"`). |
 
 Example: _Relentless Assault_ `01053` (this step, then `DEAL_DAMAGE` 5 to `CHOSEN_MINION`).
@@ -107,7 +133,7 @@ Example: _Relentless Assault_ `01053` (this step, then `DEAL_DAMAGE` 5 to `CHOSE
 
 | Parameter  | Type                 | Required | Default   | Description                                                                                    |
 | :--------- | :------------------- | :------- | :-------- | :--------------------------------------------------------------------------------------------- |
-| `keyword`  | `string`             | Yes      | -         | The keyword name being granted (e.g. `"Retaliate"`, `"Overkill"`, `"Piercing"`).                |
+| `keyword`  | `string`             | Yes      | -         | The keyword name being granted (e.g. `"Retaliate"`, `"Overkill"`, `"Piercing"`).               |
 | `amount`   | `number`             | No       | -         | Numeric magnitude for parameterized keywords (e.g. `1` for Retaliate 1). Stacked per ADR-0054. |
 | `duration` | `"PHASE" \| "ROUND"` | No       | `"PHASE"` | Lifecycle window for temporary keyword grant.                                                  |
 | `target`   | `TargetSelector`     | No       | `"SELF"`  | Target character receiving the keyword.                                                        |
@@ -129,11 +155,11 @@ Example: _Relentless Assault_ `01053` (this step, then `DEAL_DAMAGE` 5 to `CHOSE
 }
 ```
 
-| Parameter       | Type                           | Required | Default          | Description                                                                                 |
-| :-------------- | :----------------------------- | :------- | :--------------- | :------------------------------------------------------------------------------------------ |
-| `amount`        | `number \| DynamicValueSource` | Yes      | `1`              | Base damage amount moved.                                                                   |
-| `finisherBonus` | `number`                       | No       | -                | Bonus damage transferred when ability resolves as final step in a sequence (e.g. *Wakanda Forever!*). |
-| `dynamicBonus`  | `number \| DynamicValueSource` | No       | -                | Dynamic bonus damage added to amount.                                                       |
+| Parameter       | Type                           | Required | Default | Description                                                                                           |
+| :-------------- | :----------------------------- | :------- | :------ | :---------------------------------------------------------------------------------------------------- |
+| `amount`        | `number \| DynamicValueSource` | Yes      | `1`     | Base damage amount moved.                                                                             |
+| `finisherBonus` | `number`                       | No       | -       | Bonus damage transferred when ability resolves as final step in a sequence (e.g. _Wakanda Forever!_). |
+| `dynamicBonus`  | `number \| DynamicValueSource` | No       | -       | Dynamic bonus damage added to amount.                                                                 |
 
 The destination is the chosen enemy of the ability and the source is the acting identity; there are no `from` / `to` parameters (removed in #232).
 
@@ -157,14 +183,14 @@ The destination is the chosen enemy of the ability and the source is the acting 
 }
 ```
 
-| Parameter          | Type                           | Required | Default         | Description                                                                                 |
-| :----------------- | :----------------------------- | :------- | :-------------- | :------------------------------------------------------------------------------------------ |
-| `amount`           | `number \| DynamicValueSource` | Yes      | `1`             | Base threat amount removed.                                                                 |
-| `target`           | `TargetSelector`               | No       | `"MAIN_SCHEME"` | Target scheme (`MAIN_SCHEME`, `CHOSEN_SCHEME`, `THIS_SIDE_SCHEME`).                         |
-| `finisherBonus`    | `number`                       | No       | -               | Bonus threat removed when ability resolves as final step in a sequence (e.g. *Wakanda Forever!*). |
-| `dynamicBonus`     | `number \| DynamicValueSource` | No       | -               | Dynamic bonus threat added to amount.                                                       |
-| `ignoresCrisis`    | `boolean`                      | No       | `false`         | Removes threat from the Main Scheme even if a Crisis icon is in play.                       |
-| `distinctFrom`     | `"PREVIOUS_TARGET"`            | No       | -               | With a chosen scheme: the scheme chosen by the previous step is excluded, so the player must pick a different one ("from a different scheme"). Also readable as a step-level `distinctFrom`. |
+| Parameter       | Type                           | Required | Default         | Description                                                                                                                                                                                  |
+| :-------------- | :----------------------------- | :------- | :-------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `amount`        | `number \| DynamicValueSource` | Yes      | `1`             | Base threat amount removed.                                                                                                                                                                  |
+| `target`        | `TargetSelector`               | No       | `"MAIN_SCHEME"` | Target scheme (`MAIN_SCHEME`, `CHOSEN_SCHEME`, `THIS_SIDE_SCHEME`).                                                                                                                          |
+| `finisherBonus` | `number`                       | No       | -               | Bonus threat removed when ability resolves as final step in a sequence (e.g. _Wakanda Forever!_).                                                                                            |
+| `dynamicBonus`  | `number \| DynamicValueSource` | No       | -               | Dynamic bonus threat added to amount.                                                                                                                                                        |
+| `ignoresCrisis` | `boolean`                      | No       | `false`         | Removes threat from the Main Scheme even if a Crisis icon is in play.                                                                                                                        |
+| `distinctFrom`  | `"PREVIOUS_TARGET"`            | No       | -               | With a chosen scheme: the scheme chosen by the previous step is excluded, so the player must pick a different one ("from a different scheme"). Also readable as a step-level `distinctFrom`. |
 
 ---
 
@@ -191,23 +217,23 @@ The destination is the chosen enemy of the ability and the source is the acting 
 ---
 
 ### `ADD_THREAT` (with `perPlayer: true`)
- 
- - **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts)
- - **Description:** Adds `amount` (or `amountPerPlayer`) × (number of players) threat when `perPlayer: true`. Supports targeting by `cardCode`, `target` (`THIS_SIDE_SCHEME`, `MAIN_SCHEME`, `SELF`), or defaulting to the source side scheme. Fizzles per RR v1.8 p. 29 if the targeted card is not in play.
- 
- ```json
- {
-   "effect": "ADD_THREAT",
-   "effectParams": {
-     "amount": 1,
-     "perPlayer": true,
-     "target": "THIS_SIDE_SCHEME"
-   }
- }
- ```
- 
- ---
- 
+
+- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts)
+- **Description:** Adds `amount` (or `amountPerPlayer`) × (number of players) threat when `perPlayer: true`. Supports targeting by `cardCode`, `target` (`THIS_SIDE_SCHEME`, `MAIN_SCHEME`, `SELF`), or defaulting to the source side scheme. Fizzles per RR v1.8 p. 29 if the targeted card is not in play.
+
+```json
+{
+  "effect": "ADD_THREAT",
+  "effectParams": {
+    "amount": 1,
+    "perPlayer": true,
+    "target": "THIS_SIDE_SCHEME"
+  }
+}
+```
+
+---
+
 ### `PREVENT_DAMAGE` (Damage Interception & Prevention)
 
 - **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts)
@@ -222,9 +248,9 @@ The destination is the chosen enemy of the ability and the source is the acting 
 }
 ```
 
-| Parameter | Type                                    | Required | Default  | Description                                                                                |
-| :-------- | :-------------------------------------- | :------- | :------- | :----------------------------------------------------------------------------------------- |
-| `amount`  | `number \| 'ALL' \| DynamicValueSource` | No       | `ALL`    | Amount of incoming damage to consume. If omitted or `'ALL'`, consumes all remaining damage.|
+| Parameter | Type                                    | Required | Default | Description                                                                                 |
+| :-------- | :-------------------------------------- | :------- | :------ | :------------------------------------------------------------------------------------------ |
+| `amount`  | `number \| 'ALL' \| DynamicValueSource` | No       | `ALL`   | Amount of incoming damage to consume. If omitted or `'ALL'`, consumes all remaining damage. |
 
 The protected character is always the one the interrupt is about (the damage in the window); there is no `target` parameter (removed in #232).
 
@@ -233,7 +259,7 @@ The protected character is always the one the interrupt is about (the damage in 
 ### `PREVENT_THREAT` (Threat Interception & Prevention)
 
 - **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts), [ADR-0063](../../decisions/0063-deconflate-damage-and-threat-interception-primitives.md)
-- **Description:** Consumes / reduces impending threat that would be placed on a scheme within an `INTERRUPT` window (`THREAT_WOULD_BE_PLACED`). Prevents `amount` or all impending threat if `amount` is omitted. Decrements `remainingInterceptedValue` and `threatAmount`. Supports dynamic scalar binding (e.g. *Great Responsibility* `01061`), turn limits (e.g. *Jennifer Walters* `01019b`), and partial reduction (e.g. *Emergency* `01085`).
+- **Description:** Consumes / reduces impending threat that would be placed on a scheme within an `INTERRUPT` window (`THREAT_WOULD_BE_PLACED`). Prevents `amount` or all impending threat if `amount` is omitted. Decrements `remainingInterceptedValue` and `threatAmount`. Supports dynamic scalar binding (e.g. _Great Responsibility_ `01061`), turn limits (e.g. _Jennifer Walters_ `01019b`), and partial reduction (e.g. _Emergency_ `01085`).
 
 ```json
 {
@@ -245,16 +271,16 @@ The protected character is always the one the interrupt is about (the damage in 
 }
 ```
 
-| Parameter | Type                                    | Required | Default         | Description                                                                                |
-| :-------- | :-------------------------------------- | :------- | :-------------- | :----------------------------------------------------------------------------------------- |
-| `amount`  | `number \| 'ALL' \| DynamicValueSource` | No       | `ALL`           | Amount of impending threat to prevent. If omitted or `'ALL'`, prevents all impending threat.|
-| `target`  | `TargetSelector`                        | No       | `"MAIN_SCHEME"` | Target scheme where threat would be placed.                                                |
- 
- ---
- 
- ## 3. Dynamic Value Sources & Numeric Amount Resolution
- 
- The engine supports dynamic numeric resolution via `resolveNumericAmount` for parameters such as `amount` in `DEAL_DAMAGE`, `REMOVE_THREAT`, `HEAL_DAMAGE`, `PREVENT_DAMAGE`, `ADD_COUNTERS` and `MODIFY_STAT`. For an activated ability, the results of its cost are part of the formula context: `DISCARDED_CARDS` reads the cards discarded as the cost (_Legal Practice_ `01023`: one threat removed per card discarded) and `RESOURCES_SPENT` the resources paid (_Energy Channel_ `01018`: one counter per energy spent):
+| Parameter | Type                                    | Required | Default         | Description                                                                                  |
+| :-------- | :-------------------------------------- | :------- | :-------------- | :------------------------------------------------------------------------------------------- |
+| `amount`  | `number \| 'ALL' \| DynamicValueSource` | No       | `ALL`           | Amount of impending threat to prevent. If omitted or `'ALL'`, prevents all impending threat. |
+| `target`  | `TargetSelector`                        | No       | `"MAIN_SCHEME"` | Target scheme where threat would be placed.                                                  |
+
+---
+
+## 3. Dynamic Value Sources & Numeric Amount Resolution
+
+The engine supports dynamic numeric resolution via `resolveNumericAmount` for parameters such as `amount` in `DEAL_DAMAGE`, `REMOVE_THREAT`, `HEAL_DAMAGE`, `PREVENT_DAMAGE`, `ADD_COUNTERS` and `MODIFY_STAT`. For an activated ability, the results of its cost are part of the formula context: `DISCARDED_CARDS` reads the cards discarded as the cost (_Legal Practice_ `01023`: one threat removed per card discarded) and `RESOURCES_SPENT` the resources paid (_Energy Channel_ `01018`: one counter per energy spent):
 
 ```json
 {
@@ -280,10 +306,10 @@ The protected character is always the one the interrupt is about (the damage in 
 
 Delegates to a registered handler of `src/engine/specials/` (ADR-0038).
 
-| Key | Required | Meaning |
-| :-- | :-- | :-- |
-| `specialId` | yes | Handler id, e.g. `WAKANDA_FOREVER`. A missing or unknown id fails the step. |
-| `sequenceOrder` | no | Instance ids in the order to resolve, skipping the ordering prompt. |
+| Key             | Required | Meaning                                                                     |
+| :-------------- | :------- | :-------------------------------------------------------------------------- |
+| `specialId`     | yes      | Handler id, e.g. `WAKANDA_FOREVER`. A missing or unknown id fails the step. |
+| `sequenceOrder` | no       | Instance ids in the order to resolve, skipping the ordering prompt.         |
 
 ## 4. Temporary Stat Modifier Auras (`MODIFY_STAT`)
 
@@ -292,31 +318,31 @@ Delegates to a registered handler of `src/engine/specials/` (ADR-0038).
 
 ### Targets
 
-| `target` value             | Effect                                                                                           |
-| :------------------------- | :----------------------------------------------------------------------------------------------- |
-| `"SELF"`                   | Applies to the triggering card instance (typically the ally that activated the ability).         |
-| `"ALL_CONTROLLED_CHARACTERS"`| With `atkBonus` / `thwBonus`: applies to the identity AND all allies of one player (the resolving player, or the one chosen with `targetPlayer`). |
-| `"TRIGGERING_HERO"`        | Applies to the triggering player's hero identity.                                                |
-| `"CHOSEN_ALLY"`            | Applies to a player-chosen ally (currently routes via `SELF` resolution).                        |
+| `target` value                | Effect                                                                                                                                            |
+| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `"SELF"`                      | Applies to the triggering card instance (typically the ally that activated the ability).                                                          |
+| `"ALL_CONTROLLED_CHARACTERS"` | With `atkBonus` / `thwBonus`: applies to the identity AND all allies of one player (the resolving player, or the one chosen with `targetPlayer`). |
+| `"TRIGGERING_HERO"`           | Applies to the triggering player's hero identity.                                                                                                 |
+| `"CHOSEN_ALLY"`               | Applies to a player-chosen ally (currently routes via `SELF` resolution).                                                                         |
 
 ### Parameters
 
-| Parameter    | Type                                   | Required | Default   | Description                                              |
-| :----------- | :------------------------------------- | :------- | :-------- | :------------------------------------------------------- |
-| `stat`       | `"ATTACK" \| "THWART" \| "DEFENSE" \| "RECOVERY"` | Yes | `"ATTACK"` | The stat to modify.                                       |
-| `amount`     | `number \| DynamicValueSource`         | Yes      | `1`       | The additive bonus amount, flat or a formula (`CONSTANT` abilities re-evaluate it on every stat read, e.g. _Jessica Jones_ `01059`: `ENTITY_COUNT` of side schemes). |
-| `duration`   | `"PHASE" \| "ROUND"`                   | Yes      | `"PHASE"` | Expiry window per RR v1.8 timing boundaries.             |
-| `target`     | `TargetSelector`                       | Yes      | `"SELF"`  | Who receives the modifier.                               |
-| `atkBonus`   | `number`                               | No       | -         | Shorthand for `stat: "ATTACK"` when used with `ALL_CONTROLLED_CHARACTERS`. |
-| `thwBonus`   | `number`                               | No       | -         | Shorthand for `stat: "THWART"` when used with `ALL_CONTROLLED_CHARACTERS`. |
-| `targetPlayer` | `"SELF" \| "CHOSEN_PLAYER"`         | No       | `"SELF"`  | `CHOSEN_PLAYER` opens a "Choose a Player" prompt in multiplayer (the chosen player's characters get the bonus) and auto-resolves on the resolving player in solo. |
+| Parameter      | Type                                              | Required | Default    | Description                                                                                                                                                          |
+| :------------- | :------------------------------------------------ | :------- | :--------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `stat`         | `"ATTACK" \| "THWART" \| "DEFENSE" \| "RECOVERY"` | Yes      | `"ATTACK"` | The stat to modify.                                                                                                                                                  |
+| `amount`       | `number \| DynamicValueSource`                    | Yes      | `1`        | The additive bonus amount, flat or a formula (`CONSTANT` abilities re-evaluate it on every stat read, e.g. _Jessica Jones_ `01059`: `ENTITY_COUNT` of side schemes). |
+| `duration`     | `"PHASE" \| "ROUND"`                              | Yes      | `"PHASE"`  | Expiry window per RR v1.8 timing boundaries.                                                                                                                         |
+| `target`       | `TargetSelector`                                  | Yes      | `"SELF"`   | Who receives the modifier.                                                                                                                                           |
+| `atkBonus`     | `number`                                          | No       | -          | Shorthand for `stat: "ATTACK"` when used with `ALL_CONTROLLED_CHARACTERS`.                                                                                           |
+| `thwBonus`     | `number`                                          | No       | -          | Shorthand for `stat: "THWART"` when used with `ALL_CONTROLLED_CHARACTERS`.                                                                                           |
+| `targetPlayer` | `"SELF" \| "CHOSEN_PLAYER"`                       | No       | `"SELF"`   | `CHOSEN_PLAYER` opens a "Choose a Player" prompt in multiplayer (the chosen player's characters get the bonus) and auto-resolves on the resolving player in solo.    |
 
 ### Expiry Pipeline
 
-| Duration  | Expiry Trigger                                                                         |
-| :-------- | :------------------------------------------------------------------------------------- |
+| Duration  | Expiry Trigger                                                                                                     |
+| :-------- | :----------------------------------------------------------------------------------------------------------------- |
 | `"PHASE"` | Cleared at the start of each new player phase (`player-phase.ts`) and at villain phase start (`villain-phase.ts`). |
-| `"ROUND"` | Cleared at round upkeep (`round-upkeep.ts`).                                          |
+| `"ROUND"` | Cleared at round upkeep (`round-upkeep.ts`).                                                                       |
 
 ### Example: Vision `01068` — PLAYER_CHOICE → MODIFY_STAT
 

@@ -131,16 +131,16 @@ Every step in `abilities[].steps` may define a `gate` and associated `gateParams
 
 ### Result Facts (`ResultFact`)
 
-| Result Fact           | Producer Effects | Condition Verified                            |
-| :-------------------- | :--------------- | :-------------------------------------------- |
-| `TARGET_DEFEATED`     | `DEAL_DAMAGE`    | Target character was defeated by the damage.  |
-| `EXCESS_DAMAGE_DEALT` | `DEAL_DAMAGE`    | Damage exceeded target remaining hit points.  |
-| `FULLY_HEALED`        | `HEAL_DAMAGE`    | Target reached maximum hit points.            |
-| `SCHEME_EMPTY`        | `REMOVE_THREAT`  | Threat on scheme reached 0.                   |
-| `STATUS_APPLIED`      | `ADD_STATUS`     | Status card was newly added to the character. |
-| `ALREADY_HAD_STATUS`  | `ADD_STATUS`     | Character already possessed that status card. |
-| `STATUS_REMOVED`      | `REMOVE_STATUS`  | Status card was successfully discarded.       |
-| `AMOUNT_ZERO`         | `ALL`            | Evaluated numeric amount resolved to 0.       |
+| Result Fact           | Producer Effects                   | Condition Verified                                                                                 |
+| :-------------------- | :--------------------------------- | :------------------------------------------------------------------------------------------------- |
+| `TARGET_DEFEATED`     | `DEAL_DAMAGE`                      | Target character was defeated by the damage.                                                       |
+| `EXCESS_DAMAGE_DEALT` | `DEAL_DAMAGE`                      | Damage exceeded target remaining hit points.                                                       |
+| `FULLY_HEALED`        | `HEAL_DAMAGE`                      | Target reached maximum hit points.                                                                 |
+| `SCHEME_EMPTY`        | `REMOVE_THREAT`                    | Threat on scheme reached 0.                                                                        |
+| `STATUS_APPLIED`      | `ADD_STATUS`                       | Status card was newly added to the character.                                                      |
+| `ALREADY_HAD_STATUS`  | `ADD_STATUS`                       | Character already possessed that status card.                                                      |
+| `STATUS_REMOVED`      | `REMOVE_STATUS`                    | Status card was successfully discarded.                                                            |
+| `AMOUNT_ZERO`         | `ALL`                              | Evaluated numeric amount resolved to 0.                                                            |
 | `DAMAGE_DEALT`        | `VILLAIN_ATTACKS`, `ENEMY_ATTACKS` | The attack dealt damage after step 6 (above 0); fact `damagedCharacter` feeds `DAMAGED_CHARACTER`. |
 
 _Invariants:_
@@ -166,6 +166,7 @@ All 55 canonical effect primitives and their strictly allowed `effectParams` key
 | `ATTACHMENT_DAMAGE_SHIELD`                | `maxAbsorb`                                                                                                                                                                                              | Absorbs up to `maxAbsorb` damage from host attachment.            |
 | `ATTACH_FACEDOWN_CARDS_FROM_HAND`         | _(none)_                                                                                                                                                                                                 | Attaches cards facedown under host card.                          |
 | `ATTACH_TO_HOST`                          | `maxPerHost`, `target`                                                                                                                                                                                   | Attaches card to designated host enemy/card.                      |
+| `CANNOT_TAKE_DAMAGE`                      | `sourceCardType`, `sourceTrait`, `target`                                                                                                                                                                | CONSTANT: the host ignores damage from the matching source.       |
 | `CANCEL_ATTACK`                           | _(none)_                                                                                                                                                                                                 | Cancels the active enemy attack activation.                       |
 | `CANCEL_WHEN_REVEALED`                    | _(none)_                                                                                                                                                                                                 | Cancels a when-revealed treachery or ability.                     |
 | `CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER` | _(none)_                                                                                                                                                                                                 | Cancels treachery and draws a replacement encounter card.         |
@@ -173,7 +174,7 @@ All 55 canonical effect primitives and their strictly allowed `effectParams` key
 | `DEAL_DAMAGE`                             | `amount`, `dynamicBonus`, `finisherBonus`, `target`, `targetPlayer`                                                                                                                                      | Deals damage to target enemy, character, or player.               |
 | `DECLARE_DEFENDER`                        | _(none)_                                                                                                                                                                                                 | Exhausts self or marks character as defender.                     |
 | `DISCARD`                                 | `count`, `fallback`, `filter`, `matchingDestination`, `mode`, `source`, `target`, `untilFilter`                                                                                                          | Discards card(s) from hand, deck, or play.                        |
-| `DISTRIBUTE_AMOUNT`                       | `allocationDomain`, `budget`, `targetScope`                                                                                                                                                   | Distributes damage or threat across eligible targets.             |
+| `DISTRIBUTE_AMOUNT`                       | `allocationDomain`, `budget`, `targetScope`                                                                                                                                                              | Distributes damage or threat across eligible targets.             |
 | `DOUBLE_RESOURCE_FOR_ASPECT`              | `aspect`                                                                                                                                                                                                 | Doubles resource generation for a specific aspect.                |
 | `DRAW`                                    | `count`, `dynamicBonus`, `limit`, `target`, `targetPlayerId`                                                                                                                                             | Draws card(s) from player deck.                                   |
 | `ENEMY_ATTACKS`                           | `enemy`, `target`                                                                                                                                                                                        | Triggers immediate enemy attack activation.                       |

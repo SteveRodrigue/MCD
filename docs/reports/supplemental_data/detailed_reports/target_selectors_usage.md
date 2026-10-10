@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-10T21:28:03.542Z` | **Active Target Selectors In Use:** **29/43**
+> **Generated:** `2026-10-10T21:55:22.702Z` | **Active Target Selectors In Use:** **29/43**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -49,7 +49,7 @@
 | `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
 | `01051` | **Tigra (ally)** | `core` | `tigra_defeat_heal` |
 | `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
-| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_response` |
+| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
 | `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
 | `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
 | `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |

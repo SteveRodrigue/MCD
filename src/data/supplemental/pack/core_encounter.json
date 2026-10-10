@@ -730,25 +730,26 @@
     "01157": {
       "abilities": [
         {
-          "id": "killmonger_response",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
+          "id": "killmonger_immunity",
+          "timing": "CONSTANT",
           "steps": [
             {
-              "effect": "ADD_STATUS",
+              "effect": "CANNOT_TAKE_DAMAGE",
               "effectParams": {
-                "status": "TOUGH",
-                "target": "SELF"
+                "target": "SELF",
+                "sourceCardType": "UPGRADE",
+                "sourceTrait": "Black Panther"
               }
             }
           ]
         }
       ],
       "audit": {
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-10T12:00:00Z",
+        "reviewedAt": "2026-10-10T12:00:00Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
+        "confidence": 95,
         "originalText": "Killmonger cannot take damage from [[Black Panther]] upgrades."
       }
     },

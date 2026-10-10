@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-08T02:24:10.747Z` | **Total Verified Vanilla Cards:** **12**
+> **Generated:** `2026-10-10T02:49:44.637Z` | **Total Verified Vanilla Cards:** **14**
 
 These cards require zero declarative engine hooks (e.g. vanilla resources, base stats only, or passive encounter cards without triggers).
 
@@ -17,8 +17,10 @@ These cards require zero declarative engine hooks (e.g. vanilla resources, base 
 | `01094` | **Rhino** | `villain` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01097a` | **The Break-In!** | `main_scheme` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01097b` | **The Break-In!** | `main_scheme` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
+| `01102` | **Sandman** | `minion` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01108` | **Crowd Control** | `side_scheme` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01156` | **Usurp The Throne** | `side_scheme` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01167` | **Vulture** | `minion` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
+| `01172` | **Whiplash** | `minion` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 
 [← Back to Main Usage Report](../usage_report.md)

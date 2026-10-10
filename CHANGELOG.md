@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Data (Core encounter): Sandman and Whiplash carry no invented ability (item 14 read-through)**
+  - Read-through of all 108 core encounter cards against the printed text: 20 reports in `docs/reports/core_encounter_read_through/` (48 OK, 6 data defects, 54 cards without an entry, [#265](https://github.com/SteveRodrigue/MCD/issues/265)). Engine defects filed: [#294](https://github.com/SteveRodrigue/MCD/issues/294) Charge, [#295](https://github.com/SteveRodrigue/MCD/issues/295) Stampede, [#296](https://github.com/SteveRodrigue/MCD/issues/296) Explosion, [#297](https://github.com/SteveRodrigue/MCD/issues/297) Killmonger.
+  - `01102` Sandman: the invented Forced Response (discard 2 encounter cards after he attacks) removed; printed text is Toughness only. `01172` Whiplash: the invented tough status on reveal and the redundant `GRANT_KEYWORD Retaliate` removed; Retaliate 1 comes from the printed keyword. Both are `noSupplementalNeeded`, confidence 100 (owner approved 2026-10-09).
+  - Tests: `tests/engine/keyword-only-minions.test.ts` (4).
+
 - **Refactor (Engine): one boost resolution for every activation ([Issue #263](https://github.com/SteveRodrigue/MCD/issues/263))**
   - New `src/engine/pipeline/boost-resolution.ts` (`getAdditionalBoostCardCount`, `dealBoostCards`, `resolveBoostCards`) replaces the three copies of the boost loop (villain or minion attack, villain scheme, Villainous minion scheme). One log shape; the extra-boost log now also appears for minion schemes.
   - `GIVE_ADDITIONAL_BOOST_CARD` works in every activation through `state.activeBoostResolution` (it did nothing in schemes). `AttackExecutionContext.boostQueue` removed.

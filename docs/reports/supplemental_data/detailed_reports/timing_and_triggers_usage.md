@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-08T02:24:10.747Z`
+> **Generated:** `2026-10-10T02:49:44.637Z`
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
@@ -73,7 +73,7 @@
 | `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
 
-### <a id="constant"></a>`CONSTANT` (20 Cards)
+### <a id="constant"></a>`CONSTANT` (19 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -95,7 +95,6 @@
 | `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
 | `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
 | `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
-| `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_retaliate` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
 
 ### <a id="action"></a>`ACTION` (19 Cards)
@@ -122,7 +121,7 @@
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 
-### <a id="forced-response"></a>`FORCED_RESPONSE` (18 Cards)
+### <a id="forced-response"></a>`FORCED_RESPONSE` (16 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -130,7 +129,6 @@
 | `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
 | `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
 | `01084` | **Nick Fury (ally)** | `core` | `nick_fury_enters_play`, `nick_fury_round_end_discard` |
-| `01102` | **Sandman (minion)** | `core_encounter` | `sandman_attack_discard` |
 | `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` |
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_response` |
 | `01160` | **Legal Work (obligation)** | `core_encounter` | `legal_work_resolve` |
@@ -138,7 +136,6 @@
 | `01165` | **Eviction Notice (obligation)** | `core_encounter` | `eviction_notice_resolve` |
 | `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
-| `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_response` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 | `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
 | `01194` | **Unknown Card #01194** | `core_encounter` | `masterplan_when_revealed` |
@@ -246,7 +243,7 @@
 
 ## 2. Trigger Windows (`TriggerTypeSchema` — 20/30 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (37 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (36 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -269,7 +266,6 @@
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
 | `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
 | `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
-| `01172` | **Whiplash (minion)** | `core_encounter` | `whiplash_response` |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_when_revealed` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
 | `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
@@ -359,13 +355,6 @@
 | `01052` | **Chase Them Down (event)** | `core` | `chase_them_down` |
 | `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
 
-### <a id="minion-attacked"></a>`MINION_ATTACKED` (2 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01102` | **Sandman (minion)** | `core_encounter` | `sandman_attack_discard` |
-| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
-
 ### <a id="treachery-revealed"></a>`TREACHERY_REVEALED` (2 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -408,6 +397,12 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
+
+### <a id="minion-attacked"></a>`MINION_ATTACKED` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
 
 ### <a id="minion-enters-play"></a>`MINION_ENTERS_PLAY` (1 Cards)
 

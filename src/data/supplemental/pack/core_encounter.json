@@ -235,29 +235,15 @@
       }
     },
     "01102": {
-      "abilities": [
-        {
-          "id": "sandman_attack_discard",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "MINION_ATTACKED",
-          "steps": [
-            {
-              "effect": "DISCARD",
-              "effectParams": {
-                "source": "ENCOUNTER_DECK",
-                "count": 2
-              }
-            }
-          ]
-        }
-      ],
+      "noSupplementalNeeded": true,
+      "abilities": [],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-09T00:00:00Z",
+        "reviewedAt": "2026-10-09T00:00:00Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 50,
+        "confidence": 100,
         "originalText": "Toughness. <i>(This character enters play with a tough status card.)</i>"
       }
     },
@@ -1374,42 +1360,15 @@
       }
     },
     "01172": {
-      "abilities": [
-        {
-          "id": "whiplash_response",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "steps": [
-            {
-              "effect": "ADD_STATUS",
-              "effectParams": {
-                "status": "TOUGH",
-                "target": "SELF"
-              }
-            }
-          ]
-        },
-        {
-          "id": "whiplash_retaliate",
-          "timing": "CONSTANT",
-          "steps": [
-            {
-              "effect": "GRANT_KEYWORD",
-              "effectParams": {
-                "keyword": "Retaliate",
-                "amount": 1
-              }
-            }
-          ]
-        }
-      ],
+      "noSupplementalNeeded": true,
+      "abilities": [],
       "audit": {
         "createdAt": "2026-08-28T09:34",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-09T00:00:00Z",
+        "reviewedAt": "2026-10-09T00:00:00Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "Retaliate 1 <i>(After this character is attacked, deal 1 damage to the attacking character.)</i>"
       }
     },

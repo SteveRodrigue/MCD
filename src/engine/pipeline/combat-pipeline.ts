@@ -9,6 +9,7 @@ import {
   GamePhase,
   Keyword,
   hasKeyword,
+  StepFacts,
   VillainState,
   getActiveVillain,
   getVillainById,
@@ -155,6 +156,21 @@ export function step2_dispatchInitiationTriggers(
     attackerKind: attackerType,
     acceptOptionalTriggers,
   });
+}
+
+/**
+ * What the last finished attack did, as step result facts for the steps after the one that
+ * started it (#295). No attack outcome (cancelled in step 1) means no damage.
+ */
+export function getAttackOutcomeFacts(state: GameState): StepFacts {
+  const outcome = state.lastCombatOutcome;
+  const damage = outcome?.finalDamage ?? 0;
+  return {
+    damageDealt: damage,
+    ...(damage > 0 && outcome?.damagedCharacter
+      ? { damagedCharacter: outcome.damagedCharacter }
+      : {}),
+  };
 }
 
 /**
@@ -1000,6 +1016,7 @@ export function applyCalculatedAttackDamage(
     totalBoostIcons: attackContext.totalBoostIcons,
     defenseValue: attackContext.defenseValue || 0,
     finalDamage: rawDamage,
+    damagedCharacter: attackContext.damagedCharacter,
     hasOverkill: attackContext.hasOverkill,
     hasPiercing: attackContext.hasPiercing,
   };

@@ -54,7 +54,11 @@ import {
   enqueueDistributionPrompt,
   peekDecisionPrompt,
 } from '../pipeline/prompt-queue';
-import { beginEnemyAttack, resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
+import {
+  beginEnemyAttack,
+  getAttackOutcomeFacts,
+  resolveDefenderDeclaration,
+} from '../pipeline/combat-pipeline';
 import {
   applyDamageToTarget,
   defeatMinionsBeyondHitPoints,
@@ -246,6 +250,8 @@ export interface EffectResult {
   targetId?: string;
   facts?: StepFacts;
   discardedCards?: CardInstance[];
+  /** An attack step started an attack that is still open (a prompt is pending); its facts arrive on resume (#295). */
+  attackPending?: boolean;
 }
 
 /**
@@ -1022,11 +1028,37 @@ export function hasPendingSequence(state: GameState): boolean {
   return Boolean(state.pendingSequences && state.pendingSequences.length > 0);
 }
 
+/**
+ * The attack that paused a sequence is over: its damage facts join the result of the step that
+ * started it, which the remaining steps read as their previous result (#295).
+ */
+function joinAttackOutcome(state: GameState, pending: PendingSequence): void {
+  const facts = getAttackOutcomeFacts(state);
+  if (pending.previousResult) {
+    pending.previousResult = {
+      ...pending.previousResult,
+      facts: { ...(pending.previousResult.facts as StepFacts), ...facts },
+    };
+  }
+  const fromContext = pending.context.previousResult as StepResolutionResult | undefined;
+  if (fromContext) {
+    pending.context.previousResult = { ...fromContext, facts: { ...fromContext.facts, ...facts } };
+  }
+}
+
 export function resumePendingSequence(state: GameState): GameState {
   let currentState = state;
   while (!peekDecisionPrompt(currentState) && hasPendingSequence(currentState)) {
+    // The attack that paused the sequence is still open: its remaining steps keep waiting (#295).
+    if (
+      peekPendingSequence(currentState)?.awaitsAttackOutcome &&
+      currentState.activeAttackContext
+    ) {
+      break;
+    }
     const pending = popPendingSequence(currentState);
     if (!pending) break;
+    if (pending.awaitsAttackOutcome) joinAttackOutcome(currentState, pending);
     const stepResultsMap = new Map<string, StepResolutionResult>(
       Object.entries(pending.stepResultsMap || {}),
     );
@@ -1306,6 +1338,7 @@ export function executeSequence(
         stepResultsMap: Object.fromEntries(stepResultsMap.entries()),
         onomatopoeias,
         anyStepMutated,
+        ...(res.attackPending ? { awaitsAttackOutcome: true } : {}),
       });
 
       return {
@@ -1328,6 +1361,19 @@ export function executeSequence(
     facts: Object.keys(accumulatedFacts).length > 0 ? accumulatedFacts : lastExecutedResult?.facts,
     onomatopoeia: onomatopoeias.length > 0 ? onomatopoeias.join(' ➔ ') : 'SEQUENCE RESOLVED!',
   };
+}
+
+/**
+ * Result fields of a step that started an enemy attack (#295): the facts when the attack already
+ * ended, or the pending flag when it waits for a prompt (the facts join the result on resume).
+ */
+function attackOutcome(
+  state: GameState,
+  attacked: boolean,
+): Pick<EffectResult, 'facts' | 'attackPending'> {
+  if (!attacked) return {};
+  if (state.activeAttackContext) return { attackPending: true };
+  return { facts: getAttackOutcomeFacts(state) };
 }
 
 function recordAttackedEnemy(
@@ -3878,8 +3924,13 @@ export function executeStep(
     }
 
     case 'VILLAIN_ATTACKS': {
-      executeVillainAttackAgainstPlayer(state, player);
-      return { state, success: true, onomatopoeia: 'VILLAIN ATTACKS!' };
+      const begun = beginEnemyAttack(state, { type: 'VILLAIN' }, player.id);
+      return {
+        state: begun.state,
+        success: true,
+        onomatopoeia: 'VILLAIN ATTACKS!',
+        ...attackOutcome(begun.state, begun.attacked),
+      };
     }
 
     case 'ENEMY_ATTACKS': {
@@ -3916,6 +3967,7 @@ export function executeStep(
         mutatedState: begun.attacked,
         targetId: enemyId,
         onomatopoeia: begun.attacked ? 'ENEMY ATTACKS!' : 'NO ATTACK!',
+        ...attackOutcome(begun.state, begun.attacked),
       };
     }
 

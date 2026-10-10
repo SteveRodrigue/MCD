@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-10T20:24:51.773Z` | **Active Effects In Use:** **46/55**
+> **Generated:** `2026-10-10T20:44:26.888Z` | **Active Effects In Use:** **46/55**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
@@ -55,7 +55,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 | `01195` | **Unknown Card #01195** | `core_encounter` | `under_fire_when_revealed` |
 
-### <a id="add-status"></a>`ADD_STATUS` (12 Cards, 14 Step Occurrences)
+### <a id="add-status"></a>`ADD_STATUS` (13 Cards, 15 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -65,6 +65,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 | `01096` | **Rhino (villain)** | `core_encounter` | `rhino_stage_iii_when_revealed` |
 | `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
+| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_response` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed`, `heart_shaped_herb_boost` |

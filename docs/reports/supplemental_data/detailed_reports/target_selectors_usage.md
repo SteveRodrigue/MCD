@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-10T20:24:51.773Z` | **Active Target Selectors In Use:** **30/43**
+> **Generated:** `2026-10-10T20:44:26.888Z` | **Active Target Selectors In Use:** **30/43**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -141,6 +141,13 @@
 | `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_attach` |
 | `01053` | **Relentless Assault (event)** | `core` | `relentless_assault` |
 
+### <a id="damaged-character"></a>`DAMAGED_CHARACTER` (2 Cards, 2 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
+
 ### <a id="engaged-enemies"></a>`ENGAGED_ENEMIES` (2 Cards, 2 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -209,12 +216,6 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01080` | **Med Team (support)** | `core` | `med_team_heal` |
-
-### <a id="damaged-character"></a>`DAMAGED_CHARACTER` (1 Cards, 1 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
 
 ### <a id="defending-player"></a>`DEFENDING_PLAYER` (1 Cards, 1 Declarations)
 

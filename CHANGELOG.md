@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature (Engine): attack steps report damage dealt and the damaged character; Stampede `01106` stuns it ([Issue #295](https://github.com/SteveRodrigue/MCD/issues/295))**
+  - `VILLAIN_ATTACKS` and `ENEMY_ATTACKS` return facts (`damageDealt`, `damagedCharacter`); new result fact `DAMAGE_DEALT` for `IF_RESULT`; `DAMAGED_CHARACTER` also reads the previous step. Steps after an attack that waits for a prompt resume with the facts once the attack ends (`PendingSequence.awaitsAttackOutcome`).
+  - `01106` Stampede: the stun sentence added (no damage, fully defended or prevented, means no stun).
+  - Docs: `QUICK_REFERENCE.md`, specs `03` and `10`, ADR-0019 addendum. No Card Editor change (the result list follows the schema).
+  - Tests: `tests/engine/attack-outcome-facts.test.ts` (8).
+
 - **Refactor (Engine): Charge `01099` discards itself declaratively at the end of the attack ([Issue #294](https://github.com/SteveRodrigue/MCD/issues/294))**
   - New trigger `HOST_ATTACK_ENDED`: `step7_resolvePostAttackAndRetaliate` runs it on the attacker's attachments (villain or minion) after Retaliate. The hardcoded `01099` discard in the engine is removed; `01099` gets a `charge_discard` ability (`FORCED_RESPONSE`, `DISCARD` `source: SELF`). Rhino's behaviour is unchanged: +3 ATK and Overkill stay CONSTANT while attached, and a stunned Rhino keeps Charge (owner approved 2026-10-10).
   - Docs: `02_timings_and_triggers.md`, `QUICK_REFERENCE.md`, `04-combat-and-villain-phase.md`, ADR-0031 addendum. No Card Editor change (the trigger select follows the schema).

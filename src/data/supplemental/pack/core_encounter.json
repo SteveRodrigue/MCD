@@ -376,6 +376,18 @@
               "effectParams": {}
             },
             {
+              "id": "stampede_stun_damaged",
+              "gate": "IF_RESULT",
+              "gateParams": {
+                "result": "DAMAGE_DEALT"
+              },
+              "effect": "ADD_STATUS",
+              "effectParams": {
+                "status": "STUNNED",
+                "target": "DAMAGED_CHARACTER"
+              }
+            },
+            {
               "id": "stampede_alter_ego_surge",
               "gate": "IF_FORM",
               "gateParams": {

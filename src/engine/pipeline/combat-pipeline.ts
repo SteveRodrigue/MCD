@@ -1206,14 +1206,20 @@ export function step7_resolvePostAttackAndRetaliate(
     }
   }
 
-  // Discard single-use attack attachments on villain (e.g. Charge 01099)
-  if (attackContext.attackerType === 'VILLAIN') {
-    const chargeIdx = (attackingVillain(state, attackContext).attachments || []).findIndex(
-      (att) => att.card.code === '01099',
-    );
-    if (chargeIdx !== -1) {
-      const [chargeAtt] = attackingVillain(state, attackContext).attachments.splice(chargeIdx, 1);
-      state.encounterDiscard.push(chargeAtt);
+  // HOST_ATTACK_ENDED: attachments on the attacker react at the end of the attack (e.g. Charge
+  // discards itself). Iterate a copy since the ability removes its own attachment.
+  const attackerAttachments =
+    attackContext.attackerType === 'VILLAIN'
+      ? attackingVillain(state, attackContext).attachments
+      : attackContext.attackerCard?.attachments;
+  for (const att of [...(attackerAttachments || [])]) {
+    const owner =
+      (att.ownerId ? state.players.find((p) => p.id === att.ownerId) : undefined) ||
+      player ||
+      state.players[0];
+    for (const ability of att.card.enrichment?.abilities || []) {
+      if (ability.trigger !== 'HOST_ATTACK_ENDED') continue;
+      executeEffect(state, ability, { playerId: owner.id, sourceCardInstance: att });
     }
   }
 

@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-10T02:49:44.637Z`
+> **Generated:** `2026-10-10T20:24:51.773Z`
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
@@ -121,7 +121,7 @@
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 
-### <a id="forced-response"></a>`FORCED_RESPONSE` (16 Cards)
+### <a id="forced-response"></a>`FORCED_RESPONSE` (17 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -129,6 +129,7 @@
 | `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
 | `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
 | `01084` | **Nick Fury (ally)** | `core` | `nick_fury_enters_play`, `nick_fury_round_end_discard` |
+| `01099` | **Charge (attachment)** | `core_encounter` | `charge_discard` |
 | `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` |
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_response` |
 | `01160` | **Legal Work (obligation)** | `core_encounter` | `legal_work_resolve` |
@@ -241,7 +242,7 @@
 | :--- | :--- | :--- | :--- |
 | `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
 
-## 2. Trigger Windows (`TriggerTypeSchema` — 20/30 In Use)
+## 2. Trigger Windows (`TriggerTypeSchema` — 21/31 In Use)
 
 ### <a id="when-revealed"></a>`WHEN_REVEALED` (36 Cards)
 
@@ -391,6 +392,12 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01019a` | **She-Hulk (hero)** | `core` | `she_hulk_form_change` |
+
+### <a id="host-attack-ended"></a>`HOST_ATTACK_ENDED` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01099` | **Charge (attachment)** | `core_encounter` | `charge_discard` |
 
 ### <a id="host-would-attack"></a>`HOST_WOULD_ATTACK` (1 Cards)
 

@@ -62,6 +62,7 @@
                     "CHARACTER_DEFEATED",
                     "SCHEME_DEFEATED",
                     "HOST_WOULD_ATTACK",
+                    "HOST_ATTACK_ENDED",
                     "THREAT_WOULD_BE_PLACED",
                     "BASIC_ATTACK_PERFORMED",
                     "ATTACK_DEFENDED",

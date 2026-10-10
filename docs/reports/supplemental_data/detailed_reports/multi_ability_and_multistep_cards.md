@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-10T02:49:44.637Z`
+> **Generated:** `2026-10-10T20:24:51.773Z`
 
 ## 1. Cards with Multiple Abilities (2+ Declared Abilities — 17 Cards)
 
@@ -16,7 +16,7 @@
 | `01039` | **Rocket Boots** | `upgrade` | `core` | **2** | • `rocket_boots_hp` (`CONSTANT`, **1 step**)<br/>• `rocket_boots_aerial` (`HERO_ACTION`, **1 step**) |
 | `01074` | **Inspired** | `upgrade` | `core` | **3** | • `inspired_attach` (`ACTION`, **1 step**)<br/>• `inspired_thw_bonus` (`CONSTANT`, **1 step**)<br/>• `inspired_atk_bonus` (`CONSTANT`, **1 step**) |
 | `01084` | **Nick Fury** | `ally` | `core` | **2** | • `nick_fury_enters_play` (`FORCED_RESPONSE` / `ENTERS_PLAY`, **1 step**)<br/>• `nick_fury_round_end_discard` (`FORCED_RESPONSE` / `ROUND_ENDED`, **1 step**) |
-| `01099` | **Charge** | `attachment` | `core_encounter` | **2** | • `charge_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `charge_overkill` (`CONSTANT`, **1 step**) |
+| `01099` | **Charge** | `attachment` | `core_encounter` | **3** | • `charge_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `charge_overkill` (`CONSTANT`, **1 step**)<br/>• `charge_discard` (`FORCED_RESPONSE` / `HOST_ATTACK_ENDED`, **1 step**) |
 | `01100` | **Enhanced Ivory Horn** | `attachment` | `core_encounter` | **2** | • `ivory_horn_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `ivory_horn_discard_action` (`HERO_ACTION`, **1 step**) |
 | `01158` | **Heart-Shaped Herb** | `treachery` | `core_encounter` | **2** | • `heart_shaped_herb_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `heart_shaped_herb_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01164` | **Titania's Fury** | `treachery` | `core_encounter` | **2** | • `titanias_fury_when_revealed` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **3 steps**)<br/>• `titanias_fury_boost` (`BOOST` / `BOOST`, **1 step**) |

@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Card Editor: `capRule` parameter removed from the `DISTRIBUTE_AMOUNT` descriptor. Docs: ADR-0064 addendum, `QUICK_REFERENCE.md`, spec `05`.
   - Tests: `explosion-bomb-scare`, `decision-prompts`, `damage-pipeline-unified`, `effect-params-keys`, `effect-parameter-registry` (net +5).
 
+- **Tooling: `npm run rule` no longer needs Python**
+  - `scripts/lookup-rule.py` ported to `scripts/lookup-rule.ts` (run via `tsx`, same output). `package.json` script and the docs (`AGENTS.md`, `references/README.md`, `references/rules/README.md`) now use `npm run rule -- <term>`. `tools/build_rules_markdown.py` and `data/upstream/*.py` are unchanged.
+
 - **Feature (Engine): attack steps report damage dealt and the damaged character; Stampede `01106` stuns it ([Issue #295](https://github.com/SteveRodrigue/MCD/issues/295))**
   - `VILLAIN_ATTACKS` and `ENEMY_ATTACKS` return facts (`damageDealt`, `damagedCharacter`); new result fact `DAMAGE_DEALT` for `IF_RESULT`; `DAMAGED_CHARACTER` also reads the previous step. Steps after an attack that waits for a prompt resume with the facts once the attack ends (`PendingSequence.awaitsAttackOutcome`).
   - `01106` Stampede: the stun sentence added (no damage, fully defended or prevented, means no stun).

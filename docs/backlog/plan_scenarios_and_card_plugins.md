@@ -230,7 +230,7 @@ type Hook<A extends unknown[], R> = (state: GameState, ctx: ScenarioHookContext,
   - `mc40` NeXt Evolution
   - `mc45` Age of Apocalypse
   - `mc50` Agents of S.H.I.E.L.D.
-- Add a lookup path (extend `scripts/lookup-rule.py` or add a sibling) and update the Rules Reference Inspection Policy in AGENTS.md to cover campaign references.
+- Add a lookup path (extend `scripts/lookup-rule.ts` or add a sibling) and update the Rules Reference Inspection Policy in AGENTS.md to cover campaign references.
 - Produce a **pattern matrix**: which mechanics are common to all campaigns (ordered scenarios, log flags/counters, card awards, persistent hit points) and which are campaign-specific (e.g. the GMW ship/market, AoA's structure, MTS specifics).
 
 ### C2. Requirements (constraints already fixed)

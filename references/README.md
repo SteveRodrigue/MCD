@@ -13,7 +13,7 @@ This directory serves as the **immutable external ground truth** repository for 
 
 ### Quick Rules Lookup
 ```powershell
-python scripts/lookup-rule.py "toughness"
+npm run rule -- "toughness"
 # or
 npm run rule -- "toughness"
 ```

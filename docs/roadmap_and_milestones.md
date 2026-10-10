@@ -201,6 +201,8 @@ _Objective: Equip developers and card authors with an integrated visual editor a
 
 _Objective: Complete, test, and ship a 100% polished, playable vertical slice featuring all 5 Core Heroes battling against the Rhino Scenario on Standard and Expert difficulty with full UI and headless simulation proof ([ADR-0002](decisions/0002-decoupled-headless-rules-engine.md), [ADR-0004](decisions/0004-visual-art-direction-comic-pop-art.md))._
 
+**Open work:** every remaining Gate 1 issue is in the GitHub milestone [Gate 1 — Rhino Release](https://github.com/SteveRodrigue/MCD/milestone/2); the ordered queue is in [docs/backlog/teamwork_status_and_next_target.md](backlog/teamwork_status_and_next_target.md). Later gates have their own milestones (Gate 2 to Gate 4, plus Tech Debt & Tooling).
+
 ### 1.1. 🔴 `[Must-Have]` Core Set Player Cards & Primitives (101 Cards — Inbox Zero)
 
 - [x] **Universal Ability Step Sequencing & Cost Engine ([ADR-0024](decisions/0024-declarative-action-cost-engine-and-state-mutation-pre-checks.md), [ADR-0030](decisions/0030-unified-ability-step-sequence-architecture.md)):** Unified `steps: AbilityStep[]` pipeline with conditional gates (`ALWAYS`, `THEN`, `IF_AMOUNT_ZERO`, `IF_ALREADY_HAS_STATUS`, `IF_RESOURCE_MATCH`).
@@ -210,12 +212,12 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
   - She-Hulk (`01019a/b`): Focused Rage, Legal Practice ([Issue #6](https://github.com/SteveRodrigue/MCD/issues/6)), Split Personality ([Issue #7](https://github.com/SteveRodrigue/MCD/issues/7)), Superhuman Strength ([Issue #8](https://github.com/SteveRodrigue/MCD/issues/8)), Gamma Slam ([Issue #5](https://github.com/SteveRodrigue/MCD/issues/5)).
   - Iron Man (`01029a/b`): Tech Hand Size ([Issue #9](https://github.com/SteveRodrigue/MCD/issues/9)), Futurist SEARCH_AND_SELECT ([Issue #10](https://github.com/SteveRodrigue/MCD/issues/10), [Issue #38](https://github.com/SteveRodrigue/MCD/issues/38)), Arc Reactor, Powered Gauntlets, Repulsor Blast ([Issue #12](https://github.com/SteveRodrigue/MCD/issues/12)), Pepper Potts ([Issue #13](https://github.com/SteveRodrigue/MCD/issues/13)), Stark Tower ([Issue #14](https://github.com/SteveRodrigue/MCD/issues/14)).
   - Black Panther (`01040a/b`): Setup ability ([Issue #16](https://github.com/SteveRodrigue/MCD/issues/16)), Wakanda Forever multi-upgrade resolution ([Issue #18](https://github.com/SteveRodrigue/MCD/issues/18)), Energy Daggers ([Issue #19](https://github.com/SteveRodrigue/MCD/issues/19)), Vibranium Suit ([Issue #20](https://github.com/SteveRodrigue/MCD/issues/20)), Ancestral Knowledge ([Issue #17](https://github.com/SteveRodrigue/MCD/issues/17)).
-- [ ] **Remaining Core Player Card Issues:**
+- [x] **Remaining Core Player Card Issues:**
   - [x] **[Issue #46](https://github.com/SteveRodrigue/MCD/issues/46):** `[BUG]: Helicarrier cost reduction` across all player card types ([ADR-0061](decisions/0061-declarative-next-card-cost-reduction-aura.md)) ✅ (Completed)
   - [x] **[Issue #45](https://github.com/SteveRodrigue/MCD/issues/45):** `[BUG]: Alpha Flight Station` discard and draw sequencing ([ADR-0055](decisions/0055-universal-ability-resource-payment-and-action-verb-unification.md)) ✅ (Completed)
   - [x] **[Issue #48](https://github.com/SteveRodrigue/MCD/issues/48):** `[FEAT]: prevent infinite loop` in circular trigger chains ([ADR-0053](decisions/0053-infinite-trigger-loop-detection-and-prevention-guardrails.md)).
   - [x] **Universal Uses (X) Counter Depletion & Discard Lifecycle Architecture ([ADR-0057](decisions/0057-universal-uses-counter-depletion-and-discard-lifecycle-architecture.md)):** Centralized counter depletion and discard lifecycle in `cost-engine.ts`, automated discard in `executeAbilityCost`, generator depletion in `action-dispatcher.ts`, and strict non-discard guard for Hawkeye (`01066`).
-  - [ ] **[Issue #49](https://github.com/SteveRodrigue/MCD/issues/49):** `[BUG]: reference to card.text in code` normalization.
+  - [x] **[Issue #49](https://github.com/SteveRodrigue/MCD/issues/49):** `[BUG]: reference to card.text in code` normalization. ✅ (Completed)
   - [x] **[Issue #52](https://github.com/SteveRodrigue/MCD/issues/52):** `[FEAT]: Supplemental Data Schema - validation and helper` ([ADR-0043](decisions/0043-codebase-grounded-supplemental-schema-validation-and-live-vscode-integration.md)).
   - [x] **[Issue #53](https://github.com/SteveRodrigue/MCD/issues/53):** `feat(tooling): Card text parsing and declarative mapping analyzer tool` ([ADR-0044](decisions/0044-card-text-parsing-and-declarative-mapping-analyzer.md)).
   - [x] **[Issue #66](https://github.com/SteveRodrigue/MCD/issues/66):** `feat(engine): Unify fragmented DISCARD_* primitives into universal DISCARD with source, filter, and until-condition`.
@@ -228,7 +230,7 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
   - [x] **Declarative Schema Taxonomy & Primitive Consolidation ([ADR-0058](decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md)):** Consolidated card triggers, effect primitives, and target selectors; migrated pack data; deleted legacy aliases; realigned test suite; upgraded Card Editor UI; and synchronized documentation set. ✅ (Completed)
   - [x] **[Issue #120](https://github.com/SteveRodrigue/MCD/issues/120) / [Issue #123](https://github.com/SteveRodrigue/MCD/issues/123):** `feat(engine): Deconflate Damage and Threat Interception Primitives: Introduce PREVENT_THREAT` ([ADR-0063](decisions/0063-deconflate-damage-and-threat-interception-primitives.md)) — Establish strict domain separation between character damage prevention (`PREVENT_DAMAGE`) and scheme threat interception (`PREVENT_THREAT`), update Card Supplemental Editor, and retrofit Core Set cards (`01019b`, `01061`, `01085`). ✅ (Completed)
   - [x] **[Issue #124](https://github.com/SteveRodrigue/MCD/issues/124):** `fix(engine,ui): First-Class Declarative Heal Ability Cost Primitive & Card Editor UI Support` ([ADR-0065](decisions/0065-first-class-heal-ability-cost-primitive.md)) — Formalize first-class atomic heal ability costs (`heal: { amount, target }`) in `AbilityCostSchema`, purge legacy `costCheck`, and expose Heal Cost in Card Editor UI (`01010a`). ✅ (Completed)
-  - [ ] **Composable Value Transformers, Event Interception & Explicit Condition Contracts ([ADR-0049](decisions/0049-composable-value-transformers-and-event-interception.md)):**
+  - [x] **Composable Value Transformers, Event Interception & Explicit Condition Contracts ([ADR-0049](decisions/0049-composable-value-transformers-and-event-interception.md)):**
     - [x] **[Issue #89](https://github.com/SteveRodrigue/MCD/issues/89):** `feat(schema): Formalize StepConditionSchema and DynamicValueSource for composable card effects (ADR-0049)` ✅ (Completed)
     - [x] **[Issue #90](https://github.com/SteveRodrigue/MCD/issues/90):** `feat(engine): Implement universal CONSUME_INTERCEPTED_EVENT and scalar value binding in trigger dispatcher (ADR-0049)` ✅ (Completed)
     - [x] **[Issue #91](https://github.com/SteveRodrigue/MCD/issues/91):** `feat(engine): Implement explicit condition evaluation and IF_CONDITION_MET sequential gating (ADR-0049)` ✅ (Completed)
@@ -250,13 +252,13 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
 - [x] **Granular Villain Phase Stepper & Interactive Turn Pacing ([ADR-0068](decisions/0068-granular-villain-phase-stepper-and-interactive-turn-pacing.md) / [Issue #140](https://github.com/SteveRodrigue/MCD/issues/140)) ✅ (Completed):** Step-by-step interactive milestone progression, auto-advance pacing controls (Normal, Fast, Manual, Instant), pop-art Combat Boost calculation modal, and comic damage splashes.
 - [x] **Align Villain Phase End Ordering & Rule-Step Labels with RR v1.8 ([Issue #145](https://github.com/SteveRodrigue/MCD/issues/145)) ✅ (Completed):** Step 5 First Player Token rotation before Step 6 end-of-phase/round resolution, phase duration/limit expiration in Step 6a, and RR v1.8 step numbering (3. Deal, 4. Reveal, 5. First Player).
 - [x] **Dynamic Hand & Zone Displays:** Fan-out hand cards, vertical scheme threat gauge, and hero tableau layout.
-- [ ] **[Issue #50](https://github.com/SteveRodrigue/MCD/issues/50):** `[IMPROVEMENT] Adjust UI layout in multiplayer (2+ hero board)` for clean tabletop layout.
-- [ ] **[Issue #4](https://github.com/SteveRodrigue/MCD/issues/4):** `feat(ui): Display active and dynamic traits on card hover/mouseover`.
+- [x] **[Issue #50](https://github.com/SteveRodrigue/MCD/issues/50):** `[IMPROVEMENT] Adjust UI layout in multiplayer (2+ hero board)` for clean tabletop layout. ✅ (Completed)
+- [x] **[Issue #4](https://github.com/SteveRodrigue/MCD/issues/4):** `feat(ui): Display active and dynamic traits on card hover/mouseover`. ✅ (Completed)
 - [x] **Interactive Card Play & Resource Payment Modal ([ADR-0055](decisions/0055-universal-ability-resource-payment-and-action-verb-unification.md) / [Issue #108](https://github.com/SteveRodrigue/MCD/issues/108)) ✅ (Completed):** High-contrast generator tapping, double-resource auto-selection, and interactive paid ability activations for attachments and tableau cards.
 
 ### 1.4. 🔴 `[Must-Have]` Automated 100-Game Headless Match Simulation Gate
 
-- [ ] **Monte Carlo Verification Suite (`tests/engine/match-simulator.test.ts`):**
+- [ ] **Monte Carlo Verification Suite ([Issue #304](https://github.com/SteveRodrigue/MCD/issues/304), needs [Issue #252](https://github.com/SteveRodrigue/MCD/issues/252) seeded RNG):**
   - Automated headless runner executing 100 complete simulated games (Spider-Man, Captain Marvel, She-Hulk, Iron Man, Black Panther) against Rhino on Standard and Expert.
   - Asserts zero state corruption, zero deadlocks, and verified win/loss condition evaluations.
 

@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-10-10T20:44:26.888Z`  
+> **Generated:** `2026-10-10T21:28:03.542Z`  
 > **Source Packs Scanned:** `aoa_encounter, core, core_encounter, cw_encounter, mts`
 
 ---
@@ -15,8 +15,8 @@
 | **Open Ambiguity Reports** | **2** | Blocked | Cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🟢 0 | Cards marked `noSupplementalNeeded` that have printed rules text |
 | **Overall Schema Engine Coverage** | **100.0%** | [Matrix](detailed_reports/schema_code_path_audit.md) | Percentage of all schema primitives with active engine code paths |
-| **Effect Types Code Path Coverage** | **100.0%** | **55/55** | [46 In Use](detailed_reports/effects_usage.md) |
-| **Target Selectors Code Path Coverage** | **100.0%** | **43/43** | [30 In Use](detailed_reports/target_selectors_usage.md) |
+| **Effect Types Code Path Coverage** | **100.0%** | **55/55** | [47 In Use](detailed_reports/effects_usage.md) |
+| **Target Selectors Code Path Coverage** | **100.0%** | **43/43** | [29 In Use](detailed_reports/target_selectors_usage.md) |
 | **Condition Gates Code Path Coverage** | **100.0%** | **9/9** | [9 In Use](detailed_reports/condition_gates_usage.md) |
 | **Step Conditions Code Path Coverage** | **100.0%** | **0/0** | [0 In Use](detailed_reports/condition_gates_usage.md) |
 | **Trigger Types Code Path Coverage** | **100.0%** | **31/31** | [21 In Use](detailed_reports/timing_and_triggers_usage.md) |
@@ -78,7 +78,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | `CHOSEN_MINION` | **2** | 2 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-minion) |
 | `ALL_ENEMIES` | **2** | 2 | [Inspect Cards](detailed_reports/target_selectors_usage.md#all-enemies) |
 
-> 🔗 **[View all 30 Target Selectors in Use →](detailed_reports/target_selectors_usage.md)**
+> 🔗 **[View all 29 Target Selectors in Use →](detailed_reports/target_selectors_usage.md)**
 
 ---
 
@@ -98,7 +98,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 
 | Effect Primitive | Declaring Cards | Occurrences | Detailed Card List |
 | :--- | :---: | :---: | :--- |
-| `DEAL_DAMAGE` | **24 cards** | 25 steps | [View Cards](detailed_reports/effects_usage.md#deal-damage) |
+| `DEAL_DAMAGE` | **23 cards** | 24 steps | [View Cards](detailed_reports/effects_usage.md#deal-damage) |
 | `DISCARD` | **15 cards** | 16 steps | [View Cards](detailed_reports/effects_usage.md#discard) |
 | `ADD_STATUS` | **13 cards** | 15 steps | [View Cards](detailed_reports/effects_usage.md#add-status) |
 | `DRAW` | **11 cards** | 11 steps | [View Cards](detailed_reports/effects_usage.md#draw) |
@@ -112,7 +112,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | `READY` | **5 cards** | 5 steps | [View Cards](detailed_reports/effects_usage.md#ready) |
 | `CHANGE_FORM` | **5 cards** | 5 steps | [View Cards](detailed_reports/effects_usage.md#change-form) |
 
-> 🔗 **[View all 46 Effects in Use →](detailed_reports/effects_usage.md)**
+> 🔗 **[View all 47 Effects in Use →](detailed_reports/effects_usage.md)**
 
 ---
 
@@ -133,8 +133,8 @@ Every schema primitive is verified for a matching engine handler. Check the comp
 ### Summary of Unhandled or Zero-Usage Primitives:
 | Category | Schema Total | Unused in Cards (0 Cards) | Missing Engine Handler |
 | :--- | :---: | :---: | :---: |
-| **Effects** | 55 | 9 | 🟢 0 |
-| **Targets** | 43 | 13 | 🟢 0 |
+| **Effects** | 55 | 8 | 🟢 0 |
+| **Targets** | 43 | 14 | 🟢 0 |
 | **Gates** | 9 | 0 | 🟢 0 |
 | **Step Conditions** | 0 | 0 | 🟢 0 |
 | **Triggers** | 31 | 10 | 🟢 0 |

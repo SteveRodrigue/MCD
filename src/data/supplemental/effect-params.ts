@@ -24,7 +24,7 @@ export const EFFECT_PARAM_KEYS: Record<EffectType, readonly string[]> = {
   DEAL_DAMAGE: ['amount', 'dynamicBonus', 'finisherBonus', 'target', 'targetPlayer'],
   DECLARE_DEFENDER: [],
   DISCARD: ['count', 'fallback', 'filter', 'matchingDestination', 'mode', 'source', 'target', 'untilFilter'],
-  DISTRIBUTE_AMOUNT: ['allocationDomain', 'budget', 'capRule', 'targetScope'],
+  DISTRIBUTE_AMOUNT: ['allocationDomain', 'budget', 'targetScope'],
   DOUBLE_RESOURCE_FOR_ASPECT: ['aspect'],
   DRAW: ['count', 'dynamicBonus', 'limit', 'target', 'targetPlayerId'],
   ENEMY_ATTACKS: ['enemy', 'target'],

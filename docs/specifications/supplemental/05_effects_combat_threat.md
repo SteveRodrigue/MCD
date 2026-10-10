@@ -8,7 +8,7 @@
 
 - **References:** [`effects/index.ts:L43`](../../../src/engine/effects/index.ts#L43)
 - **Description:** Deals flat or dynamically calculated damage to target enemy or character. Handles Tough status removal, overkill, and character defeat.
-- **Always through the damage pipeline (#247, ADR-0078):** every target kind (chosen minion, villain, `ENGAGED_ENEMIES`, `ALL_ENEMIES`, `ALL_CHARACTERS`, the identity selectors, `ALL_HEROES`, the `ALL_HEROES_AND_ALLIES` assignment) builds its target list and calls `applyDamageToTarget` once per target. So Tough, damage shields ("would be dealt" / "would be taken"), defeat triggers, Overkill, excess damage and the hero-defeat loss are applied the same way for every target, and `isAttack` (from `effectParams.isAttack` or the context) decides Retaliate and attack-only shields. The step's prompts (choose a player, explosion distribution) are unchanged.
+- **Always through the damage pipeline (#247, ADR-0078):** every target kind (chosen minion, villain, `ENGAGED_ENEMIES`, `ALL_ENEMIES`, `ALL_CHARACTERS`, the identity selectors, `ALL_HEROES`, `ALL_HEROES_AND_ALLIES`) builds its target list and calls `applyDamageToTarget` once per target. So Tough, damage shields ("would be dealt" / "would be taken"), defeat triggers, Overkill, excess damage and the hero-defeat loss are applied the same way for every target, and `isAttack` (from `effectParams.isAttack` or the context) decides Retaliate and attack-only shields. The step's "choose a player" prompt is unchanged.
 - **Overkill:** when the step has Overkill (granted by `GRANT_ATTACK_KEYWORD` earlier in the same ability, or the printed Overkill keyword) and the target is a minion that is defeated, the damage beyond the minion's remaining hit points is dealt to the active villain through the pipeline (so the villain's Tough and shields apply).
 - **Excess and defeat:** the pipeline result carries `excessDamage` and `targetDefeated`; a chosen-minion step with `condition: "EXCESS_DAMAGE_DEALT"` reads the first, `condition: "TARGET_DEFEATED"` the second.
 - **Hero defeat:** a hero reduced to 0 hit points is eliminated (`eliminatePlayer`, ADR-0079), in the pipeline only. The remaining heroes keep playing; the game is lost when the last hero is eliminated.
@@ -34,6 +34,35 @@
 | `ranged`           | `boolean`                      | No       | `false`          | Ignores Retaliate keywords on the target.                                                |
 | `finisherBonus`    | `number`                       | No       | -                | Bonus damage when ability resolves as final step in a sequence (e.g. *Wakanda Forever!*). |
 | `dynamicBonus`     | `number \| DynamicValueSource` | No       | -                | Dynamic bonus damage added to amount (e.g. *Supersonic Punch* `01032`).                  |
+
+- **`ALL_HEROES_AND_ALLIES` means "each" (#296):** `DEAL_DAMAGE` with this target deals the amount to every hero (alter-ego players are not heroes) and every ally. It never splits the amount; to assign an amount among them use `DISTRIBUTE_AMOUNT`.
+
+---
+
+### `DISTRIBUTE_AMOUNT`
+
+- **Description:** Assigns a budget (damage, threat removal, heal, counters, exhaust) among the legal targets of `targetScope` (ADR-0064). Used by *Explosion* `01111`.
+- **Who assigns:** an encounter card that names no player leaves the choice to the first player (RR v1.8 First Player); any other source is assigned by the player who resolves it.
+- **No prompt when there is nothing to choose:** no legal target ignores the budget; one legal target takes as much of the budget as it can; two or more queue a `DISTRIBUTE_POINTS` prompt.
+- **Cap:** derived from `allocationDomain` (`DAMAGE`: a character takes at most its remaining hit points). There is no `capRule` parameter. The submitted assignment is validated: the total equals the budget (limited by the capacity of the legal targets), each target is legal and each portion is within its cap; otherwise it is rejected and the prompt stays.
+- **Damage goes through the damage pipeline:** every portion is applied with `applyDamageToTarget` (Tough, shields, DAMAGE_TAKEN, defeat and its triggers), the source card being the defeat source.
+
+```json
+{
+  "effect": "DISTRIBUTE_AMOUNT",
+  "effectParams": {
+    "allocationDomain": "DAMAGE",
+    "budget": { "from": "CARD_ATTRIBUTE", "fromCard": { "zone": "IN_PLAY", "cardCode": "01109" }, "attribute": "THREAT" },
+    "targetScope": "ALL_HEROES_AND_ALLIES"
+  }
+}
+```
+
+| Parameter          | Type                                                                 | Required | Default                   | Description                                 |
+| :----------------- | :------------------------------------------------------------------- | :------- | :------------------------ | :------------------------------------------ |
+| `allocationDomain` | `"DAMAGE" | "THREAT_REMOVAL" | "HEAL" | "COUNTERS" | "EXHAUST"` | No       | `"DAMAGE"`                | What is distributed.                        |
+| `budget`           | `number | DynamicValueSource`                                       | Yes      | -                         | Total to assign.                            |
+| `targetScope`      | `TargetSelector`                                                     | No       | `"ALL_HEROES_AND_ALLIES"` | Set of targets eligible for the assignment. |
 
 ---
 

@@ -155,6 +155,24 @@ describe('effectParams key guard (#230)', () => {
     ]);
   });
 
+  it('rejects capRule on DISTRIBUTE_AMOUNT: the cap comes from allocationDomain (#296)', () => {
+    const card = {
+      code: '99995',
+      abilities: [
+        {
+          steps: [
+            {
+              effect: 'DISTRIBUTE_AMOUNT',
+              effectParams: { allocationDomain: 'DAMAGE', budget: 3, capRule: 'REMAINING_HP' },
+            },
+          ],
+        },
+      ],
+    };
+    const v = findUnknownEffectParamKeys(card, '99995');
+    expect(v).toEqual([{ card: '99995', effect: 'DISTRIBUTE_AMOUNT', key: 'capRule' }]);
+  });
+
   it('every ATTACHMENT_DAMAGE_SHIELD step in the packs declares a numeric maxAbsorb (#232)', () => {
     const missing: string[] = [];
     const walk = (node: unknown, code: string): void => {

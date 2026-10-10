@@ -159,14 +159,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         defaultValue: 'ALL_HEROES_AND_ALLIES',
         description: 'Set of targets eligible for point allocation',
       },
-      {
-        key: 'capRule',
-        label: 'Cap Rule',
-        type: 'select',
-        options: ['REMAINING_HP', 'SUFFERED_DAMAGE', 'CURRENT_THREAT', 'NONE'] as const,
-        defaultValue: 'NONE',
-        description: 'Maximum points assignable to a single target',
-      },
     ],
   },
   PREVENT_DAMAGE: {

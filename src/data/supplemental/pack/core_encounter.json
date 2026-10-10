@@ -539,9 +539,10 @@
               "gateParams": {
                 "cardCode": "01109"
               },
-              "effect": "DEAL_DAMAGE",
+              "effect": "DISTRIBUTE_AMOUNT",
               "effectParams": {
-                "amount": {
+                "allocationDomain": "DAMAGE",
+                "budget": {
                   "from": "CARD_ATTRIBUTE",
                   "fromCard": {
                     "zone": "IN_PLAY",
@@ -549,7 +550,7 @@
                   },
                   "attribute": "THREAT"
                 },
-                "target": "ALL_HEROES_AND_ALLIES"
+                "targetScope": "ALL_HEROES_AND_ALLIES"
               }
             },
             {

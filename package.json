@@ -21,7 +21,7 @@
     "card:validate": "tsx scripts/validate-card.ts",
     "parse:card": "tsx tools/audit/card-text-parser.ts",
     "schema:generate": "tsx tools/generate-supplemental-schema.ts",
-    "rule": "python scripts/lookup-rule.py",
+    "rule": "tsx scripts/lookup-rule.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write \"**/*.{ts,tsx,js}\"",

@@ -13,7 +13,7 @@ and the post-task procedure is in
 ## Project principles
 
 - Follow Marvel Champions Rules Reference v1.8 for gameplay behavior.
-- **Rules Reference Inspection Policy:** Agents must use the structured Markdown reference in `references/rules/` (or the lookup command `npm run rule -- <term>` / `python scripts/lookup-rule.py <term>`) for all gameplay rules research, card translations, and engine verification. Agents must **not** open or read the raw PDF (`references/mc_rulesreference_v18_compressed.pdf`) unless confidence on an ambiguous reading is low (<95%) or explicitly requested by the user.
+- **Rules Reference Inspection Policy:** Agents must use the structured Markdown reference in `references/rules/` (or the lookup command `npm run rule -- <term>`) for all gameplay rules research, card translations, and engine verification. Agents must **not** open or read the raw PDF (`references/mc_rulesreference_v18_compressed.pdf`) unless confidence on an ambiguous reading is low (<95%) or explicitly requested by the user.
 - **Cross-Cutting Rules Protocol:** When researching a rule or mechanic in `references/rules/`:
   1. Inspect the primary entry in `references/rules/glossary/`.
   2. Follow and inspect all direct `See also:` and `Referenced by:` links, plus any linked FAQ/errata items.

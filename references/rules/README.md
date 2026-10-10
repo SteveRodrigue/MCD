@@ -54,7 +54,7 @@ This directory contains the structured, modularized Markdown translation of the 
 ## Fast Terminal Rule Lookup
 You can quickly retrieve any rule entry directly in PowerShell / terminal without loading large files:
 ```powershell
-python scripts/lookup-rule.py "toughness"
+npm run rule -- "toughness"
 ```
 Or via npm:
 ```bash

@@ -12,6 +12,7 @@ export const ResultFactSchema = z.enum([
   'ALREADY_HAD_STATUS',
   'STATUS_REMOVED',
   'AMOUNT_ZERO',
+  'DAMAGE_DEALT',
 ]);
 export type ResultFact = z.infer<typeof ResultFactSchema>;
 
@@ -28,6 +29,10 @@ export interface StepFacts {
   statusRemoved?: boolean;
   amountZero?: boolean;
   villainDefeated?: boolean;
+  /** Damage an enemy attack dealt after step 6; the fact DAMAGE_DEALT is true when above 0. */
+  damageDealt?: number;
+  /** The friendly character that attack damaged, read by the DAMAGED_CHARACTER selector. */
+  damagedCharacter?: { type: 'HERO' | 'ALLY'; playerId: string; allyInstanceId?: string };
 }
 
 export const FACT_PRODUCERS: Record<ResultFact, string[] | 'ALL'> = {
@@ -39,6 +44,7 @@ export const FACT_PRODUCERS: Record<ResultFact, string[] | 'ALL'> = {
   ALREADY_HAD_STATUS: ['ADD_STATUS'],
   STATUS_REMOVED: ['REMOVE_STATUS'],
   AMOUNT_ZERO: 'ALL',
+  DAMAGE_DEALT: ['VILLAIN_ATTACKS', 'ENEMY_ATTACKS'],
 };
 
 export function canEffectProduceFact(effect: string, fact: ResultFact): boolean {

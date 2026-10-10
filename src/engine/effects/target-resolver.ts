@@ -267,7 +267,7 @@ export function resolveTargets(
     // ability resolves after step 6. Nothing when that character has since left play (a defeated
     // ally) or was reduced to 0 HP (game over).
     case 'DAMAGED_CHARACTER': {
-      const damaged = context?.damagedCharacter;
+      const damaged = context?.damagedCharacter ?? context?.previousResult?.facts?.damagedCharacter;
       const owner = damaged ? state.players.find((p) => p.id === damaged.playerId) : undefined;
       if (!damaged || !owner) return [];
       if (damaged.type === 'ALLY') {

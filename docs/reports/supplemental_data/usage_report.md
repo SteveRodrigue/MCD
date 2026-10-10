@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-10-10T20:24:51.773Z`  
+> **Generated:** `2026-10-10T20:44:26.888Z`  
 > **Source Packs Scanned:** `aoa_encounter, core, core_encounter, cw_encounter, mts`
 
 ---
@@ -88,7 +88,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | :--- | :---: | :---: | :---: | :--- |
 | **Condition Gates** | **9** | 9 | 100.0% | [View Gates Breakdown](detailed_reports/condition_gates_usage.md#1-condition-gates-conditiongateschema) |
 | **Step Conditions** | **0** | 0 | 100.0% | [View Step Conditions](detailed_reports/condition_gates_usage.md#2-step-conditions-stepconditionschema) |
-| **Gate Parameters** | **10** | - | - | `trait` (4), `resource` (5), `count` (2), `form` (7), `negate` (5), `result` (4), `cardCode` (3), `step` (3), `attackerKind` (2), `zone` (1) |
+| **Gate Parameters** | **10** | - | - | `trait` (4), `resource` (5), `count` (2), `form` (7), `negate` (5), `result` (5), `cardCode` (3), `step` (3), `attackerKind` (2), `zone` (1) |
 
 ---
 
@@ -100,7 +100,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | :--- | :---: | :---: | :--- |
 | `DEAL_DAMAGE` | **24 cards** | 25 steps | [View Cards](detailed_reports/effects_usage.md#deal-damage) |
 | `DISCARD` | **15 cards** | 16 steps | [View Cards](detailed_reports/effects_usage.md#discard) |
-| `ADD_STATUS` | **12 cards** | 14 steps | [View Cards](detailed_reports/effects_usage.md#add-status) |
+| `ADD_STATUS` | **13 cards** | 15 steps | [View Cards](detailed_reports/effects_usage.md#add-status) |
 | `DRAW` | **11 cards** | 11 steps | [View Cards](detailed_reports/effects_usage.md#draw) |
 | `MODIFY_STAT` | **11 cards** | 13 steps | [View Cards](detailed_reports/effects_usage.md#modify-stat) |
 | `SURGE` | **11 cards** | 11 steps | [View Cards](detailed_reports/effects_usage.md#surge) |

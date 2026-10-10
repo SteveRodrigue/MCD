@@ -141,6 +141,7 @@ Every step in `abilities[].steps` may define a `gate` and associated `gateParams
 | `ALREADY_HAD_STATUS`  | `ADD_STATUS`     | Character already possessed that status card. |
 | `STATUS_REMOVED`      | `REMOVE_STATUS`  | Status card was successfully discarded.       |
 | `AMOUNT_ZERO`         | `ALL`            | Evaluated numeric amount resolved to 0.       |
+| `DAMAGE_DEALT`        | `VILLAIN_ATTACKS`, `ENEMY_ATTACKS` | The attack dealt damage after step 6 (above 0); fact `damagedCharacter` feeds `DAMAGED_CHARACTER`. |
 
 _Invariants:_
 

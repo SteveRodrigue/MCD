@@ -104,6 +104,9 @@ export function evaluateStepGate(
         case 'AMOUNT_ZERO':
           gateSatisfied = Boolean(evaluatedResult.facts.amountZero);
           break;
+        case 'DAMAGE_DEALT':
+          gateSatisfied = (evaluatedResult.facts.damageDealt ?? 0) > 0;
+          break;
         default:
           gateSatisfied = false;
           break;

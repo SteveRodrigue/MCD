@@ -31,7 +31,7 @@ Steps execute conditionally by specifying `gate` from the 9 canonical `StepGate`
   - `gateParams`: `{ step?: string, negate?: boolean }`.
 - `"IF_RESULT"`: Executes Step $N$ only if the referenced step produced the specified milestone fact.
   - `gateParams`: `{ fact: ResultFact, step?: string, negate?: boolean }`.
-  - Supported facts: `"defeated"`, `"excessDamage"`, `"amountZero"`, `"threatZero"`, `"fullyHealed"`, `"statusAdded"`, `"statusRemoved"`, `"villainDefeated"`.
+  - Supported facts: `"defeated"`, `"excessDamage"`, `"amountZero"`, `"threatZero"`, `"fullyHealed"`, `"statusAdded"`, `"statusRemoved"`, `"villainDefeated"`, `"DAMAGE_DEALT"` (an enemy attack step, `VILLAIN_ATTACKS` or `ENEMY_ATTACKS`, dealt damage; #295). The attack opens defender and prevention prompts, so the steps after it wait in a pending sequence and resume once the attack is over, with the attack's facts (`damageDealt`, `damagedCharacter`) joined to the previous result. A cancelled attack (stunned enemy) has no facts, so the gate fails.
 - `"IF_FORM"`: Executes Step $N$ based on identity form (hero vs alter-ego).
   - `gateParams`: `{ form?: "HERO" | "ALTER_EGO", target?: "INITIATOR" | "TARGET", negate?: boolean }`.
 - `"IF_PLAYER_HAS_TRAIT"`: Executes Step $N$ if the player possesses the specified trait (e.g. `[[AERIAL]]`).

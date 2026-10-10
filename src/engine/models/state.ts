@@ -327,6 +327,8 @@ export interface CombatResolutionSummary {
   totalBoostIcons: number;
   defenseValue: number;
   finalDamage: number;
+  /** The friendly character that took the damage, for later steps of the ability that started the attack (#295). */
+  damagedCharacter?: DamagedCharacter;
   hasOverkill?: boolean;
   hasPiercing?: boolean;
 }
@@ -491,6 +493,8 @@ export interface PendingSequence {
   stepResultsMap?: Record<string, any>;
   onomatopoeias?: string[];
   anyStepMutated?: boolean;
+  /** The last step started an enemy attack that was still open: its damage facts join the previous result on resume (#295). */
+  awaitsAttackOutcome?: boolean;
 }
 
 export interface PendingActivation {

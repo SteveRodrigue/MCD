@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-10T20:24:51.773Z`
+> **Generated:** `2026-10-10T20:44:26.888Z`
 
 ## 1. Condition Gates (`StepGateSchema` — 9/9 In Use)
 
@@ -23,6 +23,16 @@
 | `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
 | `01053` | **Relentless Assault (event)** | `core` | `relentless_assault` |
 
+### <a id="if-result"></a>`IF_RESULT` (5 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
+| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
+| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
+| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
+| `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
+
 ### <a id="if-player-has-trait"></a>`IF_PLAYER_HAS_TRAIT` (3 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -30,15 +40,6 @@
 | `01012` | **Crisis Interdiction (event)** | `core` | `crisis_interdiction` |
 | `01016` | **Captain Marvel's Helmet (upgrade)** | `core` | `captain_marvel_helmet_def` |
 | `01037` | **Mark V Helmet (upgrade)** | `core` | `mark_v_helmet` |
-
-### <a id="if-result"></a>`IF_RESULT` (4 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
-| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
-| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
-| `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
 
 ### <a id="then"></a>`THEN` (3 Cards)
 

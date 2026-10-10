@@ -2,11 +2,11 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-10T20:44:26.888Z` | **Active Effects In Use:** **46/55**
+> **Generated:** `2026-10-10T21:28:03.542Z` | **Active Effects In Use:** **47/55**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
-### <a id="deal-damage"></a>`DEAL_DAMAGE` (24 Cards, 25 Step Occurrences)
+### <a id="deal-damage"></a>`DEAL_DAMAGE` (23 Cards, 24 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -32,7 +32,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01077` | **Counter-Punch (event)** | `core` | `counter_punch_response` |
 | `01087` | **Haymaker (event)** | `core` | `haymaker` |
 | `01103` | **Shocker (minion)** | `core_encounter` | `shocker_when_revealed` |
-| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
 
 ### <a id="discard"></a>`DISCARD` (15 Cards, 16 Step Occurrences)
@@ -338,6 +337,12 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
+
+### <a id="distribute-amount"></a>`DISTRIBUTE_AMOUNT` (1 Cards, 1 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
 
 ### <a id="enemy-attacks"></a>`ENEMY_ATTACKS` (1 Cards, 1 Step Occurrences)
 

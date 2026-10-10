@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): Explosion `01111` assigns X damage among heroes and allies ([Issue #296](https://github.com/SteveRodrigue/MCD/issues/296))**
+  - `01111` uses `DISTRIBUTE_AMOUNT`. Before, nothing in production enabled the prompt, so the revealing player's hero took all X. Now the first player assigns (RR First Player); one legal target needs no prompt; no legal target ignores the damage; a character cannot be assigned more than its remaining HP; the submitted assignment is validated (total = X, legal targets, cap) and a bad one keeps the prompt open.
+  - One `applyDistributedDamage` through `applyDamageToTarget` replaces three hand-written copies. `DISTRIBUTE_AMOUNT.capRule`, the `interactivePrompt` context flag and the `interactivePromptMode` state flag are removed. `DEAL_DAMAGE` with `ALL_HEROES_AND_ALLIES` now explicitly means X to each hero and ally.
+  - Card Editor: `capRule` parameter removed from the `DISTRIBUTE_AMOUNT` descriptor. Docs: ADR-0064 addendum, `QUICK_REFERENCE.md`, spec `05`.
+  - Tests: `explosion-bomb-scare`, `decision-prompts`, `damage-pipeline-unified`, `effect-params-keys`, `effect-parameter-registry` (net +5).
+
 - **Feature (Engine): attack steps report damage dealt and the damaged character; Stampede `01106` stuns it ([Issue #295](https://github.com/SteveRodrigue/MCD/issues/295))**
   - `VILLAIN_ATTACKS` and `ENEMY_ATTACKS` return facts (`damageDealt`, `damagedCharacter`); new result fact `DAMAGE_DEALT` for `IF_RESULT`; `DAMAGED_CHARACTER` also reads the previous step. Steps after an attack that waits for a prompt resume with the facts once the attack ends (`PendingSequence.awaitsAttackOutcome`).
   - `01106` Stampede: the stun sentence added (no damage, fully defended or prevented, means no stun).

@@ -291,16 +291,14 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
             budget: 3,
             allocationDomain: 'DAMAGE' as const,
             targetScope: 'ALL_HEROES_AND_ALLIES',
-            capRule: 'REMAINING_HP',
           },
         },
       ],
     };
 
-    // Interactive prompt execution
+    // Hero and ally are both legal targets: the real path queues the assignment prompt
     const promptRes = executeEffect(enqueuedState, ability, {
       playerId: 'p1',
-      interactivePrompt: true,
     });
 
     expect(peekDecisionPrompt(promptRes.state)).toBeDefined();
@@ -346,7 +344,6 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
 
     const res = executeEffect(state, ability, {
       playerId: 'p1',
-      interactivePrompt: true,
     });
 
     // Auto-bypasses prompt because total capacity is 0

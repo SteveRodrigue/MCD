@@ -29,8 +29,8 @@ import {
   PendingSequence,
   DamagedCharacter,
   getPerPlayerCount,
+  getFirstPlayer,
 } from '@engine/models';
-import { handleVillainDefeat } from '../pipeline/scenario-helpers';
 import { matchesCardFilter } from '../filters/card-filter';
 import {
   executeVillainAttackAgainstPlayer,
@@ -168,7 +168,6 @@ export interface EffectExecutionContext {
   isFinalStep?: boolean;
   discardedCards?: CardInstance[];
   assignments?: Record<string, number>;
-  interactivePrompt?: boolean;
   /** Active chain of trigger nodes for cycle detection & depth tracking (ADR-0053) */
   triggerChain?: TriggerCallNode[];
   /** Host ability context for timing, trigger, and cost evaluation */
@@ -599,7 +598,6 @@ export function compileDistributionTargets(
   state: GameState,
   targetScope: string,
   allocationDomain: string,
-  capRule?: string,
 ): TargetAllocationItem[] {
   const targets: TargetAllocationItem[] = [];
 
@@ -668,14 +666,6 @@ export function compileDistributionTargets(
         } else {
           allocationCap = 1;
         }
-      } else if (allocationDomain === 'DAMAGE') {
-        if (capRule === 'REMAINING_HP') {
-          allocationCap = p.health;
-        } else if (capRule === 'NONE') {
-          allocationCap = 999;
-        } else {
-          allocationCap = p.health;
-        }
       }
 
       targets.push({
@@ -720,14 +710,6 @@ export function compileDistributionTargets(
             allocationCap = 0;
           } else {
             allocationCap = 1;
-          }
-        } else if (allocationDomain === 'DAMAGE') {
-          if (capRule === 'REMAINING_HP') {
-            allocationCap = currentHp;
-          } else if (capRule === 'NONE') {
-            allocationCap = 999;
-          } else {
-            allocationCap = currentHp;
           }
         }
 
@@ -947,36 +929,93 @@ function dealDamageToIdentity(
   }).state;
 }
 
-/** Damage a player assigns to a hero while distributing points: through the damage pipeline. */
-export function dealDistributedDamageToPlayer(
+/**
+ * Applies a distribution of damage (DISTRIBUTE_AMOUNT, domain DAMAGE): every portion goes through
+ * the damage pipeline, so Tough, damage shields, DAMAGE_TAKEN interrupts, defeat and its triggers
+ * are the ones of any other damage. The source card is the defeat source (#296).
+ */
+export function applyDistributedDamage(
   state: GameState,
+  assignments: Record<string, number>,
   player: PlayerState,
-  amount: number,
   sourceCardInstance?: CardInstance,
 ): GameState {
-  return applyAbilityDamage(state, playerTargetRef(player), amount, {
+  const opts: AbilityDamageOptions = {
     sourceType: 'CARD_EFFECT',
     sourcePlayerId: player.id,
     sourceCardInstance,
     isAttack: false,
     hasPiercing: false,
-  }).state;
+  };
+  for (const [targetId, amount] of Object.entries(assignments)) {
+    if (!(amount > 0)) continue;
+
+    const allyOwner = state.players.find((p) => p.allies.some((a) => a.instanceId === targetId));
+    const ally = allyOwner?.allies.find((a) => a.instanceId === targetId);
+    if (allyOwner && ally) {
+      state = applyAbilityDamage(state, allyTargetRef(ally, allyOwner.id), amount, opts).state;
+      continue;
+    }
+
+    const targetPlayer = state.players.find(
+      (pl) =>
+        pl.id === targetId || pl.activeFormCard?.code === targetId || pl.hero?.code === targetId,
+    );
+    if (targetPlayer) {
+      state = dealDamageToIdentity(state, targetPlayer, amount, opts);
+      continue;
+    }
+
+    // A chosen villain is resolved by id so any villain in play can be targeted.
+    const villain =
+      targetId === 'villain' ? getActiveVillain(state) : getVillainById(state, targetId);
+    if (villain) {
+      state = applyAbilityDamage(state, villainTargetRef(villain), amount, opts).state;
+      continue;
+    }
+
+    for (const p of state.players) {
+      const minion = p.engagedMinions.find((m) => m.instanceId === targetId);
+      if (minion) {
+        state = applyAbilityDamage(state, minionTargetRef(minion, p.id), amount, opts).state;
+        break;
+      }
+    }
+  }
+  return state;
 }
 
-/** Damage to an ally (by instance id) or, failing that, to the player with that id. */
-function dealDamageToAllyOrHero(
-  state: GameState,
-  id: string,
-  fallbackPlayer: PlayerState,
-  amount: number,
-  opts: AbilityDamageOptions,
-): GameState {
-  for (const p of state.players) {
-    const ally = p.allies.find((a) => a.instanceId === id);
-    if (ally) return applyAbilityDamage(state, allyTargetRef(ally, p.id), amount, opts).state;
+/**
+ * Why a submitted distribution is not legal, or undefined when it is: every portion goes to an
+ * eligible target and is at most that target's cap (a character takes at most its remaining HP),
+ * and the total is the budget (at most the budget when an exact match is not required).
+ */
+export function validateDistributionAssignments(
+  config: DistributionPromptConfig,
+  assignments: Record<string, number>,
+): string | undefined {
+  let total = 0;
+  for (const [targetId, amount] of Object.entries(assignments)) {
+    if (!(amount > 0)) {
+      if (amount < 0 || Number.isNaN(amount)) return `Invalid amount for ${targetId}`;
+      continue;
+    }
+    if (!Number.isInteger(amount)) return `Invalid amount for ${targetId}`;
+    const target = config.targets.find((t) => t.instanceId === targetId);
+    if (!target || target.isEligible === false) return `${targetId} is not a legal target`;
+    if (amount > (target.allocationCap ?? 0)) {
+      return `${target.name} can take at most ${target.allocationCap ?? 0}`;
+    }
+    total += amount;
   }
-  const hero = state.players.find((pl) => pl.id === id) || fallbackPlayer;
-  return applyAbilityDamage(state, playerTargetRef(hero), amount, opts).state;
+  if (
+    config.exactMatchRequired !== false
+      ? total !== config.effectiveBudget
+      : total > config.effectiveBudget
+  ) {
+    return `Assign ${config.effectiveBudget} in total (assigned ${total})`;
+  }
+  return undefined;
 }
 
 /** Damage to every minion engaged with the given players, last engaged first. */
@@ -2212,71 +2251,19 @@ export function executeStep(
       }
 
       if (targetParam === 'ALL_HEROES_AND_ALLIES') {
-        if (context.assignments && typeof context.assignments === 'object') {
-          for (const [id, dmg] of Object.entries(context.assignments as Record<string, number>)) {
-            if (dmg <= 0) continue;
-            state = dealDamageToAllyOrHero(state, id, player, dmg, damageOpts);
+        // The amount to each hero (alter-ego players are not heroes) and each ally. A snapshot: a
+        // hero eliminated by this damage leaves state.players (#246). Splitting an amount among
+        // them is DISTRIBUTE_AMOUNT, not this selector.
+        for (const p of [...state.players].filter((pl) => pl.currentForm === 'hero')) {
+          state = dealDamageToIdentity(state, p, amount, damageOpts);
+        }
+        for (const p of state.players) {
+          for (const ally of [...p.allies].reverse()) {
+            state = applyAbilityDamage(state, allyTargetRef(ally, p.id), amount, damageOpts).state;
           }
-        } else if (context.chosenTargetInstanceId) {
-          state = dealDamageToAllyOrHero(
-            state,
-            context.chosenTargetInstanceId,
-            player,
-            amount,
-            damageOpts,
-          );
-        } else if (
-          amount > 0 &&
-          (context.interactivePrompt || (state as any).interactivePromptMode)
-        ) {
-          const targets = compileDistributionTargets(
-            state,
-            'ALL_HEROES_AND_ALLIES',
-            'DAMAGE',
-            'REMAINING_HP',
-          );
-          const config: DistributionPromptConfig = {
-            totalBudget: amount,
-            effectiveBudget: amount,
-            budgetLabel: 'DAMAGE',
-            unitSingular: 'DMG',
-            unitPlural: 'DMG',
-            exactMatchRequired: true,
-            canCancel: false,
-            allocationDomain: 'DAMAGE',
-            targets,
-          };
-          const prompt: PendingDecisionPrompt = {
-            promptId: `explosion_dist_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-            playerId: player.id,
-            title: 'Explosion: Assign Damage',
-            description: `Assign ${amount} damage among heroes and allies:`,
-            sourceCardName: context.sourceCardInstance?.card.name || 'Explosion',
-            sourceCardCode: context.sourceCardInstance?.card.code,
-            sourceCardInstanceId: context.sourceCardInstance?.instanceId,
-            kind: 'DISTRIBUTE_POINTS',
-            distributionConfig: config,
-            options: [
-              {
-                id: 'confirm_distribution',
-                label: 'Confirm Assignment',
-                effect: 'DISTRIBUTE_POINTS',
-              },
-            ],
-          };
-          state = enqueueDistributionPrompt(state, prompt);
-          return {
-            state,
-            success: true,
-            mutatedState: true,
-            onomatopoeia: 'ASSIGN DAMAGE!',
-          };
-        } else {
-          // Default: Hero takes the assigned damage
-          state = applyAbilityDamage(state, playerTargetRef(player), amount, damageOpts).state;
         }
 
-        const onomatopoeia = `EXPLOSION! ${amount} DAMAGE ASSIGNED!`;
+        const onomatopoeia = `BOOM! ${amount} DAMAGE TO HEROES AND ALLIES!`;
         state.log.push({
           id: `log_${Date.now()}`,
           timestamp: Date.now(),
@@ -2287,13 +2274,7 @@ export function executeStep(
           onomatopoeia,
         });
 
-        return {
-          state,
-          success: true,
-          mutatedState: amount > 0,
-          value: amount,
-          onomatopoeia,
-        };
+        return { state, success: true, mutatedState: amount > 0, value: amount, onomatopoeia };
       }
 
       if (targetParam === 'ALL_ENEMIES') {
@@ -2556,114 +2537,19 @@ export function executeStep(
         (stepParams.targetScope as string) ||
         (stepParams.target as string) ||
         'ALL_HEROES_AND_ALLIES';
-      const capRule = (stepParams.capRule as string) || 'REMAINING_HP';
       const canCancel = Boolean(stepParams.canCancel);
       const exactMatchRequired = stepParams.exactMatchRequired !== false;
 
       // 1. If assignments already provided, execute immediately
       if (context.assignments && typeof context.assignments === 'object') {
         const assignments = context.assignments;
+        if (allocationDomain === 'DAMAGE') {
+          state = applyDistributedDamage(state, assignments, player, context.sourceCardInstance);
+        }
         for (const [targetId, amount] of Object.entries(assignments)) {
           if (amount <= 0) continue;
 
-          if (allocationDomain === 'DAMAGE') {
-            let ally: CardInstance | undefined;
-            let allyController: PlayerState | undefined;
-            for (const p of state.players) {
-              const found = p.allies.find((a) => a.instanceId === targetId);
-              if (found) {
-                ally = found;
-                allyController = p;
-                break;
-              }
-            }
-
-            if (ally && allyController) {
-              const allyToughIdx = (ally.statusCards || []).indexOf(StatusCard.TOUGH);
-              if (allyToughIdx !== -1) {
-                ally.statusCards!.splice(allyToughIdx, 1);
-              } else {
-                const currentDmg = ally.tokens?.damage || 0;
-                const newDmg = currentDmg + amount;
-                const allyHp = (ally.card as any).health || 1;
-                if (newDmg >= allyHp) {
-                  const idx = allyController.allies.indexOf(ally);
-                  allyController.allies.splice(idx, 1);
-                  processHostDefeated(state, ally, { player: allyController });
-                  dispatchTrigger(state, 'CHARACTER_DEFEATED', {
-                    targetPlayerId: allyController.id,
-                    targetInstanceId: ally.instanceId,
-                    targetType: 'ally',
-                  });
-                  const owner =
-                    (ally.ownerId
-                      ? state.players.find((pl) => pl.id === ally.ownerId)
-                      : undefined) || allyController;
-                  owner.discard.push(ally);
-                } else {
-                  ally.tokens = { ...ally.tokens, damage: newDmg };
-                }
-              }
-            } else {
-              const targetPlayer =
-                state.players.find(
-                  (pl) =>
-                    pl.id === targetId ||
-                    pl.activeFormCard?.code === targetId ||
-                    pl.hero?.code === targetId,
-                ) || (targetId === player.id ? player : undefined);
-              // A chosen villain is resolved by id so any villain in play can be targeted.
-              const targetVillain =
-                targetId === 'villain' ? getActiveVillain(state) : getVillainById(state, targetId);
-
-              if (targetPlayer) {
-                state = dealDistributedDamageToPlayer(
-                  state,
-                  targetPlayer,
-                  amount,
-                  context.sourceCardInstance,
-                );
-              } else if (targetVillain) {
-                const vToughIdx = targetVillain.statusCards.indexOf(StatusCard.TOUGH);
-                if (vToughIdx !== -1) {
-                  targetVillain.statusCards.splice(vToughIdx, 1);
-                } else {
-                  targetVillain.health = Math.max(0, targetVillain.health - amount);
-                  if (targetVillain.health <= 0) {
-                    state = handleVillainDefeat(state, targetVillain.instanceId);
-                  }
-                }
-              } else {
-                for (const p of state.players) {
-                  const mIdx = p.engagedMinions.findIndex((m) => m.instanceId === targetId);
-                  if (mIdx !== -1) {
-                    const minion = p.engagedMinions[mIdx];
-                    const mToughIdx = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
-                    if (mToughIdx !== -1) {
-                      minion.statusCards!.splice(mToughIdx, 1);
-                    } else {
-                      const currentDmg = minion.tokens?.damage || 0;
-                      const newDmg = currentDmg + amount;
-                      const minionHp = getEffectiveMinionHitPoints(state, minion);
-                      if (newDmg >= minionHp) {
-                        processHostDefeated(state, minion, { player: p });
-                        p.engagedMinions.splice(mIdx, 1);
-                        moveDefeatedCardToPile(state, minion, state.encounterDiscard);
-                        dispatchTrigger(state, 'CHARACTER_DEFEATED', {
-                          targetPlayerId: p.id,
-                          targetInstanceId: minion.instanceId,
-                          targetType: 'minion',
-                        });
-                      } else {
-                        minion.tokens = { ...minion.tokens, damage: newDmg };
-                      }
-                    }
-                    break;
-                  }
-                }
-              }
-            }
-          } else if (allocationDomain === 'THREAT_REMOVAL') {
+          if (allocationDomain === 'THREAT_REMOVAL') {
             if (
               targetId === 'main_scheme' ||
               targetId === getActiveMainScheme(state)?.instanceId ||
@@ -2747,85 +2633,118 @@ export function executeStep(
         };
       }
 
-      // 2. Interactive Prompt Mode if interactivePrompt requested or interactivePromptMode active
-      if (budget > 0 && (context.interactivePrompt || (state as any).interactivePromptMode)) {
-        const targets = compileDistributionTargets(state, targetScope, allocationDomain, capRule);
-        const unitSingular =
-          stepParams.unitSingular ||
-          (allocationDomain === 'DAMAGE'
-            ? 'DMG'
-            : allocationDomain === 'THREAT_REMOVAL'
-              ? 'THW'
-              : 'PT');
-        const unitPlural =
-          stepParams.unitPlural ||
-          (allocationDomain === 'DAMAGE'
-            ? 'DMG'
-            : allocationDomain === 'THREAT_REMOVAL'
-              ? 'THW'
-              : 'PTS');
-        const config: DistributionPromptConfig = {
-          totalBudget: budget,
-          effectiveBudget: budget,
-          budgetLabel: stepParams.budgetLabel || `${allocationDomain.replace('_', ' ')}`,
-          unitSingular,
-          unitPlural,
-          exactMatchRequired,
-          canCancel,
-          allocationDomain,
-          targets,
-        };
-
-        const prompt: PendingDecisionPrompt = {
-          promptId: `dist_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-          playerId: player.id,
-          title: stepParams.promptTitle || `Distribute ${config.budgetLabel}`,
-          description:
-            stepParams.promptDescription ||
-            `Assign ${budget} ${unitPlural} among eligible targets:`,
-          sourceCardName: context.sourceCardInstance?.card.name || 'Game Effect',
-          sourceCardCode: context.sourceCardInstance?.card.code,
-          sourceCardInstanceId: context.sourceCardInstance?.instanceId,
-          kind: 'DISTRIBUTE_POINTS',
-          distributionConfig: config,
-          options: [
-            {
-              id: 'confirm_distribution',
-              label: 'Confirm Assignment',
-              effect: 'DISTRIBUTE_POINTS',
-            },
-          ],
-        };
-
-        state = enqueueDistributionPrompt(state, prompt);
+      // 2. No assignment yet: nothing to distribute, a single legal target, or a prompt to the assigner.
+      if (budget <= 0) {
         return {
           state,
           success: true,
-          mutatedState: true,
-          onomatopoeia: 'ASSIGN POINTS!',
+          mutatedState: false,
+          value: 0,
+          onomatopoeia: 'POINTS ASSIGNED!',
         };
       }
 
-      // 3. Headless fallback: deterministic default
-      if (allocationDomain === 'DAMAGE') {
-        state = dealDistributedDamageToPlayer(state, player, budget, context.sourceCardInstance);
-      } else if (allocationDomain === 'THREAT_REMOVAL') {
-        if (getActiveMainScheme(state)) {
-          getActiveMainScheme(state).threat = Math.max(
-            0,
-            getActiveMainScheme(state).threat - budget,
-          );
-        }
-      } else if (allocationDomain === 'HEAL') {
-        player.health = Math.min(player.maxHealth, player.health + budget);
+      const targets = compileDistributionTargets(state, targetScope, allocationDomain);
+      const legalTargets = targets.filter(
+        (t) => t.isEligible !== false && (t.allocationCap ?? 0) > 0,
+      );
+
+      // No legal target: the points are ignored.
+      if (legalTargets.length === 0) {
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          category: 'ability',
+          actor: { name: player.name, type: player.currentForm },
+          key: 'decision.distribution.noLegalTarget',
+          params: {
+            player: player.name,
+            domain: allocationDomain,
+            amount: budget,
+            source: context.sourceCardInstance?.card.name || 'Game Effect',
+          },
+          onomatopoeia: 'NO LEGAL TARGET!',
+        });
+        return {
+          state,
+          success: true,
+          mutatedState: false,
+          value: 0,
+          onomatopoeia: 'NO LEGAL TARGET!',
+        };
       }
 
+      // One legal target: nothing to choose, it takes as much of the budget as it can.
+      if (legalTargets.length === 1) {
+        const only = legalTargets[0];
+        const portion = Math.min(budget, only.allocationCap ?? budget);
+        return executeStep(state, step, {
+          ...context,
+          assignments: { [only.instanceId]: portion },
+        });
+      }
+
+      const unitSingular =
+        stepParams.unitSingular ||
+        (allocationDomain === 'DAMAGE'
+          ? 'DMG'
+          : allocationDomain === 'THREAT_REMOVAL'
+            ? 'THW'
+            : 'PT');
+      const unitPlural =
+        stepParams.unitPlural ||
+        (allocationDomain === 'DAMAGE'
+          ? 'DMG'
+          : allocationDomain === 'THREAT_REMOVAL'
+            ? 'THW'
+            : 'PTS');
+      const config: DistributionPromptConfig = {
+        totalBudget: budget,
+        effectiveBudget: budget,
+        budgetLabel: stepParams.budgetLabel || `${allocationDomain.replace('_', ' ')}`,
+        unitSingular,
+        unitPlural,
+        exactMatchRequired,
+        canCancel,
+        allocationDomain,
+        targets,
+      };
+
+      // An encounter card that names no player leaves the choice to the first player (RR v1.8
+      // First Player); any other source is assigned by the player who resolves it.
+      const assigner =
+        context.sourceCardInstance && isEncounterCard(context.sourceCardInstance.card)
+          ? getFirstPlayer(state)
+          : player;
+
+      const prompt: PendingDecisionPrompt = {
+        promptId: `dist_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        playerId: assigner.id,
+        title: stepParams.promptTitle || `Distribute ${config.budgetLabel}`,
+        description:
+          stepParams.promptDescription || `Assign ${budget} ${unitPlural} among eligible targets:`,
+        sourceCardName: context.sourceCardInstance?.card.name || 'Game Effect',
+        sourceCardCode: context.sourceCardInstance?.card.code,
+        sourceCardInstanceId: context.sourceCardInstance?.instanceId,
+        kind: 'DISTRIBUTE_POINTS',
+        distributionConfig: config,
+        options: [
+          {
+            id: 'confirm_distribution',
+            label: 'Confirm Assignment',
+            effect: 'DISTRIBUTE_POINTS',
+          },
+        ],
+      };
+
+      state = enqueueDistributionPrompt(state, prompt);
       return {
         state,
         success: true,
-        mutatedState: budget > 0,
-        value: budget,
-        onomatopoeia: 'POINTS ASSIGNED!',
+        mutatedState: true,
+        onomatopoeia: 'ASSIGN POINTS!',
       };
     }
 

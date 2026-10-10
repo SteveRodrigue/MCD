@@ -50,8 +50,8 @@ import {
 } from './cost-engine';
 import {
   executeEffect,
-  moveDefeatedCardToPile,
-  dealDistributedDamageToPlayer,
+  applyDistributedDamage,
+  validateDistributionAssignments,
   processHostDefeated,
   defeatSideScheme,
   resetCardState,
@@ -66,12 +66,10 @@ import {
   completeEncounterAttachment,
 } from './villain-phase';
 import { initiatePlayerPhaseCleanup, executePlayerCleanup } from './player-phase-cleanup';
-import { handleVillainDefeat } from './scenario-helpers';
 import {
   getEffectiveAllyStats,
   getEffectiveHeroStats,
   getEffectiveMaxHealth,
-  getEffectiveMinionHitPoints,
   hasEntityKeyword,
   consumeEntityStatusCards,
 } from './stat-calculator';
@@ -2201,12 +2199,22 @@ function dispatchSingleAction(
         activePrompt &&
         (activePrompt.kind === 'DISTRIBUTE_POINTS' || activePrompt.distributionConfig !== undefined)
       ) {
+        const isCancel =
+          (action.selectedOptionId === 'cancel' || action.selectedOptionId === 'pass') &&
+          (activePrompt.distributionConfig?.canCancel || activePrompt.isVoluntary);
+
+        // A submitted assignment is validated, never trusted: the prompt stays on a bad one (#296)
+        if (!isCancel && activePrompt.distributionConfig) {
+          const error = validateDistributionAssignments(
+            activePrompt.distributionConfig,
+            action.assignments || {},
+          );
+          if (error) return { state, result: { success: false, error } };
+        }
+
         const { state: poppedState } = popDecisionPrompt(nextState);
 
-        if (
-          (action.selectedOptionId === 'cancel' || action.selectedOptionId === 'pass') &&
-          (activePrompt.distributionConfig?.canCancel || activePrompt.isVoluntary)
-        ) {
+        if (isCancel) {
           poppedState.log.push({
             id: `log_${Date.now()}`,
             timestamp: Date.now(),
@@ -2233,108 +2241,22 @@ function dispatchSingleAction(
           }
         }
 
+        // Damage goes through the damage pipeline, like any other damage (#296). The source card
+        // is the defeat source; an encounter treachery is already in the encounter discard pile.
+        if (domain === 'DAMAGE') {
+          const sourceCard = activePrompt.sourceCardInstanceId
+            ? poppedState.encounterDiscard.find(
+                (c) => c.instanceId === activePrompt.sourceCardInstanceId,
+              )
+            : undefined;
+          applyDistributedDamage(poppedState, assignments, player, sourceCard);
+        }
+
         // Apply assignments across targets
         for (const [targetId, amount] of Object.entries(assignments)) {
           if (amount <= 0) continue;
 
-          if (domain === 'DAMAGE') {
-            let ally: CardInstance | undefined;
-            let allyController: PlayerState | undefined;
-            for (const p of poppedState.players) {
-              const found = p.allies.find((a) => a.instanceId === targetId);
-              if (found) {
-                ally = found;
-                allyController = p;
-                break;
-              }
-            }
-
-            if (ally && allyController) {
-              const allyToughIdx = (ally.statusCards || []).indexOf(StatusCard.TOUGH);
-              if (allyToughIdx !== -1) {
-                ally.statusCards!.splice(allyToughIdx, 1);
-              } else {
-                const currentDmg = ally.tokens?.damage || 0;
-                const newDmg = currentDmg + amount;
-                const allyHp = (ally.card as any).health || 1;
-                if (newDmg >= allyHp) {
-                  const idx = allyController.allies.indexOf(ally);
-                  allyController.allies.splice(idx, 1);
-                  processHostDefeated(poppedState, ally, { player: allyController });
-                  dispatchDefeat(poppedState, {
-                    targetPlayerId: allyController.id,
-                    targetInstanceId: ally.instanceId,
-                    targetType: 'ALLY',
-                    defeatSource: { kind: 'EFFECT', playerId: player.id, byAttack: false },
-                  });
-                  const owner =
-                    (ally.ownerId
-                      ? poppedState.players.find((pl) => pl.id === ally.ownerId)
-                      : undefined) || allyController;
-                  resetCardState(ally);
-                  owner.discard.push(ally);
-                } else {
-                  ally.tokens = { ...ally.tokens, damage: newDmg };
-                }
-              }
-            } else {
-              const targetPlayer =
-                poppedState.players.find(
-                  (pl) =>
-                    pl.id === targetId ||
-                    pl.activeFormCard?.code === targetId ||
-                    pl.hero?.code === targetId,
-                ) || (targetId === player.id ? player : undefined);
-              // A chosen villain is resolved by id so any villain in play can be targeted.
-              const targetVillain =
-                targetId === 'villain'
-                  ? getActiveVillain(poppedState)
-                  : getVillainById(poppedState, targetId);
-
-              if (targetPlayer) {
-                dealDistributedDamageToPlayer(poppedState, targetPlayer, amount);
-              } else if (targetVillain) {
-                const vToughIdx = targetVillain.statusCards.indexOf(StatusCard.TOUGH);
-                if (vToughIdx !== -1) {
-                  targetVillain.statusCards.splice(vToughIdx, 1);
-                } else {
-                  targetVillain.health = Math.max(0, targetVillain.health - amount);
-                  if (targetVillain.health <= 0) {
-                    handleVillainDefeat(poppedState, targetVillain.instanceId);
-                  }
-                }
-              } else {
-                for (const p of poppedState.players) {
-                  const mIdx = p.engagedMinions.findIndex((m) => m.instanceId === targetId);
-                  if (mIdx !== -1) {
-                    const minion = p.engagedMinions[mIdx];
-                    const mToughIdx = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
-                    if (mToughIdx !== -1) {
-                      minion.statusCards!.splice(mToughIdx, 1);
-                    } else {
-                      const currentDmg = minion.tokens?.damage || 0;
-                      const newDmg = currentDmg + amount;
-                      const minionHp = getEffectiveMinionHitPoints(poppedState, minion);
-                      if (newDmg >= minionHp) {
-                        processHostDefeated(poppedState, minion, { player: p });
-                        p.engagedMinions.splice(mIdx, 1);
-                        moveDefeatedCardToPile(poppedState, minion, poppedState.encounterDiscard);
-                        dispatchDefeat(poppedState, {
-                          targetPlayerId: player.id,
-                          targetInstanceId: minion.instanceId,
-                          targetType: 'MINION',
-                          defeatSource: { kind: 'EFFECT', playerId: player.id, byAttack: false },
-                        });
-                      } else {
-                        minion.tokens = { ...minion.tokens, damage: newDmg };
-                      }
-                    }
-                    break;
-                  }
-                }
-              }
-            }
-          } else if (domain === 'THREAT_REMOVAL') {
+          if (domain === 'THREAT_REMOVAL') {
             const targetMainScheme = getActiveMainScheme(poppedState);
             if (
               targetId === 'main_scheme' ||

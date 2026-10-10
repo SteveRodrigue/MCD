@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-10T20:44:26.888Z` | **Active Target Selectors In Use:** **30/43**
+> **Generated:** `2026-10-10T21:28:03.542Z` | **Active Target Selectors In Use:** **29/43**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -186,12 +186,6 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01070` | **Lead from the Front (event)** | `core` | `lead_from_the_front_action` |
-
-### <a id="all-heroes-and-allies"></a>`ALL_HEROES_AND_ALLIES` (1 Cards, 1 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
 
 ### <a id="all-schemes"></a>`ALL_SCHEMES` (1 Cards, 1 Declarations)
 

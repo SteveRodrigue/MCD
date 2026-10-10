@@ -110,3 +110,13 @@ How do we establish canonical, orthogonal collective target scopes, enforce stri
 ### Negative Consequences / Risks & Mitigations
 - Card definitions using legacy `HEROES_AND_ALLIES` must be audited and retrofitted.
   - *Mitigation:* Automated audit via `report:declarations` and card-loader quality gates.
+
+---
+
+## Addendum (#296): who assigns, one apply path
+
+- The first player assigns a distribution from an encounter card that names no player (RR v1.8 First Player). Another source is assigned by the player who resolves it.
+- The prompt is always queued when the budget is above 0 and two or more legal targets exist; one legal target takes the budget without a prompt; none ignores it. The test-only `interactivePrompt` / `interactivePromptMode` flags are removed.
+- Damage portions all go through `applyDamageToTarget` (ADR-0078) via `applyDistributedDamage`, the one apply path for the immediate and the prompt resolution. The submitted assignment is validated (total, legal targets, per-target cap) and rejected with the prompt kept when it is not.
+- The cap comes from `allocationDomain` (`DAMAGE`: remaining hit points). The `capRule` parameter is removed.
+- *Explosion* (`01111`) is a `DISTRIBUTE_AMOUNT`; `DEAL_DAMAGE` with `ALL_HEROES_AND_ALLIES` deals the amount to each hero and ally.

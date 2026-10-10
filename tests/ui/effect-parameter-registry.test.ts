@@ -309,7 +309,7 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(TARGET_OPTIONS).not.toContain('ACTIVE_IDENTITY');
   });
 
-  it('DISTRIBUTE_AMOUNT exposes budget, allocationDomain, targetScope, and capRule', () => {
+  it('DISTRIBUTE_AMOUNT exposes budget, allocationDomain and targetScope', () => {
     const desc = getEffectDescriptor('DISTRIBUTE_AMOUNT');
     expect(desc.effect).toBe('DISTRIBUTE_AMOUNT');
     expect(desc.description).toContain('Distribute a pool of damage');
@@ -318,7 +318,7 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(paramKeys).toContain('budget');
     expect(paramKeys).toContain('allocationDomain');
     expect(paramKeys).toContain('targetScope');
-    expect(paramKeys).toContain('capRule');
+    expect(paramKeys).not.toContain('capRule');
 
     const budgetParam = desc.parameters.find((p) => p.key === 'budget');
     expect(budgetParam?.type).toBe('number');
@@ -331,10 +331,6 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     const scopeParam = desc.parameters.find((p) => p.key === 'targetScope');
     expect(scopeParam?.type).toBe('select');
     expect(scopeParam?.defaultValue).toBe('ALL_HEROES_AND_ALLIES');
-
-    const capParam = desc.parameters.find((p) => p.key === 'capRule');
-    expect(capParam?.type).toBe('select');
-    expect(capParam?.defaultValue).toBe('NONE');
   });
 });
 

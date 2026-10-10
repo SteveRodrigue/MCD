@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-10T20:44:26.888Z`
+> **Generated:** `2026-10-10T21:28:03.542Z`
 
 ## 1. Cards with Multiple Abilities (2+ Declared Abilities — 17 Cards)
 
@@ -44,7 +44,7 @@
 | `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` | `WHEN_REVEALED` | **2** | `[1] HEAL_DAMAGE ➔ [2] SURGE` |
 | `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` | `WHEN_REVEALED` | **2** | `[1] ADD_STATUS ➔ [2] SURGE` |
 | `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` | `WHEN_REVEALED` | **3** | `[1] VILLAIN_ATTACKS ➔ [2] ADD_STATUS ➔ [3] SURGE` |
-| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DEAL_DAMAGE ➔ [2] SURGE` |
+| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DISTRIBUTE_AMOUNT ➔ [2] SURGE` |
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` | `WHEN_REVEALED` | **2** | `[1] ADD_STATUS ➔ [2] SURGE` |
 | `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` | `FORCED_RESPONSE` | **2** | `[1] CHANGE_FORM ➔ [2] PLAYER_CHOICE` |
 | `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DISCARD ➔ [2] PLAYER_CHOICE` |

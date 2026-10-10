@@ -244,7 +244,7 @@ describe('Target Scopes & Form Invariants Contract Tests (ADR-0064 & RR v1.8)', 
     const ability = explosionCard.enrichment!.abilities![0];
 
     // Schema verification: canonical target is ALL_HEROES_AND_ALLIES
-    expect(ability.steps[0].effectParams?.target).toBe('ALL_HEROES_AND_ALLIES');
+    expect(ability.steps[0].effectParams?.targetScope).toBe('ALL_HEROES_AND_ALLIES');
 
     const p1InitialHp = state.players[0].health;
     const p2InitialHp = state.players[1].health;

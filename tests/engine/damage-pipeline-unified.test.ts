@@ -190,15 +190,9 @@ describe('One damage pipeline for ability damage (#247 part 1)', () => {
       sites: () => ({ sites: [heroSite(0), heroSite(1)] }),
     },
     {
-      name: 'explosion assignment',
+      name: 'all heroes and allies',
       params: { amount: 3, target: 'ALL_HEROES_AND_ALLIES' },
-      sites: () => {
-        const a = allySite();
-        return {
-          sites: [a, heroSite(1)],
-          ctx: { assignments: { [a.id]: 1, p2: 1 } },
-        };
-      },
+      sites: () => ({ sites: [allySite(), heroSite(0), heroSite(1)] }),
     },
   ];
 
@@ -277,11 +271,11 @@ describe('One damage pipeline for ability damage (#247 part 1)', () => {
         },
       },
       {
-        name: 'explosion assignment (ally)',
+        name: 'all heroes and allies (ally)',
         params: { amount: 5, target: 'ALL_HEROES_AND_ALLIES' },
         setup: () => {
-          const a = allySite();
-          return { ctx: { assignments: { [a.id]: 5 } }, defeated: 1 };
+          allySite();
+          return { defeated: 1 };
         },
       },
     ];
@@ -340,10 +334,15 @@ describe('One damage pipeline for ability damage (#247 part 1)', () => {
       expect(getActiveVillain(state).health).toBe(before);
     });
 
-    it('keeps the explosion distribution prompt when no assignment is given', () => {
-      allySite();
-      run({ amount: 3, target: 'ALL_HEROES_AND_ALLIES' }, { interactivePrompt: true });
-      expect(peekDecisionPrompt(state)?.kind).toBe('DISTRIBUTE_POINTS');
+    it('all heroes and allies: deals the amount to each hero and each ally, no prompt (#296)', () => {
+      const a = allySite();
+      const h1 = heroSite(0);
+      const h2 = heroSite(1);
+      run({ amount: 1, target: 'ALL_HEROES_AND_ALLIES' });
+      expect(peekDecisionPrompt(state)).toBeUndefined();
+      expect(h1.damage()).toBe(1);
+      expect(h2.damage()).toBe(1);
+      expect(a.damage()).toBe(1);
     });
 
     it('maps DamageRequest.sourceType to defeatSource.kind', () => {
@@ -606,8 +605,28 @@ describe('One damage pipeline for ability damage (#247 part 1)', () => {
       });
     }
 
-    it('explosion assignment: the hero that took the damage is eliminated, the other plays on', () => {
-      run({ amount: 99, target: 'ALL_HEROES_AND_ALLIES' }, { assignments: { p2: 99 } });
+    it('distributed damage: the hero that took the damage is eliminated, the other plays on', () => {
+      const distribute = {
+        id: 'test_distribute',
+        timing: 'HERO_ACTION',
+        steps: [
+          {
+            id: 'dist',
+            effect: 'DISTRIBUTE_AMOUNT',
+            effectParams: {
+              budget: 99,
+              allocationDomain: 'DAMAGE',
+              targetScope: 'ALL_HEROES_AND_ALLIES',
+            },
+          },
+        ],
+      } as any;
+      state =
+        executeEffect(state, distribute, {
+          playerId: 'p1',
+          sourceCardInstance: eventCard(),
+          assignments: { p2: 99 },
+        }).state ?? state;
       expect(state.winner).toBeNull();
       expect(state.players.map((p) => p.id)).toEqual(['p1']);
     });

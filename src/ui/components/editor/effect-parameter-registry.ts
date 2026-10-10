@@ -1146,6 +1146,33 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     description: 'Cancel When Revealed effect and reveal another encounter card.',
     parameters: [],
   },
+  CANNOT_TAKE_DAMAGE: {
+    effect: 'CANNOT_TAKE_DAMAGE',
+    description:
+      'CONSTANT: the host cannot take damage. Optional source filter: only damage from a card of this type and/or trait is ignored (Killmonger: Black Panther upgrades). No Tough, shield or Retaliate is used, and the host is not a valid target of a damage-only ability from such a source.',
+    parameters: [
+      {
+        key: 'target',
+        label: 'Target',
+        type: 'select',
+        options: ['SELF'] as const,
+        defaultValue: 'SELF',
+      },
+      {
+        key: 'sourceCardType',
+        label: 'Source Card Type',
+        type: 'select',
+        options: ['UPGRADE', 'ALLY', 'EVENT', 'SUPPORT', 'RESOURCE'] as const,
+        description: 'Only damage from a card of this type is ignored (empty: any source)',
+      },
+      {
+        key: 'sourceTrait',
+        label: 'Source Trait',
+        type: 'text',
+        description: 'Only damage from a card with this trait is ignored (empty: any source)',
+      },
+    ],
+  },
   CANCEL_ATTACK: {
     effect: 'CANCEL_ATTACK',
     description: 'Cancel incoming enemy attack before boost cards or damage are resolved.',

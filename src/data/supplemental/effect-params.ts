@@ -20,6 +20,7 @@ export const EFFECT_PARAM_KEYS: Record<EffectType, readonly string[]> = {
   CANCEL_ATTACK: [],
   CANCEL_WHEN_REVEALED: [],
   CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER: [],
+  CANNOT_TAKE_DAMAGE: ['sourceCardType', 'sourceTrait', 'target'],
   CHANGE_FORM: ['form', 'optional'],
   DEAL_DAMAGE: ['amount', 'dynamicBonus', 'finisherBonus', 'target', 'targetPlayer'],
   DECLARE_DEFENDER: [],

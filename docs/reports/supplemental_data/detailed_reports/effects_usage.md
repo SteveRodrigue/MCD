@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-10T21:28:03.542Z` | **Active Effects In Use:** **47/55**
+> **Generated:** `2026-10-10T21:55:22.702Z` | **Active Effects In Use:** **48/56**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
@@ -54,7 +54,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 | `01195` | **Unknown Card #01195** | `core_encounter` | `under_fire_when_revealed` |
 
-### <a id="add-status"></a>`ADD_STATUS` (13 Cards, 15 Step Occurrences)
+### <a id="add-status"></a>`ADD_STATUS` (12 Cards, 14 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -66,7 +66,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
 | `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
-| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_response` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed`, `heart_shaped_herb_boost` |
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed`, `sweeping_swoop_boost` |
 | `01194` | **Unknown Card #01194** | `core_encounter` | `masterplan_when_revealed` |
@@ -337,6 +336,12 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
+
+### <a id="cannot-take-damage"></a>`CANNOT_TAKE_DAMAGE` (1 Cards, 1 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
 
 ### <a id="distribute-amount"></a>`DISTRIBUTE_AMOUNT` (1 Cards, 1 Step Occurrences)
 

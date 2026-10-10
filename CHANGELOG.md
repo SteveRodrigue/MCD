@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): Killmonger `01157` cannot take damage from Black Panther upgrades ([Issue #297](https://github.com/SteveRodrigue/MCD/issues/297))**
+  - New CONSTANT effect `CANNOT_TAKE_DAMAGE` (`sourceCardType`, `sourceTrait`). `applyDamageToTarget` checks it first (step 0): 0 damage, no Tough, shield or Retaliate used. Such a character is not a valid target of `DEAL_DAMAGE` / `TRANSFER_DAMAGE` (Wakanda Forever! cannot target Killmonger with Panther Claws or Vibranium Suit). The invented tough status of `01157` is removed; confidence 95.
+  - Card Editor descriptor, spec `05`, `QUICK_REFERENCE.md`, ADR-0078 addendum. Board conditions (Madame Hydra, Ultron) are not covered yet.
+  - Tests: `cannot-take-damage`, `killmonger-wakanda-forever` (25).
+
 - **Fix (Engine): Explosion `01111` assigns X damage among heroes and allies ([Issue #296](https://github.com/SteveRodrigue/MCD/issues/296))**
   - `01111` uses `DISTRIBUTE_AMOUNT`. Before, nothing in production enabled the prompt, so the revealing player's hero took all X. Now the first player assigns (RR First Player); one legal target needs no prompt; no legal target ignores the damage; a character cannot be assigned more than its remaining HP; the submitted assignment is validated (total = X, legal targets, cap) and a bad one keeps the prompt open.
   - One `applyDistributedDamage` through `applyDamageToTarget` replaces three hand-written copies. `DISTRIBUTE_AMOUNT.capRule`, the `interactivePrompt` context flag and the `interactivePromptMode` state flag are removed. `DEAL_DAMAGE` with `ALL_HEROES_AND_ALLIES` now explicitly means X to each hero and ally.

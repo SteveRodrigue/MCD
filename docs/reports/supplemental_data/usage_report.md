@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-10-10T21:28:03.542Z`  
+> **Generated:** `2026-10-10T21:55:22.702Z`  
 > **Source Packs Scanned:** `aoa_encounter, core, core_encounter, cw_encounter, mts`
 
 ---
@@ -15,7 +15,7 @@
 | **Open Ambiguity Reports** | **2** | Blocked | Cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🟢 0 | Cards marked `noSupplementalNeeded` that have printed rules text |
 | **Overall Schema Engine Coverage** | **100.0%** | [Matrix](detailed_reports/schema_code_path_audit.md) | Percentage of all schema primitives with active engine code paths |
-| **Effect Types Code Path Coverage** | **100.0%** | **55/55** | [47 In Use](detailed_reports/effects_usage.md) |
+| **Effect Types Code Path Coverage** | **100.0%** | **56/56** | [48 In Use](detailed_reports/effects_usage.md) |
 | **Target Selectors Code Path Coverage** | **100.0%** | **43/43** | [29 In Use](detailed_reports/target_selectors_usage.md) |
 | **Condition Gates Code Path Coverage** | **100.0%** | **9/9** | [9 In Use](detailed_reports/condition_gates_usage.md) |
 | **Step Conditions Code Path Coverage** | **100.0%** | **0/0** | [0 In Use](detailed_reports/condition_gates_usage.md) |
@@ -100,7 +100,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | :--- | :---: | :---: | :--- |
 | `DEAL_DAMAGE` | **23 cards** | 24 steps | [View Cards](detailed_reports/effects_usage.md#deal-damage) |
 | `DISCARD` | **15 cards** | 16 steps | [View Cards](detailed_reports/effects_usage.md#discard) |
-| `ADD_STATUS` | **13 cards** | 15 steps | [View Cards](detailed_reports/effects_usage.md#add-status) |
+| `ADD_STATUS` | **12 cards** | 14 steps | [View Cards](detailed_reports/effects_usage.md#add-status) |
 | `DRAW` | **11 cards** | 11 steps | [View Cards](detailed_reports/effects_usage.md#draw) |
 | `MODIFY_STAT` | **11 cards** | 13 steps | [View Cards](detailed_reports/effects_usage.md#modify-stat) |
 | `SURGE` | **11 cards** | 11 steps | [View Cards](detailed_reports/effects_usage.md#surge) |
@@ -112,7 +112,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | `READY` | **5 cards** | 5 steps | [View Cards](detailed_reports/effects_usage.md#ready) |
 | `CHANGE_FORM` | **5 cards** | 5 steps | [View Cards](detailed_reports/effects_usage.md#change-form) |
 
-> 🔗 **[View all 47 Effects in Use →](detailed_reports/effects_usage.md)**
+> 🔗 **[View all 48 Effects in Use →](detailed_reports/effects_usage.md)**
 
 ---
 
@@ -128,12 +128,12 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 
 ## ⚠️ 9. Code Path Verification & Zero-Usage Detection
 
-Every schema primitive is verified for a matching engine handler. Check the complete **[Schema Primitives Code Path Matrix](detailed_reports/schema_code_path_audit.md)** for status on all 157 schema definitions.
+Every schema primitive is verified for a matching engine handler. Check the complete **[Schema Primitives Code Path Matrix](detailed_reports/schema_code_path_audit.md)** for status on all 158 schema definitions.
 
 ### Summary of Unhandled or Zero-Usage Primitives:
 | Category | Schema Total | Unused in Cards (0 Cards) | Missing Engine Handler |
 | :--- | :---: | :---: | :---: |
-| **Effects** | 55 | 8 | 🟢 0 |
+| **Effects** | 56 | 8 | 🟢 0 |
 | **Targets** | 43 | 14 | 🟢 0 |
 | **Gates** | 9 | 0 | 🟢 0 |
 | **Step Conditions** | 0 | 0 | 🟢 0 |

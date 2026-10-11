@@ -137,7 +137,7 @@ describe('Setup order: opening hands drawn after the scenario setup (Issue #240)
     expect(bakeIn.threat).toBe(def.baseThreat * (def.baseThreatFixed ? 1 : 1) + 1);
 
     const keys = state.log.map((l) => l.key);
-    expect(keys).toContain('scenario.sideSchemeRevealed');
+    expect(keys).toContain('encounter.reveal.sideScheme');
     expect(keys).toContain('scenario.setup');
   });
 
@@ -181,7 +181,6 @@ describe('Setup order: opening hands drawn after the scenario setup (Issue #240)
       villainSetup: {
         villainName: 'Rhino',
         stages: { SKIRMISH: ['01094'], STANDARD: ['01094'], EXPERT: ['01094'] },
-        healthPerPlayer: { '01094': 10 },
       },
       mainSchemeSetup: {
         stages: ['01097a'],

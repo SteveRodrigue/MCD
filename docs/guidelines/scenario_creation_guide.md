@@ -25,7 +25,7 @@ src/engine/scenarios/custom/my_custom_scenario/
 
 ## 📄 Step 1: Create the Manifest (`definition.json`)
 
-The manifest defines the static properties, stages, health per player, and modular sets:
+The manifest defines the static properties, stages, and modular sets:
 
 ```json
 {
@@ -44,11 +44,6 @@ The manifest defines the static properties, stages, health per player, and modul
       "SKIRMISH": ["custom_v1"],
       "STANDARD": ["custom_v1", "custom_v2"],
       "EXPERT": ["custom_v2", "custom_v3"]
-    },
-    "healthPerPlayer": {
-      "custom_v1": 12,
-      "custom_v2": 15,
-      "custom_v3": 18
     }
   },
 
@@ -69,6 +64,8 @@ The manifest defines the static properties, stages, health per player, and modul
   }
 }
 ```
+
+Villain hit points are not declared here: each stage's hit points are the printed `health` of its villain card (per player when the card says so) times the number of players, set by `advanceVillainStage` (`src/engine/scenarios/advance-villain-stage.ts`).
 
 ---
 

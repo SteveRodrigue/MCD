@@ -16,7 +16,7 @@
 | Q5  | Location              | **Uniform:** official content moves to `plugins/official/<pack>/` (dogfoods the mod API). AGENTS.md, skills, scripts, editor and docs are updated in the same change. No dual paths.                                                                                                                                                         |
 | Q6  | File granularity      | Supplemental files **mirror upstream 1:1** (`cards/core.json`, `cards/core_encounter.json`). Scripts always live at pack level in `cards/scripts/<cardCode>-<slug>.ts`. Scenario folders hold only `definition.json`, an optional `plugin.ts`, and `README.md`.                                                                              |
 | Q7  | Identity & collisions | Codegen **hard-fails** on duplicate card codes, scenario ids or campaign ids. Custom mods may enrich **only their own** `raw.json` cards (no overriding official supplemental). Custom codes use a mod prefix (`<modId>-0001`), enforced by JSON schema.                                                                                     |
-| Q8  | Correctness           | Live Rhino bugs filed as [#303](https://github.com/SteveRodrigue/MCD/issues/303). Fix them in Phase A with failing tests written first. The base plugin reads HP and exclusions only from data, uses a seedable shuffle, and does not build ids from `Date.now()`.                                                                           |
+| Q8  | Correctness           | Live Rhino bugs filed as [#303](https://github.com/SteveRodrigue/MCD/issues/303). Fix them in Phase A with failing tests written first. The base plugin reads HP from the printed villain card (`health` x players, no `healthPerPlayer` in `definition.json`) and exclusions only from data, uses a seedable shuffle, and does not build ids from `Date.now()`.                                                                           |
 | Q9  | Plugin API            | Single public barrel `src/engine/plugin-api/index.ts` (alias `@plugin-api`). ESLint forbids `plugins/**` from importing any other engine path. `manifest.json` declares `apiVersion`, which codegen checks.                                                                                                                                  |
 | Q10 | Override model        | **Composition:** `defineScenarioPlugin({ hooks })` with partial overrides. Each hook is `(state, ctx, next)`, and `next()` runs the default behavior.                                                                                                                                                                                        |
 | Q11 | Safety net            | **Golden-parity gate:** seeded Rhino snapshots + a seeded 100-game simulation summary must match before/after, except the intentional Q8 fixes, which get dedicated tests.                                                                                                                                                                   |
@@ -77,7 +77,7 @@ src/
 Sources: `references/rules/glossary/V.md#villain-defeat`, Main Scheme, Appendix (Setup). Cross-check the Timing & Triggers and Combat clusters in `TOPIC_MAP.md`.
 
 1. **Villain Defeat**
-   - When HP reaches 0, remove the stage. Reveal the next sequential stage for the current difficulty (this cannot be canceled). Set HP to `healthPerPlayer[stage] × P`. Excess damage does not carry over.
+   - When HP reaches 0, remove the stage. Reveal the next sequential stage for the current difficulty (this cannot be canceled). Set HP to the printed `health` of the new stage × P (`P` = starting player count, #246). Excess damage does not carry over.
    - **Same title:** treated as the same character (e.g. Retaliate). Attachments, upgrades, status cards, counters and non-damage tokens **carry over**. If the villain was defeated while activating, the **activation resumes** with the new stage.
    - **Different title:** none of the above carries over. An in-progress activation **ends without resolving**.
    - The reveal fires the new stage's `WHEN_REVEALED` supplemental ability through the standard effect pipeline.
@@ -85,12 +85,7 @@ Sources: `references/rules/glossary/V.md#villain-defeat`, Main Scheme, Appendix 
 2. **Main Scheme**: when threat reaches the target, advance to the next stage. Its `WHEN_REVEALED`/setup fires and target threat is rescaled. If the final stage completes, the villain wins.
 3. **Setup (Steps 1–15)**: the base plugin plugs into the existing `game-setup.ts` pipeline (ADR-0033). It does not duplicate it. The encounter deck is built from the scenario set + Standard (+ Expert) + modular sets − definition-declared exclusions, and is shuffled with the injected `shuffleFn`.
 
-**Known live deviations (Q8, go to the GitHub issue):**
-
-- `RhinoScenarioPlugin.advanceToStage` clears `statusCards`/`attachments` on I→II although the titles match.
-- Stage HP is hardcoded (`numPlayers * 15`, `* 16`) instead of read from `definition.json`.
-- Shuffles use a `Math.random` sort (biased, not seedable) and ignore the `shuffleFn` that `game-setup.ts` already supports.
-- The Rhino II/III `WHEN_REVEALED` effects are re-implemented imperatively even though `core_encounter.json` (01095/01096) already declares them.
+**Q8 deviations fixed in #303:** the stage change now lives in the generic `advanceVillainStage` (`src/engine/scenarios/advance-villain-stage.ts`). Same-title stages keep their `instanceId`, status cards and attachments, stage HP comes from the card, and the Rhino II/III `WHEN_REVEALED` text runs from supplemental data. Still open: shuffles use a `Math.random` sort (biased, not seedable) and ignore the `shuffleFn` that `game-setup.ts` already supports.
 
 ---
 
@@ -153,7 +148,7 @@ type Hook<A extends unknown[], R> = (
   - same-title carryover of status, attachments and counters;
   - different-title clearing;
   - activation resume vs end;
-  - HP read from the definition.
+  - HP read from the printed villain card.
 - Composition tests: an override that calls `next()` wraps the default; an override that does not call `next()` replaces it.
 - `definition.json` schema validation for all scenarios.
 

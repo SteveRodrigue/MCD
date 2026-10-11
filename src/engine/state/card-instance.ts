@@ -40,9 +40,13 @@ export function createCardInstance(card: NormalizedCard, ownerId?: string): Card
 
 /**
  * Toughness: "This character enters play with a tough status card." Call it once for every
- * ally or minion that enters play (played, put into play, revealed), after its state is reset.
+ * ally, minion or villain stage that enters play (played, put into play, revealed), after its state
+ * is reset.
  */
-export function applyToughnessOnEntry(instance: CardInstance): void {
+export function applyToughnessOnEntry(instance: {
+  card: NormalizedCard;
+  statusCards?: StatusCard[];
+}): void {
   if (!hasKeyword(instance.card, Keyword.TOUGH)) return;
   if (!instance.statusCards) instance.statusCards = [];
   if (!instance.statusCards.includes(StatusCard.TOUGH)) {

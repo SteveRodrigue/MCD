@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-10 (backlog reorganized by release gate; done items purged, history is in `git log` and `CHANGELOG.md`)
 > **Repository state:** `main`, everything through #297 (`c588ed4`) committed and pushed. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
-> **Verification baseline:** 🟢 2,523 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
+> **Verification baseline:** 🟢 2,537 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
 ---
@@ -62,11 +62,10 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 ### 3.1 Bugs seen in real Rhino games (do first)
 
-| #   | Issue                                                   | Item                                                                                                              | Estimate | Notes                                                                                                                                                                         |
-| :-- | :------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------- | :------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4   | [#303](https://github.com/SteveRodrigue/MCD/issues/303) | Villain stage change: same title keeps attachments, status cards, counters; HP from card data; activation resumes | 1 day    | Rhino I→II loses Charge / Armored Rhino Suit / Ivory Horn today; keep it generic (Klaw, Ultron reuse it)                                                                      |
-| 5   | [#264](https://github.com/SteveRodrigue/MCD/issues/264) | Villain attack may not resume after declining Spider-Sense `01001a` (stepped villain phase)                       | ½ day    | Not reproduced yet: the first step is a failing test                                                                                                                          |
-| 6   | [#233](https://github.com/SteveRodrigue/MCD/issues/233) | Caught Off Guard `01188`: no choice prompt for the upgrade to discard                                             | ½ day    | Owner 2026-10-10: tests prove a choice modal whenever 2+ upgrades / supports could be discarded, and a combat log entry names the discarded card; reproduce from the snapshot |
+| #   | Issue                                                   | Item                                                                                        | Estimate | Notes                                                                                                                                                                         |
+| :-- | :------------------------------------------------------ | :------------------------------------------------------------------------------------------ | :------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 5   | [#264](https://github.com/SteveRodrigue/MCD/issues/264) | Villain attack may not resume after declining Spider-Sense `01001a` (stepped villain phase) | ½ day    | Not reproduced yet: the first step is a failing test                                                                                                                          |
+| 6   | [#233](https://github.com/SteveRodrigue/MCD/issues/233) | Caught Off Guard `01188`: no choice prompt for the upgrade to discard                       | ½ day    | Owner 2026-10-10: tests prove a choice modal whenever 2+ upgrades / supports could be discarded, and a combat log entry names the discarded card; reproduce from the snapshot |
 
 ### 3.2 Rules gaps that affect core cards
 

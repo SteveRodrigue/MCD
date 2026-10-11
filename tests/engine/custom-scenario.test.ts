@@ -20,10 +20,6 @@ describe('Fan-Made Custom Scenario Extensibility (Universal Scenario Package For
         STANDARD: ['01094', '01095'],
         EXPERT: ['01095', '01096'],
       },
-      healthPerPlayer: {
-        '01094': 10,
-        '01095': 12,
-      },
     },
     mainSchemeSetup: {
       stages: ['01097a'],

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): A villain stage change keeps the same character, with hit points from the card ([Issue #303](https://github.com/SteveRodrigue/MCD/issues/303))**
+  - Rhino, Klaw and Ultron each built a new villain on a stage change: new `instanceId`, attachments and status cards lost even with the same title, hit points hardcoded (`numPlayers * 15`). New generic `advanceVillainStage` (`src/engine/scenarios/advance-villain-stage.ts`): same title keeps `instanceId`, attachments, status cards, cards underneath and facedown boost cards, damage resets, an attack in progress resumes with the new stage (ATK follows the new card); different title carries nothing over and ends the activation.
+  - Hit points are the printed `health` x players; `healthPerPlayer` is removed from `ScenarioDefinition` and the three `definition.json`. Rhino II/III `WHEN_REVEALED` (Breakin' & Takin', stun each hero) and Toughness now run from supplemental data and the keyword; the in-code copies are deleted. Klaw keeps its "Immortal" Klaw callback (+10 hit points per player).
+  - Docs: ADR-0033 addendum, `scenario_creation_guide.md`, `content_plugins_scenarios_and_campaigns.md`. Tests: `villain-stage-change` (+14); `setup-hand-draw-order` now expects the `encounter.reveal.sideScheme` log key. No data, schema or Card Editor change.
+
 - **Fix (Engine): Vibranium Suit `01049` only moves damage the hero carries ([Issue #300](https://github.com/SteveRodrigue/MCD/issues/300))**
   - `TRANSFER_DAMAGE` healed the hero up to full health but still dealt the full amount to the enemy, so an undamaged hero got a free 1-2 damage attack. Now the moved amount is capped at the damage on the hero (RR Move: no valid source, no move). With no damage the step does nothing and fails without an error, so the other upgrades of a Wakanda Forever! sequence still resolve.
   - Tests: `transfer-damage-source` (+6). No data, schema or Card Editor change.

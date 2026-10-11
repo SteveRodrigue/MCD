@@ -27,7 +27,6 @@ export interface ScenarioDefinition {
   villainSetup: {
     villainName: string;
     stages: Record<DifficultyMode, string[]>;
-    healthPerPlayer: Record<string, number>;
   };
 
   mainSchemeSetup: {

@@ -11,13 +11,13 @@ import {
   getActiveMainScheme,
   getVillainById,
   setActiveVillain,
-  replaceVillain,
   replaceActiveMainScheme,
   getPerPlayerCount,
 } from '@engine/models';
 import { cardCatalog } from '../../../../data/importer/card-loader';
 import { createCardInstance } from '../../../state/card-instance';
 import { ScenarioPlugin, ScenarioDefinition, ScenarioGameSetupOptions } from '../../types';
+import { advanceVillainStage, villainStageHitPoints } from '../../advance-villain-stage';
 import definitionData from './definition.json';
 
 export const ultronDefinition: ScenarioDefinition = definitionData as ScenarioDefinition;
@@ -94,8 +94,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
       );
     }
 
-    const hpPerPlayer = this.definition.villainSetup.healthPerPlayer[startingStageCode] || 17;
-    const maxHealth = hpPerPlayer * numPlayers;
+    const maxHealth = villainStageHitPoints(villainCard, numPlayers);
 
     const initialVillain: VillainState = {
       instanceId: `villain_${Date.now()}_${startingStageCode}`,
@@ -246,7 +245,6 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     const villain = getVillainById(state, defeatedVillainInstanceId) || getActiveVillain(state);
     const currentCode = villain.card.code;
     const difficulty = state.difficulty || 'STANDARD';
-    const numPlayers = getPerPlayerCount(state) || 1;
 
     // Skirmish Mode: Stage I defeated -> Immediate Victory
     if (difficulty === 'SKIRMISH') {
@@ -265,7 +263,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     // Standard Mode: Stage I -> Stage II, Stage II -> Victory
     if (difficulty === 'STANDARD') {
       if (currentCode === '01134') {
-        return this.advanceToStage(state, '01135', numPlayers * 22);
+        return advanceVillainStage(state, villain.instanceId!, '01135');
       } else {
         state.winner = 'HEROES';
         state.log.push({
@@ -283,7 +281,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     // Expert Mode: Stage II -> Stage III, Stage III -> Victory
     if (difficulty === 'EXPERT') {
       if (currentCode === '01135') {
-        return this.advanceToStage(state, '01136', numPlayers * 27);
+        return advanceVillainStage(state, villain.instanceId!, '01136');
       } else {
         state.winner = 'HEROES';
         state.log.push({
@@ -299,44 +297,6 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     }
 
     return { state };
-  }
-
-  private advanceToStage(
-    state: GameState,
-    nextStageCode: string,
-    nextStageMaxHealth: number,
-  ): { state: GameState; advancedStage: boolean } {
-    const nextCard = cardCatalog.getCard(nextStageCode) as VillainCard;
-    if (!nextCard) {
-      throw new Error(`Villain stage card '${nextStageCode}' not found in catalog.`);
-    }
-
-    const newVillain: VillainState = {
-      instanceId: `villain_${Date.now()}_${nextStageCode}`,
-      card: nextCard,
-      health: nextStageMaxHealth,
-      maxHealth: nextStageMaxHealth,
-      exhausted: false,
-      statusCards: [],
-      attachments: [],
-    };
-
-    replaceVillain(state, getActiveVillain(state).instanceId!, newVillain);
-
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
-      category: 'phase',
-      key: 'scenario.stageAdvance',
-      params: {
-        stage: nextCard.stage,
-        villain: nextCard.name,
-        health: nextStageMaxHealth,
-      },
-      onomatopoeia: `ULTRON ADVANCES TO STAGE ${nextCard.stage}!`,
-    });
-
-    return { state, advancedStage: true };
   }
 
   onMainSchemeCompleted(

@@ -2,21 +2,21 @@ import {
   GameState,
   VillainState,
   MainSchemeState,
-  SideSchemeCard,
-  StatusCard,
   VillainCard,
   NormalizedCard,
   getActiveVillain,
   getVillainById,
   setActiveVillain,
-  replaceVillain,
   replaceActiveMainScheme,
-  getPerPlayerCount,
 } from '@engine/models';
 import { cardCatalog } from '../../../../data/importer/card-loader';
 import { createCardInstance } from '../../../state/card-instance';
-import { executeEffect } from '@engine/effects';
 import { ScenarioPlugin, ScenarioDefinition, ScenarioGameSetupOptions } from '../../types';
+import {
+  advanceVillainStage,
+  revealVillainStage,
+  villainStageHitPoints,
+} from '../../advance-villain-stage';
 import definitionData from './definition.json';
 
 export const rhinoDefinition: ScenarioDefinition = definitionData as ScenarioDefinition;
@@ -47,8 +47,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
       );
     }
 
-    const hpPerPlayer = this.definition.villainSetup.healthPerPlayer[startingStageCode] || 14;
-    const maxHealth = hpPerPlayer * numPlayers;
+    const maxHealth = villainStageHitPoints(villainCard, numPlayers);
 
     const initialVillain: VillainState = {
       instanceId: `villain_${Date.now()}_${startingStageCode}`,
@@ -123,10 +122,8 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     state.encounterDiscard = [];
     state.sideSchemes = [];
 
-    // If starting on Expert (Stage II), resolve Stage II When Revealed search immediately
-    if (difficulty === 'EXPERT' && startingStageCode === '01095') {
-      this.resolveStageIIWhenRevealed(state);
-    }
+    // The starting stage is revealed: its When Revealed (Expert starts on Stage II) comes from supplemental data
+    revealVillainStage(state, initialVillain);
 
     state.log.push({
       id: `log_${Date.now()}`,
@@ -157,7 +154,6 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     const villain = getVillainById(state, defeatedVillainInstanceId) || getActiveVillain(state);
     const currentCode = villain.card.code;
     const difficulty = state.difficulty || 'STANDARD';
-    const numPlayers = getPerPlayerCount(state) || 1;
 
     // Skirmish Mode: Stage I defeated -> Immediate Victory
     if (difficulty === 'SKIRMISH') {
@@ -176,9 +172,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     // Standard Mode: Stage I -> Stage II, Stage II -> Victory
     if (difficulty === 'STANDARD') {
       if (currentCode === '01094') {
-        return this.advanceToStage(state, '01095', numPlayers * 15, () => {
-          this.resolveStageIIWhenRevealed(state);
-        });
+        return advanceVillainStage(state, villain.instanceId!, '01095');
       } else {
         // Stage II defeated -> Victory
         state.winner = 'HEROES';
@@ -197,9 +191,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     // Expert Mode: Stage II -> Stage III, Stage III -> Victory
     if (difficulty === 'EXPERT') {
       if (currentCode === '01095') {
-        return this.advanceToStage(state, '01096', numPlayers * 16, () => {
-          this.resolveStageIIIWhenRevealed(state);
-        });
+        return advanceVillainStage(state, villain.instanceId!, '01096');
       } else {
         // Stage III defeated -> Victory
         state.winner = 'HEROES';
@@ -260,118 +252,6 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
       return { winner: 'VILLAIN', reason: 'All heroes have been defeated.' };
     }
     return null;
-  }
-
-  // --- PRIVATE STAGE ADVANCEMENT & WHEN REVEALED HELPERS ---
-
-  private advanceToStage(
-    state: GameState,
-    nextStageCode: string,
-    nextHealth: number,
-    onRevealedCallback?: () => void,
-  ): { state: GameState; advancedStage: boolean } {
-    const nextCard = cardCatalog.getCard(nextStageCode) as VillainCard;
-    if (!nextCard) {
-      throw new Error(`Next villain stage card '${nextStageCode}' not found in catalog.`);
-    }
-
-    const updatedVillain: VillainState = {
-      instanceId: `villain_${Date.now()}_${nextStageCode}`,
-      card: nextCard,
-      health: nextHealth,
-      maxHealth: nextHealth,
-      exhausted: false,
-      statusCards: [],
-      attachments: [], // Clear attachments on stage transition
-    };
-
-    replaceVillain(state, getActiveVillain(state).instanceId!, updatedVillain);
-
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
-      category: 'combat',
-      key: 'villain.stageAdvance',
-      params: { villain: nextCard.name, stage: nextCard.stage, health: nextHealth },
-      onomatopoeia: `RHINO ADVANCES TO STAGE ${nextCard.stage}!`,
-    });
-
-    if (onRevealedCallback) {
-      onRevealedCallback();
-    }
-
-    return { state, advancedStage: true };
-  }
-
-  private resolveStageIIWhenRevealed(state: GameState): void {
-    // Search encounter deck and discard pile for Breakin' & Takin' (01107) and reveal it. Shuffle encounter deck.
-    let foundIndex = state.encounterDeck.findIndex((c) => c.card.code === '01107');
-    let foundInstance =
-      foundIndex !== -1 ? state.encounterDeck.splice(foundIndex, 1)[0] : undefined;
-
-    if (!foundInstance) {
-      foundIndex = state.encounterDiscard.findIndex((c) => c.card.code === '01107');
-      if (foundIndex !== -1) {
-        foundInstance = state.encounterDiscard.splice(foundIndex, 1)[0];
-      }
-    }
-
-    if (foundInstance) {
-      const sideSchemeCard = foundInstance.card as SideSchemeCard;
-      const baseThreat =
-        sideSchemeCard.baseThreat * (sideSchemeCard.baseThreatFixed ? 1 : getPerPlayerCount(state));
-      state.sideSchemes.push({
-        instanceId: foundInstance.instanceId,
-        card: sideSchemeCard,
-        threat: baseThreat,
-      });
-
-      // Execute Breakin' & Takin' when revealed threat scaling
-      const abilities = sideSchemeCard.enrichment?.abilities || [];
-      for (const ab of abilities) {
-        if (ab.trigger === 'WHEN_REVEALED') {
-          executeEffect(state, ab, {
-            playerId: state.players[0]?.id || 'p1',
-            sourceCardInstance: foundInstance,
-          });
-        }
-      }
-
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        category: 'scheme',
-        key: 'scenario.sideSchemeRevealed',
-        params: { sideScheme: "Breakin' & Takin'" },
-        onomatopoeia: "BREAKIN' & TAKIN' REVEALED!",
-      });
-    }
-
-    // Shuffle Encounter Deck
-    state.encounterDeck.sort(() => Math.random() - 0.5);
-  }
-
-  private resolveStageIIIWhenRevealed(state: GameState): void {
-    // Rhino Stage III: Stun each hero. Rhino gains Tough status.
-    const activeVillain = getActiveVillain(state);
-    if (!activeVillain.statusCards.includes(StatusCard.TOUGH)) {
-      activeVillain.statusCards.push(StatusCard.TOUGH);
-    }
-
-    for (const player of state.players.filter((pl) => pl.currentForm === 'hero')) {
-      if (!player.statusCards.includes(StatusCard.STUNNED)) {
-        player.statusCards.push(StatusCard.STUNNED);
-      }
-    }
-
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
-      category: 'status',
-      key: 'scenario.stageIIIRevealed',
-      params: { villain: 'Rhino', effect: 'Tough + Stun All Heroes' },
-      onomatopoeia: 'RHINO GAINS TOUGH & STUNS ALL HEROES!',
-    });
   }
 }
 

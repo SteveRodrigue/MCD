@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-10 (backlog reorganized by release gate; done items purged, history is in `git log` and `CHANGELOG.md`)
-> **Repository state:** `main`, everything through #297 (`c588ed4`) committed and pushed. Check `git log -1` and `git status` first.
+> **Last updated:** 2026-10-11 (everything through #264 committed and pushed)
+> **Repository state:** `main`, everything through #264 (`1d69a3c`) committed and pushed. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
-> **Verification baseline:** 🟢 2,537 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
+> **Verification baseline:** 🟢 2,543 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
 ---

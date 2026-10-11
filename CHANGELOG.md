@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): Vibranium Suit `01049` only moves damage the hero carries ([Issue #300](https://github.com/SteveRodrigue/MCD/issues/300))**
+  - `TRANSFER_DAMAGE` healed the hero up to full health but still dealt the full amount to the enemy, so an undamaged hero got a free 1-2 damage attack. Now the moved amount is capped at the damage on the hero (RR Move: no valid source, no move). With no damage the step does nothing and fails without an error, so the other upgrades of a Wakanda Forever! sequence still resolve.
+  - Tests: `transfer-damage-source` (+6). No data, schema or Card Editor change.
+
 - **Fix (Engine): One-Two Punch `01024` is offered after a basic attack ([Issue #302](https://github.com/SteveRodrigue/MCD/issues/302))**
   - `BASIC_ATTACK_PERFORMED` fired, but `dispatchTrigger` had no in-hand scan for it, so a hand Response on that trigger was never offered. New scan in `trigger-dispatcher.ts`, attacking player only (the text says "you"), for a basic attack on a villain or a minion. A Stunned hero makes no attack, so nothing is offered.
   - Tests: `one-two-punch` (+7). No data, schema or Card Editor change.

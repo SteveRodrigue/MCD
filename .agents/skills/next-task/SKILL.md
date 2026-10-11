@@ -1,6 +1,12 @@
 ---
 name: next-task
 description: 'Picks the next task: the first open row of the backlog queue, or, when the queue is empty, the top open issue of the active gate milestone on GitHub. Then writes the plan and stops for approval. Trigger when asking what to work on next, when continuing work, or prefixed with "next-task".'
+hooks:
+  PreToolUse:
+    - matcher: 'Edit|Write'
+      hooks:
+        - type: command
+          command: 'node "$CLAUDE_PROJECT_DIR/.claude/hooks/plan-gate.mjs"'
 ---
 
 # Next Task
@@ -49,7 +55,7 @@ Sources, in this order:
 1. Say which task in one line (issue number, title, queue row or milestone).
 2. Research: the issue body, `npm run rule -- <term>` and `references/rules/` (raw PDF only below 95% confidence), the related ADRs and code.
 3. Write `docs/backlog/plan_issue_<n>_<slug>.md` following the plan anatomy in [`docs/backlog/README.md`](../../../docs/backlog/README.md).
-4. **Stop.** No code, test or data change until the owner approves the plan.
+4. **Stop.** No code, test or data change until the owner approves the plan. Create `temp/.plan-pending` when you post the plan and delete it once the owner approves. While it exists, a hook blocks edits under `src/`, `tests/`, `data/`, `tools/` and `scripts/`.
 
 ## Presentation (fallback only)
 

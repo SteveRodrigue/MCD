@@ -33,6 +33,7 @@ import {
 import { getEffectiveHandSize } from '../../../engine/pipeline/stat-calculator';
 import { getDiscardCostBounds } from '../../../engine/pipeline/cost-engine';
 import { peekDecisionPrompt } from '../../../engine/pipeline';
+import { optionRequiresPayment } from '../../utils/option-requires-payment';
 
 interface GameBoardProps {
   gameState: GameState;
@@ -655,26 +656,12 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
           const activePrompt = decisionPrompt;
           if (!activePrompt) return;
 
-          const isDecline =
-            optionId === 'pass' ||
-            optionId === 'PASS' ||
-            optionId.includes('decline') ||
-            optionId.includes('none');
-
           const selectedOption = activePrompt.options?.find((o) => o.id === optionId);
           const promptPlayer =
             gameState.players.find((p) => p.id === activePrompt.playerId) || activePlayer;
 
           const optParams = selectedOption?.params as Record<string, any> | undefined;
-          const requiresPayment =
-            !isDecline &&
-            Boolean(
-              (selectedOption as any)?.requiresPayment ||
-              optParams?.requiresPayment ||
-              optParams?.resourceCost ||
-              (optParams?.ability?.cost?.resourceCost !== undefined &&
-                optParams?.ability?.cost?.resourceCost !== 0),
-            );
+          const requiresPayment = selectedOption ? optionRequiresPayment(selectedOption) : false;
 
           if (requiresPayment && selectedOption) {
             const cardInstanceId =

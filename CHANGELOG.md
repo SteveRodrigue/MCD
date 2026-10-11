@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (UI): Superhuman Law Division `01026` no longer asks to pay a second time after the scheme choice ([Issue #298](https://github.com/SteveRodrigue/MCD/issues/298))**
+  - The "Choose Target" prompt of an ability carries the ability (cost included) so the engine can resolve its steps. `GameBoard` and `DecisionPromptModal` each had a copy of the payment test and read that cost as unpaid. One `optionRequiresPayment` (`src/ui/utils/`) replaces both copies and returns false for ability target choices. The engine already charged once.
+  - Tests: `option-requires-payment`, `superhuman-law-division` (+5).
+
 - **Fix (Engine): Killmonger `01157` cannot take damage from Black Panther upgrades ([Issue #297](https://github.com/SteveRodrigue/MCD/issues/297))**
   - New CONSTANT effect `CANNOT_TAKE_DAMAGE` (`sourceCardType`, `sourceTrait`). `applyDamageToTarget` checks it first (step 0): 0 damage, no Tough, shield or Retaliate used. Such a character is not a valid target of `DEAL_DAMAGE` / `TRANSFER_DAMAGE` (Wakanda Forever! cannot target Killmonger with Panther Claws or Vibranium Suit). The invented tough status of `01157` is removed; confidence 95.
   - Card Editor descriptor, spec `05`, `QUICK_REFERENCE.md`, ADR-0078 addendum. Board conditions (Madame Hydra, Ultron) are not covered yet.

@@ -18,6 +18,7 @@ import { FormattedCardText } from '../cards/FormattedCardText';
 import { WakandaForeverModal } from './WakandaForeverModal';
 import { DistributeAmountModal } from './DistributeAmountModal';
 import { SelectCardsModal } from './SelectCardsModal';
+import { optionRequiresPayment } from '../../utils/option-requires-payment';
 
 interface DecisionPromptModalProps {
   prompt?: PendingDecisionPrompt;
@@ -376,15 +377,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
               const isDisabled = Boolean(option.disabled);
 
               const optParams = option.params as Record<string, any> | undefined;
-              const requiresPayment =
-                !isDeclineOption &&
-                Boolean(
-                  (option as any).requiresPayment ||
-                  optParams?.requiresPayment ||
-                  (optParams?.resourceCost && optParams.resourceCost.amount > 0) ||
-                  (optParams?.ability?.cost?.resourceCost !== undefined &&
-                    optParams?.ability?.cost?.resourceCost !== 0),
-                );
+              const requiresPayment = optionRequiresPayment(option);
 
               const costAmount =
                 optParams?.resourceCost?.amount ??

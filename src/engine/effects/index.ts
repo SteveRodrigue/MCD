@@ -5137,6 +5137,13 @@ export function executeStep(
       if (isImmuneToDamage(state, transferTarget, context.sourceCardInstance)) {
         return { state, success: false, error: 'Target cannot take damage from this source' };
       }
+      // Damage can only move if the hero carries it (#300). With no damage there is no valid
+      // source: the step fails without an error, so the rest of a Wakanda Forever! sequence resolves.
+      const heroDamage = getEffectiveMaxHealth(player, state) - player.health;
+      if (heroDamage <= 0) {
+        return { state, success: false };
+      }
+      amount = Math.min(amount, heroDamage);
       player.health = Math.min(getEffectiveMaxHealth(player, state), player.health + amount);
 
       // The enemy side goes through the damage pipeline like DEAL_DAMAGE (#247): shields, Tough,

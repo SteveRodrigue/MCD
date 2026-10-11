@@ -80,11 +80,7 @@ import {
   popDecisionPrompt,
   validateSearchSelection,
 } from './prompt-queue';
-import {
-  resolveDefenderDeclaration,
-  finishAttackDamageAndPostResolution,
-  continueAttackAfterInitiation,
-} from './combat-pipeline';
+import { resolveDefenderDeclaration, finishAttackDamageAndPostResolution } from './combat-pipeline';
 import { getSpecialHandler } from '../specials/special-registry';
 import {
   attachCardToHost,
@@ -3345,12 +3341,6 @@ function dispatchSingleAction(
         paymentOptions,
       );
       let resultingState = promptRes.state;
-
-      // If resolving an initiation trigger prompt for an active attack, continue attack
-      if (resultingState.activeAttackContext?.phase === 'INITIATION') {
-        const attackCtx = resultingState.activeAttackContext;
-        resultingState = continueAttackAfterInitiation(resultingState, attackCtx);
-      }
 
       // If resolving a damage prevention interrupt for an active attack, finish damage calculation and post-resolution
       if (

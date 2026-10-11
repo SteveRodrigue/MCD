@@ -22,8 +22,13 @@ import { dispatchTrigger } from '../triggers';
 import { executeEffect } from '../effects';
 import { applyThreatPlacement } from './threat-pipeline';
 import { getEffectiveVillainStats, consumeEntityStatusCards } from './stat-calculator';
-import { initiateEnemyAttack, CombatOptions } from './combat-pipeline';
+import {
+  initiateEnemyAttack,
+  continueAttackAfterInitiation,
+  CombatOptions,
+} from './combat-pipeline';
 export type { CombatOptions };
+export { continueAttackAfterInitiation };
 import { drawEncounterCard } from './deck-exhaustion';
 import { dealBoostCards, resolveBoostCards, type BoostLogContext } from './boost-resolution';
 import { dealSurgeCard } from './surge';
@@ -279,7 +284,7 @@ export function step2_villainAndMinionActivations(
   state: GameState,
   options?: CombatOptions,
 ): GameState {
-  if (state.winner) return state;
+  if (peekDecisionPrompt(state) || state.winner) return state;
   state.phase = GamePhase.VILLAIN_PHASE;
   state.villainPhaseStep = VillainPhaseStep.VILLAIN_ACTIVATIONS;
 

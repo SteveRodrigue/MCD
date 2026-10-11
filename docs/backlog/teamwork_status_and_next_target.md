@@ -62,10 +62,9 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 ### 3.1 Bugs seen in real Rhino games (do first)
 
-| #   | Issue                                                   | Item                                                                                        | Estimate | Notes                                                                                                                                                                         |
-| :-- | :------------------------------------------------------ | :------------------------------------------------------------------------------------------ | :------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 5   | [#264](https://github.com/SteveRodrigue/MCD/issues/264) | Villain attack may not resume after declining Spider-Sense `01001a` (stepped villain phase) | ½ day    | Not reproduced yet: the first step is a failing test                                                                                                                          |
-| 6   | [#233](https://github.com/SteveRodrigue/MCD/issues/233) | Caught Off Guard `01188`: no choice prompt for the upgrade to discard                       | ½ day    | Owner 2026-10-10: tests prove a choice modal whenever 2+ upgrades / supports could be discarded, and a combat log entry names the discarded card; reproduce from the snapshot |
+| #   | Issue                                                   | Item                                                                  | Estimate | Notes                                                                                                                                                                         |
+| :-- | :------------------------------------------------------ | :-------------------------------------------------------------------- | :------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 6   | [#233](https://github.com/SteveRodrigue/MCD/issues/233) | Caught Off Guard `01188`: no choice prompt for the upgrade to discard | ½ day    | Owner 2026-10-10: tests prove a choice modal whenever 2+ upgrades / supports could be discarded, and a combat log entry names the discarded card; reproduce from the snapshot |
 
 ### 3.2 Rules gaps that affect core cards
 

@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-10 (backlog reorganized by release gate; done items purged, history is in `git log` and `CHANGELOG.md`)
 > **Repository state:** `main`, everything through #297 (`c588ed4`) committed and pushed. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
-> **Verification baseline:** 🟢 2,505 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
+> **Verification baseline:** 🟢 2,517 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
 ---
@@ -64,7 +64,6 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 | #   | Issue                                                   | Item                                                                                                              | Estimate | Notes                                                                                                                                                                         |
 | :-- | :------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------- | :------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2   | [#302](https://github.com/SteveRodrigue/MCD/issues/302) | One-Two Punch `01024` does not trigger after a basic attack                                                       | ½ day    | Dev Mode report, P1                                                                                                                                                           |
 | 3   | [#300](https://github.com/SteveRodrigue/MCD/issues/300) | Vibranium Suit `01049` moves damage when Black Panther has none                                                   | ½ day    | Dev Mode report                                                                                                                                                               |
 | 4   | [#303](https://github.com/SteveRodrigue/MCD/issues/303) | Villain stage change: same title keeps attachments, status cards, counters; HP from card data; activation resumes | 1 day    | Rhino I→II loses Charge / Armored Rhino Suit / Ivory Horn today; keep it generic (Klaw, Ultron reuse it)                                                                      |
 | 5   | [#264](https://github.com/SteveRodrigue/MCD/issues/264) | Villain attack may not resume after declining Spider-Sense `01001a` (stepped villain phase)                       | ½ day    | Not reproduced yet: the first step is a failing test                                                                                                                          |

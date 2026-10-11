@@ -18,7 +18,10 @@ import {
   executeResourceCostPayment,
   AbilityPaymentOptions,
 } from './cost-engine';
-import { resolveActiveEncounterCardAfterInterrupt } from './villain-phase';
+import {
+  resolveActiveEncounterCardAfterInterrupt,
+  continueAttackAfterInitiation,
+} from './villain-phase';
 import { evaluateStepGate } from './step-gate-evaluator';
 import { canPayAbilityCost } from './cost-engine';
 import { abilityCancelsEncounterReveal } from './encounter-cancel';
@@ -401,6 +404,9 @@ function resumeAfterPromptResolved(state: GameState): GameState {
   let current = state;
   if (current.pendingThreatPlacements && current.pendingThreatPlacements.length > 0) {
     current = finishPendingThreatPlacements(current);
+  }
+  if (!peekDecisionPrompt(current) && current.activeAttackContext?.phase === 'INITIATION') {
+    current = continueAttackAfterInitiation(current, current.activeAttackContext);
   }
   if (!peekDecisionPrompt(current) && hasPendingSequence(current)) {
     current = resumePendingSequence(current);

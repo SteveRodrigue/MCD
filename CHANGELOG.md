@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): Villain attack resumes after declining or accepting Spider-Sense `01001a` ([Issue #264](https://github.com/SteveRodrigue/MCD/issues/264))**
+  - Resolving or declining an attack initiation interrupt prompt (such as Spider-Sense) left the active attack suspended without declaring defenders, flipping boost cards, or dealing damage. `resumeAfterPromptResolved` (`src/engine/pipeline/prompt-queue.ts`) now intrinsically checks `current.activeAttackContext?.phase === 'INITIATION'` and calls `continueAttackAfterInitiation`, transitioning directly to defender declaration in interactive mode or completing synchronously under `synchronousPolicy`. Redundant manual invocation in `action-dispatcher.ts` was removed, and `step2_villainAndMinionActivations` halts safely if a prompt is pending.
+  - Tests: `tests/engine/spider-sense-villain-attack-resume.test.ts` (+5). No data, schema or Card Editor change.
+
 - **Fix (Engine): A villain stage change keeps the same character, with hit points from the card ([Issue #303](https://github.com/SteveRodrigue/MCD/issues/303))**
   - Rhino, Klaw and Ultron each built a new villain on a stage change: new `instanceId`, attachments and status cards lost even with the same title, hit points hardcoded (`numPlayers * 15`). New generic `advanceVillainStage` (`src/engine/scenarios/advance-villain-stage.ts`): same title keeps `instanceId`, attachments, status cards, cards underneath and facedown boost cards, damage resets, an attack in progress resumes with the new stage (ATK follows the new card); different title carries nothing over and ends the activation.
   - Hit points are the printed `health` x players; `healthPerPlayer` is removed from `ScenarioDefinition` and the three `definition.json`. Rhino II/III `WHEN_REVEALED` (Breakin' & Takin', stun each hero) and Toughness now run from supplemental data and the keyword; the in-code copies are deleted. Klaw keeps its "Immortal" Klaw callback (+10 hit points per player).

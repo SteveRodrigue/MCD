@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): One-Two Punch `01024` is offered after a basic attack ([Issue #302](https://github.com/SteveRodrigue/MCD/issues/302))**
+  - `BASIC_ATTACK_PERFORMED` fired, but `dispatchTrigger` had no in-hand scan for it, so a hand Response on that trigger was never offered. New scan in `trigger-dispatcher.ts`, attacking player only (the text says "you"), for a basic attack on a villain or a minion. A Stunned hero makes no attack, so nothing is offered.
+  - Tests: `one-two-punch` (+7). No data, schema or Card Editor change.
+
 - **Fix (UI): Superhuman Law Division `01026` no longer asks to pay a second time after the scheme choice ([Issue #298](https://github.com/SteveRodrigue/MCD/issues/298))**
   - The "Choose Target" prompt of an ability carries the ability (cost included) so the engine can resolve its steps. `GameBoard` and `DecisionPromptModal` each had a copy of the payment test and read that cost as unpaid. One `optionRequiresPayment` (`src/ui/utils/`) replaces both copies and returns false for ability target choices. The engine already charged once.
   - Tests: `option-requires-payment`, `superhuman-law-division` (+5).

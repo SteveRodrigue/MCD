@@ -1220,6 +1220,24 @@ export function dispatchTrigger(
     }
   }
 
+  // 8. In-hand Responses after a hero makes a basic attack (e.g. One-Two Punch 01024). The text
+  // says "you", so only the attacking player's hand is scanned.
+  if (trigger === 'BASIC_ATTACK_PERFORMED') {
+    if (
+      scanHandReactions(state, trigger, context, currentChain, [player], {
+        resolve: ({ player: p, card, ability, chain }) => {
+          executeEffect(state, ability, {
+            playerId: p.id,
+            sourceCardInstance: card,
+            triggerChain: chain,
+          });
+        },
+      })
+    ) {
+      hasPendingPrompt = true;
+    }
+  }
+
   return {
     state,
     damageAmount: currentDamage,

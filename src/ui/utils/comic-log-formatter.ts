@@ -439,6 +439,10 @@ export function mapToCanonicalTemplateKey(key?: string, entry?: GameLogEntry): s
     case 'BLACK_CAT_FETCH':
       return 'BLACK_CAT_FETCH';
 
+    case 'player.tableau.discarded':
+    case 'PLAYER_TABLEAU_DISCARDED':
+      return 'PLAYER_TABLEAU_DISCARDED';
+
     default:
       return key;
   }
@@ -655,6 +659,7 @@ export function normalizeLogParams(
   }
 
   normalized.who = who;
+  normalized.player = paramPlayer ?? who;
   if (p.actor !== undefined) {
     normalized.actor = String(p.actor);
   } else if (

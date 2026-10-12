@@ -80,7 +80,8 @@
     "CARDS_DISCARDED_NAMES": "{{who}} discarded {{count}} card(s) from {{source}}: {{cards}}.",
     "CARDS_DRAWN_NAMES": "{{who}} drew {{count}} card(s): {{cards}}.",
     "CARDS_DRAWN_FROM_SOURCE": "{{who}} drew {{count}} card(s) ({{source}}): {{cards}}.",
-    "BLACK_CAT_FETCH": "Black Cat retrieved {{card}} into {{who}}'s hand!"
+    "BLACK_CAT_FETCH": "Black Cat retrieved {{card}} into {{who}}'s hand!",
+    "PLAYER_TABLEAU_DISCARDED": "{{player}} discarded {{card}} from their tableau."
   },
   "dialogue": {
     "spider_man": {

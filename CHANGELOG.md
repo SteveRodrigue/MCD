@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine/UI): Caught Off Guard `01188` choice prompt and card name in combat log ([Issue #233](https://github.com/SteveRodrigue/MCD/issues/233))**
+  - When 2 or more candidate upgrades/supports are eligible to be discarded from the tableau, `executeDiscard` now enqueues a generic `RESOLVE_DISCARD_CHOICE` prompt in `pendingDecisionQueue` with dynamic source/trait metadata (title, description, and thumbnail card previews) instead of auto-discarding or using hardcoded titles.
+  - Generically extended to and verified across all Core Set tableau discard choices: Caught Off Guard (`01188`), Electric Whip Attack (`01173`, two-stage choice & undefended boost), and Affairs of State (`01155`, two-stage choice & Black Panther trait filtering).
+  - Combat log entry `player.tableau.discarded` now includes the discarded card's name in both English (`"{{player}} discarded {{card}} from their tableau."`) and French (`"{{player}} a défaussé {{card}} de son tableau."`).
+  - Tests: `tests/engine/caught-off-guard-choice.test.ts`, `tests/engine/electric-whip-attack.test.ts`, `tests/engine/affairs-of-state-discard.test.ts`, `tests/ui/comic-log-formatter.test.ts`, `tests/ui/DecisionPromptModal.test.tsx` (net +12 tests).
+
 - **Fix (Engine): Villain attack resumes after declining or accepting Spider-Sense `01001a` ([Issue #264](https://github.com/SteveRodrigue/MCD/issues/264))**
   - Resolving or declining an attack initiation interrupt prompt (such as Spider-Sense) left the active attack suspended without declaring defenders, flipping boost cards, or dealing damage. `resumeAfterPromptResolved` (`src/engine/pipeline/prompt-queue.ts`) now intrinsically checks `current.activeAttackContext?.phase === 'INITIATION'` and calls `continueAttackAfterInitiation`, transitioning directly to defender declaration in interactive mode or completing synchronously under `synchronousPolicy`. Redundant manual invocation in `action-dispatcher.ts` was removed, and `step2_villainAndMinionActivations` halts safely if a prompt is pending.
   - Tests: `tests/engine/spider-sense-villain-attack-resume.test.ts` (+5). No data, schema or Card Editor change.

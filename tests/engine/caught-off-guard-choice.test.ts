@@ -103,6 +103,12 @@ describe('Caught Off Guard (01188) Discard Choice and Surge Behavior (Issue #184
     // No Surge: player dealtEncounterCards is empty
     expect(resolveAction.state.players[0].dealtEncounterCards.length).toBe(0);
 
+    // Discard log entry includes player and discarded card name
+    const discardLog = resolveAction.state.log.find((l) => l.key === 'player.tableau.discarded');
+    expect(discardLog).toBeDefined();
+    expect(discardLog!.params?.player).toBe('Spider-Man');
+    expect(discardLog!.params?.card).toBe('Avengers Mansion');
+
     // Prompt is cleared from the queue
     expect(peekDecisionPrompt(resolveAction.state)).toBeUndefined();
   });
@@ -125,6 +131,12 @@ describe('Caught Off Guard (01188) Discard Choice and Surge Behavior (Issue #184
       true,
     );
 
+    // Auto-discard log entry includes player and discarded card name
+    const discardLog = nextState.log.find((l) => l.key === 'player.tableau.discarded');
+    expect(discardLog).toBeDefined();
+    expect(discardLog!.params?.player).toBe('Spider-Man');
+    expect(discardLog!.params?.card).toBe('Web-Shooter');
+
     // No Surge triggered
     expect(nextState.players[0].dealtEncounterCards.length).toBe(0);
   });
@@ -146,5 +158,79 @@ describe('Caught Off Guard (01188) Discard Choice and Surge Behavior (Issue #184
     expect(res.onomatopoeia).toBe('SURGE!');
     expect(state.players[0].tableau.length).toBe(0);
     expect(state.players[0].dealtEncounterCards.length).toBe(initialDealtCount + 1);
+  });
+
+  it('Test 5: 2-player multiplayer scenario routes prompt to dealt player and logs resolution under that player', () => {
+    const captainMarvelHero = cardCatalog.getCard('01010a') as HeroCard;
+    const carolDanversAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
+
+    const twoPlayerState = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Spider-Man',
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+        },
+        {
+          id: 'p2',
+          name: 'Captain Marvel',
+          hero: captainMarvelHero,
+          alterEgo: carolDanversAlterEgo,
+          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+        },
+      ],
+      villain: cardCatalog.getCard('01094') as any,
+      mainScheme: cardCatalog.getCard('01097b') as any,
+      encounterCards: cardCatalog.getCardsBySet('rhino'),
+      skipMulligan: true,
+    });
+
+    twoPlayerState.players[0].currentForm = 'hero';
+    twoPlayerState.players[0].activeFormCard = spiderManHero;
+    twoPlayerState.players[1].currentForm = 'hero';
+    twoPlayerState.players[1].activeFormCard = captainMarvelHero;
+
+    // Give p2 two cards in tableau (Support + Upgrade)
+    const mansion = createCardInstance(cardCatalog.getCard('01091')!); // Avengers Mansion (Support)
+    const cosmicFlight = createCardInstance(cardCatalog.getCard('01017')!); // Cosmic Flight (Upgrade)
+    twoPlayerState.players[1].tableau.push(mansion, cosmicFlight);
+
+    // p2 is dealt Caught Off Guard
+    const caughtOffGuard = createCardInstance(cardCatalog.getCard('01188')!);
+    twoPlayerState.players[1].dealtEncounterCards.push(caughtOffGuard);
+
+    const promptState = step4_revealEncounterCards(twoPlayerState);
+    const prompt = peekDecisionPrompt(promptState);
+
+    expect(prompt).toBeDefined();
+    expect(prompt!.playerId).toBe('p2');
+    expect(prompt!.title).toBe('Discard Upgrade or Support');
+    expect(prompt!.options.map((o) => o.id)).toEqual([mansion.instanceId, cosmicFlight.instanceId]);
+
+    // Resolve choice: p2 chooses Cosmic Flight
+    const resolveAction = dispatchAction(promptState, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p2',
+      selectedOptionId: cosmicFlight.instanceId,
+    });
+
+    expect(resolveAction.result.success).toBe(true);
+    expect(
+      resolveAction.state.players[1].tableau.some((c) => c.instanceId === cosmicFlight.instanceId),
+    ).toBe(false);
+    expect(
+      resolveAction.state.players[1].tableau.some((c) => c.instanceId === mansion.instanceId),
+    ).toBe(true);
+    expect(
+      resolveAction.state.players[1].discard.some((c) => c.instanceId === cosmicFlight.instanceId),
+    ).toBe(true);
+
+    const discardLog = resolveAction.state.log.find((l) => l.key === 'player.tableau.discarded');
+    expect(discardLog).toBeDefined();
+    expect(discardLog!.params?.player).toBe('Captain Marvel');
+    expect(discardLog!.params?.card).toBe('Cosmic Flight');
   });
 });

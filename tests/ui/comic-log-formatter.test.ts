@@ -669,6 +669,30 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
           'Spider-Man équipe Spider-Tracer sur Hydra Soldier (Spider-Man).',
         );
       });
+
+      it('formats player.tableau.discarded with player and discarded card name in English and French', () => {
+        const discardEntry: GameLogEntry = {
+          id: 'log-tableau-discard',
+          timestamp: Date.now(),
+          round: 1,
+          key: 'player.tableau.discarded',
+          params: {
+            who: 'Spider-Man',
+            player: 'Spider-Man',
+            card: 'Avengers Mansion',
+          },
+        };
+
+        const enDiscard = formatComicLogEntry(discardEntry, 'en', mockGameState);
+        expect(enDiscard.narrativeAction).toBe(
+          'Spider-Man discarded Avengers Mansion from their tableau.',
+        );
+
+        const frDiscard = formatComicLogEntry(discardEntry, 'fr', mockGameState);
+        expect(frDiscard.narrativeAction).toBe(
+          'Spider-Man a défaussé Avengers Mansion de son tableau.',
+        );
+      });
     });
   });
 });

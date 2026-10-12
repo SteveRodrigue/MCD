@@ -1,6 +1,4 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import * as fs from 'fs';
-import * as path from 'path';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import {
   GameState,
@@ -266,32 +264,25 @@ describe('The (attack) label (#247 part 2)', () => {
       '01087': 'haymaker',
     };
 
-    const pack = JSON.parse(
-      fs.readFileSync(
-        path.resolve(__dirname, '../../src/data/supplemental/pack/core.json'),
-        'utf8',
-      ),
-    ).cards as Record<
-      string,
-      { abilities?: Array<{ id: string; labels?: string[] }>; audit?: any }
-    >;
-
     for (const [code, abilityId] of Object.entries(expected)) {
-      it(`${code}: ${abilityId} declares labels ["ATTACK"] and the card prints (attack)`, () => {
-        const card = pack[code];
-        expect(card.audit?.originalText).toContain('<i>(attack)</i>');
-        const labelled = (card.abilities ?? []).filter((a) => a.labels?.includes('ATTACK'));
+      it(`${code}: ${abilityId} derives labels ["ATTACK"] and the card prints (attack)`, () => {
+        const card = cardCatalog.getCard(code)!;
+        expect(card.text).toContain('<i>(attack)</i>');
+        const labelled = (card.enrichment?.abilities ?? []).filter((a) =>
+          a.labels?.includes('ATTACK'),
+        );
         expect(labelled.map((a) => a.id)).toEqual([abilityId]);
         expect(labelled[0].labels).toEqual(['ATTACK']);
       });
     }
 
     it('no other core card declares ATTACK', () => {
-      const others = Object.entries(pack)
-        .filter(([code]) => !(code in expected))
-        .filter(([, card]) => (card.abilities ?? []).some((a) => a.labels?.includes('ATTACK')))
-        .map(([code]) => code);
-      expect(others).toEqual([]);
+      const others = cardCatalog
+        .getAllCards()
+        .filter((c) => c.packCode === 'core' && !(c.code in expected))
+        .filter((c) => (c.enrichment?.abilities ?? []).some((a) => a.labels?.includes('ATTACK')))
+        .map((c) => c.code);
+      expect(Array.from(new Set(others))).toEqual([]);
     });
 
     it('the schema accepts labels and rejects unknown ones', async () => {

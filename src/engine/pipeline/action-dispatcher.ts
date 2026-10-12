@@ -72,6 +72,7 @@ import {
   getEffectiveMaxHealth,
   hasEntityKeyword,
   consumeEntityStatusCards,
+  isEntityIncapacitatedByStatus,
 } from './stat-calculator';
 import {
   resolveDecisionPrompt,
@@ -1647,7 +1648,15 @@ function dispatchSingleAction(
           if (requiredTargetScope) break;
         }
 
-        if (requiredTargetScope && !eventTargetId) {
+        const willBeCanceledByStatus = (abilities || []).some(
+          (a) =>
+            (a.labels?.includes('ATTACK') &&
+              isEntityIncapacitatedByStatus(player, StatusCard.STUNNED)) ||
+            (a.labels?.includes('THWART') &&
+              isEntityIncapacitatedByStatus(player, StatusCard.CONFUSED)),
+        );
+
+        if (requiredTargetScope && !eventTargetId && !willBeCanceledByStatus) {
           const eligibleTargets = getEligibleTargets(
             nextState,
             player,
@@ -1954,7 +1963,13 @@ function dispatchSingleAction(
         }
       }
 
-      if (requiredAbilityScope && !abilityTargetId) {
+      const willBeCanceledByStatus =
+        (ability.labels?.includes('ATTACK') &&
+          isEntityIncapacitatedByStatus(player, StatusCard.STUNNED)) ||
+        (ability.labels?.includes('THWART') &&
+          isEntityIncapacitatedByStatus(player, StatusCard.CONFUSED));
+
+      if (requiredAbilityScope && !abilityTargetId && !willBeCanceledByStatus) {
         const eligibleTargets = getEligibleTargets(
           nextState,
           player,

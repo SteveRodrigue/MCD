@@ -13,6 +13,7 @@ import {
   getActiveMainScheme,
   getMainSchemesInPlay,
   getVillainsInPlay,
+  StatusCard,
 } from '@engine/models';
 import { getCardEnrichment } from '../../data/supplemental';
 import {
@@ -25,7 +26,11 @@ import {
   getAvailableResources,
 } from './cost-engine';
 import { matchesCardFilter } from '../filters/card-filter';
-import { getEffectiveAllyLimit, hasPlayerTrait } from './stat-calculator';
+import {
+  getEffectiveAllyLimit,
+  hasPlayerTrait,
+  isEntityIncapacitatedByStatus,
+} from './stat-calculator';
 import { getStepEffectParams } from '../../data/supplemental/schema';
 import { findInPlayCardInstance } from '../state/state-validator';
 import { locateCard, readCardResources } from '../queries/card-inspector';
@@ -1127,6 +1132,13 @@ export function evaluateSchemeTargetRequirement(
     const steps = ab.steps || [];
     const threatStep = steps.find((s) => s.effect === 'REMOVE_THREAT');
     if (threatStep) {
+      // Confused identity attempting a thwart ability bypasses target requirement (RR v1.8 p. 28)
+      if (
+        ab.labels?.includes('THWART') &&
+        isEntityIncapacitatedByStatus(player, StatusCard.CONFUSED)
+      ) {
+        continue;
+      }
       const stepParams = getStepEffectParams(threatStep);
       const targetParam = (stepParams.target as string) || 'CHOSEN_SCHEME';
       const targetInstId = stepParams.targetInstanceId as string | undefined;
@@ -1309,6 +1321,12 @@ export function canInitiateAbility(
     const stepParams = getStepEffectParams(step);
     // 5A. Threat Removal / Thwart
     if (step.effect === 'REMOVE_THREAT') {
+      if (
+        ability.labels?.includes('THWART') &&
+        isEntityIncapacitatedByStatus(player, StatusCard.CONFUSED)
+      ) {
+        continue;
+      }
       const targetParam = (stepParams.target as string) || 'CHOSEN_SCHEME';
       const targetInstId = (stepParams.targetInstanceId as string) || options?.targetInstanceId;
       if (!hasEligibleThreatRemovalTarget(state, playerId, targetParam, targetInstId)) {
@@ -1321,6 +1339,12 @@ export function canInitiateAbility(
 
     // 5B. Attack / Enemy Target Damage
     if (step.effect === 'ATTACK' || (step.effect === 'DEAL_DAMAGE' && stepParams.target)) {
+      if (
+        ability.labels?.includes('ATTACK') &&
+        isEntityIncapacitatedByStatus(player, StatusCard.STUNNED)
+      ) {
+        continue;
+      }
       const target = (stepParams.target as string) || 'CHOSEN_ENEMY';
       const allMinions = state.players.flatMap((p) => p.engagedMinions || []);
       const hasGuard = player.engagedMinions.some((m) => hasKeyword(m.card, Keyword.GUARD));

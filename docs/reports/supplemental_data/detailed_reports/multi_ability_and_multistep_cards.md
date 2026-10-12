@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-10T21:55:22.702Z`
+> **Generated:** `2026-10-12T21:37:23.188Z`
 
 ## 1. Cards with Multiple Abilities (2+ Declared Abilities — 17 Cards)
 

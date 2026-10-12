@@ -11,6 +11,7 @@ import {
   PlayerSideSchemeCard,
   MinionCard,
   AllyCard,
+  AbilityTiming,
 } from '@engine/models';
 
 /**
@@ -178,6 +179,48 @@ export function parseKeywords(raw: RawUpstreamCard, enrichment?: CardEnrichment)
   return Array.from(keywords);
 }
 
+const TIMING_MAP: Record<string, AbilityTiming> = {
+  'hero action': 'HERO_ACTION',
+  'alter-ego action': 'ALTER_EGO_ACTION',
+  'action': 'ACTION',
+  'hero interrupt': 'HERO_INTERRUPT',
+  'alter-ego interrupt': 'ALTER_EGO_INTERRUPT',
+  'interrupt': 'INTERRUPT',
+  'forced interrupt': 'FORCED_INTERRUPT',
+  'hero response': 'HERO_RESPONSE',
+  'alter-ego response': 'ALTER_EGO_RESPONSE',
+  'response': 'RESPONSE',
+  'forced response': 'FORCED_RESPONSE',
+  'special': 'SPECIAL',
+};
+
+/**
+ * Derives printed ability labels (attack, thwart, defense) directly from raw card text (RR v1.8 p. 17).
+ */
+export function parseAbilityLabelsFromText(
+  text?: string,
+): { timing?: AbilityTiming; labels: ('ATTACK' | 'THWART' | 'DEFENSE')[] }[] {
+  if (!text) return [];
+  const regex = /<b>([^<]+)<\/b>\s*<i>\s*\(([^)]+)\)\s*<\/i>\s*:?/gi;
+  const results: { timing?: AbilityTiming; labels: ('ATTACK' | 'THWART' | 'DEFENSE')[] }[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(text)) !== null) {
+    const rawTiming = match[1].trim().toLowerCase();
+    const rawLabel = match[2].trim().toLowerCase();
+    const timing = TIMING_MAP[rawTiming];
+    const labelParts = rawLabel
+      .split('/')
+      .map((l) => l.trim().toUpperCase())
+      .filter((l): l is 'ATTACK' | 'THWART' | 'DEFENSE' =>
+        l === 'ATTACK' || l === 'THWART' || l === 'DEFENSE',
+      );
+    if (labelParts.length > 0) {
+      results.push({ timing, labels: labelParts });
+    }
+  }
+  return results;
+}
+
 /**
  * Converts a raw upstream MarvelsDB card into a normalized, strongly-typed card,
  * enriching it with supplemental abilities and trigger definitions.
@@ -188,9 +231,35 @@ export function normalizeRawCard(
 ): NormalizedCard {
   const enrichment = supplementalEffects[raw.code];
 
+  let enriched = enrichment;
+  if (enrichment?.abilities && enrichment.abilities.length > 0) {
+    const parsedLabels = parseAbilityLabelsFromText(raw.text);
+    if (parsedLabels.length > 0) {
+      const usedParsedIndices = new Set<number>();
+      const newAbilities = enrichment.abilities.map((ab) => {
+        if (ab.labels && ab.labels.length > 0) {
+          return ab;
+        }
+        if (enrichment.abilities!.length === 1 && parsedLabels.length === 1) {
+          usedParsedIndices.add(0);
+          return { ...ab, labels: [...parsedLabels[0].labels] };
+        }
+        const matchIdx = parsedLabels.findIndex(
+          (p, idx) => !usedParsedIndices.has(idx) && p.timing === ab.timing,
+        );
+        if (matchIdx !== -1) {
+          usedParsedIndices.add(matchIdx);
+          return { ...ab, labels: [...parsedLabels[matchIdx].labels] };
+        }
+        return ab;
+      });
+      enriched = { ...enrichment, abilities: newAbilities };
+    }
+  }
+
   const isLandscape =
-    enrichment?.isLandscape !== undefined
-      ? enrichment.isLandscape
+    enriched?.isLandscape !== undefined
+      ? enriched.isLandscape
       : raw.type_code === CardType.MAIN_SCHEME ||
         raw.type_code === CardType.SIDE_SCHEME ||
         raw.type_code === 'main_scheme' ||
@@ -208,21 +277,21 @@ export function normalizeRawCard(
     quantity: raw.quantity || 1,
     deckLimit: raw.deck_limit || 1,
     isUnique: !!raw.is_unique,
-    maxPerPlayer: parseMaxPerPlayer(raw, enrichment),
+    maxPerPlayer: parseMaxPerPlayer(raw, enriched),
     cost: raw.cost,
     costPerHero: !!raw.cost_per_hero,
     restrictedSlots:
-      enrichment?.restrictedSlots !== undefined
-        ? enrichment.restrictedSlots
+      enriched?.restrictedSlots !== undefined
+        ? enriched.restrictedSlots
         : (raw.text || '').toLowerCase().includes('counts as 2 restricted') ||
             (raw.text || '').toLowerCase().includes('counts as two restricted')
           ? 2
           : undefined,
     text: raw.text || '',
     flavor: raw.flavor,
-    traits: enrichment?.traits !== undefined ? enrichment.traits : parseTraits(raw.traits),
+    traits: enriched?.traits !== undefined ? enriched.traits : parseTraits(raw.traits),
     printedTraits: raw.traits,
-    keywords: parseKeywords(raw, enrichment),
+    keywords: parseKeywords(raw, enriched),
     scheme_crisis: raw.scheme_crisis ?? undefined,
     resources: parseResources(raw),
     setCode: raw.set_code,
@@ -233,7 +302,7 @@ export function normalizeRawCard(
     errata: raw.errata,
     isLandscape,
     orientation: isLandscape ? 'landscape' : 'portrait',
-    enrichment,
+    enrichment: enriched,
     meta: raw.meta,
     raw,
   };

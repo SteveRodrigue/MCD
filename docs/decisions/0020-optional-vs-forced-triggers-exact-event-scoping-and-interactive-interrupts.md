@@ -85,3 +85,17 @@ Setup: opening hands are drawn after the scenario setup (Appendix II step 14), a
 `applyThreatPlacement` placed the threat as soon as `THREAT_WOULD_BE_PLACED` was dispatched, even when interrupt prompts were queued, and an accepted prompt ran with a snapshot of the amount, so Emergency, Great Responsibility and "I Object!" accepted from their prompt changed nothing.
 
 **Decision:** when the window enqueues prompts, the placement is stored in `state.pendingThreatPlacements` (`{ id, request, amount }`) and every option of those prompts carries the `threatPlacementId` in its context. Accepting an option runs the ability with the live amount and writes the reduced amount back, so later interrupts (any player) see it. When the prompt queue is empty the paused placements are placed in order (`finishPendingThreatPlacements`), then paused sequences resume (#248). A pending amount of 0 (a replacement such as Great Responsibility, or reductions that use the threat up) closes the window: the remaining prompts for that placement are removed and nothing is paid. A queued prompt is shown only while its card is still in hand, its cost is payable and its limit is unused. For this trigger the hand scan offers every eligible card of each player (copies included), starting with the first player; the other hand triggers keep one card per player (#267). The stepped villain phase updates its step event with the final amount.
+
+---
+
+## Addendum (2026-10-12, #267): Hand reactions offer all eligible cards in first-player turn order and damage placements wait for interrupt prompts
+
+Prior to #267, non-threat in-hand triggers (`DAMAGE_WOULD_BE_TAKEN`, `ENCOUNTER_CARD_REVEALED`, `TREACHERY_REVEALED`, `ATTACK_DEFENDED`, and `BASIC_ATTACK_PERFORMED`) broke early after finding the first eligible card for each player, preventing multiple copies (e.g. two *Backflips* or two *Enhanced Spider-Sense*) from being offered. In addition, multiplayer scoping either scanned players out of turn order or unconditionally restricted `DAMAGE_WOULD_BE_TAKEN` to the attacked player even when a reaction had broad scope.
+
+**Decision:**
+1. **Full Hand Scanning (`allEligibleCards: true`):** All in-hand triggers offer every eligible card in a player's hand (including duplicate copies) across the response/interrupt window.
+2. **Turn-Order Evaluation (`playersInTurnOrder`):** In multiplayer, reactive windows scan players starting from the first player (`playersInTurnOrder(state)`) per RR v1.8 First Player.
+3. **Target Scope Resolution:** `DAMAGE_WOULD_BE_TAKEN` defaults to the targeted player for cards without explicit scope filters, while allowing cards with `targetPlayerScope: 'ANY'` to react to damage dealt to any player.
+4. **Pending Damage Placements (`pendingDamagePlacements`):** Symmetrical to threat placements (#266, Option B), when `step6_calculateAndApplyAttackDamage` enqueues damage interrupt prompts, it creates a `PendingDamagePlacement` in `state.pendingDamagePlacements` (`{ id, targetPlayerId, targetType, sourceType, amount, initialAmount, attackId }`) and tags prompt options with `damagePlacementId`.
+5. **Live Damage Reduction & Prompt Pruning:** Resolving a damage prevention interrupt updates both `pendingDamagePlacement.amount` and `activeAttackContext.pendingDamage`. If damage reaches 0 or a card is no longer payable/usable, moot queued prompts are pruned (`pruneDamageInterruptPrompts`). Once the prompt queue empties, `finishPendingDamagePlacements` applies the final remaining damage and post-combat resolution.
+

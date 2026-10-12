@@ -397,13 +397,13 @@ describe('threat interrupt prompts change the placed threat (Issue #266)', () =>
     expect(discardCodes(after, 0).filter((c) => c === EMERGENCY)).toHaveLength(1);
   });
 
-  it('18. A non-threat hand trigger still offers one card per player', () => {
+  it('18. A non-threat hand trigger offers all eligible cards per player (Issue #267)', () => {
     const state = setup([
       { hero: SPIDER_MAN, form: 'hero', hand: ['01078', '01078'] },
       { hero: CAPTAIN_MARVEL, form: 'hero', hand: ['01078'] },
     ]);
     dispatchTrigger(state, 'TREACHERY_REVEALED', { targetPlayerId: 'p1' });
-    expect(state.pendingDecisionQueue ?? []).toHaveLength(1);
+    expect(state.pendingDecisionQueue ?? []).toHaveLength(2);
     expect(peekDecisionPrompt(state)?.playerId).toBe('p1');
   });
 

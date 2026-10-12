@@ -13,8 +13,14 @@ import {
   VillainState,
   getActiveVillain,
   getVillainById,
+  PendingDamagePlacement,
 } from '../models';
-import { enqueueDecisionPrompt, popDecisionPrompt, peekDecisionPrompt } from './prompt-queue';
+import {
+  enqueueDecisionPrompt,
+  popDecisionPrompt,
+  peekDecisionPrompt,
+  registerFinishDamagePlacementsHook,
+} from './prompt-queue';
 import { dealBoostCards, resolveBoostCards, type BoostLogContext } from './boost-resolution';
 import { dispatchTrigger, TriggerDispatchResult } from '../triggers/trigger-dispatcher';
 import { dispatchDefeat, type DefeatSource } from './damage-pipeline';
@@ -755,6 +761,9 @@ export function step6_calculateAndApplyAttackDamage(
   const targetMaxHp = player.maxHealth;
 
   if (attackContext.defender?.type !== 'ALLY' && rawDamage > 0) {
+    const promptsBefore = new Set(
+      (state.pendingDecisionQueue ?? []).map((prompt) => prompt.promptId),
+    );
     const defenseResult = dispatchTrigger(state, 'DAMAGE_WOULD_BE_TAKEN', {
       targetPlayerId: player.id,
       damageAmount: rawDamage,
@@ -779,6 +788,34 @@ export function step6_calculateAndApplyAttackDamage(
     }
     rawDamage = modifiedDamage;
     if (defenseResult.hasPendingPrompt) {
+      const newPrompts = (state.pendingDecisionQueue ?? []).filter(
+        (prompt) => !promptsBefore.has(prompt.promptId),
+      );
+      if (newPrompts.length > 0) {
+        const id = `damage_placement_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+        for (const prompt of newPrompts) {
+          for (const option of prompt.options) {
+            if (option.effect === 'EXECUTE_OPTIONAL_TRIGGER' && option.params) {
+              option.params = {
+                ...option.params,
+                context: { ...(option.params.context as object), damagePlacementId: id },
+              };
+            }
+          }
+        }
+        state.pendingDamagePlacements = [
+          ...(state.pendingDamagePlacements ?? []),
+          {
+            id,
+            targetPlayerId: player.id,
+            targetType: 'HERO',
+            sourceType: 'ATTACK',
+            amount: rawDamage,
+            initialAmount: rawDamage,
+            attackId: attackContext.attackId,
+          },
+        ];
+      }
       attackContext.pendingDamage = rawDamage;
       return;
     }
@@ -1098,6 +1135,35 @@ export function finishAttackDamageAndPostResolution(
   state.activeAttackContext = undefined;
   return state;
 }
+
+/**
+ * Applies remaining damage for finished damage placements (#267). Called once all the interrupt
+ * prompts of the window are answered.
+ */
+export function finishPendingDamagePlacements(state: GameState): GameState {
+  const pending: PendingDamagePlacement[] = state.pendingDamagePlacements ?? [];
+  delete state.pendingDamagePlacements;
+  let current = state;
+  for (const placement of pending) {
+    if (placement.sourceType === 'ATTACK' && current.activeAttackContext) {
+      const preventedDamage = Math.max(0, placement.initialAmount - placement.amount);
+      current.activeAttackContext.pendingDamage = placement.initialAmount;
+      current = finishAttackDamageAndPostResolution(
+        current,
+        current.activeAttackContext,
+        preventedDamage,
+      );
+    } else {
+      const player = current.players.find((p) => p.id === placement.targetPlayerId);
+      if (player && placement.amount > 0) {
+        player.health = Math.max(0, player.health - placement.amount);
+      }
+    }
+  }
+  return current;
+}
+
+registerFinishDamagePlacementsHook(finishPendingDamagePlacements);
 
 /**
  * Step 7: Post-Attack Reactions, Retaliate & Cleanup.

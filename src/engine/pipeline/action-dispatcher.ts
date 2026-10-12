@@ -81,7 +81,7 @@ import {
   popDecisionPrompt,
   validateSearchSelection,
 } from './prompt-queue';
-import { resolveDefenderDeclaration, finishAttackDamageAndPostResolution } from './combat-pipeline';
+import { resolveDefenderDeclaration } from './combat-pipeline';
 import { getSpecialHandler } from '../specials/special-registry';
 import {
   attachCardToHost,
@@ -3356,39 +3356,6 @@ function dispatchSingleAction(
         paymentOptions,
       );
       let resultingState = promptRes.state;
-
-      // If resolving a damage prevention interrupt for an active attack, finish damage calculation and post-resolution
-      if (
-        activePrompt &&
-        resultingState.activeAttackContext?.pendingDamage !== undefined &&
-        (activePrompt.description?.includes('DAMAGE_WOULD_BE_TAKEN') ||
-          activePrompt.options.some(
-            (o) => (o.params as any)?.ability?.trigger === 'DAMAGE_WOULD_BE_TAKEN',
-          ))
-      ) {
-        const attackCtx = resultingState.activeAttackContext;
-        let preventedDamage = 0;
-        if (action.selectedOptionId !== 'pass' && action.selectedOptionId !== 'PASS') {
-          const optAbility = (
-            activePrompt?.options.find((o) => o.id === action.selectedOptionId)?.params as any
-          )?.ability;
-          const preventStep = optAbility?.steps?.find((s: any) => s.effect === 'PREVENT_DAMAGE');
-          if (preventStep) {
-            const isAll =
-              preventStep.effectParams?.amount === 'ALL' ||
-              preventStep.effectParams?.preventAll ||
-              preventStep.effectParams?.amount === undefined;
-            preventedDamage = isAll
-              ? (attackCtx.pendingDamage ?? 0)
-              : Number(preventStep.effectParams?.amount || 0);
-          }
-        }
-        resultingState = finishAttackDamageAndPostResolution(
-          resultingState,
-          attackCtx,
-          preventedDamage,
-        );
-      }
 
       // If in villain phase and no decision prompts are pending, continue villain phase sequence
       if (resultingState.phase === GamePhase.VILLAIN_PHASE && !peekDecisionPrompt(resultingState)) {

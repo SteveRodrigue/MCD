@@ -93,6 +93,7 @@ import {
   getPlayerAllyLimit,
   checkUniqueCardPlayable,
 } from '../pipeline/legality-checker';
+import { cardCatalog } from '../../data/importer/card-loader';
 
 /**
  * Narrows resolved targets with an optional UniversalCardFilter (ADR-0046) so that EXHAUST and READY
@@ -1525,6 +1526,129 @@ export function executeEffect(
   return { state, success: true, onomatopoeia: 'RESOLVED!' };
 }
 
+function findAnyCardInstance(state?: GameState, idOrCode?: string): CardInstance | undefined {
+  if (!state || !idOrCode) return undefined;
+  for (const p of state.players || []) {
+    const found =
+      p.tableau?.find((c) => c.instanceId === idOrCode || c.card.code === idOrCode) ||
+      p.hand?.find((c) => c.instanceId === idOrCode || c.card.code === idOrCode) ||
+      p.discard?.find((c) => c.instanceId === idOrCode || c.card.code === idOrCode) ||
+      p.deck?.find((c) => c.instanceId === idOrCode || c.card.code === idOrCode) ||
+      p.allies?.find((c) => c.instanceId === idOrCode || c.card.code === idOrCode) ||
+      p.obligations?.find((c) => c.instanceId === idOrCode || c.card.code === idOrCode);
+    if (found) return found;
+  }
+  const encFound =
+    state.encounterDiscard?.find((c) => c.instanceId === idOrCode || c.card.code === idOrCode) ||
+    state.encounterDeck?.find((c) => c.instanceId === idOrCode || c.card.code === idOrCode) ||
+    state.removedFromGame?.find((c) => c.instanceId === idOrCode || c.card.code === idOrCode);
+  if (encFound) return encFound;
+  return undefined;
+}
+
+/**
+ * Dynamic prompt title, description, and source card metadata generator for tableau discard prompts (Issue #233).
+ */
+export function getTableauDiscardPromptMeta(
+  filter?: any,
+  sourceCardInstance?: CardInstance,
+  sourceCardId?: string,
+  state?: GameState,
+): { title: string; description: string; sourceCardName: string; sourceCardCode?: string } {
+  const resolvedInstance =
+    sourceCardInstance ||
+    (sourceCardId ? findAnyCardInstance(state, sourceCardId) : undefined) ||
+    state?.activeEncounterContext?.encounterCard;
+
+  const sourceCardName =
+    resolvedInstance?.card?.name ||
+    (sourceCardId ? cardCatalog.getCard(sourceCardId)?.name : undefined) ||
+    'Encounter Card';
+
+  const sourceCardCode =
+    resolvedInstance?.card?.code ||
+    (sourceCardId && cardCatalog.getCard(sourceCardId) ? sourceCardId : undefined);
+
+  const rawTraits = filter?.traits || (filter?.trait ? [filter.trait] : []);
+  const traits = Array.isArray(rawTraits) ? rawTraits.filter(Boolean) : [];
+
+  const rawTypes = filter?.types || (filter?.type ? [filter.type] : []);
+  const types = (Array.isArray(rawTypes) ? rawTypes : [rawTypes])
+    .filter(Boolean)
+    .map((t: string) => String(t).toLowerCase());
+
+  const hasUpgrade = types.includes('upgrade');
+  const hasSupport = types.includes('support');
+
+  if (traits.length > 0) {
+    const traitStr = traits.join(' ');
+    if (hasUpgrade && !hasSupport) {
+      return {
+        title: `Discard ${traitStr} Upgrade`,
+        description: `Choose a ${traitStr} upgrade you control to discard:`,
+        sourceCardName,
+        sourceCardCode,
+      };
+    }
+    if (hasSupport && !hasUpgrade) {
+      return {
+        title: `Discard ${traitStr} Support`,
+        description: `Choose a ${traitStr} support you control to discard:`,
+        sourceCardName,
+        sourceCardCode,
+      };
+    }
+    if (hasUpgrade && hasSupport) {
+      return {
+        title: `Discard ${traitStr} Upgrade or Support`,
+        description: `Choose a ${traitStr} upgrade or support you control to discard:`,
+        sourceCardName,
+        sourceCardCode,
+      };
+    }
+    return {
+      title: `Discard ${traitStr} Card`,
+      description: `Choose a ${traitStr} card you control to discard:`,
+      sourceCardName,
+      sourceCardCode,
+    };
+  }
+
+  if (hasUpgrade && hasSupport) {
+    return {
+      title: 'Discard Upgrade or Support',
+      description: 'Choose an upgrade or support you control to discard:',
+      sourceCardName,
+      sourceCardCode,
+    };
+  }
+
+  if (hasUpgrade) {
+    return {
+      title: 'Discard Upgrade',
+      description: 'Choose an upgrade you control to discard:',
+      sourceCardName,
+      sourceCardCode,
+    };
+  }
+
+  if (hasSupport) {
+    return {
+      title: 'Discard Support',
+      description: 'Choose a support you control to discard:',
+      sourceCardName,
+      sourceCardCode,
+    };
+  }
+
+  return {
+    title: 'Discard Card',
+    description: 'Choose a card you control to discard:',
+    sourceCardName,
+    sourceCardCode,
+  };
+}
+
 /**
  * Universal DISCARD Primitive Handler (RR v1.8 p. 10, Issue #66)
  * Handles card attrition/removal across all valid game zones (hand, deck, encounter deck, tableau, host, self, cards under host).
@@ -1794,7 +1918,7 @@ export function executeDiscard(
           phase: state.phase,
           category: 'combat',
           key: 'player.tableau.discarded',
-          params: { player: player.name, card: targetCard.card.name },
+          params: { who: player.name, player: player.name, card: targetCard.card.name },
           onomatopoeia: 'TABLEAU DISCARDED!',
         });
         return {
@@ -1829,7 +1953,7 @@ export function executeDiscard(
         phase: state.phase,
         category: 'combat',
         key: 'player.tableau.discarded',
-        params: { player: player.name, card: targetCard.card.name },
+        params: { who: player.name, player: player.name, card: targetCard.card.name },
         onomatopoeia: 'TABLEAU DISCARDED!',
       });
       return {
@@ -1849,13 +1973,20 @@ export function executeDiscard(
       params: { source: 'TABLEAU', targetInstanceId: c.instanceId },
     }));
 
+    const promptMeta = getTableauDiscardPromptMeta(
+      filter,
+      context.sourceCardInstance,
+      context.sourceCardId,
+      state,
+    );
+
     enqueueDecisionPrompt(state, {
       promptId: `prompt_discard_tableau_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       playerId: player.id,
-      title: 'Discard Upgrade or Support',
-      description: 'Choose an upgrade or support you control to discard:',
-      sourceCardName: context.sourceCardInstance?.card.name || 'Caught Off Guard',
-      sourceCardCode: context.sourceCardInstance?.card.code,
+      title: promptMeta.title,
+      description: promptMeta.description,
+      sourceCardName: promptMeta.sourceCardName,
+      sourceCardCode: promptMeta.sourceCardCode,
       isVoluntary: false,
       options,
     });

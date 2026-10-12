@@ -80,7 +80,8 @@
     "CARDS_DISCARDED_NAMES": "{{who}} a défaussé {{count}} carte(s) de {{source}} : {{cards}}.",
     "CARDS_DRAWN_NAMES": "{{who}} a pioché {{count}} carte(s) : {{cards}}.",
     "CARDS_DRAWN_FROM_SOURCE": "{{who}} a pioché {{count}} carte(s) ({{source}}) : {{cards}}.",
-    "BLACK_CAT_FETCH": "Black Cat a récupéré {{card}} dans la main de {{who}} !"
+    "BLACK_CAT_FETCH": "Black Cat a récupéré {{card}} dans la main de {{who}} !",
+    "PLAYER_TABLEAU_DISCARDED": "{{player}} a défaussé {{card}} de son tableau."
   },
   "dialogue": {
     "spider_man": {

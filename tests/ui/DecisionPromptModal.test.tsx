@@ -358,4 +358,63 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
     });
     expect(screen.getByTestId(`card-hover-preview-${energyDaggers.code}`)).toBeDefined();
   });
+
+  it('tableau discard prompt renders dynamic title, card options with thumbnails, and fires selection callback', async () => {
+    const webShooter = cardCatalog.getCard('01005')!;
+    const caughtOffGuard = cardCatalog.getCard('01188')!;
+    const onSelectOption = vi.fn();
+
+    const prompt: PendingDecisionPrompt = {
+      promptId: 'prompt_tableau_discard',
+      playerId: 'p1',
+      title: 'Caught Off Guard: Discard an Upgrade or Support from play',
+      description: 'Select 1 card(s) to discard:',
+      sourceCardName: 'Caught Off Guard',
+      sourceCardCode: '01188',
+      triggerSourceName: 'Caught Off Guard',
+      triggerSourceCode: '01188',
+      triggerSourceCard: caughtOffGuard,
+      isVoluntary: false,
+      options: [
+        {
+          id: 'discard_inst_web_shooter',
+          label: `Discard ${webShooter.name}`,
+          cardCode: webShooter.code,
+          cardName: webShooter.name,
+          description:
+            'Uses (3 web counters). <b>Hero Resource</b>: Exhaust Web-Shooter -> generate a [wild] resource.',
+          effect: 'RESOLVE_DISCARD_CHOICE',
+          params: {
+            cardInstanceId: 'inst_web_shooter',
+            playerId: 'p1',
+            cardCode: webShooter.code,
+            cardName: webShooter.name,
+          },
+        },
+      ],
+    };
+
+    await act(async () => {
+      render(<DecisionPromptModal prompt={prompt} onSelectOption={onSelectOption} />);
+    });
+
+    // Check dynamic title & description
+    expect(
+      screen.getByText('Caught Off Guard: Discard an Upgrade or Support from play'),
+    ).toBeDefined();
+    expect(screen.getByText('Select 1 card(s) to discard:')).toBeDefined();
+
+    // Check card option rendering
+    expect(screen.getByAltText(`Discard ${webShooter.name}`)).toBeDefined();
+    expect(screen.getByText(`Discard ${webShooter.name}`)).toBeDefined();
+    expect(screen.getByText(`Cost: ${webShooter.cost}`)).toBeDefined();
+
+    // Click option
+    const optionButton = screen.getByRole('button', {
+      name: new RegExp(`Discard ${webShooter.name}`, 'i'),
+    });
+    fireEvent.click(optionButton);
+
+    expect(onSelectOption).toHaveBeenCalledWith('discard_inst_web_shooter');
+  });
 });

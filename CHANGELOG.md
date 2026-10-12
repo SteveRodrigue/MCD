@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): Hand reactions offer all eligible cards in first-player turn order and damage placements wait for interrupt prompts ([Issue #267](https://github.com/SteveRodrigue/MCD/issues/267))**
+  - In-hand reactive scans (`DAMAGE_WOULD_BE_TAKEN`, `ENCOUNTER_CARD_REVEALED`, `TREACHERY_REVEALED`, `ATTACK_DEFENDED`, and `BASIC_ATTACK_PERFORMED`) now evaluate all eligible cards in hand (`allEligibleCards: true`), allowing multiple copies (such as two *Backflips* or two *Enhanced Spider-Sense*) to be queued for player decisions.
+  - In multiplayer, hand reactions scan players in turn order starting with the first player (`playersInTurnOrder(state)`). `DAMAGE_WOULD_BE_TAKEN` scoping defaults to the targeted player while respecting cards with `targetPlayerScope: 'ANY'`.
+  - Symmetrical to threat placements (#266), attack damage calculation in `step6_calculateAndApplyAttackDamage` pauses and registers a `PendingDamagePlacement` in `state.pendingDamagePlacements` when damage interrupts are queued.
+  - Answering a damage interrupt reads and updates the live pending damage (`pendingDamagePlacement.amount` and `activeAttackContext.pendingDamage`). Moot prompts are pruned when live damage reaches 0 or their costs can no longer be paid (`pruneDamageInterruptPrompts`). Once all prompts are resolved, `finishPendingDamagePlacements` applies the remaining damage and completes combat resolution.
+  - Tests: `tests/engine/hand-reactions-all-cards.test.ts` (+13), updated `tests/engine/threat-interrupt-prompt.test.ts`. No supplemental data or schema change.
+
 - **Fix (Engine/Data): Automatic ability labels derivation, THWART/DEFENSE resolution, and status cancellation ([Issue #270](https://github.com/SteveRodrigue/MCD/issues/270))**
   - Ability labels (`(attack)`, `(thwart)`, `(defense)`) are now derived automatically from card text on load by `card-loader.ts`, eliminating manual `"labels"` declarations from supplemental JSON (removed 13 redundant manual entries in `core.json`). Explicit supplemental `ability.labels` is retained solely as an override mechanism if ever required.
   - Labeled `THWART` abilities resolve as a thwart by the identity (RR v1.8 glossary L & T): passes `thwarterType: 'HERO'` and `suppressTrigger: true` to `applyThwart`, and dispatches `THWART_RESOLVED` exactly once upon completion with `sourceInstanceId: playerId` and `sourceCardCode: player.activeFormCard?.code`.

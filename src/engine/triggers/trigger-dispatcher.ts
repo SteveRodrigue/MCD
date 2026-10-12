@@ -158,11 +158,25 @@ export function matchesTriggerFilter(
   }
 
   if (filter.targetPlayerScope) {
-    if (!player || !context.targetPlayerId) return false;
-    const actualScope = context.targetPlayerId === player.id ? 'SELF' : 'OTHER';
-    if (filter.targetPlayerScope === 'ANY') {
-      // no-op, allowed by explicit contract
-    } else if (actualScope !== filter.targetPlayerScope) {
+    if (!player) return false;
+    if (context.targetPlayerScope === 'ANY') {
+      // Trigger event targets any/all players
+    } else {
+      if (!context.targetPlayerId) return false;
+      const actualScope = context.targetPlayerId === player.id ? 'SELF' : 'OTHER';
+      if (filter.targetPlayerScope === 'ANY') {
+        // no-op, allowed by explicit contract
+      } else if (actualScope !== filter.targetPlayerScope) {
+        return false;
+      }
+    }
+  } else if (
+    triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN') &&
+    player &&
+    context.targetPlayerId &&
+    context.targetPlayerScope !== 'ANY'
+  ) {
+    if (context.targetPlayerId !== player.id) {
       return false;
     }
   }
@@ -807,7 +821,7 @@ export function dispatchTrigger(
     trigger === 'MINION_ENTERS_PLAY' ||
     trigger === 'ENCOUNTER_CARD_REVEALED' ||
     trigger === 'TREACHERY_REVEALED'
-      ? [player, ...state.players.filter((p) => p.id !== player.id)]
+      ? revealReactors(state, player)
       : [player];
 
   for (const controller of playersToScanForInPlay) {
@@ -1031,11 +1045,13 @@ export function dispatchTrigger(
     }
   }
 
-  // 3. In-hand reactions to damage about to be taken (e.g. Backflip 01003). Only the targeted player.
+  // 3. In-hand reactions to damage about to be taken (e.g. Backflip 01003).
   if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && currentDamage > 0) {
     const isDamageTrigger = triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN');
     if (
-      scanHandReactions(state, trigger, context, currentChain, [player], {
+      scanHandReactions(state, trigger, context, currentChain, playersInTurnOrder(state), {
+        isActive: () => currentDamage > 0,
+        allEligibleCards: true,
         resolve: ({ player: p, card, ability, chain }) => {
           if (ability.steps?.some((s) => s.effect === 'PREVENT_DAMAGE')) {
             const effCtx = {
@@ -1156,6 +1172,8 @@ export function dispatchTrigger(
   if (trigger === 'ENCOUNTER_CARD_REVEALED' || trigger === 'TREACHERY_REVEALED') {
     if (
       scanHandReactions(state, trigger, context, currentChain, revealReactors(state, player), {
+        isActive: () => !state.activeEncounterContext?.cancelled,
+        allEligibleCards: true,
         resolve: ({ player: p, card, ability, chain }) => {
           executeEffect(state, ability, {
             playerId: p.id,
@@ -1180,7 +1198,8 @@ export function dispatchTrigger(
   // player may react; each card's own triggerFilter decides who qualifies.
   if (triggersAreEquivalent('ATTACK_DEFENDED', trigger)) {
     if (
-      scanHandReactions(state, trigger, context, currentChain, state.players, {
+      scanHandReactions(state, trigger, context, currentChain, playersInTurnOrder(state), {
+        allEligibleCards: true,
         resolve: ({ player: p, card, ability, chain }) => {
           executeEffect(state, ability, {
             playerId: p.id,
@@ -1225,6 +1244,7 @@ export function dispatchTrigger(
   if (trigger === 'BASIC_ATTACK_PERFORMED') {
     if (
       scanHandReactions(state, trigger, context, currentChain, [player], {
+        allEligibleCards: true,
         resolve: ({ player: p, card, ability, chain }) => {
           executeEffect(state, ability, {
             playerId: p.id,

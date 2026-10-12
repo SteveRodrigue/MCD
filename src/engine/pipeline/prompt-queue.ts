@@ -29,6 +29,11 @@ import type { TriggerContext } from '../triggers/trigger-dispatcher';
 import { discardResolvedObligation } from './obligations';
 import { finishPendingThreatPlacements } from './threat-pipeline';
 
+let finishDamagePlacementsHook: ((state: GameState) => GameState) | undefined;
+export function registerFinishDamagePlacementsHook(fn: (state: GameState) => GameState): void {
+  finishDamagePlacementsHook = fn;
+}
+
 /**
  * Re-evaluates per-option availability (`gate`, `cost`) against the current state (Issue #158).
  * Run whenever a prompt becomes the active head, so options reflect effects of earlier prompts
@@ -393,17 +398,93 @@ function pruneThreatInterruptPrompts(state: GameState): void {
   if (queue.length > 0) refreshPromptOptionAvailability(state, queue[0]);
 }
 
+/** The damage placement a queued interrupt prompt belongs to, if any (#267). */
+function damagePlacementIdOf(prompt: PendingDecisionPrompt): string | undefined {
+  for (const option of prompt.options) {
+    const id = (option.params?.context as { damagePlacementId?: string } | undefined)
+      ?.damagePlacementId;
+    if (id) return id;
+  }
+  return undefined;
+}
+
 /**
- * After a prompt is answered: close the threat interrupt window, and once the queue is empty
- * finish the paused threat placements, then resume paused sequences (#248, #266).
+ * True while a queued damage interrupt can still be used: the card is where it was offered, its
+ * cost is payable and its limit is unused (RR v1.8 Initiating Abilities).
+ */
+function isDamageInterruptStillUsable(state: GameState, prompt: PendingDecisionPrompt): boolean {
+  const option = prompt.options.find((o) => o.effect === 'EXECUTE_OPTIONAL_TRIGGER');
+  const ability = option?.params?.ability as CardAbility | undefined;
+  const player = state.players.find((p) => p.id === prompt.playerId);
+  if (!option || !ability || !player) return true;
+
+  if (ability.limit === 'ONCE_PER_ROUND' && player.usedAbilitiesThisRound?.[ability.id]) {
+    return false;
+  }
+  if (ability.limit === 'ONCE_PER_PHASE' && player.usedAbilitiesThisPhase?.[ability.id]) {
+    return false;
+  }
+
+  const sourceId = option.params?.sourceCardInstanceId as string | undefined;
+  if (!sourceId) return canPayAbilityCost(state, player, ability).allowed;
+
+  const source =
+    ability.zone === 'HAND'
+      ? player.hand.find((c) => c.instanceId === sourceId)
+      : [...player.tableau, ...player.allies, ...(player.attachments ?? [])].find(
+          (c) => c.instanceId === sourceId,
+        );
+  return source ? canPayAbilityCost(state, player, ability, source).allowed : false;
+}
+
+/**
+ * Closes the interrupt window of damage placements (#267): prompts of a placement with nothing
+ * left to take are dropped without paying anything, and a queued prompt whose card is no longer
+ * usable is dropped when it comes up.
+ */
+function pruneDamageInterruptPrompts(state: GameState): void {
+  const queue = state.pendingDecisionQueue;
+  if (!queue || queue.length === 0) return;
+  const placements = state.pendingDamagePlacements ?? [];
+  const isOpen = (id: string) => placements.some((p) => p.id === id && p.amount > 0);
+
+  const kept = queue.filter((prompt) => {
+    const id = damagePlacementIdOf(prompt);
+    return !id || isOpen(id);
+  });
+  while (kept.length > 0) {
+    const head = kept[0];
+    if (!damagePlacementIdOf(head)) break;
+    refreshPromptOptionAvailability(state, head);
+    if (isDamageInterruptStillUsable(state, head)) break;
+    kept.shift();
+  }
+
+  if (kept.length === queue.length) return;
+  queue.splice(0, queue.length, ...kept);
+  const total = queue.length;
+  for (let i = 0; i < queue.length; i++) {
+    queue[i].queuePosition = i + 1;
+    queue[i].totalQueued = total;
+  }
+  if (queue.length > 0) refreshPromptOptionAvailability(state, queue[0]);
+}
+
+/**
+ * After a prompt is answered: close the threat and damage interrupt windows, and once the queue
+ * is empty finish the paused threat and damage placements, then resume paused sequences (#248, #266, #267).
  */
 function resumeAfterPromptResolved(state: GameState): GameState {
   pruneThreatInterruptPrompts(state);
+  pruneDamageInterruptPrompts(state);
   if (peekDecisionPrompt(state)) return state;
 
   let current = state;
   if (current.pendingThreatPlacements && current.pendingThreatPlacements.length > 0) {
     current = finishPendingThreatPlacements(current);
+  }
+  if (current.pendingDamagePlacements && current.pendingDamagePlacements.length > 0) {
+    current = finishDamagePlacementsHook ? finishDamagePlacementsHook(current) : current;
   }
   if (!peekDecisionPrompt(current) && current.activeAttackContext?.phase === 'INITIATION') {
     current = continueAttackAfterInitiation(current, current.activeAttackContext);
@@ -563,10 +644,13 @@ export function resolveDecisionPrompt(
       }
     }
 
-    // A threat interrupt reads and changes the live amount of its paused placement, not the
-    // snapshot taken when the prompt was built (#266).
+    // A threat or damage interrupt reads and changes the live amount of its paused placement, not the
+    // snapshot taken when the prompt was built (#266, #267).
     const pendingPlacement = optContext?.threatPlacementId
       ? nextState.pendingThreatPlacements?.find((p) => p.id === optContext.threatPlacementId)
+      : undefined;
+    const pendingDamagePlacement = optContext?.damagePlacementId
+      ? nextState.pendingDamagePlacements?.find((p) => p.id === optContext.damagePlacementId)
       : undefined;
     const effectContext: EffectExecutionContext = {
       playerId,
@@ -574,10 +658,14 @@ export function resolveDecisionPrompt(
       eventTargetType: optContext?.targetType,
       eventTargetInstanceId: optContext?.targetInstanceId,
       threatAmount: pendingPlacement ? pendingPlacement.amount : optContext?.threatAmount,
-      damageAmount: optContext?.damageAmount,
+      damageAmount: pendingDamagePlacement
+        ? pendingDamagePlacement.amount
+        : optContext?.damageAmount,
       interceptedValue: pendingPlacement
         ? pendingPlacement.amount
-        : (optContext?.interceptedValue ?? optContext?.threatAmount ?? optContext?.damageAmount),
+        : pendingDamagePlacement
+          ? pendingDamagePlacement.amount
+          : (optContext?.interceptedValue ?? optContext?.threatAmount ?? optContext?.damageAmount),
       resourcesSpent: selectedOption?.params?.resourcesSpent || optContext?.resourcesSpent,
     };
     const effectRes = canInitiate
@@ -585,6 +673,12 @@ export function resolveDecisionPrompt(
       : { state: nextState, success: true, mutatedState: false, onomatopoeia: 'NO VALID TARGET!' };
     if (canInitiate && pendingPlacement && effectContext.threatAmount !== undefined) {
       pendingPlacement.amount = Math.max(0, effectContext.threatAmount);
+    }
+    if (canInitiate && pendingDamagePlacement && effectContext.damageAmount !== undefined) {
+      pendingDamagePlacement.amount = Math.max(0, effectContext.damageAmount);
+      if (nextState.activeAttackContext) {
+        nextState.activeAttackContext.pendingDamage = pendingDamagePlacement.amount;
+      }
     }
     if (canInitiate && nextState.activeEncounterContext?.cancelled) {
       removeMootCancelPrompts(nextState, nextState.activeEncounterContext.encounterInstanceId);

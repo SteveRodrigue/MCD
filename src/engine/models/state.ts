@@ -485,6 +485,21 @@ export interface PendingThreatPlacement {
   amount: number;
 }
 
+/**
+ * A damage placement paused while its interrupt prompts are answered (#267). `amount` is the live
+ * amount left after the interrupts resolved so far.
+ */
+export interface PendingDamagePlacement {
+  id: string;
+  targetPlayerId: string;
+  targetType: 'HERO' | 'ALLY' | 'VILLAIN' | 'MINION';
+  targetInstanceId?: string;
+  sourceType: 'ATTACK' | 'CARD_EFFECT' | 'HAZARD';
+  amount: number;
+  initialAmount: number;
+  attackId?: string;
+}
+
 export interface PendingSequence {
   sequenceId?: string;
   remainingSteps: AbilityStep[];
@@ -541,6 +556,8 @@ export interface GameState {
   pendingSequences?: PendingSequence[];
   /** Threat placements waiting for their interrupt prompts to be answered (#266) */
   pendingThreatPlacements?: PendingThreatPlacement[];
+  /** Damage placements waiting for their interrupt prompts to be answered (#267) */
+  pendingDamagePlacements?: PendingDamagePlacement[];
   /** Ordered player queue for End of Player Phase voluntary cleanup (RR v1.8 p. 23) */
   pendingCleanUpPlayerIds?: string[];
   scenarioId?: string;

@@ -73,6 +73,8 @@ import {
   getEffectiveHandSize,
   getEffectiveMinionHitPoints,
   hasEntityKeyword,
+  consumeEntityStatusCards,
+  isEntityIncapacitatedByStatus,
 } from '../pipeline/stat-calculator';
 import {
   dispatchTrigger,
@@ -162,6 +164,16 @@ export interface EffectExecutionContext {
   /** The first enemy a labelled attack damaged; ATTACK_RESOLVED is dispatched for it, once. */
   attackedEnemy?: { targetType: 'villain' | 'minion'; instanceId: string };
   attackResolvedDispatched?: boolean;
+  isThwart?: boolean;
+  /**
+   * The resolving ability is labelled "(thwart)": its threat removal is a thwart by the player's identity
+   * (RR v1.8 glossary L). One labelled ability is one thwart, however many threat removal instances.
+   */
+  labelledThwart?: boolean;
+  /** The first scheme a labelled thwart targeted; THWART_RESOLVED is dispatched for it, once. */
+  thwartedScheme?: { targetType: 'main_scheme' | 'side_scheme'; instanceId?: string };
+  thwartResolvedDispatched?: boolean;
+  accumulatedThreatRemoved?: number;
   /**
    * Keywords the resolving ability granted to its own attack (`GRANT_ATTACK_KEYWORD`). Lives on
    * this context only, so it ends with the ability and never reaches a card, a player or the state.
@@ -1128,6 +1140,7 @@ export function resumePendingSequence(state: GameState): GameState {
     currentState = res.state;
     if ((currentState.pendingSequences?.length ?? 0) <= pendingBefore) {
       finishLabelledAttack(currentState, pending.context as EffectExecutionContext);
+      finishLabelledThwart(currentState, pending.context as EffectExecutionContext);
     }
   }
   return currentState;
@@ -1317,6 +1330,12 @@ export function executeSequence(
     if (stepContext.attackedEnemy && !context.attackedEnemy) {
       context.attackedEnemy = stepContext.attackedEnemy;
     }
+    if (stepContext.thwartedScheme && !context.thwartedScheme) {
+      context.thwartedScheme = stepContext.thwartedScheme;
+    }
+    if (stepContext.accumulatedThreatRemoved !== undefined) {
+      context.accumulatedThreatRemoved = stepContext.accumulatedThreatRemoved;
+    }
 
     const stepMutated = res.mutatedState ?? res.success;
     if (stepMutated) {
@@ -1451,6 +1470,31 @@ function finishLabelledAttack(state: GameState, context: EffectExecutionContext)
 }
 
 /**
+ * After a labelled "(thwart)" ability has fully resolved: THWART_RESOLVED for the thwarted scheme,
+ * once, as a basic thwart does (RR v1.8 glossary L & T).
+ */
+function finishLabelledThwart(state: GameState, context: EffectExecutionContext): void {
+  if (
+    !context.labelledThwart ||
+    context.thwartResolvedDispatched ||
+    (!context.thwartedScheme && !context.accumulatedThreatRemoved)
+  ) {
+    return;
+  }
+  context.thwartResolvedDispatched = true;
+  const player = state.players.find((p) => p.id === context.playerId) || state.players[0];
+  const scheme = context.thwartedScheme;
+  dispatchTrigger(state, 'THWART_RESOLVED', {
+    targetPlayerId: context.playerId,
+    targetType: scheme?.targetType || 'main_scheme',
+    targetInstanceId: scheme?.instanceId,
+    threatAmount: context.accumulatedThreatRemoved || 0,
+    sourceInstanceId: context.playerId,
+    sourceCardCode: player?.activeFormCard?.code,
+  });
+}
+
+/**
  * Executes a declarative effect or ability on the GameState.
  */
 export function executeEffect(
@@ -1480,6 +1524,57 @@ export function executeEffect(
     discardCardInstance(state, cardToDiscard, context.playerId);
   }
 
+  // Status Cancellation for Labeled Abilities (RR v1.8 p. 17, 28)
+  const abilityLabels =
+    'labels' in abilityOrStep ? (abilityOrStep as CardAbility).labels : undefined;
+  if (abilityLabels && abilityLabels.length > 0) {
+    const player = state.players.find((p) => p.id === context.playerId) || state.players[0];
+    const willCancelAttack =
+      abilityLabels.includes('ATTACK') && isEntityIncapacitatedByStatus(player, StatusCard.STUNNED);
+    const willCancelThwart =
+      abilityLabels.includes('THWART') &&
+      isEntityIncapacitatedByStatus(player, StatusCard.CONFUSED);
+
+    if (willCancelAttack || willCancelThwart) {
+      let onom = 'STATUS CLEARED!';
+      if (willCancelAttack) {
+        consumeEntityStatusCards(player, StatusCard.STUNNED);
+        onom = 'STUN CLEARED!';
+        state.log.push({
+          id: `log_${Date.now()}_stun_cleared`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          key: 'status.stunned.cleared',
+          params: { player: player.name },
+          onomatopoeia: 'STUN CLEARED!',
+        });
+      }
+      if (willCancelThwart) {
+        consumeEntityStatusCards(player, StatusCard.CONFUSED);
+        onom = 'CONFUSION CLEARED!';
+        state.log.push({
+          id: `log_${Date.now()}_confused_cleared`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          key: 'status.confused.cleared',
+          params: { player: player.name },
+          onomatopoeia: 'CONFUSION CLEARED!',
+        });
+      }
+      if (willCancelAttack && willCancelThwart) {
+        onom = 'STUN & CONFUSION CLEARED!';
+      }
+      return {
+        state,
+        success: true,
+        onomatopoeia: onom,
+        mutatedState: true,
+      };
+    }
+  }
+
   if (
     'steps' in abilityOrStep &&
     Array.isArray(abilityOrStep.steps) &&
@@ -1491,19 +1586,39 @@ export function executeEffect(
     if ((abilityOrStep as CardAbility).forEachPlayer) {
       return executeForEachPlayer(state, abilityOrStep.steps, context, playerIdsInOrder(state));
     }
-    if ((abilityOrStep as CardAbility).labels?.includes('ATTACK')) {
-      // An "(attack)" ability is one attack by the player's identity (RR v1.8 glossary L)
-      const attackContext: EffectExecutionContext = {
-        ...context,
-        isAttack: true,
-        labelledAttack: true,
-      };
-      const pendingBefore = state.pendingSequences?.length ?? 0;
-      const attackRes = executeSequence(state, abilityOrStep.steps, attackContext);
-      if ((attackRes.state.pendingSequences?.length ?? 0) <= pendingBefore) {
-        finishLabelledAttack(attackRes.state, attackContext);
+    const hasAttack = (abilityOrStep as CardAbility).labels?.includes('ATTACK');
+    const hasThwart = (abilityOrStep as CardAbility).labels?.includes('THWART');
+    const hasDefense = (abilityOrStep as CardAbility).labels?.includes('DEFENSE');
+
+    if (hasDefense && state.activeAttackContext) {
+      if (state.activeAttackContext.defender?.type !== 'ALLY') {
+        const player = state.players.find((p) => p.id === context.playerId) || state.players[0];
+        state.activeAttackContext.heroDefended = true;
+        state.activeAttackContext.defender = { type: 'HERO', playerId: player.id };
       }
-      return attackRes;
+    }
+
+    if (hasAttack || hasThwart) {
+      // An "(attack)" or "(thwart)" ability is performed by the player's identity (RR v1.8 glossary L)
+      if (hasAttack) {
+        context.isAttack = true;
+        context.labelledAttack = true;
+      }
+      if (hasThwart) {
+        context.isThwart = true;
+        context.labelledThwart = true;
+      }
+      const pendingBefore = state.pendingSequences?.length ?? 0;
+      const res = executeSequence(state, abilityOrStep.steps, context);
+      if ((res.state.pendingSequences?.length ?? 0) <= pendingBefore) {
+        if (hasAttack) {
+          finishLabelledAttack(res.state, context);
+        }
+        if (hasThwart) {
+          finishLabelledThwart(res.state, context);
+        }
+      }
+      return res;
     }
     return executeSequence(state, abilityOrStep.steps, context);
   }
@@ -3219,18 +3334,30 @@ export function executeStep(
           (state.sideSchemes || []).some((s) => s.instanceId === st.id || s.card.code === st.id);
 
         const thwartRes = applyThwart(state, {
-          thwarterType: 'CARD_EFFECT',
-          thwarterEntity: context.sourceCardInstance,
+          thwarterType: context.labelledThwart ? 'HERO' : 'CARD_EFFECT',
+          thwarterEntity: context.labelledThwart ? player : context.sourceCardInstance,
           playerId: player.id,
           targetType: isSide ? 'side_scheme' : 'main_scheme',
           targetInstanceId: isSide ? st.id : undefined,
           thwartValue: amount,
           ignoresCrisis,
+          suppressTrigger: Boolean(context.labelledThwart),
         });
 
         removed += thwartRes.result.threatRemoved;
         targetSchemeName = thwartRes.result.targetSchemeName || targetSchemeName;
         remainingThreat = thwartRes.result.remainingThreat;
+
+        if (context.labelledThwart && !context.thwartedScheme) {
+          context.thwartedScheme = {
+            targetType: isSide ? 'side_scheme' : 'main_scheme',
+            instanceId: isSide ? st.id : undefined,
+          };
+        }
+      }
+
+      if (context.labelledThwart) {
+        context.accumulatedThreatRemoved = (context.accumulatedThreatRemoved || 0) + removed;
       }
 
       const onomatopoeia = `-${removed} THREAT!`;

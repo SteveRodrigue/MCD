@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine/Data): Automatic ability labels derivation, THWART/DEFENSE resolution, and status cancellation ([Issue #270](https://github.com/SteveRodrigue/MCD/issues/270))**
+  - Ability labels (`(attack)`, `(thwart)`, `(defense)`) are now derived automatically from card text on load by `card-loader.ts`, eliminating manual `"labels"` declarations from supplemental JSON (removed 13 redundant manual entries in `core.json`). Explicit supplemental `ability.labels` is retained solely as an override mechanism if ever required.
+  - Labeled `THWART` abilities resolve as a thwart by the identity (RR v1.8 glossary L & T): passes `thwarterType: 'HERO'` and `suppressTrigger: true` to `applyThwart`, and dispatches `THWART_RESOLVED` exactly once upon completion with `sourceInstanceId: playerId` and `sourceCardCode: player.activeFormCard?.code`.
+  - Labeled `DEFENSE` abilities resolving during an undefended attack mark the hero as defender (`heroDefended = true`, `defender = { type: 'HERO', playerId }`), ensuring `ATTACK_DEFENDED` dispatches post-attack with `defenderType: 'HERO'` to trigger in-hand reactions like Counter-Punch (`01077`).
+  - Labeled abilities triggered while incapacitated by a canceling status card (`STUNNED` for `ATTACK`, `CONFUSED` for `THWART`, or both for dual-label abilities) pay costs, consume the status card(s), and cancel the ability before executing steps (no damage dealt, no threat removed, no `ATTACK_RESOLVED`, no `THWART_RESOLVED`, no Retaliate). In `action-dispatcher.ts`, target prompts are bypassed when the ability will be status-canceled, honoring RR v1.8 p. 28 (can attempt even without valid targets).
+  - Tests: `tests/data/card-loader-labels.test.ts`, `tests/engine/thwart-label.test.ts`, `tests/engine/defense-label.test.ts`, `tests/engine/status-cancel.test.ts` (net +16 tests).
+
 - **Fix (Engine/UI): Caught Off Guard `01188` choice prompt and card name in combat log ([Issue #233](https://github.com/SteveRodrigue/MCD/issues/233))**
   - When 2 or more candidate upgrades/supports are eligible to be discarded from the tableau, `executeDiscard` now enqueues a generic `RESOLVE_DISCARD_CHOICE` prompt in `pendingDecisionQueue` with dynamic source/trait metadata (title, description, and thumbnail card previews) instead of auto-discarding or using hardcoded titles.
   - Generically extended to and verified across all Core Set tableau discard choices: Caught Off Guard (`01188`), Electric Whip Attack (`01173`, two-stage choice & undefended boost), and Affairs of State (`01155`, two-stage choice & Black Panther trait filtering).

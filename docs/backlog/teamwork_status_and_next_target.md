@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-11 (everything through #264 committed and pushed)
-> **Repository state:** `main`, everything through #264 (`1d69a3c`) committed and pushed. Check `git log -1` and `git status` first.
+> **Last updated:** 2026-10-12 (Issue #270 implemented and verified)
+> **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
-> **Verification baseline:** 🟢 2,543 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
+> **Verification baseline:** 🟢 2,566 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
 ---
@@ -68,7 +68,6 @@ _None currently._
 
 | #   | Issue                                                   | Item                                                                                                      | Estimate | Notes                                                                                                                                                                                     |
 | :-- | :------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------- | :------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 7   | [#270](https://github.com/SteveRodrigue/MCD/issues/270) | `THWART` / `DEFENSE` ability labels and the status cancel (Confused cancels a thwart, Stunned an attack)  | 1 day    | 8 core cards carry a label (Backflip defense; Crisis Interdiction, Legal Practice, Mark V Helmet, Tactical Genius, Chase Them Down, For Justice!, Emergency thwart); False Alarm confuses |
 | 8   | [#267](https://github.com/SteveRodrigue/MCD/issues/267) | Hand reactions: every eligible card of every player, starting with the first player (non-threat triggers) | 1 day    | #266 already fixed the threat window                                                                                                                                                      |
 | 9   | [#273](https://github.com/SteveRodrigue/MCD/issues/273) | Empty player deck resets immediately and deals 1 encounter card; empty discard pile case                  | ½ day    |                                                                                                                                                                                           |
 | 10  | [#206](https://github.com/SteveRodrigue/MCD/issues/206) | Identity printed traits are the union of both sides regardless of form                                    | ½ day    | Owner 2026-10-10: only visible traits count, so traits follow the current form plus traits granted by cards (e.g. Rocket Boots Aerial); the union tests change                            |

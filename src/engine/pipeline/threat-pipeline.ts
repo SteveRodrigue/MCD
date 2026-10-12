@@ -55,6 +55,7 @@ export interface ThwartRequest {
   thwartValue: number;
   ignoresCrisis?: boolean;
   ignoresPatrol?: boolean;
+  suppressTrigger?: boolean;
 }
 
 export interface ThwartResult {
@@ -544,14 +545,16 @@ export function applyThwart(
         ? (thwarterEntity as PlayerState)?.activeFormCard?.code
         : undefined;
 
-  dispatchTrigger(state, 'THWART_RESOLVED', {
-    targetPlayerId: player.id,
-    targetType,
-    targetInstanceId,
-    threatAmount: removed,
-    sourceInstanceId: sourceInstId,
-    sourceCardCode: sourceCardCd,
-  });
+  if (!request.suppressTrigger) {
+    dispatchTrigger(state, 'THWART_RESOLVED', {
+      targetPlayerId: player.id,
+      targetType,
+      targetInstanceId,
+      threatAmount: removed,
+      sourceInstanceId: sourceInstId,
+      sourceCardCode: sourceCardCd,
+    });
+  }
 
   return {
     state,

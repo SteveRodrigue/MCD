@@ -73,6 +73,7 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
       nonEnergyCard,
       nonEnergyCard,
       nonEnergyCard,
+      nonEnergyCard,
     ];
 
     const initialHealth = state.villain.health;
@@ -86,7 +87,7 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
     // 1 base + 0 bonus = 1 damage
     expect(state.villain.health).toBe(initialHealth - 1);
     expect(state.players[0].discard.length).toBe(5);
-    expect(state.players[0].deck.length).toBe(0);
+    expect(state.players[0].deck.length).toBe(1);
   });
 
   it('deals 1 base + 2 per energy icon (including double energy cards) to enemy', () => {
@@ -185,6 +186,7 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
       singleEnergyCard,
       nonEnergyCard,
       nonEnergyCard,
+      nonEnergyCard,
     ];
 
     const initialHealth = state.villain.health;
@@ -231,7 +233,7 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
       },
     } as any);
 
-    state.players[0].deck = [wildCard, wildCard, wildCard, wildCard, wildCard];
+    state.players[0].deck = [wildCard, wildCard, wildCard, wildCard, wildCard, wildCard];
 
     const initialHealth = state.villain.health;
     const result = executeEffect(state, ability, {
@@ -309,6 +311,7 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
     state.players[0].deck = [
       singleEnergyCard,
       singleEnergyCard,
+      nonEnergyCard,
       nonEnergyCard,
       nonEnergyCard,
       nonEnergyCard,

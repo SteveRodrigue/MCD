@@ -45,6 +45,9 @@ import {
   drawEncounterCard,
   exhaustPlayerDeck,
   drawPlayerCard,
+  checkAndResetPlayerDeck,
+  exhaustEncounterDeck,
+  checkDeckExhaustionInvariants,
 } from '../pipeline/deck-exhaustion';
 import { dealSurgeCard } from '../pipeline/surge';
 import { canCancelEncounterReveal } from '../pipeline/encounter-cancel';
@@ -418,6 +421,10 @@ export function discardCardInstance(
         targetPlayerId: targetPlayer.id,
         sourceInstanceId: card.instanceId,
       });
+      if (targetPlayer.deckEmptiedWithEmptyDiscard && targetPlayer.discard.length > 0) {
+        targetPlayer.deckEmptiedWithEmptyDiscard = false;
+        exhaustPlayerDeck(state, targetPlayer.id);
+      }
     }
   }
 }
@@ -1497,7 +1504,7 @@ function finishLabelledThwart(state: GameState, context: EffectExecutionContext)
 /**
  * Executes a declarative effect or ability on the GameState.
  */
-export function executeEffect(
+function executeEffectInternal(
   state: GameState,
   abilityOrStep: CardAbility | AbilityStep,
   context: EffectExecutionContext,
@@ -1639,6 +1646,22 @@ export function executeEffect(
   }
 
   return { state, success: true, onomatopoeia: 'RESOLVED!' };
+}
+
+/**
+ * Executes a declarative effect or ability on the GameState.
+ * Enforces deck exhaustion invariants upon effect completion (RR v1.8 p. 11, 18).
+ */
+export function executeEffect(
+  state: GameState,
+  abilityOrStep: CardAbility | AbilityStep,
+  context: EffectExecutionContext,
+): EffectResult {
+  const result = executeEffectInternal(state, abilityOrStep, context);
+  if (result.state) {
+    checkDeckExhaustionInvariants(result.state);
+  }
+  return result;
 }
 
 function findAnyCardInstance(state?: GameState, idOrCode?: string): CardInstance | undefined {
@@ -1852,14 +1875,22 @@ export function executeDiscard(
     const discardedCards: CardInstance[] = [];
     const addedToHandCards: CardInstance[] = [];
     const matchingDestination = params.matchingDestination as string | undefined;
+
+    // RR v1.8 "Player Deck": if deck is already empty, reset it; no further cards are discarded from the new deck.
+    if (player.deck.length === 0) {
+      checkAndResetPlayerDeck(state, player.id);
+      return {
+        state,
+        success: true,
+        mutatedState: true,
+        value: 0,
+        discardedCards: [],
+        onomatopoeia: 'DECK RESHUFFLED!',
+      };
+    }
+
     for (let i = 0; i < count; i++) {
-      // RR v1.8 "Player Deck": a deck that empties while discarding is reset, but no further card
-      // is discarded from the new deck.
-      if (i > 0 && player.deck.length === 0) {
-        exhaustPlayerDeck(state, player.id);
-        break;
-      }
-      const card = drawPlayerCard(state, player.id);
+      const card = player.deck.shift();
       if (card) {
         if (matchingDestination && filter && matchCardFilter(card.card, filter, player)) {
           if (matchingDestination === 'HAND') {
@@ -1881,6 +1912,13 @@ export function executeDiscard(
           sourceInstanceId: card.instanceId,
           triggerChain: context.triggerChain,
         });
+
+        // RR v1.8 "Player Deck": a deck that empties while discarding is reset, but no further card
+        // is discarded from the new deck.
+        if (player.deck.length === 0) {
+          checkAndResetPlayerDeck(state, player.id);
+          break;
+        }
       }
     }
     if (discardedCards.length > 0) {
@@ -1981,14 +2019,31 @@ export function executeDiscard(
         onomatopoeia: `DISCARDED ${discarded.length} ENCOUNTER CARDS!`,
       };
     }
+    // RR v1.8 "Encounter Deck": if deck is already empty, reset it; do not continue discard with the newly shuffled deck.
+    if (state.encounterDeck.length === 0) {
+      exhaustEncounterDeck(state);
+      return {
+        state,
+        success: true,
+        mutatedState: true,
+        value: 0,
+        discardedCards: [],
+        onomatopoeia: 'ENCOUNTER DECK RESHUFFLED!',
+      };
+    }
+
     let discardedCount = 0;
     const discardedCards: CardInstance[] = [];
     for (let i = 0; i < count; i++) {
-      const card = drawEncounterCard(state);
+      const card = state.encounterDeck.shift();
       if (card) {
         state.encounterDiscard.push(card);
         discardedCards.push(card);
         discardedCount++;
+        if (state.encounterDeck.length === 0) {
+          exhaustEncounterDeck(state);
+          break;
+        }
       }
     }
     if (discardedCount > 0) {

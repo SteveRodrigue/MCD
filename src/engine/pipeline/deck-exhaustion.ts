@@ -5,7 +5,7 @@ import { GameState, CardInstance } from '@engine/models';
  * 1. Unconditionally places 1 permanent acceleration token on the Main Scheme.
  * 2. Shuffles the encounter discard pile into the encounter deck.
  */
-export function exhaustEncounterDeck(state: GameState): void {
+export function exhaustEncounterDeck(state: GameState): boolean {
   // 1. Unconditional penalty: +1 permanent acceleration token on Main Scheme
   state.accelerationTokens = (state.accelerationTokens || 0) + 1;
 
@@ -23,7 +23,10 @@ export function exhaustEncounterDeck(state: GameState): void {
   if (state.encounterDiscard.length > 0) {
     state.encounterDeck = [...state.encounterDiscard].sort(() => Math.random() - 0.5);
     state.encounterDiscard = [];
+    return true;
   }
+
+  return false;
 }
 
 /**
@@ -38,21 +41,51 @@ export function drawEncounterCard(state: GameState): CardInstance | undefined {
 }
 
 /**
- * Executes Player Deck Exhaustion (RR v1.8 p. 18).
- * 1. Shuffles the player's discard pile into their draw deck.
- * 2. Unconditionally deals 1 facedown encounter card to that player.
+ * Checks if a player's deck is empty and resets it if discard pile has cards (RR v1.8 p. 18).
+ * If discard pile is empty, marks deckEmptiedWithEmptyDiscard for deferred reset.
+ * Returns true if the deck was reset, false otherwise.
  */
-export function exhaustPlayerDeck(state: GameState, playerId: string): void {
+export function checkAndResetPlayerDeck(state: GameState, playerId: string): boolean {
   const player = state.players.find((p) => p.id === playerId);
-  if (!player) return;
+  if (!player) return false;
+  if (player.deck.length === 0) {
+    if (player.discard.length > 0) {
+      player.deckEmptiedWithEmptyDiscard = false;
+      return exhaustPlayerDeck(state, playerId);
+    } else {
+      player.deckEmptiedWithEmptyDiscard = true;
+    }
+  }
+  return false;
+}
 
-  // 1. Reshuffle discard pile into player deck
-  if (player.discard.length > 0) {
-    player.deck = [...player.discard].sort(() => Math.random() - 0.5);
-    player.discard = [];
+/**
+ * Executes Player Deck Exhaustion (RR v1.8 p. 18).
+ * 1. Guard: if player.discard.length === 0, marks deckEmptiedWithEmptyDiscard and returns false
+ *    (do not reset, do not deal encounter card until a card enters discard).
+ * 2. Shuffles the player's discard pile into their draw deck.
+ * 3. Deals 1 facedown encounter card to that player.
+ * 4. Logs player.deck.exhausted.
+ * Returns true if reset executed.
+ */
+export function exhaustPlayerDeck(state: GameState, playerId: string): boolean {
+  const player = state.players.find((p) => p.id === playerId);
+  if (!player) return false;
+
+  // Guard: if discard pile is empty, deck does not reset and no encounter card is dealt
+  // until at least one card enters the discard pile (RR v1.8 glossary "Player Deck").
+  if (player.discard.length === 0) {
+    player.deckEmptiedWithEmptyDiscard = true;
+    return false;
   }
 
-  // 2. Unconditional penalty: Deal 1 facedown encounter card to that player
+  player.deckEmptiedWithEmptyDiscard = false;
+
+  // 1. Reshuffle discard pile into player deck
+  player.deck = [...player.discard].sort(() => Math.random() - 0.5);
+  player.discard = [];
+
+  // 2. Penalty: Deal 1 facedown encounter card to that player
   const extraEncounter = drawEncounterCard(state);
   if (extraEncounter) {
     player.dealtEncounterCards.push(extraEncounter);
@@ -68,21 +101,34 @@ export function exhaustPlayerDeck(state: GameState, playerId: string): void {
     params: { player: player.name },
     onomatopoeia: 'EXTRA ENCOUNTER CARD!',
   });
+
+  return true;
 }
 
 /**
  * Draws the top card from a player's draw deck.
  * If the deck is empty, triggers Player Deck Exhaustion before drawing (RR v1.8 p. 18).
+ * If drawing empties the player deck, triggers immediate deck reset.
  */
 export function drawPlayerCard(state: GameState, playerId: string): CardInstance | undefined {
   const player = state.players.find((p) => p.id === playerId);
   if (!player) return undefined;
 
   if (player.deck.length === 0) {
-    exhaustPlayerDeck(state, playerId);
+    if (player.discard.length > 0) {
+      exhaustPlayerDeck(state, playerId);
+    }
+  }
+  if (player.deck.length === 0) {
+    return undefined;
   }
 
-  return player.deck.shift();
+  const card = player.deck.shift();
+  if (player.deck.length === 0) {
+    checkAndResetPlayerDeck(state, playerId);
+  }
+
+  return card;
 }
 
 /**
@@ -97,6 +143,7 @@ export function drawPlayerCard(state: GameState, playerId: string): CardInstance
  * card is found, the discard STOPS with found: null and the effect is fulfilled; encounter deck
  * exhaustion (acceleration token and reshuffle) then triggers, and the discard does not continue
  * into the new deck.
+ * If the target matches on the exact last card of the deck, deck exhaustion also triggers immediately.
  */
 export function discardFromEncounterDeckUntil(
   state: GameState,
@@ -104,19 +151,31 @@ export function discardFromEncounterDeckUntil(
 ): { found: CardInstance | null; discarded: CardInstance[] } {
   const discarded: CardInstance[] = [];
 
+  if (state.encounterDeck.length === 0) {
+    exhaustEncounterDeck(state);
+  }
+
   while (state.encounterDeck.length > 0) {
     const card = state.encounterDeck.shift()!;
     discarded.push(card);
 
     if (predicate(card)) {
+      if (state.encounterDeck.length === 0) {
+        exhaustEncounterDeck(state);
+      }
       return { found: card, discarded };
     }
     state.encounterDiscard.push(card);
+
+    if (state.encounterDeck.length === 0) {
+      exhaustEncounterDeck(state);
+      return { found: null, discarded };
+    }
   }
 
-  // Target wasn't found and deck emptied. Action terminates.
-  // Sequential exhaustion triggers (the discarded cards are already in the discard pile):
-  exhaustEncounterDeck(state);
+  if (state.encounterDeck.length === 0) {
+    exhaustEncounterDeck(state);
+  }
 
   return { found: null, discarded };
 }
@@ -127,6 +186,7 @@ export function discardFromEncounterDeckUntil(
  * Invariant: If the player deck runs out of cards before finding a matching card,
  * the search/discard loop immediately STOPS and terminates with found: null.
  * Standard player deck exhaustion triggers sequentially AFTER the discard loop terminates.
+ * If the target matches on the exact last card of the deck, deck exhaustion also triggers immediately.
  */
 export function discardFromPlayerDeckUntil(
   state: GameState,
@@ -136,6 +196,10 @@ export function discardFromPlayerDeckUntil(
   const player = state.players.find((p) => p.id === playerId);
   if (!player) return { found: null, discarded: [] };
 
+  if (player.deck.length === 0) {
+    checkAndResetPlayerDeck(state, playerId);
+  }
+
   const discarded: CardInstance[] = [];
 
   while (player.deck.length > 0) {
@@ -144,13 +208,33 @@ export function discardFromPlayerDeckUntil(
     discarded.push(card);
 
     if (predicate(card)) {
+      if (player.deck.length === 0) {
+        checkAndResetPlayerDeck(state, playerId);
+      }
       return { found: card, discarded };
+    }
+
+    if (player.deck.length === 0) {
+      checkAndResetPlayerDeck(state, playerId);
+      return { found: null, discarded };
     }
   }
 
-  // Target wasn't found and deck emptied. Action terminates.
-  // Sequential exhaustion triggers:
-  exhaustPlayerDeck(state, playerId);
+  if (player.deck.length === 0) {
+    checkAndResetPlayerDeck(state, playerId);
+  }
 
   return { found: null, discarded };
+}
+
+/**
+ * Checks all players for deferred deck resets waiting for cards to enter their discard pile (RR v1.8 p. 18).
+ */
+export function checkDeckExhaustionInvariants(state: GameState): void {
+  for (const player of state.players) {
+    if (player.deckEmptiedWithEmptyDiscard && player.discard.length > 0) {
+      player.deckEmptiedWithEmptyDiscard = false;
+      exhaustPlayerDeck(state, player.id);
+    }
+  }
 }

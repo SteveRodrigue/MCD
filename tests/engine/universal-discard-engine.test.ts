@@ -28,7 +28,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [cardCatalog.getCard('01005')!, cardCatalog.getCard('01006')!],
+          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
         },
       ],
       villain: rhinoVillain,
@@ -94,8 +94,8 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
       createCardInstance(cardCatalog.getCard('01005')!),
       createCardInstance(cardCatalog.getCard('01006')!),
     ];
-    const initialDeckCount = player.deck.length;
-    const initialDiscardCount = player.discard.length;
+    player.discard = [];
+    player.dealtEncounterCards = [];
 
     const res = executeEffect(
       state,
@@ -110,8 +110,10 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
     );
 
     expect(res.success).toBe(true);
-    expect(player.deck.length).toBe(initialDeckCount - 2);
-    expect(player.discard.length).toBe(initialDiscardCount + 2);
+    // RR v1.8: discarding 2 cards empties the deck; the 2 discarded cards immediately reset into deck
+    expect(player.deck.length).toBe(2);
+    expect(player.discard.length).toBe(0);
+    expect(player.dealtEncounterCards.length).toBe(1);
   });
 
   it('discards cards from ENCOUNTER_DECK', () => {
@@ -279,7 +281,8 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
     // Card 2: Energy resource (01006 Aunt May has energy resource)
     const nonMentalCard = createCardInstance(cardCatalog.getCard('01006')!);
 
-    player.deck = [mentalCard, nonMentalCard];
+    const extraDeckCard = createCardInstance(cardCatalog.getCard('01005')!);
+    player.deck = [mentalCard, nonMentalCard, extraDeckCard];
     const initialHandCount = player.hand.length;
 
     const res = executeEffect(
@@ -410,14 +413,14 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [cardCatalog.getCard('01005')!, cardCatalog.getCard('01006')!],
+            deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
           },
           {
             id: 'p2',
             name: 'Spider-Man Two',
             hero: cardCatalog.getCard('01010a')!,
             alterEgo: cardCatalog.getCard('01010b')!,
-            deckCards: [cardCatalog.getCard('01005')!, cardCatalog.getCard('01006')!],
+            deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
           },
         ],
         villain: rhinoVillain,

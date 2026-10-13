@@ -265,6 +265,7 @@ describe('Villain Phase Stepping & Pacing Engine (ADR-0068 / Issue #140)', () =>
     const encounterCards = catalog.getCardsBySet('standard');
 
     const twoPlayerGame = setupGame({
+      scenarioId: 'rhino',
       players: [
         {
           id: 'p1',
@@ -299,6 +300,9 @@ describe('Villain Phase Stepping & Pacing Engine (ADR-0068 / Issue #140)', () =>
     const enc1 = createCardInstance(catalog.getCard('01112')!);
     const enc2 = createCardInstance(catalog.getCard('01112')!);
     twoPlayerGame.encounterDeck = [boost1, boost2, enc1, enc2];
+    twoPlayerGame.sideSchemes = [
+      { instanceId: 'bt_1', card: catalog.getCard('01107') as any, threat: 2 },
+    ];
 
     // 1. Advance to VILLAIN_PHASE -> Step 1 (threat placed)
     let state = advanceVillainPhaseStep(twoPlayerGame, { synchronousPolicy: 'TAKE_UNDEFENDED' });

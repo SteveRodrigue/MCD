@@ -66,6 +66,7 @@ import {
   completeEncounterAttachment,
 } from './villain-phase';
 import { initiatePlayerPhaseCleanup, executePlayerCleanup } from './player-phase-cleanup';
+import { checkDeckExhaustionInvariants } from './deck-exhaustion';
 import {
   getEffectiveAllyStats,
   getEffectiveHeroStats,
@@ -272,6 +273,7 @@ export function dispatchAction(
   if (next.setupState?.stage === 'PLAYER_SETUP') {
     next = advancePlayerSetup(next);
   }
+  checkDeckExhaustionInvariants(next);
   return next === outcome.state ? outcome : { state: next, result: outcome.result };
 }
 

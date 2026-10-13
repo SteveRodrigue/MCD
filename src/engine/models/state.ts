@@ -79,6 +79,8 @@ export interface PlayerState {
   activeTraitModifiers?: ActiveTraitModifier[];
   dealtEncounterCards: CardInstance[]; // Face-down cards dealt in Step 4
   setAsideCards: CardInstance[]; // Set-aside nemesis cards
+  /** Set when player deck empties while discard is empty; resets when first card enters discard (RR v1.8 p. 18) */
+  deckEmptiedWithEmptyDiscard?: boolean;
 }
 
 export type Duration = 'PHASE' | 'ROUND' | 'TURN';

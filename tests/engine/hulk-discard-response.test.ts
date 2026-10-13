@@ -75,9 +75,9 @@ describe('Hulk (01050) Forced Response Contract Tests — RR v1.8 & Issue #113',
     const hulkInst = createCardInstance(hulkCard);
     state.players[0].allies.push(hulkInst);
 
-    // Top card of deck has physical resource
+    // Top card of deck has physical resource, with a 2nd card so deck does not empty
     const physCard = createResourceCard('physical');
-    state.players[0].deck = [physCard];
+    state.players[0].deck = [physCard, createResourceCard('mental')];
 
     const initialVillainHp = state.villain.health;
 
@@ -117,7 +117,7 @@ describe('Hulk (01050) Forced Response Contract Tests — RR v1.8 & Issue #113',
     state.players[0].engagedMinions.push(minion);
 
     const energyCard = createResourceCard('energy');
-    state.players[0].deck = [energyCard];
+    state.players[0].deck = [energyCard, createResourceCard('mental')];
 
     const initialHeroHp = state.players[0].health;
     const initialVillainHp = state.villain.health;
@@ -157,7 +157,7 @@ describe('Hulk (01050) Forced Response Contract Tests — RR v1.8 & Issue #113',
     state.players[0].allies.push(hulkInst);
 
     const mentalCard = createResourceCard('mental');
-    state.players[0].deck = [mentalCard];
+    state.players[0].deck = [mentalCard, createResourceCard('physical')];
 
     const { state: nextState } = dispatchAction(state, {
       type: 'ALLY_ATTACK',
@@ -185,7 +185,7 @@ describe('Hulk (01050) Forced Response Contract Tests — RR v1.8 & Issue #113',
     state.players[0].allies.push(hulkInst);
 
     const wildCard = createResourceCard('wild');
-    state.players[0].deck = [wildCard];
+    state.players[0].deck = [wildCard, createResourceCard('mental')];
 
     const initialHeroHp = state.players[0].health;
     const initialVillainHp = state.villain.health;
@@ -209,5 +209,30 @@ describe('Hulk (01050) Forced Response Contract Tests — RR v1.8 & Issue #113',
     expect(nextState.players[0].discard.some((c) => c.instanceId === hulkInst.instanceId)).toBe(
       true,
     );
+  });
+
+  it('cleanly resets player deck and deals penalty encounter card when deck empties from attack discard', () => {
+    const hulkCard = cardCatalog.getCard('01050')!;
+    const hulkInst = createCardInstance(hulkCard);
+    state.players[0].allies.push(hulkInst);
+
+    const physCard = createResourceCard('physical');
+    state.players[0].deck = [physCard];
+    state.players[0].discard = [];
+    state.players[0].dealtEncounterCards = [];
+
+    const { state: nextState, result } = dispatchAction(state, {
+      type: 'ALLY_ATTACK',
+      playerId: 'p1',
+      allyInstanceId: hulkInst.instanceId,
+      targetType: 'villain',
+      targetInstanceId: state.villain.instanceId,
+    });
+
+    expect(result.success).toBe(true);
+    // 1 card was discarded, deck emptied, so it immediately reshuffled the 1 card back into deck
+    expect(nextState.players[0].deck.length).toBe(1);
+    expect(nextState.players[0].discard.length).toBe(0);
+    expect(nextState.players[0].dealtEncounterCards.length).toBe(1);
   });
 });

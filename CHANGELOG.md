@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): Reset empty player deck immediately and enforce RR v1.8 exhaustion invariants ([Issue #273](https://github.com/SteveRodrigue/MCD/issues/273))**
+  - Drawing or discarding that empties a player's draw deck immediately resets the deck from their discard pile and deals 1 facedown penalty encounter card, instead of deferring reset to the next draw attempt (`drawPlayerCard`, `executeDiscard`, `discardFromPlayerDeckUntil`).
+  - Guarded empty discard pile on deck exhaustion (RR v1.8 glossary "Player Deck"): if a player deck empties while their discard pile has 0 cards, no reset occurs and no penalty encounter card is dealt until a card subsequently enters their discard pile (`deckEmptiedWithEmptyDiscard` flag monitored via `discardCardInstance` and `checkDeckExhaustionInvariants`).
+  - Discarding from player deck or encounter deck (milling, e.g. Repulsor Blast `01031`, Hulk `01050`, Black Cat `01003`) immediately ceases discarding when the deck empties and does not continue discarding across the reshuffle into the newly formed deck.
+  - Tests: `tests/engine/deck-exhaustion-invariants.test.ts` (+21 contract tests), updated `tests/engine/universal-discard-engine.test.ts`, `tests/engine/repulsor-blast.test.ts`, `tests/engine/hulk-discard-response.test.ts`, `tests/engine/villain-phase-stepping.test.ts`.
+
 - **Fix (Engine): Hand reactions offer all eligible cards in first-player turn order and damage placements wait for interrupt prompts ([Issue #267](https://github.com/SteveRodrigue/MCD/issues/267))**
   - In-hand reactive scans (`DAMAGE_WOULD_BE_TAKEN`, `ENCOUNTER_CARD_REVEALED`, `TREACHERY_REVEALED`, `ATTACK_DEFENDED`, and `BASIC_ATTACK_PERFORMED`) now evaluate all eligible cards in hand (`allEligibleCards: true`), allowing multiple copies (such as two *Backflips* or two *Enhanced Spider-Sense*) to be queued for player decisions.
   - In multiplayer, hand reactions scan players in turn order starting with the first player (`playersInTurnOrder(state)`). `DAMAGE_WOULD_BE_TAKEN` scoping defaults to the targeted player while respecting cards with `targetPlayerScope: 'ANY'`.

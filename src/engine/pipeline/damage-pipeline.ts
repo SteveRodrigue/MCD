@@ -16,6 +16,7 @@ import { eliminatePlayer } from './player-elimination';
 import { dispatchTrigger, type DefeatSource } from '../triggers/trigger-dispatcher';
 import type { TriggerCallNode } from '../errors/infinite-loop-error';
 import { moveDefeatedCardToPile, isEncounterCard, processHostDefeated } from '../effects';
+import { nextEngineId } from '../state/rng';
 
 export type { DefeatSource };
 
@@ -206,7 +207,7 @@ function resolveDamageShieldForHost(
 
   const onomatopoeia = discarded ? 'ARMORED SUIT SHATTERED!' : 'ARMORED SUIT ABSORBS DAMAGE!';
   state.log.push({
-    id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    id: nextEngineId(state, 'log'),
     timestamp: Date.now(),
     round: state.roundNumber,
     phase: state.phase,
@@ -260,7 +261,7 @@ export function applyDamageToTarget(
     isImmuneToDamage(state, target.entity, request.sourceCardInstance)
   ) {
     state.log.push({
-      id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      id: nextEngineId(state, 'log'),
       timestamp: Date.now(),
       round: state.roundNumber,
       phase: state.phase,
@@ -317,7 +318,7 @@ export function applyDamageToTarget(
         currentDamage = 0;
         onomatopoeia = 'CLANG! (TOUGH)';
         state.log.push({
-          id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          id: nextEngineId(state, 'log'),
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
@@ -375,7 +376,7 @@ export function applyDamageToTarget(
         const healthBefore = villain.health;
         villain.health = Math.max(0, villain.health - damageTaken);
         state.log.push({
-          id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          id: nextEngineId(state, 'log'),
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
@@ -416,7 +417,7 @@ export function applyDamageToTarget(
         const minionHealth = getEffectiveMinionHitPoints(state, minion);
 
         state.log.push({
-          id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          id: nextEngineId(state, 'log'),
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
@@ -465,7 +466,7 @@ export function applyDamageToTarget(
         const healthBefore = player.health;
         player.health = Math.max(0, player.health - damageTaken);
         state.log.push({
-          id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          id: nextEngineId(state, 'log'),
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
@@ -503,7 +504,7 @@ export function applyDamageToTarget(
         const allyMaxHp = (ally.card as AllyCard)?.health || 2;
 
         state.log.push({
-          id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          id: nextEngineId(state, 'log'),
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
@@ -574,7 +575,7 @@ export function applyDamageToTarget(
     state = overkillRes.state;
     if (overkillRes.result.damageTaken > 0) {
       state.log.push({
-        id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        id: nextEngineId(state, 'log'),
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
@@ -620,7 +621,7 @@ export function applyDamageToTarget(
         });
 
         state.log.push({
-          id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          id: nextEngineId(state, 'log'),
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
@@ -652,7 +653,7 @@ export function applyDamageToTarget(
           });
 
           state.log.push({
-            id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            id: nextEngineId(state, 'log'),
             timestamp: Date.now(),
             round: state.roundNumber,
             phase: state.phase,

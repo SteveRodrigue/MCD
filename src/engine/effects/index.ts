@@ -99,6 +99,7 @@ import {
   checkUniqueCardPlayable,
 } from '../pipeline/legality-checker';
 import { cardCatalog } from '../../data/importer/card-loader';
+import { nextEngineId, randomInt, shuffleArray } from '../state/rng';
 
 /**
  * Narrows resolved targets with an optional UniversalCardFilter (ADR-0046) so that EXHAUST and READY
@@ -505,7 +506,7 @@ export function processHostDefeated(
         });
 
         state.log.push({
-          id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          id: nextEngineId(state, 'log'),
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
@@ -596,7 +597,7 @@ export function defeatSideScheme(
 
   // 5. Comic event log
   state.log.push({
-    id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    id: nextEngineId(state, 'log'),
     timestamp: Date.now(),
     round: state.roundNumber,
     phase: state.phase,
@@ -1824,7 +1825,7 @@ export function executeDiscard(
       const toDiscardCount = isCountAll ? candidates.length : Math.min(count, candidates.length);
       const chosen: CardInstance[] = [];
       for (let i = 0; i < toDiscardCount; i++) {
-        const idx = isRandom ? Math.floor(Math.random() * candidates.length) : 0;
+        const idx = isRandom ? randomInt(state, candidates.length) : 0;
         chosen.push(...candidates.splice(idx, 1));
       }
       if (chosen.length === 0) continue;
@@ -2151,7 +2152,7 @@ export function executeDiscard(
     );
 
     enqueueDecisionPrompt(state, {
-      promptId: `prompt_discard_tableau_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      promptId: nextEngineId(state, 'prompt_discard_tableau'),
       playerId: player.id,
       title: promptMeta.title,
       description: promptMeta.description,
@@ -3022,7 +3023,7 @@ export function executeStep(
           : player;
 
       const prompt: PendingDecisionPrompt = {
-        promptId: `dist_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        promptId: nextEngineId(state, 'dist'),
         playerId: assigner.id,
         title: stepParams.promptTitle || `Distribute ${config.budgetLabel}`,
         description:
@@ -3348,7 +3349,7 @@ export function executeStep(
         );
         if (nonMainSchemes.length === 0) {
           state.log.push({
-            id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            id: nextEngineId(state, 'log'),
             timestamp: Date.now(),
             round: state.roundNumber,
             phase: state.phase,
@@ -4433,10 +4434,10 @@ export function executeStep(
 
       if (toDeck === 'ENCOUNTER_DECK') {
         state.encounterDeck.push(...matches);
-        state.encounterDeck.sort(() => Math.random() - 0.5);
+        state.encounterDeck = shuffleArray(state, state.encounterDeck);
       } else if (toDeck === 'PLAYER_DECK') {
         player.deck.push(...matches);
-        player.deck.sort(() => Math.random() - 0.5);
+        player.deck = shuffleArray(state, player.deck);
       }
 
       const onomatopoeia = `SHUFFLE ${matches.length} CARDS!`;
@@ -4478,7 +4479,7 @@ export function executeStep(
       // Optional flip: offer a voluntary choice instead of flipping immediately
       if (step.effectParams?.optional && nextFormCard) {
         enqueueDecisionPrompt(state, {
-          promptId: `prompt_optional_flip_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          promptId: nextEngineId(state, 'prompt_optional_flip'),
           playerId: context.playerId || player.id,
           title: `Flip to ${nextFormCard.name}?`,
           description: `You may flip to ${nextFormCard.name}.`,
@@ -5105,10 +5106,10 @@ export function executeStep(
 
       const shuffleSearchedDecks = () => {
         if (sourceZones.includes('ENCOUNTER_DECK')) {
-          state.encounterDeck.sort(() => Math.random() - 0.5);
+          state.encounterDeck = shuffleArray(state, state.encounterDeck);
         }
         if (sourceZones.includes('PLAYER_DECK')) {
-          targetPlayer.deck.sort(() => Math.random() - 0.5);
+          targetPlayer.deck = shuffleArray(state, targetPlayer.deck);
         }
       };
 
@@ -5232,15 +5233,23 @@ export function executeStep(
             }
           }
         } else if (destination === 'DECK_SHUFFLE') {
+          let shuffledEncounter = false;
+          let shuffledPlayer = false;
           for (const card of cards) {
             const origin = cardOriginMap.get(card.instanceId) || sourceZones[0];
             if (origin.startsWith('ENCOUNTER') || card.card.faction === 'encounter') {
               state.encounterDeck.push(card);
-              state.encounterDeck.sort(() => Math.random() - 0.5);
+              shuffledEncounter = true;
             } else {
               targetPlayer.deck.push(card);
-              targetPlayer.deck.sort(() => Math.random() - 0.5);
+              shuffledPlayer = true;
             }
+          }
+          if (shuffledEncounter) {
+            state.encounterDeck = shuffleArray(state, state.encounterDeck);
+          }
+          if (shuffledPlayer) {
+            targetPlayer.deck = shuffleArray(state, targetPlayer.deck);
           }
         } else if (destination === 'ATTACH_TO_TARGET') {
           for (const card of cards) {
@@ -5365,7 +5374,7 @@ export function executeStep(
       }));
 
       const prompt: PendingDecisionPrompt = {
-        promptId: `prompt_search_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        promptId: nextEngineId(state, 'prompt_search'),
         playerId: context.playerId || player.id,
         title: promptTitle,
         description:
@@ -5533,7 +5542,7 @@ export function executeStep(
       }
       for (const p of state.players) {
         if (p.hand.length > 0) {
-          const randIdx = Math.floor(Math.random() * p.hand.length);
+          const randIdx = randomInt(state, p.hand.length);
           const [removed] = p.hand.splice(randIdx, 1);
           removed.ownerId = p.id;
           if (!host.cardsUnderneath) host.cardsUnderneath = [];
@@ -5614,7 +5623,7 @@ export function executeStep(
       const sourceCardCode = context.sourceCardInstance?.card.code;
 
       const reduction: ActiveCostReduction = {
-        id: `cost_red_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        id: nextEngineId(state, 'cost_red'),
         sourceCardName,
         sourceCardCode,
         amount,
@@ -5838,7 +5847,7 @@ export function executeStep(
       });
 
       const prompt: PendingDecisionPrompt = {
-        promptId: `prompt_play_from_zone_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        promptId: nextEngineId(state, 'prompt_play_from_zone'),
         playerId: player.id,
         title: promptTitle,
         description: 'Choose a card to pay for and play into your tableau:',

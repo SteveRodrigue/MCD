@@ -12,6 +12,7 @@ import {
 } from '../models';
 import { getEffectiveMaxHealth } from './stat-calculator';
 import { removeCardFromAllZones } from '../state/state-validator';
+import { randomInt } from '../state/rng';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 import { getStepEffectParams } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
@@ -743,7 +744,7 @@ export function executeAbilityCost(
         const count = cost.discardCard.count || 1;
         const countToDiscard = Math.min(player.hand.length, count);
         for (let i = 0; i < countToDiscard; i++) {
-          const randIdx = Math.floor(Math.random() * player.hand.length);
+          const randIdx = randomInt(state, player.hand.length);
           const [discarded] = player.hand.splice(randIdx, 1);
           player.discard.push(discarded);
           discardedCards.push(discarded);

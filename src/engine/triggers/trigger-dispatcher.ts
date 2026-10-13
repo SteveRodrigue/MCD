@@ -24,6 +24,7 @@ import {
   canCancelEncounterReveal,
 } from '../pipeline/encounter-cancel';
 import { InfiniteLoopError, TriggerCallNode } from '../errors/infinite-loop-error';
+import { nextEngineId } from '../state/rng';
 
 export const MAX_TRIGGER_DEPTH = 15;
 
@@ -567,7 +568,7 @@ function scanHandReactions(
         : '';
 
       enqueueDecisionPrompt(state, {
-        promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        promptId: nextEngineId(state, `prompt_trigger_${ability.id}`),
         playerId: p.id,
         title: `Do you want to use the following ability from ${cardName}${costSuffix}?${spec.promptTitleSuffix ?? ''}`,
         description: `${formatAbilityStepsSummary(trigger, ability.steps || [])}${spec.promptDescriptionSuffix ?? ''}`,
@@ -766,7 +767,7 @@ export function dispatchTrigger(
         const damageDescSuffix =
           isDamageTrigger && currentDamage > 0 ? ` [Incoming Damage: ${currentDamage}]` : '';
         enqueueDecisionPrompt(state, {
-          promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          promptId: nextEngineId(state, `prompt_trigger_${ability.id}`),
           playerId: player.id,
           title: `Do you want to use the following ability from ${cardName}?${damageSuffix}`,
           description: `${formatAbilityStepsSummary(trigger, ability.steps || [])}${damageDescSuffix}`,
@@ -978,7 +979,7 @@ export function dispatchTrigger(
             const damageDescSuffix =
               isDamageTrigger && currentDamage > 0 ? ` [Incoming Damage: ${currentDamage}]` : '';
             enqueueDecisionPrompt(state, {
-              promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+              promptId: nextEngineId(state, `prompt_trigger_${ability.id}`),
               playerId: controller.id,
               title: `Do you want to use the following ability from ${cardName}?${damageSuffix}`,
               description: `${formatAbilityStepsSummary(trigger, ability.steps || [])}${damageDescSuffix}`,

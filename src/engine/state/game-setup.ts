@@ -20,6 +20,7 @@ import { ScenarioRegistry } from '../scenarios';
 import { executeEffect, hasPendingSequence } from '../effects';
 import { peekDecisionPrompt } from '../pipeline/prompt-queue';
 import { createCardInstance, resetInstanceCounter } from './card-instance';
+import { createRng, shuffleArray, nextEngineId } from './rng';
 
 export { createCardInstance, resetInstanceCounter };
 
@@ -45,20 +46,17 @@ export interface GameSetupOptions {
   encounterCards?: NormalizedCard[];
   modularSetCodes?: string[];
   shuffleFn?: <T>(array: T[]) => T[];
+  seed?: number | string;
   skipMulligan?: boolean;
   skipScenarioPlugin?: boolean;
 }
 
 /**
- * Standard Fisher-Yates array shuffle.
+ * Standard Fisher-Yates array shuffle using the engine PRNG.
  */
-export function defaultShuffle<T>(array: T[]): T[] {
-  const result = [...array];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
+export function defaultShuffle<T>(array: T[], seed?: number | string): T[] {
+  const dummyState = { rng: createRng(seed) } as GameState;
+  return shuffleArray(dummyState, array);
 }
 
 /**
@@ -86,7 +84,15 @@ export function defaultShuffle<T>(array: T[]): T[] {
  * or SETUP_PHASE (PLAYER_SETUP) while a Setup ability waits for a decision.
  */
 export function setupGame(options: GameSetupOptions): GameState {
-  const shuffle = options.shuffleFn || defaultShuffle;
+  const rng = createRng(options.seed);
+  const tempRngState = {
+    rng,
+    idCounter: 0,
+    options: {
+      shuffleFn: options.shuffleFn,
+    },
+  } as GameState;
+  const shuffle = <T>(arr: T[]): T[] => shuffleArray(tempRngState, arr);
   const playerCount = options.players.length;
   const skipMulligan = options.skipMulligan ?? false;
   const difficulty = options.difficulty || 'STANDARD';
@@ -213,9 +219,14 @@ export function setupGame(options: GameSetupOptions): GameState {
   // the SCENARIO_SETUP stage suppressing player-controlled abilities.
   // 6. Initialize Base GameState
   let state: GameState = {
-    id: options.id || `game_${Date.now()}`,
+    id: options.id || 'game_1',
     roundNumber: 1,
     phase: GamePhase.SETUP_PHASE,
+    rng: tempRngState.rng,
+    idCounter: tempRngState.idCounter,
+    options: {
+      shuffleFn: options.shuffleFn,
+    },
     setupState: { stage: 'SCENARIO_SETUP', mulliganCompleted: {} },
     scenarioId: options.scenarioId || 'rhino',
     difficulty,
@@ -243,7 +254,7 @@ export function setupGame(options: GameSetupOptions): GameState {
     winner: null,
     log: [
       {
-        id: `log_${Date.now()}`,
+        id: nextEngineId(tempRngState, 'log'),
         timestamp: Date.now(),
         key: 'game.setup.complete',
         params: {
@@ -255,6 +266,7 @@ export function setupGame(options: GameSetupOptions): GameState {
       },
     ],
   };
+  state.idCounter = tempRngState.idCounter;
 
   // 7. Invoke Scenario Plugin Lifecycle Setup if registered (Enforces official 15-step scenario setup)
   if (
@@ -277,7 +289,7 @@ export function setupGame(options: GameSetupOptions): GameState {
           state.encounterDeck.push(createCardInstance(ob));
         }
       }
-      state.encounterDeck = shuffle(state.encounterDeck);
+      state.encounterDeck = shuffleArray(state, state.encounterDeck);
     }
   }
 

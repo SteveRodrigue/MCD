@@ -58,6 +58,7 @@ import {
   hasPendingSequence,
   resumePendingSequence,
 } from '../effects';
+import { shuffleArray, nextEngineId } from '../state/rng';
 import {
   advanceVillainPhaseStep,
   continueVillainPhase,
@@ -192,10 +193,10 @@ export function routeCardInstances(
   } else if (destination === 'DECK_SHUFFLE') {
     if (sourceZone === 'ENCOUNTER_DECK') {
       state.encounterDeck.push(...cards);
-      state.encounterDeck.sort(() => Math.random() - 0.5);
+      state.encounterDeck = shuffleArray(state, state.encounterDeck);
     } else {
       player.deck.push(...cards);
-      player.deck.sort(() => Math.random() - 0.5);
+      player.deck = shuffleArray(state, player.deck);
     }
   } else if (destination === 'ATTACH_TO_TARGET') {
     for (const card of cards) {
@@ -3093,15 +3094,15 @@ function dispatchSingleAction(
           }
           if (shuffleAfter) {
             if (sourceZones.includes('ENCOUNTER_DECK')) {
-              poppedState.encounterDeck.sort(() => Math.random() - 0.5);
+              poppedState.encounterDeck = shuffleArray(poppedState, poppedState.encounterDeck);
             }
             if (sourceZones.includes('PLAYER_DECK')) {
-              targetPlayer.deck.sort(() => Math.random() - 0.5);
+              targetPlayer.deck = shuffleArray(poppedState, targetPlayer.deck);
             }
           }
 
           poppedState.log.push({
-            id: `log_${Date.now()}`,
+            id: nextEngineId(poppedState, 'log'),
             timestamp: Date.now(),
             round: poppedState.roundNumber,
             phase: poppedState.phase,
@@ -3168,15 +3169,15 @@ function dispatchSingleAction(
 
         if (shuffleAfter) {
           if (sourceZones.includes('ENCOUNTER_DECK')) {
-            poppedState.encounterDeck.sort(() => Math.random() - 0.5);
+            poppedState.encounterDeck = shuffleArray(poppedState, poppedState.encounterDeck);
           }
           if (sourceZones.includes('PLAYER_DECK')) {
-            targetPlayer.deck.sort(() => Math.random() - 0.5);
+            targetPlayer.deck = shuffleArray(poppedState, targetPlayer.deck);
           }
         }
 
         poppedState.log.push({
-          id: `log_${Date.now()}`,
+          id: nextEngineId(poppedState, 'log'),
           timestamp: Date.now(),
           round: poppedState.roundNumber,
           phase: poppedState.phase,

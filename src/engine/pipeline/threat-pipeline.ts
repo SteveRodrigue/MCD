@@ -10,6 +10,7 @@ import { consumeEntityStatusCards } from './stat-calculator';
 import { hasCrisisInPlay } from './legality-checker';
 import { handleMainSchemeCompletion } from './scenario-helpers';
 import { defeatSideScheme } from '../effects';
+import { nextEngineId } from '../state/rng';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 
 export type ThreatTargetType = 'main_scheme' | 'side_scheme';
@@ -125,7 +126,7 @@ export function applyThreatPlacement(
       (prompt) => !promptsBefore.has(prompt.promptId),
     );
     if (newPrompts.length > 0) {
-      const id = `threat_placement_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      const id = nextEngineId(state, 'threat_placement');
       for (const prompt of newPrompts) {
         for (const option of prompt.options) {
           if (option.effect === 'EXECUTE_OPTIONAL_TRIGGER' && option.params) {
@@ -201,7 +202,7 @@ function placeThreat(
     if (sourceType === 'VILLAIN_PHASE_STEP_1') {
       onomatopoeia = 'SCHEME GROWS!';
       state.log.push({
-        id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        id: nextEngineId(state, 'log'),
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
@@ -220,7 +221,7 @@ function placeThreat(
         ? state.players.find((p) => p.id === sourcePlayerId)
         : undefined;
       state.log.push({
-        id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        id: nextEngineId(state, 'log'),
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
@@ -239,7 +240,7 @@ function placeThreat(
     } else {
       onomatopoeia = `+${finalThreat} THREAT!`;
       state.log.push({
-        id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        id: nextEngineId(state, 'log'),
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
@@ -277,7 +278,7 @@ function placeThreat(
 
       onomatopoeia = `+${finalThreat} THREAT!`;
       state.log.push({
-        id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        id: nextEngineId(state, 'log'),
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
@@ -390,7 +391,7 @@ export function applyThwart(
 
     const onomatopoeia = 'CONFUSION CLEARED!';
     state.log.push({
-      id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      id: nextEngineId(state, 'log'),
       timestamp: Date.now(),
       round: state.roundNumber,
       phase: state.phase,
@@ -419,7 +420,7 @@ export function applyThwart(
   if (targetType === 'main_scheme' && !ignoresCrisis && hasCrisisInPlay(state)) {
     const onomatopoeia = 'CRISIS BLOCKS!';
     state.log.push({
-      id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      id: nextEngineId(state, 'log'),
       timestamp: Date.now(),
       round: state.roundNumber,
       phase: state.phase,
@@ -464,7 +465,7 @@ export function applyThwart(
 
     onomatopoeia = 'FOILED!';
     state.log.push({
-      id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      id: nextEngineId(state, 'log'),
       timestamp: Date.now(),
       round: state.roundNumber,
       phase: state.phase,
@@ -500,7 +501,7 @@ export function applyThwart(
       }
 
       state.log.push({
-        id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        id: nextEngineId(state, 'log'),
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,

@@ -1,4 +1,5 @@
 import { GameState, CardInstance } from '@engine/models';
+import { shuffleArray, nextEngineId } from '../state/rng';
 
 /**
  * Executes Encounter Deck Exhaustion (RR v1.8 p. 11).
@@ -10,7 +11,7 @@ export function exhaustEncounterDeck(state: GameState): boolean {
   state.accelerationTokens = (state.accelerationTokens || 0) + 1;
 
   state.log.push({
-    id: `log_${Date.now()}_accel`,
+    id: nextEngineId(state, 'log'),
     timestamp: Date.now(),
     round: state.roundNumber,
     phase: state.phase,
@@ -21,7 +22,7 @@ export function exhaustEncounterDeck(state: GameState): boolean {
 
   // 2. Reshuffle discard pile into encounter deck
   if (state.encounterDiscard.length > 0) {
-    state.encounterDeck = [...state.encounterDiscard].sort(() => Math.random() - 0.5);
+    state.encounterDeck = shuffleArray(state, state.encounterDiscard);
     state.encounterDiscard = [];
     return true;
   }
@@ -82,7 +83,7 @@ export function exhaustPlayerDeck(state: GameState, playerId: string): boolean {
   player.deckEmptiedWithEmptyDiscard = false;
 
   // 1. Reshuffle discard pile into player deck
-  player.deck = [...player.discard].sort(() => Math.random() - 0.5);
+  player.deck = shuffleArray(state, player.discard);
   player.discard = [];
 
   // 2. Penalty: Deal 1 facedown encounter card to that player
@@ -92,7 +93,7 @@ export function exhaustPlayerDeck(state: GameState, playerId: string): boolean {
   }
 
   state.log.push({
-    id: `log_${Date.now()}_player_exhaust_${player.id}`,
+    id: nextEngineId(state, 'log'),
     timestamp: Date.now(),
     round: state.roundNumber,
     phase: state.phase,

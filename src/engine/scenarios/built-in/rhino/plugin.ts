@@ -11,6 +11,7 @@ import {
 } from '@engine/models';
 import { cardCatalog } from '../../../../data/importer/card-loader';
 import { createCardInstance } from '../../../state/card-instance';
+import { shuffleArray, nextEngineId } from '../../../state/rng';
 import { ScenarioPlugin, ScenarioDefinition, ScenarioGameSetupOptions } from '../../types';
 import {
   advanceVillainStage,
@@ -117,7 +118,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     );
 
     // Shuffle and create instances
-    const shuffled = [...deckCards].sort(() => Math.random() - 0.5);
+    const shuffled = shuffleArray(state, deckCards);
     state.encounterDeck = shuffled.map((c) => createCardInstance(c));
     state.encounterDiscard = [];
     state.sideSchemes = [];
@@ -126,7 +127,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     revealVillainStage(state, initialVillain);
 
     state.log.push({
-      id: `log_${Date.now()}`,
+      id: nextEngineId(state, 'log'),
       timestamp: Date.now(),
       category: 'phase',
       key: 'scenario.setup',

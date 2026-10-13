@@ -39,6 +39,7 @@ describe('Obligation recipient resolution (Issue #158, RR v1.8 Obligation)', () 
       mainScheme: cardCatalog.getCard('01097b') as any,
       encounterCards: cardCatalog.getCardsBySet('rhino'),
       skipMulligan: true,
+      seed: 'obligation-test-seed',
     });
   }
 
@@ -112,6 +113,7 @@ describe('Obligation recipient resolution (Issue #158, RR v1.8 Obligation)', () 
         mainScheme: cardCatalog.getCard('01097b') as any,
         encounterCards: cardCatalog.getCardsBySet('rhino'),
         skipMulligan: true,
+        seed: 42,
       });
       // Stack the top of the shuffled deck with an inert minion: the extra card is known (#217)
       const extra = createCardInstance(cardCatalog.getCard('01101')!);

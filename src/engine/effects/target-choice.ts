@@ -11,6 +11,7 @@ import { StatusCard } from '../models';
 import { getEffectiveMaxHealth, hasEntityKeyword } from '../pipeline/stat-calculator';
 import { isImmuneToDamage } from '../pipeline/damage-immunity';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
+import { nextEngineId } from '../state/rng';
 import { getEligibleTargets, resolveTargets, type ResolvedTarget } from './target-resolver';
 import type { EffectExecutionContext } from './index';
 
@@ -186,7 +187,7 @@ export function chooseStepTarget(
   });
 
   enqueueDecisionPrompt(state, {
-    promptId: `choose_target_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    promptId: nextEngineId(state, 'choose_target'),
     playerId: player.id,
     title: `${sourceName ? `${sourceName}: ` : ''}Choose ${noun}`,
     description: `Choose ${noun} for ${step.effect}.`,

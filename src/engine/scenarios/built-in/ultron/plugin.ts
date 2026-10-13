@@ -16,6 +16,7 @@ import {
 } from '@engine/models';
 import { cardCatalog } from '../../../../data/importer/card-loader';
 import { createCardInstance } from '../../../state/card-instance';
+import { shuffleArray, nextEngineId } from '../../../state/rng';
 import { ScenarioPlugin, ScenarioDefinition, ScenarioGameSetupOptions } from '../../types';
 import { advanceVillainStage, villainStageHitPoints } from '../../advance-villain-stage';
 import definitionData from './definition.json';
@@ -170,7 +171,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     );
 
     // Shuffle and create instances
-    const shuffled = [...deckCards].sort(() => Math.random() - 0.5);
+    const shuffled = shuffleArray(state, deckCards);
     state.encounterDeck = shuffled.map((c) => createCardInstance(c));
     state.encounterDiscard = [];
     state.sideSchemes = [];
@@ -180,7 +181,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     this.resolveStage1ASetup(state, options);
 
     state.log.push({
-      id: `log_${Date.now()}`,
+      id: nextEngineId(state, 'log'),
       timestamp: Date.now(),
       category: 'phase',
       key: 'scenario.setup',

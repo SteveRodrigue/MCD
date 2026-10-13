@@ -534,12 +534,20 @@ export interface GameOptions {
    */
   autoResolveUnambiguous?: boolean;
   villainPhaseStepping?: boolean;
+  shuffleFn?: <T>(array: T[]) => T[];
+}
+
+export interface RngState {
+  seed: number;
+  current: number;
 }
 
 export interface GameState {
   id: string;
   roundNumber: number;
   phase: GamePhase;
+  rng?: RngState;
+  idCounter?: number;
   setupState?: SetupState;
   villainPhaseStep?: VillainPhaseStep;
   options?: GameOptions;

@@ -28,6 +28,7 @@ import { abilityCancelsEncounterReveal } from './encounter-cancel';
 import { dispatchTrigger, type TriggerContext } from '../triggers/trigger-dispatcher';
 import { discardResolvedObligation } from './obligations';
 import { finishPendingThreatPlacements } from './threat-pipeline';
+import { nextEngineId } from '../state/rng';
 
 let finishDamagePlacementsHook: ((state: GameState) => GameState) | undefined;
 export function registerFinishDamagePlacementsHook(fn: (state: GameState) => GameState): void {
@@ -135,9 +136,7 @@ export function enqueueDistributionPrompt(
   if ('targets' in promptOrConfig && !('options' in promptOrConfig)) {
     config = promptOrConfig;
     prompt = {
-      promptId:
-        promptOrConfig.promptId ||
-        `prompt_dist_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      promptId: promptOrConfig.promptId || nextEngineId(state, 'prompt_dist'),
       playerId: promptOrConfig.playerId || state.players[0]?.id || '',
       title: promptOrConfig.title || `Distribute ${config.budgetLabel || 'Points'}`,
       description: promptOrConfig.description || `Assign points across eligible targets:`,
@@ -549,7 +548,7 @@ export function resolveDecisionPrompt(
     (selectedOption && (selectedOption.effect === 'PASS' || selectedOption.id === 'pass'))
   ) {
     nextState.log.push({
-      id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      id: nextEngineId(nextState, 'log'),
       timestamp: Date.now(),
       round: nextState.roundNumber,
       phase: nextState.phase,
@@ -588,7 +587,7 @@ export function resolveDecisionPrompt(
   const optionLabel = selectedOption ? selectedOption.label : selectedOptionId;
 
   nextState.log.push({
-    id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    id: nextEngineId(nextState, 'log'),
     timestamp: Date.now(),
     round: nextState.roundNumber,
     phase: nextState.phase,
@@ -617,7 +616,7 @@ export function resolveDecisionPrompt(
       !player || abilityHasValidTarget(nextState, player, optAbility, sourceCardInst);
     if (!canInitiate) {
       nextState.log.push({
-        id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        id: nextEngineId(nextState, 'log'),
         timestamp: Date.now(),
         round: nextState.roundNumber,
         phase: nextState.phase,
@@ -702,7 +701,7 @@ export function resolveDecisionPrompt(
 
     if (canInitiate) {
       nextState.log.push({
-        id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        id: nextEngineId(nextState, 'log'),
         timestamp: Date.now(),
         round: nextState.roundNumber,
         phase: nextState.phase,

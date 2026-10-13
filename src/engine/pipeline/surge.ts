@@ -1,5 +1,6 @@
 import { GameState, PlayerState } from '../models';
 import { drawEncounterCard } from './deck-exhaustion';
+import { nextEngineId } from '../state/rng';
 
 /**
  * Surge (RR v1.8): the player resolving the card deals themself 1 facedown encounter card from the
@@ -19,7 +20,7 @@ export function dealSurgeCard(state: GameState, player: PlayerState, cardName?: 
     player.dealtEncounterCards.push(surgeCard);
   }
   state.log.push({
-    id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    id: nextEngineId(state, 'log'),
     timestamp: Date.now(),
     round: state.roundNumber,
     phase: state.phase,

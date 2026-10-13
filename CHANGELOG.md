@@ -7,19 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature (Engine): Seeded injectable PRNG, Fisher-Yates array shuffling, and deterministic simulation ([Issue #252](https://github.com/SteveRodrigue/MCD/issues/252))**
+  - Introduces a deterministic Mulberry32 pseudo-random number generator (`src/engine/state/rng.ts`) with FNV-1a 32-bit hash conversion for human-friendly string seeds (e.g. `'rhino-expert-run-1'`).
+  - Eliminates all non-deterministic `Math.random()` calls across `src/engine/`, isolating the unseeded bootstrap strictly to `createRng()` when no seed is supplied.
+  - Replaces biased `.sort(() => Math.random() - 0.5)` deck shuffles with an unbiased Fisher-Yates shuffle algorithm (`shuffleArray`), while preserving backwards-compatibility for existing test hooks via `state.options.shuffleFn`.
+  - Replaces non-deterministic entity and log ID generation (`Date.now() + Math.random().toString(36)`) with monotonic, byte-reproducible ID generation (`nextEngineId`) driven by `GameState.idCounter`.
+  - Fixes test determinism in Issue #217 (`tests/engine/obligation-recipient.test.ts`), and verifies 100% byte-for-byte serialization equality across identical runs (`tests/engine/deterministic-simulation.test.ts`).
+  - Architectural decision record: [ADR-0081](docs/decisions/0081-seeded-injectable-prng-and-deterministic-simulation.md).
+
 - **Fix (Engine/Data/UI): Events discard intrinsically per RR v1.8 and remove workaround cost.discardSelf ([Issue #271](https://github.com/SteveRodrigue/MCD/issues/271))**
-  - Enforces intrinsic discarding for event cards per RR v1.8 *Event*: event cards are removed from hand upon initiation, resolve their effects in limbo, and move intrinsically to the owner's discard pile (even when effects are canceled, e.g. Confused status).
-  - Handles sub-prompt limbo cleanly via `completion: 'DISCARD_RESOLVING_EVENT'` on `PendingDecisionPrompt` so events with targeting prompts (e.g. *Chase Them Down*) discard immediately once their chosen target finishes resolving, without lingering in hand during choice.
-  - Cleans up data in `src/data/supplemental/pack/core.json`: removes `cost.discardSelf` from the 8 core event cards (*Backflip* `01003`, *Enhanced Spider-Sense* `01004`, *One-Two Punch* `01024`, *Chase Them Down* `01052`, *Great Responsibility* `01061`, *Counter-Punch* `01077`, *Get Behind Me!* `01078`, *Emergency* `01085`) while preserving it on in-play upgrades/supports that legitimately declare it as an ability cost.
+  - Enforces intrinsic discarding for event cards per RR v1.8 _Event_: event cards are removed from hand upon initiation, resolve their effects in limbo, and move intrinsically to the owner's discard pile (even when effects are canceled, e.g. Confused status).
+  - Handles sub-prompt limbo cleanly via `completion: 'DISCARD_RESOLVING_EVENT'` on `PendingDecisionPrompt` so events with targeting prompts (e.g. _Chase Them Down_) discard immediately once their chosen target finishes resolving, without lingering in hand during choice.
+  - Cleans up data in `src/data/supplemental/pack/core.json`: removes `cost.discardSelf` from the 8 core event cards (_Backflip_ `01003`, _Enhanced Spider-Sense_ `01004`, _One-Two Punch_ `01024`, _Chase Them Down_ `01052`, _Great Responsibility_ `01061`, _Counter-Punch_ `01077`, _Get Behind Me!_ `01078`, _Emergency_ `01085`) while preserving it on in-play upgrades/supports that legitimately declare it as an ability cost.
   - In `CardAbilitySchema`, rejects abilities in zone `HAND` declaring `cost.discardSelf`. In `CardSupplementalService.saveCardSupplemental`, rejects saving any event card declaring `cost.discardSelf`.
   - In Card Editor UI (`AbilityCostSection.tsx` and `AbilityFormBuilder.tsx`), disables and grays out the `discardSelf` checkbox for event cards with helper text `(Events discard intrinsically per RR v1.8)` and informative tooltip.
   - In `src/tools/card-text-parser/parser.ts`, removes the artificial heuristic that injected `cost = { discardSelf: true }` for hand triggers.
   - Tests: `tests/engine/event-intrinsic-discard.test.ts` (+11 contract tests), `tests/data/event-discard-self.test.ts` (+3 tests), `tests/ui/AbilityCostSection.test.tsx` (+1 test).
 
-
 - **Fix (Engine): Identity printed traits depend on active form only ([Issue #206](https://github.com/SteveRodrigue/MCD/issues/206))**
   - Isolates printed traits to the active in-play identity form (`activeFormCard` and matching form card `hero` or `alterEgo`) in `getEffectivePlayerTraitsDetails` (`stat-calculator.ts`), stopping cross-form union bleed where hero and alter-ego traits were permanently combined in both forms (RR v1.8 p. 13, 15, 16).
-  - Preserves continuous dynamic traits (such as `Aerial` from *Cosmic Flight* / *Rocket Boots*, and identity attachments) on the player identity.
+  - Preserves continuous dynamic traits (such as `Aerial` from _Cosmic Flight_ / _Rocket Boots_, and identity attachments) on the player identity.
   - Updates `getEffectiveCardTraitsDetails` to delegate to player effective traits only when evaluating the active in-play form card; out-of-play inactive face cards evaluate their own printed traits without inheriting active hero traits or player dynamic traits.
   - Updates character target trait filtering in `target-resolver.ts` to evaluate `getEffectivePlayerTraits` for player targets, recognizing active form traits and dynamic traits.
   - Updates `docs/specifications/supplemental/11_play_requirements.md` and tests in `tests/engine/effective-traits.test.ts` (+2 contract tests).
@@ -31,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Tests: `tests/engine/deck-exhaustion-invariants.test.ts` (+21 contract tests), updated `tests/engine/universal-discard-engine.test.ts`, `tests/engine/repulsor-blast.test.ts`, `tests/engine/hulk-discard-response.test.ts`, `tests/engine/villain-phase-stepping.test.ts`.
 
 - **Fix (Engine): Hand reactions offer all eligible cards in first-player turn order and damage placements wait for interrupt prompts ([Issue #267](https://github.com/SteveRodrigue/MCD/issues/267))**
-  - In-hand reactive scans (`DAMAGE_WOULD_BE_TAKEN`, `ENCOUNTER_CARD_REVEALED`, `TREACHERY_REVEALED`, `ATTACK_DEFENDED`, and `BASIC_ATTACK_PERFORMED`) now evaluate all eligible cards in hand (`allEligibleCards: true`), allowing multiple copies (such as two *Backflips* or two *Enhanced Spider-Sense*) to be queued for player decisions.
+  - In-hand reactive scans (`DAMAGE_WOULD_BE_TAKEN`, `ENCOUNTER_CARD_REVEALED`, `TREACHERY_REVEALED`, `ATTACK_DEFENDED`, and `BASIC_ATTACK_PERFORMED`) now evaluate all eligible cards in hand (`allEligibleCards: true`), allowing multiple copies (such as two _Backflips_ or two _Enhanced Spider-Sense_) to be queued for player decisions.
   - In multiplayer, hand reactions scan players in turn order starting with the first player (`playersInTurnOrder(state)`). `DAMAGE_WOULD_BE_TAKEN` scoping defaults to the targeted player while respecting cards with `targetPlayerScope: 'ANY'`.
   - Symmetrical to threat placements (#266), attack damage calculation in `step6_calculateAndApplyAttackDamage` pauses and registers a `PendingDamagePlacement` in `state.pendingDamagePlacements` when damage interrupts are queued.
   - Answering a damage interrupt reads and updates the live pending damage (`pendingDamagePlacement.amount` and `activeAttackContext.pendingDamage`). Moot prompts are pruned when live damage reaches 0 or their costs can no longer be paid (`pruneDamageInterruptPrompts`). Once all prompts are resolved, `finishPendingDamagePlacements` applies the remaining damage and completes combat resolution.

@@ -22,6 +22,7 @@ import {
   registerFinishDamagePlacementsHook,
 } from './prompt-queue';
 import { dealBoostCards, resolveBoostCards, type BoostLogContext } from './boost-resolution';
+import { nextEngineId } from '../state/rng';
 import { dispatchTrigger, TriggerDispatchResult } from '../triggers/trigger-dispatcher';
 import { dispatchDefeat, type DefeatSource } from './damage-pipeline';
 import { eliminatePlayer } from './player-elimination';
@@ -247,7 +248,7 @@ export function beginEnemyAttack(
   }
 
   const attackContext: AttackExecutionContext = {
-    attackId: `attack_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    attackId: nextEngineId(state, 'attack'),
     attackerType: attacker.type,
     attackerCard: attacker.card,
     attackerVillainId: attackerVillain?.instanceId,
@@ -792,7 +793,7 @@ export function step6_calculateAndApplyAttackDamage(
         (prompt) => !promptsBefore.has(prompt.promptId),
       );
       if (newPrompts.length > 0) {
-        const id = `damage_placement_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+        const id = nextEngineId(state, 'damage_placement');
         for (const prompt of newPrompts) {
           for (const option of prompt.options) {
             if (option.effect === 'EXECUTE_OPTIONAL_TRIGGER' && option.params) {

@@ -17,6 +17,12 @@ export function slugify(text: string): string {
 /**
  * Generates a collision-resistant, domain-namespaced filename according to ADR-0016.
  */
+let deckFileCounter = 0;
+
+export function resetDeckFileCounter(): void {
+  deckFileCounter = 0;
+}
+
 export function generateDeckFilename(
   deck: MarvelCDBDeck,
   domain: 'prebuilt' | 'marvelcdb' | 'user' = 'user',
@@ -38,7 +44,7 @@ export function generateDeckFilename(
     }
     case 'user':
     default: {
-      const suffix = uniqueIdSuffix || Math.random().toString(36).substring(2, 6);
+      const suffix = uniqueIdSuffix || (++deckFileCounter).toString(36).padStart(4, '0');
       return `user_${heroSlug.replace(/-/g, '_')}_${titleSlug}_${suffix}.json`;
     }
   }

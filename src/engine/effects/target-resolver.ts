@@ -15,7 +15,7 @@ import {
 } from '@engine/models';
 import { TargetSelector } from '../../data/supplemental/schema';
 import type { EffectExecutionContext } from './index';
-import { getEffectiveMaxHealth } from '../pipeline/stat-calculator';
+import { getEffectiveMaxHealth, getEffectivePlayerTraits } from '../pipeline/stat-calculator';
 import { hasCrisisInPlay } from '../pipeline/legality-checker';
 
 export type EffectContext = Partial<EffectExecutionContext>;
@@ -1777,7 +1777,7 @@ export function getEligibleTargets(
       let entityTraits: string[] = [];
       if (target.kind === 'character') {
         if (target.entityType === 'hero' || target.entityType === 'alter_ego') {
-          entityTraits = (target.entity as PlayerState).activeFormCard?.traits || [];
+          entityTraits = getEffectivePlayerTraits(target.entity as PlayerState, state);
         } else if (target.entityType === 'ally' || target.entityType === 'minion') {
           entityTraits = (target.entity as CardInstance).card?.traits || [];
         } else if (target.entityType === 'villain') {

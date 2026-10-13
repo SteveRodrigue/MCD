@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-12 (Issue #273 implemented and verified)
+> **Last updated:** 2026-10-13 (Issue #206 implemented and verified)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
-> **Verification baseline:** 🟢 2,588 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
+> **Verification baseline:** 🟢 2,590 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
 ---
@@ -66,10 +66,9 @@ _None currently._
 
 ### 3.2 Rules gaps that affect core cards
 
-| #   | Issue                                                   | Item                                                                                                      | Estimate | Notes                                                                                                                                                                                     |
-| :-- | :------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------- | :------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 10  | [#206](https://github.com/SteveRodrigue/MCD/issues/206) | Identity printed traits are the union of both sides regardless of form                                    | ½ day    | Owner 2026-10-10: only visible traits count, so traits follow the current form plus traits granted by cards (e.g. Rocket Boots Aerial); the union tests change                            |
-| 11  | [#271](https://github.com/SteveRodrigue/MCD/issues/271) | Events go to the discard pile intrinsically; remove `cost.discardSelf` from event data                    | ½ day    | Supplemental change on core events (owner approval)                                                                                                                                       |
+| #   | Issue                                                   | Item                                                                    | Estimate | Notes                                               |
+| :-- | :------------------------------------------------------ | :---------------------------------------------------------------------- | :------- | :-------------------------------------------------- |
+| 11  | [#271](https://github.com/SteveRodrigue/MCD/issues/271) | Events go to the discard pile intrinsically; remove `cost.discardSelf` from event data | ½ day    | Supplemental change on core events (owner approval) |
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 

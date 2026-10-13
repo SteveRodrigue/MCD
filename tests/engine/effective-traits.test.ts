@@ -108,8 +108,8 @@ describe('Effective Traits Engine Pipeline', () => {
 
       expect(details.printedTraits).toContain('Avenger');
       expect(details.printedTraits).toContain('Captain Marvel');
-      expect(details.printedTraits).toContain('S.H.I.E.L.D.');
-      expect(details.printedTraits).toContain('Soldier');
+      expect(details.printedTraits).not.toContain('S.H.I.E.L.D.');
+      expect(details.printedTraits).not.toContain('Soldier');
       expect(details.dynamicTraits).toEqual([]);
       expect(details.traits).toEqual(details.printedTraits);
 
@@ -224,6 +224,9 @@ describe('Effective Traits Engine Pipeline', () => {
       let details = getEffectivePlayerTraitsDetails(player);
       // In hero form, activeFormCard traits are Avenger and Captain Marvel
       expect(details.traits).toContain('Avenger');
+      expect(details.traits).toContain('Captain Marvel');
+      expect(details.traits).not.toContain('Soldier');
+      expect(details.traits).not.toContain('S.H.I.E.L.D.');
 
       // Flip form to alter-ego
       player.currentForm = 'alter_ego';
@@ -231,6 +234,8 @@ describe('Effective Traits Engine Pipeline', () => {
       details = getEffectivePlayerTraitsDetails(player);
       expect(details.traits).toContain('Soldier');
       expect(details.traits).toContain('S.H.I.E.L.D.');
+      expect(details.traits).not.toContain('Avenger');
+      expect(details.traits).not.toContain('Captain Marvel');
     });
   });
 
@@ -372,14 +377,25 @@ describe('Effective Traits Engine Pipeline', () => {
   });
 
   describe('hasPlayerTrait', () => {
-    it('returns true for printed traits with case-insensitivity', () => {
+    it('returns true for printed traits of active form only with case-insensitivity', () => {
       const player = createMockPlayer();
+      // In Hero form
       expect(hasPlayerTrait(player, 'Avenger')).toBe(true);
       expect(hasPlayerTrait(player, 'avenger')).toBe(true);
       expect(hasPlayerTrait(player, 'AVENGER')).toBe(true);
+      expect(hasPlayerTrait(player, 'Soldier')).toBe(false);
+      expect(hasPlayerTrait(player, 'soldier')).toBe(false);
+      expect(hasPlayerTrait(player, 'S.H.I.E.L.D.')).toBe(false);
+      expect(hasPlayerTrait(player, 'Mystic')).toBe(false);
+
+      // In Alter-Ego form
+      player.currentForm = 'alter_ego';
+      player.activeFormCard = player.alterEgo;
       expect(hasPlayerTrait(player, 'Soldier')).toBe(true);
       expect(hasPlayerTrait(player, 'soldier')).toBe(true);
-      expect(hasPlayerTrait(player, 'Mystic')).toBe(false);
+      expect(hasPlayerTrait(player, 'S.H.I.E.L.D.')).toBe(true);
+      expect(hasPlayerTrait(player, 'Avenger')).toBe(false);
+      expect(hasPlayerTrait(player, 'Captain Marvel')).toBe(false);
     });
 
     it('returns true for dynamically granted traits via Cosmic Flight', () => {
@@ -521,6 +537,84 @@ describe('Effective Traits Engine Pipeline', () => {
 
       const result = evaluatePlayRequirements(state, player, aerialEventCard);
       expect(result.allowed).toBe(true);
+    });
+
+    it('blocks playing an Avenger-required card in Alter-Ego form and allows it in Hero form', () => {
+      const state = createMockState();
+      const player = state.players[0];
+
+      const avengerEventCard: NormalizedCard = {
+        code: 'avenger-event-1',
+        name: "Earth's Mightiest Heroes",
+        type: CardType.EVENT,
+        traits: ['Tactic'],
+        faction: 'hero',
+        cost: 0,
+        text: 'Play only if your identity has the Avenger trait.',
+        resources: { total: 0, physical: 0, energy: 0, mental: 0, wild: 0 },
+        enrichment: {
+          playRequirements: {
+            identityTraits: ['Avenger'],
+          },
+        },
+      } as any;
+
+      // In Hero form, Captain Marvel has Avenger trait
+      expect(player.currentForm).toBe('hero');
+      const heroResult = evaluatePlayRequirements(state, player, avengerEventCard);
+      expect(heroResult.allowed).toBe(true);
+
+      // In Alter-Ego form, Carol Danvers does not have Avenger trait
+      player.currentForm = 'alter_ego';
+      player.activeFormCard = player.alterEgo;
+      const alterEgoResult = evaluatePlayRequirements(state, player, avengerEventCard);
+      expect(alterEgoResult.allowed).toBe(false);
+      expect(alterEgoResult.reason).toContain('Requires identity with trait: Avenger');
+    });
+  });
+
+  describe('inactive identity card face traits', () => {
+    it('returns card printed traits for the inactive side without active identity traits or dynamic traits', () => {
+      const player = createMockPlayer();
+      const cosmicFlight: CardInstance = {
+        instanceId: 'cf-1',
+        card: {
+          code: '01017',
+          name: 'Cosmic Flight',
+          type: CardType.UPGRADE,
+          traits: ['Item'],
+          enrichment: {
+            abilities: [
+              {
+                id: 'cf_aerial',
+                timing: 'CONSTANT',
+                steps: [
+                  {
+                    effect: 'ADD_TRAIT',
+                    effectParams: { trait: 'Aerial' },
+                  },
+                ],
+              },
+            ],
+          },
+        } as any,
+      };
+      player.tableau.push(cosmicFlight);
+
+      // In Hero form, active form is Hero (Captain Marvel)
+      expect(player.currentForm).toBe('hero');
+      const activeDetails = getEffectiveCardTraitsDetails(player.activeFormCard, undefined, {
+        player,
+      });
+      expect(activeDetails.traits).toContain('Avenger');
+      expect(activeDetails.traits).toContain('Aerial');
+      expect(activeDetails.traits).not.toContain('Soldier');
+
+      // The inactive Alter-Ego card face does NOT gain active Hero traits or player dynamic traits
+      const inactiveDetails = getEffectiveCardTraitsDetails(player.alterEgo, undefined, { player });
+      expect(inactiveDetails.printedTraits).toEqual(['S.H.I.E.L.D.', 'Soldier']);
+      expect(inactiveDetails.dynamicTraits).toEqual([]);
+      expect(inactiveDetails.traits).toEqual(['S.H.I.E.L.D.', 'Soldier']);
     });
   });
 });

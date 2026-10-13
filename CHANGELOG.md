@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): Identity printed traits depend on active form only ([Issue #206](https://github.com/SteveRodrigue/MCD/issues/206))**
+  - Isolates printed traits to the active in-play identity form (`activeFormCard` and matching form card `hero` or `alterEgo`) in `getEffectivePlayerTraitsDetails` (`stat-calculator.ts`), stopping cross-form union bleed where hero and alter-ego traits were permanently combined in both forms (RR v1.8 p. 13, 15, 16).
+  - Preserves continuous dynamic traits (such as `Aerial` from *Cosmic Flight* / *Rocket Boots*, and identity attachments) on the player identity.
+  - Updates `getEffectiveCardTraitsDetails` to delegate to player effective traits only when evaluating the active in-play form card; out-of-play inactive face cards evaluate their own printed traits without inheriting active hero traits or player dynamic traits.
+  - Updates character target trait filtering in `target-resolver.ts` to evaluate `getEffectivePlayerTraits` for player targets, recognizing active form traits and dynamic traits.
+  - Updates `docs/specifications/supplemental/11_play_requirements.md` and tests in `tests/engine/effective-traits.test.ts` (+2 contract tests).
+
 - **Fix (Engine): Reset empty player deck immediately and enforce RR v1.8 exhaustion invariants ([Issue #273](https://github.com/SteveRodrigue/MCD/issues/273))**
   - Drawing or discarding that empties a player's draw deck immediately resets the deck from their discard pile and deals 1 facedown penalty encounter card, instead of deferring reset to the next draw attempt (`drawPlayerCard`, `executeDiscard`, `discardFromPlayerDeckUntil`).
   - Guarded empty discard pile on deck exhaustion (RR v1.8 glossary "Player Deck"): if a player deck empties while their discard pile has 0 cards, no reset occurs and no penalty encounter card is dealt until a card subsequently enters their discard pile (`deckEmptiedWithEmptyDiscard` flag monitored via `discardCardInstance` and `checkDeckExhaustionInvariants`).

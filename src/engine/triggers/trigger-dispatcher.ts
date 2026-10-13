@@ -545,7 +545,7 @@ function scanHandReactions(
         const handIdx = p.hand.findIndex((c) => c.instanceId === card.instanceId);
         if (handIdx !== -1) {
           p.hand.splice(handIdx, 1);
-          if (ability.cost?.discardSelf !== false) {
+          if (card.card.type === 'event' || ability.cost?.discardSelf !== false) {
             p.discard.push(card);
           }
         }
@@ -573,6 +573,7 @@ function scanHandReactions(
         description: `${formatAbilityStepsSummary(trigger, ability.steps || [])}${spec.promptDescriptionSuffix ?? ''}`,
         sourceCardName: cardName,
         sourceCardCode: card.card.code,
+        sourceCardInstanceId: card.instanceId,
         triggerType: ability.timing,
         isVoluntary: true,
         ...(spec.promptFields?.(p, ability, card) ?? {}),

@@ -56,6 +56,15 @@ describe('AbilityCostSection', () => {
     expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ discardSelf: true }));
   });
 
+  it('disables and grays out discardSelf when isEvent is true', () => {
+    render(<AbilityCostSection cost={{}} abilityIndex={0} isEvent={true} onChange={vi.fn()} />);
+
+    const checkbox = screen.getByTestId('cost-discard-self-0') as HTMLInputElement;
+    expect(checkbox.disabled).toBe(true);
+    expect(checkbox.checked).toBe(false);
+    expect(screen.getByText(/\(Events discard intrinsically per RR v1\.8\)/i)).toBeDefined();
+  });
+
   it('updates self damage and hero damage', () => {
     const handleChange = vi.fn();
 

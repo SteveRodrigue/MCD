@@ -230,7 +230,6 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
               timing: 'HERO_INTERRUPT',
               trigger: 'DAMAGE_WOULD_BE_TAKEN',
               zone: 'HAND',
-              cost: { discardSelf: true },
               steps: [
                 {
                   effect: 'PREVENT_DAMAGE',
@@ -285,7 +284,6 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
                 trigger: 'DAMAGE_WOULD_BE_TAKEN',
                 triggerFilter: { targetPlayerScope: 'ANY' },
                 zone: 'HAND',
-                cost: { discardSelf: true },
                 steps: [{ effect: 'PREVENT_DAMAGE', effectParams: { amount: 1 } }],
               },
             ],

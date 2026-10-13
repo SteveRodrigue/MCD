@@ -323,9 +323,6 @@ function parseAbilityLine(line: string): ParsedAbilityResult | null {
   if (timing === 'INTERRUPT' || timing === 'HERO_INTERRUPT') {
     if (trigger === 'DAMAGE_WOULD_BE_TAKEN' || trigger === 'WHEN_REVEALED') {
       zone = 'HAND';
-      if (!cost) {
-        cost = { discardSelf: true };
-      }
     }
   }
 

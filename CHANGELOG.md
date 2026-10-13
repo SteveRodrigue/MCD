@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine/Data/UI): Events discard intrinsically per RR v1.8 and remove workaround cost.discardSelf ([Issue #271](https://github.com/SteveRodrigue/MCD/issues/271))**
+  - Enforces intrinsic discarding for event cards per RR v1.8 *Event*: event cards are removed from hand upon initiation, resolve their effects in limbo, and move intrinsically to the owner's discard pile (even when effects are canceled, e.g. Confused status).
+  - Handles sub-prompt limbo cleanly via `completion: 'DISCARD_RESOLVING_EVENT'` on `PendingDecisionPrompt` so events with targeting prompts (e.g. *Chase Them Down*) discard immediately once their chosen target finishes resolving, without lingering in hand during choice.
+  - Cleans up data in `src/data/supplemental/pack/core.json`: removes `cost.discardSelf` from the 8 core event cards (*Backflip* `01003`, *Enhanced Spider-Sense* `01004`, *One-Two Punch* `01024`, *Chase Them Down* `01052`, *Great Responsibility* `01061`, *Counter-Punch* `01077`, *Get Behind Me!* `01078`, *Emergency* `01085`) while preserving it on in-play upgrades/supports that legitimately declare it as an ability cost.
+  - In `CardAbilitySchema`, rejects abilities in zone `HAND` declaring `cost.discardSelf`. In `CardSupplementalService.saveCardSupplemental`, rejects saving any event card declaring `cost.discardSelf`.
+  - In Card Editor UI (`AbilityCostSection.tsx` and `AbilityFormBuilder.tsx`), disables and grays out the `discardSelf` checkbox for event cards with helper text `(Events discard intrinsically per RR v1.8)` and informative tooltip.
+  - In `src/tools/card-text-parser/parser.ts`, removes the artificial heuristic that injected `cost = { discardSelf: true }` for hand triggers.
+  - Tests: `tests/engine/event-intrinsic-discard.test.ts` (+11 contract tests), `tests/data/event-discard-self.test.ts` (+3 tests), `tests/ui/AbilityCostSection.test.tsx` (+1 test).
+
+
 - **Fix (Engine): Identity printed traits depend on active form only ([Issue #206](https://github.com/SteveRodrigue/MCD/issues/206))**
   - Isolates printed traits to the active in-play identity form (`activeFormCard` and matching form card `hero` or `alterEgo`) in `getEffectivePlayerTraitsDetails` (`stat-calculator.ts`), stopping cross-form union bleed where hero and alter-ego traits were permanently combined in both forms (RR v1.8 p. 13, 15, 16).
   - Preserves continuous dynamic traits (such as `Aerial` from *Cosmic Flight* / *Rocket Boots*, and identity attachments) on the player identity.

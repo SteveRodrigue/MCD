@@ -16,6 +16,7 @@ import { abilityHasValidTarget } from '../effects/target-choice';
 import {
   executeAbilityCost,
   executeResourceCostPayment,
+  canPayAbilityCost,
   AbilityPaymentOptions,
 } from './cost-engine';
 import {
@@ -23,9 +24,8 @@ import {
   continueAttackAfterInitiation,
 } from './villain-phase';
 import { evaluateStepGate } from './step-gate-evaluator';
-import { canPayAbilityCost } from './cost-engine';
 import { abilityCancelsEncounterReveal } from './encounter-cancel';
-import type { TriggerContext } from '../triggers/trigger-dispatcher';
+import { dispatchTrigger, type TriggerContext } from '../triggers/trigger-dispatcher';
 import { discardResolvedObligation } from './obligations';
 import { finishPendingThreatPlacements } from './threat-pipeline';
 
@@ -628,8 +628,24 @@ export function resolveDecisionPrompt(
       });
     }
 
-    if (canInitiate && optAbility.cost && player) {
+    const hasCostToPay =
+      Boolean(optAbility.cost) ||
+      (sourceCardInst?.card?.type === 'event' && (sourceCardInst.card.cost ?? 0) > 0) ||
+      Boolean(selectedOption?.params?.requiresPayment);
+
+    if (canInitiate && hasCostToPay && player) {
       executeAbilityCost(nextState, player, optAbility, sourceCardInst, paymentOptions);
+    }
+
+    const isHandEvent =
+      canInitiate &&
+      player &&
+      sourceCardInst &&
+      sourceCardInst.card.type === 'event' &&
+      player.hand.some((c) => c.instanceId === sourceCardInst!.instanceId);
+
+    if (isHandEvent && player) {
+      player.hand = player.hand.filter((c) => c.instanceId !== sourceCardInst!.instanceId);
     }
 
     if (canInitiate && player) {
@@ -712,6 +728,27 @@ export function resolveDecisionPrompt(
           targetPlayer,
           Boolean(activeCtx.cancelled),
         );
+      }
+    }
+
+    if (isHandEvent && player && sourceCardInst) {
+      const pendingPrompts = nextState.pendingDecisionQueue || [];
+      const subPrompts = pendingPrompts.filter(
+        (p) => p.sourceCardInstanceId === sourceCardInst!.instanceId,
+      );
+      if (subPrompts.length > 0) {
+        for (const p of subPrompts) {
+          p.completion = 'DISCARD_RESOLVING_EVENT';
+          p.sourceCardInstance = sourceCardInst;
+        }
+      } else {
+        if (!player.discard.some((c) => c.instanceId === sourceCardInst!.instanceId)) {
+          player.discard.push(sourceCardInst);
+        }
+        dispatchTrigger(nextState, 'CARD_PLAYED', {
+          targetPlayerId: player.id,
+          sourceInstanceId: sourceCardInst.instanceId,
+        });
       }
     }
 
@@ -815,6 +852,21 @@ export function resolveDecisionPrompt(
   // Completion default for obligations: discard unless an option already removed it from play
   if (prompt.completion === 'DISCARD_SOURCE_OBLIGATION' && prompt.sourceCardInstanceId) {
     discardResolvedObligation(effectRes.state, prompt.sourceCardInstanceId);
+  }
+
+  // Completion for resolving events: discard once the sub-prompt finishes (Issue #271 / RR v1.8 Event)
+  if (prompt.completion === 'DISCARD_RESOLVING_EVENT' && prompt.sourceCardInstance) {
+    const eventOwner = effectRes.state.players.find((p) => p.id === prompt.playerId);
+    if (
+      eventOwner &&
+      !eventOwner.discard.some((c) => c.instanceId === prompt.sourceCardInstance!.instanceId)
+    ) {
+      eventOwner.discard.push(prompt.sourceCardInstance);
+      dispatchTrigger(effectRes.state, 'CARD_PLAYED', {
+        targetPlayerId: eventOwner.id,
+        sourceInstanceId: prompt.sourceCardInstance.instanceId,
+      });
+    }
   }
 
   // The chosen option may have changed state later prompts depend on (e.g. a form flip)

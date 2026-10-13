@@ -44,7 +44,7 @@ describe('Unified Payment Subsystem & Exhaust Lifecycle Invariants (Issue #155)'
   });
 
   it('1. Web-Shooter paid during Villain Phase exhausts, decrements uses, and remains exhausted across round upkeep into next Player Phase', () => {
-    // Hand has Enhanced Spider-Sense (01004) - Hero Interrupt, cost: 1 resource, discardSelf: true
+    // Hand has Enhanced Spider-Sense (01004) - Hero Interrupt, cost: 1 resource
     const spiderSense = createCardInstance(cardCatalog.getCard('01004')!);
     state.players[0].hand = [spiderSense];
 
@@ -223,7 +223,6 @@ describe('Unified Payment Subsystem & Exhaust Lifecycle Invariants (Issue #155)'
             timing: 'HERO_INTERRUPT',
             trigger: 'DAMAGE_WOULD_BE_TAKEN',
             zone: 'HAND',
-            cost: { discardSelf: true },
             steps: [{ effect: 'PREVENT_DAMAGE', effectParams: { amount: 2 } }],
           },
         ],

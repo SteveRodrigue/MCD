@@ -937,6 +937,15 @@ export const CardAbilitySchema: z.ZodType<CardAbility> = z
         }
       }
     }
+
+    if (ability.zone === 'HAND' && ability.cost?.discardSelf) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Abilities in zone 'HAND' cannot declare 'cost.discardSelf'; events discard intrinsically per RR v1.8 Event",
+        path: ['cost', 'discardSelf'],
+      });
+    }
   });
 
 /**

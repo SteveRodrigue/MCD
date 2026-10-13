@@ -404,7 +404,8 @@ export interface PendingDecisionPrompt {
   triggerType?: string;
   options: DecisionPromptOption[];
   /** When set, the source obligation is discarded once the chosen option has resolved (Issue #158) */
-  completion?: 'DISCARD_SOURCE_OBLIGATION';
+  completion?: 'DISCARD_SOURCE_OBLIGATION' | 'DISCARD_RESOLVING_EVENT';
+  sourceCardInstance?: CardInstance;
   /**
    * Cards discarded by the steps that ran before this choice in the same ability. Handed back to the
    * chosen option so its amounts can read them ("X is 1 more than the boost icons on the discarded

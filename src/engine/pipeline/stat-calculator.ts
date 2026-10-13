@@ -257,18 +257,16 @@ function extractAddTraitEffects(
 
 /**
  * Computes full effective trait details for a player identity,
- * inspecting active form traits, hero/alter-ego printed traits,
- * tableau upgrades with CONSTANT ADD_TRAIT, and identity attachments with CONSTANT ADD_TRAIT.
+ * inspecting active form printed traits, tableau upgrades with CONSTANT ADD_TRAIT,
+ * and identity attachments with CONSTANT ADD_TRAIT.
  */
 export function getEffectivePlayerTraitsDetails(
   player: PlayerState,
   state?: GameState,
 ): EffectiveTraitsResult {
-  const rawPrinted = [
-    ...(player.activeFormCard?.traits || []),
-    ...(player.hero?.traits || []),
-    ...(player.alterEgo?.traits || []),
-  ];
+  const isAlterEgo = player.currentForm === 'alter_ego';
+  const activeSide = isAlterEgo ? player.alterEgo : player.hero;
+  const rawPrinted = [...(player.activeFormCard?.traits || []), ...(activeSide?.traits || [])];
   const printedTraits = dedupeTraits(rawPrinted);
 
   const dynamicSources = [...(player.tableau || []), ...(player.attachments || [])];
@@ -301,7 +299,7 @@ export function getEffectivePlayerTraits(player: PlayerState, state?: GameState)
 
 /**
  * Computes full effective trait details for any card or card instance,
- * delegating to player traits if matching identity, and inspecting attachments for CONSTANT ADD_TRAIT.
+ * delegating to player traits if matching active identity form, and inspecting attachments for CONSTANT ADD_TRAIT.
  */
 export function getEffectiveCardTraitsDetails(
   card: NormalizedCard,
@@ -317,17 +315,14 @@ export function getEffectiveCardTraitsDetails(
         p.alterEgo?.code === card.code,
     );
 
-  const isIdentityCard =
+  const isActiveFormCard =
     targetPlayer &&
-    (targetPlayer.activeFormCard?.code === card.code ||
-      targetPlayer.hero?.code === card.code ||
-      targetPlayer.alterEgo?.code === card.code ||
-      card.type === CardType.HERO ||
-      card.type === CardType.ALTER_EGO ||
-      (card as any).type === 'hero' ||
-      (card as any).type === 'alter_ego');
+    (targetPlayer.activeFormCard
+      ? targetPlayer.activeFormCard.code === card.code
+      : (targetPlayer.currentForm === 'alter_ego' && targetPlayer.alterEgo?.code === card.code) ||
+        (targetPlayer.currentForm !== 'alter_ego' && targetPlayer.hero?.code === card.code));
 
-  if (targetPlayer && isIdentityCard) {
+  if (targetPlayer && isActiveFormCard) {
     const playerDetails = getEffectivePlayerTraitsDetails(targetPlayer, context?.state);
     if (instance?.attachments && instance.attachments.length > 0) {
       const extraDynamic = dedupeTraits(
@@ -734,7 +729,13 @@ export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
   }
 
   // 3. Entity traits check (e.g. traits array)
-  const traits = entity.traits || entity.card?.traits || entity.hero?.traits || [];
+  const traits =
+    entity.traits ||
+    entity.card?.traits ||
+    entity.activeFormCard?.traits ||
+    (entity.currentForm === 'alter_ego' ? entity.alterEgo?.traits : entity.hero?.traits) ||
+    entity.hero?.traits ||
+    [];
   if (traits.some((t: any) => String(t).toLowerCase().trim() === kw)) {
     return true;
   }

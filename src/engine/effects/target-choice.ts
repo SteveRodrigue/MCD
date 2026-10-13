@@ -193,6 +193,10 @@ export function chooseStepTarget(
     sourceCardName: sourceName ?? step.effect,
     sourceCardCode: context.sourceCardInstance?.card.code,
     sourceCardInstanceId: context.sourceCardInstance?.instanceId,
+    completion:
+      context.sourceCardInstance?.card.type === 'event' ? 'DISCARD_RESOLVING_EVENT' : undefined,
+    sourceCardInstance:
+      context.sourceCardInstance?.card.type === 'event' ? context.sourceCardInstance : undefined,
     discardedCards: context.discardedCards ?? context.previousResult?.discardedCards,
     isFinalStep: context.isFinalStep,
     isVoluntary: false,

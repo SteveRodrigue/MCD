@@ -325,6 +325,21 @@ export class CardSupplementalService {
     // Ensure supplemental object
     const supplemental = payload.supplemental || {};
 
+    // Invariant check: Event cards cannot declare cost.discardSelf (Issue #271 / RR v1.8 Event)
+    const cardTypeCode = entry?.card?.type_code;
+    if (cardTypeCode === 'event') {
+      const hasDiscardSelf = (supplemental.abilities || []).some(
+        (a: any) => a?.cost?.discardSelf === true,
+      );
+      if (hasDiscardSelf) {
+        return {
+          success: false,
+          error:
+            "Event cards cannot declare 'cost.discardSelf'; events discard intrinsically per RR v1.8 Event",
+        };
+      }
+    }
+
     // Validate using authoritative Zod schema
     const validation = CardEnrichmentSchema.safeParse(supplemental);
     if (!validation.success) {

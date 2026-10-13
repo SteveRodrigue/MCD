@@ -1033,9 +1033,6 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
             timing: 'HERO_INTERRUPT',
             trigger: 'THREAT_WOULD_BE_PLACED',
             zone: 'HAND',
-            cost: {
-              discardSelf: true,
-            },
             steps: [
               {
                 id: 'consume_threat',
@@ -1062,9 +1059,6 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
             timing: 'INTERRUPT',
             trigger: 'THREAT_WOULD_BE_PLACED',
             zone: 'HAND',
-            cost: {
-              discardSelf: true,
-            },
             steps: [
               {
                 id: 'reduce_threat',
@@ -1101,9 +1095,6 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           const ability = {
             id: 'gamma_slam_action',
             timing: 'HERO_ACTION',
-            cost: {
-              discardSelf: true,
-            },
             steps: [
               {
                 id: 'deal_damage_step',

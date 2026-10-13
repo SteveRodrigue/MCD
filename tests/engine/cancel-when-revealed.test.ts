@@ -120,7 +120,6 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
             timing: 'INTERRUPT',
             trigger: 'ENCOUNTER_CARD_REVEALED',
             zone: 'HAND',
-            cost: { discardSelf: true },
             steps: [
               {
                 effect: 'CANCEL_WHEN_REVEALED',
@@ -187,7 +186,6 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
     const mentalReqAbility = {
       ...spiderSense.card.enrichment!.abilities![0],
       cost: {
-        discardSelf: true,
         resourceCost: { mental: 1 },
       },
     };

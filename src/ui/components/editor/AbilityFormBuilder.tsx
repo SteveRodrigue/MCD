@@ -546,6 +546,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                   <AbilityCostSection
                     cost={ability.cost}
                     abilityIndex={aIdx}
+                    isEvent={typeCode === 'event'}
                     onChange={(newCost) => handleUpdateAbility(aIdx, { cost: newCost })}
                   />
 

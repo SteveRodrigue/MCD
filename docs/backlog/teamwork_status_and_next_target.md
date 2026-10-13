@@ -66,9 +66,7 @@ _None currently._
 
 ### 3.2 Rules gaps that affect core cards
 
-| #   | Issue                                                   | Item                                                                    | Estimate | Notes                                               |
-| :-- | :------------------------------------------------------ | :---------------------------------------------------------------------- | :------- | :-------------------------------------------------- |
-| 11  | [#271](https://github.com/SteveRodrigue/MCD/issues/271) | Events go to the discard pile intrinsically; remove `cost.discardSelf` from event data | ½ day    | Supplemental change on core events (owner approval) |
+_None currently._
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 

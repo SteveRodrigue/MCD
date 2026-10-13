@@ -5,6 +5,7 @@ import { UniversalCardFilterBuilder } from './UniversalCardFilterBuilder';
 export interface AbilityCostSectionProps {
   cost?: any;
   abilityIndex?: number;
+  isEvent?: boolean;
   onChange: (updatedCost: any | undefined) => void;
   hasErrors?: boolean;
   errors?: string[];
@@ -13,6 +14,7 @@ export interface AbilityCostSectionProps {
 export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
   cost = {},
   abilityIndex = 0,
+  isEvent = false,
   onChange,
   hasErrors = false,
   errors = [],
@@ -123,12 +125,23 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
           <span className="font-bold">Exhaust Host Card</span>
         </label>
 
-        <label className="flex items-center gap-1.5 cursor-pointer">
+        <label
+          className={`flex items-center gap-1.5 ${
+            isEvent ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+          }`}
+          title={
+            isEvent
+              ? 'Event cards discard intrinsically per RR v1.8 Event; discardSelf is not a cost.'
+              : undefined
+          }
+        >
           <input
             type="checkbox"
             data-testid={`cost-discard-self-${abilityIndex}`}
-            checked={Boolean(currentCost.discardSelf)}
+            disabled={isEvent}
+            checked={Boolean(!isEvent && currentCost.discardSelf)}
             onChange={(e) => {
+              if (isEvent) return;
               handleCostUpdate({
                 discardSelf: e.target.checked || undefined,
               });
@@ -136,6 +149,11 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
             className="accent-black"
           />
           <span className="font-bold">Discard Host Card</span>
+          {isEvent && (
+            <span className="text-[10px] text-gray-500 italic">
+              (Events discard intrinsically per RR v1.8)
+            </span>
+          )}
         </label>
 
         <div className="flex items-center gap-1">

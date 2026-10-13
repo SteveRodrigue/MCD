@@ -103,9 +103,6 @@
             "damageSource": "ATTACK"
           },
           "zone": "HAND",
-          "cost": {
-            "discardSelf": true
-          },
           "steps": [
             {
               "id": "prevent_all_damage",
@@ -133,7 +130,6 @@
           "trigger": "TREACHERY_REVEALED",
           "zone": "HAND",
           "cost": {
-            "discardSelf": true,
             "resourceCost": 1
           },
           "steps": [
@@ -889,7 +885,6 @@
           "trigger": "BASIC_ATTACK_PERFORMED",
           "zone": "HAND",
           "cost": {
-            "discardSelf": true,
             "resourceCost": 1
           },
           "steps": [
@@ -1809,7 +1804,7 @@
                 "amount": 1,
                 "finisherBonus": 1,
                 "target": "ENGAGED_ENEMIES",
-              "targetPlayer": "CHOSEN_PLAYER"
+                "targetPlayer": "CHOSEN_PLAYER"
               }
             }
           ]
@@ -2009,9 +2004,6 @@
           "timing": "RESPONSE",
           "trigger": "DEFEATED",
           "zone": "HAND",
-          "cost": {
-            "discardSelf": true
-          },
           "triggerFilter": {
             "targetType": "ENEMY",
             "defeatedByAttackOf": "YOUR_HERO"
@@ -2291,9 +2283,6 @@
           "timing": "HERO_INTERRUPT",
           "trigger": "THREAT_WOULD_BE_PLACED",
           "zone": "HAND",
-          "cost": {
-            "discardSelf": true
-          },
           "steps": [
             {
               "id": "consume_threat",
@@ -2814,9 +2803,6 @@
             "defenderType": "HERO"
           },
           "zone": "HAND",
-          "cost": {
-            "discardSelf": true
-          },
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
@@ -2849,7 +2835,6 @@
           "trigger": "TREACHERY_REVEALED",
           "zone": "HAND",
           "cost": {
-            "discardSelf": true,
             "resourceCost": 1
           },
           "steps": [
@@ -3102,9 +3087,6 @@
           "zone": "HAND",
           "triggerFilter": {
             "threatSource": "VILLAIN_SCHEME"
-          },
-          "cost": {
-            "discardSelf": true
           },
           "steps": [
             {

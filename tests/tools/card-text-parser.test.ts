@@ -97,7 +97,7 @@ describe('Card Text Parser', () => {
       expect(ability.timing).toBe('INTERRUPT');
       expect(ability.trigger).toBe('DAMAGE_WOULD_BE_TAKEN');
       expect(ability.zone).toBe('HAND');
-      expect(ability.cost).toEqual({ discardSelf: true });
+      expect(ability.cost).toBeUndefined();
       expect(ability.steps[0]).toEqual({
         effect: 'PREVENT_DAMAGE',
         effectParams: { amount: 'ALL' },

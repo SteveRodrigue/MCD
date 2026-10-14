@@ -12,6 +12,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -21,6 +23,28 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Check changelog fragments
+        run: |
+          npm run changelog:check
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="origin/${{ github.base_ref }}"
+          else
+            BASE="${{ github.event.before }}"
+            if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+              BASE="HEAD~1"
+            fi
+          fi
+          if git rev-parse --verify "$BASE" >/dev/null 2>&1; then
+            SRC_CHANGES=$(git diff --name-only "$BASE" HEAD -- 'src/')
+            if [ -n "$SRC_CHANGES" ]; then
+              FRAGMENTS=$(git diff --name-only --diff-filter=A "$BASE" HEAD -- 'changes/unreleased/*.md')
+              if [ -z "$FRAGMENTS" ]; then
+                echo "Error: Changes to src/ require a new changelog fragment in changes/unreleased/ (decision 2B)."
+                exit 1
+              fi
+            fi
+          fi
 
       - name: Check formatting
         run: npm run format:check

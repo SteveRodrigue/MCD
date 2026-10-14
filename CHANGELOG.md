@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Pending changes live in `changes/unreleased/` until the next release.
+
+---
+
+## [0.1.1] - 2026-10-13
+
+_Note: Entries in this release predate the fragment-based Keep a Changelog grouping._
+
 - **Docs (Audit): Documentation audit — ADR template conformance, Decision Log sync, broken links, and count drift**
   - ADRs: 51 ADRs normalized to `docs/decisions/template.md`. Plain `## Context` / `## Decision` headings renamed to the template names; missing template sections added with a note that they are not required; missing `Authors` / `Deciders` metadata added (`MCD Core Team`, `User & Antigravity`); bold `Status` values unbolded. ADR-0072 and ADR-0073 headings and metadata moved to the `# [ADR-XXXX]` list-item format.
   - ADR-0032 and ADR-0033 now name the ADRs they supersede (ADR-0020, ADR-0010).
@@ -2533,8 +2541,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `DeclareDefenderAction` action handler in `action-dispatcher.ts` and refactored `villain-phase.ts` to route attacks through `combat-pipeline.ts`.
   - Promoted _Armored Vest_ (`01081`) and _Indomitable_ (`01082`) to 100% confidence.
   - Added test suite [`tests/engine/combat-pipeline-step1-3.test.ts`](tests/engine/combat-pipeline-step1-3.test.ts) (9 new tests, 190 total tests passing).
-
-## [Unreleased]
 
 ### Added
 

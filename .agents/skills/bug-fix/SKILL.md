@@ -158,7 +158,7 @@ rtk npm run format:check && rtk npm run lint && rtk npm run typecheck && rtk npm
 
 ### Step 7: Post-Task Hygiene Protocol
 
-Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to the fix's blast-radius tier (Tier 1: CHANGELOG, and declarations if card data modified; Tier 2/3: full relevant checklist).
+Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to the fix's blast-radius tier (Tier 1: CHANGELOG fragment in `changes/unreleased/`, and declarations if card data modified; Tier 2/3: full relevant checklist).
 
 ---
 

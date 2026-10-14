@@ -1,7 +1,7 @@
 {
   "name": "marvel-champions-digital",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "An open-source digital implementation of Marvel Champions: The Card Game",
   "license": "MIT",
@@ -22,6 +22,8 @@
     "parse:card": "tsx tools/audit/card-text-parser.ts",
     "schema:generate": "tsx tools/generate-supplemental-schema.ts",
     "rule": "tsx scripts/lookup-rule.ts",
+    "changelog:release": "tsx scripts/changelog-release.ts",
+    "changelog:check": "tsx scripts/changelog-release.ts --check",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write \"**/*.{ts,tsx,js}\"",

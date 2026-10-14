@@ -57,7 +57,7 @@ flowchart TD
 - **[Coding Guidelines & Standards](docs/coding_guidelines.md)** — Strict architectural boundaries, typing rules, UI layering standards, and TDD requirements.
 - **[Installation & Setup Guide](docs/installation_guide.md)** — Comprehensive environment setup, PATH troubleshooting, installation, and run instructions.
 - **[Technology Evaluation & Design](docs/technology_evaluation_and_architecture.md)** — Deep architectural analysis, engine evaluation, and state models.
-- **[Changelog](CHANGELOG.md)** — Chronological release history and milestone log.
+- **[Changelog](CHANGELOG.md)** — Chronological release history and milestone log. Pending changes are tracked in `changes/unreleased/` and compiled with `npm run changelog:release -- <version>` (see [changes/README.md](changes/README.md)).
 
 ---
 

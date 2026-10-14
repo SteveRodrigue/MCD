@@ -24,7 +24,21 @@ To guarantee fidelity to **Marvel Champions Rules Reference v1.8** and maintain 
 
 ---
 
-## Decision
+## Decision Drivers
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
+## Decision Outcome
 
 We establish the **8-Step Card Integration Protocol**, **3-Tier Blast-Radius Guardrails**, **Batch-Resilient Ambiguity Queue**, and **Encapsulated Audit Tracking**:
 
@@ -69,6 +83,13 @@ Every card added or refined must follow these exact sequential steps:
 - Each blocked card generates its own dedicated file: `docs/ambiguities/{pack}_{card_code}_{slug}.md`.
 - Files contain YAML frontmatter (`card_code`, `card_name`, `confidence_reached`, `blocker_category`) and forensic failure details.
 - As developers resolve blockers, files are deleted. An empty directory signifies 100% engine compatibility.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

@@ -12,6 +12,13 @@ Digital card games often default to generic high-end 3D physics engines (e.g. He
 
 ---
 
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
 ## Decision Drivers
 1. **Thematic Immersion:** The interface should feel like playing inside an interactive, dynamic comic book page.
 2. **2D Graphic Polish over 3D Complexity:** Prioritizing vibrant 2D graphic design, punchy onomatopoeia, and animated comic panels over heavy 3D mesh rendering.
@@ -47,6 +54,13 @@ Digital card games often default to generic high-end 3D physics engines (e.g. He
   * CSS transforms, SVG starburst shapes, and Framer Motion spring physics excel at pop-in/pop-out comic onomatopoeia bursts.
   * No requirement for complex 3D rigging, lighting, or mesh rendering.
   * Easy integration of custom SVG filters for halftone dot effects and screen-print color separation.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

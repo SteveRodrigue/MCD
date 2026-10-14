@@ -39,6 +39,13 @@ We need a systematic method to document all major decisions and the explicit **"
 
 ---
 
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
 ## Consequences
 
 ### Positive Consequences

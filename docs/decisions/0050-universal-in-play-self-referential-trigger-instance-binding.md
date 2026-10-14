@@ -22,7 +22,7 @@ This caused two severe engine defects:
 
 ## Decision Drivers
 
-- **RR v1.8 pp. 11, 21:** "Enters play" and "play" refer to the transition of a specific card. A triggered ability reading "After [this card] enters play" or "After you play [this card]" fires once upon that specific card's transition, not when other cards transition.
+- **RR v1.8 p. 18:** "Enters play" and "play" refer to the transition of a specific card. A triggered ability reading "After [this card] enters play" or "After you play [this card]" fires once upon that specific card's transition, not when other cards transition.
 - **Distinction between Self-Triggers and Observers:** Cards with `ENTERS_PLAY` or `CARD_PLAYED` represent abilities of the entering/played card itself. Observer cards that watch other cards enter play (e.g. Hawkeye `01066`, Widow's Bite `08010`, Utopia `33020`) use distinct observer triggers (`MINION_ENTERS_PLAY`, `ALLY_ENTERS_PLAY`, etc.).
 - **Hero-Watching Upgrades vs Character-Specific Ally Actions:** For `ATTACK_RESOLVED` and `THWART_RESOLVED`, an ally's ability should only trigger if that specific ally attacked/thwarted, whereas an upgrade in the tableau (e.g. Superhuman Strength `01028`) watches the hero identity's attack.
 - **Card-Agnostic Engine Invariant:** Engine pipelines must enforce rules via universal invariants rather than card-code hardcoding or overly narrow type filters.

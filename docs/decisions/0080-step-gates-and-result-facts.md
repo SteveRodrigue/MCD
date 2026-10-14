@@ -20,6 +20,13 @@ How do we unify step gating into a minimal, canonical taxonomy with strictly val
 
 ---
 
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
 ## Decision Drivers
 
 - **Driver 1: Zero Semantic Duplication & Minimal Canonical Gate Set**: Eliminate pairs of inverted gates (e.g. `IF_CARD_IN_PLAY` vs `IF_CARD_NOT_IN_PLAY`, `IF_CONDITION_MET` vs `IF_CONDITION_NOT_MET`) in favor of an explicit `negate: boolean` flag, and consolidate result-dependent gates into canonical primitives.
@@ -91,6 +98,13 @@ In `executeSequence`:
   - Step 0 cannot use RESULT gates.
   - The `step` reference must match an earlier step in the same ability.
   - Fact producer compatibility check: an `IF_RESULT` gate referencing a step requires that the referenced step's effect primitive can produce the requested fact per `FACT_PRODUCERS`.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

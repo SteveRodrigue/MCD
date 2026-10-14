@@ -51,7 +51,7 @@ describe('Card: Swinging Web Kick', () => {
 ```
 
 ### Step 3: Implement the Ability Effect in `src/engine/`
-Add the declarative effect hook or action reducer in `src/engine/pipeline/` or `src/engine/state/reducers/`. Run `npm test` to verify your test turns green!
+Add the effect handler in `src/engine/effects/index.ts`, or pipeline logic in `src/engine/pipeline/`. Run `npm test` to verify your test turns green!
 
 ---
 

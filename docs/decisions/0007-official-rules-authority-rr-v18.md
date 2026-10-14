@@ -14,6 +14,13 @@ To prevent conflicting interpretations and ensure strict rules accuracy across a
 
 ---
 
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
 ## Decision Drivers
 1. **Unambiguous Rules Authority:** A single, authoritative benchmark for all game mechanics, trigger priority, and timing windows.
 2. **Up-to-Date Errata Integration:** Incorporating all official card errata and rules clarifications issued by Fantasy Flight Games (FFG).
@@ -40,6 +47,13 @@ Whenever a rules ambiguity or card interaction is implemented or tested:
 1. **The Golden Rule:** Card text overrides general rules; when card text is ambiguous, the Rules Reference v1.8 governs.
 2. **Document Hierarchy:** **Rules Reference v1.8 strictly supersedes and corrects the Learn to Play guide.**
 3. **Official Errata:** Any card text that has received an official FFG errata in Rules Reference v1.8 (Section: *Errata*) must be implemented with its errata text applied via `src/data/overrides/`.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

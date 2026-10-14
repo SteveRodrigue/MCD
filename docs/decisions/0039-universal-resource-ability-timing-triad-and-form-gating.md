@@ -9,7 +9,7 @@
 
 ## 📜 Context & Problem Statement
 
-In Marvel Champions Rules Reference (RR v1.8 p. 25 "Resource Ability"), a resource ability is a special class of ability that generates resources:
+In Marvel Champions Rules Reference (RR v1.8 p. 37 "Resource Ability"), a resource ability is a special class of ability that generates resources:
 
 > _"A resource ability is a type of ability that generates resources. A resource ability can be triggered during any window in which the player is paying costs (such as paying the resource cost of a card or an ability)."_
 > _"A player cannot trigger a resource ability unless they are actively paying a cost."_
@@ -23,6 +23,13 @@ Furthermore, printed cards in the official game have three distinct stance heade
 Previously, only generic `RESOURCE` was defined in the timing enum. Certain cards like _Web-Shooter_ (`01008`) were inadvertently declared with `HERO_ACTION` timing, causing them to appear in `getLegalActionsForPlayer()` as standalone in-play board actions outside of the cost payment window.
 
 Additionally, multi-form heroes (_Ant-Man_, _Wasp_, _Vision_, _Spectrum_, _Shadowcat_, _Angel_) and custom fan-made cards require both broad stance gating and sub-form state validation (_Tiny_, _Giant_, _Dense_, _Intangible_, _Solid_, _Phased_, _Archangel_, _Photon_).
+
+---
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 
@@ -118,6 +125,13 @@ In `getLegalActionsForPlayer()`, filter out any ability satisfying `isResourceAb
 ### 4. Payment Window & Modal Integration (`CardPaymentModal.tsx` & `action-dispatcher.ts`)
 
 In `CardPaymentModal.tsx` and `action-dispatcher.ts`, in-play resource generators validate both broad stance requirements (`isAbilityPlayableInForm`) and any specific sub-form traits (`cost.requiredSubForm`).
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

@@ -25,6 +25,13 @@ Issue #156 requested nesting Allies directly in the top row alongside the Hero I
 
 ---
 
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
 ## Decision Drivers
 
 - **Player Character Army Ergonomics:** Grouping Hero and Allies inside a unified roster reflects the "characters you control" identity.
@@ -77,6 +84,13 @@ Issue #156 requested nesting Allies directly in the top row alongside the Hero I
 2. **Row 2 (`tableau-section`):**
    - Spans the full width (`w-full`) of the hero station.
    - Hosts all tableau cards with `flex-wrap gap-3`, cleanly wrapping lines when many upgrades and supports are in play.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

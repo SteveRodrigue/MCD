@@ -13,10 +13,17 @@
 As the game expands beyond the Core Set across official expansions (e.g. _Next Evolution_, _Age of Apocalypse_, _Sinister Motives_, _Mad Titan's Shadow_), new card types and game areas are introduced:
 
 1. **Player Side Schemes (`player_side_scheme` - 35 cards in catalog):** Player cards played during the Player Phase that enter the scheme area with starting threat. When thwarted to 0 threat, they do not discard; they trigger a **"When Defeated"** player reward and enter the **Victory Display**.
-2. **Victory Display & Victory Points (RR v1.8 p. 30 "Victory"):** Encounter and player cards with the `Victory X` keyword must be placed in a dedicated `state.victoryDisplay` zone upon defeat rather than their respective discard piles, preventing them from recycling and providing end-game score / trigger counts (e.g. _Cable_, _Plasma Rifle_).
+2. **Victory Display & Victory Points (RR v1.8 p. 46 "Victory"):** Encounter and player cards with the `Victory X` keyword must be placed in a dedicated `state.victoryDisplay` zone upon defeat rather than their respective discard piles, preventing them from recycling and providing end-game score / trigger counts (e.g. _Cable_, _Plasma Rifle_).
 3. **Auxiliary Scenario Decks (RR v1.8 Scenario Rules):** Scenarios such as Thanos (_Infinity Gauntlet Deck_), M.O.D.O.K. (_Holding Cell Deck_), GMW (_Market Deck_), and Agents of S.H.I.E.L.D. (_Evidence Decks_) require distinct face-down draw piles alongside the standard encounter deck.
 
 How should we model these zones, card types, and defeat transitions in the headless engine?
+
+---
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 
@@ -75,6 +82,13 @@ export interface GameState {
   auxiliaryDiscards: Record<string, CardInstance[]>;
 }
 ```
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

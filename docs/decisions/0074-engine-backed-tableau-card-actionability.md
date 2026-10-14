@@ -43,6 +43,13 @@
 
 ---
 
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
 ## Consequences
 
 ### Positive Consequences

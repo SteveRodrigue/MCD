@@ -2,6 +2,7 @@
 
 * **Status:** Accepted
 * **Date:** 2026-08-27
+* **Authors:** MCD Core Team
 * **Deciders:** Core Engineering Team
 * **Consulted:** Open Source Contributors & Community Specifications
 * **Informed:** MCD Maintainers
@@ -91,6 +92,13 @@ The loader dynamically executes the following resolution steps:
 2. **Player Draw Deck:** Expands the key-value `slots` map into the exact 40–50 normalized card instances.
 3. **Obligation Resolution:** Automatically queries the catalog for the hero's Obligation card (`type === 'obligation'` matching hero set/text) to shuffle into the scenario encounter deck during setup.
 4. **Nemesis Isolation:** Automatically queries the catalog for the 5-card Nemesis Set (`${hero.setCode}_nemesis`) to isolate out of play.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

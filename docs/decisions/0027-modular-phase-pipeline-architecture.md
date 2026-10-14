@@ -48,6 +48,11 @@ Adopted **Option 1 (Modular Phase Pipelines)**:
    - Passes First Player token clockwise.
    - Increments `roundNumber`, dispatches `ROUND_BEGAN`, and transitions into the new Player Phase.
 
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
 ## Consequences
 
 - **Positive:**

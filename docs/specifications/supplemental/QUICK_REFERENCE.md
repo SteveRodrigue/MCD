@@ -154,7 +154,7 @@ _Invariants:_
 
 ## 4. Effect Primitives & Allowed Parameter Keys
 
-All 55 canonical effect primitives and their strictly allowed `effectParams` keys (`EFFECT_PARAM_KEYS`):
+All canonical effect primitives (`EffectTypeSchema`; current count via `npm run report:declarations` in the [usage report](../../reports/supplemental_data/usage_report.md)) and their strictly allowed `effectParams` keys (`EFFECT_PARAM_KEYS`):
 
 | Effect Primitive                          | Allowed `effectParams` Keys                                                                                                                                                                              | Description / Engine Behavior                                     |
 | :---------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------- |

@@ -11,21 +11,35 @@
 
 In Marvel Champions rules architecture, triggers and reactive abilities (Interrupts and Responses) are among the most nuanced systems in the game. Conflating distinct enemy activations or treating optional player choices as automatic side-effects violates official timing rules and breaks tactical decision-making:
 
-1. **Forced vs. Optional Abilities (RR v1.8 p. 11 "Forced", p. 12 "Interrupt", p. 19 "Response"):**
+1. **Forced vs. Optional Abilities (RR v1.8 p. 20 "Forced", p. 25 "Interrupt", p. 38 "Response"):**
    - **Forced Abilities (`FORCED_INTERRUPT`, `FORCED_RESPONSE`):** Mandatory. The game engine must resolve them immediately and automatically upon their trigger condition without player intervention (e.g. _Nick Fury_ end-of-round discard, villain _When Revealed_ abilities).
    - **Standard Abilities (`INTERRUPT`, `RESPONSE`, `HERO_INTERRUPT`, `HERO_RESPONSE`):** **Strictly optional by player choice**. A player may choose to hold their reactive card or save their resources for a future window. The engine must never automatically spend cards from a player's hand without explicit player confirmation.
 
-2. **Exact Event Scoping (Villain Activations vs. Minion Activations - RR v1.8 p. 25 "Scheme", p. 7 "Attack", p. 31 "Villain Phase"):**
+2. **Exact Event Scoping (Villain Activations vs. Minion Activations - RR v1.8 p. 39 "Scheme", p. 7 "Attack", p. 47 "Villain Phase"):**
    - Cards such as _Emergency_ (`01085`) specify: _"**Interrupt**: When the villain schemes, reduce the amount of threat placed on the scheme by 1."_
    - **The Villain is NOT a Minion:** Minions are separate enemy entities. When a minion schemes during Step 3 of the Villain Phase, it is a _Minion Activation_, **not** the _Villain Scheming_. Conflating minion threat with villain scheming creates false trigger windows.
 
-3. **Form Invariance of Neutral Interrupts (RR v1.8 p. 13 "Form", p. 12 "Interrupt"):**
+3. **Form Invariance of Neutral Interrupts (RR v1.8 p. 21 "Form", p. 25 "Interrupt"):**
    - Cards with neutral `"timing": "INTERRUPT"` (like _Emergency_) lack the `"Hero"` or `"Alter-Ego"` prefix.
    - A player in **Hero form** or **Alter-Ego form** is legally permitted to trigger _Emergency_ whenever the villain schemes (e.g. against another teammate in Alter-Ego form or via treachery cards that cause the villain to scheme).
 
 ---
 
-## Decision
+## Decision Drivers
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
+## Decision Outcome
 
 We establish the **Trigger Classification & Interactive Interrupt Architecture**:
 
@@ -51,6 +65,13 @@ We split broad event triggers into precise, distinct types:
 ### 3. Headless & Test Compatibility
 
 For test automation and headless simulation, `dispatchTrigger` accepts an optional `acceptOptionalTriggers?: boolean` context parameter, ensuring full test determinism while supporting interactive UI gameplay.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

@@ -1,6 +1,6 @@
 # [ADR-0022] Authoritative Zod Supplemental Schema & CI/CD Quality Gate
 
-* **Status:** **Accepted**
+* **Status:** Accepted
 * **Date:** 2026-08-30
 * **Authors:** MCD Core Team
 * **Deciders:** User & Antigravity
@@ -37,6 +37,13 @@ Previously, supplemental data was checked only via static TypeScript interfaces.
 1. **Type Inference + Runtime Validation in One:** Zod provides both runtime parsing with clear error paths (`path: ["cards", "01023", "abilities", 0, "cost"]`) and automatic TypeScript type generation (`z.infer<typeof SupplementalPackSchema>`).
 2. **Strict CI/CD Enforcement:** Implemented `tests/data/supplemental-schema.test.ts` which loads and validates every `.json` file in `src/data/supplemental/pack/` as part of `npm test`.
 3. **Developer Ergonomics:** When a contributor creates an invalid card ability, the test runner outputs exact JSON line numbers and reasons, preventing guesswork.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

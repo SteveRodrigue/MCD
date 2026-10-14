@@ -2,6 +2,7 @@
 
 * **Status:** Accepted
 * **Date:** 2026-08-27
+* **Authors:** MCD Core Team
 * **Deciders:** Core Architecture Team
 * **Consulted:** UX Guidelines, Golden Rule (Visual Fidelity & Comic Styling)
 * **Informed:** MCD Frontend Developers
@@ -13,6 +14,13 @@
 When users hover over cards in the Player Hand tray to inspect card text and art, the card scales up ($1.9\times$) and elevates upwards. 
 
 However, when the parent container has `overflow-x: auto` or `overflow: hidden`, CSS creates a clipping boundary and stacking context. When the transformed card visual boundary exceeds the parent box, the browser spawns unwanted horizontal and vertical scrollbars, and clips the top of the card.
+
+---
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 
@@ -41,6 +49,13 @@ However, when the parent container has `overflow-x: auto` or `overflow: hidden`,
    * Physical card art captures only static printed card text. Cards that dynamically acquire traits (e.g. *Cosmic Flight* `01017` granting Captain Marvel the `[[Aerial]]` trait, or attachment traits) must clearly communicate their effective state to the player.
    * On hover-zoom, dynamically gained traits are rendered as high-contrast 1960s pop-art badge pills (`[✨ Aerial]`) positioned at the card header overlay.
    * Badges scale seamlessly with the card container (`transform origin` and `--card-zoom-scale`) without triggering container clipping or stacking context collapse.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

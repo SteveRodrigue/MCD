@@ -2,7 +2,7 @@
 
 - **References:** [`src/engine/filters/card-filter.ts`](../../../src/engine/filters/card-filter.ts) / [ADR-0046](../../decisions/0046-universal-declarative-card-filtering-architecture.md)
 - **Schema Authority:** [`src/data/supplemental/schema.ts`](../../../src/data/supplemental/schema.ts) (`UniversalCardFilterSchema`, `CardCriteriaSchema`)
-- **Rules Authority:** Marvel Champions Rules Reference (RR v1.8 p. 19 "Look at", p. 26 "Search", p. 28 "Target")
+- **Rules Authority:** Marvel Champions Rules Reference (RR v1.8 p. 27 "Look at", p. 39 "Search", p. 28 "Target")
 
 ---
 
@@ -132,4 +132,4 @@ _Meaning:_ Match any non-unique ally.
 | **`DISCARD`**           | `filter`, `untilFilter`     | [06. Zones & Cards (Discard)](./06_effects_zones_cards.md#discard)             |
 | **`MODIFY_HAND_SIZE`**  | `filter` (or step `filter`) | [06. Zones & Cards (Hand Size)](./06_effects_zones_cards.md#modify_hand_size)  |
 | **`PUT_INTO_PLAY`**     | `filter`                    | [06. Zones & Cards (Put Into Play)](./06_effects_zones_cards.md#put_into_play) |
-| **`EXHAUST` / `READY`** | `filter`                    | [07. Status & Economy](./07_effects_status_economy.md#exhaust-and-ready)       |
+| **`EXHAUST` / `READY`** | `filter`                    | [07. Status & Economy](./07_effects_status_economy.md#2-card-orientation--ready-states-exhaust-ready)       |

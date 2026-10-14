@@ -1,7 +1,9 @@
-# 0072. Unified Payment Subsystem Across Actions, Prompts, and Attachments
+# [ADR-0072] Unified Payment Subsystem Across Actions, Prompts, and Attachments
 
-Date: 2026-09-27
-Status: Accepted
+- **Status:** Accepted
+- **Date:** 2026-09-27
+- **Authors:** MCD Core Team
+- **Deciders:** User & Antigravity
 
 ## Context & Problem Statement
 
@@ -16,7 +18,7 @@ These defects caused generator payment failures during the Villain Phase (GitHub
 
 ## Decision Drivers
 
-- **RR v1.8 p. 24 (Exhausted / Ready):** Cards exhausted to pay costs must remain exhausted until an explicit game effect or step readies them. Cards exhausted during the Villain Phase do not ready at round upkeep; they remain exhausted throughout the next Player Phase until the End of Player Phase cleanup (Step 3).
+- **RR v1.8 p. 19 (Exhausted / Ready):** Cards exhausted to pay costs must remain exhausted until an explicit game effect or step readies them. Cards exhausted during the Villain Phase do not ready at round upkeep; they remain exhausted throughout the next Player Phase until the End of Player Phase cleanup (Step 3).
 - **Single Source of Truth:** Eliminate duplicate generator exhaustion, use counter decrementing, and hand payment loops across the engine.
 - **Universal Reusability:** Ensure `CardPaymentModal` and backend payment resolution support actions, in-play abilities, attachment discards, and decision prompts uniformly.
 
@@ -50,6 +52,11 @@ Introduced `executeResourceCostPayment(state, player, requiredAmount, requiredTy
 
 ### 5. UI Generalization (`GameBoard.tsx`)
 - When a prompt requires payment, `GameBoard.tsx` synthesizes a valid fallback card instance if the source is an encounter card or attachment, allowing `CardPaymentModal` to open cleanly and return both `paymentHandCardIds` and `generatorCardIds`.
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ## Consequences
 

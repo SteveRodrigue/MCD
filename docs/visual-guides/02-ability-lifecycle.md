@@ -46,7 +46,7 @@ flowchart TD
 > `gateParams` configures the _gate_ (whether the step runs); `effectParams` configures the
 > _effect_ (what the step does) — they are never merged. See
 > [ADR-0060](../decisions/0060-gate-and-effect-params-separation.md), or
-> [10. Sequences & Modals §1](../specifications/supplemental/10_sequences_and_prompts.md#1-unified-action-step-sequencing-steps--conditional-gates).
+> [10. Sequences & Modals §1](../specifications/supplemental/10_sequences_and_prompts.md#1-unified-action-step-sequencing-steps---conditional-gates).
 
 ---
 

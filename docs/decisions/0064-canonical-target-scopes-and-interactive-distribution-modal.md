@@ -10,9 +10,9 @@
 ## Context and Problem Statement
 
 In Marvel Champions Rules Reference (RR v1.8), targeting semantics distinguish clearly between player identities (which change between Hero and Alter-Ego forms), allies, and players as game participants. Specifically:
-- RR v1.8 p. 11 ("Damage") and p. 13 ("Identity"): *"While a player is in hero form, their identity is a hero. While a player is in alter-ego form, their identity is an alter-ego. An ability that targets a hero cannot target an alter-ego, and vice versa."*
-- RR v1.8 p. 14 ("Indirect Damage"): Indirect damage dealt to players must be assigned among characters they control, bounded by remaining hit points.
-- RR v1.8 p. 19 ("Player") & p. 20 ("Status Cards"): Abilities targeting *"each player"* affect every participant regardless of form, while abilities targeting *"each hero"* strictly exclude Alter-Egos.
+- RR v1.8 p. 14 ("Damage") and p. 23 ("Identity"): *"While a player is in hero form, their identity is a hero. While a player is in alter-ego form, their identity is an alter-ego. An ability that targets a hero cannot target an alter-ego, and vice versa."*
+- RR v1.8 p. 24 ("Indirect Damage"): Indirect damage dealt to players must be assigned among characters they control, bounded by remaining hit points.
+- RR v1.8 p. 33 ("Player") & p. 41 ("Status Cards"): Abilities targeting *"each player"* affect every participant regardless of form, while abilities targeting *"each hero"* strictly exclude Alter-Egos.
 
 Previously, MCD had several schema and engine ambiguities:
 1. Target selector naming inconsistency: `Explosion` (`01111`) used `HEROES_AND_ALLIES` without the standard `ALL_` prefix used by all other collective selectors (`ALL_HEROES`, `ALL_ENEMIES`, `ALL_CHARACTERS`).

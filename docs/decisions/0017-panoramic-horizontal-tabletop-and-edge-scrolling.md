@@ -7,7 +7,7 @@
 
 ---
 
-## Context
+## Context and Problem Statement
 
 In Marvel Champions Digital, a game may feature from 1 to 4 heroes simultaneously. Each hero controls an Identity Station, Health tracker, Engaged Minions zone, Support & Upgrade Tableau, Allies, and a Hand Tray with Deck, Discard, and Nemesis piles.
 
@@ -18,7 +18,17 @@ When displaying 3 or 4 heroes on a screen:
 3. In Marvel Champions rules (RR v1.8), gameplay is primarily turn-based per hero, with occasional cross-player interactions (such as playing cards on teammates, defending with allies, or attacking minions engaged with teammates).
 4. Future phases require drag-and-drop mechanics (dragging a card from hand or tableau across the play space to target a teammate or an engaged minion).
 
-## Decision
+## Decision Drivers
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+## Decision Outcome
 
 We adopt **Proposition 4: Panoramic Horizontal Tabletop with Edge & Drag Scrolling**:
 
@@ -39,6 +49,11 @@ We adopt **Proposition 4: Panoramic Horizontal Tabletop with Edge & Drag Scrolli
 5. **Fixed Top Banner & Scenario Zone:**
    - The Top Bar (Round & Phase badges, Seat Jump Buttons, Dev Mode, Combat Log) remains sticky at the top.
    - The Scenario & Villain Zone remains centered and accessible above the panoramic hero stations.
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ## Consequences
 

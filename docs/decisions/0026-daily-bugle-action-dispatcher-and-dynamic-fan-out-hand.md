@@ -1,8 +1,8 @@
 ﻿# [ADR-0026] 1960s Daily Bugle Action Dispatcher & Dynamic Fan-Out Hand Architecture
 
-* **Status:** **Accepted**
+* **Status:** Accepted
 * **Date:** 2026-08-30
-* **Author:** @SteveRodrigue & Antigravity (Google DeepMind)
+* **Authors:** @SteveRodrigue & Antigravity (Google DeepMind)
 * **Deciders:** Steve Rodrigue, Antigravity Agent
 * **Technical Areas:** UI Presentation Layer, Rules Engine Integration, Accessibility, Layout Systems
 
@@ -46,6 +46,13 @@ As the complexity of player board states grew (allies, upgrades, supports, ident
    * Uses `ResizeObserver` to compute exact negative margins so the hand never overflows the usable container width.
    * Hovered card pops to `z-index: 60` with upward float elevation (`-translate-y-12`) and 1.9× Comic Zoom.
    * Hardware-accelerated `transition-transform duration-150` eliminates sluggish accordion reflows.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

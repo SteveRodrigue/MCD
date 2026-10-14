@@ -27,7 +27,7 @@ Under **ADR-0060**, parameters configuring conditional step gates and parameters
 
 Steps execute conditionally by specifying `gate` from the 9 canonical `StepGate` values, parameterized by typed `gateParams`:
 
-- `"THEN"`: Executes Step $N$ only if the referenced step (or Step $N-1$) completed successfully (not skipped and not failed; RR v1.8 p. 24 "Then"). Use `gateParams: { "negate": true }` for fallbacks ("if Step failed").
+- `"THEN"`: Executes Step $N$ only if the referenced step (or Step $N-1$) completed successfully (not skipped and not failed; RR v1.8 p. 44 "Then"). Use `gateParams: { "negate": true }` for fallbacks ("if Step failed").
   - `gateParams`: `{ step?: string, negate?: boolean }`.
 - `"IF_RESULT"`: Executes Step $N$ only if the referenced step produced the specified milestone fact.
   - `gateParams`: `{ fact: ResultFact, step?: string, negate?: boolean }`.

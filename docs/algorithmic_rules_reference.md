@@ -65,7 +65,7 @@ stateDiagram-v2
 
 ---
 
-### 2.1 Setup Phase & Multi-Hero Scaling State Machine (RR v1.8 p. 23–24)
+### 2.1 Setup Phase & Multi-Hero Scaling State Machine (RR v1.8 p. 51)
 
 ```mermaid
 stateDiagram-v2
@@ -87,7 +87,7 @@ stateDiagram-v2
 ```
 
 > [!IMPORTANT]
-> **Mulligan Rule Invariant (RR v1.8 p. 23):** On mulligan, rejected cards are placed directly into the player's **discard pile** and replacement cards are drawn from the top of the draw deck. The player deck is **NOT** shuffled during mulligan.
+> **Mulligan Rule Invariant (RR v1.8 p. 51):** On mulligan, rejected cards are placed directly into the player's **discard pile** and replacement cards are drawn from the top of the draw deck. The player deck is **NOT** shuffled during mulligan.
 
 * **Multi-Hero Scaling Formulae ($N = \text{playerCount}$):**
   * $\text{Villain.MaxHealth} = \begin{cases} N \times \text{Card.Health} & \text{if } \text{healthPerHero} = \text{true} \\ \text{Card.Health} & \text{otherwise} \end{cases}$
@@ -175,7 +175,7 @@ function ProcessEventPipeline(event: GameEvent, state: GameState): GameState {
 }
 ```
 
-### Simultaneous Trigger Ordering (RR v1.8 p. 16)
+### Simultaneous Trigger Ordering (RR v1.8 p. 5)
 If multiple `FORCED` triggers or multiple voluntary reactions are eligible at the same step, the active/first player chooses the sequence of resolution.
 
 ---
@@ -209,8 +209,8 @@ If multiple `FORCED` triggers or multiple voluntary reactions are eligible at th
 ### Algorithm 5.4: BASIC_THWART & THREAT_REMOVAL (RR v1.8 p. 11, 20, 29, 30)
 * **Thwart Action & Threat Removal Requirements:**
   * Requires at least one eligible scheme target in play with threat $> 0$.
-  * **Crisis Keyword (RR v1.8 p. 11):** While a side scheme with a Crisis icon is in play, players cannot remove threat from the main scheme.
-  * **Patrol Keyword (RR v1.8 p. 20):** While an engaged minion with Patrol is in play with the acting player, that player cannot thwart the main scheme.
+  * **Crisis Keyword (RR v1.8 p. 14):** While a side scheme with a Crisis icon is in play, players cannot remove threat from the main scheme.
+  * **Patrol Keyword (RR v1.8 p. 32):** While an engaged minion with Patrol is in play with the acting player, that player cannot thwart the main scheme.
   * If all side schemes have $0$ threat and the main scheme is blocked by Crisis or Patrol (or has $0$ threat), no threat can be removed, and the thwart action cannot be initiated.
 
 ### Algorithm 5.5: ABILITY_INITIATION & TARGET_VALIDITY (RR v1.8 p. 15–16, 29)
@@ -265,7 +265,7 @@ The engine pipeline dispatches discrete lifecycle triggers and performs atomic l
 
 ---
 
-## 7. Form Change Invariants (RR v1.8 p. 8 "Change Form")
+## 7. Form Change Invariants (RR v1.8 p. 21 "Change Form")
 
 * **Basic Form Change (1/Round):**
   $$\text{Player.basicChangeFormUsedThisRound} = \begin{cases} \text{true} & \text{after basic flip action} \\ \text{false} & \text{upon } \text{ROUND\_BEGAN} \end{cases}$$

@@ -2,6 +2,7 @@
 
 * **Status:** Accepted
 * **Date:** 2026-08-27
+* **Authors:** MCD Core Team
 * **Deciders:** Core Engineering Team & Project Maintainer
 * **Consulted:** Open Source Contributors & Community Modding Standards
 * **Informed:** MCD Community
@@ -101,6 +102,13 @@ export interface IContentStorageDriver {
   saveFanMadeScenario(scenarioPkg: CustomScenarioPackage): Promise<void>;
 }
 ```
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

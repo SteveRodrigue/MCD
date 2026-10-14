@@ -201,8 +201,11 @@ and line for each.
 Severity: **Critical** (D1, D7 — actively misleading), **Major** (D3, D4, D5), **Minor** (D2, D6, D8).
 
 > [!IMPORTANT]
-> Every RR v1.8 citation (e.g. "RR v1.8 p. 16") must be verified against
-> `references/rules/` (open `references/mc_rulesreference_v18_compressed.pdf` only if the structured reference cannot confirm it). A wrong page reference is a Critical finding.
+> Every RR v1.8 citation (e.g. "RR v1.8 p. 16") must be verified. Verify the rule text against
+> `references/rules/`. `references/rules/` carries no page numbers, so this skill is explicitly
+> allowed to open `references/mc_rulesreference_v18_compressed.pdf` to verify page numbers. This
+> permission overrides the `AGENTS.md` PDF restriction for documentation audits only.
+> A wrong page reference is a Critical finding.
 
 ---
 
@@ -372,7 +375,7 @@ The audit is complete only when **all** hold:
 - [ ] `docs/decisions/README.md` table is complete, ID-ordered, and status-accurate.
 - [ ] The Mermaid ADR lineage graph covers every lineage-participating ADR, parses cleanly, and its supersede edges match ADR statuses.
 - [ ] All relative links and ADR references resolve.
-- [ ] RR v1.8 citations verified against `references/rules/` (PDF only as fallback).
+- [ ] RR v1.8 citations verified: rule text against `references/rules/`, page numbers against the PDF.
 - [ ] `git status` proves **only `.md` files changed** — no code was written, reformatted, or deleted.
 - [ ] Every suspected code defect has a filed, peer-reviewable GitHub issue (`#XX`) — no workarounds, no silent doc-to-bug alignment.
 - [ ] Every Critical/architectural finding was explicitly approved by the user before editing.

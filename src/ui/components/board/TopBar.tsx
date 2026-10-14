@@ -42,11 +42,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <>
-      <header
-        className={`bg-amber-50 border-b-3 border-comic-black shadow-comic px-4 py-2 flex flex-wrap items-center justify-between gap-3 z-40 fixed top-0 left-0 transition-all duration-300 ${
-          isLogOpen ? 'right-0 lg:right-[420px]' : 'right-0'
-        }`}
-      >
+      <header className="bg-amber-50 border-b-3 border-comic-black shadow-comic px-4 py-2 flex flex-wrap items-center justify-between gap-3 z-40 sticky top-0 w-full transition-all duration-300">
         {/* Left: Round & Phase Badges */}
         <div className="flex items-center gap-3">
           {/* Round Badge */}
@@ -63,9 +59,14 @@ export const TopBar: React.FC<TopBarProps> = ({
                 : 'bg-rose-600 text-white'
             }`}
           >
-            {gameState.phase === GamePhase.PLAYER_PHASE
-              ? 'HEROES ASSEMBLE! (PLAYER PHASE)'
-              : 'VILLAIN PHASE'}
+            {gameState.phase === GamePhase.PLAYER_PHASE ? (
+              <>
+                <span className="hidden lg:inline">HEROES ASSEMBLE! (PLAYER PHASE)</span>
+                <span className="lg:hidden">PLAYER PHASE</span>
+              </>
+            ) : (
+              'VILLAIN PHASE'
+            )}
           </div>
         </div>
 
@@ -73,8 +74,8 @@ export const TopBar: React.FC<TopBarProps> = ({
         {gameState.players.length > 1 && (
           <div className="flex items-center gap-1.5 bg-white p-1 rounded-lg border-2 border-comic-black shadow-comic-sm">
             <span className="text-[11px] font-bold text-slate-500 uppercase px-2 flex items-center gap-1">
-              <Compass className="w-3.5 h-3.5 text-comic-blue" />
-              Jump to Hero:
+              <Compass className="w-3.5 h-3.5 text-comic-blue shrink-0" />
+              <span className="hidden md:inline">Jump to Hero:</span>
             </span>
             {gameState.players.map((p, idx) => {
               const isFirstPlayer = gameState.firstPlayerIndex === idx;
@@ -102,7 +103,8 @@ export const TopBar: React.FC<TopBarProps> = ({
                     <Crown className="w-3.5 h-3.5 text-comic-yellow shrink-0 fill-comic-yellow" />
                   )}
                   <span>
-                    Seat {idx + 1}: {p.activeFormCard.name}
+                    Seat {idx + 1}
+                    <span className="hidden sm:inline">: {p.activeFormCard.name}</span>
                   </span>
                   {isActiveTurn && (
                     <span className="text-[9px] bg-comic-yellow text-comic-black px-1 rounded font-black">
@@ -149,7 +151,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             title="Click to toggle Developer Mode"
           >
             <Wrench className={`w-3.5 h-3.5 ${devMode ? 'text-slate-950' : 'text-slate-500'}`} />
-            <span>DEV MODE: {devMode ? 'ON' : 'OFF'}</span>
+            <span className="hidden sm:inline">DEV MODE: {devMode ? 'ON' : 'OFF'}</span>
           </button>
 
           {/* Combat Log Drawer Button */}
@@ -162,7 +164,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             }`}
           >
             <BookOpen className="w-4 h-4" />
-            <span>COMBAT LOG {isLogOpen ? '(OPEN)' : ''}</span>
+            <span className="hidden sm:inline">COMBAT LOG {isLogOpen ? '(OPEN)' : ''}</span>
           </button>
 
           {/* Report a Problem Button */}
@@ -191,7 +193,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             className="px-3 py-1.5 font-comic text-xs bg-white hover:bg-rose-50 text-comic-red rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span>NEW GAME</span>
+            <span className="hidden sm:inline">NEW GAME</span>
           </button>
         </div>
       </header>

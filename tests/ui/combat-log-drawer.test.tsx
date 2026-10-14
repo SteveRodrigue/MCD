@@ -2,7 +2,6 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CombatLogDrawer } from '../../src/ui/components/board/CombatLogDrawer';
 import { GameBoard } from '../../src/ui/components/board/GameBoard';
-import { TopBar } from '../../src/ui/components/board/TopBar';
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
 import { GameLogEntry, GamePhase, GameState } from '../../src/engine/models';
 import { setupGame } from '../../src/engine/state/game-setup';
@@ -156,41 +155,6 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
 
     // After switching to French, should show French translated text
     expect(screen.getByText('Iron-Man a infligé 2 dégâts à Rhino.')).toBeDefined();
-  });
-
-  it('shifts TopBar right edge to accommodate docked combat log on desktop', () => {
-    const { container, rerender } = render(
-      <GameSettingsProvider>
-        <TopBar
-          gameState={mockGameState as GameState}
-          activeSeatIndex={0}
-          onSelectSeat={vi.fn()}
-          onToggleLog={vi.fn()}
-          isLogOpen={false}
-          onReset={vi.fn()}
-        />
-      </GameSettingsProvider>,
-    );
-
-    const headerClosed = container.querySelector('header');
-    expect(headerClosed?.className).toContain('right-0');
-    expect(headerClosed?.className).not.toContain('lg:right-[420px]');
-
-    rerender(
-      <GameSettingsProvider>
-        <TopBar
-          gameState={mockGameState as GameState}
-          activeSeatIndex={0}
-          onSelectSeat={vi.fn()}
-          onToggleLog={vi.fn()}
-          isLogOpen={true}
-          onReset={vi.fn()}
-        />
-      </GameSettingsProvider>,
-    );
-
-    const headerOpen = container.querySelector('header');
-    expect(headerOpen?.className).toContain('lg:right-[420px]');
   });
 
   it('renders source card badge when log entry has source attribution (Issue #204)', () => {

@@ -117,7 +117,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 | Feature | Ability Cost (`cost.exhaustSelf` / `cost.exhaustCard`) | Effect Step (`EXHAUST` / `READY`) |
 | :--- | :--- | :--- |
-| **Rules Reference** | **"Cost" (p. 8)** | **"Exhaust" (p. 13)** & **"Ready" (p. 23)** |
+| **Rules Reference** | **"Cost" (p. 13)** | **"Exhaust" (p. 19)** & **"Ready" (p. 36)** |
 | **Timing Location** | **Before arrow `→`** (Prerequisite payment) | **After arrow `→`** (Resolution effect payoff) |
 | **Engine Reducer** | `cost-engine.ts` / `legality-checker.ts` | `executeEffect()` in `effects/index.ts` |
 | **Card Editor UI** | **"Exhaust Host Card"** checkbox in Cost Section | **`EXHAUST` / `READY`** primitive in Resolution Steps Section |

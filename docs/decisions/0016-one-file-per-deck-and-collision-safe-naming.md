@@ -2,6 +2,7 @@
 
 * **Status:** Accepted (Option 3 Approved by Project Maintainer)
 * **Date:** 2026-08-27
+* **Authors:** MCD Core Team
 * **Deciders:** Core Engineering Team & Project Maintainer
 * **Consulted:** Open Source Contributors & Filesystem Modding Guidelines
 * **Informed:** MCD Community
@@ -110,6 +111,13 @@ Using Vite's `import.meta.glob` or static bundling:
 const prebuiltFiles = import.meta.glob('../../../data/prebuilt_decks/*.json', { eager: true });
 ```
 Adding a new prebuilt deck in the future requires only creating a new `.json` file in `data/prebuilt_decks/` (e.g. `thor_aggression.json`). Vite and the engine loader will discover and register it automatically with zero code changes!
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

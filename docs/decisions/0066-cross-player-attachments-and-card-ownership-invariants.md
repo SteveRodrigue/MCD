@@ -11,7 +11,7 @@
 
 In Marvel Champions LCG, several player cards feature the rule _"Play under any player's control"_ (e.g. `01057` Combat Training, `01065` Heroic Intuition, and `01081` Armored Vest), or attach to characters controlled by other players (e.g. `01074` Inspired attaching to a teammate's ally).
 
-Per the Marvel Champions Rules Reference (RR v1.8 p. 23 "Ownership and Control"):
+Per the Marvel Champions Rules Reference (RR v1.8 p. 31 "Ownership and Control"):
 
 1. _"A card's owner is the player whose deck contained the card at the start of the game."_
 2. _"A card enters play under the control of the player who played it, unless an ability specifies otherwise."_

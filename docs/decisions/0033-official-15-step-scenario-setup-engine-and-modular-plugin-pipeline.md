@@ -4,11 +4,12 @@
 * **Date:** 2026-08-31
 * **Authors:** MCD Core Team
 * **Deciders:** User & Antigravity
+* **Supersedes:** [ADR-0010](0010-scenario-catalog-and-multi-hero-setup.md)
 
 ---
 
 ## Context and Problem Statement
-In *Marvel Champions: The Card Game* (Rules Reference v1.8 p. 27–28 "Appendix I: Setup"), initializing a game requires executing an official **15-step setup protocol** that dynamically compiles player decks, scales villain hit points and scheme target threat based on player seat count ($N = \text{playerCount}$), and executes unique scenario instructions defined on **Main Scheme Stage 1A**.
+In *Marvel Champions: The Card Game* (Rules Reference v1.8 p. 51 "Appendix II: Setup"), initializing a game requires executing an official **15-step setup protocol** that dynamically compiles player decks, scales villain hit points and scheme target threat based on player seat count ($N = \text{playerCount}$), and executes unique scenario instructions defined on **Main Scheme Stage 1A**.
 
 Across all 170 official MarvelsDB / Zzorba packs, there are **62 distinct Scenario Main Scheme 1A setups** (spanning Rhino, Klaw, Ultron, Green Goblin, Red Skull, Kang, Thanos, Sinister Six, Apocalypse, etc.). These setups include:
 * Modular encounter set inclusion (e.g. *Bomb Scare*, *Masters of Evil*, *Legions of Hydra*, *Standard I/II*, *Expert I/II*).
@@ -24,7 +25,7 @@ How should we design a standardized, modular, and 100% data-driven Scenario Setu
 ---
 
 ## Decision Drivers
-* **Driver 1: Official Rules Fidelity (RR v1.8 p. 27–28):** Implement the exact 15-step sequence in chronological order.
+* **Driver 1: Official Rules Fidelity (RR v1.8 p. 51):** Implement the exact 15-step sequence in chronological order.
 * **Driver 2: Scenario Plugin Architecture:** Allow scenarios to be declared as modular plugins (`ScenarioPlugin`) that can be loaded, configured, and simulated independently.
 * **Driver 3: Strict Encounter Set Taxonomy & Modular Slot Customization:** Distinguish between **Scenario-Mandatory Sets** (Villain set, Standard/Expert set, scenario-required secondary sets) and **Customizable Modular Slots** (where players may replace the recommended default set, e.g. *Bomb Scare*, with other modular sets complying with scenario constraints).
 * **Driver 4: Headless Simulation Integration:** Enable instant game creation via `createGame(scenarioConfig, playerConfigs)` for automated headless match testing.
@@ -64,7 +65,7 @@ Parse Main Scheme 1A raw text dynamically at runtime to figure out setup steps.
 
 **Chosen Option:** **Option 2: Declarative Scenario Plugin Architecture**
 
-### 🏗️ The 15-Step Setup State Machine (RR v1.8 p. 27–28)
+### 🏗️ The 15-Step Setup State Machine (RR v1.8 p. 51)
 
 ```mermaid
 flowchart TD
@@ -173,6 +174,13 @@ graph TD
 2. **Visual Retro Pop-Art Treatment:**
    * **Mandatory Sets:** Displayed with retro black-and-yellow comic badge borders with a locked icon (`🔒 MANDATORY`).
    * **Customizable Slots:** Rendered as interactive Ben-Day halftone selectors showing set icon, card count (e.g. `6 cards`), hazard/boost previews, and a "Defaults" restore trigger.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

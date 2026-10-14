@@ -7,7 +7,7 @@
 
 ---
 
-## Context
+## Context and Problem Statement
 
 In card game engine architecture, checking specific card IDs (e.g. `if (card.code === '01073')` for _The Triskelion_, `if (card.code === '01008')` for _Web-Shooter_, `if (card.code === '01084')` for _Nick Fury_) introduces tight coupling, brittleness, and technical debt. As new heroes, allies, scenarios, and encounter sets are added, hardcoded branching becomes unmaintainable.
 
@@ -19,7 +19,21 @@ Per the MCD architectural mandate, all game rules must be derived strictly from:
 
 ---
 
-## Decision
+## Decision Drivers
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
+## Decision Outcome
 
 We establish the **Zero Card-Code Coupling Principle**:
 
@@ -57,6 +71,13 @@ All player limits and board parameters are derived dynamically from state querie
 ### 5. Complex Scenario Mechanics
 
 If a future Scenario introduces a truly novel mini-game mechanic that cannot be composed via standard primitives, that logic will reside in a **named specialized effect function** registered in `src/engine/effects/` rather than hardcoded in the core dispatch loops.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

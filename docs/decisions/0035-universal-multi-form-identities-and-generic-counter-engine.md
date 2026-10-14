@@ -30,6 +30,13 @@ How should we design an extensible, data-driven architecture to support arbitrar
 
 ---
 
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
 ## Decision Drivers
 * **Driver 1: Open Form Architecture:** Support 2, 3, or $N$ identity forms and persistent form upgrades cleanly on `PlayerState`.
 * **Driver 2: Zero Bespoke Counter Fields (ADR-0018):** Never create hardcoded fields like `ammoCounters` or `chargeCounters`. Use a universal `counters: Record<string, number>` map on all in-play entities.
@@ -139,6 +146,13 @@ To support all cross-card interactions discovered in the catalog audit, counter 
   }
 }
 ```
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

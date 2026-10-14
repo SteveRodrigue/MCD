@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Broken links and anchors repaired in `CHANGELOG.md` (renamed ADR-0038/0045/0046/0052 files, RR glossary anchor), `docs/roadmap_and_milestones.md`, `docs/visual-guides/README.md`, `docs/visual-guides/02-ability-lifecycle.md` and `docs/specifications/supplemental/04_universal_card_filter.md`.
   - Hardcoded effect primitive counts removed from `docs/roadmap_and_milestones.md`, `QUICK_REFERENCE.md` and the supplemental specification `README.md`; they now point to `EffectTypeSchema` and the `npm run report:declarations` usage report.
   - `documentation-audit` skill: may open the RR v1.8 PDF to verify page numbers, since `references/rules/` has none.
+  - RR v1.8 page citations: 98 page numbers that followed an older Rules Reference pagination corrected in ADRs, specifications, `docs/algorithmic_rules_reference.md`, `docs/roadmap_and_milestones.md` and `implementation_plan.md`. Each new page was checked against the rule heading in the RR v1.8 PDF. ADR-0033 now cites "Appendix II: Setup" (p. 51). Historical CHANGELOG entries were not changed.
+  - `CONTRIBUTING.md`: Step 3 now points to `src/engine/effects/index.ts` instead of the nonexistent `src/engine/state/reducers/`.
 
 - **Test / Gate (Engine): 100-game headless simulation release gate across 5 Core heroes vs Rhino ([Issue #304](https://github.com/SteveRodrigue/MCD/issues/304))**
   - Implements the Gate 1 ("Rhino Release") automated 100-game headless match simulation release criterion (Roadmap 1.4) in `scripts/simulate-games.ts` (`npm run simulate`).

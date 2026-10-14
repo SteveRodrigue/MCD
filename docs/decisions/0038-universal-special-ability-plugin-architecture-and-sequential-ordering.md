@@ -7,9 +7,9 @@
 
 ---
 
-## Context
+## Context and Problem Statement
 
-In Marvel Champions (RR v1.8 p. 28 "Special"), "Special" abilities represent unique, non-standard activation sequences that can only be triggered when explicitly commanded by another card effect:
+In Marvel Champions (RR v1.8 p. 40 "Special"), "Special" abilities represent unique, non-standard activation sequences that can only be triggered when explicitly commanded by another card effect:
 
 1. **Black Panther (_Wakanda Forever!_ `01043`):** Triggers the Special ability of each controlled Black Panther upgrade (_Energy Daggers_, _Panther Claws_, _Tactical Genius_, _Panther Suit_) in the player's chosen sequential order, applying enhanced **Finisher Bonuses** to the final step.
 2. **Doctor Strange (_Invocation Deck_):** Resolves custom spells (_Crimson Bands of Cyttorak_, _Seven Rings of Raggadorr_, _Vapors of Valtorr_) as Special actions.
@@ -17,7 +17,17 @@ In Marvel Champions (RR v1.8 p. 28 "Special"), "Special" abilities represent uni
 
 Embedding complex multi-card execution pipelines and interactive reordering algorithms directly into the monolithic `effects/index.ts` switch statement creates architectural coupling, bloats the core primitive engine, and hinders the integration of fan-made content and future expansion heroes.
 
-## Decision
+## Decision Drivers
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+## Decision Outcome
 
 We establish a dedicated **Special Ability Plugin Registry** in `src/engine/specials/` that decouples hero-specific and scenario-specific Special ability mechanics from the universal headless primitive dispatcher:
 
@@ -43,6 +53,11 @@ We establish a dedicated **Special Ability Plugin Registry** in `src/engine/spec
    - `effects/index.ts` exposes a card-agnostic primitive `EXECUTE_SPECIAL` (and aliased `EXECUTE_WAKANDA_FOREVER`) that resolves through `getSpecialHandler(specialId)`.
 4. **Interactive Sequential Ordering Modal:**
    - When a sequence involves player choice over multiple items, the engine enqueues a decision prompt (`WAKANDA_FOREVER_SEQUENCE_ORDER`), rendering an interactive Drag & Drop / Left-to-Right reordering modal (`WakandaForeverModal.tsx`) with a reference card tooltip on the left and dynamic Finisher highlighting on the right.
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ## Consequences
 

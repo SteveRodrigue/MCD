@@ -43,7 +43,7 @@ Ad-hoc string tokens (`amountFormula`) are completely retired in favor of this s
 
 ## 2. Modifiers, Clamping & Rules Reference (RR v1.8) Calculations
 
-Per **RR v1.8 p. 11 ("Modifiers", "Calculation")** and **p. 31 ("Variable Numbers", "X")**:
+Per **RR v1.8 p. 29 ("Modifiers", "Calculation")** and **p. 31 ("Variable Numbers", "X")**:
 
 1. All dynamic values are calculated at the moment of ability resolution.
 2. Fractions are rounded down (`Math.floor`).

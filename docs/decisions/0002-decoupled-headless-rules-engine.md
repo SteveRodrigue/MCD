@@ -40,6 +40,13 @@ Coupling rule execution directly to a rendering framework or UI components (such
 
 ---
 
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
 ## Consequences
 
 ### Positive Consequences

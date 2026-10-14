@@ -22,7 +22,7 @@ Following the development of the Card Supplemental Editor ([ADR-0045](0045-card-
    Five fields in `TriggerFilterSchema` (`damageSourceType`, `damageTargetType`, `defeatEntityType`, `defeatByAttack`, `formChangeDirection`) had zero references in `src/engine/` and zero occurrences in any pack JSON. The trigger dispatcher (`matchesTriggerFilter` in `src/engine/triggers/trigger-dispatcher.ts`) never evaluated them. Maintaining non-functional schema fields violates the project principle against unapproved legacy shims or dead definitions.
 
 3. **Data Defect on Powered Gauntlets (`01038`):**  
-   Iron Man's *Powered Gauntlets* (`01038`) erroneously declared `"resourceCost": { "energy": 1 }` in its ability cost in `src/data/supplemental/pack/core.json`. Its printed text (*"Hero Action (attack): Exhaust Powered Gauntlets → deal 1 damage to an enemy..."*) and Rules Reference v1.8 p. 9 ("Cost Arrow") mandate that only exhaustion precedes the cost arrow; no resource payment is required.
+   Iron Man's *Powered Gauntlets* (`01038`) erroneously declared `"resourceCost": { "energy": 1 }` in its ability cost in `src/data/supplemental/pack/core.json`. Its printed text (*"Hero Action (attack): Exhaust Powered Gauntlets → deal 1 damage to an enemy..."*) and Rules Reference v1.8 p. 14 ("Cost Arrow") mandate that only exhaustion precedes the cost arrow; no resource payment is required.
 
 ---
 
@@ -58,6 +58,13 @@ Following the development of the Card Supplemental Editor ([ADR-0045](0045-card-
 - **Zero Speculative Dead Weight:** Implementing engine features without real card requirements creates dead code and maintenance burden. Purging the 5 un-evaluated fields aligns the schema directly with `matchesTriggerFilter`, which actively evaluates exactly 8 canonical properties (`attackerKind`, `attackerCardFilter`, `sourceCardCode`, `sourceInstanceId`, `targetPlayerScope`, `targetForm`, `targetType`, `isEngaged`).
 - **Editor Completeness:** Cards like Black Cat (`01002`, `attackCost: 0`), Tac Team (`01072`, `playUnderAnyPlayerControl: true`), Hulk (`01050`, `sourceCardCode: "01050"`), and Tony Stark (`01029a`, `step.filter` for Tech upgrades) can now be viewed, edited, and verified natively in the Card Supplemental Editor GUI.
 - **Gameplay Fidelity:** Powered Gauntlets (`01038`) can now be activated as printed: exhausting the card to deal 1 damage (2 if Aerial) without requiring an energy resource payment.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

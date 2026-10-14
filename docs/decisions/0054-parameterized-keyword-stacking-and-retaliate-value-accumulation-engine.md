@@ -9,7 +9,7 @@
 
 ## Context and Problem Statement
 
-Per Marvel Champions Rules Reference (RR v1.8 p. 24 "Retaliate"):
+Per Marvel Champions Rules Reference (RR v1.8 p. 38 "Retaliate"):
 > "After a character with the retaliate X keyword is attacked, it deals X damage to the attacking character."
 > "If a character has multiple instances of retaliate, the values of each instance are added together."
 > "If a character with retaliate X is defeated by the attack, retaliate does not trigger."
@@ -26,7 +26,7 @@ How should parameterized keywords and Retaliate value accumulation be formally m
 
 ## Decision Drivers
 
-- **Driver 1: Marvel Champions Rules Reference (RR v1.8 p. 24):** Strict adherence to official rules governing retaliate accumulation, survival requirements, and attack-only triggers.
+- **Driver 1: Marvel Champions Rules Reference (RR v1.8 p. 38):** Strict adherence to official rules governing retaliate accumulation, survival requirements, and attack-only triggers.
 - **Driver 2: Zero Technical Debt in Declarative Supplemental Data:** Supplemental card definitions must use canonical structured parameter objects (`{ keyword: "Retaliate", amount: 1 }`) rather than unstructured string concatenation.
 - **Driver 3: Single Source of Truth for Character Retaliate:** Centralize all dynamic character retaliate calculations into a single universal engine function (`getEffectiveRetaliate(entity, state?)`).
 - **Driver 4: Headless Decoupling & Universal Character Parity:** The same calculation and triggering rules must apply symmetrically to Heroes, Allies, Minions, and Villains.
@@ -78,7 +78,7 @@ Option 3 provides a clean, robust, and rules-faithful architecture:
 
 ### Option 3: Centralized Dynamic Retaliate Accumulator with Canonical Structured Modeling
 - **Pros:**
-  - Strict compliance with RR v1.8 p. 24 value addition invariant.
+  - Strict compliance with RR v1.8 p. 38 value addition invariant.
   - Zero technical debt in supplemental data (`core.json` and `core_encounter.json`).
   - Seamless support for stacking multiple instances across base card + attachments + upgrades.
   - Transparent backward compatibility for raw upstream cards.

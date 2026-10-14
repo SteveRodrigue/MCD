@@ -2,7 +2,7 @@
 
 > [!NOTE]
 > **Purpose:** This folder is a **companion, diagram-first atlas** to the prose-and-schema
-> specifications in [`docs/specifications/`](../specifications/README.md). It does not
+> specifications in [`docs/specifications/`](../specifications/). It does not
 > redefine any contract — every diagram here links back to the authoritative spec section,
 > ADR, or source file that governs the behavior shown.
 >

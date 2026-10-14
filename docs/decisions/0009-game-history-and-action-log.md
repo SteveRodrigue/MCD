@@ -7,13 +7,23 @@
 
 ---
 
-## Context
+## Context and Problem Statement
 In digital card games like *Marvel Champions*, players frequently need to:
 1. **Understand Immediate Actions During Play:** Inspect the combat log to see why damage occurred, what boost icons were drawn, which interrupts triggered, and why a status card was discarded.
 2. **Review Match Timeline Post-Game:** Review a completed game round-by-round to analyze decision branches, close calls, misplays, and key strategic turning points.
 3. **Immersive 60s Comic Pop-Art Presentation:** Accompany log entries with dynamic comic onomatopoeia (`THWIP!`, `POW!`, `WHAM!`, `CLANG!`, `FOILED!`) to bring table actions to life.
 
-## Decision
+## Decision Drivers
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+## Decision Outcome
 We establish a **Structured Invariant Game History Log (`state.log`)**:
 1. **First-Class Immutable Event Entries (`GameLogEntry`):**
    * Every engine mutation emits a strongly-typed `GameLogEntry` containing:
@@ -31,6 +41,11 @@ We establish a **Structured Invariant Game History Log (`state.log`)**:
 2. **Dual-Use Presentation & Comic Book Dialogue Engine (ADR-0037):**
    * **In-Game (Action Chronicle Drawer):** A full-height comic issue drawer featuring 4-tier visual dialogue differentiation (`hero_speech`, `hero_thought`, `villain_shout`, `narrator_caption`), localized sound effects, and character flavor quotes.
    * **Post-Game (Match Review Modal / Log Export):** Full searchable, filterable chronological timeline with round headers, damage summaries, and exportable Markdown report format.
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ## Consequences
 ### Positive

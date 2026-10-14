@@ -1,11 +1,13 @@
-# 0073. Global Unicity Enforcement Across Players and Card Ingress
+# [ADR-0073] Global Unicity Enforcement Across Players and Card Ingress
 
-Date: 2026-10-01
-Status: Accepted
+- **Status:** Accepted
+- **Date:** 2026-10-01
+- **Authors:** MCD Core Team
+- **Deciders:** User & Antigravity
 
 ## Context & Problem Statement
 
-In Marvel Champions, cards bearing the unique icon ([unique]) represent a singular entity in the Marvel universe (Rules Reference v1.8 pp. 28–29). Under official rules:
+In Marvel Champions, cards bearing the unique icon ([unique]) represent a singular entity in the Marvel universe (Rules Reference v1.8 p. 45). Under official rules:
 1. A player card in an out-of-play state that matches a card in play cannot enter play (it cannot be played or put into play, and any effect attempting to do so has no effect).
 2. Two unique cards match if:
    - They share a title, and both have no subtitle and no alter-ego title (e.g. two copies of *Nick Fury* or *Helicarrier*).
@@ -31,7 +33,7 @@ In GitHub Issue #187, a player was able to play *Nick Fury* (`01084`) even when 
 
 ## Decision Drivers
 
-- **RR v1.8 pp. 28–29 (Unique Icon):** Global table-wide unicity must be enforced strictly across all seats, identities, tableaus, and in-play cards.
+- **RR v1.8 p. 45 (Unique Icon):** Global table-wide unicity must be enforced strictly across all seats, identities, tableaus, and in-play cards.
 - **Engine-UI Parity:** `evaluateCardPlayability` and `canPlayCard` must evaluate identical unicity rules so the UI never displays an unplayable card as playable.
 - **Ingress Safety:** No ability (e.g. `PUT_INTO_PLAY` from discard, deck, or set-aside) may put a matching unique card into play.
 - **Resource Spending Legality:** Disallowing a card from entering play or being played must not prevent a player from spending that card from hand as a resource.

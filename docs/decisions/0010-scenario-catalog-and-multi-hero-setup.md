@@ -2,8 +2,9 @@
 
 * **Status:** Superseded by [ADR-0033](0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md)
 * **Date:** 2026-08-26
+* **Authors:** MCD Core Team
 * **Deciders:** Core Architecture Team
-* **Consulted:** Rules Reference v1.8 (Setup Sequence p. 23–24), Learn to Play Guide
+* **Consulted:** Rules Reference v1.8 (Setup Sequence p. 51), Learn to Play Guide
 * **Informed:** MCD Engine & UI Developers
 
 ---
@@ -22,7 +23,7 @@ We needed a clean, scalable architecture to:
 
 ## Decision Drivers
 
-* **Rules Authority Compliance (RR v1.8 p. 23–24):** Exact adherence to official 15-step setup (starting in Alter-Ego form, drawing printed hand size, discarding and redrawing during mulligan, shuffling discards back into deck).
+* **Rules Authority Compliance (RR v1.8 p. 51):** Exact adherence to official 15-step setup (starting in Alter-Ego form, drawing printed hand size, discarding and redrawing during mulligan, shuffling discards back into deck).
 * **Multi-Hero Solo Flexibility:** Seamlessly allow solo players to play true solo (1 hero) or two-handed/multi-hero (2–4 heroes).
 * **Extensible Scenario & Modular Set Architecture:** Decouple villain identity, stage cards, main scheme 1A/1B, and modular sets so new scenarios (Klaw, Ultron, Mutagen Formula) can be added as data definitions.
 * **Separation of Concerns:** Keep deck building separate from gameplay/setup flow.
@@ -58,6 +59,13 @@ We needed a clean, scalable architecture to:
      $$\text{hand} \leftarrow \text{keptCards} \cup \text{drawnReplacements}$$
      $$\text{deck} \leftarrow \text{shuffle}(\text{deck} \cup \text{mulliganDiscards})$$
    * Automatically transitions to `GamePhase.PLAYER_PHASE` Round 1 once all seats complete their mulligan.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

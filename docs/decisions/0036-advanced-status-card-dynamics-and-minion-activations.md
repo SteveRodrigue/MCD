@@ -9,19 +9,26 @@
 
 ## Context and Problem Statement
 Expansion packs introduce deeper tactical dynamics to status cards and enemy activations:
-1. **Advanced Status Scaling (`Stalwart` & `Steady` - RR v1.8 p. 28):**
+1. **Advanced Status Scaling (`Stalwart` & `Steady` - RR v1.8 pp. 40–41):**
    * **Stalwart:** Character is completely immune to `STUNNED` and `CONFUSED`. Any stun/confuse attempt is discarded without effect.
    * **Steady:** Character requires **2 copies** of a status card to be incapacitated (e.g. 1st Stun does not cancel attacks; 2nd Stun cancels the attack and discards both Stun cards).
-2. **Minion Activation Modifiers (`Villainous` & `Quickstrike` - RR v1.8 p. 18, 30):**
+2. **Minion Activation Modifiers (`Villainous` & `Quickstrike` - RR v1.8 pp. 36, 47):**
    * **Villainous:** When an elite minion attacks or schemes, it deals and resolves a facedown boost card, identical to a villain activation.
    * **Quickstrike:** When a minion engages a Hero (enters play), it immediately triggers an attack activation against that hero.
-3. **Encounter Entry Threat Modifiers (`Incite X` & `Hinder X` - RR v1.8 p. 14, 16):**
+3. **Encounter Entry Threat Modifiers (`Incite X` & `Hinder X` - RR v1.8 pp. 22, 24):**
    * **Incite $X$:** Places $X$ threat on the main scheme immediately upon being revealed.
    * **Hinder $X$:** Enters play with $X \times \text{per\_hero}$ additional threat.
 
 Previously, status cards were modeled as simple boolean flags, minions never drew boost cards, and minion entry did not trigger combat.
 
 How should we model these advanced status thresholds and minion activations in the rules engine?
+
+---
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 
@@ -56,6 +63,13 @@ flowchart TD
     SingleCheck -- Yes --> CancelAction1["Cancel Action & Discard 1 Status Card"]
     SingleCheck -- No --> ExecuteAction["Execute Action Normally"]
 ```
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

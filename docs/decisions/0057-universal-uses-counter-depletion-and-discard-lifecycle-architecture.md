@@ -9,7 +9,7 @@
 
 ## Context and Problem Statement
 
-Under the official Marvel Champions Rules Reference (RR v1.8 p. 30), the **Uses (X)** keyword governs cards that enter play with a finite number of counters:
+Under the official Marvel Champions Rules Reference (RR v1.8 p. 46), the **Uses (X)** keyword governs cards that enter play with a finite number of counters:
 > *"When a card with the uses keyword enters play, place X counters on it, of the specified type. When a card with uses has no counters on it, discard it."*
 
 Conversely, cards that enter play with counters *without* the "Uses" keyword—most notably Hawkeye (Core Set 01066: *"Hawkeye enters play with 4 arrow counters on him."*)—do not discard when empty; they remain in play as valid allies with 0 counters, retaining full basic attack, thwart, and defense capabilities until defeated through damage or consequence.
@@ -26,9 +26,9 @@ A unified, centralized, and card-agnostic lifecycle architecture is required to 
 
 ## Decision Drivers
 
-- **RR v1.8 Rules Fidelity:** Strictly enforce RR v1.8 p. 30 "Uses (X)" discard rules while honoring non-discard exceptions (e.g. Hawkeye 01066 with `discardOnEmpty: false`).
+- **RR v1.8 Rules Fidelity:** Strictly enforce RR v1.8 p. 46 "Uses (X)" discard rules while honoring non-discard exceptions (e.g. Hawkeye 01066 with `discardOnEmpty: false`).
 - **Atomic Card Conservation (ADR-0040):** Ensure cards leaving play are removed atomically via `removeCardFromAllZones`, avoiding phantom duplicates in play or discard.
-- **Attachment & Tucked Card Cascading (RR v1.8 p. 5, 6):** Ensure any attachments and cards tucked underneath an exhausted uses host card are cleanly routed to encounter or player discard piles.
+- **Attachment & Tucked Card Cascading (RR v1.8 p. 8):** Ensure any attachments and cards tucked underneath an exhausted uses host card are cleanly routed to encounter or player discard piles.
 - **Trigger Integrity (ADR-0048, ADR-0050):** Ensure the `CARD_DISCARDED` trigger is dispatched with correct player and source card attribution whenever a uses card is discarded.
 - **Comic Pop-Art Presentation (ADR-0004, ADR-0009):** Emit structured comic log events (`card.discarded.uses_exhausted`) with vibrant onomatopoeia (`USES EXHAUSTED!`).
 - **Clean Architecture & Zero Cycles:** Centralize depletion discard in the cost pipeline without introducing circular import cycles between `cost-engine.ts`, `trigger-dispatcher.ts`, and `effects/index.ts`.
@@ -52,7 +52,7 @@ A unified, centralized, and card-agnostic lifecycle architecture is required to 
 
 ### Rationale ("The Why")
 
-- **Encapsulated Cost Execution:** Ability costs in Marvel Champions are atomic (RR v1.8 p. 7 "Cost"). Depleting the final counter of a card with "Uses" is part of paying the cost; the card immediately exhausts its utility and leaves play. Encapsulating this inside `executeAbilityCost` ensures that whether an ability is paid via `USE_CARD_ABILITY`, a triggered response, or an interactive decision prompt in `prompt-queue.ts`, the card lifecycle is consistently and automatically finalized.
+- **Encapsulated Cost Execution:** Ability costs in Marvel Champions are atomic (RR v1.8 p. 13 "Cost"). Depleting the final counter of a card with "Uses" is part of paying the cost; the card immediately exhausts its utility and leaves play. Encapsulating this inside `executeAbilityCost` ensures that whether an ability is paid via `USE_CARD_ABILITY`, a triggered response, or an interactive decision prompt in `prompt-queue.ts`, the card lifecycle is consistently and automatically finalized.
 - **Elimination of Fragmented Logic:** Replacing bespoke inline array splices in `action-dispatcher.ts` with `checkAndDiscardZeroCounterCard` guarantees that resource generators (such as Web-Shooter 01008) trigger `CARD_DISCARDED`, cascade attachments, route to the correct owner's discard pile, and produce comic log entries.
 - **Strict Non-Discard Guard:** By inspecting `cardInstance.card.enrichment?.uses?.discardOnEmpty === false` at the very top of `checkAndDiscardZeroCounterCard`, cards like Hawkeye (01066) are guaranteed to never be inadvertently discarded, even when their counters hit 0.
 - **Clean Module Hierarchy:** Cascading attachments via an inline loop within `cost-engine.ts` prevents importing `effects/index.ts`, creating a clean DAG: `effects` -> `cost-engine`, while `trigger-dispatcher` and `cost-engine` only share safe runtime function dependencies without top-level evaluation cycles.
@@ -95,7 +95,7 @@ A unified, centralized, and card-agnostic lifecycle architecture is required to 
 
 - **Guaranteed Rules Invariants:** Every Uses card (Web-Shooter, Tac Team, Med Team) reliably transitions from tableau to owner discard when its last counter is spent, firing `CARD_DISCARDED` triggers and producing onomatopoeic comic logs.
 - **Protected Non-Uses Cards:** Hawkeye and any future cards with counters but no discard requirement remain safely in play with 0 counters.
-- **Attachment Cascading:** When a host card with uses is discarded, any attachments or cards underneath are cleanly discarded per RR v1.8 p. 5, 6.
+- **Attachment Cascading:** When a host card with uses is discarded, any attachments or cards underneath are cleanly discarded per RR v1.8 p. 8.
 - **Robust Prompt Queue Integration:** Optional triggers and interrupt responses resolved through the decision queue automatically discard exhausted cards without caller overhead.
 
 ### Negative Consequences / Risks & Mitigations

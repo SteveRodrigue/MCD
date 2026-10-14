@@ -20,6 +20,13 @@ How do we architect an injectable, deterministic pseudo-random number generator 
 
 ---
 
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
 ## Decision Drivers
 
 - **Driver 1: Zero Math.random in Engine Execution**: Eliminate all non-deterministic `Math.random()` calls from `src/engine/`, isolating the PRNG bootstrap strictly to `createRng()`.
@@ -61,6 +68,13 @@ All call sites in `src/engine/` were refactored:
 - Action dispatcher (`action-dispatcher.ts`): Search remainder shuffles and deck shuffles migrated to `shuffleArray`.
 - Effects engine (`effects/index.ts`): Discard selections, facedown card selections, search shuffles, and prompt IDs migrated to `randomInt`, `shuffleArray`, and `nextEngineId`.
 - Prompt queue and trigger dispatcher (`prompt-queue.ts`, `trigger-dispatcher.ts`): Migrated all prompt IDs and log IDs to `nextEngineId`.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

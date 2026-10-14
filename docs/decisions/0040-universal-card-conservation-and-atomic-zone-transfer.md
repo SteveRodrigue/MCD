@@ -22,6 +22,13 @@ Previously, an architectural flaw existed in attachment handling between `action
 
 ---
 
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
 ## 🎯 Decision Drivers
 
 1. **Physical Card Simulation Fidelity:** Eliminate duplicate card instances across all game states.
@@ -105,6 +112,13 @@ export function assertCardConservation(state: GameState): void {
   }
 }
 ```
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

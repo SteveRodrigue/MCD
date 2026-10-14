@@ -2,6 +2,7 @@
 
 * **Status:** Accepted
 * **Date:** 2026-08-27
+* **Authors:** MCD Core Team
 * **Deciders:** Core Architecture Team
 * **Consulted:** Rules Reference v1.8 (Cards, Schemes, and Exhaustion p. 13-14, 22-23), MarvelCDB API
 * **Informed:** MCD Frontend & Engine Developers
@@ -19,6 +20,13 @@ Without explicit orientation metadata and responsive sizing in the UI layer:
 * Rotations for exhaustion or form flipping become ambiguous.
 
 Additionally, card art assets fetched from remote CDNs (MarvelCDB) must not introduce runtime latency, network overhead, or fail when offline.
+
+---
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 
@@ -71,6 +79,13 @@ Additionally, card art assets fetched from remote CDNs (MarvelCDB) must not intr
 * **CLI & Future Precaching:**
   * `npm run cache:cards` (`scripts/cache-card-images.ts`) provides optional batch pre-caching into `cache/cards/`.
   * Future in-app precaching actions will leverage this same declarative pipeline.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

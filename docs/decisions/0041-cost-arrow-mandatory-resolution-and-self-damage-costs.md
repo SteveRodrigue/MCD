@@ -7,13 +7,23 @@
 
 ---
 
-## Context
+## Context and Problem Statement
 
-In Marvel Champions (Rules Reference v1.8 p. 8 "Cost", p. 15 "Forced", and p. 27 "Response"):
+In Marvel Champions (Rules Reference v1.8 p. 13 "Cost", p. 20 "Forced", and p. 38 "Response"):
 
 1. **Cost Arrow (`→`):** All costs to the left of the arrow must be paid in full to resolve the effect to the right of the arrow.
 2. **Forced Responses / Interrupts:** When triggered, a forced ability with a cost must automatically pay its mandatory costs (e.g. _Superhuman Strength_ `01028` discarding itself to stun an enemy after attacking) and execute immediately without prompting the player.
 3. **Character Damage Costs:** Certain character cards (such as ally _War Machine_ `01030`) have costs requiring direct damage to themselves (`cost.damageSelf`). If the cumulative damage equals or exceeds the character's max health, the character is cleanly defeated and placed into the discard pile.
+
+## Decision Drivers
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ## Decisions
 
@@ -24,6 +34,11 @@ In Marvel Champions (Rules Reference v1.8 p. 8 "Cost", p. 15 "Forced", and p. 27
 3. **Self-Damage Cost Primitive:**
    - Added `damageSelf: z.number().optional()` to `AbilityCostSchema` in `src/data/supplemental/schema.ts` and `AbilityCost` interface in `src/engine/models/abilities.ts`.
    - In `src/engine/pipeline/cost-engine.ts`, `canPayAbilityCost` and `executeAbilityCost` validate and apply `damageSelf` to ally/character instances, automatically discarding defeated characters into owner discard piles via atomic zone transfer `removeCardFromAllZones()`.
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ## Consequences
 

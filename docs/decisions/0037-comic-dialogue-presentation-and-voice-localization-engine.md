@@ -12,6 +12,13 @@ In accordance with Marvel Champions rules transparency (ADR-0009) and the 1960s 
 
 ---
 
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
 ## Decision Drivers
 1. **Authentic 1960s Marvel Comic Visuals:** Distinct, recognizable speech balloons reflecting hero, villain, and narrator voices.
 2. **Actor & Speaker Role Differentiation:** Clear visual hierarchy between Hero Speech (white balloons), Alter-Ego Thought (scalloped cloud balloons), Villain Threat (jagged burst balloons), and Omniscient Narrator (Stan Lee golden yellow caption boxes).
@@ -43,6 +50,13 @@ We establish the **Comic Dialogue & Character Voice Presentation Architecture**:
 ### 4. Local-First Font Bundling & Base UI Scaling
 * **100% Offline Font Assets:** `Komika Text` (`TypoPRO-KomikaText-*.ttf`), `Comic Relief` (`@fontsource/comic-relief`), and `Bangers` (`@fontsource/bangers`) are bundled directly into the local application package and production bundle (`dist/assets/`).
 * **Root 110% Base UI Scaling:** Configured `html { font-size: 110%; }` in Tailwind base layers, uniformly scaling all `rem`-based cards, tableaus, boards, drawers, and typography by +10% without requiring manual browser zoom.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

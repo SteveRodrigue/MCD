@@ -2,7 +2,7 @@
 
 > [!IMPORTANT]
 > **Authoritative Specification & Single Source of Truth:**  
-> This specification defines the declarative schema for card-level play restrictions and requirements (`PlayRequirementsSchema`) as governed by the Marvel Champions Rules Reference (RR v1.8 p. 16 "Play Restrictions, Permissions, & Instructions").
+> This specification defines the declarative schema for card-level play restrictions and requirements (`PlayRequirementsSchema`) as governed by the Marvel Champions Rules Reference (RR v1.8 p. 33 "Play Restrictions, Permissions, & Instructions").
 >
 > All supplemental files are automatically validated during CI/CD via `tests/data/supplemental-schema.test.ts`.
 
@@ -67,7 +67,7 @@ export const PlayRequirementsSchema = z
 | `identityForm` | `'HERO' \| 'ALTER_EGO'` | Restricts card play to either Hero or Alter-Ego form. | *"Hero form only."* | `01009` (*Webbed Up*), `01018` (*Get Over Here!*) |
 | `formTrait` | `string` | Requires the active identity card to have the specific trait. | *"Play only if you are in Giant form."* | Ant-Man / Wasp cards |
 | `identityTraits` | `string[]` | Requires the identity (in its current active form) to possess at least one matching trait. Evaluated dynamically via `hasPlayerTrait()`, taking into account active form printed traits and continuous upgrade trait additions (e.g. *Cosmic Flight* `01017` granting *Aerial*). | *"Play only if your identity has the Mystic trait."* | Doctor Strange, Scarlet Witch, Captain Marvel cards |
-| `controlFilter` | `UniversalCardFilter` | Evaluates cards currently **in play under player control** (`tableau`, `allies`, `identity`) against universal filter (traits, types, etc.). Per RR v1.8 p. 11 ("Control") & p. 16 ("In Play"), cards in hand, deck, or discard pile are out-of-play and strictly not controlled. | *"Play only if you control a Black Panther upgrade."* | `01043` (*Wakanda Forever!*) |
+| `controlFilter` | `UniversalCardFilter` | Evaluates cards currently **in play under player control** (`tableau`, `allies`, `identity`) against universal filter (traits, types, etc.). Per RR v1.8 p. 31 ("Control") & p. 23 ("In Play"), cards in hand, deck, or discard pile are out-of-play and strictly not controlled. | *"Play only if you control a Black Panther upgrade."* | `01043` (*Wakanda Forever!*) |
 | `controlZones` | `('tableau' \| 'allies' \| 'identity')[]` | (Optional) Specific in-play zones to inspect for `controlFilter`. Defaults to `["tableau", "allies", "identity"]`. For example, setting `["tableau"]` restricts the search exclusively to player tableau upgrades and supports. | *"Play only if you control an upgrade in your tableau."* | `01043` (*Wakanda Forever!*) |
 | `identityNames` | `string[]` | Requires identity title or alter-ego name to match one of the listed names. | *"Play only if you are Peter Parker."* | Hero-specific upgrades / allies |
 
@@ -133,7 +133,7 @@ Both `canPlayCard` and `evaluateCardPlayability` call `evaluatePlayRequirements`
 
 Not all play restrictions are declared in supplemental `playRequirements`. Universal rules defined in the Marvel Champions Rules Reference v1.8 are evaluated automatically as engine-level invariants across all cards:
 
-1. **Global Unicity (RR v1.8 pp. 28–29 / ADR-0073):**
+1. **Global Unicity (RR v1.8 p. 45 / ADR-0073):**
    - Evaluated automatically for any card where `is_unique: true` (`checkUniqueCardPlayable`).
    - Checks against all active hero and alter-ego identity titles and subtitles across all players.
    - Checks against all in-play allies and tableaus across all player seats.

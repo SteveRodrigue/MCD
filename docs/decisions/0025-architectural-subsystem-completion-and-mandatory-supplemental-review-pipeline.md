@@ -1,6 +1,6 @@
 # [ADR-0025] Architectural Subsystem Completion & Mandatory Supplemental Review Pipeline
 
-* **Status:** **Accepted**
+* **Status:** Accepted
 * **Date:** 2026-08-30
 * **Authors:** MCD Core Team
 * **Deciders:** User & Antigravity
@@ -14,6 +14,13 @@ Without a formalized protocol, developers and AI agents could implement an engin
 1. **Stale Ambiguity Reports:** Cards that are now fully supported remain marked as blocked in `docs/ambiguities/`.
 2. **Untracked Regressions:** Missing automated unit tests for the newly enabled cards.
 3. **Open GitHub Issues:** GitHub issues for resolved card mechanics remain open indefinitely.
+
+---
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 
@@ -34,6 +41,13 @@ Whenever an architectural subsystem or effect primitive is implemented or refact
 2. **Supplemental Translation:** Update the card's entry in `src/data/supplemental/pack/*.json` to $\ge 95\%$ confidence.
 3. **Automated Unit Tests:** Add regression unit tests in `tests/engine/` verifying the card mechanics end-to-end.
 4. **Inbox Zero & GitHub Issue Closure:** Prune the ambiguity file in `docs/ambiguities/` and close the tracking GitHub issue via `gh issue close <id>`.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

@@ -8,7 +8,7 @@
 ---
 
 ## Context and Problem Statement
-In *Marvel Champions: The Card Game* (Rules Reference v1.8 p. 4 "Attack", p. 7 "Defend, Defense", p. 11 "Damage"), combat is not a simple integer subtraction (`player.health -= attack`). Rather, an enemy attack is a multi-step interactive state machine spanning **5 distinct timing windows**, supporting **Basic Hero/Ally Defense**, **Defense Events**, **In-Play Defense Upgrades**, **Boost Cancellations**, **Damage Prevention**, **Overkill**, **Retaliate**, and **Post-Defense Reactions**.
+In *Marvel Champions: The Card Game* (Rules Reference v1.8 p. 4 "Attack", p. 15 "Defend, Defense", p. 14 "Damage"), combat is not a simple integer subtraction (`player.health -= attack`). Rather, an enemy attack is a multi-step interactive state machine spanning **5 distinct timing windows**, supporting **Basic Hero/Ally Defense**, **Defense Events**, **In-Play Defense Upgrades**, **Boost Cancellations**, **Damage Prevention**, **Overkill**, **Retaliate**, and **Post-Defense Reactions**.
 
 Previously, the MCD rules engine bypassed the entire defense subsystem:
 1. `player.hero.defense` was never subtracted from incoming attacks.
@@ -110,6 +110,13 @@ flowchart TD
 ### 3. Dual-Mode Execution Architecture
 * **Interactive Mode:** Enqueues `DECLARE_DEFENDER` and `DEFENSE_INTERRUPT` prompts into `pendingDecisionQueue`.
 * **Headless Simulation Mode:** Evaluates an automated defense policy (`NEVER_DEFEND`, `HERO_ALWAYS`, `ALLY_CHUMP_BLOCK`, or `HEURISTIC_OPTIMAL`) to run deterministic headless simulations at thousands of games per second.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

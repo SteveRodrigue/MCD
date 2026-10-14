@@ -4,14 +4,15 @@
 * **Date:** 2026-08-31
 * **Authors:** MCD Core Team
 * **Deciders:** User & Antigravity
+* **Supersedes:** [ADR-0020](0020-optional-vs-forced-triggers-exact-event-scoping-and-interactive-interrupts.md)
 
 ---
 
 ## Context and Problem Statement
-In *Marvel Champions: The Card Game* (Rules Reference v1.8 p. 16 "Priority of Timing", p. 24 "Triggered Abilities"), card abilities trigger during nested timing windows inside ongoing actions:
+In *Marvel Champions: The Card Game* (Rules Reference v1.8 p. 5 "Priority of Timing", p. 45 "Triggered Abilities"), card abilities trigger during nested timing windows inside ongoing actions:
 * **Interrupts:** Trigger *before* a triggering condition completes, allowing players to modify, cancel, or redirect the triggering event (e.g., *Great Responsibility* `01061`, *Get Behind Me!* `01078`, *Backflip* `01003`, *Emergency* `01085`).
 * **Responses:** Trigger *after* a triggering condition resolves (e.g., *Counter-Punch* `01077`, *Indomitable* `01082`, *Chase Them Down* `01052`).
-* **Simultaneous Triggers:** When multiple abilities trigger at the exact same timing point, RR v1.8 p. 16 dictates strict resolution priority:
+* **Simultaneous Triggers:** When multiple abilities trigger at the exact same timing point, RR v1.8 p. 5 dictates strict resolution priority:
   $$\text{Constant Abilities} \longrightarrow \text{Forced Interrupts} \longrightarrow \text{Interrupts} \longrightarrow \text{Forced Responses} \longrightarrow \text{Responses}$$
   *(With the First Player deciding the resolution order among abilities of the same priority level).*
 
@@ -71,7 +72,7 @@ Use an in-memory Node.js / Browser `EventEmitter` with listener callbacks.
 flowchart TD
     TriggerOccurs["Game Event Trigger Occurs<br/>(e.g., THREAT_WOULD_BE_PLACED, TAKE_ATTACK_DAMAGE)"] --> CollectCandidates["Collect Candidate Abilities across Table & Hands"]
     
-    CollectCandidates --> SortPriority["Sort by Timing Priority (RR v1.8 p. 16):<br/>1. Constant ➔ 2. Forced Interrupt ➔ 3. Interrupt ➔ 4. Forced Response ➔ 5. Response"]
+    CollectCandidates --> SortPriority["Sort by Timing Priority (RR v1.8 p. 5):<br/>1. Constant ➔ 2. Forced Interrupt ➔ 3. Interrupt ➔ 4. Forced Response ➔ 5. Response"]
     
     SortPriority --> CheckSimultaneous{"Are there multiple triggers at same priority?"}
     
@@ -118,12 +119,19 @@ Every optional response or interrupt prompt generated for a player includes a st
 
 ---
 
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
 ## Consequences
 
 ### Positive Consequences
 * Completely resolves all nested prompt collisions and race conditions.
 * Unblocks 10+ interrupt/response ambiguity cards (*Great Responsibility*, *Emergency*, *Get Behind Me!*, *One-Two Punch*, *Counter-Punch*, *Energy Channel*, *Black Widow*, etc.).
-* Enables multiplayer simultaneous trigger resolution strictly matching Rules Reference v1.8 p. 16.
+* Enables multiplayer simultaneous trigger resolution strictly matching Rules Reference v1.8 p. 5.
 * 100% serializable state for save/load and replay inspection.
 
 ---

@@ -2,6 +2,7 @@
 
 * **Status:** Accepted
 * **Date:** 2026-08-27
+* **Authors:** MCD Core Team
 * **Deciders:** Core Architecture Team
 * **Consulted:** UX Guidelines, Rules Authority (RR v1.8 Hidden vs Open Information)
 * **Informed:** MCD Frontend Developers
@@ -15,6 +16,13 @@ During development, testing, and debugging, developers and QA need the ability t
 However, according to the official Marvel Champions rules (RR v1.8), draw decks are face-down hidden information in a real game unless an explicit card or rule allows searching/scrying.
 
 We need a clean, persistent UI settings system that supports developer tooling (Dev Mode) and user options without contaminating the core game engine state or violating rules authority.
+
+---
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 
@@ -38,6 +46,13 @@ We need a clean, persistent UI settings system that supports developer tooling (
    * Prominently displays `🛠️ DEV MODE: ON` with dynamic styling, allowing 1-click quick toggling directly from the menu bar.
 4. **Conditional Deck Inspection:**
    * `VillainZone.tsx` and `PlayerHandTray.tsx` consume `useGameSettings()`. Deck inspection modals are gated by `devMode`. Discard piles and set-aside nemesis cards remain accessible as open information.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

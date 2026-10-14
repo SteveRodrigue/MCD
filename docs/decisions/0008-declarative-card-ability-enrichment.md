@@ -7,7 +7,7 @@
 
 ---
 
-## Context
+## Context and Problem Statement
 
 As the engine grows to support hundreds of Marvel Champions cards, hardcoding card IDs (e.g. `if (player.card.code === '01001a')`) directly into the rules engine loops creates tight coupling, severe duplication, and unmaintainable code.
 
@@ -32,7 +32,21 @@ Therefore, card enrichment requires an **expert human analysis process** that de
 
 ---
 
-## Decision
+## Decision Drivers
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
+## Decision Outcome
 
 We establish a **data-driven ability architecture with strict scanning criteria, a formal card analysis methodology, and runtime missing-supplemental validation**:
 
@@ -165,6 +179,13 @@ Error: Supplemental data is missing for card <CODE> (<NAME>)
 ```
 
 This guarantees that no unscanned card can silently enter a game and cause runtime bugs or missing triggers.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

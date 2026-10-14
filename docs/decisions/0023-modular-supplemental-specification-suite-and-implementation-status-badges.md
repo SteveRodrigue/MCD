@@ -1,6 +1,6 @@
 # [ADR-0023] Modular Supplemental Specification Suite & Implementation Status Badges
 
-- **Status:** **Accepted**
+- **Status:** Accepted
 - **Date:** 2026-08-30
 - **Authors:** MCD Core Team
 - **Deciders:** User & Antigravity
@@ -15,6 +15,13 @@ This monolithic approach caused two major problems:
 
 1. **Sprawl & Navigability:** Contributors and AI agents struggled to quickly find specific specifications (e.g. how `FilterSchema` works or how dynamic math formulas are structured).
 2. **Ambiguous Maturity Status:** It was unclear from the documentation which effect primitives were actually coded and working in the engine. Planning status belongs in GitHub issues and the project roadmap, not in the implemented specification suite.
+
+---
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 
@@ -42,9 +49,16 @@ This monolithic approach caused two major problems:
 - `08_effects_villain_nemesis.md`: `VILLAIN_SCHEMES`, `VILLAIN_ATTACKS`, `SPAWN_NEMESIS`, `ATTACH_TO_HOST`.
 - `09_dynamic_formulas.md`: `amountCalculated`, state tokens (`PLAYER_MAX_HEALTH`, `SUFFERED_DAMAGE`), clamps.
 - `10_sequences_and_prompts.md`: `steps: []`[^names] multi-action chaining, `PLAYER_CHOICE` Pop-Art modals.
-- `11_play_requirements.md`: Card-level form, trait, and control constraints (RR v1.8 p. 16).
+- `11_play_requirements.md`: Card-level form, trait, and control constraints (RR v1.8 p. 33).
 
 [^names]: **Errata (2026-09-02 / 2026-09-06, `documentation-audit`).** The primitive names and module numbers in this list were updated after this ADR was accepted; the list above has been updated to the current engine vocabulary and 11-module numbering suite so the suite index stays navigable. The original 2026-08-30 wording read `PLACE_THREAT`, `SEARCH_AND_DRAW`, `APPLY_STATUS`, `TOUGHNESS`, `RESOURCE_GENERATION`, `SCRY_AND_SELECT_TRAIT`, and `sequence: []`. The `sequence` → `steps` rename is the vocabulary standardization mandated by [ADR-0030](0030-unified-ability-step-sequence-architecture.md); the remaining renames align the docs with the actual `switch (step.effect)` labels in `src/engine/effects/index.ts`. This decision's substance is unchanged.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

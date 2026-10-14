@@ -18,13 +18,13 @@ The Card Supplemental Editor is the developer & authoring interface for declarin
    - Multi-modal support via a **3-Way Segmented Switcher (Gap 3A.1)**: Fixed numbers, `'ALL'` literal (for `DISCARD`, `REMOVE_COUNTERS`), and dynamic formulas (`from: 'STAT_VALUE' | 'COUNTERS' | 'ENTITY_COUNT' | 'DISCARDED_COUNT' | 'INTERCEPTED_VALUE' | 'PREVIOUS_RESULT' | 'CARD_ATTRIBUTE'`).
    - Dynamic formula parameters: `stat`, `counterType`, `attribute`, `multiplier`, `offset`, `clamp: { min, max }`, `target: TargetSelector`.
    - **Collapsible Filter Accordion for `ENTITY_COUNT` (Gap 3B.2):** Expandable `<UniversalCardFilterBuilder>` inside `DynamicValueBuilder` showing criteria summary badges to prevent excessive visual nesting.
-3. **Card-Level Attributes & Uses (RR v1.8 p. 30 'Uses', ADR-0054, ADR-0057):**
+3. **Card-Level Attributes & Uses (RR v1.8 p. 46 'Uses', ADR-0054, ADR-0057):**
    - Structured keywords matrix: `Guard`, `Overkill`, `Ranged`, `Toughness`, `Crisis`, `Hazard`, `Acceleration`, `Quickstrike`, `Retaliate` (+ numeric amount input).
    - "Uses" counters lifecycle: `count`, `type` / `counterType`, `max`, `discardOnEmpty`.
    - Numeric metadata: `restrictedSlots`, `additionalBoostCards`, `victoryPoints`, `attackCost`, `thwartCost`, `isLandscape`, `traits`.
 4. **Trigger Filters (ADR-0058):**
    - Event scoping: `attackerKind` (`VILLAIN` | `MINION` | `ANY_ENEMY`), `targetPlayerScope` (`SELF` | `OTHER` | `ANY`), `targetForm`, `isEngaged`, `damageSourceType`, `defeatEntityType`, `defeatByAttack`, `formChangeDirection`.
-5. **Full Ability Cost Specification (RR v1.8 p. 10 'Cost', ADR-0051, ADR-0055):**
+5. **Full Ability Cost Specification (RR v1.8 p. 13 'Cost', ADR-0051, ADR-0055):**
    - Host card manipulation: `exhaustSelf`, `discardSelf`.
    - Damage costs: `damageSelf`, `damageHero`.
    - Resource payments: `resources` (Physical, Energy, Mental, Wild counts) and `resourceCost` array.

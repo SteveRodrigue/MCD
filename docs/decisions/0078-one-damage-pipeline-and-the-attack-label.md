@@ -2,12 +2,13 @@
 
 - **Status:** Accepted (parts 1 to 3)
 - **Date:** 2026-10-05
+- **Authors:** MCD Core Team
 - **Deciders:** Owner & Claude
 - **Related Issues:** #247 (Chase Them Down `01052`), #269 (enemy attack damage onto the same pipeline), #246 (player elimination)
 
 ---
 
-## Context
+## Context and Problem Statement
 
 Damage was applied by two parallel mechanisms. `applyDamageToTarget` (`damage-pipeline.ts`) implements the RR v1.8 damage steps (would be dealt, Tough, would be taken, placing damage, defeat, Retaliate) and was used by basic attacks and by `DEAL_DAMAGE` aimed at the villain. Every other `DEAL_DAMAGE` branch (all characters, the explosion assignment, heroes and identities, engaged and all enemies, a chosen minion) wrote damage by hand, each with its own idea of Tough, shields, Overkill, Retaliate and defeat. The visible failures:
 
@@ -16,6 +17,16 @@ Damage was applied by two parallel mechanisms. `applyDamageToTarget` (`damage-pi
 - Eight places wrote `state.winner = 'VILLAIN'` directly, and the pipeline's own player branch never did.
 - `DamageRequest.hasOverkill` was declared but unused; the chosen-minion branch had a private Overkill, Retaliate and excess-damage implementation.
 - Three copies of the defeat dispatch existed (`damage-pipeline.ts`, `combat-pipeline.ts`, `action-dispatcher.ts`), none saying who defeated the character.
+
+## Decision Drivers
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ## Decision (part 1)
 
@@ -41,6 +52,11 @@ Damage was applied by two parallel mechanisms. `applyDamageToTarget` (`damage-pi
 2. **Hand scan after a defeat**, in `dispatchTrigger`, through `scanHandReactions` (all eligible cards, first player first, as the threat window of #266): once per defeat, on `DEFEATED` for characters only, matching hand abilities on `DEFEATED` or `CHARACTER_DEFEATED`. No window-closing rule: a Response follows the event.
 3. **`TriggerFilter`:** `targetType` gains `ENEMY` (villain or minion); `defeatedByAttackOf: 'YOUR_HERO' | 'THIS_CARD'` is evaluated against `context.defeatSource` (`YOUR_HERO`: `HERO`, `byAttack`, `playerId` is the responder; `THIS_CARD`: `byAttack`, `instanceId` is the ability's card).
 4. **Data:** Chase Them Down `01052` (`zone: HAND`, `cost: { discardSelf: true }` as every in-hand event Response, `targetType: ENEMY`, `defeatedByAttackOf: YOUR_HERO`) and Tigra `01051` (`defeatedByAttackOf: THIS_CARD`, the half of #257 this covers).
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ## Consequences
 

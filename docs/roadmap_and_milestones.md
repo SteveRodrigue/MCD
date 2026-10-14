@@ -62,7 +62,7 @@ graph TD
 - [x] **Modular Documentation Hub:** 10-part specification suite in `docs/specifications/supplemental/` with 🟢 `IMPLEMENTED` vs 🟡 `ROADMAP` status badges.
 - [x] **Declarative Sequencing & Generic Zone Primitives (ADR-0028 & ADR-0029):** Atomic multi-step sequences (`steps: []`, renamed from `sequence: []` by ADR-0030), conditional gates (`gate: "ALWAYS" | "THEN" | "IF_AMOUNT_ZERO" | "IF_ALREADY_HAS_STATUS" | "IF_FAILED"`), and generic zone transfer primitives (`PUT_INTO_PLAY`, `SHUFFLE_INTO_DECK`).
 - [x] **100% Core Set Encounter Pool Parity:** Multi-Stage Villain transitions (I $\rightarrow$ II $\rightarrow$ III), Option 3 Extra Activations (_Advance_, _Assault_, _Gang-Up_, _Explosion_, _Masterplan_, _Under Fire_), and Nemesis Spawning pipeline (_Shadow of the Past_ `01190`).
-- [x] **Mulligan Rules Alignment (RR v1.8 p. 23):** Discard pile placement with top replacement draws.
+- [x] **Mulligan Rules Alignment (RR v1.8 p. 51):** Discard pile placement with top replacement draws.
 - [x] **Ergonomics & Action Engine:** 1960s Daily Bugle Action Dispatcher (`DailyBugleActionNewspaper.tsx`), form-aware Identity Action Modal (`IdentityActionModal.tsx`), and Dynamic Fan-Out Stack Hand layout (`useHandFanLayout.ts`).
 
 ---
@@ -73,11 +73,11 @@ _Objective: Build an industrial-grade, capability-driven rules engine with compl
 
 ### 1. 🔴 `[Must-Have]` Completed Engine Foundations
 
-- [x] **Interleaved Villain Phase Activations (RR v1.8 p. 22):**
+- [x] **Interleaved Villain Phase Activations (RR v1.8 p. 47):**
   - Structured Step 2/3 as a unified player-by-player loop starting from the First Player.
-- [x] **Sequential Hazard Icon Distribution (RR v1.8 p. 11) & Heroic Mode:**
+- [x] **Sequential Hazard Icon Distribution (RR v1.8 p. 21) & Heroic Mode:**
   - Distributed extra encounter cards from Hazard icons sequentially in player order starting from the First Player (round-robin).
-- [x] **Turn-Gated Form Changes (RR v1.8 p. 8):**
+- [x] **Turn-Gated Form Changes (RR v1.8 p. 21):**
   - Basic 1/round form change limit tracked via `basicChangeFormUsedThisRound` with automatic reset on `ROUND_BEGAN`.
 
 ### 2. 🔴 `[Must-Have]` Milestone 2A: Universal Resolution Stack & Decision Prompt Queue ([ADR-0032](decisions/0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md)) ✅ (Completed)
@@ -132,11 +132,11 @@ _Objective: Build an industrial-grade, capability-driven rules engine with compl
   - Implemented universal declarative `SEARCH_AND_SELECT` effect primitive and resolution dispatcher in `src/engine/effects/index.ts` and `src/engine/pipeline/action-dispatcher.ts`.
   - Supports Top-$N$ Look & Split (`lookCount: N`, `selectedDestination: "HAND"`, `unselectedDestination: "DISCARD"` / `"DECK_BOTTOM"` / `"DECK_TOP"`).
   - Enforced strict deck order preservation when returning looked cards to `DECK_TOP` / `DECK_BOTTOM` (RR v1.8 p. 19).
-  - Supports targeted search and specific card picking (`unselectedDestination: null`, `shuffleAfter: true`, RR v1.8 p. 26).
+  - Supports targeted search and specific card picking (`unselectedDestination: null`, `shuffleAfter: true`, RR v1.8 p. 39).
   - Retrofitted Tony Stark (_Futurist_ `01029b`) to declarative schema.
   - Deprecated and removed obsolete `SEARCH_DECK_FOR_CARD` primitive in favor of canonical `SEARCH_AND_SELECT` with direct Card Editor parameter support ([Issue #39](https://github.com/SteveRodrigue/MCD/issues/39)).
   - **Multi-Zone Search & 0/'ALL' Pool ([#115](https://github.com/SteveRodrigue/MCD/issues/115)) ✅ (Completed):** Extended `SEARCH` to support multiple source zones (`SearchZone[]`), unified `0` and `'ALL'` semantics (`lookCount` 0 = entire pile, `takeCount` 0 = all matches without prompt), voluntary player search "Pass" option vs mandatory forced encounter resolution, encounter card reveal routing (`REVEAL`), non-negative validation (`min={0}`), and multi-select chip picker in the Card Editor. Retrofitted Rhino Stage II (`01095`).
-- [x] **Restricted Card Keyword Limit Engine (RR v1.8 p. 25 / [ADR-0018](decisions/0018-declarative-state-modifiers-and-dynamic-board-limits.md) / [Issue #30](https://github.com/SteveRodrigue/MCD/issues/30)) ✅ (Completed):**
+- [x] **Restricted Card Keyword Limit Engine (RR v1.8 p. 38 / [ADR-0018](decisions/0018-declarative-state-modifiers-and-dynamic-board-limits.md) / [Issue #30](https://github.com/SteveRodrigue/MCD/issues/30)) ✅ (Completed):**
   - Implemented dynamic restricted limit calculator (`getPlayerRestrictedLimit`, base 2).
   - Supported heavy item weights ("Counts as 2 restricted cards", e.g. _Bazooka_, _Nightcrawler's Blades_).
   - Supported dynamic limit expansion modifiers (e.g. _Side Holster_, _Venom_, _Prehensile Tail_).
@@ -153,7 +153,7 @@ _Objective: Build an industrial-grade, capability-driven rules engine with compl
   - Automated mandatory cost resolution on `FORCED_RESPONSE` and `FORCED_INTERRUPT` triggers (_Superhuman Strength_ `01028` discard self + stun).
   - Integrated `BASIC_ATTACK_PERFORMED`, `ATTACK_RESOLVED`, and `THWART_RESOLVED` lifecycle triggers in `action-dispatcher.ts`.
   - Formalized direct character self-damage cost primitive (`cost.damageSelf`) in `cost-engine.ts` with automated ally defeat handling (_War Machine_ `01030`).
-- [x] **Unify Redundant Counter & Token Cost Primitives (`spendCounters`) (RR v1.8 p. 7, 30 / [ADR-0035](decisions/0035-universal-named-counter-map-cross-entity-targeting.md) / [Issue #74](https://github.com/SteveRodrigue/MCD/issues/74)) ✅ (Completed):**
+- [x] **Unify Redundant Counter & Token Cost Primitives (`spendCounters`) (RR v1.8 p. 7, 30 / [ADR-0035](decisions/0035-universal-multi-form-identities-and-generic-counter-engine.md) / [Issue #74](https://github.com/SteveRodrigue/MCD/issues/74)) ✅ (Completed):**
   - Removed dead/redundant cost primitives (`spendTokens`, `removeCounter`, `spendCounter`) from `AbilityCostSchema` and `AbilityCost`.
   - Consolidated all counter depletion on the canonical `spendCounters: { counterType?: string, amount: number, target?: 'SELF' | 'IDENTITY' }` primitive.
   - Pruned fallback branches from `cost-engine.ts`, regenerated `schema.json`, and updated `03_costs_and_targeting.md`.
@@ -188,7 +188,7 @@ _Objective: Equip developers and card authors with an integrated visual editor a
   - **Editor Contrast & Ergonomics ([#116](https://github.com/SteveRodrigue/MCD/issues/116)) ✅ (Completed):** Resolved white-on-white text fallbacks and missing pop-art drop shadows across editor controls via complete design system tokens in `tailwind.config.js`; added collapsible sidebar (Column 1), natural card-width inspector (Column 2) with 2-column Zzorba properties, and full-width expandable rules editor (`flex-1` Column 3).
 - [x] **Step 3: Visual Declarative Ability Builder & Live Schema Diagnostics ([Issue #63](https://github.com/SteveRodrigue/MCD/issues/63)) ✅ (Completed):**
   - Form builder mode for ability timing, event triggers, costs, limits, and steps with dynamic primitive parameter fields.
-  - 100% 1:1 parameter parity across all 104 effect primitives via `EFFECT_PARAMETER_REGISTRY` (`effect-parameter-registry.ts`), eliminating ad-hoc inputs and ensuring every engine primitive parameter (`count`, `lookCount`, `status`, `resource`, etc.) is visually editable and verified.
+  - 100% 1:1 parameter parity across all effect primitives (canonical list: `EffectTypeSchema` in `src/data/supplemental/schema.ts`; current count: run `npm run report:declarations`, see [usage report](reports/supplemental_data/usage_report.md)) via `EFFECT_PARAMETER_REGISTRY` (`effect-parameter-registry.ts`), eliminating ad-hoc inputs and ensuring every engine primitive parameter (`count`, `lookCount`, `status`, `resource`, etc.) is visually editable and verified.
   - Raw JSON mode with syntax error markers and live client-side Zod validation against `CardEnrichmentSchema`.
   - Atomic Save action (`Ctrl+S` / Save button) updating disk JSON and triggering Vite HMR with session reset toast.
 - [x] **Step 4: In-Game Tabletop Context Menu Integration ([Issue #62](https://github.com/SteveRodrigue/MCD/issues/62)) ✅ (Completed):**

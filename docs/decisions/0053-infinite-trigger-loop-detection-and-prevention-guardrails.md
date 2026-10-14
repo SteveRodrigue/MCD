@@ -8,7 +8,7 @@
 ---
 
 ## Context and Problem Statement
-In *Marvel Champions: The Card Game* (Rules Reference v1.8 p. 16 "Priority of Timing", p. 24 "Triggered Abilities"), forced abilities (Forced Interrupts and Forced Responses) execute automatically whenever their trigger conditions occur without requiring player consent or an opportunity to pass.
+In *Marvel Champions: The Card Game* (Rules Reference v1.8 p. 5 "Priority of Timing", p. 45 "Triggered Abilities"), forced abilities (Forced Interrupts and Forced Responses) execute automatically whenever their trigger conditions occur without requiring player consent or an opportunity to pass.
 
 When card abilities or engine primitives interact, circular dependencies can emerge:
 1. **Direct Mutual Cycles (A ? B):** Ability A on Card 1 triggers on Event X and produces Event Y (e.g. Dealing damage). Ability B on Card 2 triggers on Event Y and produces Event X (e.g. Taking damage or discarding a card).

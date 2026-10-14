@@ -107,7 +107,7 @@ Defines which game entity is chosen or affected by the ability:
 
 ### Orthogonal Collective Target Scopes (Rules Authority & Form Invariants)
 
-Per RR v1.8 p. 11 ("Damage"), p. 13 ("Identity"), p. 14 ("Indirect Damage"), p. 19 ("Player"), and p. 20 ("Status"):
+Per RR v1.8 p. 14 ("Damage"), p. 23 ("Identity"), p. 24 ("Indirect Damage"), p. 33 ("Player"), and p. 41 ("Status"):
 
 | Target Selector               | Affects Heroes? | Affects Alter-Egos? |  Affects Allies?   | Canonical Meaning & Card Text Equivalent                                            |
 | :---------------------------- | :-------------: | :-----------------: | :----------------: | :---------------------------------------------------------------------------------- |

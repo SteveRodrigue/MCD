@@ -19,6 +19,13 @@ We need a robust, local-first data architecture that keeps all data locally vers
 
 ---
 
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
 ## Decision Drivers
 
 1. **100% Local & Offline Reliability:** All card data must be bundled directly in the codebase. The game engine and test suite must run 100% offline.
@@ -106,6 +113,13 @@ Only when 100% pass may the updated `data/upstream/` be committed.
 > test suite, a changed card count, or a new entry in the declarations report's orphan list as a
 > **blocking** signal, and reconcile the supplemental layer before committing. Never "fix" a sync by
 > editing `data/upstream/` — that layer is strictly read-only.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

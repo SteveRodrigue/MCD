@@ -72,6 +72,13 @@ To ensure the game is accessible to an international audience, all UI text, game
 
 ---
 
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
 ## Consequences
 
 ### Positive Consequences

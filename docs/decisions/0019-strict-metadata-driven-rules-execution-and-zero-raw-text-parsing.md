@@ -7,7 +7,7 @@
 
 ---
 
-## Context
+## Context and Problem Statement
 
 In card game engine architecture, it can be tempting to parse card text strings (e.g. `card.text.includes('Hero Action')`, `card.text.includes('Interrupt')`, `card.text.includes('Attach to your hero')`, or regex extraction). However, relying on raw card text is fundamentally fragile and introduces critical failure points:
 
@@ -20,7 +20,21 @@ In card game engine architecture, it can be tempting to parse card text strings 
 
 ---
 
-## Decision
+## Decision Drivers
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
+## Decision Outcome
 
 We establish the **Zero Raw-Text Parsing Principle**:
 
@@ -59,6 +73,13 @@ const isHeroFormRequired = card.type === CardType.HERO || hasHeroTiming;
 const isAlterEgoFormRequired =
   card.type === CardType.ALTER_EGO || hasAlterEgoTiming;
 ```
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

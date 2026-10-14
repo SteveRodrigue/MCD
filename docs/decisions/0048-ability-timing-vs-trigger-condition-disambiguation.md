@@ -17,7 +17,7 @@ The declarative supplemental schema conflated two distinct concepts:
 Concretely, `CARD_PLAYED` and `WHEN_PLAYED` appeared in `TimingTypeSchema` as "timing types" — but playing a card is a player ACTION, not a timing category. This caused:
 
 - Attachment upgrades (Spider-Tracer `01007`, Inspired `01074`) to use `timing: "CARD_PLAYED"` — semantically wrong; the play action is an `ACTION`.
-- Five ally cards (Spider-Woman `01011`, Shuri `01041`, Maria Hill `01067`, Mockingbird `01083`, Nick Fury `01084`) to use `trigger: "CARD_PLAYED"` when their printed text says *"After [card] enters play"* — semantically wrong per RR v1.8 pp. 11, 21.
+- Five ally cards (Spider-Woman `01011`, Shuri `01041`, Maria Hill `01067`, Mockingbird `01083`, Nick Fury `01084`) to use `trigger: "CARD_PLAYED"` when their printed text says *"After [card] enters play"* — semantically wrong per RR v1.8 p. 18.
 - `ENTERS_PLAY` was missing entirely from `TriggerTypeSchema` and the engine's `TriggerType` union.
 - All `CARD_PLAYED`/`ENTERS_PLAY` dispatch was handled by 4 ad-hoc inline loops instead of routing through the canonical `dispatchTrigger` function.
 
@@ -25,7 +25,7 @@ Concretely, `CARD_PLAYED` and `WHEN_PLAYED` appeared in `TimingTypeSchema` as "t
 
 ## Decision Drivers
 
-- **RR v1.8 pp. 11, 21:** "Enters play" covers both played and put-into-play; "played" (cost paid) is a strict subset.
+- **RR v1.8 p. 18:** "Enters play" covers both played and put-into-play; "played" (cost paid) is a strict subset.
 - **RR v1.8 p. 4:** "Attach to a minion/ally" is a play restriction — it defines *where* to place the card when played, not a distinct timing header. Playing a card with this restriction is an ACTION.
 - **Engine attachment dispatch is timing-agnostic:** `action-dispatcher.ts` routes upgrades by scanning `steps.effect === 'ATTACH_TO_HOST'` — the `timing` field is never read for this purpose. This confirms `CARD_PLAYED` timing was always meaningless for attachments.
 - **Legality-checker is timing-dependent for form-gating:** `legality-checker.ts` checks `ability.timing.startsWith('HERO_')` on `ATTACH_TO_HOST` steps to infer hero-form restrictions. This preserves Webbed Up (`01009`, `timing: "HERO_ACTION"`) form-gating while Spider-Tracer/Inspired (`timing: "ACTION"`) remain unrestricted.

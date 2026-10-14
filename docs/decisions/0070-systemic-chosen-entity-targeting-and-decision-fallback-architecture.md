@@ -19,9 +19,16 @@ When playing cards with targeting requirements (such as *First Aid*, *Get Ready*
 
 ---
 
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
+
+---
+
 ## Decision Drivers
 
-- **RR v1.8 Precision:** Rules Reference v1.8 p. 3 ("Change the Game State"), p. 11 ("Damage"), p. 16 ("Play Requirements"), and p. 19 ("Target").
+- **RR v1.8 Precision:** Rules Reference v1.8 p. 3 ("Change the Game State"), p. 14 ("Damage"), p. 16 ("Play Requirements"), and p. 19 ("Target").
 - **Unfiltered Scopes vs Optional Filters:** A target scope like `CHOSEN_CHARACTER` is structurally universal (all characters). State predicates (such as `damaged: true` or `exhausted: true`) are optional constraints passed via `TargetFilterOptions`.
 - **Headless Decoupling:** Candidate discovery and decision prompting must live in the headless engine (`target-resolver.ts`, `legality-checker.ts`, `action-dispatcher.ts`), independent of React or DOM.
 - **No Friction Auto-Binding:** If exactly 1 valid candidate exists when the target is omitted, auto-bind without interrupting player flow.
@@ -54,6 +61,13 @@ Extended [`src/engine/pipeline/action-dispatcher.ts`](../../src/engine/pipeline/
 Updated [`src/ui/components/board/CardPaymentModal.tsx`](../../src/ui/components/board/CardPaymentModal.tsx):
 - Auto-detects heal, ally, scheme, and minion target scopes.
 - Displays comic-styled target selection buttons showing current/max HP and damage taken for heal targets, exhausted badges for allies, and player form indicators.
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

@@ -92,7 +92,7 @@ Raises (or lowers) the maximum hit points of the character carrying the card, wh
 ### `DISCARD`
 
 - **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts) / Issue [#66](https://github.com/SteveRodrigue/MCD/issues/66)
-- **Description:** Moves cards from a specified source zone (`HAND`, `DECK`, `ENCOUNTER_DECK`, `TABLEAU`, `HOST`, `SELF`, `CARDS_UNDER_HOST`) directly to the discard pile (or encounter discard pile for encounter cards) per RR v1.8 p. 10. Supports random hand selection, filtering, iterative milling, and fallback actions (e.g. Surge when no valid target in tableau).
+- **Description:** Moves cards from a specified source zone (`HAND`, `DECK`, `ENCOUNTER_DECK`, `TABLEAU`, `HOST`, `SELF`, `CARDS_UNDER_HOST`) directly to the discard pile (or encounter discard pile for encounter cards) per RR v1.8 p. 16. Supports random hand selection, filtering, iterative milling, and fallback actions (e.g. Surge when no valid target in tableau).
 
 ```json
 {
@@ -149,7 +149,7 @@ The step always returns `discardedCards` (all players, in seat order) and `value
 
 | Feature              | `DISCARD` (Attrition & Removal)                                                         | `SEARCH` (Discovery & Retrieval)                                                                                                                                     |
 | :------------------- | :-------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rules Reference**  | **"Discard" (p. 10)**                                                                   | **"Search" (p. 26)** & **"Look at" (p. 19)**                                                                                                                         |
+| **Rules Reference**  | **"Discard" (p. 16)**                                                                   | **"Search" (p. 39)** & **"Look at" (p. 27)**                                                                                                                         |
 | **Primary Intent**   | Destruction, penalty, or milling into discard pile.                                     | Inspection, drafting, or tutoring cards to keep/play.                                                                                                                |
 | **Card Destination** | **Always Discard Pile** (`player.discard` / `encounterDiscard`).                        | **Two-Pile Split**: selected cards go to `selectedDestination` (`HAND`, `TABLEAU`, `DECK_SHUFFLE`), remainder to `unselectedDestination` (`DISCARD`, `DECK_BOTTOM`). |
 | **Example Cards**    | _Caught Off Guard_, _Black Cat_ (01002), _Charge_, Obligations, Treachery hand discard. | _Tony Stark_ (Futurist `01029b`), _Make the Call_, _Ancestral Knowledge_.                                                                                            |

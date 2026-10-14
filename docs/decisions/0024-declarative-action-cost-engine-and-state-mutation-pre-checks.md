@@ -1,6 +1,6 @@
 # [ADR-0024] Declarative Action Cost Engine & State Mutation Pre-Checks
 
-* **Status:** **Accepted**
+* **Status:** Accepted
 * **Date:** 2026-08-30
 * **Authors:** MCD Core Team
 * **Deciders:** User & Antigravity
@@ -16,6 +16,13 @@ In *Marvel Champions*, cards have diverse and composite costs to initiate abilit
 * **Pre-condition Checks:** Rules prohibiting ability usage if the state cannot legally change (e.g. *Carol Danvers* cannot use *Rechannel* if already at maximum health).
 
 Previously, cost checks were either hard-coded into specific actions or scattered ad-hoc inside `action-dispatcher.ts` and `legality-checker.ts`.
+
+---
+
+## Considered Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 
@@ -40,6 +47,13 @@ Previously, cost checks were either hard-coded into specific actions or scattere
    * Validates available hand size for `discardCard`.
 2. **`executeAbilityCost(state, player, ability, sourceCardInst, options)`:**
    * Applies all deductions atomically and returns metadata (such as `discardedCount` for dynamic scaling).
+
+---
+
+## Evaluation of Options
+
+> [!NOTE]
+> This section was not part of the original decision record and is not required for this ADR.
 
 ---
 

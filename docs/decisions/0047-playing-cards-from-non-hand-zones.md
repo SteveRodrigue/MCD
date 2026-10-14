@@ -90,5 +90,5 @@ How should MCD model playing cards from non-hand zones and paying dynamic target
 - Future cards (*Lockjaw*, *The Bifrost*, *Magik*) have a verified architectural pattern ready to use.
 
 ### Negative Consequences / Risks & Mitigations
-- *Multi-hero card ownership:* When an ally owned by Player 2 is played by Player 1 via *Make the Call*, the ally enters play under Player 1's control, but upon defeat returns to Player 2's discard pile (RR v1.8 p. 18 "Ownership").
+- *Multi-hero card ownership:* When an ally owned by Player 2 is played by Player 1 via *Make the Call*, the ally enters play under Player 1's control, but upon defeat returns to Player 2's discard pile (RR v1.8 p. 31 "Ownership").
   - *Mitigation:* Explicitly tracked via `ownerId?: string` on `CardInstance` in `src/engine/models/state.ts`. All defeat and discard pipelines (`ALLY_ATTACK`, `ALLY_THWART`, `combat-pipeline.ts`, `round-upkeep.ts`, `effects/index.ts`) route the card to `owner.discard`, fully satisfying RR v1.8 p. 11.

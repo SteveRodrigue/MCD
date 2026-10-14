@@ -258,9 +258,11 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
 
 ### 1.4. 🔴 `[Must-Have]` Automated 100-Game Headless Match Simulation Gate
 
-- [ ] **Monte Carlo Verification Suite ([Issue #304](https://github.com/SteveRodrigue/MCD/issues/304), needs [Issue #252](https://github.com/SteveRodrigue/MCD/issues/252) seeded RNG):**
+- [x] **Monte Carlo Verification Suite ([Issue #304](https://github.com/SteveRodrigue/MCD/issues/304), needs [Issue #252](https://github.com/SteveRodrigue/MCD/issues/252) seeded RNG) ✅ (Completed):**
   - Automated headless runner executing 100 complete simulated games (Spider-Man, Captain Marvel, She-Hulk, Iron Man, Black Panther) against Rhino on Standard and Expert.
   - Asserts zero state corruption, zero deadlocks, and verified win/loss condition evaluations.
+- [ ] **Simulation Player Logic & Strategic Heuristics ([Issue #309](https://github.com/SteveRodrigue/MCD/issues/309)):**
+  - Mid/long-term heuristic table and card evaluation priority in `player-bot.ts` (dynamic threat threshold awareness, high-value card protection, intelligent form change timing) to achieve realistic player win rates against core scenarios.
 
 ---
 

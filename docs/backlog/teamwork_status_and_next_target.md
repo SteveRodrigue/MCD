@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-13 (Issue #206 implemented and verified)
+> **Last updated:** 2026-10-13 (Issue #304 implemented and verified)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
-> **Verification baseline:** 🟢 2,590 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
+> **Verification baseline:** 🟢 2,646 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
 ---
@@ -70,10 +70,7 @@ _None currently._
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 
-| #   | Issue                                                   | Item                                                                                             | Estimate | Notes                                                        |
-| :-- | :------------------------------------------------------ | :----------------------------------------------------------------------------------------------- | :------- | :----------------------------------------------------------- |
-| 12  | [#252](https://github.com/SteveRodrigue/MCD/issues/252) | Seeded, injectable RNG instead of `Math.random` (about 20 call sites, biased `sort` shuffles)    | 1 day    | Prerequisite of #304; also makes Dev Mode reports replayable |
-| 13  | [#304](https://github.com/SteveRodrigue/MCD/issues/304) | 100 headless games, 5 core heroes vs Rhino, Standard and Expert, through the real scenario setup | 1–2 days | Today: 3 games, Spider-Man only, Standard only               |
+_None currently._
 
 ### 3.4 UI should-haves
 

@@ -7,8 +7,8 @@ description: 'Canonical 8-point post-task documentation and hygiene protocol'
 
 After implementation and verification, execute this checklist before concluding. To eliminate token waste, scope checks by the task's Blast-Radius Tier (defined in `shared-quality-gates.md`):
 
-- **Tier 1 (Localized UI, Data, or Test change):** Check Item 1 (CHANGELOG). If card data changed, check Item 8. Do not generate verbose N/A notes for unaffected items.
-- **Tier 2 (Shared Subsystems, generic primitives, schemas):** Check Items 1 (CHANGELOG), 2 (Docs), 3 (Specs), 6 (Ambiguities/Issues), and 8 (Declarations).
+- **Tier 1 (Localized UI, Data, or Test change):** Check Item 1 (CHANGELOG fragment). If card data changed, check Item 8. Do not generate verbose N/A notes for unaffected items.
+- **Tier 2 (Shared Subsystems, generic primitives, schemas):** Check Items 1 (CHANGELOG fragment), 2 (Docs), 3 (Specs), 6 (Ambiguities/Issues), and 8 (Declarations).
 - **Tier 3 (Core Architecture, state model, new paradigms):** Execute the full 8-point protocol including Items 4 (Guidelines), 5 (ADRs), and 7 (Roadmap).
 
 ---
@@ -16,9 +16,10 @@ After implementation and verification, execute this checklist before concluding.
 ## The 8 Checklist Items
 
 
-### 1. CHANGELOG Update
+### 1. CHANGELOG Fragment
 
-- Review `CHANGELOG.md` and ensure the `[Unreleased]` section is updated under appropriate subheadings (`Added`, `Changed`, `Fixed`, `Removed`).
+- Add a change fragment in `changes/unreleased/` following the format in `changes/README.md` (`<issue>-<short-slug>.md` or `YYYY-MM-DD-<short-slug>.md`).
+- Specify the Keep a Changelog `type` in the YAML front matter (`Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`).
 - Detail user-facing features, rules engine changes, and UI improvements with clear context and component references.
 
 ### 2. Documentation Updates

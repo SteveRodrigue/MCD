@@ -152,7 +152,7 @@ rtk npm run build
 ```
 
 6. Re-query Dependabot alerts and report whether the alert closed, remains open, or changed state.
-7. Update `CHANGELOG.md` and relevant documentation when the remediation changes supported tooling, configuration, or developer workflow.
+7. Add a changelog fragment in `changes/unreleased/` and update relevant documentation when the remediation changes supported tooling, configuration, or developer workflow.
 8. Summarize residual risk and any alerts that remain unresolved.
 
 ## Required Final Report

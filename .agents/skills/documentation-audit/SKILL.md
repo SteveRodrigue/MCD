@@ -130,7 +130,7 @@ flowchart TD
     D4 --> D5["5. Report Findings (severity-ranked, per-file)"]
     D5 --> D6["6. Apply Corrections (docs-only blast radius)"]
     D6 --> D7["7. Verify (links, Mermaid, declarations report, tests untouched)"]
-    D7 --> D8["8. Post-Task Protocol, CHANGELOG & Commit (docs: ...)"]
+    D7 --> D8["8. Post-Task Protocol, CHANGELOG Fragment & Commit (docs: ...)"]
 ```
 
 ---
@@ -351,9 +351,9 @@ Editing standards:
 
 ### Step 8 — Post-Task Protocol & Commit
 
-1. Execute the mandatory post-task checklist in `AGENTS.md` (CHANGELOG, docs, specifications,
+1. Execute the mandatory post-task checklist in `AGENTS.md` (CHANGELOG fragment, docs, specifications,
    guidelines, ADRs, issues/ambiguities, roadmap, supplemental retrofit + declarations analyzer).
-2. Add a `CHANGELOG.md` `[Unreleased]` entry summarizing the audit: files corrected, primitives
+2. Add a changelog fragment in `changes/unreleased/` summarizing the audit: files corrected, primitives
    documented, ADR/Mermaid graph repairs, and any code-defect issues filed (`#XX`).
 3. Commit with a docs-scoped message, closing any tracked documentation issue:
    `docs(audit): synchronize <scope> with code truth & repair ADR lineage graph (Closes #XX)`.
@@ -379,4 +379,4 @@ The audit is complete only when **all** hold:
 - [ ] `git status` proves **only `.md` files changed** — no code was written, reformatted, or deleted.
 - [ ] Every suspected code defect has a filed, peer-reviewable GitHub issue (`#XX`) — no workarounds, no silent doc-to-bug alignment.
 - [ ] Every Critical/architectural finding was explicitly approved by the user before editing.
-- [ ] CHANGELOG updated and post-task protocol executed.
+- [ ] CHANGELOG fragment added in `changes/unreleased/` and post-task protocol executed.

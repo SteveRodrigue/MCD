@@ -40,7 +40,7 @@ sequenceDiagram
     Primary->>Subagent: Spawn worker (see host adapter)
     Note over Subagent: Ingests plan<br/>Applies file edits<br/>Runs verification pipeline
     Subagent-->>Primary: Returns test output & summary of changes
-    Note over Primary: Executes post-task checklist<br/>Updates CHANGELOG & walkthrough
+    Note over Primary: Executes post-task checklist<br/>Adds CHANGELOG fragment & walkthrough
     Primary->>User: Displays concise completion report
 ```
 
@@ -106,7 +106,7 @@ The worker applies the code changes with the host's file tools, runs the test su
 Upon receiving the worker's completion message:
 
 1. Verify that all tests succeeded with **0 failures and 0 skipped tests** (Zero Skipped Tests Invariant).
-2. Update `CHANGELOG.md` under `[Unreleased]` with what was implemented.
+2. Add a changelog fragment in `changes/unreleased/` with what was implemented (see `changes/README.md`).
 3. If card supplemental JSON was modified, run `rtk npm run report:declarations`.
 4. Create or update the walkthrough/recap in the host's user-facing artifact location when available.
 5. Present the walkthrough and verification results to the user. If the user's original request already authorized delivery (e.g. "implement and commit/push this plan"), proceed directly through commit and push; otherwise wait for an explicit commit/push request before delivering.

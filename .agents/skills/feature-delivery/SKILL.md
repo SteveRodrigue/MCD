@@ -196,7 +196,7 @@ rtk npm run format:check && rtk npm run lint && rtk npm run typecheck && rtk npm
 ### Step 8: Post-Task Hygiene & Delivery Recap
 
 1. **Execute Post-Task Protocol:**
-   Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to Tier 2/3: update CHANGELOG, synchronize specs and docs, verify Card Editor alignment, check off roadmap tasks in `docs/roadmap_and_milestones.md`, and run `rtk npm run report:declarations`.
+   Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to Tier 2/3: add a CHANGELOG fragment in `changes/unreleased/`, synchronize specs and docs, verify Card Editor alignment, check off roadmap tasks in `docs/roadmap_and_milestones.md`, and run `rtk npm run report:declarations`.
 2. **Present Verification & Solution Recap:**
    Present the completed feature, verification logs, and proposed diff to the user.
 3. **Delivery Authorization:**

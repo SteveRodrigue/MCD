@@ -85,3 +85,4 @@ Add the effect handler in `src/engine/effects/index.ts`, or pipeline logic in `s
    * [ ] Type checking passes with 0 errors (`npm run typecheck`).
    * [ ] Linter passes (`npm run lint`).
    * [ ] Code adheres strictly to the decoupled engine architecture.
+   * [ ] A changelog fragment is added in `changes/unreleased/` (compiled into releases via `npm run changelog:release`).

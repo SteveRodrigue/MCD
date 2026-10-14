@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-13 (Issue #304 implemented and verified)
+> **Last updated:** 2026-10-14 (Issue #301 implemented and verified)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
-> **Verification baseline:** 🟢 2,646 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
+> **Verification baseline:** 🟢 2,654 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
 ---
@@ -74,11 +74,10 @@ _None currently._
 
 ### 3.4 UI should-haves
 
-| #   | Issue                                                   | Item                                                                       | Estimate | Notes            |
-| :-- | :------------------------------------------------------ | :------------------------------------------------------------------------- | :------- | :--------------- |
-| 14  | [#301](https://github.com/SteveRodrigue/MCD/issues/301) | Top bar wraps to 2 lines on smaller screens and hides the top of the board | ½ day    | Dev Mode report  |
-| 15  | [#282](https://github.com/SteveRodrigue/MCD/issues/282) | Visible "removed from game" pile                                           | ½ day    | Dev Mode request |
-| 16  | [#287](https://github.com/SteveRodrigue/MCD/issues/287) | Players choose the order of simultaneous optional abilities                | 1 day    | Do after #267    |
+| #   | Issue                                                   | Item                                                        | Estimate | Notes            |
+| :-- | :------------------------------------------------------ | :---------------------------------------------------------- | :------- | :--------------- |
+| 15  | [#282](https://github.com/SteveRodrigue/MCD/issues/282) | Visible "removed from game" pile                            | ½ day    | Dev Mode request |
+| 16  | [#287](https://github.com/SteveRodrigue/MCD/issues/287) | Players choose the order of simultaneous optional abilities | 1 day    | Do after #267    |
 
 **Gate 1 is done when** sections 3.1 to 3.4 are empty, the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
 

@@ -331,164 +331,166 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
 
   return (
     <div className="relative min-h-screen w-full flex flex-col justify-between bg-comic-paper overflow-x-hidden">
-      {/* 1. Sticky Top Navigation Bar */}
-      <TopBar
-        gameState={gameState}
-        activeSeatIndex={activeSeatIndex}
-        legalActionCount={legalReport.activeActionCount}
-        onSelectSeat={handleSelectSeat}
-        onToggleLog={() => setIsLogOpen((prev) => !prev)}
-        isLogOpen={isLogOpen}
-        onReset={onReset}
-        onOpenNewspaper={() => setIsNewspaperOpen((prev) => !prev)}
-      />
-
-      {/* 2. Panoramic Tabletop Main Stage */}
-      <main
-        className={`flex-1 flex flex-col items-center justify-start p-2 md:p-4 pt-20 md:pt-24 gap-4 max-w-full transition-all duration-300 ${
+      <div
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
           isLogOpen ? 'w-full lg:w-[calc(100%-420px)]' : 'w-full'
         }`}
       >
-        {/* Villain Phase Stepper Ribbon (Issue #140) */}
-        {gameState.phase === 'VILLAIN_PHASE' && (
-          <VillainPhaseStepper
-            gameState={gameState}
-            pacing={villainPhasePacing}
-            onNextStep={handleNextVillainStep}
-            onToggleAutoPlay={() => setIsAutoPlaying((prev) => !prev)}
-            onSkip={handleSkipVillainPacing}
-            isAutoPlaying={isAutoPlaying}
-          />
-        )}
-
-        {/* Scenario Main Villain & Schemes Console */}
-        <VillainZone
-          villain={getActiveVillain(gameState)}
-          mainScheme={getActiveMainScheme(gameState)}
-          sideSchemes={gameState.sideSchemes}
-          encounterDeck={gameState.encounterDeck}
-          encounterDiscard={gameState.encounterDiscard}
-          accelerationTokens={gameState.accelerationTokens}
-          onSelectAttachment={(att) => {
-            const matchAction = legalReport.boardActions.find(
-              (a) =>
-                a.targetCardInstance?.instanceId === att.instanceId ||
-                (a.action as any)?.cardInstanceId === att.instanceId,
-            );
-            if (matchAction) {
-              handleSelectNewspaperAction(matchAction);
-            }
-          }}
+        {/* 1. Sticky Top Navigation Bar */}
+        <TopBar
+          gameState={gameState}
+          activeSeatIndex={activeSeatIndex}
+          legalActionCount={legalReport.activeActionCount}
+          onSelectSeat={handleSelectSeat}
+          onToggleLog={() => setIsLogOpen((prev) => !prev)}
+          isLogOpen={isLogOpen}
+          onReset={onReset}
+          onOpenNewspaper={() => setIsNewspaperOpen((prev) => !prev)}
         />
 
-        {/* Multi-Hero Panoramic Track (or Solo Play Area) */}
-        {isMultiHero ? (
-          <div className="relative w-full overflow-hidden px-2 py-1">
-            {/* Edge Navigation Buttons */}
-            {canScrollLeft && (
-              <button
-                onClick={() => scrollByAmount(-400)}
-                className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-comic-yellow hover:bg-amber-400 text-comic-black p-2 rounded-full border-2 border-comic-black shadow-comic transition-all cursor-pointer"
-                title="Scroll Left"
+        {/* 2. Panoramic Tabletop Main Stage */}
+        <main className="flex-1 flex flex-col items-center justify-start p-2 md:p-4 gap-4 max-w-full">
+          {/* Villain Phase Stepper Ribbon (Issue #140) */}
+          {gameState.phase === 'VILLAIN_PHASE' && (
+            <VillainPhaseStepper
+              gameState={gameState}
+              pacing={villainPhasePacing}
+              onNextStep={handleNextVillainStep}
+              onToggleAutoPlay={() => setIsAutoPlaying((prev) => !prev)}
+              onSkip={handleSkipVillainPacing}
+              isAutoPlaying={isAutoPlaying}
+            />
+          )}
+
+          {/* Scenario Main Villain & Schemes Console */}
+          <VillainZone
+            villain={getActiveVillain(gameState)}
+            mainScheme={getActiveMainScheme(gameState)}
+            sideSchemes={gameState.sideSchemes}
+            encounterDeck={gameState.encounterDeck}
+            encounterDiscard={gameState.encounterDiscard}
+            accelerationTokens={gameState.accelerationTokens}
+            onSelectAttachment={(att) => {
+              const matchAction = legalReport.boardActions.find(
+                (a) =>
+                  a.targetCardInstance?.instanceId === att.instanceId ||
+                  (a.action as any)?.cardInstanceId === att.instanceId,
+              );
+              if (matchAction) {
+                handleSelectNewspaperAction(matchAction);
+              }
+            }}
+          />
+
+          {/* Multi-Hero Panoramic Track (or Solo Play Area) */}
+          {isMultiHero ? (
+            <div className="relative w-full overflow-hidden px-2 py-1">
+              {/* Edge Navigation Buttons */}
+              {canScrollLeft && (
+                <button
+                  onClick={() => scrollByAmount(-400)}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-comic-yellow hover:bg-amber-400 text-comic-black p-2 rounded-full border-2 border-comic-black shadow-comic transition-all cursor-pointer"
+                  title="Scroll Left"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+              )}
+              {canScrollRight && (
+                <button
+                  onClick={() => scrollByAmount(400)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-comic-yellow hover:bg-amber-400 text-comic-black p-2 rounded-full border-2 border-comic-black shadow-comic transition-all cursor-pointer"
+                  title="Scroll Right"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              )}
+
+              {/* Scrollable Panoramic Track */}
+              <div
+                ref={containerRef}
+                className="w-full overflow-x-auto no-scrollbar scroll-smooth px-4 py-2"
               >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-            )}
-            {canScrollRight && (
-              <button
-                onClick={() => scrollByAmount(400)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-comic-yellow hover:bg-amber-400 text-comic-black p-2 rounded-full border-2 border-comic-black shadow-comic transition-all cursor-pointer"
-                title="Scroll Right"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-            )}
+                <div className="flex items-start justify-center min-w-full w-max gap-6">
+                  {gameState.players.map((player, idx) => {
+                    const isFocused = activeSeatIndex === idx;
 
-            {/* Scrollable Panoramic Track */}
-            <div
-              ref={containerRef}
-              className="w-full overflow-x-auto no-scrollbar scroll-smooth px-4 py-2"
-            >
-              <div className="flex items-start justify-center min-w-full w-max gap-6">
-                {gameState.players.map((player, idx) => {
-                  const isFocused = activeSeatIndex === idx;
+                    return (
+                      <div
+                        key={player.id}
+                        ref={(el) => {
+                          heroStationRefs.current[idx] = el;
+                        }}
+                        onClick={!isFocused ? () => handleSelectSeat(idx) : undefined}
+                        className={`w-[820px] lg:w-[880px] shrink-0 space-y-4 ${
+                          isFocused
+                            ? 'opacity-100 z-10 scale-[1.00] transition-all duration-300'
+                            : 'opacity-60 grayscale-[35%] hover:opacity-95 hover:grayscale-0 z-0 transition-all duration-300 cursor-pointer'
+                        }`}
+                      >
+                        {/* Hero Play Area */}
+                        <HeroZone
+                          player={player}
+                          gameState={gameState}
+                          seatNumber={idx + 1}
+                          isFocused={isFocused}
+                          isMultiHero={true}
+                          onFocus={() => handleSelectSeat(idx)}
+                          onDispatchAction={handleDispatchAction}
+                          onInitiateAction={handleSelectNewspaperAction}
+                        />
 
-                  return (
-                    <div
-                      key={player.id}
-                      ref={(el) => {
-                        heroStationRefs.current[idx] = el;
-                      }}
-                      onClick={!isFocused ? () => handleSelectSeat(idx) : undefined}
-                      className={`w-[820px] lg:w-[880px] shrink-0 space-y-4 ${
-                        isFocused
-                          ? 'opacity-100 z-10 scale-[1.00] transition-all duration-300'
-                          : 'opacity-60 grayscale-[35%] hover:opacity-95 hover:grayscale-0 z-0 transition-all duration-300 cursor-pointer'
-                      }`}
-                    >
-                      {/* Hero Play Area */}
-                      <HeroZone
-                        player={player}
-                        gameState={gameState}
-                        seatNumber={idx + 1}
-                        isFocused={isFocused}
-                        isMultiHero={true}
-                        onFocus={() => handleSelectSeat(idx)}
-                        onDispatchAction={handleDispatchAction}
-                        onInitiateAction={handleSelectNewspaperAction}
-                      />
-
-                      {/* Hero Hand Tray */}
-                      <PlayerHandTray
-                        hand={player.hand}
-                        deck={player.deck}
-                        discard={player.discard}
-                        setAsideCards={player.setAsideCards}
-                        heroName={player.name}
-                        handSizeLimit={getEffectiveHandSize(player, gameState)}
-                        seatNumber={idx + 1}
-                        isFocused={isFocused}
-                        isMultiHero={true}
-                        player={player}
-                        gameState={gameState}
-                        onDispatchAction={handleDispatchAction}
-                        onFocus={() => handleSelectSeat(idx)}
-                      />
-                    </div>
-                  );
-                })}
+                        {/* Hero Hand Tray */}
+                        <PlayerHandTray
+                          hand={player.hand}
+                          deck={player.deck}
+                          discard={player.discard}
+                          setAsideCards={player.setAsideCards}
+                          heroName={player.name}
+                          handSizeLimit={getEffectiveHandSize(player, gameState)}
+                          seatNumber={idx + 1}
+                          isFocused={isFocused}
+                          isMultiHero={true}
+                          player={player}
+                          gameState={gameState}
+                          onDispatchAction={handleDispatchAction}
+                          onFocus={() => handleSelectSeat(idx)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          /* Single Player (Solo Mode Tabletop) */
-          <div className="max-w-5xl lg:max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-6 space-y-6">
-            <HeroZone
-              player={singlePlayer}
-              gameState={gameState}
-              seatNumber={1}
-              isFocused={true}
-              isMultiHero={false}
-              onDispatchAction={handleDispatchAction}
-              onInitiateAction={handleSelectNewspaperAction}
-            />
-            <PlayerHandTray
-              hand={singlePlayer.hand}
-              deck={singlePlayer.deck}
-              discard={singlePlayer.discard}
-              setAsideCards={singlePlayer.setAsideCards}
-              heroName={singlePlayer.name}
-              handSizeLimit={getEffectiveHandSize(singlePlayer, gameState)}
-              seatNumber={1}
-              isFocused={true}
-              isMultiHero={false}
-              player={singlePlayer}
-              gameState={gameState}
-              onDispatchAction={handleDispatchAction}
-            />
-          </div>
-        )}
-      </main>
+          ) : (
+            /* Single Player (Solo Mode Tabletop) */
+            <div className="max-w-5xl lg:max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-6 space-y-6">
+              <HeroZone
+                player={singlePlayer}
+                gameState={gameState}
+                seatNumber={1}
+                isFocused={true}
+                isMultiHero={false}
+                onDispatchAction={handleDispatchAction}
+                onInitiateAction={handleSelectNewspaperAction}
+              />
+              <PlayerHandTray
+                hand={singlePlayer.hand}
+                deck={singlePlayer.deck}
+                discard={singlePlayer.discard}
+                setAsideCards={singlePlayer.setAsideCards}
+                heroName={singlePlayer.name}
+                handSizeLimit={getEffectiveHandSize(singlePlayer, gameState)}
+                seatNumber={1}
+                isFocused={true}
+                isMultiHero={false}
+                player={singlePlayer}
+                gameState={gameState}
+                onDispatchAction={handleDispatchAction}
+              />
+            </div>
+          )}
+        </main>
+      </div>
 
       {/* 3. 1960s Daily Bugle Newspaper Action Popover */}
       <DailyBugleActionNewspaper

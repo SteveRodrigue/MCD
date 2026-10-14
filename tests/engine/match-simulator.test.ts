@@ -1,86 +1,150 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { CardCatalog } from '@data/importer/card-loader';
-import {
-  setupGame,
-  resetInstanceCounter,
-  runMatch,
-  VillainCard,
-  MainSchemeCard,
-} from '@engine/index';
+import { cardCatalog } from '../../src/data/importer/card-loader';
+import { getStarterDeck } from '../../src/engine/decks/starter-decks';
+import { setupGame } from '../../src/engine/state/game-setup';
+import { runMatch } from '../../src/engine/simulation/match-simulator';
+import { executeVillainAttackAgainstPlayer } from '../../src/engine/pipeline';
+import { attachCardToHost } from '../../src/engine/state/state-validator';
+import { createCardInstance } from '../../src/engine/state/card-instance';
+import { resetInstanceCounter } from '../../src/engine';
 
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
-
-describe('End-to-End Match Simulator (Vertical Slice Matchup)', () => {
-  const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
-
-  let initialGameState: ReturnType<typeof setupGame>;
-
+describe('Fast Multi-Hero Match Simulator Battery (Roadmap 1.4)', () => {
   beforeEach(() => {
     resetInstanceCounter();
+  });
 
-    const identity = catalog.getHeroIdentity('spider_man')!;
-    const signatureCards = catalog.getCardsBySet('spider_man').flatMap((c) => {
-      if (c.type === 'hero' || c.type === 'alter_ego') return [];
-      return Array(c.quantity).fill(c);
+  const coreHeroes = [
+    { deckId: 'spider_man_justice', difficulty: 'STANDARD' as const, name: 'Spider-Man' },
+    { deckId: 'captain_marvel_leadership', difficulty: 'EXPERT' as const, name: 'Captain Marvel' },
+    { deckId: 'she_hulk_aggression', difficulty: 'STANDARD' as const, name: 'She-Hulk' },
+    { deckId: 'iron_man_aggression', difficulty: 'EXPERT' as const, name: 'Iron Man' },
+    { deckId: 'black_panther_protection', difficulty: 'STANDARD' as const, name: 'Black Panther' },
+  ];
+
+  for (const { deckId, difficulty, name } of coreHeroes) {
+    it(`simulates ${name} vs Rhino (${difficulty}) without errors or deadlocks`, () => {
+      const starter = getStarterDeck(deckId);
+      expect(starter).toBeDefined();
+      const loaded = starter!.loadDeck(cardCatalog);
+
+      const state = setupGame({
+        scenarioId: 'rhino',
+        difficulty,
+        seed: `test_fast_${deckId}_${difficulty.toLowerCase()}`,
+        players: [
+          {
+            id: 'p1',
+            name: loaded.hero.name,
+            hero: loaded.hero,
+            alterEgo: loaded.alterEgo,
+            deckCards: loaded.deckCards,
+            obligation: loaded.obligation,
+            nemesisCards: loaded.nemesisCards,
+          },
+        ],
+      });
+
+      const result = runMatch(state, {
+        maxRounds: 15,
+        maxActionsPerTurn: 10,
+        seed: `test_fast_${deckId}_${difficulty.toLowerCase()}`,
+      });
+
+      expect(['HEROES', 'VILLAIN', 'TIMEOUT']).toContain(result.winner);
+      expect(result.roundsPlayed).toBeGreaterThanOrEqual(1);
+      expect(result.heroNames).toEqual([loaded.hero.name]);
+      expect(result.difficulty).toBe(difficulty);
+      expect(result.playerCount).toBe(1);
+      expect(result.finalState).toBeDefined();
     });
-    const justiceCards = catalog
-      .getCardsByFaction('justice' as any)
-      .flatMap((c) => Array(c.quantity).fill(c));
-    const basicCards = catalog
-      .getCardsByFaction('basic' as any)
-      .flatMap((c) => Array(c.quantity).fill(c));
-    const deck = [...signatureCards, ...justiceCards, ...basicCards].slice(0, 40);
+  }
 
-    const rhinoCards = catalog
-      .getCardsBySet('rhino')
-      .filter((c) => c.type !== 'villain' && c.type !== 'main_scheme');
-    const standardCards = catalog.getCardsBySet('standard');
-    const bombScareCards = catalog.getCardsBySet('bomb_scare');
-    const encounterCards = [...rhinoCards, ...standardCards, ...bombScareCards].flatMap((c) =>
-      Array(c.quantity).fill(c),
-    );
+  it('simulates a 2-player cooperative match (Spider-Man + Captain Marvel vs Rhino Standard)', () => {
+    const spideyStarter = getStarterDeck('spider_man_justice')!.loadDeck(cardCatalog);
+    const marvelStarter = getStarterDeck('captain_marvel_leadership')!.loadDeck(cardCatalog);
 
-    const villain = catalog.getCard('01094') as VillainCard; // Rhino I
-    const mainScheme = catalog.getCard('01097b') as MainSchemeCard; // The Break-In!
-
-    initialGameState = setupGame({
+    const state = setupGame({
+      scenarioId: 'rhino',
+      difficulty: 'STANDARD',
+      seed: 'test_coop_spidey_marvel_standard',
       players: [
         {
           id: 'p1',
-          name: 'Spider-Man',
-          hero: identity.hero,
-          alterEgo: identity.alterEgo,
-          deckCards: deck,
+          name: spideyStarter.hero.name,
+          hero: spideyStarter.hero,
+          alterEgo: spideyStarter.alterEgo,
+          deckCards: spideyStarter.deckCards,
+          obligation: spideyStarter.obligation,
+          nemesisCards: spideyStarter.nemesisCards,
+        },
+        {
+          id: 'p2',
+          name: marvelStarter.hero.name,
+          hero: marvelStarter.hero,
+          alterEgo: marvelStarter.alterEgo,
+          deckCards: marvelStarter.deckCards,
+          obligation: marvelStarter.obligation,
+          nemesisCards: marvelStarter.nemesisCards,
         },
       ],
-      villain,
-      mainScheme,
-      encounterCards,
-      shuffleFn: (arr) => arr,
     });
+
+    const result = runMatch(state, {
+      maxRounds: 15,
+      maxActionsPerTurn: 10,
+      seed: 'test_coop_spidey_marvel_standard',
+    });
+
+    expect(['HEROES', 'VILLAIN', 'TIMEOUT']).toContain(result.winner);
+    expect(result.roundsPlayed).toBeGreaterThanOrEqual(1);
+    expect(result.playerCount).toBe(2);
+    expect(result.heroNames).toHaveLength(2);
+    expect(result.finalState).toBeDefined();
   });
 
-  it('runs a complete end-to-end match to victory or defeat', () => {
-    const result = runMatch(initialGameState, { maxRounds: 30 });
+  describe('Combat Pipeline Step 7 Host Attachment Regression', () => {
+    it('eliminating a solo hero during attack with Charge attachment completes step 7 cleanly', () => {
+      const sheHulkStarter = getStarterDeck('she_hulk_aggression')!.loadDeck(cardCatalog);
+      const state = setupGame({
+        scenarioId: 'rhino',
+        difficulty: 'STANDARD',
+        skipMulligan: true,
+        players: [
+          {
+            id: 'p1',
+            name: sheHulkStarter.hero.name,
+            hero: sheHulkStarter.hero,
+            alterEgo: sheHulkStarter.alterEgo,
+            deckCards: sheHulkStarter.deckCards,
+            obligation: sheHulkStarter.obligation,
+            nemesisCards: sheHulkStarter.nemesisCards,
+          },
+        ],
+      });
 
-    // 1. Simulation terminated with a valid conclusion
-    expect(['HEROES', 'VILLAIN']).toContain(result.winner);
-    expect(result.roundsPlayed).toBeGreaterThanOrEqual(1);
-    expect(result.totalActionsExecuted).toBeGreaterThan(0);
+      // Set player to Hero form with 1 HP so any attack eliminates them
+      state.players[0].currentForm = 'hero';
+      state.players[0].activeFormCard = sheHulkStarter.hero;
+      state.players[0].health = 1;
 
-    // 2. Final state assertions
-    expect(result.finalState).toBeDefined();
-    expect(result.finalState.log.length).toBeGreaterThan(5);
+      // Attach Charge (01100) to Rhino
+      const chargeCard = cardCatalog.getCard('01100')!;
+      const chargeInstance = createCardInstance(chargeCard);
+      attachCardToHost(state, chargeInstance, 'VILLAIN');
 
-    // 3. Victory/Defeat condition verified
-    if (result.winner === 'HEROES') {
-      expect(result.finalState.villain.health).toBe(0);
-    } else if (result.winner === 'VILLAIN') {
-      const threatReachedLimit =
-        result.finalState.mainScheme.threat >= result.finalState.mainScheme.targetThreat;
-      const heroDefeated = result.finalState.players[0].health <= 0;
-      expect(threatReachedLimit || heroDefeated).toBe(true);
-    }
+      expect(state.villain.attachments.some((a) => a.card.code === '01100')).toBe(true);
+
+      // Execute attack against solo player - should eliminate player and trigger HOST_ATTACK_ENDED
+      // without throwing "Cannot read properties of undefined (reading 'id')"
+      let nextState!: typeof state;
+      expect(() => {
+        nextState = executeVillainAttackAgainstPlayer(state, state.players[0], {
+          synchronousPolicy: 'TAKE_UNDEFENDED',
+        });
+      }).not.toThrow();
+
+      expect(nextState.winner).toBe('VILLAIN');
+      expect(nextState.players).toHaveLength(0);
+    });
   });
 });

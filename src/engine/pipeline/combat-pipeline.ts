@@ -1301,9 +1301,15 @@ export function step7_resolvePostAttackAndRetaliate(
       (att.ownerId ? state.players.find((p) => p.id === att.ownerId) : undefined) ||
       player ||
       state.players[0];
+    const ownerId =
+      owner?.id ||
+      att.ownerId ||
+      attackContext.targetPlayerId ||
+      state.eliminatedPlayers?.[0]?.id ||
+      '';
     for (const ability of att.card.enrichment?.abilities || []) {
       if (ability.trigger !== 'HOST_ATTACK_ENDED') continue;
-      executeEffect(state, ability, { playerId: owner.id, sourceCardInstance: att });
+      executeEffect(state, ability, { playerId: ownerId, sourceCardInstance: att });
     }
   }
 

@@ -1,10 +1,12 @@
-import { GameState, GamePhase, cloneGameState } from '@engine/models';
-import { dispatchAction, executeVillainPhase } from '../pipeline';
+import { GameState, GamePhase, cloneGameState, getActiveVillain } from '@engine/models';
+import { dispatchAction, executeVillainPhase, peekDecisionPrompt } from '../pipeline';
 import { chooseBotAction } from './player-bot';
+import { assertGameStateInvariants } from '../state/state-validator';
 
 export interface MatchSimulationOptions {
   maxRounds?: number;
   maxActionsPerTurn?: number;
+  seed?: string;
 }
 
 export interface MatchSimulationResult {
@@ -13,6 +15,147 @@ export interface MatchSimulationResult {
   totalActionsExecuted: number;
   finalState: GameState;
   logSummary: string[];
+  seed?: string;
+  heroNames: string[];
+  villainName: string;
+  difficulty: string;
+  playerCount: number;
+}
+
+/**
+ * Automatically and legally resolves a single pending decision prompt using heuristic defaults.
+ */
+function resolveDecisionPromptHeuristically(state: GameState, seed: string): GameState {
+  const prompt = peekDecisionPrompt(state);
+  if (!prompt) return state;
+
+  // 1. Cleanup prompt: prefer 'done_cleanup' to keep remaining hand cards and advance
+  const doneCleanupOption = prompt.options.find((o) => o.id === 'done_cleanup');
+  if (doneCleanupOption) {
+    const { state: nextState, result } = dispatchAction(state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: prompt.playerId,
+      selectedOptionId: doneCleanupOption.id,
+    });
+    if (result.success) return nextState;
+  }
+
+  // 2. Multi-select search prompt (selection: { min, max })
+  if (prompt.selection) {
+    const min = prompt.selection.min;
+    const max = prompt.selection.max;
+    const validOptions = prompt.options.filter((o) => !o.disabled && o.id !== 'confirm');
+    const chosenCount = Math.min(max, Math.max(min, validOptions.length > 0 ? 1 : 0));
+    const chosen = validOptions.slice(0, chosenCount).map((o) => o.id);
+    const confirmOpt = prompt.options.find((o) => o.id === 'confirm') || prompt.options[0];
+    const { state: nextState, result } = dispatchAction(state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: prompt.playerId,
+      selectedOptionId: confirmOpt?.id || chosen[0] || '',
+      selectedOptionIds: chosen,
+    });
+    if (!result.success) {
+      throw new Error(
+        `[MatchSimulator] Failed to resolve multi-select prompt '${prompt.title}': ${result.error || 'unknown error'} (seed: ${seed})`,
+      );
+    }
+    return nextState;
+  }
+
+  // 3. Distribution prompt (DISTRIBUTE_POINTS / distributionConfig)
+  if (prompt.distributionConfig || prompt.kind === 'DISTRIBUTE_POINTS') {
+    const config = prompt.distributionConfig;
+    if (config) {
+      const targets = (config.targets || []).filter((t) => t.isEligible !== false);
+      const budget = config.effectiveBudget ?? config.totalBudget ?? 0;
+      const assignments: Record<string, number> = {};
+      let remaining = budget;
+      for (const t of targets) {
+        if (remaining <= 0) break;
+        const cap = t.allocationCap ?? remaining;
+        const alloc = Math.min(remaining, cap);
+        if (alloc > 0) {
+          assignments[t.instanceId] = alloc;
+          remaining -= alloc;
+        }
+      }
+      const confirmOpt =
+        prompt.options.find((o) => o.id === 'confirm_distribution' || o.id === 'confirm') ||
+        prompt.options[0];
+      const { state: nextState, result } = dispatchAction(state, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: prompt.playerId,
+        selectedOptionId: confirmOpt?.id || 'confirm_distribution',
+        assignments,
+      });
+      if (result.success) return nextState;
+
+      if (config.canCancel || prompt.isVoluntary) {
+        const { state: cancelState, result: cancelRes } = dispatchAction(state, {
+          type: 'RESOLVE_DECISION_PROMPT',
+          playerId: prompt.playerId,
+          selectedOptionId: 'cancel',
+        });
+        if (cancelRes.success) return cancelState;
+      }
+    }
+  }
+
+  // 4. Standard decision prompt: pick first enabled option
+  const enabledOptions = prompt.options.filter((o) => !o.disabled);
+  if (enabledOptions.length === 0) {
+    if (prompt.isVoluntary) {
+      const passOpt = prompt.options.find((o) => o.id === 'pass' || o.id === 'cancel');
+      if (passOpt) {
+        const { state: passState, result: passRes } = dispatchAction(state, {
+          type: 'RESOLVE_DECISION_PROMPT',
+          playerId: prompt.playerId,
+          selectedOptionId: passOpt.id,
+        });
+        if (passRes.success) return passState;
+      }
+    }
+    throw new Error(
+      `[MatchSimulator] Prompt '${prompt.title}' (${prompt.promptId}) has no enabled options to select (seed: ${seed}).`,
+    );
+  }
+
+  for (const candidate of enabledOptions) {
+    const { state: nextState, result } = dispatchAction(state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: prompt.playerId,
+      selectedOptionId: candidate.id,
+    });
+    if (result.success) {
+      return nextState;
+    }
+  }
+
+  throw new Error(
+    `[MatchSimulator] Failed to legally resolve prompt '${prompt.title}' across ${enabledOptions.length} candidate option(s) (seed: ${seed}).`,
+  );
+}
+
+/**
+ * Drain all queued decision prompts iteratively until empty or game ends.
+ */
+function drainPrompts(currentState: GameState, seed: string): GameState {
+  let s = currentState;
+  let count = 0;
+  const MAX_ATTEMPTS = 50;
+
+  while (peekDecisionPrompt(s) && !s.winner) {
+    if (count >= MAX_ATTEMPTS) {
+      const prompt = peekDecisionPrompt(s);
+      throw new Error(
+        `[MatchSimulator] Exceeded max prompt resolution attempts (${MAX_ATTEMPTS}) on prompt '${prompt?.title}' (ID: ${prompt?.promptId}) with seed: ${seed}`,
+      );
+    }
+    s = resolveDecisionPromptHeuristically(s, seed);
+    count++;
+  }
+
+  return s;
 }
 
 /**
@@ -24,6 +167,13 @@ export function runMatch(
 ): MatchSimulationResult {
   const maxRounds = options.maxRounds || 30;
   const maxActionsPerTurn = options.maxActionsPerTurn || 15;
+  const seed = options.seed || (initialState.rng ? String(initialState.rng.seed) : 'unseeded');
+
+  // Capture match metadata from initial state
+  const heroNames = initialState.players.map((p) => p.hero?.name || p.name);
+  const villainName = getActiveVillain(initialState)?.card?.name || 'Rhino';
+  const difficulty = initialState.difficulty || 'STANDARD';
+  const playerCount = initialState.players.length;
 
   let state: GameState = cloneGameState(initialState);
   let totalActions = 0;
@@ -41,6 +191,9 @@ export function runMatch(
       }
     }
   }
+
+  // Drain any setup prompts (e.g. Black Panther's Foresight)
+  state = drainPrompts(state, seed);
 
   while (!state.winner && state.roundNumber <= maxRounds) {
     state.phase = GamePhase.PLAYER_PHASE;
@@ -80,6 +233,9 @@ export function runMatch(
         state = dispatchResult.state;
         totalActions += 1;
         actionCountForTurn += 1;
+
+        // Drain any prompts produced during player action
+        state = drainPrompts(state, seed);
       }
 
       if (state.winner) break;
@@ -89,7 +245,14 @@ export function runMatch(
 
     // 2. VILLAIN PHASE: Complete 6-step automation (with AUTO_OPTIMAL headless defense policy)
     state = executeVillainPhase(state, { synchronousPolicy: 'AUTO_OPTIMAL' });
+    state = drainPrompts(state, seed);
+
+    // Invariant assertion after each round
+    assertGameStateInvariants(state);
   }
+
+  // Invariant assertion at match end
+  assertGameStateInvariants(state);
 
   const finalWinner = state.winner || 'TIMEOUT';
 
@@ -101,5 +264,10 @@ export function runMatch(
     logSummary: state.log.map(
       (l) => `[Round ${state.roundNumber}] ${l.onomatopoeia ? l.onomatopoeia + ' ' : ''}${l.key}`,
     ),
+    seed,
+    heroNames,
+    villainName,
+    difficulty,
+    playerCount,
   };
 }

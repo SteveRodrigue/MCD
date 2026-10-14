@@ -388,3 +388,179 @@ export function findInPlayCardInstance(
 
   return undefined;
 }
+
+/**
+ * Asserts full GameState invariants across the engine:
+ * 1. Universal Card Conservation Law (ADR-0040): No card instance exists in multiple zones simultaneously.
+ * 2. Attachment & Host Integrity: Every attachment in play on a villain, scheme, player, ally, or minion
+ *    has an active host entity, and cards in non-play zones do not retain attachments.
+ * 3. Non-Negative Value Invariants: Active player health >= 0, active villain health >= 0,
+ *    main/side scheme threat >= 0, and card tokens (damage, threat, counters) >= 0.
+ * 4. Valid Win/Loss State: HEROES win only when all villain stages are defeated; VILLAIN wins
+ *    only when main scheme reaches target threat or all heroes are eliminated; active games have no winner set.
+ */
+export function assertGameStateInvariants(state: GameState): void {
+  // 1. Universal Card Conservation Law (ADR-0040)
+  assertCardConservation(state);
+
+  // 2. Attachment & Host Integrity
+  const activeHostIds = new Set<string>();
+  activeHostIds.add('villain');
+  activeHostIds.add('mainScheme');
+
+  for (const villain of getVillainsInPlay(state)) {
+    if (villain.instanceId) activeHostIds.add(villain.instanceId);
+  }
+  for (const scheme of getMainSchemesInPlay(state)) {
+    if (scheme.instanceId) activeHostIds.add(scheme.instanceId);
+  }
+  for (const scheme of state.sideSchemes || []) {
+    if (scheme.instanceId) activeHostIds.add(scheme.instanceId);
+  }
+  for (const player of state.players || []) {
+    activeHostIds.add(player.id);
+    for (const ally of player.allies || []) {
+      if (ally.instanceId) activeHostIds.add(ally.instanceId);
+    }
+    for (const minion of player.engagedMinions || []) {
+      if (minion.instanceId) activeHostIds.add(minion.instanceId);
+    }
+  }
+
+  const verifyAttachmentHost = (
+    attachments: CardInstance[] | undefined,
+    hostLabel: string,
+    hostId?: string,
+  ) => {
+    for (const att of attachments || []) {
+      const explicitHostId = (att as any).hostInstanceId;
+      if (explicitHostId && !activeHostIds.has(explicitHostId)) {
+        throw new Error(
+          `[INVARIANT VIOLATION] Attachment '${att.card?.name || att.instanceId}' on ${hostLabel} (${hostId || 'unknown'}) references missing host '${explicitHostId}'.`,
+        );
+      }
+    }
+  };
+
+  for (const villain of getVillainsInPlay(state)) {
+    verifyAttachmentHost(villain.attachments, 'villain', villain.instanceId);
+  }
+  for (const scheme of getMainSchemesInPlay(state)) {
+    verifyAttachmentHost(scheme.attachments, 'mainScheme', scheme.instanceId);
+  }
+  for (const scheme of state.sideSchemes || []) {
+    verifyAttachmentHost(scheme.attachments, 'sideScheme', scheme.instanceId);
+  }
+  for (const player of state.players || []) {
+    verifyAttachmentHost(player.attachments, 'player', player.id);
+    for (const ally of player.allies || []) {
+      verifyAttachmentHost(ally.attachments, 'ally', ally.instanceId);
+    }
+    for (const minion of player.engagedMinions || []) {
+      verifyAttachmentHost(minion.attachments, 'minion', minion.instanceId);
+    }
+  }
+
+  // Cards in non-play zones (discard, deck, hand, victoryDisplay, removedFromGame) must not have attachments
+  const verifyNoAttachmentsInZone = (cards: CardInstance[] | undefined, zoneName: string) => {
+    for (const card of cards || []) {
+      if (card.attachments && card.attachments.length > 0) {
+        throw new Error(
+          `[INVARIANT VIOLATION] Card '${card.card?.name || card.instanceId}' in zone '${zoneName}' has ${card.attachments.length} attachment(s). Attachments cannot exist on cards out of play.`,
+        );
+      }
+    }
+  };
+
+  verifyNoAttachmentsInZone(state.encounterDeck, 'encounterDeck');
+  verifyNoAttachmentsInZone(state.encounterDiscard, 'encounterDiscard');
+  verifyNoAttachmentsInZone(state.victoryDisplay, 'victoryDisplay');
+  verifyNoAttachmentsInZone(state.removedFromGame, 'removedFromGame');
+  for (const player of state.players || []) {
+    verifyNoAttachmentsInZone(player.hand, `player ${player.id} hand`);
+    verifyNoAttachmentsInZone(player.deck, `player ${player.id} deck`);
+    verifyNoAttachmentsInZone(player.discard, `player ${player.id} discard`);
+  }
+
+  // 3. Non-Negative Value Invariants
+  for (const player of state.players || []) {
+    if (player.health < 0) {
+      throw new Error(
+        `[INVARIANT VIOLATION] Active player '${player.id}' has negative health: ${player.health}`,
+      );
+    }
+  }
+
+  for (const villain of getVillainsInPlay(state)) {
+    if (villain.health < 0) {
+      throw new Error(
+        `[INVARIANT VIOLATION] Active villain '${villain.instanceId || 'villain'}' has negative health: ${villain.health}`,
+      );
+    }
+  }
+
+  for (const mainScheme of getMainSchemesInPlay(state)) {
+    if (mainScheme.threat < 0) {
+      throw new Error(
+        `[INVARIANT VIOLATION] Main scheme '${mainScheme.instanceId || 'mainScheme'}' has negative threat: ${mainScheme.threat}`,
+      );
+    }
+  }
+
+  for (const sideScheme of state.sideSchemes || []) {
+    const threat = sideScheme.threat ?? 0;
+    if (threat < 0) {
+      throw new Error(
+        `[INVARIANT VIOLATION] Side scheme '${sideScheme.card?.name || sideScheme.instanceId}' has negative threat: ${threat}`,
+      );
+    }
+  }
+
+  for (const card of getAllCardInstances(state)) {
+    if (card.tokens) {
+      for (const [tokenKey, tokenVal] of Object.entries(card.tokens)) {
+        if (typeof tokenVal === 'number' && tokenVal < 0) {
+          throw new Error(
+            `[INVARIANT VIOLATION] Card '${card.card?.name || card.instanceId}' has negative token '${tokenKey}': ${tokenVal}`,
+          );
+        }
+      }
+    }
+    if (card.counters) {
+      for (const [counterKey, count] of Object.entries(card.counters)) {
+        if (typeof count === 'number' && count < 0) {
+          throw new Error(
+            `[INVARIANT VIOLATION] Card '${card.card?.name || card.instanceId}' has negative counter '${counterKey}': ${count}`,
+          );
+        }
+      }
+    }
+  }
+
+  // 4. Valid Win/Loss State
+  if (state.winner === 'HEROES') {
+    const villains = getVillainsInPlay(state);
+    const anyVillainAlive = villains.some((v) => v.health > 0);
+    if (anyVillainAlive) {
+      throw new Error(
+        `[INVARIANT VIOLATION] Game marked as won by HEROES, but villain has health > 0.`,
+      );
+    }
+  } else if (state.winner === 'VILLAIN') {
+    const mainSchemes = state.mainSchemes || [];
+    const mainSchemeCompleted = mainSchemes.some(
+      (ms) => (ms.targetThreat || 0) > 0 && ms.threat >= ms.targetThreat,
+    );
+    const allHeroesEliminated = (state.players?.length || 0) === 0;
+
+    if (!mainSchemeCompleted && !allHeroesEliminated) {
+      throw new Error(
+        `[INVARIANT VIOLATION] Game marked as won by VILLAIN, but neither main scheme reached target threat nor were all heroes eliminated.`,
+      );
+    }
+  } else if (state.winner) {
+    throw new Error(
+      `[INVARIANT VIOLATION] Unknown winner '${state.winner}'. Must be 'HEROES', 'VILLAIN', or null.`,
+    );
+  }
+}

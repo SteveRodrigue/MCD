@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-14 (Issue #282 implemented and verified; queued new Gate 1 issues #310, #311, #306)
+> **Last updated:** 2026-10-14 (Issue #310 implemented and verified; queued Gate 1 issues #311, #306)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
-> **Verification baseline:** 🟢 2,659 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
+> **Verification baseline:** 🟢 2,663 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
 ---
@@ -64,7 +64,6 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 | #   | Issue                                                   | Item                                                                | Estimate | Notes                                               |
 | :-- | :------------------------------------------------------ | :------------------------------------------------------------------ | :------- | :-------------------------------------------------- |
-| 17  | [#310](https://github.com/SteveRodrigue/MCD/issues/310) | Turn-end prompt fires before One-Two Punch (01024) readies She-Hulk | ½ day    | Dev Mode report; snapshot in `logs/gamestates/`     |
 | 18  | [#311](https://github.com/SteveRodrigue/MCD/issues/311) | "I Object!" interrupt (01019b) not offered on villain-phase threat  | ½ day    | Dev Mode report; reporter calls it "Legal Practice" |
 
 ### 3.2 Rules gaps that affect core cards

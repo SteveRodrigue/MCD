@@ -1,6 +1,6 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-14 (Issue #282 implemented and verified)
+> **Last updated:** 2026-10-14 (Issue #282 implemented and verified; queued new Gate 1 issues #310, #311, #306)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
 > **Verification baseline:** 🟢 2,659 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
@@ -62,11 +62,16 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 ### 3.1 Bugs seen in real Rhino games (do first)
 
-_None currently._
+| #   | Issue                                                   | Item                                                                | Estimate | Notes                                               |
+| :-- | :------------------------------------------------------ | :------------------------------------------------------------------ | :------- | :-------------------------------------------------- |
+| 17  | [#310](https://github.com/SteveRodrigue/MCD/issues/310) | Turn-end prompt fires before One-Two Punch (01024) readies She-Hulk | ½ day    | Dev Mode report; snapshot in `logs/gamestates/`     |
+| 18  | [#311](https://github.com/SteveRodrigue/MCD/issues/311) | "I Object!" interrupt (01019b) not offered on villain-phase threat  | ½ day    | Dev Mode report; reporter calls it "Legal Practice" |
 
 ### 3.2 Rules gaps that affect core cards
 
-_None currently._
+| #   | Issue                                                   | Item                                                                     | Estimate | Notes                                          |
+| :-- | :------------------------------------------------------ | :----------------------------------------------------------------------- | :------- | :--------------------------------------------- |
+| 19  | [#306](https://github.com/SteveRodrigue/MCD/issues/306) | Retaliate damage goes through the damage pipeline (defeat, stage change) | 1 day    | Black Panther 01040a has Retaliate 1; see #303 |
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 
@@ -74,9 +79,9 @@ _None currently._
 
 ### 3.4 UI should-haves
 
-| #   | Issue                                                   | Item                                                        | Estimate | Notes            |
-| :-- | :------------------------------------------------------ | :---------------------------------------------------------- | :------- | :--------------- |
-| 16  | [#287](https://github.com/SteveRodrigue/MCD/issues/287) | Players choose the order of simultaneous optional abilities | 1 day    | Do after #267    |
+| #   | Issue                                                   | Item                                                        | Estimate | Notes         |
+| :-- | :------------------------------------------------------ | :---------------------------------------------------------- | :------- | :------------ |
+| 16  | [#287](https://github.com/SteveRodrigue/MCD/issues/287) | Players choose the order of simultaneous optional abilities | 1 day    | Do after #267 |
 
 **Gate 1 is done when** sections 3.1 to 3.4 are empty, the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
 

@@ -1,6 +1,6 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-15 (Issue #312 UI z-axis layering, sticky TopBar and board polish delivered; queued Gate 1 issues #311, #306)
+> **Last updated:** 2026-10-15 (Issue #312 UI z-axis layering delivered; queued Gate 1 issues #311, #306, and #314 "Call for Action")
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
 > **Verification baseline:** 🟢 2,696 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
@@ -78,9 +78,10 @@ _None currently._
 
 ### 3.4 UI should-haves
 
-| #   | Issue                                                   | Item                                                        | Estimate | Notes         |
-| :-- | :------------------------------------------------------ | :---------------------------------------------------------- | :------- | :------------ |
-| 16  | [#287](https://github.com/SteveRodrigue/MCD/issues/287) | Players choose the order of simultaneous optional abilities | 1 day    | Do after #267 |
+| #   | Issue                                                   | Item                                                        | Estimate | Notes                                                     |
+| :-- | :------------------------------------------------------ | :---------------------------------------------------------- | :------- | :-------------------------------------------------------- |
+| 16  | [#287](https://github.com/SteveRodrigue/MCD/issues/287) | Players choose the order of simultaneous optional abilities | 1 day    | Do after #267                                             |
+| 20  | [#314](https://github.com/SteveRodrigue/MCD/issues/314) | "Call for Action" from another player's tableau in coop     | 1 day    | Dev Mode report; Daily Bugle & tableau action integration |
 
 **Gate 1 is done when** sections 3.1 to 3.4 are empty, the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
 

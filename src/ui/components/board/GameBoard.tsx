@@ -15,6 +15,7 @@ import { VillainPhaseStepper } from './VillainPhaseStepper';
 import { CombatBoostModal } from './CombatBoostModal';
 import { TopBar } from './TopBar';
 import { VillainZone } from './VillainZone';
+import { RemovedFromGameBox } from './RemovedFromGameBox';
 import { HeroZone } from './HeroZone';
 import { PlayerHandTray } from './PlayerHandTray';
 import { CombatLogDrawer } from './CombatLogDrawer';
@@ -362,25 +363,28 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
             />
           )}
 
-          {/* Scenario Main Villain & Schemes Console */}
-          <VillainZone
-            villain={getActiveVillain(gameState)}
-            mainScheme={getActiveMainScheme(gameState)}
-            sideSchemes={gameState.sideSchemes}
-            encounterDeck={gameState.encounterDeck}
-            encounterDiscard={gameState.encounterDiscard}
-            accelerationTokens={gameState.accelerationTokens}
-            onSelectAttachment={(att) => {
-              const matchAction = legalReport.boardActions.find(
-                (a) =>
-                  a.targetCardInstance?.instanceId === att.instanceId ||
-                  (a.action as any)?.cardInstanceId === att.instanceId,
-              );
-              if (matchAction) {
-                handleSelectNewspaperAction(matchAction);
-              }
-            }}
-          />
+          {/* Scenario Main Villain & Out of Play Console */}
+          <div className="w-full flex flex-wrap items-start justify-center gap-4">
+            <RemovedFromGameBox cards={gameState.removedFromGame || []} />
+            <VillainZone
+              villain={getActiveVillain(gameState)}
+              mainScheme={getActiveMainScheme(gameState)}
+              sideSchemes={gameState.sideSchemes}
+              encounterDeck={gameState.encounterDeck}
+              encounterDiscard={gameState.encounterDiscard}
+              accelerationTokens={gameState.accelerationTokens}
+              onSelectAttachment={(att) => {
+                const matchAction = legalReport.boardActions.find(
+                  (a) =>
+                    a.targetCardInstance?.instanceId === att.instanceId ||
+                    (a.action as any)?.cardInstanceId === att.instanceId,
+                );
+                if (matchAction) {
+                  handleSelectNewspaperAction(matchAction);
+                }
+              }}
+            />
+          </div>
 
           {/* Multi-Hero Panoramic Track (or Solo Play Area) */}
           {isMultiHero ? (

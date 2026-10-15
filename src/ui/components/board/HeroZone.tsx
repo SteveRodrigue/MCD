@@ -27,6 +27,7 @@ import {
 import { LegalActionItem } from '../../../engine/pipeline/legal-actions-generator';
 import { CardView } from '../cards/CardView';
 import { CardAttachmentFan } from '../cards/CardAttachmentFan';
+import { getStaircaseExpansion } from '../cards/attachment-fan-utils';
 import { FacedownEncounterCard } from '../cards/FacedownEncounterCard';
 import { ThreatZoneSubzone } from './ThreatZoneSubzone';
 import { useGameSettings } from '../../context/useGameSettings';
@@ -427,9 +428,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                 {engagedMinions.map((minion) => {
                   const isGuard = hasKeyword(minion.card, Keyword.GUARD);
                   const isTough = minion.statusCards?.includes(StatusCard.TOUGH) ?? false;
-                  const attachmentCount = minion.attachments?.length || 0;
-                  const verticalExtraPx = attachmentCount > 0 ? attachmentCount * 70 : 0;
-                  const horizontalExtraClass = attachmentCount > 0 ? 'ml-4 sm:ml-6' : '';
+                  const { extraBottomPx: verticalExtraPx, extraLeftClass: horizontalExtraClass } =
+                    getStaircaseExpansion(minion.attachments, minion.cardsUnderneath);
 
                   return (
                     <div
@@ -439,21 +439,18 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                         verticalExtraPx > 0 ? { marginBottom: `${verticalExtraPx}px` } : undefined
                       }
                     >
-                      <div className="relative flex flex-col items-center">
-                        <div className="relative z-30 flex flex-col items-center">
-                          <CardView
-                            card={minion.card}
-                            instance={minion}
-                            size="sm"
-                            enableHoverZoom={true}
-                          />
-                        </div>
-                        <CardAttachmentFan
-                          attachments={minion.attachments}
-                          cardsUnderneath={minion.cardsUnderneath}
-                          mode="staircase"
+                      <CardAttachmentFan
+                        attachments={minion.attachments}
+                        cardsUnderneath={minion.cardsUnderneath}
+                        mode="staircase"
+                      >
+                        <CardView
+                          card={minion.card}
+                          instance={minion}
+                          size="sm"
+                          enableHoverZoom={true}
                         />
-                      </div>
+                      </CardAttachmentFan>
                       <div className="flex items-center gap-1 flex-wrap justify-center z-30">
                         <span
                           className="bg-white text-comic-blue border border-comic-black font-comic text-[9px] px-1 py-0.2 rounded font-bold shadow-comic-xs"

@@ -8,6 +8,7 @@ export interface CardAttachmentFanProps {
   onSelectAttachment?: (attachment: CardInstance) => void;
   mode?: 'vertical' | 'staircase';
   className?: string;
+  children?: React.ReactNode;
 }
 
 // Small offsets (percent of the host card) so facedown cards read as a stack, not as visible cards.
@@ -28,22 +29,30 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
   attachments = [],
   cardsUnderneath = [],
   onSelectAttachment,
-  mode = 'vertical',
+  mode = 'staircase',
   className = '',
+  children,
 }) => {
   const hasAttachments = attachments.length > 0;
   const hasCardsUnderneath = cardsUnderneath.length > 0;
 
   if (!hasAttachments && !hasCardsUnderneath) {
+    if (children) {
+      return (
+        <div className={`relative flex flex-col items-center ${className}`}>
+          <div className="relative z-[5] flex flex-col items-center">{children}</div>
+        </div>
+      );
+    }
     return null;
   }
 
-  return (
+  const fanContent = (
     <div
       className={
         mode === 'staircase'
-          ? `pointer-events-none ${className}`
-          : `flex flex-col items-center w-full relative ${className}`
+          ? `pointer-events-none ${!children ? className : ''}`
+          : `flex flex-col items-center w-full relative ${!children ? className : ''}`
       }
     >
       {/* 2. Staircase Fan-Down Mode (Issue #83 & #84) */}
@@ -58,16 +67,16 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
                 a.steps?.some((s) => s.effect === 'DISCARD_ATTACHMENT'),
             );
 
-            // Stacking behind host: Host is z-30.
-            // Att 0 (idx=0) is z-20, Att 1 (idx=1) is z-10, etc.
-            const zIndex = (attachments.length - idx) * 10;
+            // Stacking behind host: Host is z-[5].
+            // Attachments stack descending behind host (all below z-10)
+            const zIndex = Math.max(1, attachments.length - idx);
             const topOffset = `${(idx + 1) * 42}%`;
             const leftOffset = `${(idx + 1) * -11}%`;
 
             return (
               <div
                 key={att.instanceId || `att_${idx}`}
-                className="absolute transition-all duration-200 pointer-events-auto group/att hover:z-40"
+                className="absolute transition-all duration-200 pointer-events-auto group/att hover:z-50"
                 style={{
                   top: topOffset,
                   left: leftOffset,
@@ -116,7 +125,7 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
               style={{
                 top: `${(i + 1) * FACEDOWN_PEEK_TOP_PERCENT}%`,
                 left: `${(i + 1) * -FACEDOWN_PEEK_LEFT_PERCENT}%`,
-                zIndex: cardsUnderneath.length - i,
+                zIndex: Math.max(0, cardsUnderneath.length - i - 1),
               }}
             >
               <FacedownUnderneathCard card={tucked} />
@@ -206,4 +215,15 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
       )}
     </div>
   );
+
+  if (children) {
+    return (
+      <div className={`relative flex flex-col items-center ${className}`}>
+        <div className="relative z-[5] flex flex-col items-center">{children}</div>
+        {fanContent}
+      </div>
+    );
+  }
+
+  return fanContent;
 };

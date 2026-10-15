@@ -20,6 +20,7 @@ import {
 } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
 import { CardAttachmentFan } from '../cards/CardAttachmentFan';
+import { getStaircaseExpansion } from '../cards/attachment-fan-utils';
 import { useGameSettings } from '../../context/useGameSettings';
 import { getEncounterSetName } from './villain-zone-utils';
 import { getEffectiveVillainStats } from '../../../engine/pipeline/stat-calculator';
@@ -126,6 +127,9 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
     return groups;
   }, [processedDeckItems, sortMode]);
 
+  const { extraBottomPx: villainBottomPx, extraLeftClass: villainLeftClass } =
+    getStaircaseExpansion(villain.attachments, villain.cardsUnderneath);
+
   return (
     <>
       <section className="comic-panel p-4 bg-white/95 relative hover:z-30 focus-within:z-30 shadow-comic">
@@ -136,8 +140,34 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
         </div>
 
         <div className="flex flex-wrap items-start gap-4 pt-2">
-          {/* 1. Encounter Deck & Discard Piles (Left of Villain) */}
-          <div className="flex md:flex-col items-center justify-center gap-3 shrink-0">
+          {/* 1. Encounter Discard & Draw Piles (Left of Villain, Left-to-Right: Discard -> Deck) */}
+          <div className="flex items-center justify-center gap-3 shrink-0">
+            {/* Encounter Discard Pile (Open Information • Click to Inspect) */}
+            <div className="flex flex-col items-center">
+              {topDiscard ? (
+                <div
+                  onClick={() => setShowDiscardModal(true)}
+                  className="relative cursor-pointer group"
+                  title="Inspect Encounter Discard Pile"
+                >
+                  <CardView
+                    card={topDiscard.card}
+                    size="sm"
+                    showTokens={false}
+                    enableHoverZoom={true}
+                  />
+                  <span className="absolute -bottom-2 -right-2 bg-slate-900 text-white font-comic text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
+                    {encounterDiscard.length}
+                  </span>
+                </div>
+              ) : (
+                <div className="w-28 h-40 bg-slate-100 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-center p-1">
+                  <span className="font-comic text-xs text-slate-400">DISCARD</span>
+                  <span className="text-[10px] text-slate-400 font-bold">EMPTY</span>
+                </div>
+              )}
+            </div>
+
             {/* Encounter Draw Pile (Face-Down Default • Click to Inspect in Dev Mode) */}
             <div
               data-testid="encounter-deck-pile"
@@ -150,7 +180,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               }
             >
               <div
-                className={`w-18 h-26 sm:w-20 sm:h-28 border-2 border-comic-black rounded-lg shadow-comic-sm flex flex-col items-center justify-center p-2 text-center relative overflow-hidden transition-all ${
+                className={`w-28 h-40 border-2 border-comic-black rounded-lg shadow-comic-sm flex flex-col items-center justify-center p-2 text-center relative overflow-hidden transition-all ${
                   devMode ? 'group-hover:border-comic-yellow' : ''
                 }`}
                 style={{
@@ -177,36 +207,14 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                 </span>
               </div>
             </div>
-
-            {/* Encounter Discard Pile (Open Information • Click to Inspect) */}
-            <div className="flex flex-col items-center">
-              {topDiscard ? (
-                <div
-                  onClick={() => setShowDiscardModal(true)}
-                  className="relative cursor-pointer group"
-                  title="Inspect Encounter Discard Pile"
-                >
-                  <CardView
-                    card={topDiscard.card}
-                    size="sm"
-                    showTokens={false}
-                    enableHoverZoom={true}
-                  />
-                  <span className="absolute -bottom-2 -right-2 bg-slate-900 text-white font-comic text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
-                    {encounterDiscard.length}
-                  </span>
-                </div>
-              ) : (
-                <div className="w-18 h-26 sm:w-20 sm:h-28 bg-slate-100 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-center p-1">
-                  <span className="font-comic text-xs text-slate-400">DISCARD</span>
-                  <span className="text-[10px] text-slate-400 font-bold">EMPTY</span>
-                </div>
-              )}
-            </div>
           </div>
 
           {/* 2. Villain Panel & Attachments */}
-          <div className="w-fit flex flex-col gap-2 bg-rose-50/80 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
+          <div
+            data-testid="villain-main-panel"
+            className="w-fit flex flex-col gap-2 bg-rose-50/80 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0 transition-all"
+            style={villainBottomPx > 0 ? { paddingBottom: `${villainBottomPx + 12}px` } : undefined}
+          >
             {/* Header: Villain Icon, Name, Stage Badge & Status Badges */}
             <div className="flex flex-col gap-1 w-full">
               <div className="flex items-center justify-between gap-2 w-full">
@@ -249,7 +257,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               {/* Left Column (Stats) */}
               <div
                 data-testid="villain-stats-column"
-                className="flex flex-col gap-1.5 items-center justify-center min-w-[36px]"
+                className="relative z-10 flex flex-col gap-1.5 items-center justify-center min-w-[36px]"
               >
                 {/* SCH */}
                 <div
@@ -284,19 +292,29 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               </div>
 
               {/* Center Column (Card) */}
-              <div className="flex flex-col justify-center items-center relative shrink-0">
-                <CardView card={villain.card} size="sm" showTokens={false} enableHoverZoom={true} />
+              <div
+                data-testid="villain-center-card-column"
+                className={`flex flex-col justify-center items-center relative shrink-0 transition-all ${villainLeftClass}`}
+              >
                 <CardAttachmentFan
                   attachments={villain.attachments}
                   cardsUnderneath={villain.cardsUnderneath}
+                  mode="staircase"
                   onSelectAttachment={onSelectAttachment}
-                />
+                >
+                  <CardView
+                    card={villain.card}
+                    size="sm"
+                    showTokens={false}
+                    enableHoverZoom={true}
+                  />
+                </CardAttachmentFan>
               </div>
 
               {/* Right Column (Vertical HP Gauge) */}
               <div
                 data-testid="villain-hp-column"
-                className="flex flex-col items-center justify-center gap-1 shrink-0"
+                className="relative z-10 flex flex-col items-center justify-center gap-1 shrink-0"
               >
                 <div className="flex items-center gap-0.5">
                   <Heart className="w-2.5 h-2.5 text-comic-red fill-comic-red" />
@@ -401,27 +419,23 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
             {sideSchemes.length > 0 ? (
               <div className="flex flex-wrap gap-3 items-center pt-1 overflow-visible">
                 {sideSchemes.map((scheme) => {
-                  const stackedPx =
-                    (scheme.attachments?.length ?? 0) * 70 +
-                    (scheme.cardsUnderneath?.length ?? 0) * 12;
+                  const { extraBottomPx, extraLeftClass } = getStaircaseExpansion(
+                    scheme.attachments,
+                    scheme.cardsUnderneath,
+                  );
                   return (
                     <div
                       key={scheme.instanceId}
-                      className={`flex flex-col items-center gap-1 relative z-10 hover:z-50 focus-within:z-50 ${
-                        stackedPx > 0 ? 'ml-4 sm:ml-6' : ''
-                      }`}
-                      style={stackedPx > 0 ? { marginBottom: `${stackedPx}px` } : undefined}
+                      className={`flex flex-col items-center gap-1 relative z-10 hover:z-50 focus-within:z-50 ${extraLeftClass}`}
+                      style={extraBottomPx > 0 ? { marginBottom: `${extraBottomPx}px` } : undefined}
                     >
-                      <div className="relative flex flex-col items-center">
-                        <div className="relative z-30">
-                          <CardView card={scheme.card} size="sm" enableHoverZoom={true} />
-                        </div>
-                        <CardAttachmentFan
-                          attachments={scheme.attachments}
-                          cardsUnderneath={scheme.cardsUnderneath}
-                          mode="staircase"
-                        />
-                      </div>
+                      <CardAttachmentFan
+                        attachments={scheme.attachments}
+                        cardsUnderneath={scheme.cardsUnderneath}
+                        mode="staircase"
+                      >
+                        <CardView card={scheme.card} size="sm" enableHoverZoom={true} />
+                      </CardAttachmentFan>
                       <span className="bg-comic-yellow text-comic-black border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded-full shadow-comic-sm relative z-40">
                         ⚠️ {scheme.threat} THREAT
                       </span>

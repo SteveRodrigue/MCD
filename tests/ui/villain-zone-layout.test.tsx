@@ -179,4 +179,39 @@ describe('VillainZone Compact Tri-Column Layout', () => {
     expect(screen.getByText('Stunned')).toBeDefined();
     expect(screen.getByText('Confused')).toBeDefined();
   });
+
+  it('keeps SCH / ATK stats and HP bar on top (relative z-10) and renders attachments in staircase fan mode', () => {
+    const ivoryHornCard = cardCatalog.getCard('01100')!; // Armored Rhino / Ivory Horn
+    const mockHornAttachment: CardInstance = {
+      instanceId: 'att-horn',
+      card: ivoryHornCard,
+      exhausted: false,
+    };
+
+    const villainWithAtt = createMockVillain({
+      attachments: [mockHornAttachment],
+    });
+
+    renderVillainZone(villainWithAtt);
+
+    // 1. Stats and HP columns have relative z-10 so they stay always on top of lowered cards (z-[5] / z-1..4) without floating over modals
+    const statsColumn = screen.getByTestId('villain-stats-column');
+    expect(statsColumn.className).toContain('relative');
+    expect(statsColumn.className).toContain('z-10');
+
+    const hpColumn = screen.getByTestId('villain-hp-column');
+    expect(hpColumn.className).toContain('relative');
+    expect(hpColumn.className).toContain('z-10');
+
+    // 2. Attachment card is rendered via staircase fan
+    expect(screen.getByAltText(ivoryHornCard.name)).toBeDefined();
+
+    // 3. Center card column gets ml-4 separation so staircase fan does not overlap stats column
+    const centerCardCol = screen.getByTestId('villain-center-card-column');
+    expect(centerCardCol.className).toContain('ml-4');
+
+    // 4. Villain main panel expands padding to accommodate the staircase fan
+    const mainPanel = screen.getByTestId('villain-main-panel');
+    expect(mainPanel.style.paddingBottom).toBe('82px'); // 1 * 70px + 12px
+  });
 });

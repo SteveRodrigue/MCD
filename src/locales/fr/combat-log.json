@@ -81,7 +81,8 @@
     "CARDS_DRAWN_NAMES": "{{who}} a pioché {{count}} carte(s) : {{cards}}.",
     "CARDS_DRAWN_FROM_SOURCE": "{{who}} a pioché {{count}} carte(s) ({{source}}) : {{cards}}.",
     "BLACK_CAT_FETCH": "Black Cat a récupéré {{card}} dans la main de {{who}} !",
-    "PLAYER_TABLEAU_DISCARDED": "{{player}} a défaussé {{card}} de son tableau."
+    "PLAYER_TABLEAU_DISCARDED": "{{player}} a défaussé {{card}} de son tableau.",
+    "RETALIATE_DAMAGE": "{{actor}} a riposté en infligeant {{damage}} dégât(s)."
   },
   "dialogue": {
     "spider_man": {
@@ -101,20 +102,14 @@
         "Raté d'un cheveu !",
         "Trop lent, mastodonte !"
       ],
-      "play_card": [
-        "Montons d'un cran !",
-        "Lance-toiles verrouillés et parés !"
-      ]
+      "play_card": ["Montons d'un cran !", "Lance-toiles verrouillés et parés !"]
     },
     "peter_parker": {
       "recover": [
         "Les pancakes de tante May sont le meilleur des remèdes.",
         "Besoin d'un instant pour recalibrer ma formule de fluide de toile."
       ],
-      "resource": [
-        "Mes piges au Daily Bugle paient enfin !",
-        "Un peu d'ingéniosité scientifique."
-      ]
+      "resource": ["Mes piges au Daily Bugle paient enfin !", "Un peu d'ingéniosité scientifique."]
     },
     "captain_marvel": {
       "attack": [
@@ -178,10 +173,7 @@
         "DÉFONCEZ LE BÂTIMENT ! EMBARQUEZ LE BUTIN !",
         "AUCUN HÉROS NE M'ARRÊTERA !"
       ],
-      "boost": [
-        "PRÉPARE-TOI AU CHOC !",
-        "VOICI LA CORNE !"
-      ]
+      "boost": ["PRÉPARE-TOI AU CHOC !", "VOICI LA CORNE !"]
     },
     "klaw": {
       "attack": [

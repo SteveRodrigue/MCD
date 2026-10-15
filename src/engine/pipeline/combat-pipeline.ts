@@ -24,7 +24,7 @@ import {
 import { dealBoostCards, resolveBoostCards, type BoostLogContext } from './boost-resolution';
 import { nextEngineId } from '../state/rng';
 import { dispatchTrigger, TriggerDispatchResult } from '../triggers/trigger-dispatcher';
-import { dispatchDefeat, type DefeatSource } from './damage-pipeline';
+import { applyDamageToTarget, dispatchDefeat, type DefeatSource } from './damage-pipeline';
 import { eliminatePlayer } from './player-elimination';
 import { executeEffect, processHostDefeated, resetCardState } from '../effects';
 import {
@@ -600,7 +600,7 @@ export function resolveDefenderDeclaration(
   }
 
   // Step 7: Post-Attack Reactions, Retaliate & Cleanup
-  step7_resolvePostAttackAndRetaliate(state, attackContext);
+  state = step7_resolvePostAttackAndRetaliate(state, attackContext);
 
   if (state.lastCombatOutcome && state.villainPhaseStepEvent) {
     const rawDamage = state.lastCombatOutcome.finalDamage;
@@ -1123,7 +1123,7 @@ export function finishAttackDamageAndPostResolution(
   delete attackContext.pendingDamage;
 
   applyCalculatedAttackDamage(state, player, attackContext, rawDamage);
-  step7_resolvePostAttackAndRetaliate(state, attackContext);
+  state = step7_resolvePostAttackAndRetaliate(state, attackContext);
 
   if (state.lastCombatOutcome && state.villainPhaseStepEvent) {
     const attackerName = state.lastCombatOutcome.attackerName;
@@ -1172,7 +1172,7 @@ registerFinishDamagePlacementsHook(finishPendingDamagePlacements);
 export function step7_resolvePostAttackAndRetaliate(
   state: GameState,
   attackContext: AttackExecutionContext,
-): void {
+): GameState {
   attackContext.phase = 'POST_ATTACK';
 
   const player = state.players.find((p) => p.id === attackContext.targetPlayerId);
@@ -1208,84 +1208,151 @@ export function step7_resolvePostAttackAndRetaliate(
   });
 
   // Step 7 Retaliate: If defending character survived and has Retaliate X, deal X damage back to attacker (RR v1.8 p. 24, ADR-0054)
-  if (player && player.health > 0 && attackContext.heroDefended) {
+  const heroAttacked = attackContext.heroDefended || attackContext.defender?.type === 'UNDEFENDED';
+  const allyDefended = attackContext.defender?.type === 'ALLY';
+
+  if (player && player.health > 0 && heroAttacked && !allyDefended) {
     const retaliateX = getEffectiveRetaliate(player, state);
 
     if (retaliateX > 0) {
       if (attackContext.attackerType === 'VILLAIN') {
-        attackingVillain(state, attackContext).health = Math.max(
-          0,
-          attackingVillain(state, attackContext).health - retaliateX,
-        );
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
-          category: 'combat',
-          key: 'retaliate.hero.hit',
-          params: { damage: retaliateX, villain: attackingVillain(state, attackContext).card.name },
-          onomatopoeia: 'RETALIATE! (HERO)',
+        const villain = attackingVillain(state, attackContext);
+        const damageRes = applyDamageToTarget(state, {
+          target: {
+            type: 'villain',
+            entity: villain,
+            instanceId: villain.instanceId,
+            name: villain.card?.name || 'Villain',
+            attachments: villain.attachments,
+            statusCards: villain.statusCards,
+          },
+          amount: retaliateX,
+          sourceType: 'HERO',
+          sourcePlayerId: player.id,
+          isAttack: false,
+          skipRetaliate: true,
         });
+        state = damageRes.state;
       } else if (attackContext.attackerCard) {
         const minion = attackContext.attackerCard;
-        if (!minion.tokens) minion.tokens = {};
-        minion.tokens.damage = (minion.tokens.damage || 0) + retaliateX;
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
-          category: 'combat',
-          key: 'retaliate.hero.hit',
-          params: { damage: retaliateX, minion: minion.card.name },
-          onomatopoeia: 'RETALIATE! (HERO)',
+        const damageRes = applyDamageToTarget(state, {
+          target: {
+            type: 'minion',
+            entity: minion,
+            instanceId: minion.instanceId,
+            name: minion.card.name,
+            targetPlayerId: attackContext.targetPlayerId,
+            attachments: minion.attachments,
+            statusCards: minion.statusCards,
+          },
+          amount: retaliateX,
+          sourceType: 'HERO',
+          sourcePlayerId: player.id,
+          isAttack: false,
+          skipRetaliate: true,
         });
+        state = damageRes.state;
       }
+
+      const characterName = player.hero?.name || player.name;
+      const targetName =
+        attackContext.attackerType === 'VILLAIN'
+          ? attackingVillain(state, attackContext).card?.name || 'Villain'
+          : attackContext.attackerCard?.card.name || 'Minion';
+
+      state.log.push({
+        id: nextEngineId(state, 'log'),
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'combat',
+        key: 'RETALIATE_DAMAGE',
+        actor: {
+          name: characterName,
+          type: 'hero',
+        },
+        params: {
+          actor: characterName,
+          who: characterName,
+          damage: retaliateX,
+          target: targetName,
+        },
+        text: `${characterName} retaliated for ${retaliateX} damage.`,
+        onomatopoeia: 'RETALIATE!',
+      });
     }
-  } else if (
-    attackContext.defender?.type === 'ALLY' &&
-    attackContext.defender.allyInstanceId &&
-    player
-  ) {
+  } else if (allyDefended && attackContext.defender?.allyInstanceId && player) {
     const ally = player.allies.find((a) => a.instanceId === attackContext.defender?.allyInstanceId);
     if (ally) {
       const allyRetaliate = getEffectiveRetaliate(ally, state);
       if (allyRetaliate > 0) {
         if (attackContext.attackerType === 'VILLAIN') {
-          attackingVillain(state, attackContext).health = Math.max(
-            0,
-            attackingVillain(state, attackContext).health - allyRetaliate,
-          );
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            category: 'combat',
-            key: 'retaliate.ally.hit',
-            params: {
-              damage: allyRetaliate,
-              villain: attackingVillain(state, attackContext).card.name,
-              ally: ally.card.name,
+          const villain = attackingVillain(state, attackContext);
+          const damageRes = applyDamageToTarget(state, {
+            target: {
+              type: 'villain',
+              entity: villain,
+              instanceId: villain.instanceId,
+              name: villain.card?.name || 'Villain',
+              attachments: villain.attachments,
+              statusCards: villain.statusCards,
             },
-            onomatopoeia: 'RETALIATE! (ALLY)',
+            amount: allyRetaliate,
+            sourceType: 'ALLY',
+            sourcePlayerId: player.id,
+            sourceCardInstance: ally,
+            isAttack: false,
+            skipRetaliate: true,
           });
+          state = damageRes.state;
         } else if (attackContext.attackerCard) {
           const minion = attackContext.attackerCard;
-          if (!minion.tokens) minion.tokens = {};
-          minion.tokens.damage = (minion.tokens.damage || 0) + allyRetaliate;
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            category: 'combat',
-            key: 'retaliate.ally.hit',
-            params: { damage: allyRetaliate, minion: minion.card.name, ally: ally.card.name },
-            onomatopoeia: 'RETALIATE! (ALLY)',
+          const damageRes = applyDamageToTarget(state, {
+            target: {
+              type: 'minion',
+              entity: minion,
+              instanceId: minion.instanceId,
+              name: minion.card.name,
+              targetPlayerId: attackContext.targetPlayerId,
+              attachments: minion.attachments,
+              statusCards: minion.statusCards,
+            },
+            amount: allyRetaliate,
+            sourceType: 'ALLY',
+            sourcePlayerId: player.id,
+            sourceCardInstance: ally,
+            isAttack: false,
+            skipRetaliate: true,
           });
+          state = damageRes.state;
         }
+
+        const characterName = ally.card.name;
+        const targetName =
+          attackContext.attackerType === 'VILLAIN'
+            ? attackingVillain(state, attackContext).card?.name || 'Villain'
+            : attackContext.attackerCard?.card.name || 'Minion';
+
+        state.log.push({
+          id: nextEngineId(state, 'log'),
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          category: 'combat',
+          key: 'RETALIATE_DAMAGE',
+          actor: {
+            name: characterName,
+            type: 'ally',
+          },
+          params: {
+            actor: characterName,
+            who: characterName,
+            damage: allyRetaliate,
+            target: targetName,
+          },
+          text: `${characterName} retaliated for ${allyRetaliate} damage.`,
+          onomatopoeia: 'RETALIATE!',
+        });
       }
     }
   }
@@ -1315,7 +1382,18 @@ export function step7_resolvePostAttackAndRetaliate(
 
   // Forced Responses on minion attack (e.g. Sandman 01102, Yon-Rogg 01177). An attack whose target
   // was eliminated has ended (RR v1.8 Player Elimination).
-  if (player && attackContext.attackerType === 'MINION' && attackContext.attackerCard) {
+  const isMinionEngaged =
+    (player?.engagedMinions.some((m) => m.instanceId === attackContext.attackerCard?.instanceId) ??
+      false) ||
+    state.players.some((p) =>
+      p.engagedMinions.some((m) => m.instanceId === attackContext.attackerCard?.instanceId),
+    );
+  if (
+    player &&
+    attackContext.attackerType === 'MINION' &&
+    attackContext.attackerCard &&
+    isMinionEngaged
+  ) {
     const minion = attackContext.attackerCard;
     const abilities = minion.card.enrichment?.abilities || [];
     for (const ability of abilities) {
@@ -1330,6 +1408,8 @@ export function step7_resolvePostAttackAndRetaliate(
       }
     }
   }
+
+  return state;
 }
 
 /**

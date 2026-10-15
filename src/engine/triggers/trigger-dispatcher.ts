@@ -18,7 +18,7 @@ import {
   canPayAbilityCost,
   extractResourceCost,
 } from '../pipeline/cost-engine';
-import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
+import { enqueueDecisionPrompt, refreshPromptOptionAvailability } from '../pipeline/prompt-queue';
 import {
   abilityCancelsEncounterReveal,
   canCancelEncounterReveal,
@@ -662,156 +662,189 @@ export function dispatchTrigger(
   let isCancelled = false;
   let hasPendingPrompt = false;
 
+  const queueLenBefore = state.pendingDecisionQueue?.length ?? 0;
+
+  const priorityOrder =
+    trigger === 'MINION_ENTERS_PLAY' ||
+    trigger === 'ENCOUNTER_CARD_REVEALED' ||
+    trigger === 'TREACHERY_REVEALED'
+      ? revealReactors(state, player)
+      : playersInTurnOrder(state);
+
+  const isGlobalTrigger =
+    trigger === 'THREAT_WOULD_BE_PLACED' ||
+    trigger === 'MINION_ENTERS_PLAY' ||
+    trigger === 'ENCOUNTER_CARD_REVEALED' ||
+    trigger === 'TREACHERY_REVEALED';
+
   // 1. Scan in-play identity card abilities (e.g. Spider-Sense on Spider-Man 01001a)
   const playerAbilitiesSuspended = arePlayerAbilitiesSuspended(state);
-  const identityAbilities =
-    player && !playerAbilitiesSuspended ? player.activeFormCard?.enrichment?.abilities || [] : [];
-  for (const ability of identityAbilities) {
-    if (triggersAreEquivalent(ability.trigger, trigger)) {
-      if (revealCannotBeCanceledBy(state, ability, context)) continue;
-      if (
-        (ability.timing === 'HERO_INTERRUPT' || ability.timing === 'HERO_RESPONSE') &&
-        player.currentForm !== 'hero'
-      ) {
-        continue;
-      }
-      if (
-        (ability.timing === 'ALTER_EGO_INTERRUPT' || ability.timing === 'ALTER_EGO_RESPONSE') &&
-        player.currentForm !== 'alter_ego'
-      ) {
-        continue;
-      }
-      if (
-        !matchesTriggerFilter(
-          ability.triggerFilter,
-          context,
-          player,
-          { instanceId: player.id, card: player.activeFormCard } as CardInstance,
-          trigger,
-        )
-      ) {
-        continue;
-      }
-      if (ability.limit === 'ONCE_PER_ROUND' && player.usedAbilitiesThisRound?.[ability.id]) {
-        continue;
-      }
-      if (ability.limit === 'ONCE_PER_PHASE' && player.usedAbilitiesThisPhase?.[ability.id]) {
-        continue;
-      }
+  const playersToScanForIdentity: PlayerState[] = isGlobalTrigger ? priorityOrder : [player];
 
-      const isForced = isForcedTiming(ability.timing);
-      if (isForced || context.acceptOptionalTriggers === true) {
-        const node: TriggerCallNode = {
-          trigger,
-          abilityId: ability.id,
-          sourceInstanceId: player.id,
-          cardCode: player.activeFormCard.code,
-          cardName: player.activeFormCard.name,
-        };
-        const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
-
-        if (ability.cost) {
-          executeAbilityCost(state, player, ability);
-        }
-        if (ability.limit === 'ONCE_PER_ROUND') {
-          if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
-          player.usedAbilitiesThisRound[ability.id] =
-            (player.usedAbilitiesThisRound[ability.id] || 0) + 1;
-        } else if (ability.limit === 'ONCE_PER_PHASE') {
-          if (!player.usedAbilitiesThisPhase) player.usedAbilitiesThisPhase = {};
-          player.usedAbilitiesThisPhase[ability.id] =
-            (player.usedAbilitiesThisPhase[ability.id] || 0) + 1;
-        }
-        const effCtx: EffectExecutionContext = {
-          playerId: player.id,
-          eventTargetType: context.targetType,
-          eventTargetInstanceId: context.targetInstanceId,
-          threatAmount: currentThreat,
-          damageAmount: currentDamage,
-          interceptedValue: currentThreat || currentDamage,
-          triggerChain: nextChain,
-        };
-        executeEffect(state, ability, effCtx);
-        if (trigger === 'THREAT_WOULD_BE_PLACED' && effCtx.threatAmount !== undefined) {
-          currentThreat = effCtx.threatAmount;
-        }
-        if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && effCtx.damageAmount !== undefined) {
-          currentDamage = effCtx.damageAmount;
-          if (currentDamage === 0) isPrevented = true;
-        }
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          key: `ability.${ability.id}.triggered`,
-          params: { player: player.name },
-          onomatopoeia: 'ABILITY TRIGGERED!',
-        });
-      } else {
-        // Optional Identity Ability: Check cost & limits before prompting
-        const costCheck = canPayAbilityCost(state, player, ability);
-        if (!costCheck.allowed) continue;
-        // RR v1.8 "Target": an ability that requires a target needs at least one valid target.
-        if (!abilityHasValidTarget(state, player, ability)) continue;
-
-        if (ability.limit === 'ONCE_PER_ROUND' && player.usedAbilitiesThisRound?.[ability.id]) {
+  for (const identityPlayer of playersToScanForIdentity) {
+    const identityAbilities =
+      identityPlayer && !playerAbilitiesSuspended
+        ? identityPlayer.activeFormCard?.enrichment?.abilities || []
+        : [];
+    for (const ability of identityAbilities) {
+      if (triggersAreEquivalent(ability.trigger, trigger)) {
+        if (revealCannotBeCanceledBy(state, ability, context)) continue;
+        if (
+          (ability.timing === 'HERO_INTERRUPT' || ability.timing === 'HERO_RESPONSE') &&
+          identityPlayer.currentForm !== 'hero'
+        ) {
           continue;
         }
-        if (ability.limit === 'ONCE_PER_PHASE' && player.usedAbilitiesThisPhase?.[ability.id]) {
+        if (
+          (ability.timing === 'ALTER_EGO_INTERRUPT' || ability.timing === 'ALTER_EGO_RESPONSE') &&
+          identityPlayer.currentForm !== 'alter_ego'
+        ) {
+          continue;
+        }
+        if (
+          !matchesTriggerFilter(
+            ability.triggerFilter,
+            context,
+            identityPlayer,
+            { instanceId: identityPlayer.id, card: identityPlayer.activeFormCard } as CardInstance,
+            trigger,
+          )
+        ) {
+          continue;
+        }
+        if (
+          ability.limit === 'ONCE_PER_ROUND' &&
+          identityPlayer.usedAbilitiesThisRound?.[ability.id]
+        ) {
+          continue;
+        }
+        if (
+          ability.limit === 'ONCE_PER_PHASE' &&
+          identityPlayer.usedAbilitiesThisPhase?.[ability.id]
+        ) {
           continue;
         }
 
-        const cardName = player.activeFormCard.name;
-        const isDamageTrigger = triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN');
-        const damageSuffix =
-          isDamageTrigger && currentDamage > 0 ? ` (Incoming Damage: ${currentDamage})` : '';
-        const damageDescSuffix =
-          isDamageTrigger && currentDamage > 0 ? ` [Incoming Damage: ${currentDamage}]` : '';
-        enqueueDecisionPrompt(state, {
-          promptId: nextEngineId(state, `prompt_trigger_${ability.id}`),
-          playerId: player.id,
-          title: `Do you want to use the following ability from ${cardName}?${damageSuffix}`,
-          description: `${formatAbilityStepsSummary(trigger, ability.steps || [])}${damageDescSuffix}`,
-          incomingDamage: isDamageTrigger ? currentDamage : undefined,
-          sourceCardName: cardName,
-          sourceCardCode: player.activeFormCard.code,
-          triggerSourceName:
-            context.encounterCardInstance?.card?.name ||
-            (context.targetType === 'villain'
-              ? targetedVillain(state, context).card.name
-              : undefined),
-          triggerSourceCode:
-            context.encounterCardInstance?.card?.code ||
-            (context.targetType === 'villain'
-              ? targetedVillain(state, context).card.code
-              : undefined),
-          triggerSourceCard:
-            context.encounterCardInstance?.card ||
-            (context.targetType === 'villain' ? targetedVillain(state, context).card : undefined),
-          triggerType: ability.timing,
-          isVoluntary: true,
-          options: [
-            {
-              id: `trigger_${ability.id}`,
-              label: 'Yes',
-              effect: 'EXECUTE_OPTIONAL_TRIGGER',
-              params: {
-                ability,
-                context: {
-                  ...context,
-                  threatAmount: currentThreat,
-                  damageAmount: currentDamage,
-                  interceptedValue: currentThreat || currentDamage,
+        const isForced = isForcedTiming(ability.timing);
+        if (isForced || context.acceptOptionalTriggers === true) {
+          const node: TriggerCallNode = {
+            trigger,
+            abilityId: ability.id,
+            sourceInstanceId: identityPlayer.id,
+            cardCode: identityPlayer.activeFormCard.code,
+            cardName: identityPlayer.activeFormCard.name,
+          };
+          const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
+
+          if (ability.cost) {
+            executeAbilityCost(state, identityPlayer, ability);
+          }
+          if (ability.limit === 'ONCE_PER_ROUND') {
+            if (!identityPlayer.usedAbilitiesThisRound) identityPlayer.usedAbilitiesThisRound = {};
+            identityPlayer.usedAbilitiesThisRound[ability.id] =
+              (identityPlayer.usedAbilitiesThisRound[ability.id] || 0) + 1;
+          } else if (ability.limit === 'ONCE_PER_PHASE') {
+            if (!identityPlayer.usedAbilitiesThisPhase) identityPlayer.usedAbilitiesThisPhase = {};
+            identityPlayer.usedAbilitiesThisPhase[ability.id] =
+              (identityPlayer.usedAbilitiesThisPhase[ability.id] || 0) + 1;
+          }
+          const effCtx: EffectExecutionContext = {
+            playerId: identityPlayer.id,
+            eventTargetType: context.targetType,
+            eventTargetInstanceId: context.targetInstanceId,
+            threatAmount: currentThreat,
+            damageAmount: currentDamage,
+            interceptedValue: currentThreat || currentDamage,
+            triggerChain: nextChain,
+          };
+          executeEffect(state, ability, effCtx);
+          if (trigger === 'THREAT_WOULD_BE_PLACED' && effCtx.threatAmount !== undefined) {
+            currentThreat = effCtx.threatAmount;
+          }
+          if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && effCtx.damageAmount !== undefined) {
+            currentDamage = effCtx.damageAmount;
+            if (currentDamage === 0) isPrevented = true;
+          }
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            key: `ability.${ability.id}.triggered`,
+            params: { player: identityPlayer.name },
+            onomatopoeia: 'ABILITY TRIGGERED!',
+          });
+        } else {
+          // Optional Identity Ability: Check cost & limits before prompting
+          const costCheck = canPayAbilityCost(state, identityPlayer, ability);
+          if (!costCheck.allowed) continue;
+          // RR v1.8 "Target": an ability that requires a target needs at least one valid target.
+          if (!abilityHasValidTarget(state, identityPlayer, ability)) continue;
+
+          if (
+            ability.limit === 'ONCE_PER_ROUND' &&
+            identityPlayer.usedAbilitiesThisRound?.[ability.id]
+          ) {
+            continue;
+          }
+          if (
+            ability.limit === 'ONCE_PER_PHASE' &&
+            identityPlayer.usedAbilitiesThisPhase?.[ability.id]
+          ) {
+            continue;
+          }
+
+          const cardName = identityPlayer.activeFormCard.name;
+          const isDamageTrigger = triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN');
+          const damageSuffix =
+            isDamageTrigger && currentDamage > 0 ? ` (Incoming Damage: ${currentDamage})` : '';
+          const damageDescSuffix =
+            isDamageTrigger && currentDamage > 0 ? ` [Incoming Damage: ${currentDamage}]` : '';
+          enqueueDecisionPrompt(state, {
+            promptId: nextEngineId(state, `prompt_trigger_${ability.id}`),
+            playerId: identityPlayer.id,
+            title: `Do you want to use the following ability from ${cardName}?${damageSuffix}`,
+            description: `${formatAbilityStepsSummary(trigger, ability.steps || [])}${damageDescSuffix}`,
+            incomingDamage: isDamageTrigger ? currentDamage : undefined,
+            sourceCardName: cardName,
+            sourceCardCode: identityPlayer.activeFormCard.code,
+            triggerSourceName:
+              context.encounterCardInstance?.card?.name ||
+              (context.targetType === 'villain'
+                ? targetedVillain(state, context).card.name
+                : undefined),
+            triggerSourceCode:
+              context.encounterCardInstance?.card?.code ||
+              (context.targetType === 'villain'
+                ? targetedVillain(state, context).card.code
+                : undefined),
+            triggerSourceCard:
+              context.encounterCardInstance?.card ||
+              (context.targetType === 'villain' ? targetedVillain(state, context).card : undefined),
+            triggerType: ability.timing,
+            isVoluntary: true,
+            options: [
+              {
+                id: `trigger_${ability.id}`,
+                label: 'Yes',
+                effect: 'EXECUTE_OPTIONAL_TRIGGER',
+                params: {
+                  ability,
+                  context: {
+                    ...context,
+                    threatAmount: currentThreat,
+                    damageAmount: currentDamage,
+                    interceptedValue: currentThreat || currentDamage,
+                  },
                 },
               },
-            },
-            {
-              id: 'pass',
-              label: 'No',
-              effect: 'PASS',
-            },
-          ],
-        });
-        hasPendingPrompt = true;
+              {
+                id: 'pass',
+                label: 'No',
+                effect: 'PASS',
+              },
+            ],
+          });
+          hasPendingPrompt = true;
+        }
       }
     }
   }
@@ -819,15 +852,10 @@ export function dispatchTrigger(
   // 2. Scan tableau, allies & in-play cards
   // A card revealed for one player can be interrupted by the cards in play of every player
   // ("When a card is revealed from the encounter deck", Black Widow 01075).
-  const playersToScanForInPlay: PlayerState[] =
-    trigger === 'MINION_ENTERS_PLAY' ||
-    trigger === 'ENCOUNTER_CARD_REVEALED' ||
-    trigger === 'TREACHERY_REVEALED'
-      ? revealReactors(state, player)
-      : [player];
+  const playersToScanForInPlay: PlayerState[] = isGlobalTrigger ? priorityOrder : [player];
 
   for (const controller of playersToScanForInPlay) {
-    if (hasPendingPrompt) break;
+    if (hasPendingPrompt && trigger !== 'THREAT_WOULD_BE_PLACED') break;
     const inPlayCards: CardInstance[] = [
       ...(playerAbilitiesSuspended ? [] : controller.tableau || []),
       ...(playerAbilitiesSuspended ? [] : controller.allies || []),
@@ -1043,7 +1071,7 @@ export function dispatchTrigger(
           }
         }
       }
-      if (hasPendingPrompt) break;
+      if (hasPendingPrompt && trigger !== 'THREAT_WOULD_BE_PLACED') break;
     }
   }
 
@@ -1257,6 +1285,28 @@ export function dispatchTrigger(
       })
     ) {
       hasPendingPrompt = true;
+    }
+  }
+
+  if (state.pendingDecisionQueue && state.pendingDecisionQueue.length > queueLenBefore) {
+    const turnOrder = priorityOrder.map((p) => p.id);
+    const existing = state.pendingDecisionQueue.slice(0, queueLenBefore);
+    const newlyAdded = state.pendingDecisionQueue.slice(queueLenBefore);
+    newlyAdded.sort((a, b) => {
+      const idxA = turnOrder.indexOf(a.playerId);
+      const idxB = turnOrder.indexOf(b.playerId);
+      const orderA = idxA === -1 ? 999 : idxA;
+      const orderB = idxB === -1 ? 999 : idxB;
+      return orderA - orderB;
+    });
+    state.pendingDecisionQueue = [...existing, ...newlyAdded];
+    const total = state.pendingDecisionQueue.length;
+    for (let i = 0; i < total; i++) {
+      state.pendingDecisionQueue[i].queuePosition = i + 1;
+      state.pendingDecisionQueue[i].totalQueued = total;
+    }
+    if (state.pendingDecisionQueue.length > 0) {
+      refreshPromptOptionAvailability(state, state.pendingDecisionQueue[0]);
     }
   }
 

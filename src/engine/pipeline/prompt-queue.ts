@@ -353,7 +353,12 @@ function isThreatInterruptStillUsable(state: GameState, prompt: PendingDecisionP
   }
 
   const sourceId = option.params?.sourceCardInstanceId as string | undefined;
-  if (!sourceId) return canPayAbilityCost(state, player, ability).allowed;
+  if (!sourceId) {
+    if (prompt.sourceCardCode && player.activeFormCard?.code !== prompt.sourceCardCode) {
+      return false;
+    }
+    return canPayAbilityCost(state, player, ability).allowed;
+  }
 
   const source =
     ability.zone === 'HAND'

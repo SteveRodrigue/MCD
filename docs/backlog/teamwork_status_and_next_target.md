@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-15 (Issue #312 UI z-axis layering delivered; queued Gate 1 issues #311, #306, and #314 "Call for Action")
+> **Last updated:** 2026-10-15 (Issue #311 "I Object!" villain-phase threat interrupt delivered; active queue: #306, #287, #314)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
-> **Verification baseline:** 🟢 2,696 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
+> **Verification baseline:** 🟢 2,700 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
 ---
@@ -62,9 +62,7 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 ### 3.1 Bugs seen in real Rhino games (do first)
 
-| #   | Issue                                                   | Item                                                                | Estimate | Notes                                               |
-| :-- | :------------------------------------------------------ | :------------------------------------------------------------------ | :------- | :-------------------------------------------------- |
-| 18  | [#311](https://github.com/SteveRodrigue/MCD/issues/311) | "I Object!" interrupt (01019b) not offered on villain-phase threat  | ½ day    | Dev Mode report; reporter calls it "Legal Practice" |
+_None currently._
 
 ### 3.2 Rules gaps that affect core cards
 

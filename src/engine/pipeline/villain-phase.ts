@@ -746,6 +746,11 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
 
     if (nextState.winner) return nextState;
 
+    if (peekDecisionPrompt(nextState)) {
+      nextState.villainPhaseStep = VillainPhaseStep.MAIN_SCHEME_THREAT;
+      return nextState;
+    }
+
     nextState.villainPhaseStep = VillainPhaseStep.VILLAIN_ACTIVATIONS;
     delete nextState.pendingActivations;
     return nextState;

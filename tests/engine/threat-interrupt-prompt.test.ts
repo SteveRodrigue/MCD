@@ -15,6 +15,7 @@ import { peekDecisionPrompt, resolveDecisionPrompt } from '@engine/pipeline/prom
 import {
   executeVillainSchemeAgainstPlayer,
   advanceVillainPhaseStep,
+  step1_placeThreat,
 } from '@engine/pipeline/villain-phase';
 import { dispatchTrigger } from '@engine/triggers/trigger-dispatcher';
 import { executeEffect } from '@engine/effects';
@@ -35,6 +36,7 @@ interface PlayerSetup {
 const SPIDER_MAN: [string, string] = ['01001a', '01001b'];
 const CAPTAIN_MARVEL: [string, string] = ['01010a', '01010b'];
 const SHE_HULK: [string, string] = ['01019a', '01019b'];
+const BLACK_PANTHER: [string, string] = ['01040a', '01040b'];
 
 const EMERGENCY = '01085';
 const GREAT_RESPONSIBILITY = '01061';
@@ -416,5 +418,81 @@ describe('threat interrupt prompts change the placed threat (Issue #266)', () =>
     const res = resolveDecisionPrompt(state, prompt.playerId, yes.id);
     expect(res.result.success).toBe(true);
     expect(threat(res.state)).toBe(before + 2);
+  });
+
+  it('19. Issue #311 reproduction: "I Object!" (01019b) offered on villain-phase Step 1 threat in 2-player game with player 2 active', () => {
+    const state = setup(
+      [
+        { hero: SHE_HULK, form: 'alter_ego', hand: [] },
+        { hero: BLACK_PANTHER, form: 'hero', hand: [] },
+      ],
+      { firstPlayerIndex: 1 },
+    );
+    state.activePlayerIndex = 1;
+    const before = threat(state);
+    step1_placeThreat(state);
+
+    expect(peekDecisionPrompt(state)?.playerId).toBe('p1');
+    expect(peekDecisionPrompt(state)?.sourceCardCode).toBe('01019b');
+
+    const accepted = accept(state);
+    expect(accepted.players[0].usedAbilitiesThisRound?.['i_object']).toBe(1);
+    expect(threat(accepted)).toBe(before + 1);
+  });
+
+  it('20. Stepped flow: villainPhaseStep remains MAIN_SCHEME_THREAT while threat interrupt prompt is open', () => {
+    const state = setup([{ hero: SHE_HULK, form: 'alter_ego', hand: [] }]);
+    state.phase = GamePhase.PLAYER_PHASE;
+    const before = threat(state);
+
+    const paused = advanceVillainPhaseStep(state);
+    expect(peekDecisionPrompt(paused)?.sourceCardCode).toBe('01019b');
+    expect(paused.villainPhaseStep).toBe(VillainPhaseStep.MAIN_SCHEME_THREAT);
+
+    const accepted = accept(paused);
+    expect(threat(accepted)).toBe(before);
+    expect(accepted.villainPhaseStep).toBe(VillainPhaseStep.MAIN_SCHEME_THREAT);
+
+    const next = advanceVillainPhaseStep(accepted);
+    expect(next.villainPhaseStep).toBe(VillainPhaseStep.VILLAIN_ACTIVATIONS);
+  });
+
+  it('21. Turn order priority: prompts are presented in clockwise order starting from first player', () => {
+    const state = setup(
+      [
+        { hero: SHE_HULK, form: 'alter_ego', hand: [] },
+        { hero: SPIDER_MAN, form: 'hero', hand: [GREAT_RESPONSIBILITY] },
+      ],
+      { firstPlayerIndex: 1 },
+    );
+    step1_placeThreat(state);
+
+    expect(peekDecisionPrompt(state)?.playerId).toBe('p2');
+    expect(peekDecisionPrompt(state)?.sourceCardCode).toBe(GREAT_RESPONSIBILITY);
+
+    const afterP2 = pass(state);
+    expect(peekDecisionPrompt(afterP2)?.playerId).toBe('p1');
+    expect(peekDecisionPrompt(afterP2)?.sourceCardCode).toBe('01019b');
+  });
+
+  it('22. Prompt usability guard: identity interrupt queued in Alter-Ego is pruned if form changed', () => {
+    const state = setup(
+      [
+        { hero: SHE_HULK, form: 'alter_ego', hand: [] },
+        { hero: SPIDER_MAN, form: 'hero', hand: [GREAT_RESPONSIBILITY] },
+      ],
+      { firstPlayerIndex: 1 },
+    );
+    step1_placeThreat(state);
+
+    // Player 1 flips form to hero while prompt is queued
+    state.players[0].currentForm = 'hero';
+    state.players[0].activeFormCard = state.players[0].hero;
+
+    // Player 2 passes on their prompt
+    const afterP2 = pass(state);
+
+    // Player 1's prompt for 01019b is pruned because active form is now 01019a
+    expect(peekDecisionPrompt(afterP2)).toBeUndefined();
   });
 });

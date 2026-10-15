@@ -185,7 +185,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
           <button
             type="button"
             onClick={handlePrevScenario}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-30 bg-comic-yellow hover:bg-amber-300 text-comic-black border-2 border-comic-black p-2 md:p-3 rounded-full shadow-comic hover:scale-110 active:scale-95 transition-all cursor-pointer"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-zoom bg-comic-yellow hover:bg-amber-300 text-comic-black border-2 border-comic-black p-2 md:p-3 rounded-full shadow-comic hover:scale-110 active:scale-95 transition-all cursor-pointer"
             title="Previous Scenario"
           >
             <ChevronLeft className="w-6 h-6 md:w-8 md:h-8 stroke-[3]" />
@@ -194,16 +194,16 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
           <button
             type="button"
             onClick={handleNextScenario}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-30 bg-comic-yellow hover:bg-amber-300 text-comic-black border-2 border-comic-black p-2 md:p-3 rounded-full shadow-comic hover:scale-110 active:scale-95 transition-all cursor-pointer"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-zoom bg-comic-yellow hover:bg-amber-300 text-comic-black border-2 border-comic-black p-2 md:p-3 rounded-full shadow-comic hover:scale-110 active:scale-95 transition-all cursor-pointer"
             title="Next Scenario"
           >
             <ChevronRight className="w-6 h-6 md:w-8 md:h-8 stroke-[3]" />
           </button>
 
           {/* Two-Page Spread Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10 px-4 md:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-content px-4 md:px-8">
             {/* Center Spine Fold / Binding Crease */}
-            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 -translate-x-1/2 w-8 pointer-events-none z-20">
+            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 -translate-x-1/2 w-8 pointer-events-none z-raised">
               <div className="w-full h-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
               {/* Metal Staples */}
               <div className="absolute top-12 left-1/2 -translate-x-1/2 w-1.5 h-6 bg-slate-400 rounded-sm border border-slate-600 shadow-sm" />
@@ -541,7 +541,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                 return (
                   <div
                     key={index}
-                    className={`p-3 rounded-lg border-2 transition-all relative hover:z-40 ${
+                    className={`p-3 rounded-lg border-2 transition-all relative hover:z-zoom ${
                       isAssigned
                         ? 'bg-amber-50/80 border-comic-black shadow-comic-sm'
                         : 'bg-slate-50 border-dashed border-slate-300 hover:border-slate-400'
@@ -551,7 +551,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                       /* Occupied Seat Card Tile */
                       <div className="flex items-start gap-3">
                         {/* Hero Card Miniature Thumbnail (Hero Form) */}
-                        <div className="shrink-0 relative z-10 hover:z-50">
+                        <div className="shrink-0 relative z-content hover:z-zoom">
                           {heroCard ? (
                             <CardView card={heroCard} size="sm" />
                           ) : (

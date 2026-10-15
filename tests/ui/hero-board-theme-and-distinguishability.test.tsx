@@ -182,7 +182,7 @@ describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
 
       // Active seat: full opacity, scale-100
       expect(activeSeatContainer.className).toContain('opacity-100');
-      expect(activeSeatContainer.className).toContain('scale-[1.00]');
+      expect(activeSeatContainer.className).toContain('z-content');
       expect(activeSeatContainer.className).not.toContain('opacity-60');
 
       // Inactive seat: opacity-60, grayscale-[35%], cursor-pointer
@@ -221,7 +221,7 @@ describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
       const seat1After = innerTrack.children[1] as HTMLElement;
 
       expect(seat1After.className).toContain('opacity-100');
-      expect(seat1After.className).toContain('scale-[1.00]');
+      expect(seat1After.className).toContain('z-content');
       expect(seat0After.className).toContain('opacity-60');
       expect(seat0After.className).toContain('grayscale-[35%]');
     });

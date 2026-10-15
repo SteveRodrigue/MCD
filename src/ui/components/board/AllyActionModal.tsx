@@ -1,5 +1,5 @@
 import React from 'react';
-import { createPortal } from 'react-dom';
+import { ModalLayer } from '../layout/ModalLayer';
 import { Swords, Target, Zap, X, Shield, Skull } from 'lucide-react';
 import { CardInstance, PlayerState, GameState, GameAction, AllyCard } from '../../../engine/models';
 import {
@@ -77,8 +77,8 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
     (ab) => ab.timing === 'ACTION' || ab.timing === 'HERO_ACTION',
   );
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-150">
+  return (
+    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-150">
       <div className="relative w-full max-w-md bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl overflow-hidden flex flex-col font-comic">
         {/* Comic dots pattern */}
         <div
@@ -367,8 +367,7 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
           </button>
         </div>
       </div>
-    </div>,
-    document.body,
+    </ModalLayer>
   );
 };
 

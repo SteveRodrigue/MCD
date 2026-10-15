@@ -1,5 +1,5 @@
 import React from 'react';
-import { createPortal } from 'react-dom';
+import { ModalLayer } from '../layout/ModalLayer';
 import { Target, ShieldAlert, Sparkles, X, AlertOctagon, Flame } from 'lucide-react';
 import { SchemeTarget } from './thwart-target-utils';
 
@@ -26,8 +26,8 @@ export const ThwartTargetModal: React.FC<ThwartTargetModalProps> = ({
 }) => {
   if (!isOpen || targets.length === 0) return null;
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
+  return (
+    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
       <div className="relative w-full max-w-lg bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl overflow-hidden flex flex-col font-comic">
         {/* Comic dots overlay */}
         <div
@@ -199,8 +199,7 @@ export const ThwartTargetModal: React.FC<ThwartTargetModalProps> = ({
           </button>
         </div>
       </div>
-    </div>,
-    document.body,
+    </ModalLayer>
   );
 };
 

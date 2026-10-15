@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import { ModalLayer } from '../layout/ModalLayer';
 import { Bug, X, Check, Send, ExternalLink, AlertTriangle } from 'lucide-react';
 import { GameState } from '../../../engine/models';
 import { getLatestGameStateSnapshot } from '../../services/gamestate-logger-service';
@@ -117,8 +117,11 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
     }
   };
 
-  return createPortal(
-    <div className="fixed inset-0 bg-comic-black/80 backdrop-blur-xs z-[100000] flex items-center justify-center p-4">
+  return (
+    <ModalLayer
+      layer="critical"
+      className="inset-0 bg-comic-black/80 backdrop-blur-xs flex items-center justify-center p-4"
+    >
       <div className="bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl max-w-lg w-full flex flex-col max-h-[90vh] overflow-hidden font-comic">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 bg-comic-red text-white border-b-4 border-comic-black select-none">
@@ -269,8 +272,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
           </div>
         )}
       </div>
-    </div>,
-    document.body,
+    </ModalLayer>
   );
 };
 

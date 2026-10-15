@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ModalLayer } from '../layout/ModalLayer';
 import { AlertTriangle, X } from 'lucide-react';
 import { GameLogEntry } from '../../../engine/models';
 
@@ -19,9 +20,10 @@ export const DevStepErrorBanner: React.FC<DevStepErrorBannerProps> = ({ logs, de
   if (!latest || latest.id === dismissedId) return null;
 
   return (
-    <div
+    <ModalLayer
+      layer="banner"
       role="alert"
-      className="fixed top-16 left-1/2 -translate-x-1/2 z-[60] max-w-xl flex items-start gap-3 bg-yellow-300 border-4 border-comic-black shadow-comic-lg px-4 py-3 font-bold text-comic-black"
+      className="top-16 left-1/2 -translate-x-1/2 max-w-xl flex items-start gap-3 bg-yellow-300 border-4 border-comic-black shadow-comic-lg px-4 py-3 font-bold text-comic-black"
     >
       <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
       <div className="text-sm">
@@ -36,7 +38,7 @@ export const DevStepErrorBanner: React.FC<DevStepErrorBannerProps> = ({ logs, de
       >
         <X className="w-4 h-4" />
       </button>
-    </div>
+    </ModalLayer>
   );
 };
 

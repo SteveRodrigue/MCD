@@ -96,7 +96,7 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
   return (
     <div
       data-testid="villain-phase-stepper"
-      className="w-full max-w-4xl mx-auto px-2 py-1 font-comic z-20"
+      className="w-full max-w-4xl mx-auto px-2 py-1 font-comic z-raised"
     >
       <div className="bg-comic-paper border-3 border-comic-black rounded-xl shadow-comic p-2.5 sm:p-3 flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
         {/* Left: Step Category Badge & Narrative */}

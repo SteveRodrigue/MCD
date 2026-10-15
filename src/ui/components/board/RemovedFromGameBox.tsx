@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ModalLayer } from '../layout/ModalLayer';
 import { Archive, X } from 'lucide-react';
 import { CardInstance, NormalizedCard } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
@@ -28,12 +29,12 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({ cards = 
     <>
       <section
         data-testid="removed-from-game-box"
-        className="comic-panel p-4 bg-white/95 relative hover:z-30 focus-within:z-30 shadow-comic shrink-0"
+        className="comic-panel p-4 bg-white/95 relative hover:z-raised focus-within:z-raised shadow-comic shrink-0"
       >
         {/* Zone Title Ribbon */}
         <div className="absolute -top-3 left-4 bg-slate-900 text-white border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1">
           <Archive className="w-3.5 h-3.5" />
-          <span>OUT OF PLAY: REMOVED FROM GAME</span>
+          <span>OUT OF PLAY</span>
         </div>
 
         <div className="flex items-center justify-center pt-2">
@@ -68,9 +69,9 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({ cards = 
 
       {/* Removed from Game Modal */}
       {showModal && (
-        <div
+        <ModalLayer
           data-testid="removed-from-game-modal"
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4"
         >
           <div className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-5xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
@@ -112,7 +113,7 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({ cards = 
                         size="sm"
                         enableHoverZoom={true}
                       />
-                      <span className="absolute -top-2 -left-2 bg-slate-900 text-white font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black">
+                      <span className="absolute -top-2 -right-2 bg-slate-900 text-white font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black">
                         #{idx + 1}
                       </span>
                     </div>
@@ -134,7 +135,7 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({ cards = 
               </button>
             </div>
           </div>
-        </div>
+        </ModalLayer>
       )}
     </>
   );

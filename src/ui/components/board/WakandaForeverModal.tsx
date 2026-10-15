@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
+import { ModalLayer } from '../layout/ModalLayer';
 import { PendingDecisionPrompt } from '../../../engine/models';
 
 interface WakandaForeverModalProps {
@@ -123,8 +123,8 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
     onExecuteSequence(sequenceOrder);
   };
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
+  return (
+    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
       <div className="relative w-full max-w-5xl bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl overflow-hidden flex flex-col font-comic">
         {/* Comic Header Banner */}
         <div className="bg-purple-900 text-amber-300 p-4 border-b-4 border-comic-black flex items-center justify-between select-none shadow-md">
@@ -325,7 +325,6 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
           </div>
         </div>
       </div>
-    </div>,
-    document.body,
+    </ModalLayer>
   );
 };

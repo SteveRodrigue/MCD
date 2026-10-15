@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { ModalLayer } from '../layout/ModalLayer';
 import { X, BookOpen, ChevronDown, ChevronRight, Globe, Type } from 'lucide-react';
 import { GameLogEntry, GameState } from '../../../engine/models';
 import { formatComicLogEntry } from '../../utils/comic-log-formatter';
@@ -82,7 +83,10 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed lg:fixed inset-y-0 right-0 w-full sm:w-[420px] lg:w-[420px] bg-slate-100 border-l-4 border-comic-black shadow-comic-lg z-50 flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-200">
+    <ModalLayer
+      layer="drawer"
+      className="inset-y-0 right-0 w-full sm:w-[420px] lg:w-[420px] bg-slate-100 border-l-4 border-comic-black shadow-comic-lg flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-200"
+    >
       {/* 1. Daily Bugle Masthead Header Bar */}
       <div className="bg-slate-900 p-3 sm:p-4 border-b-4 border-comic-black shadow-comic-sm">
         <div className="flex items-center justify-between mb-2">
@@ -242,7 +246,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </ModalLayer>
   );
 };
 

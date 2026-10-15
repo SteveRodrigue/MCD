@@ -228,7 +228,7 @@ export const CardView: React.FC<CardViewProps> = ({
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
       onContextMenu={handleContextMenu}
-      className={`relative inline-block transition-all duration-200 select-none group cursor-pointer z-0 hover:z-50 ${
+      className={`relative inline-block transition-all duration-200 select-none group cursor-pointer z-table hover:z-zoom ${
         exhaustedState
           ? 'rotate-[30deg] filter brightness-95 hover:rotate-0 hover:brightness-100'
           : 'rotate-0'
@@ -261,7 +261,7 @@ export const CardView: React.FC<CardViewProps> = ({
       >
         {/* Exhausted Indicator Tag */}
         {exhaustedState && (
-          <div className="absolute top-1.5 left-1.5 z-20 bg-slate-950/90 text-amber-300 font-comic text-[8px] px-1.5 py-0.5 rounded border border-comic-black shadow-sm font-bold uppercase pointer-events-none">
+          <div className="absolute top-1.5 left-1.5 z-content bg-slate-950/90 text-amber-300 font-comic text-[8px] px-1.5 py-0.5 rounded border border-comic-black shadow-sm font-bold uppercase pointer-events-none">
             EXHAUSTED
           </div>
         )}
@@ -269,7 +269,7 @@ export const CardView: React.FC<CardViewProps> = ({
         {/* Unplayable / Inactive Form Indicator Tag */}
         {!isFacedown && (isPlayable === false || isUsable === false) && (
           <div
-            className="absolute top-1.5 right-1.5 z-20 bg-slate-900/90 text-white font-comic text-[8px] px-1.5 py-0.5 rounded border border-comic-black shadow-sm font-bold uppercase pointer-events-none group-hover:hidden"
+            className="absolute top-1.5 right-1.5 z-content bg-slate-900/90 text-white font-comic text-[8px] px-1.5 py-0.5 rounded border border-comic-black shadow-sm font-bold uppercase pointer-events-none group-hover:hidden"
             title={
               unusableReason || unplayableReason
                 ? `Cannot use: ${unusableReason || unplayableReason}`
@@ -284,7 +284,7 @@ export const CardView: React.FC<CardViewProps> = ({
         {!isFacedown && activeDynamicTraits.length > 0 && (
           <div
             data-testid="dynamic-traits-row"
-            className="absolute top-1.5 left-1/2 -translate-x-1/2 z-20 flex flex-wrap justify-center items-center gap-1 pointer-events-none max-w-[95%]"
+            className="absolute top-1.5 left-1/2 -translate-x-1/2 z-content flex flex-wrap justify-center items-center gap-1 pointer-events-none max-w-[95%]"
           >
             {activeDynamicTraits.map((trait, idx) => (
               <span
@@ -434,7 +434,7 @@ export const CardView: React.FC<CardViewProps> = ({
         {showTokens && instance && (
           <>
             {/* Left Badges: Damage, Threat, Status Cards */}
-            <div className="absolute bottom-1.5 left-1.5 flex flex-wrap items-center gap-1 pointer-events-none z-20">
+            <div className="absolute bottom-1.5 left-1.5 flex flex-wrap items-center gap-1 pointer-events-none z-content">
               {/* Damage Tokens */}
               {(instance.tokens?.damage ?? 0) > 0 && (
                 <span className="bg-comic-red text-white font-comic text-xs px-2 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
@@ -469,7 +469,7 @@ export const CardView: React.FC<CardViewProps> = ({
 
             {/* Right Badge: General Counter Tokens (All-Purpose Green Game Counter: Tac Team, Web-Shooter) */}
             {(instance.tokens?.counters ?? 0) > 0 && (
-              <div className="absolute bottom-1.5 right-1.5 z-20 pointer-events-none">
+              <div className="absolute bottom-1.5 right-1.5 z-content pointer-events-none">
                 <div className="bg-emerald-600 text-white font-comic text-xs font-black min-w-[22px] h-[22px] px-1 rounded-md border-2 border-comic-black shadow-comic-sm flex items-center justify-center">
                   {instance.tokens?.counters}
                 </div>

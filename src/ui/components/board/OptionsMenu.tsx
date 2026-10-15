@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ModalLayer } from '../layout/ModalLayer';
 import {
   Settings,
   Wrench,
@@ -46,7 +47,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-comic-black/80 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <ModalLayer className="inset-0 bg-comic-black/80 backdrop-blur-xs flex items-center justify-center p-4">
       <div className="bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl max-w-lg w-full flex flex-col max-h-[90vh] overflow-hidden font-comic">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 bg-comic-darkBlue text-white border-b-4 border-comic-black select-none">
@@ -395,7 +396,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
           </button>
         </div>
       </div>
-    </div>
+    </ModalLayer>
   );
 };
 

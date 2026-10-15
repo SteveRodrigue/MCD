@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ModalLayer } from '../layout/ModalLayer';
 import { Skull, AlertTriangle, Eye, X } from 'lucide-react';
 import { CardInstance } from '../../../engine/models';
 import { useGameSettings } from '../../context/useGameSettings';
@@ -95,7 +96,7 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
           )}
 
           {/* Top: Header & Icons */}
-          <div className="flex items-center justify-between z-10 bg-slate-950/80 px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs backdrop-blur-xs">
+          <div className="flex items-center justify-between z-content bg-slate-950/80 px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs backdrop-blur-xs">
             <div className="flex items-center gap-1">
               <Skull className="w-3.5 h-3.5 text-comic-red" />
               <span className="font-comic text-[10px] tracking-wider text-rose-300 font-bold uppercase">
@@ -116,7 +117,7 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
           </div>
 
           {/* Center: Comic Emblem */}
-          <div className="flex flex-col items-center justify-center my-auto z-10">
+          <div className="flex flex-col items-center justify-center my-auto z-content">
             <div className="w-10 h-10 rounded-full border-2 border-comic-black bg-rose-700/90 flex items-center justify-center shadow-comic-xs">
               <Skull className="w-6 h-6 text-amber-300 drop-shadow-md" />
             </div>
@@ -126,7 +127,7 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
           </div>
 
           {/* Bottom: Count Badge */}
-          <div className="flex justify-center z-10">
+          <div className="flex justify-center z-content">
             <span
               data-testid="facedown-count-badge"
               className="bg-amber-400 text-slate-950 font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black font-bold shadow-comic-xs uppercase tracking-wide"
@@ -139,8 +140,8 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
 
       {/* Dev Mode Inspector / Peek Modal */}
       {isDevMode && isPeekOpen && (
-        <div
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        <ModalLayer
+          className="inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={() => setIsPeekOpen(false)}
           data-testid="facedown-peek-modal"
         >
@@ -182,7 +183,7 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
                       size="sm"
                       enableHoverZoom={true}
                     />
-                    <span className="absolute -top-2 -left-2 bg-slate-900 text-white font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black">
+                    <span className="absolute -top-2 -right-2 bg-slate-900 text-white font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black">
                       #{idx + 1}
                     </span>
                   </div>
@@ -206,7 +207,7 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </ModalLayer>
       )}
     </>
   );

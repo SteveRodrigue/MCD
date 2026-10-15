@@ -9,7 +9,7 @@ This directory contains all internal, project-authored architecture, developer s
 ```
 docs/
 ├── ambiguities/                  # Active ambiguity & blocker queue (Inbox Zero)
-├── decisions/                    # Architecture Decision Records (ADR-0001 to ADR-0046)
+├── decisions/                    # Architecture Decision Records (ADR-0001 to ADR-0082)
 ├── guidelines/                   # Standard engineering protocols & procedures
 │   ├── card_integration_protocol.md # 8-step card integration protocol
 │   ├── hero_creation_guide.md    # Hero & identity authoring guide
@@ -24,7 +24,8 @@ docs/
 ├── coding_guidelines.md          # Core coding guidelines & standards
 ├── installation_guide.md         # Comprehensive environment setup & installation guide
 ├── roadmap_and_milestones.md     # Development phases & milestones
-└── technology_evaluation_and_architecture.md # Tech stack selection & architecture
+├── technology_evaluation_and_architecture.md # Tech stack selection & architecture
+└── ui_z_axis_layering.md         # UI z-index ladder, fan-out offsets & scale (ADR-0082)
 ```
 
 ---

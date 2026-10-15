@@ -73,19 +73,17 @@ describe('Facedown cards underneath a side scheme (#238)', () => {
     expect(container.textContent).not.toContain('Underneath');
   });
 
-  it.each(['staircase', 'vertical'] as const)(
-    'CardAttachmentFan (%s) draws attachments and facedown cards together',
-    (mode) => {
-      const attachment = createCardInstance(cardCatalog.getCard('01099')!);
-      render(
-        <CardAttachmentFan
-          mode={mode}
-          attachments={[attachment]}
-          cardsUnderneath={[secret('Hidden Gamma', 'p1')]}
-        />,
-      );
-      expect(screen.getAllByTestId('underneath-facedown-card')).toHaveLength(1);
-      expect(screen.queryByText('Hidden Gamma')).toBeNull();
-    },
-  );
+  it('CardAttachmentFan draws attachments and facedown cards together', () => {
+    const attachment = createCardInstance(cardCatalog.getCard('01099')!);
+    render(
+      <CardAttachmentFan
+        attachments={[attachment]}
+        cardsUnderneath={[secret('Hidden Gamma', 'p1')]}
+      >
+        <div>host</div>
+      </CardAttachmentFan>,
+    );
+    expect(screen.getAllByTestId('underneath-facedown-card')).toHaveLength(1);
+    expect(screen.queryByText('Hidden Gamma')).toBeNull();
+  });
 });

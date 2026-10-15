@@ -22,22 +22,22 @@ describe('ReportProblemModal (Issue #164)', () => {
     vi.useRealTimers();
   });
 
-  it('Test 1: Verifies ReportProblemModal renders into document.body via createPortal with class z-[100000]', () => {
+  it('Test 1: Verifies ReportProblemModal renders into document.body via createPortal with class z-critical', () => {
     const onClose = vi.fn();
     const { rerender } = render(<ReportProblemModal isOpen={false} onClose={onClose} />);
 
     // When closed, nothing should be rendered in document.body
-    expect(document.body.querySelector('.z-\\[100000\\]')).toBeNull();
+    expect(document.body.querySelector('.z-critical')).toBeNull();
 
-    // When opened, createPortal mounts the modal overlay directly into document.body with z-[100000]
+    // When opened, createPortal mounts the modal overlay directly into document.body with z-critical
     rerender(<ReportProblemModal isOpen={true} onClose={onClose} />);
 
-    const overlay = document.body.querySelector('.z-\\[100000\\]');
+    const overlay = document.body.querySelector('.z-critical');
     expect(overlay).not.toBeNull();
     expect(document.body.contains(overlay)).toBe(true);
     expect(overlay?.classList.contains('fixed')).toBe(true);
     expect(overlay?.classList.contains('inset-0')).toBe(true);
-    expect(overlay?.classList.contains('z-[100000]')).toBe(true);
+    expect(overlay?.classList.contains('z-critical')).toBe(true);
 
     // Verify modal header is rendered inside document.body
     expect(screen.getByText('BULLPEN FIELD DISPATCH')).not.toBeNull();

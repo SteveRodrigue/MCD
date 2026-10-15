@@ -145,11 +145,8 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
 
   return (
     <div className="min-h-screen w-full bg-comic-paper flex flex-col overflow-hidden font-sans select-none">
-      {/* Halftone Dot Overlay */}
-      <div className="fixed inset-0 bg-bendy-dots pointer-events-none z-0" />
-
       {/* TOP HEADER BAR */}
-      <header className="relative z-20 bg-comic-panel border-b-4 border-black px-4 py-2.5 flex items-center justify-between shadow-comic-md">
+      <header className="relative z-raised bg-comic-panel border-b-4 border-black px-4 py-2.5 flex items-center justify-between shadow-comic-md">
         <div className="flex items-center gap-3">
           <button
             onClick={handleBack}
@@ -220,14 +217,14 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
       />
 
       {/* MAIN WORKSPACE SPLIT (Left: Card Gallery List, Right: Dual Inspector) */}
-      <div className="relative z-10 flex-1 flex flex-col md:flex-row overflow-hidden border-t-2 border-black">
+      <div className="relative z-content flex-1 flex flex-col md:flex-row overflow-hidden border-t-2 border-black">
         {/* Edge toggle when collapsed */}
         {isSidebarCollapsed && (
           <button
             type="button"
             data-testid="toggle-sidebar-edge-btn"
             onClick={() => setIsSidebarCollapsed(false)}
-            className="absolute left-0 top-3 z-30 bg-comic-yellow hover:bg-yellow-400 text-black p-1.5 border-2 border-l-0 border-black shadow-comic-xs cursor-pointer active:scale-95 transition-transform"
+            className="absolute left-0 top-3 z-zoom bg-comic-yellow hover:bg-yellow-400 text-black p-1.5 border-2 border-l-0 border-black shadow-comic-xs cursor-pointer active:scale-95 transition-transform"
             title="Expand Sidebar"
           >
             <PanelLeftOpen className="w-4 h-4" />

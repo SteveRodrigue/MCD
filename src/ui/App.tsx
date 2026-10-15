@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ModalLayer } from './components/layout/ModalLayer';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 import { CardCatalog } from '../data/importer/card-loader';
@@ -223,12 +224,12 @@ export const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-comic-paper flex flex-col items-center justify-start overflow-x-hidden overflow-y-auto font-sans">
+    <div className="relative min-h-screen w-full bg-comic-paper flex flex-col items-center justify-start overflow-x-clip font-sans">
       {/* Halftone Dot Overlay */}
-      <div className="fixed inset-0 bg-bendy-dots pointer-events-none z-0" />
+      <div className="fixed inset-0 bg-bendy-dots pointer-events-none z-table" />
 
       {/* Screen Render Switcher */}
-      <div className="relative z-10 w-full">
+      <div className="relative z-content w-full">
         <React.Suspense
           fallback={
             <div className="flex items-center justify-center h-screen bg-comic-paper">
@@ -281,7 +282,10 @@ export const AppContent: React.FC = () => {
 
         {/* Infinite Loop Detected Modal (ADR-0053, Issue #48) */}
         {loopError && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs">
+          <ModalLayer
+            layer="critical"
+            className="inset-0 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs"
+          >
             <div className="relative max-w-lg w-full bg-yellow-300 border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-black">
               <div className="bg-red-600 text-white font-black text-2xl px-4 py-2 uppercase border-2 border-black tracking-wider text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-4 rotate-[-1deg]">
                 💥 Infinite Loop Detected!
@@ -308,7 +312,7 @@ export const AppContent: React.FC = () => {
                 </button>
               </div>
             </div>
-          </div>
+          </ModalLayer>
         )}
       </div>
     </div>

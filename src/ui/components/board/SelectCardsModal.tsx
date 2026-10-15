@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
+import { ModalLayer } from '../layout/ModalLayer';
 import { CheckCircle2, Zap } from 'lucide-react';
 import { PendingDecisionPrompt } from '../../../engine/models';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
@@ -42,8 +42,8 @@ export const SelectCardsModal: React.FC<SelectCardsModalProps> = ({ prompt, onCo
 
   const canConfirm = chosen.length >= selection.min && chosen.length <= selection.max;
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200 font-comic">
+  return (
+    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200 font-comic">
       <div className="relative w-full max-w-2xl max-h-[90vh] bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl overflow-hidden flex flex-col">
         <div className="relative px-5 py-3.5 bg-comic-yellow border-b-4 border-comic-black flex items-center justify-between text-comic-black select-none">
           <div className="flex items-center gap-3">
@@ -116,7 +116,6 @@ export const SelectCardsModal: React.FC<SelectCardsModalProps> = ({ prompt, onCo
           </button>
         </div>
       </div>
-    </div>,
-    document.body,
+    </ModalLayer>
   );
 };

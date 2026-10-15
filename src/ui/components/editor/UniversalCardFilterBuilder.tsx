@@ -545,7 +545,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
                       type="button"
                       data-testid={`remove-${comb}-subfilter-${bIdx}`}
                       onClick={() => handleRemoveCombinatorItem(comb, bIdx)}
-                      className="absolute right-2 top-2 z-10 p-1 text-gray-400 hover:text-comic-red cursor-pointer"
+                      className="absolute right-2 top-2 z-content p-1 text-gray-400 hover:text-comic-red cursor-pointer"
                       title="Remove condition"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

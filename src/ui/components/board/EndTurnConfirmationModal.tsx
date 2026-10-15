@@ -1,4 +1,5 @@
 import React from 'react';
+import { ModalLayer } from '../layout/ModalLayer';
 import { Newspaper, Eye } from 'lucide-react';
 import { LegalActionItem } from '../../../engine/pipeline/legal-actions-generator';
 
@@ -20,7 +21,7 @@ export const EndTurnConfirmationModal: React.FC<EndTurnConfirmationModalProps> =
   if (!isOpen || !turnAction) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
+    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
       {/* Vintage 1960s Tabloid Press Flash */}
       <div className="relative w-full max-w-md bg-[#fbf7ee] text-slate-900 border-4 border-slate-950 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-sm overflow-hidden flex flex-col font-serif">
         {/* Masthead Flash */}
@@ -71,7 +72,7 @@ export const EndTurnConfirmationModal: React.FC<EndTurnConfirmationModalProps> =
           </div>
         </div>
       </div>
-    </div>
+    </ModalLayer>
   );
 };
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ModalLayer } from '../layout/ModalLayer';
 import {
   Newspaper,
   X,
@@ -97,7 +98,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
       {/* 1960s Newsprint Broadsheet Container */}
       <div className="relative w-full max-w-2xl max-h-[85vh] bg-[#fbf7ee] text-slate-900 border-4 border-slate-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-sm overflow-hidden flex flex-col font-serif">
         {/* Top Woodblock Masthead */}
@@ -105,7 +106,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
           {/* Close Button (Solid non-transparent comic badge) */}
           <button
             onClick={onClose}
-            className="absolute top-2 right-2 p-1 bg-slate-900 text-white hover:bg-comic-red hover:text-white rounded border-2 border-slate-950 shadow-comic-sm transition-all cursor-pointer z-10 flex items-center justify-center"
+            className="absolute top-2 right-2 p-1 bg-slate-900 text-white hover:bg-comic-red hover:text-white rounded border-2 border-slate-950 shadow-comic-sm transition-all cursor-pointer z-content flex items-center justify-center"
             title="Close Newspaper"
           >
             <X className="w-4 h-4" />
@@ -358,7 +359,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
           </div>
         )}
       </div>
-    </div>
+    </ModalLayer>
   );
 };
 

@@ -16,7 +16,7 @@ export const ComicDamageSplash: React.FC<ComicDamageSplashProps> = ({
   return (
     <div
       data-testid="comic-damage-splash"
-      className={`absolute inset-0 z-30 flex items-center justify-center pointer-events-none animate-in zoom-in-75 duration-300 ${className}`}
+      className={`absolute inset-0 z-raised flex items-center justify-center pointer-events-none animate-in zoom-in-75 duration-300 ${className}`}
     >
       {/* Explosive Jagged Starburst Container */}
       <div className="relative flex flex-col items-center justify-center -rotate-6 transition-transform hover:scale-105">

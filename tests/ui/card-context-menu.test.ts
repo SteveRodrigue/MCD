@@ -100,17 +100,17 @@ describe('CardContextMenu Actions & Invariants', () => {
       expect(content).toMatch(/createPortal\s*\([\s\S]*document\.body/);
     });
 
-    it('enforces elevated z-index (z-[9999] / z-[10000]) above tabletop hover-zoom layers', async () => {
+    it('enforces elevated z-index (z-menu) above tabletop hover-zoom layers', async () => {
       const fs = await import('fs');
       const path = await import('path');
       const filePath = path.resolve(process.cwd(), 'src/ui/components/cards/CardContextMenu.tsx');
       const content = fs.readFileSync(filePath, 'utf8');
 
-      // Menu container must have z-[9999] or higher
-      expect(content).toContain('z-[9999]');
+      // Menu container must have z-menu
+      expect(content).toContain('z-menu');
 
-      // Raw modal backdrop must have z-[10000]
-      expect(content).toContain('z-[10000]');
+      // Raw modal backdrop must have z-menu
+      expect(content).toContain('z-menu');
     });
 
     it('guards raw data modal with modalRef to prevent premature dismiss on inside click', async () => {

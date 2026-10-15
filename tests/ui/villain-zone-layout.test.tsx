@@ -157,8 +157,11 @@ describe('VillainZone Compact Tri-Column Layout', () => {
     renderVillainZone(villain);
 
     const hpColumn = screen.getByTestId('villain-hp-column');
-    expect(hpColumn.textContent).toContain('10/14');
-    expect(hpColumn.textContent).toContain('HP');
+    // Heart at the top, health number as the bottom label (no redundant "HP" text)
+    expect(hpColumn.firstElementChild!.querySelector('svg')).not.toBeNull();
+    expect(hpColumn.firstElementChild!.textContent).toBe('');
+    expect(hpColumn.lastElementChild!.textContent).toBe('10/14');
+    expect(hpColumn.textContent).not.toContain('HP');
 
     const progressBar = within(hpColumn).getByRole('progressbar');
     expect(progressBar).toBeDefined();
@@ -180,7 +183,7 @@ describe('VillainZone Compact Tri-Column Layout', () => {
     expect(screen.getByText('Confused')).toBeDefined();
   });
 
-  it('keeps SCH / ATK stats and HP bar on top (relative z-10) and renders attachments in staircase fan mode', () => {
+  it('keeps SCH / ATK stats and HP bar on top (relative z-content) and renders attachments in staircase fan mode', () => {
     const ivoryHornCard = cardCatalog.getCard('01100')!; // Armored Rhino / Ivory Horn
     const mockHornAttachment: CardInstance = {
       instanceId: 'att-horn',
@@ -194,14 +197,14 @@ describe('VillainZone Compact Tri-Column Layout', () => {
 
     renderVillainZone(villainWithAtt);
 
-    // 1. Stats and HP columns have relative z-10 so they stay always on top of lowered cards (z-[5] / z-1..4) without floating over modals
+    // 1. Stats and HP columns have relative z-content so they sit above the villain fan at rest; the fan raises itself to z-zoom when hovered (Issue #312)
     const statsColumn = screen.getByTestId('villain-stats-column');
     expect(statsColumn.className).toContain('relative');
-    expect(statsColumn.className).toContain('z-10');
+    expect(statsColumn.className).toContain('z-content');
 
     const hpColumn = screen.getByTestId('villain-hp-column');
     expect(hpColumn.className).toContain('relative');
-    expect(hpColumn.className).toContain('z-10');
+    expect(hpColumn.className).toContain('z-content');
 
     // 2. Attachment card is rendered via staircase fan
     expect(screen.getByAltText(ivoryHornCard.name)).toBeDefined();
@@ -213,5 +216,21 @@ describe('VillainZone Compact Tri-Column Layout', () => {
     // 4. Villain main panel expands padding to accommodate the staircase fan
     const mainPanel = screen.getByTestId('villain-main-panel');
     expect(mainPanel.style.paddingBottom).toBe('82px'); // 1 * 70px + 12px
+  });
+
+  it('stretches villain, main scheme and side scheme panels to one row height (Issue #312 follow-up)', () => {
+    renderVillainZone(createMockVillain());
+
+    const panelRow = screen.getByTestId('villain-main-panel').parentElement!;
+    expect(panelRow.className).toContain('items-stretch');
+    expect(panelRow.className).not.toContain('items-start');
+
+    // Encounter piles stay top-aligned
+    const pilesColumn = screen.getByTestId('encounter-deck-pile').parentElement!;
+    expect(pilesColumn.className).toContain('self-start');
+
+    // Villain card and gauges stay vertically centred in the taller panel
+    const triColumnRow = screen.getByTestId('villain-stats-column').parentElement!;
+    expect(triColumnRow.className).toContain('flex-1');
   });
 });

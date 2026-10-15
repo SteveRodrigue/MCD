@@ -235,7 +235,7 @@ describe('HeroZone Nested Allies & 2-Tier Tableau Architecture (Issue #156)', ()
       for (const testId of ['identity-stats-column', 'identity-hp-column']) {
         const column = within(identityStation).getByTestId(testId);
         expect(column.className).toContain('relative');
-        expect(column.className).toContain('z-10');
+        expect(column.className).toContain('z-content');
       }
     },
   );
@@ -283,6 +283,10 @@ describe('HeroZone Nested Allies & 2-Tier Tableau Architecture (Issue #156)', ()
     expect(progressBar).toBeDefined();
     expect(progressBar.getAttribute('aria-valuenow')).toBe(String(player.health));
     expect(progressBar.getAttribute('aria-valuemax')).toBe(String(player.maxHealth));
+    // Heart at the top, health number as the bottom label (no redundant "HP" text)
+    expect(hpColumn.firstElementChild!.querySelector('svg')).not.toBeNull();
+    expect(hpColumn.lastElementChild!.textContent).toBe(`${player.health}/${player.maxHealth}`);
+    expect(hpColumn.textContent).not.toContain('HP');
 
     // 4. Single-row Action Buttons in Hero form (Flip, Attack, Thwart)
     const actionRow = within(identityStation).getByTestId('identity-action-row');

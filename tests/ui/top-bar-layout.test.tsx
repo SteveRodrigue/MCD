@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { GameBoard } from '../../src/ui/components/board/GameBoard';
 import { TopBar } from '../../src/ui/components/board/TopBar';
@@ -76,6 +78,44 @@ describe('TopBar and GameBoard Layout In-Flow Architecture (Issue #301)', () => 
     // Fixed offsets pt-20 / md:pt-24 must be removed because TopBar is in-flow
     expect(main?.className).not.toContain('pt-20');
     expect(main?.className).not.toContain('md:pt-24');
+  });
+
+  it('keeps the Top Menu visible: roots clip instead of scroll, TopBar is sticky at z-sticky (Issue #312)', () => {
+    const state = createTestGameState(1);
+    const { container } = render(
+      <GameSettingsProvider>
+        <GameBoard gameState={state} onReset={vi.fn()} />
+      </GameSettingsProvider>,
+    );
+
+    const header = container.querySelector('header');
+    expect(header?.className).toContain('sticky');
+    expect(header?.className).toContain('top-0');
+    expect(header?.className).toContain('z-sticky');
+
+    // GameBoard root is the first ancestor of the header that clips horizontally.
+    let node: HTMLElement | null = header as HTMLElement;
+    let boardRoot: HTMLElement | null = null;
+    while (node) {
+      if (node.className.includes('overflow-x-')) {
+        boardRoot = node;
+        break;
+      }
+      node = node.parentElement;
+    }
+    expect(boardRoot).not.toBeNull();
+    expect(boardRoot?.className).toContain('overflow-x-clip');
+    expect(boardRoot?.className).not.toContain('overflow-x-hidden');
+    expect(boardRoot?.className).not.toContain('overflow-y-auto');
+  });
+
+  it('App root clips horizontally without becoming a scroll container (Issue #312)', () => {
+    const source = readFileSync(join(__dirname, '..', '..', 'src', 'ui', 'App.tsx'), 'utf8');
+    const rootLine = source.match(/^.*relative min-h-screen w-full bg-comic-paper.*$/m)?.[0];
+    expect(rootLine).toBeDefined();
+    expect(rootLine).toContain('overflow-x-clip');
+    expect(rootLine).not.toContain('overflow-x-hidden');
+    expect(rootLine).not.toContain('overflow-y-auto');
   });
 
   it('adjusts the shared column container width when combat log drawer is toggled', () => {

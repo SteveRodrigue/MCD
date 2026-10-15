@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { createPortal } from 'react-dom';
+import { ModalLayer } from '../layout/ModalLayer';
 import { ShieldAlert, Zap, AlertTriangle, RotateCcw, ArrowRight, X } from 'lucide-react';
 import { PendingDecisionPrompt, TargetAllocationItem } from '../../../engine/models';
 
@@ -153,8 +153,8 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
     }
   };
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200 font-comic">
+  return (
+    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200 font-comic">
       <div className="relative w-full max-w-2xl max-h-[90vh] bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl overflow-hidden flex flex-col">
         {/* Comic background dots */}
         <div
@@ -367,7 +367,6 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
           </button>
         </div>
       </div>
-    </div>,
-    document.body,
+    </ModalLayer>
   );
 };

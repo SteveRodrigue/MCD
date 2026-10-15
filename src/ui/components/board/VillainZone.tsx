@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { ModalLayer } from '../layout/ModalLayer';
 import {
   Skull,
   AlertTriangle,
@@ -132,16 +133,16 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
 
   return (
     <>
-      <section className="comic-panel p-4 bg-white/95 relative hover:z-30 focus-within:z-30 shadow-comic">
+      <section className="comic-panel p-4 bg-white/95 relative hover:z-raised focus-within:z-raised shadow-comic">
         {/* Zone Title Ribbon */}
         <div className="absolute -top-3 left-4 bg-comic-red text-white border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1">
           <Skull className="w-3.5 h-3.5" />
           <span>VILLAIN & SCENARIO ZONE</span>
         </div>
 
-        <div className="flex flex-wrap items-start gap-4 pt-2">
+        <div className="flex flex-wrap items-stretch gap-4 pt-2">
           {/* 1. Encounter Discard & Draw Piles (Left of Villain, Left-to-Right: Discard -> Deck) */}
-          <div className="flex items-center justify-center gap-3 shrink-0">
+          <div className="flex items-center justify-center gap-3 shrink-0 self-start">
             {/* Encounter Discard Pile (Open Information • Click to Inspect) */}
             <div className="flex flex-col items-center">
               {topDiscard ? (
@@ -202,7 +203,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                     style={{ backgroundColor: getCardBackFallbackColor('encounter') }}
                   />
                 )}
-                <span className="absolute bottom-1 right-1 z-10 bg-slate-950/80 text-white font-comic text-xs font-bold px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs backdrop-blur-xs leading-none">
+                <span className="absolute bottom-1 right-1 z-content bg-slate-950/80 text-white font-comic text-xs font-bold px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs backdrop-blur-xs leading-none">
                   {encounterDeck.length}
                 </span>
               </div>
@@ -253,11 +254,11 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
             </div>
 
             {/* Center Tri-Column Row */}
-            <div className="flex items-center justify-center gap-2 w-full">
+            <div className="flex-1 flex items-center justify-center gap-2 w-full">
               {/* Left Column (Stats) */}
               <div
                 data-testid="villain-stats-column"
-                className="relative z-10 flex flex-col gap-1.5 items-center justify-center min-w-[36px]"
+                className="relative z-content flex flex-col gap-1.5 items-center justify-center min-w-[36px]"
               >
                 {/* SCH */}
                 <div
@@ -299,7 +300,6 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                 <CardAttachmentFan
                   attachments={villain.attachments}
                   cardsUnderneath={villain.cardsUnderneath}
-                  mode="staircase"
                   onSelectAttachment={onSelectAttachment}
                 >
                   <CardView
@@ -314,13 +314,10 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               {/* Right Column (Vertical HP Gauge) */}
               <div
                 data-testid="villain-hp-column"
-                className="relative z-10 flex flex-col items-center justify-center gap-1 shrink-0"
+                className="relative z-content flex flex-col items-center justify-center gap-1 shrink-0"
               >
-                <div className="flex items-center gap-0.5">
+                <div className="flex items-center">
                   <Heart className="w-2.5 h-2.5 text-comic-red fill-comic-red" />
-                  <span className="font-comic text-[10px] font-black text-slate-900 leading-none">
-                    {villain.health}/{villain.maxHealth}
-                  </span>
                 </div>
                 <div
                   role="progressbar"
@@ -339,8 +336,8 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                     }}
                   />
                 </div>
-                <span className="font-comic text-[9px] font-black text-slate-600 uppercase tracking-tighter">
-                  HP
+                <span className="font-comic text-[10px] font-black text-slate-900 leading-none">
+                  {villain.health}/{villain.maxHealth}
                 </span>
               </div>
             </div>
@@ -410,7 +407,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
           </div>
 
           {/* 4. Active Side Schemes & Player Schemes (Takes remaining width) */}
-          <div className="flex-1 min-w-[200px] flex flex-col gap-2 bg-slate-50/90 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm min-h-[220px] relative z-10 hover:z-40 focus-within:z-40">
+          <div className="flex-1 min-w-[200px] flex flex-col gap-2 bg-slate-50/90 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm min-h-[220px] relative z-content hover:z-zoom focus-within:z-zoom">
             <div className="flex items-center gap-1.5 text-xs font-bold uppercase text-slate-600 border-b border-slate-200 pb-1.5">
               <Flame className="w-4 h-4 text-comic-red" />
               <span>Active Side Schemes ({sideSchemes.length})</span>
@@ -426,17 +423,16 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                   return (
                     <div
                       key={scheme.instanceId}
-                      className={`flex flex-col items-center gap-1 relative z-10 hover:z-50 focus-within:z-50 ${extraLeftClass}`}
+                      className={`flex flex-col items-center gap-1 relative z-content hover:z-zoom focus-within:z-zoom ${extraLeftClass}`}
                       style={extraBottomPx > 0 ? { marginBottom: `${extraBottomPx}px` } : undefined}
                     >
                       <CardAttachmentFan
                         attachments={scheme.attachments}
                         cardsUnderneath={scheme.cardsUnderneath}
-                        mode="staircase"
                       >
                         <CardView card={scheme.card} size="sm" enableHoverZoom={true} />
                       </CardAttachmentFan>
-                      <span className="bg-comic-yellow text-comic-black border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded-full shadow-comic-sm relative z-40">
+                      <span className="bg-comic-yellow text-comic-black border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded-full shadow-comic-sm relative z-raised">
                         ⚠️ {scheme.threat} THREAT
                       </span>
                     </div>
@@ -454,7 +450,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
 
       {/* Encounter Deck Inspector Modal (Dev Mode with Sorting & Set Labels) */}
       {showDeckModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ModalLayer className="inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-5xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b-2 border-comic-black pb-3">
@@ -564,7 +560,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                               size="sm"
                               enableHoverZoom={true}
                             />
-                            <span className="absolute -top-2 -left-2 bg-slate-900 text-comic-yellow font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm">
+                            <span className="absolute -top-2 -right-2 bg-slate-900 text-comic-yellow font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm">
                               #{originalIndex + 1}
                             </span>
                           </div>
@@ -591,7 +587,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                         size="sm"
                         enableHoverZoom={true}
                       />
-                      <span className="absolute -top-2 -left-2 bg-slate-900 text-comic-yellow font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm">
+                      <span className="absolute -top-2 -right-2 bg-slate-900 text-comic-yellow font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm">
                         #{originalIndex + 1}
                       </span>
                     </div>
@@ -613,12 +609,12 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </ModalLayer>
       )}
 
       {/* Encounter Discard Pile Modal */}
       {showDiscardModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ModalLayer className="inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-5xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b-2 border-comic-black pb-3">
               <div className="flex items-center gap-2">
@@ -650,7 +646,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                       size="sm"
                       enableHoverZoom={true}
                     />
-                    <span className="absolute -top-2 -left-2 bg-slate-900 text-white font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black">
+                    <span className="absolute -top-2 -right-2 bg-slate-900 text-white font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black">
                       #{idx + 1}
                     </span>
                   </div>
@@ -670,7 +666,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </ModalLayer>
       )}
     </>
   );

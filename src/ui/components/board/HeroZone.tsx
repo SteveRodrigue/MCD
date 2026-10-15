@@ -442,7 +442,6 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       <CardAttachmentFan
                         attachments={minion.attachments}
                         cardsUnderneath={minion.cardsUnderneath}
-                        mode="staircase"
                       >
                         <CardView
                           card={minion.card}
@@ -451,7 +450,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                           enableHoverZoom={true}
                         />
                       </CardAttachmentFan>
-                      <div className="flex items-center gap-1 flex-wrap justify-center z-30">
+                      <div className="flex items-center gap-1 flex-wrap justify-center z-raised">
                         <span
                           className="bg-white text-comic-blue border border-comic-black font-comic text-[9px] px-1 py-0.2 rounded font-bold shadow-comic-xs"
                           title={`Scheme: ${(minion.card as any).scheme ?? 0}`}
@@ -560,7 +559,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
               {/* Left Column (Stats) */}
               {isHero ? (
                 <div
-                  className="relative z-10 flex flex-col gap-1 items-center justify-center min-w-[36px]"
+                  className="relative z-content flex flex-col gap-1 items-center justify-center min-w-[36px]"
                   data-testid="identity-stats-column"
                 >
                   {/* THW */}
@@ -655,7 +654,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                 </div>
               ) : (
                 <div
-                  className="relative z-10 flex flex-col gap-1.5 items-center justify-center min-w-[36px]"
+                  className="relative z-content flex flex-col gap-1.5 items-center justify-center min-w-[36px]"
                   data-testid="identity-stats-column"
                 >
                   {/* REC */}
@@ -718,39 +717,35 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                 data-testid="hero-identity-card"
                 onClick={() => setIsIdentityModalOpen(true)}
               >
-                <CardView
-                  card={player.activeFormCard}
-                  dynamicTraits={identityTraitsDetails.dynamicTraits}
-                  effectiveTraits={identityTraitsDetails.traits}
-                  isExhausted={player.exhausted}
-                  size="sm"
-                  showTokens={false}
-                  enableHoverZoom={true}
-                />
+                <CardAttachmentFan
+                  attachments={player.attachments}
+                  cardsUnderneath={player.cardsUnderneath}
+                >
+                  <CardView
+                    card={player.activeFormCard}
+                    dynamicTraits={identityTraitsDetails.dynamicTraits}
+                    effectiveTraits={identityTraitsDetails.traits}
+                    isExhausted={player.exhausted}
+                    size="sm"
+                    showTokens={false}
+                    enableHoverZoom={true}
+                  />
+                </CardAttachmentFan>
                 {isTargetOfDamageEvent && (
                   <ComicDamageSplash
                     amount={splashDamageAmount}
                     onomatopoeia={stepEvent?.onomatopoeia || 'BANG!'}
                   />
                 )}
-                <CardAttachmentFan
-                  attachments={player.attachments}
-                  cardsUnderneath={player.cardsUnderneath}
-                />
               </div>
 
               {/* Right Column (Vertical HP Gauge) */}
               <div
-                className="relative z-10 flex flex-col items-center justify-center gap-1 shrink-0"
+                className="relative z-content flex flex-col items-center justify-center gap-1 shrink-0"
                 data-testid="identity-hp-column"
               >
                 <div className="flex flex-col items-center text-center">
-                  <div className="flex items-center gap-0.5">
-                    <Heart className="w-2.5 h-2.5 text-comic-red fill-comic-red" />
-                    <span className="font-comic text-[10px] font-black text-slate-900 leading-none">
-                      {player.health}/{effectiveMaxHealth}
-                    </span>
-                  </div>
+                  <Heart className="w-2.5 h-2.5 text-comic-red fill-comic-red" />
                   {hpBonus > 0 && (
                     <span
                       className="bg-emerald-400 text-slate-950 font-comic text-[8px] px-1 rounded border border-comic-black font-bold shadow-comic-xs flex items-center gap-0.5 mt-0.5"
@@ -781,8 +776,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     }}
                   />
                 </div>
-                <span className="font-comic text-[9px] font-black text-slate-600 uppercase tracking-tighter">
-                  HP
+                <span className="font-comic text-[10px] font-black text-slate-900 leading-none">
+                  {player.health}/{effectiveMaxHealth}
                 </span>
               </div>
             </div>
@@ -952,8 +947,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       className={`flex flex-col items-center transition-all ${horizontalExtraClass}`}
                       style={{ marginBottom: `${verticalExtraPx}px` }}
                     >
-                      {/* Ally Action Mini-Console (Positioned above card at z-30) */}
-                      <div className="flex items-center gap-1 w-full justify-center mb-1 z-30">
+                      {/* Ally Action Mini-Console (Positioned above card (z-raised)) */}
+                      <div className="flex items-center gap-1 w-full justify-center mb-1 z-raised">
                         <button
                           onClick={() => handleInitiateAttack('ally', ally.instanceId)}
                           disabled={!canAct}
@@ -991,7 +986,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       </div>
 
                       {/* Pop-Art Ally Stat Bonus Strip (Matching Hero stat display) */}
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/95 border border-comic-black rounded shadow-comic-xs text-[9px] font-comic font-bold mb-1 z-30">
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/95 border border-comic-black rounded shadow-comic-xs text-[9px] font-comic font-bold mb-1 z-raised">
                         <div className="flex items-center gap-0.5">
                           <span className="text-slate-500 uppercase text-[8px]">THW</span>
                           <span
@@ -1024,34 +1019,25 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       </div>
 
                       {/* Dedicated Host Card & Attachment Anchor Container (Coordinates align with top of host card) */}
-                      <div className="relative flex flex-col items-center">
-                        <div className="relative z-30 flex flex-col items-center">
-                          {(() => {
-                            const allyTraitsDetails = getEffectiveCardTraitsDetails(
-                              ally.card,
-                              ally,
-                            );
-                            return (
-                              <CardView
-                                card={ally.card}
-                                instance={ally}
-                                dynamicTraits={allyTraitsDetails.dynamicTraits}
-                                effectiveTraits={allyTraitsDetails.traits}
-                                size="sm"
-                                enableHoverZoom={true}
-                                onClick={() => setSelectedAllyForModal(ally)}
-                              />
-                            );
-                          })()}
-                        </div>
-
-                        {/* Fan-Down Staircase Attachments Stack (Anchored to top of host card) */}
-                        <CardAttachmentFan
-                          attachments={ally.attachments}
-                          cardsUnderneath={ally.cardsUnderneath}
-                          mode="staircase"
-                        />
-                      </div>
+                      <CardAttachmentFan
+                        attachments={ally.attachments}
+                        cardsUnderneath={ally.cardsUnderneath}
+                      >
+                        {(() => {
+                          const allyTraitsDetails = getEffectiveCardTraitsDetails(ally.card, ally);
+                          return (
+                            <CardView
+                              card={ally.card}
+                              instance={ally}
+                              dynamicTraits={allyTraitsDetails.dynamicTraits}
+                              effectiveTraits={allyTraitsDetails.traits}
+                              size="sm"
+                              enableHoverZoom={true}
+                              onClick={() => setSelectedAllyForModal(ally)}
+                            />
+                          );
+                        })()}
+                      </CardAttachmentFan>
                     </div>
                   );
                 })}

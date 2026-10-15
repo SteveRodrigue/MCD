@@ -1,6 +1,6 @@
 ﻿import React from 'react';
-import { createPortal } from 'react-dom';
 import { Swords, ShieldAlert, Sparkles, X, Crosshair, Skull } from 'lucide-react';
+import { ModalLayer } from '../layout/ModalLayer';
 import { EnemyTarget } from './attack-target-utils';
 
 interface AttackTargetModalProps {
@@ -24,8 +24,8 @@ export const AttackTargetModal: React.FC<AttackTargetModalProps> = ({
 }) => {
   if (!isOpen || targets.length === 0) return null;
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
+  return (
+    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
       <div className="relative w-full max-w-lg bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl overflow-hidden flex flex-col font-comic">
         {/* Comic dots overlay */}
         <div
@@ -170,8 +170,7 @@ export const AttackTargetModal: React.FC<AttackTargetModalProps> = ({
           </button>
         </div>
       </div>
-    </div>,
-    document.body,
+    </ModalLayer>
   );
 };
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { ModalLayer } from '../layout/ModalLayer';
 import { GameState } from '../../../engine/models';
 
 interface GameOverScreenProps {
@@ -17,11 +18,12 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ gameState, onRes
   const fallen = gameState.eliminatedPlayers ?? [];
 
   return (
-    <div
+    <ModalLayer
+      layer="critical"
       role="dialog"
       aria-modal="true"
       aria-label={victory ? 'Victory' : 'Defeat'}
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-comic-black/70 p-4"
+      className="inset-0 flex items-center justify-center bg-comic-black/70 p-4"
     >
       <div
         className={`max-w-lg w-full border-4 border-comic-black shadow-comic-lg p-6 text-center ${
@@ -54,7 +56,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ gameState, onRes
           New game
         </button>
       </div>
-    </div>
+    </ModalLayer>
   );
 };
 

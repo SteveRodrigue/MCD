@@ -257,7 +257,7 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
       {/* LEFT / CENTER COLUMN: Card Visual Preview & Printed Text */}
       <div className="w-full md:w-[320px] lg:w-[340px] shrink-0 p-4 md:p-6 overflow-y-auto border-r-4 border-black flex flex-col items-center gap-4 bg-[#fbf9f4]">
         {/* Card View Visual Preview (ADR-0012 Unconstrained Z-Axis Elevation) */}
-        <div className="flex flex-col items-center relative z-30 overflow-visible">
+        <div className="flex flex-col items-center relative z-zoom overflow-visible">
           <div className="shadow-comic-lg border-2 border-black rounded-lg bg-black p-1 overflow-visible">
             <CardView card={normalizedCard} size="lg" enableHoverZoom={true} zoomOrigin="center" />
           </div>

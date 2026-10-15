@@ -253,12 +253,12 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 1. **Unconstrained Z-Axis Elevation for Interactive Elements:**
    - Interactive card containers (such as `PlayerHandTray` and tabletop zones) must maintain `overflow-visible` so elevated/hovered elements can project into the 3D Z-axis without triggering clipping boundaries or scrollbar spawning.
    - Never place `overflow-x: auto` or `overflow: hidden` on a container whose child elements perform scale transforms on hover (`hover:scale-[1.85]`).
-2. **Layering (Z-Index) Hierarchy:**
-   - Base Tabletop Layers: `z-0` to `z-10`
-   - Bottom Hand Tray Base: `z-20`
-   - Sticky Navigation / Header: `z-30`
-   - Hovered / Elevated Interactive Cards: `z-50` (with deep drop shadows)
-   - Modals & Drawers (Combat Log, Payment Modal): `z-50` to `z-60`
+2. **Layering (Z-Index) Hierarchy (ADR-0082):**
+   - Use only the named scale from `src/ui/styles/z-layers.ts` (`z-table` 0, `z-content` 100, `z-raised` 200, `z-zoom` 400, `z-sticky` 500, `z-drawer` 600, `z-modal` 700, `z-banner` 800, `z-menu` 900, `z-critical` 1000). Numeric or arbitrary z classes and numeric `zIndex` literals fail `tests/ui/z-literal-guard.test.ts`.
+   - Every modal, drawer or banner renders through `ModalLayer` (portal to `document.body`), never inline.
+   - Fans are `isolate`d, raise themselves with `hover:z-zoom focus-within:z-zoom`, and compute card z with `getFanZIndex` (`src/ui/components/cards/fan-z.ts`). Never derive fan z from a fixed constant.
+   - Do not put `overflow-x-hidden` / `overflow-*-auto` on an ancestor of the sticky TopBar; use `overflow-x-clip`.
+   - Full ladder and fan rules: [docs/ui_z_axis_layering.md](ui_z_axis_layering.md).
 
 ---
 
@@ -269,6 +269,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 2. **Typographic Roles:**
    - **Dialogue & Narrative Prose:** Use `font-dialogue` (`Komika Text` / `Comic Relief`) with bold weight for high legibility in multi-line speech bubbles.
    - **Sound Effects & Banners:** Use `font-comic` (`Bangers`) for explosive onomatopoeias (`POW!`, `HEROES ASSEMBLE!`) and mastheads.
+   - **Numbers:** `font-comic` and `.font-bangers` start with the `Comic Digits` face (`src/ui/styles/index.css`), which covers only `0–9` (`unicode-range: U+0030-0039`) and maps to Comic Relief Bold. Digits stay readable (Bangers' 1 and 7 look alike) with no per-element class; keep `Comic Digits` first in both stacks.
 3. **Base UI Scale:**
    - The application uses `html { font-size: 110%; }` to deliver an immersive tabletop scale at standard 100% browser zoom. All component dimensions and spacings should utilize Tailwind `rem`-based classes (`p-4`, `w-44`, `text-sm`, etc.) to benefit from uniform scaling.
 

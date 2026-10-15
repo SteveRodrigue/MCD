@@ -148,7 +148,7 @@ describe('GameBoard Multiplayer Centered Alignment & Active-Player Focus (Issue 
     const seat2 = innerTrack.children[2];
 
     expect(seat0.className).toContain('opacity-100');
-    expect(seat0.className).toContain('z-10');
+    expect(seat0.className).toContain('z-content');
     expect(seat1.className).toContain('opacity-60');
     expect(seat2.className).toContain('opacity-60');
 
@@ -168,7 +168,7 @@ describe('GameBoard Multiplayer Centered Alignment & Active-Player Focus (Issue 
 
     // Active seat auto-aligned and focused for Player 2
     expect(seat1.className).toContain('opacity-100');
-    expect(seat1.className).toContain('z-10');
+    expect(seat1.className).toContain('z-content');
     expect(seat0.className).toContain('opacity-60');
     expect(seat2.className).toContain('opacity-60');
     expect(scrollToSpy).toHaveBeenCalled();
@@ -191,7 +191,7 @@ describe('GameBoard Multiplayer Centered Alignment & Active-Player Focus (Issue 
 
     // Active seat auto-aligned and focused for Player 3
     expect(seat2.className).toContain('opacity-100');
-    expect(seat2.className).toContain('z-10');
+    expect(seat2.className).toContain('z-content');
     expect(seat0.className).toContain('opacity-60');
     expect(seat1.className).toContain('opacity-60');
     expect(scrollToSpy).toHaveBeenCalled();

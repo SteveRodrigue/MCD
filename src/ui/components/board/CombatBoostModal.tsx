@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { ModalLayer } from '../layout/ModalLayer';
 import { Swords, Sparkles, ChevronRight } from 'lucide-react';
 import { CombatResolutionSummary } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
@@ -41,9 +42,9 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
         : 'Undefended');
 
   return (
-    <div
+    <ModalLayer
       data-testid="combat-boost-modal"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs font-comic"
+      className="inset-0 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs font-comic"
     >
       <div className="relative w-full max-w-xl bg-comic-paper border-4 border-comic-black rounded-2xl shadow-comic-xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
         {/* Comic Header Banner */}
@@ -238,7 +239,7 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </ModalLayer>
   );
 };
 

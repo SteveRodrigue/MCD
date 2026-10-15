@@ -128,9 +128,9 @@ describe('THW / SCH Stat Alignment & ADR-0012 Z-Axis Hover-Zoom Contract Tests',
       // Must contain ADR-0012 reference
       expect(content).toContain('ADR-0012');
 
-      // The Card View Visual Preview container must have overflow-visible and z-30
+      // The Card View Visual Preview container must have overflow-visible and z-zoom
       expect(content).toContain('overflow-visible');
-      expect(content).toContain('relative z-30');
+      expect(content).toContain('relative z-zoom');
 
       // The container wrapping CardView must NOT have overflow-hidden
       const cardViewContainerMatch = content.match(

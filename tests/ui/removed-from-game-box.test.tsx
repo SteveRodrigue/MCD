@@ -66,6 +66,18 @@ describe('Visible Removed from Game Pile (Issue #282)', () => {
     expect(screen.getByAltText(obligationCard.name)).toBeDefined();
   });
 
+  it('shows the short OUT OF PLAY ribbon title (Issue #312 follow-up)', () => {
+    render(
+      <GameSettingsProvider>
+        <RemovedFromGameBox cards={[]} />
+      </GameSettingsProvider>,
+    );
+
+    const ribbon = screen.getByText('OUT OF PLAY');
+    expect(ribbon.textContent).toBe('OUT OF PLAY');
+    expect(screen.queryByText(/OUT OF PLAY: REMOVED FROM GAME/)).toBeNull();
+  });
+
   it('opens modal on click showing cards and title', () => {
     const obligationCard = cardCatalog.getCard('01165')!;
     const cardInstance = createCardInstance(obligationCard);

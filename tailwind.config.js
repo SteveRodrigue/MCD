@@ -1,3 +1,5 @@
+import { Z } from './src/ui/styles/z-layers';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
@@ -25,7 +27,7 @@ export default {
         },
       },
       fontFamily: {
-        comic: ['"Bangers"', 'Impact', 'system-ui', 'sans-serif'],
+        comic: ['"Comic Digits"', '"Bangers"', 'Impact', 'system-ui', 'sans-serif'],
         dialogue: ['"Komika Text"', '"Comic Relief"', '"Comic Sans MS"', 'cursive', 'sans-serif'],
         body: ['Inter', 'system-ui', 'sans-serif'],
       },
@@ -41,6 +43,7 @@ export default {
       borderWidth: {
         comic: '3px',
       },
+      zIndex: Object.fromEntries(Object.entries(Z).map(([key, value]) => [key, String(value)])),
     },
   },
   plugins: [],

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
+import { ModalLayer } from '../layout/ModalLayer';
 import {
   HelpCircle,
   CheckCircle2,
@@ -114,8 +114,8 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
       return match ? parseInt(match[1], 10) : undefined;
     })();
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
+  return (
+    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
       <div className="relative w-full max-w-xl bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl overflow-hidden flex flex-col font-comic">
         {/* Comic background dots */}
         <div
@@ -338,9 +338,8 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                           onSelectOption(rc.selectableOptionId);
                         }
                       }}
-                      style={{ zIndex: isHovered ? 60 : 10 }}
                       className={`flex flex-col items-center gap-1.5 transition-all relative ${
-                        isHovered ? 'z-[60]' : 'z-10'
+                        isHovered ? 'z-zoom' : 'z-content'
                       } ${
                         rc.isSelectable
                           ? 'cursor-pointer hover:scale-105 filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] ring-2 ring-emerald-500 rounded-xl p-0.5'
@@ -437,7 +436,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                           {optionCard && hoveredOptionCardId === option.id && (
                             <div
                               data-testid={`card-hover-preview-${optionCard.code}`}
-                              className="absolute left-12 top-1/2 -translate-y-1/2 z-[70] drop-shadow-2xl animate-in fade-in duration-150 pointer-events-none"
+                              className="absolute left-12 top-1/2 -translate-y-1/2 z-raised drop-shadow-2xl animate-in fade-in duration-150 pointer-events-none"
                             >
                               <CardView card={optionCard} size="sm" enableHoverZoom={true} />
                             </div>
@@ -515,8 +514,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
           </div>
         </div>
       </div>
-    </div>,
-    document.body,
+    </ModalLayer>
   );
 };
 

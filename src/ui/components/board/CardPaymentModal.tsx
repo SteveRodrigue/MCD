@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import { ModalLayer } from '../layout/ModalLayer';
 import {
   X,
   Sparkles,
@@ -755,8 +755,8 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     );
   };
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-comic-black/75 backdrop-blur-sm animate-fade-in">
+  return (
+    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-comic-black/75 backdrop-blur-sm animate-fade-in">
       <div className="relative w-full max-w-2xl bg-comic-paper border-4 border-comic-black rounded-lg shadow-comic-xl flex flex-col max-h-[90vh] overflow-hidden">
         {/* 1. Pop-Art Header */}
         <div className="flex items-center justify-between px-6 py-4 bg-comic-yellow border-b-4 border-comic-black">
@@ -1357,7 +1357,6 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
           </button>
         </div>
       </div>
-    </div>,
-    document.body,
+    </ModalLayer>
   );
 };

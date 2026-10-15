@@ -92,7 +92,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
             left: `${Math.max(10, adjustedX)}px`,
             top: `${Math.max(10, adjustedY)}px`,
           }}
-          className="fixed z-[9999] w-60 bg-white border-3 border-black shadow-comic-lg rounded-md overflow-hidden font-sans select-none animate-in fade-in zoom-in-95 duration-100"
+          className="fixed z-menu w-60 bg-white border-3 border-black shadow-comic-lg rounded-md overflow-hidden font-sans select-none animate-in fade-in zoom-in-95 duration-100"
           onClick={(e) => e.stopPropagation()}
           onContextMenu={(e) => e.preventDefault()}
         >
@@ -177,7 +177,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
       {/* Raw Attributes Quick Modal */}
       {showRawModal && (
         <div
-          className="fixed inset-0 bg-comic-black/80 z-[10000] flex items-center justify-center p-4 backdrop-blur-xs font-comic"
+          className="fixed inset-0 bg-comic-black/80 z-menu flex items-center justify-center p-4 backdrop-blur-xs font-comic"
           onClick={() => {
             setShowRawModal(false);
             onClose();

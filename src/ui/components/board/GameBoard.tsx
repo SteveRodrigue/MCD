@@ -341,7 +341,7 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
   const singlePlayer = gameState.players[0];
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col justify-between bg-comic-paper overflow-x-hidden">
+    <div className="relative min-h-screen w-full flex flex-col justify-between bg-comic-paper overflow-x-clip">
       <div
         className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
           isLogOpen ? 'w-full lg:w-[calc(100%-420px)]' : 'w-full'
@@ -403,7 +403,7 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
               {canScrollLeft && (
                 <button
                   onClick={() => scrollByAmount(-400)}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-comic-yellow hover:bg-amber-400 text-comic-black p-2 rounded-full border-2 border-comic-black shadow-comic transition-all cursor-pointer"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-raised bg-comic-yellow hover:bg-amber-400 text-comic-black p-2 rounded-full border-2 border-comic-black shadow-comic transition-all cursor-pointer"
                   title="Scroll Left"
                 >
                   <ChevronLeft className="w-6 h-6" />
@@ -412,7 +412,7 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
               {canScrollRight && (
                 <button
                   onClick={() => scrollByAmount(400)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-comic-yellow hover:bg-amber-400 text-comic-black p-2 rounded-full border-2 border-comic-black shadow-comic transition-all cursor-pointer"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-raised bg-comic-yellow hover:bg-amber-400 text-comic-black p-2 rounded-full border-2 border-comic-black shadow-comic transition-all cursor-pointer"
                   title="Scroll Right"
                 >
                   <ChevronRight className="w-6 h-6" />
@@ -437,8 +437,8 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
                         onClick={!isFocused ? () => handleSelectSeat(idx) : undefined}
                         className={`w-[820px] lg:w-[880px] shrink-0 space-y-4 ${
                           isFocused
-                            ? 'opacity-100 z-10 scale-[1.00] transition-all duration-300'
-                            : 'opacity-60 grayscale-[35%] hover:opacity-95 hover:grayscale-0 z-0 transition-all duration-300 cursor-pointer'
+                            ? 'opacity-100 z-content transition-all duration-300'
+                            : 'opacity-60 grayscale-[35%] hover:opacity-95 hover:grayscale-0 z-table transition-all duration-300 cursor-pointer'
                         }`}
                       >
                         {/* Hero Play Area */}

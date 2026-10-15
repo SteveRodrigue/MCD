@@ -75,7 +75,7 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
   );
 
   return (
-    <div className="bg-comic-panel border-b-4 border-black p-4 shadow-comic-pop relative z-20">
+    <div className="bg-comic-panel border-b-4 border-black p-4 shadow-comic-pop relative z-raised">
       <div className="flex flex-wrap items-center justify-between gap-3">
         {/* Title & Count Badge */}
         <div className="flex items-center gap-3">

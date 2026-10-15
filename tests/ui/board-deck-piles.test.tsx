@@ -64,6 +64,14 @@ describe('Board Deck Piles & Facedown Card Backs (Issue #141)', () => {
       expect(deckPile.textContent).toContain('3');
       expect(deckPile.textContent).not.toContain('DECK');
 
+      // Desktop: the piles sidebar stretches to the hand height; only the deck grows
+      expect(deckPile.className).toContain('md:flex-1');
+      expect(deckPile.className).not.toContain('md:h-14');
+      expect(deckPile.parentElement!.className).toContain('md:flex-1');
+      const pilesRow = deckPile.parentElement!.parentElement!.parentElement!;
+      expect(pilesRow.className).toContain('md:items-stretch');
+      expect(screen.getByText(/DISCARD:/).parentElement!.className).not.toContain('flex-1');
+
       const img = screen.getByTestId('player-deck-image') as HTMLImageElement;
       expect(img).toBeDefined();
       expect(img.getAttribute('src')).toBe(getCardBackUrl('player'));

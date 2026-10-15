@@ -187,7 +187,7 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
                   onClick={() => toggleDiscard(cardInst.instanceId)}
                 />
                 {!isCurrentHeroCompleted && isDiscarded && (
-                  <div className="absolute top-2 right-2 bg-rose-600 text-white font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black shadow-comic-sm pointer-events-none uppercase font-bold z-10">
+                  <div className="absolute top-2 right-2 bg-rose-600 text-white font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black shadow-comic-sm pointer-events-none uppercase font-bold z-content">
                     DISCARD
                   </div>
                 )}

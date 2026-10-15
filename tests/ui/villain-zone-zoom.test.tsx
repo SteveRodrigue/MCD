@@ -56,15 +56,15 @@ describe('VillainZone Side Scheme Zoom & Stacking Context (Issue #148)', () => {
     );
   }
 
-  it('renders root section with hover:z-30 focus-within:z-30 stacking classes', () => {
+  it('renders root section with hover:z-raised focus-within:z-raised stacking classes', () => {
     const { container } = renderVillainZone();
     const rootSection = container.querySelector('section.comic-panel');
     expect(rootSection).not.toBeNull();
-    expect(rootSection?.className).toContain('hover:z-30');
-    expect(rootSection?.className).toContain('focus-within:z-30');
+    expect(rootSection?.className).toContain('hover:z-raised');
+    expect(rootSection?.className).toContain('focus-within:z-raised');
   });
 
-  it('renders side schemes column wrapper with relative z-10 hover:z-40 focus-within:z-40', () => {
+  it('renders side schemes column wrapper with relative z-content hover:z-zoom focus-within:z-zoom', () => {
     renderVillainZone();
     const threatBadge = screen.getByText(/⚠️/i);
     const itemWrapper = threatBadge.parentElement!;
@@ -72,9 +72,9 @@ describe('VillainZone Side Scheme Zoom & Stacking Context (Issue #148)', () => {
     const columnWrapper = listContainer.parentElement!;
 
     expect(columnWrapper.className).toContain('relative');
-    expect(columnWrapper.className).toContain('z-10');
-    expect(columnWrapper.className).toContain('hover:z-40');
-    expect(columnWrapper.className).toContain('focus-within:z-40');
+    expect(columnWrapper.className).toContain('z-content');
+    expect(columnWrapper.className).toContain('hover:z-zoom');
+    expect(columnWrapper.className).toContain('focus-within:z-zoom');
   });
 
   it('renders active side schemes container with overflow-visible and without overflow-y-auto or max-h-', () => {
@@ -88,14 +88,14 @@ describe('VillainZone Side Scheme Zoom & Stacking Context (Issue #148)', () => {
     expect(listContainer.className).not.toContain('max-h-');
   });
 
-  it('renders each active side scheme card item wrapper with relative z-10 hover:z-50 focus-within:z-50', () => {
+  it('renders each active side scheme card item wrapper with relative z-content hover:z-zoom focus-within:z-zoom', () => {
     renderVillainZone();
     const threatBadge = screen.getByText(/⚠️/i);
     const itemWrapper = threatBadge.parentElement!;
 
     expect(itemWrapper.className).toContain('relative');
-    expect(itemWrapper.className).toContain('z-10');
-    expect(itemWrapper.className).toContain('hover:z-50');
-    expect(itemWrapper.className).toContain('focus-within:z-50');
+    expect(itemWrapper.className).toContain('z-content');
+    expect(itemWrapper.className).toContain('hover:z-zoom');
+    expect(itemWrapper.className).toContain('focus-within:z-zoom');
   });
 });

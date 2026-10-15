@@ -91,7 +91,7 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
 
   it('applies docked desktop classes to drawer container', () => {
     const onClose = vi.fn();
-    const { container } = render(
+    render(
       <CombatLogDrawer
         isOpen={true}
         onClose={onClose}
@@ -100,9 +100,11 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
       />,
     );
 
-    const drawer = container.firstChild as HTMLElement;
+    // The drawer renders through ModalLayer (portal under document.body).
+    const drawer = document.body.querySelector('.z-drawer') as HTMLElement;
+    expect(drawer).not.toBeNull();
     expect(drawer.className).toContain('fixed');
-    expect(drawer.className).toContain('lg:fixed');
+    expect(drawer.className).toContain('z-drawer');
     expect(drawer.className).toContain('lg:w-[420px]');
   });
 

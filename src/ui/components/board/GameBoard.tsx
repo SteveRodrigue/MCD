@@ -165,7 +165,7 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
     [gameState, activePlayer.id],
   );
 
-  // Auto-detect when active actions drop from >0 to 0 during an active turn to prompt End Turn confirmation (ADR-0026 / Issue #169)
+  // Auto-detect when active actions drop from >0 to 0 during an active turn to prompt End Turn confirmation (ADR-0026 / Issue #169, #310)
   const prevActionCountRef = useRef<number>(legalReport.activeActionCount);
   const prevPlayerIdRef = useRef<string>(activePlayer.id);
   const prevRoundRef = useRef<number>(gameState.roundNumber);
@@ -188,8 +188,14 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
       return;
     }
 
-    // Only prompt when actions drop from >0 to 0 during an ongoing turn
+    // Dismiss modal whenever active actions become available again (#310)
+    if (legalReport.activeActionCount > 0) {
+      setIsEndTurnPromptOpen(false);
+    }
+
+    // Only prompt when actions drop from >0 to 0 during an ongoing turn and no decision prompt is pending
     if (
+      !decisionPrompt &&
       prevActionCountRef.current > 0 &&
       legalReport.activeActionCount === 0 &&
       legalReport.isPlayerTurn &&
@@ -198,7 +204,10 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
       setIsEndTurnPromptOpen(true);
     }
 
-    prevActionCountRef.current = legalReport.activeActionCount;
+    // Preserve prevActionCount across active decision prompts; update once prompt is resolved (#310)
+    if (!decisionPrompt) {
+      prevActionCountRef.current = legalReport.activeActionCount;
+    }
     prevPlayerIdRef.current = activePlayer.id;
     prevRoundRef.current = gameState.roundNumber;
     prevPhaseRef.current = gameState.phase;
@@ -209,6 +218,7 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
     gameState.phase,
     gameState.roundNumber,
     activePlayer.id,
+    decisionPrompt,
   ]);
 
   // Horizontal Panoramic Track Edge-Scroll Hook (ADR-0017)

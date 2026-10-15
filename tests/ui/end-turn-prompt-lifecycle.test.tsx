@@ -226,4 +226,184 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
     expect(queryByText(/PRESS RUN COMPLETE!/i)).not.toBeNull();
     expect(queryByText(/All Actions Resolved for Tony Stark/i)).not.toBeNull();
   });
+
+  it('does NOT display End Turn confirmation modal when activeActionCount drops to 0 if a decisionPrompt is pending', () => {
+    const state = createTestGameState();
+    state.phase = GamePhase.PLAYER_PHASE;
+    state.roundNumber = 1;
+    state.activePlayerIndex = 0;
+
+    const p1 = state.players[0];
+    p1.currentForm = 'hero';
+    p1.activeFormCard = ironManHero;
+    p1.exhausted = false; // Hero ready -> basic attack / thwart available
+    p1.hand = [];
+    p1.tableau = [];
+    p1.allies = [];
+
+    const { rerender, queryByText } = render(
+      <GameSettingsProvider>
+        <GameBoard gameState={state} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+      </GameSettingsProvider>,
+    );
+
+    expect(queryByText(/PRESS RUN COMPLETE!/i)).toBeNull();
+
+    // Hero attacks and exhausts (actions drop to 0), but an interrupt/response prompt is queued
+    const stateWithPrompt: GameState = JSON.parse(JSON.stringify(state));
+    const p1After = stateWithPrompt.players[0];
+    p1After.exhausted = true;
+    p1After.formChangedThisRound = true;
+    p1After.basicChangeFormUsedThisRound = true;
+    stateWithPrompt.pendingDecisionQueue = [
+      {
+        promptId: 'prompt_1',
+        playerId: 'p1',
+        title: 'One-Two Punch',
+        description: 'Trigger One-Two Punch response?',
+        sourceCardName: 'One-Two Punch',
+        options: [
+          { id: 'trigger_one_two_punch', label: 'Play One-Two Punch', effect: 'READY_HERO' },
+          { id: 'pass', label: 'Pass', effect: 'PASS' },
+        ],
+      },
+    ];
+
+    act(() => {
+      rerender(
+        <GameSettingsProvider>
+          <GameBoard gameState={stateWithPrompt} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+        </GameSettingsProvider>,
+      );
+    });
+
+    // Modal should NOT be displayed while a decision prompt is pending
+    expect(queryByText(/PRESS RUN COMPLETE!/i)).toBeNull();
+    expect(queryByText(/All Actions Resolved for Tony Stark/i)).toBeNull();
+  });
+
+  it('closes / suppresses End Turn confirmation modal when an action or response readies the hero and restores activeActionCount > 0', () => {
+    const state = createTestGameState();
+    state.phase = GamePhase.PLAYER_PHASE;
+    state.roundNumber = 1;
+    state.activePlayerIndex = 0;
+
+    const p1 = state.players[0];
+    p1.currentForm = 'hero';
+    p1.activeFormCard = ironManHero;
+    p1.exhausted = false;
+    p1.hand = [];
+    p1.tableau = [];
+    p1.allies = [];
+
+    const { rerender, queryByText } = render(
+      <GameSettingsProvider>
+        <GameBoard gameState={state} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+      </GameSettingsProvider>,
+    );
+
+    expect(queryByText(/PRESS RUN COMPLETE!/i)).toBeNull();
+
+    // Exhaust hero with no prompt -> modal appears
+    const stateExhausted: GameState = JSON.parse(JSON.stringify(state));
+    const p1Exhausted = stateExhausted.players[0];
+    p1Exhausted.exhausted = true;
+    p1Exhausted.formChangedThisRound = true;
+    p1Exhausted.basicChangeFormUsedThisRound = true;
+
+    act(() => {
+      rerender(
+        <GameSettingsProvider>
+          <GameBoard gameState={stateExhausted} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+        </GameSettingsProvider>,
+      );
+    });
+
+    expect(queryByText(/PRESS RUN COMPLETE!/i)).not.toBeNull();
+
+    // Hero readies (e.g. from an effect or One-Two Punch), restoring activeActionCount > 0
+    const stateReadied: GameState = JSON.parse(JSON.stringify(stateExhausted));
+    stateReadied.players[0].exhausted = false;
+
+    act(() => {
+      rerender(
+        <GameSettingsProvider>
+          <GameBoard gameState={stateReadied} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+        </GameSettingsProvider>,
+      );
+    });
+
+    // Modal should be closed / suppressed
+    expect(queryByText(/PRESS RUN COMPLETE!/i)).toBeNull();
+    expect(queryByText(/All Actions Resolved for Tony Stark/i)).toBeNull();
+  });
+
+  it('displays End Turn confirmation modal if the pending decisionPrompt is resolved with "pass" / decline and activeActionCount remains 0', () => {
+    const state = createTestGameState();
+    state.phase = GamePhase.PLAYER_PHASE;
+    state.roundNumber = 1;
+    state.activePlayerIndex = 0;
+
+    const p1 = state.players[0];
+    p1.currentForm = 'hero';
+    p1.activeFormCard = ironManHero;
+    p1.exhausted = false;
+    p1.hand = [];
+    p1.tableau = [];
+    p1.allies = [];
+
+    const { rerender, queryByText } = render(
+      <GameSettingsProvider>
+        <GameBoard gameState={state} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+      </GameSettingsProvider>,
+    );
+
+    expect(queryByText(/PRESS RUN COMPLETE!/i)).toBeNull();
+
+    // 1. Actions drop to 0, but decisionPrompt is pending
+    const stateWithPrompt: GameState = JSON.parse(JSON.stringify(state));
+    const p1Prompt = stateWithPrompt.players[0];
+    p1Prompt.exhausted = true;
+    p1Prompt.formChangedThisRound = true;
+    p1Prompt.basicChangeFormUsedThisRound = true;
+    stateWithPrompt.pendingDecisionQueue = [
+      {
+        promptId: 'prompt_1',
+        playerId: 'p1',
+        title: 'One-Two Punch',
+        description: 'Trigger One-Two Punch response?',
+        sourceCardName: 'One-Two Punch',
+        options: [
+          { id: 'trigger_one_two_punch', label: 'Play One-Two Punch', effect: 'READY_HERO' },
+          { id: 'pass', label: 'Pass', effect: 'PASS' },
+        ],
+      },
+    ];
+
+    act(() => {
+      rerender(
+        <GameSettingsProvider>
+          <GameBoard gameState={stateWithPrompt} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+        </GameSettingsProvider>,
+      );
+    });
+
+    expect(queryByText(/PRESS RUN COMPLETE!/i)).toBeNull();
+
+    // 2. Decision prompt is resolved with "pass", leaving queue empty and activeActionCount remaining 0
+    const stateAfterPass: GameState = JSON.parse(JSON.stringify(stateWithPrompt));
+    stateAfterPass.pendingDecisionQueue = [];
+
+    act(() => {
+      rerender(
+        <GameSettingsProvider>
+          <GameBoard gameState={stateAfterPass} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+        </GameSettingsProvider>,
+      );
+    });
+
+    // Modal SHOULD now appear because actions transitioned from >0 (preserved before prompt) to 0
+    expect(queryByText(/PRESS RUN COMPLETE!/i)).not.toBeNull();
+    expect(queryByText(/All Actions Resolved for Tony Stark/i)).not.toBeNull();
+  });
 });

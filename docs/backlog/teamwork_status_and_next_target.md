@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-15 (Issue #311 "I Object!" villain-phase threat interrupt delivered; active queue: #306, #287, #314)
+> **Last updated:** 2026-10-15 (Issue #306 Retaliate damage through damage pipeline delivered; active queue: #287, #314)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
-> **Verification baseline:** 🟢 2,700 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
+> **Verification baseline:** 🟢 2,720 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
 ---
@@ -66,9 +66,7 @@ _None currently._
 
 ### 3.2 Rules gaps that affect core cards
 
-| #   | Issue                                                   | Item                                                                     | Estimate | Notes                                          |
-| :-- | :------------------------------------------------------ | :----------------------------------------------------------------------- | :------- | :--------------------------------------------- |
-| 19  | [#306](https://github.com/SteveRodrigue/MCD/issues/306) | Retaliate damage goes through the damage pipeline (defeat, stage change) | 1 day    | Black Panther 01040a has Retaliate 1; see #303 |
+_None currently._
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 

@@ -81,7 +81,8 @@
     "CARDS_DRAWN_NAMES": "{{who}} drew {{count}} card(s): {{cards}}.",
     "CARDS_DRAWN_FROM_SOURCE": "{{who}} drew {{count}} card(s) ({{source}}): {{cards}}.",
     "BLACK_CAT_FETCH": "Black Cat retrieved {{card}} into {{who}}'s hand!",
-    "PLAYER_TABLEAU_DISCARDED": "{{player}} discarded {{card}} from their tableau."
+    "PLAYER_TABLEAU_DISCARDED": "{{player}} discarded {{card}} from their tableau.",
+    "RETALIATE_DAMAGE": "{{actor}} retaliated for {{damage}} damage."
   },
   "dialogue": {
     "spider_man": {
@@ -96,25 +97,15 @@
         "Let me just web up those blueprints for you.",
         "Your villainous plot is officially untangled!"
       ],
-      "defense": [
-        "My Spider-Sense is tingling!",
-        "Missed me by an inch!",
-        "Too slow, bulky!"
-      ],
-      "play_card": [
-        "Let's turn up the heat!",
-        "Web-shooters locked and loaded!"
-      ]
+      "defense": ["My Spider-Sense is tingling!", "Missed me by an inch!", "Too slow, bulky!"],
+      "play_card": ["Let's turn up the heat!", "Web-shooters locked and loaded!"]
     },
     "peter_parker": {
       "recover": [
         "Aunt May makes the best wheatcakes for recovery.",
         "Need a quick rest to recalibrate my web-fluid formula."
       ],
-      "resource": [
-        "Daily Bugle freelancing pays off!",
-        "Just a little scientific ingenuity."
-      ]
+      "resource": ["Daily Bugle freelancing pays off!", "Just a little scientific ingenuity."]
     },
     "captain_marvel": {
       "attack": [
@@ -156,11 +147,7 @@
       ]
     },
     "black_panther": {
-      "attack": [
-        "For Wakanda!",
-        "The Panther's claws strike without mercy!",
-        "Wakanda Forever!"
-      ],
+      "attack": ["For Wakanda!", "The Panther's claws strike without mercy!", "Wakanda Forever!"],
       "thwart": [
         "Bast grants us wisdom to see through your deception.",
         "Wakandan intelligence has already outmaneuvered you."
@@ -178,10 +165,7 @@
         "SMASH THE FACILITY! GRAB THE LOOT!",
         "NO HERO CAN STOP THIS HEIST!"
       ],
-      "boost": [
-        "GET READY FOR IMPACT!",
-        "HERE COMES THE HORN!"
-      ]
+      "boost": ["GET READY FOR IMPACT!", "HERE COMES THE HORN!"]
     },
     "klaw": {
       "attack": [

@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-10-13T17:53:08.690Z`  
+> **Generated:** `2026-10-16T00:40:05.451Z`  
 > **Source Packs Scanned:** `aoa_encounter, core, core_encounter, cw_encounter, mts`
 
 ---
@@ -19,7 +19,7 @@
 | **Target Selectors Code Path Coverage** | **100.0%** | **43/43** | [29 In Use](detailed_reports/target_selectors_usage.md) |
 | **Condition Gates Code Path Coverage** | **100.0%** | **9/9** | [9 In Use](detailed_reports/condition_gates_usage.md) |
 | **Step Conditions Code Path Coverage** | **100.0%** | **0/0** | [0 In Use](detailed_reports/condition_gates_usage.md) |
-| **Trigger Types Code Path Coverage** | **100.0%** | **31/31** | [21 In Use](detailed_reports/timing_and_triggers_usage.md) |
+| **Trigger Types Code Path Coverage** | **100.0%** | **30/30** | [20 In Use](detailed_reports/timing_and_triggers_usage.md) |
 | **Timing Types Code Path Coverage** | **100.0%** | **19/19** | [15 In Use](detailed_reports/timing_and_triggers_usage.md) |
 | **Total Abilities Declared** | **164** | - | Total individual ability definitions declared |
 | **Multi-Step Pipelines (2+ Steps)** | [32](detailed_reports/multi_ability_and_multistep_cards.md) | - | Abilities decomposed into sequenced execution pipelines |
@@ -56,8 +56,8 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | Component | In Use | Schema Total | Coverage | Detailed Report |
 | :--- | :---: | :---: | :---: | :--- |
 | **Ability Timings** | **15** | 19 | 100.0% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md) |
-| **Trigger Windows** | **21** | 31 | 100.0% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md#2-trigger-windows-triggertypeschema) |
-| **Trigger Filters** | **10** | - | - | `attackerKind` (1), `targetPlayerScope` (3), `damageSource` (1), `targetScope` (1), `attackedBy` (1), `sourceCardCode` (1), `targetType` (3), `defeatedByAttackOf` (2), `defenderType` (1), `threatSource` (1) |
+| **Trigger Windows** | **20** | 30 | 100.0% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md#2-trigger-windows-triggertypeschema) |
+| **Trigger Filters** | **11** | - | - | `attackerKind` (1), `targetPlayerScope` (3), `damageSource` (1), `cardFilter` (2), `targetScope` (1), `attackedBy` (1), `sourceCardCode` (1), `targetType` (3), `defeatedByAttackOf` (2), `defenderType` (1), `threatSource` (1) |
 | **Cost Primitives** | **9** | - | - | `resourceCost` (9), `exhaustSelf` (20), `spendCounters` (5), `resources` (2), `heal` (1), `discardCard` (2), `discardSelf` (5), `damageHero` (1), `damageSelf` (1) |
 | **Multi-Ability Cards (2+)** | **17** | - | - | [View 17 Cards](detailed_reports/multi_ability_and_multistep_cards.md) |
 
@@ -128,7 +128,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 
 ## ⚠️ 9. Code Path Verification & Zero-Usage Detection
 
-Every schema primitive is verified for a matching engine handler. Check the complete **[Schema Primitives Code Path Matrix](detailed_reports/schema_code_path_audit.md)** for status on all 158 schema definitions.
+Every schema primitive is verified for a matching engine handler. Check the complete **[Schema Primitives Code Path Matrix](detailed_reports/schema_code_path_audit.md)** for status on all 157 schema definitions.
 
 ### Summary of Unhandled or Zero-Usage Primitives:
 | Category | Schema Total | Unused in Cards (0 Cards) | Missing Engine Handler |
@@ -137,5 +137,5 @@ Every schema primitive is verified for a matching engine handler. Check the comp
 | **Targets** | 43 | 14 | 🟢 0 |
 | **Gates** | 9 | 0 | 🟢 0 |
 | **Step Conditions** | 0 | 0 | 🟢 0 |
-| **Triggers** | 31 | 10 | 🟢 0 |
+| **Triggers** | 30 | 10 | 🟢 0 |
 | **Timings** | 19 | 4 | 🟢 0 |

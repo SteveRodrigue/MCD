@@ -82,27 +82,43 @@ function threat(state: GameState): number {
   return getActiveMainScheme(state).threat;
 }
 
-function answer(state: GameState, playerId: string, optionId: string): GameState {
+function answer(
+  state: GameState,
+  playerId: string,
+  optionId: string,
+  extra?: { sequenceOrder?: string[] },
+): GameState {
   const res = dispatchAction(state, {
     type: 'RESOLVE_DECISION_PROMPT',
     playerId,
     selectedOptionId: optionId,
+    ...(extra?.sequenceOrder ? { sequenceOrder: extra.sequenceOrder } : {}),
   });
   expect(res.result.success).toBe(true);
   return res.state;
 }
 
 function accept(state: GameState): GameState {
-  const prompt = peekDecisionPrompt(state)!;
+  let current = state;
+  if (peekDecisionPrompt(current)?.kind === 'ORDER_SIMULTANEOUS_ABILITIES') {
+    const prompt = peekDecisionPrompt(current)!;
+    current = answer(current, prompt.playerId, 'confirm_order');
+  }
+  const prompt = peekDecisionPrompt(current)!;
   expect(prompt).toBeDefined();
   const yes = prompt.options.find((o) => o.effect === 'EXECUTE_OPTIONAL_TRIGGER')!;
-  return answer(state, prompt.playerId, yes.id);
+  return answer(current, prompt.playerId, yes.id);
 }
 
 function pass(state: GameState): GameState {
-  const prompt = peekDecisionPrompt(state)!;
+  let current = state;
+  if (peekDecisionPrompt(current)?.kind === 'ORDER_SIMULTANEOUS_ABILITIES') {
+    const prompt = peekDecisionPrompt(current)!;
+    current = answer(current, prompt.playerId, 'confirm_order');
+  }
+  const prompt = peekDecisionPrompt(current)!;
   expect(prompt).toBeDefined();
-  return answer(state, prompt.playerId, 'pass');
+  return answer(current, prompt.playerId, 'pass');
 }
 
 function handCodes(state: GameState, playerIndex: number): string[] {
@@ -282,13 +298,15 @@ describe('threat interrupt prompts change the placed threat (Issue #266)', () =>
   });
 
   it('11. Emergency and Great Responsibility are both offered and both resolve', () => {
-    const state = setup([
+    let state = setup([
       { hero: SPIDER_MAN, form: 'hero', hand: [EMERGENCY, GREAT_RESPONSIBILITY] },
     ]);
     const before = threat(state);
     const hp = state.players[0].health;
     scheme(state, TWO_ICON_BOOST);
 
+    expect(peekDecisionPrompt(state)?.kind).toBe('ORDER_SIMULTANEOUS_ABILITIES');
+    state = answer(state, 'p1', 'confirm_order');
     expect(peekDecisionPrompt(state)?.sourceCardCode).toBe(EMERGENCY);
     expect(state.pendingDecisionQueue).toHaveLength(2);
     const afterFirst = accept(state);
@@ -304,12 +322,17 @@ describe('threat interrupt prompts change the placed threat (Issue #266)', () =>
   });
 
   it('12. Great Responsibility first: the window closes and Emergency stays in hand', () => {
-    const state = setup([
+    let state = setup([
       { hero: SPIDER_MAN, form: 'hero', hand: [GREAT_RESPONSIBILITY, EMERGENCY] },
     ]);
     const before = threat(state);
     const hp = state.players[0].health;
     scheme(state, TWO_ICON_BOOST);
+
+    expect(peekDecisionPrompt(state)?.kind).toBe('ORDER_SIMULTANEOUS_ABILITIES');
+    state = answer(state, 'p1', 'confirm_order', {
+      sequenceOrder: [GREAT_RESPONSIBILITY, EMERGENCY],
+    });
 
     const after = accept(state);
     expect(peekDecisionPrompt(after)).toBeUndefined();
@@ -331,9 +354,11 @@ describe('threat interrupt prompts change the placed threat (Issue #266)', () =>
   });
 
   it('14. "I Object!" and Emergency both resolve for one placement', () => {
-    const state = setup([{ hero: SHE_HULK, form: 'alter_ego', hand: [EMERGENCY] }]);
+    let state = setup([{ hero: SHE_HULK, form: 'alter_ego', hand: [EMERGENCY] }]);
     const before = threat(state);
     scheme(state, TWO_ICON_BOOST);
+    expect(peekDecisionPrompt(state)?.kind).toBe('ORDER_SIMULTANEOUS_ABILITIES');
+    state = answer(state, 'p1', 'confirm_order');
     expect(state.pendingDecisionQueue).toHaveLength(2);
 
     const after = accept(accept(state));
@@ -404,9 +429,20 @@ describe('threat interrupt prompts change the placed threat (Issue #266)', () =>
       { hero: SPIDER_MAN, form: 'hero', hand: ['01078', '01078'] },
       { hero: CAPTAIN_MARVEL, form: 'hero', hand: ['01078'] },
     ]);
-    dispatchTrigger(state, 'TREACHERY_REVEALED', { targetPlayerId: 'p1' });
+    const falseAlarm = createCardInstance(cardCatalog.getCard('01112')!);
+    state.activeEncounterContext = {
+      encounterInstanceId: falseAlarm.instanceId,
+      encounterCard: falseAlarm,
+      targetPlayerId: 'p1',
+    };
+    dispatchTrigger(state, 'ENCOUNTER_CARD_REVEALED', {
+      targetPlayerId: 'p1',
+      encounterCardInstance: falseAlarm,
+    });
+    // Two copies in single player's hand: ordering prompt suppressed, both offered successively
     expect(state.pendingDecisionQueue ?? []).toHaveLength(2);
     expect(peekDecisionPrompt(state)?.playerId).toBe('p1');
+    expect(peekDecisionPrompt(state)?.sourceCardCode).toBe('01078');
   });
 
   it('answers through resolveDecisionPrompt as well', () => {
@@ -458,7 +494,7 @@ describe('threat interrupt prompts change the placed threat (Issue #266)', () =>
   });
 
   it('21. Turn order priority: prompts are presented in clockwise order starting from first player', () => {
-    const state = setup(
+    let state = setup(
       [
         { hero: SHE_HULK, form: 'alter_ego', hand: [] },
         { hero: SPIDER_MAN, form: 'hero', hand: [GREAT_RESPONSIBILITY] },
@@ -468,6 +504,9 @@ describe('threat interrupt prompts change the placed threat (Issue #266)', () =>
     step1_placeThreat(state);
 
     expect(peekDecisionPrompt(state)?.playerId).toBe('p2');
+    expect(peekDecisionPrompt(state)?.kind).toBe('ORDER_SIMULTANEOUS_ABILITIES');
+    state = answer(state, 'p2', 'confirm_order');
+    expect(peekDecisionPrompt(state)?.playerId).toBe('p2');
     expect(peekDecisionPrompt(state)?.sourceCardCode).toBe(GREAT_RESPONSIBILITY);
 
     const afterP2 = pass(state);
@@ -476,7 +515,7 @@ describe('threat interrupt prompts change the placed threat (Issue #266)', () =>
   });
 
   it('22. Prompt usability guard: identity interrupt queued in Alter-Ego is pruned if form changed', () => {
-    const state = setup(
+    let state = setup(
       [
         { hero: SHE_HULK, form: 'alter_ego', hand: [] },
         { hero: SPIDER_MAN, form: 'hero', hand: [GREAT_RESPONSIBILITY] },
@@ -484,6 +523,9 @@ describe('threat interrupt prompts change the placed threat (Issue #266)', () =>
       { firstPlayerIndex: 1 },
     );
     step1_placeThreat(state);
+
+    // Confirm order for P2
+    state = answer(state, 'p2', 'confirm_order');
 
     // Player 1 flips form to hero while prompt is queued
     state.players[0].currentForm = 'hero';

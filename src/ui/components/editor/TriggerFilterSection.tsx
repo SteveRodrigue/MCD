@@ -23,6 +23,7 @@ export const TriggerFilterSection: React.FC<TriggerFilterSectionProps> = ({
 }) => {
   const [internalExpanded, setInternalExpanded] = React.useState(false);
   const [isAttackerFilterExpanded, setIsAttackerFilterExpanded] = React.useState(false);
+  const [isCardFilterExpanded, setIsCardFilterExpanded] = React.useState(false);
 
   const expanded = isExpanded !== undefined ? isExpanded : internalExpanded;
   const toggleExpand = () => {
@@ -344,6 +345,42 @@ export const TriggerFilterSection: React.FC<TriggerFilterSectionProps> = ({
                     label="Attacker Card Criteria"
                     filter={currentFilter.attackerCardFilter}
                     onChange={(newFilter) => handleFieldChange('attackerCardFilter', newFilter)}
+                    isSubBranch={true}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* cardFilter Sub-form */}
+          <div className="col-span-full pt-1">
+            <div
+              data-testid={`trigger-card-filter-accordion-${abilityIndex}`}
+              className="rounded border border-black bg-white p-2 space-y-1.5"
+            >
+              <div
+                onClick={() => setIsCardFilterExpanded(!isCardFilterExpanded)}
+                data-testid={`toggle-trigger-card-filter-btn-${abilityIndex}`}
+                className="flex items-center justify-between cursor-pointer select-none hover:bg-yellow-50 p-1 rounded"
+              >
+                <span className="text-[10px] font-bold uppercase text-gray-700 flex items-center gap-1">
+                  {isCardFilterExpanded ? (
+                    <ChevronDown className="w-3.5 h-3.5 text-gray-600" />
+                  ) : (
+                    <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
+                  )}
+                  <span>Triggering Card Criteria (cardFilter)</span>
+                </span>
+                <span className="bg-comic-yellow border border-black px-1.5 py-0.2 rounded text-[9px] font-bold text-black">
+                  {currentFilter.cardFilter ? 'Configured' : 'None'}
+                </span>
+              </div>
+              {isCardFilterExpanded && (
+                <div className="pt-2 border-t border-gray-200">
+                  <UniversalCardFilterBuilder
+                    label="Triggering Card Criteria"
+                    filter={currentFilter.cardFilter}
+                    onChange={(newFilter) => handleFieldChange('cardFilter', newFilter)}
                     isSubBranch={true}
                   />
                 </div>

@@ -246,6 +246,9 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
 
       state = initiateAttackToDefense(state, 'p1');
 
+      expect(peekDecisionPrompt(state)?.kind).toBe('ORDER_SIMULTANEOUS_ABILITIES');
+      state = answerPrompt(state, 'p1', 'confirm_order');
+
       expect(state.pendingDecisionQueue?.length).toBe(2);
       const placement = state.pendingDamagePlacements![0];
       expect(placement.amount).toBe(2);
@@ -290,7 +293,7 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
           },
         } as any);
 
-      const state = createTestGame(
+      let state = createTestGame(
         [
           { heroCode: SPIDER_MAN_HERO, aeCode: SPIDER_MAN_AE, handCodes: [] },
           { heroCode: CAPTAIN_MARVEL_HERO, aeCode: CAPTAIN_MARVEL_AE, handCodes: [] },
@@ -308,6 +311,11 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
         damageSource: 'ATTACK',
         targetPlayerScope: 'ANY',
       });
+
+      // Player 2 must receive ordering prompt first because firstPlayerIndex === 1
+      expect(peekDecisionPrompt(state)?.kind).toBe('ORDER_SIMULTANEOUS_ABILITIES');
+      expect(peekDecisionPrompt(state)?.playerId).toBe('p2');
+      state = answerPrompt(state, 'p2', 'confirm_order');
 
       // Player 2 must be prompted first because firstPlayerIndex === 1
       expect(state.pendingDecisionQueue?.length).toBe(2);
@@ -377,6 +385,10 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
       // Reveal for Player 1
       let nextState = step4_revealEncounterCards(state);
 
+      expect(peekDecisionPrompt(nextState)?.kind).toBe('ORDER_SIMULTANEOUS_ABILITIES');
+      expect(peekDecisionPrompt(nextState)?.playerId).toBe('p1');
+      nextState = answerPrompt(nextState, 'p1', 'confirm_order');
+
       // Both players have prompts: Player 1 (revealing) first, Player 2 second
       expect(nextState.pendingDecisionQueue?.length).toBe(2);
       expect(nextState.pendingDecisionQueue![0].playerId).toBe('p1');
@@ -408,6 +420,10 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
       state.players[0].dealtEncounterCards.push(falseAlarm);
 
       let nextState = step4_revealEncounterCards(state);
+
+      expect(peekDecisionPrompt(nextState)?.kind).toBe('ORDER_SIMULTANEOUS_ABILITIES');
+      expect(peekDecisionPrompt(nextState)?.playerId).toBe('p1');
+      nextState = answerPrompt(nextState, 'p1', 'confirm_order');
 
       // Player 1 passes
       nextState = passPrompt(nextState);
@@ -450,7 +466,11 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
       const falseAlarm = createCardInstance(cardCatalog.getCard(FALSE_ALARM)!);
       state.players[0].dealtEncounterCards.push(falseAlarm);
 
-      const nextState = step4_revealEncounterCards(state);
+      let nextState = step4_revealEncounterCards(state);
+
+      expect(peekDecisionPrompt(nextState)?.kind).toBe('ORDER_SIMULTANEOUS_ABILITIES');
+      expect(peekDecisionPrompt(nextState)?.playerId).toBe('p3');
+      nextState = answerPrompt(nextState, 'p3', 'confirm_order');
 
       // P1 has no cancel card. P3 and P2 both have GET_BEHIND_ME.
       // Since firstPlayerIndex is 2 (P3), P3 is prompted before P2!
@@ -505,7 +525,7 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
     });
 
     it('multiplayer: two defending players holding Counter-Punch prompted in first-player order', () => {
-      const state = createTestGame(
+      let state = createTestGame(
         [
           { heroCode: SPIDER_MAN_HERO, aeCode: SPIDER_MAN_AE, handCodes: [COUNTER_PUNCH] },
           { heroCode: CAPTAIN_MARVEL_HERO, aeCode: CAPTAIN_MARVEL_AE, handCodes: [COUNTER_PUNCH] },
@@ -520,6 +540,10 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
         targetPlayerScope: 'ANY',
         targetInstanceId: state.villain.instanceId,
       });
+
+      expect(peekDecisionPrompt(state)?.kind).toBe('ORDER_SIMULTANEOUS_ABILITIES');
+      expect(peekDecisionPrompt(state)?.playerId).toBe('p2');
+      state = answerPrompt(state, 'p2', 'confirm_order');
 
       // With firstPlayerIndex = 1, Player 2 is scanned first, Player 1 second
       expect(state.pendingDecisionQueue?.length).toBe(2);

@@ -18,6 +18,7 @@ import { FormattedCardText } from '../cards/FormattedCardText';
 import { WakandaForeverModal } from './WakandaForeverModal';
 import { DistributeAmountModal } from './DistributeAmountModal';
 import { SelectCardsModal } from './SelectCardsModal';
+import { SimultaneousAbilitiesModal } from './SimultaneousAbilitiesModal';
 import { optionRequiresPayment } from '../../utils/option-requires-payment';
 
 interface DecisionPromptModalProps {
@@ -53,6 +54,16 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
         prompt={prompt}
         onConfirm={(assignments) => onSelectOption('confirm_distribution', { assignments })}
         onCancel={prompt.distributionConfig?.canCancel ? () => onSelectOption('cancel') : undefined}
+      />
+    );
+  }
+
+  // Delegate simultaneous optional abilities ordering to specialized modal (Issue #287)
+  if (prompt.kind === 'ORDER_SIMULTANEOUS_ABILITIES') {
+    return (
+      <SimultaneousAbilitiesModal
+        prompt={prompt}
+        onConfirmOrder={(sequenceOrder) => onSelectOption('confirm_order', { sequenceOrder })}
       />
     );
   }

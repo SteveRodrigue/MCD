@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-13T17:53:08.690Z`
+> **Generated:** `2026-10-16T00:40:05.451Z`
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
@@ -242,7 +242,7 @@
 | :--- | :--- | :--- | :--- |
 | `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
 
-## 2. Trigger Windows (`TriggerTypeSchema` — 21/31 In Use)
+## 2. Trigger Windows (`TriggerTypeSchema` — 20/30 In Use)
 
 ### <a id="when-revealed"></a>`WHEN_REVEALED` (35 Cards)
 
@@ -326,6 +326,14 @@
 | `01017` | **Cosmic Flight (upgrade)** | `core` | `cosmic_flight_prevent` |
 | `01098` | **Armored Rhino Suit (attachment)** | `core_encounter` | `armored_rhino_suit_shield` |
 
+### <a id="encounter-card-revealed"></a>`ENCOUNTER_CARD_REVEALED` (3 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01004` | **Enhanced Spider-Sense (event)** | `core` | `enhanced_spider_sense` |
+| `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
+| `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
+
 ### <a id="threat-would-be-placed"></a>`THREAT_WOULD_BE_PLACED` (3 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -355,13 +363,6 @@
 | `01052` | **Chase Them Down (event)** | `core` | `chase_them_down` |
 | `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
 
-### <a id="treachery-revealed"></a>`TREACHERY_REVEALED` (2 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01004` | **Enhanced Spider-Sense (event)** | `core` | `enhanced_spider_sense` |
-| `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
-
 ### <a id="basic-attack-performed"></a>`BASIC_ATTACK_PERFORMED` (1 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -373,12 +374,6 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01002` | **Black Cat (ally)** | `core` | `black_cat_when_played` |
-
-### <a id="encounter-card-revealed"></a>`ENCOUNTER_CARD_REVEALED` (1 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
 
 ### <a id="enemy-initiates-attack"></a>`ENEMY_INITIATES_ATTACK` (1 Cards)
 

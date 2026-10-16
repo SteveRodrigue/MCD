@@ -78,6 +78,7 @@ import {
 } from './stat-calculator';
 import {
   resolveDecisionPrompt,
+  resolveSimultaneousAbilitiesOrderPrompt,
   enqueueDecisionPrompt,
   peekDecisionPrompt,
   popDecisionPrompt,
@@ -2207,6 +2208,17 @@ function dispatchSingleAction(
       const targetPlayerId = action.playerId || activePrompt?.playerId;
       const player = targetPlayerId ? getPlayer(nextState, targetPlayerId) : undefined;
       if (!player) return { state, result: { success: false, error: 'Player not found' } };
+
+      // Simultaneous Optional Abilities Resolution Order (Issue #287)
+      if (activePrompt && activePrompt.kind === 'ORDER_SIMULTANEOUS_ABILITIES') {
+        return resolveSimultaneousAbilitiesOrderPrompt(
+          nextState,
+          activePrompt,
+          action.playerId,
+          action.selectedOptionId,
+          action.sequenceOrder,
+        );
+      }
 
       // Distribution Prompt Resolution (ADR-0064)
       if (

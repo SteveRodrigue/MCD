@@ -40,14 +40,14 @@ describe('Feature #26 Contract Tests: Interrupt Replacement Effects (01078 & 010
     state.players[0].hand = [];
   });
 
-  describe('01078 Get Behind Me! (Hero Interrupt @ TREACHERY_REVEALED)', () => {
+  describe('01078 Get Behind Me! (Hero Interrupt @ ENCOUNTER_CARD_REVEALED)', () => {
     it('cancels treachery When Revealed and induces a villain attack when accepted automatically', () => {
       const gbmCard = cardCatalog.getCard('01078')!;
       const gbmInst = createCardInstance(gbmCard);
       const paymentCard = createCardInstance(cardCatalog.getCard('01005')!);
       state.players[0].hand.push(gbmInst, paymentCard);
 
-      const treacheryCard = cardCatalog.getCard('01103')!; // False Alarm (Rhino treachery)
+      const treacheryCard = cardCatalog.getCard('01112')!; // False Alarm (Rhino treachery)
       const treacheryInst = createCardInstance(treacheryCard);
       state.activeEncounterContext = {
         encounterInstanceId: treacheryInst.instanceId,
@@ -58,7 +58,7 @@ describe('Feature #26 Contract Tests: Interrupt Replacement Effects (01078 & 010
       const initialHp = state.players[0].health;
 
       // Dispatch trigger with acceptOptionalTriggers: true
-      let triggerRes = dispatchTrigger(state, 'TREACHERY_REVEALED', {
+      let triggerRes = dispatchTrigger(state, 'ENCOUNTER_CARD_REVEALED', {
         targetPlayerId: 'p1',
         encounterCardInstance: treacheryInst,
         acceptOptionalTriggers: true,
@@ -103,10 +103,10 @@ describe('Feature #26 Contract Tests: Interrupt Replacement Effects (01078 & 010
       const paymentCard = createCardInstance(cardCatalog.getCard('01005')!);
       state.players[0].hand.push(gbmInst, paymentCard);
 
-      const treacheryCard = cardCatalog.getCard('01103')!;
+      const treacheryCard = cardCatalog.getCard('01112')!;
       const treacheryInst = createCardInstance(treacheryCard);
 
-      const triggerRes = dispatchTrigger(state, 'TREACHERY_REVEALED', {
+      const triggerRes = dispatchTrigger(state, 'ENCOUNTER_CARD_REVEALED', {
         targetPlayerId: 'p1',
         encounterCardInstance: treacheryInst,
         acceptOptionalTriggers: true,

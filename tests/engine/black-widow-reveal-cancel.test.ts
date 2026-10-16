@@ -421,15 +421,29 @@ describe('Several cancel abilities queued for the same reveal (#255)', () => {
 
   const sources = (s: GameState) => (s.pendingDecisionQueue ?? []).map((p) => p.sourceCardName);
   const yesOf = (s: GameState) => peekDecisionPrompt(s)!.options.find((o) => o.id !== 'pass')!.id;
+  const confirmOrderIfPending = (s: GameState): GameState => {
+    if (peekDecisionPrompt(s)?.kind === 'ORDER_SIMULTANEOUS_ABILITIES') {
+      return resolveDecisionPrompt(s, 'p1', 'confirm_order').state;
+    }
+    return s;
+  };
 
   it('queues the three cancels in order', () => {
     const paused = step4_revealEncounterCards(threeCancelsGame());
 
-    expect(sources(paused)).toEqual(['Black Widow', 'Enhanced Spider-Sense', 'Get Behind Me!']);
+    expect(peekDecisionPrompt(paused)?.kind).toBe('ORDER_SIMULTANEOUS_ABILITIES');
+    expect(peekDecisionPrompt(paused)?.simultaneousPrompts?.map((p) => p.sourceCardName)).toEqual([
+      'Black Widow',
+      'Enhanced Spider-Sense',
+      'Get Behind Me!',
+    ]);
+
+    const ordered = resolveDecisionPrompt(paused, 'p1', 'confirm_order').state;
+    expect(sources(ordered)).toEqual(['Black Widow', 'Enhanced Spider-Sense', 'Get Behind Me!']);
   });
 
   it('accepting Black Widow removes the other cancel prompts of the same card', () => {
-    const paused = step4_revealEncounterCards(threeCancelsGame());
+    const paused = confirmOrderIfPending(step4_revealEncounterCards(threeCancelsGame()));
 
     const after = resolveDecisionPrompt(paused, 'p1', yesOf(paused)).state;
 
@@ -441,7 +455,7 @@ describe('Several cancel abilities queued for the same reveal (#255)', () => {
   });
 
   it('passing Black Widow then accepting Enhanced Spider-Sense leaves no Get Behind Me!', () => {
-    const paused = step4_revealEncounterCards(threeCancelsGame());
+    const paused = confirmOrderIfPending(step4_revealEncounterCards(threeCancelsGame()));
     const afterPass = resolveDecisionPrompt(paused, 'p1', 'pass').state;
     expect(sources(afterPass)).toEqual(['Enhanced Spider-Sense', 'Get Behind Me!']);
 
@@ -453,7 +467,7 @@ describe('Several cancel abilities queued for the same reveal (#255)', () => {
   });
 
   it('passing both first cancels still offers Get Behind Me!', () => {
-    const paused = step4_revealEncounterCards(threeCancelsGame());
+    const paused = confirmOrderIfPending(step4_revealEncounterCards(threeCancelsGame()));
     const afterBw = resolveDecisionPrompt(paused, 'p1', 'pass').state;
     const afterSs = resolveDecisionPrompt(afterBw, 'p1', 'pass').state;
 

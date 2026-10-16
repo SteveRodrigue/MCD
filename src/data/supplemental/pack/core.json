@@ -127,7 +127,14 @@
         {
           "id": "enhanced_spider_sense",
           "timing": "HERO_INTERRUPT",
-          "trigger": "TREACHERY_REVEALED",
+          "trigger": "ENCOUNTER_CARD_REVEALED",
+          "triggerFilter": {
+            "cardFilter": {
+              "types": [
+                "treachery"
+              ]
+            }
+          },
           "zone": "HAND",
           "cost": {
             "resourceCost": 1
@@ -2832,7 +2839,14 @@
         {
           "id": "get_behind_me_interrupt",
           "timing": "HERO_INTERRUPT",
-          "trigger": "TREACHERY_REVEALED",
+          "trigger": "ENCOUNTER_CARD_REVEALED",
+          "triggerFilter": {
+            "cardFilter": {
+              "types": [
+                "treachery"
+              ]
+            }
+          },
           "zone": "HAND",
           "cost": {
             "resourceCost": 1

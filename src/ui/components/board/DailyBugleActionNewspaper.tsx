@@ -19,6 +19,7 @@ import {
 } from '../../../engine/pipeline/legal-actions-generator';
 import { useCardArt } from '../../hooks/useCardArt';
 import { getRemoteMarvelCdbUrl } from '../../services/card-cache-service';
+import { FormattedCardText } from '../cards/FormattedCardText';
 
 interface DailyBugleCardThumbnailProps {
   cardCode?: string;
@@ -63,6 +64,17 @@ interface DailyBugleActionNewspaperProps {
   onSelectAction: (actionItem: LegalActionItem) => void;
 }
 
+function formatTeammateHeader(ownerName?: string): string {
+  if (!ownerName) return 'TEAMMATE ACTIONS';
+  const match = ownerName.match(/^(Hero Seat \d+)\s*\(([^)]+)\)$/);
+  if (match) {
+    const seat = match[1];
+    const hero = match[2];
+    return `${hero.toUpperCase()} (${seat})`;
+  }
+  return ownerName.toUpperCase();
+}
+
 export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps> = ({
   report,
   isOpen,
@@ -101,10 +113,290 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
     }
   };
 
+  const hasIdentity = identityActions.length > 0;
+  const hasHand = handCardActions.length > 0;
+  const hasBoard = boardActions.length > 0;
+  const hasVillain = villainActionItems.length > 0;
+  const hasCallForAction = callForActionItems.length > 0;
+
+  const hasIdentityOrHand = hasIdentity || hasHand;
+  const hasBoardOrVillain = hasBoard || hasVillain;
+
+  let activePlayerColumns: Array<{
+    showIdentity?: boolean;
+    showHand?: boolean;
+    showBoard?: boolean;
+    showVillain?: boolean;
+  }> = [];
+
+  if (hasIdentityOrHand && hasBoardOrVillain) {
+    activePlayerColumns = [
+      { showIdentity: hasIdentity, showHand: hasHand },
+      { showBoard: hasBoard, showVillain: hasVillain },
+    ];
+  } else if (!hasBoardOrVillain && hasIdentity && hasHand) {
+    activePlayerColumns = [{ showIdentity: true }, { showHand: true }];
+  } else if (hasIdentityOrHand || hasBoardOrVillain) {
+    activePlayerColumns = [
+      {
+        showIdentity: hasIdentity,
+        showHand: hasHand,
+        showBoard: hasBoard,
+        showVillain: hasVillain,
+      },
+    ];
+  }
+
+  const totalColumns = activePlayerColumns.length + (hasCallForAction ? 1 : 0);
+
+  const containerWidthClass =
+    totalColumns >= 3 ? 'max-w-6xl' : totalColumns === 2 ? 'max-w-4xl' : 'max-w-xl';
+
+  const gridClass =
+    totalColumns === 3 ? 'lg:grid-cols-3' : totalColumns === 2 ? 'lg:grid-cols-2' : '';
+
+  // Group call for action items by teammate owner
+  const callForActionByOwner: Record<string, LegalActionItem[]> = {};
+  for (const item of callForActionItems) {
+    const key = item.ownerName || 'Unknown Teammate';
+    if (!callForActionByOwner[key]) {
+      callForActionByOwner[key] = [];
+    }
+    callForActionByOwner[key].push(item);
+  }
+
+  const renderIdentitySection = () => (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
+          <span>📰 FRONT PAGE: IDENTITY DIRECTIVES</span>
+        </h2>
+        <span className="text-[10px] text-slate-600 font-bold uppercase">Form & Basic Moves</span>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        {identityActions.map((item) => {
+          const cardCode = item.cardCode || item.targetCardInstance?.card.code;
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                onSelectAction(item);
+                onClose();
+              }}
+              className="w-full text-left bg-white/90 hover:bg-amber-100/90 border border-slate-800 p-2 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start gap-2.5 group"
+            >
+              <DailyBugleCardThumbnail
+                cardCode={cardCode}
+                cardName={item.headline}
+                fallbackIcon={renderIcon(item.iconType)}
+              />
+              <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
+                <div>
+                  <div className="flex items-start justify-between gap-1 mb-0.5">
+                    <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-comic-blue flex items-center gap-1 line-clamp-1">
+                      {renderIcon(item.iconType)}
+                      <span>{item.headline}</span>
+                    </span>
+                    {item.badge && (
+                      <span className="bg-slate-900 text-amber-300 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
+                    {item.subtext}
+                  </p>
+                </div>
+                <div className="mt-1 text-right">
+                  <span className="text-[10px] font-bold text-comic-blue uppercase group-hover:underline">
+                    Execute ➔
+                  </span>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const renderHandSection = (hasPrevSection: boolean) => (
+    <div className={hasPrevSection ? 'pt-3 border-t border-slate-300' : ''}>
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
+          <span>🃏 LATEST DISPATCHES: PLAYABLE HAND CARDS</span>
+        </h2>
+        <span className="text-[10px] text-slate-600 font-bold uppercase">Ready from Hand</span>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        {handCardActions.map((item) => {
+          const cardCode = item.cardCode || item.targetCardInstance?.card.code;
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                onSelectAction(item);
+                onClose();
+              }}
+              className="w-full text-left bg-white/90 hover:bg-amber-100/90 border border-slate-800 p-2 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start gap-2.5 group"
+            >
+              <DailyBugleCardThumbnail
+                cardCode={cardCode}
+                cardName={item.headline}
+                fallbackIcon={renderIcon(item.iconType)}
+              />
+              <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
+                <div>
+                  <div className="flex items-start justify-between gap-1 mb-0.5">
+                    <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-comic-red flex items-center gap-1 line-clamp-1">
+                      {renderIcon(item.iconType)}
+                      <span>{item.headline}</span>
+                    </span>
+                    {item.badge && (
+                      <span className="bg-amber-300 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
+                    {item.subtext}
+                  </p>
+                </div>
+                <div className="mt-1 text-right">
+                  <span className="text-[10px] font-bold text-comic-red uppercase group-hover:underline">
+                    Play Card ➔
+                  </span>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const renderBoardSection = () => (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
+          <span>⚡ THE CLASSIFIEDS: IN-PLAY ASSETS & ALLIES</span>
+        </h2>
+        <span className="text-[10px] text-slate-600 font-bold uppercase">Tableau & Allies</span>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        {boardActions.map((item) => {
+          const cardCode = item.cardCode || item.targetCardInstance?.card.code;
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                onSelectAction(item);
+                onClose();
+              }}
+              className="w-full text-left bg-white/90 hover:bg-amber-100/90 border border-slate-800 p-2 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start gap-2.5 group"
+            >
+              <DailyBugleCardThumbnail
+                cardCode={cardCode}
+                cardName={item.headline}
+                fallbackIcon={renderIcon(item.iconType)}
+              />
+              <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
+                <div>
+                  <div className="flex items-start justify-between gap-1 mb-0.5">
+                    <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-emerald-700 flex items-center gap-1 line-clamp-1">
+                      {renderIcon(item.iconType)}
+                      <span>{item.headline}</span>
+                    </span>
+                    {item.badge && (
+                      <span className="bg-emerald-200 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
+                    {item.subtext}
+                  </p>
+                </div>
+                <div className="mt-1 text-right">
+                  <span className="text-[10px] font-bold text-emerald-700 uppercase group-hover:underline">
+                    Activate ➔
+                  </span>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const renderVillainSection = (hasPrevSection: boolean) => (
+    <div className={hasPrevSection ? 'pt-3 border-t border-slate-300' : ''}>
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
+          <Skull className="w-3.5 h-3.5 text-rose-700" />
+          <span>🚨 VILLAIN DISPATCHES: ENCOUNTER & SCHEME ACTIONS</span>
+        </h2>
+        <span className="text-[10px] text-slate-600 font-bold uppercase">Encounter & Schemes</span>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        {villainActionItems.map((item) => {
+          const cardCode = item.cardCode || item.targetCardInstance?.card.code;
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                onSelectAction(item);
+                onClose();
+              }}
+              className="w-full text-left bg-white/90 hover:bg-rose-50 border border-slate-800 p-2 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start gap-2.5 group"
+            >
+              <DailyBugleCardThumbnail
+                cardCode={cardCode}
+                cardName={item.headline}
+                fallbackIcon={<Skull className="w-5 h-5 text-rose-700" />}
+              />
+              <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
+                <div>
+                  <div className="flex items-start justify-between gap-1 mb-0.5">
+                    <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-rose-700 flex items-center gap-1 line-clamp-1">
+                      {renderIcon(item.iconType)}
+                      <span>{item.headline}</span>
+                    </span>
+                    {item.badge && (
+                      <span className="bg-rose-200 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
+                    {item.subtext}
+                  </p>
+                </div>
+                <div className="mt-1 text-right">
+                  <span className="text-[10px] font-bold text-rose-700 uppercase group-hover:underline">
+                    Discard / Pay ➔
+                  </span>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   return (
     <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
       {/* 1960s Newsprint Broadsheet Container */}
-      <div className="relative w-full max-w-2xl max-h-[85vh] bg-[#fbf7ee] text-slate-900 border-4 border-slate-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-sm overflow-hidden flex flex-col font-serif">
+      <div
+        data-testid="daily-bugle-container"
+        className={`relative w-full ${containerWidthClass} max-h-[85vh] bg-[#fbf7ee] text-slate-900 border-4 border-slate-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-sm overflow-hidden flex flex-col font-serif transition-all duration-300`}
+      >
         {/* Top Woodblock Masthead */}
         <div className="bg-[#f4ebd9] border-b-2 border-slate-900 p-3 relative select-none">
           {/* Close Button (Solid non-transparent comic badge) */}
@@ -148,321 +440,114 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
         </div>
 
         {/* Scrollable Columnar Newsprint Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 divide-y divide-slate-300 text-slate-900">
-          {/* Section 1: FRONT PAGE (Identity Directives) */}
-          {identityActions.length > 0 && (
-            <div className="pt-2 first:pt-0">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
-                  <span>📰 FRONT PAGE: IDENTITY DIRECTIVES</span>
-                </h2>
-                <span className="text-[10px] text-slate-600 font-bold uppercase">
-                  Form & Basic Moves
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {identityActions.map((item) => {
-                  const cardCode = item.cardCode || item.targetCardInstance?.card.code;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        onSelectAction(item);
-                        onClose();
-                      }}
-                      className="text-left bg-white/90 hover:bg-amber-100/90 border border-slate-800 p-2 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start gap-2.5 group"
-                    >
-                      <DailyBugleCardThumbnail
-                        cardCode={cardCode}
-                        cardName={item.headline}
-                        fallbackIcon={renderIcon(item.iconType)}
-                      />
-                      <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
-                        <div>
-                          <div className="flex items-start justify-between gap-1 mb-0.5">
-                            <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-comic-blue flex items-center gap-1 line-clamp-1">
-                              {renderIcon(item.iconType)}
-                              <span>{item.headline}</span>
-                            </span>
-                            {item.badge && (
-                              <span className="bg-slate-900 text-amber-300 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
-                                {item.badge}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
-                            {item.subtext}
-                          </p>
-                        </div>
-                        <div className="mt-1 text-right">
-                          <span className="text-[10px] font-bold text-comic-blue uppercase group-hover:underline">
-                            Execute ➔
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Section 2: SPECIAL DISPATCHES (Playable Cards in Hand) */}
-          {handCardActions.length > 0 && (
-            <div className="pt-3">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
-                  <span>🃏 LATEST DISPATCHES: PLAYABLE HAND CARDS</span>
-                </h2>
-                <span className="text-[10px] text-slate-600 font-bold uppercase">
-                  Ready from Hand
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {handCardActions.map((item) => {
-                  const cardCode = item.cardCode || item.targetCardInstance?.card.code;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        onSelectAction(item);
-                        onClose();
-                      }}
-                      className="text-left bg-white/90 hover:bg-amber-100/90 border border-slate-800 p-2 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start gap-2.5 group"
-                    >
-                      <DailyBugleCardThumbnail
-                        cardCode={cardCode}
-                        cardName={item.headline}
-                        fallbackIcon={renderIcon(item.iconType)}
-                      />
-                      <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
-                        <div>
-                          <div className="flex items-start justify-between gap-1 mb-0.5">
-                            <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-comic-red flex items-center gap-1 line-clamp-1">
-                              {renderIcon(item.iconType)}
-                              <span>{item.headline}</span>
-                            </span>
-                            {item.badge && (
-                              <span className="bg-amber-300 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
-                                {item.badge}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
-                            {item.subtext}
-                          </p>
-                        </div>
-                        <div className="mt-1 text-right">
-                          <span className="text-[10px] font-bold text-comic-red uppercase group-hover:underline">
-                            Play Card ➔
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Section 3: THE CLASSIFIEDS (In-Play Tableau & Allies) */}
-          {boardActions.length > 0 && (
-            <div className="pt-3">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
-                  <span>⚡ THE CLASSIFIEDS: IN-PLAY ASSETS & ALLIES</span>
-                </h2>
-                <span className="text-[10px] text-slate-600 font-bold uppercase">
-                  Tableau & Allies
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {boardActions.map((item) => {
-                  const cardCode = item.cardCode || item.targetCardInstance?.card.code;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        onSelectAction(item);
-                        onClose();
-                      }}
-                      className="text-left bg-white/90 hover:bg-amber-100/90 border border-slate-800 p-2 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start gap-2.5 group"
-                    >
-                      <DailyBugleCardThumbnail
-                        cardCode={cardCode}
-                        cardName={item.headline}
-                        fallbackIcon={renderIcon(item.iconType)}
-                      />
-                      <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
-                        <div>
-                          <div className="flex items-start justify-between gap-1 mb-0.5">
-                            <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-emerald-700 flex items-center gap-1 line-clamp-1">
-                              {renderIcon(item.iconType)}
-                              <span>{item.headline}</span>
-                            </span>
-                            {item.badge && (
-                              <span className="bg-emerald-200 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
-                                {item.badge}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
-                            {item.subtext}
-                          </p>
-                        </div>
-                        <div className="mt-1 text-right">
-                          <span className="text-[10px] font-bold text-emerald-700 uppercase group-hover:underline">
-                            Activate ➔
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Section 4: VILLAIN DISPATCHES (Encounter & Scheme Actions) */}
-          {villainActionItems.length > 0 && (
-            <div className="pt-3">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
-                  <Skull className="w-3.5 h-3.5 text-rose-700" />
-                  <span>🚨 VILLAIN DISPATCHES: ENCOUNTER & SCHEME ACTIONS</span>
-                </h2>
-                <span className="text-[10px] text-slate-600 font-bold uppercase">
-                  Encounter & Schemes
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {villainActionItems.map((item) => {
-                  const cardCode = item.cardCode || item.targetCardInstance?.card.code;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        onSelectAction(item);
-                        onClose();
-                      }}
-                      className="text-left bg-white/90 hover:bg-rose-50 border border-slate-800 p-2 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start gap-2.5 group"
-                    >
-                      <DailyBugleCardThumbnail
-                        cardCode={cardCode}
-                        cardName={item.headline}
-                        fallbackIcon={<Skull className="w-5 h-5 text-rose-700" />}
-                      />
-                      <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
-                        <div>
-                          <div className="flex items-start justify-between gap-1 mb-0.5">
-                            <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-rose-700 flex items-center gap-1 line-clamp-1">
-                              {renderIcon(item.iconType)}
-                              <span>{item.headline}</span>
-                            </span>
-                            {item.badge && (
-                              <span className="bg-rose-200 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
-                                {item.badge}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
-                            {item.subtext}
-                          </p>
-                        </div>
-                        <div className="mt-1 text-right">
-                          <span className="text-[10px] font-bold text-rose-700 uppercase group-hover:underline">
-                            Discard / Pay ➔
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Section 5: CALL FOR ACTION (Team Tableau Assets) */}
-          {callForActionItems.length > 0 && (
-            <div className="pt-3">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
-                  <Users className="w-3.5 h-3.5 text-indigo-700" />
-                  <span>🤝 CALL FOR ACTION: TEAM TABLEAU ASSETS</span>
-                </h2>
-                <span className="text-[10px] text-slate-600 font-bold uppercase">
-                  Teammate Tableau
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {callForActionItems.map((item) => {
-                  const cardCode = item.cardCode || item.targetCardInstance?.card.code;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        onSelectAction(item);
-                        onClose();
-                      }}
-                      className="text-left bg-white/90 hover:bg-indigo-50 border border-slate-800 p-2 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start gap-2.5 group"
-                    >
-                      <DailyBugleCardThumbnail
-                        cardCode={cardCode}
-                        cardName={item.headline}
-                        fallbackIcon={<Users className="w-5 h-5 text-indigo-700" />}
-                      />
-                      <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
-                        <div>
-                          <div className="flex items-start justify-between gap-1 mb-0.5">
-                            <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-indigo-700 flex items-center gap-1 line-clamp-1">
-                              {renderIcon(item.iconType)}
-                              <span>{item.headline}</span>
-                            </span>
-                            <div className="flex items-center gap-1 shrink-0">
-                              {item.ownerName && (
-                                <span className="bg-indigo-100 text-indigo-950 text-[9px] font-comic font-bold px-1.5 py-0.2 rounded border border-indigo-400">
-                                  {item.ownerName}
-                                </span>
-                              )}
-                              {item.badge && (
-                                <span className="bg-amber-300 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800">
-                                  {item.badge}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
-                            {item.subtext}
-                          </p>
-                        </div>
-                        <div className="mt-1 text-right">
-                          <span className="text-[10px] font-bold text-indigo-700 uppercase group-hover:underline">
-                            Ask Teammate ➔
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* No Active Actions Banner */}
-          {activeActionCount === 0 && callForActionItems.length === 0 && (
-            <div className="p-4 bg-amber-100/80 border-2 border-dashed border-slate-400 rounded text-center space-y-1">
-              <h3 className="font-comic text-sm font-bold text-slate-900 uppercase">
+        <div className="flex-1 overflow-y-auto p-4 text-slate-900">
+          {activeActionCount === 0 && callForActionItems.length === 0 ? (
+            <div className="p-8 bg-amber-100/80 border-2 border-dashed border-slate-400 rounded text-center space-y-1 my-4">
+              <h3 className="font-comic text-base font-bold text-slate-900 uppercase">
                 ★ PRESS RUN COMPLETE: NO ACTIONS REMAIN ★
               </h3>
               <p className="text-xs text-slate-600 font-serif">
                 You have exhausted your character and played all available cards. You may now
                 conclude your turn below.
               </p>
+            </div>
+          ) : (
+            <div
+              data-testid="daily-bugle-grid"
+              className={`grid grid-cols-1 ${gridClass} gap-6 ${
+                totalColumns > 1 ? 'lg:divide-x-2 lg:divide-slate-400' : ''
+              }`}
+            >
+              {activePlayerColumns.map((col, idx) => (
+                <div key={`col_${idx}`} className={`space-y-4 ${idx > 0 ? 'lg:pl-6' : ''}`}>
+                  {col.showIdentity && renderIdentitySection()}
+                  {col.showHand && renderHandSection(!!col.showIdentity)}
+                  {col.showBoard && renderBoardSection()}
+                  {col.showVillain && renderVillainSection(!!col.showBoard)}
+                </div>
+              ))}
+
+              {/* CALL FOR ACTION (Teammate Tableau Assets & Identities) */}
+              {hasCallForAction && (
+                <div
+                  className={`space-y-4 ${activePlayerColumns.length > 0 ? 'lg:pl-6' : ''}`}
+                  data-testid="daily-bugle-call-for-action-column"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-indigo-700 pb-0.5 flex items-center gap-1 font-comic">
+                        <Users className="w-3.5 h-3.5 text-indigo-700" />
+                        <span>🤝 CALL FOR ACTION: TEAM TABLEAU ASSETS</span>
+                      </h2>
+                      <span className="text-[10px] text-indigo-700 font-bold uppercase">
+                        Teammate Tableau
+                      </span>
+                    </div>
+
+                    <div className="space-y-4">
+                      {Object.entries(callForActionByOwner).map(([ownerKey, items]) => (
+                        <div
+                          key={ownerKey}
+                          className="border border-slate-900 rounded overflow-hidden shadow-sm"
+                        >
+                          <div className="bg-slate-900 text-amber-300 px-2.5 py-1 font-comic font-black text-xs uppercase tracking-wide border border-slate-900 rounded-t flex items-center justify-between">
+                            <span>{formatTeammateHeader(ownerKey)}</span>
+                            <span className="text-[10px] font-mono text-amber-200">
+                              {items.length} ACTION{items.length === 1 ? '' : 'S'}
+                            </span>
+                          </div>
+                          <div className="p-2 bg-[#f4ebd9]/40 flex flex-col gap-2">
+                            {items.map((item) => {
+                              const cardCode = item.cardCode || item.targetCardInstance?.card.code;
+                              const cardText = item.targetCardInstance?.card?.text || item.subtext;
+                              return (
+                                <button
+                                  key={item.id}
+                                  onClick={() => {
+                                    onSelectAction(item);
+                                    onClose();
+                                  }}
+                                  className="w-full text-left bg-white/90 hover:bg-indigo-50 border border-slate-800 p-2 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start gap-2.5 group"
+                                >
+                                  <DailyBugleCardThumbnail
+                                    cardCode={cardCode}
+                                    cardName={item.headline}
+                                    fallbackIcon={<Users className="w-5 h-5 text-indigo-700" />}
+                                  />
+                                  <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
+                                    <div>
+                                      <div className="flex items-start justify-between gap-1 mb-0.5">
+                                        <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-indigo-700 flex items-center gap-1 line-clamp-1">
+                                          {renderIcon(item.iconType)}
+                                          <span>{item.headline}</span>
+                                        </span>
+                                        {item.badge && (
+                                          <span className="bg-amber-300 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
+                                            {item.badge}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <FormattedCardText
+                                        text={cardText}
+                                        className="text-[11px] text-slate-800 leading-snug font-serif"
+                                      />
+                                    </div>
+                                    <div className="mt-1 text-right">
+                                      <span className="text-[10px] font-bold text-indigo-700 uppercase group-hover:underline">
+                                        Ask Teammate ➔
+                                      </span>
+                                    </div>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

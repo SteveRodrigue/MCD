@@ -128,10 +128,10 @@ export function getTableauActionItems(
             category: isCallingPlayerTurn ? 'board' : 'call_for_action',
             headline: isCallingPlayerTurn
               ? `Activate ${tableauItem.card.name}`
-              : `${player.name}: ${tableauItem.card.name}`,
+              : tableauItem.card.name,
             subtext: ab.steps?.[0]?.effectParams?.description
               ? String(ab.steps[0].effectParams.description)
-              : `Trigger ${tableauItem.card.name} (${ab.id})`,
+              : tableauItem.card.text || `Trigger ${tableauItem.card.name} (${ab.id})`,
             action: {
               type: 'USE_CARD_ABILITY',
               playerId: player.id,
@@ -182,9 +182,7 @@ export function getIdentityActionItems(
 
       const costCheck = canInitiateAbility(state, player.id, ab, undefined, {});
       if (costCheck.allowed) {
-        let badge = isCallingPlayerTurn
-          ? formatTimingBadge(ab.timing)
-          : `${player.name.toUpperCase()} • ${formatTimingBadge(ab.timing)}`;
+        let badge = formatTimingBadge(ab.timing);
         if (isCallingPlayerTurn && ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND') {
           const count = ab.cost.discardCard.count || 1;
           badge = `DISCARD ${count} CARD${count > 1 ? 'S' : ''}`;
@@ -192,11 +190,11 @@ export function getIdentityActionItems(
 
         const headline = isCallingPlayerTurn
           ? `Action: ${ab.id.replace(/_/g, ' ').toUpperCase()}`
-          : `Ask ${player.name}: ${player.activeFormCard.name} (${formatTimingBadge(ab.timing)})`;
+          : `${player.activeFormCard.name}: ${ab.id.replace(/_/g, ' ').toUpperCase()}`;
 
         const subtext = ab.steps?.[0]?.effectParams?.description
           ? String(ab.steps[0].effectParams.description)
-          : `Trigger ${player.activeFormCard.name}'s special ability`;
+          : player.activeFormCard.text || `Trigger ${player.activeFormCard.name}'s special ability`;
 
         items.push({
           id: isCallingPlayerTurn

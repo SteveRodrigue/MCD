@@ -57,7 +57,7 @@ describe('Daily Bugle & TopBar Call for Action & Villain Actions UI (Issue #314)
     state.activePlayerIndex = 0;
   });
 
-  it('1. TopBar renders "CALL FOR ACTION! [N]" button when multiplayer game has available teammate actions', () => {
+  it('1. TopBar does not render "CALL FOR ACTION!" button (moved to GameBoard hover pill)', () => {
     const onOpenNewspaper = vi.fn();
 
     render(
@@ -66,8 +66,6 @@ describe('Daily Bugle & TopBar Call for Action & Villain Actions UI (Issue #314)
           gameState={state}
           activeSeatIndex={0}
           legalActionCount={3}
-          callForActionCount={2}
-          villainActionCount={0}
           onSelectSeat={vi.fn()}
           onToggleLog={vi.fn()}
           isLogOpen={false}
@@ -77,15 +75,11 @@ describe('Daily Bugle & TopBar Call for Action & Villain Actions UI (Issue #314)
       </GameSettingsProvider>,
     );
 
-    const callBtn = screen.getByRole('button', { name: /call for action/i });
-    expect(callBtn).toBeDefined();
-    expect(callBtn.textContent).toContain('2');
-
-    fireEvent.click(callBtn);
-    expect(onOpenNewspaper).toHaveBeenCalled();
+    const callBtn = screen.queryByRole('button', { name: /call for action/i });
+    expect(callBtn).toBeNull();
   });
 
-  it('2. TopBar renders "VILLAIN ACTIONS! [N]" button when encounter actions are available', () => {
+  it('2. TopBar keeps clean without separate villain action button (bundled into EXTRA! hover button)', () => {
     const onOpenNewspaper = vi.fn();
 
     render(
@@ -94,8 +88,6 @@ describe('Daily Bugle & TopBar Call for Action & Villain Actions UI (Issue #314)
           gameState={state}
           activeSeatIndex={0}
           legalActionCount={3}
-          callForActionCount={0}
-          villainActionCount={1}
           onSelectSeat={vi.fn()}
           onToggleLog={vi.fn()}
           isLogOpen={false}
@@ -105,12 +97,8 @@ describe('Daily Bugle & TopBar Call for Action & Villain Actions UI (Issue #314)
       </GameSettingsProvider>,
     );
 
-    const villainBtn = screen.getByRole('button', { name: /villain actions/i });
-    expect(villainBtn).toBeDefined();
-    expect(villainBtn.textContent).toContain('1');
-
-    fireEvent.click(villainBtn);
-    expect(onOpenNewspaper).toHaveBeenCalled();
+    const villainBtn = screen.queryByRole('button', { name: /villain actions/i });
+    expect(villainBtn).toBeNull();
   });
 
   it('3. Daily Bugle displays distinct sections including Villain Dispatches and Call for Action', () => {
@@ -216,11 +204,13 @@ describe('Daily Bugle & TopBar Call for Action & Villain Actions UI (Issue #314)
     expect(screen.getByText(/THE CLASSIFIEDS: IN-PLAY ASSETS & ALLIES/i)).toBeDefined();
     // Section 4: Villain Dispatches
     expect(screen.getByText(/VILLAIN DISPATCHES: ENCOUNTER & SCHEME ACTIONS/i)).toBeDefined();
-    // Section 5: Call for Action
-    expect(screen.getByText(/CALL FOR ACTION: TEAM TABLEAU ASSETS/i)).toBeDefined();
+    // Section 5: Call for Action in dedicated 3rd column container
+    const cfaCol = screen.getByTestId('daily-bugle-call-for-action-column');
+    expect(cfaCol).toBeDefined();
+    expect(cfaCol.textContent).toContain('CALL FOR ACTION: TEAM TABLEAU ASSETS');
 
-    // Teammate owner name badge must be shown
-    expect(screen.getByText('Tony Stark')).toBeDefined();
+    // Teammate header must be shown
+    expect(screen.getByText('TONY STARK')).toBeDefined();
 
     // Clicking Discard / Pay on encounter action dispatches action
     const discardBtn = screen.getByRole('button', { name: /Discard: Ivory Horn/i });
@@ -247,7 +237,7 @@ describe('Daily Bugle & TopBar Call for Action & Villain Actions UI (Issue #314)
         {
           id: 'action_call_id_p2_commander',
           category: 'call_for_action',
-          headline: 'Ask Carol Danvers: Carol Danvers (ACTION)',
+          headline: 'Carol Danvers: COMMANDER',
           subtext: 'Choose a player to draw 1 card.',
           ownerName: 'Carol Danvers',
           action: {
@@ -256,7 +246,7 @@ describe('Daily Bugle & TopBar Call for Action & Villain Actions UI (Issue #314)
             cardInstanceId: '01010b',
             abilityId: 'commander',
           },
-          badge: 'CAROL DANVERS • ACTION',
+          badge: 'ACTION',
           cardCode: '01010b',
         },
       ],
@@ -275,21 +265,312 @@ describe('Daily Bugle & TopBar Call for Action & Villain Actions UI (Issue #314)
       />,
     );
 
-    // Call for Action section should be displayed
-    expect(screen.getByText(/CALL FOR ACTION: TEAM TABLEAU ASSETS/i)).toBeDefined();
+    // Call for Action section should be displayed in dedicated column container
+    const cfaCol = screen.getByTestId('daily-bugle-call-for-action-column');
+    expect(cfaCol).toBeDefined();
+    expect(cfaCol.textContent).toContain('CALL FOR ACTION: TEAM TABLEAU ASSETS');
 
-    // Owner name badge and headline
-    expect(screen.getByText('Carol Danvers')).toBeDefined();
-    expect(screen.getByText(/Ask Carol Danvers: Carol Danvers \(ACTION\)/i)).toBeDefined();
+    // Teammate header and headline
+    expect(screen.getByText('CAROL DANVERS')).toBeDefined();
+    expect(screen.getByText('Carol Danvers: COMMANDER')).toBeDefined();
 
     // Clicking the item triggers onSelectAction and closes modal
     const actionBtn = screen.getByRole('button', {
-      name: /Ask Carol Danvers: Carol Danvers \(ACTION\)/i,
+      name: /Carol Danvers: COMMANDER/i,
     });
     expect(actionBtn).toBeDefined();
     fireEvent.click(actionBtn);
 
     expect(onSelectAction).toHaveBeenCalledWith(mockReport.callForActionItems[0]);
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it('5. Dynamic column distribution: when active player has Identity + Hand cards and no board/villain actions, Col 1 has Identity and Col 2 has Hand cards', () => {
+    const mockReport: LegalActionReport = {
+      playerId: 'p1',
+      playerName: 'Spider-Man',
+      isPlayerTurn: true,
+      activeActionCount: 2,
+      callForActionCount: 0,
+      villainActionCount: 0,
+      identityActions: [
+        {
+          id: 'action_basic_atk',
+          category: 'identity',
+          headline: 'Basic Attack (Hero)',
+          subtext: 'Attack enemy',
+          action: { type: 'BASIC_ATTACK', playerId: 'p1', targetType: 'villain' },
+          badge: '2 ATK',
+        },
+      ],
+      handCardActions: [
+        {
+          id: 'action_play_card',
+          category: 'hand',
+          headline: 'Play Web-Shooter',
+          subtext: 'Put into play',
+          action: {
+            type: 'PLAY_CARD',
+            playerId: 'p1',
+            cardInstanceId: 'c1',
+            paymentCardInstanceIds: [],
+          },
+          badge: '1 RESOURCE',
+        },
+      ],
+      boardActions: [],
+      villainActionItems: [],
+      callForActionItems: [],
+      allActions: [],
+    };
+
+    render(
+      <DailyBugleActionNewspaper
+        report={mockReport}
+        isOpen={true}
+        onClose={vi.fn()}
+        onSelectAction={vi.fn()}
+      />,
+    );
+
+    // Verify grid layout uses 2 columns
+    const grid = screen.getByTestId('daily-bugle-grid');
+    expect(grid).toBeDefined();
+    expect(grid.className).toContain('lg:grid-cols-2');
+    expect(grid.children.length).toBe(2);
+
+    // Col 1 should have identity directives and NOT playable hand cards
+    const col1 = grid?.children[0];
+    expect(col1?.textContent).toContain('FRONT PAGE: IDENTITY DIRECTIVES');
+    expect(col1?.textContent).not.toContain('LATEST DISPATCHES: PLAYABLE HAND CARDS');
+
+    // Col 2 should have playable hand cards and NOT identity directives
+    const col2 = grid?.children[1];
+    expect(col2?.textContent).toContain('LATEST DISPATCHES: PLAYABLE HAND CARDS');
+    expect(col2?.textContent).not.toContain('FRONT PAGE: IDENTITY DIRECTIVES');
+  });
+
+  it('6. Teammate grouping with header CAPTAIN MARVEL (Hero Seat 2) and compact card layout', () => {
+    const mockReport: LegalActionReport = {
+      playerId: 'p1',
+      playerName: 'Spider-Man',
+      isPlayerTurn: true,
+      activeActionCount: 1,
+      callForActionCount: 2,
+      villainActionCount: 0,
+      identityActions: [
+        {
+          id: 'action_basic_atk',
+          category: 'identity',
+          headline: 'Basic Attack (Hero)',
+          subtext: 'Attack enemy',
+          action: { type: 'BASIC_ATTACK', playerId: 'p1', targetType: 'villain' },
+          badge: '2 ATK',
+        },
+      ],
+      handCardActions: [],
+      boardActions: [],
+      villainActionItems: [],
+      callForActionItems: [
+        {
+          id: 'action_call_mansion',
+          category: 'call_for_action',
+          headline: 'Avengers Mansion',
+          subtext: 'Draw 1 card',
+          ownerName: 'Hero Seat 2 (Captain Marvel)',
+          action: {
+            type: 'USE_CARD_ABILITY',
+            playerId: 'p2',
+            cardInstanceId: 'mansion_1',
+            abilityId: 'mansion_ab',
+          },
+          badge: 'ACTION',
+        },
+        {
+          id: 'action_call_alpha_flight',
+          category: 'call_for_action',
+          headline: 'Alpha Flight Station',
+          subtext: 'Shuffle card into deck',
+          ownerName: 'Hero Seat 2 (Captain Marvel)',
+          action: {
+            type: 'USE_CARD_ABILITY',
+            playerId: 'p2',
+            cardInstanceId: 'afs_1',
+            abilityId: 'afs_ab',
+          },
+          badge: 'ACTION',
+        },
+      ],
+      allActions: [],
+    };
+
+    render(
+      <DailyBugleActionNewspaper
+        report={mockReport}
+        isOpen={true}
+        onClose={vi.fn()}
+        onSelectAction={vi.fn()}
+      />,
+    );
+
+    // Formatted teammate header
+    expect(screen.getByText('CAPTAIN MARVEL (Hero Seat 2)')).toBeDefined();
+    expect(screen.getByText('2 ACTIONS')).toBeDefined();
+
+    // Verify both cards are present under that group
+    expect(screen.getByText('Avengers Mansion')).toBeDefined();
+    expect(screen.getByText('Alpha Flight Station')).toBeDefined();
+    expect(screen.getAllByText('Ask Teammate ➔').length).toBe(2);
+  });
+
+  it('8. Call for Action dispatches render full card.text via FormattedCardText without truncation', () => {
+    const mockReport: LegalActionReport = {
+      playerId: 'p1',
+      playerName: 'Spider-Man',
+      isPlayerTurn: true,
+      activeActionCount: 0,
+      callForActionCount: 1,
+      villainActionCount: 0,
+      identityActions: [],
+      handCardActions: [],
+      boardActions: [],
+      villainActionItems: [],
+      callForActionItems: [
+        {
+          id: 'action_call_mansion',
+          category: 'call_for_action',
+          headline: 'Avengers Mansion',
+          subtext: 'Draw 1 card fallback',
+          ownerName: 'Tony Stark',
+          action: {
+            type: 'USE_CARD_ABILITY',
+            playerId: 'p2',
+            cardInstanceId: 'mansion_1',
+            abilityId: 'mansion_ab',
+          },
+          badge: 'ACTION',
+          targetCardInstance: {
+            instanceId: 'mansion_1',
+            card: {
+              id: '01091',
+              code: '01091',
+              name: 'Avengers Mansion',
+              type: 'support',
+              text: '<b>Action</b>: Exhaust Avengers Mansion -> choose a player. That player draws 1 card.',
+            } as any,
+          } as any,
+        },
+      ],
+      allActions: [],
+    };
+
+    render(
+      <DailyBugleActionNewspaper
+        report={mockReport}
+        isOpen={true}
+        onClose={vi.fn()}
+        onSelectAction={vi.fn()}
+      />,
+    );
+
+    // FormattedCardText converts <b>Action</b> and arrow into HTML/formatted elements
+    expect(
+      screen.getByText(/Exhaust Avengers Mansion -> choose a player\. That player draws 1 card\./i),
+    ).toBeDefined();
+  });
+
+  it('9. Daily Bugle container dynamically adapts width based on column count (max-w-xl, max-w-4xl, max-w-6xl)', () => {
+    // Test 1: 1 column (only Call for Action) -> max-w-xl
+    const oneColReport: LegalActionReport = {
+      playerId: 'p1',
+      playerName: 'Spider-Man',
+      isPlayerTurn: true,
+      activeActionCount: 0,
+      callForActionCount: 1,
+      villainActionCount: 0,
+      identityActions: [],
+      handCardActions: [],
+      boardActions: [],
+      villainActionItems: [],
+      callForActionItems: [
+        {
+          id: 'cfa_1',
+          category: 'call_for_action',
+          headline: 'Avengers Mansion',
+          subtext: 'Draw 1 card',
+          action: { type: 'USE_CARD_ABILITY', playerId: 'p2' } as any,
+        },
+      ],
+      allActions: [],
+    };
+
+    const { rerender } = render(
+      <DailyBugleActionNewspaper
+        report={oneColReport}
+        isOpen={true}
+        onClose={vi.fn()}
+        onSelectAction={vi.fn()}
+      />,
+    );
+
+    const broadsheet1 = screen.getByTestId('daily-bugle-container');
+    expect(broadsheet1.className).toContain('max-w-xl');
+    expect(broadsheet1.className).not.toContain('max-w-4xl');
+    expect(broadsheet1.className).not.toContain('max-w-6xl');
+
+    // Test 2: 2 columns (e.g. Identity + Call for Action) -> max-w-4xl
+    const twoColReport: LegalActionReport = {
+      ...oneColReport,
+      activeActionCount: 1,
+      identityActions: [
+        {
+          id: 'id_1',
+          category: 'identity',
+          headline: 'Basic Attack',
+          subtext: 'Attack villain',
+          action: { type: 'BASIC_ATTACK', playerId: 'p1' } as any,
+        },
+      ],
+    };
+
+    rerender(
+      <DailyBugleActionNewspaper
+        report={twoColReport}
+        isOpen={true}
+        onClose={vi.fn()}
+        onSelectAction={vi.fn()}
+      />,
+    );
+
+    const broadsheet2 = screen.getByTestId('daily-bugle-container');
+    expect(broadsheet2.className).toContain('max-w-4xl');
+    expect(broadsheet2.className).not.toContain('max-w-6xl');
+
+    // Test 3: 3 columns (Identity + Board/Villain + Call for Action) -> max-w-6xl
+    const threeColReport: LegalActionReport = {
+      ...twoColReport,
+      activeActionCount: 2,
+      boardActions: [
+        {
+          id: 'board_1',
+          category: 'board',
+          headline: 'Daredevil',
+          subtext: 'Ally attack',
+          action: { type: 'ALLY_ATTACK', playerId: 'p1' } as any,
+        },
+      ],
+    };
+
+    rerender(
+      <DailyBugleActionNewspaper
+        report={threeColReport}
+        isOpen={true}
+        onClose={vi.fn()}
+        onSelectAction={vi.fn()}
+      />,
+    );
+
+    const broadsheet3 = screen.getByTestId('daily-bugle-container');
+    expect(broadsheet3.className).toContain('max-w-6xl');
   });
 });

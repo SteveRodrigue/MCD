@@ -9,8 +9,6 @@ import {
   Compass,
   Newspaper,
   Bug,
-  Skull,
-  Users,
 } from 'lucide-react';
 import { GameState, GamePhase } from '../../../engine';
 import { useGameSettings } from '../../context/useGameSettings';
@@ -21,8 +19,6 @@ interface TopBarProps {
   gameState: GameState;
   activeSeatIndex: number;
   legalActionCount?: number;
-  callForActionCount?: number;
-  villainActionCount?: number;
   onSelectSeat: (index: number) => void;
   onToggleLog: () => void;
   isLogOpen: boolean;
@@ -34,8 +30,6 @@ export const TopBar: React.FC<TopBarProps> = ({
   gameState,
   activeSeatIndex,
   legalActionCount = 0,
-  callForActionCount = 0,
-  villainActionCount = 0,
   onSelectSeat,
   onToggleLog,
   isLogOpen,
@@ -131,47 +125,8 @@ export const TopBar: React.FC<TopBarProps> = ({
           </div>
         )}
 
-        {/* Right: Daily Bugle Newspaper, Call for Action, Villain Actions, Dev Mode, Combat Log, Options, Reset */}
+        {/* Right: Daily Bugle Newspaper, Dev Mode, Combat Log, Options, Reset */}
         <div className="flex items-center gap-2.5">
-          {/* Villain Actions Hazard Button (Issue #314) */}
-          {gameState.phase === GamePhase.PLAYER_PHASE &&
-            villainActionCount > 0 &&
-            onOpenNewspaper && (
-              <button
-                onClick={onOpenNewspaper}
-                className="px-2.5 py-1.5 font-comic text-xs bg-rose-600 hover:bg-rose-500 text-white rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 cursor-pointer font-black transition-all hover:scale-105 active:translate-y-0.5 animate-pulse"
-                title="VILLAIN ACTIONS: Encounter or scheme actions can be triggered (Click to open Daily Bugle)"
-              >
-                <Skull className="w-4 h-4 text-comic-yellow fill-comic-yellow" />
-                <span className="hidden md:inline font-comic font-black uppercase tracking-tight">
-                  VILLAIN ACTIONS!
-                </span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-black bg-comic-black text-comic-yellow border border-comic-yellow">
-                  {villainActionCount}
-                </span>
-              </button>
-            )}
-
-          {/* Call for Action Teammate Button (Issue #314) */}
-          {gameState.phase === GamePhase.PLAYER_PHASE &&
-            gameState.players.length > 1 &&
-            callForActionCount > 0 &&
-            onOpenNewspaper && (
-              <button
-                onClick={onOpenNewspaper}
-                className="px-2.5 py-1.5 font-comic text-xs bg-comic-yellow hover:bg-amber-300 text-comic-black rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 cursor-pointer font-black transition-all hover:scale-105 active:translate-y-0.5"
-                title="CALL FOR ACTION: Request action from teammate tableau cards (Click to open Daily Bugle)"
-              >
-                <Users className="w-4 h-4 text-comic-black" />
-                <span className="hidden md:inline font-comic font-black uppercase tracking-tight">
-                  CALL FOR ACTION!
-                </span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-comic-red text-white border border-comic-black">
-                  {callForActionCount}
-                </span>
-              </button>
-            )}
-
           {/* 1960s Daily Bugle Newspaper Action Sheet Button */}
           {onOpenNewspaper && (
             <button

@@ -39,8 +39,8 @@ stateDiagram-v2
         PlayerTurn --> BasicRecover: Alter-Ego (Clamped to Dynamic Max HP)
         PlayerTurn --> BasicAttack: Hero (Guard check, Attack Damage)
         PlayerTurn --> BasicThwart: Hero (Crisis/Patrol check)
-        PlayerTurn --> AllyAttack: Ready Ally (Consequential Dmg Event)
-        PlayerTurn --> AllyThwart: Ready Ally (Consequential Dmg Event)
+        PlayerTurn --> AllyAttack: Ready Ally, ATK not dash (–) (Consequential Dmg Event)
+        PlayerTurn --> AllyThwart: Ready Ally, THW not dash (–) (Consequential Dmg Event)
         PlayerTurn --> PlayCard: Pay resources (CARD_PLAYED Event)
         PlayerTurn --> UseCardAbility: Actions / Resources (Max Per Round Check)
         PlayerTurn --> NextPlayer: End Turn

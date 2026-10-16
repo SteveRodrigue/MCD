@@ -4,6 +4,8 @@ import {
   canBasicRecover,
   canBasicAttack,
   canBasicThwart,
+  canAllyAttack,
+  canAllyThwart,
   canPlayCard,
 } from '../pipeline';
 
@@ -154,7 +156,10 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
   for (const ally of player.allies) {
     if (!ally.exhausted) {
       // If threat is elevated, prioritize Ally Thwart
-      if (isThreatHigh || getActiveMainScheme(state).threat >= 2) {
+      if (
+        (isThreatHigh || getActiveMainScheme(state).threat >= 2) &&
+        canAllyThwart(state, playerId, ally.instanceId, 'main_scheme').allowed
+      ) {
         return {
           type: 'ALLY_THWART',
           playerId,
@@ -162,14 +167,19 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
           targetType: 'main_scheme',
         };
       } else if (player.engagedMinions.length > 0) {
-        return {
-          type: 'ALLY_ATTACK',
-          playerId,
-          allyInstanceId: ally.instanceId,
-          targetType: 'minion',
-          targetInstanceId: player.engagedMinions[0].instanceId,
-        };
-      } else {
+        const targetMinion = player.engagedMinions[0];
+        if (
+          canAllyAttack(state, playerId, ally.instanceId, 'minion', targetMinion.instanceId).allowed
+        ) {
+          return {
+            type: 'ALLY_ATTACK',
+            playerId,
+            allyInstanceId: ally.instanceId,
+            targetType: 'minion',
+            targetInstanceId: targetMinion.instanceId,
+          };
+        }
+      } else if (canAllyAttack(state, playerId, ally.instanceId, 'villain').allowed) {
         return {
           type: 'ALLY_ATTACK',
           playerId,

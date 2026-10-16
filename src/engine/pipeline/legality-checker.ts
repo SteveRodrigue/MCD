@@ -11,6 +11,8 @@ import {
   CardAbility,
   AbilityStep,
   getActiveMainScheme,
+  hasDashPower,
+  CharacterPower,
   getMainSchemesInPlay,
   getVillainsInPlay,
   StatusCard,
@@ -165,6 +167,13 @@ export function canChangeForm(
   return { allowed: true };
 }
 
+function dashPowerReason(name: string, power: CharacterPower): string {
+  const label = { attack: 'ATK', thwart: 'THW', defense: 'DEF', recover: 'REC', scheme: 'SCH' }[
+    power
+  ];
+  return `${name} has no ${label} (–) and cannot use it.`;
+}
+
 /**
  * Checks if player can perform basic Recover (RR v1.8 p. 23).
  * Must be in Alter-Ego form and not exhausted.
@@ -192,6 +201,10 @@ export function canBasicRecover(
 
   if (player.exhausted) {
     return { allowed: false, reason: 'Character is exhausted.' };
+  }
+
+  if (hasDashPower(player.alterEgo, 'recover')) {
+    return { allowed: false, reason: dashPowerReason(player.alterEgo.name, 'recover') };
   }
 
   return { allowed: true };
@@ -226,6 +239,10 @@ export function canBasicAttack(
 
   if (player.exhausted) {
     return { allowed: false, reason: 'Character is exhausted.' };
+  }
+
+  if (hasDashPower(player.hero, 'attack')) {
+    return { allowed: false, reason: dashPowerReason(player.hero.name, 'attack') };
   }
 
   if (targetType === 'minion') {
@@ -286,6 +303,10 @@ export function canAllyAttack(
     return { allowed: false, reason: 'Ally is exhausted.' };
   }
 
+  if (hasDashPower(ally.card, 'attack')) {
+    return { allowed: false, reason: dashPowerReason(ally.card.name, 'attack') };
+  }
+
   if (targetType === 'minion') {
     if (!targetInstanceId) {
       return { allowed: false, reason: 'Minion target instance ID must be specified.' };
@@ -341,6 +362,10 @@ export function canBasicThwart(
 
   if (player.exhausted) {
     return { allowed: false, reason: 'Character is exhausted.' };
+  }
+
+  if (hasDashPower(player.hero, 'thwart')) {
+    return { allowed: false, reason: dashPowerReason(player.hero.name, 'thwart') };
   }
 
   if (targetType === 'side_scheme') {
@@ -415,6 +440,10 @@ export function canAllyThwart(
 
   if (ally.exhausted) {
     return { allowed: false, reason: 'Ally is exhausted.' };
+  }
+
+  if (hasDashPower(ally.card, 'thwart')) {
+    return { allowed: false, reason: dashPowerReason(ally.card.name, 'thwart') };
   }
 
   if (targetType === 'side_scheme') {

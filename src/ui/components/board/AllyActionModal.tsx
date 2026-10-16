@@ -1,7 +1,14 @@
 import React from 'react';
 import { ModalLayer } from '../layout/ModalLayer';
 import { Swords, Target, Zap, X, Shield, Skull } from 'lucide-react';
-import { CardInstance, PlayerState, GameState, GameAction, AllyCard } from '../../../engine/models';
+import {
+  CardInstance,
+  PlayerState,
+  GameState,
+  GameAction,
+  AllyCard,
+  hasDashPower,
+} from '../../../engine/models';
 import {
   getEffectiveAllyStats,
   getEffectiveCardTraitsDetails,
@@ -37,8 +44,8 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
   const allyStats = gameState
     ? getEffectiveAllyStats(gameState, ally)
     : {
-        attack: (ally.card as any).attack ?? 1,
-        thwart: (ally.card as any).thwart ?? 1,
+        attack: allyCard.attack,
+        thwart: allyCard.thwart,
       };
 
   const isPlayerTurn = gameState
@@ -48,8 +55,12 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
 
   const baseAtk = (allyCard as any).attack ?? 0;
   const baseThw = (allyCard as any).thwart ?? 0;
-  const atkBonus = allyStats.attack - baseAtk;
-  const thwBonus = allyStats.thwart - baseThw;
+  const atkDash = hasDashPower(allyCard, 'attack');
+  const thwDash = hasDashPower(allyCard, 'thwart');
+  const atkBonus = atkDash ? 0 : allyStats.attack - baseAtk;
+  const thwBonus = thwDash ? 0 : allyStats.thwart - baseThw;
+  const atkDisplay = atkDash ? '–' : allyStats.attack;
+  const thwDisplay = thwDash ? '–' : allyStats.thwart;
   const allyTraitsDetails = getEffectiveCardTraitsDetails(ally.card, ally);
 
   const currentDamage = ally.tokens?.damage || 0;
@@ -136,7 +147,7 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
                 atkBonus > 0 ? 'bg-comic-red ring-2 ring-rose-400 font-black' : 'bg-comic-red'
               }`}
             >
-              <span>{allyStats.attack} ATK</span>
+              <span>{atkDisplay} ATK</span>
               {atkBonus > 0 && (
                 <span className="text-yellow-300 ml-0.5 text-[9px] font-black">(+{atkBonus})</span>
               )}
@@ -146,7 +157,7 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
                 thwBonus > 0 ? 'bg-sky-500 ring-2 ring-sky-300 font-black' : 'bg-sky-500'
               }`}
             >
-              <span>{allyStats.thwart} THW</span>
+              <span>{thwDisplay} THW</span>
               {thwBonus > 0 && (
                 <span className="text-yellow-300 ml-0.5 text-[9px] font-black">(+{thwBonus})</span>
               )}
@@ -213,7 +224,7 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-black text-sm text-slate-950">
-                      Attack ({allyStats.attack} DMG)
+                      Attack ({atkDisplay} DMG)
                     </span>
                   </div>
                   <span className="text-xs text-slate-600 block mt-0.5">
@@ -266,17 +277,19 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-black text-sm text-slate-950">
-                      Thwart ({allyStats.thwart} THW)
+                      Thwart ({thwDisplay} THW)
                     </span>
                   </div>
                   <span className="text-xs text-slate-600 block mt-0.5">
                     {ally.exhausted
                       ? 'Ally is exhausted'
-                      : !isPlayerTurn
-                        ? 'Not your turn'
-                        : !thwartTargets.some((t) => t.allowed)
-                          ? 'No schemes can be thwarted'
-                          : `Exhaust to remove threat from a scheme (takes ${consequentialThw} consequential damage)`}
+                      : thwDash
+                        ? 'THW is – and cannot be used'
+                        : !isPlayerTurn
+                          ? 'Not your turn'
+                          : !thwartTargets.some((t) => t.allowed)
+                            ? 'No schemes can be thwarted'
+                            : `Exhaust to remove threat from a scheme (takes ${consequentialThw} consequential damage)`}
                   </span>
                 </div>
               </div>

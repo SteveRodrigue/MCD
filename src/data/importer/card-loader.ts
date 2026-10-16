@@ -12,6 +12,7 @@ import {
   MinionCard,
   AllyCard,
   AbilityTiming,
+  CharacterPower,
 } from '@engine/models';
 
 /**
@@ -222,6 +223,23 @@ export function parseAbilityLabelsFromText(
 }
 
 /**
+ * Powers upstream prints as a dash (–), which MarvelCDB encodes as `null`. An omitted (`undefined`)
+ * field is not a dash (RR v1.8 "Dash (Value)").
+ */
+export function collectDashPowers(raw: RawUpstreamCard, powers: CharacterPower[]): CharacterPower[] {
+  const values = raw as unknown as Record<string, unknown>;
+  return powers.filter((power) => values[power] === null);
+}
+
+function dashPowersField(
+  raw: RawUpstreamCard,
+  powers: CharacterPower[],
+): { dashPowers?: CharacterPower[] } {
+  const dashPowers = collectDashPowers(raw, powers);
+  return dashPowers.length > 0 ? { dashPowers } : {};
+}
+
+/**
  * Converts a raw upstream MarvelsDB card into a normalized, strongly-typed card,
  * enriching it with supplemental abilities and trigger definitions.
  */
@@ -321,6 +339,7 @@ export function normalizeRawCard(
         defense: raw.defense ?? 0,
         defenseStar: !!raw.defense_star,
         alterEgoCode: raw.back_link || '',
+        ...dashPowersField(raw, ['thwart', 'attack', 'defense']),
       } as HeroCard;
     }
     case CardType.ALTER_EGO: {
@@ -332,6 +351,7 @@ export function normalizeRawCard(
         recover: raw.recover ?? 0,
         recoverStar: !!raw.recover_star,
         heroCode: raw.back_link,
+        ...dashPowersField(raw, ['recover']),
       } as AlterEgoCard;
     }
     case CardType.VILLAIN: {
@@ -354,6 +374,7 @@ export function normalizeRawCard(
         attack: raw.attack ?? 0,
         attackStar: !!raw.attack_star,
         additionalBoostCards,
+        ...dashPowersField(raw, ['attack', 'scheme']),
       } as VillainCard;
     }
     case CardType.MAIN_SCHEME: {
@@ -394,9 +415,9 @@ export function normalizeRawCard(
         ...base,
         type: CardType.ALLY,
         health: raw.health || 2,
-        thwart: raw.thwart ?? 1,
+        thwart: raw.thwart === null ? 0 : (raw.thwart ?? 1),
         thwartCost: enrichmentThwartCost !== undefined ? enrichmentThwartCost : (raw.thwart_cost !== undefined ? raw.thwart_cost : 1),
-        attack: raw.attack ?? 1,
+        attack: raw.attack === null ? 0 : (raw.attack ?? 1),
         attackCost:
           enrichmentAttackCost !== undefined
             ? enrichmentAttackCost
@@ -405,6 +426,7 @@ export function normalizeRawCard(
               : (raw.text || '').toLowerCase().includes('does not take consequential damage after attacking')
                 ? 0
                 : 1,
+        ...dashPowersField(raw, ['thwart', 'attack']),
       } as AllyCard;
     }
     case CardType.MINION: {
@@ -416,6 +438,7 @@ export function normalizeRawCard(
         health: raw.health ?? 1,
         boostIcons: raw.boost,
         boostStar: !!raw.boost_star,
+        ...dashPowersField(raw, ['attack', 'scheme']),
       } as MinionCard;
     }
     default:

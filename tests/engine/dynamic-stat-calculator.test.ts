@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
-import { setupGame } from '../../src/engine/state/game-setup';
+import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import {
   getEffectiveHandSize,
   getEffectiveMaxHealth,
@@ -342,6 +342,18 @@ describe('Milestone 2A.2: Unified Dynamic Stat & Aura Calculator', () => {
       p1.tableau.push({ instanceId: 'tri_1', card: triskelion, exhausted: false });
 
       expect(getEffectiveAllyLimit(p1)).toBe(4);
+    });
+  });
+
+  describe('Dash (–) power is an unmodifiable 0 (Issue #316, RR v1.8 "Dash (Value)")', () => {
+    it('keeps Hulk THW at 0 with Inspired attached while ATK is still modified', () => {
+      const hulkCard = cardCatalog.getCard('01050') as any;
+      const hulk = createCardInstance(hulkCard);
+      hulk.attachments = [createCardInstance(cardCatalog.getCard('01074')!)];
+
+      const stats = getEffectiveAllyStats(state, hulk);
+      expect(stats.thwart).toBe(0);
+      expect(stats.attack).toBe(hulkCard.attack + 1);
     });
   });
 });

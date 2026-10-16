@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
-import { setupGame } from '../../src/engine/state/game-setup';
+import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { getLegalActionsForPlayer } from '../../src/engine/pipeline/legal-actions-generator';
 
 describe('Legal Actions Generator (The Daily Bugle Action Bulletins)', () => {
@@ -323,5 +323,24 @@ describe('Legal Actions Generator (The Daily Bugle Action Bulletins)', () => {
     expect(allyMinionAttack).toBeDefined();
     expect(allyMinionAttack?.headline).toContain('Hydra Mercenary');
     expect(allyMinionAttack?.headline).toContain('Peter Parker');
+  });
+
+  it('omits ALLY_THWART for Hulk (THW dash) but keeps it for Spider-Woman (Issue #316)', () => {
+    const p1 = state.players[0];
+    p1.currentForm = 'hero';
+    p1.activeFormCard = ironManHero;
+    p1.hand = [];
+    const hulk = createCardInstance(cardCatalog.getCard('01050')!);
+    const spiderWoman = createCardInstance(cardCatalog.getCard('01011')!);
+    p1.allies = [hulk, spiderWoman];
+    state.mainScheme.threat = 3;
+
+    const report = getLegalActionsForPlayer(state, p1.id);
+    const thwarters = report.boardActions
+      .filter((a) => a.action.type === 'ALLY_THWART')
+      .map((a) => (a.action as any).allyInstanceId);
+
+    expect(thwarters).not.toContain(hulk.instanceId);
+    expect(thwarters).toContain(spiderWoman.instanceId);
   });
 });

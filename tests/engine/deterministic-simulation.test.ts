@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
-import { setupGame, resetInstanceCounter } from '@engine/state/game-setup';
+import { setupGame, resetInstanceCounter, createCardInstance } from '@engine/state/game-setup';
+import { chooseBotAction } from '@engine/simulation/player-bot';
 import { exhaustPlayerDeck, drawPlayerCard } from '@engine/pipeline/deck-exhaustion';
 
 describe('Deterministic Simulation from Seed (Issue #252)', () => {
@@ -113,5 +114,19 @@ describe('Deterministic Simulation from Seed (Issue #252)', () => {
     } finally {
       mathRandomSpy.mockRestore();
     }
+  });
+
+  it('bot never chooses ALLY_THWART for a dash-THW ally (Issue #316)', () => {
+    const state = createTestGame(7);
+    const p = state.players[0];
+    p.currentForm = 'hero';
+    p.activeFormCard = p.hero;
+    p.hand = [];
+    p.exhausted = true;
+    p.allies = [createCardInstance(cardCatalog.getCard('01050')!)];
+    state.mainScheme.threat = 6;
+
+    const action = chooseBotAction({ state, playerId: 'p1' });
+    expect(action.type).not.toBe('ALLY_THWART');
   });
 });

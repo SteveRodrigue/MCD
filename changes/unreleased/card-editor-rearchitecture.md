@@ -19,3 +19,7 @@ type: Changed
   - Card attributes: one chip bar (Play Requirements, Uses / Counters, Attachment Host, Obligation Recipient, Cross-Player Control, Errata) plus read-only upstream badges (traits, keywords incl. Victory X, max per player, consequential damage, restricted slots, dash powers).
   - The redundant Visual Review tab is removed; the inspector has Form Builder and Raw JSON.
   - Number fields accept negative values where the schema allows them; Dynamic Value sources now include `PREVIOUS_EXCESS_DAMAGE` and a target card code.
+- **Phase 4: progressive disclosure for abilities and steps**
+  - Abilities show only the timing window (and the event trigger for interrupt, response, when-revealed and boost timings); cost, trigger filter, limit, zone, for-each-player and errata are `+ Add` chips until set.
+  - Printed `(attack)` / `(thwart)` / `(defense)` labels appear as read-only `AUTO` badges in the ability header.
+  - Steps show the effect and its parameters; gate, step ID and uncancelable are `+ Add` chips. Removing a gate also removes its parameters.

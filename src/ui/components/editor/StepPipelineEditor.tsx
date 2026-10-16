@@ -22,6 +22,22 @@ import {
 import { ZodSchemaForm } from './schema-form/ZodSchemaForm';
 import { generateStepSummary } from './step-pipeline-utils';
 import { GateParamsPanel } from './GateParamsPanel';
+import { ChipBar } from './schema-form/ChipBar';
+import { ChipSection } from './schema-form/ChipSection';
+
+type StepChipKey = 'gate' | 'id' | 'cannotBeCanceled';
+
+/** Optional step keys offered as chips, with the value a freshly added chip starts at. */
+const STEP_CHIPS: ReadonlyArray<{
+  key: StepChipKey;
+  label: string;
+  title: string;
+  initial: unknown;
+}> = [
+  { key: 'gate', label: 'Gate', title: 'Conditional Gate (Timing / Flow)', initial: 'THEN' },
+  { key: 'id', label: 'Step ID', title: 'Step ID', initial: '' },
+  { key: 'cannotBeCanceled', label: 'Uncancelable', title: 'Uncancelable', initial: true },
+];
 
 export interface StepPipelineEditorProps {
   steps: any[];
@@ -316,77 +332,95 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                 </div>
               )}
 
-              {/* Step Identification */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                    Step ID (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    data-testid={`step-id-${abilityIndex}-${sIdx}`}
-                    value={step.id || ''}
-                    onChange={(e) => handleUpdateStep(sIdx, { id: e.target.value || undefined })}
-                    placeholder="e.g. photonic_blast_damage"
-                    className="w-full bg-white border border-black p-1 text-xs rounded font-mono"
-                  />
-                </div>
-              </div>
+              <ChipBar
+                testId={`step-chip-bar-${abilityIndex}-${sIdx}`}
+                items={STEP_CHIPS.filter((chip) => step[chip.key] === undefined).map((chip) => ({
+                  key: chip.key,
+                  label: chip.label,
+                  testId: `step-chip-add-${chip.key}-${abilityIndex}-${sIdx}`,
+                }))}
+                onAdd={(key) =>
+                  handleUpdateStep(sIdx, {
+                    [key]: STEP_CHIPS.find((chip) => chip.key === key)?.initial,
+                  })
+                }
+              />
 
-              {/* Conditional Gate */}
-              <div>
-                <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                  Conditional Gate (Timing / Flow)
-                </label>
-                <select
-                  data-testid={`step-gate-${abilityIndex}-${sIdx}`}
-                  value={step.gate || ''}
-                  onChange={(e) => {
-                    const nextGate = e.target.value || undefined;
-                    handleUpdateStep(sIdx, {
-                      gate: nextGate,
-                      gateParams: nextGate !== step.gate ? undefined : gateParams,
-                    });
-                  }}
-                  className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
-                >
-                  <option value="">None (ALWAYS)</option>
-                  {StepGateSchema.options.map((g) => (
-                    <option key={g} value={g}>
-                      {g}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* "This effect cannot be canceled" */}
-              <label className="flex items-center gap-1.5 text-[10px] font-bold text-gray-700">
-                <input
-                  type="checkbox"
-                  data-testid={`step-cannot-be-canceled-${abilityIndex}-${sIdx}`}
-                  checked={step.cannotBeCanceled === true}
-                  onChange={(e) =>
-                    handleUpdateStep(sIdx, { cannotBeCanceled: e.target.checked || undefined })
+              {STEP_CHIPS.filter((chip) => step[chip.key] !== undefined).map((chip) => (
+                <ChipSection
+                  key={chip.key}
+                  title={chip.title}
+                  testId={`step-section-${chip.key}-${abilityIndex}-${sIdx}`}
+                  removeTestId={`step-chip-remove-${chip.key}-${abilityIndex}-${sIdx}`}
+                  onRemove={() =>
+                    handleUpdateStep(
+                      sIdx,
+                      chip.key === 'gate'
+                        ? { gate: undefined, gateParams: undefined }
+                        : { [chip.key]: undefined },
+                    )
                   }
-                />
-                This effect cannot be canceled (still resolves when the card&apos;s reveal is
-                cancelled)
-              </label>
-
-              {/* Parameterized Gate Panel */}
-              {step.gate && (
-                <GateParamsPanel
-                  gate={step.gate}
-                  gateParams={gateParams}
-                  onChange={updateGateParam}
-                  availableStepIds={steps
-                    .slice(0, sIdx)
-                    .map((s: any) => s.id)
-                    .filter(Boolean)}
-                  abilityIndex={abilityIndex}
-                  stepIndex={sIdx}
-                />
-              )}
+                >
+                  {chip.key === 'id' && (
+                    <input
+                      type="text"
+                      data-testid={`step-id-${abilityIndex}-${sIdx}`}
+                      value={step.id ?? ''}
+                      onChange={(e) => handleUpdateStep(sIdx, { id: e.target.value })}
+                      placeholder="e.g. photonic_blast_damage"
+                      className="w-full bg-white border border-black p-1 text-xs rounded font-mono"
+                    />
+                  )}
+                  {chip.key === 'gate' && (
+                    <>
+                      <select
+                        data-testid={`step-gate-${abilityIndex}-${sIdx}`}
+                        value={step.gate}
+                        onChange={(e) =>
+                          handleUpdateStep(sIdx, {
+                            gate: e.target.value,
+                            gateParams: e.target.value !== step.gate ? undefined : gateParams,
+                          })
+                        }
+                        className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
+                      >
+                        {StepGateSchema.options.map((g) => (
+                          <option key={g} value={g}>
+                            {g}
+                          </option>
+                        ))}
+                      </select>
+                      <GateParamsPanel
+                        gate={step.gate}
+                        gateParams={gateParams}
+                        onChange={updateGateParam}
+                        availableStepIds={steps
+                          .slice(0, sIdx)
+                          .map((s: any) => s.id)
+                          .filter(Boolean)}
+                        abilityIndex={abilityIndex}
+                        stepIndex={sIdx}
+                      />
+                    </>
+                  )}
+                  {chip.key === 'cannotBeCanceled' && (
+                    <label className="flex items-center gap-1.5 text-[10px] font-bold text-gray-700">
+                      <input
+                        type="checkbox"
+                        data-testid={`step-cannot-be-canceled-${abilityIndex}-${sIdx}`}
+                        checked={step.cannotBeCanceled === true}
+                        onChange={(e) =>
+                          handleUpdateStep(sIdx, {
+                            cannotBeCanceled: e.target.checked ? true : undefined,
+                          })
+                        }
+                      />
+                      This effect cannot be canceled (still resolves when the card&apos;s reveal is
+                      cancelled)
+                    </label>
+                  )}
+                </ChipSection>
+              ))}
 
               {/* Effect Primitive Selector & Description */}
               <div>

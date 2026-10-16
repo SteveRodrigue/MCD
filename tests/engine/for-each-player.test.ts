@@ -234,7 +234,7 @@ describe('Per-player iteration, ability-level forEachPlayer (#220)', () => {
       id: 'a',
       timing: 'WHEN_REVEALED',
       trigger: 'WHEN_REVEALED',
-      steps: [{ effect: 'DRAW', effectParams: { amount: 1 } }],
+      steps: [{ effect: 'DRAW', effectParams: { count: 1 } }],
     };
 
     it('accepts a boolean forEachPlayer on an ability', () => {

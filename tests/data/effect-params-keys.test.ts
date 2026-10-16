@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { EffectTypeSchema } from '../../src/data/supplemental/schema';
-import { EFFECT_PARAM_KEYS } from '../../src/data/supplemental/effect-params';
+import { EFFECT_PARAM_KEYS, EFFECT_PARAM_SCHEMAS } from '../../src/data/supplemental/effect-params';
+import { introspectObjectSchema } from '../../src/data/supplemental/schema-introspector';
 
 const PACK_DIR = path.resolve(__dirname, '../../src/data/supplemental/pack');
 const PACK_FILES = ['aoa_encounter.json', 'core.json', 'core_encounter.json', 'cw_encounter.json', 'mts.json'];
@@ -72,6 +73,52 @@ describe('effectParams key guard (#230)', () => {
       expect(Array.isArray(EFFECT_PARAM_KEYS[effect]), `Missing table entry: ${effect}`).toBe(true);
     }
     expect(Object.keys(EFFECT_PARAM_KEYS).sort()).toEqual([...EffectTypeSchema.options].sort());
+  });
+
+  describe('EFFECT_PARAM_SCHEMAS (Phase 2)', () => {
+    it('defines a schema for every EffectType and nothing else', () => {
+      expect(Object.keys(EFFECT_PARAM_SCHEMAS).sort()).toEqual([...EffectTypeSchema.options].sort());
+    });
+
+    it('derives EFFECT_PARAM_KEYS from the schema shapes', () => {
+      for (const effect of EffectTypeSchema.options) {
+        expect(EFFECT_PARAM_KEYS[effect], effect).toEqual(Object.keys(EFFECT_PARAM_SCHEMAS[effect].shape));
+      }
+    });
+
+    it('makes every schema strict: an unknown key is rejected', () => {
+      for (const effect of EffectTypeSchema.options) {
+        const result = EFFECT_PARAM_SCHEMAS[effect].safeParse({ __unknownKey__: 1 });
+        expect(result.success, effect).toBe(false);
+      }
+    });
+
+    it('annotates every key with a label', () => {
+      for (const effect of EffectTypeSchema.options) {
+        for (const field of introspectObjectSchema(EFFECT_PARAM_SCHEMAS[effect])) {
+          expect(field.label, `${effect}.${field.key}`).not.toBe(field.key);
+        }
+      }
+    });
+
+    it('accepts every step effectParams in the 5 packs', () => {
+      const failures: string[] = [];
+      const walk = (node: unknown, code: string): void => {
+        if (Array.isArray(node)) return node.forEach((n) => walk(n, code));
+        if (node === null || typeof node !== 'object') return;
+        const obj = node as Record<string, unknown>;
+        const effect = obj.effect as keyof typeof EFFECT_PARAM_SCHEMAS;
+        if (typeof effect === 'string' && effect in EFFECT_PARAM_SCHEMAS && obj.effectParams) {
+          const result = EFFECT_PARAM_SCHEMAS[effect].safeParse(obj.effectParams);
+          if (!result.success) failures.push(`${code} ${effect}: ${result.error.message}`);
+        }
+        Object.values(obj).forEach((v) => walk(v, code));
+      };
+      for (const file of PACK_FILES) {
+        for (const c of loadPack(file)) walk(c, String((c as { code?: string }).code));
+      }
+      expect(failures).toEqual([]);
+    });
   });
 
   it('rejects an unknown key and names card, effect and key', () => {

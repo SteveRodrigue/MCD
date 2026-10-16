@@ -12,6 +12,81 @@ import {
   CardAbilitySchema,
   AbilityStepSchema,
 } from '../../src/data/supplemental/schema';
+import {
+  hasRequiredFields,
+  introspectObjectSchema,
+} from '../../src/data/supplemental/schema-introspector';
+
+const NEGATE = { key: 'negate', label: 'Negate (NOT)', type: 'boolean', required: false };
+const STEP = { key: 'step', label: 'Step ID', type: 'step', required: false };
+const FORM_QUALIFIER = {
+  key: 'form',
+  label: 'Form Qualifier',
+  type: 'enum',
+  required: false,
+  options: IdentityFormSchema.options,
+};
+
+/** The hand-written field arrays GATE_REGISTRY held before they were derived from the schemas. */
+const EXPECTED_GATE_FIELDS = {
+  THEN: [STEP, NEGATE],
+  IF_RESULT: [
+    { key: 'result', label: 'Result Fact', type: 'enum', required: true, options: ResultFactSchema.options },
+    STEP,
+    NEGATE,
+  ],
+  IF_FORM: [
+    { key: 'form', label: 'Identity Form', type: 'enum', required: true, options: IdentityFormSchema.options },
+    NEGATE,
+  ],
+  IF_PLAYER_HAS_TRAIT: [
+    { key: 'trait', label: 'Trait', type: 'string', required: true },
+    FORM_QUALIFIER,
+    NEGATE,
+  ],
+  IF_ZONE_EMPTY: [
+    {
+      key: 'zone',
+      label: 'Zone',
+      type: 'enum',
+      required: true,
+      options: ['SIDE_SCHEMES', 'ENCOUNTER_DECK', 'ENCOUNTER_DISCARD', 'HAND', 'DECK', 'DISCARD'],
+    },
+    NEGATE,
+  ],
+  IF_CARD_IN_PLAY: [{ key: 'cardCode', label: 'Card Code', type: 'string', required: true }, NEGATE],
+  IF_RESOURCE_MATCH: [
+    { key: 'resource', label: 'Resource', type: 'string', required: true },
+    { key: 'count', label: 'Count', type: 'number', required: false, defaultValue: 1 },
+    { key: 'printedResource', label: 'Printed Only', type: 'boolean', required: false },
+    { key: 'only', label: 'Only Matching Spent', type: 'boolean', required: false },
+    FORM_QUALIFIER,
+    NEGATE,
+  ],
+  IF_UNDEFENDED_ATTACK: [
+    {
+      key: 'attackerKind',
+      label: 'Attacker Kind',
+      type: 'enum',
+      required: false,
+      options: ['VILLAIN', 'MINION', 'ANY_ENEMY'],
+    },
+    NEGATE,
+  ],
+  IF_ACTIVATION_DEALT_DAMAGE: [NEGATE],
+} as const;
+
+const EXPECTED_HAS_REQUIRED = {
+  THEN: false,
+  IF_RESULT: true,
+  IF_FORM: true,
+  IF_PLAYER_HAS_TRAIT: true,
+  IF_ZONE_EMPTY: true,
+  IF_CARD_IN_PLAY: true,
+  IF_RESOURCE_MATCH: true,
+  IF_UNDEFENDED_ATTACK: false,
+  IF_ACTIVATION_DEALT_DAMAGE: false,
+} as const;
 
 describe('Step Gate Registry and Param Schemas (ADR-0080, Issues #289, #290)', () => {
   it('defines the 9 canonical StepGateSchema values', () => {
@@ -137,6 +212,25 @@ describe('Step Gate Registry and Param Schemas (ADR-0080, Issues #289, #290)', (
       expect(actSchema.safeParse({}).success).toBe(true);
       expect(actSchema.safeParse({ negate: true }).success).toBe(true);
     });
+  });
+
+  describe('GATE_REGISTRY fields derived from the annotated schemas', () => {
+    for (const gate of StepGateSchema.options) {
+      it(`${gate} fields and hasRequiredParams equal the former hand-written values`, () => {
+        expect(GATE_REGISTRY[gate].fields).toEqual(EXPECTED_GATE_FIELDS[gate]);
+        expect(GATE_REGISTRY[gate].hasRequiredParams).toBe(EXPECTED_HAS_REQUIRED[gate]);
+      });
+
+      it(`${gate} is derived through the introspector`, () => {
+        const { schema } = GATE_REGISTRY[gate];
+        expect(GATE_REGISTRY[gate].hasRequiredParams).toBe(hasRequiredFields(schema));
+        const described = introspectObjectSchema(schema);
+        expect(GATE_REGISTRY[gate].fields.map((f) => f.key)).toEqual(described.map((f) => f.key));
+        expect(described.map((f) => f.label)).toEqual(
+          EXPECTED_GATE_FIELDS[gate].map((f) => f.label),
+        );
+      });
+    }
   });
 
   describe('FACT_PRODUCERS and canEffectProduceFact', () => {

@@ -15,6 +15,7 @@ import path from 'path';
 import type { ZodType } from 'zod';
 import { SupplementalPackSchema } from '../../src/data/supplemental/schema';
 import { EFFECT_PARAM_KEYS } from '../../src/data/supplemental/effect-params';
+import { defOf } from '../../src/data/supplemental/schema-introspector';
 
 export type MemberKind = 'field' | 'enum';
 
@@ -51,23 +52,6 @@ const RECURSIVE_FIELDS = new Set(['all', 'any', 'none', 'steps', 'options']);
 
 /** Editor metadata, not an engine member. */
 const NON_ENGINE_FIELDS = new Set(['$schema']);
-
-interface ZodDef {
-  type: string;
-  innerType?: ZodType;
-  element?: ZodType;
-  getter?: () => ZodType;
-  valueType?: ZodType;
-  options?: ZodType[];
-  left?: ZodType;
-  right?: ZodType;
-  in?: ZodType;
-  entries?: Record<string, string>;
-  shape?: Record<string, ZodType> | (() => Record<string, ZodType>);
-}
-
-const defOf = (schema: ZodType): ZodDef | undefined =>
-  (schema as unknown as { _zod?: { def?: ZodDef } })._zod?.def;
 
 /**
  * Walks a Zod schema and lists every object field and enum member once. Objects and enums

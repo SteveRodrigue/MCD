@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { hasRequiredFields, introspectObjectSchema } from './schema-introspector';
 
 export const IdentityFormSchema = z.enum(['HERO', 'ALTER_EGO']);
 export type IdentityForm = z.infer<typeof IdentityFormSchema>;
@@ -81,72 +82,77 @@ export type ZoneEmptyTarget = z.infer<typeof ZoneEmptyTargetSchema>;
 export const AttackerKindSchema = z.enum(['VILLAIN', 'MINION', 'ANY_ENEMY']);
 export type AttackerKind = z.infer<typeof AttackerKindSchema>;
 
-// Individual strict param schemas per gate
+// Individual strict param schemas per gate. `.meta()` carries the editor labels; the field list and
+// `hasRequiredParams` of GATE_REGISTRY are derived from these schemas by the introspector.
+const stepIdParam = z.string().min(1).meta({ label: 'Step ID', widget: 'step' }).optional();
+const negateParam = z.boolean().meta({ label: 'Negate (NOT)' }).optional();
+const formQualifierParam = IdentityFormSchema.meta({ label: 'Form Qualifier' }).optional();
+
 export const ThenGateParamsSchema = z
   .object({
-    step: z.string().min(1).optional(),
-    negate: z.boolean().optional(),
+    step: stepIdParam,
+    negate: negateParam,
   })
   .strict();
 
 export const IfResultGateParamsSchema = z
   .object({
-    result: ResultFactSchema,
-    step: z.string().min(1).optional(),
-    negate: z.boolean().optional(),
+    result: ResultFactSchema.meta({ label: 'Result Fact' }),
+    step: stepIdParam,
+    negate: negateParam,
   })
   .strict();
 
 export const IfFormGateParamsSchema = z
   .object({
-    form: IdentityFormSchema,
-    negate: z.boolean().optional(),
+    form: IdentityFormSchema.meta({ label: 'Identity Form' }),
+    negate: negateParam,
   })
   .strict();
 
 export const IfPlayerHasTraitGateParamsSchema = z
   .object({
-    trait: z.string().min(1),
-    form: IdentityFormSchema.optional(),
-    negate: z.boolean().optional(),
+    trait: z.string().min(1).meta({ label: 'Trait' }),
+    form: formQualifierParam,
+    negate: negateParam,
   })
   .strict();
 
 export const IfZoneEmptyGateParamsSchema = z
   .object({
-    zone: ZoneEmptyTargetSchema,
-    negate: z.boolean().optional(),
+    zone: ZoneEmptyTargetSchema.meta({ label: 'Zone' }),
+    negate: negateParam,
   })
   .strict();
 
 export const IfCardInPlayGateParamsSchema = z
   .object({
-    cardCode: z.string().min(1),
-    negate: z.boolean().optional(),
+    cardCode: z.string().min(1).meta({ label: 'Card Code' }),
+    negate: negateParam,
   })
   .strict();
 
 export const IfResourceMatchGateParamsSchema = z
   .object({
-    resource: z.string().min(1),
-    count: z.number().int().positive().optional(),
-    printedResource: z.boolean().optional(),
-    only: z.boolean().optional(),
-    form: IdentityFormSchema.optional(),
-    negate: z.boolean().optional(),
+    resource: z.string().min(1).meta({ label: 'Resource' }),
+    count: z.number().int().positive().meta({ label: 'Count', defaultValue: 1 }).optional(),
+    printedResource: z.boolean().meta({ label: 'Printed Only' }).optional(),
+    only: z.boolean().meta({ label: 'Only Matching Spent' }).optional(),
+    form: formQualifierParam,
+    negate: negateParam,
   })
   .strict();
 
 export const IfUndefendedAttackGateParamsSchema = z
   .object({
-    attackerKind: AttackerKindSchema.optional(),
-    negate: z.boolean().optional(),
+    attackerKind: AttackerKindSchema.meta({ label: 'Attacker Kind' }).optional(),
+    negate: negateParam,
   })
   .strict();
 
 export const IfActivationDealtDamageGateParamsSchema = z
   .object({
-    negate: z.boolean().optional(),
+    negate: negateParam,
   })
   .strict();
 
@@ -169,100 +175,37 @@ export interface GateDefinition {
   fields: GateFieldMeta[];
 }
 
+function defineGate(gate: StepGate, kind: GateKind, schema: z.ZodObject<any>): GateDefinition {
+  const fields = introspectObjectSchema(schema).map((descriptor): GateFieldMeta => {
+    const field: GateFieldMeta = {
+      key: descriptor.key,
+      label: descriptor.label,
+      type: descriptor.widget as GateFieldType,
+      required: descriptor.required,
+    };
+    if (descriptor.options) field.options = descriptor.options;
+    if (descriptor.defaultValue !== undefined) field.defaultValue = descriptor.defaultValue;
+    return field;
+  });
+  return { gate, kind, schema, hasRequiredParams: hasRequiredFields(schema), fields };
+}
+
 export const GATE_REGISTRY: Record<StepGate, GateDefinition> = {
-  THEN: {
-    gate: 'THEN',
-    kind: 'RESULT',
-    schema: ThenGateParamsSchema,
-    hasRequiredParams: false,
-    fields: [
-      { key: 'step', label: 'Step ID', type: 'step', required: false },
-      { key: 'negate', label: 'Negate (NOT)', type: 'boolean', required: false },
-    ],
-  },
-  IF_RESULT: {
-    gate: 'IF_RESULT',
-    kind: 'RESULT',
-    schema: IfResultGateParamsSchema,
-    hasRequiredParams: true,
-    fields: [
-      { key: 'result', label: 'Result Fact', type: 'enum', required: true, options: ResultFactSchema.options },
-      { key: 'step', label: 'Step ID', type: 'step', required: false },
-      { key: 'negate', label: 'Negate (NOT)', type: 'boolean', required: false },
-    ],
-  },
-  IF_FORM: {
-    gate: 'IF_FORM',
-    kind: 'STATE',
-    schema: IfFormGateParamsSchema,
-    hasRequiredParams: true,
-    fields: [
-      { key: 'form', label: 'Identity Form', type: 'enum', required: true, options: IdentityFormSchema.options },
-      { key: 'negate', label: 'Negate (NOT)', type: 'boolean', required: false },
-    ],
-  },
-  IF_PLAYER_HAS_TRAIT: {
-    gate: 'IF_PLAYER_HAS_TRAIT',
-    kind: 'STATE',
-    schema: IfPlayerHasTraitGateParamsSchema,
-    hasRequiredParams: true,
-    fields: [
-      { key: 'trait', label: 'Trait', type: 'string', required: true },
-      { key: 'form', label: 'Form Qualifier', type: 'enum', required: false, options: IdentityFormSchema.options },
-      { key: 'negate', label: 'Negate (NOT)', type: 'boolean', required: false },
-    ],
-  },
-  IF_ZONE_EMPTY: {
-    gate: 'IF_ZONE_EMPTY',
-    kind: 'STATE',
-    schema: IfZoneEmptyGateParamsSchema,
-    hasRequiredParams: true,
-    fields: [
-      { key: 'zone', label: 'Zone', type: 'enum', required: true, options: ZoneEmptyTargetSchema.options },
-      { key: 'negate', label: 'Negate (NOT)', type: 'boolean', required: false },
-    ],
-  },
-  IF_CARD_IN_PLAY: {
-    gate: 'IF_CARD_IN_PLAY',
-    kind: 'STATE',
-    schema: IfCardInPlayGateParamsSchema,
-    hasRequiredParams: true,
-    fields: [
-      { key: 'cardCode', label: 'Card Code', type: 'string', required: true },
-      { key: 'negate', label: 'Negate (NOT)', type: 'boolean', required: false },
-    ],
-  },
-  IF_RESOURCE_MATCH: {
-    gate: 'IF_RESOURCE_MATCH',
-    kind: 'CONTEXT',
-    schema: IfResourceMatchGateParamsSchema,
-    hasRequiredParams: true,
-    fields: [
-      { key: 'resource', label: 'Resource', type: 'string', required: true },
-      { key: 'count', label: 'Count', type: 'number', required: false, defaultValue: 1 },
-      { key: 'printedResource', label: 'Printed Only', type: 'boolean', required: false },
-      { key: 'only', label: 'Only Matching Spent', type: 'boolean', required: false },
-      { key: 'form', label: 'Form Qualifier', type: 'enum', required: false, options: IdentityFormSchema.options },
-      { key: 'negate', label: 'Negate (NOT)', type: 'boolean', required: false },
-    ],
-  },
-  IF_UNDEFENDED_ATTACK: {
-    gate: 'IF_UNDEFENDED_ATTACK',
-    kind: 'CONTEXT',
-    schema: IfUndefendedAttackGateParamsSchema,
-    hasRequiredParams: false,
-    fields: [
-      { key: 'attackerKind', label: 'Attacker Kind', type: 'enum', required: false, options: AttackerKindSchema.options },
-      { key: 'negate', label: 'Negate (NOT)', type: 'boolean', required: false },
-    ],
-  },
-  IF_ACTIVATION_DEALT_DAMAGE: {
-    gate: 'IF_ACTIVATION_DEALT_DAMAGE',
-    kind: 'CONTEXT',
-    schema: IfActivationDealtDamageGateParamsSchema,
-    hasRequiredParams: false,
-    fields: [
-      { key: 'negate', label: 'Negate (NOT)', type: 'boolean', required: false },
-    ],
-  },
+  THEN: defineGate('THEN', 'RESULT', ThenGateParamsSchema),
+  IF_RESULT: defineGate('IF_RESULT', 'RESULT', IfResultGateParamsSchema),
+  IF_FORM: defineGate('IF_FORM', 'STATE', IfFormGateParamsSchema),
+  IF_PLAYER_HAS_TRAIT: defineGate('IF_PLAYER_HAS_TRAIT', 'STATE', IfPlayerHasTraitGateParamsSchema),
+  IF_ZONE_EMPTY: defineGate('IF_ZONE_EMPTY', 'STATE', IfZoneEmptyGateParamsSchema),
+  IF_CARD_IN_PLAY: defineGate('IF_CARD_IN_PLAY', 'STATE', IfCardInPlayGateParamsSchema),
+  IF_RESOURCE_MATCH: defineGate('IF_RESOURCE_MATCH', 'CONTEXT', IfResourceMatchGateParamsSchema),
+  IF_UNDEFENDED_ATTACK: defineGate(
+    'IF_UNDEFENDED_ATTACK',
+    'CONTEXT',
+    IfUndefendedAttackGateParamsSchema,
+  ),
+  IF_ACTIVATION_DEALT_DAMAGE: defineGate(
+    'IF_ACTIVATION_DEALT_DAMAGE',
+    'CONTEXT',
+    IfActivationDealtDamageGateParamsSchema,
+  ),
 };

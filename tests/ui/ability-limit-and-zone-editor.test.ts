@@ -27,7 +27,7 @@ describe('Ability Limits, Activation Zone & maxPerRound Deprecation (Contract Te
     const baseAbility = {
       id: 'test_limit',
       timing: 'ACTION',
-      steps: [{ effect: 'DRAW', effectParams: { amount: 1 } }],
+      steps: [{ effect: 'DRAW', effectParams: { count: 1 } }],
     };
 
     // Valid with ONCE_PER_ROUND
@@ -65,7 +65,7 @@ describe('Ability Limits, Activation Zone & maxPerRound Deprecation (Contract Te
       timing: 'ACTION',
       limit: 'ONCE_PER_ROUND',
       maxPerRound: 1, // Dead-weight property removed from schema
-      steps: [{ effect: 'DRAW', effectParams: { amount: 1 } }],
+      steps: [{ effect: 'DRAW', effectParams: { count: 1 } }],
     };
 
     expect(() => CardAbilitySchema.parse(invalidAbility)).toThrow();
@@ -75,7 +75,7 @@ describe('Ability Limits, Activation Zone & maxPerRound Deprecation (Contract Te
     const baseAbility = {
       id: 'test_zone',
       timing: 'INTERRUPT',
-      steps: [{ effect: 'DRAW', effectParams: { amount: 1 } }],
+      steps: [{ effect: 'DRAW', effectParams: { count: 1 } }],
     };
 
     const parsedHand = CardAbilitySchema.parse({

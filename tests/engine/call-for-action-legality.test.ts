@@ -193,8 +193,8 @@ describe('Call for Action Legality & Generator (Issue #314 / RR v1.8 p. 5, 23)',
     expect(commanderAction?.ownerName).toBe('Carol Danvers');
     expect(commanderAction?.action.playerId).toBe('p2');
     expect((commanderAction?.action as any).cardInstanceId).toBe('01010b');
-    expect(commanderAction?.headline).toBe('Ask Carol Danvers: Carol Danvers (ACTION)');
-    expect(commanderAction?.badge).toBe('CAROL DANVERS • ACTION');
+    expect(commanderAction?.headline).toBe('Carol Danvers: COMMANDER');
+    expect(commanderAction?.badge).toBe('ACTION');
 
     // Trigger ability during Player 1's active turn
     const res = dispatchAction(state, commanderAction!.action);

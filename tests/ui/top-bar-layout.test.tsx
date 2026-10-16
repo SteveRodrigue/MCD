@@ -210,4 +210,26 @@ describe('TopBar and GameBoard Layout In-Flow Architecture (Issue #301)', () => 
 
     expect(screen.getByText('VILLAIN PHASE')).toBeDefined();
   });
+
+  it('remains clean without rendering Call for Action button in TopBar', () => {
+    const state = createTestGameState(2);
+    state.phase = GamePhase.PLAYER_PHASE;
+
+    render(
+      <GameSettingsProvider>
+        <TopBar
+          gameState={state}
+          activeSeatIndex={0}
+          legalActionCount={3}
+          onSelectSeat={vi.fn()}
+          onToggleLog={vi.fn()}
+          isLogOpen={false}
+          onReset={vi.fn()}
+          onOpenNewspaper={vi.fn()}
+        />
+      </GameSettingsProvider>,
+    );
+
+    expect(screen.queryByRole('button', { name: /call for action/i })).toBeNull();
+  });
 });

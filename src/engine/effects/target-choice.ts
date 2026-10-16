@@ -85,8 +85,7 @@ const canAffect = (
     }
     case 'REMOVE_THREAT':
       return target.kind === 'scheme' && (entity.threat ?? 0) > 0;
-    case 'HEAL_DAMAGE':
-    case 'HEAL': {
+    case 'HEAL_DAMAGE': {
       if (target.kind !== 'character') return false;
       if (target.entityType === 'hero' || target.entityType === 'alter_ego') {
         const p = entity as PlayerState;

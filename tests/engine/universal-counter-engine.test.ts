@@ -102,7 +102,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
     expect(addRes.state.players[0].tableau[0].counters?.web).toBe(4);
   });
 
-  it('automatically discards card from tableau and dispatches CARD_DISCARDED trigger when uses counters reach zero (RR v1.8 p. 30)', () => {
+  it('automatically discards card from tableau when uses counters reach zero (RR v1.8 p. 30)', () => {
     const webShooter: NormalizedCard = {
       ...cardCatalog.getCard('01005')!,
       code: 'test_web_shooter_empty',

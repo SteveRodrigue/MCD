@@ -5,6 +5,7 @@ import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import type {
   AlterEgoCard,
+  CardAbility,
   CardInstance,
   GameState,
   HeroCard,
@@ -71,7 +72,7 @@ describe('Spider-Tracer removes exactly 3 threat per defeated host (Issue #249)'
   const threatOf = (s: GameState, id: string) =>
     s.sideSchemes.find((x) => x.instanceId === id)?.threat;
 
-  const damageAbility = (target: string) => ({
+  const damageAbility = (target: string): CardAbility => ({
     id: 'event_damage',
     timing: 'HERO_ACTION' as const,
     steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 3, target } }],

@@ -183,7 +183,7 @@ describe('Compact Step Pipeline Summaries (Task 4.3)', () => {
           initial={[
             { effect: 'DEAL_DAMAGE', effectParams: { amount: 3 } },
             { effect: 'DRAW', effectParams: { count: 2 } },
-            { effect: 'HEAL', effectParams: { amount: 1 } },
+            { effect: 'HEAL_DAMAGE', effectParams: { amount: 1 } },
           ]}
           abilityIndex={0}
           onChange={handleChange}
@@ -196,7 +196,7 @@ describe('Compact Step Pipeline Summaries (Task 4.3)', () => {
 
       expect(handleChange).toHaveBeenCalledWith([
         expect.objectContaining({ effect: 'DEAL_DAMAGE' }),
-        expect.objectContaining({ effect: 'HEAL' }),
+        expect.objectContaining({ effect: 'HEAL_DAMAGE' }),
         expect.objectContaining({ effect: 'DRAW' }),
       ]);
 
@@ -204,7 +204,7 @@ describe('Compact Step Pipeline Summaries (Task 4.3)', () => {
       await user.click(screen.getByTestId('step-remove-0-2'));
       expect(handleChange).toHaveBeenCalledWith([
         expect.objectContaining({ effect: 'DEAL_DAMAGE' }),
-        expect.objectContaining({ effect: 'HEAL' }),
+        expect.objectContaining({ effect: 'HEAL_DAMAGE' }),
       ]);
     });
 

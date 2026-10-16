@@ -353,9 +353,8 @@ export function getEncounterLegalActions(state: GameState, player: PlayerState):
         cardInst.card.type === 'attachment' ||
         ab.steps?.some(
           (s) =>
-            s.effect === 'DISCARD_ATTACHMENT' ||
-            (s.effect === 'DISCARD' &&
-              (s.effectParams?.source === 'SELF' || s.effectParams?.source === 'HOST')),
+            s.effect === 'DISCARD' &&
+            (s.effectParams?.source === 'SELF' || s.effectParams?.source === 'HOST'),
         ) ||
         Boolean(ab.cost?.discardSelf);
 

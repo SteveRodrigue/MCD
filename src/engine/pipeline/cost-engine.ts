@@ -13,7 +13,6 @@ import {
 import { getEffectiveMaxHealth } from './stat-calculator';
 import { removeCardFromAllZones } from '../state/state-validator';
 import { randomInt } from '../state/rng';
-import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 import { getStepEffectParams, type ResourceCost } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
 import { locateCard, readCardResources } from '../queries/card-inspector';
@@ -1073,10 +1072,6 @@ function cascadeAttachmentsAndTuckedCards(
         const ownerId = (attachment as any).ownerId || defaultPlayerId;
         const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
         targetP.discard.push(attachment);
-        dispatchTrigger(state, 'CARD_DISCARDED', {
-          targetPlayerId: targetP.id,
-          sourceInstanceId: attachment.instanceId,
-        });
       }
     }
     cardInstance.attachments = [];
@@ -1097,10 +1092,6 @@ function cascadeAttachmentsAndTuckedCards(
         const ownerId = (tucked as any).ownerId || defaultPlayerId;
         const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
         targetP.discard.push(tucked);
-        dispatchTrigger(state, 'CARD_DISCARDED', {
-          targetPlayerId: targetP.id,
-          sourceInstanceId: tucked.instanceId,
-        });
       }
     }
     cardInstance.cardsUnderneath = [];
@@ -1110,7 +1101,7 @@ function cascadeAttachmentsAndTuckedCards(
 /**
  * Checks if an in-play card has exhausted its 'Uses' counters and discards it per RR v1.8 p. 30 and ADR-0057.
  * Cascades hosted attachments and cards underneath to appropriate discard piles, routes host card to owner's
- * discard, dispatches the CARD_DISCARDED trigger, and logs comic onomatopoeia.
+ * discard, and logs comic onomatopoeia.
  * Strictly respects discardOnEmpty: false for cards that enter with counters but lack the Uses keyword (e.g. Hawkeye 01066).
  */
 export function checkAndDiscardZeroCounterCard(
@@ -1160,13 +1151,7 @@ export function checkAndDiscardZeroCounterCard(
         : undefined) || player;
     owner.discard.push(cardInstance);
 
-    // 4. Dispatch CARD_DISCARDED trigger
-    dispatchTrigger(state, 'CARD_DISCARDED', {
-      targetPlayerId: player.id,
-      sourceInstanceId: cardInstance.instanceId,
-    });
-
-    // 5. Append comic log entry card.discarded.uses_exhausted with onomatopoeia 'USES EXHAUSTED!'
+    // 4. Append comic log entry card.discarded.uses_exhausted with onomatopoeia 'USES EXHAUSTED!'
     state.log.push({
       id: `log_${Date.now()}_uses_exhausted`,
       timestamp: Date.now(),

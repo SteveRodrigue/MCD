@@ -35,12 +35,7 @@ function isForcedTiming(timing: string): boolean {
 }
 
 const TRIGGER_EQUIVALENTS: Record<string, string[]> = {
-  ENEMY_INITIATES_ATTACK: ['VILLAIN_INITIATES_ATTACK'],
-  DAMAGE_WOULD_BE_TAKEN: ['TAKE_ATTACK_DAMAGE', 'TAKE_DAMAGE'],
-  ATTACK_DEFENDED: ['HERO_DEFENDED_ATTACK'],
-  CHARACTER_DEFEATED: ['MINION_DEFEATED', 'MINION_DEFEATED_BY_ATTACK', 'HOST_DEFEATED'],
   SCHEME_DEFEATED: ['SCHEME_THREAT_REDUCED_TO_ZERO'],
-  FORM_CHANGED: ['FORM_CHANGED_TO_HERO', 'FORM_CHANGED_TO_ALTER_EGO', 'HERO_FLIPPED'],
 };
 
 export function triggersAreEquivalent(
@@ -433,7 +428,7 @@ function checkAndRecordTriggerNode(
 export function formatAbilityStepsSummary(trigger: string, steps: AbilityStep[]): string {
   const stepDescriptions = (steps || [])
     .map((s) => {
-      if (s.effect === 'DRAW_CARDS' || s.effect === 'DRAW') {
+      if (s.effect === 'DRAW') {
         return `${displayEffectName(s.effect)} (${s.effectParams?.count ?? 1})`;
       }
       if (s.effect === 'DEAL_DAMAGE') return `DEAL_DAMAGE (${s.effectParams?.amount ?? 1})`;

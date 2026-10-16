@@ -156,9 +156,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
         abilities.some((a) => (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'));
       const hasHeal =
         isEventCard &&
-        abilities.some((a) =>
-          (a.steps || []).some((s) => ['HEAL', 'HEAL_DAMAGE'].includes(s.effect)),
-        );
+        abilities.some((a) => (a.steps || []).some((s) => s.effect === 'HEAL_DAMAGE'));
       const hasAllyTarget =
         isEventCard &&
         !hasAttack &&
@@ -575,8 +573,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   const isThwart =
     isEventCard && abilities.some((a) => (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'));
   const isHeal =
-    isEventCard &&
-    abilities.some((a) => (a.steps || []).some((s) => ['HEAL', 'HEAL_DAMAGE'].includes(s.effect)));
+    isEventCard && abilities.some((a) => (a.steps || []).some((s) => s.effect === 'HEAL_DAMAGE'));
   const isAllyTarget =
     isEventCard &&
     !isAttack &&

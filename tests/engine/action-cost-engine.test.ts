@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { GameState, HeroCard, AlterEgoCard, CardAbility } from '../../src/engine/models';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { dispatchAction } from '../../src/engine/pipeline';
 import { canPayAbilityCost, executeAbilityCost } from '../../src/engine/pipeline/cost-engine';
@@ -737,7 +737,7 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
       };
 
       // Ability with requirePrinted: true
-      const printedCostAbility = {
+      const printedCostAbility: CardAbility = {
         id: 'test_printed_cost',
         timing: 'ACTION' as const,
         cost: {

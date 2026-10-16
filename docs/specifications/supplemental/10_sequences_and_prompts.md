@@ -302,3 +302,15 @@ When `PLAYER_CHOICE` is executed from a `USE_CARD_ABILITY` action on an in-play 
   "sourceCardInstanceId": "<runtime instanceId>"
 }
 ```
+
+### Simultaneous Optional Abilities Resolution Order (`ORDER_SIMULTANEOUS_ABILITIES`, #287)
+
+Under RR v1.8 Simultaneous Resolution (p. 27), when two or more effects with the same bold timing trigger would resolve simultaneously, the **first player** determines the order in which the effects resolve.
+
+When `dispatchTrigger` detects multiple eligible optional ability prompts (`newlyAdded.length > 1`) for a single triggering condition:
+- If `context.acceptOptionalTriggers !== true`, an `ORDER_SIMULTANEOUS_ABILITIES` prompt is constructed and assigned to the First Player (`state.players[state.firstPlayerIndex]?.id || state.players[0]?.id`).
+- The candidate prompts are carried under `prompt.simultaneousPrompts`, and the ordering options list each candidate card.
+- The UI delegates to `SimultaneousAbilitiesModal`, allowing the first player to reorder abilities via Up/Down buttons or drag-and-drop.
+- When confirmed, `RESOLVE_DECISION_PROMPT` carries `sequenceOrder: string[]`, re-inserting the candidate prompts into `pendingDecisionQueue` matching the exact sequence chosen by the first player.
+- Subsequent downstream moot prompts are pruned dynamically by existing interrupt pruners (`removeMootCancelPrompts`, `pruneThreatInterruptPrompts`, `pruneDamageInterruptPrompts`) as earlier interrupts cancel or mitigate the event.
+

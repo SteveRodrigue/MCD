@@ -500,6 +500,128 @@ function resumeAfterPromptResolved(state: GameState): GameState {
 }
 
 /**
+ * Resolves an ORDER_SIMULTANEOUS_ABILITIES decision prompt (Issue #287, RR v1.8 p. 27).
+ * Unpacks the simultaneous candidate prompts into the head of the pendingDecisionQueue
+ * in the order chosen by the first player.
+ */
+export function resolveSimultaneousAbilitiesOrderPrompt(
+  state: GameState,
+  prompt: PendingDecisionPrompt,
+  playerId: string,
+  selectedOptionId: string,
+  sequenceOrder?: string[],
+): {
+  state: GameState;
+  result: ActionResult;
+} {
+  const { state: poppedState } = popDecisionPrompt(state);
+  const candidates = prompt.simultaneousPrompts ? [...prompt.simultaneousPrompts] : [];
+  let orderedPrompts: PendingDecisionPrompt[] = [];
+
+  if (sequenceOrder && sequenceOrder.length > 0) {
+    const promptMap = new Map<string, PendingDecisionPrompt>();
+    for (const cand of candidates) {
+      promptMap.set(cand.promptId, cand);
+      for (const opt of cand.options) {
+        promptMap.set(opt.id, cand);
+      }
+      if (cand.sourceCardCode) {
+        promptMap.set(cand.sourceCardCode, cand);
+      }
+    }
+
+    const usedPromptIds = new Set<string>();
+    for (const key of sequenceOrder) {
+      const found = promptMap.get(key);
+      if (found && !usedPromptIds.has(found.promptId)) {
+        orderedPrompts.push(found);
+        usedPromptIds.add(found.promptId);
+      }
+    }
+    for (const cand of candidates) {
+      if (!usedPromptIds.has(cand.promptId)) {
+        orderedPrompts.push(cand);
+        usedPromptIds.add(cand.promptId);
+      }
+    }
+  } else if (
+    selectedOptionId &&
+    selectedOptionId !== 'confirm_order' &&
+    selectedOptionId !== 'pass' &&
+    selectedOptionId !== 'PASS'
+  ) {
+    const selected = candidates.find(
+      (p) =>
+        p.promptId === selectedOptionId ||
+        p.sourceCardCode === selectedOptionId ||
+        p.options.some((o) => o.id === selectedOptionId),
+    );
+    if (selected) {
+      orderedPrompts = [selected, ...candidates.filter((p) => p !== selected)];
+    } else {
+      orderedPrompts = candidates;
+    }
+  } else {
+    orderedPrompts = candidates;
+  }
+
+  // Propagate placement IDs from ordering prompt options to candidate prompts
+  for (const cand of orderedPrompts) {
+    const matchingOpt = prompt.options.find(
+      (o) => o.id === cand.promptId || (o.params as any)?.promptId === cand.promptId,
+    );
+    const threatPlacementId = (matchingOpt?.params?.context as any)?.threatPlacementId;
+    const damagePlacementId = (matchingOpt?.params?.context as any)?.damagePlacementId;
+    if (threatPlacementId || damagePlacementId) {
+      for (const opt of cand.options) {
+        if (opt.effect === 'EXECUTE_OPTIONAL_TRIGGER' && opt.params) {
+          opt.params.context = {
+            ...(opt.params.context || {}),
+            ...(threatPlacementId ? { threatPlacementId } : {}),
+            ...(damagePlacementId ? { damagePlacementId } : {}),
+          };
+        }
+      }
+    }
+  }
+
+  poppedState.pendingDecisionQueue = [
+    ...orderedPrompts,
+    ...(poppedState.pendingDecisionQueue || []),
+  ];
+
+  const total = poppedState.pendingDecisionQueue.length;
+  for (let i = 0; i < total; i++) {
+    poppedState.pendingDecisionQueue[i].queuePosition = i + 1;
+    poppedState.pendingDecisionQueue[i].totalQueued = total;
+  }
+
+  if (poppedState.pendingDecisionQueue.length > 0) {
+    refreshPromptOptionAvailability(poppedState, poppedState.pendingDecisionQueue[0]);
+  }
+
+  const player = poppedState.players.find((p) => p.id === playerId);
+  const playerName = player ? player.name : playerId;
+
+  poppedState.log.push({
+    id: nextEngineId(poppedState, 'log'),
+    timestamp: Date.now(),
+    round: poppedState.roundNumber,
+    phase: poppedState.phase,
+    category: 'ability',
+    actor: { name: playerName, type: player?.currentForm || 'hero' },
+    key: 'decision.order_simultaneous.resolved',
+    params: {
+      player: playerName,
+      count: orderedPrompts.length,
+    },
+    onomatopoeia: 'ORDER SET!',
+  });
+
+  return { state: poppedState, result: { success: true, onomatopoeia: 'ORDER SET!' } };
+}
+
+/**
  * Resolve the active head decision prompt with player choice or voluntary pass (ADR-0032).
  */
 export function resolveDecisionPrompt(
@@ -507,6 +629,7 @@ export function resolveDecisionPrompt(
   playerId: string,
   selectedOptionId: string,
   paymentOptions?: AbilityPaymentOptions,
+  sequenceOrder?: string[],
 ): {
   state: GameState;
   result: ActionResult;
@@ -522,6 +645,17 @@ export function resolveDecisionPrompt(
       state,
       result: { success: false, error: 'Decision prompt belongs to another player' },
     };
+  }
+
+  // Handle Simultaneous Optional Abilities Order prompt (Issue #287)
+  if (prompt.kind === 'ORDER_SIMULTANEOUS_ABILITIES') {
+    return resolveSimultaneousAbilitiesOrderPrompt(
+      state,
+      prompt,
+      playerId,
+      selectedOptionId,
+      sequenceOrder,
+    );
   }
 
   // Handle explicit voluntary "Pass" option or option selection

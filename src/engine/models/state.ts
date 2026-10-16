@@ -358,7 +358,8 @@ export interface VillainPhaseStepEvent {
   card?: CardInstance;
 }
 
-export type DecisionPromptKind = 'SINGLE_CHOICE' | 'DISTRIBUTE_POINTS' | 'MULTI_SELECT_TARGETS';
+export type DecisionPromptKind =
+  'SINGLE_CHOICE' | 'DISTRIBUTE_POINTS' | 'MULTI_SELECT_TARGETS' | 'ORDER_SIMULTANEOUS_ABILITIES';
 
 export interface TargetAllocationItem {
   instanceId: string;
@@ -446,6 +447,7 @@ export interface PendingDecisionPrompt {
   targetHasTough?: boolean;
   targetRetaliate?: number;
   preventAmount?: number | 'ALL';
+  simultaneousPrompts?: PendingDecisionPrompt[];
 }
 
 export interface EncounterExecutionContext {

@@ -85,7 +85,7 @@ describe('Event Intrinsic Discard Lifecycle (Issue #271 / RR v1.8 Event)', () =>
       targetPlayerId: 'p1',
     };
 
-    const res = dispatchTrigger(state, 'TREACHERY_REVEALED', {
+    const res = dispatchTrigger(state, 'ENCOUNTER_CARD_REVEALED', {
       targetPlayerId: 'p1',
       encounterCardInstance: falseAlarm,
     });
@@ -256,7 +256,7 @@ describe('Event Intrinsic Discard Lifecycle (Issue #271 / RR v1.8 Event)', () =>
       targetPlayerId: 'p1',
     };
 
-    const res = dispatchTrigger(state, 'TREACHERY_REVEALED', {
+    const res = dispatchTrigger(state, 'ENCOUNTER_CARD_REVEALED', {
       targetPlayerId: 'p1',
       encounterCardInstance: falseAlarm,
     });

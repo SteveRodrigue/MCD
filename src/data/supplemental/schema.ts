@@ -64,7 +64,6 @@ export const TriggerTypeSchema = z.enum([
   'ENTERS_PLAY',
   'MINION_ENTERS_PLAY',
   'ENCOUNTER_CARD_REVEALED',
-  'TREACHERY_REVEALED',
   'CHARACTER_DEFEATED',
   'SCHEME_DEFEATED',
   'HOST_WOULD_ATTACK',
@@ -365,6 +364,7 @@ export const TriggerFilterSchema = z
   .object({
     attackerKind: z.enum(['VILLAIN', 'MINION', 'ANY_ENEMY']).optional(),
     attackerCardFilter: UniversalCardFilterSchema.optional(),
+    cardFilter: UniversalCardFilterSchema.optional(),
     sourceCardCode: z.string().optional(),
     sourceInstanceId: z.string().optional(),
     targetPlayerScope: z.enum(['SELF', 'OTHER', 'ANY']).optional(),

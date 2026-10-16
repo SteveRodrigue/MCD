@@ -74,10 +74,9 @@ _None currently._
 
 ### 3.4 UI should-haves
 
-| #   | Issue                                                   | Item                                                        | Estimate | Notes                                                     |
-| :-- | :------------------------------------------------------ | :---------------------------------------------------------- | :------- | :-------------------------------------------------------- |
-| 16  | [#287](https://github.com/SteveRodrigue/MCD/issues/287) | Players choose the order of simultaneous optional abilities | 1 day    | Do after #267                                             |
-| 20  | [#314](https://github.com/SteveRodrigue/MCD/issues/314) | "Call for Action" from another player's tableau in coop     | 1 day    | Dev Mode report; Daily Bugle & tableau action integration |
+| #   | Issue                                                   | Item                                                    | Estimate | Notes                                                     |
+| :-- | :------------------------------------------------------ | :------------------------------------------------------ | :------- | :-------------------------------------------------------- |
+| 20  | [#314](https://github.com/SteveRodrigue/MCD/issues/314) | "Call for Action" from another player's tableau in coop | 1 day    | Dev Mode report; Daily Bugle & tableau action integration |
 
 **Gate 1 is done when** sections 3.1 to 3.4 are empty, the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
 

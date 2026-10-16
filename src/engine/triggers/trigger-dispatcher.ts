@@ -1,5 +1,6 @@
 import {
   GameState,
+  PendingDecisionPrompt,
   TriggerType,
   AbilityStep,
   PlayerState,
@@ -139,9 +140,17 @@ export function matchesTriggerFilter(
   }
 
   if (filter.attackerCardFilter) {
-    const attackerCard = context.attackerCard?.card || context.encounterCardInstance?.card;
+    const attackerCard = context.attackerCard?.card;
     if (!attackerCard) return false;
     if (!matchesCardFilter(attackerCard, filter.attackerCardFilter, { player })) {
+      return false;
+    }
+  }
+
+  if (filter.cardFilter) {
+    const card = context.encounterCardInstance?.card || context.attackerCard?.card;
+    if (!card) return false;
+    if (!matchesCardFilter(card, filter.cardFilter, { player })) {
       return false;
     }
   }
@@ -665,17 +674,14 @@ export function dispatchTrigger(
   const queueLenBefore = state.pendingDecisionQueue?.length ?? 0;
 
   const priorityOrder =
-    trigger === 'MINION_ENTERS_PLAY' ||
-    trigger === 'ENCOUNTER_CARD_REVEALED' ||
-    trigger === 'TREACHERY_REVEALED'
+    trigger === 'MINION_ENTERS_PLAY' || trigger === 'ENCOUNTER_CARD_REVEALED'
       ? revealReactors(state, player)
       : playersInTurnOrder(state);
 
   const isGlobalTrigger =
     trigger === 'THREAT_WOULD_BE_PLACED' ||
     trigger === 'MINION_ENTERS_PLAY' ||
-    trigger === 'ENCOUNTER_CARD_REVEALED' ||
-    trigger === 'TREACHERY_REVEALED';
+    trigger === 'ENCOUNTER_CARD_REVEALED';
 
   // 1. Scan in-play identity card abilities (e.g. Spider-Sense on Spider-Man 01001a)
   const playerAbilitiesSuspended = arePlayerAbilitiesSuspended(state);
@@ -1199,7 +1205,7 @@ export function dispatchTrigger(
 
   // 5. In-hand reactions to an encounter card being revealed (e.g. Enhanced Spider-Sense 01004,
   // Get Behind Me! 01078). Their text has no "you", so any player may react, the revealing one first.
-  if (trigger === 'ENCOUNTER_CARD_REVEALED' || trigger === 'TREACHERY_REVEALED') {
+  if (trigger === 'ENCOUNTER_CARD_REVEALED') {
     if (
       scanHandReactions(state, trigger, context, currentChain, revealReactors(state, player), {
         isActive: () => !state.activeEncounterContext?.cancelled,
@@ -1213,8 +1219,7 @@ export function dispatchTrigger(
           isCancelled = true;
         },
         promptFields: () => ({
-          triggerSourceName:
-            context.encounterCardInstance?.card?.name || 'Treachery / Encounter Card',
+          triggerSourceName: context.encounterCardInstance?.card?.name || 'Encounter Card',
           triggerSourceCode: context.encounterCardInstance?.card?.code,
           triggerSourceCard: context.encounterCardInstance?.card,
         }),
@@ -1299,7 +1304,70 @@ export function dispatchTrigger(
       const orderB = idxB === -1 ? 999 : idxB;
       return orderA - orderB;
     });
-    state.pendingDecisionQueue = [...existing, ...newlyAdded];
+    const isIdenticalHandDuplicates =
+      newlyAdded.length > 1 &&
+      newlyAdded.every((c) => {
+        const first = newlyAdded[0];
+        if (c.playerId !== first.playerId) return false;
+        if (!c.sourceCardCode || c.sourceCardCode !== first.sourceCardCode) return false;
+        const owner = state.players.find((p) => p.id === c.playerId);
+        return Boolean(owner?.hand?.some((h) => h.instanceId === c.sourceCardInstanceId));
+      });
+
+    if (
+      newlyAdded.length > 1 &&
+      context.acceptOptionalTriggers !== true &&
+      !isIdenticalHandDuplicates
+    ) {
+      const firstPlayerId =
+        state.players[state.firstPlayerIndex]?.id || state.players[0]?.id || newlyAdded[0].playerId;
+      const orderingPrompt: PendingDecisionPrompt = {
+        promptId: nextEngineId(state, 'prompt_order_simultaneous'),
+        playerId: firstPlayerId,
+        kind: 'ORDER_SIMULTANEOUS_ABILITIES',
+        title: 'Simultaneous Optional Abilities: Choose Resolution Order',
+        description:
+          'Multiple optional abilities triggered simultaneously. The first player determines the order in which they resolve.',
+        sourceCardName:
+          newlyAdded[0]?.triggerSourceName ||
+          newlyAdded[0]?.sourceCardName ||
+          'Simultaneous Abilities',
+        sourceCardCode: newlyAdded[0]?.triggerSourceCode,
+        triggerSourceName: newlyAdded[0]?.triggerSourceName,
+        triggerSourceCode: newlyAdded[0]?.triggerSourceCode,
+        triggerSourceCard: newlyAdded[0]?.triggerSourceCard,
+        triggerType: newlyAdded[0]?.triggerType,
+        isVoluntary: false,
+        options: newlyAdded.map((candidate) => {
+          const owner = state.players.find((pl) => pl.id === candidate.playerId);
+          const ownerName = owner?.hero?.name || owner?.name || owner?.id || candidate.playerId;
+          const candidateOption = candidate.options?.find(
+            (o) => o.effect === 'EXECUTE_OPTIONAL_TRIGGER',
+          );
+          return {
+            id: candidate.promptId,
+            label: candidate.sourceCardName,
+            cardName: candidate.sourceCardName,
+            cardCode: candidate.sourceCardCode,
+            description: candidate.description,
+            effect: 'EXECUTE_OPTIONAL_TRIGGER',
+            params: {
+              promptId: candidate.promptId,
+              playerId: candidate.playerId,
+              playerName: ownerName,
+              triggerType: candidate.triggerType,
+              sourceCardInstanceId: candidate.sourceCardInstanceId,
+              ...(candidateOption?.params || {}),
+              context: { ...(candidateOption?.params?.context || {}) },
+            },
+          };
+        }),
+        simultaneousPrompts: newlyAdded,
+      };
+      state.pendingDecisionQueue = [...existing, orderingPrompt];
+    } else {
+      state.pendingDecisionQueue = [...existing, ...newlyAdded];
+    }
     const total = state.pendingDecisionQueue.length;
     for (let i = 0; i < total; i++) {
       state.pendingDecisionQueue[i].queuePosition = i + 1;
@@ -1307,6 +1375,7 @@ export function dispatchTrigger(
     }
     if (state.pendingDecisionQueue.length > 0) {
       refreshPromptOptionAvailability(state, state.pendingDecisionQueue[0]);
+      hasPendingPrompt = true;
     }
   }
 

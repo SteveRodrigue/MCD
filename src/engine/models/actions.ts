@@ -104,6 +104,7 @@ export interface ResolveDecisionPromptAction {
   assignments?: Record<string, number>;
   paymentCardInstanceIds?: string[];
   generatorInstanceIds?: string[];
+  sequenceOrder?: string[];
 }
 
 export interface DeclareDefenderAction {

@@ -58,7 +58,6 @@
                     "ENTERS_PLAY",
                     "MINION_ENTERS_PLAY",
                     "ENCOUNTER_CARD_REVEALED",
-                    "TREACHERY_REVEALED",
                     "CHARACTER_DEFEATED",
                     "SCHEME_DEFEATED",
                     "HOST_WOULD_ATTACK",
@@ -96,6 +95,9 @@
                       ]
                     },
                     "attackerCardFilter": {
+                      "$ref": "#/$defs/__schema0"
+                    },
+                    "cardFilter": {
                       "$ref": "#/$defs/__schema0"
                     },
                     "sourceCardCode": {

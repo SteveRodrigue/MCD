@@ -270,4 +270,57 @@ describe('TriggerFilterSection', () => {
       'SELF',
     );
   });
+
+  describe('cardFilter (Triggering Card Criteria) subform', () => {
+    it('renders cardFilter accordion collapsed by default with None status', () => {
+      render(<TriggerFilterSection filter={{}} isExpanded={true} onChange={vi.fn()} />);
+
+      const accordion = screen.getByTestId('trigger-card-filter-accordion-0');
+      expect(accordion).toBeDefined();
+      expect(screen.getByTestId('toggle-trigger-card-filter-btn-0')).toBeDefined();
+      expect(screen.getByText('Triggering Card Criteria (cardFilter)')).toBeDefined();
+      expect(screen.queryByTestId('filter-type-treachery')).toBeNull();
+    });
+
+    it('displays Configured status badge when cardFilter is defined', () => {
+      render(
+        <TriggerFilterSection
+          filter={{ cardFilter: { types: ['treachery'] } }}
+          isExpanded={true}
+          onChange={vi.fn()}
+        />,
+      );
+
+      const accordion = screen.getByTestId('trigger-card-filter-accordion-0');
+      expect(accordion).toBeDefined();
+      expect(screen.getAllByText('Configured').length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('expands cardFilter accordion on click and allows selecting card type criteria', async () => {
+      const user = userEvent.setup();
+      const handleChange = vi.fn();
+
+      render(
+        <StatefulTriggerFilterSection initial={{}} isExpanded={true} onChange={handleChange} />,
+      );
+
+      // Expand cardFilter accordion
+      const toggleBtn = screen.getByTestId('toggle-trigger-card-filter-btn-0');
+      await user.click(toggleBtn);
+
+      // Card type chips are now visible
+      const treacheryBtn = screen.getByTestId('filter-type-treachery');
+      expect(treacheryBtn).toBeDefined();
+
+      // Click treachery chip
+      await user.click(treacheryBtn);
+      expect(handleChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cardFilter: expect.objectContaining({
+            types: ['treachery'],
+          }),
+        }),
+      );
+    });
+  });
 });

@@ -433,8 +433,8 @@ export function step4_revealEncounterCards(
 }
 
 /**
- * Opens the interrupt window of a reveal: ENCOUNTER_CARD_REVEALED for every encounter card, then
- * TREACHERY_REVEALED for treacheries. Returns true when the reveal was cancelled.
+ * Opens the interrupt window of a reveal: ENCOUNTER_CARD_REVEALED for every encounter card.
+ * Returns true when the reveal was cancelled.
  */
 function dispatchRevealInterrupts(
   state: GameState,
@@ -447,15 +447,8 @@ function dispatchRevealInterrupts(
     encounterCardInstance: cardInstance,
     acceptOptionalTriggers: options?.acceptOptionalTriggers,
   };
-  let isCancelled = false;
   const whenRevealed = dispatchTrigger(state, 'ENCOUNTER_CARD_REVEALED', context);
-  if (whenRevealed.cancelled || state.activeEncounterContext?.cancelled) isCancelled = true;
-
-  if (!isCancelled && cardInstance.card.type === CardType.TREACHERY) {
-    const treachery = dispatchTrigger(state, 'TREACHERY_REVEALED', context);
-    if (treachery.cancelled || state.activeEncounterContext?.cancelled) isCancelled = true;
-  }
-  return isCancelled;
+  return Boolean(whenRevealed.cancelled || state.activeEncounterContext?.cancelled);
 }
 
 /**

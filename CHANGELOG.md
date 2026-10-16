@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature (Engine & UI): Simultaneous Optional Abilities Resolution Order ([Issue #287](https://github.com/SteveRodrigue/MCD/issues/287))**
+  - Detects when two or more optional ability prompts trigger simultaneously on the same event and constructs an `ORDER_SIMULTANEOUS_ABILITIES` prompt for the First Player per RR v1.8 Simultaneous Resolution.
+  - Adds `SimultaneousAbilitiesModal` comic pop-art UI dialog allowing the first player to reorder abilities upfront using Up/Down buttons or drag-and-drop.
+  - Re-inserts candidates into the prompt queue according to the chosen `sequenceOrder` on `RESOLVE_DECISION_PROMPT`.
+  - Deprecates and removes redundant `TREACHERY_REVEALED` trigger primitive in favor of unified `ENCOUNTER_CARD_REVEALED` filtered by `triggerFilter.cardFilter` (`UniversalCardFilter`).
+  - Adds `cardFilter` accordion subform to Card Editor `TriggerFilterSection` with `UniversalCardFilterBuilder` for visual card criteria authoring.
+
 - **Fix (Engine): Retaliate damage to villain or minion routes through damage pipeline ([Issue #306](https://github.com/SteveRodrigue/MCD/issues/306))**
   - Routes Retaliate damage in `combat-pipeline.ts` (`step7_resolvePostAttackAndRetaliate`) through `applyDamageToTarget` instead of raw counter arithmetic.
   - Corrects retaliate triggering to include undefended attacks where the hero was the targeted character and survived (RR v1.8 p. 24, 38).

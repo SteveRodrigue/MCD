@@ -1,6 +1,6 @@
 # [ADR-0069] Card Editor Field Binding Completeness, Trigger Filter Orphan Purge & Powered Gauntlets Correction
 
-- **Status:** Accepted
+- **Status:** Accepted (Superseded in part by [ADR-0083](0083-schema-driven-card-editor-and-upstream-derived-fields.md) regarding the `labels`, step-level duplicate fields and hand-written editor field bindings)
 - **Date:** 2026-09-19
 - **Authors:** MCD Core Team
 - **Deciders:** User & Antigravity

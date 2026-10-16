@@ -1,6 +1,6 @@
 # [ADR-0055] Universal Ability Resource Payment & Action Verb Unification
 
-- **Status:** Accepted
+- **Status:** Accepted (Superseded in part by [ADR-0083](0083-schema-driven-card-editor-and-upstream-derived-fields.md) regarding the `cost.resources` array and untyped numeric `resourceCost` (typed `resourceCost` map only))
 - **Date:** 2026-09-13
 - **Authors:** MCD Core Team
 - **Deciders:** User & Antigravity

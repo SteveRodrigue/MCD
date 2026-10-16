@@ -1,6 +1,6 @@
 # Card Editor Re-Architecture Plan (Complete Specification)
 
-> **Status:** Approved, revision 2 (2026-10-15).
+> **Status:** In progress — Phases 1–5 implemented (2026-10-16).
 > **Milestone:** Gate 1 — Rhino Release (user-added scope, 2026-10-15).
 > **Depends on:** Issue [#316](https://github.com/SteveRodrigue/MCD/issues/316) (Dash `null` basic powers) lands first. See §0.2.
 
@@ -350,3 +350,16 @@ Historical reports in `docs/reports/` are not edited.
 3. **Phase 1.5 deferred (engine type re-exports):** re-exporting `TriggerType`, `EffectType`, `AbilityTiming`, `AbilityCost`, `CardUsesDefinition` from `schema.ts` is not behavior-neutral. The engine types are wider: extra trigger values (`WHEN_BOOST_CARD_REVEALED`, `CARD_DISCARDED`, `CARD_LEFT_PLAY`), `EffectType | string`, cost fields `discardFromHand` / `takeDamage` / `selfDamage`, uses fields `type` / `max`, and `discardCard.from` of `HAND | DECK | PLAY`. Options: (a) keep deferred, (b) make the schema authoritative and delete the engine-only members, (c) widen the schema. Needs a user decision; Phase 1 only switched `AbilityCost.resourceCost` to the schema's `ResourceCost` type.
 4. **KeywordSchema sync deferred (Phase 2.2):** `KeywordSchema` has 8 values, `src/engine/models/enums.ts` has 23. Aligning them means renaming `Toughness` to `Tough` (tracked by `KNOWN_GAPS`, #280) and choosing which engine keywords are valid `hasKeyword` filter values. No pack uses `hasKeyword` today. Needs a user decision.
 5. **Deadpool-pack allies' consequential costs** (`44013`–`44016`, `44043`–`44045`): `?? 0` follows upstream. Verify against card images when those packs are integrated (Gate 4). No Gate 1 impact.
+
+## 9. Implementation notes
+
+Accepted deviations from the plan as written (the code and [ADR-0083](../decisions/0083-schema-driven-card-editor-and-upstream-derived-fields.md) describe what was built):
+
+- **56 effects, not 57.** `EFFECT_PARAM_SCHEMAS` covers every `EffectTypeSchema` option; there are 56.
+- **Leaf schemas split.** They live in the internal `src/data/supplemental/schema-primitives.ts`, which `schema.ts` re-exports, to break the load cycle between `schema.ts` and `effect-params.ts`.
+- **Phase 1.5 deferred** (engine type re-exports): see §8.3.
+- **`KeywordSchema` sync deferred** (Phase 2.2): see §8.4.
+- **Audit stamps.** The save endpoint (`src/tools/editor/api-middleware.ts`) stamps `audit.updatedAt` and `audit.reviewedAt`; the editor never does.
+- **Audit & Metadata** stays a collapsible section of the card form.
+- **Duration options** are `PHASE` / `ROUND` / `TURN` (`DurationSchema`).
+- **Parity guard.** `tests/ui/editor-schema-parity.test.ts` found one hardcoded resource-type array (`AbilityCostSection.tsx`) and replaced it with `ResourceTypeSchema.options`.

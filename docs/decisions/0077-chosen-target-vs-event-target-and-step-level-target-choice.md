@@ -1,6 +1,6 @@
 # [ADR-0077] Chosen Target vs. Event Target, and Step-Level Target Choice
 
-- **Status:** Accepted
+- **Status:** Accepted (Superseded in part by [ADR-0083](0083-schema-driven-card-editor-and-upstream-derived-fields.md) regarding the step-level `target`, `filter` and `distinctFrom` fields (now only in `effectParams`))
 - **Date:** 2026-10-05
 - **Authors:** MCD Core Team
 - **Deciders:** Owner & Claude

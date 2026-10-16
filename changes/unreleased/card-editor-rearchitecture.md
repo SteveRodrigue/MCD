@@ -2,7 +2,7 @@
 type: Changed
 ---
 
-- **Card Editor re-architecture, Phase 1: supplemental schema purge (plan `docs/backlog/plan_card_editor_rearchitecture.md`)**
+- **Card Editor re-architecture, Phase 1: supplemental schema purge ([#319](https://github.com/SteveRodrigue/MCD/issues/319), ADR-0083)**
   - Supplemental cards no longer declare values the upstream card data already provides: `traits`, `keywords`, `maxPerPlayer`, `isLandscape`, `restrictedSlots`, `additionalBoostCards`, `attackCost`, `thwartCost`, `victoryPoints` and ability `labels` are removed from the schema and derived by the loader.
   - Printed `Victory X` (including `Victory 0` and negative values) is now parsed into the Victory keyword.
   - Allies with no printed consequential damage icon now take 0 consequential damage (was 1 when upstream omitted the value).

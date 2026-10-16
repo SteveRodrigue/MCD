@@ -5,7 +5,7 @@
 - **Authors:** MCD Core Team
 - **Deciders:** Owner & Claude
 - **Related Issues:** [#319](https://github.com/SteveRodrigue/MCD/issues/319) (Card Editor re-architecture), [#316](https://github.com/SteveRodrigue/MCD/issues/316) (dash power values, fixed first), [#318](https://github.com/SteveRodrigue/MCD/issues/318) (variable X costs)
-- **Plan:** [`docs/backlog/plan_card_editor_rearchitecture.md`](../backlog/plan_card_editor_rearchitecture.md)
+- **Plan:** delivered and removed (the backlog deletes delivered plans); the commits referencing #319 are the record
 - **Supersedes in part:** [ADR-0069](0069-card-editor-field-binding-completeness-and-trigger-filter-orphan-purge.md), [ADR-0078](0078-one-damage-pipeline-and-the-attack-label.md), [ADR-0055](0055-universal-ability-resource-payment-and-action-verb-unification.md), [ADR-0011](0011-card-orientation-and-art-caching.md), [ADR-0077](0077-chosen-target-vs-event-target-and-step-level-target-choice.md)
 
 ---
@@ -66,7 +66,8 @@ The schema itself also asked authors to declare values the upstream card data al
 
 ### Deferred
 
-- Variable "Spend X" costs (Energy Channel `01018`) cannot be expressed by the positive-integer map. #318 will extend it; `<ZodSchemaForm />` picks up the new shape through `.meta()`.
+- Variable "Spend X" costs (Energy Channel `01018`) stay modelled as `resourceCost: { energy: 1 }` plus an amount read from the resources spent. RR v1.8 allows overpaying, so this matches the rules; #318 was closed as works-as-intended.
+- Allies with no printed consequential damage value now default to 0 (`raw.attack_cost ?? 0`, `raw.thwart_cost ?? 0`). The Deadpool-pack allies (`44013` to `44016`, `44043` to `44045`) have no upstream value for either; check them against the card images when those packs are integrated (Gate 4).
 
 ---
 

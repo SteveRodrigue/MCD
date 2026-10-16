@@ -70,7 +70,7 @@ describe('Zero Card Text Parsing Contract (ADR-0019)', () => {
       expect(hasKeyword(cardWithGuard, Keyword.OVERKILL)).toBe(false);
     });
 
-    it('correctly identifies keywords declared via enrichment without reading text', () => {
+    it('takes keywords from card.keywords only, never from supplemental enrichment', () => {
       const cardWithEnrichment = makeMockCard({
         keywords: [],
         text: '',
@@ -80,8 +80,11 @@ describe('Zero Card Text Parsing Contract (ADR-0019)', () => {
       });
       const inst = makeMockInstance(cardWithEnrichment);
 
-      expect(hasKeyword(cardWithEnrichment, Keyword.RANGED)).toBe(true);
-      expect(hasKeyword(inst, Keyword.RANGED)).toBe(true);
+      expect(hasKeyword(cardWithEnrichment, Keyword.RANGED)).toBe(false);
+      expect(hasKeyword(inst, Keyword.RANGED)).toBe(false);
+
+      const cardWithKeyword = makeMockCard({ keywords: [Keyword.RANGED], text: '' });
+      expect(hasKeyword(cardWithKeyword, Keyword.RANGED)).toBe(true);
     });
 
     it('resolves parameterized keyword values without reading text', () => {

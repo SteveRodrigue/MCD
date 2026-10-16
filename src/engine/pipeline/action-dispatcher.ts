@@ -1867,10 +1867,7 @@ function dispatchSingleAction(
       }
 
       // Resource payment validation: Player must explicitly select payment cards or generators (RR v1.8 p. 25 / ADR-0055)
-      if (
-        ability.cost?.resourceCost ||
-        (ability.cost?.resources && ability.cost.resources.length > 0)
-      ) {
+      if (ability.cost?.resourceCost) {
         const hasPaymentCards = (action.paymentCardInstanceIds?.length || 0) > 0;
         const hasGenerators = (action.generatorInstanceIds?.length || 0) > 0;
         if (!hasPaymentCards && !hasGenerators) {

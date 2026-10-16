@@ -3,6 +3,7 @@ import {
   parseTraits,
   parseResources,
   CardCatalog,
+  normalizeRawCard,
 } from '@data/importer/card-loader';
 import {
   CardType,
@@ -18,6 +19,7 @@ import { matchCardFilter } from '@engine/effects';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 import ttEncounterPack from '../../data/upstream/pack/tt_encounter.json';
+import aosEncounterPack from '../../data/upstream/pack/aos_encounter.json';
 
 describe('Card Loader & Normalizer Unit Tests', () => {
   describe('Helper Parsers', () => {
@@ -385,6 +387,71 @@ describe('Card Loader & Normalizer Unit Tests', () => {
       const omitted = new CardCatalog([raw] as any).getCard('01011') as any;
       expect(omitted.thwart).toBe(1);
       expect(omitted.dashPowers).toBeUndefined();
+    });
+  });
+  describe('Upstream-derived Victory X (RR v1.8 Victory X)', () => {
+    const victoryRaw = (text: string) =>
+      ({
+        code: 'test-victory',
+        name: 'Test Minion',
+        type_code: 'minion',
+        faction_code: 'encounter',
+        pack_code: 'test',
+        text,
+      }) as any;
+
+    it.each([
+      ['Victory 0.', 'Victory 0'],
+      ['Victory 1.', 'Victory 1'],
+      ['Victory -1.\nDoes not count against your ally limit.', 'Victory -1'],
+    ])('parses printed %j as keywords Victory and %s', (text, signed) => {
+      const card = normalizeRawCard(victoryRaw(text), {});
+      expect(card.keywords).toContain('Victory');
+      expect(card.keywords).toContain(signed);
+    });
+
+    it('parses the negative Victory of Rescued Captive (50091) from upstream text', () => {
+      const raw = (aosEncounterPack as any[]).find((c) => c.code === '50091');
+      const card = normalizeRawCard(raw, {});
+      expect(card.keywords).toContain('Victory');
+      expect(card.keywords).toContain('Victory -1');
+    });
+
+    it('does not tag a card that does not print Victory', () => {
+      const card = normalizeRawCard(victoryRaw('Guard.'), {});
+      expect(card.keywords).not.toContain('Victory');
+    });
+  });
+
+  describe('Ally consequential costs default to 0 when upstream omits them (RR v1.8 Consequential Damage)', () => {
+    const allyRaw = (extra: Record<string, unknown>) =>
+      ({
+        code: 'test-ally',
+        name: 'Test Ally',
+        type_code: 'ally',
+        faction_code: 'basic',
+        pack_code: 'test',
+        text: '',
+        ...extra,
+      }) as any;
+
+    it('defaults a missing attack_cost and thwart_cost to 0', () => {
+      const ally = normalizeRawCard(allyRaw({}), {}) as any;
+      expect(ally.attackCost).toBe(0);
+      expect(ally.thwartCost).toBe(0);
+    });
+
+    it('keeps printed consequential icons', () => {
+      const ally = normalizeRawCard(allyRaw({ attack_cost: 2, thwart_cost: 1 }), {}) as any;
+      expect(ally.attackCost).toBe(2);
+      expect(ally.thwartCost).toBe(1);
+    });
+
+    it('gives Black Cat (01002) attackCost 0 without any supplemental override', () => {
+      const raw = (corePack as any[]).find((c) => c.code === '01002');
+      const blackCat = normalizeRawCard(raw, {}) as any;
+      expect(blackCat.attackCost).toBe(0);
+      expect(blackCat.thwartCost).toBe(1);
     });
   });
 });

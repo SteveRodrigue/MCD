@@ -53,11 +53,6 @@ export function generateStepSummary(step: any, index: number): string {
   // Effect name
   parts.push(step?.effect || 'STEP');
 
-  // Arrow + target (if set and not default)
-  if (step?.target) {
-    parts.push(`→ ${step.target}`);
-  }
-
   // Key param extract from effectParams
   const params = step?.effectParams || {};
   if (params.stat) {

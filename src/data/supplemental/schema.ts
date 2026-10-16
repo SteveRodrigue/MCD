@@ -543,6 +543,22 @@ export const GenerateResourceParamsSchema = z
 export type GenerateResourceParams = z.infer<typeof GenerateResourceParamsSchema>;
 
 /**
+ * Typed ability resource cost: "Spend a [energy] resource" is `{ energy: 1 }` (RR v1.8 Resources).
+ * `wild` is a legal key only for a printed "Spend a [wild] resource" cost. An event's printed cost is
+ * read from the upstream card, never declared here.
+ */
+export const ResourceCostSchema = z
+  .object({
+    physical: z.number().int().positive().optional(),
+    energy: z.number().int().positive().optional(),
+    mental: z.number().int().positive().optional(),
+    wild: z.number().int().positive().optional(),
+  })
+  .strict();
+
+export type ResourceCost = z.infer<typeof ResourceCostSchema>;
+
+/**
  * Ability Cost Schema
  */
 export const AbilityCostSchema = z
@@ -550,8 +566,7 @@ export const AbilityCostSchema = z
     exhaustSelf: z.boolean().optional(),
     exhaustCard: z.literal('SELF_IDENTITY').optional(),
     discardSelf: z.boolean().optional(),
-    resources: z.array(ResourceTypeSchema).optional(),
-    resourceCost: z.union([z.number(), z.record(z.string(), z.number())]).optional(),
+    resourceCost: ResourceCostSchema.optional(),
     requirePrinted: z.boolean().optional(),
     damageHero: z.number().optional(),
     damageSelf: z.number().optional(),
@@ -764,21 +779,15 @@ export const ReduceNextCardCostParamsSchema = z
 
 export type ReduceNextCardCostParams = z.infer<typeof ReduceNextCardCostParamsSchema>;
 
-export const DistinctFromSchema = z.enum(['PREVIOUS_TARGET']).or(z.string());
-export type DistinctFrom = z.infer<typeof DistinctFromSchema>;
-
 /**
  * Ability Execution Step Interface (Operational Primitive)
  */
 export interface AbilityStep {
   id?: string;
   effect: EffectType;
-  target?: TargetSelector;
-  distinctFrom?: DistinctFrom;
   gateParams?: Record<string, any>;
   effectParams?: Record<string, any>;
   gate?: StepGate;
-  filter?: z.infer<typeof FilterSchema>;
   cannotBeCanceled?: boolean;
 }
 
@@ -797,12 +806,9 @@ export const AbilityStepSchema = z
   .object({
     id: z.string().optional(),
     effect: EffectTypeSchema,
-    target: TargetSelectorSchema.optional(),
-    distinctFrom: DistinctFromSchema.optional(),
     gateParams: z.record(z.string(), z.any()).optional(),
     effectParams: z.record(z.string(), z.any()).optional(),
     gate: StepGateSchema.optional(),
-    filter: FilterSchema.optional(),
     cannotBeCanceled: z.boolean().optional(),
   })
   .strict()
@@ -850,19 +856,11 @@ export interface CardAbility {
   zone?: 'HAND' | 'PLAY' | 'DISCARD';
   cost?: AbilityCost;
   limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE';
-  labels?: AbilityLabel[];
   /** The whole step list resolves once per player in player order ("each player ... that player"). */
   forEachPlayer?: boolean;
   errata?: string | null;
   steps: AbilityStep[];
 }
-
-/**
- * Printed ability labels: "(attack)", "(thwart)", "(defense)" (RR v1.8 glossary L). Only `ATTACK`
- * is read by the engine (#247, ADR-0078); `THWART` and `DEFENSE` are declared, not yet read.
- */
-export const AbilityLabelSchema = z.enum(['ATTACK', 'THWART', 'DEFENSE']);
-export type AbilityLabel = z.infer<typeof AbilityLabelSchema>;
 
 /**
  * Card Ability Schema
@@ -876,7 +874,6 @@ export const CardAbilitySchema: z.ZodType<CardAbility> = z
     zone: z.enum(['HAND', 'PLAY', 'DISCARD']).optional(),
     cost: AbilityCostSchema.optional(),
     limit: z.enum(['ONCE_PER_ROUND', 'ONCE_PER_PHASE']).optional(),
-    labels: z.array(AbilityLabelSchema).min(1).optional(),
     forEachPlayer: z.boolean().optional(),
     errata: z.string().nullable().optional(),
     steps: z.array(AbilityStepSchema).min(1),
@@ -1039,19 +1036,10 @@ export const CardEnrichmentSchema = z
     playRequirements: PlayRequirementsSchema.optional(),
     audit: CardAuditRecordSchema.optional(),
     noSupplementalNeeded: z.boolean().optional(),
-    isLandscape: z.boolean().optional(),
-    attackCost: z.number().int().nonnegative().optional(),
-    thwartCost: z.number().int().nonnegative().optional(),
-    maxPerPlayer: z.number().optional(),
     recipient: PlayerRecipientSchema.optional(),
     attachTo: AttachToSchema.optional(),
     playUnderAnyPlayerControl: z.boolean().optional(),
     uses: CardUsesSchema.optional(),
-    victoryPoints: z.number().optional(),
-    keywords: z.array(KeywordEntrySchema).optional(),
-    traits: z.array(z.string()).optional(),
-    restrictedSlots: z.number().int().positive().optional(),
-    additionalBoostCards: z.number().int().positive().optional(),
     errata: z.string().nullable().optional(),
   })
   .strict();

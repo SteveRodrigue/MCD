@@ -34,11 +34,11 @@ describe('CardAttributesSection', () => {
     expect(screen.getByText(/CARD-LEVEL ATTRIBUTES & AUDIT/i)).toBeDefined();
     expect(screen.getByTestId('no-supplemental-needed-checkbox')).toBeDefined();
 
-    // Verify all 5 section headers exist
+    // Verify all 3 section headers exist
     expect(screen.getByTestId('section-audit-metadata')).toBeDefined();
     expect(screen.getByTestId('section-card-mechanics')).toBeDefined();
-    expect(screen.getByTestId('section-combat-properties')).toBeDefined();
-    expect(screen.getByTestId('section-layout-display')).toBeDefined();
+    expect(screen.queryByTestId('section-combat-properties')).toBeNull();
+    expect(screen.queryByTestId('section-layout-display')).toBeNull();
     expect(screen.getByTestId('section-play-requirements')).toBeDefined();
 
     // In default Smart View, collapsed sections do not render inputs
@@ -48,19 +48,21 @@ describe('CardAttributesSection', () => {
     const toggleShowAllBtn = screen.getByTestId('toggle-show-all-fields-btn');
     await user.click(toggleShowAllBtn);
 
-    // Now all inputs across all 5 sections should be accessible
+    // Now all inputs across all sections should be accessible
     expect(screen.getByPlaceholderText(/e\.g\. Hero attack/i)).toBeDefined();
-    expect(screen.getByPlaceholderText(/Leave empty if unrestricted/i)).toBeDefined();
-    expect(screen.getByTestId('card-traits-input')).toBeDefined();
-    expect(screen.getByTestId('card-restricted-slots-input')).toBeDefined();
-    expect(screen.getByTestId('card-additional-boost-cards-input')).toBeDefined();
-    expect(screen.getByTestId('card-victory-points-input')).toBeDefined();
-    expect(screen.getByTestId('card-is-landscape-checkbox')).toBeDefined();
     expect(screen.getByTestId('toggle-uses-btn')).toBeDefined();
+    // Upstream-derived fields are not authored here
+    expect(screen.queryByPlaceholderText(/Leave empty if unrestricted/i)).toBeNull();
+    expect(screen.queryByTestId('card-traits-input')).toBeNull();
+    expect(screen.queryByTestId('card-restricted-slots-input')).toBeNull();
+    expect(screen.queryByTestId('card-additional-boost-cards-input')).toBeNull();
+    expect(screen.queryByTestId('card-victory-points-input')).toBeNull();
+    expect(screen.queryByTestId('card-is-landscape-checkbox')).toBeNull();
+    expect(screen.queryByTestId('keyword-guard')).toBeNull();
     expect(screen.getByTestId('play-req-identity-form-select')).toBeDefined();
   });
 
-  it('updates basic card metadata (comment, limits, confidence, attribution)', async () => {
+  it('updates basic card metadata (comment)', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
     render(<StatefulCardAttributesSection initial={{}} onChange={handleChange} />);
@@ -74,48 +76,6 @@ describe('CardAttributesSection', () => {
         audit: expect.objectContaining({ comment: 'Updated comment' }),
       }),
     );
-
-    // Expand Card Mechanics to edit maxPerPlayer
-    await user.click(screen.getByTestId('section-card-mechanics-toggle'));
-    const maxInput = screen.getByPlaceholderText(/Leave empty if unrestricted/i);
-    fireEvent.change(maxInput, { target: { value: '2' } });
-    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ maxPerPlayer: 2 }));
-  });
-
-  it('updates numeric properties and orientation (restrictedSlots, boost, victory, isLandscape)', async () => {
-    const user = userEvent.setup();
-    const handleChange = vi.fn();
-
-    render(
-      <StatefulCardAttributesSection initial={{ traits: ['Avenger'] }} onChange={handleChange} />,
-    );
-
-    // Card Mechanics auto-expanded due to traits
-    const traitsInput = screen.getByTestId('card-traits-input');
-    fireEvent.change(traitsInput, { target: { value: 'Avenger, Spy' } });
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({ traits: ['Avenger', 'Spy'] }),
-    );
-
-    const slotsInput = screen.getByTestId('card-restricted-slots-input');
-    fireEvent.change(slotsInput, { target: { value: '2' } });
-    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ restrictedSlots: 2 }));
-
-    // Expand Combat Properties
-    await user.click(screen.getByTestId('section-combat-properties-toggle'));
-    const boostInput = screen.getByTestId('card-additional-boost-cards-input');
-    fireEvent.change(boostInput, { target: { value: '1' } });
-    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ additionalBoostCards: 1 }));
-
-    // Expand Layout & Display
-    await user.click(screen.getByTestId('section-layout-display-toggle'));
-    const vpInput = screen.getByTestId('card-victory-points-input');
-    fireEvent.change(vpInput, { target: { value: '3' } });
-    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ victoryPoints: 3 }));
-
-    const landscapeCheckbox = screen.getByTestId('card-is-landscape-checkbox');
-    await user.click(landscapeCheckbox);
-    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ isLandscape: true }));
   });
 
   it('manages uses counters lifecycle (configure, update, remove)', async () => {
@@ -174,30 +134,6 @@ describe('CardAttributesSection', () => {
     );
   });
 
-  it('toggles keywords and modifies Retaliate amount', async () => {
-    const user = userEvent.setup();
-    const handleChange = vi.fn();
-
-    render(<StatefulCardAttributesSection initial={{ keywords: [] }} onChange={handleChange} />);
-
-    // Expand Card Mechanics
-    await user.click(screen.getByTestId('section-card-mechanics-toggle'));
-
-    // Toggle Guard
-    await user.click(screen.getByText('Guard'));
-    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ keywords: ['Guard'] }));
-
-    // Toggle Retaliate and set amount
-    await user.click(screen.getByText('Retaliate'));
-    const retaliateInput = screen.getByTestId('keyword-retaliate-amount');
-    fireEvent.change(retaliateInput, { target: { value: '3' } });
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        keywords: expect.arrayContaining([{ keyword: 'Retaliate', amount: 3 }]),
-      }),
-    );
-  });
-
   it('configures play requirements (identity form, form trait, traits, control filter)', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
@@ -248,43 +184,24 @@ describe('CardAttributesSection', () => {
         supplemental={{}}
         onChange={vi.fn()}
         hasErrors={true}
-        errors={['restrictedSlots must be a positive integer', 'traits is required']}
+        errors={['uses.count must be a number', 'playRequirements is invalid']}
       />,
     );
 
     expect(screen.getByText(/Attributes Issue/i)).toBeDefined();
     expect(screen.getByTestId('card-attributes-errors')).toBeDefined();
-    expect(screen.getByText(/restrictedSlots must be a positive integer/i)).toBeDefined();
-    expect(screen.getByText(/traits is required/i)).toBeDefined();
+    expect(screen.getByText(/uses\.count must be a number/i)).toBeDefined();
+    expect(screen.getByText(/playRequirements is invalid/i)).toBeDefined();
 
-    // Card Mechanics should auto-expand because errors routed to it
-    expect(screen.getByTestId('card-restricted-slots-input')).toBeDefined();
+    // Card Mechanics should auto-expand because the uses error is routed to it
+    expect(screen.getByTestId('toggle-uses-btn')).toBeDefined();
   });
 
-  it('configures attackCost, thwartCost, playUnderAnyPlayerControl, and errata', async () => {
+  it('configures playUnderAnyPlayerControl and errata', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
 
     render(<StatefulCardAttributesSection initial={{}} onChange={handleChange} />);
-
-    // Expand Combat Properties
-    await user.click(screen.getByTestId('section-combat-properties-toggle'));
-
-    // attackCost
-    fireEvent.change(screen.getByTestId('card-attack-cost-input'), { target: { value: '0' } });
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        attackCost: 0,
-      }),
-    );
-
-    // thwartCost
-    fireEvent.change(screen.getByTestId('card-thwart-cost-input'), { target: { value: '2' } });
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        thwartCost: 2,
-      }),
-    );
 
     // Expand Play Requirements for cross-player control
     await user.click(screen.getByTestId('section-play-requirements-toggle'));
@@ -395,8 +312,7 @@ describe('CardAttributesSection', () => {
     render(
       <CardAttributesSection
         supplemental={{
-          traits: ['Avenger'],
-          attackCost: 2,
+          uses: { count: 2, counterType: 'charge' },
           playRequirements: { identityForm: 'HERO' },
         }}
         onChange={vi.fn()}
@@ -404,13 +320,11 @@ describe('CardAttributesSection', () => {
     );
 
     // Card Mechanics auto-expanded
-    expect(screen.getByTestId('card-traits-input')).toBeDefined();
-    // Combat Properties auto-expanded
-    expect(screen.getByTestId('card-attack-cost-input')).toBeDefined();
+    expect(screen.getByTestId('toggle-uses-btn')).toBeDefined();
     // Play Requirements auto-expanded
     expect(screen.getByTestId('play-req-identity-form-select')).toBeDefined();
-    // Layout & Display remains collapsed
-    expect(screen.queryByTestId('card-is-landscape-checkbox')).toBeNull();
+    // Audit & Metadata remains collapsed
+    expect(screen.queryByTestId('audit-ambiguity-file')).toBeNull();
   });
 
   it('resets showAllFields state when cardCode changes', async () => {
@@ -422,14 +336,14 @@ describe('CardAttributesSection', () => {
     // Turn on Show All
     await user.click(screen.getByTestId('toggle-show-all-fields-btn'));
     expect(screen.getByText('Smart View')).toBeDefined();
-    expect(screen.getByTestId('card-traits-input')).toBeDefined();
+    expect(screen.getByTestId('toggle-uses-btn')).toBeDefined();
 
     // Switch card
     rerender(<CardAttributesSection cardCode="01002a" supplemental={{}} onChange={vi.fn()} />);
 
     // State reset to Show All (Smart View active)
     expect(screen.getByText('Show All')).toBeDefined();
-    expect(screen.queryByTestId('card-traits-input')).toBeNull();
+    expect(screen.queryByTestId('toggle-uses-btn')).toBeNull();
   });
 
   it('renders read-only audit timestamp badges when present, and omits them when absent', async () => {

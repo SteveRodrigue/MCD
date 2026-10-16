@@ -605,10 +605,7 @@ export function normalizeLogParams(
     defaultMainSchemeName;
 
   // 8. Resolve 'status'
-  const status =
-    (p.status !== undefined ? String(p.status) : undefined) ??
-    (p.condition !== undefined ? String(p.condition) : undefined) ??
-    'Status';
+  const status = (p.status !== undefined ? String(p.status) : undefined) ?? 'Status';
 
   // 9. Resolve 'source'
   const source =

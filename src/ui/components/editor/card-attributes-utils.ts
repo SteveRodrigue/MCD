@@ -1,8 +1,6 @@
 export function getSectionVisibility(typeCode: string | undefined, showAll: boolean) {
-  if (showAll || !typeCode) return { mechanics: true, combat: true, layout: true, playReqs: true };
+  if (showAll || !typeCode) return { mechanics: true, playReqs: true };
 
-  const combat = ['ally', 'minion', 'villain'].includes(typeCode);
-  const layout = ['side_scheme', 'main_scheme', 'minion', 'villain'].includes(typeCode);
   const playReqs = [
     'ally',
     'upgrade',
@@ -14,7 +12,7 @@ export function getSectionVisibility(typeCode: string | undefined, showAll: bool
   ].includes(typeCode);
   const mechanics = !['treachery', 'obligation', 'environment'].includes(typeCode);
 
-  return { mechanics, combat, layout, playReqs };
+  return { mechanics, playReqs };
 }
 
 export function countAuditFields(audit: any, supplemental: any): number {
@@ -31,28 +29,9 @@ export function countAuditFields(audit: any, supplemental: any): number {
 
 export function countMechanicsFields(supplemental: any): number {
   let count = 0;
-  if (supplemental?.keywords?.length) count++;
-  if (supplemental?.traits?.length) count++;
   if (supplemental?.uses) count++;
-  if (supplemental?.maxPerPlayer != null) count++;
   if (supplemental?.recipient) count++;
   if (supplemental?.attachTo) count++;
-  if (supplemental?.restrictedSlots != null) count++;
-  return count;
-}
-
-export function countCombatFields(supplemental: any): number {
-  let count = 0;
-  if (supplemental?.attackCost != null) count++;
-  if (supplemental?.thwartCost != null) count++;
-  if (supplemental?.additionalBoostCards != null) count++;
-  return count;
-}
-
-export function countLayoutFields(supplemental: any): number {
-  let count = 0;
-  if (supplemental?.isLandscape) count++;
-  if (supplemental?.victoryPoints != null) count++;
   return count;
 }
 

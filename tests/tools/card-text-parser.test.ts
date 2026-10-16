@@ -212,7 +212,14 @@ describe('Card Text Parser', () => {
       expect(() => CardEnrichmentSchema.parse(result.enrichment)).not.toThrow();
     });
 
-    it('parses Superhuman Law Division (01026) — exhaustSelf + resources: [mental]', () => {
+    it('does not emit maxPerPlayer: the limit is derived from the printed text by the loader', () => {
+      const result = parseCardText('Max 1 per player.', '01018');
+
+      expect(result.enrichment).not.toHaveProperty('maxPerPlayer');
+      expect(() => CardEnrichmentSchema.parse(result.enrichment)).not.toThrow();
+    });
+
+    it('parses Superhuman Law Division (01026) — exhaustSelf + resourceCost: { mental: 1 }', () => {
       const text =
         '<b>Alter-Ego Action</b>: Exhaust Superhuman Law Division and spend a [mental] resource → remove 2 threat from a scheme.';
       const result = parseCardText(text, '01026');
@@ -222,7 +229,7 @@ describe('Card Text Parser', () => {
       expect(ability.timing).toBe('ALTER_EGO_ACTION');
       expect(ability.cost).toEqual({
         exhaustSelf: true,
-        resources: ['mental'],
+        resourceCost: { mental: 1 },
       });
       expect(ability.steps[0]).toEqual({
         effect: 'REMOVE_THREAT',

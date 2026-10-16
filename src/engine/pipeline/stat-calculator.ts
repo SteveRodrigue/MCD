@@ -603,7 +603,7 @@ export function getEffectiveAllyLimit(player: PlayerState, state?: GameState): n
 
 /**
  * Computes dynamic effective Retaliate magnitude for an entity (Player, Villain, Minion, Ally, or CardInstance),
- * aggregating base card keywords, enrichment keywords, constant abilities, attachments, and tableau upgrades (RR v1.8 p. 24, ADR-0054).
+ * aggregating base card keywords, constant abilities, attachments, and tableau upgrades (RR v1.8 p. 24, ADR-0054).
  * "If a character has multiple instances of retaliate, the values of each instance are added together."
  */
 export function getEffectiveRetaliate(entity: any, _state?: GameState): number {
@@ -623,16 +623,7 @@ export function getEffectiveRetaliate(entity: any, _state?: GameState): number {
     }
   }
 
-  // 2. Card enrichment keywords
-  const enrichmentKws = entity.enrichment?.keywords || targetCard?.enrichment?.keywords || [];
-  for (const k of enrichmentKws) {
-    const parsed = parseKeywordItem(k);
-    if (parsed && parsed.name.toLowerCase() === 'retaliate') {
-      baseCardRetaliate += parsed.amount;
-    }
-  }
-
-  // 3. Constant abilities on the entity's card itself (e.g. Black Panther 01040a or Whiplash 01172)
+  // 2. Constant abilities on the entity's card itself (e.g. Black Panther 01040a or Whiplash 01172)
   let selfAbilitiesRetaliate = 0;
   const selfAbilities = targetCard?.enrichment?.abilities || entity.abilities || [];
   for (const ab of selfAbilities) {
@@ -655,7 +646,7 @@ export function getEffectiveRetaliate(entity: any, _state?: GameState): number {
   // Base character retaliate takes the maximum of printed keywords or declarative ability declaration
   retaliateTotal += Math.max(baseCardRetaliate, selfAbilitiesRetaliate);
 
-  // 4. In-play attachments on the entity (e.g. Concussion Blasters on Villain, or upgrade attached to Ally/Minion)
+  // 3. In-play attachments on the entity (e.g. Concussion Blasters on Villain, or upgrade attached to Ally/Minion)
   const attachments = entity.attachments || [];
   for (const att of attachments) {
     for (const k of att.card?.keywords || []) {
@@ -683,7 +674,7 @@ export function getEffectiveRetaliate(entity: any, _state?: GameState): number {
     }
   }
 
-  // 5. In-play tableau upgrades for player (e.g. Electrostatic Armor, Dauntless)
+  // 4. In-play tableau upgrades for player (e.g. Electrostatic Armor, Dauntless)
   if (entity.tableau) {
     for (const item of entity.tableau) {
       for (const k of item.card?.keywords || []) {
@@ -736,16 +727,7 @@ export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
     if (s === kw || s.startsWith(kw + ' ')) return true;
   }
 
-  // 2. Card enrichment keywords
-  const enrichmentKws = entity.enrichment?.keywords || entity.card?.enrichment?.keywords || [];
-  for (const k of enrichmentKws) {
-    const parsed = parseKeywordItem(k);
-    if (parsed && parsed.name.toLowerCase() === kw) return true;
-    const s = String(k).toLowerCase().trim();
-    if (s === kw || s.startsWith(kw + ' ')) return true;
-  }
-
-  // 3. Entity traits check (e.g. traits array)
+  // 2. Entity traits check (e.g. traits array)
   const traits =
     entity.traits ||
     entity.card?.traits ||
@@ -757,7 +739,7 @@ export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
     return true;
   }
 
-  // 4. Attachments granting keyword
+  // 3. Attachments granting keyword
   const attachments = entity.attachments || [];
   for (const att of attachments) {
     const abilities = att.card?.enrichment?.abilities || [];
@@ -781,7 +763,7 @@ export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
     }
   }
 
-  // 5. Tableau upgrades granting keyword to hero (for player)
+  // 4. Tableau upgrades granting keyword to hero (for player)
   if (entity.tableau) {
     for (const item of entity.tableau) {
       const abilities = item.card?.enrichment?.abilities || [];

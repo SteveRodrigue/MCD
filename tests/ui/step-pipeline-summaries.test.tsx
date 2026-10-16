@@ -26,13 +26,10 @@ const StatefulStepPipelineEditor: React.FC<{
 describe('Compact Step Pipeline Summaries (Task 4.3)', () => {
   describe('generateStepSummary helper', () => {
     it('generates accurate labels matching all specification patterns', () => {
-      // 1. Basic damage with target and amount
-      expect(
-        generateStepSummary(
-          { effect: 'DEAL_DAMAGE', target: 'CHOSEN_ENEMY', effectParams: { amount: 3 } },
-          0,
-        ),
-      ).toBe('#1 DEAL_DAMAGE → CHOSEN_ENEMY (3)');
+      // 1. Basic damage with amount
+      expect(generateStepSummary({ effect: 'DEAL_DAMAGE', effectParams: { amount: 3 } }, 0)).toBe(
+        '#1 DEAL_DAMAGE (3)',
+      );
 
       // 2. Gate prefix with count
       expect(
@@ -44,16 +41,15 @@ describe('Compact Step Pipeline Summaries (Task 4.3)', () => {
         generateStepSummary(
           {
             effect: 'ADD_STATUS',
-            target: 'VILLAIN',
             gate: 'IF_PREVIOUS_SUCCESS',
             effectParams: { status: 'STUNNED' },
           },
           2,
         ),
-      ).toBe('[IF_PREVIOUS_SUCCESS] #3 ADD_STATUS → VILLAIN (STUNNED)');
+      ).toBe('[IF_PREVIOUS_SUCCESS] #3 ADD_STATUS (STUNNED)');
 
-      // 4. Effect with target only
-      expect(generateStepSummary({ effect: 'SEARCH', target: 'SELF' }, 0)).toBe('#1 SEARCH → SELF');
+      // 4. Effect with no parameters
+      expect(generateStepSummary({ effect: 'SEARCH' }, 0)).toBe('#1 SEARCH');
 
       // 5. Stat modification with positive/negative amounts
       expect(
@@ -124,7 +120,7 @@ describe('Compact Step Pipeline Summaries (Task 4.3)', () => {
       render(
         <StepPipelineEditor
           steps={[
-            { effect: 'DEAL_DAMAGE', target: 'CHOSEN_ENEMY', effectParams: { amount: 3 } },
+            { effect: 'DEAL_DAMAGE', effectParams: { amount: 3 } },
             { effect: 'DRAW', effectParams: { count: 2 } },
           ]}
           abilityIndex={0}
@@ -137,19 +133,15 @@ describe('Compact Step Pipeline Summaries (Task 4.3)', () => {
       expect(screen.getByTestId('step-item-0-1')).toBeDefined();
 
       // Step 0 summary label
-      expect(screen.getByTestId('step-summary-0-0').textContent).toBe(
-        '#1 DEAL_DAMAGE → CHOSEN_ENEMY (3)',
-      );
+      expect(screen.getByTestId('step-summary-0-0').textContent).toBe('#1 DEAL_DAMAGE (3)');
       // Step 1 summary label
       expect(screen.getByTestId('step-summary-0-1').textContent).toBe('#2 DRAW (2)');
 
       // Step 0 is expanded: inputs are visible
       expect(screen.getByTestId('step-id-0-0')).toBeDefined();
-      expect(screen.getByTestId('step-target-0-0')).toBeDefined();
 
       // Step 1 is collapsed: inputs are not in DOM
       expect(screen.queryByTestId('step-id-0-1')).toBeNull();
-      expect(screen.queryByTestId('step-target-0-1')).toBeNull();
     });
 
     it('clicking a collapsed step expands it and collapses the previously active step', async () => {

@@ -259,7 +259,6 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                 onClick={() => {
                   const hasPaymentCost =
                     ab.cost?.resourceCost ||
-                    (ab.cost?.resources && ab.cost.resources.length > 0) ||
                     (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND');
 
                   if (hasPaymentCost && onInitiateAction) {

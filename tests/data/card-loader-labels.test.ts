@@ -63,25 +63,4 @@ describe('Automatic Ability Labels Derivation (Issue #270)', () => {
     const cardTri = testCard('<b>Hero Action</b> <i>(attack/defense/thwart)</i>: Do something.');
     expect(cardTri.enrichment?.abilities?.[0].labels).toEqual(['ATTACK', 'DEFENSE', 'THWART']);
   });
-
-  it('preserves explicit supplemental ability.labels as an override if provided', () => {
-    const raw: RawUpstreamCard = {
-      code: 'test_override',
-      name: 'Test Override',
-      type_code: CardType.EVENT,
-      text: '<b>Hero Action</b> <i>(attack)</i>: Deal 5 damage.',
-    } as any;
-    const enrichment = {
-      abilities: [
-        {
-          id: 'test_ab',
-          timing: 'HERO_ACTION' as const,
-          labels: ['DEFENSE' as const],
-          steps: [],
-        },
-      ],
-    };
-    const card = normalizeRawCard(raw, { test_override: enrichment });
-    expect(card.enrichment?.abilities?.[0].labels).toEqual(['DEFENSE']);
-  });
 });

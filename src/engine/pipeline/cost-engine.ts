@@ -14,7 +14,7 @@ import { getEffectiveMaxHealth } from './stat-calculator';
 import { removeCardFromAllZones } from '../state/state-validator';
 import { randomInt } from '../state/rng';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
-import { getStepEffectParams } from '../../data/supplemental/schema';
+import { getStepEffectParams, type ResourceCost } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
 import { locateCard, readCardResources } from '../queries/card-inspector';
 import { getCardEnrichment } from '../../data/supplemental';
@@ -37,7 +37,6 @@ export function getEventAbilityExtraCost(ability: CardAbility): CardAbility | un
   if (!ability.cost) return undefined;
   const extra = { ...ability.cost };
   delete extra.resourceCost;
-  delete extra.resources;
   delete extra.discardSelf;
   delete extra.requirePrinted;
   return Object.keys(extra).length > 0 ? { ...ability, cost: extra } : undefined;
@@ -69,34 +68,16 @@ export function extractResourceCost(cost?: CardAbility['cost']): {
     return { hasCost: false, requiredAmount: 0, requirePrinted: false };
   }
   const requirePrinted = Boolean(cost.requirePrinted);
-  if (cost.resources && cost.resources.length > 0) {
+  if (cost.resourceCost !== undefined) {
+    const keys = Object.keys(cost.resourceCost) as (keyof ResourceCost)[];
+    const reqType = keys[0];
+    const reqAmount = reqType ? cost.resourceCost[reqType] || 1 : 1;
     return {
       hasCost: true,
-      requiredType: cost.resources[0],
-      requiredAmount: cost.resources.length,
+      requiredType: reqType,
+      requiredAmount: reqAmount,
       requirePrinted,
     };
-  }
-  if (cost.resourceCost !== undefined) {
-    if (typeof cost.resourceCost === 'number') {
-      return {
-        hasCost: true,
-        requiredType: undefined,
-        requiredAmount: cost.resourceCost,
-        requirePrinted,
-      };
-    }
-    if (typeof cost.resourceCost === 'object' && cost.resourceCost !== null) {
-      const keys = Object.keys(cost.resourceCost);
-      const reqType = keys[0];
-      const reqAmount = reqType ? cost.resourceCost[reqType] || 1 : 1;
-      return {
-        hasCost: true,
-        requiredType: reqType,
-        requiredAmount: reqAmount,
-        requirePrinted,
-      };
-    }
   }
   return { hasCost: false, requiredAmount: 0, requirePrinted: false };
 }
@@ -258,6 +239,24 @@ export function getGeneratorProvidedResources(
 }
 
 /**
+ * The cost an ability is paid with. An event ability played from hand that declares no cost still
+ * pays the event's printed cost (RR v1.8 Costs), so an empty cost stands in for it and the printed
+ * cost fallback in the resource step applies.
+ */
+function getEffectiveAbilityCost(
+  ability: CardAbility,
+  sourceCardInst?: CardInstance,
+): CardAbility['cost'] {
+  const hasInHandEventCost =
+    ability.zone === 'HAND' &&
+    sourceCardInst?.card &&
+    ((sourceCardInst.card.type as any) === 'event' ||
+      sourceCardInst.card.type === CardType.EVENT) &&
+    (sourceCardInst.card.cost ?? 0) > 0;
+  return ability.cost ?? (hasInHandEventCost ? {} : undefined);
+}
+
+/**
  * Validates whether a player can satisfy all prerequisites and costs of a card ability.
  */
 export function canPayAbilityCost(
@@ -267,7 +266,7 @@ export function canPayAbilityCost(
   sourceCardInst?: CardInstance,
   options?: AbilityPaymentOptions,
 ): { allowed: boolean; reason?: string } {
-  const cost = ability.cost;
+  const cost = getEffectiveAbilityCost(ability, sourceCardInst);
   if (!cost) return { allowed: true };
 
   // 1. Heal Cost Validation
@@ -603,15 +602,7 @@ export function executeAbilityCost(
   sourceCardInst?: CardInstance,
   options?: AbilityPaymentOptions,
 ): AbilityCostResult {
-  const hasInHandEventCost =
-    ability.zone === 'HAND' &&
-    sourceCardInst?.card &&
-    ((sourceCardInst.card.type as any) === 'event' ||
-      sourceCardInst.card.type === CardType.EVENT) &&
-    (sourceCardInst.card.cost ?? 0) > 0;
-
-  const cost =
-    ability.cost ?? (hasInHandEventCost ? ({} as NonNullable<CardAbility['cost']>) : undefined);
+  const cost = getEffectiveAbilityCost(ability, sourceCardInst);
   let discardedCount = 0;
   const discardedCards: CardInstance[] = [];
   if (!cost) {

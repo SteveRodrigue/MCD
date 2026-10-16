@@ -33,6 +33,7 @@ import {
 } from '../../../engine/pipeline/legal-actions-generator';
 import { getEffectiveHandSize } from '../../../engine/pipeline/stat-calculator';
 import { getDiscardCostBounds } from '../../../engine/pipeline/cost-engine';
+import type { ResourceCost } from '../../../data/supplemental/schema';
 import { peekDecisionPrompt } from '../../../engine/pipeline';
 import { optionRequiresPayment } from '../../utils/option-requires-payment';
 
@@ -298,9 +299,7 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
       );
 
       if (ability?.cost) {
-        const needsResourcePayment =
-          Boolean(ability.cost.resourceCost) ||
-          Boolean(ability.cost.resources && ability.cost.resources.length > 0);
+        const needsResourcePayment = Boolean(ability.cost.resourceCost);
         const needsDiscardPayment =
           ability.cost.discardCard?.from === 'HAND' && ability.cost.discardCard.mode !== 'RANDOM';
 
@@ -583,20 +582,10 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
                       (a) => a.id === (pendingPaymentAction.action as any).abilityId,
                     );
                     if (!ab?.cost) return undefined;
-                    const reqType =
-                      ab.cost.resourceCost && typeof ab.cost.resourceCost === 'object'
-                        ? (Object.keys(ab.cost.resourceCost)[0] as any)
-                        : ab.cost.resources && ab.cost.resources.length > 0
-                          ? (ab.cost.resources[0] as any)
-                          : undefined;
-                    const amount =
-                      typeof ab.cost.resourceCost === 'number'
-                        ? ab.cost.resourceCost
-                        : reqType && typeof ab.cost.resourceCost === 'object'
-                          ? (ab.cost.resourceCost as any)[reqType] || 1
-                          : ab.cost.resources && ab.cost.resources.length > 0
-                            ? ab.cost.resources.length
-                            : 0;
+                    const reqType = ab.cost.resourceCost
+                      ? (Object.keys(ab.cost.resourceCost)[0] as keyof ResourceCost | undefined)
+                      : undefined;
+                    const amount = reqType ? ab.cost.resourceCost?.[reqType] || 1 : 0;
                     const discardBounds =
                       ab.cost.discardCard?.from === 'HAND'
                         ? getDiscardCostBounds(ab.cost.discardCard)
@@ -741,16 +730,10 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
 
             const resCost = optParams?.resourceCost;
             const ability = optParams?.ability;
-            const costAmount =
-              resCost?.amount ??
-              (typeof ability?.cost?.resourceCost === 'number'
-                ? ability.cost.resourceCost
-                : (inPlayCard?.card?.cost ?? 1));
+            const costAmount = resCost?.amount ?? inPlayCard?.card?.cost ?? 1;
             const resourceType =
               resCost?.resourceType ??
-              (typeof ability?.cost?.resourceCost === 'object' && ability.cost.resourceCost !== null
-                ? Object.keys(ability.cost.resourceCost)[0]
-                : undefined);
+              (ability?.cost?.resourceCost ? Object.keys(ability.cost.resourceCost)[0] : undefined);
 
             // Fallback synthetic card if prompt is from an encounter card or villain attachment
             const paymentCard = inPlayCard || {

@@ -12,7 +12,7 @@ export const EFFECT_PARAM_KEYS: Record<EffectType, readonly string[]> = {
   ADD_ACCELERATION: ['amount'],
   ADD_COUNTERS: ['amount', 'counterType', 'target'],
   ADD_STATUS: ['status', 'target'],
-  ADD_THREAT: ['amount', 'cardCode', 'condition', 'perPlayer', 'target'],
+  ADD_THREAT: ['amount', 'cardCode', 'perPlayer', 'target'],
   ADD_TRAIT: ['duration', 'target', 'trait'],
   ATTACHMENT_DAMAGE_SHIELD: ['maxAbsorb'],
   ATTACH_FACEDOWN_CARDS_FROM_HAND: [],

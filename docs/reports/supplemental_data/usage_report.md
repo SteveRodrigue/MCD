@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-10-16T00:40:05.451Z`  
+> **Generated:** `2026-10-16T03:40:49.015Z`  
 > **Source Packs Scanned:** `aoa_encounter, core, core_encounter, cw_encounter, mts`
 
 ---
@@ -45,9 +45,8 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | **Vanilla / Passive Cards** | **14** | [View Full List](detailed_reports/vanilla_and_passive_cards.md) |
 | **Play Requirements** | **2** | `identityForm` (1), `controlFilter` (4) |
 | **Card Uses & Counters** | **6** | `uses (web)` (1), `uses (energy)` (1), `uses (attack)` (1), `uses (snoop)` (1), `uses (arrow)` (1), `uses (medical)` (1) |
-| **Keywords** | **0** | *(None declared directly in supplemental)* |
 | **Player Recipient Overrides** | **1** | `FIRST_PLAYER` (1) |
-| **Stat & Rule Overrides** | **3** | `attackCost` (1), `maxPerPlayer` (7), `playUnderAnyPlayerControl` (3) |
+| **Stat & Rule Overrides** | **1** | `playUnderAnyPlayerControl` (3) |
 
 ---
 
@@ -58,7 +57,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | **Ability Timings** | **15** | 19 | 100.0% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md) |
 | **Trigger Windows** | **20** | 30 | 100.0% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md#2-trigger-windows-triggertypeschema) |
 | **Trigger Filters** | **11** | - | - | `attackerKind` (1), `targetPlayerScope` (3), `damageSource` (1), `cardFilter` (2), `targetScope` (1), `attackedBy` (1), `sourceCardCode` (1), `targetType` (3), `defeatedByAttackOf` (2), `defenderType` (1), `threatSource` (1) |
-| **Cost Primitives** | **9** | - | - | `resourceCost` (9), `exhaustSelf` (20), `spendCounters` (5), `resources` (2), `heal` (1), `discardCard` (2), `discardSelf` (5), `damageHero` (1), `damageSelf` (1) |
+| **Cost Primitives** | **8** | - | - | `exhaustSelf` (20), `spendCounters` (5), `resourceCost` (8), `heal` (1), `discardCard` (2), `discardSelf` (5), `damageHero` (1), `damageSelf` (1) |
 | **Multi-Ability Cards (2+)** | **17** | - | - | [View 17 Cards](detailed_reports/multi_ability_and_multistep_cards.md) |
 
 ---

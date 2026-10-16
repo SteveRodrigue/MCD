@@ -62,14 +62,13 @@
     "01002": {
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-16T03:32:47Z",
+        "reviewedAt": "2026-10-16T03:32:47Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>Forced Response</b>: After you play Black Cat, discard the top 2 cards of your deck. Add each card with a printed [mental] resource discarded this way to your hand."
       },
-      "attackCost": 0,
       "abilities": [
         {
           "id": "black_cat_when_played",
@@ -136,9 +135,6 @@
             }
           },
           "zone": "HAND",
-          "cost": {
-            "resourceCost": 1
-          },
           "steps": [
             {
               "effect": "CANCEL_WHEN_REVEALED",
@@ -149,9 +145,9 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-16T03:32:47Z",
+        "reviewedAt": "2026-10-16T03:32:47Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>Hero Interrupt</b>: When a treachery card is revealed from the encounter deck, cancel its \"<b>When Revealed</b>\" effects."
@@ -353,9 +349,9 @@
           "id": "rechannel",
           "timing": "ACTION",
           "cost": {
-            "resources": [
-              "energy"
-            ],
+            "resourceCost": {
+              "energy": 1
+            },
             "heal": {
               "amount": 1,
               "target": "SELF"
@@ -375,9 +371,9 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-17T20:31:00Z",
-        "reviewedAt": "2026-09-17T20:31:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-16T03:32:47Z",
+        "reviewedAt": "2026-10-16T03:32:47Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Rechannel — <b>Action</b>: Spend a [energy] resource and heal 1 damage from Captain Marvel → draw 1 card. (Limit once per round.)"
@@ -651,7 +647,6 @@
       }
     },
     "01018": {
-      "maxPerPlayer": 1,
       "uses": {
         "counterType": "energy",
         "count": 0
@@ -705,9 +700,9 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-10-05T12:00",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-16T03:32:47Z",
+        "reviewedAt": "2026-10-16T03:32:47Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Max 1 per player.\n<b>Action</b>: Spend X [energy] resources → put X energy counters here.\n<b>Hero Action</b> <i>(attack)</i>: Discard Energy Channel → deal 2 damage to an enemy (to a maximum of 10) for each energy counter here."
@@ -891,9 +886,6 @@
           "timing": "RESPONSE",
           "trigger": "BASIC_ATTACK_PERFORMED",
           "zone": "HAND",
-          "cost": {
-            "resourceCost": 1
-          },
           "steps": [
             {
               "effect": "READY",
@@ -906,9 +898,9 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-16T03:32:47Z",
+        "reviewedAt": "2026-10-16T03:32:47Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 95,
         "originalText": "<b>Response</b>: After you make a basic attack <i>(using your ATK)</i>, ready She-Hulk."
@@ -1270,7 +1262,6 @@
           "steps": [
             {
               "effect": "SEARCH",
-              "target": "CHOSEN_PLAYER",
               "effectParams": {
                 "source": "PLAYER_DISCARD",
                 "target": "CHOSEN_PLAYER",
@@ -1293,9 +1284,9 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-18T10:10:00Z",
-        "reviewedAt": "2026-09-18T10:10:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-16T03:32:47Z",
+        "reviewedAt": "2026-10-16T03:32:47Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>Alter-Ego Action</b>: Exhaust Stark Tower → choose a player. That player returns the topmost [[Tech]] upgrade in their discard pile to their hand."
@@ -1458,9 +1449,9 @@
           "timing": "HERO_ACTION",
           "cost": {
             "exhaustSelf": true,
-            "resources": [
-              "mental"
-            ]
+            "resourceCost": {
+              "mental": 1
+            }
           },
           "steps": [
             {
@@ -1476,8 +1467,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-10-04T12:00",
-        "reviewedAt": "2026-10-04T12:00",
+        "updatedAt": "2026-10-16T03:32:47Z",
+        "reviewedAt": "2026-10-16T03:32:47Z",
         "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -2165,7 +2156,6 @@
       }
     },
     "01057": {
-      "maxPerPlayer": 1,
       "playUnderAnyPlayerControl": true,
       "abilities": [
         {
@@ -2184,9 +2174,9 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-17T18:20:00Z",
-        "reviewedAt": "2026-09-17T18:20:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-16T03:32:47Z",
+        "reviewedAt": "2026-10-16T03:32:47Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Play under any player's control. Max 1 per player.\nYour hero gets +1 ATK."
@@ -2369,14 +2359,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-16T03:32:47Z",
+        "reviewedAt": "2026-10-16T03:32:47Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Max 1 per player.\n<b>Response</b>: After you defeat a minion, exhaust Interrogation Room → remove 1 threat from a scheme."
-      },
-      "maxPerPlayer": 1
+      }
     },
     "01064": {
       "uses": {
@@ -2417,7 +2406,6 @@
       }
     },
     "01065": {
-      "maxPerPlayer": 1,
       "playUnderAnyPlayerControl": true,
       "abilities": [
         {
@@ -2436,9 +2424,9 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-17T18:20:00Z",
-        "reviewedAt": "2026-09-17T18:20:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-16T03:32:47Z",
+        "reviewedAt": "2026-10-16T03:32:47Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Play under any player's control. Max 1 per player.\nYour hero gets +1 THW."
@@ -2848,9 +2836,6 @@
             }
           },
           "zone": "HAND",
-          "cost": {
-            "resourceCost": 1
-          },
           "steps": [
             {
               "id": "step_1_cancel",
@@ -2866,9 +2851,9 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-10-07T12:00",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-16T03:32:47Z",
+        "reviewedAt": "2026-10-16T03:32:47Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>Hero Interrupt</b>: When a treachery card is revealed from the encounter deck, cancel its \"<b>When Revealed</b>\" effects. The villain attacks you instead."
@@ -2938,7 +2923,6 @@
       }
     },
     "01081": {
-      "maxPerPlayer": 1,
       "playUnderAnyPlayerControl": true,
       "abilities": [
         {
@@ -2957,9 +2941,9 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-17T18:20:00Z",
-        "reviewedAt": "2026-09-17T18:20:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-16T03:32:47Z",
+        "reviewedAt": "2026-10-16T03:32:47Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Play under any player's control. Max 1 per player.\nYour hero gets +1 DEF."
@@ -3212,7 +3196,6 @@
       }
     },
     "01091": {
-      "maxPerPlayer": 1,
       "abilities": [
         {
           "id": "avengers_mansion",
@@ -3233,21 +3216,20 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-16T03:32:47Z",
+        "reviewedAt": "2026-10-16T03:32:47Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "Max 1 per player.\n<b>Action</b>: Exhaust Avengers Mansion → choose a player. That player draws 1 card."
       }
     },
     "01092": {
-      "maxPerPlayer": 1,
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-15T18:04:00Z",
-        "reviewedAt": "2026-09-15T18:04:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-16T03:32:47Z",
+        "reviewedAt": "2026-10-16T03:32:47Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Max 1 per player.\n<b>Action</b>: Exhaust Helicarrier → choose a player. Reduce the resource cost of the next card that player plays this phase by 1."

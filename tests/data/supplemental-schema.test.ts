@@ -568,15 +568,55 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       expect(res.success).toBe(true);
     });
 
-    it('Accepts valid attackCost, thwartCost, and isLandscape in CardEnrichmentSchema', () => {
-      const allyEnrichment = {
-        audit: { comment: 'Black Cat takes 0 consequential damage' },
-        attackCost: 0,
-        thwartCost: 1,
-        isLandscape: false,
-      };
-      const res = CardEnrichmentSchema.safeParse(allyEnrichment);
-      expect(res.success).toBe(true);
+    it.each([
+      ['traits', ['Avenger']],
+      ['keywords', ['Surge']],
+      ['maxPerPlayer', 1],
+      ['isLandscape', true],
+      ['restrictedSlots', 2],
+      ['additionalBoostCards', 1],
+      ['attackCost', 0],
+      ['thwartCost', 1],
+      ['victoryPoints', 1],
+    ])('Rejects the upstream-derived card field %s in CardEnrichmentSchema', (field, value) => {
+      const res = CardEnrichmentSchema.safeParse({ [field]: value });
+      expect(res.success).toBe(false);
+    });
+
+    it('Rejects manual ability labels (labels come from the printed text)', () => {
+      const res = CardAbilitySchema.safeParse({
+        id: 'labelled',
+        timing: 'HERO_ACTION',
+        labels: ['ATTACK'],
+        steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 1 } }],
+      });
+      expect(res.success).toBe(false);
+    });
+
+    it.each(['target', 'filter', 'distinctFrom'])(
+      'Rejects the step-level field %s in AbilityStepSchema',
+      (field) => {
+        const res = AbilityStepSchema.safeParse({
+          effect: 'DEAL_DAMAGE',
+          [field]: field === 'filter' ? { types: ['minion'] } : 'PREVIOUS_TARGET',
+        });
+        expect(res.success).toBe(false);
+      },
+    );
+
+    it('Rejects cost.resources and a numeric cost.resourceCost in AbilityCostSchema', () => {
+      expect(AbilityCostSchema.safeParse({ resources: ['energy'] }).success).toBe(false);
+      expect(AbilityCostSchema.safeParse({ resourceCost: 1 }).success).toBe(false);
+    });
+
+    it('Accepts a typed cost.resourceCost map and rejects unknown, zero, or fractional entries', () => {
+      expect(AbilityCostSchema.safeParse({ resourceCost: { energy: 1 } }).success).toBe(true);
+      expect(
+        AbilityCostSchema.safeParse({ resourceCost: { physical: 1, mental: 2, wild: 1 } }).success,
+      ).toBe(true);
+      expect(AbilityCostSchema.safeParse({ resourceCost: { gold: 1 } }).success).toBe(false);
+      expect(AbilityCostSchema.safeParse({ resourceCost: { energy: 0 } }).success).toBe(false);
+      expect(AbilityCostSchema.safeParse({ resourceCost: { energy: 1.5 } }).success).toBe(false);
     });
 
     it('Rejects unknown/undeclared properties in AbilityCostSchema (.strict() enforcement)', () => {

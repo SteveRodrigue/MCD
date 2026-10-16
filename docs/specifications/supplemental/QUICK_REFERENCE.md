@@ -152,7 +152,7 @@ All canonical effect primitives (`EffectTypeSchema`; current count via `npm run 
 | `ADD_ACCELERATION`                        | `amount`                                                                                                                                                                                                 | Adds acceleration tokens to the main scheme.                      |
 | `ADD_COUNTERS`                            | `amount`, `counterType`, `target`                                                                                                                                                                        | Adds specified counters to target card.                           |
 | `ADD_STATUS`                              | `status`, `target`                                                                                                                                                                                       | Places `STUNNED`, `CONFUSED`, or `TOUGH` on target.               |
-| `ADD_THREAT`                              | `amount`, `cardCode`, `perPlayer`, `target`                                                                                                                                                                       | Places threat on target or main scheme.                           |
+| `ADD_THREAT`                              | `amount`, `cardCode`, `perPlayer`, `target`                                                                                                                                                              | Places threat on target or main scheme.                           |
 | `ADD_TRAIT`                               | `duration`, `target`, `trait`                                                                                                                                                                            | Adds temporary trait to target character.                         |
 | `ATTACHMENT_DAMAGE_SHIELD`                | `maxAbsorb`                                                                                                                                                                                              | Absorbs up to `maxAbsorb` damage from host attachment.            |
 | `ATTACH_FACEDOWN_CARDS_FROM_HAND`         | _(none)_                                                                                                                                                                                                 | Attaches cards facedown under host card.                          |
@@ -250,21 +250,21 @@ The universal composable card filter (`UniversalCardFilterSchema`) evaluates car
 
 ### Predicate Criteria Fields
 
-| Field                | Type                | Example / Values                                                                                                               |
-| :------------------- | :------------------ | :----------------------------------------------------------------------------------------------------------------------------- |
-| `traits`             | `string[]`          | `["Avenger", "Aerial"]`                                                                                                        |
-| `types`              | `CardType[]`        | `["ally", "event", "upgrade", "support", "minion", "treachery"]`                                                               |
-| `names`              | `string[]`          | `["Iron Man", "Captain America"]`                                                                                              |
-| `codes`              | `string[]`          | `["01001a", "01002"]`                                                                                                          |
-| `aspects`            | `Aspect[]`          | `["aggression", "justice", "leadership", "protection", "basic", "encounter"]`                                                  |
-| `cost`               | `NumberComparison`  | `{ min?: 1, max?: 3, equals?: 2 }` (supports `costMin` / `costMax` ranges)                                                     |
-| `resourceIcons`      | `ResourceType[]`    | `["physical", "energy", "mental", "wild"]`                                                                                     |
-| `hasKeyword`         | `Keyword`           | `'Guard'` \| `'Overkill'` \| `'Quickstrike'` \| `'Ranged'` \| `'Retaliate'` \| `'Toughness'` \| `'Hazard'` \| `'Acceleration'` |
-| `hasStatus`          | `CharacterStatus[]` | `["STUNNED", "CONFUSED", "TOUGH"]`                                                                                             |
-| `isUnique`           | `boolean`           | `true` \| `false`                                                                                                              |
-| `isIdentitySpecific` | `boolean`           | `true` \| `false`                                                                                                              |
-| `isExhausted`        | `boolean`           | `true` \| `false`                                                                                                              |
-| `sets`               | `string[]`          | `["rhino", "spider_man"]`                                                                                                      |
+| Field                | Type                | Example / Values                                                                                                                                                                                    |
+| :------------------- | :------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `traits`             | `string[]`          | `["Avenger", "Aerial"]`                                                                                                                                                                             |
+| `types`              | `CardType[]`        | `["ally", "event", "upgrade", "support", "minion", "treachery"]`                                                                                                                                    |
+| `names`              | `string[]`          | `["Iron Man", "Captain America"]`                                                                                                                                                                   |
+| `codes`              | `string[]`          | `["01001a", "01002"]`                                                                                                                                                                               |
+| `aspects`            | `Aspect[]`          | `["aggression", "justice", "leadership", "protection", "basic", "encounter"]`                                                                                                                       |
+| `cost`               | `NumberComparison`  | `{ min?: 1, max?: 3, equals?: 2 }` (supports `costMin` / `costMax` ranges)                                                                                                                          |
+| `resourceIcons`      | `ResourceType[]`    | `["physical", "energy", "mental", "wild"]`                                                                                                                                                          |
+| `hasKeyword`         | `Keyword`           | Any engine keyword (`Keyword` enum, 23 values), e.g. `'Guard'` \| `'Toughness'` \| `'Retaliate'`. `Toughness` is the keyword; the tough **status** is matched with status filters, not `hasKeyword` |
+| `hasStatus`          | `CharacterStatus[]` | `["STUNNED", "CONFUSED", "TOUGH"]`                                                                                                                                                                  |
+| `isUnique`           | `boolean`           | `true` \| `false`                                                                                                                                                                                   |
+| `isIdentitySpecific` | `boolean`           | `true` \| `false`                                                                                                                                                                                   |
+| `isExhausted`        | `boolean`           | `true` \| `false`                                                                                                                                                                                   |
+| `sets`               | `string[]`          | `["rhino", "spider_man"]`                                                                                                                                                                           |
 
 ### Composable Boolean Tree
 

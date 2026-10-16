@@ -10,6 +10,8 @@ import { CardAttributesSection } from './CardAttributesSection';
 import { AbilityCostSection } from './AbilityCostSection';
 import { TriggerFilterSection } from './TriggerFilterSection';
 import { StepPipelineEditor } from './StepPipelineEditor';
+import { ChipBar } from './schema-form/ChipBar';
+import { ChipSection } from './schema-form/ChipSection';
 import {
   Zap,
   Plus,
@@ -19,6 +21,32 @@ import {
   ShieldCheck,
   AlertTriangle,
 } from 'lucide-react';
+
+/** Timings whose abilities fire on an event, so the Event Trigger select is shown by default. */
+const TRIGGER_TIMINGS: ReadonlySet<string> = new Set([
+  'FORCED_INTERRUPT',
+  'INTERRUPT',
+  'HERO_INTERRUPT',
+  'ALTER_EGO_INTERRUPT',
+  'FORCED_RESPONSE',
+  'RESPONSE',
+  'HERO_RESPONSE',
+  'ALTER_EGO_RESPONSE',
+  'WHEN_REVEALED',
+  'BOOST',
+]);
+
+type AbilityChipKey = 'cost' | 'triggerFilter' | 'limit' | 'zone' | 'forEachPlayer' | 'errata';
+
+/** Optional ability keys offered as chips, with the value a freshly added chip starts at. */
+const ABILITY_CHIPS: ReadonlyArray<{ key: AbilityChipKey; label: string; initial: unknown }> = [
+  { key: 'cost', label: 'Cost', initial: {} },
+  { key: 'triggerFilter', label: 'Trigger Filter', initial: {} },
+  { key: 'limit', label: 'Usage Limit (RR v1.8 p. 21)', initial: 'ONCE_PER_ROUND' },
+  { key: 'zone', label: 'Activation Zone', initial: 'HAND' },
+  { key: 'forEachPlayer', label: 'For Each Player', initial: true },
+  { key: 'errata', label: 'Ability Errata (Official FFG Ruling)', initial: '' },
+];
 
 export interface AbilityFormBuilderProps {
   supplemental: any;
@@ -39,6 +67,10 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
   const [expandedAbility, setExpandedAbility] = React.useState<number | null>(0);
   const [expandedTriggerFilter, setExpandedTriggerFilter] = React.useState<number | null>(null);
   const [showValidationIssues, setShowValidationIssues] = React.useState(false);
+
+  /** Printed labels the loader derived onto the runtime ability with this id (read-only). */
+  const derivedLabels = (ability: any): string[] =>
+    upstreamCard?.enrichment?.abilities?.find((a) => a.id === ability.id)?.labels ?? [];
 
   const abilities = React.useMemo(() => {
     return Array.isArray(supplemental.abilities) ? supplemental.abilities : [];
@@ -312,6 +344,16 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                       📍 {ability.zone}
                     </span>
                   )}
+                  {derivedLabels(ability).map((label) => (
+                    <span
+                      key={label}
+                      data-testid={`ability-label-badge-${aIdx}-${label}`}
+                      title="Printed ability label, derived from the card text (read-only)"
+                      className="bg-sky-100 text-sky-900 border border-sky-500 px-1.5 py-0.2 rounded text-[10px] font-bold"
+                    >
+                      AUTO: {label}
+                    </span>
+                  ))}
                   {isInvalid && (
                     <span
                       data-testid={`ability-invalid-badge-${aIdx}`}
@@ -380,137 +422,141 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                     </div>
                   </div>
 
-                  {/* Trigger Window (if not basic ACTION) */}
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-                      Event Trigger (Optional for voluntary actions)
-                    </label>
-                    <select
-                      data-testid={`ability-trigger-select-${aIdx}`}
-                      value={ability.trigger || ''}
-                      onChange={(e) =>
-                        handleUpdateAbility(aIdx, {
-                          trigger: e.target.value || undefined,
-                          triggerFilter: !e.target.value ? undefined : ability.triggerFilter,
-                        })
-                      }
-                      className="w-full bg-white border border-black p-1 text-xs rounded font-mono"
-                    >
-                      <option value="">None (Voluntary Action / Constant)</option>
-                      {TriggerTypeSchema.options.map((tr) => (
-                        <option key={tr} value={tr}>
-                          {tr}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Trigger Filter Sub-Form */}
-                  {ability.trigger && (
-                    <TriggerFilterSection
-                      filter={ability.triggerFilter}
-                      abilityIndex={aIdx}
-                      isExpanded={expandedTriggerFilter === aIdx}
-                      onToggleExpand={() =>
-                        setExpandedTriggerFilter(expandedTriggerFilter === aIdx ? null : aIdx)
-                      }
-                      onChange={(newFilter) =>
-                        handleUpdateAbility(aIdx, { triggerFilter: newFilter })
-                      }
-                    />
-                  )}
-
-                  {/* Usage Limit & Activation Zone */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {/* Event Trigger: default for interrupt/response/reveal/boost timings or when set */}
+                  {(TRIGGER_TIMINGS.has(ability.timing) || ability.trigger !== undefined) && (
                     <div>
                       <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-                        Usage Limit (RR v1.8 p. 21)
+                        Event Trigger (Optional for voluntary actions)
                       </label>
                       <select
-                        value={ability.limit || ''}
+                        data-testid={`ability-trigger-select-${aIdx}`}
+                        value={ability.trigger || ''}
                         onChange={(e) =>
                           handleUpdateAbility(aIdx, {
-                            limit: e.target.value
-                              ? (e.target.value as 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE')
-                              : undefined,
-                          })
-                        }
-                        className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
-                      >
-                        <option value="">None (Unlimited)</option>
-                        <option value="ONCE_PER_ROUND">
-                          Limit once per round (ONCE_PER_ROUND)
-                        </option>
-                        <option value="ONCE_PER_PHASE">
-                          Limit once per phase (ONCE_PER_PHASE)
-                        </option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-                        Activation Zone
-                      </label>
-                      <select
-                        value={ability.zone || ''}
-                        onChange={(e) =>
-                          handleUpdateAbility(aIdx, {
-                            zone: e.target.value
-                              ? (e.target.value as 'HAND' | 'PLAY' | 'DISCARD')
-                              : undefined,
+                            trigger: e.target.value || undefined,
+                            triggerFilter: !e.target.value ? undefined : ability.triggerFilter,
                           })
                         }
                         className="w-full bg-white border border-black p-1 text-xs rounded font-mono"
                       >
-                        <option value="">Default (In Play)</option>
-                        <option value="HAND">From Hand (HAND)</option>
-                        <option value="PLAY">In Play (PLAY)</option>
-                        <option value="DISCARD">From Discard (DISCARD)</option>
+                        <option value="">None (Voluntary Action / Constant)</option>
+                        {TriggerTypeSchema.options.map((tr) => (
+                          <option key={tr} value={tr}>
+                            {tr}
+                          </option>
+                        ))}
                       </select>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Per-player resolution: "each player ... that player" (#220) */}
-                  <label className="flex items-center gap-1 text-xs font-bold cursor-pointer">
-                    <input
-                      type="checkbox"
-                      data-testid={`ability-for-each-player-${aIdx}`}
-                      checked={ability.forEachPlayer === true}
-                      onChange={(e) =>
-                        handleUpdateAbility(aIdx, {
-                          forEachPlayer: e.target.checked ? true : undefined,
-                        })
-                      }
-                    />
-                    Resolve for each player, in player order (forEachPlayer)
-                  </label>
-
-                  {/* Ability Errata Field */}
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-                      Ability Errata (Official FFG Ruling)
-                    </label>
-                    <input
-                      type="text"
-                      data-testid={`ability-errata-${aIdx}`}
-                      value={ability.errata || ''}
-                      placeholder="e.g. This ability resolves before..."
-                      onChange={(e) =>
-                        handleUpdateAbility(aIdx, {
-                          errata: e.target.value || undefined,
-                        })
-                      }
-                      className="w-full bg-white border border-black p-1.5 text-xs rounded"
-                    />
-                  </div>
-
-                  {/* Ability Cost Section */}
-                  <AbilityCostSection
-                    cost={ability.cost}
-                    abilityIndex={aIdx}
-                    isEvent={typeCode === 'event'}
-                    onChange={(newCost) => handleUpdateAbility(aIdx, { cost: newCost })}
+                  <ChipBar
+                    testId={`ability-chip-bar-${aIdx}`}
+                    items={ABILITY_CHIPS.filter((chip) => ability[chip.key] === undefined).map(
+                      (chip) => ({
+                        key: chip.key,
+                        label: chip.label,
+                        testId: `ability-chip-add-${chip.key}-${aIdx}`,
+                      }),
+                    )}
+                    onAdd={(key) =>
+                      handleUpdateAbility(aIdx, {
+                        [key]: ABILITY_CHIPS.find((chip) => chip.key === key)?.initial,
+                      })
+                    }
                   />
+
+                  {ABILITY_CHIPS.filter((chip) => ability[chip.key] !== undefined).map((chip) => (
+                    <ChipSection
+                      key={chip.key}
+                      title={chip.label}
+                      testId={`ability-section-${chip.key}-${aIdx}`}
+                      removeTestId={`ability-chip-remove-${chip.key}-${aIdx}`}
+                      onRemove={() => handleUpdateAbility(aIdx, { [chip.key]: undefined })}
+                    >
+                      {chip.key === 'cost' && (
+                        <AbilityCostSection
+                          cost={ability.cost}
+                          abilityIndex={aIdx}
+                          isEvent={typeCode === 'event'}
+                          onChange={(newCost) => handleUpdateAbility(aIdx, { cost: newCost ?? {} })}
+                        />
+                      )}
+                      {chip.key === 'triggerFilter' && (
+                        <TriggerFilterSection
+                          filter={ability.triggerFilter}
+                          abilityIndex={aIdx}
+                          isExpanded={expandedTriggerFilter === aIdx}
+                          onToggleExpand={() =>
+                            setExpandedTriggerFilter(expandedTriggerFilter === aIdx ? null : aIdx)
+                          }
+                          onChange={(newFilter) =>
+                            handleUpdateAbility(aIdx, { triggerFilter: newFilter ?? {} })
+                          }
+                        />
+                      )}
+                      {chip.key === 'limit' && (
+                        <select
+                          data-testid={`ability-limit-select-${aIdx}`}
+                          value={ability.limit}
+                          onChange={(e) =>
+                            handleUpdateAbility(aIdx, {
+                              limit: e.target.value as 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE',
+                            })
+                          }
+                          className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+                        >
+                          <option value="ONCE_PER_ROUND">
+                            Limit once per round (ONCE_PER_ROUND)
+                          </option>
+                          <option value="ONCE_PER_PHASE">
+                            Limit once per phase (ONCE_PER_PHASE)
+                          </option>
+                        </select>
+                      )}
+                      {chip.key === 'zone' && (
+                        <select
+                          data-testid={`ability-zone-select-${aIdx}`}
+                          value={ability.zone}
+                          onChange={(e) =>
+                            handleUpdateAbility(aIdx, {
+                              zone: e.target.value as 'HAND' | 'PLAY' | 'DISCARD',
+                            })
+                          }
+                          className="w-full bg-white border border-black p-1 text-xs rounded font-mono"
+                        >
+                          <option value="HAND">From Hand (HAND)</option>
+                          <option value="PLAY">In Play (PLAY)</option>
+                          <option value="DISCARD">From Discard (DISCARD)</option>
+                        </select>
+                      )}
+                      {chip.key === 'forEachPlayer' && (
+                        /* Per-player resolution: "each player ... that player" (#220) */
+                        <label className="flex items-center gap-1 text-xs font-bold cursor-pointer">
+                          <input
+                            type="checkbox"
+                            data-testid={`ability-for-each-player-${aIdx}`}
+                            checked={ability.forEachPlayer === true}
+                            onChange={(e) =>
+                              handleUpdateAbility(aIdx, {
+                                forEachPlayer: e.target.checked ? true : undefined,
+                              })
+                            }
+                          />
+                          Resolve for each player, in player order (forEachPlayer)
+                        </label>
+                      )}
+                      {chip.key === 'errata' && (
+                        <input
+                          type="text"
+                          data-testid={`ability-errata-${aIdx}`}
+                          value={ability.errata ?? ''}
+                          placeholder="e.g. This ability resolves before..."
+                          onChange={(e) => handleUpdateAbility(aIdx, { errata: e.target.value })}
+                          className="w-full bg-white border border-black p-1.5 text-xs rounded"
+                        />
+                      )}
+                    </ChipSection>
+                  ))}
 
                   {/* Step Pipeline Editor */}
                   <StepPipelineEditor

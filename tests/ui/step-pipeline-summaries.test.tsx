@@ -138,10 +138,10 @@ describe('Compact Step Pipeline Summaries (Task 4.3)', () => {
       expect(screen.getByTestId('step-summary-0-1').textContent).toBe('#2 DRAW (2)');
 
       // Step 0 is expanded: inputs are visible
-      expect(screen.getByTestId('step-id-0-0')).toBeDefined();
+      expect(screen.getByTestId('step-effect-select-0-0')).toBeDefined();
 
       // Step 1 is collapsed: inputs are not in DOM
-      expect(screen.queryByTestId('step-id-0-1')).toBeNull();
+      expect(screen.queryByTestId('step-effect-select-0-1')).toBeNull();
     });
 
     it('clicking a collapsed step expands it and collapses the previously active step', async () => {
@@ -158,20 +158,20 @@ describe('Compact Step Pipeline Summaries (Task 4.3)', () => {
       );
 
       // Initially Step 0 expanded, Step 1 collapsed
-      expect(screen.getByTestId('step-id-0-0')).toBeDefined();
-      expect(screen.queryByTestId('step-id-0-1')).toBeNull();
+      expect(screen.getByTestId('step-effect-select-0-0')).toBeDefined();
+      expect(screen.queryByTestId('step-effect-select-0-1')).toBeNull();
 
       // Click Step 1 summary row to expand it
       await user.click(screen.getByTestId('step-item-0-1'));
 
       // Now Step 1 is expanded, Step 0 is collapsed
-      expect(screen.getByTestId('step-id-0-1')).toBeDefined();
-      expect(screen.queryByTestId('step-id-0-0')).toBeNull();
+      expect(screen.getByTestId('step-effect-select-0-1')).toBeDefined();
+      expect(screen.queryByTestId('step-effect-select-0-0')).toBeNull();
 
       // Click Step 0 to toggle back
       await user.click(screen.getByTestId('step-item-0-0'));
-      expect(screen.getByTestId('step-id-0-0')).toBeDefined();
-      expect(screen.queryByTestId('step-id-0-1')).toBeNull();
+      expect(screen.getByTestId('step-effect-select-0-0')).toBeDefined();
+      expect(screen.queryByTestId('step-effect-select-0-1')).toBeNull();
     });
 
     it('supports reordering and deletion directly from compact summary rows', async () => {
@@ -221,15 +221,15 @@ describe('Compact Step Pipeline Summaries (Task 4.3)', () => {
       );
 
       // Initially only 1 step, expanded
-      expect(screen.getByTestId('step-id-0-0')).toBeDefined();
+      expect(screen.getByTestId('step-effect-select-0-0')).toBeDefined();
 
       // Click Add Step
       await user.click(screen.getByTestId('add-step-btn-0'));
 
       // New step is Step #2 (index 1), should be auto-expanded
-      expect(screen.getByTestId('step-id-0-1')).toBeDefined();
+      expect(screen.getByTestId('step-effect-select-0-1')).toBeDefined();
       // Previously expanded Step 0 is now collapsed
-      expect(screen.queryByTestId('step-id-0-0')).toBeNull();
+      expect(screen.queryByTestId('step-effect-select-0-0')).toBeNull();
     });
 
     it('auto-expands a step that has validation errors even if not active', () => {
@@ -246,7 +246,7 @@ describe('Compact Step Pipeline Summaries (Task 4.3)', () => {
 
       // Step 1 has error, so it forces expanded and shows error
       expect(screen.getByText('• Invalid effect type')).toBeDefined();
-      expect(screen.getByTestId('step-id-0-1')).toBeDefined();
+      expect(screen.getByTestId('step-effect-select-0-1')).toBeDefined();
     });
   });
 });

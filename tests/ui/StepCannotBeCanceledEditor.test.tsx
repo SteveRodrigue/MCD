@@ -28,10 +28,9 @@ describe('Step "cannot be canceled" flag in the Card Editor (#255)', () => {
 
     render(<StepPipelineEditor steps={steps} abilityIndex={0} onChange={handleChange} />);
 
-    const flag = screen.getByTestId('step-cannot-be-canceled-0-0') as HTMLInputElement;
-    expect(flag.checked).toBe(false);
+    expect(screen.queryByTestId('step-cannot-be-canceled-0-0')).toBeNull();
 
-    await user.click(flag);
+    await user.click(screen.getByTestId('step-chip-add-cannotBeCanceled-0-0'));
     expect(handleChange.mock.calls.at(-1)![0][0].cannotBeCanceled).toBe(true);
   });
 });

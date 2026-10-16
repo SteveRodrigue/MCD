@@ -71,6 +71,7 @@ describe('StepPipelineEditor', () => {
     );
 
     // Set step.id
+    await user.click(screen.getByTestId('step-chip-add-id-0-0'));
     const idInput = screen.getByTestId('step-id-0-0');
     await user.type(idInput, 'photonic_blast_damage');
     expect(handleChange).toHaveBeenCalledWith(
@@ -663,5 +664,53 @@ describe('StepPipelineEditor', () => {
     expect(screen.queryByText(/Step Condition/i)).toBeNull();
     expect(screen.queryByTestId(/step-condition/i)).toBeNull();
     expect(screen.queryByTestId(/condition-select/i)).toBeNull();
+  });
+});
+
+describe('StepPipelineEditor progressive disclosure (Phase 4)', () => {
+  const baseStep = { effect: 'DRAW', effectParams: { count: 1, target: 'SELF' } };
+
+  it('shows Effect Primitive and params by default and hides gate, id, and uncancelable', () => {
+    render(<StatefulStepPipelineEditor initial={[baseStep]} />);
+    expect(screen.getByTestId('step-effect-select-0-0')).toBeDefined();
+    for (const key of ['gate', 'id', 'cannotBeCanceled']) {
+      expect(screen.getByTestId(`step-chip-add-${key}-0-0`)).toBeDefined();
+      expect(screen.queryByTestId(`step-section-${key}-0-0`)).toBeNull();
+    }
+  });
+
+  const defaults: Array<[string, unknown]> = [
+    ['gate', 'THEN'],
+    ['id', ''],
+    ['cannotBeCanceled', true],
+  ];
+
+  it.each(defaults)('adds then removes the %s chip', async (key, initial) => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    render(<StatefulStepPipelineEditor initial={[baseStep]} onChange={handleChange} />);
+
+    await user.click(screen.getByTestId(`step-chip-add-${key}-0-0`));
+    expect(handleChange.mock.calls.at(-1)![0][0][key]).toEqual(initial);
+    expect(screen.getByTestId(`step-section-${key}-0-0`)).toBeDefined();
+
+    await user.click(screen.getByTestId(`step-chip-remove-${key}-0-0`));
+    expect(key in handleChange.mock.calls.at(-1)![0][0]).toBe(false);
+    expect(screen.queryByTestId(`step-section-${key}-0-0`)).toBeNull();
+  });
+
+  it('removing the gate also drops gateParams', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    render(
+      <StatefulStepPipelineEditor
+        initial={[{ ...baseStep, gate: 'IF_ZONE_EMPTY', gateParams: { zone: 'SIDE_SCHEMES' } }]}
+        onChange={handleChange}
+      />,
+    );
+    await user.click(screen.getByTestId('step-chip-remove-gate-0-0'));
+    const step = handleChange.mock.calls.at(-1)![0][0];
+    expect('gate' in step).toBe(false);
+    expect('gateParams' in step).toBe(false);
   });
 });

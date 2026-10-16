@@ -390,7 +390,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
             source: 'PLAYER_DECK',
             lookCount: 3,
             takeCount: 1,
-            filter: { trait: 'Tech' },
+            filter: { traits: ['Tech'] },
             selectedDestination: 'HAND',
             unselectedDestination: 'DISCARD',
           },
@@ -422,9 +422,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           effect: 'SEARCH',
           effectParams: {
             source: 'PLAYER_DECK',
-            targetCardCode: '01046',
-            trait: 'Black Panther',
-            type: 'upgrade',
+            filter: { traits: ['Black Panther'], types: ['upgrade'] },
             takeCount: 1,
             selectedDestination: 'HAND',
             shuffleAfter: true,
@@ -439,7 +437,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           effect: 'DISCARD',
           effectParams: {
             source: 'TABLEAU',
-            filter: { cardTypes: ['upgrade', 'support'] },
+            filter: { types: ['upgrade', 'support'] },
             fallback: 'SURGE',
           },
         }).success,
@@ -1144,8 +1142,8 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
                   amount: {
                     from: 'STAT_VALUE',
                     stat: 'SUFFERED_DAMAGE',
+                    clamp: { max: 15 },
                   },
-                  max: 15,
                 },
               },
             ],
@@ -1243,3 +1241,54 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
   });
 });
 
+describe('AbilityStepSchema effectParams validation (Phase 2)', () => {
+  it('accepts known keys with correctly typed values', () => {
+    const result = AbilityStepSchema.safeParse({
+      effect: 'DEAL_DAMAGE',
+      effectParams: { amount: 3, target: 'CHOSEN_ENEMY' },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts a dynamic value source where the engine resolves one', () => {
+    const result = AbilityStepSchema.safeParse({
+      effect: 'DEAL_DAMAGE',
+      effectParams: { amount: { from: 'STAT_VALUE', stat: 'ATTACK' } },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects an unknown effectParams key', () => {
+    const result = AbilityStepSchema.safeParse({
+      effect: 'DRAW',
+      effectParams: { count: 1, bogusKey: 2 },
+    });
+    expect(result.success).toBe(false);
+    expect(JSON.stringify(result.error?.issues)).toContain('bogusKey');
+  });
+
+  it('rejects a wrongly typed value and reports the effectParams path', () => {
+    const result = AbilityStepSchema.safeParse({
+      effect: 'DEAL_DAMAGE',
+      effectParams: { amount: 'lots' },
+    });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path[0] === 'effectParams')).toBe(true);
+  });
+
+  it('rejects an invalid enum value for a typed parameter', () => {
+    const result = AbilityStepSchema.safeParse({
+      effect: 'ADD_STATUS',
+      effectParams: { status: 'FROZEN', target: 'VILLAIN' },
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects any effectParams key on an effect that takes none', () => {
+    const result = AbilityStepSchema.safeParse({
+      effect: 'CANCEL_ATTACK',
+      effectParams: { target: 'SELF' },
+    });
+    expect(result.success).toBe(false);
+  });
+});

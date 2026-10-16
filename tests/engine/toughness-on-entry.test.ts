@@ -1,12 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, StatusCard, Keyword } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
 import { executeEffect } from '@engine/effects';
+import { applyToughnessOnEntry } from '@engine/state/card-instance';
 
 const LUKE_CAGE = '01076'; // ally, "Toughness."
 const SANDMAN = '01102'; // minion, "Toughness."
+const RHINO_STAGE_3 = '01096'; // villain stage, "Toughness."
+const IM_TOUGH = '01105'; // treachery: gives a tough STATUS, grants no keyword
 
 /** Toughness: "This character enters play with a tough status card" (RR v1.8, #253 / #283). */
 describe('Toughness: a character enters play with a tough status card', () => {
@@ -117,5 +120,35 @@ describe('Toughness: a character enters play with a tough status card', () => {
       (m) => m.instanceId === sandman.instanceId,
     );
     expect(inPlay?.statusCards).toEqual([StatusCard.TOUGH]);
+  });
+
+  it('Toughness is the keyword; Tough is the status card (distinct enum values)', () => {
+    expect(Keyword.TOUGHNESS).toBe('Toughness');
+    expect(StatusCard.TOUGH).toBe('Tough');
+  });
+
+  it('a villain stage that prints Toughness (Rhino 01096) enters with a tough status card', () => {
+    const rhino = createCardInstance(cardCatalog.getCard(RHINO_STAGE_3)!);
+    expect(rhino.card.keywords).toContain(Keyword.TOUGHNESS);
+    rhino.statusCards = [];
+    applyToughnessOnEntry(rhino);
+    expect(rhino.statusCards).toEqual([StatusCard.TOUGH]);
+  });
+
+  it('"I\'m Tough" (01105) gives the status without granting the Toughness keyword', () => {
+    const imTough = cardCatalog.getCard(IM_TOUGH)!;
+    expect(imTough.keywords ?? []).not.toContain(Keyword.TOUGHNESS);
+    state.villain.statusCards = [];
+    const res = executeEffect(
+      state,
+      {
+        id: 'im_tough',
+        timing: 'WHEN_REVEALED' as const,
+        steps: [{ effect: 'ADD_STATUS', effectParams: { status: 'TOUGH', target: 'VILLAIN' } }],
+      },
+      { playerId: 'p1' },
+    );
+    expect(res.state.villain.statusCards).toEqual([StatusCard.TOUGH]);
+    expect(res.state.villain.card.keywords ?? []).not.toContain(Keyword.TOUGHNESS);
   });
 });

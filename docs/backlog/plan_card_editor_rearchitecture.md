@@ -1,6 +1,6 @@
 # Card Editor Re-Architecture Plan (Complete Specification)
 
-> **Status:** In progress — Phases 1–5 implemented (2026-10-16).
+> **Status:** In progress — Phases 1–5 implemented; Phase 6 approved (2026-10-16).
 > **Milestone:** Gate 1 — Rhino Release (user-added scope, 2026-10-15).
 > **Depends on:** Issue [#316](https://github.com/SteveRodrigue/MCD/issues/316) (Dash `null` basic powers) lands first. See §0.2.
 
@@ -251,6 +251,83 @@ Scanned `core.json` (101 cards), `core_encounter.json` (56), `aoa_encounter.json
 
 ---
 
+### Phase 6: Engine/Schema Type Unification & Toughness Alignment (added 2026-10-16)
+
+Resolves §8.3 and §8.4. User direction: an engine member that no card can use gets a real card imported as evidence and test; a pure duplicate is cleaned up now.
+
+#### 6.1 Rules (RR v1.8)
+
+- **TOUGHNESS** (keyword, `references/rules/glossary/T.md#toughness`): "When a character with the toughness keyword enters play, place a tough status card on it." Equivalent to "Forced Response: After this character enters play, give it a tough status card."
+- **TOUGH** (status card, `T.md#tough`, `S.md#status-cards`): "If a character with a tough status card would take any amount of damage, prevent all of that damage and discard a tough status card from that character instead."
+- So **Toughness** is only ever a *keyword* (printed on the card), and **Tough** is only ever a *status card* (on a character in play). "Has the Toughness keyword" and "has a tough status card" are different questions.
+
+#### 6.2 Toughness / Tough alignment
+
+Today the engine keyword enum says `Keyword.TOUGH = 'Tough'` ([`enums.ts`](../../src/engine/models/enums.ts)), duplicating `StatusCard.TOUGH = 'Tough'`. The schema says `'Toughness'`. They only meet through an alias hack in [`keyword-helpers.ts:35-36`](../../src/engine/models/keyword-helpers.ts#L35-L36). Gate 1 cards depending on it: Rhino `01096`, Luke Cage `01076`, Sandman `01102` (keyword); "I'm Tough" `01105` (status).
+
+| File | Change |
+| :-- | :-- |
+| `src/engine/models/enums.ts` | `Keyword.TOUGH = 'Tough'` → `Keyword.TOUGHNESS = 'Toughness'`. `StatusCard.TOUGH = 'Tough'` unchanged. |
+| `src/data/importer/card-loader.ts:161` | `keywords.add(Keyword.TOUGHNESS)` |
+| `src/engine/state/card-instance.ts:50` | `applyToughnessOnEntry` checks `Keyword.TOUGHNESS` (still gives `StatusCard.TOUGH`) |
+| `src/engine/models/keyword-helpers.ts:35-36` | Delete the `tough` ↔ `toughness` alias |
+| `src/data/supplemental/schema-primitives.ts` | `KeywordSchema = z.enum(Keyword)`, derived from the engine enum (23 values; `enums.ts` has no imports, so no cycle) |
+| `src/data/supplemental/effect-params.ts:44-53` | Delete the local `KEYWORD_OPTIONS` copy; `GRANT_KEYWORD` / `GRANT_ATTACK_KEYWORD` use `KeywordSchema.options` |
+| `tools/audit/schema-member-coverage.ts:44-45` | Remove the `hasKeyword=Toughness` `KNOWN_GAPS` entry (#280) |
+| Pack data | Grep all 5 packs for `"Tough"` used as a keyword (vs. a status). Keyword uses become `Toughness`; status uses (`ADD_STATUS` / `REMOVE_STATUS` / status filters) stay `Tough`. Bump audit stamps on changed cards. |
+
+Tests:
+
+- `tests/engine/toughness-on-entry.test.ts`: Rhino `01096`, Luke Cage `01076`, Sandman `01102` enter with a tough status card; "I'm Tough" `01105` gives the **status** without granting the keyword.
+- `tests/engine/filters/card-filter.test.ts`: `hasKeyword: 'Toughness'` matches Sandman; `hasKeyword: 'Tough'` is rejected by the schema; a character holding only a tough **status** does not match `hasKeyword: 'Toughness'`.
+- `tests/data/schema-member-coverage.test.ts`: passes without the #280 gap.
+- Update existing tests that use `Keyword.TOUGH` or the keyword string `'Tough'` (full list by `rg "Keyword.TOUGH\b|'Tough'" tests`; known: `keyword-only-minions`, `combat-damage-prevention-and-overkill`, `villain-phase`, `villain-stage-change`, `setup-ability-owners`).
+
+Closes #280 (its Luke Cage part was fixed by #253).
+
+#### 6.3 Engine type unification (`src/engine/models/abilities.ts`)
+
+Comparison of engine types against `schema.ts` (2026-10-16):
+
+| Member | Engine readers in `src/` | Upstream cards | Action |
+| :-- | :-- | :-- | :-- |
+| `AbilityTiming` | — | — | Identical set → re-export the schema type |
+| `EffectType` legacy names (`DISCARD_TOP_DECK_FILTER`, `CANCEL_ATTACK_AND_STUN`, `VILLAIN_SCHEMES_IMMEDIATELY`, `VILLAIN_ATTACKS_IMMEDIATELY`, `CHOICE_DAMAGE_OR_THREAT`, `CONVERT_THREAT_TO_DAMAGE`, `CHANGE_FORM_DRAW_TO_HAND_SIZE`, `THW_BONUS_PER_SIDE_SCHEME`, `DISCARD_SELF`) and `\| string` | 0 | — | **Duplicate/dead:** delete; re-export schema `EffectType` (56 values) |
+| `AbilityCost.discardFromHand`, `takeDamage`, `selfDamage` | 0 (`selfDamage` is only a local variable name for `damageSelf`) | — | **Dead:** delete |
+| `AbilityCost.discardCard.from: 'DECK' \| 'PLAY'` | 0 (every reader handles `'HAND'` only) | — | **Dead:** narrow to `'HAND'`; re-export schema `AbilityCost` |
+| `CardUsesDefinition.type`, `.max` | 0 (`max` is already rejected by the schema) | — | **Dead:** delete; re-export schema `CardUses` |
+| `TriggerType.CARD_LEFT_PLAY` | 0 (never dispatched) | 15 cards print "after … leaves play" (none core) | **Dead in engine:** delete; filed as #322 |
+| `TriggerType.CARD_DISCARDED` | dispatched in 8 places, no listener can exist | 10 cards (none core) | **Remove** with its dispatch sites; filed as #320 (6.4) |
+| `TriggerType.WHEN_BOOST_CARD_REVEALED` | dispatched once (`boost-resolution.ts:125`), no listener can exist | 10 cards (none core) | **Remove** with its dispatch site; filed as #321 (6.4) |
+
+After 6.3, `TriggerType` also becomes a re-export. Fix every compile error the narrowing exposes. If a reader turns out to need a deleted member, stop and report.
+
+#### 6.4 Live-but-unauthorable triggers → filed as missing features (user decision 2026-10-16)
+
+No Core Set card uses them, and building them needs engine work (new payload fields, trigger filters, primitives). Instead of importing evidence cards now, the research is filed and the stale code is removed in 6.3:
+
+- `CARD_DISCARDED` → #320 (dispatch sites, 10 candidate cards, recommended evidence card Digging Deep `40060`).
+- `WHEN_BOOST_CARD_REVEALED` → #321 (dispatch site, 10 candidate cards, recommended evidence card Target Acquired `08024`).
+- `CARD_LEFT_PLAY` → #322 (15 candidate cards, recommended evidence card Cosmo `21180b`).
+
+6.3 therefore **removes** `CARD_DISCARDED` and `WHEN_BOOST_CARD_REVEALED` from the engine `TriggerType` together with their 9 dispatch sites (8 in `effects/index.ts` / `cost-engine.ts`, 1 in `boost-resolution.ts`). Tests that used them only as examples move to a live trigger: `tests/engine/infinite-loop-detection.test.ts` → `DAMAGE_TAKEN` (or another schema trigger with an existing dispatch); the dispatch-count fixture in `tests/engine/boost-resolution.test.ts` (~174) is deleted. The removal commit hash is added to #320–#322 afterwards.
+
+#### 6.5 Docs
+
+- ADR-0083: add a "Phase 6" consequence paragraph (Toughness/Tough split, type unification, evidence cards).
+- The supplemental spec section that lists keywords: Toughness (keyword) vs. Tough (status).
+- Mark §8.3 and §8.4 resolved; CHANGELOG fragment bullet; #280 closes on push.
+
+#### 6.6 Order & commits
+
+1. 6.2 Toughness alignment (commit, `Fixes #280`).
+2. 6.3 Type unification incl. trigger removal (commit, `Refs #320 #321 #322`); add the hash to those issues.
+3. 6.5 Docs + CHANGELOG (commit).
+
+Verification per commit: targeted + related vitest (0 failed, 0 skipped), typecheck, lint, format. Full `npm test` and `npm run build` on the last commit.
+
+---
+
 ## 5. Tests
 
 Written first (TDD) for each phase. The list below comes from a repo-wide search; `rtk npm run typecheck` after Phase 1 is the final check for anything missed.
@@ -347,8 +424,8 @@ Historical reports in `docs/reports/` are not edited.
 
 1. **Phase 2 dry-run failures:** any pack data that fails the new strict `EFFECT_PARAM_SCHEMAS` is reported to the user before the schema or data is changed (§4 Phase 2.3).
 2. **Variable X costs ([#318](https://github.com/SteveRodrigue/MCD/issues/318)):** the typed `resourceCost` map (positive integers) cannot express X. #318 will extend it (e.g. `"X"` value or a separate field). Whichever lands second adapts to the other; `<ZodSchemaForm />` picks up the new shape through `.meta()`.
-3. **Phase 1.5 deferred (engine type re-exports):** re-exporting `TriggerType`, `EffectType`, `AbilityTiming`, `AbilityCost`, `CardUsesDefinition` from `schema.ts` is not behavior-neutral. The engine types are wider: extra trigger values (`WHEN_BOOST_CARD_REVEALED`, `CARD_DISCARDED`, `CARD_LEFT_PLAY`), `EffectType | string`, cost fields `discardFromHand` / `takeDamage` / `selfDamage`, uses fields `type` / `max`, and `discardCard.from` of `HAND | DECK | PLAY`. Options: (a) keep deferred, (b) make the schema authoritative and delete the engine-only members, (c) widen the schema. Needs a user decision; Phase 1 only switched `AbilityCost.resourceCost` to the schema's `ResourceCost` type.
-4. **KeywordSchema sync deferred (Phase 2.2):** `KeywordSchema` has 8 values, `src/engine/models/enums.ts` has 23. Aligning them means renaming `Toughness` to `Tough` (tracked by `KNOWN_GAPS`, #280) and choosing which engine keywords are valid `hasKeyword` filter values. No pack uses `hasKeyword` today. Needs a user decision.
+3. **Resolved by Phase 6.3. Phase 1.5 deferred (engine type re-exports):** re-exporting `TriggerType`, `EffectType`, `AbilityTiming`, `AbilityCost`, `CardUsesDefinition` from `schema.ts` is not behavior-neutral. The engine types are wider: extra trigger values (`WHEN_BOOST_CARD_REVEALED`, `CARD_DISCARDED`, `CARD_LEFT_PLAY`), `EffectType | string`, cost fields `discardFromHand` / `takeDamage` / `selfDamage`, uses fields `type` / `max`, and `discardCard.from` of `HAND | DECK | PLAY`. Options: (a) keep deferred, (b) make the schema authoritative and delete the engine-only members, (c) widen the schema. Needs a user decision; Phase 1 only switched `AbilityCost.resourceCost` to the schema's `ResourceCost` type.
+4. **Resolved by Phase 6.2. KeywordSchema sync deferred (Phase 2.2):** `KeywordSchema` has 8 values, `src/engine/models/enums.ts` has 23. User ruling (2026-10-16): follow RR v1.8 — `Toughness` is the keyword, `Tough` is the status card; the schema derives all keywords from the engine enum (see Phase 6.2, #280).
 5. **Deadpool-pack allies' consequential costs** (`44013`–`44016`, `44043`–`44045`): `?? 0` follows upstream. Verify against card images when those packs are integrated (Gate 4). No Gate 1 impact.
 
 ## 9. Implementation notes

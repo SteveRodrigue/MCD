@@ -9,6 +9,7 @@ import {
   DurationSchema,
   DynamicValueSourceSchema,
   GenerateResourceParamsSchema,
+  KeywordSchema,
   PlayCardFromZoneParamsSchema,
   ReduceNextCardCostParamsSchema,
   ResourceTypeSchema,
@@ -40,17 +41,6 @@ const optional = <T extends z.ZodType>(schema: T, meta: FieldMeta) =>
 
 const target = (label: string, defaultValue?: string, description?: string) =>
   optional(TargetSelectorSchema, { label, defaultValue, description, primary: true });
-
-const KEYWORD_OPTIONS = [
-  'Retaliate',
-  'Overkill',
-  'Ranged',
-  'Quickstrike',
-  'Guard',
-  'Hazard',
-  'Acceleration',
-  'Toughness',
-] as const;
 
 const BONUS_DESCRIPTION = 'Dynamic bonus calculated from game state or discarded cards';
 const effectOnly = () => z.object({}).strict();
@@ -341,7 +331,7 @@ export const EFFECT_PARAM_SCHEMAS: Record<EffectType, z.ZodObject<any>> = {
     .object({
       keyword: optional(z.string().min(1), {
         label: 'Keyword',
-        options: KEYWORD_OPTIONS,
+        options: KeywordSchema.options,
         defaultValue: 'Overkill',
         primary: true,
       }),
@@ -351,7 +341,7 @@ export const EFFECT_PARAM_SCHEMAS: Record<EffectType, z.ZodObject<any>> = {
     .object({
       keyword: optional(z.string().min(1), {
         label: 'Keyword',
-        options: KEYWORD_OPTIONS,
+        options: KeywordSchema.options,
         defaultValue: 'Retaliate',
         primary: true,
       }),

@@ -158,7 +158,7 @@ export function parseKeywords(raw: RawUpstreamCard): Keyword[] {
     keywords.add(Keyword.RETALIATE);
   }
   if (printed('surge')) keywords.add(Keyword.SURGE);
-  if (printed('toughness')) keywords.add(Keyword.TOUGH);
+  if (printed('toughness')) keywords.add(Keyword.TOUGHNESS);
   if (printed('stalwart')) keywords.add(Keyword.STALWART);
   if (printed('steady')) keywords.add(Keyword.STEADY);
   const incite = getPrintedKeywordValue(raw.text, 'incite');

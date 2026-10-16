@@ -146,5 +146,5 @@ Not all play restrictions are declared in supplemental `playRequirements`. Unive
    - Restricted card limit (base 2 slots, modified by cards like *Side Holster*).
 
 3. **Per-Player Limits:**
-   - Evaluated dynamically via `maxPerPlayer` / `max_per_player`.
+   - `maxPerPlayer` is derived from the printed text ("Max N per player") by `card-loader.ts`; supplemental data cannot declare it (ADR-0083).
 

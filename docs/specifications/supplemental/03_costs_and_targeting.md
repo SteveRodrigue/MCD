@@ -12,7 +12,7 @@ The optional `cost` object defines mandatory prerequisites that must be satisfie
 ```json
 "cost": {
   "exhaustSelf": true,
-  "resources": ["energy", "physical"],
+  "resourceCost": { "energy": 1, "physical": 1 },
   "damageHero": 1,
   "spendCounters": {
     "amount": 1,
@@ -31,14 +31,15 @@ The optional `cost` object defines mandatory prerequisites that must be satisfie
 | `discardSelf`   | `boolean`                          | `true`                                                  | In-play card instance is discarded to owner's discard pile as an ability cost (e.g. upgrades/supports). Event cards discard intrinsically per RR v1.8 *Event* and cannot declare `cost.discardSelf`. |
 | `damageHero`    | `number`                           | `1`                                                     | Direct damage the hero identity must suffer as a cost (e.g. _War Machine_).                |
 | `damageSelf`    | `number`                           | `1`                                                     | Direct damage the card instance itself must suffer as a cost.                              |
-| `resources`     | `ResourceType[]`                   | `["energy", "mental"]`                                  | Specific printed resource types required (`'physical'`, `'energy'`, `'mental'`, `'wild'`). |
-| `resourceCost`  | `number \| Record<string, number>` | `2` or `{"physical": 1}`                                | Generic untyped resource cost ($N$) or typed resource map. Evaluated in `cost-engine.ts`.  |
+| `resourceCost`  | `{ physical?, energy?, mental?, wild? }` | `{"energy": 1}` | Typed resource map: each key is a positive integer count of that resource type. Strict (unknown keys are rejected). A wild resource can pay any typed key; `wild` as a key means a printed "Spend a [wild] resource". The old `resources` array and the untyped numeric `resourceCost` were removed (ADR-0083). Evaluated in `cost-engine.ts`. |
 | `requirePrinted`| `boolean`                          | `true`                                                  | When true, resources paid must match printed icons on cards (RR v1.8 p. 15).                |
 
-> **Typed-cost eligibility:** for a typed cost (`resources` or a typed `resourceCost`), the payment modal disables hand cards and generators with no icon of that type. A Wild icon qualifies unless `requirePrinted` is `true`. See ADR-0072 addendum (Issues #180, #129).
+> **Typed-cost eligibility:** for a typed `resourceCost`, the payment modal disables hand cards and generators with no icon of that type. A Wild icon qualifies unless `requirePrinted` is `true`. See ADR-0072 addendum (Issues #180, #129).
 | `discardCard`   | `object`                           | `{"count": 1, "from": "HAND", "filter": { ... }}`       | Card(s) discarded from `"HAND"` (the only source the cost engine implements). `count` takes exactly that many cards; `maxCount` lets the player choose 1 to N (zero would change nothing). An event pays it when played, before its steps resolve; the played event is not part of the hand it can use. Supports `filter`.  |
 | `spendCounters` | `object`                           | `{"amount": 1, "counterType": "web", "target": "SELF"}` | Decrements counters from the card instance or player identity.                             |
 | `heal`          | `object`                           | `{"amount": 1, "target": "SELF"}`                       | Damage must be healed as an atomic prerequisite cost (RR v1.8 p. 11, 16).                  |
+
+> **Event printed-cost fallback:** an event ability declares no `cost.resourceCost` for the event's own printed cost. When an ability played from hand declares no resource cost, `cost-engine.ts` (`getEffectiveAbilityCost`) falls back to the printed card cost from upstream `raw.cost`, for both the affordability check and the payment. Declare a resource cost on an event only for an extra cost the card prints on top of its event cost (for example "spend a [mental] resource"). `tests/data/supplemental-pack-guards.test.ts` enforces this for HAND-zone event abilities. Variable "Spend X" costs are tracked in #318 and are not expressible yet.
 
 ### Universal Resource Payment Engine (`executeResourceCostPayment`)
 

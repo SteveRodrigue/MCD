@@ -1,6 +1,6 @@
 # [ADR-0078] One Damage Pipeline and the Attack Label
 
-- **Status:** Accepted (parts 1 to 3)
+- **Status:** Accepted (parts 1 to 3; superseded in part by [ADR-0083](0083-schema-driven-card-editor-and-upstream-derived-fields.md) regarding the manual `ability.labels` override (labels now come only from printed text))
 - **Date:** 2026-10-05
 - **Authors:** MCD Core Team
 - **Deciders:** Owner & Claude

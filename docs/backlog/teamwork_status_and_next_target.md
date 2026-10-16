@@ -1,6 +1,6 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-15 (Issue #317 Call for Action includes teammate identity in-play actions delivered; active queue: empty)
+> **Last updated:** 2026-10-16 (Issue #319 Card Editor re-architecture in progress, Phases 1 to 5 implemented; #317 delivered)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
 > **Verification baseline:** 🟢 2,720 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
@@ -74,7 +74,9 @@ _None currently._
 
 ### 3.4 UI should-haves
 
-_None currently._
+| #   | Issue                                                   | Item                                                           | Estimate | Notes                                                                                                                          |
+| :-- | :------------------------------------------------------ | :------------------------------------------------------------- | :------- | :----------------------------------------------------------------------------------------------------------------------------- |
+| 21  | [#319](https://github.com/SteveRodrigue/MCD/issues/319) | Card Editor re-architecture (schema-driven forms), in progress | 3 days   | Plan: [plan_card_editor_rearchitecture.md](plan_card_editor_rearchitecture.md); ADR-0083; #316 fixed; variable X costs in #318 |
 
 **Gate 1 is done when** sections 3.1 to 3.4 are empty, the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
 

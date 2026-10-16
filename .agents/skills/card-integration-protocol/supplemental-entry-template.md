@@ -2,6 +2,8 @@
 
 Strict template: the entry must match the schema in `src/data/supplemental/schema.ts` exactly. Replace the `<placeholders>`; timestamps and `reviewedBy` follow the [audit stamp rules](../../rules/shared-quality-gates.md#audit-stamp).
 
+Cost rules (ADR-0083): `resourceCost` is the typed map only (`{ "physical": 1 }`); never copy an event's printed cost into `cost` (the engine reads it from upstream); never declare upstream-derived fields (`traits`, `keywords`, `maxPerPlayer`, `isLandscape`, `restrictedSlots`, `additionalBoostCards`, `attackCost`, `thwartCost`, `victoryPoints`, ability `labels`).
+
 ```json
 "{card_code}": {
   "audit": {

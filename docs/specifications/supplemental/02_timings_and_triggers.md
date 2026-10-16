@@ -112,7 +112,7 @@ Cards print some abilities with a label in parentheses: "(attack)", "(thwart)", 
 | `THWART`  | The ability is a thwart made by the resolving player's identity (RR v1.8 glossary L & T). Threat removal steps pass `thwarterType: 'HERO'` and `suppressTrigger: true`. It is **one thwart** however many schemes or threat removal steps it has: after the ability fully resolves, `THWART_RESOLVED` is dispatched once with `sourceInstanceId: playerId` and `sourceCardCode: player.activeFormCard.code`. A Confused status card cancels the ability and is consumed upon initiation (can be attempted even without valid targets, RR v1.8 p. 28). |
 | `DEFENSE` | When resolved during an enemy attack, marks the player's identity as the defender (`heroDefended = true`, `defender = { type: 'HERO', playerId }` if no ally defender was declared). Enables post-defense triggers such as `ATTACK_DEFENDED` with `defenderType: 'HERO'` for reactions (e.g. Counter-Punch `01077`). |
 
-Supplemental JSON packs do not declare manual `"labels"`. All ability labels are derived dynamically from card text on load, with explicit supplemental `ability.labels` retained solely as an override mechanism if ever required.
+Supplemental JSON packs do not declare `"labels"`: `CardAbilitySchema` is strict and rejects the field (ADR-0083). Labels come only from `parseAbilityLabelsFromText(raw.text)` on load, and the runtime `CardAbility.labels` is filled from it. The Card Editor shows them as read-only `AUTO` badges in the ability header.
 
 ---
 

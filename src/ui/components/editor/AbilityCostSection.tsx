@@ -1,6 +1,6 @@
 import React from 'react';
 import { Shield, Coins, AlertCircle } from 'lucide-react';
-import { AbilityCostSchema } from '../../../data/supplemental/schema';
+import { AbilityCostSchema, ResourceTypeSchema } from '../../../data/supplemental/schema';
 import { ZodSchemaForm } from './schema-form/ZodSchemaForm';
 import { kebabCase } from './schema-form/test-id';
 
@@ -131,7 +131,7 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {(['physical', 'energy', 'mental', 'wild'] as const).map((res) => {
+          {ResourceTypeSchema.options.map((res) => {
             const count = getResourceCount(res);
             return (
               <div

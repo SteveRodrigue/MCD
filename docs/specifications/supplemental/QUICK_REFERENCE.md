@@ -20,8 +20,6 @@ A card entry in `src/data/supplemental/pack/<pack>.json`:
     "originalText": "Exact printed card text here"
   },
   "uses": { "count": 3, "counterType": "all-purpose", "discardOnEmpty": true },
-  "keywords": ["Guard", { "keyword": "Ranged" }],
-  "isLandscape": false,
   "recipient": { "type": "CARD_SET_OWNER" },
   "noSupplementalNeeded": false
 }
@@ -29,24 +27,18 @@ A card entry in `src/data/supplemental/pack/<pack>.json`:
 
 ### Root Properties Summary
 
+Traits, keywords (incl. Victory X), max per player, orientation, restricted slots, boost cards and ally consequential damage are derived from upstream and rejected if declared (ADR-0083).
+
 | Property                    | Type               | Description                                                                                           |
 | :-------------------------- | :----------------- | :---------------------------------------------------------------------------------------------------- |
 | `abilities`                 | `CardAbility[]`    | Actions, interrupts, responses, constants, setup, boosts.                                             |
 | `playRequirements`          | `PlayRequirements` | Identity form, traits, control filters required to play/enter play.                                   |
 | `audit`                     | `CardAuditRecord`  | Verification record: `rulesVersion`, `confidence`, `originalText`, etc.                               |
 | `uses`                      | `CardUses`         | `count`, `counterType`, `discardOnEmpty`.                                                             |
-| `keywords`                  | `KeywordEntry[]`   | String (`"Guard"`) or structured (`{ keyword: "Ranged", amount?: 1 }`).                               |
-| `isLandscape`               | `boolean`          | True for landscape cards (e.g. main schemes).                                                         |
 | `recipient`                 | `PlayerRecipient`  | `{ type: "FIRST_PLAYER" \| "REVEALING_PLAYER" \| "CARD_SET_OWNER" \| "IDENTITY", codes?: string[] }`. |
 | `noSupplementalNeeded`      | `boolean`          | True for cards with no rules text or purely vanilla stats.                                            |
-| `attackCost` / `thwartCost` | `number`           | Additional resource/cost penalty to attack or thwart.                                                 |
-| `maxPerPlayer`              | `number`           | Maximum copies a single player may have in play.                                                      |
 | `attachTo`                  | `AttachTo`         | Host selection (`VILLAIN`, `MINION`, `ENEMY`) and optional fallback `otherwise: SURGE`.               |
 | `playUnderAnyPlayerControl` | `boolean`          | Player card can be played into another player's tableau.                                              |
-| `restrictedSlots`           | `number`           | Occupies restricted weapon/item slots (default 1).                                                    |
-| `additionalBoostCards`      | `number`           | Villain/enemy deals extra boost cards when activating.                                                |
-| `victoryPoints`             | `number`           | Added to victory display when defeated.                                                               |
-| `traits`                    | `string[]`         | Additional or override traits.                                                                        |
 | `errata`                    | `string \| null`   | Formal errata text overlay.                                                                           |
 
 ---
@@ -101,8 +93,7 @@ A card entry in `src/data/supplemental/pack/<pack>.json`:
 - `exhaustSelf`: `boolean`
 - `exhaustCard`: `'SELF_IDENTITY'`
 - `discardSelf`: `boolean`
-- `resources`: Array of `'physical'` | `'energy'` | `'mental'` | `'wild'`
-- `resourceCost`: `number` or specific count object
+- `resourceCost`: `{ physical?: number, energy?: number, mental?: number, wild?: number }` (typed map of positive integers; no untyped number, no `resources` array)
 - `requirePrinted`: `boolean`
 - `damageHero` / `damageSelf`: `number`
 - `spendCounters`: `{ amount: number, counterType?: string, target?: 'SELF' | 'IDENTITY' }`

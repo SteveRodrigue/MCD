@@ -22,6 +22,7 @@ This file is the canonical source for policies shared by MCD agent workflows. Sk
 - Align implementation work with the currently active roadmap and milestone gates unless the user
   explicitly changes scope. Read-only audits may inspect any user-selected scope.
 - Do not introduce permanent shims, aliases, deprecated names, duplicate paths, or temporary shortcuts without explicit approval.
+- **Refactor-First & Single-Path Mandate:** Never propose "supporting both" or duplicating functions for minor variations. Always prefer merging similar functions, adding a parameter to an existing function, or refactoring complex/spaghetti code in the path of the change and updating all callers in scope.
 - Tests must pass or fail; never add or retain skipped or todo tests to hide unfinished work.
 
 ## Supplemental card comments policy
@@ -42,7 +43,7 @@ Supplemental card entries carry `audit.createdAt`, `audit.updatedAt`, `audit.rev
 
 Before modifying source, tests, supplemental data, dependencies, or configuration:
 
-1. Create or update a reviewable implementation plan with rules/spec analysis, file changes, tests, and open decisions.
+1. Create or update a reviewable implementation plan with rules/spec analysis, a **Simplification & Refactor Check** (explicitly identifying existing functions/types to reuse, parameterize, merge, or delete instead of adding parallel code), file changes, tests, and open decisions.
 2. State the UI/Card Editor impact explicitly when the task could affect those surfaces.
 3. Stop for user review and approval before implementation.
 
@@ -54,26 +55,26 @@ The plan may live in the host's user-facing artifact location or a repository-re
 
 | Tier | Change                                                                          | Required handling                                           |
 | ---- | ------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| 1    | Local UI, data, test, or existing-dispatcher change                             | Focused implementation and validation                       |
-| 2    | Shared pipeline, generic primitive, schema, or reducer change                   | Regression coverage and full verification                   |
+| 1    | Local UI, data, test, or existing-dispatcher change                             | Focused implementation and targeted validation              |
+| 2    | Shared pipeline, generic primitive, schema, or reducer change                   | Targeted + related regression tests (`vitest related`)      |
 | 3    | Core state model, public contracts, phase architecture, or structural migration | Plan approval before implementation; explicit design review |
 
-## Verification matrix
+## Verification matrix (Run Once, Targeted First)
 
-Run the narrowest relevant executable check first, then widen verification to match the blast radius.
+Run only the narrowest relevant check during development. **Never re-run a test, `typecheck`, or `lint` command when zero files have changed since it last passed.** Leave the full test suite (`npm test`) to `.githooks/pre-push` on push.
 
-| Change surface                                             | Minimum verification                                                                                                                                                                             |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Agent or Markdown documentation only                       | Markdown/link checks available in the repository, structural instruction audit, and `rtk git diff --check`                                                                                       |
-| Local UI or data change                                    | Focused tests plus applicable lint and typecheck (`rtk npm run lint`, `rtk npm run typecheck`)                                                                                                    |
-| Shared engine, schema, taxonomy, or cross-cutting behavior | Iterative dev: `rtk npm run format:check`, `rtk npm run lint`, `rtk npm run typecheck`, `rtk vitest run <targeted>`, and `rtk npm run report:declarations`. Delivery: `rtk npm test` and `rtk npm run build`. |
-| Supplemental declarations or related primitives            | Also run `rtk npm run report:declarations` after affected data is updated                                                                                                                        |
+| Change surface                                             | Task verification (run once after edits)                                                                                                  |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Agent or Markdown documentation only                       | `rtk git diff --check`                                                                                                                    |
+| Local UI, card data, or single-subsystem change (Tier 1)   | `rtk npx vitest run <targeted-test-files>`, `rtk npm run typecheck`, `rtk npm run lint`, and `rtk npx prettier --check <changed-files>`   |
+| Shared engine, schema, taxonomy, or cross-cutting (Tier 2) | `rtk npx vitest related <changed-files> --run`, `rtk npm run typecheck`, `rtk npm run lint`, and `rtk npx prettier --check <changed-files>` |
+| Supplemental declarations or related primitives            | Also run `rtk npm run report:declarations` once after affected data is updated                                                            |
 
 Report unavailable commands rather than inventing results. Compress shell outputs with `rtk` across all `git`, `npm`, `vitest`, and `npx` commands per [`antigravity-rtk-rules.md`](antigravity-rtk-rules.md).
 
 ## Delivery authorization
 
-Commit and push only happen in response to the user's explicit request in the current message (e.g. "commit and push", "commit this"); the agent never initiates delivery on its own. Once requested, the workflow stages the reviewed file set, runs quality gates, states the commit message, and proceeds through commit and push directly without a separate mid-flow approval round-trip, reporting verification results and any issue-state discrepancies afterward.
+Commit and push only happen in response to the user's explicit request in the current message (e.g. "commit and push", "commit this"); the agent never initiates delivery on its own. Once requested, the workflow stages the reviewed file set, states the commit message, and proceeds through `git commit` (which runs `pre-commit`: `format:check`, `lint`, `typecheck`) and `git push` (which runs `pre-push`: `npm test`) directly without manually duplicating those checks beforehand.
 
 
 ### Primitive and Card Retrofit Ordering

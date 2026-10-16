@@ -109,24 +109,26 @@ Use the command and body in [`issue-template.md`](issue-template.md) (strict: ke
 ### Step 4: Root-Cause Diagnosis & Implementation Plan Review 🛑
 
 - Diagnose the exact line of code, mutation logic, or missing condition responsible for the failure.
+- **Refactor-First Check:** Inspect surrounding functions and callers. If the bug is caused by duplicated logic, parallel code paths, or tangled conditionals, plan to **merge the similar functions**, **add a parameter to an existing function**, or **refactor the debt in path** rather than adding another branch or "supporting both".
 - **MANDATORY REVIEW GATE:** Create an `implementation_plan.md` artifact detailing:
   1. **Root-Cause Analysis:** Why the defect occurs with reference to game state snapshots in `logs/gamestates/` and RR v1.8 rules.
-  2. **Blast-Radius Classification:** Tier 1, 2, or 3.
-  3. **Proposed Code Fix:** Exact lines and files to modify.
-  4. **Regression Verification Strategy:** Specific test files to run.
+  2. **Simplification & Refactor Check:** What existing functions/helpers are being merged, parameterized, or cleaned up so minimal net-new code is added.
+  3. **Blast-Radius Classification:** Tier 1, 2, or 3.
+  4. **Proposed Code Fix:** Exact lines and files to modify.
+  5. **Regression Verification Strategy:** Specific targeted test files to run (prefer extending an existing test file over creating duplicate test setup).
 - **STOP AND WAIT:** Set `request_feedback: true` in artifact metadata. Create `temp/.plan-pending` when you post the plan and delete it once the user approves. While it exists, a hook blocks edits under `src/`, `tests/`, `data/`, `tools/` and `scripts/`; fixing before approval skips the review gate.
 
 ---
 
-### Step 5: Apply Surgical Code Fix (Green)
+### Step 5: Apply Surgical or Refactor-First Code Fix (Green)
 
-- Apply the minimal, cleanest code change addressing the root cause.
+- Apply the cleanest code change addressing the root cause—consolidating duplicate logic or parameterizing existing functions where applicable.
 - Respect all project architectural principles:
   1. **Strict Engine Decoupling:** Never import React, DOM, `window`, `document`, or CSS into `src/engine/`.
   2. **Official Rules Fidelity:** Strictly adhere to Marvel Champions Rules Reference v1.8.
   3. **Declarative Enrichment:** Fix card mechanics in `src/data/supplemental/` rather than hardcoding card codes into the engine.
   4. **Local-First Reliability:** Never add external runtime network dependencies.
-- Run the reproduction test to verify it now **passes** (**Green**). If it still fails, go back to Step 4 and re-diagnose.
+- Run the targeted reproduction test (`rtk npx vitest run <test-file>`) to verify it now **passes** (**Green**). If it still fails, go back to Step 4 and re-diagnose.
 
 ---
 
@@ -140,19 +142,17 @@ Use the command and body in [`issue-template.md`](issue-template.md) (strict: ke
 
 ---
 
-### Step 6: Full-Suite Verification & Zero-Regression Proof
+### Step 6: Targeted Verification (No Redundant Full-Suite Runs)
 
-Execute the full verification suite across engine, tests, schemas, build, lint, and formatting:
+Run the targeted verification checks **once** (skip any check that already passed if zero files changed since):
 
 ```bash
-rtk npm run format:check && rtk npm run lint && rtk npm run typecheck && rtk npm test && rtk npm run build && rtk npm run report:declarations
+rtk npx prettier --check <changed-files> && rtk npm run lint && rtk npm run typecheck && rtk npx vitest related <changed-files> --run
 ```
 
-- **Enforce Zero Skipped Tests Invariant:** Confirm all tests pass with **0 failed and 0 skipped** (`passed: N, failed: 0, skipped: 0`). A hook blocks skipped, todo, and focused tests in `tests/**`; do not comment out assertions either.
-- Confirm 0 TypeScript compilation errors (`tsc --noEmit`).
-- Confirm 0 ESLint warnings/errors and Prettier format compliance.
-- Confirm production bundle succeeds (`vite build`).
-- Confirm declarations report reports 0 schema or false-vanilla violations.
+- If supplemental data changed, also run `rtk npm run report:declarations` once.
+- **Enforce Zero Skipped Tests Invariant:** Confirm all targeted/related tests pass with **0 failed and 0 skipped** (`passed: N, failed: 0, skipped: 0`).
+- **Do NOT run the full `npm test` suite or `npm run build` here:** `.githooks/pre-push` runs the full suite once on push.
 
 ---
 
@@ -166,9 +166,8 @@ Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist
 
 Present the solution, verification results, and diff summary to the user. Per `AGENTS.md`, delivery (commit and push) is only executed upon the user's explicit request in the conversation. When requested, follow the `commit-and-push` protocol:
 1. Stage the intentionally changed files (e.g. `rtk git add <files>`).
-2. Run quality gates with `rtk`.
-3. Commit with Conventional Commits syntax (e.g. `rtk git commit -m "fix(<scope>): <description> (Fixes #<NUM>)"`).
-4. Push to remote and verify issue closure (`rtk git push`).
+2. Commit with Conventional Commits syntax (e.g. `rtk git commit -m "fix(<scope>): <description> (Fixes #<NUM>)"`), letting `.githooks/pre-commit` verify `format:check`, `lint`, and `typecheck`.
+3. Push to remote (`rtk git push`), letting `.githooks/pre-push` run the full `npm test` suite once, and verify issue closure.
 
 
 ---

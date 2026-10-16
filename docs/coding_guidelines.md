@@ -136,9 +136,9 @@ Each card implementation must follow a predictable, declarative pattern:
 
 ---
 
-## 5. Iterative Development & Test Recursion (Micro-Iterations)
+## 5. Iterative Development, Refactor-First & Targeted Testing
 
-To ensure stability, prevent regressions, and maintain high velocity, all development must follow a **strict micro-iteration workflow**:
+To ensure stability, prevent technical debt, and maintain high velocity, all development follows a **Refactor-First, Targeted-Verification workflow**:
 
 ```
 +-------------------------------------------------------------------------+
@@ -147,25 +147,29 @@ To ensure stability, prevent regressions, and maintain high velocity, all develo
 |  1. Pick ONE small feature/card (e.g. "Spider-Man Backflip interrupt")  |
 |                                   │                                     |
 |                                   ▼                                     |
-|  2. Write the automated unit test (Arrange-Act-Assert)                  |
+|  2. Refactor-First Check: Reuse, parameterize, or merge existing logic  |
 |                                   │                                     |
 |                                   ▼                                     |
-|  3. Implement the minimal code to satisfy the test                      |
+|  3. Write/extend the automated unit test (Arrange-Act-Assert)           |
 |                                   │                                     |
 |                                   ▼                                     |
-|  4. RECURSIVE TEST RUN: Run the ENTIRE test suite (`npm test`)          |
-|     Ensure ZERO regressions across all previously implemented cards.    |
+|  4. Implement the minimal code & clean any tech debt in the path        |
 |                                   │                                     |
 |                                   ▼                                     |
-|  5. Commit atomically (e.g. `feat(card): implement Backflip interrupt`) |
+|  5. TARGETED TEST RUN: Run `vitest run <file>` or `vitest related`      |
+|     (Full suite `npm test` runs once via `.githooks/pre-push`)          |
+|                                   │                                     |
+|                                   ▼                                     |
+|  6. Commit atomically (e.g. `feat(card): implement Backflip interrupt`) |
 +-------------------------------------------------------------------------+
 ```
 
 ### Key Rules for Iterative Execution:
 
-1. **Small, Atomic Scope:** Never attempt to implement multiple cards or complex engine systems in a single unverified leap. Build one card, one keyword, or one phase step at a time.
-2. **Continuous Test Recursion:** Whenever changing core engine pipelines (trigger bus, payment resolution, threat calculations), the entire test suite must re-run recursively to guarantee that older cards and rules still function correctly.
-3. **No Dead Code / Unverified Logic:** Every function or card effect added must be immediately exercised by an active test.
+1. **Refactor-First (Zero Additive Bloat):** Never propose "supporting both" or duplicating functions for minor variations. If two functions are very similar, merge them or add a parameter to the existing function. If you encounter spaghetti or redundant code in the path of your change, refactor it in scope and update all callers.
+2. **Small, Atomic Scope:** Never attempt to implement multiple cards or complex engine systems in a single unverified leap. Build one card, one keyword, or one phase step at a time.
+3. **Targeted Test Execution (No Redundant Runs):** Run only the targeted test file (`rtk npx vitest run <file>`) or related tests (`rtk npx vitest related <files> --run`) during iteration. Do not re-run tests, `typecheck`, or `lint` when no files have changed since the last pass. Leave the full suite (`npm test`) to `.githooks/pre-push`.
+4. **No Dead Code / Unverified Logic:** Every function or card effect added must be immediately exercised by an active test.
 
 ---
 

@@ -153,6 +153,87 @@ export function getTableauActionItems(
 }
 
 /**
+ * Discovers legal Action abilities on a player's active identity card (Alter-Ego or Hero).
+ * Reusable for both the active player's turn report and cooperative teammate call-for-actions (RR v1.8 p. 5, 23).
+ */
+export function getIdentityActionItems(
+  state: GameState,
+  player: PlayerState,
+  isCallingPlayerTurn: boolean,
+): LegalActionItem[] {
+  const items: LegalActionItem[] = [];
+  const isHero = player.currentForm === 'hero';
+  const idAbilities = player.activeFormCard.enrichment?.abilities || [];
+
+  for (const ab of idAbilities) {
+    if (isResourceAbility(ab.timing)) continue; // Never present resource abilities as standalone turn actions (RR v1.8 p. 25 / ADR-0039)
+    if (
+      ab.timing === 'ACTION' ||
+      (isHero && ab.timing === 'HERO_ACTION') ||
+      (!isHero && ab.timing === 'ALTER_EGO_ACTION')
+    ) {
+      // Limit validation (RR v1.8 p. 21)
+      const isUsedRound =
+        ab.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
+      const isUsedPhase =
+        ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[ab.id] || 0) >= 1;
+      if (isUsedRound || isUsedPhase) continue;
+
+      const costCheck = canInitiateAbility(state, player.id, ab, undefined, {});
+      if (costCheck.allowed) {
+        let badge = isCallingPlayerTurn
+          ? formatTimingBadge(ab.timing)
+          : `${player.name.toUpperCase()} • ${formatTimingBadge(ab.timing)}`;
+        if (isCallingPlayerTurn && ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND') {
+          const count = ab.cost.discardCard.count || 1;
+          badge = `DISCARD ${count} CARD${count > 1 ? 'S' : ''}`;
+        }
+
+        const headline = isCallingPlayerTurn
+          ? `Action: ${ab.id.replace(/_/g, ' ').toUpperCase()}`
+          : `Ask ${player.name}: ${player.activeFormCard.name} (${formatTimingBadge(ab.timing)})`;
+
+        const subtext = ab.steps?.[0]?.effectParams?.description
+          ? String(ab.steps[0].effectParams.description)
+          : `Trigger ${player.activeFormCard.name}'s special ability`;
+
+        items.push({
+          id: isCallingPlayerTurn
+            ? `action_id_ability_${ab.id}`
+            : `action_call_id_${player.id}_${ab.id}`,
+          category: isCallingPlayerTurn ? 'identity' : 'call_for_action',
+          headline,
+          subtext,
+          action: {
+            type: 'USE_CARD_ABILITY',
+            playerId: player.id,
+            cardInstanceId: player.activeFormCard.code,
+            abilityId: ab.id,
+          },
+          badge,
+          iconType: 'ability',
+          requiresModal:
+            ab.cost?.resourceCost ||
+            (ab.cost?.resources && ab.cost.resources.length > 0) ||
+            (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND')
+              ? 'payment'
+              : undefined,
+          targetCardInstance: {
+            instanceId: player.activeFormCard.code,
+            card: player.activeFormCard,
+            exhausted: player.exhausted,
+          } as CardInstance,
+          cardCode: player.activeFormCard.code,
+          ownerName: isCallingPlayerTurn ? undefined : player.name,
+        });
+      }
+    }
+  }
+
+  return items;
+}
+
+/**
  * Discovers legal Action abilities on encounter cards, villain/player attachments,
  * active player's obligations, and in-play side schemes payable by the player (RR v1.8 p. 5).
  */
@@ -501,59 +582,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
     }
 
     // 1E. Identity In-Play Actions (e.g. Tony Stark Futuristic, Carol Danvers Rechannel)
-    const idAbilities = player.activeFormCard.enrichment?.abilities || [];
-    for (const ab of idAbilities) {
-      if (isResourceAbility(ab.timing)) continue; // Never present resource abilities as standalone turn actions (RR v1.8 p. 25 / ADR-0039)
-      if (
-        ab.timing === 'ACTION' ||
-        (isHero && ab.timing === 'HERO_ACTION') ||
-        (!isHero && ab.timing === 'ALTER_EGO_ACTION')
-      ) {
-        // Limit validation (RR v1.8 p. 21)
-        const isUsedRound =
-          ab.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
-        const isUsedPhase =
-          ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[ab.id] || 0) >= 1;
-        if (isUsedRound || isUsedPhase) continue;
-
-        const costCheck = canInitiateAbility(state, player.id, ab, undefined, {});
-        if (costCheck.allowed) {
-          let badge = formatTimingBadge(ab.timing);
-          if (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND') {
-            const count = ab.cost.discardCard.count || 1;
-            badge = `DISCARD ${count} CARD${count > 1 ? 'S' : ''}`;
-          }
-          identityActions.push({
-            id: `action_id_ability_${ab.id}`,
-            category: 'identity',
-            headline: `Action: ${ab.id.replace(/_/g, ' ').toUpperCase()}`,
-            subtext: ab.steps?.[0]?.effectParams?.description
-              ? String(ab.steps[0].effectParams.description)
-              : `Trigger ${player.activeFormCard.name}'s special ability`,
-            action: {
-              type: 'USE_CARD_ABILITY',
-              playerId: player.id,
-              cardInstanceId: player.activeFormCard.code,
-              abilityId: ab.id,
-            },
-            badge,
-            iconType: 'ability',
-            requiresModal:
-              ab.cost?.resourceCost ||
-              (ab.cost?.resources && ab.cost.resources.length > 0) ||
-              (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND')
-                ? 'payment'
-                : undefined,
-            targetCardInstance: {
-              instanceId: player.activeFormCard.code,
-              card: player.activeFormCard,
-              exhausted: player.exhausted,
-            } as CardInstance,
-            cardCode: player.activeFormCard.code,
-          });
-        }
-      }
-    }
+    identityActions.push(...getIdentityActionItems(state, player, true));
 
     // 2. Playable Hand Cards
     for (const cardInst of player.hand) {
@@ -700,10 +729,11 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
     // 3C. Villain & Encounter Actions (ADR-0055, RR v1.8 p. 5)
     villainActionItems.push(...getEncounterLegalActions(state, player));
 
-    // 3D. Teammate Tableau Scan (Call for Action - RR v1.8 p. 5, 23)
+    // 3D. Teammate Tableau & Identity Scan (Call for Action - RR v1.8 p. 5, 23)
     for (const otherPlayer of state.players || []) {
       if (otherPlayer.id !== playerId) {
         callForActionItems.push(...getTableauActionItems(state, otherPlayer, false));
+        callForActionItems.push(...getIdentityActionItems(state, otherPlayer, false));
       }
     }
   } else if (state.phase === 'PLAYER_PHASE') {

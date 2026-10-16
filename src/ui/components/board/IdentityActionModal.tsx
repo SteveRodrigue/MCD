@@ -9,7 +9,10 @@ import {
   AlterEgoCard,
   CardInstance,
 } from '../../../engine/models';
-import { LegalActionItem } from '../../../engine/pipeline/legal-actions-generator';
+import {
+  LegalActionItem,
+  formatTimingBadge,
+} from '../../../engine/pipeline/legal-actions-generator';
 import {
   getEffectiveMaxHealth,
   getEffectiveHeroStats,
@@ -54,6 +57,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
     player,
   );
   const traitsDetails = getEffectivePlayerTraitsDetails(player);
+  const isPlayerPhase = gameState ? gameState.phase === 'PLAYER_PHASE' : true;
   const isPlayerTurn = gameState
     ? gameState.phase === 'PLAYER_PHASE' &&
       gameState.players[gameState.activePlayerIndex]?.id === player.id
@@ -243,7 +247,10 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
             const costCheck = gameState
               ? canInitiateAbility(gameState, player.id, ab, undefined, {})
               : { allowed: !alreadyUsed };
-            const canTrigger = isPlayerTurn && !alreadyUsed && costCheck.allowed;
+            const canTrigger = isPlayerPhase && !alreadyUsed && costCheck.allowed;
+            const actionLabel = !isPlayerTurn
+              ? `Ask ${player.name}: ${ab.id.replace(/_/g, ' ').toUpperCase()}`
+              : ab.id.replace(/_/g, ' ').toUpperCase();
 
             return (
               <button
@@ -257,9 +264,13 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
 
                   if (hasPaymentCost && onInitiateAction) {
                     onInitiateAction({
-                      id: `action_id_ability_${ab.id}`,
-                      category: 'identity',
-                      headline: `Action: ${ab.id.replace(/_/g, ' ').toUpperCase()}`,
+                      id: isPlayerTurn
+                        ? `action_id_ability_${ab.id}`
+                        : `action_call_id_${player.id}_${ab.id}`,
+                      category: isPlayerTurn ? 'identity' : 'call_for_action',
+                      headline: isPlayerTurn
+                        ? `Action: ${ab.id.replace(/_/g, ' ').toUpperCase()}`
+                        : `Ask ${player.name}: ${player.activeFormCard.name} (${formatTimingBadge(ab.timing)})`,
                       subtext: `Trigger ${player.activeFormCard.name}'s special ability`,
                       action: {
                         type: 'USE_CARD_ABILITY',
@@ -274,6 +285,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                         exhausted: player.exhausted,
                       } as CardInstance,
                       cardCode: player.activeFormCard.code,
+                      ownerName: isPlayerTurn ? undefined : player.name,
                     });
                   } else {
                     onDispatchAction?.({
@@ -287,7 +299,9 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                 }}
                 className={`w-full text-left p-2.5 rounded-lg border-2 border-comic-black transition-all flex items-center justify-between gap-2 shadow-comic-sm ${
                   canTrigger
-                    ? 'bg-amber-100 hover:bg-comic-yellow cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+                    ? !isPlayerTurn
+                      ? 'bg-indigo-50 hover:bg-indigo-100 cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+                      : 'bg-amber-100 hover:bg-comic-yellow cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
                     : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
                 }`}
               >
@@ -295,7 +309,9 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                   <div
                     className={`p-1.5 rounded-full border border-comic-black ${
                       canTrigger
-                        ? 'bg-comic-yellow text-comic-black'
+                        ? !isPlayerTurn
+                          ? 'bg-indigo-200 text-indigo-950'
+                          : 'bg-comic-yellow text-comic-black'
                         : 'bg-slate-300 text-slate-500'
                     }`}
                   >
@@ -303,7 +319,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                   </div>
                   <div>
                     <span className="font-comic font-black text-xs block text-slate-950">
-                      {ab.id.replace(/_/g, ' ').toUpperCase()}
+                      {actionLabel}
                     </span>
                     <span className="text-[10px] text-slate-600 block">
                       {alreadyUsed
@@ -318,10 +334,14 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                 </div>
                 <span
                   className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border border-comic-black ${
-                    canTrigger ? 'bg-comic-black text-amber-300' : 'bg-slate-300 text-slate-500'
+                    canTrigger
+                      ? !isPlayerTurn
+                        ? 'bg-indigo-900 text-indigo-100'
+                        : 'bg-comic-black text-amber-300'
+                      : 'bg-slate-300 text-slate-500'
                   } shrink-0`}
                 >
-                  ACTION
+                  {!isPlayerTurn ? 'CALL FOR ACTION' : 'ACTION'}
                 </span>
               </button>
             );

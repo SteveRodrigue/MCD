@@ -18,7 +18,7 @@ export interface TableauLegalityContext {
  * to trigger or benefit from in the player's current identity form (RR v1.8 p. 14, 15).
  *
  * When a game context is supplied, a card whose only player-triggered abilities (Action /
- * Resource) cannot currently be initiated (no legal target, exhausted, not the owner's turn,
+ * Resource) cannot currently be initiated (no legal target, exhausted, outside player phase,
  * unpayable cost) is also reported unusable (RR v1.8 p. 15-16).
  */
 export function evaluateTableauCardLegality(

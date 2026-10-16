@@ -10,6 +10,8 @@ import {
   Target,
   RefreshCw,
   ChevronRight,
+  Skull,
+  Users,
 } from 'lucide-react';
 import {
   LegalActionReport,
@@ -70,11 +72,13 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
   if (!isOpen) return null;
 
   const {
-    identityActions,
-    handCardActions,
-    boardActions,
+    identityActions = [],
+    handCardActions = [],
+    boardActions = [],
+    villainActionItems = [],
+    callForActionItems = [],
     turnAction,
-    activeActionCount,
+    activeActionCount = 0,
     playerName,
   } = report;
 
@@ -322,8 +326,135 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
             </div>
           )}
 
+          {/* Section 4: VILLAIN DISPATCHES (Encounter & Scheme Actions) */}
+          {villainActionItems.length > 0 && (
+            <div className="pt-3">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
+                  <Skull className="w-3.5 h-3.5 text-rose-700" />
+                  <span>🚨 VILLAIN DISPATCHES: ENCOUNTER & SCHEME ACTIONS</span>
+                </h2>
+                <span className="text-[10px] text-slate-600 font-bold uppercase">
+                  Encounter & Schemes
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {villainActionItems.map((item) => {
+                  const cardCode = item.cardCode || item.targetCardInstance?.card.code;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        onSelectAction(item);
+                        onClose();
+                      }}
+                      className="text-left bg-white/90 hover:bg-rose-50 border border-slate-800 p-2 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start gap-2.5 group"
+                    >
+                      <DailyBugleCardThumbnail
+                        cardCode={cardCode}
+                        cardName={item.headline}
+                        fallbackIcon={<Skull className="w-5 h-5 text-rose-700" />}
+                      />
+                      <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
+                        <div>
+                          <div className="flex items-start justify-between gap-1 mb-0.5">
+                            <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-rose-700 flex items-center gap-1 line-clamp-1">
+                              {renderIcon(item.iconType)}
+                              <span>{item.headline}</span>
+                            </span>
+                            {item.badge && (
+                              <span className="bg-rose-200 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
+                            {item.subtext}
+                          </p>
+                        </div>
+                        <div className="mt-1 text-right">
+                          <span className="text-[10px] font-bold text-rose-700 uppercase group-hover:underline">
+                            Discard / Pay ➔
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Section 5: CALL FOR ACTION (Team Tableau Assets) */}
+          {callForActionItems.length > 0 && (
+            <div className="pt-3">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
+                  <Users className="w-3.5 h-3.5 text-indigo-700" />
+                  <span>🤝 CALL FOR ACTION: TEAM TABLEAU ASSETS</span>
+                </h2>
+                <span className="text-[10px] text-slate-600 font-bold uppercase">
+                  Teammate Tableau
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {callForActionItems.map((item) => {
+                  const cardCode = item.cardCode || item.targetCardInstance?.card.code;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        onSelectAction(item);
+                        onClose();
+                      }}
+                      className="text-left bg-white/90 hover:bg-indigo-50 border border-slate-800 p-2 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start gap-2.5 group"
+                    >
+                      <DailyBugleCardThumbnail
+                        cardCode={cardCode}
+                        cardName={item.headline}
+                        fallbackIcon={<Users className="w-5 h-5 text-indigo-700" />}
+                      />
+                      <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
+                        <div>
+                          <div className="flex items-start justify-between gap-1 mb-0.5">
+                            <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-indigo-700 flex items-center gap-1 line-clamp-1">
+                              {renderIcon(item.iconType)}
+                              <span>{item.headline}</span>
+                            </span>
+                            <div className="flex items-center gap-1 shrink-0">
+                              {item.ownerName && (
+                                <span className="bg-indigo-100 text-indigo-950 text-[9px] font-comic font-bold px-1.5 py-0.2 rounded border border-indigo-400">
+                                  {item.ownerName}
+                                </span>
+                              )}
+                              {item.badge && (
+                                <span className="bg-amber-300 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800">
+                                  {item.badge}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
+                            {item.subtext}
+                          </p>
+                        </div>
+                        <div className="mt-1 text-right">
+                          <span className="text-[10px] font-bold text-indigo-700 uppercase group-hover:underline">
+                            Ask Teammate ➔
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* No Active Actions Banner */}
-          {activeActionCount === 0 && (
+          {activeActionCount === 0 && callForActionItems.length === 0 && (
             <div className="p-4 bg-amber-100/80 border-2 border-dashed border-slate-400 rounded text-center space-y-1">
               <h3 className="font-comic text-sm font-bold text-slate-900 uppercase">
                 ★ PRESS RUN COMPLETE: NO ACTIONS REMAIN ★

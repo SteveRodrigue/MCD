@@ -56,6 +56,9 @@ export function getAllCardInstances(state: GameState): CardInstance[] {
     cards.push(...(scheme.cardsUnderneath || []));
   }
 
+  // Environments (e.g. Ultron Drones)
+  cards.push(...(state.environments || []));
+
   // 4. Encounter Zones & Boosts
   cards.push(...(state.encounterDeck || []));
   cards.push(...(state.encounterDiscard || []));
@@ -151,6 +154,7 @@ export function removeCardFromAllZones(
     if (removeFromList(s.cardsUnderneath)) return found;
   }
   if (removeFromList(state.sideSchemes)) return found;
+  if (removeFromList(state.environments)) return found;
 
   // Encounter & Misc
   if (removeFromList(state.encounterDeck)) return found;
@@ -345,6 +349,16 @@ export function findInPlayCardInstance(
     );
     if (fromAllies) return fromAllies;
 
+    const fromMinions = p.engagedMinions?.find(
+      (c) => c.instanceId === instanceId || c.card.code === instanceId,
+    );
+    if (fromMinions) return fromMinions;
+
+    const fromObligations = p.obligations?.find(
+      (c) => c.instanceId === instanceId || c.card.code === instanceId,
+    );
+    if (fromObligations) return fromObligations;
+
     const fromAttachments = p.attachments?.find(
       (c) => c.instanceId === instanceId || c.card.code === instanceId,
     );
@@ -380,10 +394,19 @@ export function findInPlayCardInstance(
   }
 
   for (const s of state.sideSchemes || []) {
+    if (s.instanceId === instanceId || s.card.code === instanceId) return s;
     const fromSideSchemeAtt = s.attachments?.find(
       (c) => c.instanceId === instanceId || c.card.code === instanceId,
     );
     if (fromSideSchemeAtt) return fromSideSchemeAtt;
+  }
+
+  for (const env of state.environments || []) {
+    if (env.instanceId === instanceId || env.card.code === instanceId) return env;
+    const fromEnvAtt = env.attachments?.find(
+      (c) => c.instanceId === instanceId || c.card.code === instanceId,
+    );
+    if (fromEnvAtt) return fromEnvAtt;
   }
 
   return undefined;

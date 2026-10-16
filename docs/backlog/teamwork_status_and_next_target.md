@@ -1,6 +1,6 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-15 (Issue #306 Retaliate damage through damage pipeline delivered; active queue: #287, #314)
+> **Last updated:** 2026-10-15 (Issue #314 Call for Action in multiplayer cooperative play and encounter actions delivered; active queue: empty)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
 > **Verification baseline:** 🟢 2,720 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
@@ -74,9 +74,7 @@ _None currently._
 
 ### 3.4 UI should-haves
 
-| #   | Issue                                                   | Item                                                    | Estimate | Notes                                                     |
-| :-- | :------------------------------------------------------ | :------------------------------------------------------ | :------- | :-------------------------------------------------------- |
-| 20  | [#314](https://github.com/SteveRodrigue/MCD/issues/314) | "Call for Action" from another player's tableau in coop | 1 day    | Dev Mode report; Daily Bugle & tableau action integration |
+_None currently._
 
 **Gate 1 is done when** sections 3.1 to 3.4 are empty, the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
 

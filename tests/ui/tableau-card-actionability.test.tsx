@@ -8,6 +8,7 @@ import {
   SideSchemeCard,
   GameState,
   CardInstance,
+  GamePhase,
 } from '../../src/engine/models';
 import { evaluateTableauCardLegality } from '../../src/ui/components/board/tableau-card-legality';
 import { HeroZone } from '../../src/ui/components/board/HeroZone';
@@ -78,10 +79,15 @@ describe('Tableau Card Actionability Graying (Issue #185)', () => {
     expect(legality().isUsable).toBe(true);
   });
 
-  it('Surveillance Team is unusable when it is not the owner turn', () => {
+  it('Surveillance Team is usable on another player turn via Call for Action (RR v1.8 p. 5, Issue #314) but unusable in Villain Phase', () => {
     state.mainScheme.threat = 3;
     state.activePlayerIndex = 1;
     state.players.push({ ...state.players[0], id: 'p2', name: 'Other' });
+    // Usable during other player's turn in player phase via Call for Action
+    expect(legality().isUsable).toBe(true);
+
+    // Unusable outside player phase
+    state.phase = GamePhase.VILLAIN_PHASE;
     expect(legality().isUsable).toBe(false);
   });
 

@@ -352,6 +352,8 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
           gameState={gameState}
           activeSeatIndex={activeSeatIndex}
           legalActionCount={legalReport.activeActionCount}
+          callForActionCount={legalReport.callForActionCount}
+          villainActionCount={legalReport.villainActionCount}
           onSelectSeat={handleSelectSeat}
           onToggleLog={() => setIsLogOpen((prev) => !prev)}
           isLogOpen={isLogOpen}

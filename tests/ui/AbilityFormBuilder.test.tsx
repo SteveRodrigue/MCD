@@ -23,15 +23,16 @@ const StatefulAbilityFormBuilder: React.FC<{
 };
 
 describe('AbilityFormBuilder Card-Level Attributes', () => {
-  it('renders top-level card metadata fields', async () => {
-    const user = userEvent.setup();
+  it('renders top-level card metadata fields', () => {
     render(
       <AbilityFormBuilder supplemental={{ audit: { comment: 'Test card' } }} onChange={vi.fn()} />,
     );
 
     expect(screen.getByText(/CARD-LEVEL ATTRIBUTES & AUDIT/i)).toBeDefined();
-    await user.click(screen.getByTestId('toggle-show-all-fields-btn'));
-    expect(screen.getByTestId('toggle-uses-btn')).toBeDefined();
+    // Card-level attributes are a chip bar, not a Smart View / Show All toggle
+    expect(screen.queryByTestId('toggle-show-all-fields-btn')).toBeNull();
+    expect(screen.getByTestId('card-chip-add-uses')).toBeDefined();
+
     // Upstream-derived fields are not authored in the supplemental (derived from the printed card)
     expect(screen.queryByTestId('card-traits-input')).toBeNull();
     expect(screen.queryByTestId('card-restricted-slots-input')).toBeNull();
@@ -51,12 +52,8 @@ describe('AbilityFormBuilder Card-Level Attributes', () => {
       />,
     );
 
-    // Expand Card Mechanics to configure uses
-    await user.click(screen.getByTestId('section-card-mechanics-toggle'));
-
-    // Click Configure Uses
-    const toggleBtn = screen.getByTestId('toggle-uses-btn');
-    await user.click(toggleBtn);
+    // Add the Uses / Counters chip
+    await user.click(screen.getByTestId('card-chip-add-uses'));
 
     expect(handleChange).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -65,7 +62,7 @@ describe('AbilityFormBuilder Card-Level Attributes', () => {
     );
 
     // Modify count
-    const countInput = screen.getByTestId('uses-count-input');
+    const countInput = screen.getByTestId('uses-count');
     fireEvent.change(countInput, { target: { value: '4' } });
 
     expect(handleChange).toHaveBeenCalledWith(
@@ -75,7 +72,7 @@ describe('AbilityFormBuilder Card-Level Attributes', () => {
     );
 
     // Remove uses
-    await user.click(screen.getByTestId('toggle-uses-btn'));
+    await user.click(screen.getByTestId('card-chip-remove-uses'));
     expect(handleChange).toHaveBeenLastCalledWith(
       expect.not.objectContaining({ uses: expect.anything() }),
     );
@@ -203,7 +200,7 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
     );
 
     // Add spend counters cost
-    await user.click(screen.getByTestId('cost-spend-counters-toggle-0'));
+    await user.click(screen.getByTestId('cost-spend-counters-add-0'));
     expect(handleChange).toHaveBeenCalledWith(
       expect.objectContaining({
         abilities: [
@@ -217,7 +214,7 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
     );
 
     // Add discard card cost
-    await user.click(screen.getByTestId('cost-discard-card-toggle-0'));
+    await user.click(screen.getByTestId('cost-discard-card-add-0'));
     expect(handleChange).toHaveBeenCalledWith(
       expect.objectContaining({
         abilities: [
@@ -386,8 +383,9 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
       />,
     );
 
-    // UniversalCardFilterBuilder rendered for SEARCH.filter
-    expect(screen.getByText(/Card Filter/i)).toBeDefined();
+    // SEARCH.filter is offered as a collapsed card-filter field; opening it mounts the builder
+    expect(screen.getByTestId('step-param-filter-toggle-0-0')).toBeDefined();
+    fireEvent.click(screen.getByTestId('step-param-filter-toggle-0-0'));
     expect(screen.getByTestId('filter-codes-input')).toBeDefined();
   });
 

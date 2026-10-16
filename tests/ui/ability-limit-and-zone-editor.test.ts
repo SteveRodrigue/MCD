@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { CardAbilitySchema, CardEnrichmentSchema } from '../../src/data/supplemental/schema';
+import {
+  AbilityCostSchema,
+  CardAbilitySchema,
+  CardEnrichmentSchema,
+} from '../../src/data/supplemental/schema';
+import { introspectObjectSchema } from '../../src/data/supplemental/schema-introspector';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -193,14 +198,10 @@ describe('Ability Limits, Activation Zone & maxPerRound Deprecation (Contract Te
       const costSectionCode = fs.readFileSync(costSectionPath, 'utf8');
       expect(costSectionCode).not.toContain('cost.exhaust)');
       expect(costSectionCode).not.toContain('exhaust: e.target.checked');
-      expect(costSectionCode).toContain('cost.exhaustSelf');
-
-      const dualInspectorPath = path.resolve(
-        __dirname,
-        '../../src/ui/components/editor/DualCardInspector.tsx',
-      );
-      const dualInspectorCode = fs.readFileSync(dualInspectorPath, 'utf8');
-      expect(dualInspectorCode).toContain('ab.cost.exhaustSelf');
+      // The editor renders the cost fields from AbilityCostSchema, whose key is exhaustSelf.
+      expect(costSectionCode).toContain('schema={AbilityCostSchema}');
+      expect(Object.keys(AbilityCostSchema.shape)).toContain('exhaustSelf');
+      expect(Object.keys(AbilityCostSchema.shape)).not.toContain('exhaust');
     });
   });
 
@@ -230,14 +231,18 @@ describe('Ability Limits, Activation Zone & maxPerRound Deprecation (Contract Te
       const stepEditorCode = fs.readFileSync(stepEditorPath, 'utf8');
 
       expect(stepEditorCode).toContain('EffectTypeSchema.options.map');
-      expect(stepEditorCode).toContain('getEffectDescriptor');
+      expect(stepEditorCode).toContain('EFFECT_PARAM_SCHEMAS');
 
       const costSectionPath = path.resolve(
         __dirname,
         '../../src/ui/components/editor/AbilityCostSection.tsx',
       );
       const costSectionCode = fs.readFileSync(costSectionPath, 'utf8');
-      expect(costSectionCode).toContain('Exhaust Host Card');
+      expect(costSectionCode).toContain('schema={AbilityCostSchema}');
+      const exhaustSelfField = introspectObjectSchema(AbilityCostSchema).find(
+        (field) => field.key === 'exhaustSelf',
+      );
+      expect(exhaustSelfField?.label).toBe('Exhaust Host Card');
     });
   });
 });

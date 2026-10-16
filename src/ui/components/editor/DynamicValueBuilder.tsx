@@ -1,5 +1,10 @@
 import React from 'react';
-import { type DynamicValueSource, TargetSelectorSchema } from '../../../data/supplemental/schema';
+import {
+  type DynamicValueSource,
+  DynamicValueSourceSchema,
+  TargetSelectorSchema,
+} from '../../../data/supplemental/schema';
+import { introspectObjectSchema } from '../../../data/supplemental/schema-introspector';
 import { UniversalCardFilterBuilder } from './UniversalCardFilterBuilder';
 import { CardLocationSelectorForm } from './CardLocationSelectorForm';
 import { ChevronDown, ChevronRight, Calculator, Layers } from 'lucide-react';
@@ -12,56 +17,17 @@ export interface DynamicValueBuilderProps {
   description?: string;
 }
 
-const FROM_SOURCES = [
-  'INTERCEPTED_VALUE',
-  'PREVIOUS_RESULT',
-  'DISCARDED_CARDS',
-  'COUNTERS',
-  'STAT_VALUE',
-  'ENTITY_COUNT',
-  'CARD_ATTRIBUTE',
-  'HAS_TRAIT',
-  'HAS_IDENTITY',
-  'PAID_WITH_RESOURCE',
-  'RESOURCES_SPENT',
-] as const;
+/** Option lists come from `DynamicValueSourceSchema`, the single source of truth for formulas. */
+const SOURCE_FIELDS = Object.fromEntries(
+  introspectObjectSchema(DynamicValueSourceSchema).map((field) => [field.key, field]),
+);
+const optionsOf = (key: string): readonly string[] => SOURCE_FIELDS[key]?.options ?? [];
 
-const DISCARD_ATTRIBUTE_OPTIONS = [
-  'COUNT',
-  'RESOURCE_ICONS',
-  'DIFFERENT_RESOURCES',
-  'BOOST_ICONS',
-  'DIFFERENT_CARD_TYPES',
-  'PRINTED_COST',
-] as const;
-
-const RESOURCE_TYPE_OPTIONS = ['energy', 'physical', 'mental', 'wild'] as const;
-
-const STAT_OPTIONS = [
-  'ATTACK',
-  'THWART',
-  'DEFENSE',
-  'RECOVERY',
-  'SUFFERED_DAMAGE',
-  'HERO_ATK',
-  'THREAT',
-  'DAMAGE',
-] as const;
-
-const ATTRIBUTE_OPTIONS = [
-  'PRINTED_RESOURCES',
-  'PRINTED_COST',
-  'BOOST_ICONS',
-  'THREAT',
-  'DAMAGE',
-  'REMAINING_HIT_POINTS',
-  'COUNTERS',
-  'TOTAL_RESOURCES',
-  'PHYSICAL_RESOURCES',
-  'ENERGY_RESOURCES',
-  'MENTAL_RESOURCES',
-  'WILD_RESOURCES',
-] as const;
+const FROM_SOURCES = optionsOf('from');
+const DISCARD_ATTRIBUTE_OPTIONS = optionsOf('discardAttribute');
+const RESOURCE_TYPE_OPTIONS = optionsOf('resourceType');
+const STAT_OPTIONS = optionsOf('stat');
+const ATTRIBUTE_OPTIONS = optionsOf('attribute');
 
 export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
   label,
@@ -203,10 +169,9 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
         <div>
           <input
             type="number"
-            min={0}
             data-testid="dynamic-value-number-input"
             value={numValue}
-            onChange={(e) => onChange(Math.max(0, parseInt(e.target.value, 10) || 0))}
+            onChange={(e) => onChange(parseInt(e.target.value, 10) || 0)}
             className="w-full rounded border border-black bg-white px-2.5 py-1 text-xs text-black font-bold focus:ring-1 focus:ring-black"
           />
         </div>
@@ -489,6 +454,28 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
             />
           )}
 
+          {Boolean(
+            sourceValue.from === 'CARD_ATTRIBUTE' ||
+            sourceValue.from === 'COUNTERS' ||
+            sourceValue.from === 'STAT_VALUE',
+          ) && (
+            <div>
+              <label className="block text-[10px] font-bold uppercase text-gray-700 mb-1">
+                Target Card Code (Optional)
+              </label>
+              <input
+                type="text"
+                data-testid="dynamic-value-target-card-code-input"
+                value={sourceValue.targetCardCode || ''}
+                placeholder="e.g. 01050"
+                onChange={(e) =>
+                  handleUpdateFormula({ targetCardCode: e.target.value.trim() || undefined })
+                }
+                className="w-full rounded border border-black bg-white px-2 py-1 text-xs text-black font-mono"
+              />
+            </div>
+          )}
+
           {/* ENTITY_COUNT, HAS_TRAIT, HAS_IDENTITY sub-fields: Collapsible UniversalCardFilter Accordion */}
           {(sourceValue.from === 'ENTITY_COUNT' ||
             sourceValue.from === 'HAS_TRAIT' ||
@@ -563,7 +550,6 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                 </label>
                 <input
                   type="number"
-                  min={0}
                   data-testid="dynamic-value-amount-input"
                   value={sourceValue.amount ?? 1}
                   onChange={(e) =>

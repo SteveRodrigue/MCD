@@ -206,9 +206,12 @@ export const CardAbilitySchema: z.ZodType<CardAbility> = z
  */
 export const CardUsesSchema = z
   .object({
-    count: z.number().int().nonnegative(),
-    counterType: z.string().optional(),
-    discardOnEmpty: z.boolean().optional(),
+    count: z.number().int().nonnegative().meta({ label: 'Count', primary: true }),
+    counterType: z
+      .string()
+      .meta({ label: 'Counter Type', placeholder: 'e.g. charge, all-purpose', primary: true })
+      .optional(),
+    discardOnEmpty: z.boolean().meta({ label: 'Discard When Empty', primary: true }).optional(),
   })
   .strict();
 
@@ -221,12 +224,40 @@ export type CardUses = z.infer<typeof CardUsesSchema>;
  */
 export const PlayRequirementsSchema = z
   .object({
-    identityForm: IdentityFormSchema.optional(),
-    formTrait: z.string().optional(),
-    identityTraits: z.array(z.string()).optional(),
-    controlFilter: UniversalCardFilterSchema.optional(),
-    controlZones: z.array(z.enum(['tableau', 'allies', 'identity'])).optional(),
-    identityNames: z.array(z.string()).optional(),
+    identityForm: IdentityFormSchema.meta({
+      label: 'Required Identity Form',
+      primary: true,
+    }).optional(),
+    formTrait: z
+      .string()
+      .meta({ label: 'Form Trait Requirement', placeholder: 'e.g. Giant, Tiny', primary: true })
+      .optional(),
+    identityTraits: z
+      .array(z.string())
+      .meta({
+        label: 'Required Identity Traits (comma separated)',
+        placeholder: 'e.g. Avenger, Mystic, X-Men',
+        widget: 'string-list',
+        primary: true,
+      })
+      .optional(),
+    controlFilter: UniversalCardFilterSchema.meta({
+      label: 'Required Controlled Card Criteria',
+      widget: 'card-filter',
+    }).optional(),
+    controlZones: z
+      .array(z.enum(['tableau', 'allies', 'identity']))
+      .meta({ label: 'Required Control Zones', primary: true })
+      .optional(),
+    identityNames: z
+      .array(z.string())
+      .meta({
+        label: 'Required Identity Names (comma separated)',
+        placeholder: 'e.g. Peter Parker, Tony Stark',
+        widget: 'string-list',
+        primary: true,
+      })
+      .optional(),
   })
   .strict();
 

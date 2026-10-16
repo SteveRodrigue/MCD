@@ -27,6 +27,14 @@ const StatefulStepPipelineEditor: React.FC<{
   );
 };
 
+/** A parameter is offered when its field is shown or its `+ Add` chip is (progressive disclosure). */
+const expectParamOffered = (key: string) => {
+  const offered =
+    screen.queryByTestId(`step-param-${key}-0-0`) ??
+    screen.queryByTestId(`step-param-${key}-add-0-0`);
+  expect(offered, `parameter ${key} is not offered`).not.toBeNull();
+};
+
 describe('StepPipelineEditor', () => {
   it('renders resolution steps and adds a new step', async () => {
     const user = userEvent.setup();
@@ -130,11 +138,11 @@ describe('StepPipelineEditor', () => {
         onChange={vi.fn()}
       />,
     );
-    expect(screen.getByTestId('step-param-shuffleAfter-0-0')).toBeDefined();
-    expect(screen.getByTestId('step-param-minimumTake-0-0')).toBeDefined();
-    expect(screen.getByTestId('step-param-distinctBy-0-0')).toBeDefined();
+    expectParamOffered('shuffleAfter');
+    expectParamOffered('minimumTake');
+    expectParamOffered('distinctBy');
     expect(screen.queryByTestId('step-param-isVoluntary-0-0')).toBeNull();
-    expect(screen.getByTestId('step-param-promptTitle-0-0')).toBeDefined();
+    expectParamOffered('promptTitle');
 
     // DRAW
     rerender(
@@ -144,7 +152,7 @@ describe('StepPipelineEditor', () => {
         onChange={vi.fn()}
       />,
     );
-    expect(screen.getByTestId('step-param-targetPlayerId-0-0')).toBeDefined();
+    expectParamOffered('targetPlayerId');
 
     // SPEND_COUNTERS
     rerender(
@@ -154,7 +162,7 @@ describe('StepPipelineEditor', () => {
         onChange={vi.fn()}
       />,
     );
-    expect(screen.getByTestId('step-param-counterType-0-0')).toBeDefined();
+    expectParamOffered('counterType');
 
     // REMOVE_COUNTERS_MATCHING_FILTER
     rerender(
@@ -164,7 +172,7 @@ describe('StepPipelineEditor', () => {
         onChange={vi.fn()}
       />,
     );
-    expect(screen.getByTestId('step-param-targetZone-0-0')).toBeDefined();
+    expectParamOffered('targetZone');
     expect(screen.getByText('Amount to Remove')).toBeDefined();
 
     // GENERATE_RESOURCE
@@ -175,7 +183,7 @@ describe('StepPipelineEditor', () => {
         onChange={vi.fn()}
       />,
     );
-    expect(screen.getByTestId('step-param-count-0-0')).toBeDefined();
+    expectParamOffered('count');
 
     // PLAY_FROM_ZONE
     rerender(
@@ -185,8 +193,8 @@ describe('StepPipelineEditor', () => {
         onChange={vi.fn()}
       />,
     );
-    expect(screen.getByTestId('step-param-promptTitle-0-0')).toBeDefined();
-    expect(screen.getByText('Card Filter (Filter)')).toBeDefined();
+    expectParamOffered('promptTitle');
+    expect(screen.getAllByText('Card Filter').length).toBeGreaterThanOrEqual(1);
 
     // DISCARD
     rerender(
@@ -196,7 +204,7 @@ describe('StepPipelineEditor', () => {
         onChange={vi.fn()}
       />,
     );
-    expect(screen.getByText('Until Match Filter (Filter)')).toBeDefined();
+    expect(screen.getAllByText('Until Match Filter').length).toBeGreaterThanOrEqual(1);
   });
 
   it('does not render deprecated/unimplemented parameters on REMOVE_THREAT', () => {
@@ -211,8 +219,8 @@ describe('StepPipelineEditor', () => {
     expect(screen.queryByTestId('step-param-aerialAllSchemes-0-0')).toBeNull();
     expect(screen.queryByTestId('step-param-bonusWithMental-0-0')).toBeNull();
     // But keeps implemented ones:
-    expect(screen.getByTestId('step-param-finisherBonus-0-0')).toBeDefined();
-    expect(screen.getByText('Dynamic Bonus Threat')).toBeDefined();
+    expectParamOffered('finisherBonus');
+    expect(screen.getAllByText('Dynamic Bonus Threat').length).toBeGreaterThanOrEqual(1);
   });
 
   it('updates newly registered effect parameters in state', async () => {
@@ -226,6 +234,7 @@ describe('StepPipelineEditor', () => {
       />,
     );
 
+    await user.click(screen.getByTestId('step-param-shuffleAfter-add-0-0'));
     const shuffleCheckbox = screen.getByTestId('step-param-shuffleAfter-0-0');
     await user.click(shuffleCheckbox);
 

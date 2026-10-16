@@ -1,25 +1,22 @@
 import React from 'react';
-import { UniversalCardFilterBuilder } from './UniversalCardFilterBuilder';
+import { Sliders, AlertCircle, ClipboardCheck, X } from 'lucide-react';
+import {
+  CardAuditRecordSchema,
+  CardUsesSchema,
+  PlayRequirementsSchema,
+} from '../../../data/supplemental/schema';
+import {
+  hasDashPower,
+  type CharacterPower,
+  type NormalizedCard,
+} from '../../../engine/models/card';
 import { FormattedCardText } from '../cards/FormattedCardText';
 import { CollapsibleSection } from './CollapsibleSection';
-import {
-  Sliders,
-  Layers,
-  ChevronDown,
-  ChevronRight,
-  AlertCircle,
-  Eye,
-  EyeOff,
-  ClipboardCheck,
-  Cog,
-  Shield,
-} from 'lucide-react';
-import {
-  getSectionVisibility,
-  countAuditFields,
-  countMechanicsFields,
-  countPlayReqFields,
-} from './card-attributes-utils';
+import { AttachToField } from './schema-form/AttachToField';
+import { ChipBar } from './schema-form/ChipBar';
+import { RecipientField } from './schema-form/RecipientField';
+import { ZodSchemaForm } from './schema-form/ZodSchemaForm';
+import { kebabCase } from './schema-form/test-id';
 
 export interface CardAttributesSectionProps {
   supplemental: any;
@@ -28,9 +25,97 @@ export interface CardAttributesSectionProps {
   hasErrors?: boolean;
   errors?: string[];
   cardCode?: string;
-  typeCode?: string;
-  showAllFields?: boolean;
+  /** The loaded upstream card; its derived attributes are shown as read-only badges. */
+  upstreamCard?: NormalizedCard;
 }
+
+type ChipKey =
+  'playRequirements' | 'uses' | 'attachTo' | 'recipient' | 'playUnderAnyPlayerControl' | 'errata';
+
+/** Card-level `CardEnrichment` keys offered as chips, with the value a freshly added chip starts at. */
+const CARD_CHIPS: ReadonlyArray<{ key: ChipKey; label: string; initial: unknown }> = [
+  { key: 'playRequirements', label: 'Play Requirements', initial: {} },
+  {
+    key: 'uses',
+    label: 'Uses / Counters',
+    initial: { count: 3, counterType: 'charge', discardOnEmpty: true },
+  },
+  { key: 'attachTo', label: 'Attachment Host', initial: { host: { type: 'VILLAIN' } } },
+  { key: 'recipient', label: 'Obligation Recipient', initial: { type: 'REVEALING_PLAYER' } },
+  { key: 'playUnderAnyPlayerControl', label: 'Cross-Player Control', initial: true },
+  { key: 'errata', label: 'Errata', initial: '' },
+];
+
+const POWER_LABELS: ReadonlyArray<[CharacterPower, string]> = [
+  ['attack', 'ATK'],
+  ['thwart', 'THW'],
+  ['defense', 'DEF'],
+  ['recover', 'REC'],
+  ['scheme', 'SCH'],
+];
+
+/** Read-only attributes the loader derives from the upstream card (never authored). */
+function upstreamBadges(card: NormalizedCard): Array<{ id: string; text: string }> {
+  const badges: Array<{ id: string; text: string }> = [];
+  for (const trait of card.traits) badges.push({ id: `trait-${trait}`, text: trait });
+  for (const keyword of card.keywords) badges.push({ id: `keyword-${keyword}`, text: keyword });
+  if (card.maxPerPlayer !== undefined) {
+    badges.push({ id: 'max-per-player', text: `Max ${card.maxPerPlayer} per player` });
+  }
+  const ally = card as NormalizedCard & { attackCost?: number; thwartCost?: number };
+  if (card.type === 'ally') {
+    if (ally.attackCost) {
+      badges.push({ id: 'attack-cost', text: `Consequential ATK ${ally.attackCost}` });
+    }
+    if (ally.thwartCost) {
+      badges.push({ id: 'thwart-cost', text: `Consequential THW ${ally.thwartCost}` });
+    }
+  }
+  if (card.restrictedSlots !== undefined) {
+    badges.push({ id: 'restricted-slots', text: `Restricted slots ${card.restrictedSlots}` });
+  }
+  for (const [power, label] of POWER_LABELS) {
+    if (hasDashPower(card, power)) badges.push({ id: `dash-${power}`, text: `${label} –` });
+  }
+  return badges;
+}
+
+const SectionFrame: React.FC<{
+  chip: ChipKey;
+  title: string;
+  onRemove: () => void;
+  children: React.ReactNode;
+}> = ({ chip, title, onRemove, children }) => (
+  <div
+    data-testid={`card-section-${chip}`}
+    className="bg-yellow-50/50 p-2.5 border-2 border-black rounded shadow-comic-xs space-y-2"
+  >
+    <div className="flex items-center justify-between">
+      <span className="text-[10px] font-bold uppercase text-gray-700">{title}</span>
+      <button
+        type="button"
+        data-testid={`card-chip-remove-${chip}`}
+        title={`Remove ${title}`}
+        onClick={onRemove}
+        className="p-0.5 text-gray-400 hover:text-comic-red cursor-pointer rounded hover:bg-red-50 transition-colors"
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+    </div>
+    {children}
+  </div>
+);
+
+const prefixedTestId =
+  (prefix: string) =>
+  (path: string[], extra?: string): string =>
+    `${prefix}-${path.map(kebabCase).join('-')}${extra ? `-${extra}` : ''}`;
+
+const TIMESTAMPS = [
+  ['created', 'Created', 'bg-gray-100 text-gray-700 border-gray-300'],
+  ['updated', 'Updated', 'bg-gray-100 text-gray-700 border-gray-300'],
+  ['reviewed', 'Reviewed', 'bg-green-100 text-green-800 border-green-300'],
+] as const;
 
 export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
   supplemental,
@@ -39,212 +124,52 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
   hasErrors = false,
   errors = [],
   cardCode,
-  typeCode,
-  showAllFields: showAllFieldsProp,
+  upstreamCard,
 }) => {
-  const [internalShowAllFields, setInternalShowAllFields] = React.useState(
-    showAllFieldsProp ?? false,
-  );
-  const [isControlFilterExpanded, setIsControlFilterExpanded] = React.useState(false);
-
-  // Sync internalShowAllFields when prop changes
-  React.useEffect(() => {
-    if (showAllFieldsProp !== undefined) {
-      setInternalShowAllFields(showAllFieldsProp);
-    }
-  }, [showAllFieldsProp]);
-
-  // Reset showAllFields when switching cards (ephemeral state)
-  React.useEffect(() => {
-    setInternalShowAllFields(showAllFieldsProp ?? false);
-  }, [cardCode, showAllFieldsProp]);
-
-  const showAllFields = showAllFieldsProp !== undefined ? showAllFieldsProp : internalShowAllFields;
-
   const audit = supplemental.audit || {};
 
-  const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange({
-      ...supplemental,
-      audit: {
-        ...supplemental.audit,
-        comment: e.target.value || undefined,
-      },
-    });
-  };
-
-  const recipientType: string = supplemental.recipient?.type ?? '';
-  const handleRecipientTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const type = e.target.value;
-    if (!type) {
-      onChange({ ...supplemental, recipient: undefined });
-    } else if (type === 'IDENTITY') {
-      onChange({
-        ...supplemental,
-        recipient: { type, codes: supplemental.recipient?.codes ?? [] },
-      });
-    } else {
-      onChange({ ...supplemental, recipient: { type } });
-    }
-  };
-  const handleRecipientCodesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const codes = e.target.value
-      .split(',')
-      .map((c) => c.trim())
-      .filter(Boolean);
-    onChange({ ...supplemental, recipient: { type: 'IDENTITY', codes } });
-  };
-
-  const attachTo = supplemental.attachTo as
-    | {
-        host: {
-          type: string;
-          superlative?: { stat: string; extreme: string };
-          withoutCopyAttached?: boolean;
-        };
-        otherwise?: { type: string };
-      }
-    | undefined;
-  const emitAttachTo = (next: typeof attachTo) => onChange({ ...supplemental, attachTo: next });
-  const handleAttachHostChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const type = e.target.value;
-    const otherwise = attachTo?.otherwise ? { otherwise: attachTo.otherwise } : {};
-    if (!type) {
-      emitAttachTo(undefined);
-    } else if (type === 'VILLAIN') {
-      emitAttachTo({ host: { type }, ...otherwise });
-    } else {
-      emitAttachTo({
-        host: {
-          type,
-          ...(attachTo?.host.superlative ? { superlative: attachTo.host.superlative } : {}),
-          ...(attachTo?.host.withoutCopyAttached ? { withoutCopyAttached: true } : {}),
-        },
-        ...otherwise,
-      });
-    }
-  };
-  const handleAttachSuperlativeChange = (field: 'stat' | 'extreme', value: string) => {
-    if (!attachTo) return;
-    const { superlative, ...host } = attachTo.host;
-    if (field === 'stat' && !value) {
-      emitAttachTo({ ...attachTo, host });
-      return;
-    }
-    const next = {
-      stat: superlative?.stat ?? '',
-      extreme: superlative?.extreme ?? 'HIGHEST',
-      [field]: value,
-    };
-    emitAttachTo({ ...attachTo, host: { ...host, superlative: next } });
-  };
-  const handleAttachWithoutCopyChange = (checked: boolean) => {
-    if (!attachTo) return;
-    const { withoutCopyAttached: _drop, ...host } = attachTo.host;
-    emitAttachTo({ ...attachTo, host: checked ? { ...host, withoutCopyAttached: true } : host });
-  };
-  const handleAttachOtherwiseChange = (value: string) => {
-    if (!attachTo) return;
-    const { otherwise: _drop, ...rest } = attachTo;
-    emitAttachTo(value ? { ...rest, otherwise: { type: value } } : rest);
-  };
-
-  const handleConfidenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseInt(e.target.value, 10);
-    onChange({
-      ...supplemental,
-      audit: {
-        ...audit,
-        confidence: isNaN(val) ? 100 : val,
-      },
-    });
-  };
-
-  const handleReviewedByChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange({
-      ...supplemental,
-      audit: {
-        ...audit,
-        reviewedBy: e.target.value || 'developer',
-      },
-    });
+  const setKey = (key: string, value: unknown) => onChange({ ...supplemental, [key]: value });
+  const removeKey = (key: string) => {
+    const { [key]: _removed, ...rest } = supplemental;
+    onChange(rest);
   };
 
   const handleFallbackNoSupplementalNeededChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
     const abilities = Array.isArray(supplemental.abilities) ? supplemental.abilities : [];
-    if (checked) {
+    if (e.target.checked) {
       if (abilities.length > 0) {
         const confirmed = window.confirm(
           'Marking this card as vanilla (noSupplementalNeeded) will remove its existing declarative abilities. Proceed?',
         );
         if (!confirmed) return;
       }
-      const updated = {
-        ...supplemental,
-        noSupplementalNeeded: true,
-      };
-      delete updated.abilities;
-      onChange(updated);
+      const { abilities: _dropped, ...rest } = supplemental;
+      onChange({ ...rest, noSupplementalNeeded: true });
     } else {
-      const updated = { ...supplemental };
-      delete updated.noSupplementalNeeded;
-      if (!updated.abilities) {
-        updated.abilities = [];
-      }
-      onChange(updated);
+      const { noSupplementalNeeded: _dropped, ...rest } = supplemental;
+      onChange({ ...rest, abilities: rest.abilities ?? [] });
     }
   };
 
-  // Section data existence checks for auto-expansion & visibility overrides
+  const present = (key: ChipKey) => supplemental[key] !== undefined;
   const hasAuditData = Boolean(
     audit.comment ||
     audit.ambiguityFile ||
     audit.confidence !== undefined ||
     audit.reviewedBy ||
-    audit.originalText ||
-    supplemental.errata,
+    audit.originalText,
   );
-
-  const hasMechanicsData = Boolean(
-    supplemental.uses || supplemental.recipient || supplemental.attachTo,
-  );
-
-  const hasPlayReqData = Boolean(
-    supplemental.playRequirements?.identityForm ||
-    supplemental.playRequirements?.formTrait ||
-    (supplemental.playRequirements?.identityTraits &&
-      supplemental.playRequirements.identityTraits.length > 0) ||
-    (supplemental.playRequirements?.identityNames &&
-      supplemental.playRequirements.identityNames.length > 0) ||
-    (supplemental.playRequirements?.controlZones &&
-      supplemental.playRequirements.controlZones.length > 0) ||
-    supplemental.playRequirements?.controlFilter ||
-    supplemental.playUnderAnyPlayerControl,
-  );
-
-  // Visibility computed from typeCode & showAllFields
-  const vis = getSectionVisibility(typeCode, showAllFields);
-
-  // Field counts for section badges
-  const auditCount = countAuditFields(audit, supplemental);
-  const mechanicsCount = countMechanicsFields(supplemental);
-  const playReqCount = countPlayReqFields(supplemental);
-
-  const auditBadge = auditCount > 0 ? auditCount : undefined;
-  const mechanicsBadge = mechanicsCount > 0 ? mechanicsCount : undefined;
-  const playReqBadge = playReqCount > 0 ? playReqCount : undefined;
-
-  // Error routing to sections
   const auditHasErrors = errors.some((e) =>
-    /audit|comment|confidence|reviewedBy|rulesVersion|originalText|errata|ambiguityFile/i.test(e),
+    /audit|comment|confidence|reviewedBy|rulesVersion|originalText|ambiguityFile/i.test(e),
   );
-  const mechanicsHasErrors = errors.some((e) => /uses/i.test(e));
-  const playReqHasErrors = errors.some((e) =>
-    /playRequirement|identityForm|formTrait|identityTraits|identityNames|controlZones|controlFilter|playUnderAnyPlayerControl/i.test(
-      e,
-    ),
-  );
+  const badges = upstreamCard ? upstreamBadges(upstreamCard) : [];
+
+  const renderSection = (key: ChipKey, title: string, body: React.ReactNode) =>
+    present(key) && (
+      <SectionFrame chip={key} title={title} onRemove={() => removeKey(key)}>
+        {body}
+      </SectionFrame>
+    );
 
   return (
     <div
@@ -253,7 +178,6 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
         hasErrors ? 'border-comic-red ring-2 ring-red-200' : 'border-black'
       } p-3 rounded shadow-comic-xs transition-colors space-y-3`}
     >
-      {/* Header with Title, rulesVersion, Show All Toggle, and Errors Alert */}
       <div className="flex items-center justify-between border-b pb-1 text-black">
         <div className="flex items-center gap-1.5 font-bangers text-sm">
           <Sliders className="w-4 h-4 text-comic-accent" />
@@ -261,48 +185,20 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
           {audit.rulesVersion && (
             <span
               data-testid="card-audit-rules-version"
-              className="text-[10px] font-sans font-bold bg-blue-100 text-blue-900 border border-blue-400 px-1.5 py-0.2 rounded ml-1"
+              className="text-[10px] font-sans font-bold bg-blue-100 text-blue-900 border border-blue-400 px-1.5 py-0.5 rounded ml-1"
             >
               Rules: {audit.rulesVersion}
             </span>
           )}
         </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            data-testid="toggle-show-all-fields-btn"
-            onClick={() => setInternalShowAllFields((prev) => !prev)}
-            className={`flex items-center gap-1 px-2 py-0.5 text-xs font-bold border border-black rounded shadow-comic-xs cursor-pointer active:scale-95 transition-transform ${
-              showAllFields
-                ? 'bg-comic-accent text-white'
-                : 'bg-white hover:bg-yellow-50 text-black'
-            }`}
-            title={showAllFields ? 'Switch to Smart View' : 'Show All Fields'}
-          >
-            {showAllFields ? (
-              <>
-                <EyeOff className="w-3.5 h-3.5" />
-                <span>Smart View</span>
-              </>
-            ) : (
-              <>
-                <Eye className="w-3.5 h-3.5" />
-                <span>Show All</span>
-              </>
-            )}
-          </button>
-
-          {hasErrors && (
-            <div className="flex items-center gap-1 text-[11px] font-bold text-comic-red bg-red-50 border border-comic-red px-1.5 py-0.5 rounded">
-              <AlertCircle className="w-3.5 h-3.5 text-comic-red" />
-              <span>Attributes Issue</span>
-            </div>
-          )}
-        </div>
+        {hasErrors && (
+          <div className="flex items-center gap-1 text-[11px] font-bold text-comic-red bg-red-50 border border-comic-red px-1.5 py-0.5 rounded">
+            <AlertCircle className="w-3.5 h-3.5 text-comic-red" />
+            <span>Attributes Issue</span>
+          </div>
+        )}
       </div>
 
-      {/* Top-level errors block */}
       {errors.length > 0 && (
         <div
           data-testid="card-attributes-errors"
@@ -317,7 +213,6 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
         </div>
       )}
 
-      {/* 🎯 Vanilla Card Checkbox (always visible, top of section) */}
       <div className="bg-yellow-50/50 p-2.5 border-2 border-black rounded shadow-comic-xs">
         <label className="flex items-center gap-2 cursor-pointer select-none">
           <input
@@ -337,233 +232,139 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
         </p>
       </div>
 
-      {/* 1. 📋 Audit & Metadata */}
+      {badges.length > 0 && (
+        <div data-testid="upstream-badges" className="flex flex-wrap items-center gap-1.5">
+          <span className="text-[9px] uppercase font-bold text-gray-500">From upstream:</span>
+          {badges.map((badge) => (
+            <span
+              key={badge.id}
+              data-testid={`upstream-badge-${kebabCase(badge.id)}`}
+              className="text-[10px] font-bold bg-gray-100 text-black border border-black px-1.5 py-0.5 rounded shadow-comic-xs"
+            >
+              {badge.text}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <ChipBar
+        testId="card-chip-bar"
+        items={CARD_CHIPS.filter((chip) => !present(chip.key)).map((chip) => ({
+          key: chip.key,
+          label: chip.label,
+          testId: `card-chip-add-${chip.key}`,
+        }))}
+        onAdd={(key) => setKey(key, CARD_CHIPS.find((chip) => chip.key === key)?.initial)}
+      />
+
+      {renderSection(
+        'playRequirements',
+        'Play Requirements',
+        <ZodSchemaForm
+          schema={PlayRequirementsSchema}
+          value={supplemental.playRequirements}
+          onChange={(next) => setKey('playRequirements', next ?? {})}
+          disclosure="all"
+          emptyLabel="Any / Unrestricted"
+          testId={prefixedTestId('play-req')}
+        />,
+      )}
+      {renderSection(
+        'uses',
+        'Uses / Counters (RR v1.8 p. 30)',
+        <ZodSchemaForm
+          schema={CardUsesSchema}
+          value={supplemental.uses}
+          onChange={(next) => setKey('uses', next ?? {})}
+          disclosure="all"
+          testId={prefixedTestId('uses')}
+        />,
+      )}
+      {renderSection(
+        'attachTo',
+        'Attachment Host',
+        <AttachToField
+          value={supplemental.attachTo}
+          onChange={(next) => setKey('attachTo', next)}
+        />,
+      )}
+      {renderSection(
+        'recipient',
+        'Obligation Recipient',
+        <RecipientField
+          value={supplemental.recipient}
+          onChange={(next) => setKey('recipient', next)}
+        />,
+      )}
+      {renderSection(
+        'playUnderAnyPlayerControl',
+        'Cross-Player Control (ADR-0066)',
+        <label className="flex items-center gap-1.5 text-xs font-bold cursor-pointer">
+          <input
+            type="checkbox"
+            data-testid="card-play-under-any-player-control-checkbox"
+            checked={Boolean(supplemental.playUnderAnyPlayerControl)}
+            onChange={(e) => setKey('playUnderAnyPlayerControl', e.target.checked)}
+            className="accent-black"
+          />
+          <span>Play Under Any Player Control</span>
+        </label>,
+      )}
+      {renderSection(
+        'errata',
+        'Card-Level Errata (Official FFG Ruling)',
+        <input
+          type="text"
+          data-testid="card-errata-input"
+          value={supplemental.errata ?? ''}
+          placeholder="Leave empty if no official errata applies"
+          onChange={(e) => setKey('errata', e.target.value)}
+          className="w-full bg-white border border-black p-1.5 text-xs rounded"
+        />,
+      )}
+
       <CollapsibleSection
         key={`${cardCode || 'card'}-audit`}
         title="Audit & Metadata"
         icon={ClipboardCheck}
         defaultOpen={hasAuditData}
-        forceOpen={showAllFields}
         hasErrors={auditHasErrors}
-        badge={auditBadge}
         testId="section-audit-metadata"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Internal Developer Comment
-            </label>
-            <input
-              type="text"
-              value={supplemental.audit?.comment || ''}
-              onChange={handleCommentChange}
-              placeholder="e.g. Hero attack: deals 3 damage..."
-              className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
-            />
-          </div>
+        <div className="space-y-3">
+          <ZodSchemaForm
+            schema={CardAuditRecordSchema}
+            value={supplemental.audit}
+            onChange={(next) => (next ? setKey('audit', next) : removeKey('audit'))}
+            disclosure="all"
+            hiddenKeys={['createdAt', 'updatedAt', 'reviewedAt', 'rulesVersion', 'originalText']}
+            testId={prefixedTestId('audit')}
+          />
 
-          {(typeCode === 'obligation' || supplemental.recipient) && (
-            <div data-testid="obligation-recipient-field">
-              <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-                Obligation Recipient Override
-              </label>
-              <select
-                data-testid="obligation-recipient-select"
-                value={recipientType}
-                onChange={handleRecipientTypeChange}
-                className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
-              >
-                <option value="">Default (hero-set owner, else revealing player)</option>
-                <option value="FIRST_PLAYER">First player</option>
-                <option value="REVEALING_PLAYER">Revealing player</option>
-                <option value="CARD_SET_OWNER">Card set owner</option>
-                <option value="IDENTITY">Specific identity codes</option>
-              </select>
-              {recipientType === 'IDENTITY' && (
-                <input
-                  type="text"
-                  data-testid="obligation-recipient-codes"
-                  value={(supplemental.recipient?.codes ?? []).join(', ')}
-                  onChange={handleRecipientCodesChange}
-                  placeholder="Hero / alter-ego codes, comma separated (e.g. 01010a, 01010b)"
-                  className="mt-1 w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
-                />
-              )}
-            </div>
-          )}
-
-          {(typeCode === 'attachment' || attachTo) && (
-            <div data-testid="attach-to-field">
-              <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-                Encounter Attachment Host
-              </label>
-              <select
-                data-testid="attach-to-host-select"
-                value={attachTo?.host.type ?? ''}
-                onChange={handleAttachHostChange}
-                className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
-              >
-                <option value="">Default (the active villain)</option>
-                <option value="VILLAIN">The active villain</option>
-                <option value="MINION">A minion</option>
-                <option value="ENEMY">An enemy (villain or minion)</option>
-              </select>
-              {attachTo && attachTo.host.type !== 'VILLAIN' && (
-                <div className="mt-1 grid grid-cols-2 gap-1">
-                  <select
-                    data-testid="attach-to-stat-select"
-                    value={attachTo.host.superlative?.stat ?? ''}
-                    onChange={(e) => handleAttachSuperlativeChange('stat', e.target.value)}
-                    className="bg-white border border-black p-1.5 text-xs rounded"
-                  >
-                    <option value="">Any (first player chooses)</option>
-                    <option value="PRINTED_HIT_POINTS">Printed hit points</option>
-                    <option value="PRINTED_ATTACK">Printed ATK</option>
-                  </select>
-                  <select
-                    data-testid="attach-to-extreme-select"
-                    value={attachTo.host.superlative?.extreme ?? 'HIGHEST'}
-                    disabled={!attachTo.host.superlative}
-                    onChange={(e) => handleAttachSuperlativeChange('extreme', e.target.value)}
-                    className="bg-white border border-black p-1.5 text-xs rounded"
-                  >
-                    <option value="HIGHEST">Highest</option>
-                    <option value="LOWEST">Lowest</option>
-                  </select>
-                  <label className="col-span-2 flex items-center gap-2 text-xs">
-                    <input
-                      type="checkbox"
-                      data-testid="attach-to-without-copy"
-                      checked={Boolean(attachTo.host.withoutCopyAttached)}
-                      onChange={(e) => handleAttachWithoutCopyChange(e.target.checked)}
-                    />
-                    Without a copy of this card attached
-                  </label>
-                </div>
-              )}
-              {attachTo && (
-                <select
-                  data-testid="attach-to-otherwise-select"
-                  value={attachTo.otherwise?.type ?? ''}
-                  onChange={(e) => handleAttachOtherwiseChange(e.target.value)}
-                  className="mt-1 w-full bg-white border border-black p-1.5 text-xs rounded"
-                >
-                  <option value="">Otherwise: the villain</option>
-                  <option value="SURGE">Otherwise: this card gains surge</option>
-                </select>
-              )}
-            </div>
-          )}
-
-          <div>
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Confidence Level ({audit.confidence ?? 100}%)
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="5"
-              value={audit.confidence ?? 100}
-              onChange={handleConfidenceChange}
-              className="w-full cursor-pointer accent-comic-red"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Reviewed By Attribution
-            </label>
-            <input
-              type="text"
-              value={audit.reviewedBy || 'developer'}
-              onChange={handleReviewedByChange}
-              className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
-            />
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Ambiguity File (docs/ambiguities/...)
-            </label>
-            <input
-              type="text"
-              data-testid="audit-ambiguity-file"
-              value={audit.ambiguityFile || ''}
-              placeholder="e.g. docs/ambiguities/spider-sense-timing.md"
-              onChange={(e) => {
-                const val = e.target.value.trim();
-                const nextAudit = { ...audit };
-                if (!val) {
-                  delete nextAudit.ambiguityFile;
-                } else {
-                  nextAudit.ambiguityFile = val;
-                }
-                onChange({
-                  ...supplemental,
-                  audit: nextAudit,
-                });
-              }}
-              className="w-full bg-white border border-black p-1.5 text-xs rounded"
-            />
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Card-Level Errata (Official FFG Ruling)
-            </label>
-            <input
-              type="text"
-              data-testid="card-errata-input"
-              value={supplemental.errata || ''}
-              placeholder="Leave empty if no official errata applies"
-              onChange={(e) => {
-                onChange({
-                  ...supplemental,
-                  errata: e.target.value.trim() ? e.target.value : undefined,
-                });
-              }}
-              className="w-full bg-white border border-black p-1.5 text-xs rounded"
-            />
-          </div>
-
-          {/* Audit Timestamps (read-only) */}
           {(audit.createdAt || audit.updatedAt || audit.reviewedAt) && (
-            <div className="sm:col-span-2 flex flex-wrap gap-2 mt-1">
-              {audit.createdAt && (
-                <span
-                  data-testid="audit-created-at"
-                  title={audit.createdAt}
-                  className="text-[10px] font-sans bg-gray-100 text-gray-700 border border-gray-300 px-1.5 py-0.5 rounded"
-                >
-                  Created: {new Date(audit.createdAt).toLocaleDateString()}
-                </span>
-              )}
-              {audit.updatedAt && (
-                <span
-                  data-testid="audit-updated-at"
-                  title={audit.updatedAt}
-                  className="text-[10px] font-sans bg-gray-100 text-gray-700 border border-gray-300 px-1.5 py-0.5 rounded"
-                >
-                  Updated: {new Date(audit.updatedAt).toLocaleDateString()}
-                </span>
-              )}
-              {audit.reviewedAt && (
-                <span
-                  data-testid="audit-reviewed-at"
-                  title={audit.reviewedAt}
-                  className="text-[10px] font-sans bg-green-100 text-green-800 border border-green-300 px-1.5 py-0.5 rounded"
-                >
-                  Reviewed: {new Date(audit.reviewedAt).toLocaleDateString()}
-                </span>
-              )}
+            <div className="flex flex-wrap gap-2">
+              {TIMESTAMPS.map(([id, label, tone]) => {
+                const stamp: string | undefined = audit[`${id}At`];
+                return (
+                  stamp && (
+                    <span
+                      key={id}
+                      data-testid={`audit-${id}-at`}
+                      title={stamp}
+                      className={`text-[10px] font-sans border px-1.5 py-0.5 rounded ${tone}`}
+                    >
+                      {label}: {new Date(stamp).toLocaleDateString()}
+                    </span>
+                  )
+                );
+              })}
             </div>
           )}
 
           {audit.originalText && (
             <div
               data-testid="card-audit-original-text-container"
-              className="sm:col-span-2 bg-gray-50 border border-gray-300 p-2 rounded text-xs"
+              className="bg-gray-50 border border-gray-300 p-2 rounded text-xs"
             >
               <span className="font-bold text-[10px] uppercase text-gray-500 block mb-1">
                 Original Printed Rules Text (Audit Reference)
@@ -576,383 +377,6 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
               </div>
             </div>
           )}
-        </div>
-      </CollapsibleSection>
-
-      {/* 2. 🔧 Card Mechanics */}
-      <CollapsibleSection
-        key={`${cardCode || 'card'}-mechanics`}
-        title="Card Mechanics"
-        icon={Cog}
-        visible={vis.mechanics || hasMechanicsData}
-        defaultOpen={hasMechanicsData}
-        forceOpen={showAllFields}
-        hasErrors={mechanicsHasErrors}
-        badge={mechanicsBadge}
-        testId="section-card-mechanics"
-      >
-        <div className="space-y-3">
-          {/* Uses Lifecycle (RR v1.8 p. 30, ADR-0057) */}
-          <div className="pt-2 border-t border-gray-200">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] font-bold uppercase text-gray-700 flex items-center gap-1">
-                <Layers className="w-3.5 h-3.5 text-comic-accent" />
-                <span>Uses Counters Lifecycle (RR v1.8 p. 30)</span>
-              </span>
-              <button
-                type="button"
-                data-testid="toggle-uses-btn"
-                onClick={() => {
-                  if (supplemental.uses) {
-                    const { uses: _, ...rest } = supplemental;
-                    onChange(rest);
-                  } else {
-                    onChange({
-                      ...supplemental,
-                      uses: { count: 3, counterType: 'charge', discardOnEmpty: true },
-                    });
-                  }
-                }}
-                className="text-[10px] font-bold text-comic-accent hover:underline cursor-pointer"
-              >
-                {supplemental.uses ? 'Remove Uses' : '+ Configure Uses'}
-              </button>
-            </div>
-
-            {supplemental.uses && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-yellow-50/50 p-2.5 border border-black rounded shadow-comic-xs">
-                <div>
-                  <label className="block text-[9px] font-bold uppercase text-gray-600 mb-0.5">
-                    Count
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    data-testid="uses-count-input"
-                    value={supplemental.uses.count ?? 0}
-                    onChange={(e) => {
-                      const count = parseInt(e.target.value, 10);
-                      onChange({
-                        ...supplemental,
-                        uses: { ...supplemental.uses, count: isNaN(count) ? 0 : count },
-                      });
-                    }}
-                    className="w-full bg-white border border-black p-1 text-xs rounded font-bold text-center"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[9px] font-bold uppercase text-gray-600 mb-0.5">
-                    Counter Type
-                  </label>
-                  <input
-                    type="text"
-                    data-testid="uses-type-input"
-                    value={supplemental.uses.counterType || ''}
-                    placeholder="e.g. charge, all-purpose"
-                    onChange={(e) => {
-                      onChange({
-                        ...supplemental,
-                        uses: { ...supplemental.uses, counterType: e.target.value || undefined },
-                      });
-                    }}
-                    className="w-full bg-white border border-black p-1 text-xs rounded"
-                  />
-                </div>
-                <div className="flex items-center pt-3">
-                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-black">
-                    <input
-                      type="checkbox"
-                      data-testid="uses-discard-on-empty-checkbox"
-                      checked={Boolean(supplemental.uses.discardOnEmpty)}
-                      onChange={(e) => {
-                        onChange({
-                          ...supplemental,
-                          uses: {
-                            ...supplemental.uses,
-                            discardOnEmpty: e.target.checked || undefined,
-                          },
-                        });
-                      }}
-                      className="accent-black"
-                    />
-                    <span>Discard When Empty</span>
-                  </label>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </CollapsibleSection>
-
-      {/* 3. 🎯 Play Requirements */}
-      <CollapsibleSection
-        key={`${cardCode || 'card'}-playRequirements`}
-        title="Play Requirements"
-        icon={Shield}
-        visible={vis.playReqs || hasPlayReqData}
-        defaultOpen={hasPlayReqData}
-        forceOpen={showAllFields}
-        hasErrors={playReqHasErrors}
-        badge={playReqBadge}
-        testId="section-play-requirements"
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Required Identity Form
-            </label>
-            <select
-              data-testid="play-req-identity-form-select"
-              value={supplemental.playRequirements?.identityForm || ''}
-              onChange={(e) => {
-                const val = e.target.value;
-                const current = supplemental.playRequirements || {};
-                if (!val) {
-                  const { identityForm: _, ...rest } = current;
-                  onChange({
-                    ...supplemental,
-                    playRequirements: Object.keys(rest).length > 0 ? rest : undefined,
-                  });
-                } else {
-                  onChange({
-                    ...supplemental,
-                    playRequirements: {
-                      ...current,
-                      identityForm: val,
-                    },
-                  });
-                }
-              }}
-              className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
-            >
-              <option value="">Any / Unrestricted</option>
-              <option value="HERO">Hero Form Only (e.g. Webbed Up)</option>
-              <option value="ALTER_EGO">Alter-Ego Form Only</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Cross-Player Control (ADR-0066)
-            </label>
-            <label className="flex items-center gap-1.5 pt-2 text-xs font-bold cursor-pointer">
-              <input
-                type="checkbox"
-                data-testid="card-play-under-any-player-control-checkbox"
-                checked={Boolean(supplemental.playUnderAnyPlayerControl)}
-                onChange={(e) => {
-                  onChange({
-                    ...supplemental,
-                    playUnderAnyPlayerControl: e.target.checked || undefined,
-                  });
-                }}
-                className="accent-black"
-              />
-              <span>Play Under Any Player Control</span>
-            </label>
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Form Trait Requirement
-            </label>
-            <input
-              type="text"
-              data-testid="play-req-form-trait-input"
-              value={supplemental.playRequirements?.formTrait || ''}
-              onChange={(e) => {
-                const val = e.target.value.trim();
-                const current = supplemental.playRequirements || {};
-                if (!val) {
-                  const { formTrait: _, ...rest } = current;
-                  onChange({
-                    ...supplemental,
-                    playRequirements: Object.keys(rest).length > 0 ? rest : undefined,
-                  });
-                } else {
-                  onChange({
-                    ...supplemental,
-                    playRequirements: {
-                      ...current,
-                      formTrait: val,
-                    },
-                  });
-                }
-              }}
-              placeholder="e.g. Giant, Tiny"
-              className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
-            />
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Required Identity Traits (comma separated)
-            </label>
-            <input
-              type="text"
-              data-testid="play-req-identity-traits-input"
-              value={(supplemental.playRequirements?.identityTraits || []).join(', ')}
-              onChange={(e) => {
-                const traits = e.target.value
-                  .split(',')
-                  .map((t) => t.trim())
-                  .filter(Boolean);
-                const current = supplemental.playRequirements || {};
-                if (traits.length === 0) {
-                  const { identityTraits: _, ...rest } = current;
-                  onChange({
-                    ...supplemental,
-                    playRequirements: Object.keys(rest).length > 0 ? rest : undefined,
-                  });
-                } else {
-                  onChange({
-                    ...supplemental,
-                    playRequirements: {
-                      ...current,
-                      identityTraits: traits,
-                    },
-                  });
-                }
-              }}
-              placeholder="e.g. Avenger, Mystic, X-Men"
-              className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
-            />
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Required Identity Names (comma-separated)
-            </label>
-            <input
-              type="text"
-              data-testid="play-req-identity-names-input"
-              value={(supplemental.playRequirements?.identityNames || []).join(', ')}
-              onChange={(e) => {
-                const names = e.target.value
-                  .split(',')
-                  .map((t) => t.trim())
-                  .filter(Boolean);
-                const current = supplemental.playRequirements || {};
-                if (names.length === 0) {
-                  const { identityNames: _, ...rest } = current;
-                  onChange({
-                    ...supplemental,
-                    playRequirements: Object.keys(rest).length > 0 ? rest : undefined,
-                  });
-                } else {
-                  onChange({
-                    ...supplemental,
-                    playRequirements: {
-                      ...current,
-                      identityNames: names,
-                    },
-                  });
-                }
-              }}
-              placeholder="e.g. Peter Parker, Tony Stark"
-              className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
-            />
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Required Control Zones (controlZones)
-            </label>
-            <div className="flex items-center gap-2">
-              {(['tableau', 'allies', 'identity'] as const).map((zone) => {
-                const currentZones: string[] = supplemental.playRequirements?.controlZones || [];
-                const isSelected = currentZones.includes(zone);
-                return (
-                  <button
-                    key={zone}
-                    type="button"
-                    data-testid={`play-req-zone-${zone}`}
-                    onClick={() => {
-                      const updatedZones = isSelected
-                        ? currentZones.filter((z) => z !== zone)
-                        : [...currentZones, zone];
-                      const current = supplemental.playRequirements || {};
-                      if (updatedZones.length === 0) {
-                        const { controlZones: _, ...rest } = current;
-                        onChange({
-                          ...supplemental,
-                          playRequirements: Object.keys(rest).length > 0 ? rest : undefined,
-                        });
-                      } else {
-                        onChange({
-                          ...supplemental,
-                          playRequirements: {
-                            ...current,
-                            controlZones: updatedZones,
-                          },
-                        });
-                      }
-                    }}
-                    className={`px-2.5 py-1 text-xs font-bold rounded border-2 border-black transition-colors cursor-pointer ${
-                      isSelected
-                        ? 'bg-comic-accent text-white shadow-comic-xs'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {zone}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Controlled Card Requirement: UniversalCardFilterBuilder Integration */}
-          <div className="sm:col-span-2">
-            <div
-              data-testid="play-req-control-filter-accordion"
-              className="rounded border border-black bg-white p-2 space-y-2"
-            >
-              <div
-                onClick={() => setIsControlFilterExpanded(!isControlFilterExpanded)}
-                data-testid="toggle-play-req-control-filter-btn"
-                className="flex items-center justify-between cursor-pointer select-none hover:bg-yellow-50 p-1 rounded"
-              >
-                <span className="text-[10px] font-bold uppercase text-gray-700 flex items-center gap-1">
-                  {isControlFilterExpanded ? (
-                    <ChevronDown className="w-3.5 h-3.5 text-gray-600" />
-                  ) : (
-                    <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
-                  )}
-                  <span>Required Controlled Card Criteria (controlFilter)</span>
-                </span>
-                <span className="bg-comic-yellow border border-black px-1.5 py-0.2 rounded text-[9px] font-bold text-black">
-                  {supplemental.playRequirements?.controlFilter ? 'Configured' : 'None configured'}
-                </span>
-              </div>
-
-              {isControlFilterExpanded && (
-                <div className="pt-2 border-t border-gray-200">
-                  <UniversalCardFilterBuilder
-                    filter={supplemental.playRequirements?.controlFilter}
-                    onChange={(newFilter) => {
-                      const current = supplemental.playRequirements || {};
-                      if (!newFilter) {
-                        const { controlFilter: _, ...rest } = current;
-                        onChange({
-                          ...supplemental,
-                          playRequirements: Object.keys(rest).length > 0 ? rest : undefined,
-                        });
-                      } else {
-                        onChange({
-                          ...supplemental,
-                          playRequirements: {
-                            ...current,
-                            controlFilter: newFilter,
-                          },
-                        });
-                      }
-                    }}
-                    isSubBranch={true}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
         </div>
       </CollapsibleSection>
     </div>

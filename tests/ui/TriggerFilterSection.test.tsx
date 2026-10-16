@@ -134,8 +134,9 @@ describe('TriggerFilterSection', () => {
       />,
     );
 
-    expect(screen.getByTestId('trigger-attacker-card-filter-accordion-0')).toBeDefined();
-    await user.click(screen.getByTestId('toggle-trigger-attacker-card-filter-btn-0'));
+    // A configured filter starts expanded; its header toggles it.
+    expect(screen.getByTestId('trigger-attacker-card-filter-toggle-0')).toBeDefined();
+    await user.click(screen.getByTestId('trigger-attacker-card-filter-toggle-0'));
     expect(screen.getAllByText(/Attacker Card Criteria/i).length).toBeGreaterThanOrEqual(1);
   });
 
@@ -275,10 +276,9 @@ describe('TriggerFilterSection', () => {
     it('renders cardFilter accordion collapsed by default with None status', () => {
       render(<TriggerFilterSection filter={{}} isExpanded={true} onChange={vi.fn()} />);
 
-      const accordion = screen.getByTestId('trigger-card-filter-accordion-0');
-      expect(accordion).toBeDefined();
-      expect(screen.getByTestId('toggle-trigger-card-filter-btn-0')).toBeDefined();
-      expect(screen.getByText('Triggering Card Criteria (cardFilter)')).toBeDefined();
+      expect(screen.getByTestId('trigger-card-filter-toggle-0')).toBeDefined();
+      expect(screen.getByText('Triggering Card Criteria')).toBeDefined();
+      expect(screen.getAllByText('None').length).toBe(2);
       expect(screen.queryByTestId('filter-type-treachery')).toBeNull();
     });
 
@@ -291,8 +291,7 @@ describe('TriggerFilterSection', () => {
         />,
       );
 
-      const accordion = screen.getByTestId('trigger-card-filter-accordion-0');
-      expect(accordion).toBeDefined();
+      expect(screen.getByTestId('trigger-card-filter-toggle-0')).toBeDefined();
       expect(screen.getAllByText('Configured').length).toBeGreaterThanOrEqual(1);
     });
 
@@ -305,7 +304,7 @@ describe('TriggerFilterSection', () => {
       );
 
       // Expand cardFilter accordion
-      const toggleBtn = screen.getByTestId('toggle-trigger-card-filter-btn-0');
+      const toggleBtn = screen.getByTestId('trigger-card-filter-toggle-0');
       await user.click(toggleBtn);
 
       // Card type chips are now visible

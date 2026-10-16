@@ -436,7 +436,7 @@ Accepted deviations from the plan as written (the code and [ADR-0083](../decisio
 - **Leaf schemas split.** They live in the internal `src/data/supplemental/schema-primitives.ts`, which `schema.ts` re-exports, to break the load cycle between `schema.ts` and `effect-params.ts`.
 - **Phase 1.5 and the `KeywordSchema` sync** were deferred, then done in Phase 6 (§8.3, §8.4).
 - **Phase 6.3** also removed 10 dead trigger aliases and 8 comparisons against effect names outside the schema. The one remaining off-schema dispatch (`SCHEME_THREAT_REDUCED_TO_ZERO`) is a rules question, #323.
-- **Phase 6.4** triggers were filed instead of built: #320, #321, #322 (removal commit `eaab0d8`).
+- **Phase 6.4** triggers were filed instead of built: #320, #321, #322 (removal commit `a6c5542`).
 - **Audit stamps.** The save endpoint (`src/tools/editor/api-middleware.ts`) stamps `audit.updatedAt` and `audit.reviewedAt`; the editor never does.
 - **Audit & Metadata** stays a collapsible section of the card form.
 - **Duration options** are `PHASE` / `ROUND` / `TURN` (`DurationSchema`).

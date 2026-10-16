@@ -84,10 +84,11 @@ Use the spawn call from your host file. Paste the full approved plan after these
 ```text
 Execute the approved implementation plan exactly as written. The full plan follows at the end of this prompt.
 1. Apply the file modifications specified in the plan (target files and changes only).
-2. Run the automated verification commands using `rtk` to condense output:
-   - rtk npm test -- <relevant_tests> (enforcing 0 failures and 0 skipped tests)
+2. Run the targeted verification commands once at the end of your edits using `rtk` to condense output:
+   - rtk npx vitest run <relevant_test_files> (enforcing 0 failures and 0 skipped tests; do not run the full suite)
    - rtk npm run typecheck
    - rtk npm run lint
+   Do not re-run any check if zero files changed since it passed.
 3. Do not infer missing requirements, select between plausible designs, expand scope, or modify files not explicitly authorized by the plan. If ambiguity, a conflict, or a missing decision is discovered, stop before editing the affected work and report the precise blocker using "Why This Is Blocking" and "What I Need From You" headings.
 4. Do not commit or push.
 5. Conclude with a concise diff summary and verification pass/fail status. Avoid meta-analysis or multi-step retrospectives.
@@ -99,7 +100,7 @@ The worker runs in the background. End the turn after launching it; do not poll 
 
 ### Step 3: Worker Subagent Execution
 
-The worker applies the code changes with the host's file tools, runs the test suite, typecheck, and lint through the shell using `rtk` (0 failed and 0 skipped tests), and reports completion and test logs back to the primary agent.
+The worker applies the code changes with the host's file tools, runs the targeted tests, typecheck, and lint once through the shell using `rtk` (0 failed and 0 skipped tests), and reports completion and test logs back to the primary agent. The primary agent must NOT re-run the tests, typecheck, or lint that the worker already passed.
 
 ### Step 4: Post-Task Hygiene & Walkthrough (Primary Agent)
 

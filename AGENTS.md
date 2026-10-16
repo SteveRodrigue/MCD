@@ -26,6 +26,8 @@ and the post-task procedure is in
   explicitly changes scope. Read-only audits may inspect any user-selected scope.
 - Preserve the project's comic pop-art visual direction in user-facing UI work.
 - Do not introduce unapproved legacy shims, aliases, deprecated names, duplicate paths, or temporary shortcuts.
+- **Refactor-First & Zero-Bloat Policy:** We are early in development: refactor now. Never propose "we'll support both", parallel functions, or copy-pasted logic with minor variations. Before adding a new function, primitive, or branch, search for similar existing code and prefer **merging similar functions**, **adding a parameter to an existing function**, or **simplifying tangled/spaghetti code in the path of the change** and updating all callers/data in scope.
+- **Lean Testing Policy (No Redundant Runs):** Run only targeted tests (`rtk npx vitest run <target>` or `rtk npx vitest related <files> --run`) during implementation. Never re-run a test, `typecheck`, or `lint` command if zero files changed since it last passed. Leave the full test suite (`npm test`) to the `git push` hook (`.githooks/pre-push`).
 - Never add skipped or todo tests to hide unfinished work.
 - **Supplemental Card Comments Policy:** The `comment` field resides strictly inside `audit.comment` and is reserved for human/user notes. Agents must never autonomously add or update `audit.comment`. If explicitly instructed by the user to add or update a comment, the agent must clearly state the reason in the review recap and commit message. Card ambiguities or defects must be resolved with user interaction or in `docs/ambiguities/`, never by embedding informal notes in `audit.comment`.
 - **ADHD Mode Default Policy:** `i-have-adhd` mode is on by default in this project. On Claude Code, the SessionStart hook `.claude/hooks/adhd-default.mjs` injects the skill rules. On other hosts, agents must read `.agents/skills/i-have-adhd/SKILL.md` and apply it from the first turn. It turns off only when the user says "stop adhd mode" or "normal mode".
@@ -36,7 +38,7 @@ Skills live in `.agents/skills/`. Claude Code only reads `.claude/skills/`, so t
 
 ## Before implementation
 
-For source, test, supplemental-data, dependency, or configuration changes, create or update a reviewable implementation plan with rules/spec analysis, file changes, tests, and open decisions. State UI/Card Editor impact explicitly when relevant, then stop for user approval before implementation. The plan may use the host's user-facing artifact location or a repository-relative plan file; do not overwrite an unrelated existing plan.
+For source, test, supplemental-data, dependency, or configuration changes, create or update a reviewable implementation plan with rules/spec analysis, a **Simplification & Refactor Check** (what existing code is merged, parameterized, or deleted), file changes, tests, and open decisions. State UI/Card Editor impact explicitly when relevant, then stop for user approval before implementation. The plan may use the host's user-facing artifact location or a repository-relative plan file; do not overwrite an unrelated existing plan.
 
 ## Artifact presentation
 

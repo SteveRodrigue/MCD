@@ -36,8 +36,8 @@ Before writing any implementation code or tests for a new feature, verify the fo
 4. **Core Invariants (from `shared-quality-gates.md`):**
    - Headless & decoupled engine (`src/engine/` contains no UI/DOM/CSS dependencies).
    - Declarative data-first (generic primitives in `src/engine/effects/`, card-specific parameters in `src/data/supplemental/`).
-   - Rhino release scope boundary (Core set player cards & Rhino encounters for Gate 1).
-   - Zero tech debt (no unapproved shims, aliases, or duplicate paths; purge confirmed legacy/orphan code).
+    - Rhino release scope boundary (Core set player cards & Rhino encounters for Gate 1).
+   - **Refactor-First & Zero Tech Debt:** Never propose "supporting both" or duplicating functions for minor variations. Prefer merging similar functions, adding a parameter to an existing function, or refactoring tangled/spaghetti code in the path of the change and updating all callers/data in scope.
 
 
 ---
@@ -70,8 +70,8 @@ flowchart TD
     S3Plan --> S4["4. Write Acceptance / Contract Tests (BDD Red)"]
     S4 --> S5["5. Composable & Modular Implementation (Green)"]
     S5 --> S6["6. Declarative Supplemental Wiring & Card Promotion"]
-    S6 --> S7["7. Full Verification Suite (npm test, typecheck, build, declarations)"]
-   S7 --> S8["8. Prepare walkthrough, recap, and proposed commit"]
+    S6 --> S7["7. Targeted Verification (vitest related, typecheck, lint, declarations)"]
+    S7 --> S8["8. Prepare walkthrough, recap, and proposed commit"]
 ```
 
 ---
@@ -106,13 +106,13 @@ flowchart TD
 
 1. **Audit Rules Reference:** Use `npm run rule -- <term>` and `references/rules/` for all timing, cost, and trigger definitions. Open the raw PDF only if confidence stays below 95%.
 2. **Evaluate Confidence:** Assess confidence level ($0–100\%$). If $< 95\%$, trigger the **Ambiguity RFC Circuit Breaker** and stop.
-3. **Audit ADR & Schemas:**
+3. **Audit ADR, Schemas & Refactor Opportunities:**
    - Read the controlling ADR in `docs/decisions/`.
-   - Update `src/data/supplemental/schema.ts` with strict Zod types if introducing new primitives.
+   - Search existing primitives and helpers first: can an existing primitive/function be parameterized or two similar functions merged instead of adding a new one?
+   - Update `src/data/supplemental/schema.ts` with strict Zod types if introducing or parameterizing primitives.
    - Update `src/engine/models/abilities.ts` or `src/engine/models/state.ts`.
    - Trace the change into the Card Supplemental Editor and its specification. Identify every affected editor descriptor, builder control, validation path, persistence shape, and editor test before implementation.
-   - Identify confirmed legacy/orphan code and references that the feature supersedes. Record the cleanup targets in the implementation plan; flag uncertain ownership or usage as an explicit user decision instead of inferring deletion.
-   - Run schema tests: `rtk vitest run tests/data/supplemental-validation.test.ts`.
+   - Identify confirmed legacy/orphan/redundant code in the path that the feature supersedes or should consolidate. Record the refactor targets in the implementation plan.
 
 ---
 
@@ -120,7 +120,7 @@ flowchart TD
 
 - **MANDATORY REVIEW GATE:** Because of the complexity of Marvel Champions rules and state invariants, you MUST always create an `implementation_plan.md` artifact detailing (strict structure: all five sections, in this order):
   1. **Rules Reference & Spec Analysis:** Exact citations from RR v1.8, timing priority, and active ADRs.
-  2. **Proposed Changes:** File-by-file breakdown (`[NEW]`, `[MODIFY]`) across engine pipelines, effect primitives, and supplemental data.
+  2. **Proposed Changes (with Simplification & Refactor Check):** Explicitly state what existing functions/primitives are being reused, parameterized, merged, or cleaned up (never propose "supporting both" or duplicating functions), followed by the file-by-file breakdown (`[NEW]`, `[MODIFY]`, `[DELETE]`).
   3. **UI and Card Editor Impact:** Explicitly state the impact and required files. If neither surface is affected, include exactly:
 
      ```markdown
@@ -131,7 +131,7 @@ flowchart TD
 
      If either surface is affected, list the affected components, specifications, validation/persistence paths, and required UI/Card Editor tests. Never leave this section implied or omit it because the change appears engine-only.
 
-  4. **Verification Plan:** Complete test inventory covering engine/data behavior, integration contracts, boundary conditions, and UI/Card Editor behavior whenever affected. Every planned code path must have a corresponding test or an explicit rationale for why an existing test is sufficient.
+  4. **Verification Plan:** Complete targeted test inventory covering engine/data behavior, integration contracts, boundary conditions, and UI/Card Editor behavior whenever affected. Prefer extending existing test files or `it.each` tables over duplicating test setup boilerplate.
   5. **Open Questions & Design Decisions:** Any trade-offs or design choices highlighted for user review.
 - **STOP AND WAIT:** Set `request_feedback: true` in the artifact metadata. Create `temp/.plan-pending` when you post the plan and delete it once the user approves. While it exists, a hook blocks edits under `src/`, `tests/`, `data/`, `tools/` and `scripts/`; implementing before approval skips the review gate.
 - **Execution Handoff:** Before approval, feature-delivery must stop and must not delegate implementation. After explicit approval, hand the approved plan to `/execute-plan`; `/execute-plan` performs its own ambiguity gate and delegates execution only for the plan's unambiguous, explicitly authorized work. Feature-delivery must not interpret missing requirements or bypass that handoff.
@@ -141,7 +141,7 @@ flowchart TD
 ### Step 4: Write Acceptance & Contract Tests (BDD Red)
 
 - **Golden Rule:** NEVER implement a feature before writing comprehensive, contract-defining tests demonstrating all intended behaviors and edge cases.
-- Create a dedicated test file in `tests/engine/`, `tests/ui/`, or `tests/scenarios/` (e.g. `tests/engine/feature-name.test.ts`).
+- Create or extend a test file in `tests/engine/`, `tests/ui/`, or `tests/scenarios/` (e.g. `tests/engine/feature-name.test.ts`).
 - The implementation plan must identify every required test file and case before implementation. This includes Card Editor tests whenever the UI or editor is affected: schema/form round-trips, control visibility and choices, validation diagnostics, persistence payloads, and reload behavior as applicable.
 - If the UI and Card Editor are unaffected, preserve the explicit plan statement `UI and Card Editor / No change required.` and add the focused evidence supporting that conclusion (for example, engine/data-only file scope and unchanged editor contract).
 - Write unit and integration tests covering:
@@ -149,7 +149,7 @@ flowchart TD
   - **Edge Cases:** Boundary conditions, 0-amount scenarios, empty decks, defeated characters.
   - **Rules Invariants:** Unicity checks, form restrictions, timing priorities.
 - **Zero Skipped Tests Invariant:** Tests must pass or fail. A hook blocks skipped, todo, and focused tests in `tests/**`; do not comment out assertions either.
-- Run the test suite (`npx vitest run tests/<file>.test.ts`) and confirm it fails because the capability is not yet implemented (**Red**). If it passes before implementation, go back and tighten the test.
+- Run the targeted test file (`rtk npx vitest run tests/<file>.test.ts`) and confirm it fails because the capability is not yet implemented (**Red**). If it passes before implementation, go back and tighten the test.
 
 ---
 
@@ -163,7 +163,7 @@ flowchart TD
   - **UI Components:** `src/ui/components/` (React presentation, Tailwind styling, Pop-Art aesthetic).
 - Keep the Card Supplemental Editor usable for the new canonical shape. Update the relevant editor registry, form builder, validation, persistence, and round-trip tests whenever the feature changes what a card can express or how it is reviewed.
 - Remove confirmed legacy/orphan implementations and references made obsolete by the feature. Do not leave duplicate code paths or dead compatibility branches behind.
-- Run the acceptance test suite to confirm all tests pass cleanly (**Green**). If any fail, fix the implementation and re-run before moving to Step 6.
+- Run the targeted acceptance test file to confirm all tests pass cleanly (**Green**). If any fail, fix the implementation and re-run before moving to Step 6.
 
 ---
 
@@ -175,35 +175,35 @@ flowchart TD
   3. **Update Audit Metadata:** For every modified card entry, update:
      - `updatedAt`, `reviewedAt`, `reviewedBy`: per the [audit stamp rules](../../rules/shared-quality-gates.md#audit-stamp).
   4. **Card Promotion & Ambiguity Pruning:** If previously blocked, promote `audit.confidence: 1.0` and prune resolved ambiguity files in `docs/ambiguities/` (Inbox Zero).
-   5. **Run Declarations Analyzer:** Execute `rtk npm run report:declarations` to ensure zero schema violations.
+  5. **Run Declarations Analyzer:** Execute `rtk npm run report:declarations` once to ensure zero schema violations.
 
 ---
 
-### Step 7: Full Verification Suite & Quality Gate
+### Step 7: Targeted Verification Gate (No Redundant Full-Suite Runs)
 
-Execute the full multi-tier verification suite:
+Run the targeted verification checks **once** (skip any check that already passed if zero files changed since):
 
 ```bash
-rtk npm run format:check && rtk npm run lint && rtk npm run typecheck && rtk npm test && rtk npm run build && rtk npm run report:declarations
+rtk npx prettier --check <changed-files> && rtk npm run lint && rtk npm run typecheck && rtk npx vitest related <changed-files> --run
 ```
 
-- **Vitest Suite:** All test files and suites pass with 0 failures and **0 skipped tests** (Zero Skipped Tests Invariant: `passed: N, failed: 0, skipped: 0`).- **TypeScript:** 0 compilation errors (`tsc --noEmit`).
-- **Vite Production Build:** Production bundle compiles cleanly without warnings.
-- **Declarations Analyzer:** `docs/reports/supplemental_declarations_usage_report.md` compiles with 0 schema violations.
+- **Related Vitest Suite:** All related test files pass with 0 failures and **0 skipped tests** (Zero Skipped Tests Invariant: `passed: N, failed: 0, skipped: 0`).
+- **TypeScript & Lint:** 0 compilation errors (`tsc --noEmit`) and 0 ESLint warnings/errors.
+- **Do NOT run the full `npm test` suite or `npm run build` here:** `.githooks/pre-push` executes the full test suite once on push.
 
 ---
 
 ### Step 8: Post-Task Hygiene & Delivery Recap
 
 1. **Execute Post-Task Protocol:**
-   Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to Tier 2/3: add a CHANGELOG fragment in `changes/unreleased/`, synchronize specs and docs, verify Card Editor alignment, check off roadmap tasks in `docs/roadmap_and_milestones.md`, and run `rtk npm run report:declarations`.
+   Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to Tier 2/3: add a CHANGELOG fragment in `changes/unreleased/`, synchronize specs and docs, verify Card Editor alignment, and check off roadmap tasks in `docs/roadmap_and_milestones.md`.
 2. **Present Verification & Solution Recap:**
    Present the completed feature, verification logs, and proposed diff to the user.
 3. **Delivery Authorization:**
    Per `AGENTS.md`, commit and push occur only upon explicit user request in the current message. When authorized, follow `commit-and-push`:
    - Stage reviewed files (`rtk git add <files>`).
-   - Commit with auto-closing syntax: `rtk git commit -m "feat(<scope>): <description> (Closes #<NUM>)"`.
-   - Push to remote and confirm issue closure (`rtk git push`).
+   - Commit with auto-closing syntax: `rtk git commit -m "feat(<scope>): <description> (Closes #<NUM>)"` (letting `.githooks/pre-commit` run `format:check`, `lint`, `typecheck`).
+   - Push to remote and confirm issue closure (`rtk git push`, letting `.githooks/pre-push` run the full `npm test` suite once).
 
 
 ---

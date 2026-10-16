@@ -181,9 +181,9 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
 - **Sub-step 6B (Trigger Emission & Dispatch Window Trace):**
   - Open `src/engine/pipeline/` (e.g. `villain-phase.ts`, `action-dispatcher.ts`, `damage-pipeline.ts`) and trace whether the trigger event (e.g. `WHEN_REVEALED`, `VILLAIN_STAGE_TRANSITION`, `MINION_ATTACKED`) is **actually dispatched for this specific card type and phase window**.
   - If a trigger is not dispatched for that card type (e.g. `WHEN_REVEALED` on Minions / Side Schemes, or Villain Stage transitions), the mechanic is **inactive in the engine**.
-- **Sub-step 6C (Code-Level Gap Routing):**
+- **Sub-step 6C (Code-Level Gap Routing — Refactor-First):**
   - If the underlying TypeScript code has gaps, missing clauses, un-emitted triggers, or card-specific anti-patterns:
-    - **Tier 2 (Additive Generic Helper / Dispatch Fix):** If the fix is a localized **card-agnostic generic helper** (e.g. composable `PLAYER_CHOICE`, `ADD_THREAT_PER_PLAYER`) or wiring a missing dispatch without architectural changes, implement the generic fix and write a regression unit test.
+    - **Tier 2 (Parameterize, Merge, or Generic Dispatch Fix):** Prefer adding a parameter to an existing generic primitive or merging similar handlers over adding a parallel primitive. Never propose "supporting both". Implement the clean generic fix and write/extend a targeted regression unit test.
     - **Tier 3 (Structural Blocker / Interactive UI Modal):** If the card requires interactive decision modals, new state machines, state schema redesigns, or phase loop redesigns, **confidence CANNOT exceed 80%**; isolate the card to `docs/ambiguities/` and strip `abilities: [...]`.
 
 ### Step 7: Differential Comparison, Blast-Radius Gate & Mandatory User Peer Review
@@ -199,7 +199,7 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
   - **Batch Mode:** Do not stop card-by-card. Collate the 4-part review breakdown for all ready cards across the batch into a single consolidated implementation plan / peer review artifact. Stop **once** for user approval for the entire batch.
 - **Blast-Radius Tier Handling:**
   - **Tier 1 (No code change needed / Fast-track):** Card integrated or updated in supplemental JSON without engine code changes. Present the peer-review diff to the user.
-  - **Tier 2 (Additive helper added):** Implement generic reusable building block and write a regression unit test.
+  - **Tier 2 (Parameterized or merged generic helper):** Parameterize/merge existing generic building blocks (or add a truly distinct primitive) and write a targeted regression unit test.
   - **Tier 3 (Structural):** Isolate to `docs/ambiguities/{pack}_{code}_{slug}.md` and strip `abilities: [...]`. In single-card mode: stop and request approval; in batch mode: isolate, continue batch, and include in the consolidated end-of-batch report.
 
 ### Step 8: Stamp Audit Metadata (HH:MM), Codify Specs & Prune Ambiguity
@@ -209,12 +209,12 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
 2. **Synchronous Specification Feedback Loop:**
    - Whenever an engine primitive, trigger, or parameter is implemented or refactored:
      1. Immediately update the corresponding specification file in [`docs/specifications/supplemental/`](../../../docs/specifications/supplemental/README.md) to mark it 🟢 `IMPLEMENTED (v1.0)` with code links.
-     2. Run `rtk vitest run tests/data/supplemental-schema.test.ts` to ensure schema conformance.
+     2. Run `rtk npx vitest run tests/data/supplemental-schema.test.ts` to ensure schema conformance.
 3. **Inbox Zero Pruning:** If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it**.
 4. **Canonical Card ID Sorting:** Keep `src/data/supplemental/pack/*.json` in ascending card ID order (`01001a` -> `01001b` -> `01002`); a hook reports any out-of-order key after each edit. Insert new entries in place, not at the bottom.
-5. **Regenerate Usage Audit & Verification:**
-   - **In Single-Card Mode:** Run `rtk npm run report:declarations` (or `rtk npx tsx tools/audit/supplemental-declarations-analyzer.ts`) to regenerate [`docs/reports/supplemental_data/usage_report.md`](../../../docs/reports/supplemental_data/usage_report.md). Run full verification suite: `rtk npm test; rtk npm run typecheck; rtk npm run build` (confirming **0 failed and 0 skipped tests** under the Zero Skipped Tests Invariant).
-   - **In Batch Mode:** Do **not** run verification repeatedly per card. Execute Step 8 authoring and sorting across all approved cards in the batch first, then execute `rtk npm run report:declarations` and the full verification suite (`rtk npm test; rtk npm run typecheck; rtk npm run build`) **once as a single consolidated check** at the end of the batch.
+5. **Regenerate Usage Audit & Targeted Verification:**
+   - **In Single-Card Mode:** Run `rtk npm run report:declarations` once to regenerate [`docs/reports/supplemental_data/usage_report.md`](../../../docs/reports/supplemental_data/usage_report.md). Run targeted verification: `rtk npx vitest run <card-test-file> tests/data/supplemental-validation.test.ts` and `rtk npm run typecheck` (confirming **0 failed and 0 skipped tests**). Do not run the full `npm test` suite or `npm run build` here; `.githooks/pre-push` runs `npm test` on push.
+   - **In Batch Mode:** Do **not** run verification repeatedly per card. Execute Step 8 authoring and sorting across all approved cards in the batch first, then execute `rtk npm run report:declarations`, `rtk npx vitest run <batch-test-files> tests/data/supplemental-validation.test.ts`, and `rtk npm run typecheck` **once as a single consolidated check** at the end of the batch.
 
 ---
 

@@ -18,12 +18,11 @@ A commit and push only ever happen in response to the user's explicit request in
 
 ```mermaid
 flowchart TD
-    S1["1. Inspect Working Tree & Status (rtk git status, rtk git diff)"] --> S2["2. Stage Changes & Clean Working Tree (rtk git add)"]
-    S2 --> S3["3. Execute Quality Gates (rtk npm run format/lint/typecheck/test)"]
-    S3 --> S4["4. Categorize & Select Scope (Conventional Commits)"]
-    S4 --> S5["5. Formulate Concise Commit Message (Auto-Generate if Absent)"]
-      S5 --> S6["6. Validate issue references, then commit (rtk git commit)"]
-      S6 --> S7["7. Push and run final verification (rtk git push)"]
+    S1["1. Inspect Working Tree & Status (rtk git status, rtk git diff)"] --> S2["2. Stage Target Changes & Format Staged Files (rtk git add)"]
+    S2 --> S3["3. Categorize & Select Scope (Conventional Commits)"]
+    S3 --> S4["4. Formulate Concise Commit Message"]
+    S4 --> S5["5. Validate issue references, then commit (pre-commit runs format/lint/typecheck)"]
+    S5 --> S6["6. Push (pre-push runs full npm test) & verify issue state"]
 ```
 
 ---
@@ -39,50 +38,26 @@ flowchart TD
 
 ## 📦 Step 2: Stage Target Changes
 
-1. If files are unstaged, stage intentional changes:
-   - For complete feature/fix deliveries: stage the reviewed file list explicitly.
-   - For selective commits: `rtk git add <file1> <file2> ...`
-2. If supplemental card data (`src/data/supplemental/`) was modified:
-   - **Always run:** `rtk npm run report:declarations`
+1. Format only the modified TS/TSX/JS files before staging so `.githooks/pre-commit` passes on the first try:
+   ```sh
+   rtk npx prettier --write <modified-ts-tsx-js-files>
+   ```
+2. Stage intentional changes by name:
+   - For complete feature/fix deliveries: stage the reviewed file list explicitly (`rtk git add <file1> <file2> ...`).
+   - A hook blocks `git add .`, `-A`, `--all`, and `git commit -a`, because a broad stage commits unrelated work.
+3. If supplemental card data (`src/data/supplemental/`) was modified and `report:declarations` has not yet been run since the last data edit:
+   - Run `rtk npm run report:declarations`
    - Stage the updated reports: `rtk git add docs/reports/supplemental_data/ docs/reports/supplemental_declarations_usage_report.md`
-3. Re-run `rtk git diff --cached --name-status` and confirm every staged path belongs to the intended file set.
-4. Stage by name only. A hook blocks `git add .`, `-A`, `--all`, and `git commit -a`, because a broad stage commits unrelated work.
+4. Re-run `rtk git diff --cached --name-status` and confirm every staged path belongs to the intended file set.
 
 ---
 
-## 🛡️ Step 3: Run Automated Quality Gates
+## 🛡️ Step 3: Rely on Git Hooks (No Duplicate Manual Runs)
 
-Before committing, run the project's quality verification pipeline using `rtk` to condense output. If any gate fails, fix it, re-stage only the intended files, and re-run from the start of this step:
-
-1. **Prettier Format Check:**
-
-   ```sh
-   rtk npm run format:check
-   ```
-
-   _Recovery:_ If formatting issues are found, format only the reviewed file set, inspect the diff, and stage only the intended files.
-
-2. **ESLint Static Analysis:**
-
-   ```sh
-   rtk npm run lint
-   ```
-
-   _Requirement:_ Must exit with 0 errors and 0 warnings (`--max-warnings 0`).
-
-3. **TypeScript Typecheck:**
-
-   ```sh
-   rtk npm run typecheck
-   ```
-
-   _Requirement:_ Must compile cleanly with 0 TypeScript diagnostics (`tsc --noEmit`).
-
-4. **Automated Test Suite (Zero Skipped Tests Invariant):**
-   ```sh
-   rtk npm test
-   ```
-   _Requirement:_ All unit, integration, and contract tests must pass with **0 failures and 0 skipped tests** (`passed: N, failed: 0, skipped: 0`). A skipped or todo test blocks commit and push until resolved or pruned (a hook also blocks adding one under `tests/`).
+Do **not** manually run `npm run format:check`, `npm run lint`, `npm run typecheck`, or `npm test` before committing:
+- `git commit` automatically triggers `.githooks/pre-commit` (`format:check`, `lint`, `typecheck`).
+- `git push` automatically triggers `.githooks/pre-push` (`npm test` enforcing 0 failures and 0 skipped tests).
+- Running them manually in Step 3 duplicates every check back-to-back. Only run a targeted check manually if a hook fails and you are diagnosing the fix.
 
 ---
 

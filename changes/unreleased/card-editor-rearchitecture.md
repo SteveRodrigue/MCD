@@ -23,3 +23,7 @@ type: Changed
   - Abilities show only the timing window (and the event trigger for interrupt, response, when-revealed and boost timings); cost, trigger filter, limit, zone, for-each-player and errata are `+ Add` chips until set.
   - Printed `(attack)` / `(thwart)` / `(defense)` labels appear as read-only `AUTO` badges in the ability header.
   - Steps show the effect and its parameters; gate, step ID and uncancelable are `+ Add` chips. Removing a gate also removes its parameters.
+- **Phase 6: one set of types, Toughness fixed**
+  - Toughness is the keyword and Tough is the status card (RR v1.8, #280): Rhino, Luke Cage and Sandman get their tough status card through the Toughness keyword, without a name alias.
+  - Card filters accept every engine keyword (23).
+  - The engine uses the supplemental schema's types directly; unused engine-only effect names, cost fields and triggers are removed. Discard, boost-reveal and leaves-play reactions are tracked as missing features (#320, #321, #322).

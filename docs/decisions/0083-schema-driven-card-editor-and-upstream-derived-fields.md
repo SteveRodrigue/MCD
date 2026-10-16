@@ -58,10 +58,14 @@ The schema itself also asked authors to declare values the upstream card data al
 5. **Editor rendered from schemas.** `<ZodSchemaForm />` renders descriptors (selects, pills, numbers including negatives where the schema allows, checkboxes, text, and the card filter, card location and dynamic value builders) and shows unset optional fields as `+ Add` chips. Card level, ability level and step level each use a chip bar; the Visual Review tab is gone, leaving Form Builder and Raw JSON. Audit & Metadata stays a collapsible section. The editor never stamps `audit.updatedAt` or `audit.reviewedAt`: the save endpoint (`src/tools/editor/api-middleware.ts`) does.
 6. **CI guard.** `tests/ui/editor-schema-parity.test.ts` fails when an effect or gate has no schema, when a schema cannot be introspected, or when a file under `src/ui/components/editor/` hardcodes a string array that duplicates an exported schema enum.
 
+### Phase 6: engine types and keywords (2026-10-16)
+
+- **One set of types.** The engine's `AbilityTiming`, `TriggerType`, `EffectType`, `AbilityCost` and `CardUsesDefinition` are now the schema types. Engine-only members that no card could declare were removed: 9 legacy effect names and `| string`, three dead cost fields, `discardCard.from` DECK/PLAY, uses `type`/`max`, and 10 dead trigger aliases. `tests/engine/ability-types-parity.test.ts` keeps them equal and rejects any dispatched trigger the schema does not know.
+- **Unauthorable triggers removed, research kept.** `CARD_DISCARDED` and `WHEN_BOOST_CARD_REVEALED` were dispatched but no card could listen; `CARD_LEFT_PLAY` was never dispatched. They were removed (`eaab0d8`) and filed as missing features #320, #321, #322, each with candidate cards and a recommended evidence card. The last off-schema dispatch, `SCHEME_THREAT_REDUCED_TO_ZERO`, is a rules question (#323).
+- **Toughness vs. Tough (RR v1.8, #280).** Toughness is a keyword ("enters play with a tough status card"); Tough is a status card. The engine keyword is `Keyword.TOUGHNESS = 'Toughness'`, the status stays `StatusCard.TOUGH = 'Tough'`, and the alias that matched one to the other is gone. `KeywordSchema` is derived from the engine `Keyword` enum (23 keywords).
+
 ### Deferred
 
-- Re-exporting the engine's `TriggerType`, `EffectType`, `AbilityTiming`, `AbilityCost` and `CardUsesDefinition` from `schema.ts` (plan Phase 1.5) is not behavior-neutral, because the engine types are wider. It needs an owner decision.
-- Aligning `KeywordSchema` (8 values) with the engine keyword enum (23 values) needs the same decision, and renaming `Toughness` to `Tough` (#280).
 - Variable "Spend X" costs (Energy Channel `01018`) cannot be expressed by the positive-integer map. #318 will extend it; `<ZodSchemaForm />` picks up the new shape through `.meta()`.
 
 ---

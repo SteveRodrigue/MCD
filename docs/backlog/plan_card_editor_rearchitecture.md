@@ -1,6 +1,6 @@
 # Card Editor Re-Architecture Plan (Complete Specification)
 
-> **Status:** In progress — Phases 1–5 implemented; Phase 6 approved (2026-10-16).
+> **Status:** Implemented — Phases 1–6 (2026-10-16). Awaiting merge to `main`.
 > **Milestone:** Gate 1 — Rhino Release (user-added scope, 2026-10-15).
 > **Depends on:** Issue [#316](https://github.com/SteveRodrigue/MCD/issues/316) (Dash `null` basic powers) lands first. See §0.2.
 
@@ -434,8 +434,9 @@ Accepted deviations from the plan as written (the code and [ADR-0083](../decisio
 
 - **56 effects, not 57.** `EFFECT_PARAM_SCHEMAS` covers every `EffectTypeSchema` option; there are 56.
 - **Leaf schemas split.** They live in the internal `src/data/supplemental/schema-primitives.ts`, which `schema.ts` re-exports, to break the load cycle between `schema.ts` and `effect-params.ts`.
-- **Phase 1.5 deferred** (engine type re-exports): see §8.3.
-- **`KeywordSchema` sync deferred** (Phase 2.2): see §8.4.
+- **Phase 1.5 and the `KeywordSchema` sync** were deferred, then done in Phase 6 (§8.3, §8.4).
+- **Phase 6.3** also removed 10 dead trigger aliases and 8 comparisons against effect names outside the schema. The one remaining off-schema dispatch (`SCHEME_THREAT_REDUCED_TO_ZERO`) is a rules question, #323.
+- **Phase 6.4** triggers were filed instead of built: #320, #321, #322 (removal commit `eaab0d8`).
 - **Audit stamps.** The save endpoint (`src/tools/editor/api-middleware.ts`) stamps `audit.updatedAt` and `audit.reviewedAt`; the editor never does.
 - **Audit & Metadata** stays a collapsible section of the card form.
 - **Duration options** are `PHASE` / `ROUND` / `TURN` (`DurationSchema`).

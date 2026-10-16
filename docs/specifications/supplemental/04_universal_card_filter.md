@@ -63,21 +63,21 @@ export type UniversalCardFilter = CardCriteria & {
 
 ## 3. Filter Criteria Reference
 
-| Criterion            | Type                | Description                                                                                                                                        | Example                               |
-| :------------------- | :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------ |
-| `codes`              | `string[]`          | Matches exact card code(s).                                                                                                                        | `{ "codes": ["01046", "01047"] }`     |
-| `names`              | `string[]`          | Matches card title (case-insensitive).                                                                                                             | `{ "names": ["Avengers Mansion"] }`   |
-| `types`              | `CardType[]`        | Matches card type (`"upgrade"`, `"support"`, `"ally"`, `"event"`, `"minion"`, `"side_scheme"`, etc.). Matches both normalized and raw `type_code`. | `{ "types": ["upgrade", "support"] }` |
-| `traits`             | `string[]`          | Matches bold bracketed traits (`[[Tech]]`, `[[Avenger]]`). Punctuation and casing resilient (e.g. `"S.H.I.E.L.D."` matches `"SHIELD"`).            | `{ "traits": ["Tech"] }`              |
-| `aspects`            | `Aspect[]`          | Matches card aspect or faction (`"aggression"`, `"justice"`, `"leadership"`, `"protection"`, `"basic"`, `"encounter"`).                            | `{ "aspects": ["leadership"] }`       |
-| `sets`               | `string[]`          | Matches encounter set or hero set. Special value `"PLAYER_NEMESIS"` matches the resolving hero's set-aside nemesis set.                            | `{ "sets": ["PLAYER_NEMESIS"] }`      |
-| `isUnique`           | `boolean`           | Matches unique cards marked with the unique title diamond symbol ($\star$).                                                                        | `{ "isUnique": true }`                |
-| `isIdentitySpecific` | `boolean`           | Restricts matching to cards belonging to the active player's identity set.                                                                         | `{ "isIdentitySpecific": true }`      |
-| `cost`               | `NumberComparison`  | Compares printed card resource cost (`min`, `max`, `equals`).                                                                                      | `{ "cost": { "max": 2 } }`            |
-| `resourceIcons`      | `ResourceType[]`    | Matches cards bearing printed resource icons (`"physical"`, `"energy"`, `"mental"`, `"wild"`).                                                     | `{ "resourceIcons": ["mental"] }`     |
-| `hasKeyword`         | `Keyword`           | Matches cards with the specified active keyword (`"Guard"`, `"Overkill"`, `"Quickstrike"`, `"Ranged"`, `"Retaliate"`, `"Toughness"`, etc.).        | `{ "hasKeyword": "Guard" }`           |
-| `isExhausted`        | `boolean`           | When evaluating cards in play, matches exhaustion orientation.                                                                                     | `{ "isExhausted": true }`             |
-| `hasStatus`          | `CharacterStatus[]` | When evaluating characters in play, matches attached status cards (`"STUNNED"`, `"CONFUSED"`, `"TOUGH"`).                                          | `{ "hasStatus": ["TOUGH"] }`          |
+| Criterion            | Type                | Description                                                                                                                                                                                                                                        | Example                               |
+| :------------------- | :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------ |
+| `codes`              | `string[]`          | Matches exact card code(s).                                                                                                                                                                                                                        | `{ "codes": ["01046", "01047"] }`     |
+| `names`              | `string[]`          | Matches card title (case-insensitive).                                                                                                                                                                                                             | `{ "names": ["Avengers Mansion"] }`   |
+| `types`              | `CardType[]`        | Matches card type (`"upgrade"`, `"support"`, `"ally"`, `"event"`, `"minion"`, `"side_scheme"`, etc.). Matches both normalized and raw `type_code`.                                                                                                 | `{ "types": ["upgrade", "support"] }` |
+| `traits`             | `string[]`          | Matches bold bracketed traits (`[[Tech]]`, `[[Avenger]]`). Punctuation and casing resilient (e.g. `"S.H.I.E.L.D."` matches `"SHIELD"`).                                                                                                            | `{ "traits": ["Tech"] }`              |
+| `aspects`            | `Aspect[]`          | Matches card aspect or faction (`"aggression"`, `"justice"`, `"leadership"`, `"protection"`, `"basic"`, `"encounter"`).                                                                                                                            | `{ "aspects": ["leadership"] }`       |
+| `sets`               | `string[]`          | Matches encounter set or hero set. Special value `"PLAYER_NEMESIS"` matches the resolving hero's set-aside nemesis set.                                                                                                                            | `{ "sets": ["PLAYER_NEMESIS"] }`      |
+| `isUnique`           | `boolean`           | Matches unique cards marked with the unique title diamond symbol ($\star$).                                                                                                                                                                        | `{ "isUnique": true }`                |
+| `isIdentitySpecific` | `boolean`           | Restricts matching to cards belonging to the active player's identity set.                                                                                                                                                                         | `{ "isIdentitySpecific": true }`      |
+| `cost`               | `NumberComparison`  | Compares printed card resource cost (`min`, `max`, `equals`).                                                                                                                                                                                      | `{ "cost": { "max": 2 } }`            |
+| `resourceIcons`      | `ResourceType[]`    | Matches cards bearing printed resource icons (`"physical"`, `"energy"`, `"mental"`, `"wild"`).                                                                                                                                                     | `{ "resourceIcons": ["mental"] }`     |
+| `hasKeyword`         | `Keyword`           | Matches cards with the specified active keyword (`"Guard"`, `"Overkill"`, `"Quickstrike"`, `"Ranged"`, `"Retaliate"`, `"Toughness"`, etc.; any value of the engine `Keyword` enum). `Toughness` is the printed keyword, not the tough status card. | `{ "hasKeyword": "Guard" }`           |
+| `isExhausted`        | `boolean`           | When evaluating cards in play, matches exhaustion orientation.                                                                                                                                                                                     | `{ "isExhausted": true }`             |
+| `hasStatus`          | `CharacterStatus[]` | When evaluating characters in play, matches attached status cards (`"STUNNED"`, `"CONFUSED"`, `"TOUGH"`).                                                                                                                                          | `{ "hasStatus": ["TOUGH"] }`          |
 
 ---
 
@@ -126,10 +126,10 @@ _Meaning:_ Match any non-unique ally.
 
 ## 5. Integration Across Effect Primitives
 
-| Effect Primitive        | Parameter                   | Documentation                                                                  |
-| :---------------------- | :-------------------------- | :----------------------------------------------------------------------------- |
-| **`SEARCH`**            | `filter`                    | [06. Zones & Cards (Search)](./06_effects_zones_cards.md#search)               |
-| **`DISCARD`**           | `filter`, `untilFilter`     | [06. Zones & Cards (Discard)](./06_effects_zones_cards.md#discard)             |
-| **`MODIFY_HAND_SIZE`**  | `filter` (or step `filter`) | [06. Zones & Cards (Hand Size)](./06_effects_zones_cards.md#modify_hand_size)  |
-| **`PUT_INTO_PLAY`**     | `filter`                    | [06. Zones & Cards (Put Into Play)](./06_effects_zones_cards.md#put_into_play) |
-| **`EXHAUST` / `READY`** | `filter`                    | [07. Status & Economy](./07_effects_status_economy.md#2-card-orientation--ready-states-exhaust-ready)       |
+| Effect Primitive        | Parameter                   | Documentation                                                                                         |
+| :---------------------- | :-------------------------- | :---------------------------------------------------------------------------------------------------- |
+| **`SEARCH`**            | `filter`                    | [06. Zones & Cards (Search)](./06_effects_zones_cards.md#search)                                      |
+| **`DISCARD`**           | `filter`, `untilFilter`     | [06. Zones & Cards (Discard)](./06_effects_zones_cards.md#discard)                                    |
+| **`MODIFY_HAND_SIZE`**  | `filter` (or step `filter`) | [06. Zones & Cards (Hand Size)](./06_effects_zones_cards.md#modify_hand_size)                         |
+| **`PUT_INTO_PLAY`**     | `filter`                    | [06. Zones & Cards (Put Into Play)](./06_effects_zones_cards.md#put_into_play)                        |
+| **`EXHAUST` / `READY`** | `filter`                    | [07. Status & Economy](./07_effects_status_economy.md#2-card-orientation--ready-states-exhaust-ready) |

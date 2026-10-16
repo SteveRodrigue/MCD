@@ -1,7 +1,15 @@
 import React from 'react';
-import { StepGateSchema, EffectTypeSchema } from '../../../data/supplemental/schema';
-import { UniversalCardFilterBuilder } from './UniversalCardFilterBuilder';
-import { DynamicValueBuilder } from './DynamicValueBuilder';
+import type { ZodObject } from 'zod';
+import {
+  StepGateSchema,
+  EffectTypeSchema,
+  type EffectType,
+} from '../../../data/supplemental/schema';
+import {
+  EFFECT_DESCRIPTIONS,
+  EFFECT_PARAM_SCHEMAS,
+} from '../../../data/supplemental/effect-params';
+import { introspectObjectSchema } from '../../../data/supplemental/schema-introspector';
 import {
   Plus,
   Trash2,
@@ -11,8 +19,7 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
-import { getEffectDescriptor } from './effect-parameter-registry';
-import { CardLocationSelectorForm } from './CardLocationSelectorForm';
+import { ZodSchemaForm } from './schema-form/ZodSchemaForm';
 import { generateStepSummary } from './step-pipeline-utils';
 import { GateParamsPanel } from './GateParamsPanel';
 
@@ -116,37 +123,29 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
         {steps.map((step: any, sIdx: number) => {
           const effectParams = step.effectParams ?? {};
           const gateParams = step.gateParams ?? {};
-          const descriptor = getEffectDescriptor(step.effect || 'DEAL_DAMAGE');
+          const effect: EffectType = step.effect || 'DEAL_DAMAGE';
+          // An effect missing from the schema map (stale or invalid data) has no parameter form.
+          const effectSchema: ZodObject | undefined = EFFECT_PARAM_SCHEMAS[effect];
+          const effectFields = effectSchema ? introspectObjectSchema(effectSchema) : [];
           const errorsForStep = stepErrors[sIdx] || [];
 
           const handleEffectChange = (newEffect: string) => {
-            const newDesc = getEffectDescriptor(newEffect);
+            const newFields = introspectObjectSchema(EFFECT_PARAM_SCHEMAS[newEffect as EffectType]);
             const newParams: Record<string, any> = {};
-            for (const p of newDesc.parameters) {
-              if (effectParams[p.key] !== undefined) {
-                newParams[p.key] = effectParams[p.key];
-              } else if (p.key === 'count' && effectParams.amount !== undefined) {
+            for (const field of newFields) {
+              if (effectParams[field.key] !== undefined) {
+                newParams[field.key] = effectParams[field.key];
+              } else if (field.key === 'count' && effectParams.amount !== undefined) {
                 newParams.count = effectParams.amount;
-              } else if (p.key === 'amount' && effectParams.count !== undefined) {
+              } else if (field.key === 'amount' && effectParams.count !== undefined) {
                 newParams.amount = effectParams.count;
-              } else if (p.defaultValue !== undefined) {
-                newParams[p.key] = p.defaultValue;
+              } else if (field.defaultValue !== undefined) {
+                newParams[field.key] = field.defaultValue;
               }
             }
             const cleanParams = Object.keys(newParams).length > 0 ? newParams : undefined;
             handleUpdateStep(sIdx, {
               effect: newEffect,
-              effectParams: cleanParams,
-            });
-          };
-
-          const updateEffectParam = (key: string, val: any) => {
-            const nextParams = { ...effectParams, [key]: val };
-            if (val === undefined || val === '') {
-              delete nextParams[key];
-            }
-            const cleanParams = Object.keys(nextParams).length > 0 ? nextParams : undefined;
-            handleUpdateStep(sIdx, {
               effectParams: cleanParams,
             });
           };
@@ -396,7 +395,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                     Effect Primitive
                   </label>
                   <span className="text-[10px] text-gray-500 italic truncate max-w-xs">
-                    {descriptor.description}
+                    {EFFECT_DESCRIPTIONS[effect]}
                   </span>
                 </div>
                 <select
@@ -413,239 +412,52 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                 </select>
               </div>
 
-              {/* Dynamic Parameter Fields */}
-              {descriptor.parameters.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-white/80 p-2.5 border border-black rounded shadow-comic-xs">
-                  {step.effect === 'GENERATE_RESOURCE' && (
-                    <div className="col-span-full space-y-2">
-                      <div>
-                        <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                          Source Mode
-                        </label>
-                        <select
-                          data-testid={`step-param-sourceMode-${abilityIndex}-${sIdx}`}
-                          value={effectParams.fromCard ? 'FROM_CARD' : 'STATIC'}
-                          onChange={(e) => {
-                            if (e.target.value === 'FROM_CARD') {
-                              const next = { ...effectParams };
-                              delete next.resource;
-                              delete next.amount;
-                              next.fromCard = { zone: 'PLAYER_DISCARD', position: 'TOP' };
-                              handleUpdateStep(sIdx, { effectParams: next });
-                            } else {
-                              const next = { ...effectParams };
-                              delete next.fromCard;
-                              next.resource = 'wild';
-                              next.amount = 1;
-                              handleUpdateStep(sIdx, { effectParams: next });
-                            }
-                          }}
-                          className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
-                        >
-                          <option value="STATIC">STATIC (Fixed Resource Amount)</option>
-                          <option value="FROM_CARD">FROM_CARD (Dynamic Card Inspector)</option>
-                        </select>
-                      </div>
-
-                      {Boolean(effectParams.fromCard) && (
-                        <CardLocationSelectorForm
-                          value={effectParams.fromCard}
-                          onChange={(val) => {
-                            const next = { ...effectParams };
-                            if (val) {
-                              next.fromCard = val;
-                            } else {
-                              delete next.fromCard;
-                            }
-                            handleUpdateStep(sIdx, { effectParams: next });
-                          }}
-                          label="Resource Source Card"
-                          testIdPrefix={`generate-resource-from-card-${abilityIndex}-${sIdx}`}
-                        />
-                      )}
+              {/* Effect parameters, rendered from EFFECT_PARAM_SCHEMAS[effect] */}
+              {effectSchema && effectFields.length > 0 ? (
+                <div className="space-y-2 bg-white/80 p-2.5 border border-black rounded shadow-comic-xs">
+                  {effect === 'GENERATE_RESOURCE' && (
+                    <div>
+                      <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                        Source Mode
+                      </label>
+                      <select
+                        data-testid={`step-param-sourceMode-${abilityIndex}-${sIdx}`}
+                        value={effectParams.fromCard ? 'FROM_CARD' : 'STATIC'}
+                        onChange={(e) => {
+                          const next = { ...effectParams };
+                          if (e.target.value === 'FROM_CARD') {
+                            delete next.resource;
+                            delete next.amount;
+                            next.fromCard = { zone: 'PLAYER_DISCARD', position: 'TOP' };
+                          } else {
+                            delete next.fromCard;
+                            next.resource = 'wild';
+                            next.amount = 1;
+                          }
+                          handleUpdateStep(sIdx, { effectParams: next });
+                        }}
+                        className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
+                      >
+                        <option value="STATIC">STATIC (Fixed Resource Amount)</option>
+                        <option value="FROM_CARD">FROM_CARD (Dynamic Card Inspector)</option>
+                      </select>
                     </div>
                   )}
-                  {descriptor.parameters.map((param) => {
-                    const val = effectParams[param.key];
-
-                    if (
-                      step.effect === 'GENERATE_RESOURCE' &&
-                      effectParams.fromCard &&
-                      (param.key === 'resource' || param.key === 'amount')
-                    ) {
-                      return null;
+                  <ZodSchemaForm
+                    schema={effectSchema}
+                    value={step.effectParams}
+                    onChange={(next) => handleUpdateStep(sIdx, { effectParams: next })}
+                    testId={(path, extra) =>
+                      `step-param-${path.join('-')}${extra ? `-${extra}` : ''}-${abilityIndex}-${sIdx}`
                     }
-
-                    if (param.type === 'card-filter') {
-                      return (
-                        <div key={param.key} className="col-span-full">
-                          <UniversalCardFilterBuilder
-                            label={`${param.label} (Filter)`}
-                            filter={val}
-                            onChange={(newFilter) => updateEffectParam(param.key, newFilter)}
-                            isSubBranch={true}
-                          />
-                        </div>
-                      );
+                    hiddenKeys={
+                      effect !== 'GENERATE_RESOURCE'
+                        ? []
+                        : effectParams.fromCard
+                          ? ['resource', 'amount']
+                          : ['fromCard']
                     }
-
-                    if (param.allowDynamic) {
-                      return (
-                        <div key={param.key} className="col-span-full">
-                          <DynamicValueBuilder
-                            label={param.label}
-                            value={val}
-                            allowAll={param.allowAll}
-                            description={param.description}
-                            onChange={(newVal) => updateEffectParam(param.key, newVal)}
-                          />
-                        </div>
-                      );
-                    }
-
-                    if (param.type === 'boolean') {
-                      return (
-                        <label
-                          key={param.key}
-                          className="flex items-center gap-1.5 text-xs font-bold text-gray-800 cursor-pointer pt-3"
-                          title={param.description}
-                        >
-                          <input
-                            type="checkbox"
-                            data-testid={`step-param-${param.key}-${abilityIndex}-${sIdx}`}
-                            checked={Boolean(val)}
-                            onChange={(e) => updateEffectParam(param.key, e.target.checked)}
-                            className="accent-black"
-                          />
-                          <span>{param.label}</span>
-                        </label>
-                      );
-                    }
-
-                    if (param.type === 'multi-select') {
-                      const selectedValues: string[] = Array.isArray(val)
-                        ? val
-                        : val
-                          ? [val]
-                          : param.defaultValue || [];
-                      return (
-                        <div key={param.key} className="col-span-full">
-                          <label
-                            className="block text-[9px] uppercase font-bold text-gray-500 mb-1"
-                            title={param.description}
-                          >
-                            {param.label}
-                          </label>
-                          <div className="flex flex-wrap gap-1.5">
-                            {param.options?.map((opt) => {
-                              const isActive = selectedValues.includes(opt);
-                              return (
-                                <button
-                                  key={opt}
-                                  type="button"
-                                  data-testid={`step-param-${param.key}-${opt}-${abilityIndex}-${sIdx}`}
-                                  onClick={() => {
-                                    const next = isActive
-                                      ? selectedValues.filter((v) => v !== opt)
-                                      : [...selectedValues, opt];
-                                    updateEffectParam(
-                                      param.key,
-                                      next.length > 0 ? next : undefined,
-                                    );
-                                  }}
-                                  className={`px-2 py-0.5 text-[10px] font-bold rounded border border-black transition-all ${
-                                    isActive
-                                      ? 'bg-comic-accent text-white shadow-comic-xs'
-                                      : 'bg-gray-100 text-black hover:bg-gray-200'
-                                  }`}
-                                >
-                                  {opt}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    if (param.type === 'select') {
-                      return (
-                        <div key={param.key}>
-                          <label
-                            className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5"
-                            title={param.description}
-                          >
-                            {param.label}
-                          </label>
-                          <select
-                            data-testid={`step-param-${param.key}-${abilityIndex}-${sIdx}`}
-                            value={val !== undefined ? val : ''}
-                            onChange={(e) =>
-                              updateEffectParam(param.key, e.target.value || undefined)
-                            }
-                            className="w-full bg-white border border-black p-1 text-[11px] font-mono"
-                          >
-                            <option value="">Default (Contextual)</option>
-                            {param.options?.map((opt) => (
-                              <option key={opt} value={opt}>
-                                {opt}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      );
-                    }
-
-                    if (param.type === 'number') {
-                      return (
-                        <div key={param.key}>
-                          <label
-                            className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5"
-                            title={param.description}
-                          >
-                            {param.label}
-                          </label>
-                          <input
-                            type="number"
-                            min={0}
-                            data-testid={`step-param-${param.key}-${abilityIndex}-${sIdx}`}
-                            value={val !== undefined ? val : ''}
-                            onChange={(e) => {
-                              const num =
-                                e.target.value !== ''
-                                  ? Math.max(0, parseInt(e.target.value, 10) || 0)
-                                  : undefined;
-                              updateEffectParam(param.key, num);
-                            }}
-                            placeholder={param.placeholder || '0'}
-                            className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
-                          />
-                        </div>
-                      );
-                    }
-
-                    // Text input
-                    return (
-                      <div key={param.key}>
-                        <label
-                          className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5"
-                          title={param.description}
-                        >
-                          {param.label}
-                        </label>
-                        <input
-                          type="text"
-                          data-testid={`step-param-${param.key}-${abilityIndex}-${sIdx}`}
-                          value={val || ''}
-                          onChange={(e) =>
-                            updateEffectParam(param.key, e.target.value || undefined)
-                          }
-                          placeholder={param.placeholder || ''}
-                          className="w-full bg-white border border-black p-1 text-xs rounded"
-                        />
-                      </div>
-                    );
-                  })}
+                  />
                 </div>
               ) : (
                 <div className="text-[11px] italic text-gray-500 bg-gray-100 p-1.5 rounded border border-gray-300">

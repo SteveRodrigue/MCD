@@ -13,3 +13,9 @@ type: Changed
   - New headless `schema-introspector.ts` turns `.meta()`-annotated Zod schemas into form field descriptors.
   - Every effect primitive now has a strict `effectParams` schema (`EFFECT_PARAM_SCHEMAS`); unknown or wrongly typed parameters are rejected when packs load. All 196 parameterized steps in the 5 packs validate.
   - Gate parameter fields are derived from their schemas instead of hand-written lists.
+- **Phase 3: schema-driven Card Editor forms**
+  - New `<ZodSchemaForm />` renders any annotated schema (selects, pills, numbers, checkboxes, card filters, card locations, dynamic values) and shows unset optional fields as `+ Add` chips.
+  - Effect parameters, trigger filters and ability costs are rendered from their schemas; the 1,365-line hand-written parameter registry is deleted.
+  - Card attributes: one chip bar (Play Requirements, Uses / Counters, Attachment Host, Obligation Recipient, Cross-Player Control, Errata) plus read-only upstream badges (traits, keywords incl. Victory X, max per player, consequential damage, restricted slots, dash powers).
+  - The redundant Visual Review tab is removed; the inspector has Form Builder and Raw JSON.
+  - Number fields accept negative values where the schema allows them; Dynamic Value sources now include `PREVIOUS_EXCESS_DAMAGE` and a target card code.

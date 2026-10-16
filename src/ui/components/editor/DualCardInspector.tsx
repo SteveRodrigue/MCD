@@ -13,8 +13,6 @@ import {
   Copy,
   Check,
   Zap,
-  Clock,
-  Shield,
   Tag,
   Save,
   Sliders,
@@ -31,39 +29,12 @@ interface DualCardInspectorProps {
   ) => Promise<boolean>;
 }
 
-function formatCostSummary(cost: any): string {
-  if (!cost) return '';
-  const parts: string[] = [];
-  if (cost.exhaustSelf) parts.push('Exhaust Self');
-  if (cost.exhaustCard) parts.push(`Exhaust ${cost.exhaustCard}`);
-  if (cost.discardSelf) parts.push('Discard Self');
-  if (cost.damageSelf) parts.push(`Take ${cost.damageSelf} DMG`);
-  if (cost.damageHero) parts.push(`Hero takes ${cost.damageHero} DMG`);
-  if (cost.spendCounters) parts.push(`Spend ${cost.spendCounters} Counters`);
-  if (cost.heal) parts.push(`Heal ${cost.heal}`);
-  if (cost.discardCard) {
-    const dc = cost.discardCard;
-    if (dc.count) parts.push(`Discard ${dc.count} Card${dc.count > 1 ? 's' : ''}`);
-    else if (dc.maxCount)
-      parts.push(`Discard up to ${dc.maxCount} Card${dc.maxCount > 1 ? 's' : ''}`);
-    else parts.push('Discard Card');
-  }
-  if (typeof cost.resourceCost === 'object' && cost.resourceCost !== null) {
-    const resParts = Object.entries(cost.resourceCost)
-      .filter(([, v]) => typeof v === 'number' && (v as number) > 0)
-      .map(([k, v]) => `${v} ${k}`)
-      .join(', ');
-    if (resParts) parts.push(resParts);
-  }
-  return parts.length > 0 ? parts.join(' • ') : 'None';
-}
-
 export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
   cardDetails,
   loading,
   onSaveSupplemental,
 }) => {
-  const [activeTab, setActiveTab] = useState<'summary' | 'form' | 'raw'>('form');
+  const [activeTab, setActiveTab] = useState<'form' | 'raw'>('form');
   const [copiedRaw, setCopiedRaw] = useState(false);
 
   // Editable Supplemental Data State
@@ -162,6 +133,7 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
     setIsSaving(true);
     try {
       if (onSaveSupplemental) {
+        // The save endpoint stamps audit.updatedAt / reviewedAt; the editor sends the edits as-is.
         const success = await onSaveSupplemental(cardDetails.code, {
           packFile: cardDetails.packFile,
           supplemental: editedSupplemental,
@@ -438,18 +410,6 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('summary')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 font-comic text-xs font-bold border-t-2 border-x-2 border-black rounded-t transition-colors cursor-pointer ${
-              activeTab === 'summary'
-                ? 'bg-comic-yellow text-black -mb-[2px] pb-2 shadow-sm'
-                : 'bg-white text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <Zap className="w-3.5 h-3.5 text-black" />
-            <span>Visual Review</span>
-          </button>
-
-          <button
             onClick={() => setActiveTab('raw')}
             className={`flex items-center gap-1.5 px-3 py-1.5 font-comic text-xs font-bold border-t-2 border-x-2 border-black rounded-t transition-colors cursor-pointer ${
               activeTab === 'raw'
@@ -513,302 +473,12 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
               onChange={handleFormChange}
               typeCode={upstream?.type_code}
               cardCode={code}
+              upstreamCard={normalizedCard}
             />
           </div>
         )}
 
-        {/* TAB 2: Visual Review Summary */}
-        {activeTab === 'summary' && (
-          <div className="flex flex-col gap-4">
-            {editedSupplemental ? (
-              <>
-                {/* Audit Metadata Card */}
-                <div className="bg-white border-3 border-black p-3 shadow-comic-sm">
-                  <div className="flex items-center justify-between border-b-2 border-black pb-1.5 mb-2 font-bangers text-sm tracking-wide text-comic-dark">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-black" />
-                      <span>AUDIT & RECONSTRUCTION METADATA</span>
-                    </div>
-                    {editedSupplemental.audit?.confidence !== undefined && (
-                      <span
-                        className={`text-xs font-bold px-2 py-0.5 border border-black rounded ${
-                          editedSupplemental.audit.confidence >= 95
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}
-                      >
-                        Confidence: {editedSupplemental.audit.confidence}%
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-sans">
-                    <div>
-                      <span className="text-[10px] text-gray-500 font-bold block">Reviewed By</span>
-                      <span className="font-bold">
-                        {editedSupplemental.audit?.reviewedBy || 'None'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-gray-500 font-bold block">
-                        Rules Version
-                      </span>
-                      <span className="font-bold">
-                        {editedSupplemental.audit?.rulesVersion || 'v1.8'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-gray-500 font-bold block">
-                        Last Updated
-                      </span>
-                      <span className="font-mono text-[11px] truncate block">
-                        {editedSupplemental.audit?.updatedAt || '—'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-gray-500 font-bold block">Created</span>
-                      <span className="font-mono text-[11px] truncate block">
-                        {editedSupplemental.audit?.createdAt || '—'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {editedSupplemental.audit?.comment && (
-                    <div className="mt-2.5 pt-2 border-t border-gray-200 text-xs font-comic text-gray-700">
-                      <span className="font-bold text-black">Comment: </span>
-                      {editedSupplemental.audit.comment}
-                    </div>
-                  )}
-                </div>
-
-                {/* Card Attributes & Rules Summary */}
-                <div
-                  data-testid="summary-card-attributes"
-                  className="bg-white border-3 border-black p-3 shadow-comic-sm"
-                >
-                  <div className="flex items-center gap-2 border-b-2 border-black pb-1.5 mb-2 font-bangers text-sm tracking-wide text-comic-dark">
-                    <Tag className="w-4 h-4 text-black" />
-                    <span>CARD ATTRIBUTES & RULES</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-sans">
-                    {editedSupplemental.playUnderAnyPlayerControl !== undefined && (
-                      <div className="bg-comic-paper p-1.5 border border-black rounded">
-                        <span className="text-[10px] uppercase font-bold text-gray-500 block">
-                          Play Under Any
-                        </span>
-                        <span className="font-bold">
-                          {editedSupplemental.playUnderAnyPlayerControl ? 'Yes' : 'No'}
-                        </span>
-                      </div>
-                    )}
-                    {editedSupplemental.uses && (
-                      <div className="bg-comic-paper p-1.5 border border-black rounded">
-                        <span className="text-[10px] uppercase font-bold text-gray-500 block">
-                          Uses
-                        </span>
-                        <span className="font-bold">
-                          {editedSupplemental.uses.count} {editedSupplemental.uses.counterType}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {editedSupplemental.errata && (
-                    <div className="mt-2 pt-2 border-t border-gray-200 text-xs text-comic-red font-comic">
-                      <span className="font-bold text-black">Errata: </span>
-                      {editedSupplemental.errata}
-                    </div>
-                  )}
-
-                  {editedSupplemental.playRequirements && (
-                    <div className="mt-2 pt-2 border-t border-gray-200 text-xs space-y-1">
-                      <span className="font-bold text-black block">Play Requirements:</span>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] font-mono bg-gray-50 p-2 border border-gray-300 rounded">
-                        {editedSupplemental.playRequirements.identityNames && (
-                          <div>
-                            <span className="font-bold text-gray-600">Identities: </span>
-                            <span>
-                              {editedSupplemental.playRequirements.identityNames.join(', ')}
-                            </span>
-                          </div>
-                        )}
-                        {editedSupplemental.playRequirements.controlZones && (
-                          <div>
-                            <span className="font-bold text-gray-600">Zones: </span>
-                            <span>
-                              {editedSupplemental.playRequirements.controlZones.join(', ')}
-                            </span>
-                          </div>
-                        )}
-                        {editedSupplemental.playRequirements.aspects && (
-                          <div>
-                            <span className="font-bold text-gray-600">Aspects: </span>
-                            <span>{editedSupplemental.playRequirements.aspects.join(', ')}</span>
-                          </div>
-                        )}
-                        {editedSupplemental.playRequirements.requiresEngagedMinion && (
-                          <div>
-                            <span className="font-bold text-gray-600">Minion Engaged: </span>
-                            <span>Yes</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {editedSupplemental.playUnderAnyPlayerControl === undefined &&
-                    !editedSupplemental.uses &&
-                    !editedSupplemental.errata &&
-                    !editedSupplemental.playRequirements && (
-                      <div className="text-xs text-gray-400 italic">
-                        No additional card-level attributes or restrictions defined.
-                      </div>
-                    )}
-                </div>
-
-                {/* Abilities List */}
-                <div className="bg-white border-3 border-black p-3 shadow-comic-sm">
-                  <div className="flex items-center justify-between border-b-2 border-black pb-1.5 mb-3 font-bangers text-base tracking-wide text-comic-dark">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 fill-comic-yellow text-black" />
-                      <span>
-                        DECLARATIVE ABILITIES ({editedSupplemental.abilities?.length || 0})
-                      </span>
-                    </div>
-                  </div>
-
-                  {editedSupplemental.abilities && editedSupplemental.abilities.length > 0 ? (
-                    <div className="space-y-3">
-                      {editedSupplemental.abilities.map((ab: any, idx: number) => (
-                        <div
-                          key={idx}
-                          className="bg-comic-paper border-2 border-black p-3 shadow-comic-xs rounded"
-                        >
-                          <div className="flex flex-wrap items-center justify-between gap-1.5 mb-2">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-mono text-[11px] font-bold bg-comic-accent text-white px-1.5 py-0.5 rounded border border-black">
-                                #{idx + 1} {ab.id || 'ability'}
-                              </span>
-                              <span className="font-bold text-xs bg-comic-yellow text-black px-2 py-0.5 border border-black rounded">
-                                {ab.timing}
-                              </span>
-                              {ab.trigger && (
-                                <span className="font-mono text-[11px] bg-gray-200 text-gray-800 px-1.5 py-0.5 rounded border border-gray-400">
-                                  {ab.trigger}
-                                </span>
-                              )}
-                              {ab.limit && (
-                                <span className="font-bold text-[11px] bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded border border-amber-400">
-                                  ⏳ {ab.limit}
-                                </span>
-                              )}
-                              {ab.zone && (
-                                <span className="font-mono text-[11px] bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded border border-blue-400">
-                                  📍 {ab.zone}
-                                </span>
-                              )}
-                            </div>
-                            {ab.cost && (
-                              <div className="flex items-center gap-1 text-[11px] font-bold text-comic-red">
-                                <Shield className="w-3.5 h-3.5" />
-                                <span>
-                                  Cost: {ab.cost.exhaustSelf ? '' : ''}
-                                  {formatCostSummary(ab.cost)}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-
-                          {ab.description && (
-                            <p className="text-xs text-gray-700 italic mb-2 font-comic">
-                              "{ab.description}"
-                            </p>
-                          )}
-
-                          {/* Steps List */}
-                          {ab.steps && ab.steps.length > 0 && (
-                            <div className="mt-2 pl-2 border-l-2 border-black space-y-1.5">
-                              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
-                                Resolution Steps ({ab.steps.length})
-                              </span>
-                              {ab.steps.map((st: any, sIdx: number) => {
-                                const hasGateParams =
-                                  st.gateParams && Object.keys(st.gateParams).length > 0;
-                                const effParams = st.effectParams;
-                                const hasEffectParams =
-                                  effParams && Object.keys(effParams).length > 0;
-                                return (
-                                  <div
-                                    key={sIdx}
-                                    data-testid={`visual-review-step-${sIdx}`}
-                                    className="text-xs font-mono bg-white p-2 border border-black rounded flex flex-col gap-1.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] overflow-hidden"
-                                  >
-                                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                                      <div className="flex items-center gap-1.5">
-                                        <span className="text-[10px] font-bold bg-gray-200 text-gray-700 px-1 py-0.5 rounded border border-gray-400">
-                                          #{sIdx + 1}
-                                        </span>
-                                        <span className="font-bold text-comic-accent">
-                                          [{st.effect}]
-                                        </span>
-                                      </div>
-                                      {st.gate && (
-                                        <span className="text-[10px] font-bold bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded border border-yellow-400">
-                                          Gate: {st.gate}
-                                        </span>
-                                      )}
-                                    </div>
-                                    {hasGateParams && (
-                                      <div className="mt-1">
-                                        <span className="text-[9px] font-bold uppercase text-yellow-800 block mb-0.5">
-                                          Gate Parameters:
-                                        </span>
-                                        <pre className="p-1.5 bg-yellow-50/50 border border-yellow-300 rounded text-[11px] font-mono text-gray-800 whitespace-pre-wrap break-words overflow-x-auto max-h-32">
-                                          {JSON.stringify(st.gateParams, null, 2)}
-                                        </pre>
-                                      </div>
-                                    )}
-                                    {hasEffectParams && (
-                                      <div className="mt-1">
-                                        <span className="text-[9px] font-bold uppercase text-gray-500 block mb-0.5">
-                                          Effect Parameters:
-                                        </span>
-                                        <pre className="p-1.5 bg-gray-50 border border-gray-300 rounded text-[11px] font-mono text-gray-800 whitespace-pre-wrap break-words overflow-x-auto max-h-48">
-                                          {JSON.stringify(st.effectParams, null, 2)}
-                                        </pre>
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : editedSupplemental.noSupplementalNeeded ? (
-                    <div
-                      data-testid="summary-vanilla-notice"
-                      className="p-4 bg-blue-50 border-2 border-blue-600 rounded flex items-center justify-center gap-2 text-xs text-blue-900 font-bold"
-                    >
-                      <ShieldCheck className="w-4 h-4 text-blue-700 shrink-0" />
-                      <span>
-                        Vanilla Card: No supplemental rules needed (no printed abilities).
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="p-4 text-center text-xs text-gray-500 italic">
-                      No declarative abilities defined on this supplemental record.
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : null}
-          </div>
-        )}
-
-        {/* TAB 3: Raw JSON Editor */}
+        {/* TAB 2: Raw JSON Editor */}
         {activeTab === 'raw' && (
           <div className="bg-white border-3 border-black p-3 shadow-comic-sm flex flex-col gap-3">
             <div className="flex items-center justify-between border-b-2 border-black pb-1.5 font-bangers text-sm tracking-wide text-black">

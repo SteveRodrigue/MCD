@@ -289,7 +289,10 @@ export const EFFECT_PARAM_SCHEMAS: Record<EffectType, z.ZodObject<any>> = {
         placeholder: 'e.g. WAKANDA_FOREVER',
         primary: true,
       }),
-      sequenceOrder: optional(z.array(z.string()), { label: 'Sequence Order (instance ids)' }),
+      sequenceOrder: optional(z.array(z.string()), {
+        label: 'Sequence Order (instance ids)',
+        widget: 'string-list',
+      }),
     })
     .strict(),
   EXHAUST: z
@@ -327,7 +330,8 @@ export const EFFECT_PARAM_SCHEMAS: Record<EffectType, z.ZodObject<any>> = {
         description: 'Number of resources to generate',
       }),
       fromCard: optional(CardLocationSelectorSchema, {
-        label: 'From Card',
+        label: 'Resource Source Card',
+        widget: 'card-location',
         description: 'Card selector whose resources are generated',
       }),
     })
@@ -649,6 +653,7 @@ export const EFFECT_PARAM_SCHEMAS: Record<EffectType, z.ZodObject<any>> = {
     .object({
       source: annotated(SearchAndSelectParamsSchema.shape.source, {
         label: 'Source Zone',
+        widget: 'multi-enum',
         primary: true,
       }),
       target: annotated(SearchAndSelectParamsSchema.shape.target, {
@@ -727,7 +732,7 @@ export const EFFECT_PARAM_SCHEMAS: Record<EffectType, z.ZodObject<any>> = {
         primary: true,
       }),
       count: optional(z.number(), { label: 'Card Count', placeholder: 'e.g. 3' }),
-      filter: optional(UniversalCardFilterSchema, { label: 'Card Filter' }),
+      filter: optional(UniversalCardFilterSchema, { label: 'Card Filter', widget: 'card-filter' }),
     })
     .strict(),
   SPEND_COUNTERS: z
@@ -775,3 +780,63 @@ export const EFFECT_PARAM_KEYS: Record<EffectType, readonly string[]> = Object.f
 export function getAllowedEffectParamKeys(effect: EffectType): readonly string[] {
   return EFFECT_PARAM_KEYS[effect];
 }
+
+/** One-line help text per effect primitive, shown next to the effect selector in the Card Editor. */
+export const EFFECT_DESCRIPTIONS: Record<EffectType, string> = {
+  DEAL_DAMAGE: "Deal damage to a target character or enemy.",
+  DISTRIBUTE_AMOUNT: "Distribute a pool of damage, threat removal, heal, or counters across multiple eligible targets (ADR-0064).",
+  PREVENT_DAMAGE: "Prevent incoming attack or effect damage to a character.",
+  HEAL_DAMAGE: "Heal damage from target identity, ally, or friendly character.",
+  TRANSFER_DAMAGE: "Move damage from one character to another.",
+  REMOVE_THREAT: "Remove threat counters from target scheme.",
+  ADD_THREAT: "Place threat counters on target scheme.",
+  PREVENT_THREAT: "Prevent or reduce impending threat that would be placed on a scheme.",
+  ADD_STATUS: "Apply status card (Stunned, Confused, Tough) to target.",
+  GENERATE_RESOURCE: "Generate resources statically or dynamically from a card (e.g. top card of discard pile).",
+  DOUBLE_RESOURCE_FOR_ASPECT: "Double resource generation when paying for a matching aspect card.",
+  ADD_ACCELERATION: "Place acceleration tokens on the main scheme (+1 threat per token each villain phase).",
+  ADD_COUNTERS: "Add multiple counter tokens to target card.",
+  REMOVE_COUNTERS: "Remove multiple counters from target card.",
+  REMOVE_COUNTERS_MATCHING_FILTER: "Remove counters across cards matching a trait or zone filter.",
+  SPEND_COUNTERS: "Spend counter tokens to pay cost or resolve effect.",
+  MODIFY_STAT: "Modify dynamic ATTACK, THWART, DEFENSE, or RECOVERY stat on target character.",
+  ADD_TRAIT: "Grant a trait (e.g. Aerial, Avenger, Gamma) to target character.",
+  GRANT_ATTACK_KEYWORD: "The attack of this ability gains a keyword (e.g. \"this attack gains overkill\"). Ends with the ability. Put it before the damage step and gate it.",
+  GRANT_KEYWORD: "Grant keyword (Retaliate, Overkill, Ranged, etc.) to target character.",
+  MODIFY_MAX_HEALTH: "Modify maximum hit points of target character.",
+  MODIFY_HAND_SIZE: "Modify effective hand size. Use a dynamic formula for scaled bonuses (e.g. Iron Man: +1 per Tech upgrade, clamp max 6).",
+  MODIFY_ALLY_LIMIT: "Expand or reduce maximum player ally capacity in play.",
+  MODIFY_RESTRICTED_LIMIT: "Grant additional restricted item slots (Side Holster).",
+  EXHAUST: "Exhaust a card, identity, ally, minion, villain, or character.",
+  READY: "Ready an exhausted card, identity, ally, minion, or character.",
+  DISCARD: "Discard cards from a specified source zone (hand, tableau, deck, host, or self).",
+  ATTACH_TO_HOST: "Attach card to target character or scheme.",
+  ATTACH_FACEDOWN_CARDS_FROM_HAND: "Tuck cards facedown under host card from hand.",
+  REMOVE_FROM_GAME: "Remove the source card from the game (it ends only in the removed-from-game zone).",
+  PLACE_CARD_UNDER_HOST: "Place card underneath host card.",
+  RETURN_TO_HAND: "Return target card in play or attached facedown cards back to owner hand.",
+  ATTACHMENT_DAMAGE_SHIELD: "Absorb incoming damage directed at host (e.g. Armored Rhino).",
+  CHANGE_FORM: "Flip between Hero and Alter-Ego identity forms (RR v1.8 p. 8).",
+  FLIP_FORM: "Flip identity form card.",
+  REDUCE_NEXT_CARD_COST: "Reduce resource cost of next played card (Helicarrier).",
+  PLAY_FROM_ZONE: "Play a card from a designated zone (e.g. discard, deck) with optional cost modes.",
+  PUT_INTO_PLAY: "Put card into play without paying resource cost.",
+  SHUFFLE_INTO_DECK: "Shuffle cards from a designated zone into a target deck.",
+  VILLAIN_ATTACKS: "Induce the Villain to immediately initiate an attack against player.",
+  ENEMY_ATTACKS: "A specific enemy (minion, or a named villain) attacks the player. The step fails when it did not attack (not in play, stunned, cancelled, no hero), so a later step can gate on IF_FAILED.",
+  VILLAIN_SCHEMES: "Induce the Villain to immediately scheme against player.",
+  VILLAIN_AND_ENGAGED_MINIONS_ATTACK: "Villain and all engaged minions initiate attacks against player.",
+  SURGE: "Resolve Surge keyword: deal and reveal an additional encounter card.",
+  REVEAL_ENCOUNTER_CARD: "Reveal top card of encounter deck.",
+  GIVE_ADDITIONAL_BOOST_CARD: "Deal additional facedown boost card to activating enemy.",
+  CANCEL_WHEN_REVEALED: "Cancel the \"When Revealed\" effect of an encounter card.",
+  CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER: "Cancel When Revealed effect and reveal another encounter card.",
+  CANNOT_TAKE_DAMAGE: "CONSTANT: the host cannot take damage. Optional source filter: only damage from a card of this type and/or trait is ignored (Killmonger: Black Panther upgrades). No Tough, shield or Retaliate is used, and the host is not a valid target of a damage-only ability from such a source.",
+  CANCEL_ATTACK: "Cancel incoming enemy attack before boost cards or damage are resolved.",
+  DECLARE_DEFENDER: "Prompt player to declare a defender against an incoming enemy attack.",
+  EXECUTE_SPECIAL: "Execute signature card-specific special logic.",
+  PLAYER_CHOICE: "Prompt player to choose between multiple options.",
+  DRAW: "Canonical alias for drawing cards.",
+  SEARCH: "Canonical alias for searching and selecting cards.",
+  REMOVE_STATUS: "Remove a status card from a target.",
+};

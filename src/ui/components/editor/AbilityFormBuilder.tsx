@@ -5,6 +5,7 @@ import {
   CardEnrichmentSchema,
   CardAbilitySchema,
 } from '../../../data/supplemental/schema';
+import type { NormalizedCard } from '../../../engine/models/card';
 import { CardAttributesSection } from './CardAttributesSection';
 import { AbilityCostSection } from './AbilityCostSection';
 import { TriggerFilterSection } from './TriggerFilterSection';
@@ -24,7 +25,8 @@ export interface AbilityFormBuilderProps {
   onChange: (updatedSupplemental: any) => void;
   typeCode?: string;
   cardCode?: string;
-  showAllFields?: boolean;
+  /** The loaded upstream card, forwarded to the read-only badges of the card-level section. */
+  upstreamCard?: NormalizedCard;
 }
 
 export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
@@ -32,7 +34,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
   onChange,
   typeCode,
   cardCode,
-  showAllFields,
+  upstreamCard,
 }) => {
   const [expandedAbility, setExpandedAbility] = React.useState<number | null>(0);
   const [expandedTriggerFilter, setExpandedTriggerFilter] = React.useState<number | null>(null);
@@ -206,9 +208,8 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
         onNoSupplementalNeededChange={handleNoSupplementalNeededChange}
         hasErrors={topLevelErrors.length > 0}
         errors={topLevelErrors}
-        typeCode={typeCode}
         cardCode={cardCode}
-        showAllFields={showAllFields}
+        upstreamCard={upstreamCard}
       />
 
       {/* 2. Declarative Abilities List */}

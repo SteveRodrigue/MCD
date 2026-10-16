@@ -25,12 +25,24 @@ export const CardAuditRecordSchema = z
     createdAt: IsoTimestampSchema.optional(),
     updatedAt: IsoTimestampSchema.optional(),
     reviewedAt: IsoTimestampSchema.optional(),
-    reviewedBy: z.string().optional(),
+    reviewedBy: z.string().meta({ label: 'Reviewed By Attribution' }).optional(),
     rulesVersion: z.string().optional(),
-    confidence: z.number().min(0).max(100).optional(),
-    ambiguityFile: z.string().optional(),
+    confidence: z.number().min(0).max(100).meta({ label: 'Confidence Level (%)' }).optional(),
+    ambiguityFile: z
+      .string()
+      .meta({
+        label: 'Ambiguity File (docs/ambiguities/...)',
+        placeholder: 'e.g. docs/ambiguities/spider-sense-timing.md',
+      })
+      .optional(),
     originalText: z.string().optional(),
-    comment: z.string().optional(),
+    comment: z
+      .string()
+      .meta({
+        label: 'Internal Developer Comment',
+        placeholder: 'e.g. Hero attack: deals 3 damage...',
+      })
+      .optional(),
   })
   .strict();
 
@@ -360,19 +372,46 @@ export const UniversalCardFilterSchema: z.ZodType<UniversalCardFilter> = CardCri
 
 export const TriggerFilterSchema = z
   .object({
-    attackerKind: z.enum(['VILLAIN', 'MINION', 'ANY_ENEMY']).optional(),
-    attackerCardFilter: UniversalCardFilterSchema.optional(),
-    cardFilter: UniversalCardFilterSchema.optional(),
-    sourceCardCode: z.string().optional(),
-    sourceInstanceId: z.string().optional(),
-    targetPlayerScope: z.enum(['SELF', 'OTHER', 'ANY']).optional(),
-    targetScope: z.enum(['HOST', 'SELF', 'OTHER', 'ANY']).optional(),
-    targetForm: IdentityFormSchema.optional(),
-    targetType: z.enum(['VILLAIN', 'MINION', 'ENEMY', 'SCHEME', 'CHARACTER', 'ALLY']).optional(),
-    attackedBy: z.enum(['YOUR_HERO', 'THIS_CARD']).optional(),
-    defeatedByAttackOf: z.enum(['YOUR_HERO', 'THIS_CARD']).optional(),
-    isEngaged: z.boolean().optional(),
-    defenderType: z.enum(['HERO', 'ALLY']).optional(),
+    attackerKind: z
+      .enum(['VILLAIN', 'MINION', 'ANY_ENEMY'])
+      .meta({ label: 'Attacker Kind' })
+      .optional(),
+    attackerCardFilter: UniversalCardFilterSchema.meta({
+      label: 'Attacker Card Criteria',
+      widget: 'card-filter',
+    }).optional(),
+    cardFilter: UniversalCardFilterSchema.meta({
+      label: 'Triggering Card Criteria',
+      widget: 'card-filter',
+    }).optional(),
+    sourceCardCode: z
+      .string()
+      .meta({ label: 'Source Card Code', placeholder: 'e.g. 01050' })
+      .optional(),
+    sourceInstanceId: z
+      .string()
+      .meta({ label: 'Source Instance ID', placeholder: 'e.g. inst_123' })
+      .optional(),
+    targetPlayerScope: z
+      .enum(['SELF', 'OTHER', 'ANY'])
+      .meta({ label: 'Target Player Scope' })
+      .optional(),
+    targetScope: z
+      .enum(['HOST', 'SELF', 'OTHER', 'ANY'])
+      .meta({ label: 'Target Scope' })
+      .optional(),
+    targetForm: IdentityFormSchema.meta({ label: 'Target Form' }).optional(),
+    targetType: z
+      .enum(['VILLAIN', 'MINION', 'ENEMY', 'SCHEME', 'CHARACTER', 'ALLY'])
+      .meta({ label: 'Target Entity Type' })
+      .optional(),
+    attackedBy: z.enum(['YOUR_HERO', 'THIS_CARD']).meta({ label: 'Attacked By' }).optional(),
+    defeatedByAttackOf: z
+      .enum(['YOUR_HERO', 'THIS_CARD'])
+      .meta({ label: 'Defeated By Attack Of' })
+      .optional(),
+    isEngaged: z.boolean().meta({ label: 'Enemy Engaged With You' }).optional(),
+    defenderType: z.enum(['HERO', 'ALLY']).meta({ label: 'Defender Type' }).optional(),
     threatSource: z
       .enum([
         'VILLAIN_PHASE_STEP_1',
@@ -382,8 +421,9 @@ export const TriggerFilterSchema = z
         'INCITE',
         'HAZARD',
       ])
+      .meta({ label: 'Threat Source' })
       .optional(),
-    damageSource: z.enum(['ATTACK']).optional(),
+    damageSource: z.enum(['ATTACK']).meta({ label: 'Damage Source' }).optional(),
   })
   .strict();
 
@@ -561,37 +601,52 @@ export type ResourceCost = z.infer<typeof ResourceCostSchema>;
  */
 export const AbilityCostSchema = z
   .object({
-    exhaustSelf: z.boolean().optional(),
-    exhaustCard: z.literal('SELF_IDENTITY').optional(),
-    discardSelf: z.boolean().optional(),
-    resourceCost: ResourceCostSchema.optional(),
-    requirePrinted: z.boolean().optional(),
-    damageHero: z.number().optional(),
-    damageSelf: z.number().optional(),
+    exhaustSelf: z.boolean().meta({ label: 'Exhaust Host Card', primary: true }).optional(),
+    exhaustCard: z
+      .literal('SELF_IDENTITY')
+      .meta({ label: 'Exhaust Card', primary: true })
+      .optional(),
+    discardSelf: z.boolean().meta({ label: 'Discard Host Card', primary: true }).optional(),
+    resourceCost: ResourceCostSchema.meta({ label: 'Resource Costs' }).optional(),
+    requirePrinted: z
+      .boolean()
+      .meta({ label: 'Require Printed Resources', primary: true })
+      .optional(),
+    damageHero: z.number().meta({ label: 'Hero DMG', placeholder: '0', primary: true }).optional(),
+    damageSelf: z.number().meta({ label: 'Self DMG', placeholder: '0', primary: true }).optional(),
     spendCounters: z
       .object({
-        counterType: z.string().optional(),
-        amount: z.number(),
-        target: z.enum(['SELF', 'IDENTITY']).optional(),
+        counterType: z.string().meta({ label: 'Type', placeholder: 'e.g. charge' }).optional(),
+        amount: z.number().meta({ label: 'Amount' }),
+        target: z.enum(['SELF', 'IDENTITY']).meta({ label: 'Target' }).optional(),
       })
       .strict()
+      .meta({
+        label: 'Spend Counters Cost',
+        defaultValue: { amount: 1, counterType: 'charge', target: 'SELF' },
+      })
       .optional(),
     discardCard: z
       .object({
-        count: z.number().optional(),
-        maxCount: z.number().optional(),
-        from: z.literal('HAND'),
-        filter: UniversalCardFilterSchema.optional(),
-        mode: z.enum(['CHOSEN', 'RANDOM']).optional(),
+        count: z.number().meta({ label: 'Count' }).optional(),
+        maxCount: z.number().meta({ label: 'Max Count', placeholder: 'Optional' }).optional(),
+        from: z.literal('HAND').meta({ label: 'From Zone' }),
+        filter: UniversalCardFilterSchema.meta({
+          label: 'Discard Card Filter',
+          widget: 'card-filter',
+        }).optional(),
+        mode: z.enum(['CHOSEN', 'RANDOM']).meta({ label: 'Mode' }).optional(),
       })
       .strict()
+      .meta({ label: 'Discard Card Cost', defaultValue: { count: 1, from: 'HAND' } })
       .optional(),
     heal: z
       .object({
-        amount: z.number().min(1),
-        target: z.enum(['SELF', 'TARGET']).optional(),
+        amount: z.number().min(1).meta({ label: 'Amount' }),
+        target: z.enum(['SELF', 'TARGET']).meta({ label: 'Target' }).optional(),
       })
       .strict()
+      .meta({ label: 'Heal Cost', defaultValue: { amount: 1, target: 'SELF' } })
       .optional(),
   })
   .strict();

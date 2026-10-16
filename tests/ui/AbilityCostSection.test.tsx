@@ -36,9 +36,9 @@ describe('AbilityCostSection', () => {
     expect(screen.getByTestId('cost-damage-self-0')).toBeDefined();
     expect(screen.getByTestId('cost-damage-hero-0')).toBeDefined();
     expect(screen.getByTestId('cost-res-plus-physical-0')).toBeDefined();
-    expect(screen.getByTestId('cost-spend-counters-toggle-0')).toBeDefined();
-    expect(screen.getByTestId('cost-discard-card-toggle-0')).toBeDefined();
-    expect(screen.getByTestId('cost-heal-toggle-0')).toBeDefined();
+    expect(screen.getByTestId('cost-spend-counters-add-0')).toBeDefined();
+    expect(screen.getByTestId('cost-discard-card-add-0')).toBeDefined();
+    expect(screen.getByTestId('cost-heal-add-0')).toBeDefined();
   });
 
   it('toggles exhaustSelf and discardSelf', async () => {
@@ -124,7 +124,7 @@ describe('AbilityCostSection', () => {
     render(<StatefulAbilityCostSection initial={{}} onChange={handleChange} />);
 
     // Add spendCounters
-    await user.click(screen.getByTestId('cost-spend-counters-toggle-0'));
+    await user.click(screen.getByTestId('cost-spend-counters-add-0'));
     expect(handleChange).toHaveBeenCalledWith(
       expect.objectContaining({
         spendCounters: { amount: 1, counterType: 'charge', target: 'SELF' },
@@ -141,7 +141,7 @@ describe('AbilityCostSection', () => {
       }),
     );
 
-    fireEvent.change(screen.getByTestId('cost-spend-counters-type-0'), {
+    fireEvent.change(screen.getByTestId('cost-spend-counters-counter-type-0'), {
       target: { value: 'shield' },
     });
     expect(handleChange).toHaveBeenCalledWith(
@@ -158,7 +158,7 @@ describe('AbilityCostSection', () => {
     );
 
     // Remove spendCounters
-    await user.click(screen.getByTestId('cost-spend-counters-toggle-0'));
+    await user.click(screen.getByTestId('cost-spend-counters-remove-0'));
     expect(handleChange).toHaveBeenCalledWith(
       expect.not.objectContaining({ spendCounters: expect.anything() }),
     );
@@ -171,7 +171,7 @@ describe('AbilityCostSection', () => {
     render(<StatefulAbilityCostSection initial={{}} onChange={handleChange} />);
 
     // Add discardCard
-    await user.click(screen.getByTestId('cost-discard-card-toggle-0'));
+    await user.click(screen.getByTestId('cost-discard-card-add-0'));
     expect(handleChange).toHaveBeenCalledWith(
       expect.objectContaining({
         discardCard: { count: 1, from: 'HAND' },
@@ -193,7 +193,7 @@ describe('AbilityCostSection', () => {
     expect(Array.from(fromSelect.options).map((o) => o.value)).toEqual(['HAND']);
 
     // Remove discardCard
-    await user.click(screen.getByTestId('cost-discard-card-toggle-0'));
+    await user.click(screen.getByTestId('cost-discard-card-remove-0'));
     expect(handleChange).toHaveBeenCalledWith(
       expect.not.objectContaining({ discardCard: expect.anything() }),
     );
@@ -229,7 +229,8 @@ describe('AbilityCostSection', () => {
 
     expect(amountInput.value).toBe('2');
     expect(targetSelect.value).toBe('TARGET');
-    expect(screen.getByTestId('cost-heal-toggle-0').textContent).toBe('Remove');
+    expect(screen.getByTestId('cost-heal-remove-0')).toBeDefined();
+    expect(screen.queryByTestId('cost-heal-add-0')).toBeNull();
   });
 
   it('configures, updates, and removes heal cost', async () => {
@@ -239,7 +240,7 @@ describe('AbilityCostSection', () => {
     render(<StatefulAbilityCostSection initial={{}} onChange={handleChange} />);
 
     // Add heal cost
-    await user.click(screen.getByTestId('cost-heal-toggle-0'));
+    await user.click(screen.getByTestId('cost-heal-add-0'));
     expect(handleChange).toHaveBeenCalledWith(
       expect.objectContaining({
         heal: { amount: 1, target: 'SELF' },
@@ -264,7 +265,7 @@ describe('AbilityCostSection', () => {
     );
 
     // Remove heal cost
-    await user.click(screen.getByTestId('cost-heal-toggle-0'));
+    await user.click(screen.getByTestId('cost-heal-remove-0'));
     expect(handleChange).toHaveBeenCalledWith(
       expect.not.objectContaining({ heal: expect.anything() }),
     );
@@ -351,8 +352,8 @@ describe('AbilityCostSection', () => {
     );
 
     // Expand filter accordion
-    expect(screen.getByTestId('cost-discard-card-filter-accordion-0')).toBeDefined();
+    expect(screen.getByTestId('cost-discard-card-filter-toggle-0')).toBeDefined();
     await user.click(screen.getByTestId('cost-discard-card-filter-toggle-0'));
-    expect(screen.getByText(/Discard Filter Criteria/i)).toBeDefined();
+    expect(screen.getByTestId('filter-codes-input')).toBeDefined();
   });
 });

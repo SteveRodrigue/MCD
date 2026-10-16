@@ -3,31 +3,25 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { CardAttributesSection } from '../../src/ui/components/editor/CardAttributesSection';
 
 describe('CardAttributesSection encounter attachment host (#209)', () => {
-  const renderFor = (supplemental: any, typeCode = 'attachment', onChange = vi.fn()) => {
-    render(
-      <CardAttributesSection
-        supplemental={supplemental}
-        onChange={onChange}
-        typeCode={typeCode}
-        showAllFields={true}
-      />,
-    );
+  const renderFor = (supplemental: any, onChange = vi.fn()) => {
+    render(<CardAttributesSection supplemental={supplemental} onChange={onChange} />);
     return onChange;
   };
 
-  it('offers the host select for attachments and emits a host without superlative', () => {
-    const onChange = renderFor({});
+  it('shows the host select once the chip is added and emits a host without superlative', () => {
+    const onChange = renderFor({ attachTo: { host: { type: 'VILLAIN' } } });
     const select = screen.getByTestId('attach-to-host-select') as HTMLSelectElement;
-    expect(select.value).toBe('');
+    expect(select.value).toBe('VILLAIN');
     fireEvent.change(select, { target: { value: 'MINION' } });
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({ attachTo: { host: { type: 'MINION' } } }),
     );
   });
 
-  it('does not show the field for other card types without attachTo', () => {
-    renderFor({}, 'upgrade');
+  it('does not show the field without attachTo, offering the chip instead', () => {
+    renderFor({});
     expect(screen.queryByTestId('attach-to-field')).toBeNull();
+    expect(screen.getByTestId('card-chip-add-attachTo')).toBeDefined();
   });
 
   it('edits the superlative', () => {

@@ -74,7 +74,7 @@ describe('SearchParameterEditor UI Tests (Issue #115)', () => {
     ]);
   });
 
-  it('clamps number inputs to non-negative values in StepPipelineEditor', () => {
+  it('allows negative numbers where the schema allows them in StepPipelineEditor', () => {
     const handleChange = vi.fn();
     const initialSteps = [
       {
@@ -88,21 +88,21 @@ describe('SearchParameterEditor UI Tests (Issue #115)', () => {
     render(<StepPipelineEditor steps={initialSteps} abilityIndex={0} onChange={handleChange} />);
 
     const numInput = screen.getByTestId('step-param-amount-0-0') as HTMLInputElement;
-    expect(numInput.getAttribute('min')).toBe('0');
+    expect(numInput.getAttribute('min')).toBeNull();
 
-    // Simulate typing a negative number
+    // MODIFY_RESTRICTED_LIMIT.amount is an unconstrained z.number(), so negative values are valid
     fireEvent.change(numInput, { target: { value: '-5' } });
     expect(handleChange).toHaveBeenCalledWith([
       {
         effect: 'MODIFY_RESTRICTED_LIMIT',
         effectParams: {
-          amount: 0,
+          amount: -5,
         },
       },
     ]);
   });
 
-  it('clamps number inputs to non-negative values in DynamicValueBuilder', () => {
+  it('allows negative fixed numbers in DynamicValueBuilder (the schema allows them)', () => {
     const handleChange = vi.fn();
 
     render(
@@ -110,10 +110,9 @@ describe('SearchParameterEditor UI Tests (Issue #115)', () => {
     );
 
     const numInput = screen.getByTestId('dynamic-value-number-input') as HTMLInputElement;
-    expect(numInput.getAttribute('min')).toBe('0');
+    expect(numInput.getAttribute('min')).toBeNull();
 
-    // Simulate typing a negative number
     fireEvent.change(numInput, { target: { value: '-2' } });
-    expect(handleChange).toHaveBeenCalledWith(0);
+    expect(handleChange).toHaveBeenCalledWith(-2);
   });
 });

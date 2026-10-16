@@ -1,212 +1,102 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { CardAttributesSection } from '../../src/ui/components/editor/CardAttributesSection';
-import {
-  getSectionVisibility,
-  countAuditFields,
-  countMechanicsFields,
-  countPlayReqFields,
-} from '../../src/ui/components/editor/card-attributes-utils';
+import { cardCatalog } from '../../src/data/importer/card-loader';
 
-describe('Type-Aware Field Visibility (DOM Removal) & Badges', () => {
-  describe('getSectionVisibility helper', () => {
-    it('returns all visible if showAll is true', () => {
-      const vis = getSectionVisibility('treachery', true);
-      expect(vis).toEqual({
-        mechanics: true,
-        playReqs: true,
-      });
-    });
+const upstream = (code: string) => {
+  const card = cardCatalog.getCard(code);
+  expect(card, `card ${code} is not in the catalog`).toBeDefined();
+  return card!;
+};
 
-    it('returns all visible if typeCode is undefined', () => {
-      const vis = getSectionVisibility(undefined, false);
-      expect(vis).toEqual({
-        mechanics: true,
-        playReqs: true,
-      });
-    });
+const badgeTexts = () =>
+  Array.from(
+    screen.getByTestId('upstream-badges').querySelectorAll('[data-testid^="upstream-badge-"]'),
+  ).map((el) => el.textContent);
 
-    it('configures visibility correctly for ally', () => {
-      const vis = getSectionVisibility('ally', false);
-      expect(vis.playReqs).toBe(true);
-      expect(vis.mechanics).toBe(true);
-    });
+const renderBadges = (code: string) =>
+  render(
+    <CardAttributesSection supplemental={{}} onChange={vi.fn()} upstreamCard={upstream(code)} />,
+  );
 
-    it('configures visibility correctly for side_scheme', () => {
-      const vis = getSectionVisibility('side_scheme', false);
-      expect(vis.playReqs).toBe(false);
-      expect(vis.mechanics).toBe(true);
-    });
-
-    it('configures visibility correctly for treachery', () => {
-      const vis = getSectionVisibility('treachery', false);
-      expect(vis.mechanics).toBe(false);
-      expect(vis.playReqs).toBe(false);
-    });
+describe('CardAttributesSection read-only upstream badges', () => {
+  it('shows no badge strip without an upstream card', () => {
+    render(<CardAttributesSection supplemental={{}} onChange={vi.fn()} />);
+    expect(screen.queryByTestId('upstream-badges')).toBeNull();
   });
 
-  describe('CardAttributesSection DOM visibility', () => {
-    it('ally card shows Card Mechanics and Play Requirements and has no Combat or Layout sections', () => {
-      render(<CardAttributesSection supplemental={{}} onChange={vi.fn()} typeCode="ally" />);
-
-      expect(screen.getByTestId('section-audit-metadata')).toBeDefined();
-      expect(screen.getByTestId('section-card-mechanics')).toBeDefined();
-      expect(screen.getByTestId('section-play-requirements')).toBeDefined();
-
-      // The upstream-derived Combat and Layout sections no longer exist
-      expect(screen.queryByTestId('section-combat-properties')).toBeNull();
-      expect(screen.queryByTestId('section-layout-display')).toBeNull();
-    });
-
-    it('side_scheme card hides Play Requirements', () => {
-      render(<CardAttributesSection supplemental={{}} onChange={vi.fn()} typeCode="side_scheme" />);
-
-      expect(screen.getByTestId('section-audit-metadata')).toBeDefined();
-      expect(screen.getByTestId('section-card-mechanics')).toBeDefined();
-
-      // Play Requirements should be removed from DOM
-      expect(screen.queryByTestId('section-play-requirements')).toBeNull();
-    });
-
-    it('treachery card hides Card Mechanics and Play Requirements', () => {
-      render(<CardAttributesSection supplemental={{}} onChange={vi.fn()} typeCode="treachery" />);
-
-      expect(screen.getByTestId('section-audit-metadata')).toBeDefined();
-      expect(screen.queryByTestId('section-card-mechanics')).toBeNull();
-      expect(screen.queryByTestId('section-play-requirements')).toBeNull();
-    });
-
-    it('Show all fields toggle overrides type visibility and reveals all sections', async () => {
-      const user = userEvent.setup();
-      render(<CardAttributesSection supplemental={{}} onChange={vi.fn()} typeCode="treachery" />);
-
-      // Treachery initially hides mechanics and playReqs
-      expect(screen.queryByTestId('section-card-mechanics')).toBeNull();
-      expect(screen.queryByTestId('section-play-requirements')).toBeNull();
-
-      // Click "Show All" toggle
-      await user.click(screen.getByTestId('toggle-show-all-fields-btn'));
-
-      // All sections are now present in DOM
-      expect(screen.getByTestId('section-audit-metadata')).toBeDefined();
-      expect(screen.getByTestId('section-card-mechanics')).toBeDefined();
-      expect(screen.getByTestId('section-play-requirements')).toBeDefined();
-    });
-
-    it('hidden section becomes visible when its data fields have values', () => {
-      // Treachery normally hides card mechanics and play requirements, but data forces them visible
-      render(
-        <CardAttributesSection
-          supplemental={{
-            uses: { count: 2, counterType: 'charge' },
-            playUnderAnyPlayerControl: true,
-          }}
-          onChange={vi.fn()}
-          typeCode="treachery"
-        />,
-      );
-
-      expect(screen.getByTestId('section-card-mechanics')).toBeDefined();
-      expect(screen.getByTestId('section-play-requirements')).toBeDefined();
-    });
+  it('shows Max N per player from the upstream card (Energy Channel 01018)', () => {
+    renderBadges('01018');
+    expect(screen.getByTestId('upstream-badge-max-per-player').textContent).toBe(
+      'Max 1 per player',
+    );
   });
 
-  describe('Section Badges & Counting Helpers (Task 4.4)', () => {
-    it('calculates counts per section correctly', () => {
-      expect(
-        countAuditFields(
-          { comment: 'test', confidence: 100, reviewedBy: 'dev' },
-          { errata: 'Official errata' },
-        ),
-      ).toBe(4);
+  it('shows the dash power and the consequential damage of Hulk (01050): THW is a dash', () => {
+    renderBadges('01050');
+    expect(screen.getByTestId('upstream-badge-dash-thwart').textContent).toBe('THW –');
+    expect(screen.getByTestId('upstream-badge-attack-cost').textContent).toBe(
+      'Consequential ATK 1',
+    );
+    expect(screen.queryByTestId('upstream-badge-dash-attack')).toBeNull();
+  });
 
-      expect(
-        countMechanicsFields({
-          uses: { count: 2 },
-          recipient: { type: 'FIRST_PLAYER' },
-          attachTo: { host: { type: 'VILLAIN' } },
-        }),
-      ).toBe(3);
+  it('shows traits and a consequential THW cost for an ally (Black Cat 01002)', () => {
+    renderBadges('01002');
+    const texts = badgeTexts();
+    expect(texts).toContain('Consequential THW 1');
+    const traitTexts = upstream('01002').traits;
+    expect(traitTexts.length).toBeGreaterThan(0);
+    for (const trait of traitTexts) expect(texts).toContain(trait);
+  });
 
-      expect(
-        countPlayReqFields({
-          playRequirements: {
-            identityForm: 'HERO',
-            formTrait: 'Giant',
-            identityTraits: ['Avenger'],
-            identityNames: ['Steve Rogers'],
-            controlZones: ['tableau'],
-            controlFilter: { traits: ['Tech'] },
-          },
-          playUnderAnyPlayerControl: true,
-        }),
-      ).toBe(7);
-    });
+  it('shows no consequential cost badge for cards that are not allies', () => {
+    renderBadges('01018');
+    expect(screen.queryByTestId('upstream-badge-attack-cost')).toBeNull();
+    expect(screen.queryByTestId('upstream-badge-thwart-cost')).toBeNull();
+  });
 
-    it('renders badges in title bars reactively when fields are configured and omits when 0', () => {
-      const { rerender } = render(
+  it('shows keywords including Victory X as the loader derives them', () => {
+    const card = { ...upstream('01018'), keywords: ['Guard', 'Victory 0', 'Victory -1'] as any };
+    render(<CardAttributesSection supplemental={{}} onChange={vi.fn()} upstreamCard={card} />);
+    expect(badgeTexts()).toEqual(expect.arrayContaining(['Guard', 'Victory 0', 'Victory -1']));
+  });
+
+  it('shows restricted slots when the upstream card has them', () => {
+    const card = { ...upstream('01018'), restrictedSlots: 2 };
+    render(<CardAttributesSection supplemental={{}} onChange={vi.fn()} upstreamCard={card} />);
+    expect(screen.getByTestId('upstream-badge-restricted-slots').textContent).toBe(
+      'Restricted slots 2',
+    );
+  });
+
+  it('badges are static text, not inputs', () => {
+    renderBadges('01050');
+    const strip = screen.getByTestId('upstream-badges');
+    expect(strip.querySelectorAll('input, select, textarea, button')).toHaveLength(0);
+  });
+});
+
+describe('CardAttributesSection chip bar is independent of the card type', () => {
+  it('offers every chip for any upstream card, since the editor no longer hides sections by type', () => {
+    const chips = [
+      'playRequirements',
+      'uses',
+      'attachTo',
+      'recipient',
+      'playUnderAnyPlayerControl',
+      'errata',
+    ];
+    for (const code of ['01002', '01018', '01094', '01107']) {
+      const { unmount } = render(
         <CardAttributesSection
-          supplemental={{
-            uses: { count: 2, counterType: 'charge' },
-          }}
+          supplemental={{}}
           onChange={vi.fn()}
+          upstreamCard={upstream(code)}
         />,
       );
-
-      // Card mechanics has 1 field configured (uses)
-      const mechanicsBadge = screen.getByTestId('section-card-mechanics-badge');
-      expect(mechanicsBadge.textContent).toBe('1');
-
-      // Play requirements has 0 fields configured -> no badge rendered
-      expect(screen.queryByTestId('section-play-requirements-badge')).toBeNull();
-
-      // Update supplemental to add play requirement fields
-      rerender(
-        <CardAttributesSection
-          supplemental={{
-            uses: { count: 2, counterType: 'charge' },
-            playRequirements: { identityForm: 'HERO', formTrait: 'Giant' },
-          }}
-          onChange={vi.fn()}
-        />,
-      );
-
-      const playReqBadge = screen.getByTestId('section-play-requirements-badge');
-      expect(playReqBadge.textContent).toBe('2');
-    });
-
-    it('resets section expansion when switching cardCode', () => {
-      const { rerender } = render(
-        <CardAttributesSection
-          cardCode="01001a"
-          supplemental={{
-            uses: { count: 2, counterType: 'charge' },
-          }}
-          onChange={vi.fn()}
-        />,
-      );
-
-      // Card 01001a has uses -> Card Mechanics is open
-      expect(screen.getByTestId('toggle-uses-btn')).toBeDefined();
-      // Play Requirements is empty -> collapsed
-      expect(screen.queryByTestId('play-req-identity-form-select')).toBeNull();
-
-      // Switch to card 01002 with play requirements and no mechanics
-      rerender(
-        <CardAttributesSection
-          cardCode="01002"
-          supplemental={{
-            playRequirements: { identityForm: 'HERO' },
-          }}
-          onChange={vi.fn()}
-        />,
-      );
-
-      // Card Mechanics is now empty -> collapsed
-      expect(screen.queryByTestId('toggle-uses-btn')).toBeNull();
-      // Play Requirements is now filled -> open
-      expect(screen.getByTestId('play-req-identity-form-select')).toBeDefined();
-    });
+      for (const key of chips) expect(screen.getByTestId(`card-chip-add-${key}`)).toBeDefined();
+      unmount();
+    }
   });
 });

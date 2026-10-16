@@ -1,6 +1,6 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-15 (Issue #314 Call for Action in multiplayer cooperative play and encounter actions delivered; active queue: empty)
+> **Last updated:** 2026-10-15 (Issue #317 Call for Action includes teammate identity in-play actions delivered; active queue: empty)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
 > **Verification baseline:** 🟢 2,720 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.

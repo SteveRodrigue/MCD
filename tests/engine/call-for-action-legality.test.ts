@@ -99,7 +99,7 @@ describe('Call for Action Legality & Generator (Issue #314 / RR v1.8 p. 5, 23)',
     const report = getLegalActionsForPlayer(state, 'p1');
 
     expect(report.callForActionItems).toBeDefined();
-    expect(report.callForActionCount).toBe(1);
+    expect(report.callForActionCount).toBe(2); // Avengers Mansion (tableau) + Tony Stark Futurist (identity)
 
     const mansionAction = report.callForActionItems.find(
       (item) =>
@@ -110,6 +110,15 @@ describe('Call for Action Legality & Generator (Issue #314 / RR v1.8 p. 5, 23)',
     expect(mansionAction?.action.playerId).toBe('p2');
     expect(mansionAction?.ownerName).toBe('Tony Stark');
     expect(mansionAction?.category).toBe('call_for_action');
+
+    const futuristAction = report.callForActionItems.find(
+      (item) =>
+        item.action.type === 'USE_CARD_ABILITY' && (item.action as any).abilityId === 'futurist',
+    );
+    expect(futuristAction).toBeDefined();
+    expect(futuristAction?.action.playerId).toBe('p2');
+    expect(futuristAction?.ownerName).toBe('Tony Stark');
+    expect(futuristAction?.category).toBe('call_for_action');
 
     // activeActionCount must NOT include teammate call-for-actions so end-turn auto-prompts are not blocked
     expect(report.activeActionCount).not.toBeGreaterThanOrEqual(
@@ -159,6 +168,44 @@ describe('Call for Action Legality & Generator (Issue #314 / RR v1.8 p. 5, 23)',
     expect(
       report.callForActionItems.some(
         (item) => (item.action as any).cardInstanceId === avengersMansion.instanceId,
+      ),
+    ).toBe(false);
+  });
+
+  it('5. Teammate identity in-play actions (Carol Danvers Commander) appear in callForActionItems and can be dispatched (Issue #317)', () => {
+    const captainMarvelHero = cardCatalog.getCard('01010a') as HeroCard;
+    const carolDanversAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
+
+    state.players[1].hero = captainMarvelHero;
+    state.players[1].alterEgo = carolDanversAlterEgo;
+    state.players[1].currentForm = 'alter_ego';
+    state.players[1].activeFormCard = carolDanversAlterEgo;
+    state.players[1].name = 'Carol Danvers';
+
+    const report = getLegalActionsForPlayer(state, 'p1');
+    const commanderAction = report.callForActionItems.find(
+      (item) =>
+        item.action.type === 'USE_CARD_ABILITY' && (item.action as any).abilityId === 'commander',
+    );
+
+    expect(commanderAction).toBeDefined();
+    expect(commanderAction?.category).toBe('call_for_action');
+    expect(commanderAction?.ownerName).toBe('Carol Danvers');
+    expect(commanderAction?.action.playerId).toBe('p2');
+    expect((commanderAction?.action as any).cardInstanceId).toBe('01010b');
+    expect(commanderAction?.headline).toBe('Ask Carol Danvers: Carol Danvers (ACTION)');
+    expect(commanderAction?.badge).toBe('CAROL DANVERS • ACTION');
+
+    // Trigger ability during Player 1's active turn
+    const res = dispatchAction(state, commanderAction!.action);
+    expect(res.result.success).toBe(true);
+    expect(res.state.players[1].usedAbilitiesThisRound?.['commander']).toBe(1);
+
+    // After triggering, commander should no longer be in callForActionItems (limit ONCE_PER_ROUND)
+    const updatedReport = getLegalActionsForPlayer(res.state, 'p1');
+    expect(
+      updatedReport.callForActionItems.some(
+        (item) => (item.action as any).abilityId === 'commander',
       ),
     ).toBe(false);
   });

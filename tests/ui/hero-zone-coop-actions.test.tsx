@@ -10,6 +10,7 @@ import {
 } from '../../src/engine/models';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { HeroZone } from '../../src/ui/components/board/HeroZone';
+import { IdentityActionModal } from '../../src/ui/components/board/IdentityActionModal';
 
 vi.mock('../../src/ui/hooks/useCardArt', () => ({
   useCardArt: vi.fn().mockReturnValue({
@@ -97,5 +98,60 @@ describe('HeroZone Cooperative Tableau Actions (Issue #314)', () => {
         cardInstanceId: avengersMansion.instanceId,
       }),
     );
+  });
+
+  it('IdentityActionModal allows triggering Commander for teammate Carol Danvers during active player turn in PLAYER_PHASE', () => {
+    const captainMarvelHero = cardCatalog.getCard('01010a') as HeroCard;
+    const carolDanversAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
+
+    state.players[1].hero = captainMarvelHero;
+    state.players[1].alterEgo = carolDanversAlterEgo;
+    state.players[1].currentForm = 'alter_ego';
+    state.players[1].activeFormCard = carolDanversAlterEgo;
+    state.players[1].name = 'Carol Danvers';
+
+    const onDispatchAction = vi.fn();
+    const onInitiateAction = vi.fn();
+    const onClose = vi.fn();
+
+    render(
+      <IdentityActionModal
+        isOpen={true}
+        player={state.players[1]}
+        gameState={state}
+        onClose={onClose}
+        onDispatchAction={onDispatchAction}
+        onInitiateAction={onInitiateAction}
+      />,
+    );
+
+    // In Alter-Ego, basic Recover is disabled for teammate during Player 1's turn
+    const recoverBtn = screen.getByRole('button', { name: /recover/i });
+    expect((recoverBtn as HTMLButtonElement).disabled).toBe(true);
+
+    // Flip to hero is disabled for teammate during Player 1's turn
+    const flipBtn = screen.getByRole('button', { name: /suit up/i });
+    expect((flipBtn as HTMLButtonElement).disabled).toBe(true);
+
+    // Carol Danvers Commander ability button should be enabled with cooperative styling/label
+    const commanderBtn = screen.getByRole('button', {
+      name: /Ask Carol Danvers: COMMANDER/i,
+    });
+    expect(commanderBtn).toBeDefined();
+    expect((commanderBtn as HTMLButtonElement).disabled).toBe(false);
+    expect(commanderBtn.textContent).toContain('CALL FOR ACTION');
+
+    fireEvent.click(commanderBtn);
+
+    // Must dispatch action for player 2 (Carol Danvers)
+    expect(onDispatchAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'USE_CARD_ABILITY',
+        playerId: 'p2',
+        cardInstanceId: '01010b',
+        abilityId: 'commander',
+      }),
+    );
+    expect(onClose).toHaveBeenCalled();
   });
 });

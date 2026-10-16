@@ -230,4 +230,66 @@ describe('Daily Bugle & TopBar Call for Action & Villain Actions UI (Issue #314)
     expect(onSelectAction).toHaveBeenCalledWith(mockReport.villainActionItems[0]);
     expect(onClose).toHaveBeenCalled();
   });
+
+  it('4. Daily Bugle displays teammate identity actions (e.g. Carol Danvers Commander) in CALL FOR ACTION and allows triggering', () => {
+    const mockReport: LegalActionReport = {
+      playerId: 'p1',
+      playerName: 'Spider-Man',
+      isPlayerTurn: true,
+      activeActionCount: 1,
+      callForActionCount: 1,
+      villainActionCount: 0,
+      identityActions: [],
+      handCardActions: [],
+      boardActions: [],
+      villainActionItems: [],
+      callForActionItems: [
+        {
+          id: 'action_call_id_p2_commander',
+          category: 'call_for_action',
+          headline: 'Ask Carol Danvers: Carol Danvers (ACTION)',
+          subtext: 'Choose a player to draw 1 card.',
+          ownerName: 'Carol Danvers',
+          action: {
+            type: 'USE_CARD_ABILITY',
+            playerId: 'p2',
+            cardInstanceId: '01010b',
+            abilityId: 'commander',
+          },
+          badge: 'CAROL DANVERS • ACTION',
+          cardCode: '01010b',
+        },
+      ],
+      allActions: [],
+    };
+
+    const onSelectAction = vi.fn();
+    const onClose = vi.fn();
+
+    render(
+      <DailyBugleActionNewspaper
+        report={mockReport}
+        isOpen={true}
+        onClose={onClose}
+        onSelectAction={onSelectAction}
+      />,
+    );
+
+    // Call for Action section should be displayed
+    expect(screen.getByText(/CALL FOR ACTION: TEAM TABLEAU ASSETS/i)).toBeDefined();
+
+    // Owner name badge and headline
+    expect(screen.getByText('Carol Danvers')).toBeDefined();
+    expect(screen.getByText(/Ask Carol Danvers: Carol Danvers \(ACTION\)/i)).toBeDefined();
+
+    // Clicking the item triggers onSelectAction and closes modal
+    const actionBtn = screen.getByRole('button', {
+      name: /Ask Carol Danvers: Carol Danvers \(ACTION\)/i,
+    });
+    expect(actionBtn).toBeDefined();
+    fireEvent.click(actionBtn);
+
+    expect(onSelectAction).toHaveBeenCalledWith(mockReport.callForActionItems[0]);
+    expect(onClose).toHaveBeenCalled();
+  });
 });

@@ -1102,12 +1102,16 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       const costCheck = gameState
                         ? canInitiateAbility(gameState, player.id, ab, cardInst, {})
                         : { allowed: false, reason: 'Game state not loaded' };
-                      const canUse = isPlayerTurn && costCheck.allowed;
-                      const label = ab.id.includes('add')
-                        ? '⚡ ADD TOKENS'
-                        : ab.id.includes('blast')
-                          ? '💥 BLAST'
-                          : '⚡ USE';
+                      const isPlayerPhase = gameState ? gameState.phase === 'PLAYER_PHASE' : true;
+                      const canUse = isPlayerPhase && costCheck.allowed;
+                      const isCoopCall = isPlayerPhase && !isPlayerTurn;
+                      const label = isCoopCall
+                        ? '🤝 CALL / USE'
+                        : ab.id.includes('add')
+                          ? '⚡ ADD TOKENS'
+                          : ab.id.includes('blast')
+                            ? '💥 BLAST'
+                            : '⚡ USE';
 
                       const hasPaymentCost =
                         ab.cost?.resourceCost ||

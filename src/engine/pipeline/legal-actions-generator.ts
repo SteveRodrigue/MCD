@@ -5,6 +5,8 @@ import {
   getActiveVillain,
   getActiveMainScheme,
   getVillainsInPlay,
+  getMainSchemesInPlay,
+  PlayerState,
 } from '../models';
 import {
   getPlayer,
@@ -22,11 +24,11 @@ import {
   getEffectiveMaxHealth,
   getEffectiveHandSize,
 } from './stat-calculator';
-import { isResourceAbility, canPayAbilityCost, getEffectiveCardCost } from './cost-engine';
+import { isResourceAbility, getEffectiveCardCost } from './cost-engine';
 
 export interface LegalActionItem {
   id: string;
-  category: 'identity' | 'hand' | 'board' | 'turn';
+  category: 'identity' | 'hand' | 'board' | 'turn' | 'villain' | 'call_for_action';
   headline: string;
   subtext: string;
   action: GameAction;
@@ -35,6 +37,7 @@ export interface LegalActionItem {
   requiresModal?: 'payment' | 'target';
   targetCardInstance?: CardInstance;
   cardCode?: string;
+  ownerName?: string;
 }
 
 export interface LegalActionReport {
@@ -45,6 +48,10 @@ export interface LegalActionReport {
   identityActions: LegalActionItem[];
   handCardActions: LegalActionItem[];
   boardActions: LegalActionItem[];
+  callForActionItems: LegalActionItem[];
+  callForActionCount: number;
+  villainActionItems: LegalActionItem[];
+  villainActionCount: number;
   turnAction?: LegalActionItem;
   allActions: LegalActionItem[];
 }
@@ -53,6 +60,281 @@ export function formatTimingBadge(timing: string): string {
   if (timing === 'ALTER_EGO_ACTION') return 'ALTER-EGO ACTION';
   if (timing === 'HERO_ACTION') return 'HERO ACTION';
   return timing.replace(/_/g, ' ');
+}
+
+/**
+ * Discovers legal Action abilities on a player's in-play tableau (Supports & Upgrades).
+ * Reusable for both the active player's turn report and cooperative teammate call-for-actions (RR v1.8 p. 5, 23).
+ */
+export function getTableauActionItems(
+  state: GameState,
+  player: PlayerState,
+  isCallingPlayerTurn: boolean,
+): LegalActionItem[] {
+  const items: LegalActionItem[] = [];
+  const isHero = player.currentForm === 'hero';
+
+  for (const tableauItem of player.tableau || []) {
+    const abilities = tableauItem.card.enrichment?.abilities || [];
+    for (const ab of abilities) {
+      if (isResourceAbility(ab.timing)) continue; // Never present resource abilities as standalone turn actions (RR v1.8 p. 25 / ADR-0039)
+      if (
+        ab.timing === 'ACTION' ||
+        (isHero && ab.timing === 'HERO_ACTION') ||
+        (!isHero && ab.timing === 'ALTER_EGO_ACTION')
+      ) {
+        // Limit validation (RR v1.8 p. 21)
+        const abilityKey = `${tableauItem.instanceId}_${ab.id}`;
+        const isUsedRound =
+          ab.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1;
+        const isUsedPhase =
+          ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[abilityKey] || 0) >= 1;
+        if (isUsedRound || isUsedPhase) continue;
+
+        const costCheck = canInitiateAbility(state, player.id, ab, tableauItem, {});
+        if (costCheck.allowed) {
+          let badge = formatTimingBadge(ab.timing);
+          let requiresModal: 'payment' | undefined = undefined;
+
+          if (ab.cost?.resourceCost) {
+            requiresModal = 'payment';
+            const requiredType =
+              typeof ab.cost.resourceCost === 'object'
+                ? Object.keys(ab.cost.resourceCost)[0]
+                : undefined;
+            const requiredAmount =
+              typeof ab.cost.resourceCost === 'number'
+                ? ab.cost.resourceCost
+                : requiredType
+                  ? ab.cost.resourceCost[requiredType] || 1
+                  : 1;
+            badge = requiredType
+              ? `${requiredAmount} ${requiredType.toUpperCase()}`
+              : `${requiredAmount} RESOURCES`;
+          } else if (ab.cost?.resources && ab.cost.resources.length > 0) {
+            requiresModal = 'payment';
+            badge = `${ab.cost.resources.length} RESOURCES`;
+          } else if (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND') {
+            requiresModal = 'payment';
+            const count = ab.cost.discardCard.count || 1;
+            badge = `DISCARD ${count} CARD${count > 1 ? 'S' : ''}`;
+          }
+
+          items.push({
+            id: isCallingPlayerTurn
+              ? `action_tableau_${tableauItem.instanceId}_${ab.id}`
+              : `action_call_tableau_${tableauItem.instanceId}_${ab.id}`,
+            category: isCallingPlayerTurn ? 'board' : 'call_for_action',
+            headline: isCallingPlayerTurn
+              ? `Activate ${tableauItem.card.name}`
+              : `${player.name}: ${tableauItem.card.name}`,
+            subtext: ab.steps?.[0]?.effectParams?.description
+              ? String(ab.steps[0].effectParams.description)
+              : `Trigger ${tableauItem.card.name} (${ab.id})`,
+            action: {
+              type: 'USE_CARD_ABILITY',
+              playerId: player.id,
+              cardInstanceId: tableauItem.instanceId,
+              abilityId: ab.id,
+            },
+            badge,
+            iconType: 'ability',
+            requiresModal,
+            targetCardInstance: tableauItem,
+            cardCode: tableauItem.card.code,
+            ownerName: player.name,
+          });
+        }
+      }
+    }
+  }
+
+  return items;
+}
+
+/**
+ * Discovers legal Action abilities on encounter cards, villain/player attachments,
+ * active player's obligations, and in-play side schemes payable by the player (RR v1.8 p. 5).
+ */
+export function getEncounterLegalActions(state: GameState, player: PlayerState): LegalActionItem[] {
+  const items: LegalActionItem[] = [];
+  const isHero = player.currentForm === 'hero';
+
+  // 1. Collect all potential encounter sources
+  const encounterSources: { cardInst: CardInstance; hostName?: string }[] = [];
+
+  // 1A. Villain attachments
+  for (const villain of getVillainsInPlay(state)) {
+    for (const att of villain.attachments || []) {
+      encounterSources.push({ cardInst: att, hostName: villain.card.name });
+    }
+  }
+
+  // 1B. Player attachments (identity, minions, allies across all seats)
+  for (const p of state.players || []) {
+    for (const att of p.attachments || []) {
+      encounterSources.push({ cardInst: att, hostName: p.name });
+    }
+    for (const m of p.engagedMinions || []) {
+      for (const att of m.attachments || []) {
+        encounterSources.push({ cardInst: att, hostName: m.card.name });
+      }
+    }
+    for (const a of p.allies || []) {
+      for (const att of a.attachments || []) {
+        encounterSources.push({ cardInst: att, hostName: a.card.name });
+      }
+    }
+  }
+
+  // 1C. Scheme attachments (main scheme & side schemes)
+  for (const ms of getMainSchemesInPlay(state)) {
+    for (const att of ms.attachments || []) {
+      encounterSources.push({ cardInst: att, hostName: ms.card.name });
+    }
+  }
+  for (const ss of state.sideSchemes || []) {
+    for (const att of ss.attachments || []) {
+      encounterSources.push({ cardInst: att, hostName: ss.card.name });
+    }
+  }
+
+  // 1D. Environment attachments
+  for (const env of state.environments || []) {
+    for (const att of env.attachments || []) {
+      encounterSources.push({ cardInst: att, hostName: env.card.name });
+    }
+  }
+
+  // 1E. Active player's obligations (RR v1.8 p. 5: cannot trigger obligations in other players' play areas)
+  for (const ob of player.obligations || []) {
+    encounterSources.push({ cardInst: ob, hostName: player.name });
+  }
+
+  // 1F. In-play side schemes
+  for (const ss of state.sideSchemes || []) {
+    encounterSources.push({ cardInst: ss, hostName: ss.card.name });
+  }
+
+  // 1G. In-play engaged minions
+  for (const p of state.players || []) {
+    for (const m of p.engagedMinions || []) {
+      encounterSources.push({ cardInst: m, hostName: m.card.name });
+    }
+  }
+
+  // 1H. In-play environments
+  for (const env of state.environments || []) {
+    encounterSources.push({ cardInst: env, hostName: env.card.name });
+  }
+
+  // Deduplicate sources by instanceId
+  const seenInstanceIds = new Set<string>();
+  const uniqueSources: { cardInst: CardInstance; hostName?: string }[] = [];
+  for (const s of encounterSources) {
+    if (!seenInstanceIds.has(s.cardInst.instanceId)) {
+      seenInstanceIds.add(s.cardInst.instanceId);
+      uniqueSources.push(s);
+    }
+  }
+
+  for (const { cardInst, hostName } of uniqueSources) {
+    const abilities = cardInst.card.enrichment?.abilities || [];
+    for (const ab of abilities) {
+      if (isResourceAbility(ab.timing)) continue;
+
+      const isAction =
+        ab.timing === 'ACTION' ||
+        (isHero && ab.timing === 'HERO_ACTION') ||
+        (!isHero && ab.timing === 'ALTER_EGO_ACTION');
+
+      if (!isAction) continue;
+
+      // Limit validation
+      const abilityKey = `${cardInst.instanceId}_${ab.id}`;
+      const isUsedRound =
+        ab.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1;
+      const isUsedPhase =
+        ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[abilityKey] || 0) >= 1;
+      if (isUsedRound || isUsedPhase) continue;
+
+      // Cost & legality validation
+      const costCheck = canInitiateAbility(state, player.id, ab, cardInst, {});
+      if (!costCheck.allowed) continue;
+
+      let badge = 'DISCARD';
+      let requiresModal: 'payment' | undefined = undefined;
+
+      if (ab.cost?.resourceCost) {
+        requiresModal = 'payment';
+        const requiredType =
+          typeof ab.cost.resourceCost === 'object'
+            ? Object.keys(ab.cost.resourceCost)[0]
+            : undefined;
+        const requiredAmount =
+          typeof ab.cost.resourceCost === 'number'
+            ? ab.cost.resourceCost
+            : requiredType
+              ? ab.cost.resourceCost[requiredType] || 1
+              : 1;
+        badge = requiredType
+          ? `${requiredAmount} ${requiredType.toUpperCase()}`
+          : `${requiredAmount} RESOURCES`;
+      } else if (ab.cost?.resources && ab.cost.resources.length > 0) {
+        requiresModal = 'payment';
+        badge = `${ab.cost.resources.length} RESOURCES`;
+      } else if (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND') {
+        requiresModal = 'payment';
+        const count = ab.cost.discardCard.count || 1;
+        badge = `DISCARD ${count} CARD${count > 1 ? 'S' : ''}`;
+      } else {
+        badge = formatTimingBadge(ab.timing);
+      }
+
+      const isDiscard =
+        cardInst.card.type === 'attachment' ||
+        ab.steps?.some(
+          (s) =>
+            s.effect === 'DISCARD_ATTACHMENT' ||
+            (s.effect === 'DISCARD' &&
+              (s.effectParams?.source === 'SELF' || s.effectParams?.source === 'HOST')),
+        ) ||
+        Boolean(ab.cost?.discardSelf);
+
+      const headline = isDiscard
+        ? `Discard: ${cardInst.card.name}`
+        : `Encounter Action: ${cardInst.card.name}`;
+
+      const subtext = ab.steps?.[0]?.effectParams?.description
+        ? String(ab.steps[0].effectParams.description)
+        : hostName
+          ? `Spend resources or trigger ${cardInst.card.name} from ${hostName}`
+          : `Trigger ${cardInst.card.name} (${ab.id})`;
+
+      items.push({
+        id:
+          cardInst.card.type === 'attachment'
+            ? `action_attachment_${cardInst.instanceId}_${ab.id}`
+            : `action_encounter_${cardInst.instanceId}_${ab.id}`,
+        category: 'villain',
+        headline,
+        subtext,
+        action: {
+          type: 'USE_CARD_ABILITY',
+          playerId: player.id,
+          cardInstanceId: cardInst.instanceId,
+          abilityId: ab.id,
+        },
+        badge,
+        iconType: 'ability',
+        requiresModal,
+        targetCardInstance: cardInst,
+        cardCode: cardInst.card.code,
+      });
+    }
+  }
+
+  return items;
 }
 
 /**
@@ -69,6 +351,10 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
       identityActions: [],
       handCardActions: [],
       boardActions: [],
+      callForActionItems: [],
+      callForActionCount: 0,
+      villainActionItems: [],
+      villainActionCount: 0,
       allActions: [],
     };
   }
@@ -79,6 +365,8 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
   const identityActions: LegalActionItem[] = [];
   const handCardActions: LegalActionItem[] = [];
   const boardActions: LegalActionItem[] = [];
+  const callForActionItems: LegalActionItem[] = [];
+  const villainActionItems: LegalActionItem[] = [];
 
   const isHero = player.currentForm === 'hero';
   const effectiveStats = getEffectiveHeroStats(state, player);
@@ -300,60 +588,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
 
     // 3. Board Tableau & Ally Actions
     // 3A. Tableau Cards (Upgrades & Supports)
-    for (const tableauItem of player.tableau) {
-      const abilities = tableauItem.card.enrichment?.abilities || [];
-      for (const ab of abilities) {
-        if (isResourceAbility(ab.timing)) continue; // Never present resource abilities as standalone turn actions (RR v1.8 p. 25 / ADR-0039)
-        if (
-          ab.timing === 'ACTION' ||
-          (isHero && ab.timing === 'HERO_ACTION') ||
-          (!isHero && ab.timing === 'ALTER_EGO_ACTION')
-        ) {
-          // Limit validation (RR v1.8 p. 21)
-          const abilityKey = `${tableauItem.instanceId}_${ab.id}`;
-          const isUsedRound =
-            ab.limit === 'ONCE_PER_ROUND' &&
-            (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1;
-          const isUsedPhase =
-            ab.limit === 'ONCE_PER_PHASE' &&
-            (player.usedAbilitiesThisPhase?.[abilityKey] || 0) >= 1;
-          if (isUsedRound || isUsedPhase) continue;
-
-          const costCheck = canInitiateAbility(state, player.id, ab, tableauItem, {});
-          if (costCheck.allowed) {
-            let badge = formatTimingBadge(ab.timing);
-            if (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND') {
-              const count = ab.cost.discardCard.count || 1;
-              badge = `DISCARD ${count} CARD${count > 1 ? 'S' : ''}`;
-            }
-            boardActions.push({
-              id: `action_tableau_${tableauItem.instanceId}_${ab.id}`,
-              category: 'board',
-              headline: `Activate ${tableauItem.card.name}`,
-              subtext: ab.steps?.[0]?.effectParams?.description
-                ? String(ab.steps[0].effectParams.description)
-                : `Trigger ${tableauItem.card.name} (${ab.id})`,
-              action: {
-                type: 'USE_CARD_ABILITY',
-                playerId: player.id,
-                cardInstanceId: tableauItem.instanceId,
-                abilityId: ab.id,
-              },
-              badge,
-              iconType: 'ability',
-              requiresModal:
-                ab.cost?.resourceCost ||
-                (ab.cost?.resources && ab.cost.resources.length > 0) ||
-                (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND')
-                  ? 'payment'
-                  : undefined,
-              targetCardInstance: tableauItem,
-              cardCode: tableauItem.card.code,
-            });
-          }
-        }
-      }
-    }
+    boardActions.push(...getTableauActionItems(state, player, true));
 
     // 3B. Ally Activations (Ally Attack / Ally Thwart)
     for (const ally of player.allies) {
@@ -462,93 +697,18 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
       }
     }
 
-    // 3C. In-Play Attachment Actions (e.g. Discard Caught in a Web, Armored Rhino Suit)
-    const allAttachments: { attachment: CardInstance; hostName: string }[] = [];
-    for (const att of player.attachments || []) {
-      allAttachments.push({ attachment: att, hostName: player.name });
-    }
-    for (const villain of getVillainsInPlay(state)) {
-      for (const att of villain.attachments || []) {
-        allAttachments.push({ attachment: att, hostName: villain.card.name });
+    // 3C. Villain & Encounter Actions (ADR-0055, RR v1.8 p. 5)
+    villainActionItems.push(...getEncounterLegalActions(state, player));
+
+    // 3D. Teammate Tableau Scan (Call for Action - RR v1.8 p. 5, 23)
+    for (const otherPlayer of state.players || []) {
+      if (otherPlayer.id !== playerId) {
+        callForActionItems.push(...getTableauActionItems(state, otherPlayer, false));
       }
     }
-    for (const m of player.engagedMinions || []) {
-      for (const att of m.attachments || []) {
-        allAttachments.push({ attachment: att, hostName: m.card.name });
-      }
-    }
-    for (const a of player.allies || []) {
-      for (const att of a.attachments || []) {
-        allAttachments.push({ attachment: att, hostName: a.card.name });
-      }
-    }
-    for (const att of getActiveMainScheme(state).attachments || []) {
-      allAttachments.push({ attachment: att, hostName: getActiveMainScheme(state).card.name });
-    }
-
-    for (const { attachment, hostName } of allAttachments) {
-      const abilities = attachment.card.enrichment?.abilities || [];
-      for (const ab of abilities) {
-        const isDiscardAbility =
-          ab.steps?.some(
-            (s) =>
-              s.effect === 'DISCARD_ATTACHMENT' ||
-              (s.effect === 'DISCARD' &&
-                (s.effectParams?.source === 'SELF' || s.effectParams?.source === 'HOST')),
-          ) || Boolean(ab.cost?.discardSelf);
-
-        if (isDiscardAbility) {
-          // Check form compatibility
-          if (ab.timing === 'HERO_ACTION' && player.currentForm !== 'hero') continue;
-          if (ab.timing === 'ALTER_EGO_ACTION' && player.currentForm !== 'alter_ego') continue;
-
-          // Check cost affordability (ADR-0055)
-          const costCheck = canPayAbilityCost(state, player, ab, attachment);
-          if (!costCheck.allowed) continue;
-
-          let badge = 'DISCARD ATTACHMENT';
-          if (ab.cost?.resourceCost) {
-            const requiredType =
-              typeof ab.cost.resourceCost === 'object'
-                ? Object.keys(ab.cost.resourceCost)[0]
-                : undefined;
-            const requiredAmount =
-              typeof ab.cost.resourceCost === 'number'
-                ? ab.cost.resourceCost
-                : requiredType
-                  ? ab.cost.resourceCost[requiredType] || 1
-                  : 1;
-            badge = requiredType
-              ? `${requiredAmount} ${requiredType.toUpperCase()}`
-              : `${requiredAmount} RESOURCES`;
-          } else if (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND') {
-            const count = ab.cost.discardCard.count || 1;
-            badge = `DISCARD ${count} CARD${count > 1 ? 'S' : ''}`;
-          }
-
-          boardActions.push({
-            id: `action_attachment_${attachment.instanceId}_${ab.id}`,
-            category: 'board',
-            headline: `Discard: ${attachment.card.name}`,
-            subtext: `Spend resources to discard ${attachment.card.name} from ${hostName}`,
-            action: {
-              type: 'USE_CARD_ABILITY',
-              playerId: player.id,
-              cardInstanceId: attachment.instanceId,
-              abilityId: ab.id,
-            },
-            badge,
-            iconType: 'ability',
-            requiresModal:
-              ab.cost?.resourceCost || (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND')
-                ? 'payment'
-                : undefined,
-            targetCardInstance: attachment,
-            cardCode: attachment.card.code,
-          });
-        }
-      }
-    }
+  } else if (state.phase === 'PLAYER_PHASE') {
+    // Non-active player during Player Phase: can trigger their own tableau Action abilities by request
+    boardActions.push(...getTableauActionItems(state, player, false));
   }
 
   // 4. Turn Control Action (End Player Turn)
@@ -573,8 +733,18 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
     };
   }
 
-  const activeActionCount = identityActions.length + handCardActions.length + boardActions.length;
-  const allActions = [...identityActions, ...handCardActions, ...boardActions];
+  const activeActionCount =
+    identityActions.length +
+    handCardActions.length +
+    boardActions.length +
+    villainActionItems.length;
+  const allActions = [
+    ...identityActions,
+    ...handCardActions,
+    ...boardActions,
+    ...villainActionItems,
+    ...callForActionItems,
+  ];
   if (turnAction) allActions.push(turnAction);
 
   return {
@@ -585,6 +755,10 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
     identityActions,
     handCardActions,
     boardActions,
+    callForActionItems,
+    callForActionCount: callForActionItems.length,
+    villainActionItems,
+    villainActionCount: villainActionItems.length,
     turnAction,
     allActions,
   };

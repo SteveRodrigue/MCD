@@ -1248,7 +1248,7 @@ export function canInitiateAbility(
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found.' };
 
-  // 1. Player Turn Validation for Actions
+  // 1. Phase & Obligation Validation for Actions (RR v1.8 p. 5, 23)
   if (
     ability.timing === 'ACTION' ||
     ability.timing === 'HERO_ACTION' ||
@@ -1260,12 +1260,18 @@ export function canInitiateAbility(
         reason: 'Action abilities can only be used during the Player Phase.',
       };
     }
-    if (state.phase === GamePhase.PLAYER_PHASE) {
-      const activePlayer = state.players[state.activePlayerIndex];
-      if (activePlayer && activePlayer.id !== playerId) {
+
+    // RR v1.8 p. 5: Players cannot trigger action abilities on obligations in other players' play areas.
+    if (sourceCardInst) {
+      const isOtherPlayerObligation = (state.players || []).some(
+        (p) =>
+          p.id !== playerId &&
+          p.obligations?.some((o) => o.instanceId === sourceCardInst.instanceId),
+      );
+      if (isOtherPlayerObligation) {
         return {
           allowed: false,
-          reason: `Not your turn (Currently ${activePlayer.name}'s turn).`,
+          reason: "Cannot trigger action abilities on obligations in other players' play areas.",
         };
       }
     }

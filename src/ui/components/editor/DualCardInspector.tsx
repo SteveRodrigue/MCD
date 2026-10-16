@@ -48,19 +48,12 @@ function formatCostSummary(cost: any): string {
       parts.push(`Discard up to ${dc.maxCount} Card${dc.maxCount > 1 ? 's' : ''}`);
     else parts.push('Discard Card');
   }
-  if (cost.resources && cost.resources.length > 0) {
-    parts.push(cost.resources.join(', '));
-  }
-  if (cost.resourceCost !== undefined) {
-    if (typeof cost.resourceCost === 'number') {
-      parts.push(`${cost.resourceCost} resource${cost.resourceCost === 1 ? '' : 's'}`);
-    } else if (typeof cost.resourceCost === 'object' && cost.resourceCost !== null) {
-      const resParts = Object.entries(cost.resourceCost)
-        .filter(([, v]) => typeof v === 'number' && (v as number) > 0)
-        .map(([k, v]) => `${v} ${k}`)
-        .join(', ');
-      if (resParts) parts.push(resParts);
-    }
+  if (typeof cost.resourceCost === 'object' && cost.resourceCost !== null) {
+    const resParts = Object.entries(cost.resourceCost)
+      .filter(([, v]) => typeof v === 'number' && (v as number) > 0)
+      .map(([k, v]) => `${v} ${k}`)
+      .join(', ');
+    if (resParts) parts.push(resParts);
   }
   return parts.length > 0 ? parts.join(' • ') : 'None';
 }
@@ -599,22 +592,6 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-sans">
-                    {editedSupplemental.attackCost !== undefined && (
-                      <div className="bg-comic-paper p-1.5 border border-black rounded">
-                        <span className="text-[10px] uppercase font-bold text-gray-500 block">
-                          Conseq. ATK Cost
-                        </span>
-                        <span className="font-bold">{editedSupplemental.attackCost}</span>
-                      </div>
-                    )}
-                    {editedSupplemental.thwartCost !== undefined && (
-                      <div className="bg-comic-paper p-1.5 border border-black rounded">
-                        <span className="text-[10px] uppercase font-bold text-gray-500 block">
-                          Conseq. THW Cost
-                        </span>
-                        <span className="font-bold">{editedSupplemental.thwartCost}</span>
-                      </div>
-                    )}
                     {editedSupplemental.playUnderAnyPlayerControl !== undefined && (
                       <div className="bg-comic-paper p-1.5 border border-black rounded">
                         <span className="text-[10px] uppercase font-bold text-gray-500 block">
@@ -625,22 +602,6 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
                         </span>
                       </div>
                     )}
-                    {editedSupplemental.maxPerPlayer !== undefined && (
-                      <div className="bg-comic-paper p-1.5 border border-black rounded">
-                        <span className="text-[10px] uppercase font-bold text-gray-500 block">
-                          Max Per Player
-                        </span>
-                        <span className="font-bold">{editedSupplemental.maxPerPlayer}</span>
-                      </div>
-                    )}
-                    {editedSupplemental.restrictedSlots !== undefined && (
-                      <div className="bg-comic-paper p-1.5 border border-black rounded">
-                        <span className="text-[10px] uppercase font-bold text-gray-500 block">
-                          Restricted Slots
-                        </span>
-                        <span className="font-bold">{editedSupplemental.restrictedSlots}</span>
-                      </div>
-                    )}
                     {editedSupplemental.uses && (
                       <div className="bg-comic-paper p-1.5 border border-black rounded">
                         <span className="text-[10px] uppercase font-bold text-gray-500 block">
@@ -649,22 +610,6 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
                         <span className="font-bold">
                           {editedSupplemental.uses.count} {editedSupplemental.uses.counterType}
                         </span>
-                      </div>
-                    )}
-                    {editedSupplemental.keywords && editedSupplemental.keywords.length > 0 && (
-                      <div className="bg-comic-paper p-1.5 border border-black rounded">
-                        <span className="text-[10px] uppercase font-bold text-gray-500 block">
-                          Keywords
-                        </span>
-                        <span className="font-bold">{editedSupplemental.keywords.join(', ')}</span>
-                      </div>
-                    )}
-                    {editedSupplemental.traits && editedSupplemental.traits.length > 0 && (
-                      <div className="bg-comic-paper p-1.5 border border-black rounded">
-                        <span className="text-[10px] uppercase font-bold text-gray-500 block">
-                          Traits
-                        </span>
-                        <span className="font-bold">{editedSupplemental.traits.join(', ')}</span>
                       </div>
                     )}
                   </div>
@@ -712,14 +657,8 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
                     </div>
                   )}
 
-                  {editedSupplemental.attackCost === undefined &&
-                    editedSupplemental.thwartCost === undefined &&
-                    editedSupplemental.playUnderAnyPlayerControl === undefined &&
-                    editedSupplemental.maxPerPlayer === undefined &&
-                    editedSupplemental.restrictedSlots === undefined &&
+                  {editedSupplemental.playUnderAnyPlayerControl === undefined &&
                     !editedSupplemental.uses &&
-                    (!editedSupplemental.keywords || editedSupplemental.keywords.length === 0) &&
-                    (!editedSupplemental.traits || editedSupplemental.traits.length === 0) &&
                     !editedSupplemental.errata &&
                     !editedSupplemental.playRequirements && (
                       <div className="text-xs text-gray-400 italic">

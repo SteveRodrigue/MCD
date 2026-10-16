@@ -70,11 +70,7 @@ export function parseResources(raw: RawUpstreamCard) {
  * Parses the "Max [X] per player" board limit for a card (RR v1.8 p. 17).
  * Filters out parenthesized Restricted reminder text: "(Max 2 restricted cards per player.)".
  */
-export function parseMaxPerPlayer(raw: RawUpstreamCard, enrichment?: CardEnrichment): number | undefined {
-  if (enrichment?.maxPerPlayer !== undefined) {
-    return enrichment.maxPerPlayer;
-  }
-
+export function parseMaxPerPlayer(raw: RawUpstreamCard): number | undefined {
   const rawText = raw.text || '';
   if (!rawText) return undefined;
 
@@ -108,7 +104,7 @@ function* printedSentences(text: string | undefined): Generator<string> {
 }
 
 function printedKeywordPattern(keyword: string): RegExp {
-  return new RegExp(`^${keyword.toLowerCase().replace(/[^a-z]/g, '')}(\\s+(\\d+))?$`);
+  return new RegExp(`^${keyword.toLowerCase().replace(/[^a-z]/g, '')}(\\s+(-?\\d+))?$`);
 }
 
 /**
@@ -142,7 +138,7 @@ export function getPrintedKeywordValue(text: string | undefined, keyword: string
  * Parses printed and supplemental keywords for a card. A keyword counts only when the card prints it
  * (#243). The Crisis icon is not a keyword: it is counted from `scheme_crisis` (`getCrisisIconCount`).
  */
-export function parseKeywords(raw: RawUpstreamCard, enrichment?: CardEnrichment): Keyword[] {
+export function parseKeywords(raw: RawUpstreamCard): Keyword[] {
   const keywords = new Set<Keyword>();
   const printed = (keyword: string) => hasPrintedKeyword(raw.text, keyword);
 
@@ -170,11 +166,11 @@ export function parseKeywords(raw: RawUpstreamCard, enrichment?: CardEnrichment)
     keywords.add(`Incite ${incite}` as any);
     keywords.add(Keyword.INCITE);
   }
-
-  if ((enrichment as any)?.keywords) {
-    for (const kw of (enrichment as any).keywords) {
-      keywords.add(kw as Keyword);
-    }
+  // Victory X is signed: `Victory 0` and `Victory -1` are printed (RR v1.8 Victory X).
+  const victory = getPrintedKeywordValue(raw.text, 'victory');
+  if (victory !== undefined) {
+    keywords.add(`Victory ${victory}` as any);
+    keywords.add(Keyword.VICTORY);
   }
 
   return Array.from(keywords);
@@ -255,9 +251,6 @@ export function normalizeRawCard(
     if (parsedLabels.length > 0) {
       const usedParsedIndices = new Set<number>();
       const newAbilities = enrichment.abilities.map((ab) => {
-        if (ab.labels && ab.labels.length > 0) {
-          return ab;
-        }
         if (enrichment.abilities!.length === 1 && parsedLabels.length === 1) {
           usedParsedIndices.add(0);
           return { ...ab, labels: [...parsedLabels[0].labels] };
@@ -276,13 +269,11 @@ export function normalizeRawCard(
   }
 
   const isLandscape =
-    enriched?.isLandscape !== undefined
-      ? enriched.isLandscape
-      : raw.type_code === CardType.MAIN_SCHEME ||
-        raw.type_code === CardType.SIDE_SCHEME ||
-        raw.type_code === 'main_scheme' ||
-        raw.type_code === 'side_scheme' ||
-        raw.type_code === 'player_side_scheme';
+    raw.type_code === CardType.MAIN_SCHEME ||
+    raw.type_code === CardType.SIDE_SCHEME ||
+    raw.type_code === 'main_scheme' ||
+    raw.type_code === 'side_scheme' ||
+    raw.type_code === 'player_side_scheme';
 
   const base: NormalizedCard = {
     code: raw.code,
@@ -295,21 +286,19 @@ export function normalizeRawCard(
     quantity: raw.quantity || 1,
     deckLimit: raw.deck_limit || 1,
     isUnique: !!raw.is_unique,
-    maxPerPlayer: parseMaxPerPlayer(raw, enriched),
+    maxPerPlayer: parseMaxPerPlayer(raw),
     cost: raw.cost,
     costPerHero: !!raw.cost_per_hero,
     restrictedSlots:
-      enriched?.restrictedSlots !== undefined
-        ? enriched.restrictedSlots
-        : (raw.text || '').toLowerCase().includes('counts as 2 restricted') ||
-            (raw.text || '').toLowerCase().includes('counts as two restricted')
-          ? 2
-          : undefined,
+      (raw.text || '').toLowerCase().includes('counts as 2 restricted') ||
+      (raw.text || '').toLowerCase().includes('counts as two restricted')
+        ? 2
+        : undefined,
     text: raw.text || '',
     flavor: raw.flavor,
-    traits: enriched?.traits !== undefined ? enriched.traits : parseTraits(raw.traits),
+    traits: parseTraits(raw.traits),
     printedTraits: raw.traits,
-    keywords: parseKeywords(raw, enriched),
+    keywords: parseKeywords(raw),
     scheme_crisis: raw.scheme_crisis ?? undefined,
     resources: parseResources(raw),
     setCode: raw.set_code,
@@ -357,12 +346,10 @@ export function normalizeRawCard(
     case CardType.VILLAIN: {
       const villainText = (raw.text || '').toLowerCase();
       const additionalBoostCards =
-        enrichment?.additionalBoostCards !== undefined
-          ? enrichment.additionalBoostCards
-          : villainText.includes('give him 1 additional boost card') ||
-              villainText.includes('additional boost card')
-            ? 1
-            : undefined;
+        villainText.includes('give him 1 additional boost card') ||
+        villainText.includes('additional boost card')
+          ? 1
+          : undefined;
       return {
         ...base,
         type: CardType.VILLAIN,
@@ -409,23 +396,14 @@ export function normalizeRawCard(
       } as PlayerSideSchemeCard;
     }
     case CardType.ALLY: {
-      const enrichmentAttackCost = enrichment?.attackCost;
-      const enrichmentThwartCost = enrichment?.thwartCost;
       return {
         ...base,
         type: CardType.ALLY,
         health: raw.health || 2,
         thwart: raw.thwart === null ? 0 : (raw.thwart ?? 1),
-        thwartCost: enrichmentThwartCost !== undefined ? enrichmentThwartCost : (raw.thwart_cost !== undefined ? raw.thwart_cost : 1),
+        thwartCost: raw.thwart_cost ?? 0,
         attack: raw.attack === null ? 0 : (raw.attack ?? 1),
-        attackCost:
-          enrichmentAttackCost !== undefined
-            ? enrichmentAttackCost
-            : raw.attack_cost !== undefined
-              ? raw.attack_cost
-              : (raw.text || '').toLowerCase().includes('does not take consequential damage after attacking')
-                ? 0
-                : 1,
+        attackCost: raw.attack_cost ?? 0,
         ...dashPowersField(raw, ['thwart', 'attack']),
       } as AllyCard;
     }

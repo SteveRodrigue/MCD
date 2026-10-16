@@ -88,6 +88,10 @@ describe('getPrintedKeywordValue: the number of Retaliate N / Incite N, only whe
     ['Toughness.\nRetaliate 3.', 'retaliate', 3],
     ['Incite 1. <i>(reminder)</i>', 'incite', 1],
     ['<b>Incite</b> 2', 'incite', 2],
+    ['Victory 0.', 'victory', 0],
+    ['Victory 2.\nGuard.', 'victory', 2],
+    ['Victory -1.\nDoes not count against your ally limit.', 'victory', -1],
+    ['Victory -1. Villainous. Vulnerable.', 'victory', -1],
   ])('%j gives %s %d', (text, keyword, value) => {
     expect(getPrintedKeywordValue(text, keyword)).toBe(value);
   });

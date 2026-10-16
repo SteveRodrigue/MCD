@@ -104,7 +104,7 @@ export function extractCostClause(costText: string): AbilityCost | undefined {
   );
   if (resMatch) {
     const resType = resMatch[2].toLowerCase() as 'physical' | 'energy' | 'mental' | 'wild';
-    cost.resources = [resType];
+    cost.resourceCost = { [resType]: parseInt(resMatch[1], 10) || 1 };
     hasCost = true;
   }
 

@@ -268,7 +268,6 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const handleSelectTableauAbility = (ability: CardAbility, cardInst: CardInstance) => {
     const hasPaymentCost =
       ability.cost?.resourceCost ||
-      (ability.cost?.resources && ability.cost.resources.length > 0) ||
       (ability.cost?.discardCard && ability.cost.discardCard.from === 'HAND');
 
     if (hasPaymentCost && onInitiateAction) {
@@ -1122,7 +1121,6 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
 
                       const hasPaymentCost =
                         ab.cost?.resourceCost ||
-                        (ab.cost?.resources && ab.cost.resources.length > 0) ||
                         (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND');
 
                       return (

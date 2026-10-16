@@ -44,14 +44,11 @@ interface CardAudit {
 interface AbilityStep {
   id?: string;
   effect?: string;
-  target?: string;
-  distinctFrom?: string;
   gate?: string;
   gateParams?: Record<string, unknown>;
   condition?: string;
   effectParams?: Record<string, unknown>;
   params?: Record<string, unknown>;
-  filter?: Record<string, unknown>;
 }
 
 interface CardAbility {
@@ -88,17 +85,8 @@ interface SupplementalEntry {
   abilities?: CardAbility[];
   playRequirements?: PlayRequirements;
   uses?: CardUses;
-  keywords?: (string | { keyword: string; amount?: number })[];
   recipient?: { type: string; codes?: string[] };
-  attackCost?: number;
-  thwartCost?: number;
-  maxPerPlayer?: number;
-  restrictedSlots?: number;
-  additionalBoostCards?: number;
   playUnderAnyPlayerControl?: boolean;
-  isLandscape?: boolean;
-  victoryPoints?: number;
-  traits?: string[];
   errata?: string | null;
   audit?: CardAudit;
 }
@@ -296,7 +284,6 @@ export function runDeclarationsAudit() {
   const gatesUsage = new Map<string, UsageOccurrence[]>();
   const gateParamsUsage = new Map<string, UsageOccurrence[]>();
   const stepConditionsUsage = new Map<string, UsageOccurrence[]>();
-  const distinctFromUsage = new Map<string, UsageOccurrence[]>();
 
   const effectParamsUsage = new Map<string, UsageOccurrence[]>();
   const dynamicValuesUsage = new Map<string, UsageOccurrence[]>();
@@ -307,7 +294,6 @@ export function runDeclarationsAudit() {
   // Card Level
   const playReqsUsage = new Map<string, UsageOccurrence[]>();
   const usesUsage = new Map<string, UsageOccurrence[]>();
-  const keywordsUsage = new Map<string, UsageOccurrence[]>();
   const recipientsUsage = new Map<string, UsageOccurrence[]>();
   const cardOverridesUsage = new Map<string, UsageOccurrence[]>();
 
@@ -436,9 +422,8 @@ export function runDeclarationsAudit() {
       for (const step of ability.steps) {
         if (step.effect) recordUsage(effectsUsage, step.effect, occ);
 
-        // Target Selectors (step root, effectParams, or legacy params)
+        // Target Selectors (effectParams or legacy params)
         const target =
-          step.target ||
           (step.effectParams && typeof step.effectParams.target === 'string'
             ? step.effectParams.target
             : undefined) ||
@@ -446,10 +431,6 @@ export function runDeclarationsAudit() {
 
         if (target) {
           recordUsage(targetsUsage, target, occ);
-        }
-
-        if (step.distinctFrom) {
-          recordUsage(distinctFromUsage, step.distinctFrom, occ);
         }
 
         // Gates & Step Conditions
@@ -485,11 +466,6 @@ export function runDeclarationsAudit() {
             }
           }
         }
-
-        // Filter on step root
-        if (step.filter) {
-          extractUniversalFilter(step.filter, occ);
-        }
       }
     }
   }
@@ -520,29 +496,12 @@ export function runDeclarationsAudit() {
         recordUsage(usesUsage, usesType, cardOcc);
       }
 
-      if (entry.keywords && Array.isArray(entry.keywords)) {
-        for (const kw of entry.keywords) {
-          const kwStr = typeof kw === 'string' ? kw : `${kw.keyword} ${kw.amount ?? ''}`.trim();
-          recordUsage(keywordsUsage, kwStr, cardOcc);
-        }
-      }
-
       if (entry.recipient) {
         recordUsage(recipientsUsage, entry.recipient.type, cardOcc);
       }
 
-      if (entry.attackCost !== undefined) recordUsage(cardOverridesUsage, 'attackCost', cardOcc);
-      if (entry.thwartCost !== undefined) recordUsage(cardOverridesUsage, 'thwartCost', cardOcc);
-      if (entry.maxPerPlayer !== undefined)
-        recordUsage(cardOverridesUsage, 'maxPerPlayer', cardOcc);
-      if (entry.restrictedSlots !== undefined)
-        recordUsage(cardOverridesUsage, 'restrictedSlots', cardOcc);
-      if (entry.additionalBoostCards !== undefined)
-        recordUsage(cardOverridesUsage, 'additionalBoostCards', cardOcc);
       if (entry.playUnderAnyPlayerControl !== undefined)
         recordUsage(cardOverridesUsage, 'playUnderAnyPlayerControl', cardOcc);
-      if (entry.victoryPoints !== undefined)
-        recordUsage(cardOverridesUsage, 'victoryPoints', cardOcc);
 
       if (entry.noSupplementalNeeded) {
         if (upstream && hasActiveRulesText(upstream.text)) {
@@ -1173,15 +1132,6 @@ export function runDeclarationsAudit() {
     `| **Card Uses & Counters** | **${usesUsage.size}** | ${Array.from(usesUsage.keys())
       .map((k) => `\`${k}\` (${usesUsage.get(k)!.length})`)
       .join(', ')} |`,
-  );
-  mainReportLines.push(
-    `| **Keywords** | **${keywordsUsage.size}** | ${
-      keywordsUsage.size > 0
-        ? Array.from(keywordsUsage.keys())
-            .map((k) => `\`${k}\` (${keywordsUsage.get(k)!.length})`)
-            .join(', ')
-        : '*(None declared directly in supplemental)*'
-    } |`,
   );
   mainReportLines.push(
     `| **Player Recipient Overrides** | **${recipientsUsage.size}** | ${Array.from(

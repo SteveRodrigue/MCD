@@ -76,7 +76,6 @@ export function parseCardText(rawText: string, cardCode?: string): ParseCardResu
   const maxPlayerMatch = normalizedText.match(/Max (\d+) per player/i);
   if (maxPlayerMatch) {
     const maxVal = parseInt(maxPlayerMatch[1], 10);
-    enrichment.maxPerPlayer = maxVal;
     matchedSpans.push({
       start: maxPlayerMatch.index!,
       end: maxPlayerMatch.index! + maxPlayerMatch[0].length,

@@ -6,7 +6,7 @@ import { getStepEffectParams } from '../../data/supplemental/schema';
 
 /**
  * Checks whether a card or card instance possesses a given Keyword (ADR-0019, ADR-0054).
- * Evaluates the normalized card keywords array, supplemental enrichment keywords, and constant abilities.
+ * Evaluates the normalized card keywords array and constant abilities.
  * Transparently supports structured { keyword, amount } and legacy string forms.
  * Never reads or regex-matches raw card.text.
  */
@@ -41,11 +41,6 @@ export function hasKeyword(
     return true;
   }
 
-  const enrichmentKeywords = (card.enrichment as any)?.keywords;
-  if (Array.isArray(enrichmentKeywords) && enrichmentKeywords.some(matches)) {
-    return true;
-  }
-
   // Check constant abilities with GRANT_KEYWORD
   const abilities = card.enrichment?.abilities || [];
   for (const ab of abilities) {
@@ -70,7 +65,7 @@ export function hasKeyword(
 
 /**
  * Resolves the aggregated numeric value of a parameterized keyword (e.g. 'Retaliate 1', 'Incite 2')
- * from card keywords, supplemental enrichment, and constant GRANT_KEYWORD abilities (ADR-0019, ADR-0054).
+ * from card keywords and constant GRANT_KEYWORD abilities (ADR-0019, ADR-0054).
  * Returns undefined if the keyword is not present on the card.
  * If multiple instances exist, adds their values together per RR v1.8 p. 24.
  * Never reads or regex-matches raw card.text.
@@ -90,10 +85,7 @@ export function getKeywordValue(
 
   let total: number | undefined = undefined;
 
-  const allKws: any[] = [
-    ...(card.keywords || []),
-    ...(((card.enrichment as any)?.keywords as any[]) || []),
-  ];
+  const allKws: any[] = [...(card.keywords || [])];
 
   for (const k of allKws) {
     if (!k) continue;

@@ -206,33 +206,31 @@
                     "discardSelf": {
                       "type": "boolean"
                     },
-                    "resources": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "enum": [
-                          "physical",
-                          "energy",
-                          "mental",
-                          "wild"
-                        ]
-                      }
-                    },
                     "resourceCost": {
-                      "anyOf": [
-                        {
-                          "type": "number"
+                      "type": "object",
+                      "properties": {
+                        "physical": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
                         },
-                        {
-                          "type": "object",
-                          "propertyNames": {
-                            "type": "string"
-                          },
-                          "additionalProperties": {
-                            "type": "number"
-                          }
+                        "energy": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "mental": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "wild": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
                         }
-                      ]
+                      },
+                      "additionalProperties": false
                     },
                     "requirePrinted": {
                       "type": "boolean"
@@ -324,18 +322,6 @@
                     "ONCE_PER_PHASE"
                   ]
                 },
-                "labels": {
-                  "minItems": 1,
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "enum": [
-                      "ATTACK",
-                      "THWART",
-                      "DEFENSE"
-                    ]
-                  }
-                },
                 "forEachPlayer": {
                   "type": "boolean"
                 },
@@ -415,67 +401,6 @@
                           "REMOVE_STATUS"
                         ]
                       },
-                      "target": {
-                        "type": "string",
-                        "enum": [
-                          "SELF",
-                          "SELF_IDENTITY",
-                          "SELF_HERO",
-                          "ACTIVE_PLAYER",
-                          "ALL_PLAYERS",
-                          "DEFENDING_PLAYER",
-                          "ALL_HEROES",
-                          "ALL_HEROES_AND_ALLIES",
-                          "TRIGGERING_HERO",
-                          "DAMAGED_CHARACTER",
-                          "CHOSEN_PLAYER",
-                          "VILLAIN",
-                          "MAIN_SCHEME",
-                          "CHOSEN_SCHEME",
-                          "CHOSEN_ENEMY",
-                          "ALL_ENEMIES",
-                          "ENGAGED_ENEMIES",
-                          "ENGAGED_MINIONS",
-                          "CHOSEN_MINION",
-                          "CHOSEN_ENGAGED_MINION",
-                          "ALL_MINIONS",
-                          "CHOSEN_ALLY",
-                          "CHOSEN_CONTROLLED_ALLY",
-                          "ALL_CONTROLLED_ALLIES",
-                          "ALL_CONTROLLED_TABLEAU",
-                          "ALL_ALLIES",
-                          "CHOSEN_CHARACTER",
-                          "CHOSEN_CONTROLLED_CHARACTER",
-                          "ALL_CONTROLLED_CHARACTERS",
-                          "CHOSEN_FRIENDLY_CHARACTER",
-                          "ALL_FRIENDLY_CHARACTERS",
-                          "ALL_CHARACTERS",
-                          "CHOSEN_SIDE_SCHEME",
-                          "THIS_SIDE_SCHEME",
-                          "ALL_SIDE_SCHEMES",
-                          "ALL_SCHEMES",
-                          "TRIGGERING_SCHEME",
-                          "PREVIOUS_TARGET",
-                          "PREVIOUS_SELECTED_CARD",
-                          "TRIGGERING_MINION",
-                          "TRIGGERING_ENEMY",
-                          "HOST",
-                          "HOST_ENEMY"
-                        ]
-                      },
-                      "distinctFrom": {
-                        "anyOf": [
-                          {
-                            "type": "string",
-                            "enum": [
-                              "PREVIOUS_TARGET"
-                            ]
-                          },
-                          {
-                            "type": "string"
-                          }
-                        ]
-                      },
                       "gateParams": {
                         "type": "object",
                         "propertyNames": {
@@ -503,9 +428,6 @@
                           "IF_UNDEFENDED_ATTACK",
                           "IF_ACTIVATION_DEALT_DAMAGE"
                         ]
-                      },
-                      "filter": {
-                        "$ref": "#/$defs/__schema0"
                       },
                       "cannotBeCanceled": {
                         "type": "boolean"
@@ -608,22 +530,6 @@
           },
           "noSupplementalNeeded": {
             "type": "boolean"
-          },
-          "isLandscape": {
-            "type": "boolean"
-          },
-          "attackCost": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 9007199254740991
-          },
-          "thwartCost": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 9007199254740991
-          },
-          "maxPerPlayer": {
-            "type": "number"
           },
           "recipient": {
             "oneOf": [
@@ -863,53 +769,6 @@
               "count"
             ],
             "additionalProperties": false
-          },
-          "victoryPoints": {
-            "type": "number"
-          },
-          "keywords": {
-            "type": "array",
-            "items": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "keyword": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "amount": {
-                      "type": "integer",
-                      "exclusiveMinimum": 0,
-                      "maximum": 9007199254740991
-                    }
-                  },
-                  "required": [
-                    "keyword"
-                  ],
-                  "additionalProperties": false
-                }
-              ]
-            }
-          },
-          "traits": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "restrictedSlots": {
-            "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
-          },
-          "additionalBoostCards": {
-            "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
           },
           "errata": {
             "type": [

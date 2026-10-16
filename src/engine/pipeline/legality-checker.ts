@@ -501,9 +501,6 @@ export function isCardRestricted(card: NormalizedCard): boolean {
 export function getCardRestrictedWeight(card: NormalizedCard): number {
   if (!isCardRestricted(card)) return 0;
   if (card.restrictedSlots !== undefined) return card.restrictedSlots;
-  if ((card.enrichment as any)?.restrictedSlots !== undefined) {
-    return (card.enrichment as any).restrictedSlots;
-  }
   const kwVal = getKeywordValue(card, Keyword.RESTRICTED);
   if (kwVal !== undefined && kwVal > 1) return kwVal;
   return 1;
@@ -737,9 +734,8 @@ export function evaluatePlayFromZoneRequirement(
     Record<string, any> | undefined;
   const source =
     ((stepParams?.source || playFromZoneStep.effectParams?.source) as string) || 'PLAYER_DISCARD';
-  const filter = (stepParams?.filter ||
-    playFromZoneStep.effectParams?.filter ||
-    playFromZoneStep.filter) as Record<string, any> | undefined;
+  const filter = (stepParams?.filter || playFromZoneStep.effectParams?.filter) as
+    Record<string, any> | undefined;
 
   let candidates: CardInstance[] = [];
   if (source === 'ANY_PLAYER_DISCARD') {
@@ -1194,8 +1190,8 @@ export function evaluateSearchLegality(
 ): { allowed: boolean; reason?: string } {
   const stepParams = getStepEffectParams(step);
   const source = stepParams.source || 'PLAYER_DECK';
-  const target = (stepParams.target as string) || (step.target as string) || 'SELF';
-  const filter = (stepParams.filter || (step as any).filter) as Record<string, any> | undefined;
+  const target = (stepParams.target as string) || 'SELF';
+  const filter = stepParams.filter as Record<string, any> | undefined;
 
   const sources = Array.isArray(source) ? source : [source];
 

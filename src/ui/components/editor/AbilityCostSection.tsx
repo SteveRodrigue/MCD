@@ -33,52 +33,35 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
     onChange(Object.keys(updated).length > 0 ? updated : undefined);
   };
 
-  const getResourceCount = (res: 'physical' | 'energy' | 'mental' | 'wild') => {
-    const arrayCount = (currentCost.resources || []).filter((r: string) => r === res).length;
-    const mapCount =
-      typeof currentCost.resourceCost === 'object' && currentCost.resourceCost !== null
-        ? currentCost.resourceCost[res] || 0
-        : 0;
-    return arrayCount + mapCount;
+  const resourceMap: Record<string, number> =
+    typeof currentCost.resourceCost === 'object' && currentCost.resourceCost !== null
+      ? currentCost.resourceCost
+      : {};
+
+  const getResourceCount = (res: 'physical' | 'energy' | 'mental' | 'wild') =>
+    resourceMap[res] || 0;
+
+  const totalResourceCount = Object.values(resourceMap).reduce(
+    (sum: number, c) => sum + (typeof c === 'number' ? c : 0),
+    0,
+  );
+
+  const hasAnyResources = currentCost.resourceCost !== undefined;
+
+  const handleAddResource = (res: 'physical' | 'energy' | 'mental' | 'wild') => {
+    handleCostUpdate({ resourceCost: { ...resourceMap, [res]: (resourceMap[res] || 0) + 1 } });
   };
 
-  const totalResourceCount =
-    (currentCost.resources?.length || 0) +
-    (typeof currentCost.resourceCost === 'object' && currentCost.resourceCost !== null
-      ? Object.values(currentCost.resourceCost as Record<string, number>).reduce(
-          (sum: number, c) => sum + (typeof c === 'number' ? c : 0),
-          0,
-        )
-      : typeof currentCost.resourceCost === 'number'
-        ? currentCost.resourceCost
-        : 0);
-
-  const hasAnyResources =
-    (currentCost.resources && currentCost.resources.length > 0) ||
-    currentCost.resourceCost !== undefined;
-
   const handleRemoveResource = (res: 'physical' | 'energy' | 'mental' | 'wild') => {
-    const cur = [...(currentCost.resources || [])];
-    const idx = cur.lastIndexOf(res);
-    if (idx >= 0) {
-      cur.splice(idx, 1);
-      handleCostUpdate({
-        resources: cur.length > 0 ? cur : undefined,
-      });
-    } else if (
-      typeof currentCost.resourceCost === 'object' &&
-      currentCost.resourceCost !== null &&
-      currentCost.resourceCost[res]
-    ) {
-      const nextMap = { ...currentCost.resourceCost };
-      nextMap[res] -= 1;
-      if (nextMap[res] <= 0) {
-        delete nextMap[res];
-      }
-      handleCostUpdate({
-        resourceCost: Object.keys(nextMap).length > 0 ? nextMap : undefined,
-      });
+    if (!resourceMap[res]) return;
+    const nextMap = { ...resourceMap };
+    nextMap[res] -= 1;
+    if (nextMap[res] <= 0) {
+      delete nextMap[res];
     }
+    handleCostUpdate({
+      resourceCost: Object.keys(nextMap).length > 0 ? nextMap : undefined,
+    });
   };
 
   return (
@@ -224,7 +207,7 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
               type="button"
               data-testid={`cost-clear-resources-${abilityIndex}`}
               onClick={() => {
-                handleCostUpdate({ resources: undefined, resourceCost: undefined });
+                handleCostUpdate({ resourceCost: undefined });
               }}
               className="text-[9px] text-comic-red font-bold hover:underline cursor-pointer"
             >
@@ -250,10 +233,7 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
                 <button
                   type="button"
                   data-testid={`cost-res-plus-${res}-${abilityIndex}`}
-                  onClick={() => {
-                    const cur = currentCost.resources || [];
-                    handleCostUpdate({ resources: [...cur, res] });
-                  }}
+                  onClick={() => handleAddResource(res)}
                   className="w-4 h-4 bg-gray-200 hover:bg-gray-300 font-bold flex items-center justify-center rounded text-xs border border-gray-400 cursor-pointer"
                   title={`Add ${res} resource`}
                 >
@@ -273,23 +253,6 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
               </div>
             );
           })}
-          <div className="flex items-center gap-1.5 bg-white border border-black px-2 py-0.5 rounded text-xs shadow-comic-xs">
-            <span className="font-bold text-[11px] text-gray-700">Generic:</span>
-            <input
-              type="number"
-              min="0"
-              data-testid={`cost-resource-cost-generic-${abilityIndex}`}
-              value={typeof currentCost.resourceCost === 'number' ? currentCost.resourceCost : ''}
-              onChange={(e) => {
-                const val = e.target.value ? parseInt(e.target.value, 10) : undefined;
-                handleCostUpdate({
-                  resourceCost: isNaN(val as number) || val === undefined ? undefined : val,
-                });
-              }}
-              placeholder="0"
-              className="w-12 bg-white border border-black px-1 py-0.5 text-center text-xs rounded font-bold"
-            />
-          </div>
         </div>
         <div className="mt-2 pt-1 border-t border-gray-100 flex items-center gap-2">
           <label className="flex items-center gap-1.5 cursor-pointer text-xs">

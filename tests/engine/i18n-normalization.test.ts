@@ -109,7 +109,7 @@ describe('i18n Normalization and Canonical Ingestion Protocol', () => {
     expect(translated.text).toBe('<b>Riposte 2.</b> Garde.');
   });
 
-  it('prioritizes supplemental enrichment for restrictedSlots and additionalBoostCards', () => {
+  it('derives restrictedSlots, additionalBoostCards, keywords and traits from upstream, not enrichment', () => {
     const rawVillain: any = {
       code: 'test_villain',
       name: 'Custom Villain',
@@ -120,21 +120,18 @@ describe('i18n Normalization and Canonical Ingestion Protocol', () => {
       text: 'Some villain text.',
     };
 
-    const enrichment = {
-      additionalBoostCards: 2,
-      restrictedSlots: 2,
-      keywords: [Keyword.OVERKILL],
-      traits: ['CustomTrait'],
+    const upstreamVillain: any = {
+      ...rawVillain,
+      text: 'Overkill. Counts as 2 restricted cards. Give him 1 additional boost card.',
+      traits: 'Brute. Avenger.',
     };
 
-    const normalized = normalizeRawCard(rawVillain, {
-      test_villain: enrichment as any,
-    }) as VillainCard;
+    const normalized = normalizeRawCard(upstreamVillain, {}) as VillainCard;
 
-    expect(normalized.additionalBoostCards).toBe(2);
+    expect(normalized.additionalBoostCards).toBe(1);
     expect(normalized.restrictedSlots).toBe(2);
     expect(hasKeyword(normalized, Keyword.OVERKILL)).toBe(true);
-    expect(normalized.traits).toEqual(['CustomTrait']);
+    expect(normalized.traits).toEqual(['Brute', 'Avenger']);
   });
 
   it('updates CardCatalog cards in bulk with applyTranslations', () => {

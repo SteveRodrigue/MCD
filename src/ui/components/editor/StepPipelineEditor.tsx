@@ -1,9 +1,5 @@
 import React from 'react';
-import {
-  StepGateSchema,
-  EffectTypeSchema,
-  TargetSelectorSchema,
-} from '../../../data/supplemental/schema';
+import { StepGateSchema, EffectTypeSchema } from '../../../data/supplemental/schema';
 import { UniversalCardFilterBuilder } from './UniversalCardFilterBuilder';
 import { DynamicValueBuilder } from './DynamicValueBuilder';
 import {
@@ -36,13 +32,6 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
   stepErrors = {},
 }) => {
   const [expandedStep, setExpandedStep] = React.useState<number | null>(0);
-  const [expandedFilterIndices, setExpandedFilterIndices] = React.useState<Record<number, boolean>>(
-    {},
-  );
-
-  const toggleFilterExpanded = (idx: number) => {
-    setExpandedFilterIndices((prev) => ({ ...prev, [idx]: !prev[idx] }));
-  };
 
   const handleAddStep = () => {
     const newStep = {
@@ -328,7 +317,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                 </div>
               )}
 
-              {/* Step Identification & Target Selector */}
+              {/* Step Identification */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
                   <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
@@ -341,66 +330,6 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                     onChange={(e) => handleUpdateStep(sIdx, { id: e.target.value || undefined })}
                     placeholder="e.g. photonic_blast_damage"
                     className="w-full bg-white border border-black p-1 text-xs rounded font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                    Step Target (TargetSelector)
-                  </label>
-                  <select
-                    data-testid={`step-target-${abilityIndex}-${sIdx}`}
-                    value={step.target || ''}
-                    onChange={(e) =>
-                      handleUpdateStep(sIdx, { target: e.target.value || undefined })
-                    }
-                    className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
-                  >
-                    <option value="">Default (Contextual)</option>
-                    {TargetSelectorSchema.options.map((tgt) => (
-                      <option key={tgt} value={tgt}>
-                        {tgt}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Distinct From (choose different target) */}
-              <div>
-                <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                  Distinct From (choose different target)
-                </label>
-                <div className="flex gap-2">
-                  <select
-                    data-testid={`step-distinct-from-${abilityIndex}-${sIdx}`}
-                    value={step.distinctFrom === 'PREVIOUS_TARGET' ? 'PREVIOUS_TARGET' : ''}
-                    onChange={(e) =>
-                      handleUpdateStep(sIdx, {
-                        distinctFrom: e.target.value || undefined,
-                      })
-                    }
-                    className="flex-1 bg-white border border-black p-1 text-[11px] font-mono font-bold rounded"
-                  >
-                    <option value="">None</option>
-                    <option value="PREVIOUS_TARGET">PREVIOUS_TARGET</option>
-                  </select>
-                  <input
-                    type="text"
-                    data-testid={`step-distinct-from-input-${abilityIndex}-${sIdx}`}
-                    placeholder="Or custom step ID..."
-                    value={
-                      typeof step.distinctFrom === 'string' &&
-                      step.distinctFrom !== 'PREVIOUS_TARGET'
-                        ? step.distinctFrom
-                        : ''
-                    }
-                    onChange={(e) =>
-                      handleUpdateStep(sIdx, {
-                        distinctFrom: e.target.value.trim() || undefined,
-                      })
-                    }
-                    className="flex-1 bg-white border border-black p-1 text-xs rounded font-mono"
                   />
                 </div>
               </div>
@@ -723,40 +652,6 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                   No additional parameters required for this operational primitive.
                 </div>
               )}
-
-              {/* Step Card Filter Accordion */}
-              <div
-                data-testid={`step-filter-accordion-${abilityIndex}-${sIdx}`}
-                className="rounded border border-black bg-white p-2 space-y-1.5 mt-2"
-              >
-                <div
-                  onClick={() => toggleFilterExpanded(sIdx)}
-                  data-testid={`toggle-step-filter-btn-${abilityIndex}-${sIdx}`}
-                  className="flex items-center justify-between cursor-pointer select-none hover:bg-yellow-50 p-1 rounded"
-                >
-                  <span className="text-[10px] font-bold uppercase text-gray-700 flex items-center gap-1">
-                    {expandedFilterIndices[sIdx] ? (
-                      <ChevronDown className="w-3.5 h-3.5 text-gray-600" />
-                    ) : (
-                      <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
-                    )}
-                    <span>Step Card Criteria (step.filter)</span>
-                  </span>
-                  <span className="bg-comic-yellow border border-black px-1.5 py-0.2 rounded text-[9px] font-bold text-black">
-                    {step.filter ? 'Configured' : 'None'}
-                  </span>
-                </div>
-                {expandedFilterIndices[sIdx] && (
-                  <div className="pt-2 border-t border-gray-200">
-                    <UniversalCardFilterBuilder
-                      label="Step Card Filter Criteria"
-                      filter={step.filter}
-                      onChange={(newFilter) => handleUpdateStep(sIdx, { filter: newFilter })}
-                      isSubBranch={true}
-                    />
-                  </div>
-                )}
-              </div>
             </div>
           );
         })}

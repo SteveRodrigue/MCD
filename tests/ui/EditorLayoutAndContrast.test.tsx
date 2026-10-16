@@ -4,7 +4,6 @@ import userEvent from '@testing-library/user-event';
 import { AbilityFormBuilder } from '../../src/ui/components/editor/AbilityFormBuilder';
 import { UniversalCardFilterBuilder } from '../../src/ui/components/editor/UniversalCardFilterBuilder';
 import { DynamicValueBuilder } from '../../src/ui/components/editor/DynamicValueBuilder';
-import { CardAttributesSection } from '../../src/ui/components/editor/CardAttributesSection';
 import { SupplementalEditorScreen } from '../../src/ui/components/editor/SupplementalEditorScreen';
 import { DualCardInspector } from '../../src/ui/components/editor/DualCardInspector';
 import { CardGalleryList } from '../../src/ui/components/editor/CardGalleryList';
@@ -77,21 +76,6 @@ describe('Editor UI Contrast & Layout Ergonomics (Issue #116)', () => {
     expect(fixedBtn.classList.contains('text-white')).toBe(true);
     expect(fixedBtn.classList.contains('shadow-comic-xs')).toBe(true);
     expect(fixedBtn.classList.contains('font-bold')).toBe(true);
-  });
-
-  it('verifies active Structured Keywords chips contrast and classes in CardAttributesSection', () => {
-    render(<CardAttributesSection supplemental={{ keywords: ['guard'] }} onChange={vi.fn()} />);
-
-    const guardChip = screen.getByTestId('keyword-guard');
-    expect(guardChip).toBeDefined();
-    expect(guardChip.classList.contains('bg-comic-accent')).toBe(true);
-    expect(guardChip.classList.contains('text-white')).toBe(true);
-    expect(guardChip.classList.contains('shadow-comic-xs')).toBe(true);
-    expect(guardChip.classList.contains('font-bold')).toBe(true);
-
-    const rangedChip = screen.getByTestId('keyword-ranged');
-    expect(rangedChip).toBeDefined();
-    expect(rangedChip.classList.contains('bg-comic-accent')).toBe(false);
   });
 
   it('verifies SupplementalEditorScreen sidebar toggle collapses and expands Column 1', async () => {

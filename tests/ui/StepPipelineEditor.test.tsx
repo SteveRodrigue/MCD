@@ -3,7 +3,6 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { StepPipelineEditor } from '../../src/ui/components/editor/StepPipelineEditor';
-import { AbilityStepSchema } from '../../src/data/supplemental/schema';
 import { ResultFactSchema } from '../../src/data/supplemental/gate-params';
 
 const StatefulStepPipelineEditor: React.FC<{
@@ -52,7 +51,7 @@ describe('StepPipelineEditor', () => {
     );
   });
 
-  it('configures step.id and step.target', async () => {
+  it('configures step.id and offers no step-level target, distinctFrom, or filter controls', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
 
@@ -74,40 +73,11 @@ describe('StepPipelineEditor', () => {
       ]),
     );
 
-    // Set step.target
-    const targetSelect = screen.getByTestId('step-target-0-0');
-    await user.selectOptions(targetSelect, 'CHOSEN_ENEMY');
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.arrayContaining([
-        expect.objectContaining({
-          target: 'CHOSEN_ENEMY',
-        }),
-      ]),
-    );
-  });
-
-  it('expands step.filter accordion and configures criteria', async () => {
-    const user = userEvent.setup();
-    const handleChange = vi.fn();
-
-    render(
-      <StatefulStepPipelineEditor
-        initial={[
-          {
-            effect: 'MODIFY_HAND_SIZE',
-            filter: { traits: ['Tech'] },
-          },
-        ]}
-        onChange={handleChange}
-      />,
-    );
-
-    expect(screen.getByTestId('step-filter-accordion-0-0')).toBeDefined();
-    expect(screen.getByText('Configured')).toBeDefined();
-
-    // Expand accordion
-    await user.click(screen.getByTestId('toggle-step-filter-btn-0-0'));
-    expect(screen.getByText(/Step Card Filter Criteria/i)).toBeDefined();
+    // Step-level target, distinctFrom and filter live only in effectParams
+    expect(screen.queryByTestId('step-target-0-0')).toBeNull();
+    expect(screen.queryByTestId('step-distinct-from-0-0')).toBeNull();
+    expect(screen.queryByTestId('step-distinct-from-input-0-0')).toBeNull();
+    expect(screen.queryByTestId('step-filter-accordion-0-0')).toBeNull();
   });
 
   it('reorders and removes steps', async () => {
@@ -149,59 +119,6 @@ describe('StepPipelineEditor', () => {
 
     expect(screen.getByText(/Step Errors/i)).toBeDefined();
     expect(screen.getByText(/Target must be specified for DEAL_DAMAGE/i)).toBeDefined();
-  });
-
-  it('configures distinctFrom via PREVIOUS_TARGET dropdown, custom string input, and removes key when cleared', async () => {
-    const user = userEvent.setup();
-    const handleChange = vi.fn();
-
-    render(
-      <StatefulStepPipelineEditor
-        initial={[
-          { effect: 'DEAL_DAMAGE', target: 'CHOSEN_ENEMY' },
-          { effect: 'DEAL_DAMAGE', target: 'CHOSEN_ENEMY' },
-        ]}
-        abilityIndex={0}
-        onChange={handleChange}
-      />,
-    );
-
-    // Expand Step 1
-    await user.click(screen.getByTestId('step-item-0-1'));
-
-    const distinctSelect = screen.getByTestId('step-distinct-from-0-1');
-    const customInput = screen.getByTestId('step-distinct-from-input-0-1') as HTMLInputElement;
-
-    // 1. Select PREVIOUS_TARGET
-    await user.selectOptions(distinctSelect, 'PREVIOUS_TARGET');
-    expect(handleChange).toHaveBeenCalledWith([
-      expect.anything(),
-      expect.objectContaining({ distinctFrom: 'PREVIOUS_TARGET' }),
-    ]);
-
-    // 2. Set custom step ID string via text input
-    fireEvent.change(customInput, { target: { value: 'first_damage_step' } });
-    expect(handleChange).toHaveBeenCalledWith([
-      expect.anything(),
-      expect.objectContaining({ distinctFrom: 'first_damage_step' }),
-    ]);
-
-    // 3. Clear distinctFrom by typing empty string
-    fireEvent.change(customInput, { target: { value: '' } });
-    const lastCall = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
-    expect(lastCall[1].distinctFrom).toBeUndefined();
-    expect('distinctFrom' in lastCall[1]).toBe(false);
-
-    // 4. Validate with AbilityStepSchema (strict object validation)
-    const stepParsed = AbilityStepSchema.safeParse(lastCall[1]);
-    expect(stepParsed.success).toBe(true);
-
-    // 5. Also verify selecting "None" clears PREVIOUS_TARGET
-    await user.selectOptions(distinctSelect, 'PREVIOUS_TARGET');
-    await user.selectOptions(distinctSelect, '');
-    const finalCall = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
-    expect(finalCall[1].distinctFrom).toBeUndefined();
-    expect('distinctFrom' in finalCall[1]).toBe(false);
   });
 
   it('renders newly registered effect parameters across effects', () => {

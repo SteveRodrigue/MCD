@@ -275,27 +275,5 @@ describe('The (attack) label (#247 part 2)', () => {
         expect(labelled[0].labels).toEqual(['ATTACK']);
       });
     }
-
-    it('no other core card declares ATTACK', () => {
-      const others = cardCatalog
-        .getAllCards()
-        .filter((c) => c.packCode === 'core' && !(c.code in expected))
-        .filter((c) => (c.enrichment?.abilities ?? []).some((a) => a.labels?.includes('ATTACK')))
-        .map((c) => c.code);
-      expect(Array.from(new Set(others))).toEqual([]);
-    });
-
-    it('the schema accepts labels and rejects unknown ones', async () => {
-      const { CardAbilitySchema } = await import('../../src/data/supplemental/schema');
-      const base = {
-        id: 'x',
-        timing: 'HERO_ACTION',
-        steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 1 } }],
-      };
-      expect(
-        CardAbilitySchema.safeParse({ ...base, labels: ['ATTACK', 'THWART', 'DEFENSE'] }).success,
-      ).toBe(true);
-      expect(CardAbilitySchema.safeParse({ ...base, labels: ['SCHEME'] }).success).toBe(false);
-    });
   });
 });

@@ -26,6 +26,7 @@ import {
   getEffectiveHandSize,
 } from './stat-calculator';
 import { isResourceAbility, getEffectiveCardCost } from './cost-engine';
+import type { ResourceCost } from '../../data/supplemental/schema';
 
 export interface LegalActionItem {
   id: string;
@@ -99,22 +100,12 @@ export function getTableauActionItems(
 
           if (ab.cost?.resourceCost) {
             requiresModal = 'payment';
-            const requiredType =
-              typeof ab.cost.resourceCost === 'object'
-                ? Object.keys(ab.cost.resourceCost)[0]
-                : undefined;
-            const requiredAmount =
-              typeof ab.cost.resourceCost === 'number'
-                ? ab.cost.resourceCost
-                : requiredType
-                  ? ab.cost.resourceCost[requiredType] || 1
-                  : 1;
+            const requiredType = Object.keys(ab.cost.resourceCost)[0] as
+              keyof ResourceCost | undefined;
+            const requiredAmount = requiredType ? ab.cost.resourceCost[requiredType] || 1 : 1;
             badge = requiredType
               ? `${requiredAmount} ${requiredType.toUpperCase()}`
               : `${requiredAmount} RESOURCES`;
-          } else if (ab.cost?.resources && ab.cost.resources.length > 0) {
-            requiresModal = 'payment';
-            badge = `${ab.cost.resources.length} RESOURCES`;
           } else if (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND') {
             requiresModal = 'payment';
             const count = ab.cost.discardCard.count || 1;
@@ -212,9 +203,7 @@ export function getIdentityActionItems(
           badge,
           iconType: 'ability',
           requiresModal:
-            ab.cost?.resourceCost ||
-            (ab.cost?.resources && ab.cost.resources.length > 0) ||
-            (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND')
+            ab.cost?.resourceCost || (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND')
               ? 'payment'
               : undefined,
           targetCardInstance: {
@@ -347,22 +336,11 @@ export function getEncounterLegalActions(state: GameState, player: PlayerState):
 
       if (ab.cost?.resourceCost) {
         requiresModal = 'payment';
-        const requiredType =
-          typeof ab.cost.resourceCost === 'object'
-            ? Object.keys(ab.cost.resourceCost)[0]
-            : undefined;
-        const requiredAmount =
-          typeof ab.cost.resourceCost === 'number'
-            ? ab.cost.resourceCost
-            : requiredType
-              ? ab.cost.resourceCost[requiredType] || 1
-              : 1;
+        const requiredType = Object.keys(ab.cost.resourceCost)[0] as keyof ResourceCost | undefined;
+        const requiredAmount = requiredType ? ab.cost.resourceCost[requiredType] || 1 : 1;
         badge = requiredType
           ? `${requiredAmount} ${requiredType.toUpperCase()}`
           : `${requiredAmount} RESOURCES`;
-      } else if (ab.cost?.resources && ab.cost.resources.length > 0) {
-        requiresModal = 'payment';
-        badge = `${ab.cost.resources.length} RESOURCES`;
       } else if (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND') {
         requiresModal = 'payment';
         const count = ab.cost.discardCard.count || 1;

@@ -31,56 +31,13 @@ describe('AbilityFormBuilder Card-Level Attributes', () => {
 
     expect(screen.getByText(/CARD-LEVEL ATTRIBUTES & AUDIT/i)).toBeDefined();
     await user.click(screen.getByTestId('toggle-show-all-fields-btn'));
-    expect(screen.getByTestId('card-traits-input')).toBeDefined();
-    expect(screen.getByTestId('card-restricted-slots-input')).toBeDefined();
-    expect(screen.getByTestId('card-additional-boost-cards-input')).toBeDefined();
-    expect(screen.getByTestId('card-victory-points-input')).toBeDefined();
-    expect(screen.getByTestId('card-is-landscape-checkbox')).toBeDefined();
     expect(screen.getByTestId('toggle-uses-btn')).toBeDefined();
-  });
-
-  it('updates card traits, restricted slots, and victory points', async () => {
-    const user = userEvent.setup();
-    const handleChange = vi.fn();
-
-    render(
-      <StatefulAbilityFormBuilder initial={{ traits: ['Avenger'] }} onChange={handleChange} />,
-    );
-
-    const traitsInput = screen.getByTestId('card-traits-input') as HTMLInputElement;
-    fireEvent.change(traitsInput, { target: { value: 'Avenger, Aerial, Soldier' } });
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        traits: ['Avenger', 'Aerial', 'Soldier'],
-      }),
-    );
-
-    const slotsInput = screen.getByTestId('card-restricted-slots-input');
-    fireEvent.change(slotsInput, { target: { value: '1' } });
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        restrictedSlots: 1,
-      }),
-    );
-
-    // Expand Layout & Display for victoryPoints and isLandscape
-    await user.click(screen.getByTestId('section-layout-display-toggle'));
-
-    const vpInput = screen.getByTestId('card-victory-points-input');
-    fireEvent.change(vpInput, { target: { value: '2' } });
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        victoryPoints: 2,
-      }),
-    );
-
-    const landscapeCheckbox = screen.getByTestId('card-is-landscape-checkbox');
-    await user.click(landscapeCheckbox);
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        isLandscape: true,
-      }),
-    );
+    // Upstream-derived fields are not authored in the supplemental (derived from the printed card)
+    expect(screen.queryByTestId('card-traits-input')).toBeNull();
+    expect(screen.queryByTestId('card-restricted-slots-input')).toBeNull();
+    expect(screen.queryByTestId('card-additional-boost-cards-input')).toBeNull();
+    expect(screen.queryByTestId('card-victory-points-input')).toBeNull();
+    expect(screen.queryByTestId('card-is-landscape-checkbox')).toBeNull();
   });
 
   it('manages uses counters lifecycle sub-form (add, modify, remove)', async () => {
@@ -121,38 +78,6 @@ describe('AbilityFormBuilder Card-Level Attributes', () => {
     await user.click(screen.getByTestId('toggle-uses-btn'));
     expect(handleChange).toHaveBeenLastCalledWith(
       expect.not.objectContaining({ uses: expect.anything() }),
-    );
-  });
-
-  it('toggles keywords and configures Retaliate amount', async () => {
-    const user = userEvent.setup();
-    const handleChange = vi.fn();
-
-    render(<StatefulAbilityFormBuilder initial={{ keywords: [] }} onChange={handleChange} />);
-
-    // Expand Card Mechanics to access keywords
-    await user.click(screen.getByTestId('section-card-mechanics-toggle'));
-
-    // Toggle Guard
-    const guardBtn = screen.getByText('Guard');
-    await user.click(guardBtn);
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        keywords: ['Guard'],
-      }),
-    );
-
-    // Toggle Retaliate
-    const retaliateBtn = screen.getByText('Retaliate');
-    await user.click(retaliateBtn);
-
-    const retaliateAmount = screen.getByTestId('keyword-retaliate-amount');
-    fireEvent.change(retaliateAmount, { target: { value: '2' } });
-
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        keywords: expect.arrayContaining([{ keyword: 'Retaliate', amount: 2 }]),
-      }),
     );
   });
 });
@@ -271,7 +196,7 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
       expect.objectContaining({
         abilities: [
           expect.objectContaining({
-            cost: expect.objectContaining({ resources: ['energy'] }),
+            cost: expect.objectContaining({ resourceCost: { energy: 1 } }),
           }),
         ],
       }),
@@ -389,7 +314,7 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
     );
   });
 
-  it('selects the IF_ACTIVATION_DEALT_DAMAGE gate and the DAMAGED_CHARACTER target (#221)', async () => {
+  it('selects the IF_ACTIVATION_DEALT_DAMAGE gate (#221)', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
 
@@ -415,16 +340,11 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
     );
     await user.selectOptions(gateSelect, 'IF_ACTIVATION_DEALT_DAMAGE');
 
-    const targetSelect = screen.getByTestId('step-target-0-0') as HTMLSelectElement;
-    expect(Array.from(targetSelect.options).map((o) => o.value)).toContain('DAMAGED_CHARACTER');
-    await user.selectOptions(targetSelect, 'DAMAGED_CHARACTER');
-
     const last = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
     expect(CardEnrichmentSchema.safeParse(last).success).toBe(true);
     expect(last.abilities[0].steps[0]).toEqual(
       expect.objectContaining({
         gate: 'IF_ACTIVATION_DEALT_DAMAGE',
-        target: 'DAMAGED_CHARACTER',
       }),
     );
   });
@@ -477,7 +397,7 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
       timing: 'HERO_ACTION' as const,
       cost: {
         exhaustSelf: true,
-        resources: ['physical' as const],
+        resourceCost: { physical: 1 },
         spendCounters: { amount: 1, counterType: 'shield', target: 'SELF' as const },
       },
       steps: [
@@ -494,9 +414,6 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
     const fullCard = {
       audit: { comment: 'Valid upgraded card' },
       uses: { count: 3, counterType: 'shield', discardOnEmpty: false },
-      keywords: [{ keyword: 'Retaliate', amount: 1 }, 'Guard'],
-      restrictedSlots: 1,
-      isLandscape: false,
       abilities: [validAbility],
     };
 
@@ -552,69 +469,24 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
     expect(parsed.success).toBe(true);
   });
 
-  it('edits ability labels (ATTACK, THWART, DEFENSE) with a multi-select and removes the key when empty', async () => {
-    const user = userEvent.setup();
-    const handleChange = vi.fn();
-
+  it('offers no manual ability label controls (labels derive from the printed text)', () => {
     render(
       <StatefulAbilityFormBuilder
         initial={{
           audit: { comment: 'Test' },
           abilities: [
             {
-              id: 'test_label_ab',
+              id: 'unlabelled',
               timing: 'HERO_ACTION',
-              steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 1 } }],
-            },
-          ],
-        }}
-        onChange={handleChange}
-      />,
-    );
-
-    const attack = screen.getByTestId('ability-label-ATTACK-0') as HTMLInputElement;
-    const thwart = screen.getByTestId('ability-label-THWART-0') as HTMLInputElement;
-    const defense = screen.getByTestId('ability-label-DEFENSE-0') as HTMLInputElement;
-    expect(attack.checked).toBe(false);
-    expect(thwart.checked).toBe(false);
-    expect(defense.checked).toBe(false);
-
-    await user.click(attack);
-    expect(handleChange).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        abilities: [expect.objectContaining({ labels: ['ATTACK'] })],
-      }),
-    );
-
-    await user.click(defense);
-    let last = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
-    expect(last.abilities[0].labels).toEqual(['ATTACK', 'DEFENSE']);
-    expect(CardAbilitySchema.safeParse(last.abilities[0]).success).toBe(true);
-
-    await user.click(attack);
-    await user.click(defense);
-    last = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
-    expect('labels' in last.abilities[0]).toBe(false);
-  });
-
-  it('shows the labels already declared on an ability', () => {
-    render(
-      <StatefulAbilityFormBuilder
-        initial={{
-          audit: { comment: 'Test' },
-          abilities: [
-            {
-              id: 'labelled',
-              timing: 'HERO_ACTION',
-              labels: ['ATTACK'],
               steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 1 } }],
             },
           ],
         }}
       />,
     );
-    expect((screen.getByTestId('ability-label-ATTACK-0') as HTMLInputElement).checked).toBe(true);
-    expect((screen.getByTestId('ability-label-THWART-0') as HTMLInputElement).checked).toBe(false);
+    expect(screen.queryByTestId('ability-label-ATTACK-0')).toBeNull();
+    expect(screen.queryByTestId('ability-label-THWART-0')).toBeNull();
+    expect(screen.queryByTestId('ability-label-DEFENSE-0')).toBeNull();
   });
 
   it('toggles forEachPlayer on an ability (#220)', async () => {
@@ -676,8 +548,8 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
       render(
         <AbilityFormBuilder
           supplemental={{
-            // Invalid maxPerPlayer (must be integer >= 1)
-            maxPerPlayer: -5,
+            // Removed upstream-derived field: the strict schema rejects it
+            maxPerPlayer: 1,
             abilities: [
               {
                 id: 'broken_ab',

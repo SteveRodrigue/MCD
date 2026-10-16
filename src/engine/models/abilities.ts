@@ -1,7 +1,7 @@
-import { Keyword } from './enums';
 import type {
   AttachTo,
   PlayRequirements,
+  ResourceCost,
   StepGate,
   StepFacts,
   TriggerFilter,
@@ -106,8 +106,7 @@ export interface AbilityCost {
     amount: number;
     target?: 'SELF' | 'IDENTITY';
   };
-  resourceCost?: number | Record<string, number>;
-  resources?: string[];
+  resourceCost?: ResourceCost;
   requirePrinted?: boolean;
   discardCard?: {
     count?: number;
@@ -149,12 +148,9 @@ export interface SequenceExecutionContext {
 export interface AbilityStep {
   id?: string;
   effect: EffectType;
-  target?: string;
-  distinctFrom?: 'PREVIOUS_TARGET' | string;
   gateParams?: Record<string, unknown>;
   effectParams?: Record<string, unknown>;
   gate?: StepGate;
-  filter?: Record<string, unknown>;
   /** "This effect cannot be canceled": still resolves when the card's reveal is cancelled. */
   cannotBeCanceled?: boolean;
 }
@@ -214,25 +210,11 @@ export interface CardEnrichment {
   cardName?: string;
   playRequirements?: PlayRequirements;
   audit?: CardAuditMetadata;
-  isLandscape?: boolean;
-  attackCost?: number;
-  thwartCost?: number;
-  maxPerPlayer?: number;
   /** Optional obligation recipient override (outside the abilities); absent = engine default */
   recipient?: PlayerRecipient;
   /** Encounter attachment host and fallback (#209); absent = the active villain */
   attachTo?: AttachTo;
   playUnderAnyPlayerControl?: boolean;
   uses?: CardUsesDefinition;
-  /** Explicit keywords on the card (overrides text loader deductions) */
-  keywords?: (Keyword | string)[];
-  /** Canonical English traits (overrides text loader deductions) */
-  traits?: string[];
-  /** Restricted slots count (e.g. 2 for heavy weapons) */
-  restrictedSlots?: number;
-  /** Additional boost cards for villain attacks */
-  additionalBoostCards?: number;
-  /** Numeric value for the printed 'Victory X' keyword (RR v1.8 p. 30) - paired with keywords: [Keyword.VICTORY] */
-  victoryPoints?: number;
   abilities?: CardAbility[];
 }

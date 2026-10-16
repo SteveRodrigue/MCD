@@ -77,43 +77,44 @@ describe('AbilityCostSection', () => {
     expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ damageHero: 3 }));
   });
 
-  it('increments, decrements, and clears resources', async () => {
+  it('increments, decrements, and clears typed resourceCost entries', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
 
     render(
-      <StatefulAbilityCostSection initial={{ resources: ['energy'] }} onChange={handleChange} />,
+      <StatefulAbilityCostSection
+        initial={{ resourceCost: { energy: 1 } }}
+        onChange={handleChange}
+      />,
     );
 
     // Add physical
     await user.click(screen.getByTestId('cost-res-plus-physical-0'));
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        resources: ['energy', 'physical'],
-      }),
+    expect(handleChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ resourceCost: { energy: 1, physical: 1 } }),
     );
 
     // Add another energy
     await user.click(screen.getByTestId('cost-res-plus-energy-0'));
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        resources: ['energy', 'physical', 'energy'],
-      }),
+    expect(handleChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ resourceCost: { energy: 2, physical: 1 } }),
     );
 
     // Remove one energy
     await user.click(screen.getByTestId('cost-res-minus-energy-0'));
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        resources: ['energy', 'physical'],
-      }),
+    expect(handleChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ resourceCost: { energy: 1, physical: 1 } }),
+    );
+
+    // Removing the last physical drops the key
+    await user.click(screen.getByTestId('cost-res-minus-physical-0'));
+    expect(handleChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ resourceCost: { energy: 1 } }),
     );
 
     // Clear resources
     await user.click(screen.getByTestId('cost-clear-resources-0'));
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.not.objectContaining({ resources: expect.anything() }),
-    );
+    expect(handleChange).toHaveBeenLastCalledWith(undefined);
   });
 
   it('configures and removes spendCounters cost', async () => {
@@ -288,7 +289,7 @@ describe('AbilityCostSection', () => {
     );
   });
 
-  it('displays typed resource counts from resourceCost map and clears both resources and resourceCost', async () => {
+  it('displays typed resource counts from resourceCost map and clears the resourceCost map', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
 
@@ -308,19 +309,10 @@ describe('AbilityCostSection', () => {
     expect(handleChange).toHaveBeenCalledWith(undefined);
   });
 
-  it('configures generic resourceCost number', async () => {
-    const handleChange = vi.fn();
+  it('has no generic numeric resourceCost input (typed map only)', () => {
+    render(<AbilityCostSection cost={{}} abilityIndex={0} onChange={vi.fn()} />);
 
-    render(<StatefulAbilityCostSection initial={{}} onChange={handleChange} />);
-
-    fireEvent.change(screen.getByTestId('cost-resource-cost-generic-0'), {
-      target: { value: '3' },
-    });
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        resourceCost: 3,
-      }),
-    );
+    expect(screen.queryByTestId('cost-resource-cost-generic-0')).toBeNull();
   });
 
   it('configures exhaustCard (only SELF_IDENTITY is a valid cost)', async () => {

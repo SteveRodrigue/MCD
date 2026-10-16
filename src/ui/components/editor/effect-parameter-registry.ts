@@ -290,11 +290,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         label: 'Card Code',
         type: 'text',
       },
-      {
-        key: 'condition',
-        label: 'Condition',
-        type: 'json',
-      },
     ],
   },
   PREVENT_THREAT: {

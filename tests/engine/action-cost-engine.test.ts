@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
-import { setupGame } from '../../src/engine/state/game-setup';
+import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { dispatchAction } from '../../src/engine/pipeline';
-import { canPayAbilityCost } from '../../src/engine/pipeline/cost-engine';
+import { canPayAbilityCost, executeAbilityCost } from '../../src/engine/pipeline/cost-engine';
 import { canInitiateAbility } from '../../src/engine/pipeline/legality-checker';
 import { peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 
@@ -840,6 +840,57 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
       expect(blastRes.state.players[0].discard.some((c) => c.instanceId === 'ec_inst')).toBe(true);
       // Clamped to 10 damage (5 tokens' worth of damage at 2 per counter, safely ignoring excess)
       expect(blastRes.state.villain.health).toBe(initialVillainHealth - 10);
+    });
+  });
+  describe('Hand-event ability costs come from the printed event cost (RR v1.8 Costs)', () => {
+    // Enhanced Spider-Sense, One-Two Punch, Get Behind Me!: printed cost 1, no ability cost.
+    const EVENTS = ['01004', '01024', '01078'];
+    // One payer of each resource type: physical (01013), energy (01002), mental (01005), wild (01011).
+    const PAYERS: [string, string][] = [
+      ['physical', '01013'],
+      ['energy', '01002'],
+      ['mental', '01005'],
+      ['wild', '01011'],
+    ];
+
+    it.each(EVENTS)('%s declares no ability cost', (code) => {
+      const ability = cardCatalog.getCard(code)!.enrichment!.abilities![0];
+      expect(ability.zone).toBe('HAND');
+      expect(ability.cost).toBeUndefined();
+    });
+
+    it.each(EVENTS.flatMap((code) => PAYERS.map(([type, payer]) => [code, type, payer])))(
+      '%s is paid by exactly one %s resource card',
+      (code, _type, payerCode) => {
+        const p1 = state.players[0];
+        p1.currentForm = 'hero';
+        p1.activeFormCard = captainMarvelHero;
+        const ability = cardCatalog.getCard(code)!.enrichment!.abilities![0];
+        const event = createCardInstance(cardCatalog.getCard(code)!, p1.id);
+        const payer = createCardInstance(cardCatalog.getCard(payerCode)!, p1.id);
+        const spare = createCardInstance(cardCatalog.getCard('01013')!, p1.id);
+        p1.hand = [event, payer, spare];
+        p1.discard = [];
+
+        const options = { paymentCardInstanceIds: [payer.instanceId] };
+        expect(canPayAbilityCost(state, p1, ability, event, options).allowed).toBe(true);
+
+        const paid = executeAbilityCost(state, p1, ability, event, options);
+        expect(paid.resourcesPaid).toBe(1);
+        expect(p1.discard.map((c) => c.instanceId)).toEqual([payer.instanceId]);
+        expect(p1.hand.map((c) => c.instanceId)).toContain(spare.instanceId);
+      },
+    );
+
+    it.each(EVENTS)('%s cannot be paid when no other card is in hand', (code) => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      const ability = cardCatalog.getCard(code)!.enrichment!.abilities![0];
+      const event = createCardInstance(cardCatalog.getCard(code)!, p1.id);
+      p1.hand = [event];
+
+      expect(canPayAbilityCost(state, p1, ability, event).allowed).toBe(false);
     });
   });
 });

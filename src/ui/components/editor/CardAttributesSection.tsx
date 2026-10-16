@@ -1,12 +1,10 @@
 import React from 'react';
-import { KeywordSchema } from '../../../data/supplemental/schema';
 import { UniversalCardFilterBuilder } from './UniversalCardFilterBuilder';
 import { FormattedCardText } from '../cards/FormattedCardText';
 import { CollapsibleSection } from './CollapsibleSection';
 import {
   Sliders,
   Layers,
-  Sparkles,
   ChevronDown,
   ChevronRight,
   AlertCircle,
@@ -14,16 +12,12 @@ import {
   EyeOff,
   ClipboardCheck,
   Cog,
-  Swords,
-  Layout,
   Shield,
 } from 'lucide-react';
 import {
   getSectionVisibility,
   countAuditFields,
   countMechanicsFields,
-  countCombatFields,
-  countLayoutFields,
   countPlayReqFields,
 } from './card-attributes-utils';
 
@@ -76,14 +70,6 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
         ...supplemental.audit,
         comment: e.target.value || undefined,
       },
-    });
-  };
-
-  const handleMaxPerPlayerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value ? parseInt(e.target.value, 10) : undefined;
-    onChange({
-      ...supplemental,
-      maxPerPlayer: isNaN(val as number) ? undefined : val,
     });
   };
 
@@ -221,22 +207,8 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
   );
 
   const hasMechanicsData = Boolean(
-    (supplemental.keywords && supplemental.keywords.length > 0) ||
-    (supplemental.traits && supplemental.traits.length > 0) ||
-    supplemental.uses ||
-    supplemental.maxPerPlayer != null ||
-    supplemental.recipient ||
-    supplemental.attachTo ||
-    supplemental.restrictedSlots != null,
+    supplemental.uses || supplemental.recipient || supplemental.attachTo,
   );
-
-  const hasCombatData = Boolean(
-    supplemental.attackCost != null ||
-    supplemental.thwartCost != null ||
-    supplemental.additionalBoostCards != null,
-  );
-
-  const hasLayoutData = Boolean(supplemental.isLandscape || supplemental.victoryPoints != null);
 
   const hasPlayReqData = Boolean(
     supplemental.playRequirements?.identityForm ||
@@ -257,25 +229,17 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
   // Field counts for section badges
   const auditCount = countAuditFields(audit, supplemental);
   const mechanicsCount = countMechanicsFields(supplemental);
-  const combatCount = countCombatFields(supplemental);
-  const layoutCount = countLayoutFields(supplemental);
   const playReqCount = countPlayReqFields(supplemental);
 
   const auditBadge = auditCount > 0 ? auditCount : undefined;
   const mechanicsBadge = mechanicsCount > 0 ? mechanicsCount : undefined;
-  const combatBadge = combatCount > 0 ? combatCount : undefined;
-  const layoutBadge = layoutCount > 0 ? layoutCount : undefined;
   const playReqBadge = playReqCount > 0 ? playReqCount : undefined;
 
   // Error routing to sections
   const auditHasErrors = errors.some((e) =>
     /audit|comment|confidence|reviewedBy|rulesVersion|originalText|errata|ambiguityFile/i.test(e),
   );
-  const mechanicsHasErrors = errors.some((e) =>
-    /keyword|trait|uses|maxPerPlayer|restrictedSlots/i.test(e),
-  );
-  const combatHasErrors = errors.some((e) => /attackCost|thwartCost|additionalBoostCards/i.test(e));
-  const layoutHasErrors = errors.some((e) => /isLandscape|victoryPoints/i.test(e));
+  const mechanicsHasErrors = errors.some((e) => /uses/i.test(e));
   const playReqHasErrors = errors.some((e) =>
     /playRequirement|identityForm|formTrait|identityTraits|identityNames|controlZones|controlFilter|playUnderAnyPlayerControl/i.test(
       e,
@@ -394,21 +358,6 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
               value={supplemental.audit?.comment || ''}
               onChange={handleCommentChange}
               placeholder="e.g. Hero attack: deals 3 damage..."
-              className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Max Per Player Board Limit
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="4"
-              value={supplemental.maxPerPlayer || ''}
-              onChange={handleMaxPerPlayerChange}
-              placeholder="Leave empty if unrestricted"
               className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
             />
           </div>
@@ -643,144 +592,6 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
         testId="section-card-mechanics"
       >
         <div className="space-y-3">
-          {/* Traits input & restricted slots */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="sm:col-span-2">
-              <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-                Card Traits (comma-separated)
-              </label>
-              <input
-                type="text"
-                data-testid="card-traits-input"
-                value={(supplemental.traits || []).join(', ')}
-                placeholder="e.g. Avenger, Tech, Gamma"
-                onChange={(e) => {
-                  const tr = e.target.value
-                    .split(',')
-                    .map((t) => t.trim())
-                    .filter(Boolean);
-                  onChange({
-                    ...supplemental,
-                    traits: tr.length > 0 ? tr : undefined,
-                  });
-                }}
-                className="w-full bg-white border border-black p-1.5 text-xs rounded"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-                Restricted Slots (RR v1.8 p. 28)
-              </label>
-              <input
-                type="number"
-                min="1"
-                data-testid="card-restricted-slots-input"
-                value={supplemental.restrictedSlots || ''}
-                placeholder="e.g. 1 or 2"
-                onChange={(e) => {
-                  const val = parseInt(e.target.value, 10);
-                  onChange({
-                    ...supplemental,
-                    restrictedSlots: isNaN(val) ? undefined : val,
-                  });
-                }}
-                className="w-full bg-white border border-black p-1.5 text-xs rounded"
-              />
-            </div>
-          </div>
-
-          {/* Structured Keywords Matrix (ADR-0054) */}
-          <div className="pt-2 border-t border-gray-200">
-            <label className="text-[10px] font-bold uppercase text-gray-700 mb-1.5 flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-comic-yellow fill-comic-yellow" />
-              <span>Structured Keywords Matrix (ADR-0054)</span>
-            </label>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {KeywordSchema.options.map((kw) => {
-                const list = Array.isArray(supplemental.keywords) ? supplemental.keywords : [];
-                const entry = list.find((k: any) =>
-                  typeof k === 'string'
-                    ? k.toLowerCase() === kw.toLowerCase()
-                    : k.keyword?.toLowerCase() === kw.toLowerCase(),
-                );
-                const isActive = Boolean(entry);
-                const retaliateAmount =
-                  kw === 'Retaliate' && typeof entry === 'object' && entry !== null
-                    ? entry.amount || 1
-                    : 1;
-
-                const toggleKeyword = () => {
-                  const updated = [...list];
-                  const idx = updated.findIndex((k: any) =>
-                    typeof k === 'string'
-                      ? k.toLowerCase() === kw.toLowerCase()
-                      : k.keyword?.toLowerCase() === kw.toLowerCase(),
-                  );
-                  if (idx >= 0) {
-                    updated.splice(idx, 1);
-                  } else {
-                    if (kw === 'Retaliate') {
-                      updated.push({ keyword: 'Retaliate', amount: 1 });
-                    } else {
-                      updated.push(kw);
-                    }
-                  }
-                  onChange({
-                    ...supplemental,
-                    keywords: updated.length > 0 ? updated : undefined,
-                  });
-                };
-
-                return (
-                  <div key={kw} className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      data-testid={`keyword-${kw.toLowerCase()}`}
-                      onClick={toggleKeyword}
-                      className={`rounded border border-black px-2 py-0.5 text-[11px] font-bold transition-transform active:scale-95 ${
-                        isActive
-                          ? 'bg-comic-accent text-white shadow-comic-xs font-bold'
-                          : 'bg-white text-gray-700 hover:bg-yellow-50'
-                      }`}
-                    >
-                      {kw}
-                    </button>
-                    {kw === 'Retaliate' && isActive && (
-                      <input
-                        type="number"
-                        min="1"
-                        max="10"
-                        data-testid="keyword-retaliate-amount"
-                        value={retaliateAmount}
-                        onChange={(e) => {
-                          const amt = parseInt(e.target.value, 10);
-                          const updated = [...list];
-                          const idx = updated.findIndex((k: any) =>
-                            typeof k === 'string'
-                              ? k.toLowerCase() === 'retaliate'
-                              : k.keyword?.toLowerCase() === 'retaliate',
-                          );
-                          const val = isNaN(amt) ? 1 : Math.max(1, amt);
-                          if (idx >= 0) {
-                            updated[idx] = { keyword: 'Retaliate', amount: val };
-                          } else {
-                            updated.push({ keyword: 'Retaliate', amount: val });
-                          }
-                          onChange({
-                            ...supplemental,
-                            keywords: updated,
-                          });
-                        }}
-                        className="w-10 bg-white border border-black px-1 py-0.5 text-xs text-center font-bold rounded"
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Uses Lifecycle (RR v1.8 p. 30, ADR-0057) */}
           <div className="pt-2 border-t border-gray-200">
             <div className="flex items-center justify-between mb-1.5">
@@ -873,141 +684,7 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
         </div>
       </CollapsibleSection>
 
-      {/* 3. ⚔️ Combat Properties */}
-      <CollapsibleSection
-        key={`${cardCode || 'card'}-combat`}
-        title="Combat Properties"
-        icon={Swords}
-        visible={vis.combat || hasCombatData}
-        defaultOpen={hasCombatData}
-        forceOpen={showAllFields}
-        hasErrors={combatHasErrors}
-        badge={combatBadge}
-        testId="section-combat-properties"
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Consequential Attack DMG (attackCost)
-            </label>
-            <input
-              type="number"
-              min="0"
-              data-testid="card-attack-cost-input"
-              value={supplemental.attackCost !== undefined ? supplemental.attackCost : ''}
-              placeholder="Default: 1 (0 for Black Cat)"
-              onChange={(e) => {
-                const val = e.target.value !== '' ? parseInt(e.target.value, 10) : undefined;
-                onChange({
-                  ...supplemental,
-                  attackCost: isNaN(val as number) || val === undefined ? undefined : val,
-                });
-              }}
-              className="w-full bg-white border border-black p-1.5 text-xs rounded"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Consequential Thwart DMG (thwartCost)
-            </label>
-            <input
-              type="number"
-              min="0"
-              data-testid="card-thwart-cost-input"
-              value={supplemental.thwartCost !== undefined ? supplemental.thwartCost : ''}
-              placeholder="Default: 1"
-              onChange={(e) => {
-                const val = e.target.value !== '' ? parseInt(e.target.value, 10) : undefined;
-                onChange({
-                  ...supplemental,
-                  thwartCost: isNaN(val as number) || val === undefined ? undefined : val,
-                });
-              }}
-              className="w-full bg-white border border-black p-1.5 text-xs rounded"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Additional Boost Cards
-            </label>
-            <input
-              type="number"
-              min="1"
-              data-testid="card-additional-boost-cards-input"
-              value={supplemental.additionalBoostCards || ''}
-              placeholder="e.g. 1"
-              onChange={(e) => {
-                const val = parseInt(e.target.value, 10);
-                onChange({
-                  ...supplemental,
-                  additionalBoostCards: isNaN(val) ? undefined : val,
-                });
-              }}
-              className="w-full bg-white border border-black p-1.5 text-xs rounded"
-            />
-          </div>
-        </div>
-      </CollapsibleSection>
-
-      {/* 4. 📐 Layout & Display */}
-      <CollapsibleSection
-        key={`${cardCode || 'card'}-layout`}
-        title="Layout & Display"
-        icon={Layout}
-        visible={vis.layout || hasLayoutData}
-        defaultOpen={hasLayoutData}
-        forceOpen={showAllFields}
-        hasErrors={layoutHasErrors}
-        badge={layoutBadge}
-        testId="section-layout-display"
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Orientation
-            </label>
-            <label className="flex items-center gap-1.5 pt-2 text-xs font-bold cursor-pointer">
-              <input
-                type="checkbox"
-                data-testid="card-is-landscape-checkbox"
-                checked={Boolean(supplemental.isLandscape)}
-                onChange={(e) => {
-                  onChange({
-                    ...supplemental,
-                    isLandscape: e.target.checked || undefined,
-                  });
-                }}
-                className="accent-black"
-              />
-              <span>Landscape Orientation (e.g. Side Schemes)</span>
-            </label>
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
-              Victory Points (RR v1.8 p. 30)
-            </label>
-            <input
-              type="number"
-              data-testid="card-victory-points-input"
-              value={supplemental.victoryPoints || ''}
-              placeholder="e.g. 1"
-              onChange={(e) => {
-                const val = parseInt(e.target.value, 10);
-                onChange({
-                  ...supplemental,
-                  victoryPoints: isNaN(val) ? undefined : val,
-                });
-              }}
-              className="w-full bg-white border border-black p-1.5 text-xs rounded"
-            />
-          </div>
-        </div>
-      </CollapsibleSection>
-
-      {/* 5. 🎯 Play Requirements */}
+      {/* 3. 🎯 Play Requirements */}
       <CollapsibleSection
         key={`${cardCode || 'card'}-playRequirements`}
         title="Play Requirements"

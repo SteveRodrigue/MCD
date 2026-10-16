@@ -1295,8 +1295,7 @@ export function executeSequence(
       gateParams,
     };
 
-    const isDistinctFromPrevious =
-      step.distinctFrom === 'PREVIOUS_TARGET' || effectParams.distinctFrom === 'PREVIOUS_TARGET';
+    const isDistinctFromPrevious = effectParams.distinctFrom === 'PREVIOUS_TARGET';
 
     const stepContext: EffectExecutionContext = {
       ...context,
@@ -1809,7 +1808,7 @@ export function executeDiscard(
     (params.mode as string) ||
     (source === 'DECK' || source === 'ENCOUNTER_DECK' ? 'TOP' : 'CHOSEN');
   const fallback = params.fallback as string | undefined;
-  const filter = (params.filter || step.filter) as any;
+  const filter = params.filter as any;
 
   // 1. DISCARD FROM HAND
   if (source === 'HAND') {
@@ -3927,8 +3926,7 @@ export function executeStep(
     case 'READY': {
       const targetParam = (step.effectParams?.target as string) || 'SELF_IDENTITY';
 
-      const readyFilter = (step.effectParams?.filter || step.filter) as
-        Record<string, any> | undefined;
+      const readyFilter = step.effectParams?.filter as Record<string, any> | undefined;
       const targets = filterResolvedTargets(
         state,
         resolveTargets(state, targetParam as any, context),
@@ -4012,8 +4010,7 @@ export function executeStep(
       const targetParam = (step.effectParams?.target as string) || 'SELF_IDENTITY';
       let exhaustTargetName = player.name;
 
-      const exhaustFilter = (step.effectParams?.filter || step.filter) as
-        Record<string, any> | undefined;
+      const exhaustFilter = step.effectParams?.filter as Record<string, any> | undefined;
       const targets = filterResolvedTargets(
         state,
         resolveTargets(state, targetParam as any, context),
@@ -4238,7 +4235,7 @@ export function executeStep(
     case 'PUT_INTO_PLAY': {
       const fromZone = (step.effectParams?.from as string) || 'SET_ASIDE';
       const toZone = (step.effectParams?.to as string) || 'ENGAGED_WITH_PLAYER';
-      const filter = (step.effectParams?.filter || step.filter) as Record<string, any> | undefined;
+      const filter = step.effectParams?.filter as Record<string, any> | undefined;
 
       // "Reveal ... and put it into play" (RR v1.8 glossary R, W): the When Revealed abilities and
       // keyword-provided Surge resolve. A card only put into play never triggers them.
@@ -4393,7 +4390,7 @@ export function executeStep(
       const toDeck =
         (step.effectParams?.toDeck as string) ||
         (step.effectParams?.count !== undefined ? 'PLAYER_DECK' : 'ENCOUNTER_DECK');
-      const filter = (step.effectParams?.filter || step.filter) as Record<string, any> | undefined;
+      const filter = step.effectParams?.filter as Record<string, any> | undefined;
       const count = step.effectParams?.count as number | undefined;
       let sourceList: CardInstance[] = [];
       if (fromZone === 'SET_ASIDE') {
@@ -4979,7 +4976,7 @@ export function executeStep(
       const countToTake = isTakeAll ? 0 : Math.max(1, resolvedTakeCount as number);
 
       const filter =
-        (step.effectParams?.filter || step.filter) ??
+        step.effectParams?.filter ??
         (step.effectParams?.targetCardCode ||
         step.effectParams?.targetCardName ||
         step.effectParams?.trait ||
@@ -4997,8 +4994,7 @@ export function executeStep(
             }
           : undefined);
 
-      const targetParam =
-        (step.effectParams?.target as string) || (step.target as string) || 'SELF';
+      const targetParam = (step.effectParams?.target as string) || 'SELF';
       let targetPlayerId: string | undefined =
         (step.effectParams?.targetPlayerId as string) || context.targetPlayerId;
 
@@ -5563,7 +5559,7 @@ export function executeStep(
       const targetParam =
         (stepParams.target as string) || (step.effectParams?.target as string) || 'CHOSEN_PLAYER';
       const duration = (stepParams.duration as 'PHASE' | 'ROUND' | 'TURN') || 'PHASE';
-      const cardFilter = stepParams.cardFilter || (stepParams.filter as any) || step.filter;
+      const cardFilter = stepParams.cardFilter || (stepParams.filter as any);
       const targetPlayerId = (context.targetPlayerId ||
         context.chosenTargetInstanceId ||
         stepParams.targetPlayerId) as string | undefined;
@@ -5666,7 +5662,7 @@ export function executeStep(
 
     case 'PLAY_FROM_ZONE': {
       const source = (step.effectParams?.source as string) || 'PLAYER_DISCARD';
-      const filter = (step.effectParams?.filter || step.filter) as Record<string, any> | undefined;
+      const filter = step.effectParams?.filter as Record<string, any> | undefined;
       const costMode = (step.effectParams?.costMode as string) || 'PRINTED_COST';
       const costReduction = (step.effectParams?.costReduction as number) || 0;
       const destination = (step.effectParams?.destination as string) || 'TABLEAU';

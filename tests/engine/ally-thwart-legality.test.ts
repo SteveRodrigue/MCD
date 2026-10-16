@@ -10,7 +10,7 @@ import {
   Keyword,
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { canAllyThwart } from '@engine/pipeline/legality-checker';
+import { canAllyThwart, canAllyAttack } from '@engine/pipeline/legality-checker';
 import { dispatchAction } from '@engine/pipeline';
 
 describe('Ally Thwart Legality & Dispatch Invariants (RR v1.8 p. 3, 11, 20)', () => {
@@ -191,6 +191,40 @@ describe('Ally Thwart Legality & Dispatch Invariants (RR v1.8 p. 3, 11, 20)', ()
       expect(res.result.success).toBe(true);
       expect(res.state.players[0].allies).toHaveLength(0);
       expect(res.state.players[0].discard.some((c) => c.card.code === '01011')).toBe(true);
+    });
+  });
+
+  describe('Dash (–) THW power (Issue #316, RR v1.8 "Dash (Value)")', () => {
+    let hulkId: string;
+
+    beforeEach(() => {
+      const hulk = createCardInstance(cardCatalog.getCard('01050') as AllyCard);
+      hulk.tokens = { damage: 0 };
+      hulk.exhausted = false;
+      hulkId = hulk.instanceId;
+      state.players[0].allies = [hulk];
+    });
+
+    it('rejects Hulk thwart and mentions THW', () => {
+      const check = canAllyThwart(state, 'p1', hulkId, 'main_scheme');
+      expect(check.allowed).toBe(false);
+      expect(check.reason).toContain('THW');
+    });
+
+    it('fails ALLY_THWART dispatch and leaves Hulk ready', () => {
+      const res = dispatchAction(state, {
+        type: 'ALLY_THWART',
+        playerId: 'p1',
+        allyInstanceId: hulkId,
+        targetType: 'main_scheme',
+      });
+      expect(res.result.success).toBe(false);
+      expect(res.state.players[0].allies[0].exhausted).toBe(false);
+      expect(res.state.mainScheme.threat).toBe(4);
+    });
+
+    it('still permits Hulk to attack', () => {
+      expect(canAllyAttack(state, 'p1', hulkId, 'villain').allowed).toBe(true);
     });
   });
 });

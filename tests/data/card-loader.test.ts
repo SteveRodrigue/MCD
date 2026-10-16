@@ -17,6 +17,7 @@ import { matchCardFilter } from '@engine/effects';
 // Import real upstream JSON datasets directly
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import ttEncounterPack from '../../data/upstream/pack/tt_encounter.json';
 
 describe('Card Loader & Normalizer Unit Tests', () => {
   describe('Helper Parsers', () => {
@@ -353,6 +354,37 @@ describe('Card Loader & Normalizer Unit Tests', () => {
 
       // Verify that unscanned card Klaw (01113) returns undefined from getCardEnrichment
       expect(getCardEnrichment('01113')).toBeUndefined();
+    });
+  });
+
+  describe('Dash (–) basic power values (Issue #316, RR v1.8 "Dash (Value)")', () => {
+    const catalog = new CardCatalog([...corePack, ...ttEncounterPack] as any);
+
+    it('loads Hulk (01050) THW dash as an unusable 0, not the default 1', () => {
+      const hulk = catalog.getCard('01050') as any;
+      expect(hulk.thwart).toBe(0);
+      expect(hulk.dashPowers).toEqual(['thwart']);
+    });
+
+    it('leaves dashPowers unset for an ally with numeric powers', () => {
+      const spiderWoman = catalog.getCard('01011') as any;
+      expect(spiderWoman.thwart).toBe(2);
+      expect(spiderWoman.dashPowers).toBeUndefined();
+    });
+
+    it('records ATK and SCH dashes on villain 55027a (Loki)', () => {
+      const loki = catalog.getCard('55027a') as any;
+      expect(loki.attack).toBe(0);
+      expect(loki.scheme).toBe(0);
+      expect(loki.dashPowers).toEqual(['attack', 'scheme']);
+    });
+
+    it('does not treat an omitted (undefined) power as a dash', () => {
+      const raw = JSON.parse(JSON.stringify(corePack.find((c: any) => c.code === '01011')));
+      delete raw.thwart;
+      const omitted = new CardCatalog([raw] as any).getCard('01011') as any;
+      expect(omitted.thwart).toBe(1);
+      expect(omitted.dashPowers).toBeUndefined();
     });
   });
 });

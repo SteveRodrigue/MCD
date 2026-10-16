@@ -21,6 +21,7 @@ import {
   GameAction,
   Keyword,
   hasKeyword,
+  hasDashPower,
   CardAbility,
   getActiveMainScheme,
 } from '../../../engine/models';
@@ -927,12 +928,18 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                         attack: baseAtk || 1,
                         thwart: baseThw || 1,
                       };
-                  const atkBonus = allyStats.attack - baseAtk;
-                  const thwBonus = allyStats.thwart - baseThw;
+                  const atkDash = hasDashPower(allyCard, 'attack');
+                  const thwDash = hasDashPower(allyCard, 'thwart');
+                  const atkBonus = atkDash ? 0 : allyStats.attack - baseAtk;
+                  const thwBonus = thwDash ? 0 : allyStats.thwart - baseThw;
+                  const atkDisplay = atkDash ? '–' : allyStats.attack;
+                  const thwDisplay = thwDash ? '–' : allyStats.thwart;
 
                   const canAct = isPlayerTurn && !ally.exhausted;
+                  const canAtk = canAct && !atkDash;
                   const canThw =
                     canAct &&
+                    !thwDash &&
                     (((gameState ? getActiveMainScheme(gameState) : undefined)?.threat || 0) > 0 ||
                       (gameState?.sideSchemes || []).some((s) => s.threat > 0));
 
@@ -951,7 +958,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       <div className="flex items-center gap-1 w-full justify-center mb-1 z-raised">
                         <button
                           onClick={() => handleInitiateAttack('ally', ally.instanceId)}
-                          disabled={!canAct}
+                          disabled={!canAtk}
                           className="px-1.5 py-0.5 font-comic text-[10px] bg-comic-red hover:bg-red-700 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2 flex items-center gap-0.5"
                           title={
                             canAct
@@ -959,7 +966,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                               : 'Ally exhausted'
                           }
                         >
-                          <span>⚔️ {allyStats.attack}</span>
+                          <span>⚔️ {atkDisplay}</span>
                           {atkBonus > 0 && (
                             <span className="text-yellow-300 text-[9px] font-black">
                               (+{atkBonus})
@@ -976,7 +983,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                               : 'No threat on schemes or ally exhausted'
                           }
                         >
-                          <span>🛡️ {allyStats.thwart}</span>
+                          <span>🛡️ {thwDisplay}</span>
                           {thwBonus > 0 && (
                             <span className="text-yellow-300 text-[9px] font-black">
                               (+{thwBonus})
@@ -994,7 +1001,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                               thwBonus > 0 ? 'text-emerald-600 font-black' : 'text-slate-900'
                             }`}
                           >
-                            {allyStats.thwart}
+                            {thwDisplay}
                             {thwBonus > 0 && (
                               <span className="text-[8px] text-emerald-600 ml-0.5">
                                 +{thwBonus}
@@ -1010,7 +1017,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                               atkBonus > 0 ? 'text-comic-red font-black' : 'text-slate-900'
                             }`}
                           >
-                            {allyStats.attack}
+                            {atkDisplay}
                             {atkBonus > 0 && (
                               <span className="text-[8px] text-rose-500 ml-0.5">+{atkBonus}</span>
                             )}

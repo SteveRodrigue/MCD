@@ -14,6 +14,7 @@ import {
   canBasicRecover,
   canBasicAttack,
   canAllyAttack,
+  canAllyThwart,
   canBasicThwart,
   evaluateCardPlayability,
   canInitiateAbility,
@@ -682,7 +683,10 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
         }
 
         // Ally Thwart (Main Scheme)
-        if ((getActiveMainScheme(state)?.threat || 0) > 0) {
+        if (
+          (getActiveMainScheme(state)?.threat || 0) > 0 &&
+          canAllyThwart(state, player.id, ally.instanceId, 'main_scheme').allowed
+        ) {
           boardActions.push({
             id: `action_ally_thwart_${ally.instanceId}`,
             category: 'board',
@@ -703,7 +707,11 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
 
         // Ally Thwart (Side Schemes)
         for (const sideScheme of state.sideSchemes || []) {
-          if (sideScheme.threat > 0) {
+          if (
+            sideScheme.threat > 0 &&
+            canAllyThwart(state, player.id, ally.instanceId, 'side_scheme', sideScheme.instanceId)
+              .allowed
+          ) {
             boardActions.push({
               id: `action_ally_thwart_side_${ally.instanceId}_${sideScheme.instanceId}`,
               category: 'board',

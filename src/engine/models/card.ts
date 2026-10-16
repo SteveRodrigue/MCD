@@ -75,6 +75,9 @@ export interface CardResources {
   total: number;
 }
 
+/** A character power that can be printed as a dash (–). */
+export type CharacterPower = 'attack' | 'thwart' | 'defense' | 'recover' | 'scheme';
+
 /**
  * Base normalized card model used across engine and UI
  */
@@ -112,7 +115,17 @@ export interface NormalizedCard {
   scheme_crisis?: number;
   enrichment?: import('./abilities').CardEnrichment;
   meta?: Record<string, unknown>;
+  /** Powers printed as a dash (–): cannot be used, treated as an unmodifiable 0 (RR v1.8 "Dash (Value)"). */
+  dashPowers?: CharacterPower[];
   raw: RawUpstreamCard;
+}
+
+/** True when the card prints the given power as a dash (–). */
+export function hasDashPower(
+  card: Pick<NormalizedCard, 'dashPowers'> | undefined,
+  power: CharacterPower,
+): boolean {
+  return card?.dashPowers?.includes(power) ?? false;
 }
 
 /**

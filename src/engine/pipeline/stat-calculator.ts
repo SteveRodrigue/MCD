@@ -8,6 +8,7 @@ import {
   PlayerState,
   NormalizedCard,
   CardType,
+  hasDashPower,
 } from '../models';
 import { parseKeywordItem } from '../models/keyword';
 import { getStepEffectParams, type DynamicValueSource } from '../../data/supplemental/schema';
@@ -49,6 +50,8 @@ export function getEffectiveMinionAttack(state: GameState, minion: CardInstance)
       }
     }
   }
+  // A dash (–) power is an unmodifiable 0 (RR v1.8 "Dash (Value)")
+  if (hasDashPower(minion.card, 'attack')) return 0;
   return Math.max(0, attack);
 }
 
@@ -125,6 +128,10 @@ export function getEffectiveVillainStats(
     }
   }
 
+  // A dash (–) power is an unmodifiable 0 (RR v1.8 "Dash (Value)")
+  if (villain.card && hasDashPower(villain.card, 'attack')) attack = 0;
+  if (villain.card && hasDashPower(villain.card, 'scheme')) scheme = 0;
+
   return {
     attack: Math.max(0, attack),
     scheme: Math.max(0, scheme),
@@ -190,6 +197,10 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
     if (mod.stat === 'THWART') thwart += mod.amount;
     if (mod.stat === 'ATTACK') attack += mod.amount;
   }
+
+  // A dash (–) power is an unmodifiable 0 (RR v1.8 "Dash (Value)")
+  if (hasDashPower(allyCard, 'thwart')) thwart = 0;
+  if (hasDashPower(allyCard, 'attack')) attack = 0;
 
   return {
     thwart: Math.max(0, thwart),
@@ -453,6 +464,12 @@ export function getEffectiveHeroStats(state: GameState, player: PlayerState): Ef
     if (mod.stat === 'DEFENSE') defense += mod.amount;
     if (mod.stat === 'RECOVERY') recovery += mod.amount;
   }
+
+  // A dash (–) power is an unmodifiable 0 (RR v1.8 "Dash (Value)")
+  if (hasDashPower(player.hero, 'thwart')) thwart = 0;
+  if (hasDashPower(player.hero, 'attack')) attack = 0;
+  if (hasDashPower(player.hero, 'defense')) defense = 0;
+  if (hasDashPower(player.alterEgo, 'recover')) recovery = 0;
 
   return {
     thwart: Math.max(0, thwart),

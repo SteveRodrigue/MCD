@@ -5,6 +5,7 @@
  * effect-params.ts import this file directly.
  */
 import { z } from 'zod';
+import { Keyword as KeywordEnum } from '../../engine/models/enums';
 import { IdentityFormSchema } from './gate-params';
 
 /**
@@ -288,16 +289,7 @@ export const AspectSchema = z.enum([
 ]);
 export type Aspect = z.infer<typeof AspectSchema>;
 
-export const KeywordSchema = z.enum([
-  'Guard',
-  'Overkill',
-  'Quickstrike',
-  'Ranged',
-  'Retaliate',
-  'Toughness',
-  'Hazard',
-  'Acceleration',
-]);
+export const KeywordSchema = z.enum(KeywordEnum);
 export type Keyword = z.infer<typeof KeywordSchema>;
 
 /**

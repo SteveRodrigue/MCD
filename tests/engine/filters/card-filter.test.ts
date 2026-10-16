@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { matchesCardFilter } from '../../../src/engine/filters/card-filter';
+import { KeywordSchema, UniversalCardFilterSchema } from '../../../src/data/supplemental/schema';
+import { Keyword } from '../../../src/engine/models/enums';
+import { cardCatalog } from '../../../src/data/importer/card-loader';
 
 describe('matchesCardFilter (ADR-0046 Universal Card Filtering Engine)', () => {
   const sampleCard = {
@@ -167,6 +170,71 @@ describe('matchesCardFilter (ADR-0046 Universal Card Filtering Engine)', () => {
       };
       expect(matchesCardFilter(sampleMinion, complexFilter)).toBe(true); // matches first branch
       expect(matchesCardFilter(sampleCard, complexFilter)).toBe(false); // cost is 4, not 5
+    });
+  });
+
+  describe('Toughness keyword vs tough status card (RR v1.8)', () => {
+    it('hasKeyword Toughness matches Sandman (01102)', () => {
+      const sandman = cardCatalog.getCard('01102')!;
+      expect(matchesCardFilter(sandman as any, { hasKeyword: Keyword.TOUGHNESS })).toBe(true);
+    });
+
+    it('the schema accepts hasKeyword Toughness and rejects Tough', () => {
+      expect(UniversalCardFilterSchema.safeParse({ hasKeyword: Keyword.TOUGHNESS }).success).toBe(
+        true,
+      );
+      expect(UniversalCardFilterSchema.safeParse({ hasKeyword: 'Tough' }).success).toBe(false);
+    });
+
+    it('KeywordSchema is derived from every engine Keyword', () => {
+      expect([...KeywordSchema.options].sort()).toEqual(Object.values(Keyword).sort());
+    });
+
+    it.each([
+      'Guard',
+      'Patrol',
+      'Hazard',
+      'Amplify',
+      'Acceleration',
+      'Toughness',
+      'Overkill',
+      'Piercing',
+      'Quickstrike',
+      'Ranged',
+      'Retaliate',
+      'Surge',
+      'Permanent',
+      'Restricted',
+      'Uses',
+      'Victory',
+      'Setup',
+      'Teamwork',
+      'Stalwart',
+      'Steady',
+      'Villainous',
+      'Incite',
+      'Hinder',
+    ] as const)('hasKeyword %s matches a card holding that keyword only', (name) => {
+      const keyword = name as Keyword;
+      const card = { code: 'k1', name: 'Keyword Holder', type: 'minion', keywords: [name] };
+      expect(UniversalCardFilterSchema.safeParse({ hasKeyword: keyword }).success).toBe(true);
+      expect(matchesCardFilter(card as any, { hasKeyword: keyword })).toBe(true);
+      expect(matchesCardFilter({ ...card, keywords: [] } as any, { hasKeyword: keyword })).toBe(
+        false,
+      );
+    });
+
+    it('a character holding only a tough status does not match hasKeyword Toughness', () => {
+      const statusOnly = {
+        code: 'x1',
+        name: 'Plain Minion',
+        type: 'minion',
+        keywords: [],
+        raw: { text: '' },
+        statusTokens: ['TOUGH'],
+      };
+      expect(matchesCardFilter(statusOnly as any, { hasKeyword: Keyword.TOUGHNESS })).toBe(false);
+      expect(matchesCardFilter(statusOnly as any, { hasStatus: ['TOUGH'] })).toBe(true);
     });
   });
 });

@@ -47,7 +47,7 @@ export enum Keyword {
   HAZARD = 'Hazard',
   AMPLIFY = 'Amplify',
   ACCELERATION = 'Acceleration',
-  TOUGH = 'Tough',
+  TOUGHNESS = 'Toughness',
   OVERKILL = 'Overkill',
   PIERCING = 'Piercing',
   QUICKSTRIKE = 'Quickstrike',

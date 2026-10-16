@@ -41,8 +41,6 @@ export const AUTHORING_METADATA_PREFIXES = ['cards.audit.', 'cards.noSupplementa
 export const KNOWN_GAPS: Record<string, string> = {
   'cards.errata': '#281 deferred authoring data (official errata, not consumed yet)',
   'cards.abilities.errata': '#281 deferred authoring data (official errata, not consumed yet)',
-  'cards.abilities.triggerFilter.attackerCardFilter.hasKeyword=Toughness':
-    '#280 keyword spelling does not match the engine (Tough)',
   'cards.abilities.triggerFilter.defeatedByAttackOf=THIS_CARD':
     'read by the else-branch in trigger-dispatcher.ts (not a literal); a shipped card uses it',
 };

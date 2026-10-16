@@ -32,8 +32,6 @@ export function hasKeyword(
     const s = String(k).toLowerCase().trim();
     if (s === kwStr) return true;
     if (s.startsWith(kwStr + ' ')) return true;
-    if (kwStr === 'tough' && s === 'toughness') return true;
-    if (kwStr === 'toughness' && s === 'tough') return true;
     return false;
   };
 

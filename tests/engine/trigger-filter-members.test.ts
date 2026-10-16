@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { AlterEgoCard, GameState, HeroCard } from '@engine/models';
+import { AlterEgoCard, GameState, HeroCard, Keyword } from '@engine/models';
 import type { TriggerFilter } from '@engine/models';
 import type { TriggerContext } from '@engine/triggers/trigger-dispatcher';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
@@ -132,7 +132,7 @@ describe('trigger filter members (#276)', () => {
     it.each(['Overkill', 'Quickstrike', 'Ranged', 'Hazard', 'Acceleration'] as const)(
       'hasKeyword %s matches an attacker carrying that keyword',
       (keyword) => {
-        const filter: TriggerFilter = { attackerCardFilter: { hasKeyword: keyword } };
+        const filter: TriggerFilter = { attackerCardFilter: { hasKeyword: keyword as Keyword } };
         const withKeyword = attacker({ code: 'x', type: 'minion', keywords: [keyword] });
         const without = attacker({ code: 'x', type: 'minion', keywords: [] });
         expect(matchesTriggerFilter(filter, withKeyword, player())).toBe(true);

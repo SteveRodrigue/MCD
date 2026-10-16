@@ -47,7 +47,7 @@ export function applyToughnessOnEntry(instance: {
   card: NormalizedCard;
   statusCards?: StatusCard[];
 }): void {
-  if (!hasKeyword(instance.card, Keyword.TOUGH)) return;
+  if (!hasKeyword(instance.card, Keyword.TOUGHNESS)) return;
   if (!instance.statusCards) instance.statusCards = [];
   if (!instance.statusCards.includes(StatusCard.TOUGH)) {
     instance.statusCards.push(StatusCard.TOUGH);

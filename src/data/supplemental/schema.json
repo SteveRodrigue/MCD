@@ -992,13 +992,28 @@
           "type": "string",
           "enum": [
             "Guard",
+            "Patrol",
+            "Hazard",
+            "Amplify",
+            "Acceleration",
+            "Toughness",
             "Overkill",
+            "Piercing",
             "Quickstrike",
             "Ranged",
             "Retaliate",
-            "Toughness",
-            "Hazard",
-            "Acceleration"
+            "Surge",
+            "Permanent",
+            "Restricted",
+            "Uses",
+            "Victory",
+            "Setup",
+            "Teamwork",
+            "Stalwart",
+            "Steady",
+            "Villainous",
+            "Incite",
+            "Hinder"
           ]
         },
         "isExhausted": {

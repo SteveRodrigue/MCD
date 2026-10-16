@@ -7,6 +7,7 @@ import {
   StatusCard,
   SideSchemeState,
   CardType,
+  CardAbility,
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
@@ -232,7 +233,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     state.mainScheme.threat = 6;
 
     // Execute DEAL_DAMAGE effect dealing 3 damage to the minion (e.g. Haymaker)
-    const attackAbility = {
+    const attackAbility: CardAbility = {
       id: 'event_attack',
       timing: 'HERO_ACTION' as const,
       steps: [

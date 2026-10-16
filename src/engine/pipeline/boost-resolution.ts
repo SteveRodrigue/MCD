@@ -8,7 +8,6 @@ import {
   VillainCard,
   VillainState,
 } from '../models';
-import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 import { executeEffect, type EffectExecutionContext } from '../effects';
 import { drawEncounterCard } from './deck-exhaustion';
 import { hasEntityKeyword } from './stat-calculator';
@@ -120,12 +119,6 @@ export function resolveBoostCards(state: GameState, options: ResolveBoostCardsOp
     const boostCard = queue.shift()!;
     state.activeBoostCard = boostCard;
     options.onRevealed?.(boostCard);
-
-    // Boost reveal interrupt window (e.g. Defiance, Target Acquired).
-    dispatchTrigger(state, 'WHEN_BOOST_CARD_REVEALED', {
-      targetPlayerId: playerId,
-      sourceInstanceId: boostCard.instanceId,
-    });
 
     if (boostCard.card.boostStar) {
       const boostAbilities = (boostCard.card.enrichment?.abilities || []).filter(

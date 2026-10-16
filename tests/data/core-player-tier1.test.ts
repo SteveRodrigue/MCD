@@ -48,6 +48,6 @@ describe('core player cards Tier 1 data (#258)', () => {
   });
 
   it('Energy Channel 01018 has no counter cap', () => {
-    expect(cardCatalog.getCard('01018')!.enrichment!.uses?.max).toBeUndefined();
+    expect(cardCatalog.getCard('01018')!.enrichment!.uses).not.toHaveProperty('max');
   });
 });

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { GameState, HeroCard, AlterEgoCard, CardAbility } from '../../src/engine/models';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { executeEffect } from '../../src/engine/effects/index';
 import { canPlayCard } from '../../src/engine/pipeline/legality-checker';
@@ -54,7 +54,7 @@ describe('Promoted Core Player Cards', () => {
     });
     const initialVillainHealth = state.villain.health;
 
-    const ability = {
+    const ability: CardAbility = {
       id: 'ground_stomp_action',
       timing: 'HERO_ACTION' as const,
       steps: [
@@ -82,7 +82,7 @@ describe('Promoted Core Player Cards', () => {
     p1.hand = [];
     p2.hand = [];
 
-    const ability = {
+    const ability: CardAbility = {
       id: 'maria_hill_enters_play',
       timing: 'RESPONSE' as const,
       trigger: 'CARD_PLAYED' as const,

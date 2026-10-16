@@ -883,9 +883,7 @@ export function evaluateAllyTargetRequirement(
         }
       } else if (
         card.type === CardType.EVENT &&
-        (step.effect === 'READY_CHARACTER' ||
-          step.effect === 'READY_ALLY' ||
-          step.effect === 'READY') &&
+        step.effect === 'READY' &&
         (target === 'CHOSEN_ALLY' || target === 'CHOSEN_CONTROLLED_ALLY' || target === 'ALLY')
       ) {
         requiresExhaustedAlly = true;
@@ -1060,7 +1058,7 @@ export function evaluateCharacterTargetRequirement(
 
     for (const step of ab.steps || []) {
       const stepParams = getStepEffectParams(step);
-      if (step.effect === 'HEAL' || step.effect === 'HEAL_DAMAGE') {
+      if (step.effect === 'HEAL_DAMAGE') {
         const targetScope = (stepParams.target as string) || 'CHOSEN_CHARACTER';
         const eligibleTargets = getEligibleTargets(state, player, targetScope, { damaged: true });
         if (eligibleTargets.length === 0) {
@@ -1369,7 +1367,7 @@ export function canInitiateAbility(
     }
 
     // 5B. Attack / Enemy Target Damage
-    if (step.effect === 'ATTACK' || (step.effect === 'DEAL_DAMAGE' && stepParams.target)) {
+    if (step.effect === 'DEAL_DAMAGE' && stepParams.target) {
       if (
         ability.labels?.includes('ATTACK') &&
         isEntityIncapacitatedByStatus(player, StatusCard.STUNNED)
@@ -1410,7 +1408,7 @@ export function canInitiateAbility(
     }
 
     // 5D. Heal / Character Target (RR v1.8 p. 3, 11)
-    if (step.effect === 'HEAL' || step.effect === 'HEAL_DAMAGE') {
+    if (step.effect === 'HEAL_DAMAGE') {
       const targetParam = (stepParams.target as string) || 'CHOSEN_CHARACTER';
       const eligibleTargets = getEligibleTargets(state, player, targetParam, { damaged: true });
       if (options?.targetInstanceId) {
@@ -1431,9 +1429,7 @@ export function canInitiateAbility(
 
     // 5E. Ready / Ally Target (RR v1.8 p. 3, 16)
     if (
-      (step.effect === 'READY_CHARACTER' ||
-        step.effect === 'READY_ALLY' ||
-        step.effect === 'READY') &&
+      step.effect === 'READY' &&
       (stepParams.target === 'CHOSEN_ALLY' ||
         stepParams.target === 'CHOSEN_CONTROLLED_ALLY' ||
         stepParams.target === 'ALLY')

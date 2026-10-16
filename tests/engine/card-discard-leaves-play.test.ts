@@ -8,6 +8,7 @@ import {
   PlayerState,
   StatusCard,
   AttackExecutionContext,
+  CardAbility,
 } from '../../src/engine/models';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { discardCardInstance, resetCardState, executeEffect } from '../../src/engine/effects';
@@ -372,7 +373,7 @@ describe('Universal Card State Reset on Discard / Leaves Play (Issue #157, RR v1
 
     player1.setAsideCards = [webShooter];
 
-    const ability = {
+    const ability: CardAbility = {
       id: 'test_put_into_play',
       timing: 'ACTION' as const,
       steps: [

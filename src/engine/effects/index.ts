@@ -357,10 +357,6 @@ export function discardHostAttachmentsAndTuckedCards(
         const ownerId = (attachment as any).ownerId || ownerPlayerId;
         const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
         targetP.discard.push(attachment);
-        dispatchTrigger(state, 'CARD_DISCARDED', {
-          targetPlayerId: targetP.id,
-          sourceInstanceId: attachment.instanceId,
-        });
       }
     }
     host.attachments = [];
@@ -375,10 +371,6 @@ export function discardHostAttachmentsAndTuckedCards(
         const ownerId = (tucked as any).ownerId || ownerPlayerId;
         const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
         targetP.discard.push(tucked);
-        dispatchTrigger(state, 'CARD_DISCARDED', {
-          targetPlayerId: targetP.id,
-          sourceInstanceId: tucked.instanceId,
-        });
       }
     }
     host.cardsUnderneath = [];
@@ -418,10 +410,6 @@ export function discardCardInstance(
 
     if (targetPlayer) {
       targetPlayer.discard.push(card);
-      dispatchTrigger(state, 'CARD_DISCARDED', {
-        targetPlayerId: targetPlayer.id,
-        sourceInstanceId: card.instanceId,
-      });
       if (targetPlayer.deckEmptiedWithEmptyDiscard && targetPlayer.discard.length > 0) {
         targetPlayer.deckEmptiedWithEmptyDiscard = false;
         exhaustPlayerDeck(state, targetPlayer.id);
@@ -1834,11 +1822,6 @@ export function executeDiscard(
         targetPlayer.hand.splice(handIdx, 1);
         targetPlayer.discard.push(discarded);
         discardedCards.push(discarded);
-        dispatchTrigger(state, 'CARD_DISCARDED', {
-          targetPlayerId: targetPlayer.id,
-          sourceInstanceId: discarded.instanceId,
-          triggerChain: context.triggerChain,
-        });
       }
       state.log.push({
         id: `log_${Date.now()}_discard_hand_${targetPlayer.id}`,
@@ -1907,11 +1890,6 @@ export function executeDiscard(
           discardedCards.push(card);
         }
         discardedCount++;
-        dispatchTrigger(state, 'CARD_DISCARDED', {
-          targetPlayerId: player.id,
-          sourceInstanceId: card.instanceId,
-          triggerChain: context.triggerChain,
-        });
 
         // RR v1.8 "Player Deck": a deck that empties while discarding is reset, but no further card
         // is discarded from the new deck.
@@ -2286,8 +2264,7 @@ export function executeStep(
   }
 
   switch (step.effect) {
-    case 'DISCARD':
-    case 'DISCARD_CARDS': {
+    case 'DISCARD': {
       return executeDiscard(state, step, context);
     }
     case 'DRAW': {

@@ -4,7 +4,6 @@ import {
   GameState,
   CardType,
   CardInstance,
-  CardAbility,
   HeroCard,
   AlterEgoCard,
   Keyword,
@@ -171,22 +170,6 @@ describe('Boost resolution: one shared helper for every activation (#263)', () =
   const logCount = (key: string) => state.log.filter((l) => l.key === key).length;
   const held = (path: Path) => path.entity.facedownBoostCards ?? [];
 
-  /** Forced identity ability counting every WHEN_BOOST_CARD_REVEALED dispatch in the log. */
-  const installRevealObserver = () => {
-    const p = state.players[0];
-    const observer: CardAbility = {
-      id: 'obs-reveal',
-      timing: 'FORCED_INTERRUPT',
-      trigger: 'WHEN_BOOST_CARD_REVEALED',
-      steps: [
-        { effect: 'ADD_STATUS', effectParams: { status: StatusCard.CONFUSED, target: 'PLAYER' } },
-      ],
-    } as never;
-    p.hero = { ...p.hero, enrichment: { ...p.hero.enrichment, abilities: [observer] } };
-    p.alterEgo = { ...p.alterEgo, enrichment: { ...p.alterEgo.enrichment, abilities: [observer] } };
-    p.activeFormCard = p.currentForm === 'hero' ? p.hero : p.alterEgo;
-  };
-
   const starCard = (): CardInstance =>
     createCardInstance({
       code: 't-star',
@@ -214,21 +197,19 @@ describe('Boost resolution: one shared helper for every activation (#263)', () =
 
   beforeEach(() => setup());
 
-  describe('1. the shared loop: reveal trigger, star ability, icons, discard', () => {
+  describe('1. the shared loop: star ability, icons, discard', () => {
     const coreKinds: PathKind[] = ['villainAttack', 'villainScheme', 'minionScheme'];
 
     for (const kind of coreKinds) {
-      it(`${kind}: each boost card dispatches the reveal trigger once, runs its star ability against the target player, adds its icons and is discarded`, () => {
+      it(`${kind}: each boost card runs its star ability against the target player, adds its icons and is discarded`, () => {
         const path = makePath(kind);
         setAdditional(path, 1);
-        installRevealObserver();
         const star = starCard();
         const plain = filler('Plain', 1);
         stack(star, plain);
 
         const outcome = path.run();
 
-        expect(logCount('ability.obs-reveal.triggered')).toBe(2);
         expect(state.players[0].statusCards).toContain(StatusCard.STUNNED);
         expect(logCount('villain.boost.starResolved')).toBe(1);
         expect(outcome).toBe(path.base + 2 + 1);

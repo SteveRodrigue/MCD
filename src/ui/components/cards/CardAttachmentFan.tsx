@@ -53,8 +53,7 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
                 (a) =>
                   a.timing === 'HERO_ACTION' ||
                   a.timing === 'ALTER_EGO_ACTION' ||
-                  a.timing === 'ACTION' ||
-                  a.steps?.some((s) => s.effect === 'DISCARD_ATTACHMENT'),
+                  a.timing === 'ACTION',
               );
 
               const key = att.instanceId || `att_${idx}`;

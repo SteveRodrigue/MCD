@@ -1629,13 +1629,9 @@ function dispatchSingleAction(
             const tgt = stepParams.target as string | undefined;
             if (tgt && tgt.startsWith('CHOSEN_')) {
               requiredTargetScope = tgt;
-              if (step.effect === 'HEAL' || step.effect === 'HEAL_DAMAGE') {
+              if (step.effect === 'HEAL_DAMAGE') {
                 filterOpts = { damaged: true };
-              } else if (
-                step.effect === 'READY' ||
-                step.effect === 'READY_ALLY' ||
-                step.effect === 'READY_CHARACTER'
-              ) {
+              } else if (step.effect === 'READY') {
                 filterOpts = { exhausted: true };
               } else if (step.effect === 'REMOVE_THREAT') {
                 filterOpts = {
@@ -1943,13 +1939,9 @@ function dispatchSingleAction(
         const tgt = stepParams.target as string | undefined;
         if (tgt && tgt.startsWith('CHOSEN_') && tgt !== 'CHOSEN_PLAYER') {
           requiredAbilityScope = tgt;
-          if (step.effect === 'HEAL' || step.effect === 'HEAL_DAMAGE') {
+          if (step.effect === 'HEAL_DAMAGE') {
             abilityFilterOpts = { damaged: true };
-          } else if (
-            step.effect === 'READY' ||
-            step.effect === 'READY_ALLY' ||
-            step.effect === 'READY_CHARACTER'
-          ) {
+          } else if (step.effect === 'READY') {
             abilityFilterOpts = { exhausted: true };
           } else if (step.effect === 'REMOVE_THREAT') {
             abilityFilterOpts = {

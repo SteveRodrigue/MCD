@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-16 (Issue #319 Card Editor re-architecture in progress, Phases 1 to 5 implemented; #317 delivered)
+> **Last updated:** 2026-10-16 (#316, #319 and #280 delivered; #323 queued (owner decision taken); #318 confirmed working as intended; missing triggers #320 to #322 filed for Gate 4)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
-> **Verification baseline:** 🟢 2,720 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
+> **Verification baseline:** 🟢 2,943 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
 ---
@@ -66,7 +66,9 @@ _None currently._
 
 ### 3.2 Rules gaps that affect core cards
 
-_None currently._
+| #   | Issue                                                   | Item                                               | Estimate   | Notes                                                                                                                                                                                                                                                                                                                                                          |
+| :-- | :------------------------------------------------------ | :------------------------------------------------- | :--------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 22  | [#323](https://github.com/SteveRodrigue/MCD/issues/323) | Separate "threat reached 0" from "scheme defeated" | half a day | Owner decision 2026-10-16: "threat reached 0" fires for **any** scheme (main or side) reaching 0 threat, defeated or not; `SCHEME_DEFEATED` only for real defeats. Replace the off-schema `SCHEME_THREAT_REDUCED_TO_ZERO` with a schema trigger dispatched from every threat-to-0 path; drop the alias; check side-scheme single dispatch; find evidence cards |
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 
@@ -74,9 +76,7 @@ _None currently._
 
 ### 3.4 UI should-haves
 
-| #   | Issue                                                   | Item                                                           | Estimate | Notes                                                                                                                          |
-| :-- | :------------------------------------------------------ | :------------------------------------------------------------- | :------- | :----------------------------------------------------------------------------------------------------------------------------- |
-| 21  | [#319](https://github.com/SteveRodrigue/MCD/issues/319) | Card Editor re-architecture (schema-driven forms), in progress | 3 days   | Plan: [plan_card_editor_rearchitecture.md](plan_card_editor_rearchitecture.md); ADR-0083; #316 fixed; variable X costs in #318 |
+_None currently._
 
 **Gate 1 is done when** sections 3.1 to 3.4 are empty, the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
 
@@ -90,4 +90,14 @@ Run the `next-task` skill (it reads this file). Plan anatomy and owner preferenc
 
 ## 5. Open decisions waiting for the owner
 
-None. Decisions taken are recorded in the row they affect (section 3) and on the issue.
+None.
+
+Decisions taken are recorded in the row they affect (section 3) and on the issue.
+
+### Filed outside Gate 1 (not queued)
+
+Missing triggers removed as dead code in `a6c5542` (Card Editor re-architecture, #319). Each issue lists the candidate cards, a recommended evidence card and the engine work; restore the old dispatch sites with `git show a6c5542`. Milestone: Gate 4.
+
+- [#320](https://github.com/SteveRodrigue/MCD/issues/320) `CARD_DISCARDED` ("After X is discarded"): evidence card Digging Deep 40060.
+- [#321](https://github.com/SteveRodrigue/MCD/issues/321) `WHEN_BOOST_CARD_REVEALED` ("When a boost card is turned faceup"): evidence card Target Acquired 08024.
+- [#322](https://github.com/SteveRodrigue/MCD/issues/322) `CARD_LEFT_PLAY` ("When X leaves play"): evidence card Cosmo 21180b.

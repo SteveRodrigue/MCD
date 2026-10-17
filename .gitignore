@@ -35,6 +35,8 @@ cache/
 cache/**
 /cache/
 /cache/**
+/stats/
+/stats/**
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

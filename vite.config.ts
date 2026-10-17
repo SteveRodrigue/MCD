@@ -4,6 +4,12 @@ import path from 'path';
 import fs from 'fs';
 import https from 'https';
 import { cardSupplementalEditorPlugin } from './src/tools/editor/api-middleware';
+import {
+  AllTimeStats,
+  applyStatsReset,
+  createInitialAllTimeStats,
+  mergeDeltaIntoAllTime,
+} from './src/engine/models/stats';
 
 function cardCachePlugin(): Plugin {
   const cacheDir = path.resolve(__dirname, 'cache', 'cards');
@@ -432,11 +438,111 @@ function problemReportPlugin(): Plugin {
   };
 }
 
+function cardStatsPlugin(): Plugin {
+  const statsDir = path.resolve(__dirname, 'stats');
+  const statsFilePath = path.join(statsDir, 'card_play_stats.json');
+
+  function ensureStatsFile(): AllTimeStats {
+    if (!fs.existsSync(statsDir)) {
+      fs.mkdirSync(statsDir, { recursive: true });
+    }
+    if (!fs.existsSync(statsFilePath)) {
+      const initial = createInitialAllTimeStats();
+      fs.writeFileSync(statsFilePath, JSON.stringify(initial, null, 2), 'utf8');
+      return initial;
+    }
+    try {
+      const content = fs.readFileSync(statsFilePath, 'utf8');
+      return JSON.parse(content);
+    } catch {
+      const initial = createInitialAllTimeStats();
+      fs.writeFileSync(statsFilePath, JSON.stringify(initial, null, 2), 'utf8');
+      return initial;
+    }
+  }
+
+  function writeStatsFile(stats: AllTimeStats): void {
+    if (!fs.existsSync(statsDir)) {
+      fs.mkdirSync(statsDir, { recursive: true });
+    }
+    fs.writeFileSync(statsFilePath, JSON.stringify(stats, null, 2), 'utf8');
+  }
+
+  const statsMiddleware = (req: any, res: any, next: any) => {
+    if (req.url === '/api/stats' && req.method === 'GET') {
+      try {
+        const stats = ensureStatsFile();
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(stats));
+      } catch (err: any) {
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: err.message }));
+      }
+      return;
+    }
+
+    if (req.url === '/api/stats' && req.method === 'POST') {
+      let body = '';
+      req.on('data', (chunk: any) => {
+        body += chunk;
+      });
+      req.on('end', () => {
+        try {
+          const currentStats = mergeDeltaIntoAllTime(ensureStatsFile(), JSON.parse(body));
+          writeStatsFile(currentStats);
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ success: true, stats: currentStats }));
+        } catch (err: any) {
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ success: false, error: err.message }));
+        }
+      });
+      return;
+    }
+
+    if (req.url === '/api/stats/reset' && req.method === 'POST') {
+      let body = '';
+      req.on('data', (chunk: any) => {
+        body += chunk;
+      });
+      req.on('end', () => {
+        try {
+          const currentStats = applyStatsReset(ensureStatsFile(), JSON.parse(body || '{}'));
+
+          writeStatsFile(currentStats);
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ success: true, stats: currentStats }));
+        } catch (err: any) {
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ success: false, error: err.message }));
+        }
+      });
+      return;
+    }
+
+    next();
+  };
+
+  return {
+    name: 'mcd-card-stats-plugin',
+    configureServer(server) {
+      server.middlewares.use(statsMiddleware);
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(statsMiddleware);
+    },
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     cardCachePlugin(),
+    cardStatsPlugin(),
     gameStateSnapshotPlugin(),
     problemReportPlugin(),
     cardSupplementalEditorPlugin(),
@@ -454,7 +560,7 @@ export default defineConfig({
     strictPort: true,
     open: false,
     watch: {
-      ignored: ['**/logs/**', '**/cache/**'],
+      ignored: ['**/logs/**', '**/cache/**', '**/stats/**'],
     },
   },
 });

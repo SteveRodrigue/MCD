@@ -14,10 +14,13 @@ import {
   ExternalLink,
   Sparkles,
   Clock,
+  Trash2,
 } from 'lucide-react';
 import { useGameSettings } from '../../context/useGameSettings';
 import { GameState } from '../../../engine/models';
 import { logGameStateSnapshot } from '../../services/gamestate-logger-service';
+import { ResetCardStatsConfirmModal } from '../cards/ResetCardStatsConfirmModal';
+import { resetAllStats } from '../../services/stats-storage-service';
 
 interface OptionsMenuProps {
   isOpen: boolean;
@@ -27,6 +30,8 @@ interface OptionsMenuProps {
 
 export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameState }) => {
   const [snapshotSuccess, setSnapshotSuccess] = useState<string | null>(null);
+  const [showResetAllConfirm, setShowResetAllConfirm] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState<string | null>(null);
   const {
     devMode,
     toggleDevMode,
@@ -240,6 +245,31 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
               Enables hidden information inspectors (face-down draw deck inspection, search & debug
               scrying) for development and rules testing.
             </p>
+
+            {devMode && (
+              <div className="pt-2 border-t border-comic-black/20 flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-xs text-comic-black">Card Play Statistics</span>
+                  <p className="text-[11px] text-slate-500">
+                    Reset all historical card play and usage statistics.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowResetAllConfirm(true)}
+                  className="px-3 py-1 font-comic text-xs rounded border-2 border-comic-black bg-rose-50 hover:bg-rose-100 text-comic-red font-bold shadow-comic-sm cursor-pointer transition-all hover:scale-105 flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Reset All Stats</span>
+                </button>
+              </div>
+            )}
+            {resetSuccess && (
+              <div className="p-2 rounded bg-emerald-100 border border-emerald-500 text-emerald-900 text-xs font-bold flex items-center gap-1.5 animate-in fade-in duration-200">
+                <span>✅</span>
+                <span>{resetSuccess}</span>
+              </div>
+            )}
           </div>
 
           {/* Auto-Resolve Unambiguous Actions Setting */}
@@ -396,6 +426,19 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
           </button>
         </div>
       </div>
+
+      {showResetAllConfirm && (
+        <ResetCardStatsConfirmModal
+          isOpen={showResetAllConfirm}
+          onClose={() => setShowResetAllConfirm(false)}
+          isAll={true}
+          onConfirm={async () => {
+            await resetAllStats();
+            setResetSuccess('All card play statistics have been reset.');
+            setTimeout(() => setResetSuccess(null), 3000);
+          }}
+        />
+      )}
     </ModalLayer>
   );
 };

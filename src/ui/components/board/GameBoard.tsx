@@ -27,6 +27,8 @@ import { EndTurnConfirmationModal } from './EndTurnConfirmationModal';
 import { CardPaymentModal } from './CardPaymentModal';
 import { useEdgeScroll } from '../../hooks/useEdgeScroll';
 import { useGameSettings } from '../../context/useGameSettings';
+import { GameStateProvider } from '../../context/GameStateContext';
+import { syncGameStats } from '../../services/stats-storage-service';
 import {
   getLegalActionsForPlayer,
   LegalActionItem,
@@ -53,12 +55,23 @@ const SPEED_MAP: Record<string, number> = {
  * The table, or the end screen alone when every hero is eliminated (#246): with no player left
  * there is no seat to show.
  */
-export const GameBoard: React.FC<GameBoardProps> = (props) =>
-  props.gameState.players.length === 0 ? (
-    <GameOverScreen gameState={props.gameState} onReset={props.onReset} />
-  ) : (
-    <GameTable {...props} />
+export const GameBoard: React.FC<GameBoardProps> = (props) => {
+  const { stats, winner } = props.gameState;
+  // Synced here, not in the table, so the final state of a game lost by elimination still counts.
+  useEffect(() => {
+    if (stats) syncGameStats(stats, !!winner).catch(() => {});
+  }, [stats, winner]);
+
+  return (
+    <GameStateProvider value={props.gameState}>
+      {props.gameState.players.length === 0 ? (
+        <GameOverScreen gameState={props.gameState} onReset={props.onReset} />
+      ) : (
+        <GameTable {...props} />
+      )}
+    </GameStateProvider>
   );
+};
 
 const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAction }) => {
   const [selectedSeatIndex, setActiveSeatIndex] = useState<number>(0);

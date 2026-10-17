@@ -13,6 +13,7 @@ import {
 } from '../engine';
 import type { SetupSelection } from './components/setup/ScenarioSelector';
 import { logGameStateSnapshot } from './services/gamestate-logger-service';
+import { resetSessionSyncTracking } from './services/stats-storage-service';
 
 import { GameSettingsProvider } from './context/GameSettingsProvider';
 import { useGameSettings } from './context/useGameSettings';
@@ -134,6 +135,7 @@ export const AppContent: React.FC = () => {
       villainPhaseStepping: settings.villainPhasePacing !== 'instant',
     };
 
+    resetSessionSyncTracking();
     setGameState(newGameState);
     setStage('MULLIGAN');
   };

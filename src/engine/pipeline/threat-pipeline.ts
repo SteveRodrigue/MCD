@@ -521,7 +521,7 @@ export function applyThwart(
   // STEP 5: Post-Thwart Triggers
   // ---------------------------------------------------------------------------
   if (remainingThreat === 0 && removed > 0) {
-    dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO' as any, {
+    dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
       targetPlayerId: player.id,
       sourceInstanceId:
         targetType === 'main_scheme'

@@ -34,20 +34,11 @@ function isForcedTiming(timing: string): boolean {
   return timing === 'FORCED_INTERRUPT' || timing === 'FORCED_RESPONSE';
 }
 
-const TRIGGER_EQUIVALENTS: Record<string, string[]> = {
-  SCHEME_DEFEATED: ['SCHEME_THREAT_REDUCED_TO_ZERO'],
-};
-
 export function triggersAreEquivalent(
   left: string | undefined,
   right: string | undefined,
 ): boolean {
-  if (!left || !right) return false;
-  if (left === right) return true;
-  return (
-    TRIGGER_EQUIVALENTS[left]?.includes(right) === true ||
-    TRIGGER_EQUIVALENTS[right]?.includes(left) === true
-  );
+  return Boolean(left && right && left === right);
 }
 
 function displayTriggerName(trigger: string): string {

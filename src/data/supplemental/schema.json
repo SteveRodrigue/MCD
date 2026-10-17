@@ -60,6 +60,7 @@
                     "ENCOUNTER_CARD_REVEALED",
                     "CHARACTER_DEFEATED",
                     "SCHEME_DEFEATED",
+                    "SCHEME_THREAT_REDUCED_TO_ZERO",
                     "HOST_WOULD_ATTACK",
                     "HOST_ATTACK_ENDED",
                     "THREAT_WOULD_BE_PLACED",

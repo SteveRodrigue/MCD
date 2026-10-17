@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine & Data): Separate "Threat Reached 0" from "Scheme Defeated" ([Issue #323](https://github.com/SteveRodrigue/MCD/issues/323))**
+  - Promotes `SCHEME_THREAT_REDUCED_TO_ZERO` to a schema-supported trigger in `TriggerTypeSchema` and regenerates `schema.json`.
+  - Removes the off-schema alias `TRIGGER_EQUIVALENTS` from `trigger-dispatcher.ts`, isolating `SCHEME_DEFEATED` strictly to defeated side schemes.
+  - Prevents main scheme threat reductions to 0 from incorrectly triggering cards listening for `SCHEME_DEFEATED` (e.g. *Skilled Investigator*, *Followed*).
+  - Eliminates double trigger dispatch on side schemes thwarted to 0 threat.
+  - Standardizes side scheme defeat in distributed threat removal allocation paths (`effects/index.ts` and `action-dispatcher.ts`) through canonical `defeatSideScheme` and dispatches `SCHEME_THREAT_REDUCED_TO_ZERO` whenever threat reaches 0.
+  - Empties `KNOWN_OFF_SCHEMA_DISPATCHES` in `ability-types-parity.test.ts`, restoring 100% on-schema trigger dispatch across the engine.
+
 - **Feature (Engine & UI): Simultaneous Optional Abilities Resolution Order ([Issue #287](https://github.com/SteveRodrigue/MCD/issues/287))**
   - Detects when two or more optional ability prompts trigger simultaneously on the same event and constructs an `ORDER_SIMULTANEOUS_ABILITIES` prompt for the First Player per RR v1.8 Simultaneous Resolution.
   - Adds `SimultaneousAbilitiesModal` comic pop-art UI dialog allowing the first player to reorder abilities upfront using Up/Down buttons or drag-and-drop.

@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-16T04:40:31.047Z`
+> **Generated:** `2026-10-16T20:47:59.443Z`
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
@@ -242,7 +242,7 @@
 | :--- | :--- | :--- | :--- |
 | `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
 
-## 2. Trigger Windows (`TriggerTypeSchema` — 20/30 In Use)
+## 2. Trigger Windows (`TriggerTypeSchema` — 20/31 In Use)
 
 ### <a id="when-revealed"></a>`WHEN_REVEALED` (35 Cards)
 

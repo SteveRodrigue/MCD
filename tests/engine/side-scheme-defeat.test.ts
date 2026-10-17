@@ -197,7 +197,7 @@ describe('Canonical Side Scheme Defeat & Zero-Threat Scheme Pipeline (Issue #149
           {
             id: 'detect_zero_threat',
             timing: 'FORCED_RESPONSE',
-            trigger: 'SCHEME_THREAT_REDUCED_TO_ZERO' as any,
+            trigger: 'SCHEME_THREAT_REDUCED_TO_ZERO',
             steps: [
               {
                 effect: 'DRAW',
@@ -326,6 +326,179 @@ describe('Canonical Side Scheme Defeat & Zero-Threat Scheme Pipeline (Issue #149
       expect(state.victoryDisplay.some((c) => c.instanceId === 'ss_victory_inst')).toBe(true);
       // Not in encounterDiscard
       expect(state.encounterDiscard.some((c) => c.instanceId === 'ss_victory_inst')).toBe(false);
+    });
+  });
+
+  describe('e) Separation of SCHEME_THREAT_REDUCED_TO_ZERO from SCHEME_DEFEATED (Issue #323)', () => {
+    it('thwarting main scheme to 0 threat dispatches SCHEME_THREAT_REDUCED_TO_ZERO but does NOT fire SCHEME_DEFEATED listener', () => {
+      const player = state.players[0];
+      state.mainScheme.threat = 3;
+
+      player.activeFormCard.enrichment = {
+        abilities: [
+          {
+            id: 'listen_scheme_defeated',
+            timing: 'FORCED_RESPONSE',
+            trigger: 'SCHEME_DEFEATED',
+            steps: [
+              {
+                effect: 'DRAW',
+                effectParams: { count: 1, target: 'SELF' },
+              },
+            ],
+          },
+          {
+            id: 'listen_threat_zero',
+            timing: 'FORCED_RESPONSE',
+            trigger: 'SCHEME_THREAT_REDUCED_TO_ZERO',
+            steps: [
+              {
+                effect: 'DRAW',
+                effectParams: { count: 1, target: 'SELF' },
+              },
+            ],
+          },
+        ],
+      };
+
+      const initialHand = player.hand.length;
+
+      const removeThreatAbility = {
+        id: 'thwart_main',
+        timing: 'HERO_ACTION' as const,
+        steps: [
+          {
+            effect: 'REMOVE_THREAT' as const,
+            effectParams: {
+              amount: 3,
+              target: 'MAIN_SCHEME',
+            },
+          },
+        ],
+      };
+
+      const result = executeEffect(state, removeThreatAbility as any, { playerId: player.id });
+      expect(result.success).toBe(true);
+      expect(state.mainScheme.threat).toBe(0);
+
+      // Only SCHEME_THREAT_REDUCED_TO_ZERO fired (+1 card drawn), NOT SCHEME_DEFEATED
+      expect(player.hand.length).toBe(initialHand + 1);
+    });
+
+    it('thwarting a side scheme to 0 threat with an unlimited SCHEME_DEFEATED listener fires exactly once (no double dispatch)', () => {
+      const player = state.players[0];
+      const sideCard = cardCatalog.getCard('01109')!; // Bomb Scare
+      state.sideSchemes = [
+        {
+          instanceId: 'ss_single_dispatch',
+          card: JSON.parse(JSON.stringify(sideCard)),
+          threat: 2,
+        },
+      ];
+
+      // Listener has NO limit (unlimited)
+      player.activeFormCard.enrichment = {
+        abilities: [
+          {
+            id: 'unlimited_scheme_defeated',
+            timing: 'FORCED_RESPONSE',
+            trigger: 'SCHEME_DEFEATED',
+            steps: [
+              {
+                effect: 'DRAW',
+                effectParams: { count: 1, target: 'SELF' },
+              },
+            ],
+          },
+        ],
+      };
+
+      const initialHand = player.hand.length;
+
+      const removeThreatAbility = {
+        id: 'thwart_side',
+        timing: 'HERO_ACTION' as const,
+        steps: [
+          {
+            effect: 'REMOVE_THREAT' as const,
+            effectParams: {
+              amount: 2,
+              target: 'SIDE_SCHEME',
+              targetInstanceId: 'ss_single_dispatch',
+            },
+          },
+        ],
+      };
+
+      const result = executeEffect(state, removeThreatAbility as any, {
+        playerId: player.id,
+        chosenTargetInstanceId: 'ss_single_dispatch',
+      });
+      expect(result.success).toBe(true);
+
+      // Side scheme defeated and discarded
+      expect(state.sideSchemes).toHaveLength(0);
+      expect(state.encounterDiscard.some((c) => c.instanceId === 'ss_single_dispatch')).toBe(true);
+
+      // Must have fired exactly once (+1 card drawn, not +2)
+      expect(player.hand.length).toBe(initialHand + 1);
+    });
+
+    it('thwarting a side scheme to 0 threat also dispatches SCHEME_THREAT_REDUCED_TO_ZERO to listeners waiting for it', () => {
+      const player = state.players[0];
+      const sideCard = cardCatalog.getCard('01109')!;
+      state.sideSchemes = [
+        {
+          instanceId: 'ss_zero_threat_listener',
+          card: JSON.parse(JSON.stringify(sideCard)),
+          threat: 2,
+        },
+      ];
+
+      player.activeFormCard.enrichment = {
+        abilities: [
+          {
+            id: 'side_threat_zero_listener',
+            timing: 'FORCED_RESPONSE',
+            trigger: 'SCHEME_THREAT_REDUCED_TO_ZERO',
+            steps: [
+              {
+                effect: 'DRAW',
+                effectParams: { count: 1, target: 'SELF' },
+              },
+            ],
+          },
+        ],
+      };
+
+      const initialHand = player.hand.length;
+
+      const removeThreatAbility = {
+        id: 'thwart_side_to_zero',
+        timing: 'HERO_ACTION' as const,
+        steps: [
+          {
+            effect: 'REMOVE_THREAT' as const,
+            effectParams: {
+              amount: 2,
+              target: 'SIDE_SCHEME',
+              targetInstanceId: 'ss_zero_threat_listener',
+            },
+          },
+        ],
+      };
+
+      const result = executeEffect(state, removeThreatAbility as any, {
+        playerId: player.id,
+        chosenTargetInstanceId: 'ss_zero_threat_listener',
+      });
+      expect(result.success).toBe(true);
+
+      // Side scheme defeated and discarded
+      expect(state.sideSchemes).toHaveLength(0);
+
+      // SCHEME_THREAT_REDUCED_TO_ZERO fired (+1 card drawn)
+      expect(player.hand.length).toBe(initialHand + 1);
     });
   });
 });

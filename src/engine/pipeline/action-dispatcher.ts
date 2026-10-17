@@ -2278,16 +2278,34 @@ function dispatchSingleAction(
               targetId === targetMainScheme?.instanceId ||
               targetId === targetMainScheme?.card?.code
             ) {
+              const prevThreat = targetMainScheme.threat;
               targetMainScheme.threat = Math.max(0, targetMainScheme.threat - amount);
+              if (prevThreat > 0 && targetMainScheme.threat === 0) {
+                dispatchTrigger(poppedState, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
+                  targetPlayerId: player.id,
+                  sourceInstanceId: targetMainScheme.instanceId || 'main_scheme',
+                  entityType: 'SCHEME',
+                  threatAmount: prevThreat,
+                });
+              }
             } else {
               const sideIdx = (poppedState.sideSchemes || []).findIndex(
                 (s) => s.instanceId === targetId || s.card.code === targetId,
               );
               if (sideIdx !== -1) {
                 const side = poppedState.sideSchemes![sideIdx];
+                const prevThreat = side.threat || 0;
                 side.threat = Math.max(0, (side.threat || 0) - amount);
                 if (side.threat <= 0) {
                   defeatSideScheme(poppedState, side.instanceId, player.id);
+                  if (prevThreat > 0) {
+                    dispatchTrigger(poppedState, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
+                      targetPlayerId: player.id,
+                      sourceInstanceId: side.instanceId,
+                      entityType: 'SCHEME',
+                      threatAmount: prevThreat,
+                    });
+                  }
                 }
               }
             }

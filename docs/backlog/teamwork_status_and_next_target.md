@@ -1,6 +1,6 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-16 (#316, #319 and #280 delivered; #323 queued (owner decision taken); #318 confirmed working as intended; missing triggers #320 to #322 filed for Gate 4)
+> **Last updated:** 2026-10-16 (#316, #319, #280 and #323 delivered; #318 confirmed working as intended; missing triggers #320 to #322 filed for Gate 4)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
 > **Verification baseline:** 🟢 2,943 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
@@ -66,9 +66,7 @@ _None currently._
 
 ### 3.2 Rules gaps that affect core cards
 
-| #   | Issue                                                   | Item                                               | Estimate   | Notes                                                                                                                                                                                                                                                                                                                                                          |
-| :-- | :------------------------------------------------------ | :------------------------------------------------- | :--------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 22  | [#323](https://github.com/SteveRodrigue/MCD/issues/323) | Separate "threat reached 0" from "scheme defeated" | half a day | Owner decision 2026-10-16: "threat reached 0" fires for **any** scheme (main or side) reaching 0 threat, defeated or not; `SCHEME_DEFEATED` only for real defeats. Replace the off-schema `SCHEME_THREAT_REDUCED_TO_ZERO` with a schema trigger dispatched from every threat-to-0 path; drop the alias; check side-scheme single dispatch; find evidence cards |
+_None currently._
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 

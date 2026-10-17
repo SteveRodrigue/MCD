@@ -17,11 +17,7 @@ import {
   type EffectType as SchemaEffectType,
 } from '../../src/data/supplemental/schema';
 
-/**
- * Known dispatch outside the schema vocabulary: `threat-pipeline.ts` dispatches it through an
- * `as any` cast and the dispatcher aliases it onto SCHEME_DEFEATED listeners. Tracked for follow-up.
- */
-const KNOWN_OFF_SCHEMA_DISPATCHES = new Set(['SCHEME_THREAT_REDUCED_TO_ZERO']);
+const KNOWN_OFF_SCHEMA_DISPATCHES = new Set<string>();
 
 const ENGINE_DIR = path.resolve(__dirname, '../../src/engine');
 

@@ -2829,30 +2829,40 @@ export function executeStep(
           if (amount <= 0) continue;
 
           if (allocationDomain === 'THREAT_REMOVAL') {
+            const activeMain = getActiveMainScheme(state);
             if (
               targetId === 'main_scheme' ||
-              targetId === getActiveMainScheme(state)?.instanceId ||
-              targetId === getActiveMainScheme(state)?.card?.code
+              targetId === activeMain?.instanceId ||
+              targetId === activeMain?.card?.code
             ) {
-              getActiveMainScheme(state).threat = Math.max(
-                0,
-                getActiveMainScheme(state).threat - amount,
-              );
+              const prevThreat = activeMain.threat;
+              activeMain.threat = Math.max(0, activeMain.threat - amount);
+              if (prevThreat > 0 && activeMain.threat === 0) {
+                dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
+                  targetPlayerId: player.id,
+                  sourceInstanceId: activeMain.instanceId || 'main_scheme',
+                  entityType: 'SCHEME',
+                  threatAmount: prevThreat,
+                });
+              }
             } else {
               const sideIdx = (state.sideSchemes || []).findIndex(
                 (s) => s.instanceId === targetId || s.card.code === targetId,
               );
               if (sideIdx !== -1) {
                 const side = state.sideSchemes![sideIdx];
+                const prevThreat = side.threat || 0;
                 side.threat = Math.max(0, (side.threat || 0) - amount);
                 if (side.threat <= 0) {
-                  state.sideSchemes!.splice(sideIdx, 1);
-                  dispatchTrigger(state, 'SCHEME_DEFEATED', {
-                    targetPlayerId: player.id,
-                    targetInstanceId: side.instanceId,
-                    entityType: 'SCHEME',
-                  });
-                  state.encounterDiscard.push(side);
+                  defeatSideScheme(state, side.instanceId, player.id);
+                  if (prevThreat > 0) {
+                    dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
+                      targetPlayerId: player.id,
+                      sourceInstanceId: side.instanceId,
+                      entityType: 'SCHEME',
+                      threatAmount: prevThreat,
+                    });
+                  }
                 }
               }
             }

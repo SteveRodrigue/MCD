@@ -27,6 +27,7 @@ import { dispatchTrigger, TriggerDispatchResult } from '../triggers/trigger-disp
 import { applyDamageToTarget, dispatchDefeat, type DefeatSource } from './damage-pipeline';
 import { eliminatePlayer } from './player-elimination';
 import { executeEffect, processHostDefeated, resetCardState } from '../effects';
+import { recordBasicAction } from './stats';
 import {
   getEffectiveHeroStats,
   getEffectiveVillainStats,
@@ -222,6 +223,8 @@ export function beginEnemyAttack(
     attackerVillain,
   );
   if (isCancelled) return { state, attacked: false };
+  if (attackerVillain) recordBasicAction(state, 'villainAttack', attackerVillain.card?.code);
+  else if (attacker.card) recordBasicAction(state, 'minionAttack', attacker.card.card.code);
 
   // Step 2: Initiation Triggers (Spider-Sense draws card BEFORE defender is declared)
   const initResult = step2_dispatchInitiationTriggers(

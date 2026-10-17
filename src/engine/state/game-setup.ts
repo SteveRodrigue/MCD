@@ -14,6 +14,7 @@ import {
   Keyword,
   hasKeyword,
   PendingSetupAbility,
+  createInitialGameStats,
 } from '@engine/models';
 import { cardCatalog } from '../../data/importer/card-loader';
 import { ScenarioRegistry } from '../scenarios';
@@ -252,6 +253,7 @@ export function setupGame(options: GameSetupOptions): GameState {
     removedFromGame: [],
     accelerationTokens: 0,
     winner: null,
+    stats: createInitialGameStats(),
     log: [
       {
         id: nextEngineId(tempRngState, 'log'),

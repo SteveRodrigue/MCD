@@ -22,6 +22,7 @@ import { dispatchTrigger } from '../triggers';
 import { executeEffect } from '../effects';
 import { applyThreatPlacement } from './threat-pipeline';
 import { getEffectiveVillainStats, consumeEntityStatusCards } from './stat-calculator';
+import { recordCardPlay, recordBasicAction } from './stats';
 import {
   initiateEnemyAttack,
   continueAttackAfterInitiation,
@@ -108,6 +109,7 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
     });
     return;
   }
+  recordBasicAction(state, 'villainScheme', villain.card?.code);
 
   // Deal and resolve the boost cards (RR v1.8 p. 25), shared with every other activation.
   const boostLog: BoostLogContext = {
@@ -178,6 +180,7 @@ export function executeMinionSchemeAgainstPlayer(
     });
     return;
   }
+  recordBasicAction(state, 'minionScheme', minion.card.code);
 
   const minionCard = minion.card as MinionCard;
   const baseScheme = minionCard.scheme ?? (minionCard as any).sch ?? 1;
@@ -566,6 +569,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
   isCancelled: boolean,
 ): void {
   const card = cardInstance.card;
+  if (!isCancelled) recordCardPlay(state, card.code);
 
   // "Cancel the effects of that card and discard it" (Black Widow 01075): the card does not enter
   // play. Effects declared `cannotBeCanceled` still resolve.

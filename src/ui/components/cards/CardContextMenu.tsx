@@ -1,8 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { NormalizedCard } from '../../../engine/models';
-import { ExternalLink, Copy, Check, Info, X, Bug } from 'lucide-react';
+import { AllTimeStats } from '../../../engine/models/stats';
+import { ExternalLink, Copy, Check, Info, X, Bug, BarChart2, Trash2 } from 'lucide-react';
 import { ReportProblemModal } from '../board/ReportProblemModal';
+import { CardStatsModal } from './CardStatsModal';
+import { ResetCardStatsConfirmModal } from './ResetCardStatsConfirmModal';
+import { useGameState } from '../../context/GameStateContext';
+import { useGameSettings } from '../../context/useGameSettings';
+import { getAllTimeStats, resetCardStats } from '../../services/stats-storage-service';
 
 interface CardContextMenuProps {
   card: NormalizedCard;
@@ -17,6 +23,18 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
   const [copiedJson, setCopiedJson] = useState(false);
   const [showRawModal, setShowRawModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const [showResetConfirmModal, setShowResetConfirmModal] = useState(false);
+
+  const gameState = useGameState();
+  const { devMode } = useGameSettings();
+  const [allTimeStats, setAllTimeStats] = useState<AllTimeStats | undefined>(undefined);
+
+  useEffect(() => {
+    getAllTimeStats()
+      .then(setAllTimeStats)
+      .catch(() => {});
+  }, []);
 
   // Close when clicking outside
   useEffect(() => {
@@ -44,7 +62,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
 
   // Adjust position to stay on screen
   const menuWidth = 240;
-  const menuHeight = 240;
+  const menuHeight = 280;
   const adjustedX = Math.min(position.x, window.innerWidth - menuWidth - 10);
   const adjustedY = Math.min(position.y, window.innerHeight - menuHeight - 10);
 
@@ -81,18 +99,47 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
     }, 1500);
   };
 
+  const handleStatsReset = async () => {
+    const updated = await resetCardStats(card.code);
+    setAllTimeStats(updated);
+  };
+
+  const gameCardStats = gameState?.stats?.cards?.[card.code];
+  const allTimeCardStats = allTimeStats?.cards?.[card.code];
+
+  const gamePlays = gameCardStats?.played || 0;
+  const allTimePlays = allTimeCardStats?.played || 0;
+
+  const gameAbilities = Object.values(gameCardStats?.abilitiesUsed || {}).reduce(
+    (a, b) => a + b,
+    0,
+  );
+  const allTimeAbilities = Object.values(allTimeCardStats?.abilitiesUsed || {}).reduce(
+    (a, b) => a + b,
+    0,
+  );
+
+  const gameBasicActions = Object.values(gameCardStats?.basicActions || {}).reduce(
+    (a, b) => a + (b || 0),
+    0,
+  );
+  const allTimeBasicActions = Object.values(allTimeCardStats?.basicActions || {}).reduce(
+    (a, b) => a + (b || 0),
+    0,
+  );
+
   if (typeof document === 'undefined') return null;
 
   return createPortal(
     <>
-      {!showReportModal && (
+      {!showReportModal && !showStatsModal && !showResetConfirmModal && (
         <div
           ref={menuRef}
           style={{
             left: `${Math.max(10, adjustedX)}px`,
             top: `${Math.max(10, adjustedY)}px`,
           }}
-          className="fixed z-menu w-60 bg-white border-3 border-black shadow-comic-lg rounded-md overflow-hidden font-sans select-none animate-in fade-in zoom-in-95 duration-100"
+          className="fixed z-menu w-64 bg-white border-3 border-black shadow-comic-lg rounded-md overflow-hidden font-sans select-none animate-in fade-in zoom-in-95 duration-100"
           onClick={(e) => e.stopPropagation()}
           onContextMenu={(e) => e.preventDefault()}
         >
@@ -115,9 +162,46 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
             </button>
           </div>
 
+          {/* Quick Stats Recap */}
+          <div className="bg-amber-50/90 border-b-2 border-black px-3 py-1.5 text-[11px] font-comic space-y-0.5">
+            <div className="flex items-center justify-between text-slate-700">
+              <span className="font-bold">Plays:</span>
+              <span className="font-mono text-[10px]">
+                Game: <b className="text-comic-red">{gamePlays}</b> | All:{' '}
+                <b className="text-comic-darkBlue">{allTimePlays}</b>
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-slate-700">
+              <span className="font-bold">Abilities:</span>
+              <span className="font-mono text-[10px]">
+                Game: <b className="text-comic-red">{gameAbilities}</b> | All:{' '}
+                <b className="text-comic-darkBlue">{allTimeAbilities}</b>
+              </span>
+            </div>
+            {(gameBasicActions > 0 || allTimeBasicActions > 0) && (
+              <div className="flex items-center justify-between text-slate-700">
+                <span className="font-bold">Actions:</span>
+                <span className="font-mono text-[10px]">
+                  Game: <b className="text-comic-red">{gameBasicActions}</b> | All:{' '}
+                  <b className="text-comic-darkBlue">{allTimeBasicActions}</b>
+                </span>
+              </div>
+            )}
+          </div>
+
           {/* Menu Items */}
           <div className="p-1.5 space-y-1 text-xs">
-            {/* 1. Open in Supplemental Editor */}
+            {/* 1. View Detailed Stats */}
+            <button
+              type="button"
+              onClick={() => setShowStatsModal(true)}
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-gray-800 hover:bg-comic-yellow/50 rounded text-left transition-colors cursor-pointer"
+            >
+              <BarChart2 className="w-4 h-4 text-comic-darkBlue shrink-0" />
+              <span>View Detailed Stats</span>
+            </button>
+
+            {/* 2. Open in Supplemental Editor */}
             <button
               type="button"
               onClick={handleOpenEditor}
@@ -127,7 +211,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
               <span>Open in Supplemental Editor</span>
             </button>
 
-            {/* 2. Open in MarvelCDB */}
+            {/* 3. Open in MarvelCDB */}
             <button
               type="button"
               onClick={handleOpenMarvelCdb}
@@ -137,7 +221,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
               <span>Open in MarvelCDB</span>
             </button>
 
-            {/* 3. Copy Card Code */}
+            {/* 4. Copy Card Code */}
             <button
               type="button"
               onClick={handleCopyCode}
@@ -151,7 +235,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
               <span>{copied ? 'Code Copied!' : 'Copy Card Code'}</span>
             </button>
 
-            {/* 3. Inspect Raw Attributes Modal */}
+            {/* 5. Inspect Raw Attributes Modal */}
             <button
               type="button"
               onClick={() => setShowRawModal(true)}
@@ -161,7 +245,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
               <span>Inspect Attributes</span>
             </button>
 
-            {/* 4. Create Issue for Card */}
+            {/* 6. Create Issue for Card */}
             <button
               type="button"
               onClick={() => setShowReportModal(true)}
@@ -170,6 +254,18 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
               <Bug className="w-4 h-4 text-comic-red shrink-0" />
               <span>Create issue for this card</span>
             </button>
+
+            {/* 7. Reset Card Stats (Dev Mode Only) */}
+            {devMode && (
+              <button
+                type="button"
+                onClick={() => setShowResetConfirmModal(true)}
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-comic-red hover:bg-rose-50 rounded text-left transition-colors cursor-pointer border-t border-gray-200 mt-1 pt-1.5"
+              >
+                <Trash2 className="w-4 h-4 text-comic-red shrink-0" />
+                <span>Reset Card Stats</span>
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -237,6 +333,30 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
             onClose();
           }}
           initialDescription={`Card: ${card.name} (${(card as any).id || card.code})\n\n`}
+        />
+      )}
+
+      {showStatsModal && (
+        <CardStatsModal
+          isOpen={showStatsModal}
+          onClose={() => {
+            setShowStatsModal(false);
+            onClose();
+          }}
+          card={card}
+          gameState={gameState}
+          allTimeStats={allTimeStats}
+          devMode={devMode}
+          onStatsReset={handleStatsReset}
+        />
+      )}
+
+      {showResetConfirmModal && (
+        <ResetCardStatsConfirmModal
+          isOpen={showResetConfirmModal}
+          onClose={() => setShowResetConfirmModal(false)}
+          card={card}
+          onConfirm={handleStatsReset}
         />
       )}
     </>,

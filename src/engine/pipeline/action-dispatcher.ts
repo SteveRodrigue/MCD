@@ -103,6 +103,7 @@ import { getStepEffectParams } from '../../data/supplemental/schema';
 import { isStepGateClosedByState } from './step-gate-evaluator';
 import { applyDamageToTarget, dispatchDefeat } from './damage-pipeline';
 import { applyThwart, applyThreatPlacement } from './threat-pipeline';
+import { recordCardPlay, recordBasicAction } from './stats';
 
 /**
  * Universal Card Routing Helper for Search, Scry, Look and Mulligan Primitives (RR v1.8 p. 19, 26).
@@ -375,6 +376,7 @@ function dispatchSingleAction(
       player.currentForm = nextFormCard.type === CardType.HERO ? 'hero' : 'alter_ego';
       player.basicChangeFormUsedThisRound = true;
       player.formChangedThisRound = true;
+      recordBasicAction(nextState, 'changeForm', player.activeFormCard.code);
       dispatchTrigger(nextState, 'FORM_CHANGED', {
         targetPlayerId: player.id,
         targetType: player.currentForm,
@@ -411,6 +413,7 @@ function dispatchSingleAction(
       player.health += healedAmount;
       player.exhausted = true;
       player.recoveryUsedThisRound = true;
+      recordBasicAction(nextState, 'alterEgoRecover', player.activeFormCard?.code);
 
       const onomatopoeia = 'REST & RECOVER!';
 
@@ -469,6 +472,7 @@ function dispatchSingleAction(
         return { state: nextState, result: { success: true, onomatopoeia } };
       }
 
+      recordBasicAction(nextState, 'heroAttack', player.activeFormCard?.code);
       const heroStats = getEffectiveHeroStats(nextState, player);
       const attackDamage = heroStats.attack;
 
@@ -585,6 +589,7 @@ function dispatchSingleAction(
       const allyIdx = player.allies.findIndex((a) => a.instanceId === action.allyInstanceId);
       const ally = player.allies[allyIdx];
       ally.exhausted = true;
+      recordBasicAction(nextState, 'allyAttack', ally.card.code);
       const allyCard = ally.card as AllyCard;
       const allyStats = getEffectiveAllyStats(nextState, ally);
       const attackDmg = allyStats.attack;
@@ -715,6 +720,7 @@ function dispatchSingleAction(
       const ally = player.allies[allyIdx];
 
       ally.exhausted = true;
+      recordBasicAction(nextState, 'allyThwart', ally.card.code);
       const allyCard = ally.card as AllyCard;
       const allyStats = getEffectiveAllyStats(nextState, ally);
       const thwValue = allyStats.thwart;
@@ -776,6 +782,7 @@ function dispatchSingleAction(
 
       const player = getPlayer(nextState, action.playerId)!;
       player.exhausted = true;
+      recordBasicAction(nextState, 'heroThwart', player.activeFormCard?.code);
 
       const heroStats = getEffectiveHeroStats(nextState, player);
       const thwartValue = heroStats.thwart;
@@ -1062,6 +1069,8 @@ function dispatchSingleAction(
         },
         onomatopoeia,
       });
+
+      recordCardPlay(nextState, playedCardInstance.card.code);
 
       // Target determination
       let targetType:
@@ -3399,6 +3408,10 @@ function dispatchSingleAction(
     case 'DECLARE_DEFENDER': {
       const player = getPlayer(nextState, action.playerId);
       if (!player) return { state, result: { success: false, error: 'Player not found' } };
+
+      if (action.defenderType === 'HERO') {
+        recordBasicAction(nextState, 'heroDefense', player.activeFormCard?.code);
+      }
 
       let updatedState = resolveDefenderDeclaration(nextState, {
         type: action.defenderType,

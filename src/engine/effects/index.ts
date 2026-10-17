@@ -71,6 +71,7 @@ import {
 } from '../pipeline/damage-pipeline';
 import { isImmuneToDamage } from '../pipeline/damage-immunity';
 import { applyThreatPlacement, applyThwart } from '../pipeline/threat-pipeline';
+import { recordAbilityUsage, recordBasicAction } from '../pipeline/stats';
 import {
   getEffectiveMaxHealth,
   getEffectiveHandSize,
@@ -1648,8 +1649,31 @@ export function executeEffect(
   const result = executeEffectInternal(state, abilityOrStep, context);
   if (result.state) {
     checkDeckExhaustionInvariants(result.state);
+    if (result.success) recordDeclaredAbilityUsage(result.state, abilityOrStep, context);
   }
   return result;
+}
+
+/**
+ * Counts a resolved ability (#315) only when the source card declares an ability with that id, so
+ * synthetic prompt abilities and step ids never create stats entries.
+ */
+function recordDeclaredAbilityUsage(
+  state: GameState,
+  abilityOrStep: CardAbility | AbilityStep,
+  context: EffectExecutionContext,
+): void {
+  const abilityId = abilityOrStep.id;
+  if (!abilityId) return;
+  const sourceCard =
+    context.sourceCardInstance?.card ??
+    (context.sourceCardId
+      ? (cardCatalog.getCard(context.sourceCardId) ??
+        findAnyCardInstance(state, context.sourceCardId)?.card)
+      : undefined);
+  if (sourceCard?.enrichment?.abilities?.some((a) => a.id === abilityId)) {
+    recordAbilityUsage(state, sourceCard.code, abilityId);
+  }
 }
 
 function findAnyCardInstance(state?: GameState, idOrCode?: string): CardInstance | undefined {
@@ -4124,6 +4148,10 @@ export function executeStep(
         (step.effectParams?.defenderType as 'HERO' | 'ALLY' | 'UNDEFENDED') || 'UNDEFENDED';
       const allyInstanceId = step.effectParams?.allyInstanceId as string | undefined;
       const playerId = (step.effectParams?.playerId as string) || context.playerId || player.id;
+      if (defenderType === 'HERO') {
+        const defendingPlayer = state.players.find((p) => p.id === playerId) || player;
+        recordBasicAction(state, 'heroDefense', defendingPlayer.activeFormCard?.code);
+      }
       const resState = resolveDefenderDeclaration(state, {
         type: defenderType,
         playerId,

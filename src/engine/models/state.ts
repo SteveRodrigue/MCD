@@ -9,6 +9,7 @@ import {
 } from './card';
 import { StatusCard } from './enums';
 import { AbilityStep, AbilityCost, StepGate, CardAbility } from './abilities';
+import { GameStats } from './stats';
 
 /**
  * Runtime card instance in a zone (hand, deck, discard, or play)
@@ -631,6 +632,8 @@ export interface GameState {
   villainPhaseStepEvent?: VillainPhaseStepEvent;
   winner: 'HEROES' | 'VILLAIN' | null;
   log: GameLogEntry[];
+  /** Card play, ability usage, and basic action statistics (#315) */
+  stats?: GameStats;
   /** Last engine diagnostic error recorded (e.g. infinite trigger loop, invariant violation) */
   lastError?: {
     type: 'INFINITE_LOOP' | 'INVARIANT_VIOLATION' | string;

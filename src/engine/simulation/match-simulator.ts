@@ -1,5 +1,5 @@
 import { GameState, GamePhase, cloneGameState, getActiveVillain } from '@engine/models';
-import { dispatchAction, executeVillainPhase, peekDecisionPrompt } from '../pipeline';
+import { dispatchAction, peekDecisionPrompt } from '../pipeline';
 import { chooseBotAction } from './player-bot';
 import { assertGameStateInvariants } from '../state/state-validator';
 
@@ -195,60 +195,43 @@ export function runMatch(
   // Drain any setup prompts (e.g. Black Panther's Foresight)
   state = drainPrompts(state, seed);
 
+  // The engine drives the round: END_PLAYER_TURN runs clean-up, the villain phase and round upkeep.
+  let actionCountForTurn = 0;
   while (!state.winner && state.roundNumber <= maxRounds) {
-    state.phase = GamePhase.PLAYER_PHASE;
+    if (state.phase !== GamePhase.PLAYER_PHASE) {
+      throw new Error(
+        `[MatchSimulator] Expected PLAYER_PHASE with no pending prompt, found ${state.phase} at step ${state.villainPhaseStep} after '${state.log.at(-1)?.key}' (seed: ${seed}).`,
+      );
+    }
+    const player = state.players[state.activePlayerIndex];
 
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: GamePhase.PLAYER_PHASE,
-      key: 'phase.player_phase.start',
-      params: { round: state.roundNumber },
-      onomatopoeia: 'HEROES ACT!',
-    });
-
-    // 1. PLAYER PHASE: Execute each player's turn in order
-    for (let pIdx = 0; pIdx < state.players.length; pIdx++) {
-      const activeIdx = (state.firstPlayerIndex + pIdx) % state.players.length;
-      state.activePlayerIndex = activeIdx;
-      const player = state.players[activeIdx];
-
-      let actionCountForTurn = 0;
-
-      while (actionCountForTurn < maxActionsPerTurn) {
-        if (state.winner) break;
-
-        const botAction = chooseBotAction({ state, playerId: player.id });
-        if (botAction.type === 'END_PLAYER_TURN') {
-          break;
-        }
-
+    if (actionCountForTurn < maxActionsPerTurn) {
+      const botAction = chooseBotAction({ state, playerId: player.id });
+      if (botAction.type !== 'END_PLAYER_TURN') {
         const dispatchResult = dispatchAction(state, botAction);
-        if (!dispatchResult.result.success) {
-          // If bot chose an illegal action, stop turn
-          break;
+        // An illegal bot choice ends the turn
+        if (dispatchResult.result.success) {
+          state = drainPrompts(dispatchResult.state, seed);
+          totalActions += 1;
+          actionCountForTurn += 1;
+          continue;
         }
-
-        state = dispatchResult.state;
-        totalActions += 1;
-        actionCountForTurn += 1;
-
-        // Drain any prompts produced during player action
-        state = drainPrompts(state, seed);
       }
-
-      if (state.winner) break;
     }
 
-    if (state.winner) break;
+    const roundBefore = state.roundNumber;
+    const endTurn = dispatchAction(state, { type: 'END_PLAYER_TURN', playerId: player.id });
+    if (!endTurn.result.success) {
+      throw new Error(
+        `[MatchSimulator] END_PLAYER_TURN rejected for ${player.id}: ${endTurn.result.error} (seed: ${seed}).`,
+      );
+    }
+    state = drainPrompts(endTurn.state, seed);
+    actionCountForTurn = 0;
 
-    // 2. VILLAIN PHASE: Complete 6-step automation (with AUTO_OPTIMAL headless defense policy)
-    state = executeVillainPhase(state, { synchronousPolicy: 'AUTO_OPTIMAL' });
-    state = drainPrompts(state, seed);
-
-    // Invariant assertion after each round
-    assertGameStateInvariants(state);
+    if (state.roundNumber !== roundBefore) {
+      assertGameStateInvariants(state);
+    }
   }
 
   // Invariant assertion at match end

@@ -14,6 +14,17 @@ Enforceable summary. Explanations, examples, naming tables and architecture live
 - `GameState` stays 100% JSON-serializable (no class instances, closures, DOM nodes, cycles) and is updated immutably.
 - Annotate object literals passed across boundaries (`const ctx: EffectExecutionContext = ...`). `tsc` does not flag a renamed field inside an untyped literal; also `grep` for the old name.
 
+## Recurring-Error Guardrails (examples in `docs/coding_guidelines.md` §15)
+
+- Validators fail closed: a check that could not run is an error; no empty `catch`.
+- Identify cards by code or enum, never by name substring or regex over free-form input.
+- One source of truth: derive lists, schemas and tiles from engine enums or card data; share one function for legality and payment.
+- Untrusted data gets a type guard (`Array.isArray`, `typeof`), not `as any`.
+- No `Date.now()`, `new Date()` or `Math.random()` in `src/engine/`; use `appendLog` and the seeded RNG.
+- UI timers use `useTimeout`; dev-server writes stay inside the intended folder.
+- Tests cover the resolution and fallback paths, not only explicit arguments.
+- Re-check flags the same way the schema does (truthiness); run `rtk npm run deadcode` after refactors.
+
 ## Refactoring and Tech Debt (Refactor Now)
 
 - **Single canonical path:** Never propose "we'll support both", backwards-compatibility shims, or parallel functions that differ only slightly.

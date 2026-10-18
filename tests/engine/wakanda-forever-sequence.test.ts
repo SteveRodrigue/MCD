@@ -282,7 +282,22 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     expect(execRes.success).toBe(true);
     // Prompt was queued
     expect(execRes.state.pendingDecisionQueue?.length).toBe(1);
-    expect(peekDecisionPrompt(execRes.state)?.sourceCardName).toBe('Wakanda Forever!');
+    const prompt = peekDecisionPrompt(execRes.state);
+    expect(prompt?.sourceCardName).toBe('Wakanda Forever!');
+    expect(prompt?.options).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: claws.instanceId,
+          cardCode: '01047',
+          label: 'Panther Claws',
+        }),
+        expect.objectContaining({
+          id: daggers.instanceId,
+          cardCode: '01046',
+          label: 'Energy Daggers',
+        }),
+      ]),
+    );
 
     // Player resolves prompt choosing [daggers, claws]
     const dispatchRes = dispatchAction(execRes.state, {

@@ -7,10 +7,7 @@ interface WakandaForeverModalProps {
   onExecuteSequence: (sequenceOrder: string[]) => void;
 }
 
-interface UpgradeMeta {
-  id: string;
-  name: string;
-  code: string;
+interface UpgradeStyle {
   icon: string;
   baseEffect: string;
   finisherEffect: string;
@@ -19,10 +16,13 @@ interface UpgradeMeta {
   colorClass: string;
 }
 
-const UPGRADE_CONFIGS: Record<string, Omit<UpgradeMeta, 'id'>> = {
+interface UpgradeMeta extends UpgradeStyle {
+  id: string;
+  name: string;
+}
+
+const UPGRADE_STYLES: Record<string, UpgradeStyle> = {
   '01046': {
-    name: 'Energy Daggers',
-    code: '01046',
     icon: '🗡️',
     baseEffect: '1 dmg to villain & engaged minions',
     finisherEffect: '2 DMG TO ALL ENEMIES (FINISHER)',
@@ -31,8 +31,6 @@ const UPGRADE_CONFIGS: Record<string, Omit<UpgradeMeta, 'id'>> = {
     colorClass: 'border-emerald-500 bg-emerald-950/80 text-emerald-100',
   },
   '01047': {
-    name: 'Panther Claws',
-    code: '01047',
     icon: '🐾',
     baseEffect: 'Deal 2 damage to an enemy',
     finisherEffect: 'DEAL 4 DAMAGE TO ENEMY (FINISHER)',
@@ -41,8 +39,6 @@ const UPGRADE_CONFIGS: Record<string, Omit<UpgradeMeta, 'id'>> = {
     colorClass: 'border-rose-500 bg-rose-950/80 text-rose-100',
   },
   '01048': {
-    name: 'Tactical Genius',
-    code: '01048',
     icon: '🧠',
     baseEffect: 'Remove 1 threat from a scheme',
     finisherEffect: 'REMOVE 2 THREAT FROM SCHEME (FINISHER)',
@@ -51,8 +47,6 @@ const UPGRADE_CONFIGS: Record<string, Omit<UpgradeMeta, 'id'>> = {
     colorClass: 'border-sky-500 bg-sky-950/80 text-sky-100',
   },
   '01049': {
-    name: 'Panther Suit',
-    code: '01049',
     icon: '🛡️',
     baseEffect: 'Move 1 damage from BP to enemy',
     finisherEffect: 'MOVE 2 DAMAGE TO ENEMY (FINISHER)',
@@ -68,16 +62,17 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
 }) => {
   // Initialize upgrades from prompt options
   const initialUpgrades: UpgradeMeta[] = prompt.options.map((opt) => {
-    const matchedConfig = Object.values(UPGRADE_CONFIGS).find(
-      (c) => opt.label.includes(c.name) || (opt.description && opt.description.includes(c.name)),
-    );
-    if (matchedConfig) {
-      return { id: opt.id, ...matchedConfig };
+    const style = opt.cardCode ? UPGRADE_STYLES[opt.cardCode] : undefined;
+    if (style) {
+      return {
+        id: opt.id,
+        name: opt.label,
+        ...style,
+      };
     }
     return {
       id: opt.id,
       name: opt.label,
-      code: 'unknown',
       icon: '⚡',
       baseEffect: opt.description || 'Special effect',
       finisherEffect: `${opt.description || 'Special effect'} (BOOSTED)`,

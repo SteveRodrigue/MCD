@@ -14,19 +14,6 @@ A commit and push only ever happen in response to the user's explicit request in
 
 ---
 
-## Commit Preparation Lifecycle
-
-```mermaid
-flowchart TD
-    S1["1. Inspect Working Tree & Status (rtk git status, rtk git diff)"] --> S2["2. Stage Target Changes & Format Staged Files (rtk git add)"]
-    S2 --> S3["3. Categorize & Select Scope (Conventional Commits)"]
-    S3 --> S4["4. Formulate Concise Commit Message"]
-    S4 --> S5["5. Validate issue references, then commit (pre-commit runs format/lint/typecheck)"]
-    S5 --> S6["6. Push (pre-push runs full npm test) & verify issue state"]
-```
-
----
-
 ## 🔍 Step 1: Inspect Working Tree & Changes
 
 1. Run `rtk git status` to detect staged, unstaged, and untracked files.

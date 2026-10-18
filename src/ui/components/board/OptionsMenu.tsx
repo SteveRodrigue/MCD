@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTimeout } from '../../hooks/useTimeout';
 import { ModalLayer } from '../layout/ModalLayer';
 import {
   Settings,
@@ -29,6 +30,7 @@ interface OptionsMenuProps {
 }
 
 export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameState }) => {
+  const later = useTimeout();
   const [snapshotSuccess, setSnapshotSuccess] = useState<string | null>(null);
   const [showResetAllConfirm, setShowResetAllConfirm] = useState(false);
   const [resetSuccess, setResetSuccess] = useState<string | null>(null);
@@ -361,7 +363,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
                   onClick={async () => {
                     await logGameStateSnapshot(gameState, undefined, 'Manual User Snapshot');
                     setSnapshotSuccess('Snapshot saved to logs/gamestates/latest_gamestate.json');
-                    setTimeout(() => setSnapshotSuccess(null), 3000);
+                    later(() => setSnapshotSuccess(null), 3000);
                   }}
                   className="px-3 py-1 font-comic text-xs rounded border-2 border-comic-black bg-comic-yellow hover:bg-amber-300 text-comic-black font-bold shadow-comic-sm cursor-pointer transition-all hover:scale-105"
                 >
@@ -435,7 +437,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
           onConfirm={async () => {
             await resetAllStats();
             setResetSuccess('All card play statistics have been reset.');
-            setTimeout(() => setResetSuccess(null), 3000);
+            later(() => setResetSuccess(null), 3000);
           }}
         />
       )}

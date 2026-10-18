@@ -31,7 +31,7 @@ import { CardAttachmentFan } from '../cards/CardAttachmentFan';
 import { getStaircaseExpansion } from '../cards/attachment-fan-utils';
 import { FacedownEncounterCard } from '../cards/FacedownEncounterCard';
 import { ThreatZoneSubzone } from './ThreatZoneSubzone';
-import { useGameSettings } from '../../context/useGameSettings';
+import { useOptionalGameSettings } from '../../context/useGameSettings';
 import { IdentityActionModal } from './IdentityActionModal';
 import { ComicDamageSplash } from './ComicDamageSplash';
 import { AttackTargetModal } from './AttackTargetModal';
@@ -79,15 +79,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const [isIdentityModalOpen, setIsIdentityModalOpen] = useState(false);
   const palette = useMemo(() => getHeroColorPalette(player), [player]);
 
-  let isDevMode = devModeProp ?? false;
-  try {
-    const settings = useGameSettings();
-    if (devModeProp === undefined && settings) {
-      isDevMode = settings.devMode;
-    }
-  } catch {
-    // Rendered outside GameSettingsProvider
-  }
+  const settings = useOptionalGameSettings();
+  const isDevMode = devModeProp ?? settings?.devMode ?? false;
 
   const isHero = player.currentForm === 'hero';
   const isPlayerTurn = gameState

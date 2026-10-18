@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTimeout } from '../../hooks/useTimeout';
 import { createPortal } from 'react-dom';
 import { NormalizedCard } from '../../../engine/models';
 import { AllTimeStats } from '../../../engine/models/stats';
@@ -17,6 +18,7 @@ interface CardContextMenuProps {
 }
 
 export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position, onClose }) => {
+  const later = useTimeout();
   const menuRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
@@ -84,7 +86,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
     e.stopPropagation();
     navigator.clipboard.writeText(card.code);
     setCopied(true);
-    setTimeout(() => {
+    later(() => {
       setCopied(false);
       onClose();
     }, 800);
@@ -94,7 +96,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
     e.stopPropagation();
     navigator.clipboard.writeText(JSON.stringify(card, null, 2));
     setCopiedJson(true);
-    setTimeout(() => {
+    later(() => {
       setCopiedJson(false);
     }, 1500);
   };

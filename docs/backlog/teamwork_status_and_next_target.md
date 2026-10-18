@@ -1,6 +1,6 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-18 (code audit AUD-20261017-232534 remediated; R1–R2 delivered; remaining work R3–R16 in section 3.5)
+> **Last updated:** 2026-10-18 (code audit AUD-20261017-232534 remediated; R1–R2 delivered; R2 review fixes in 524beb2; remaining work R3–R16 in section 3.5)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
 > **Verification baseline:** 🟢 3,025 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
@@ -97,7 +97,7 @@ The 21 findings were remediated on 2026-10-17/18 (`94ebc97..f6e470f`, pushed). W
 | R15 | Audit open questions: log growth, art fallback CORS, bundled packs                               | Tech Debt          | 1    | 2–4 h      | [plan_audit_r15_open_questions.md](plan_audit_r15_open_questions.md)                               |
 | R16 | Review all documentation (ADRs, specs, guides) against the code — **last, after R1–R15**         | Tech Debt          | 1    | 1–2 days   | [plan_audit_r16_documentation_review.md](plan_audit_r16_documentation_review.md)                   |
 
-**Gate 1 is done when** sections 3.1 to 3.4 and row R2 of section 3.5 are empty, the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
+**Gate 1 is done when** sections 3.1 to 3.4 are empty (R2, the last Gate 1 row of section 3.5, is delivered), the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
 
 ---
 

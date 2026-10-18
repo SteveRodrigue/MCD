@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/main.tsx", "scripts/**/*.ts", "tools/**/*.ts", "tests/**/*.{ts,tsx}"],
+  "project": ["src/**/*.{ts,tsx}", "scripts/**/*.ts", "tools/**/*.ts", "tests/**/*.{ts,tsx}"],
+  "ignore": ["src/data/index.ts", "src/data/card-loader.ts"],
+  "ignoreExportsUsedInFile": true,
+  "ignoreIssues": {
+    "src/engine/effects/index.ts": ["exports"],
+    "src/ui/components/board/**": ["exports"],
+    "src/ui/components/cards/CardView.tsx": ["exports"]
+  },
+  "rules": {
+    "types": "off",
+    "duplicates": "off"
+  }
+}

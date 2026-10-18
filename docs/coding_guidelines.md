@@ -203,6 +203,8 @@ To ensure stability, prevent technical debt, and maintain high velocity, all dev
    - **Fix Problems As They Are Found:** When a test fails or a regression is discovered, diagnose and resolve it immediately at the root cause. Never bypass, skip, or disable tests to force a green pipeline.
    - **Zero Lingering Code / Problems:** If an old test asserted superseded engine semantics (e.g. legacy synchronous behavior replaced by interactive decision prompts under an accepted ADR) and dedicated contract tests already verify the modern architecture, prune and delete the obsolete test completely rather than leaving it skipped. Lingering skipped tests are strictly forbidden as tech debt.
    - **Full Suite Invariant:** Verification across all environments must always enforce `0 failed | 0 skipped | 100% green`.
+5. **Coverage Thresholds as a Ratchet:**
+   - Coverage thresholds in `vitest.config.ts` are a ratchet (raise when coverage rises, never lower).
 
 ---
 

@@ -43,6 +43,15 @@ export default {
       borderWidth: {
         comic: '3px',
       },
+      keyframes: {
+        'section-open': {
+          from: { opacity: '0', transform: 'translateY(-4px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'section-open': 'section-open 200ms ease-in-out',
+      },
       zIndex: Object.fromEntries(Object.entries(Z).map(([key, value]) => [key, String(value)])),
     },
   },

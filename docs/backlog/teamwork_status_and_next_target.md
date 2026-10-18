@@ -83,7 +83,6 @@ Plan (approved 2026-10-17): [plan_audit_20261017_remediation.md](plan_audit_2026
 | #   | Finding                                                                | Tier | Estimate |
 | --- | ---------------------------------------------------------------------- | ---- | -------- |
 | 4   | F004 setup reads `ScenarioRegistry`; delete legacy `catalog.ts`        | 2    | 4–6 h    |
-| 9   | F018 remove unused dependencies and fonts                              | 1    | 1 h      |
 | 10  | F009 `appendLog` helper and deterministic ids                          | 2    | 1–2 days |
 | 11  | F005-A share card definitions across state clones                      | 2    | 4–8 h    |
 | 12  | F008 typed card filter; fix `isIdentitySpecific`                       | 2    | 1 day    |

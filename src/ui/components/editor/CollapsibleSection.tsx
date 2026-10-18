@@ -1,7 +1,6 @@
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export interface CollapsibleSectionProps {
   title: string;
@@ -61,11 +60,6 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
     setIsExpanded((prev) => !prev);
   };
 
-  const isTestEnv =
-    typeof process !== 'undefined' &&
-    (process.env.NODE_ENV === 'test' || Boolean(process.env.VITEST));
-  const animDuration = forceOpen || isTestEnv ? 0 : 0.2;
-
   return (
     <div
       data-testid={testId}
@@ -110,10 +104,10 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
             </span>
           )}
         </div>
-        <motion.div
-          animate={{ rotate: effectiveExpanded ? 0 : -90 }}
-          transition={{ duration: animDuration > 0 ? 0.15 : 0 }}
-          className="text-gray-600 flex items-center justify-center"
+        <div
+          className={`text-gray-600 flex items-center justify-center transition-transform duration-150 ${
+            effectiveExpanded ? '' : '-rotate-90'
+          }`}
         >
           <ChevronDown
             className="w-4 h-4 text-black"
@@ -125,27 +119,20 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
                 : undefined
             }
           />
-        </motion.div>
+        </div>
       </div>
 
-      <AnimatePresence initial={false}>
-        {effectiveExpanded && (
-          <motion.div
-            key="content"
-            initial={isTestEnv ? false : { height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={isTestEnv ? undefined : { height: 0, opacity: 0 }}
-            transition={{ duration: animDuration, ease: 'easeInOut' }}
-            style={{ overflow: 'hidden' }}
-            id={contentId}
-            role="region"
-            aria-labelledby={headerId}
-            data-testid={testId ? `${testId}-content` : undefined}
-          >
-            <div className="p-3 border-t border-gray-200">{children}</div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {effectiveExpanded && (
+        <div
+          id={contentId}
+          role="region"
+          aria-labelledby={headerId}
+          data-testid={testId ? `${testId}-content` : undefined}
+          className={`overflow-hidden ${forceOpen ? '' : 'animate-section-open'}`}
+        >
+          <div className="p-3 border-t border-gray-200">{children}</div>
+        </div>
+      )}
     </div>
   );
 };

@@ -127,17 +127,18 @@ export function matchesTriggerFilter(
   }
 
   if (filter.attackerCardFilter) {
-    const attackerCard = context.attackerCard?.card;
-    if (!attackerCard) return false;
-    if (!matchesCardFilter(attackerCard, filter.attackerCardFilter, { player })) {
+    if (!context.attackerCard?.card) return false;
+    if (!matchesCardFilter(context.attackerCard, filter.attackerCardFilter, { player })) {
       return false;
     }
   }
 
   if (filter.cardFilter) {
-    const card = context.encounterCardInstance?.card || context.attackerCard?.card;
-    if (!card) return false;
-    if (!matchesCardFilter(card, filter.cardFilter, { player })) {
+    const subject = context.encounterCardInstance?.card
+      ? context.encounterCardInstance
+      : context.attackerCard;
+    if (!subject?.card) return false;
+    if (!matchesCardFilter(subject, filter.cardFilter, { player })) {
       return false;
     }
   }

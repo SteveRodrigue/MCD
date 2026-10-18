@@ -160,7 +160,7 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
           effect: 'SEARCH',
           effectParams: {
             source: 'PLAYER_DISCARD',
-            filter: { trait: 'Tech', type: 'upgrade' },
+            filter: { traits: ['Tech'], types: ['upgrade'] },
             selectedDestination: 'HAND',
             takeCount: 1,
             autoSelectIfUnambiguous: true,

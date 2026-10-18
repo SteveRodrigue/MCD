@@ -508,7 +508,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     return player.hand.filter((c) => {
       if (c.instanceId === cardToPlay?.instanceId) return false;
       if (discardCost.filter) {
-        return matchesCardFilter(c.card, discardCost.filter, { player, state: gameState });
+        return matchesCardFilter(c, discardCost.filter, { player, state: gameState });
       }
       return true;
     });

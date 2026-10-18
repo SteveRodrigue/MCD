@@ -142,8 +142,19 @@ describe('trigger filter members (#276)', () => {
 
     it('isIdentitySpecific accepts only cards of the player hero set', () => {
       const filter: TriggerFilter = { attackerCardFilter: { isIdentitySpecific: true } };
-      const heroCard = attacker({ code: '01005', type: 'event', raw: {} });
-      const otherCard = attacker({ code: '09999', type: 'event', raw: {} });
+      const heroSet = player().hero.setCode;
+      const heroCard = attacker({
+        code: '01005',
+        type: 'event',
+        setCode: heroSet,
+        belongsToHeroSet: true,
+      });
+      const otherCard = attacker({
+        code: '01023',
+        type: 'event',
+        setCode: 'she_hulk',
+        belongsToHeroSet: true,
+      });
       expect(matchesTriggerFilter(filter, heroCard, player())).toBe(true);
       expect(matchesTriggerFilter(filter, otherCard, player())).toBe(false);
     });

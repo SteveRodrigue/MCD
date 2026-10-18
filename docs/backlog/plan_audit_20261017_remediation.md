@@ -260,3 +260,17 @@ Detailed plans are written into this section before each item starts. Tier 3 ite
 | 18    | F010-A / F014-B,C handler registries, catalog injection                         | 2–3  | F014-B (catalog injection) is Tier 3: **owner approval required** |
 | 19    | F011-A declarative scenario plugin                                              | 2    | Gate 2 scope (Klaw/Ultron re-verification)                        |
 | 20    | F015 enums, F019 dev-server middleware, F020 UI hygiene, F021 lint/docs hygiene | 1–2  | F019 path traversal goes through `security-review`                |
+
+---
+
+## 12. F008: typed card filter (detail)
+
+**Rules/spec analysis.** `docs/specifications/supplemental/04_universal_card_filter.md`: `isIdentitySpecific` is "cards belonging to the active player's identity set"; `PLAYER_NEMESIS` is "the resolving hero's nemesis set" (used only by Shadow of the Past 01190, "your set-aside nemesis", confidence 100 %); `isExhausted` and `hasStatus` read the card in play. The old evaluator read upstream fields that do not exist (`card_set_code`, `set_type`, `raw.keywords`), so `isIdentitySpecific` matched almost every Core card by code prefix, and `isExhausted`/`hasStatus` read instance state from the card definition, where it never is.
+
+**Simplification & Refactor Check.** Rewrite `matchesCardFilter` on normalized fields only (`type`, `faction`, `setCode`, `belongsToHeroSet`, `keywords` via `hasKeyword`); delete every alias key branch (`type`, `trait`, `set`, `targetCardCode`, ...), which the strict schema already rejects. The subject is a card or a card in play (`{ card, exhausted, statusCards }`), so callers pass the instance they hold. Delete the `matchCardFilter` alias. Replace the `raw.keywords` Piercing/Overkill probes with `hasKeyword` and drop the dead `raw.restricted` probe.
+
+**File changes.** `src/engine/filters/card-filter.ts`; callers in `effects/index.ts`, `dynamic-formula-evaluator.ts`, `trigger-dispatcher.ts`, `attachment-host.ts`, `cost-engine.ts`, `legality-checker.ts`, `CardPaymentModal.tsx`; `card-loader.ts`; tests that used alias keys.
+
+**Tests.** Filter tests for identity (Spider-Man vs She-Hulk card), `PLAYER_NEMESIS`, exact set match, in-play criteria on a definition; full suite.
+
+**Open decisions.** None. **UI and Card Editor impact.** None: the editor already writes only canonical keys.

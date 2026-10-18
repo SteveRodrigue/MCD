@@ -143,7 +143,7 @@ export function parseKeywords(raw: RawUpstreamCard): Keyword[] {
   const keywords = new Set<Keyword>();
   const printed = (keyword: string) => hasPrintedKeyword(raw.text, keyword);
 
-  if (printed('restricted') || (raw as any).restricted) keywords.add(Keyword.RESTRICTED);
+  if (printed('restricted')) keywords.add(Keyword.RESTRICTED);
   if (printed('permanent') || raw.permanent) keywords.add(Keyword.PERMANENT);
   if (printed('guard')) keywords.add(Keyword.GUARD);
   if (printed('patrol')) keywords.add(Keyword.PATROL);

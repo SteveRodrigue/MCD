@@ -743,7 +743,7 @@ export function evaluatePlayFromZoneRequirement(
 
   if (filter) {
     candidates = candidates.filter(
-      (c) => Boolean(c?.card) && matchesCardFilter(c.card, filter, { state, player }),
+      (c) => Boolean(c?.card) && matchesCardFilter(c, filter, { state, player }),
     );
   }
 
@@ -1194,7 +1194,7 @@ export function evaluateSearchLegality(
     if (target === 'CHOSEN_PLAYER' || target === 'ALL_PLAYERS') {
       const anyPlayerHasMatch = (state.players || []).some((p) =>
         (p.discard || []).some(
-          (c) => !filter || matchesCardFilter(c.card, filter, { state, player: p }),
+          (c) => !filter || matchesCardFilter(c, filter, { state, player: p }),
         ),
       );
       if (!anyPlayerHasMatch) {
@@ -1205,7 +1205,7 @@ export function evaluateSearchLegality(
       }
     } else if (target === 'SELF' || target === 'ACTIVE_PLAYER' || !target) {
       const hasMatch = (player.discard || []).some(
-        (c) => !filter || matchesCardFilter(c.card, filter, { state, player }),
+        (c) => !filter || matchesCardFilter(c, filter, { state, player }),
       );
       if (!hasMatch) {
         return {
@@ -1218,7 +1218,7 @@ export function evaluateSearchLegality(
 
   if (sources.includes('ENCOUNTER_DISCARD')) {
     const hasMatch = (state.encounterDiscard || []).some(
-      (c) => !filter || matchesCardFilter(c.card, filter, { state, player }),
+      (c) => !filter || matchesCardFilter(c, filter, { state, player }),
     );
     if (!hasMatch) {
       return {

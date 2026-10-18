@@ -13,7 +13,7 @@ import {
   VillainCard,
   SideSchemeCard,
 } from '@engine/models';
-import { matchCardFilter } from '@engine/effects';
+import { matchesCardFilter } from '@engine/effects';
 
 // Import real upstream JSON datasets directly
 import corePack from '../../data/upstream/pack/core.json';
@@ -39,18 +39,18 @@ describe('Card Loader & Normalizer Unit Tests', () => {
       expect(parseTraits('Trap!')).toEqual(['Trap!']);
     });
 
-    it('matches S.H.I.E.L.D. cards case- and punctuation-insensitively via matchCardFilter (#72)', () => {
+    it('matches S.H.I.E.L.D. cards case- and punctuation-insensitively via matchesCardFilter (#72)', () => {
       const card = {
         code: '01010b',
         name: 'Carol Danvers',
         traits: ['S.H.I.E.L.D.', 'Soldier'],
       } as any;
 
-      expect(matchCardFilter(card, { trait: 'S.H.I.E.L.D.' })).toBe(true);
-      expect(matchCardFilter(card, { trait: 'SHIELD' })).toBe(true);
-      expect(matchCardFilter(card, { trait: 'shield' })).toBe(true);
-      expect(matchCardFilter(card, { traits: ['shield', 'avenger'] })).toBe(true);
-      expect(matchCardFilter(card, { trait: 'Hydra' })).toBe(false);
+      expect(matchesCardFilter(card, { traits: ['S.H.I.E.L.D.'] })).toBe(true);
+      expect(matchesCardFilter(card, { traits: ['SHIELD'] })).toBe(true);
+      expect(matchesCardFilter(card, { traits: ['shield'] })).toBe(true);
+      expect(matchesCardFilter(card, { traits: ['shield', 'avenger'] })).toBe(true);
+      expect(matchesCardFilter(card, { traits: ['Hydra'] })).toBe(false);
     });
 
     it('correctly aggregates resource yields', () => {

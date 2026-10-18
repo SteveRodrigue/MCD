@@ -363,7 +363,7 @@ export function canPayAbilityCost(
       }
       if (cost.discardCard.filter) {
         const matchingCount = handCards.filter((c) =>
-          matchesCardFilter(c.card, cost.discardCard!.filter, { player, state }),
+          matchesCardFilter(c, cost.discardCard!.filter, { player, state }),
         ).length;
         if (matchingCount < bounds.min) {
           return {
@@ -383,7 +383,7 @@ export function canPayAbilityCost(
           }
           if (
             cost.discardCard.filter &&
-            !matchesCardFilter(cardInst.card, cost.discardCard.filter, { player, state })
+            !matchesCardFilter(cardInst, cost.discardCard.filter, { player, state })
           ) {
             return {
               allowed: false,

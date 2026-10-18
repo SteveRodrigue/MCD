@@ -31,7 +31,7 @@ import {
   getPerPlayerCount,
   getFirstPlayer,
 } from '@engine/models';
-import { matchesCardFilter } from '../filters/card-filter';
+import { matchesCardFilter, type FilterSubject } from '../filters/card-filter';
 import {
   executeVillainAttackAgainstPlayer,
   executeVillainSchemeAgainstPlayer,
@@ -114,21 +114,19 @@ function filterResolvedTargets(
 ): ResolvedTarget[] {
   if (!filter) return targets;
   return targets.filter((t) => {
-    let card: NormalizedCard | undefined;
+    let subject: FilterSubject | undefined;
     if (t.kind === 'card') {
-      card = t.entity.card;
+      subject = t.entity;
     } else if (t.kind === 'player') {
-      card = t.entity.activeFormCard;
+      subject = t.entity.activeFormCard;
     } else if (t.kind === 'character') {
       if (t.entityType === 'hero' || t.entityType === 'alter_ego') {
-        card = (t.entity as PlayerState).activeFormCard;
-      } else if (t.entityType === 'villain') {
-        card = (t.entity as VillainState).card;
+        subject = (t.entity as PlayerState).activeFormCard;
       } else {
-        card = (t.entity as CardInstance).card;
+        subject = t.entity as VillainState | CardInstance;
       }
     }
-    return card ? matchesCardFilter(card, filter, { player, state }) : false;
+    return subject ? matchesCardFilter(subject, filter, { player, state }) : false;
   });
 }
 
@@ -311,10 +309,6 @@ export function moveDefeatedCardToPile(
  * Delegates to pure engine module src/engine/filters/card-filter.ts.
  */
 export { matchesCardFilter } from '../filters/card-filter';
-
-export function matchCardFilter(card: NormalizedCard, filter?: any, player?: PlayerState): boolean {
-  return matchesCardFilter(card, filter, { player });
-}
 
 import { checkAndDiscardZeroCounterCard, getAvailableResources } from '../pipeline/cost-engine';
 import { appendLog } from '../state/game-log';
@@ -1812,7 +1806,7 @@ export function executeDiscard(
 
     for (const targetPlayer of targetPlayers) {
       const candidates = filter
-        ? targetPlayer.hand.filter((c) => matchCardFilter(c.card, filter, targetPlayer))
+        ? targetPlayer.hand.filter((c) => matchesCardFilter(c, filter, { player: targetPlayer }))
         : [...targetPlayer.hand];
       const toDiscardCount = isCountAll ? candidates.length : Math.min(count, candidates.length);
       const chosen: CardInstance[] = [];
@@ -1876,7 +1870,7 @@ export function executeDiscard(
     for (let i = 0; i < count; i++) {
       const card = player.deck.shift();
       if (card) {
-        if (matchingDestination && filter && matchCardFilter(card.card, filter, player)) {
+        if (matchingDestination && filter && matchesCardFilter(card, filter, { player })) {
           if (matchingDestination === 'HAND') {
             player.hand.push(card);
             addedToHandCards.push(card);
@@ -1955,7 +1949,7 @@ export function executeDiscard(
         };
       }
       const { found, discarded } = discardFromEncounterDeckUntil(state, (c) =>
-        matchesCardFilter(c.card, untilFilter, { player, state }),
+        matchesCardFilter(c, untilFilter, { player, state }),
       );
       if (found && matchingDestination === 'DISCARD') {
         state.encounterDiscard.push(found);
@@ -2061,7 +2055,7 @@ export function executeDiscard(
     }
 
     const matchingCards = player.tableau.filter(
-      (inst) => !filter || matchesCardFilter(inst.card, filter, { player, state }),
+      (inst) => !filter || matchesCardFilter(inst, filter, { player, state }),
     );
 
     if (matchingCards.length === 0) {
@@ -2451,8 +2445,7 @@ export function executeStep(
       const hasPiercing = Boolean(
         step.effectParams?.piercing ||
         step.effectParams?.keyword === 'Piercing' ||
-        (context.sourceCardInstance?.card as any)?.keywords?.includes('Piercing') ||
-        (context.sourceCardInstance?.card.raw as any)?.keywords?.includes('Piercing'),
+        hasKeyword(context.sourceCardInstance, Keyword.PIERCING),
       );
       const damageOpts: AbilityDamageOptions = {
         // A labelled "(attack)" ability is an attack by the player's identity (#247)
@@ -2644,8 +2637,7 @@ export function executeStep(
           // Overkill: excess damage over the minion goes to the villain (RR v1.8 glossary O)
           const hasOverkill = Boolean(
             context.grantedAttackKeywords?.some((k) => k.toLowerCase() === 'overkill') ||
-            (context.sourceCardInstance?.card as any)?.keywords?.includes('Overkill') ||
-            (context.sourceCardInstance?.card.raw as any)?.keywords?.includes('Overkill'),
+            hasKeyword(context.sourceCardInstance, Keyword.OVERKILL),
           );
 
           const minionHp = getEffectiveMinionHitPoints(state, minion);
@@ -4127,7 +4119,7 @@ export function executeStep(
       const matches = (
         step.effectParams?.target === 'SELF' && context.sourceCardInstance
           ? [context.sourceCardInstance]
-          : sourceList.filter((c) => matchesCardFilter(c.card, filter, { player, state }))
+          : sourceList.filter((c) => matchesCardFilter(c, filter, { player, state }))
       ).filter((c) => !c.card.isUnique || checkUniqueCardPlayable(state, c.card).allowed);
 
       if (matches.length === 0) {
@@ -4270,7 +4262,7 @@ export function executeStep(
       }
 
       let matches = filter
-        ? sourceList.filter((c) => matchesCardFilter(c.card, filter, { player, state }))
+        ? sourceList.filter((c) => matchesCardFilter(c, filter, { player, state }))
         : [...sourceList];
 
       if (count !== undefined && matches.length > count) {
@@ -4836,7 +4828,7 @@ export function executeStep(
 
       if (targetParam === 'CHOSEN_PLAYER' && state.players.length > 1 && !targetPlayerId) {
         const eligiblePlayers = state.players.filter((p) =>
-          p.discard.some((c) => matchesCardFilter(c.card, filter, { state, player: p })),
+          p.discard.some((c) => matchesCardFilter(c, filter, { state, player: p })),
         );
 
         if (allowAutoSelect && eligiblePlayers.length === 1) {
@@ -5091,7 +5083,7 @@ export function executeStep(
 
       // Filter matching candidate cards
       let matchingCandidates = lookedCards.filter((c) =>
-        matchCardFilter(c.card, filter, targetPlayer),
+        matchesCardFilter(c, filter, { player: targetPlayer }),
       );
       if (step.effectParams?.fromTop === true) {
         matchingCandidates = matchingCandidates.slice(0, countToTake);
@@ -5501,20 +5493,20 @@ export function executeStep(
       if (source === 'ANY_PLAYER_DISCARD') {
         for (const p of state.players) {
           for (const cardInst of p.discard) {
-            if (matchesCardFilter(cardInst.card, filter, { player, state })) {
+            if (matchesCardFilter(cardInst, filter, { player, state })) {
               candidates.push({ instance: cardInst, owner: p });
             }
           }
         }
       } else if (source === 'PLAYER_DISCARD') {
         for (const cardInst of player.discard) {
-          if (matchesCardFilter(cardInst.card, filter, { player, state })) {
+          if (matchesCardFilter(cardInst, filter, { player, state })) {
             candidates.push({ instance: cardInst, owner: player });
           }
         }
       } else if (source === 'PLAYER_DECK') {
         for (const cardInst of player.deck) {
-          if (matchesCardFilter(cardInst.card, filter, { player, state })) {
+          if (matchesCardFilter(cardInst, filter, { player, state })) {
             candidates.push({ instance: cardInst, owner: player });
           }
         }

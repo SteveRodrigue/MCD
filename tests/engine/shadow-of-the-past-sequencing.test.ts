@@ -148,7 +148,7 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
           effectParams: {
             from: 'SET_ASIDE',
             to: 'ENGAGED_WITH_PLAYER',
-            filter: { type: 'minion', set: 'PLAYER_NEMESIS' },
+            filter: { types: ['minion'], sets: ['PLAYER_NEMESIS'] },
           },
         },
         {
@@ -157,7 +157,7 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
           effectParams: {
             from: 'SET_ASIDE',
             to: 'SIDE_SCHEMES',
-            filter: { type: 'side_scheme', set: 'PLAYER_NEMESIS' },
+            filter: { types: ['side_scheme'], sets: ['PLAYER_NEMESIS'] },
           },
         },
         {
@@ -230,7 +230,7 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
           effectParams: {
             from: 'SET_ASIDE',
             to: 'ENGAGED_WITH_PLAYER',
-            filter: { type: 'minion', set: 'PLAYER_NEMESIS' },
+            filter: { types: ['minion'], sets: ['PLAYER_NEMESIS'] },
           },
         },
         {
@@ -239,7 +239,7 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
           effectParams: {
             from: 'SET_ASIDE',
             to: 'SIDE_SCHEMES',
-            filter: { type: 'side_scheme', set: 'PLAYER_NEMESIS' },
+            filter: { types: ['side_scheme'], sets: ['PLAYER_NEMESIS'] },
           },
         },
         {

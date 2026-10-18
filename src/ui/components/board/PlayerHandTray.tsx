@@ -11,7 +11,10 @@ import {
 import { CardView } from '../cards/CardView';
 import { useGameSettings } from '../../context/useGameSettings';
 import { CardPaymentModal } from './CardPaymentModal';
-import { evaluateCardPlayability } from '../../../engine/pipeline/legality-checker';
+import {
+  evaluateCardPlayability,
+  type CardPlayabilityStatus,
+} from '../../../engine/pipeline/legality-checker';
 import { useHandFanLayout } from '../../hooks/useHandFanLayout';
 import { getHeroColorPalette } from '../../utils/hero-theme';
 import { getCardBackUrl, getCardBackFallbackColor } from '../../services/card-cache-service';
@@ -108,12 +111,23 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   const [turnWarning, setTurnWarning] = useState<string | null>(null);
   const [deckImageError, setDeckImageError] = useState(false);
 
+  // One evaluation per hand card and state, shared by the click guard, the end-turn pulse and the fan
+  const playabilityById = useMemo(() => {
+    const byId = new Map<string, CardPlayabilityStatus>();
+    if (player && gameState) {
+      for (const cardInst of hand) {
+        byId.set(cardInst.instanceId, evaluateCardPlayability(gameState, player.id, cardInst));
+      }
+    }
+    return byId;
+  }, [hand, player, gameState]);
+
   const activePlayer = gameState?.players[gameState?.activePlayerIndex ?? 0];
   const isActivePlayerTurn = gameState?.phase === 'PLAYER_PHASE' && activePlayer?.id === player?.id;
 
   const handleCardClick = (cardInst: CardInstance) => {
-    if (player && gameState) {
-      const playability = evaluateCardPlayability(gameState, player.id, cardInst);
+    const playability = playabilityById.get(cardInst.instanceId);
+    if (playability) {
       if (!playability.isPlayable) {
         setTurnWarning(`Cannot play ${cardInst.card.name}: ${playability.reasons.join(' • ')}`);
         setTimeout(() => setTurnWarning(null), 4500);
@@ -239,13 +253,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   }, [processedDeckItems, sortMode]);
 
   // Check if player has any playable cards remaining in hand
-  const hasPlayableCardInHand = useMemo(() => {
-    if (!player || !gameState || hand.length === 0) return false;
-    return hand.some((cardInst) => {
-      const playability = evaluateCardPlayability(gameState, player.id, cardInst);
-      return playability.isPlayable;
-    });
-  }, [hand, player, gameState]);
+  const hasPlayableCardInHand = [...playabilityById.values()].some((p) => p.isPlayable);
 
   const shouldPulseEndTurn = isActivePlayerTurn && !hasPlayableCardInHand;
 
@@ -443,10 +451,11 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             >
               {hand.map((cardInst, index) => {
                 const isHovered = hoveredHandCardId === cardInst.instanceId;
-                const playability =
-                  player && gameState
-                    ? evaluateCardPlayability(gameState, player.id, cardInst)
-                    : { isPlayable: true, reasons: [], maxPotentialResources: 0 };
+                const playability = playabilityById.get(cardInst.instanceId) ?? {
+                  isPlayable: true,
+                  reasons: [],
+                  maxPotentialResources: 0,
+                };
 
                 return (
                   <div

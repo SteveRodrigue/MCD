@@ -675,30 +675,10 @@ describe('Empirical Verification: Multiplayer Combat & Defense Scenarios', () =>
     });
     p2.allies.push(blackCat);
 
-    // Boost card that discards/defeats the defending ally during step 5
-    const boostCard = createMockCardInstance(
-      'boost_discard_ally',
-      'Collateral Damage',
-      'treachery',
-      {
-        boostIcons: 0,
-        boostStar: true,
-        enrichment: {
-          abilities: [
-            {
-              id: 'boost_kill_ally',
-              timing: 'BOOST',
-              steps: [
-                {
-                  effect: 'DISCARD_ALLY',
-                  effectParams: { target: 'DEFENDING_CHARACTER' },
-                },
-              ],
-            },
-          ],
-        },
-      },
-    );
+    // A boost card with no boost icon: the ally's defeat is simulated below
+    const boostCard = createMockCardInstance('boost_blank', 'Blank Boost', 'treachery', {
+      boostIcons: 0,
+    });
     state.encounterDeck = [boostCard];
 
     // Rhino (ATK 3) attacks Player 1

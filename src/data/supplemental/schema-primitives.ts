@@ -255,6 +255,11 @@ export const EffectTypeSchema = z.enum([
 
 export type EffectType = z.infer<typeof EffectTypeSchema>;
 
+/** True for an executable effect; prompt options also carry routing markers such as `PASS`. */
+export function isEffectType(value: string): value is EffectType {
+  return (EffectTypeSchema.options as readonly string[]).includes(value);
+}
+
 /**
  * Resource Types
  */

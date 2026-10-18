@@ -711,8 +711,9 @@ export function getPlayerAllyLimit(state: GameState, playerId: string): number {
 function evaluatePlayFromZoneRequirement(
   state: GameState,
   player: PlayerState,
-  card: NormalizedCard,
+  cardInstance: CardInstance,
 ): { allowed: boolean; reason?: string } {
+  const card = cardInstance.card;
   let playFromZoneStep: AbilityStep | undefined;
   for (const ability of card.enrichment?.abilities || []) {
     for (const step of ability.steps || []) {
@@ -779,8 +780,10 @@ function evaluatePlayFromZoneRequirement(
     };
   }
 
-  const available = getAvailableResources(player, state).total;
-  const effectiveAvailable = Math.max(0, available - (card.resources?.total || 1));
+  const effectiveAvailable = getAvailableResources(player, state, {
+    excludeCardInstanceId: cardInstance.instanceId,
+    playedCard: card,
+  }).total;
   const minCost = Math.min(...candidates.map((c) => c.card.cost ?? 0));
 
   if (effectiveAvailable < minCost) {
@@ -1611,7 +1614,7 @@ function collectPlayRestrictions(
   check(evaluateEnemyTargetRequirement(state, player, card, choices.targetInstanceId));
   check(evaluateCharacterTargetRequirement(state, player, card));
   check(evaluateSchemeTargetRequirement(state, player, card));
-  check(evaluatePlayFromZoneRequirement(state, player, card));
+  check(evaluatePlayFromZoneRequirement(state, player, cardInstance));
 
   // Player Turn Validation (RR v1.8 p. 19 "Player Turn" & "Ask for an Action")
   if (state.phase === GamePhase.VILLAIN_PHASE) {
@@ -1830,7 +1833,7 @@ export function canPlayCard(
 export interface CardPlayabilityStatus {
   isPlayable: boolean;
   reasons: string[];
-  maxPotentialResources: number;
+  availableResources: number;
 }
 
 /**
@@ -1845,24 +1848,24 @@ export function evaluateCardPlayability(
 ): CardPlayabilityStatus {
   const player = getPlayer(state, playerId);
   if (!player) {
-    return { isPlayable: false, reasons: ['Player not found'], maxPotentialResources: 0 };
+    return { isPlayable: false, reasons: ['Player not found'], availableResources: 0 };
   }
 
   const reasons = collectPlayRestrictions(state, player, cardInstance);
 
-  const { total: maxPotentialResources } = getAvailableResources(player, state, {
+  const { total: availableResources } = getAvailableResources(player, state, {
     excludeCardInstanceId: cardInstance.instanceId,
     playedCard: cardInstance.card,
   });
 
   const { effectiveCost: cost } = getEffectiveCardCost(state, player, cardInstance);
-  if (cost > 0 && maxPotentialResources < cost) {
-    reasons.push(`Cannot afford cost (Need ${cost}, max available ${maxPotentialResources})`);
+  if (cost > 0 && availableResources < cost) {
+    reasons.push(`Cannot afford cost (Need ${cost}, max available ${availableResources})`);
   }
 
   return {
     isPlayable: reasons.length === 0,
     reasons,
-    maxPotentialResources,
+    availableResources,
   };
 }

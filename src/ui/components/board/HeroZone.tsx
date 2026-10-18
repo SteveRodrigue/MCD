@@ -108,7 +108,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const effectiveHandSize = getEffectiveHandSize(player, statState);
   const effectiveAllyLimit = getEffectiveAllyLimit(player, gameState);
   const identityTraitsDetails = getEffectivePlayerTraitsDetails(player);
-  const availableResources = getAvailableResources(player, gameState);
+  const availableResources = getAvailableResources(player, statState);
 
   const baseAtk = isHero ? heroCard.attack || 0 : 0;
   const baseThw = isHero ? heroCard.thwart || 0 : 0;

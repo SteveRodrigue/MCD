@@ -456,7 +456,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                 const playability = playabilityById.get(cardInst.instanceId) ?? {
                   isPlayable: true,
                   reasons: [],
-                  maxPotentialResources: 0,
+                  availableResources: 0,
                 };
 
                 return (

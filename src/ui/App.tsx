@@ -1,16 +1,7 @@
 import React, { useState } from 'react';
 import { ModalLayer } from './components/layout/ModalLayer';
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
-import { CardCatalog } from '../data/importer/card-loader';
-import {
-  setupGame,
-  dispatchAction,
-  getScenario,
-  getStarterDeck,
-  GameState,
-  InfiniteLoopError,
-} from '../engine';
+import { cardCatalog } from '../data/importer/card-loader';
+import { setupGame, dispatchAction, getStarterDeck, GameState, InfiniteLoopError } from '../engine';
 import type { SetupSelection } from './components/setup/ScenarioSelector';
 import { logGameStateSnapshot } from './services/gamestate-logger-service';
 import { resetSessionSyncTracking } from './services/stats-storage-service';
@@ -35,7 +26,6 @@ const SupplementalEditorScreen = React.lazy(() =>
 
 export const AppContent: React.FC = () => {
   const { settings } = useGameSettings();
-  const [catalog] = useState(() => new CardCatalog([...corePack, ...coreEncounterPack]));
   const [stage, setStage] = useState<'SETUP' | 'MULLIGAN' | 'IN_GAME' | 'EDITOR'>(() => {
     if (typeof window !== 'undefined') {
       const pathname = window.location.pathname;
@@ -94,19 +84,10 @@ export const AppContent: React.FC = () => {
   }, [gameState]);
 
   const handleStartSetup = (selection: SetupSelection) => {
-    const scenario = getScenario(selection.scenarioId) || getScenario('rhino')!;
-    const { villain, mainScheme, encounterCards } = scenario.createEncounterDeck(catalog);
-
-    // Override villain stage for Expert difficulty if selected
-    if (selection.difficulty === 'EXPERT') {
-      const expertVillain = catalog.getCard(scenario.stages.expert[0]) as any;
-      if (expertVillain) villain.health = expertVillain.health;
-    }
-
     const players = Array.from({ length: selection.playerCount }).map((_, index) => {
       const deckId = selection.deckIds[index] || 'spider_man_justice';
       const starterDeck = getStarterDeck(deckId) || getStarterDeck('spider_man_justice')!;
-      const deck = starterDeck.loadDeck(catalog);
+      const deck = starterDeck.loadDeck(cardCatalog);
       return {
         id: `player_${index + 1}`,
         name: `Hero Seat ${index + 1} (${deck.hero.name})`,
@@ -118,12 +99,10 @@ export const AppContent: React.FC = () => {
       };
     });
 
+    // The scenario plugin builds the villain, main scheme and encounter deck (ADR-0033)
     const newGameState = setupGame({
       scenarioId: selection.scenarioId,
       players,
-      villain,
-      mainScheme,
-      encounterCards,
       difficulty: selection.difficulty,
       heroicLevel: selection.heroicLevel,
       modularSetCodes: selection.selectedModularSetCodes,
@@ -239,9 +218,7 @@ export const AppContent: React.FC = () => {
             </div>
           }
         >
-          {stage === 'SETUP' && (
-            <ScenarioSelector catalog={catalog} onStartSetup={handleStartSetup} />
-          )}
+          {stage === 'SETUP' && <ScenarioSelector onStartSetup={handleStartSetup} />}
 
           {stage === 'MULLIGAN' && gameState && (
             <MulliganScreen

@@ -9,8 +9,11 @@ describe('Milestone 2C: Modular Encounter Set Hot-Swapping & Customization (ADR-
   const peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
   it('lists all 5 Core Set modular encounter sets with metadata', () => {
-    const modularSets = listModularEncounterSets();
+    const modularSets = listModularEncounterSets(cardCatalog);
     expect(modularSets.length).toBe(5);
+    // Card counts come from the catalog, not from hand-written metadata
+    expect(modularSets.find((m) => m.code === 'under_attack')?.cardCount).toBe(5);
+    expect(modularSets.find((m) => m.code === 'bomb_scare')?.cardCount).toBe(6);
 
     const codes = modularSets.map((m) => m.code);
     expect(codes).toContain('bomb_scare');

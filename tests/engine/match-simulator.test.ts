@@ -7,6 +7,7 @@ import { executeVillainAttackAgainstPlayer } from '../../src/engine/pipeline';
 import { attachCardToHost } from '../../src/engine/state/state-validator';
 import { createCardInstance } from '../../src/engine/state/card-instance';
 import { resetInstanceCounter } from '../../src/engine';
+import { getEffectiveHandSize } from '../../src/engine/pipeline/stat-calculator';
 
 describe('Fast Multi-Hero Match Simulator Battery (Roadmap 1.4)', () => {
   beforeEach(() => {
@@ -58,6 +59,52 @@ describe('Fast Multi-Hero Match Simulator Battery (Roadmap 1.4)', () => {
       expect(result.finalState).toBeDefined();
     });
   }
+
+  describe('turn loop runs the real END_PLAYER_TURN path', () => {
+    const spideyGame = (seed: string) => {
+      const loaded = getStarterDeck('spider_man_justice')!.loadDeck(cardCatalog);
+      return setupGame({
+        scenarioId: 'rhino',
+        difficulty: 'STANDARD',
+        seed,
+        players: [
+          {
+            id: 'p1',
+            name: loaded.hero.name,
+            hero: loaded.hero,
+            alterEgo: loaded.alterEgo,
+            deckCards: loaded.deckCards,
+            obligation: loaded.obligation,
+            nemesisCards: loaded.nemesisCards,
+          },
+        ],
+      });
+    };
+
+    it('refills the hand at the end of the player phase', () => {
+      const seed = 'f001_round_two_refill';
+      const result = runMatch(spideyGame(seed), { maxRounds: 1, seed });
+
+      expect(result.winner).toBe('TIMEOUT');
+      const state = result.finalState;
+      expect(state.roundNumber).toBe(2);
+      expect(state.phase).toBe('PLAYER_PHASE');
+      const player = state.players[0];
+      const cleanup = state.log.find((l) => l.key === 'player.phase.cleanup.complete');
+      // Spider-Man ends round 1 in hero form; villain-phase draws (Spider-Sense) may add more
+      expect(player.currentForm).toBe('hero');
+      expect(cleanup?.params?.handSize).toBe(getEffectiveHandSize(player, state));
+      expect(player.hand.length).toBeGreaterThanOrEqual(getEffectiveHandSize(player, state));
+    });
+
+    it('keeps acting after round 1', () => {
+      const seed = 'f001_actions_floor';
+      const result = runMatch(spideyGame(seed), { maxRounds: 5, seed });
+
+      expect(result.roundsPlayed).toBeGreaterThanOrEqual(2);
+      expect(result.totalActionsExecuted).toBeGreaterThanOrEqual(10);
+    });
+  });
 
   it('simulates a 2-player cooperative match (Spider-Man + Captain Marvel vs Rhino Standard)', () => {
     const spideyStarter = getStarterDeck('spider_man_justice')!.loadDeck(cardCatalog);

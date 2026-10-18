@@ -29,7 +29,7 @@ describe('Card Playability Potential Resource Calculation (Issue #153, RR v1.8 p
     return heroState;
   }
 
-  it('1. Helicarrier in tableau unused does NOT count toward maxPotentialResources (Issue #153)', () => {
+  it('1. Helicarrier in tableau unused does NOT count toward availableResources (Issue #153)', () => {
     const state = createTestState();
     const player = state.players[0];
 
@@ -45,8 +45,8 @@ describe('Card Playability Potential Resource Calculation (Issue #153, RR v1.8 p
 
     const playability = evaluateCardPlayability(state, player.id, surveillanceTeam);
 
-    // Helicarrier is an Action ability, NOT a resource ability; it must not inflate maxPotentialResources
-    expect(playability.maxPotentialResources).toBe(1);
+    // Helicarrier is an Action ability, NOT a resource ability; it must not inflate availableResources
+    expect(playability.availableResources).toBe(1);
     expect(playability.isPlayable).toBe(false);
     expect(playability.reasons).toContain('Cannot afford cost (Need 2, max available 1)');
   });
@@ -87,12 +87,12 @@ describe('Card Playability Potential Resource Calculation (Issue #153, RR v1.8 p
 
     // Surveillance Team is now playable with 1 resource in hand
     const playability = evaluateCardPlayability(updatedState, updatedPlayer.id, surveillanceTeam);
-    expect(playability.maxPotentialResources).toBe(1);
+    expect(playability.availableResources).toBe(1);
     expect(playability.isPlayable).toBe(true);
     expect(playability.reasons).toEqual([]);
   });
 
-  it('3. Other non-resource ACTION cards in tableau (e.g. Avengers Mansion 01091) do not count toward maxPotentialResources', () => {
+  it('3. Other non-resource ACTION cards in tableau (e.g. Avengers Mansion 01091) do not count toward availableResources', () => {
     const state = createTestState();
     const player = state.players[0];
 
@@ -107,12 +107,12 @@ describe('Card Playability Potential Resource Calculation (Issue #153, RR v1.8 p
 
     const playability = evaluateCardPlayability(state, player.id, surveillanceTeam);
 
-    expect(playability.maxPotentialResources).toBe(1);
+    expect(playability.availableResources).toBe(1);
     expect(playability.isPlayable).toBe(false);
     expect(playability.reasons).toContain('Cannot afford cost (Need 2, max available 1)');
   });
 
-  it('4. Genuine resource generators (Web-Shooter 01008 with counters) properly count toward maxPotentialResources when ready, but not when exhausted or at 0 counters', () => {
+  it('4. Genuine resource generators (Web-Shooter 01008 with counters) properly count toward availableResources when ready, but not when exhausted or at 0 counters', () => {
     const state = createTestState();
     const player = state.players[0];
 
@@ -128,14 +128,14 @@ describe('Card Playability Potential Resource Calculation (Issue #153, RR v1.8 p
 
     // Subtest 4A: Ready with counters -> provides +1 resource (total: 1 from hand + 1 from Web-Shooter = 2)
     const playabilityReady = evaluateCardPlayability(state, player.id, surveillanceTeam);
-    expect(playabilityReady.maxPotentialResources).toBe(2);
+    expect(playabilityReady.availableResources).toBe(2);
     expect(playabilityReady.isPlayable).toBe(true);
     expect(playabilityReady.reasons).toEqual([]);
 
     // Subtest 4B: Exhausted -> provides 0 resources
     webShooter.exhausted = true;
     const playabilityExhausted = evaluateCardPlayability(state, player.id, surveillanceTeam);
-    expect(playabilityExhausted.maxPotentialResources).toBe(1);
+    expect(playabilityExhausted.availableResources).toBe(1);
     expect(playabilityExhausted.isPlayable).toBe(false);
     expect(playabilityExhausted.reasons).toContain('Cannot afford cost (Need 2, max available 1)');
 
@@ -144,7 +144,7 @@ describe('Card Playability Potential Resource Calculation (Issue #153, RR v1.8 p
     webShooter.counters = { web: 0 };
     webShooter.tokens = { damage: 0, threat: 0, counters: 0 };
     const playabilityEmpty = evaluateCardPlayability(state, player.id, surveillanceTeam);
-    expect(playabilityEmpty.maxPotentialResources).toBe(1);
+    expect(playabilityEmpty.availableResources).toBe(1);
     expect(playabilityEmpty.isPlayable).toBe(false);
     expect(playabilityEmpty.reasons).toContain('Cannot afford cost (Need 2, max available 1)');
   });

@@ -119,7 +119,7 @@ describe('card playability parity: canPlayCard vs evaluateCardPlayability', () =
 
     // Total available: 1 (handCard) + 2 (Pepper Potts) = 3 resources, exactly matching Uppercut's cost of 3.
     const view = evaluateCardPlayability(state, 'p1', cardToPlay);
-    expect(view.maxPotentialResources).toBe(3);
+    expect(view.availableResources).toBe(3);
     expect(view.isPlayable).toBe(true);
 
     const engine = canPlayCard(

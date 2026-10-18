@@ -141,50 +141,51 @@ export function getGeneratorProvidedResources(
   requirePrinted?: boolean,
 ): number {
   if (gId === 'identity_ability' || gId === player.activeFormCard?.code) {
-    const idAbility = player.activeFormCard?.enrichment?.abilities?.find(
-      (a) =>
-        a.timing === 'RESOURCE' ||
-        a.timing === 'HERO_RESOURCE' ||
-        a.timing === 'ALTER_EGO_RESOURCE' ||
-        a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE'),
-    );
-    if (!idAbility) return 0;
-    if (idAbility.timing === 'HERO_RESOURCE' && player.currentForm !== 'hero') return 0;
-    if (idAbility.timing === 'ALTER_EGO_RESOURCE' && player.currentForm !== 'alter_ego') return 0;
-    if (
-      idAbility.limit === 'ONCE_PER_ROUND' &&
-      (player.usedAbilitiesThisRound?.[idAbility.id] || 0) >= 1
-    ) {
-      return 0;
-    }
-    if (
-      idAbility.limit === 'ONCE_PER_PHASE' &&
-      (player.usedAbilitiesThisPhase?.[idAbility.id] || 0) >= 1
-    ) {
-      return 0;
-    }
-    const genStep = idAbility.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
-    if (genStep && getStepEffectParams(genStep).fromCard) {
-      const target = locateCard(state, getStepEffectParams(genStep).fromCard!, { player });
-      if (!target) return 0;
-      const printedList = readCardResources(target);
-      if (requirePrinted && requiredType) {
-        return printedList.filter((r) => r === requiredType).length;
+    let provided = 0;
+    for (const idAbility of player.activeFormCard?.enrichment?.abilities ?? []) {
+      const isResource =
+        idAbility.timing === 'RESOURCE' ||
+        idAbility.timing === 'HERO_RESOURCE' ||
+        idAbility.timing === 'ALTER_EGO_RESOURCE' ||
+        idAbility.steps?.some((s) => s.effect === 'GENERATE_RESOURCE');
+      if (!isResource) continue;
+      if (idAbility.timing === 'HERO_RESOURCE' && player.currentForm !== 'hero') continue;
+      if (idAbility.timing === 'ALTER_EGO_RESOURCE' && player.currentForm !== 'alter_ego') continue;
+      if (
+        idAbility.limit === 'ONCE_PER_ROUND' &&
+        (player.usedAbilitiesThisRound?.[idAbility.id] || 0) >= 1
+      ) {
+        continue;
       }
-      if (!requiredType) {
-        return printedList.length;
+      if (
+        idAbility.limit === 'ONCE_PER_PHASE' &&
+        (player.usedAbilitiesThisPhase?.[idAbility.id] || 0) >= 1
+      ) {
+        continue;
       }
-      return printedList.filter((r) => r === requiredType || r === 'wild').length;
+      const genStep = idAbility.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
+      if (genStep && getStepEffectParams(genStep).fromCard) {
+        const target = locateCard(state, getStepEffectParams(genStep).fromCard!, { player });
+        if (!target) continue;
+        const printedList = readCardResources(target);
+        if (requirePrinted && requiredType) {
+          provided += printedList.filter((r) => r === requiredType).length;
+        } else if (!requiredType) {
+          provided += printedList.length;
+        } else {
+          provided += printedList.filter((r) => r === requiredType || r === 'wild').length;
+        }
+        continue;
+      }
+      const resType = (genStep?.effectParams?.resource as string) || 'wild';
+      const amount = Number(genStep?.effectParams?.amount) || 1;
+      if (requirePrinted) {
+        if (resType === requiredType) provided += amount;
+      } else if (!requiredType || resType === requiredType || resType === 'wild') {
+        provided += amount;
+      }
     }
-    const resType = (genStep?.effectParams?.resource as string) || 'wild';
-    const amount = Number(genStep?.effectParams?.amount) || 1;
-    if (requirePrinted) {
-      return resType === requiredType ? amount : 0;
-    }
-    if (!requiredType || resType === requiredType || resType === 'wild') {
-      return amount;
-    }
-    return 0;
+    return provided;
   }
 
   const gCard = player.tableau.find((c) => c.instanceId === gId);
@@ -1222,11 +1223,9 @@ export interface AvailableResourcesResult {
  */
 export function getAvailableResources(
   player: PlayerState,
-  state?: GameState,
+  state: GameState,
   options?: AvailableResourcesOptions,
 ): AvailableResourcesResult {
-  const effectiveState: GameState = state ?? ({ players: [player] } as unknown as GameState);
-
   // 1. Hand resources: Sum resources across all cards currently in player's hand (excluding played card if requested)
   let hand = 0;
   for (const cardInst of player.hand || []) {
@@ -1239,11 +1238,11 @@ export function getAvailableResources(
   // 2. Ready Tableau Generators (excluding non-resource cards like Helicarrier or Avengers Mansion)
   let generators = 0;
   for (const item of player.tableau || []) {
-    generators += getGeneratorProvidedResources(effectiveState, player, item.instanceId);
+    generators += getGeneratorProvidedResources(state, player, item.instanceId);
   }
 
   // 3. Identity Resource Abilities
-  const identity = getGeneratorProvidedResources(effectiveState, player, 'identity_ability');
+  const identity = getGeneratorProvidedResources(state, player, 'identity_ability');
 
   const total = hand + generators + identity;
   const breakdownParts: string[] = [];

@@ -142,8 +142,8 @@ describe('Available Resources Calculation (Issue #162)', () => {
     p1.currentForm = 'hero';
     p1.activeFormCard = p1.hero;
 
-    const ppCard = cardCatalog.getCard('01033');
-    if (ppCard) {
+    const ppCard = cardCatalog.getCard('01033')!;
+    {
       p1.tableau = [
         {
           instanceId: 'pp_1',
@@ -165,8 +165,8 @@ describe('Available Resources Calculation (Issue #162)', () => {
     p1.currentForm = 'hero';
     p1.activeFormCard = p1.hero;
 
-    const ppCard = cardCatalog.getCard('01033');
-    if (ppCard) {
+    const ppCard = cardCatalog.getCard('01033')!;
+    {
       p1.tableau = [
         {
           instanceId: 'pp_1',
@@ -188,8 +188,8 @@ describe('Available Resources Calculation (Issue #162)', () => {
     p1.currentForm = 'hero';
     p1.activeFormCard = p1.hero;
 
-    const ppCard = cardCatalog.getCard('01033');
-    if (ppCard) {
+    const ppCard = cardCatalog.getCard('01033')!;
+    {
       p1.tableau = [
         {
           instanceId: 'pp_1',
@@ -442,16 +442,31 @@ describe('Available Resources Calculation (Issue #162)', () => {
     expect(resWithDoubling.hand).toBe(2);
   });
 
-  it('16. gracefully handles undefined state', () => {
+  it('16. sums every usable identity resource ability and skips used ones', () => {
     const p1 = state.players[0];
-    p1.currentForm = 'alter_ego';
-    p1.activeFormCard = p1.alterEgo;
-    p1.hand = [{ instanceId: 'c1', card: cardCatalog.getCard('01005')! }];
+    p1.hand = [];
     p1.tableau = [];
+    p1.currentForm = 'alter_ego';
+    p1.activeFormCard = {
+      ...p1.alterEgo,
+      enrichment: {
+        abilities: [
+          {
+            id: 'used_one',
+            timing: 'RESOURCE' as const,
+            limit: 'ONCE_PER_ROUND' as const,
+            steps: [{ effect: 'GENERATE_RESOURCE', effectParams: { amount: 1 } }],
+          },
+          {
+            id: 'ready_one',
+            timing: 'RESOURCE' as const,
+            steps: [{ effect: 'GENERATE_RESOURCE', effectParams: { amount: 2 } }],
+          },
+        ],
+      },
+    } as any;
+    p1.usedAbilitiesThisRound = { used_one: 1 };
 
-    const res = getAvailableResources(p1);
-    expect(res.hand).toBe(1);
-    expect(res.identity).toBe(1);
-    expect(res.total).toBe(2);
+    expect(getAvailableResources(p1, state).identity).toBe(2);
   });
 });

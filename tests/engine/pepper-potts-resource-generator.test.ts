@@ -121,7 +121,7 @@ describe('Pepper Potts (01033) Dynamic Resource Generator — RR v1.8 & Issue #1
 
     // Also evaluateCardPlayability reports Pepper Potts as providing 0 potential resources
     const playability = evaluateCardPlayability(state, 'p1', cardToPlay);
-    expect(playability.maxPotentialResources).toBe(0);
+    expect(playability.availableResources).toBe(0);
     expect(playability.isPlayable).toBe(false);
   });
 

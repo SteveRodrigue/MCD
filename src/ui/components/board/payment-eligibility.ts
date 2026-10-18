@@ -6,7 +6,7 @@ import { readCardResources } from '../../../engine/queries/card-inspector';
  * A required type of `wild` (or none) accepts any card. A Wild icon pays any type unless the cost requires printed icons of that exact type
  * (RR v1.8 p. 15). Returns `undefined` when the cost has no required type.
  */
-export function countPayingIcons(
+function countPayingIcons(
   hCard: CardInstance,
   requiredType: string | undefined,
   requirePrinted: boolean,

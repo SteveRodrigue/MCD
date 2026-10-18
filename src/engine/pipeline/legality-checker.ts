@@ -545,7 +545,7 @@ export function getPlayerRestrictedCount(player: PlayerState): number {
  * (such as Spider-Man: Peter Parker and Spider-Man: Miles Morales), they are different
  * characters and are not restricted by this rule.
  */
-export function isUniqueCollision(
+function isUniqueCollision(
   targetName: string,
   targetSubname: string | undefined,
   existingName: string,
@@ -707,7 +707,7 @@ export function getPlayerAllyLimit(state: GameState, playerId: string): number {
  * Evaluates play requirements for cards with PLAY_FROM_ZONE effects (e.g. Make the Call)
  * (Issue #173, ADR-0047, RR v1.8 p. 16, 21).
  */
-export function evaluatePlayFromZoneRequirement(
+function evaluatePlayFromZoneRequirement(
   state: GameState,
   player: PlayerState,
   card: NormalizedCard,
@@ -855,7 +855,7 @@ export function evaluateMinionTargetRequirement(
  * Evaluates whether a card requires ally targets (RR v1.8 p. 5, 16, 17)
  * and whether eligible ally targets currently exist in play (respecting maxPerHost).
  */
-export function evaluateAllyTargetRequirement(
+function evaluateAllyTargetRequirement(
   state: GameState,
   player: PlayerState,
   card: NormalizedCard,
@@ -938,7 +938,7 @@ export function evaluateAllyTargetRequirement(
  * Evaluates whether a card requires enemy targets (RR v1.8 p. 5, 16, 17)
  * and whether eligible enemy targets currently exist in play (respecting maxPerHost).
  */
-export function evaluateEnemyTargetRequirement(
+function evaluateEnemyTargetRequirement(
   state: GameState,
   _player: PlayerState,
   card: NormalizedCard,
@@ -1032,7 +1032,7 @@ export function evaluateEnemyTargetRequirement(
  * Evaluates whether a card requires character targets (RR v1.8 p. 3, 11)
  * such as healing, and whether eligible damaged targets exist in play.
  */
-export function evaluateCharacterTargetRequirement(
+function evaluateCharacterTargetRequirement(
   state: GameState,
   player: PlayerState,
   card: NormalizedCard,
@@ -1078,7 +1078,7 @@ export function evaluateCharacterTargetRequirement(
  * - Crisis icon: Prevents removing threat from main scheme while a Crisis side scheme is in play
  * - Patrol Keyword: Prevents a player from removing threat from main scheme while engaged with a Patrol minion
  */
-export function hasEligibleThreatRemovalTarget(
+function hasEligibleThreatRemovalTarget(
   state: GameState,
   playerId: string,
   targetType: string = 'CHOSEN_SCHEME',
@@ -1129,7 +1129,7 @@ export function hasEligibleThreatRemovalTarget(
  * Evaluates whether a card requires scheme targets with threat to be played (RR v1.8 p. 15, 29, 30; Issue #101).
  * An Event whose primary effect is removing threat cannot be played if no scheme has eligible threat.
  */
-export function evaluateSchemeTargetRequirement(
+function evaluateSchemeTargetRequirement(
   state: GameState,
   player: PlayerState,
   card: NormalizedCard,
@@ -1178,7 +1178,7 @@ export function evaluateSchemeTargetRequirement(
  * Evaluates the legality of initiating a SEARCH ability step (RR v1.8 p. 2, 28).
  * Ensures at least one eligible target exists to change the game state.
  */
-export function evaluateSearchLegality(
+function evaluateSearchLegality(
   state: GameState,
   player: PlayerState,
   step: AbilityStep,

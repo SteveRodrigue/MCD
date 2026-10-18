@@ -38,7 +38,7 @@ export function createRng(seed?: number | string): RngState {
  * Mulberry32 32-bit pseudo-random number generator.
  * Advances the RNG state and returns a float in [0, 1).
  */
-export function nextRandomFloat(rng: RngState): number {
+function nextRandomFloat(rng: RngState): number {
   let t = (rng.current += 0x6d2b79f5);
   t = Math.imul(t ^ (t >>> 15), t | 1);
   t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
@@ -48,7 +48,7 @@ export function nextRandomFloat(rng: RngState): number {
 /**
  * Ensures state.rng exists, initializing lazily if missing on ad-hoc test states.
  */
-export function ensureRng(state: GameState): RngState {
+function ensureRng(state: GameState): RngState {
   if (!state.rng) {
     state.rng = createRng();
   }

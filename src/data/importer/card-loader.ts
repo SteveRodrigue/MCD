@@ -71,7 +71,7 @@ export function parseResources(raw: RawUpstreamCard) {
  * Parses the "Max [X] per player" board limit for a card (RR v1.8 p. 17).
  * Filters out parenthesized Restricted reminder text: "(Max 2 restricted cards per player.)".
  */
-export function parseMaxPerPlayer(raw: RawUpstreamCard): number | undefined {
+function parseMaxPerPlayer(raw: RawUpstreamCard): number | undefined {
   const rawText = raw.text || '';
   if (!rawText) return undefined;
 
@@ -139,7 +139,7 @@ export function getPrintedKeywordValue(text: string | undefined, keyword: string
  * Parses printed and supplemental keywords for a card. A keyword counts only when the card prints it
  * (#243). The Crisis icon is not a keyword: it is counted from `scheme_crisis` (`getCrisisIconCount`).
  */
-export function parseKeywords(raw: RawUpstreamCard): Keyword[] {
+function parseKeywords(raw: RawUpstreamCard): Keyword[] {
   const keywords = new Set<Keyword>();
   const printed = (keyword: string) => hasPrintedKeyword(raw.text, keyword);
 
@@ -195,7 +195,7 @@ const TIMING_MAP: Record<string, AbilityTiming> = {
 /**
  * Derives printed ability labels (attack, thwart, defense) directly from raw card text (RR v1.8 p. 17).
  */
-export function parseAbilityLabelsFromText(
+function parseAbilityLabelsFromText(
   text?: string,
 ): { timing?: AbilityTiming; labels: ('ATTACK' | 'THWART' | 'DEFENSE')[] }[] {
   if (!text) return [];
@@ -223,7 +223,7 @@ export function parseAbilityLabelsFromText(
  * Powers upstream prints as a dash (–), which MarvelCDB encodes as `null`. An omitted (`undefined`)
  * field is not a dash (RR v1.8 "Dash (Value)").
  */
-export function collectDashPowers(raw: RawUpstreamCard, powers: CharacterPower[]): CharacterPower[] {
+function collectDashPowers(raw: RawUpstreamCard, powers: CharacterPower[]): CharacterPower[] {
   const values = raw as unknown as Record<string, unknown>;
   return powers.filter((power) => values[power] === null);
 }

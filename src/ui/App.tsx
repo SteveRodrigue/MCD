@@ -24,7 +24,7 @@ const SupplementalEditorScreen = React.lazy(() =>
   })),
 );
 
-export const AppContent: React.FC = () => {
+const AppContent: React.FC = () => {
   const { settings } = useGameSettings();
   const [stage, setStage] = useState<'SETUP' | 'MULLIGAN' | 'IN_GAME' | 'EDITOR'>(() => {
     if (typeof window !== 'undefined') {

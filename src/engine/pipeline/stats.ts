@@ -17,7 +17,7 @@ export type BasicActionType =
 /**
  * Ensures state.stats is initialized.
  */
-export function ensureStats(state: GameState) {
+function ensureStats(state: GameState) {
   if (!state.stats) {
     state.stats = createInitialGameStats();
   }
@@ -27,7 +27,7 @@ export function ensureStats(state: GameState) {
 /**
  * Ensures stats for a specific cardCode are initialized.
  */
-export function ensureCardStats(state: GameState, cardCode: string): CardUsageStats {
+function ensureCardStats(state: GameState, cardCode: string): CardUsageStats {
   const stats = ensureStats(state);
   const card = (stats.cards[cardCode] ??= createInitialCardStats());
   card.abilitiesUsed ??= {};

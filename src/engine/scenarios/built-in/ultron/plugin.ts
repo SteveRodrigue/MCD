@@ -22,13 +22,13 @@ import { advanceVillainStage, villainStageHitPoints } from '../../advance-villai
 import definitionData from './definition.json';
 import { appendLog } from '../../../state/game-log';
 
-export const ultronDefinition: ScenarioDefinition = definitionData as ScenarioDefinition;
+const ultronDefinition: ScenarioDefinition = definitionData as ScenarioDefinition;
 
 /**
  * Creates a standard Ultron Drone minion instance (RR v1.8 / Ultron Drones Environment).
  * Drones have 1 HP, 1 ATK, 1 SCH and represent facedown player/encounter cards.
  */
-export function createDroneMinionInstance(sourceCard: CardInstance): CardInstance {
+function createDroneMinionInstance(sourceCard: CardInstance): CardInstance {
   const droneCardData: MinionCard = {
     code: `drone_${sourceCard.card.code}`,
     name: 'Ultron Drone',

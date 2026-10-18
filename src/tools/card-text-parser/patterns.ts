@@ -66,11 +66,6 @@ export const LIMIT_PATTERNS: LimitPattern[] = [
   { regex: /\(Limit (\d+) times? per round\.?\)/i, limit: 'ONCE_PER_ROUND' },
 ];
 
-export interface CostExtractorResult {
-  cost: AbilityCost;
-  matchedText: string;
-}
-
 export function extractCostClause(costText: string): AbilityCost | undefined {
   const cost: AbilityCost = {};
   let hasCost = false;

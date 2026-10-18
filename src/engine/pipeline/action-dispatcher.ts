@@ -110,7 +110,7 @@ import { appendLog } from '../state/game-log';
 /**
  * Universal Card Routing Helper for Search, Scry, Look and Mulligan Primitives (RR v1.8 p. 19, 26).
  */
-export function routeCardInstances(
+function routeCardInstances(
   state: GameState,
   player: PlayerState,
   cards: CardInstance[],

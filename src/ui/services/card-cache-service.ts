@@ -32,7 +32,7 @@ export interface CardArtIdentifier {
  *   - Stage 'A' (Setup face): maps to `${baseCode}.png` (e.g. "02004.png", "24004.png", "16061.png")
  *   - Stage 'B' (Active threat face): maps to `${baseCode}b.png` (e.g. "02004b.png", "24004b.png", "16061b.png")
  */
-export function resolveMainSchemeArtFileName(code: string, stage?: string): string {
+function resolveMainSchemeArtFileName(code: string, stage?: string): string {
   const trimmedCode = (code || '').trim().toLowerCase();
   if (!trimmedCode) return '';
 
@@ -98,7 +98,7 @@ export function getRemoteMarvelCdbUrl(card: CardArtIdentifier | string): string 
 /**
  * Checks if the browser supports the CacheStorage API.
  */
-export function isCacheStorageAvailable(): boolean {
+function isCacheStorageAvailable(): boolean {
   return typeof window !== 'undefined' && 'caches' in window;
 }
 
@@ -209,14 +209,6 @@ export async function getCardArtUrl(card: CardArtIdentifier | string): Promise<s
 
   inFlightCardArtRequests.set(fileName, artPromise);
   return artPromise;
-}
-
-/**
- * Preloads a list of card arts into CacheStorage in the background.
- */
-export async function preloadCardArts(cards: (CardArtIdentifier | string)[]): Promise<void> {
-  if (!cards || cards.length === 0) return;
-  await Promise.allSettled(cards.map((card) => getCardArtUrl(card)));
 }
 
 /**

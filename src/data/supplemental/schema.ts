@@ -19,7 +19,6 @@ import {
   AbilityCostSchema,
   UniversalCardFilterSchema,
   CardAuditRecordSchema,
-  FilterSchema,
 } from './schema-primitives';
 
 export * from './schema-primitives';
@@ -283,7 +282,7 @@ export const PlayerRecipientSchema = z.discriminatedUnion('type', [
  * `filter`; `superlative` keeps the highest / lowest printed value (ties: the first player
  * chooses); `withoutCopyAttached` skips candidates already carrying a copy of the attachment.
  */
-export const AttachHostSchema = z.discriminatedUnion('type', [
+const AttachHostSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('VILLAIN') }).strict(),
   z
     .object({
@@ -308,7 +307,7 @@ export type AttachHost = z.infer<typeof AttachHostSchema>;
  * (as today). `otherwise` applies when `host` has no candidate: `SURGE` discards the card and
  * deals the surge card; a host attaches there instead.
  */
-export const AttachToSchema = z
+const AttachToSchema = z
   .object({
     host: AttachHostSchema,
     otherwise: z.union([AttachHostSchema, z.object({ type: z.literal('SURGE') }).strict()]).optional(),
@@ -341,7 +340,5 @@ export const SupplementalPackSchema = z
   })
   .strict();
 
-export type SupplementalPack = z.infer<typeof SupplementalPackSchema>;
 export type CardEnrichment = z.infer<typeof CardEnrichmentSchema>;
 export type CardAuditRecord = z.infer<typeof CardAuditRecordSchema>;
-export type FilterSchemaType = z.infer<typeof FilterSchema>;

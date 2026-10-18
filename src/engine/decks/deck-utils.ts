@@ -19,10 +19,6 @@ export function slugify(text: string): string {
  */
 let deckFileCounter = 0;
 
-export function resetDeckFileCounter(): void {
-  deckFileCounter = 0;
-}
-
 export function generateDeckFilename(
   deck: MarvelCDBDeck,
   domain: 'prebuilt' | 'marvelcdb' | 'user' = 'user',

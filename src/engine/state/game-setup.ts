@@ -54,14 +54,6 @@ export interface GameSetupOptions {
 }
 
 /**
- * Standard Fisher-Yates array shuffle using the engine PRNG.
- */
-export function defaultShuffle<T>(array: T[], seed?: number | string): T[] {
-  const dummyState = { rng: createRng(seed) } as GameState;
-  return shuffleArray(dummyState, array);
-}
-
-/**
  * Executes official Marvel Champions Setup Sequence (Learn to Play / RR v1.8 p. 27–28):
  * 1. Players begin in Alter-Ego form. (Permanent keyword cards put directly into play).
  * 2. Set Hit Points for Hero and Villain (scaled by player count).
@@ -347,7 +339,7 @@ export function collectPlayerSetupAbilities(state: GameState): PendingSetupAbili
  * effect pipeline. An ability that needs a choice (T'Challa's Foresight) stops the setup at its
  * decision prompt; `advancePlayerSetup` continues once it is answered.
  */
-export function beginPlayerSetup(state: GameState): GameState {
+function beginPlayerSetup(state: GameState): GameState {
   state.phase = GamePhase.SETUP_PHASE;
   state.setupState = {
     stage: 'PLAYER_SETUP',

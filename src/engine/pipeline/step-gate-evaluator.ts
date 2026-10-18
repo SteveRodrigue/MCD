@@ -245,7 +245,7 @@ export function evaluateStepGate(
 /**
  * `IF_ZONE_EMPTY` gate: true when the zone named by `zone` holds no cards.
  */
-export function isZoneEmpty(
+function isZoneEmpty(
   state: GameState | undefined,
   zone: string | undefined,
   playerId: string,
@@ -291,7 +291,7 @@ export function isStepGateClosedByState(
  * `IF_FORM` gate / form qualifier: true when the player's current identity form matches `form`
  * (`HERO` or `ALTER_EGO`). Converts uppercase supplemental enum to player state representation.
  */
-export function evaluateFormGate(
+function evaluateFormGate(
   player: PlayerState,
   formOrParams?: string | Record<string, unknown>,
 ): boolean {

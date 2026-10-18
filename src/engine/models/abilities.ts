@@ -35,14 +35,6 @@ export interface StepResolutionResult {
   discardedCards?: import('./state').CardInstance[];
 }
 
-export interface SequenceExecutionContext {
-  previousResult?: StepResolutionResult;
-  collectedCardInstanceIds?: string[];
-  initiatingPlayerId?: string;
-  sourceInstanceId?: string;
-  resourcesSpent?: string[];
-}
-
 export interface AbilityStep {
   id?: string;
   effect: EffectType;

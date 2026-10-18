@@ -35,7 +35,7 @@ export interface StarterDeckDefinition {
 /**
  * Loads a playable deck from any MarvelCDB-compliant Deck object.
  */
-export function loadDeckFromMarvelCDB(deck: MarvelCDBDeck, catalog: CardCatalog) {
+function loadDeckFromMarvelCDB(deck: MarvelCDBDeck, catalog: CardCatalog) {
   const hero = catalog.getCard(deck.hero_code) as HeroCard | undefined;
   if (!hero) {
     throw new Error(`Hero card ${deck.hero_code} not found in catalog for deck ${deck.name}`);
@@ -98,7 +98,7 @@ export function loadDeckFromMarvelCDB(deck: MarvelCDBDeck, catalog: CardCatalog)
 /**
  * Creates a strongly typed StarterDeckDefinition from a MarvelCDBDeck object.
  */
-export function createStarterDeckFromMarvelCDB(deck: MarvelCDBDeck): StarterDeckDefinition {
+function createStarterDeckFromMarvelCDB(deck: MarvelCDBDeck): StarterDeckDefinition {
   const meta = parseMarvelCDBDeckMeta(deck.meta);
   const aspect =
     meta.aspect_name ||
@@ -126,7 +126,7 @@ export function createStarterDeckFromMarvelCDB(deck: MarvelCDBDeck): StarterDeck
  */
 export const starterDeckCatalog: Record<string, StarterDeckDefinition> = {};
 
-export const prebuiltDeckList: MarvelCDBDeck[] = [
+const prebuiltDeckList: MarvelCDBDeck[] = [
   spiderManDeck,
   captainMarvelDeck,
   sheHulkDeck,
@@ -138,12 +138,6 @@ prebuiltDeckList.forEach((deck) => {
   const definition = createStarterDeckFromMarvelCDB(deck);
   starterDeckCatalog[definition.id] = definition;
 });
-
-export function registerPrebuiltDeck(deck: MarvelCDBDeck): StarterDeckDefinition {
-  const definition = createStarterDeckFromMarvelCDB(deck);
-  starterDeckCatalog[definition.id] = definition;
-  return definition;
-}
 
 export function getStarterDeck(id: string): StarterDeckDefinition | undefined {
   return starterDeckCatalog[id];

@@ -643,17 +643,6 @@ export interface GameState {
 }
 
 /**
- * Accessor returning the currently active player from GameState (RR v1.8 p. 4).
- */
-export function getActivePlayer(state: GameState): PlayerState {
-  if (state.players && state.players.length > 0) {
-    const idx = state.activePlayerIndex ?? 0;
-    return state.players[idx] || state.players[0];
-  }
-  throw new Error('GameState has no players initialized');
-}
-
-/**
  * The number the per-player icon multiplies by: the players who started the scenario. An
  * eliminated player still counts (RR v1.8 Per Player Icon, #246).
  */

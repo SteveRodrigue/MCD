@@ -21,14 +21,14 @@ import {
 import definitionData from './definition.json';
 import { appendLog } from '../../../state/game-log';
 
-export const rhinoDefinition: ScenarioDefinition = definitionData as ScenarioDefinition;
+const rhinoDefinition: ScenarioDefinition = definitionData as ScenarioDefinition;
 
 /**
  * Rhino Scenario Plugin implementation.
  * Encapsulates setup, difficulty-based stage progression (I -> II -> III),
  * When Revealed triggers (Breakin' & Takin' search & hero stuns), and victory/defeat evaluation.
  */
-export class RhinoScenarioPlugin implements ScenarioPlugin {
+class RhinoScenarioPlugin implements ScenarioPlugin {
   definition = rhinoDefinition;
 
   onGameSetup(state: GameState, options: ScenarioGameSetupOptions): GameState {

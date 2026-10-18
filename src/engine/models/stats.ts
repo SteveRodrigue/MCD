@@ -47,7 +47,7 @@ export interface StatsDelta {
 /** Stats reset request: one card or everything. */
 export type StatsResetRequest = { cardCode: string } | { all: true };
 
-export function createInitialBasicActionSummary(): BasicActionSummary {
+function createInitialBasicActionSummary(): BasicActionSummary {
   return {
     heroAttack: 0,
     heroThwart: 0,

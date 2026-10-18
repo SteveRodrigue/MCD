@@ -11,7 +11,7 @@ import { IdentityFormSchema } from './gate-params';
 /**
  * ISO-8601 Timestamp regex matching YYYY-MM-DDTHH:MM(:SS)?
  */
-export const IsoTimestampSchema = z
+const IsoTimestampSchema = z
   .string()
   .regex(
     /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{3})?)?(?:Z|[+-]\d{2}:\d{2})?$/,
@@ -298,25 +298,12 @@ export type Aspect = z.infer<typeof AspectSchema>;
 export const KeywordSchema = z.enum(KeywordEnum);
 export type Keyword = z.infer<typeof KeywordSchema>;
 
-/**
- * Structured parameterized keyword declaration (ADR-0054).
- */
-export const StructuredKeywordSchema = z
-  .object({
-    keyword: z.string().min(1),
-    amount: z.number().int().positive().optional(),
-  })
-  .strict();
-
-export const KeywordEntrySchema = z.union([z.string(), StructuredKeywordSchema]);
-
 export const CharacterStatusSchema = z.enum(['STUNNED', 'CONFUSED', 'TOUGH']);
-export type CharacterStatus = z.infer<typeof CharacterStatusSchema>;
 
 /**
  * Comparison criteria for numeric properties (cost, atk, hp, etc.)
  */
-export const NumberComparisonSchema = z
+const NumberComparisonSchema = z
   .object({
     min: z.number().int().optional(),
     max: z.number().int().optional(),
@@ -330,7 +317,7 @@ export type NumberComparison = z.infer<typeof NumberComparisonSchema>;
  * Universal Card Criteria Schema (ADR-0046)
  * Atomic predicate criteria evaluated with logical AND.
  */
-export const CardCriteriaSchema = z
+const CardCriteriaSchema = z
   .object({
     codes: z.array(z.string()).optional(),
     names: z.array(z.string()).optional(),
@@ -428,11 +415,6 @@ export const TriggerFilterSchema = z
 export type TriggerFilter = z.infer<typeof TriggerFilterSchema>;
 
 /**
- * FilterSchema is now strictly canonical UniversalCardFilterSchema (ADR-0046).
- */
-export const FilterSchema = UniversalCardFilterSchema;
-
-/**
  * Card Location Selector Schema (ADR-0046, Issue #13, RR v1.8)
  * Declarative selector for locating cards across zones and in-play areas.
  */
@@ -476,7 +458,7 @@ export type CardLocationSelector = z.infer<typeof CardLocationSelectorSchema>;
  * Card Inspection Attribute Schema (Issue #13)
  * Attributes to inspect when querying a card in a zone or in play.
  */
-export const CardInspectionAttributeSchema = z.enum([
+const CardInspectionAttributeSchema = z.enum([
   'PRINTED_COST',
   'BOOST_ICONS',
   'THREAT',
@@ -497,7 +479,7 @@ export type CardInspectionAttribute = z.infer<typeof CardInspectionAttributeSche
  * Discard Inspection Attribute Schema (Issue #117)
  * Attributes to inspect when calculating dynamic values from discarded cards.
  */
-export const DiscardInspectionAttributeSchema = z.enum([
+const DiscardInspectionAttributeSchema = z.enum([
   'COUNT',
   'RESOURCE_ICONS',
   'DIFFERENT_RESOURCES',
@@ -505,8 +487,6 @@ export const DiscardInspectionAttributeSchema = z.enum([
   'DIFFERENT_CARD_TYPES',
   'PRINTED_COST',
 ]);
-
-export type DiscardInspectionAttribute = z.infer<typeof DiscardInspectionAttributeSchema>;
 
 /**
  * Dynamic Value Source Schema (ADR-0049, ADR-0052, Issue #117, Issue #13)
@@ -576,14 +556,12 @@ export const GenerateResourceParamsSchema = z
   })
   .strict();
 
-export type GenerateResourceParams = z.infer<typeof GenerateResourceParamsSchema>;
-
 /**
  * Typed ability resource cost: "Spend a [energy] resource" is `{ energy: 1 }` (RR v1.8 Resources).
  * `wild` is a legal key only for a printed "Spend a [wild] resource" cost. An event's printed cost is
  * read from the upstream card, never declared here.
  */
-export const ResourceCostSchema = z
+const ResourceCostSchema = z
   .object({
     physical: z.number().int().positive().optional(),
     energy: z.number().int().positive().optional(),
@@ -661,13 +639,6 @@ export const SpendCountersParamsSchema = z.object({
   amount: z.union([z.number(), z.string(), DynamicValueSourceSchema]),
 });
 
-export const RemoveCountersMatchingFilterParamsSchema = z.object({
-  targetZone: z.string().optional(),
-  traitFilter: z.string().optional(),
-  counterType: z.string().optional(),
-  amount: z.union([z.number(), z.literal('ALL'), DynamicValueSourceSchema]).optional(),
-});
-
 export const DiscardParamsSchema = z
   .object({
     source: z
@@ -685,16 +656,14 @@ export const DiscardParamsSchema = z
     count: z.union([z.number(), z.literal('ALL'), DynamicValueSourceSchema]).optional().default(1),
     mode: z.enum(['CHOSEN', 'RANDOM', 'TOP', 'ALL', 'UNTIL_MATCH']).optional(),
     target: TargetSelectorSchema.optional(),
-    filter: FilterSchema.optional(),
-    untilFilter: FilterSchema.optional(),
+    filter: UniversalCardFilterSchema.optional(),
+    untilFilter: UniversalCardFilterSchema.optional(),
     fallback: z.enum(['SURGE', 'NONE']).optional(),
     matchingDestination: z.enum(['HAND', 'PLAY', 'DISCARD', 'REVEAL']).optional(),
   })
   .strict();
 
-export type DiscardParams = z.infer<typeof DiscardParamsSchema>;
-
-export const DrawCardsLimitSchema = z.enum(['HAND_SIZE', 'PRINTED_HAND_SIZE']);
+const DrawCardsLimitSchema = z.enum(['HAND_SIZE', 'PRINTED_HAND_SIZE']);
 export type DrawCardsLimit = z.infer<typeof DrawCardsLimitSchema>;
 
 export const DrawCardsParamsSchema = z
@@ -707,15 +676,6 @@ export const DrawCardsParamsSchema = z
   .strict();
 
 export type DrawCardsParams = z.infer<typeof DrawCardsParamsSchema>;
-
-export const ExhaustReadyParamsSchema = z
-  .object({
-    target: TargetSelectorSchema.optional().default('SELF_IDENTITY'),
-    filter: UniversalCardFilterSchema.optional(),
-  })
-  .strict();
-
-export type ExhaustReadyParams = z.infer<typeof ExhaustReadyParamsSchema>;
 
 /**
  * Decision Prompt Option Schema
@@ -733,7 +693,7 @@ export const DecisionPromptOptionSchema = z.object({
 /**
  * Search Zone Schema
  */
-export const SearchZoneSchema = z.enum([
+const SearchZoneSchema = z.enum([
   'PLAYER_DECK',
   'ENCOUNTER_DECK',
   'PLAYER_DISCARD',
@@ -807,8 +767,6 @@ export const PlayCardFromZoneParamsSchema = z
   .strict();
 
 export type AbilityCost = z.infer<typeof AbilityCostSchema>;
-export type SearchAndSelectParams = z.infer<typeof SearchAndSelectParamsSchema>;
-export type PlayCardFromZoneParams = z.infer<typeof PlayCardFromZoneParamsSchema>;
 
 /**
  * Canonical Duration Schema (RR v1.8 - PHASE, ROUND, TURN)
@@ -827,5 +785,3 @@ export const ReduceNextCardCostParamsSchema = z
     cardFilter: UniversalCardFilterSchema.optional(),
   })
   .strict();
-
-export type ReduceNextCardCostParams = z.infer<typeof ReduceNextCardCostParamsSchema>;

@@ -23,7 +23,7 @@ import type { EffectExecutionContext } from './index';
  * moment: 0 means the step does nothing, 1 is used without asking, 2 or more open a prompt whose
  * options re-run the same step with the chosen target.
  */
-export const PLAYER_CHOSEN_SELECTORS: ReadonlySet<string> = new Set([
+const PLAYER_CHOSEN_SELECTORS: ReadonlySet<string> = new Set([
   'CHOSEN_ENEMY',
   'CHOSEN_MINION',
   'CHOSEN_ENGAGED_MINION',

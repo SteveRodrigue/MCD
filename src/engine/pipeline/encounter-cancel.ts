@@ -3,13 +3,10 @@ import { CardType } from '../models/enums';
 import { CardInstance } from '../models/state';
 
 /** Effects that cancel the reveal of an encounter card (Enhanced Spider-Sense, Black Widow, ...). */
-export const CANCEL_REVEAL_EFFECTS = [
+const CANCEL_REVEAL_EFFECTS = [
   'CANCEL_WHEN_REVEALED',
   'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER',
 ] as const;
-
-/** The cancel also discards the card: it does not enter play ("cancel the effects and discard it"). */
-export const CANCEL_AND_DISCARD_EFFECT = 'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER';
 
 export function abilityCancelsEncounterReveal(ability: CardAbility): boolean {
   return (ability.steps ?? []).some((step) =>

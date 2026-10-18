@@ -67,7 +67,7 @@ function attackingVillain(state: GameState, attackContext: AttackExecutionContex
  * then checks HOST_WOULD_ATTACK attachment interrupts (priority 2).
  * Returns true if the attack was cancelled.
  */
-export function step1_preAttackAndStunCheck(
+function step1_preAttackAndStunCheck(
   state: GameState,
   attackerType: 'VILLAIN' | 'MINION',
   attackerCard?: CardInstance,
@@ -141,7 +141,7 @@ export function step1_preAttackAndStunCheck(
  * Step 2: Attack Initiation Triggers (RR v1.8 p. 24)
  * Dispatches VILLAIN_INITIATES_ATTACK (e.g. Spider-Sense draws a card).
  */
-export function step2_dispatchInitiationTriggers(
+function step2_dispatchInitiationTriggers(
   state: GameState,
   attackerType: 'VILLAIN' | 'MINION',
   targetPlayerId: string,
@@ -292,7 +292,7 @@ export function continueAttackAfterInitiation(
 /**
  * Step 3: Open Defender Declaration Prompt in pendingDecisionQueue.
  */
-export function step3_openDefenderDeclarationPrompt(
+function step3_openDefenderDeclarationPrompt(
   state: GameState,
   player: PlayerState,
   attackContext: AttackExecutionContext,
@@ -448,7 +448,7 @@ export function step3_openDefenderDeclarationPrompt(
 /**
  * Evaluates automated defense policy for headless simulations.
  */
-export function evaluateDefensePolicy(
+function evaluateDefensePolicy(
   _state: GameState,
   player: PlayerState,
   policy: DefensePolicy,
@@ -1081,7 +1081,7 @@ export function finishAttackDamageAndPostResolution(
  * Applies remaining damage for finished damage placements (#267). Called once all the interrupt
  * prompts of the window are answered.
  */
-export function finishPendingDamagePlacements(state: GameState): GameState {
+function finishPendingDamagePlacements(state: GameState): GameState {
   const pending: PendingDamagePlacement[] = state.pendingDamagePlacements ?? [];
   delete state.pendingDamagePlacements;
   let current = state;
@@ -1109,7 +1109,7 @@ registerFinishDamagePlacementsHook(finishPendingDamagePlacements);
 /**
  * Step 7: Post-Attack Reactions, Retaliate & Cleanup.
  */
-export function step7_resolvePostAttackAndRetaliate(
+function step7_resolvePostAttackAndRetaliate(
   state: GameState,
   attackContext: AttackExecutionContext,
 ): GameState {

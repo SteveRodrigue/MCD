@@ -592,7 +592,7 @@ export function defeatSideScheme(
 /**
  * Compiles eligible and ineligible distribution targets with dynamic capacity limits (ADR-0064).
  */
-export function compileDistributionTargets(
+function compileDistributionTargets(
   state: GameState,
   targetScope: string,
   allocationDomain: string,
@@ -809,7 +809,7 @@ export function compileDistributionTargets(
  * Evaluates whether a sequential step gate condition is satisfied (RR v1.8 p. 2, 24).
  * Delegates to the shared evaluator (Issue #122).
  */
-export function shouldExecuteStep(
+function shouldExecuteStep(
   stepOrGate: AbilityStep | StepGate | undefined,
   prevResult: StepResolutionResult | undefined,
   state: GameState,
@@ -1045,18 +1045,18 @@ function dealDamageToEnemies(
   return dealDamageToMinions(state, amount, minionOwners, opts);
 }
 
-export function pushPendingSequence(state: GameState, sequence: PendingSequence): void {
+function pushPendingSequence(state: GameState, sequence: PendingSequence): void {
   if (!state.pendingSequences) {
     state.pendingSequences = [];
   }
   state.pendingSequences.push(sequence);
 }
 
-export function popPendingSequence(state: GameState): PendingSequence | undefined {
+function popPendingSequence(state: GameState): PendingSequence | undefined {
   return state.pendingSequences?.pop();
 }
 
-export function peekPendingSequence(state: GameState): PendingSequence | undefined {
+function peekPendingSequence(state: GameState): PendingSequence | undefined {
   if (!state.pendingSequences || state.pendingSequences.length === 0) return undefined;
   return state.pendingSequences[state.pendingSequences.length - 1];
 }
@@ -1674,7 +1674,7 @@ function findAnyCardInstance(state?: GameState, idOrCode?: string): CardInstance
 /**
  * Dynamic prompt title, description, and source card metadata generator for tableau discard prompts (Issue #233).
  */
-export function getTableauDiscardPromptMeta(
+function getTableauDiscardPromptMeta(
   filter?: any,
   sourceCardInstance?: CardInstance,
   sourceCardId?: string,
@@ -1778,7 +1778,7 @@ export function getTableauDiscardPromptMeta(
  * Universal DISCARD Primitive Handler (RR v1.8 p. 10, Issue #66)
  * Handles card attrition/removal across all valid game zones (hand, deck, encounter deck, tableau, host, self, cards under host).
  */
-export function executeDiscard(
+function executeDiscard(
   state: GameState,
   step: AbilityStep,
   context: EffectExecutionContext,

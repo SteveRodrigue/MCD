@@ -1,6 +1,6 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-16 (#316, #319, #280 and #323 delivered; #318 confirmed working as intended; missing triggers #320 to #322 filed for Gate 4)
+> **Last updated:** 2026-10-17 (code audit AUD-20261017-232534 remediation queued in section 3.5)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
 > **Verification baseline:** 🟢 2,943 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
@@ -76,7 +76,34 @@ _None currently._
 
 _None currently._
 
-**Gate 1 is done when** sections 3.1 to 3.4 are empty, the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
+### 3.5 Code audit AUD-20261017-232534 remediation
+
+Plan (approved 2026-10-17): [plan_audit_20261017_remediation.md](plan_audit_20261017_remediation.md). One commit per row, in this order. Rows 1 to 11 are Gate 1 (🔴 blocker / 🟠 affects Rhino); rows 12 and later are Tech Debt & Tooling and run after them.
+
+| #   | Finding                                                                | Tier | Estimate |
+| --- | ---------------------------------------------------------------------- | ---- | -------- |
+| 1   | F001 simulator dispatches `END_PLAYER_TURN` (Gate 1 §1.4 proof) 🔴     | 2    | 2–4 h    |
+| 2   | F002 single playability rule core (parity test first)                  | 2    | 1 day    |
+| 3   | F003 one end-of-player-phase step; `PLAYER_PHASE_ENDED` fires          | 2    | 3–6 h    |
+| 4   | F004 setup reads `ScenarioRegistry`; delete legacy `catalog.ts`        | 2    | 4–6 h    |
+| 5   | F006 per-action state snapshots only in dev mode                       | 1    | 1 h      |
+| 6   | F007 Rhino UI smoke suite + `coverage.include`                         | 1    | 1 day    |
+| 7   | F010-C `executeStep` fails fast on unknown effects                     | 2    | 1 h      |
+| 8   | F011-B Rhino plugin reads stages from `definition.json`                | 2    | 1 h      |
+| 9   | F018 remove unused dependencies and fonts                              | 1    | 1 h      |
+| 10  | F009 `appendLog` helper and deterministic ids                          | 2    | 1–2 days |
+| 11  | F005-A share card definitions across state clones                      | 2    | 4–8 h    |
+| 12  | F008 typed card filter; fix `isIdentitySpecific`                       | 2    | 1 day    |
+| 13  | F016 remove `state.villain` / `mainScheme` (#215) — **owner decision** | 3    | 1 day    |
+| 14  | F017 delete unused exports and aliases                                 | 1    | 2 h      |
+| 15  | F013 shared test fixtures                                              | 1    | 1 day    |
+| 16  | F012 `GameSessionContext`                                              | 2    | 1–2 days |
+| 17  | F014-A Zod-free engine runtime module                                  | 2    | 4 h      |
+| 18  | F010-A / F014-B,C handler registries — **owner decision** for F014-B   | 2–3  | 3+ days  |
+| 19  | F011-A declarative scenario plugin (Gate 2)                            | 2    | 1–2 days |
+| 20  | F015, F019, F020, F021 hygiene items                                   | 1–2  | 2 h each |
+
+**Gate 1 is done when** sections 3.1 to 3.4 and rows 1 to 11 of section 3.5 are empty, the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
 
 ---
 

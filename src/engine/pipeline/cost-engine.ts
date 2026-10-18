@@ -176,16 +176,8 @@ export function getGeneratorProvidedResources(
     (a) => isResourceAbility(a.timing) || a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE'),
   );
 
-  if (!tableAbility) {
-    if (enrichment?.uses) {
-      const uType = enrichment.uses.counterType;
-      const count = gCard.tokens?.counters ?? (uType ? gCard.counters?.[uType] : undefined) ?? 0;
-      if (count <= 0) return 0;
-      if (requirePrinted) return 0;
-      return 1;
-    }
-    return 0;
-  }
+  // Uses counters alone do not make a card a resource generator (Tac Team, #43)
+  if (!tableAbility) return 0;
 
   if (!isAbilityPlayableInForm(tableAbility.timing as any, player.currentForm)) return 0;
 

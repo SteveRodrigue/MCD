@@ -58,7 +58,7 @@ describe('Villain Phase Card Play and Action Restrictions (Issue #182)', () => {
 
       const playability = evaluateCardPlayability(state, 'p1', cardInst);
       expect(playability.isPlayable).toBe(false);
-      expect(playability.reasons).toContain('Cannot play cards during the Villain Phase');
+      expect(playability.reasons).toContain('Cannot play cards during the Villain Phase.');
     });
 
     it('canPlayCard returns allowed: false with Villain Phase reason', () => {

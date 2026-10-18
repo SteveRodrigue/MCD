@@ -286,7 +286,7 @@ describe('Zero Card Text Parsing Contract (ADR-0019)', () => {
         [generatorInst.instanceId],
       );
       expect(alterEgoPlayCheck.allowed).toBe(false);
-      expect(alterEgoPlayCheck.reason).toContain('Hero form');
+      expect(alterEgoPlayCheck.reason).toContain('cannot generate resources');
     });
   });
 

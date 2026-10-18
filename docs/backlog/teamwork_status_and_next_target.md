@@ -82,8 +82,6 @@ Plan (approved 2026-10-17): [plan_audit_20261017_remediation.md](plan_audit_2026
 
 | #   | Finding                                                                | Tier | Estimate |
 | --- | ---------------------------------------------------------------------- | ---- | -------- |
-| 1   | F001 simulator dispatches `END_PLAYER_TURN` (Gate 1 §1.4 proof) 🔴     | 2    | 2–4 h    |
-| 2   | F002 single playability rule core (parity test first)                  | 2    | 1 day    |
 | 3   | F003 one end-of-player-phase step; `PLAYER_PHASE_ENDED` fires          | 2    | 3–6 h    |
 | 4   | F004 setup reads `ScenarioRegistry`; delete legacy `catalog.ts`        | 2    | 4–6 h    |
 | 5   | F006 per-action state snapshots only in dev mode                       | 1    | 1 h      |

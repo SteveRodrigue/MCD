@@ -573,7 +573,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       });
 
       expect(res2.result.success).toBe(false);
-      expect(res2.result.error).toContain('once per round');
+      expect(res2.result.error).toBe('Peter Parker cannot generate resources now.');
     });
 
     describe('Declarative Card Playability Evaluation (Grayscale / Unplayable Checks)', () => {

@@ -17,15 +17,13 @@ import {
   getVillainsInPlay,
   StatusCard,
 } from '@engine/models';
-import { getCardEnrichment } from '../../data/supplemental';
 import {
-  isResourceAbility,
-  isAbilityPlayableInForm,
   canPayAbilityCost,
   getEventAbilityExtraCost,
   AbilityPaymentOptions,
   getEffectiveCardCost,
   getAvailableResources,
+  getGeneratorProvidedResources,
 } from './cost-engine';
 import { matchesCardFilter } from '../filters/card-filter';
 import {
@@ -35,7 +33,6 @@ import {
 } from './stat-calculator';
 import { getStepEffectParams } from '../../data/supplemental/schema';
 import { findInPlayCardInstance } from '../state/state-validator';
-import { locateCard, readCardResources } from '../queries/card-inspector';
 import { getEligibleTargets } from '../effects/target-resolver';
 
 export function getPlayer(state: GameState, playerId: string): PlayerState | undefined {
@@ -1572,14 +1569,201 @@ export function evaluatePlayRequirements(
   return { allowed: true };
 }
 
+/** Where the dispatcher finds the card it is asked to play. */
+type PlaySourceZone =
+  'HAND' | 'PLAYER_DISCARD' | 'ANY_PLAYER_DISCARD' | 'DECK_TOP' | 'ATTACHED' | 'TUCKED';
+
+/** Optional choices made with the play that some rules check (Max per player, enemy targets). */
+interface PlayChoices {
+  targetPlayerId?: string;
+  targetInstanceId?: string;
+}
+
+const isActionTiming = (ability: CardAbility) =>
+  ability.timing === 'ACTION' ||
+  ability.timing === 'HERO_ACTION' ||
+  ability.timing === 'ALTER_EGO_ACTION';
+
+/**
+ * Every rule that stops a card from being played, cost payment aside (RR v1.8 p. 16 "Play").
+ * The dispatcher rejects on the first reason; the hand, the legal-action list and the bot show
+ * them all, so both read the same rules (AUD-20261017-232534 F002).
+ */
+function collectPlayRestrictions(
+  state: GameState,
+  player: PlayerState,
+  cardInstance: CardInstance,
+  choices: PlayChoices = {},
+): string[] {
+  const card = cardInstance.card;
+  const abilities = card.enrichment?.abilities || [];
+  const reasons: string[] = [];
+  const check = (result: { allowed: boolean; reason?: string }) => {
+    if (!result.allowed && result.reason) reasons.push(result.reason);
+  };
+
+  // Universal Play Requirements (RR v1.8 p. 16)
+  check(evaluatePlayRequirements(state, player, card));
+  // Target requirements (RR v1.8 p. 3, 5, 6, 11, 15-17, 19, 28-30; Issues #101, #173)
+  check(evaluateMinionTargetRequirement(state, player, card));
+  check(evaluateAllyTargetRequirement(state, player, card));
+  check(evaluateEnemyTargetRequirement(state, player, card, choices.targetInstanceId));
+  check(evaluateCharacterTargetRequirement(state, player, card));
+  check(evaluateSchemeTargetRequirement(state, player, card));
+  check(evaluatePlayFromZoneRequirement(state, player, card));
+
+  // Player Turn Validation (RR v1.8 p. 19 "Player Turn" & "Ask for an Action")
+  if (state.phase === GamePhase.VILLAIN_PHASE) {
+    reasons.push('Cannot play cards during the Villain Phase.');
+  } else if (state.phase === GamePhase.PLAYER_PHASE) {
+    const activePlayer = state.players[state.activePlayerIndex];
+    if (activePlayer && activePlayer.id !== player.id) {
+      reasons.push(`Not your turn (Currently ${activePlayer.name}'s turn).`);
+    }
+  }
+
+  // Ambiguity / Blocked Card Check (ADR-0021)
+  if (card.enrichment?.audit?.ambiguityFile) {
+    reasons.push(
+      `Card mechanic is currently under architectural review / blocked (${card.enrichment.audit.ambiguityFile}).`,
+    );
+  }
+
+  // Reactive Event Restriction (RR v1.8 p. 12, 16, 19): an Interrupt or Response event is played
+  // only in its trigger window, never as a standard player action.
+  const isReactiveEvent =
+    card.type === CardType.EVENT &&
+    abilities.length > 0 &&
+    !abilities.some(isActionTiming) &&
+    abilities.some(
+      (a) => a.timing && (a.timing.includes('INTERRUPT') || a.timing.includes('RESPONSE')),
+    );
+  if (isReactiveEvent) {
+    reasons.push('Interrupt/Response events can only be played when their trigger occurs.');
+  }
+
+  // Resource Card Restriction (RR v1.8 p. 24): resource cards are discarded to pay costs.
+  if (card.type === CardType.RESOURCE && !abilities.some(isActionTiming)) {
+    reasons.push('Resource cards cannot be played directly; they are discarded to pay costs.');
+  }
+
+  // Dynamic Ally Limit Check (RR v1.8 p. 3, ADR-0018)
+  if (card.type === CardType.ALLY) {
+    const maxAllies = getPlayerAllyLimit(state, player.id);
+    if (player.allies.length >= maxAllies) {
+      reasons.push(`Ally limit reached (${maxAllies} allies max).`);
+    }
+  }
+
+  // Restricted Keyword Limit Check (RR v1.8 p. 25, ADR-0018): a player at the limit can still
+  // play a restricted card if enough of their restricted cards in play can be discarded.
+  if (isCardRestricted(card)) {
+    const cardWeight = getCardRestrictedWeight(card);
+    const currentRestricted = getPlayerRestrictedCount(player);
+    const maxRestricted = getPlayerRestrictedLimit(state, player.id);
+    const neededSlots = currentRestricted + cardWeight - maxRestricted;
+    if (neededSlots > 0 && currentRestricted < neededSlots) {
+      reasons.push(`Restricted card limit reached (${maxRestricted} restricted cards max).`);
+    }
+  }
+
+  // Max [X] per player Constraint Check (RR v1.8 p. 17 "Max")
+  const maxPerPlayer = card.maxPerPlayer;
+  if (maxPerPlayer !== undefined && maxPerPlayer > 0) {
+    const sameCard = (c: CardInstance) =>
+      c.card.code === card.code ||
+      c.card.name.toLowerCase().trim() === card.name.toLowerCase().trim();
+    const atLimit = (p: PlayerState) =>
+      p.tableau.filter(sameCard).length +
+        (card.type === CardType.ALLY ? p.allies.filter(sameCard).length : 0) >=
+      maxPerPlayer;
+    const limitReason = `Max ${maxPerPlayer} per player limit reached for '${card.name}'.`;
+
+    if (!card.enrichment?.playUnderAnyPlayerControl) {
+      if (atLimit(player)) reasons.push(limitReason);
+    } else if (choices.targetPlayerId) {
+      const targetPlayer = getPlayer(state, choices.targetPlayerId);
+      if (!targetPlayer) {
+        reasons.push(`Target player ${choices.targetPlayerId} not found.`);
+      } else if (atLimit(targetPlayer)) {
+        reasons.push(limitReason);
+      }
+    } else if (state.players.every(atLimit)) {
+      reasons.push(
+        state.players.length > 1
+          ? 'All players have reached max per player limit for this card.'
+          : limitReason,
+      );
+    }
+  }
+
+  // Global Unicity Constraint Check (RR v1.8 p. 29)
+  check(checkUniqueCardPlayable(state, card));
+
+  // An event's declared extra cost (a hand discard) must be payable with the other cards in hand
+  if (card.type === CardType.EVENT) {
+    for (const ability of abilities) {
+      const extraCost = getEventAbilityExtraCost(ability);
+      if (!extraCost) continue;
+      check(
+        canPayAbilityCost(state, player, extraCost, cardInstance, {
+          playedCardInstanceId: cardInstance.instanceId,
+        }),
+      );
+    }
+  }
+
+  return reasons;
+}
+
+/** Resources a hand card pays toward `playedCard`; The Power of ... doubles them for its aspect. */
+function getHandCardResourceValue(paymentCard: CardInstance, playedCard: NormalizedCard): number {
+  const resources = paymentCard.card.resources.total || 1;
+  const aspectDoubleStep = paymentCard.card.enrichment?.abilities
+    ?.flatMap((a) => a.steps || [])
+    .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
+  const doubled =
+    aspectDoubleStep && getStepEffectParams(aspectDoubleStep).aspect === playedCard.faction;
+  return doubled ? resources * 2 : resources;
+}
+
+function findCardToPlay(
+  state: GameState,
+  player: PlayerState,
+  cardInstanceId: string,
+  sourceZone: PlaySourceZone,
+  targetOwnerPlayerId?: string,
+): CardInstance | undefined {
+  const byId = (c: CardInstance) => c.instanceId === cardInstanceId;
+  switch (sourceZone) {
+    case 'PLAYER_DISCARD':
+      return player.discard.find(byId);
+    case 'ANY_PLAYER_DISCARD': {
+      const owner = targetOwnerPlayerId ? getPlayer(state, targetOwnerPlayerId) : undefined;
+      if (owner) return owner.discard.find(byId);
+      for (const p of state.players) {
+        const found = p.discard.find(byId);
+        if (found) return found;
+      }
+      return undefined;
+    }
+    case 'DECK_TOP':
+      return player.deck[0]?.instanceId === cardInstanceId ? player.deck[0] : undefined;
+    case 'ATTACHED':
+    case 'TUCKED':
+      return player.attachments?.find(byId) || player.cardsUnderneath?.find(byId);
+    default:
+      return player.hand.find(byId);
+  }
+}
+
 export function canPlayCard(
   state: GameState,
   playerId: string,
   cardInstanceOrId: string | CardInstance,
   paymentCardInstanceIds: string[] = [],
   generatorInstanceIds: string[] = [],
-  sourceZone:
-    'HAND' | 'PLAYER_DISCARD' | 'ANY_PLAYER_DISCARD' | 'DECK_TOP' | 'ATTACHED' | 'TUCKED' = 'HAND',
+  sourceZone: PlaySourceZone = 'HAND',
   targetOwnerPlayerId?: string,
   targetPlayerId?: string,
   targetInstanceId?: string,
@@ -1587,31 +1771,10 @@ export function canPlayCard(
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
 
-  let targetCardInstance: CardInstance | undefined;
-  if (typeof cardInstanceOrId !== 'string') {
-    targetCardInstance = cardInstanceOrId;
-  } else if (sourceZone === 'PLAYER_DISCARD') {
-    targetCardInstance = player.discard.find((c) => c.instanceId === cardInstanceOrId);
-  } else if (sourceZone === 'ANY_PLAYER_DISCARD') {
-    const targetOwner = targetOwnerPlayerId ? getPlayer(state, targetOwnerPlayerId) : undefined;
-    if (targetOwner) {
-      targetCardInstance = targetOwner.discard.find((c) => c.instanceId === cardInstanceOrId);
-    } else {
-      for (const p of state.players) {
-        targetCardInstance = p.discard.find((c) => c.instanceId === cardInstanceOrId);
-        if (targetCardInstance) break;
-      }
-    }
-  } else if (sourceZone === 'DECK_TOP') {
-    targetCardInstance =
-      player.deck[0]?.instanceId === cardInstanceOrId ? player.deck[0] : undefined;
-  } else if (sourceZone === 'ATTACHED' || sourceZone === 'TUCKED') {
-    targetCardInstance =
-      player.attachments?.find((c) => c.instanceId === cardInstanceOrId) ||
-      player.cardsUnderneath?.find((c) => c.instanceId === cardInstanceOrId);
-  } else {
-    targetCardInstance = player.hand.find((c) => c.instanceId === cardInstanceOrId);
-  }
+  const targetCardInstance =
+    typeof cardInstanceOrId === 'string'
+      ? findCardToPlay(state, player, cardInstanceOrId, sourceZone, targetOwnerPlayerId)
+      : cardInstanceOrId;
 
   if (!targetCardInstance) {
     return {
@@ -1623,391 +1786,44 @@ export function canPlayCard(
     };
   }
 
+  const [restriction] = collectPlayRestrictions(state, player, targetCardInstance, {
+    targetPlayerId,
+    targetInstanceId,
+  });
+  if (restriction) return { allowed: false, reason: restriction };
+
   const card = targetCardInstance.card;
-  const cardInstanceId = targetCardInstance.instanceId;
   const { effectiveCost: cost } = getEffectiveCardCost(state, player, targetCardInstance);
-
-  // Universal Play Requirements (RR v1.8 p. 16)
-  const reqCheck = evaluatePlayRequirements(state, player, card);
-  if (!reqCheck.allowed) {
-    return reqCheck;
-  }
-
-  // Minion target and attachment requirement check (RR v1.8 p. 6, 19, 28)
-  const minionCheck = evaluateMinionTargetRequirement(state, player, card);
-  if (!minionCheck.allowed) {
-    return minionCheck;
-  }
-
-  // Ally target and attachment requirement check (RR v1.8 p. 5, 16, 17)
-  const allyCheck = evaluateAllyTargetRequirement(state, player, card);
-  if (!allyCheck.allowed) {
-    return allyCheck;
-  }
-
-  // Enemy target and attachment requirement check (RR v1.8 p. 5, 16, 17)
-  const enemyCheck = evaluateEnemyTargetRequirement(state, player, card, targetInstanceId);
-  if (!enemyCheck.allowed) {
-    return enemyCheck;
-  }
-
-  // Character target and heal requirement check (RR v1.8 p. 3, 11)
-  const characterCheck = evaluateCharacterTargetRequirement(state, player, card);
-  if (!characterCheck.allowed) {
-    return characterCheck;
-  }
-
-  // Scheme threat requirement check (RR v1.8 p. 15, 29, 30; Issue #101)
-  const schemeCheck = evaluateSchemeTargetRequirement(state, player, card);
-  if (!schemeCheck.allowed) {
-    return schemeCheck;
-  }
-
-  // Play-from-zone requirement check (Issue #173)
-  const playFromZoneCheck = evaluatePlayFromZoneRequirement(state, player, card);
-  if (!playFromZoneCheck.allowed) {
-    return playFromZoneCheck;
-  }
-
-  const abilities = card.enrichment?.abilities || [];
-
-  // Player Turn Validation (RR v1.8 p. 19 "Player Turn" & "Ask for an Action")
-  if (state.phase === GamePhase.VILLAIN_PHASE) {
-    return {
-      allowed: false,
-      reason: 'Cannot play cards during the Villain Phase.',
-    };
-  }
-  if (state.phase === GamePhase.PLAYER_PHASE) {
-    const activePlayer = state.players[state.activePlayerIndex];
-    if (activePlayer && activePlayer.id !== playerId) {
-      return {
-        allowed: false,
-        reason: `Not your turn (Currently ${activePlayer.name}'s turn).`,
-      };
-    }
-  }
-
-  // Ambiguity / Blocked Card Check (ADR-0021)
-  if (card.enrichment?.audit?.ambiguityFile) {
-    return {
-      allowed: false,
-      reason: `Card mechanic is currently under architectural review / blocked (${card.enrichment.audit.ambiguityFile}).`,
-    };
-  }
-
-  // Reactive Event Restriction (RR v1.8 p. 12, 16, 19)
-  // An event card with Interrupt or Response timing can ONLY be played during its specific trigger window.
-  // It cannot be proactively played / paid for as a standard player action.
-  const isReactiveEvent =
-    card.type === CardType.EVENT &&
-    abilities.length > 0 &&
-    !abilities.some(
-      (a) => a.timing === 'ACTION' || a.timing === 'HERO_ACTION' || a.timing === 'ALTER_EGO_ACTION',
-    ) &&
-    abilities.some(
-      (a) => a.timing && (a.timing.includes('INTERRUPT') || a.timing.includes('RESPONSE')),
-    );
-
-  if (isReactiveEvent) {
-    return {
-      allowed: false,
-      reason: 'Interrupt/Response events can only be played when their trigger occurs.',
-    };
-  }
-
-  // Resource Card Restriction (RR v1.8 p. 24)
-  // Resource cards cannot be played as standalone actions; they are discarded to generate resources for payment.
-  const isResourceCard = card.type === CardType.RESOURCE;
-  const hasResourceAction = abilities.some(
-    (a) => a.timing === 'ACTION' || a.timing === 'HERO_ACTION' || a.timing === 'ALTER_EGO_ACTION',
-  );
-  if (isResourceCard && !hasResourceAction) {
-    return {
-      allowed: false,
-      reason: 'Resource cards cannot be played directly; they are discarded to pay costs.',
-    };
-  }
-
-  // Dynamic Ally Limit Check (RR v1.8 p. 3, ADR-0018)
-  if (card.type === CardType.ALLY) {
-    const maxAllies = getPlayerAllyLimit(state, playerId);
-    if (player.allies.length >= maxAllies) {
-      return { allowed: false, reason: `Ally limit reached (${maxAllies} allies max).` };
-    }
-  }
-
-  // Restricted Keyword Limit Check (RR v1.8 p. 25, ADR-0018)
-  if (isCardRestricted(card)) {
-    const cardWeight = getCardRestrictedWeight(card);
-    const currentRestricted = getPlayerRestrictedCount(player);
-    const maxRestricted = getPlayerRestrictedLimit(state, playerId);
-
-    if (currentRestricted + cardWeight > maxRestricted) {
-      // Per RR v1.8 p. 25: A player CAN play a restricted card when at limit IF they have enough
-      // in-play restricted cards in their tableau to discard to make room.
-      const neededSlots = currentRestricted + cardWeight - maxRestricted;
-      if (currentRestricted < neededSlots) {
-        return {
-          allowed: false,
-          reason: `Restricted card limit reached (${maxRestricted} restricted cards max).`,
-        };
-      }
-    }
-  }
-
-  // Max [X] per player Constraint Check (RR v1.8 p. 17 "Max")
-  if (card.maxPerPlayer !== undefined && card.maxPerPlayer > 0) {
-    const getControlledCount = (p: PlayerState) =>
-      p.tableau.filter(
-        (c) =>
-          c.card.code === card.code ||
-          c.card.name.toLowerCase().trim() === card.name.toLowerCase().trim(),
-      ).length +
-      (card.type === CardType.ALLY
-        ? p.allies.filter(
-            (a) =>
-              a.card.code === card.code ||
-              a.card.name.toLowerCase().trim() === card.name.toLowerCase().trim(),
-          ).length
-        : 0);
-
-    if (card.enrichment?.playUnderAnyPlayerControl) {
-      if (targetPlayerId) {
-        const targetP = getPlayer(state, targetPlayerId);
-        if (!targetP) {
-          return { allowed: false, reason: `Target player ${targetPlayerId} not found.` };
-        }
-        if (getControlledCount(targetP) >= card.maxPerPlayer) {
-          return {
-            allowed: false,
-            reason: `Max ${card.maxPerPlayer} per player limit reached for '${card.name}'.`,
-          };
-        }
-      } else {
-        const allReached = state.players.every((p) => getControlledCount(p) >= card.maxPerPlayer!);
-        if (allReached) {
-          return {
-            allowed: false,
-            reason:
-              state.players.length > 1
-                ? 'All players have reached max per player limit for this card.'
-                : `Max ${card.maxPerPlayer} per player limit reached for '${card.name}'.`,
-          };
-        }
-      }
-    } else {
-      const controlledCount = getControlledCount(player);
-      if (controlledCount >= card.maxPerPlayer) {
-        return {
-          allowed: false,
-          reason: `Max ${card.maxPerPlayer} per player limit reached for '${card.name}'.`,
-        };
-      }
-    }
-  }
-
-  // Global Unicity Constraint Check (RR v1.8 p. 29)
-  const unicityCheck = checkUniqueCardPlayable(state, card);
-  if (!unicityCheck.allowed) {
-    return unicityCheck;
-  }
-
-  // An event's declared extra cost (a hand discard) must be payable with the other cards in hand
-  if (card.type === CardType.EVENT) {
-    for (const ability of abilities) {
-      const extraCost = getEventAbilityExtraCost(ability);
-      if (!extraCost) continue;
-      const extraCheck = canPayAbilityCost(state, player, extraCost, targetCardInstance, {
-        playedCardInstanceId: cardInstanceId,
-      });
-      if (!extraCheck.allowed) return { allowed: false, reason: extraCheck.reason };
-    }
-  }
-
-  // Cost payment validation
   if (cost > 0) {
-    // Payment cards cannot include the card being played
-    if (cardInstanceId && paymentCardInstanceIds.includes(cardInstanceId)) {
+    if (paymentCardInstanceIds.includes(targetCardInstance.instanceId)) {
       return { allowed: false, reason: 'The card being played cannot be used to pay for itself.' };
     }
 
     let generatedResources = 0;
-
-    // 1. Resources from Hand Discards
     for (const pId of paymentCardInstanceIds) {
       const pCard = player.hand.find((c) => c.instanceId === pId);
       if (!pCard) {
         return { allowed: false, reason: `Payment card instance ${pId} not found in hand.` };
       }
-
-      // Check aspect doubling cards (e.g. The Power of Leadership / Justice / Aggression / Protection)
-      const aspectDoubleStep = pCard.card.enrichment?.abilities
-        ?.flatMap((a) => a.steps || [])
-        .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
-      if (aspectDoubleStep && getStepEffectParams(aspectDoubleStep).aspect === card.faction) {
-        generatedResources += 2;
-      } else {
-        generatedResources += pCard.card.resources.total || 1;
-      }
+      generatedResources += getHandCardResourceValue(pCard, card);
     }
 
-    // 2. Resources from Table Generators / Reducers
     for (const gId of generatorInstanceIds) {
-      // Check if identity ability (e.g. Peter Parker Scientist / Carol Danvers Rechannel)
-      if (gId === 'identity_ability' || gId === player.activeFormCard.code) {
-        const idAbility = player.activeFormCard.enrichment?.abilities?.find(
-          (a) => a.timing === 'RESOURCE' || a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE'),
-        );
-        if (idAbility) {
-          if (
-            idAbility.limit === 'ONCE_PER_ROUND' &&
-            (player.usedAbilitiesThisRound?.[idAbility.id] || 0) >= 1
-          ) {
-            return {
-              allowed: false,
-              reason: `Identity ability '${idAbility.id}' has already been used this round (Limit: once per round).`,
-            };
-          }
-          if (
-            idAbility.limit === 'ONCE_PER_PHASE' &&
-            (player.usedAbilitiesThisPhase?.[idAbility.id] || 0) >= 1
-          ) {
-            return {
-              allowed: false,
-              reason: `Identity ability '${idAbility.id}' has already been used this phase (Limit: once per phase).`,
-            };
-          }
-          const genStep = idAbility.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
-          if (genStep && getStepEffectParams(genStep).fromCard) {
-            const fromCardSelector = getStepEffectParams(genStep).fromCard;
-            const target = locateCard(state, fromCardSelector, { player });
-            if (!target) {
-              return {
-                allowed: false,
-                reason: `Identity ability '${idAbility.id}' cannot generate resources (no card found).`,
-              };
-            }
-            const resources = readCardResources(target);
-            if (resources.length === 0) {
-              return {
-                allowed: false,
-                reason: `Identity ability '${idAbility.id}' cannot generate resources (card provides 0 resources).`,
-              };
-            }
-            generatedResources += resources.length;
-          } else {
-            generatedResources +=
-              Number(genStep ? getStepEffectParams(genStep).amount : undefined) || 1;
-          }
-        }
-        continue;
-      }
-
-      const gCard = player.tableau.find((c) => c.instanceId === gId);
-      if (!gCard) {
+      const isIdentity = gId === 'identity_ability' || gId === player.activeFormCard.code;
+      const generatorName = isIdentity
+        ? player.activeFormCard.name
+        : player.tableau.find((c) => c.instanceId === gId)?.card.name;
+      if (!generatorName) {
         return {
           allowed: false,
           reason: `Resource generator instance ${gId} not found in tableau.`,
         };
       }
-      if (gCard.exhausted) {
-        return {
-          allowed: false,
-          reason: `Resource generator ${gCard.card.name} is already exhausted.`,
-        };
+      const amount = getGeneratorProvidedResources(state, player, gId);
+      if (amount <= 0) {
+        return { allowed: false, reason: `${generatorName} cannot generate resources now.` };
       }
-
-      // Check generator abilities and form restrictions (RR v1.8 p. 16, 24, 25)
-      const enrichment = gCard.card.enrichment || getCardEnrichment(gCard.card.code);
-      const abilities = enrichment?.abilities || [];
-
-      const generatorAbilities = abilities.filter(
-        (a) =>
-          isResourceAbility(a.timing) ||
-          a.steps?.some(
-            (s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
-          ),
-      );
-
-      if (generatorAbilities.length === 0) {
-        return { allowed: false, reason: `${gCard.card.name} is not a resource generator.` };
-      }
-
-      const canUseInForm = generatorAbilities.some((a) =>
-        isAbilityPlayableInForm(a.timing as any, player.currentForm),
-      );
-
-      if (!canUseInForm) {
-        const requiredForm = generatorAbilities.some((a) => a.timing.startsWith('HERO_'))
-          ? 'Hero'
-          : 'Alter-Ego';
-        return {
-          allowed: false,
-          reason: `${gCard.card.name} ability requires ${requiredForm} form.`,
-        };
-      }
-
-      const activeAbility = generatorAbilities.find((a) =>
-        isAbilityPlayableInForm(a.timing as any, player.currentForm),
-      );
-
-      if (activeAbility) {
-        const abilityKey = `${gCard.instanceId}_${activeAbility.id}`;
-        if (
-          activeAbility.limit === 'ONCE_PER_ROUND' &&
-          (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1
-        ) {
-          return {
-            allowed: false,
-            reason: `Resource generator ${gCard.card.name} has already been used this round (Limit: once per round).`,
-          };
-        }
-        if (
-          activeAbility.limit === 'ONCE_PER_PHASE' &&
-          (player.usedAbilitiesThisPhase?.[abilityKey] || 0) >= 1
-        ) {
-          return {
-            allowed: false,
-            reason: `Resource generator ${gCard.card.name} has already been used this phase (Limit: once per phase).`,
-          };
-        }
-      }
-
-      const genStep = generatorAbilities
-        .flatMap((a) => a.steps || [])
-        .find((s) => s.effect === 'GENERATE_RESOURCE');
-
-      if (genStep && getStepEffectParams(genStep).fromCard) {
-        const fromCardSelector = getStepEffectParams(genStep).fromCard;
-        const target = locateCard(state, fromCardSelector, {
-          player,
-          sourceCardInstance: gCard,
-        });
-        if (!target) {
-          return {
-            allowed: false,
-            reason: `${gCard.card.name} cannot generate resources (no card found in ${fromCardSelector.zone || 'zone'}).`,
-          };
-        }
-        const resources = readCardResources(target);
-        if (resources.length === 0) {
-          return {
-            allowed: false,
-            reason: `${gCard.card.name} cannot generate resources (top card provides 0 resources).`,
-          };
-        }
-        generatedResources += resources.length;
-      } else if (gCard.card.enrichment?.uses) {
-        if ((gCard.tokens?.counters || 0) <= 0) {
-          return { allowed: false, reason: `${gCard.card.name} has no counters remaining.` };
-        }
-        generatedResources += 1;
-      } else {
-        // Generic generator
-        const amt = genStep ? Number(getStepEffectParams(genStep).amount) || 1 : 1;
-        generatedResources += amt;
-      }
+      generatedResources += amount;
     }
 
     if (generatedResources < cost) {
@@ -2028,9 +1844,9 @@ export interface CardPlayabilityStatus {
 }
 
 /**
- * Evaluates whether a card in a player's hand can currently be played (ADR-0018).
- * Checks all game conditions: active turn, identity form, maximum affordable resources,
- * unicity constraints, ally limits, and custom play restrictions.
+ * Evaluates whether a card in a player's hand can currently be played (ADR-0018): every play
+ * restriction, plus whether the other hand cards, ready generators and the identity's resource
+ * ability could pay the effective cost.
  */
 export function evaluateCardPlayability(
   state: GameState,
@@ -2042,246 +1858,15 @@ export function evaluateCardPlayability(
     return { isPlayable: false, reasons: ['Player not found'], maxPotentialResources: 0 };
   }
 
-  const card = cardInstance.card;
-  const reasons: string[] = [];
+  const reasons = collectPlayRestrictions(state, player, cardInstance);
 
-  const abilities = card.enrichment?.abilities || [];
-
-  // 1. Player Turn Validation (RR v1.8 p. 19)
-  if (state.phase === GamePhase.VILLAIN_PHASE) {
-    reasons.push('Cannot play cards during the Villain Phase');
-  } else if (state.phase === GamePhase.PLAYER_PHASE) {
-    const activePlayer = state.players[state.activePlayerIndex];
-    if (activePlayer && activePlayer.id !== playerId) {
-      reasons.push(`Not your turn (Currently ${activePlayer.name}'s turn)`);
-    }
-  }
-
-  // Ambiguity / Blocked Card Check (ADR-0021)
-  if (card.enrichment?.audit?.ambiguityFile) {
-    reasons.push(
-      `Card is currently under architectural review / blocked (${card.enrichment.audit.ambiguityFile})`,
-    );
-  }
-
-  // Minion target and attachment requirement check (RR v1.8 p. 6, 19, 28)
-  const minionPlayabilityCheck = evaluateMinionTargetRequirement(state, player, card);
-  if (!minionPlayabilityCheck.allowed && minionPlayabilityCheck.reason) {
-    reasons.push(minionPlayabilityCheck.reason);
-  }
-
-  // Ally target and attachment requirement check (RR v1.8 p. 5, 16, 17)
-  const allyPlayabilityCheck = evaluateAllyTargetRequirement(state, player, card);
-  if (!allyPlayabilityCheck.allowed && allyPlayabilityCheck.reason) {
-    reasons.push(allyPlayabilityCheck.reason);
-  }
-
-  // Enemy target and attachment requirement check (RR v1.8 p. 5, 16, 17)
-  const enemyPlayabilityCheck = evaluateEnemyTargetRequirement(state, player, card);
-  if (!enemyPlayabilityCheck.allowed && enemyPlayabilityCheck.reason) {
-    reasons.push(enemyPlayabilityCheck.reason);
-  }
-
-  // Character target and heal requirement check (RR v1.8 p. 3, 11)
-  const characterPlayabilityCheck = evaluateCharacterTargetRequirement(state, player, card);
-  if (!characterPlayabilityCheck.allowed && characterPlayabilityCheck.reason) {
-    reasons.push(characterPlayabilityCheck.reason);
-  }
-
-  // Scheme threat requirement check (RR v1.8 p. 15, 29, 30; Issue #101)
-  const schemePlayabilityCheck = evaluateSchemeTargetRequirement(state, player, card);
-  if (!schemePlayabilityCheck.allowed && schemePlayabilityCheck.reason) {
-    reasons.push(schemePlayabilityCheck.reason);
-  }
-
-  // Play-from-zone requirement check (Issue #173)
-  const playFromZoneCheck = evaluatePlayFromZoneRequirement(state, player, card);
-  if (!playFromZoneCheck.allowed && playFromZoneCheck.reason) {
-    reasons.push(playFromZoneCheck.reason);
-  }
-
-  // 2. Reactive Event Validation (RR v1.8 p. 12, 16, 19)
-  // An event card with Interrupt or Response timing can ONLY be played during its specific trigger window.
-  const isReactiveEvent =
-    card.type === CardType.EVENT &&
-    abilities.length > 0 &&
-    !abilities.some(
-      (a) => a.timing === 'ACTION' || a.timing === 'HERO_ACTION' || a.timing === 'ALTER_EGO_ACTION',
-    ) &&
-    abilities.some(
-      (a) => a.timing && (a.timing.includes('INTERRUPT') || a.timing.includes('RESPONSE')),
-    );
-
-  if (isReactiveEvent) {
-    reasons.push('Interrupt/Response: Can only be played when triggered');
-  }
-
-  // Resource Card Restriction (RR v1.8 p. 24)
-  const isResourceCard = card.type === CardType.RESOURCE;
-  const hasResourceAction = abilities.some(
-    (a) => a.timing === 'ACTION' || a.timing === 'HERO_ACTION' || a.timing === 'ALTER_EGO_ACTION',
-  );
-  if (isResourceCard && !hasResourceAction) {
-    reasons.push('Resource card: Used to generate resources when paying costs');
-  }
-
-  // 3. Universal Play Requirements (RR v1.8 p. 16)
-  const reqCheck = evaluatePlayRequirements(state, player, card);
-  if (!reqCheck.allowed && reqCheck.reason) {
-    reasons.push(reqCheck.reason);
-  }
-
-  // 3. Dynamic Ally Limit Validation (RR v1.8 p. 3)
-  if (card.type === CardType.ALLY) {
-    const maxAllies = getPlayerAllyLimit(state, playerId);
-    if (player.allies.length >= maxAllies) {
-      reasons.push(`Ally limit reached (${maxAllies} allies max)`);
-    }
-  }
-
-  // Restricted Keyword Limit Check (RR v1.8 p. 25, ADR-0018)
-  if (isCardRestricted(card)) {
-    const cardWeight = getCardRestrictedWeight(card);
-    const currentRestricted = getPlayerRestrictedCount(player);
-    const maxRestricted = getPlayerRestrictedLimit(state, playerId);
-
-    if (currentRestricted + cardWeight > maxRestricted) {
-      const neededSlots = currentRestricted + cardWeight - maxRestricted;
-      if (currentRestricted < neededSlots) {
-        reasons.push(`Restricted card limit reached (${maxRestricted} restricted cards max).`);
-      }
-    }
-  }
-
-  // Max [X] per player Constraint Check (RR v1.8 p. 17 "Max")
-  if (card.maxPerPlayer !== undefined && card.maxPerPlayer > 0) {
-    const getControlledCount = (p: PlayerState) =>
-      p.tableau.filter(
-        (c) =>
-          c.card.code === card.code ||
-          c.card.name.toLowerCase().trim() === card.name.toLowerCase().trim(),
-      ).length +
-      (card.type === CardType.ALLY
-        ? p.allies.filter(
-            (a) =>
-              a.card.code === card.code ||
-              a.card.name.toLowerCase().trim() === card.name.toLowerCase().trim(),
-          ).length
-        : 0);
-
-    if (card.enrichment?.playUnderAnyPlayerControl) {
-      const allReached = state.players.every((p) => getControlledCount(p) >= card.maxPerPlayer!);
-      if (allReached) {
-        reasons.push(
-          state.players.length > 1
-            ? 'All players have reached max per player limit for this card.'
-            : `Max ${card.maxPerPlayer} per player limit reached for '${card.name}'.`,
-        );
-      }
-    } else {
-      const controlledCount = getControlledCount(player);
-      if (controlledCount >= card.maxPerPlayer) {
-        reasons.push(`Max ${card.maxPerPlayer} per player limit reached for '${card.name}'.`);
-      }
-    }
-  }
-
-  // 4. Global Unicity Constraint Check (RR v1.8 p. 28-29)
-  const unicityCheck = checkUniqueCardPlayable(state, card);
-  if (!unicityCheck.allowed && unicityCheck.reason) {
-    reasons.push(unicityCheck.reason);
-  }
-
-  // 5. Maximum Potential Resource Affordability Check
-  let maxPotentialResources = 0;
-
-  // A. Hand resources from other cards
+  let maxPotentialResources = getGeneratorProvidedResources(state, player, 'identity_ability');
   for (const other of player.hand) {
     if (other.instanceId === cardInstance.instanceId) continue;
-    const aspectDoubleStep = other.card.enrichment?.abilities
-      ?.flatMap((a) => a.steps || [])
-      .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
-    const multiplier =
-      aspectDoubleStep && getStepEffectParams(aspectDoubleStep).aspect === card.faction ? 2 : 1;
-    maxPotentialResources += (other.card.resources.total || 1) * multiplier;
+    maxPotentialResources += getHandCardResourceValue(other, cardInstance.card);
   }
-
-  // B. Identity Resource Ability
-  const idAbilities = player.activeFormCard.enrichment?.abilities || [];
-  for (const ab of idAbilities) {
-    if (ab.timing === 'RESOURCE' || ab.steps?.some((s) => s.effect === 'GENERATE_RESOURCE')) {
-      const isUsedRound =
-        ab.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
-      const isUsedPhase =
-        ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[ab.id] || 0) >= 1;
-      if (!isUsedRound && !isUsedPhase) {
-        const genStep = ab.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
-        if (genStep && getStepEffectParams(genStep).fromCard) {
-          const fromCardSelector = getStepEffectParams(genStep).fromCard;
-          const target = locateCard(state, fromCardSelector, { player });
-          if (target) {
-            maxPotentialResources += readCardResources(target).length;
-          }
-        } else {
-          maxPotentialResources += genStep ? Number(getStepEffectParams(genStep).amount) || 1 : 1;
-        }
-      }
-    }
-  }
-
-  // C. In-Play Tableau Generators
-  for (const t of player.tableau) {
-    if (t.exhausted) continue;
-    const enrichment = t.card.enrichment || getCardEnrichment(t.card.code);
-    const uses = enrichment?.uses;
-    const abilities = enrichment?.abilities || [];
-    const generatorAbilities = abilities.filter(
-      (a) =>
-        isResourceAbility(a.timing) &&
-        (a.steps?.some(
-          (s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
-        ) ||
-          Boolean(uses)),
-    );
-    if (generatorAbilities.length === 0) continue;
-
-    const availableAbilities = generatorAbilities.filter((a) => {
-      if (!isAbilityPlayableInForm(a.timing as any, player.currentForm)) return false;
-      const abilityKey = `${t.instanceId}_${a.id}`;
-      if (a.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1) {
-        return false;
-      }
-      if (a.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[abilityKey] || 0) >= 1) {
-        return false;
-      }
-      return true;
-    });
-    if (availableAbilities.length === 0) continue;
-
-    const genStep = availableAbilities
-      .flatMap((a) => a.steps || [])
-      .find((s) => s.effect === 'GENERATE_RESOURCE');
-
-    if (genStep && getStepEffectParams(genStep).fromCard) {
-      const fromCardSelector = getStepEffectParams(genStep).fromCard;
-      const target = locateCard(state, fromCardSelector, {
-        player,
-        sourceCardInstance: t,
-      });
-      if (target) {
-        const res = readCardResources(target);
-        maxPotentialResources += res.length;
-      }
-    } else if (uses) {
-      const uType = uses.counterType;
-      const count = t.tokens?.counters ?? (uType ? t.counters?.[uType] : undefined) ?? 0;
-      if (count > 0) {
-        maxPotentialResources += 1;
-      }
-    } else {
-      const amt = genStep ? Number(getStepEffectParams(genStep).amount) || 1 : 1;
-      maxPotentialResources += amt;
-    }
+  for (const generator of player.tableau) {
+    maxPotentialResources += getGeneratorProvidedResources(state, player, generator.instanceId);
   }
 
   const { effectiveCost: cost } = getEffectiveCardCost(state, player, cardInstance);

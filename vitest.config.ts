@@ -10,6 +10,11 @@ const alias = {
 
 export default defineConfig({
   test: {
+    // Files no test imports still count, at 0 %, instead of disappearing from the report
+    coverage: {
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.d.ts'],
+    },
     projects: [
       {
         // Engine, data, tools, and non-JSX UI tests — pure Node environment

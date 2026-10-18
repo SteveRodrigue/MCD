@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-17 (code audit AUD-20261017-232534 remediation queued in section 3.5)
+> **Last updated:** 2026-10-18 (code audit AUD-20261017-232534 remediated; remaining work R1–R16 in section 3.5)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
-> **Verification baseline:** 🟢 2,943 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
+> **Verification baseline:** 🟢 3,014 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
 ---
@@ -76,18 +76,30 @@ _None currently._
 
 _None currently._
 
-### 3.5 Code audit AUD-20261017-232534 remediation
+### 3.5 Code audit AUD-20261017-232534: remaining work
 
-Plan (approved 2026-10-17): [plan_audit_20261017_remediation.md](plan_audit_20261017_remediation.md). One commit per row, in this order. Rows 1 to 11 are Gate 1 (🔴 blocker / 🟠 affects Rhino); rows 12 and later are Tech Debt & Tooling and run after them.
+The 21 findings were remediated on 2026-10-17/18 (`94ebc97..f6e470f`, pushed). What is left is one plan per row below (`plan_audit_rNN_*.md`, each with rules/spec analysis, Simplification & Refactor Check, file changes, tests, open decisions, UI impact). Every plan still needs the owner's approval before code (rule 1). Work the rows in this order; R16 runs last.
 
-| #   | Finding                                                                                                         | Tier | Estimate |
-| --- | --------------------------------------------------------------------------------------------------------------- | ---- | -------- |
-| 4   | F004 setup reads `ScenarioRegistry`; delete legacy `catalog.ts`                                                 | 2    | 4–6 h    |
-| 13  | F016 remove `state.villain` / `mainScheme` (#215) — **deferred by owner** to multi-villain work                 | 3    | 1 day    |
-| 15  | F013 shared test fixtures — **deferred** (depends on F016)                                                      | 1    | 1 day    |
-| 18  | F014-C break the 30-module engine import cycle — **owner design decision** (kernel wiring, Tier 3; F010-A done) | 3    | 3+ days  |
+| #   | Item                                                                                             | Gate / milestone   | Tier | Estimate   | Plan                                                                                               |
+| --- | ------------------------------------------------------------------------------------------------ | ------------------ | ---- | ---------- | -------------------------------------------------------------------------------------------------- |
+| R1  | Wakanda Forever! modal matches upgrades by card code (01049 shown as "Panther Suit")             | Gate 1             | 1    | 2–3 h      | [plan_audit_r01_wakanda_modal_card_data.md](plan_audit_r01_wakanda_modal_card_data.md)             |
+| R2  | One available-resource estimate (generators counted as 1; three estimates)                       | Gate 1             | 2    | 4–6 h      | [plan_audit_r02_single_resource_estimate.md](plan_audit_r02_single_resource_estimate.md)           |
+| R3  | Event `discardSelf` rule enforced by `card:validate`, not only the editor                        | Tech Debt          | 1    | 1–2 h      | [plan_audit_r03_event_discard_self_validation.md](plan_audit_r03_event_discard_self_validation.md) |
+| R4  | Coverage thresholds; dead-export report (knip) — **owner decision** (dev dependency)             | Tech Debt          | 1    | 3–4 h      | [plan_audit_r04_quality_ratchets.md](plan_audit_r04_quality_ratchets.md)                           |
+| R5  | Typed `effectParams`; `no-explicit-any` per engine folder (#127)                                 | Tech Debt          | 2    | 2–3 days   | [plan_audit_r05_typed_effect_params.md](plan_audit_r05_typed_effect_params.md)                     |
+| R6  | Split engine god functions (action handler registry; `dispatchSingleAction` is 3,000 lines)      | Tech Debt          | 2    | 2–3 days   | [plan_audit_r06_action_handler_registry.md](plan_audit_r06_action_handler_registry.md)             |
+| R7  | Typed log catalog; shrink `normalizeLogParams`                                                   | Tech Debt          | 2    | 1–2 days   | [plan_audit_r07_typed_log_catalog.md](plan_audit_r07_typed_log_catalog.md)                         |
+| R8  | One game session context; UI settings out of `state.options` — **owner decision** (OQ-3)         | Tech Debt          | 2    | 1–1.5 days | [plan_audit_r08_ui_session_context.md](plan_audit_r08_ui_session_context.md)                       |
+| R9  | Klaw II When Revealed at Expert setup; The "Immortal" Klaw as a side scheme — **data approval**  | Gate 2             | 2    | 3–4 h      | [plan_audit_r09_klaw_ii_setup_reveal.md](plan_audit_r09_klaw_ii_setup_reveal.md)                   |
+| R10 | Inject the card catalog (F014-B); close out #275 — **owner decision**                            | Tech Debt / Gate 2 | 3    | 2–3 days   | [plan_audit_r10_catalog_injection.md](plan_audit_r10_catalog_injection.md)                         |
+| R11 | Engine kernel to break the 31-module import cycle (F014-C) — **owner decision**                  | Tech Debt          | 3    | 3+ days    | [plan_audit_r11_engine_kernel.md](plan_audit_r11_engine_kernel.md)                                 |
+| R12 | Structural sharing for state updates (Immer?) — **owner decision**; after R8                     | Tech Debt          | 3    | 2–3 days   | [plan_audit_r12_structural_sharing.md](plan_audit_r12_structural_sharing.md)                       |
+| R13 | Remove `state.villain` / `mainScheme` (F016, #215) — **deferred by owner** to multi-villain work | Gate 4             | 3    | 1 day      | [plan_audit_r13_remove_legacy_state_pointers.md](plan_audit_r13_remove_legacy_state_pointers.md)   |
+| R14 | Shared test fixtures; drop test-only execution frames (F013) — **deferred** (after R13)          | Tech Debt          | 1    | 1 day      | [plan_audit_r14_shared_test_fixtures.md](plan_audit_r14_shared_test_fixtures.md)                   |
+| R15 | Audit open questions: log growth, art fallback CORS, bundled packs                               | Tech Debt          | 1    | 2–4 h      | [plan_audit_r15_open_questions.md](plan_audit_r15_open_questions.md)                               |
+| R16 | Review all documentation (ADRs, specs, guides) against the code — **last, after R1–R15**         | Tech Debt          | 1    | 1–2 days   | [plan_audit_r16_documentation_review.md](plan_audit_r16_documentation_review.md)                   |
 
-**Gate 1 is done when** sections 3.1 to 3.4 and rows 1 to 11 of section 3.5 are empty, the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
+**Gate 1 is done when** sections 3.1 to 3.4 and rows R1 and R2 of section 3.5 are empty, the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
 
 ---
 
@@ -99,7 +111,12 @@ Run the `next-task` skill (it reads this file). Plan anatomy and owner preferenc
 
 ## 5. Open decisions waiting for the owner
 
-None.
+From the audit plans (section 3.5); each plan states the options and a recommendation:
+
+- R4: approve `knip` as a dev dependency.
+- R8 (OQ-3): are `autoResolveUnambiguous` / `villainPhaseStepping` UI preferences (pass per dispatch) or engine options?
+- R9: approve the supplemental data change for Klaw II (01114) and The "Immortal" Klaw (01127).
+- R10, R11, R12: Tier 3 design choices (catalog injection, engine kernel, structural sharing).
 
 Decisions taken are recorded in the row they affect (section 3) and on the issue.
 

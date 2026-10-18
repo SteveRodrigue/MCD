@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { matchesCardFilter } from '../../../src/engine/filters/card-filter';
-import { KeywordSchema, UniversalCardFilterSchema } from '../../../src/data/supplemental/schema';
-import { Keyword } from '../../../src/engine/models/enums';
+import {
+  CardTypeSchema,
+  KeywordSchema,
+  ResourceTypeSchema,
+  UniversalCardFilterSchema,
+} from '../../../src/data/supplemental/schema';
+import { CardType, Keyword, ResourceType } from '../../../src/engine/models/enums';
 import { cardCatalog } from '../../../src/data/importer/card-loader';
 import type { CardInstance, NormalizedCard, PlayerState } from '../../../src/engine/models';
 
@@ -229,6 +234,14 @@ describe('matchesCardFilter (ADR-0046 Universal Card Filtering Engine)', () => {
 
     it('KeywordSchema is derived from every engine Keyword', () => {
       expect([...KeywordSchema.options].sort()).toEqual(Object.values(Keyword).sort());
+    });
+
+    it('card type and resource schemas carry every engine enum value (F015)', () => {
+      expect([...CardTypeSchema.options].sort()).toEqual(Object.values(CardType).sort());
+      expect([...ResourceTypeSchema.options].sort()).toEqual(Object.values(ResourceType).sort());
+      expect(UniversalCardFilterSchema.safeParse({ types: ['player_side_scheme'] }).success).toBe(
+        true,
+      );
     });
 
     it.each([

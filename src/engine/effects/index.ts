@@ -5877,18 +5877,20 @@ export function executeStep(
       };
     }
 
+    // Constant effects: read where the rule applies (legality-checker limits, damage-immunity,
+    // stat-calculator, cost-engine), never executed as a step
     case 'MODIFY_RESTRICTED_LIMIT':
-    case 'MODIFY_ALLY_LIMIT': {
-      // Evaluated as constant modifier in legality-checker getPlayerAllyLimit
-      return {
-        state,
-        success: true,
-        mutatedState: false,
-        onomatopoeia: 'ALLY LIMIT UPDATED!',
-      };
-    }
+    case 'MODIFY_ALLY_LIMIT':
+    case 'MODIFY_HAND_SIZE':
+    case 'MODIFY_MAX_HEALTH':
+    case 'CANNOT_TAKE_DAMAGE':
+    case 'DOUBLE_RESOURCE_FOR_ASPECT':
+      return { state, success: true, mutatedState: false };
 
-    default:
-      return { state, success: true, onomatopoeia: 'RESOLVED!' };
+    default: {
+      // An effect without a handler must fail loudly, never resolve as a silent no-op
+      const unhandled: never = step.effect;
+      throw new Error(`executeStep: no handler for effect '${String(unhandled)}'`);
+    }
   }
 }

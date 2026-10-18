@@ -24,6 +24,7 @@ import {
   continueAttackAfterInitiation,
 } from './villain-phase';
 import { evaluateStepGate } from './step-gate-evaluator';
+import { isEffectType } from '../../data/supplemental/schema-primitives';
 import { abilityCancelsEncounterReveal } from './encounter-cancel';
 import { dispatchTrigger, type TriggerContext } from '../triggers/trigger-dispatcher';
 import { discardResolvedObligation } from './obligations';
@@ -967,15 +968,14 @@ export function resolveDecisionPrompt(
     ...(Array.isArray(selectedOption?.params?.labels)
       ? { labels: selectedOption.params.labels as NonNullable<CardAbility['labels']> }
       : {}),
+    // An option runs its own steps, or its effect when that is an executable effect; a routing
+    // marker (PASS, CANCEL_PLAY, ...) runs no step
     steps:
       (selectedOption as any)?.steps && Array.isArray((selectedOption as any).steps)
         ? (selectedOption as any).steps
-        : [
-            {
-              effect: selectedOption!.effect || 'RESOLVED',
-              effectParams: selectedOption!.params || {},
-            },
-          ],
+        : selectedOption?.effect && isEffectType(selectedOption.effect)
+          ? [{ effect: selectedOption.effect, effectParams: selectedOption.params || {} }]
+          : [],
   };
 
   const effectRes = executeEffect(nextState, syntheticAbility, {

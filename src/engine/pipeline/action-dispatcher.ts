@@ -2083,8 +2083,7 @@ function dispatchSingleAction(
       };
     }
 
-    case 'END_PLAYER_TURN':
-    case 'END_TURN' as any: {
+    case 'END_PLAYER_TURN': {
       if (nextState.players[nextState.activePlayerIndex]?.id !== action.playerId) {
         return {
           state,

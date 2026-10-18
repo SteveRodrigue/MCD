@@ -335,3 +335,23 @@ export const SupplementalPackSchema = z
 
 export type CardEnrichment = z.infer<typeof CardEnrichmentSchema>;
 export type CardAuditRecord = z.infer<typeof CardAuditRecordSchema>;
+
+/**
+ * Validates that an Event card does not declare `cost.discardSelf`.
+ * Per RR v1.8 'Event': "After an event resolves, it is placed in its owner's discard pile."
+ */
+export function findEventDiscardSelfViolations(
+  cardTypeCode: string | undefined,
+  enrichment: { abilities?: Array<{ id?: string; cost?: { discardSelf?: boolean } }> } | undefined,
+): string | null {
+  if (cardTypeCode === 'event') {
+    const hasDiscardSelf = (enrichment?.abilities || []).some(
+      (a) => a?.cost?.discardSelf === true,
+    );
+    if (hasDiscardSelf) {
+      return "Event cards cannot declare 'cost.discardSelf'; events discard intrinsically per RR v1.8 Event";
+    }
+  }
+  return null;
+}
+

@@ -1,6 +1,9 @@
 import path from 'path';
 import fs from 'fs';
-import { CardEnrichmentSchema } from '../../data/supplemental/schema';
+import {
+  CardEnrichmentSchema,
+  findEventDiscardSelfViolations,
+} from '../../data/supplemental/schema';
 
 export interface CardSummary {
   code: string;
@@ -336,17 +339,12 @@ export class CardSupplementalService {
 
     // Invariant check: Event cards cannot declare cost.discardSelf (Issue #271 / RR v1.8 Event)
     const cardTypeCode = entry?.card?.type_code;
-    if (cardTypeCode === 'event') {
-      const hasDiscardSelf = (supplemental.abilities || []).some(
-        (a: any) => a?.cost?.discardSelf === true,
-      );
-      if (hasDiscardSelf) {
-        return {
-          success: false,
-          error:
-            "Event cards cannot declare 'cost.discardSelf'; events discard intrinsically per RR v1.8 Event",
-        };
-      }
+    const eventViolation = findEventDiscardSelfViolations(cardTypeCode, supplemental);
+    if (eventViolation) {
+      return {
+        success: false,
+        error: eventViolation,
+      };
     }
 
     // Validate using authoritative Zod schema

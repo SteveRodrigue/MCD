@@ -105,16 +105,14 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
       }
     }
 
-    // Filter out villain cards and main scheme cards from encounter deck
+    // Villain and main scheme stages never go into the encounter deck
+    const stageCodes = new Set([
+      ...Object.values(this.definition.villainSetup.stages).flat(),
+      ...this.definition.mainSchemeSetup.stages,
+    ]);
     const deckCards = allEncounterCards.filter(
       (c: NormalizedCard) =>
-        c.type !== 'villain' &&
-        c.type !== 'main_scheme' &&
-        c.code !== '01094' &&
-        c.code !== '01095' &&
-        c.code !== '01096' &&
-        c.code !== '01097a' &&
-        c.code !== '01097b',
+        c.type !== 'villain' && c.type !== 'main_scheme' && !stageCodes.has(c.code),
     );
 
     // Shuffle and create instances
@@ -153,62 +151,26 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     victory?: boolean;
   } {
     const villain = getVillainById(state, defeatedVillainInstanceId) || getActiveVillain(state);
-    const currentCode = villain.card.code;
     const difficulty = state.difficulty || 'STANDARD';
 
-    // Skirmish Mode: Stage I defeated -> Immediate Victory
-    if (difficulty === 'SKIRMISH') {
-      state.winner = 'HEROES';
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        category: 'combat',
-        key: 'scenario.victory',
-        params: { mode: 'SKIRMISH', villain: villain.card.name },
-        onomatopoeia: 'RHINO DEFEATED! HERO VICTORY!',
-      });
-      return { state, victory: true };
+    // The next stage of this difficulty enters play; the last stage defeated wins the game
+    const stages = this.definition.villainSetup.stages[difficulty];
+    const stageIndex = stages.indexOf(villain.card.code);
+    const nextStageCode = stageIndex >= 0 ? stages[stageIndex + 1] : undefined;
+    if (nextStageCode) {
+      return advanceVillainStage(state, villain.instanceId!, nextStageCode);
     }
 
-    // Standard Mode: Stage I -> Stage II, Stage II -> Victory
-    if (difficulty === 'STANDARD') {
-      if (currentCode === '01094') {
-        return advanceVillainStage(state, villain.instanceId!, '01095');
-      } else {
-        // Stage II defeated -> Victory
-        state.winner = 'HEROES';
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          category: 'combat',
-          key: 'scenario.victory',
-          params: { mode: 'STANDARD', villain: villain.card.name },
-          onomatopoeia: 'RHINO STAGE II DEFEATED! HERO VICTORY!',
-        });
-        return { state, victory: true };
-      }
-    }
-
-    // Expert Mode: Stage II -> Stage III, Stage III -> Victory
-    if (difficulty === 'EXPERT') {
-      if (currentCode === '01095') {
-        return advanceVillainStage(state, villain.instanceId!, '01096');
-      } else {
-        // Stage III defeated -> Victory
-        state.winner = 'HEROES';
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          category: 'combat',
-          key: 'scenario.victory',
-          params: { mode: 'EXPERT', villain: villain.card.name },
-          onomatopoeia: 'RHINO STAGE III DEFEATED! HERO VICTORY!',
-        });
-        return { state, victory: true };
-      }
-    }
-
-    return { state };
+    state.winner = 'HEROES';
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      category: 'combat',
+      key: 'scenario.victory',
+      params: { mode: difficulty, villain: villain.card.name },
+      onomatopoeia: `${villain.card.name.toUpperCase()} DEFEATED! HERO VICTORY!`,
+    });
+    return { state, victory: true };
   }
 
   onMainSchemeCompleted(
@@ -230,29 +192,6 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
       onomatopoeia: 'RHINO BREACHED THE FACILITY! DEFEAT!',
     });
     return { state, defeat: true };
-  }
-
-  evaluateWinLossConditions(state: GameState): {
-    winner?: 'HEROES' | 'VILLAIN';
-    reason?: string;
-  } | null {
-    if (state.winner) {
-      return { winner: state.winner };
-    }
-    // Main Scheme threat check
-    for (const ms of state.mainSchemes) {
-      if (ms.threat >= ms.targetThreat) {
-        return {
-          winner: 'VILLAIN',
-          reason: `Main Scheme '${ms.card.name}' reached target threat (${ms.targetThreat}).`,
-        };
-      }
-    }
-    // Hero survival check: a defeated hero leaves state.players (#246), the group loses with the last one
-    if (state.players.length === 0) {
-      return { winner: 'VILLAIN', reason: 'All heroes have been defeated.' };
-    }
-    return null;
   }
 }
 

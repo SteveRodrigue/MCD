@@ -66,18 +66,6 @@ export interface ScenarioPlugin {
   resolveStage1ASetup?(state: GameState, options: ScenarioGameSetupOptions): GameState;
 
   /**
-   * Step 1 of Villain Phase: Place Threat on Main Scheme(s).
-   * If omitted, the engine places 1 threat per player on the active main scheme.
-   */
-  onVillainPhaseStep1?(state: GameState): GameState;
-
-  /**
-   * Step 2 of Villain Phase: Villain Activations.
-   * If omitted, the engine executes standard activations with the active villain.
-   */
-  onVillainPhaseStep2?(state: GameState): GameState;
-
-  /**
    * Invoked when a villain reaches 0 HP.
    * Handles stage transitions (Stage I -> II -> III), HP reset, When Revealed effects,
    * active villain rotation, or declaring 'HEROES' victory.
@@ -103,12 +91,4 @@ export interface ScenarioPlugin {
     advancedStage?: boolean;
     defeat?: boolean;
   };
-
-  /**
-   * Evaluates custom win or loss conditions.
-   */
-  evaluateWinLossConditions?(state: GameState): {
-    winner?: 'HEROES' | 'VILLAIN';
-    reason?: string;
-  } | null;
 }

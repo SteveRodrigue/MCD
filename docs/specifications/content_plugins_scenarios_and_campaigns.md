@@ -124,8 +124,7 @@ type Hook<A extends unknown[], R> = (
 - `onGameSetup`: active villain stage, main scheme stage (from definition), encounter deck (scenario set + standard/expert + modular − `encounterDeckExclusions`), shuffle via `ctx.shuffle`. Then reveal the starting villain stage and main scheme, which fires their `WHEN_REVEALED`/`SETUP` supplemental abilities. This means Expert Rhino II's _Breakin' & Takin'_ search runs via data, not code.
 - `onVillainDefeated`: the full §3.1 behavior (title-match carryover, activation resume/end).
 - `onMainSchemeCompleted`: stage advance or villain victory.
-- `evaluateWinLossConditions`: standard checks.
-- Villain-phase hooks default to the existing pipeline.
+- Win and loss are decided by `onVillainDefeated`, `onMainSchemeCompleted` and the engine's hero-elimination check; there is no separate win/loss hook. Villain-phase hooks (`onVillainPhaseStep1/2`) were removed as never invoked (AUD-20261017-232534 F011-B); add one back only with an engine call site.
 
 ### A3. `ScenarioDefinition` additions (removing hardcoded values)
 

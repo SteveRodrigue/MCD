@@ -126,3 +126,9 @@ In `executeSequence`:
 - Issues: #289 (Step Gates / gateParams), #290 (Result Facts / Milestones)
 - Supersedes: Section 3 of [ADR-0049](0049-composable-value-transformers-and-event-interception.md)
 - Related: [ADR-0030](0030-unified-ability-step-sequence-architecture.md), [ADR-0078](0078-one-damage-pipeline-and-the-attack-label.md)
+
+---
+
+## Addendum (2026-10-18): Gate kinds and the effect list live in a Zod-free module (AUD-20261017-232534 F014-A)
+
+The engine needs only each gate's kind, the effect list and the two step-param getters at runtime, and importing them from the Zod schema modules put Zod and every schema in the game's main bundle. `src/data/supplemental/runtime.ts` now owns `GATE_KINDS` (gate → `RESULT`/`STATE`/`CONTEXT`), `EFFECT_TYPES`, `isEffectType`, `getStepEffectParams` and `getStepGateParams`. `StepGateSchema`, `EffectTypeSchema` and the `kind` of every `GATE_REGISTRY` entry derive from those constants, so a new gate is added to `GATE_KINDS` and registered in `GATE_REGISTRY` with its parameter schema. `tests/engine/engine-zod-boundary.test.ts` rejects a runtime import of a schema module from `src/engine`. Main chunk: 910 KB to 759 KB (228 KB to 190 KB gzip); Zod is now only in the lazy Card Editor chunk.

@@ -31,7 +31,7 @@ import {
   hasPlayerTrait,
   isEntityIncapacitatedByStatus,
 } from './stat-calculator';
-import { getStepEffectParams } from '../../data/supplemental/schema';
+import { getStepEffectParams } from '../../data/supplemental/runtime';
 import { findInPlayCardInstance } from '../state/state-validator';
 import { getEligibleTargets } from '../effects/target-resolver';
 

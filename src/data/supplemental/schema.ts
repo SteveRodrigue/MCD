@@ -35,13 +35,6 @@ export interface AbilityStep {
   cannotBeCanceled?: boolean;
 }
 
-export function getStepEffectParams(step: { effectParams?: Record<string, any> }): Record<string, any> {
-  return step.effectParams ?? {};
-}
-
-export function getStepGateParams(step: { gateParams?: Record<string, any> }): Record<string, any> {
-  return step.gateParams ?? {};
-}
 
 /**
  * Ability Execution Step Schema

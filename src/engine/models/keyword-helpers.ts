@@ -2,7 +2,7 @@ import { NormalizedCard } from './card';
 import { CardInstance } from './state';
 import { Keyword } from './enums';
 import { parseKeywordItem } from './keyword';
-import { getStepEffectParams } from '../../data/supplemental/schema';
+import { getStepEffectParams } from '../../data/supplemental/runtime';
 
 /**
  * Checks whether a card or card instance possesses a given Keyword (ADR-0019, ADR-0054).

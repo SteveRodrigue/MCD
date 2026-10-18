@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CardType } from '../../src/engine/models';
 import { CardCatalog } from '../../src/data/importer/card-loader';
-import { getStepEffectParams } from '../../src/data/supplemental/schema';
+import { getStepEffectParams } from '../../src/data/supplemental/runtime';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 

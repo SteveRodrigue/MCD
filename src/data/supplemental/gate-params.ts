@@ -1,3 +1,6 @@
+import { GATE_KINDS, STEP_GATES, type GateKind } from './runtime';
+
+export type { GateKind };
 import { z } from 'zod';
 import { hasRequiredFields, introspectObjectSchema } from './schema-introspector';
 
@@ -54,20 +57,9 @@ export function canEffectProduceFact(effect: string, fact: ResultFact): boolean 
   return producers.includes(effect);
 }
 
-export const StepGateSchema = z.enum([
-  'THEN',
-  'IF_RESULT',
-  'IF_FORM',
-  'IF_PLAYER_HAS_TRAIT',
-  'IF_ZONE_EMPTY',
-  'IF_CARD_IN_PLAY',
-  'IF_RESOURCE_MATCH',
-  'IF_UNDEFENDED_ATTACK',
-  'IF_ACTIVATION_DEALT_DAMAGE',
-]);
+export const StepGateSchema = z.enum(STEP_GATES);
 export type StepGate = z.infer<typeof StepGateSchema>;
 
-export type GateKind = 'RESULT' | 'STATE' | 'CONTEXT';
 
 export const ZoneEmptyTargetSchema = z.enum([
   'SIDE_SCHEMES',
@@ -175,7 +167,8 @@ export interface GateDefinition {
   fields: GateFieldMeta[];
 }
 
-function defineGate(gate: StepGate, kind: GateKind, schema: z.ZodObject<any>): GateDefinition {
+function defineGate(gate: StepGate, schema: z.ZodObject<any>): GateDefinition {
+  const kind = GATE_KINDS[gate];
   const fields = introspectObjectSchema(schema).map((descriptor): GateFieldMeta => {
     const field: GateFieldMeta = {
       key: descriptor.key,
@@ -191,21 +184,15 @@ function defineGate(gate: StepGate, kind: GateKind, schema: z.ZodObject<any>): G
 }
 
 export const GATE_REGISTRY: Record<StepGate, GateDefinition> = {
-  THEN: defineGate('THEN', 'RESULT', ThenGateParamsSchema),
-  IF_RESULT: defineGate('IF_RESULT', 'RESULT', IfResultGateParamsSchema),
-  IF_FORM: defineGate('IF_FORM', 'STATE', IfFormGateParamsSchema),
-  IF_PLAYER_HAS_TRAIT: defineGate('IF_PLAYER_HAS_TRAIT', 'STATE', IfPlayerHasTraitGateParamsSchema),
-  IF_ZONE_EMPTY: defineGate('IF_ZONE_EMPTY', 'STATE', IfZoneEmptyGateParamsSchema),
-  IF_CARD_IN_PLAY: defineGate('IF_CARD_IN_PLAY', 'STATE', IfCardInPlayGateParamsSchema),
-  IF_RESOURCE_MATCH: defineGate('IF_RESOURCE_MATCH', 'CONTEXT', IfResourceMatchGateParamsSchema),
-  IF_UNDEFENDED_ATTACK: defineGate(
-    'IF_UNDEFENDED_ATTACK',
-    'CONTEXT',
-    IfUndefendedAttackGateParamsSchema,
+  THEN: defineGate('THEN', ThenGateParamsSchema),
+  IF_RESULT: defineGate('IF_RESULT', IfResultGateParamsSchema),
+  IF_FORM: defineGate('IF_FORM', IfFormGateParamsSchema),
+  IF_PLAYER_HAS_TRAIT: defineGate('IF_PLAYER_HAS_TRAIT', IfPlayerHasTraitGateParamsSchema),
+  IF_ZONE_EMPTY: defineGate('IF_ZONE_EMPTY', IfZoneEmptyGateParamsSchema),
+  IF_CARD_IN_PLAY: defineGate('IF_CARD_IN_PLAY', IfCardInPlayGateParamsSchema),
+  IF_RESOURCE_MATCH: defineGate('IF_RESOURCE_MATCH', IfResourceMatchGateParamsSchema),
+  IF_UNDEFENDED_ATTACK: defineGate('IF_UNDEFENDED_ATTACK', IfUndefendedAttackGateParamsSchema,
   ),
-  IF_ACTIVATION_DEALT_DAMAGE: defineGate(
-    'IF_ACTIVATION_DEALT_DAMAGE',
-    'CONTEXT',
-    IfActivationDealtDamageGateParamsSchema,
+  IF_ACTIVATION_DEALT_DAMAGE: defineGate('IF_ACTIVATION_DEALT_DAMAGE', IfActivationDealtDamageGateParamsSchema,
   ),
 };

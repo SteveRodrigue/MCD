@@ -1,10 +1,11 @@
 /**
  * Leaf supplemental schemas (enums, selectors, filters, dynamic values, effect sub-params).
  * Internal module: split from schema.ts so effect-params.ts can use these at load time without an
- * import cycle. Import from './schema', which re-exports everything here; only schema.ts and
+import cycle. Import from './schema', which re-exports everything here; only schema.ts and
  * effect-params.ts import this file directly.
  */
 import { z } from 'zod';
+import { EFFECT_TYPES } from './runtime';
 import { Keyword as KeywordEnum } from '../../engine/models/enums';
 import { IdentityFormSchema } from './gate-params';
 
@@ -194,71 +195,9 @@ export {
 /**
  * Ability Effect Primitives (Codebase-Grounded to active handlers in src/engine/)
  */
-export const EffectTypeSchema = z.enum([
-  'DRAW',
-  'ADD_ACCELERATION',
-  'ADD_COUNTERS',
-  'ADD_STATUS',
-  'ADD_THREAT',
-  'ADD_TRAIT',
-  'ATTACHMENT_DAMAGE_SHIELD',
-  'ATTACH_FACEDOWN_CARDS_FROM_HAND',
-  'ATTACH_TO_HOST',
-  'CANCEL_ATTACK',
-  'CANCEL_WHEN_REVEALED',
-  'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER',
-  'CANNOT_TAKE_DAMAGE',
-  'CHANGE_FORM',
-  'DEAL_DAMAGE',
-  'DECLARE_DEFENDER',
-  'DISCARD',
-  'DISTRIBUTE_AMOUNT',
-  'DOUBLE_RESOURCE_FOR_ASPECT',
-  'EXECUTE_SPECIAL',
-  'EXHAUST',
-  'FLIP_FORM',
-  'GENERATE_RESOURCE',
-  'GIVE_ADDITIONAL_BOOST_CARD',
-  'GRANT_KEYWORD',
-  'GRANT_ATTACK_KEYWORD',
-  'HEAL_DAMAGE',
-  'MODIFY_ALLY_LIMIT',
-  'MODIFY_HAND_SIZE',
-  'MODIFY_MAX_HEALTH',
-  'MODIFY_RESTRICTED_LIMIT',
-  'MODIFY_STAT',
-  'PLACE_CARD_UNDER_HOST',
-  'PLAYER_CHOICE',
-  'PLAY_FROM_ZONE',
-  'PREVENT_DAMAGE',
-  'PREVENT_THREAT',
-  'PUT_INTO_PLAY',
-  'READY',
-  'REDUCE_NEXT_CARD_COST',
-  'REMOVE_COUNTERS',
-  'REMOVE_COUNTERS_MATCHING_FILTER',
-  'REMOVE_FROM_GAME',
-  'REMOVE_THREAT',
-  'RETURN_TO_HAND',
-  'REVEAL_ENCOUNTER_CARD',
-  'SEARCH',
-  'SHUFFLE_INTO_DECK',
-  'SPEND_COUNTERS',
-  'SURGE',
-  'TRANSFER_DAMAGE',
-  'ENEMY_ATTACKS',
-  'VILLAIN_AND_ENGAGED_MINIONS_ATTACK',
-  'VILLAIN_ATTACKS',
-  'VILLAIN_SCHEMES',
-  'REMOVE_STATUS',
-]);
+export const EffectTypeSchema = z.enum(EFFECT_TYPES);
 
 export type EffectType = z.infer<typeof EffectTypeSchema>;
-
-/** True for an executable effect; prompt options also carry routing markers such as `PASS`. */
-export function isEffectType(value: string): value is EffectType {
-  return (EffectTypeSchema.options as readonly string[]).includes(value);
-}
 
 /**
  * Resource Types

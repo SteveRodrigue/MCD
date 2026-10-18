@@ -79,3 +79,9 @@ We needed a clean, scalable architecture to:
 
 ### Negative / Tradeoffs:
 * Requires multi-seat sequencing during the Mulligan UI phase (addressed by rendering clear "Hero Seat X of N" badges and sequential confirmation).
+
+---
+
+## Addendum (2026-10-17): Scenario catalog replaced by the ScenarioRegistry (AUD-20261017-232534 F004)
+
+`src/engine/scenarios/catalog.ts` is deleted. Scenario setup already ran through the `ScenarioRegistry` plugins and their `definition.json` (ADR-0033), which overwrote everything the catalog built; the setup screen now reads the same source. Display data comes from the definition (name, description, `recommendedModularSets`) and from the card catalog (stage 1A main scheme name as subtitle, villain preview per difficulty). Modular set names and descriptions live in `src/engine/scenarios/modular-sets.json`; their card counts are read from the card catalog by `listModularEncounterSets(catalog)`. The UI uses the `cardCatalog` singleton instead of building its own catalogs.

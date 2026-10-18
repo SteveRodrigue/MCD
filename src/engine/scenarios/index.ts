@@ -14,11 +14,4 @@ export * from './advance-villain-stage';
 export * from './built-in/rhino/plugin';
 export * from './built-in/klaw/plugin';
 export * from './built-in/ultron/plugin';
-export {
-  getScenario,
-  listScenarios,
-  scenarioCatalog,
-  listModularEncounterSets,
-  MODULAR_ENCOUNTER_SETS,
-} from './catalog';
-export type { ModularEncounterSetInfo } from './catalog';
+export * from './modular-sets';

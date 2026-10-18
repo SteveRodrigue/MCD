@@ -14,13 +14,11 @@ import {
   Sparkles,
   Shield,
 } from 'lucide-react';
-import { listScenarios, listModularEncounterSets } from '../../../engine/scenarios';
+import { ScenarioRegistry, listModularEncounterSets } from '../../../engine/scenarios';
 import { listStarterDecks } from '../../../engine/decks';
-import { CardCatalog } from '../../../data/importer/card-loader';
+import { cardCatalog as catalog } from '../../../data/importer/card-loader';
 import { DifficultyMode, CardType, MainSchemeCard } from '../../../engine/models';
 import { useGameSettings } from '../../context/useGameSettings';
-import corePack from '../../../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../../../data/upstream/pack/core_encounter.json';
 import { CardView } from '../cards/CardView';
 
 export interface SetupSelection {
@@ -33,21 +31,14 @@ export interface SetupSelection {
 }
 
 interface ScenarioSelectorProps {
-  catalog?: CardCatalog;
   onStartSetup: (selection: SetupSelection) => void;
 }
 
-export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
-  catalog: providedCatalog,
-  onStartSetup,
-}) => {
+export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup }) => {
   const { defaultDifficulty, defaultHeroicLevel } = useGameSettings();
-  const [catalog] = useState(
-    () => providedCatalog || new CardCatalog([...corePack, ...coreEncounterPack]),
-  );
-  const scenarios = useMemo(() => listScenarios(), []);
+  const scenarios = useMemo(() => ScenarioRegistry.getAll().map((p) => p.definition), []);
   const starterDecks = useMemo(() => listStarterDecks(), []);
-  const modularSets = useMemo(() => listModularEncounterSets(), []);
+  const modularSets = useMemo(() => listModularEncounterSets(catalog), []);
 
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>('rhino');
   const [difficulty, setDifficulty] = useState<DifficultyMode>(
@@ -60,7 +51,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
   const selectedScenario = scenarios[currentScenarioIndex] || scenarios[0];
 
   const defaultModularForScenario = useMemo(() => {
-    return selectedScenario.recommendedModularSets?.[0] || 'bomb_scare';
+    return selectedScenario.modularEncounterSets.recommendedModularSets?.[0] || 'bomb_scare';
   }, [selectedScenario]);
 
   const [selectedModularSetCode, setSelectedModularSetCode] = useState<string>(
@@ -71,8 +62,9 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
     const validIndex = (newIndex + scenarios.length) % scenarios.length;
     const scen = scenarios[validIndex];
     setSelectedScenarioId(scen.id);
-    if (scen.recommendedModularSets?.[0]) {
-      setSelectedModularSetCode(scen.recommendedModularSets[0]);
+    const recommended = scen.modularEncounterSets.recommendedModularSets?.[0];
+    if (recommended) {
+      setSelectedModularSetCode(recommended);
     }
   };
 
@@ -103,11 +95,10 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
     });
   };
 
-  const villainCode =
-    difficulty === 'EXPERT'
-      ? selectedScenario.stages.expert[0]
-      : selectedScenario.stages.standard[0];
-  const villainPreviewCard = catalog.getCard(villainCode);
+  const villainStages =
+    selectedScenario.villainSetup.stages[difficulty] ||
+    selectedScenario.villainSetup.stages.STANDARD;
+  const villainPreviewCard = catalog.getCard(villainStages[0]);
 
   // Directly query Main Scheme Stage 1A from the catalog using type and stage metadata
   const mainSchemePreviewCard =
@@ -116,7 +107,8 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
       .find(
         (c): c is MainSchemeCard =>
           c.type === CardType.MAIN_SCHEME && (c as MainSchemeCard).stage?.toUpperCase() === '1A',
-      ) || catalog.getCard(selectedScenario.mainSchemeCode);
+      ) || catalog.getCard(selectedScenario.mainSchemeSetup.stages[0]);
+  const scenarioSubtitle = mainSchemePreviewCard?.name;
 
   const handleStart = () => {
     if (playerCount === 0) return;
@@ -159,7 +151,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
             <div className="flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-comic-yellow" />
               <span className="font-comic text-lg md:text-xl text-comic-yellow tracking-wider uppercase">
-                {selectedScenario.name}: {selectedScenario.subtitle}
+                {selectedScenario.name}: {scenarioSubtitle}
               </span>
             </div>
           </div>
@@ -238,9 +230,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                 <div className="font-comic text-lg text-comic-black font-bold">
                   {selectedScenario.name}
                 </div>
-                <div className="text-xs text-comic-red font-medium">
-                  {selectedScenario.subtitle}
-                </div>
+                <div className="text-xs text-comic-red font-medium">{scenarioSubtitle}</div>
               </div>
             </div>
 

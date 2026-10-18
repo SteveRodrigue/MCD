@@ -1,0 +1,27 @@
+[
+  {
+    "code": "bomb_scare",
+    "name": "Bomb Scare",
+    "description": "A desperate explosive plot orchestrated by the Maggia crime syndicate."
+  },
+  {
+    "code": "masters_of_evil",
+    "name": "Masters of Evil",
+    "description": "A villainous alliance featuring Baron Zemo, Radioactive Man, Whirlwind, Tiger Shark, and Melter."
+  },
+  {
+    "code": "under_attack",
+    "name": "Under Attack",
+    "description": "A barrage of aerial bombardment and villainous assault cards."
+  },
+  {
+    "code": "legions_of_hydra",
+    "name": "Legions of Hydra",
+    "description": "Hydra infantry soldiers and Madame Hydra attempting to overrun the city."
+  },
+  {
+    "code": "the_doomsday_chair",
+    "name": "The Doomsday Chair",
+    "description": "M.O.D.O.K. and A.I.M. deploying devastating psionic weaponry."
+  }
+]

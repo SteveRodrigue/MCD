@@ -3,7 +3,6 @@ import { CardCatalog } from '../../src/data/importer/card-loader';
 import {
   setupGame,
   resetInstanceCounter,
-  getScenario,
   getStarterDeck,
   dispatchAction,
   GamePhase,
@@ -21,9 +20,6 @@ describe('Mulligan Phase State Machine & Rules (RR v1.8 p. 23)', () => {
   });
 
   it('moves rejected cards directly into player discard pile and draws replacements from deck (NO shuffle)', () => {
-    const scenario = getScenario('rhino')!;
-    const { villain, mainScheme, encounterCards } = scenario.createEncounterDeck(catalog);
-
     const starterDeck = getStarterDeck('spider_man_justice')!;
     const deck = starterDeck.loadDeck(catalog);
 
@@ -37,9 +33,7 @@ describe('Mulligan Phase State Machine & Rules (RR v1.8 p. 23)', () => {
           deckCards: deck.deckCards,
         },
       ],
-      villain,
-      mainScheme,
-      encounterCards,
+      scenarioId: 'rhino',
     });
 
     const player = initialState.players[0];
@@ -79,9 +73,6 @@ describe('Mulligan Phase State Machine & Rules (RR v1.8 p. 23)', () => {
   });
 
   it('handles multi-player mulligan and preserves each player discard pile into Round 1', () => {
-    const scenario = getScenario('rhino')!;
-    const { villain, mainScheme, encounterCards } = scenario.createEncounterDeck(catalog);
-
     const d1 = getStarterDeck('spider_man_justice')!.loadDeck(catalog);
     const d2 = getStarterDeck('captain_marvel_leadership')!.loadDeck(catalog);
 
@@ -102,9 +93,7 @@ describe('Mulligan Phase State Machine & Rules (RR v1.8 p. 23)', () => {
           deckCards: d2.deckCards,
         },
       ],
-      villain,
-      mainScheme,
-      encounterCards,
+      scenarioId: 'rhino',
     });
 
     // Player 1 completes mulligan with 0 cards discarded (keep all 6)

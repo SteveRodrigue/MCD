@@ -1,12 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CardCatalog } from '../../src/data/importer/card-loader';
-import {
-  setupGame,
-  resetInstanceCounter,
-  getScenario,
-  getStarterDeck,
-  GamePhase,
-} from '../../src/engine';
+import { setupGame, resetInstanceCounter, getStarterDeck, GamePhase } from '../../src/engine';
 
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
@@ -20,9 +14,6 @@ describe('Multi-Hero Solo Mode & Scenario Setup', () => {
   });
 
   it('correctly scales 1-Player Solo Setup (Rhino 14 HP, Scheme 7 Threat)', () => {
-    const scenario = getScenario('rhino')!;
-    const { villain, mainScheme, encounterCards } = scenario.createEncounterDeck(catalog);
-
     const starterDeck = getStarterDeck('spider_man_justice')!;
     const deck = starterDeck.loadDeck(catalog);
 
@@ -36,9 +27,7 @@ describe('Multi-Hero Solo Mode & Scenario Setup', () => {
           deckCards: deck.deckCards,
         },
       ],
-      villain,
-      mainScheme,
-      encounterCards,
+      scenarioId: 'rhino',
     });
 
     expect(state.players).toHaveLength(1);
@@ -58,9 +47,6 @@ describe('Multi-Hero Solo Mode & Scenario Setup', () => {
   });
 
   it('correctly scales 2-Player Multi-Hero Solo Setup (Rhino 28 HP, Scheme 14 Threat)', () => {
-    const scenario = getScenario('rhino')!;
-    const { villain, mainScheme, encounterCards } = scenario.createEncounterDeck(catalog);
-
     const deck1 = getStarterDeck('spider_man_justice')!.loadDeck(catalog);
     const deck2 = getStarterDeck('captain_marvel_leadership')!.loadDeck(catalog);
 
@@ -81,9 +67,7 @@ describe('Multi-Hero Solo Mode & Scenario Setup', () => {
           deckCards: deck2.deckCards,
         },
       ],
-      villain,
-      mainScheme,
-      encounterCards,
+      scenarioId: 'rhino',
     });
 
     expect(state.players).toHaveLength(2);
@@ -99,9 +83,6 @@ describe('Multi-Hero Solo Mode & Scenario Setup', () => {
   });
 
   it('correctly scales 4-Player Multi-Hero Solo Setup (Rhino 56 HP, Scheme 28 Threat)', () => {
-    const scenario = getScenario('rhino')!;
-    const { villain, mainScheme, encounterCards } = scenario.createEncounterDeck(catalog);
-
     const deckIds = [
       'spider_man_justice',
       'captain_marvel_leadership',
@@ -120,9 +101,7 @@ describe('Multi-Hero Solo Mode & Scenario Setup', () => {
           deckCards: d.deckCards,
         };
       }),
-      villain,
-      mainScheme,
-      encounterCards,
+      scenarioId: 'rhino',
     });
 
     expect(state.players).toHaveLength(4);

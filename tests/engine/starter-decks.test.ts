@@ -3,7 +3,6 @@ import { CardCatalog } from '../../src/data/importer/card-loader';
 import { getStarterDeck, listStarterDecks } from '../../src/engine/decks/starter-decks';
 import { slugify, generateDeckFilename } from '../../src/engine/decks/deck-utils';
 import { setupGame } from '../../src/engine/state/game-setup';
-import { getScenario } from '../../src/engine/scenarios/catalog';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 
@@ -100,9 +99,6 @@ describe('Data-Driven Starter Deck Registry & Multi-Hero Integration (ADR-0016)'
   });
 
   it('correctly sets up a 4-Hero game with 4 distinct Core Set starter decks', () => {
-    const scenario = getScenario('rhino')!;
-    const { villain, mainScheme, encounterCards } = scenario.createEncounterDeck(catalog);
-
     const smDeck = getStarterDeck('spider_man_justice')!.loadDeck(catalog);
     const cmDeck = getStarterDeck('captain_marvel_leadership')!.loadDeck(catalog);
     const shDeck = getStarterDeck('she_hulk_aggression')!.loadDeck(catalog);
@@ -147,9 +143,7 @@ describe('Data-Driven Starter Deck Registry & Multi-Hero Integration (ADR-0016)'
           nemesisCards: bpDeck.nemesisCards,
         },
       ],
-      villain,
-      mainScheme,
-      encounterCards,
+      scenarioId: 'rhino',
     });
 
     // 4 Players initialized

@@ -48,7 +48,7 @@ describe('Resource Payment Generator Validation (RR v1.8 p. 25, Issue #43)', () 
 
     // Must be rejected as illegal payment
     expect(res.result.success).toBe(false);
-    expect(res.result.error).toContain('not a resource generator');
+    expect(res.result.error).toContain('cannot generate resources');
 
     // Tac Team must remain unexhausted with 3 counters intact
     const inPlayTac = res.state.players[0].tableau.find(

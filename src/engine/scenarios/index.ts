@@ -11,6 +11,7 @@ ScenarioRegistry.register(ultronPlugin);
 export * from './types';
 export * from './registry';
 export * from './advance-villain-stage';
+export * from './declarative-plugin';
 export * from './built-in/rhino/plugin';
 export * from './built-in/klaw/plugin';
 export * from './built-in/ultron/plugin';

@@ -1,28 +1,10 @@
-import {
-  GameState,
-  VillainState,
-  MainSchemeState,
-  VillainCard,
-  NormalizedCard,
-  CardInstance,
-  CardType,
-  MinionCard,
-  getActiveVillain,
-  getActiveMainScheme,
-  getVillainById,
-  setActiveVillain,
-  replaceActiveMainScheme,
-  getPerPlayerCount,
-} from '@engine/models';
+import { CardInstance, CardType, GameState, MinionCard } from '@engine/models';
 import { cardCatalog } from '../../../../data/importer/card-loader';
 import { createCardInstance } from '../../../state/card-instance';
-import { shuffleArray, nextEngineId } from '../../../state/rng';
-import { ScenarioPlugin, ScenarioDefinition, ScenarioGameSetupOptions } from '../../types';
-import { advanceVillainStage, villainStageHitPoints } from '../../advance-villain-stage';
-import definitionData from './definition.json';
 import { appendLog } from '../../../state/game-log';
-
-const ultronDefinition: ScenarioDefinition = definitionData as ScenarioDefinition;
+import { DeclarativeScenarioPlugin } from '../../declarative-plugin';
+import type { ScenarioDefinition, ScenarioGameSetupOptions } from '../../types';
+import definitionData from './definition.json';
 
 /**
  * Creates a standard Ultron Drone minion instance (RR v1.8 / Ultron Drones Environment).
@@ -70,131 +52,14 @@ function createDroneMinionInstance(sourceCard: CardInstance): CardInstance {
 }
 
 /**
- * Ultron Scenario Plugin implementation.
- * Encapsulates setup, multi-stage villain transitions (I -> II -> III),
- * Ultron Drones environment card handling, Drone minion spawning,
- * 3-stage main scheme progression (1B -> 2B -> 3B), and victory/defeat evaluation.
+ * Ultron (The Crimson Cowl). The Ultron Drones environment stays out of the encounter deck; stage
+ * 1A puts it into play and deals each player a drone (still code, Gate 2 card integration).
  */
-export class UltronScenarioPlugin implements ScenarioPlugin {
-  definition = ultronDefinition;
+export class UltronScenarioPlugin extends DeclarativeScenarioPlugin {
+  protected excludedEncounterTypes = ['environment'];
 
-  onGameSetup(state: GameState, options: ScenarioGameSetupOptions): GameState {
-    const difficulty = options.difficulty || 'STANDARD';
-    state.difficulty = difficulty;
-    state.heroicLevel = options.heroicLevel || 0;
-    state.scenarioId = this.definition.id;
-    state.scenarioCardCode = this.definition.scenarioCardCode;
-
-    const numPlayers = state.players.length || 1;
-
-    // 1. Determine Starting Villain Stage based on Difficulty
-    const startingStageCode = this.definition.villainSetup.stages[difficulty][0];
-    const villainCard = cardCatalog.getCard(startingStageCode) as VillainCard;
-    if (!villainCard) {
-      throw new Error(
-        `Villain card '${startingStageCode}' not found in catalog for scenario '${this.definition.id}'.`,
-      );
-    }
-
-    const maxHealth = villainStageHitPoints(villainCard, numPlayers);
-
-    const initialVillain: VillainState = {
-      instanceId: `villain_${nextEngineId(state, 'id')}_${startingStageCode}`,
-      card: villainCard,
-      health: maxHealth,
-      maxHealth,
-      exhausted: false,
-      statusCards: [],
-      attachments: [],
-    };
-
-    state.villains = [initialVillain];
-    setActiveVillain(state, initialVillain.instanceId!);
-
-    // 2. Setup Main Scheme (The Crimson Cowl Stage 1B)
-    const mainSchemeCard = cardCatalog.getMainSchemeByStage('ultron', '1B');
-    if (!mainSchemeCard) {
-      throw new Error(`Main scheme stage '1B' not found in catalog for scenario 'ultron'.`);
-    }
-
-    const targetThreat =
-      (mainSchemeCard.targetThreat || this.definition.mainSchemeSetup.targetThreatPerPlayer) *
-      numPlayers;
-    const initialMainScheme: MainSchemeState = {
-      instanceId: `main_scheme_${nextEngineId(state, 'id')}_${mainSchemeCard.code}`,
-      card: mainSchemeCard,
-      threat: mainSchemeCard.baseThreat || this.definition.mainSchemeSetup.startingThreat,
-      targetThreat,
-      stage: '1B',
-    };
-
-    replaceActiveMainScheme(state, initialMainScheme);
-
-    // 3. Build Encounter Deck based on Difficulty
-    const modularSetCodes =
-      options.modularSetCodes || this.definition.modularEncounterSets.defaults[difficulty];
-    const allEncounterCards: NormalizedCard[] = [];
-
-    // Add scenario cards (Ultron set)
-    allEncounterCards.push(...cardCatalog.getExpandedCardsBySet('ultron'));
-
-    // Add Standard set
-    allEncounterCards.push(...cardCatalog.getExpandedCardsBySet('standard'));
-
-    // Add Expert set if difficulty is EXPERT
-    if (difficulty === 'EXPERT') {
-      allEncounterCards.push(...cardCatalog.getExpandedCardsBySet('expert'));
-    }
-
-    // Add modular sets
-    for (const setCode of modularSetCodes) {
-      if (setCode !== 'standard' && setCode !== 'expert') {
-        allEncounterCards.push(...cardCatalog.getExpandedCardsBySet(setCode));
-      }
-    }
-
-    // Filter out villain cards, main schemes, and environment cards from encounter deck
-    const deckCards = allEncounterCards.filter(
-      (c: NormalizedCard) =>
-        c.type !== 'villain' &&
-        c.type !== 'main_scheme' &&
-        c.type !== 'environment' &&
-        c.code !== '01134' &&
-        c.code !== '01135' &&
-        c.code !== '01136' &&
-        c.code !== '01137a' &&
-        c.code !== '01137b' &&
-        c.code !== '01138a' &&
-        c.code !== '01138b' &&
-        c.code !== '01139a' &&
-        c.code !== '01139b' &&
-        c.code !== '01140', // Ultron Drones environment
-    );
-
-    // Shuffle and create instances
-    const shuffled = shuffleArray(state, deckCards);
-    state.encounterDeck = shuffled.map((c) => createCardInstance(c));
-    state.encounterDiscard = [];
-    state.sideSchemes = [];
-    state.environments = [];
-
-    // 4. Resolve Stage 1A Declarative Setup Hook
-    this.resolveStage1ASetup(state, options);
-
-    appendLog(state, {
-      category: 'phase',
-      key: 'scenario.setup',
-      params: {
-        scenario: this.definition.name,
-        difficulty,
-        villain: villainCard.name,
-        health: maxHealth,
-        threatTarget: targetThreat,
-      },
-      onomatopoeia: 'ULTRON ONLINE! DRONES INITIALIZED!',
-    });
-
-    return state;
+  constructor() {
+    super(definitionData as ScenarioDefinition, 'ULTRON ONLINE! DRONES INITIALIZED!');
   }
 
   resolveStage1ASetup(state: GameState, _options?: ScenarioGameSetupOptions): GameState {
@@ -228,144 +93,6 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     }
 
     return state;
-  }
-
-  onVillainDefeated(
-    state: GameState,
-    defeatedVillainInstanceId: string,
-  ): {
-    state: GameState;
-    advancedStage?: boolean;
-    victory?: boolean;
-  } {
-    const villain = getVillainById(state, defeatedVillainInstanceId) || getActiveVillain(state);
-    const currentCode = villain.card.code;
-    const difficulty = state.difficulty || 'STANDARD';
-
-    // Skirmish Mode: Stage I defeated -> Immediate Victory
-    if (difficulty === 'SKIRMISH') {
-      state.winner = 'HEROES';
-      appendLog(state, {
-        category: 'combat',
-        key: 'scenario.victory',
-        params: { mode: 'SKIRMISH', villain: villain.card.name },
-        onomatopoeia: 'ULTRON DEFEATED! HERO VICTORY!',
-      });
-      return { state, victory: true };
-    }
-
-    // Standard Mode: Stage I -> Stage II, Stage II -> Victory
-    if (difficulty === 'STANDARD') {
-      if (currentCode === '01134') {
-        return advanceVillainStage(state, villain.instanceId!, '01135');
-      } else {
-        state.winner = 'HEROES';
-        appendLog(state, {
-          category: 'combat',
-          key: 'scenario.victory',
-          params: { mode: 'STANDARD', villain: villain.card.name },
-          onomatopoeia: 'ULTRON STAGE II DEFEATED! HERO VICTORY!',
-        });
-        return { state, victory: true };
-      }
-    }
-
-    // Expert Mode: Stage II -> Stage III, Stage III -> Victory
-    if (difficulty === 'EXPERT') {
-      if (currentCode === '01135') {
-        return advanceVillainStage(state, villain.instanceId!, '01136');
-      } else {
-        state.winner = 'HEROES';
-        appendLog(state, {
-          category: 'combat',
-          key: 'scenario.victory',
-          params: { mode: 'EXPERT', villain: villain.card.name },
-          onomatopoeia: 'ULTRON STAGE III DEFEATED! HERO VICTORY!',
-        });
-        return { state, victory: true };
-      }
-    }
-
-    return { state };
-  }
-
-  onMainSchemeCompleted(
-    state: GameState,
-    _completedSchemeInstanceId: string,
-  ): {
-    state: GameState;
-    advancedStage?: boolean;
-    defeat?: boolean;
-  } {
-    const numPlayers = getPerPlayerCount(state) || 1;
-    const currentStage = getActiveMainScheme(state).stage;
-
-    if (currentStage === '1B') {
-      // Advance to Stage 2B (Assault on NORAD)
-      const nextSchemeCard = cardCatalog.getMainSchemeByStage('ultron', '2B');
-      if (!nextSchemeCard) {
-        throw new Error(`Main scheme stage '2B' not found in catalog for scenario 'ultron'.`);
-      }
-      const targetThreat = (nextSchemeCard.targetThreat || 10) * numPlayers;
-
-      const nextMainScheme: MainSchemeState = {
-        instanceId: `main_scheme_${nextEngineId(state, 'id')}_${nextSchemeCard.code}`,
-        card: nextSchemeCard,
-        threat: nextSchemeCard.baseThreat || 0,
-        targetThreat,
-        stage: '2B',
-      };
-
-      replaceActiveMainScheme(state, nextMainScheme);
-
-      appendLog(state, {
-        category: 'scheme',
-        key: 'scenario.mainSchemeAdvance',
-        params: { stage: '2B', scheme: 'Assault on NORAD', targetThreat },
-        onomatopoeia: 'SCHEME ADVANCES TO ASSAULT ON NORAD!',
-      });
-
-      return { state, advancedStage: true };
-    }
-
-    if (currentStage === '2B') {
-      // Advance to Stage 3B (Countdown to Oblivion)
-      const nextSchemeCard = cardCatalog.getMainSchemeByStage('ultron', '3B');
-      if (!nextSchemeCard) {
-        throw new Error(`Main scheme stage '3B' not found in catalog for scenario 'ultron'.`);
-      }
-      const targetThreat = (nextSchemeCard.targetThreat || 5) * numPlayers;
-
-      const nextMainScheme: MainSchemeState = {
-        instanceId: `main_scheme_${nextEngineId(state, 'id')}_${nextSchemeCard.code}`,
-        card: nextSchemeCard,
-        threat: nextSchemeCard.baseThreat || 0,
-        targetThreat,
-        stage: '3B',
-      };
-
-      replaceActiveMainScheme(state, nextMainScheme);
-
-      appendLog(state, {
-        category: 'scheme',
-        key: 'scenario.mainSchemeAdvance',
-        params: { stage: '3B', scheme: 'Countdown to Oblivion', targetThreat },
-        onomatopoeia: 'SCHEME ADVANCES TO COUNTDOWN TO OBLIVION!',
-      });
-
-      return { state, advancedStage: true };
-    }
-
-    // Stage 3B completed -> Defeat
-    state.winner = 'VILLAIN';
-    appendLog(state, {
-      category: 'scheme',
-      key: 'scenario.defeat',
-      params: { scheme: 'Countdown to Oblivion' },
-      onomatopoeia: 'COUNTDOWN REACHED ZERO! HEROES DEFEATED!',
-    });
-
-    return { state, defeat: true };
   }
 }
 

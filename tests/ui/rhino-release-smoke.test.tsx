@@ -13,8 +13,9 @@ const HEROES = [
     deckId: 'black_panther_protection',
     name: 'Black Panther',
     difficulty: 'STANDARD',
-    // Foresight: the Setup ability waits for an upgrade choice on the mulligan screen
-    setupChoice: 'Vibranium Suit',
+    // Foresight: the Setup ability waits for an upgrade choice on the mulligan screen. The App
+    // seeds each game at random, so the offered upgrades vary: take the first one.
+    setupChoice: '(upgrade, Cost',
   },
 ] as const;
 
@@ -35,7 +36,7 @@ describe('Rhino release smoke: setup to first end of turn', () => {
 
       fireEvent.click(await screen.findByText(/CONFIRM ALL & START SCENARIO/, {}, LOAD));
       if ('setupChoice' in hero) {
-        // A text query: role queries scan the accessible names of the whole board and time out under load
+        // A text query: role queries scan the accessible names of the whole board and are slow
         fireEvent.click((await screen.findAllByText(hero.setupChoice, { exact: false }, LOAD))[0]);
         fireEvent.click(await screen.findByText(/START THE SCENARIO & BEGIN ROUND 1/, {}, LOAD));
       }

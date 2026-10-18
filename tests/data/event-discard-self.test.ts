@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import {
@@ -148,5 +149,37 @@ describe('Event Discard Invariant (Issue #271 / RR v1.8 Event)', () => {
     const res = validateCardInput(payload, 'event');
     expect(res.valid).toBe(false);
     expect(res.errors?.some((e) => e.message.includes("Event cards cannot declare 'cost.discardSelf'"))).toBe(true);
+  });
+
+  it('resolves the card type from a supp_<code> file name and rejects event discardSelf', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mcd-validate-'));
+    try {
+      const file = path.join(dir, 'supp_01003.json');
+      fs.writeFileSync(
+        file,
+        JSON.stringify({
+          abilities: [
+            {
+              id: 'backflip',
+              timing: 'INTERRUPT',
+              trigger: 'DAMAGE_WOULD_BE_TAKEN',
+              cost: { discardSelf: true },
+              steps: [{ effect: 'PREVENT_DAMAGE' }],
+            },
+          ],
+        }),
+      );
+      const res = validateCardInput(file);
+      expect(res.valid).toBe(false);
+      expect(res.errors?.some((e) => e.path === 'cost.discardSelf')).toBe(true);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('fails instead of silently passing when the card type cannot be resolved', () => {
+    const res = validateCardInput(JSON.stringify({ abilities: [] }));
+    expect(res.valid).toBe(false);
+    expect(res.errors?.some((e) => e.path === 'type' && e.message.includes('Card type unresolved'))).toBe(true);
   });
 });

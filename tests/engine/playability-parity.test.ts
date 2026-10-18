@@ -100,4 +100,35 @@ describe('card playability parity: canPlayCard vs evaluateCardPlayability', () =
       'No cards in hand to discard as cost.',
     ]);
   });
+
+  it('a card whose cost equals hand + a 2-resource generator is playable in evaluateCardPlayability and canPlayCard', () => {
+    const state = newGame('iron_man_aggression');
+    setForm(state, 'hero');
+    const player = state.players[0];
+
+    // Card to play: Uppercut (01050), cost 3
+    const cardToPlay: CardInstance = createCardInstance(cardCatalog.getCard('01050')!);
+    // Hand filler: 1 single-resource card
+    const handCard: CardInstance = createCardInstance(cardCatalog.getCard('01005')!); // Haymaker (1 physical)
+    player.hand = [cardToPlay, handCard];
+
+    // Pepper Potts in tableau + Energy on discard top provides 2 resources
+    const pepperPotts: CardInstance = createCardInstance(cardCatalog.getCard('01033')!);
+    player.tableau = [pepperPotts];
+    player.discard = [createCardInstance(cardCatalog.getCard('01088')!)]; // Energy (2 energy)
+
+    // Total available: 1 (handCard) + 2 (Pepper Potts) = 3 resources, exactly matching Uppercut's cost of 3.
+    const view = evaluateCardPlayability(state, 'p1', cardToPlay);
+    expect(view.maxPotentialResources).toBe(3);
+    expect(view.isPlayable).toBe(true);
+
+    const engine = canPlayCard(
+      state,
+      'p1',
+      cardToPlay,
+      [handCard.instanceId],
+      [pepperPotts.instanceId],
+    );
+    expect(engine.allowed).toBe(true);
+  });
 });

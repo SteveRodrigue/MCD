@@ -24,6 +24,7 @@ import {
   getEffectiveCardCost,
   getAvailableResources,
   getGeneratorProvidedResources,
+  getHandCardResourceValue,
 } from './cost-engine';
 import { matchesCardFilter } from '../filters/card-filter';
 import {
@@ -1716,17 +1717,6 @@ function collectPlayRestrictions(
   return reasons;
 }
 
-/** Resources a hand card pays toward `playedCard`; The Power of ... doubles them for its aspect. */
-function getHandCardResourceValue(paymentCard: CardInstance, playedCard: NormalizedCard): number {
-  const resources = paymentCard.card.resources.total || 1;
-  const aspectDoubleStep = paymentCard.card.enrichment?.abilities
-    ?.flatMap((a) => a.steps || [])
-    .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
-  const doubled =
-    aspectDoubleStep && getStepEffectParams(aspectDoubleStep).aspect === playedCard.faction;
-  return doubled ? resources * 2 : resources;
-}
-
 function findCardToPlay(
   state: GameState,
   player: PlayerState,
@@ -1860,14 +1850,10 @@ export function evaluateCardPlayability(
 
   const reasons = collectPlayRestrictions(state, player, cardInstance);
 
-  let maxPotentialResources = getGeneratorProvidedResources(state, player, 'identity_ability');
-  for (const other of player.hand) {
-    if (other.instanceId === cardInstance.instanceId) continue;
-    maxPotentialResources += getHandCardResourceValue(other, cardInstance.card);
-  }
-  for (const generator of player.tableau) {
-    maxPotentialResources += getGeneratorProvidedResources(state, player, generator.instanceId);
-  }
+  const { total: maxPotentialResources } = getAvailableResources(player, state, {
+    excludeCardInstanceId: cardInstance.instanceId,
+    playedCard: cardInstance.card,
+  });
 
   const { effectiveCost: cost } = getEffectiveCardCost(state, player, cardInstance);
   if (cost > 0 && maxPotentialResources < cost) {

@@ -136,7 +136,7 @@ describe('Available Resources Calculation (Issue #162)', () => {
     expect(res.total).toBe(0);
   });
 
-  it('7. counts ready static generator (Pepper Potts 01033)', () => {
+  it('7. counts ready static generator (Pepper Potts 01033) with discard pile card', () => {
     const p1 = state.players[0];
     p1.hand = [];
     p1.currentForm = 'hero';
@@ -151,10 +151,92 @@ describe('Available Resources Calculation (Issue #162)', () => {
           exhausted: false,
         },
       ];
+      // Discard has Haymaker (1 physical resource) -> Pepper Potts produces 1
+      p1.discard = [{ instanceId: 'd1', card: cardCatalog.getCard('01005')! }];
       const res = getAvailableResources(p1, state);
       expect(res.generators).toBe(1);
       expect(res.total).toBe(1);
     }
+  });
+
+  it('7b. counts ready generator producing 2 resources (Pepper Potts with Energy on discard)', () => {
+    const p1 = state.players[0];
+    p1.hand = [];
+    p1.currentForm = 'hero';
+    p1.activeFormCard = p1.hero;
+
+    const ppCard = cardCatalog.getCard('01033');
+    if (ppCard) {
+      p1.tableau = [
+        {
+          instanceId: 'pp_1',
+          card: ppCard,
+          exhausted: false,
+        },
+      ];
+      // Top card in discard is Energy (01088, 2 energy resources)
+      p1.discard = [{ instanceId: 'd_energy', card: cardCatalog.getCard('01088')! }];
+      const res = getAvailableResources(p1, state);
+      expect(res.generators).toBe(2);
+      expect(res.total).toBe(2);
+    }
+  });
+
+  it('7c. returns 0 for Pepper Potts when discard pile is empty', () => {
+    const p1 = state.players[0];
+    p1.hand = [];
+    p1.currentForm = 'hero';
+    p1.activeFormCard = p1.hero;
+
+    const ppCard = cardCatalog.getCard('01033');
+    if (ppCard) {
+      p1.tableau = [
+        {
+          instanceId: 'pp_1',
+          card: ppCard,
+          exhausted: false,
+        },
+      ];
+      p1.discard = [];
+      const res = getAvailableResources(p1, state);
+      expect(res.generators).toBe(0);
+      expect(res.total).toBe(0);
+    }
+  });
+
+  it('7d. counts ready mock generator with amount: 2', () => {
+    const p1 = state.players[0];
+    p1.hand = [];
+    p1.currentForm = 'hero';
+    p1.activeFormCard = p1.hero;
+
+    const mockGenCard = {
+      code: 'mock_gen_2',
+      name: 'Double Generator',
+      type: 'support',
+      resources: { total: 0 },
+      enrichment: {
+        abilities: [
+          {
+            id: 'gen_double',
+            timing: 'RESOURCE' as const,
+            steps: [{ effect: 'GENERATE_RESOURCE', effectParams: { amount: 2, resource: 'wild' } }],
+          },
+        ],
+      },
+    };
+
+    p1.tableau = [
+      {
+        instanceId: 'gen_double_inst',
+        card: mockGenCard as any,
+        exhausted: false,
+      },
+    ];
+
+    const res = getAvailableResources(p1, state);
+    expect(res.generators).toBe(2);
+    expect(res.total).toBe(2);
   });
 
   it('8. strictly excludes non-resource tableau cards like Helicarrier (01092) and Avengers Mansion (01091)', () => {
@@ -172,6 +254,26 @@ describe('Available Resources Calculation (Issue #162)', () => {
       {
         instanceId: 'mansion_1',
         card: cardCatalog.getCard('01091')!, // Avengers Mansion (Card draw action)
+        exhausted: false,
+      },
+    ];
+
+    const res = getAvailableResources(p1, state);
+    expect(res.generators).toBe(0);
+    expect(res.total).toBe(0);
+  });
+
+  it('8b. strictly excludes uses-only cards without resource ability (Tac Team 01056)', () => {
+    const p1 = state.players[0];
+    p1.hand = [];
+    p1.currentForm = 'hero';
+    p1.activeFormCard = p1.hero;
+
+    p1.tableau = [
+      {
+        instanceId: 'tac_1',
+        card: cardCatalog.getCard('01056')!, // Tac Team (uses counters, action: damage)
+        tokens: { counters: 3 },
         exhausted: false,
       },
     ];
@@ -279,23 +381,77 @@ describe('Available Resources Calculation (Issue #162)', () => {
       { instanceId: 'c2', card: cardCatalog.getCard('01088')! }, // 2 energy
     ];
 
-    // Ready generator in tableau usable in alter ego (e.g. Quincarrier 01020 or Energy Absorption if usable)
-    const qCarrier = cardCatalog.getCard('01020');
-    if (qCarrier) {
-      p1.tableau = [
-        {
-          instanceId: 'qc_1',
-          card: qCarrier,
-          exhausted: false,
-        },
-      ];
-    }
+    // Ready generator in tableau usable in alter ego (mock generator with amount: 1)
+    p1.tableau = [
+      {
+        instanceId: 'gen_1',
+        card: {
+          code: 'mock_gen',
+          name: 'Mock Generator',
+          type: 'support',
+          resources: { total: 0 },
+          enrichment: {
+            abilities: [
+              {
+                id: 'mock_res',
+                timing: 'RESOURCE' as const,
+                steps: [{ effect: 'GENERATE_RESOURCE', effectParams: { amount: 1 } }],
+              },
+            ],
+          },
+        } as any,
+        exhausted: false,
+      },
+    ];
 
     const res = getAvailableResources(p1, state);
     expect(res.hand).toBe(3);
+    expect(res.generators).toBe(1);
     expect(res.identity).toBe(1); // Scientist
-    expect(res.total).toBe(3 + res.generators + 1);
-    expect(res.breakdown).toContain('3 Hand');
-    expect(res.breakdown).toContain('1 Identity');
+    expect(res.total).toBe(5);
+    expect(res.breakdown).toBe('3 Hand, 1 Generator, 1 Identity');
+  });
+
+  it('15. supports options to exclude the played card and double resources for aspect', () => {
+    const p1 = state.players[0];
+    p1.currentForm = 'hero';
+    p1.activeFormCard = p1.hero;
+
+    const playedCard = cardCatalog.getCard('01005')!; // Haymaker (basic/neutral)
+    const aggCard = cardCatalog.getCard('01055')!; // The Power of Aggression
+    const targetAggCard = cardCatalog.getCard('01050')!; // Uppercut (aggression)
+
+    p1.hand = [
+      { instanceId: 'played_inst', card: playedCard },
+      { instanceId: 'agg_inst', card: aggCard },
+    ];
+
+    // Excluding the played card gives just the other card
+    const resWithoutDoubling = getAvailableResources(p1, state, {
+      excludeCardInstanceId: 'played_inst',
+      playedCard,
+    });
+    // The Power of Aggression does not double for Haymaker (basic)
+    expect(resWithoutDoubling.hand).toBe(1);
+
+    // When paying for an Aggression card, The Power of Aggression doubles to 2
+    const resWithDoubling = getAvailableResources(p1, state, {
+      excludeCardInstanceId: 'played_inst',
+      playedCard: targetAggCard,
+    });
+    expect(resWithDoubling.hand).toBe(2);
+  });
+
+  it('16. gracefully handles undefined state', () => {
+    const p1 = state.players[0];
+    p1.currentForm = 'alter_ego';
+    p1.activeFormCard = p1.alterEgo;
+    p1.hand = [{ instanceId: 'c1', card: cardCatalog.getCard('01005')! }];
+    p1.tableau = [];
+
+    const res = getAvailableResources(p1);
+    expect(res.hand).toBe(1);
+    expect(res.identity).toBe(1);
+    expect(res.total).toBe(2);
   });
 });

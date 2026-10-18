@@ -6,6 +6,7 @@ Working space for the current gate. It holds two kinds of file only:
 | :----------------------------------------------------------------------- | :----------------------------------------------------------------------- |
 | [teamwork_status_and_next_target.md](teamwork_status_and_next_target.md) | State, ordered work queue, open owner decisions. Update after each item. |
 | `plan_issue_<n>_<slug>.md`                                               | Plan of one change in flight. Delete it in the commit that delivers it.  |
+| `plan_audit_r<nn>_<slug>.md`                                             | Plan of one remaining code-audit item (no issue yet). Same lifecycle.    |
 
 Open work lives in the GitHub milestones (one per gate). Long-lived designs go to `docs/specifications/`, decisions to `docs/decisions/`. Policies are in [AGENTS.md](../../AGENTS.md) and `.agents/rules/`.
 

@@ -6,11 +6,6 @@ import coreEncounterPackSupplemental from './pack/core_encounter.json';
 import cwEncounterPackSupplemental from './pack/cw_encounter.json';
 import mtsPackSupplemental from './pack/mts.json';
 
-export interface PackSupplementalData {
-  $schema?: string;
-  cards: Record<string, CardEnrichment>;
-}
-
 /**
  * Supplemental Registry: Maps upstream card code to rules enrichment data.
  * Structured pack-by-pack matching upstream zzorba datasets (data/upstream/pack/).

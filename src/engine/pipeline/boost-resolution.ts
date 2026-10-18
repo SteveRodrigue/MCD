@@ -44,7 +44,7 @@ export interface ResolveBoostCardsOptions extends BoostLogContext {
 type MayAddBoostCards = VillainCard | MinionCard;
 
 /** Additional boost cards the activating enemy and its attachments give (Klaw 01113, ADR-0019). */
-export function getAdditionalBoostCardCount(
+function getAdditionalBoostCardCount(
   entity: BoostActivator,
   attachments: CardInstance[] = [],
 ): number {

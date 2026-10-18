@@ -5,14 +5,12 @@ import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
 import { nextEngineId } from '../state/rng';
 import { cardCatalog } from '../../data/importer/card-loader';
 
-export const BLACK_PANTHER_UPGRADE_CODES = ['01046', '01047', '01048', '01049'];
+const BLACK_PANTHER_UPGRADE_CODES = ['01046', '01047', '01048', '01049'];
 
 /**
  * Returns all in-play Black Panther upgrades controlled by the specified player in their tableau (ADR-0038).
  */
-export function getPlayerBlackPantherUpgrades(playerState: {
-  tableau: CardInstance[];
-}): CardInstance[] {
+function getPlayerBlackPantherUpgrades(playerState: { tableau: CardInstance[] }): CardInstance[] {
   return (playerState.tableau || []).filter(
     (t) =>
       t.card.traits?.includes('Black Panther') ||
@@ -21,7 +19,7 @@ export function getPlayerBlackPantherUpgrades(playerState: {
   );
 }
 
-export const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
+const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
   id: 'WAKANDA_FOREVER',
   validatePlayCondition: (state: GameState, context: EffectExecutionContext): boolean => {
     const player = state.players.find((p) => p.id === context.playerId) || state.players[0];

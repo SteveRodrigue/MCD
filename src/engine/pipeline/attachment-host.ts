@@ -53,7 +53,7 @@ function printedValue(candidate: AttachCandidate, stat: 'PRINTED_HIT_POINTS' | '
  * active villain; `MINION` / `ENEMY` filter the minions (and villains), drop those already
  * carrying a copy when asked, then keep the highest / lowest printed value.
  */
-export function findAttachCandidates(
+function findAttachCandidates(
   state: GameState,
   attachment: CardInstance,
   host: AttachHost,

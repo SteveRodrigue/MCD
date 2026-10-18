@@ -767,10 +767,6 @@ export const EFFECT_PARAM_KEYS: Record<EffectType, readonly string[]> = Object.f
   ]),
 ) as unknown as Record<EffectType, readonly string[]>;
 
-export function getAllowedEffectParamKeys(effect: EffectType): readonly string[] {
-  return EFFECT_PARAM_KEYS[effect];
-}
-
 /** One-line help text per effect primitive, shown next to the effect selector in the Card Editor. */
 export const EFFECT_DESCRIPTIONS: Record<EffectType, string> = {
   DEAL_DAMAGE: "Deal damage to a target character or enemy.",

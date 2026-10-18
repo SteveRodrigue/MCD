@@ -52,7 +52,7 @@ const LOCALE_DICTIONARIES: Record<string, typeof enCombatLog> = {
  * Strips out internal UI seat designations (e.g. "Hero Seat 1 (Spider-Man)" -> "Spider-Man")
  * and resolves player active identity or hero names.
  */
-export function cleanCharacterName(name?: string, player?: any): string {
+function cleanCharacterName(name?: string, player?: any): string {
   if (!name) return '';
   const seatMatch = name.match(/^Hero Seat(?:\s+\d+)?\s*\((.*?)\)$/i);
   if (seatMatch && seatMatch[1]) {
@@ -214,7 +214,7 @@ function getCharacterQuote(
  * - player.action.allyAttack -> `${playerName}: action.allyAttack`
  * - villain.attack / villain.boost -> `${villainName}: attack` / `${villainName}: boost`
  */
-export function formatHierarchicalLogKey(key: string, entry: GameLogEntry): string {
+function formatHierarchicalLogKey(key: string, entry: GameLogEntry): string {
   const params = entry.params || {};
 
   if (key.startsWith('card.')) {
@@ -314,7 +314,7 @@ export function formatHierarchicalLogKey(key: string, entry: GameLogEntry): stri
 /**
  * Maps hierarchical, legacy, or action-specific log keys to canonical combat log template keys.
  */
-export function mapToCanonicalTemplateKey(key?: string, entry?: GameLogEntry): string | undefined {
+function mapToCanonicalTemplateKey(key?: string, entry?: GameLogEntry): string | undefined {
   if (!key) return undefined;
 
   switch (key) {
@@ -453,7 +453,7 @@ export function mapToCanonicalTemplateKey(key?: string, entry?: GameLogEntry): s
  * who, who_attacks, who_is_taking_damage, who_defends, target, amount, card, scheme, status, source, form.
  * Uses gameState as fallback when parameters are omitted.
  */
-export function normalizeLogParams(
+function normalizeLogParams(
   entry: GameLogEntry,
   gameState?: GameState,
 ): Record<string, string | number | boolean> {
@@ -694,7 +694,7 @@ export function normalizeLogParams(
 /**
  * Dynamically resolves comic color palette based on character role and GameState.
  */
-export function resolveComicColors(
+function resolveComicColors(
   dialogueType: ComicDialogueType,
   entry: GameLogEntry,
   normalizedParams: Record<string, string | number | boolean>,

@@ -68,7 +68,7 @@ export function formatTimingBadge(timing: string): string {
  * Discovers legal Action abilities on a player's in-play tableau (Supports & Upgrades).
  * Reusable for both the active player's turn report and cooperative teammate call-for-actions (RR v1.8 p. 5, 23).
  */
-export function getTableauActionItems(
+function getTableauActionItems(
   state: GameState,
   player: PlayerState,
   isCallingPlayerTurn: boolean,
@@ -148,7 +148,7 @@ export function getTableauActionItems(
  * Discovers legal Action abilities on a player's active identity card (Alter-Ego or Hero).
  * Reusable for both the active player's turn report and cooperative teammate call-for-actions (RR v1.8 p. 5, 23).
  */
-export function getIdentityActionItems(
+function getIdentityActionItems(
   state: GameState,
   player: PlayerState,
   isCallingPlayerTurn: boolean,
@@ -225,7 +225,7 @@ export function getIdentityActionItems(
  * Discovers legal Action abilities on encounter cards, villain/player attachments,
  * active player's obligations, and in-play side schemes payable by the player (RR v1.8 p. 5).
  */
-export function getEncounterLegalActions(state: GameState, player: PlayerState): LegalActionItem[] {
+function getEncounterLegalActions(state: GameState, player: PlayerState): LegalActionItem[] {
   const items: LegalActionItem[] = [];
   const isHero = player.currentForm === 'hero';
 

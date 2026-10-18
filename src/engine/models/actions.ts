@@ -1,21 +1,3 @@
-export type ActionType =
-  | 'RESOLVE_MULLIGAN'
-  | 'CHANGE_FORM'
-  | 'BASIC_RECOVER'
-  | 'BASIC_ATTACK'
-  | 'BASIC_THWART'
-  | 'ALLY_ATTACK'
-  | 'ALLY_THWART'
-  | 'PLAY_CARD'
-  | 'USE_CARD_ABILITY'
-  | 'RESOLVE_DECISION_PROMPT'
-  | 'DECLARE_DEFENDER'
-  | 'END_PLAYER_TURN'
-  | 'DEV_ADD_CARD_TO_HAND'
-  | 'MINION_ENGAGES_PLAYER'
-  | 'REVEAL_ENCOUNTER_CARD'
-  | 'ADVANCE_VILLAIN_PHASE';
-
 export interface ResolveMulliganAction {
   type: 'RESOLVE_MULLIGAN';
   playerId: string;
@@ -61,10 +43,6 @@ export interface AllyThwartAction {
   allyInstanceId: string;
   targetType: 'main_scheme' | 'side_scheme';
   targetInstanceId?: string;
-}
-
-export interface PaymentResource {
-  cardInstanceId: string;
 }
 
 export interface PlayCardAction {

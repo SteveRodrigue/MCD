@@ -1,4 +1,4 @@
-export function formatGatePrefix(step: any): string | null {
+function formatGatePrefix(step: any): string | null {
   if (!step?.gate || step.gate === 'ALWAYS') {
     return null;
   }

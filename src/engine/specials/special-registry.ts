@@ -16,7 +16,3 @@ export function registerSpecialHandler(handler: SpecialAbilityHandler): void {
 export function getSpecialHandler(id: string): SpecialAbilityHandler | undefined {
   return specialHandlers.get(id.toUpperCase());
 }
-
-export function getAllSpecialHandlers(): SpecialAbilityHandler[] {
-  return Array.from(specialHandlers.values());
-}

@@ -44,7 +44,7 @@ export function initiatePlayerPhaseCleanup(
 /**
  * Processes the next player in the clean-up queue.
  */
-export function processNextPlayerInCleanupQueue(
+function processNextPlayerInCleanupQueue(
   state: GameState,
   options?: PlayerPhaseCleanupOptions,
 ): GameState {

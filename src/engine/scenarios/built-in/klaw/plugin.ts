@@ -21,7 +21,7 @@ import { advanceVillainStage, villainStageHitPoints } from '../../advance-villai
 import definitionData from './definition.json';
 import { appendLog } from '../../../state/game-log';
 
-export const klawDefinition: ScenarioDefinition = definitionData as ScenarioDefinition;
+const klawDefinition: ScenarioDefinition = definitionData as ScenarioDefinition;
 
 /**
  * Klaw Scenario Plugin implementation.

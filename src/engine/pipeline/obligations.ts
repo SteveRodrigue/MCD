@@ -20,7 +20,7 @@ function findOwnerOfSet(state: GameState, setCode: string | undefined): PlayerSt
  *   else the revealing player (rule 3).
  * Returns undefined when the card cannot be given to anyone (rule 2).
  */
-export function resolveObligationRecipient(
+function resolveObligationRecipient(
   state: GameState,
   card: CardInstance,
   revealingPlayer: PlayerState,

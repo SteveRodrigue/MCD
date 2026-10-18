@@ -85,7 +85,7 @@ export function extractResourceCost(cost?: CardAbility['cost']): {
 /**
  * Calculates matching resources provided by a physical card in hand (RR v1.8 p. 15).
  */
-export function getCardProvidedResources(
+function getCardProvidedResources(
   cardInst: CardInstance,
   requiredType?: string,
   requirePrinted?: boolean,

@@ -274,3 +274,13 @@ Detailed plans are written into this section before each item starts. Tier 3 ite
 **Tests.** Filter tests for identity (Spider-Man vs She-Hulk card), `PLAYER_NEMESIS`, exact set match, in-play criteria on a definition; full suite.
 
 **Open decisions.** None. **UI and Card Editor impact.** None: the editor already writes only canonical keys.
+
+---
+
+## 16. F012: UI re-render cost (detail)
+
+**Rules/spec analysis.** Not a rule. `PlayerHandTray` evaluated every hand card's playability in three places per render; `App.tsx` copied the "apply UI settings to `state.options`" block at five dispatch sites plus a sync effect.
+
+**Simplification & Refactor Check.** The tray computes one playability map per hand and state (`useMemo`) used by the click guard, the end-turn pulse and the fan. `App` gets one `withUiOptions(state)` helper for every new state. **Not done:** moving `gameState`/`onDispatchAction` from props to a context. Memoised children only pay off once state objects keep their identity between actions (structural sharing, audit F012-B / Appendix A1), and the switch rewrites the props of six components and their tests. Revisit with a React Profiler capture.
+
+**File changes.** `src/ui/components/board/PlayerHandTray.tsx`, `src/ui/App.tsx`. **Tests.** Existing tray, App smoke and related UI tests (behaviour unchanged). **Open decisions.** None. **UI impact.** None visible.

@@ -39,27 +39,32 @@ const AppContent: React.FC = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [loopError, setLoopError] = useState<InfiniteLoopError | null>(null);
 
-  // Sync game settings (e.g. autoResolveUnambiguous, villainPhaseStepping) to active gameState.options
-  React.useEffect(() => {
-    const shouldStep = settings.villainPhasePacing !== 'instant';
-    setGameState((prev) => {
+  // The engine reads two UI settings from state.options; every new state gets them here
+  const withUiOptions = React.useCallback(
+    (state: GameState): GameState => {
+      const villainPhaseStepping = settings.villainPhasePacing !== 'instant';
       if (
-        !prev ||
-        (prev.options?.autoResolveUnambiguous === settings.autoResolveUnambiguous &&
-          prev.options?.villainPhaseStepping === shouldStep)
+        state.options?.autoResolveUnambiguous === settings.autoResolveUnambiguous &&
+        state.options?.villainPhaseStepping === villainPhaseStepping
       ) {
-        return prev;
+        return state;
       }
       return {
-        ...prev,
+        ...state,
         options: {
-          ...prev.options,
+          ...state.options,
           autoResolveUnambiguous: settings.autoResolveUnambiguous,
-          villainPhaseStepping: shouldStep,
+          villainPhaseStepping,
         },
       };
-    });
-  }, [settings.autoResolveUnambiguous, settings.villainPhasePacing]);
+    },
+    [settings.autoResolveUnambiguous, settings.villainPhasePacing],
+  );
+
+  // A settings change applies to the game in progress
+  React.useEffect(() => {
+    setGameState((prev) => (prev ? withUiOptions(prev) : prev));
+  }, [withUiOptions]);
 
   // Handle browser popstate
   React.useEffect(() => {
@@ -107,14 +112,8 @@ const AppContent: React.FC = () => {
       modularSetCodes: selection.selectedModularSetCodes,
     });
 
-    newGameState.options = {
-      ...newGameState.options,
-      autoResolveUnambiguous: settings.autoResolveUnambiguous,
-      villainPhaseStepping: settings.villainPhasePacing !== 'instant',
-    };
-
     resetSessionSyncTracking();
-    setGameState(newGameState);
+    setGameState(withUiOptions(newGameState));
     setStage('MULLIGAN');
   };
 
@@ -126,13 +125,7 @@ const AppContent: React.FC = () => {
       playerId,
       discardCardInstanceIds: discardIds,
     });
-    nextState.options = {
-      ...nextState.options,
-      autoResolveUnambiguous: settings.autoResolveUnambiguous,
-      villainPhaseStepping: settings.villainPhasePacing !== 'instant',
-    };
-
-    setGameState(nextState);
+    setGameState(withUiOptions(nextState));
   };
 
   const handleResolveSetupPrompt = (playerId: string, selectedOptionId: string) => {
@@ -142,12 +135,7 @@ const AppContent: React.FC = () => {
       playerId,
       selectedOptionId,
     });
-    nextState.options = {
-      ...nextState.options,
-      autoResolveUnambiguous: settings.autoResolveUnambiguous,
-      villainPhaseStepping: settings.villainPhasePacing !== 'instant',
-    };
-    setGameState(nextState);
+    setGameState(withUiOptions(nextState));
   };
 
   const handleStartScenario = () => {
@@ -165,12 +153,7 @@ const AppContent: React.FC = () => {
         currentState = nextState;
       }
     }
-    currentState.options = {
-      ...currentState.options,
-      autoResolveUnambiguous: settings.autoResolveUnambiguous,
-      villainPhaseStepping: settings.villainPhasePacing !== 'instant',
-    };
-
+    currentState = withUiOptions(currentState);
     setGameState(currentState);
     // A player Setup ability may still wait for a decision: the mulligan screen shows it first.
     if (currentState.setupState?.stage !== 'PLAYER_SETUP') {
@@ -182,12 +165,7 @@ const AppContent: React.FC = () => {
     if (!gameState) return;
     try {
       const { state: nextState } = dispatchAction(gameState, action);
-      nextState.options = {
-        ...nextState.options,
-        autoResolveUnambiguous: settings.autoResolveUnambiguous,
-        villainPhaseStepping: settings.villainPhasePacing !== 'instant',
-      };
-      setGameState(nextState);
+      setGameState(withUiOptions(nextState));
     } catch (err) {
       if (err instanceof InfiniteLoopError) {
         setLoopError(err);

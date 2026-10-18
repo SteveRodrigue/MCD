@@ -1,6 +1,7 @@
 import { GameState, VillainPhaseStep } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
 import { startPlayerPhase, expireLastingEffects } from './player-phase';
+import { appendLog } from '../state/game-log';
 
 /**
  * Step 5: Pass First Player Token (RR v1.8 p. 47)
@@ -11,9 +12,7 @@ export function step5_passFirstPlayerToken(state: GameState): GameState {
   state.firstPlayerIndex = (state.firstPlayerIndex + 1) % state.players.length;
   state.activePlayerIndex = state.firstPlayerIndex;
 
-  state.log.push({
-    id: `log_${Date.now()}`,
-    timestamp: Date.now(),
+  appendLog(state, {
     key: 'first_player.passed',
     params: { player: state.players[state.firstPlayerIndex]?.name },
     onomatopoeia: 'TOKEN PASS!',
@@ -58,9 +57,7 @@ export function step6_endVillainPhaseAndRound(state: GameState): GameState {
   // Round transition: Increment Round Number
   state.roundNumber += 1;
 
-  state.log.push({
-    id: `log_${Date.now()}`,
-    timestamp: Date.now(),
+  appendLog(state, {
     key: 'round.upkeep.complete',
     params: { round: state.roundNumber },
     onomatopoeia: 'NEW ROUND!',

@@ -22,6 +22,7 @@ import { executeEffect, hasPendingSequence } from '../effects';
 import { peekDecisionPrompt } from '../pipeline/prompt-queue';
 import { createCardInstance, resetInstanceCounter } from './card-instance';
 import { createRng, shuffleArray, nextEngineId } from './rng';
+import { appendLog } from './game-log';
 
 export { createCardInstance, resetInstanceCounter };
 
@@ -174,7 +175,7 @@ export function setupGame(options: GameSetupOptions): GameState {
     : rawVillain.health;
 
   const villain: VillainState = {
-    instanceId: `villain_${Date.now()}_${rawVillain.code}`,
+    instanceId: `villain_${nextEngineId(tempRngState, 'id')}_${rawVillain.code}`,
     card: rawVillain,
     health: villainHealth,
     maxHealth: villainHealth,
@@ -190,7 +191,7 @@ export function setupGame(options: GameSetupOptions): GameState {
     (cardCatalog.getCard('01097b') as MainSchemeCard);
 
   const mainScheme: MainSchemeState = {
-    instanceId: `main_scheme_${Date.now()}_${rawMainScheme.code}`,
+    instanceId: `main_scheme_${nextEngineId(tempRngState, 'id')}_${rawMainScheme.code}`,
     card: rawMainScheme,
     threat: rawMainScheme.baseThreat * (rawMainScheme.baseThreatFixed ? 1 : playerCount),
     targetThreat: (rawMainScheme.targetThreat || 7) * playerCount,
@@ -257,7 +258,7 @@ export function setupGame(options: GameSetupOptions): GameState {
     log: [
       {
         id: nextEngineId(tempRngState, 'log'),
-        timestamp: Date.now(),
+        timestamp: tempRngState.idCounter ?? 0,
         key: 'game.setup.complete',
         params: {
           villain: rawVillain.name,
@@ -375,9 +376,7 @@ export function advancePlayerSetup(state: GameState): GameState {
       if (mulliganDone) {
         current.setupState.stage = 'GAME_READY';
         current.setupState.pendingSetupAbilities = undefined;
-        current.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
+        appendLog(current, {
           round: 1,
           phase: GamePhase.PLAYER_PHASE,
           key: 'phase.player_phase.start',
@@ -404,11 +403,8 @@ export function advancePlayerSetup(state: GameState): GameState {
       sourceCardInstance: source,
     });
     current = result.state;
-    current.log.push({
-      id: `log_${Date.now()}_setup_${next.abilityId}`,
-      timestamp: Date.now(),
+    appendLog(current, {
       round: 1,
-      phase: current.phase,
       category: 'ability',
       actor: { name: player.name, type: player.currentForm },
       key: 'character.setup.resolved',

@@ -8,6 +8,8 @@ import { getEffectiveHandSize } from './stat-calculator';
 import { drawPlayerCard } from './deck-exhaustion';
 import { enqueueDecisionPrompt } from './prompt-queue';
 import { executeVillainPhase } from './villain-phase';
+import { appendLog } from '../state/game-log';
+import { nextEngineId } from '../state/rng';
 
 export interface PlayerPhaseCleanupOptions {
   autoDiscardNone?: boolean;
@@ -87,7 +89,7 @@ export function processNextPlayerInCleanupQueue(
     });
 
     const prompt: PendingDecisionPrompt = {
-      promptId: `prompt_cleanup_${player.id}_${Date.now()}`,
+      promptId: `prompt_cleanup_${player.id}_${nextEngineId(state, 'id')}`,
       playerId: player.id,
       title: 'End of Player Phase: Voluntary Discard',
       description: `${player.name}: Select any cards in your hand you wish to discard before drawing up to hand size:`,
@@ -157,11 +159,7 @@ export function executePlayerCleanup(
     tableauCard.exhausted = false;
   }
 
-  state.log.push({
-    id: `log_${Date.now()}_cleanup_${player.id}`,
-    timestamp: Date.now(),
-    round: state.roundNumber,
-    phase: state.phase,
+  appendLog(state, {
     category: 'phase',
     actor: { name: player.name, type: player.currentForm },
     key: 'player.phase.cleanup.complete',

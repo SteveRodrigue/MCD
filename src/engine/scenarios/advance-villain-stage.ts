@@ -12,6 +12,8 @@ import { cardCatalog } from '../../data/importer/card-loader';
 import { executeEffect, discardHostAttachmentsAndTuckedCards } from '../effects';
 import { applyToughnessOnEntry } from '../state/card-instance';
 import { getEffectiveVillainStats } from '../pipeline/stat-calculator';
+import { appendLog } from '../state/game-log';
+import { nextEngineId } from '../state/rng';
 
 /** Printed hit points of a villain stage: per player when the card says so (RR v1.8 hit points). */
 export function villainStageHitPoints(card: VillainCard, playerCount: number): number {
@@ -125,7 +127,7 @@ export function advanceVillainStage(
       state.encounterDiscard.push(...defeated.facedownBoostCards);
     }
     next = {
-      instanceId: `villain_${Date.now()}_${nextStageCode}`,
+      instanceId: `villain_${nextEngineId(state, 'id')}_${nextStageCode}`,
       card: nextCard,
       health: maxHealth,
       maxHealth,
@@ -137,9 +139,7 @@ export function advanceVillainStage(
     endVillainActivation(state, instanceId);
   }
 
-  state.log.push({
-    id: `log_${Date.now()}`,
-    timestamp: Date.now(),
+  appendLog(state, {
     category: 'combat',
     key: 'villain.stageAdvance',
     params: { villain: nextCard.name, stage: nextCard.stage, health: maxHealth },

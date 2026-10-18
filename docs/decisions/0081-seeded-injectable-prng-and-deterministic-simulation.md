@@ -90,3 +90,9 @@ All call sites in `src/engine/` were refactored:
 ### Negative / Trade-offs
 
 - `GameState` now carries numeric PRNG state (`rng.current`) and `idCounter`, which advance monotonically with each random operation and ID generation.
+
+---
+
+## Addendum (2026-10-17): One log writer, no wall clock (AUD-20261017-232534 F009)
+
+The engine had about 200 hand-written `state.log.push({ id: log_${Date.now()}, timestamp: Date.now(), ... })` sites and built villain, main scheme and prompt ids from `Date.now()`, so two runs with the same seed differed. `appendLog(state, entry)` (`src/engine/state/game-log.ts`) is now the only log writer: the id comes from `nextEngineId(state, 'log')`, the `timestamp` is the same `idCounter` value (a logical clock; the UI only uses it as a fallback key), and round and phase default to the state's current ones. Every other engine id uses `nextEngineId`. `tests/engine/engine-clock-guard.test.ts` fails on any `Date.now()` or direct `log.push` in `src/engine`, and `tests/engine/match-simulator.test.ts` replays a seeded game twice and compares the serialized states.

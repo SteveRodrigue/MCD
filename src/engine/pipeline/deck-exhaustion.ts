@@ -1,5 +1,6 @@
 import { GameState, CardInstance } from '@engine/models';
-import { shuffleArray, nextEngineId } from '../state/rng';
+import { shuffleArray } from '../state/rng';
+import { appendLog } from '../state/game-log';
 
 /**
  * Executes Encounter Deck Exhaustion (RR v1.8 p. 11).
@@ -10,11 +11,7 @@ export function exhaustEncounterDeck(state: GameState): boolean {
   // 1. Unconditional penalty: +1 permanent acceleration token on Main Scheme
   state.accelerationTokens = (state.accelerationTokens || 0) + 1;
 
-  state.log.push({
-    id: nextEngineId(state, 'log'),
-    timestamp: Date.now(),
-    round: state.roundNumber,
-    phase: state.phase,
+  appendLog(state, {
     category: 'phase',
     key: 'encounter.deck.empty',
     onomatopoeia: 'ACCELERATION!',
@@ -92,11 +89,7 @@ export function exhaustPlayerDeck(state: GameState, playerId: string): boolean {
     player.dealtEncounterCards.push(extraEncounter);
   }
 
-  state.log.push({
-    id: nextEngineId(state, 'log'),
-    timestamp: Date.now(),
-    round: state.roundNumber,
-    phase: state.phase,
+  appendLog(state, {
     category: 'phase',
     key: 'player.deck.exhausted',
     params: { player: player.name },

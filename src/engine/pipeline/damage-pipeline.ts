@@ -16,7 +16,7 @@ import { eliminatePlayer } from './player-elimination';
 import { dispatchTrigger, type DefeatSource } from '../triggers/trigger-dispatcher';
 import type { TriggerCallNode } from '../errors/infinite-loop-error';
 import { moveDefeatedCardToPile, isEncounterCard, processHostDefeated } from '../effects';
-import { nextEngineId } from '../state/rng';
+import { appendLog } from '../state/game-log';
 
 export type { DefeatSource };
 
@@ -206,11 +206,7 @@ function resolveDamageShieldForHost(
   }
 
   const onomatopoeia = discarded ? 'ARMORED SUIT SHATTERED!' : 'ARMORED SUIT ABSORBS DAMAGE!';
-  state.log.push({
-    id: nextEngineId(state, 'log'),
-    timestamp: Date.now(),
-    round: state.roundNumber,
-    phase: state.phase,
+  appendLog(state, {
     category: 'combat',
     key: discarded ? 'attachment.damageShield.broken' : 'attachment.damageShield.absorbed',
     params: {
@@ -260,11 +256,7 @@ export function applyDamageToTarget(
     target.type !== 'player' &&
     isImmuneToDamage(state, target.entity, request.sourceCardInstance)
   ) {
-    state.log.push({
-      id: nextEngineId(state, 'log'),
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
+    appendLog(state, {
       category: 'combat',
       key: 'damage.prevented.immune',
       params: { target: target.name },
@@ -317,11 +309,7 @@ export function applyDamageToTarget(
       if (!hasPiercing) {
         currentDamage = 0;
         onomatopoeia = 'CLANG! (TOUGH)';
-        state.log.push({
-          id: nextEngineId(state, 'log'),
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category: 'combat',
           key: 'damage.prevented.tough',
           params: { target: target.name },
@@ -375,11 +363,7 @@ export function applyDamageToTarget(
         const villain = target.entity as VillainState;
         const healthBefore = villain.health;
         villain.health = Math.max(0, villain.health - damageTaken);
-        state.log.push({
-          id: nextEngineId(state, 'log'),
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category: 'combat',
           key: 'damage.applied.villain',
           params: {
@@ -416,11 +400,7 @@ export function applyDamageToTarget(
         minion.tokens.damage = newDmg;
         const minionHealth = getEffectiveMinionHitPoints(state, minion);
 
-        state.log.push({
-          id: nextEngineId(state, 'log'),
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category: 'combat',
           key: 'damage.applied.minion',
           params: {
@@ -465,11 +445,7 @@ export function applyDamageToTarget(
         const player = target.entity as PlayerState;
         const healthBefore = player.health;
         player.health = Math.max(0, player.health - damageTaken);
-        state.log.push({
-          id: nextEngineId(state, 'log'),
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category: 'combat',
           key: 'damage.applied.player',
           params: {
@@ -503,11 +479,7 @@ export function applyDamageToTarget(
         ally.tokens.damage = newDmg;
         const allyMaxHp = (ally.card as AllyCard)?.health || 2;
 
-        state.log.push({
-          id: nextEngineId(state, 'log'),
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category: 'combat',
           key: 'damage.applied.ally',
           params: {
@@ -574,11 +546,7 @@ export function applyDamageToTarget(
     });
     state = overkillRes.state;
     if (overkillRes.result.damageTaken > 0) {
-      state.log.push({
-        id: nextEngineId(state, 'log'),
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'combat',
         key: 'overkill.villain.hit',
         params: { damage: overkillRes.result.damageTaken, villain: villain.card?.name },
@@ -620,11 +588,7 @@ export function applyDamageToTarget(
           skipRetaliate: true,
         });
 
-        state.log.push({
-          id: nextEngineId(state, 'log'),
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category: 'combat',
           key: 'retaliate.hit',
           params: {
@@ -652,11 +616,7 @@ export function applyDamageToTarget(
             skipRetaliate: true,
           });
 
-          state.log.push({
-            id: nextEngineId(state, 'log'),
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
+          appendLog(state, {
             category: 'combat',
             key: 'retaliate.hit',
             params: {

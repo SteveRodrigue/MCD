@@ -35,6 +35,7 @@ import {
   getEffectiveRetaliate,
   consumeEntityStatusCards,
 } from './stat-calculator';
+import { appendLog } from '../state/game-log';
 
 export type DefensePolicy =
   'TAKE_UNDEFENDED' | 'HERO_IF_READY' | 'ALLY_CHUMP_BLOCK' | 'AUTO_OPTIMAL';
@@ -80,22 +81,14 @@ export function step1_preAttackAndStunCheck(
   // Priority 1: Check Stun status on attacking entity (taking into account Steady - RR v1.8 p. 28)
   if (consumeEntityStatusCards(attackerEntity, StatusCard.STUNNED)) {
     if (attackerType === 'VILLAIN') {
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'combat',
         key: 'villain.stunned.cancelled',
         params: { villain: villain.card.name },
         onomatopoeia: 'STUN CLEARED!',
       });
     } else if (attackerCard) {
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'combat',
         key: 'minion.stunned.cancelled',
         params: { minion: attackerCard.card.name },
@@ -127,11 +120,7 @@ export function step1_preAttackAndStunCheck(
         eventTargetInstanceId: targetInstanceId,
       });
 
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'combat',
         key: attackerType === 'VILLAIN' ? 'villain.attack.cancelled' : 'minion.attack.cancelled',
         params: {
@@ -530,11 +519,7 @@ export function resolveDefenderDeclaration(
     attackContext.heroDefended = true;
     attackContext.defenseValue = getEffectiveHeroStats(state, player).defense;
 
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
+    appendLog(state, {
       category: 'combat',
       key: 'combat.hero.defended',
       params: {
@@ -553,11 +538,7 @@ export function resolveDefenderDeclaration(
       attackContext.heroDefended = false;
       attackContext.defenseValue = 0;
 
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'combat',
         key: 'combat.ally.defended',
         params: {
@@ -574,11 +555,7 @@ export function resolveDefenderDeclaration(
     attackContext.heroDefended = false;
     attackContext.defenseValue = 0;
 
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
+    appendLog(state, {
       category: 'combat',
       key: 'combat.attack.undefended',
       params: {
@@ -723,11 +700,7 @@ export function step6_calculateAndApplyAttackDamage(
       : undefined;
 
   if (attackContext.defender?.type === 'ALLY' && !defenderAlly) {
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
+    appendLog(state, {
       category: 'combat',
       key: 'ally.defeated.boost.undefended',
       params: {
@@ -858,11 +831,7 @@ export function applyCalculatedAttackDamage(
       if (toughIdx !== -1 && rawDamage > 0) {
         if (attackContext.hasPiercing) {
           ally.statusCards!.splice(toughIdx, 1);
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
+          appendLog(state, {
             category: 'combat',
             key: 'ally.piercing.tough.discarded',
             params: { ally: ally.card.name },
@@ -870,11 +839,7 @@ export function applyCalculatedAttackDamage(
           });
         } else {
           ally.statusCards!.splice(toughIdx, 1);
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
+          appendLog(state, {
             category: 'combat',
             key: 'ally.tough.absorbed',
             params: { ally: ally.card.name },
@@ -891,11 +856,7 @@ export function applyCalculatedAttackDamage(
         if (!ally.tokens) ally.tokens = {};
         ally.tokens.damage = currentDamage + damageToAlly;
 
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category: 'combat',
           key: 'ally.attack.hit',
           params: { ally: ally.card.name, damage: damageToAlly },
@@ -911,11 +872,7 @@ export function applyCalculatedAttackDamage(
           resetCardState(ally);
           owner.discard.push(ally);
 
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
+          appendLog(state, {
             category: 'combat',
             key: 'ally.defeated',
             params: { ally: ally.card.name },
@@ -932,11 +889,7 @@ export function applyCalculatedAttackDamage(
           // Overkill Check
           if (attackContext.hasOverkill && excessDamage > 0) {
             player.health = Math.max(0, player.health - excessDamage);
-            state.log.push({
-              id: `log_${Date.now()}`,
-              timestamp: Date.now(),
-              round: state.roundNumber,
-              phase: state.phase,
+            appendLog(state, {
               category: 'combat',
               key: 'overkill.hit',
               params: { damage: excessDamage, player: player.name },
@@ -962,11 +915,7 @@ export function applyCalculatedAttackDamage(
     if (toughIndex !== -1 && rawDamage > 0) {
       if (attackContext.hasPiercing) {
         player.statusCards.splice(toughIndex, 1);
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category: 'combat',
           key: 'hero.piercing.tough.discarded',
           params: { player: player.name },
@@ -974,11 +923,7 @@ export function applyCalculatedAttackDamage(
         });
       } else {
         player.statusCards.splice(toughIndex, 1);
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category: 'combat',
           key: 'hero.tough.absorbed',
           params: { player: player.name },
@@ -990,11 +935,7 @@ export function applyCalculatedAttackDamage(
 
     if (rawDamage > 0) {
       player.health = Math.max(0, player.health - rawDamage);
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'combat',
         key: attackContext.attackerType === 'VILLAIN' ? 'villain.attack.hit' : 'minion.attack.hit',
         params: {
@@ -1089,11 +1030,7 @@ function resolveDeferredBoostAbilities(
       damagedCharacter: attackContext.damagedCharacter,
     });
 
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
+    appendLog(state, {
       category: 'combat',
       key: 'villain.boost.starResolved',
       params: { card: sourceCardInstance.card.name, abilityId: ability.id },
@@ -1263,11 +1200,7 @@ export function step7_resolvePostAttackAndRetaliate(
           ? attackingVillain(state, attackContext).card?.name || 'Villain'
           : attackContext.attackerCard?.card.name || 'Minion';
 
-      state.log.push({
-        id: nextEngineId(state, 'log'),
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'combat',
         key: 'RETALIATE_DAMAGE',
         actor: {
@@ -1336,11 +1269,7 @@ export function step7_resolvePostAttackAndRetaliate(
             ? attackingVillain(state, attackContext).card?.name || 'Villain'
             : attackContext.attackerCard?.card.name || 'Minion';
 
-        state.log.push({
-          id: nextEngineId(state, 'log'),
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category: 'combat',
           key: 'RETALIATE_DAMAGE',
           actor: {

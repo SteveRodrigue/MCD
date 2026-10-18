@@ -105,6 +105,7 @@ import { isStepGateClosedByState } from './step-gate-evaluator';
 import { applyDamageToTarget, dispatchDefeat } from './damage-pipeline';
 import { applyThwart, applyThreatPlacement } from './threat-pipeline';
 import { recordCardPlay, recordBasicAction } from './stats';
+import { appendLog } from '../state/game-log';
 
 /**
  * Universal Card Routing Helper for Search, Scry, Look and Mulligan Primitives (RR v1.8 p. 19, 26).
@@ -155,9 +156,7 @@ export function routeCardInstances(
           card: sideSchemeCard,
           threat: baseThreat,
         });
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
+        appendLog(state, {
           key: 'encounter.reveal.sideScheme',
           params: { sideScheme: card.card.name, threat: baseThreat },
           onomatopoeia: 'SIDE SCHEME!',
@@ -355,9 +354,7 @@ function dispatchSingleAction(
       nextState.setupState.mulliganCompleted[action.playerId] = true;
 
       const onomatopoeia = 'MULLIGAN RESOLVED!';
-      nextState.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
+      appendLog(nextState, {
         phase: GamePhase.SETUP_PHASE,
         key: 'player.setup.mulligan',
         params: {
@@ -409,9 +406,7 @@ function dispatchSingleAction(
 
       const onomatopoeia = player.currentForm === 'hero' ? 'SUIT UP!' : 'IDENTITY FLIP!';
 
-      nextState.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
+      appendLog(nextState, {
         key: 'player.action.changeForm',
         params: {
           player: player.name,
@@ -441,11 +436,7 @@ function dispatchSingleAction(
 
       const onomatopoeia = 'REST & RECOVER!';
 
-      nextState.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: nextState.roundNumber,
-        phase: nextState.phase,
+      appendLog(nextState, {
         key: 'player.action.recover',
         params: {
           player: player.name,
@@ -455,11 +446,7 @@ function dispatchSingleAction(
         onomatopoeia,
       });
 
-      nextState.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: nextState.roundNumber,
-        phase: nextState.phase,
+      appendLog(nextState, {
         category: 'status',
         key: 'card.state.exhausted',
         params: { card: player.activeFormCard.name },
@@ -486,9 +473,7 @@ function dispatchSingleAction(
       // 1. Stunned Status Replacement Check (RR v1.8 p. 28, taking into account Steady)
       if (consumeEntityStatusCards(player, StatusCard.STUNNED)) {
         const onomatopoeia = 'STUN CLEARED!';
-        nextState.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
+        appendLog(nextState, {
           key: 'status.stunned.cleared',
           params: { player: player.name },
           onomatopoeia,
@@ -519,11 +504,7 @@ function dispatchSingleAction(
           isAttack: true,
         });
 
-        nextState.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: nextState.roundNumber,
-          phase: nextState.phase,
+        appendLog(nextState, {
           category: 'status',
           key: 'card.state.exhausted',
           params: { card: player.activeFormCard.name },
@@ -571,11 +552,7 @@ function dispatchSingleAction(
           isAttack: true,
         });
 
-        nextState.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: nextState.roundNumber,
-          phase: nextState.phase,
+        appendLog(nextState, {
           category: 'status',
           key: 'card.state.exhausted',
           params: { card: player.activeFormCard.name },
@@ -618,11 +595,7 @@ function dispatchSingleAction(
       const allyStats = getEffectiveAllyStats(nextState, ally);
       const attackDmg = allyStats.attack;
 
-      nextState.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: nextState.roundNumber,
-        phase: nextState.phase,
+      appendLog(nextState, {
         key: 'player.action.allyAttack',
         params: {
           player: player.name,
@@ -633,11 +606,7 @@ function dispatchSingleAction(
         onomatopoeia: 'ALLY ATTACK!',
       });
 
-      nextState.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: nextState.roundNumber,
-        phase: nextState.phase,
+      appendLog(nextState, {
         category: 'status',
         key: 'card.state.exhausted',
         params: { card: allyCard.name },
@@ -758,11 +727,7 @@ function dispatchSingleAction(
         thwartValue: thwValue,
       });
 
-      nextState.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: nextState.roundNumber,
-        phase: nextState.phase,
+      appendLog(nextState, {
         category: 'status',
         key: 'card.state.exhausted',
         params: { card: allyCard.name },
@@ -820,11 +785,7 @@ function dispatchSingleAction(
         thwartValue,
       });
 
-      nextState.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: nextState.roundNumber,
-        phase: nextState.phase,
+      appendLog(nextState, {
         category: 'status',
         key: 'card.state.exhausted',
         params: { card: player.activeFormCard.name },
@@ -949,7 +910,7 @@ function dispatchSingleAction(
           });
 
           const prompt: PendingDecisionPrompt = {
-            promptId: `prompt_discard_restricted_${Date.now()}`,
+            promptId: `prompt_discard_restricted_${nextEngineId(nextState, 'id')}`,
             playerId: player.id,
             title: 'Restricted Limit Reached',
             description: `You have reached your Restricted card limit (${maxRestricted} max). Choose an in-play Restricted card to discard to make room for ${targetCard.card.name}, or Cancel:`,
@@ -993,11 +954,7 @@ function dispatchSingleAction(
         player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
 
         for (const r of applicableReductions) {
-          nextState.log.push({
-            id: `log_${Date.now()}_cost_consumed`,
-            timestamp: Date.now(),
-            round: nextState.roundNumber,
-            phase: nextState.phase,
+          appendLog(nextState, {
             category: 'ability',
             key: 'cost.reduction.consumed',
             params: {
@@ -1076,11 +1033,7 @@ function dispatchSingleAction(
         onomatopoeia = 'ALLY CALL!';
       }
 
-      nextState.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: nextState.roundNumber,
-        phase: nextState.phase,
+      appendLog(nextState, {
         actor: {
           name: player.hero?.name || player.name,
           type: player.currentForm === 'hero' ? 'hero' : 'alter_ego',
@@ -1159,7 +1112,7 @@ function dispatchSingleAction(
               );
 
               const prompt: PendingDecisionPrompt = {
-                promptId: `prompt_attach_minion_${Date.now()}`,
+                promptId: `prompt_attach_minion_${nextEngineId(nextState, 'id')}`,
                 playerId: action.playerId,
                 title: 'Choose Minion Host',
                 description: `Choose which minion to attach ${playedCardInstance.card.name} to:`,
@@ -1181,11 +1134,7 @@ function dispatchSingleAction(
                 allMinions[0].minion.instanceId,
               );
               const hostName = `${allMinions[0].minion.card.name} (${allMinions[0].player.name})`;
-              nextState.log.push({
-                id: `log_${Date.now()}`,
-                timestamp: Date.now(),
-                round: nextState.roundNumber,
-                phase: nextState.phase,
+              appendLog(nextState, {
                 category: 'ability',
                 actor: { name: player.name, type: player.currentForm },
                 key: 'card.attached.to_host',
@@ -1199,11 +1148,7 @@ function dispatchSingleAction(
               });
             } else {
               attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
-              nextState.log.push({
-                id: `log_${Date.now()}`,
-                timestamp: Date.now(),
-                round: nextState.roundNumber,
-                phase: nextState.phase,
+              appendLog(nextState, {
                 category: 'ability',
                 actor: { name: player.name, type: player.currentForm },
                 key: 'card.attached.to_host',
@@ -1226,11 +1171,7 @@ function dispatchSingleAction(
                 break;
               }
             }
-            nextState.log.push({
-              id: `log_${Date.now()}`,
-              timestamp: Date.now(),
-              round: nextState.roundNumber,
-              phase: nextState.phase,
+            appendLog(nextState, {
               category: 'ability',
               actor: { name: player.name, type: player.currentForm },
               key: 'card.attached.to_host',
@@ -1282,7 +1223,7 @@ function dispatchSingleAction(
               );
 
               const prompt: PendingDecisionPrompt = {
-                promptId: `prompt_attach_ally_${Date.now()}`,
+                promptId: `prompt_attach_ally_${nextEngineId(nextState, 'id')}`,
                 playerId: action.playerId,
                 title: 'Choose Ally Host',
                 description: `Choose which ally to attach ${playedCardInstance.card.name} to:`,
@@ -1304,11 +1245,7 @@ function dispatchSingleAction(
                 allAllies[0].ally.instanceId,
               );
               const hostName = `${allAllies[0].ally.card.name} (${allAllies[0].player.name})`;
-              nextState.log.push({
-                id: `log_${Date.now()}`,
-                timestamp: Date.now(),
-                round: nextState.roundNumber,
-                phase: nextState.phase,
+              appendLog(nextState, {
                 category: 'ability',
                 actor: { name: player.name, type: player.currentForm },
                 key: 'card.attached.to_host',
@@ -1322,11 +1259,7 @@ function dispatchSingleAction(
               });
             } else {
               attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
-              nextState.log.push({
-                id: `log_${Date.now()}`,
-                timestamp: Date.now(),
-                round: nextState.roundNumber,
-                phase: nextState.phase,
+              appendLog(nextState, {
                 category: 'ability',
                 actor: { name: player.name, type: player.currentForm },
                 key: 'card.attached.to_host',
@@ -1349,11 +1282,7 @@ function dispatchSingleAction(
                 break;
               }
             }
-            nextState.log.push({
-              id: `log_${Date.now()}`,
-              timestamp: Date.now(),
-              round: nextState.roundNumber,
-              phase: nextState.phase,
+            appendLog(nextState, {
               category: 'ability',
               actor: { name: player.name, type: player.currentForm },
               key: 'card.attached.to_host',
@@ -1423,7 +1352,7 @@ function dispatchSingleAction(
               }));
 
               const prompt: PendingDecisionPrompt = {
-                promptId: `prompt_attach_enemy_${Date.now()}`,
+                promptId: `prompt_attach_enemy_${nextEngineId(nextState, 'id')}`,
                 playerId: action.playerId,
                 title: 'Choose Enemy Host',
                 description: `Choose which enemy to attach ${playedCardInstance.card.name} to:`,
@@ -1440,11 +1369,7 @@ function dispatchSingleAction(
             } else if (allEnemies.length === 1) {
               attachCardToHost(nextState, playedCardInstance, targetHost, allEnemies[0].id);
               const hostName = allEnemies[0].name;
-              nextState.log.push({
-                id: `log_${Date.now()}`,
-                timestamp: Date.now(),
-                round: nextState.roundNumber,
-                phase: nextState.phase,
+              appendLog(nextState, {
                 category: 'ability',
                 actor: { name: player.name, type: player.currentForm },
                 key: 'card.attached.to_host',
@@ -1460,11 +1385,7 @@ function dispatchSingleAction(
               attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
               const villainName =
                 resolveAttackedVillain(nextState, action.targetInstanceId)?.card.name ?? '';
-              nextState.log.push({
-                id: `log_${Date.now()}`,
-                timestamp: Date.now(),
-                round: nextState.roundNumber,
-                phase: nextState.phase,
+              appendLog(nextState, {
                 category: 'ability',
                 actor: { name: player.name, type: player.currentForm },
                 key: 'card.attached.to_host',
@@ -1488,11 +1409,7 @@ function dispatchSingleAction(
                 break;
               }
             }
-            nextState.log.push({
-              id: `log_${Date.now()}`,
-              timestamp: Date.now(),
-              round: nextState.roundNumber,
-              phase: nextState.phase,
+            appendLog(nextState, {
               category: 'ability',
               actor: { name: player.name, type: player.currentForm },
               key: 'card.attached.to_host',
@@ -1508,11 +1425,7 @@ function dispatchSingleAction(
             attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
             const villainName =
               resolveAttackedVillain(nextState, action.targetInstanceId)?.card.name ?? '';
-            nextState.log.push({
-              id: `log_${Date.now()}`,
-              timestamp: Date.now(),
-              round: nextState.roundNumber,
-              phase: nextState.phase,
+            appendLog(nextState, {
               category: 'ability',
               actor: { name: player.name, type: player.currentForm },
               key: 'card.attached.to_host',
@@ -1580,7 +1493,7 @@ function dispatchSingleAction(
             });
 
             const prompt: PendingDecisionPrompt = {
-              promptId: `prompt_choose_player_${Date.now()}`,
+              promptId: `prompt_choose_player_${nextEngineId(nextState, 'id')}`,
               playerId: action.playerId,
               title: 'Choose Player Control',
               description: `Choose which player takes control of ${playedCardInstance.card.name}:`,
@@ -1755,7 +1668,7 @@ function dispatchSingleAction(
             });
 
             const prompt: PendingDecisionPrompt = {
-              promptId: `prompt_event_target_${Date.now()}`,
+              promptId: `prompt_event_target_${nextEngineId(nextState, 'id')}`,
               playerId: action.playerId,
               title: `Choose Target for ${playedCardInstance.card.name}`,
               description: `Select target for ${playedCardInstance.card.name}:`,
@@ -1819,11 +1732,7 @@ function dispatchSingleAction(
           resourcesSpent,
         });
 
-        nextState.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: nextState.roundNumber,
-          phase: nextState.phase,
+        appendLog(nextState, {
           key: 'encounter.reveal.sideScheme',
           params: { sideScheme: playedCardInstance.card.name, threat: baseThreat },
           onomatopoeia: 'SIDE SCHEME!',
@@ -2039,7 +1948,7 @@ function dispatchSingleAction(
           });
 
           const prompt: PendingDecisionPrompt = {
-            promptId: `prompt_ability_target_${Date.now()}`,
+            promptId: `prompt_ability_target_${nextEngineId(nextState, 'id')}`,
             playerId: action.playerId,
             title: `Choose Target for ${targetCardInst?.card.name || 'Ability'}`,
             description: `Select target for ${targetCardInst?.card.name || 'Ability'}:`,
@@ -2100,11 +2009,7 @@ function dispatchSingleAction(
           : currentPlayer.hero?.name) ||
         currentPlayer.name;
 
-      nextState.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: nextState.roundNumber,
-        phase: nextState.phase,
+      appendLog(nextState, {
         category: 'phase',
         actor: {
           name: characterName,
@@ -2185,11 +2090,7 @@ function dispatchSingleAction(
       const [selectedCard] = player.deck.splice(cardIdx, 1);
       player.hand.push(selectedCard);
 
-      nextState.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: nextState.roundNumber,
-        phase: nextState.phase,
+      appendLog(nextState, {
         category: 'ability',
         actor: { name: player.name, type: player.currentForm },
         key: 'dev.card.tutor',
@@ -2244,11 +2145,7 @@ function dispatchSingleAction(
         const { state: poppedState } = popDecisionPrompt(nextState);
 
         if (isCancel) {
-          poppedState.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: poppedState.roundNumber,
-            phase: poppedState.phase,
+          appendLog(poppedState, {
             category: 'ability',
             actor: { name: player.name, type: player.currentForm },
             key: 'decision.distribution.cancelled',
@@ -2369,11 +2266,7 @@ function dispatchSingleAction(
         }
 
         const assignedTotal = Object.values(assignments).reduce((sum, n) => sum + (n || 0), 0);
-        poppedState.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: poppedState.roundNumber,
-          phase: poppedState.phase,
+        appendLog(poppedState, {
           category: 'ability',
           actor: { name: player.name, type: player.currentForm },
           key: 'decision.distribution.resolved',
@@ -2448,11 +2341,7 @@ function dispatchSingleAction(
           if (cardIdx !== -1) {
             const [discarded] = targetPlayer.hand.splice(cardIdx, 1);
             targetPlayer.discard.push(discarded);
-            poppedState.log.push({
-              id: `log_${Date.now()}`,
-              timestamp: Date.now(),
-              round: poppedState.roundNumber,
-              phase: poppedState.phase,
+            appendLog(poppedState, {
               category: 'phase',
               actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
               key: 'player.phase.cleanup.cardDiscarded',
@@ -2480,7 +2369,7 @@ function dispatchSingleAction(
             });
 
             const rePrompt: PendingDecisionPrompt = {
-              promptId: `prompt_cleanup_${targetPlayer.id}_${Date.now()}`,
+              promptId: `prompt_cleanup_${targetPlayer.id}_${nextEngineId(poppedState, 'id')}`,
               playerId: targetPlayer.id,
               title: 'End of Player Phase: Voluntary Discard',
               description: `${targetPlayer.name}: Select any additional cards in your hand you wish to discard:`,
@@ -2569,11 +2458,7 @@ function dispatchSingleAction(
             }
           }
 
-          poppedState.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: poppedState.roundNumber,
-            phase: poppedState.phase,
+          appendLog(poppedState, {
             category: 'ability',
             actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
             key: 'decision.prompt.cancelled',
@@ -2592,11 +2477,7 @@ function dispatchSingleAction(
           attachCardToHost(poppedState, attachmentCard, 'CHOSEN_MINION', chosenMinionId);
         }
 
-        poppedState.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: poppedState.roundNumber,
-          phase: poppedState.phase,
+        appendLog(poppedState, {
           category: 'ability',
           actor: { name: player.name, type: player.currentForm },
           key: 'card.attached.to_host',
@@ -2653,11 +2534,7 @@ function dispatchSingleAction(
             }
           }
 
-          poppedState.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: poppedState.roundNumber,
-            phase: poppedState.phase,
+          appendLog(poppedState, {
             category: 'ability',
             actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
             key: 'decision.prompt.cancelled',
@@ -2676,11 +2553,7 @@ function dispatchSingleAction(
           attachCardToHost(poppedState, attachmentCard, 'CHOSEN_ALLY', chosenAllyId);
         }
 
-        poppedState.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: poppedState.roundNumber,
-          phase: poppedState.phase,
+        appendLog(poppedState, {
           category: 'ability',
           actor: { name: player.name, type: player.currentForm },
           key: 'card.attached.to_host',
@@ -2737,11 +2610,7 @@ function dispatchSingleAction(
             }
           }
 
-          poppedState.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: poppedState.roundNumber,
-            phase: poppedState.phase,
+          appendLog(poppedState, {
             category: 'ability',
             actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
             key: 'decision.prompt.cancelled',
@@ -2760,11 +2629,7 @@ function dispatchSingleAction(
           attachCardToHost(poppedState, attachmentCard, 'CHOSEN_ENEMY', chosenEnemyId);
         }
 
-        poppedState.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: poppedState.roundNumber,
-          phase: poppedState.phase,
+        appendLog(poppedState, {
           category: 'ability',
           actor: { name: player.name, type: player.currentForm },
           key: 'card.attached.to_host',
@@ -2825,11 +2690,7 @@ function dispatchSingleAction(
             }
           }
 
-          poppedState.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: poppedState.roundNumber,
-            phase: poppedState.phase,
+          appendLog(poppedState, {
             category: 'ability',
             actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
             key: 'decision.prompt.cancelled',
@@ -2970,11 +2831,7 @@ function dispatchSingleAction(
         targetPlayer.tableau.push(playedCardInstance);
 
         const onomatopoeia = 'PLAYED UNDER CONTROL!';
-        poppedState.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: poppedState.roundNumber,
-          phase: poppedState.phase,
+        appendLog(poppedState, {
           category: 'ability',
           actor: { name: player.name, type: player.currentForm },
           key: 'card.playUnderControl.resolved',
@@ -3032,11 +2889,7 @@ function dispatchSingleAction(
           selectedOption.id === 'cancel_play' ||
           selectedOption.effect === 'CANCEL_PLAY'
         ) {
-          poppedState.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: poppedState.roundNumber,
-            phase: poppedState.phase,
+          appendLog(poppedState, {
             category: 'card_play',
             actor: { name: player.name, type: player.currentForm },
             key: 'card.play.cancelled',
@@ -3055,11 +2908,7 @@ function dispatchSingleAction(
             const [discarded] = player.tableau.splice(discardIdx, 1);
             player.discard.push(discarded);
 
-            poppedState.log.push({
-              id: `log_${Date.now()}`,
-              timestamp: Date.now(),
-              round: poppedState.roundNumber,
-              phase: poppedState.phase,
+            appendLog(poppedState, {
               category: 'card_play',
               actor: { name: player.name, type: player.currentForm },
               key: 'card.discarded.to_make_room',
@@ -3134,11 +2983,7 @@ function dispatchSingleAction(
             }
           }
 
-          poppedState.log.push({
-            id: nextEngineId(poppedState, 'log'),
-            timestamp: Date.now(),
-            round: poppedState.roundNumber,
-            phase: poppedState.phase,
+          appendLog(poppedState, {
             category: 'ability',
             actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
             key: 'card.search.passed',
@@ -3209,11 +3054,7 @@ function dispatchSingleAction(
           }
         }
 
-        poppedState.log.push({
-          id: nextEngineId(poppedState, 'log'),
-          timestamp: Date.now(),
-          round: poppedState.roundNumber,
-          phase: poppedState.phase,
+        appendLog(poppedState, {
           category: 'ability',
           actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
           key: 'card.searched.selected',
@@ -3277,11 +3118,7 @@ function dispatchSingleAction(
             }
           }
 
-          poppedState.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: poppedState.roundNumber,
-            phase: poppedState.phase,
+          appendLog(poppedState, {
             category: 'ability',
             actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
             key: 'card.playFromZone.passed',
@@ -3358,11 +3195,7 @@ function dispatchSingleAction(
           });
 
           const onomatopoeia = `PLAYED ${chosenCard.card.name.toUpperCase()}!`;
-          poppedState.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: poppedState.roundNumber,
-            phase: poppedState.phase,
+          appendLog(poppedState, {
             category: 'ability',
             actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
             key: 'card.playFromZone.resolved',

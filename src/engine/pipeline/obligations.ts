@@ -2,6 +2,7 @@ import { GameState, CardInstance, PlayerState } from '../models';
 import { drawEncounterCard } from './deck-exhaustion';
 import { dispatchTrigger } from '../triggers';
 import { removeCardFromAllZones } from '../state/state-validator';
+import { appendLog } from '../state/game-log';
 
 /**
  * Players whose hero or alter-ego belongs to the given card set.
@@ -60,9 +61,7 @@ export function resolveRevealedObligation(
   if (!recipient) {
     removeCardFromAllZones(state, card.instanceId);
     state.removedFromGame.push(card);
-    state.log.push({
-      id: `log_${Date.now()}_obligation_removed`,
-      timestamp: Date.now(),
+    appendLog(state, {
       key: 'encounter.reveal.obligationRemoved',
       params: { obligation: card.card.name },
       onomatopoeia: 'REMOVED FROM THE GAME!',
@@ -76,9 +75,7 @@ export function resolveRevealedObligation(
   (card as any).ownerId = recipient.id;
   if (!recipient.obligations) recipient.obligations = [];
   recipient.obligations.push(card);
-  state.log.push({
-    id: `log_${Date.now()}_obligation_given`,
-    timestamp: Date.now(),
+  appendLog(state, {
     key: 'encounter.reveal.obligation',
     params: { player: recipient.name, obligation: card.card.name },
     onomatopoeia: 'OBLIGATION!',
@@ -101,9 +98,7 @@ export function discardResolvedObligation(state: GameState, instanceId: string):
     if (idx === -1) continue;
     const [card] = player.obligations.splice(idx, 1);
     state.encounterDiscard.push(card);
-    state.log.push({
-      id: `log_${Date.now()}_obligation_discarded`,
-      timestamp: Date.now(),
+    appendLog(state, {
       key: 'encounter.obligation.discarded',
       params: { player: player.name, obligation: card.card.name },
       onomatopoeia: 'OBLIGATION RESOLVED!',

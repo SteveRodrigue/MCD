@@ -317,6 +317,7 @@ export function matchCardFilter(card: NormalizedCard, filter?: any, player?: Pla
 }
 
 import { checkAndDiscardZeroCounterCard, getAvailableResources } from '../pipeline/cost-engine';
+import { appendLog } from '../state/game-log';
 export { checkAndDiscardZeroCounterCard };
 
 /**
@@ -494,11 +495,7 @@ export function processHostDefeated(
           sourceCardInstance: att,
         });
 
-        state.log.push({
-          id: nextEngineId(state, 'log'),
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           key: `ability.${ab.id}.triggered`,
           params: { card: att.card.name, host: hostCard.card.name },
           onomatopoeia: 'HOST DEFEATED!',
@@ -585,11 +582,7 @@ export function defeatSideScheme(
   moveDefeatedCardToPile(state, defeatedInstance, destinationPile);
 
   // 5. Comic event log
-  state.log.push({
-    id: nextEngineId(state, 'log'),
-    timestamp: Date.now(),
-    round: state.roundNumber,
-    phase: state.phase,
+  appendLog(state, {
     category: 'scheme',
     key: 'scheme.defeated',
     params: {
@@ -1216,11 +1209,7 @@ function logStepError(
   context: EffectExecutionContext,
 ): void {
   const cardCode = context.sourceCardInstance?.card.code;
-  state.log.push({
-    id: `log_${Date.now()}_step_error_${state.log.length}`,
-    timestamp: Date.now(),
-    round: state.roundNumber,
-    phase: state.phase,
+  appendLog(state, {
     category: 'ability',
     key: 'engine.stepError',
     params: { effect: step.effect, error, ...(cardCode ? { card: cardCode } : {}) },
@@ -1536,11 +1525,7 @@ function executeEffectInternal(
       if (willCancelAttack) {
         consumeEntityStatusCards(player, StatusCard.STUNNED);
         onom = 'STUN CLEARED!';
-        state.log.push({
-          id: `log_${Date.now()}_stun_cleared`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           key: 'status.stunned.cleared',
           params: { player: player.name },
           onomatopoeia: 'STUN CLEARED!',
@@ -1549,11 +1534,7 @@ function executeEffectInternal(
       if (willCancelThwart) {
         consumeEntityStatusCards(player, StatusCard.CONFUSED);
         onom = 'CONFUSION CLEARED!';
-        state.log.push({
-          id: `log_${Date.now()}_confused_cleared`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           key: 'status.confused.cleared',
           params: { player: player.name },
           onomatopoeia: 'CONFUSION CLEARED!',
@@ -1847,11 +1828,7 @@ export function executeDiscard(
         targetPlayer.discard.push(discarded);
         discardedCards.push(discarded);
       }
-      state.log.push({
-        id: `log_${Date.now()}_discard_hand_${targetPlayer.id}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'combat',
         key: 'card.discarded.fromHand',
         params: {
@@ -1924,11 +1901,7 @@ export function executeDiscard(
       }
     }
     if (discardedCards.length > 0) {
-      state.log.push({
-        id: `log_${Date.now()}_discard_deck`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'combat',
         key: 'card.discarded.fromDeck',
         params: {
@@ -1942,11 +1915,7 @@ export function executeDiscard(
       });
     }
     for (const card of addedToHandCards) {
-      state.log.push({
-        id: `log_${Date.now()}_black_cat_${card.instanceId}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'ability',
         key: 'black_cat.fetch',
         params: {
@@ -1992,11 +1961,7 @@ export function executeDiscard(
         state.encounterDiscard.push(found);
       }
       if (discarded.length > 0) {
-        state.log.push({
-          id: `log_${Date.now()}_discard_encounter_until`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category: 'combat',
           key: 'card.discarded.fromDeck',
           params: {
@@ -2049,11 +2014,7 @@ export function executeDiscard(
       }
     }
     if (discardedCount > 0) {
-      state.log.push({
-        id: `log_${Date.now()}_discard_encounter`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'combat',
         key: 'card.discarded.fromDeck',
         params: {
@@ -2083,11 +2044,7 @@ export function executeDiscard(
       const targetCard = player.tableau.find((c) => c.instanceId === targetInstanceId);
       if (targetCard) {
         discardCardInstance(state, targetCard, player.id);
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category: 'combat',
           key: 'player.tableau.discarded',
           params: { who: player.name, player: player.name, card: targetCard.card.name },
@@ -2118,11 +2075,7 @@ export function executeDiscard(
     if (matchingCards.length === 1) {
       const targetCard = matchingCards[0];
       discardCardInstance(state, targetCard, player.id);
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'combat',
         key: 'player.tableau.discarded',
         params: { who: player.name, player: player.name, card: targetCard.card.name },
@@ -2355,11 +2308,7 @@ export function executeStep(
           const drawSource =
             context.sourceCardInstance?.card?.name ||
             (context.ability?.id ? String(context.ability.id) : undefined);
-          state.log.push({
-            id: `log_${Date.now()}_${targetP.id}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
+          appendLog(state, {
             key: 'card.effect.drawCards',
             params: {
               who: targetP.name,
@@ -2388,7 +2337,7 @@ export function executeStep(
         const effectiveCount = count ?? 1;
         const sourceCardName =
           context.sourceCardInstance?.card.name || player.activeFormCard?.name || 'Ability';
-        const promptId = `prompt_${Date.now()}_choose_player`;
+        const promptId = `prompt_${nextEngineId(state, 'id')}_choose_player`;
         state = enqueueDecisionPrompt(state, {
           promptId,
           playerId: player.id,
@@ -2408,11 +2357,7 @@ export function executeStep(
           })),
         });
 
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category: 'ability',
           key: 'decision.prompt.opened',
           params: { player: player.name, promptId, source: sourceCardName },
@@ -2446,11 +2391,7 @@ export function executeStep(
         const drawSource =
           context.sourceCardInstance?.card?.name ||
           (context.ability?.id ? String(context.ability.id) : undefined);
-        state.log.push({
-          id: `log_${Date.now()}_${p.id}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           key: 'card.effect.drawCards',
           params: {
             who: p.name,
@@ -2540,11 +2481,7 @@ export function executeStep(
         }
 
         const onomatopoeia = `WHAM! ${amount} DAMAGE TO ALL CHARACTERS!`;
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           key: 'card.effect.dealDamage',
           params: { player: player.name, target: 'all_characters', amount },
           onomatopoeia,
@@ -2567,11 +2504,7 @@ export function executeStep(
         }
 
         const onomatopoeia = `BOOM! ${amount} DAMAGE TO HEROES AND ALLIES!`;
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           key: 'card.effect.dealDamage',
           params: { player: player.name, target: 'all_heroes_and_allies', amount },
           onomatopoeia,
@@ -2584,11 +2517,7 @@ export function executeStep(
         state = dealDamageToEnemies(state, amount, state.players, damageOpts);
 
         const onomatopoeia = `BOOM! ${amount} DAMAGE TO ALL ENEMIES!`;
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           key: 'card.effect.dealDamage',
           params: { player: player.name, target: 'all_enemies', amount },
           onomatopoeia,
@@ -2611,7 +2540,7 @@ export function executeStep(
         if (!chosenPlayerId) {
           const sourceCardName =
             context.sourceCardInstance?.card.name || player.activeFormCard?.name || 'Ability';
-          const promptId = `prompt_${Date.now()}_choose_player`;
+          const promptId = `prompt_${nextEngineId(state, 'id')}_choose_player`;
           state = enqueueDecisionPrompt(state, {
             promptId,
             playerId: player.id,
@@ -2626,11 +2555,7 @@ export function executeStep(
               params: { amount, target: 'ENGAGED_ENEMIES', targetPlayerId: p.id },
             })),
           });
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
+          appendLog(state, {
             category: 'ability',
             key: 'decision.prompt.opened',
             params: { player: player.name, promptId, source: sourceCardName },
@@ -2643,11 +2568,7 @@ export function executeStep(
         state = dealDamageToEnemies(state, amount, [chosenPlayer], damageOpts);
 
         const onomatopoeia = `BOOM! ${amount} DAMAGE TO ${chosenPlayer.name.toUpperCase()}'S ENGAGED ENEMIES!`;
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           key: 'card.effect.dealDamage',
           params: { player: player.name, target: 'engaged_enemies', amount },
           onomatopoeia,
@@ -2742,11 +2663,7 @@ export function executeStep(
 
           if (res.toughRemoved && res.damageTaken === 0) {
             const onomatopoeia = 'CLANG!';
-            state.log.push({
-              id: `log_${Date.now()}`,
-              timestamp: Date.now(),
-              round: state.roundNumber,
-              phase: state.phase,
+            appendLog(state, {
               key: 'card.effect.dealDamage',
               params: {
                 player: player.name,
@@ -2770,11 +2687,7 @@ export function executeStep(
           }
 
           const onomatopoeia = res.targetDefeated ? 'SMASH! MINION DEFEATED!' : 'WHAM!';
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
+          appendLog(state, {
             key: 'card.effect.dealDamage',
             params: {
               player: player.name,
@@ -2964,11 +2877,7 @@ export function executeStep(
 
       // No legal target: the points are ignored.
       if (legalTargets.length === 0) {
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category: 'ability',
           actor: { name: player.name, type: player.currentForm },
           key: 'decision.distribution.noLegalTarget',
@@ -3105,11 +3014,7 @@ export function executeStep(
       }
 
       const onomatopoeia = `HEAL +${healed} HP!`;
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         key: 'card.effect.heal',
         params: {
           player: player.name,
@@ -3166,11 +3071,7 @@ export function executeStep(
 
       const onomatopoeia = `PREVENTED ${consumed} DAMAGE!`;
 
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'ability',
         key: 'combat.damage.prevented',
         params: {
@@ -3230,11 +3131,7 @@ export function executeStep(
             : `PREVENTED ${consumed} THREAT!`
           : `PREVENTED ${consumed} THREAT!`;
 
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'ability',
         key: 'card.effect.preventThreat',
         params: {
@@ -3358,11 +3255,7 @@ export function executeStep(
             s.id !== getActiveMainScheme(state)?.card?.code,
         );
         if (nonMainSchemes.length === 0) {
-          state.log.push({
-            id: nextEngineId(state, 'log'),
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
+          appendLog(state, {
             category: 'ability',
             key: mainSchemeBlock.key,
             params: {
@@ -3427,11 +3320,7 @@ export function executeStep(
       }
 
       const onomatopoeia = `-${removed} THREAT!`;
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         key: 'card.effect.removeThreat',
         params: {
           player: player.name,
@@ -3559,11 +3448,7 @@ export function executeStep(
               : 'TOUGH!'
           : `${status} ALREADY APPLIED!`;
 
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         actor: {
           name: actorName,
           type: actorType,
@@ -3748,11 +3633,7 @@ export function executeStep(
           sourceCardCode: context.sourceCardInstance?.card.code,
         });
       }
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'status',
         key: 'card.effect.addTrait',
         params: { player: player.name, trait, duration: duration ?? 'WHILE_SOURCE_IN_PLAY' },
@@ -3801,7 +3682,7 @@ export function executeStep(
             ? undefined
             : player.id);
         if (!chosenPlayerId) {
-          const promptId = `prompt_${Date.now()}_choose_player`;
+          const promptId = `prompt_${nextEngineId(state, 'id')}_choose_player`;
           state = enqueueDecisionPrompt(state, {
             promptId,
             playerId: player.id,
@@ -3817,11 +3698,7 @@ export function executeStep(
               params: { ...stepParams, targetPlayerId: p.id },
             })),
           });
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
+          appendLog(state, {
             category: 'ability',
             key: 'decision.prompt.opened',
             params: { player: player.name, promptId, source: sourceCardName },
@@ -3973,11 +3850,7 @@ export function executeStep(
       }
       const readyTargetName = names.join(', ');
 
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'ability',
         key: 'card.effect.readyCharacter',
         params: { player: player.name, target: readyTargetName },
@@ -3997,11 +3870,7 @@ export function executeStep(
       }
       (context as any).attackCancelled = true;
       const cancelledBy = context.sourceCardInstance?.card.name || 'Ability';
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'combat',
         key: 'combat.attack.cancelled',
         params: {
@@ -4062,11 +3931,7 @@ export function executeStep(
         exhaustTargetName = names.join(', ') || player.name;
       }
 
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'status',
         key: 'card.state.exhausted',
         params: { card: exhaustTargetName, player: player.name },
@@ -4087,11 +3952,7 @@ export function executeStep(
         const extraCard = drawEncounterCard(state);
         if (extraCard) {
           boostResolution.queue.push(extraCard);
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
+          appendLog(state, {
             category: state.activeAttackContext ? 'combat' : 'scheme',
             key: 'villain.boost.added',
             params: { card: extraCard.card.name },
@@ -4110,7 +3971,7 @@ export function executeStep(
         'Choose an Option';
       const description = (step.effectParams?.description as string) || '';
       const sourceCardName = context.sourceCardInstance?.card.name || step.id || 'Card Ability';
-      const promptId = `prompt_${Date.now()}_${step.id || 'choice'}`;
+      const promptId = `prompt_${nextEngineId(state, 'id')}_${step.id || 'choice'}`;
       state = enqueueDecisionPrompt(state, {
         promptId,
         playerId: context.playerId || player.id,
@@ -4129,11 +3990,7 @@ export function executeStep(
             : undefined,
       });
 
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'ability',
         key: 'decision.prompt.opened',
         params: { player: player.name, promptId, source: sourceCardName },
@@ -4373,11 +4230,7 @@ export function executeStep(
 
       const cardNames = matches.map((m) => m.card.name).join(', ');
       const onomatopoeia = `ENTERS PLAY! ${cardNames.toUpperCase()}`;
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'ability',
         key: 'card.putIntoPlay',
         params: {
@@ -4453,11 +4306,7 @@ export function executeStep(
       }
 
       const onomatopoeia = `SHUFFLE ${matches.length} CARDS!`;
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'ability',
         key: 'deck.shuffled',
         params: {
@@ -4516,11 +4365,7 @@ export function executeStep(
         player.currentForm = nextFormCard.type === CardType.HERO ? 'hero' : 'alter_ego';
       }
       const onomatopoeia = 'FLIP FORM!';
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         key: 'card.effect.flipForm',
         params: { player: player.name, form: player.activeFormCard.name },
         onomatopoeia,
@@ -4542,11 +4387,7 @@ export function executeStep(
         player,
       });
       state.accelerationTokens = (state.accelerationTokens || 0) + amount;
-      state.log.push({
-        id: `log_${Date.now()}_acceleration`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         key: 'scheme.acceleration.added',
         params: { amount, card: context.sourceCardInstance?.card.name || 'Card' },
         onomatopoeia: `+${amount} ACCELERATION!`,
@@ -4566,11 +4407,7 @@ export function executeStep(
       if (!source) return { state, success: false, error: 'No card to remove from the game' };
       removeCardFromAllZones(state, source.instanceId);
       state.removedFromGame.push(source);
-      state.log.push({
-        id: `log_${Date.now()}_removed_from_game`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         key: 'card.removedFromGame',
         params: { card: source.card.name, player: player.name },
         onomatopoeia: 'REMOVED FROM THE GAME!',
@@ -4596,11 +4433,7 @@ export function executeStep(
         player.dealtEncounterCards.push(extraCard);
       }
       const onomatopoeia = 'REVEAL ENCOUNTER CARD!';
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         key: 'encounter.card.revealed',
         params: { player: player.name },
         onomatopoeia,
@@ -4705,11 +4538,7 @@ export function executeStep(
         }
 
         // Targeted scheme is not in play: effect fizzles per RR v1.8 p. 29
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           key: 'scheme.threat.target_missing',
           params: { cardCode, amount },
         });
@@ -4752,11 +4581,7 @@ export function executeStep(
         };
       }
 
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         key: 'scheme.threat.target_missing',
         params: { target: targetParam, amount },
       });
@@ -4772,11 +4597,7 @@ export function executeStep(
       const cancelRes = cancelActiveEncounterReveal(state, false);
       if (cancelRes) return cancelRes;
       const onomatopoeia = 'CANCELLED!';
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         key: 'encounter.whenRevealed.cancelled',
         params: { player: player.name },
         onomatopoeia,
@@ -5021,7 +4842,7 @@ export function executeStep(
         if (allowAutoSelect && eligiblePlayers.length === 1) {
           targetPlayerId = eligiblePlayers[0].id;
         } else {
-          const promptId = `prompt_${Date.now()}_choose_search_player`;
+          const promptId = `prompt_${nextEngineId(state, 'id')}_choose_search_player`;
           const sourceCardName =
             context.sourceCardInstance?.card.name ||
             player.activeFormCard?.name ||
@@ -5054,11 +4875,7 @@ export function executeStep(
           };
 
           state = enqueueDecisionPrompt(state, prompt);
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
+          appendLog(state, {
             category: 'ability',
             key: 'decision.prompt.opened',
             params: { player: player.name, promptId, source: sourceCardName },
@@ -5194,9 +5011,7 @@ export function executeStep(
                 card: sideSchemeCard,
                 threat: baseThreat,
               });
-              state.log.push({
-                id: `log_${Date.now()}`,
-                timestamp: Date.now(),
+              appendLog(state, {
                 key: 'encounter.reveal.sideScheme',
                 params: { sideScheme: card.card.name, threat: baseThreat },
                 onomatopoeia: 'SIDE SCHEME!',
@@ -5283,11 +5098,7 @@ export function executeStep(
       }
 
       if (matchingCandidates.length === 0) {
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category: 'ability',
           actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
           key: 'card.search.nothingFound',
@@ -5583,7 +5394,7 @@ export function executeStep(
       if (targetParam === 'CHOSEN_PLAYER' && state.players.length > 1 && !targetPlayerId) {
         const sourceCardName =
           context.sourceCardInstance?.card.name || player.activeFormCard?.name || 'Helicarrier';
-        const promptId = `prompt_${Date.now()}_choose_cost_reduction_player`;
+        const promptId = `prompt_${nextEngineId(state, 'id')}_choose_cost_reduction_player`;
         state = enqueueDecisionPrompt(state, {
           promptId,
           playerId: player.id,
@@ -5605,11 +5416,7 @@ export function executeStep(
           })),
         });
 
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category: 'ability',
           key: 'decision.prompt.opened',
           params: { player: player.name, promptId, source: sourceCardName },
@@ -5652,11 +5459,7 @@ export function executeStep(
         0,
       );
 
-      state.log.push({
-        id: `log_${Date.now()}_cost_red`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         category: 'ability',
         key: 'cost.reduced',
         params: {
@@ -5768,11 +5571,7 @@ export function executeStep(
           });
 
           const onomatopoeia = `PLAYED ${chosenCard.card.name.toUpperCase()}!`;
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
+          appendLog(state, {
             category: 'ability',
             key: 'card.playFromZone',
             params: {

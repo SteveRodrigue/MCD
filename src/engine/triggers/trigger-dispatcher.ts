@@ -10,7 +10,7 @@ import {
   getActiveVillain,
   getVillainById,
 } from '@engine/models';
-import { TriggerFilter } from '../../data/supplemental/schema';
+import type { TriggerFilter } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
 import { executeEffect, type EffectExecutionContext } from '../effects';
 import { abilityHasValidTarget } from '../effects/target-choice';

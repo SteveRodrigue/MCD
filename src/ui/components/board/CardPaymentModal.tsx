@@ -32,11 +32,8 @@ import {
   getEffectiveMinionHitPoints,
 } from '../../../engine/pipeline/stat-calculator';
 import { matchesCardFilter } from '../../../engine/filters/card-filter';
-import {
-  UniversalCardFilter,
-  CardLocationSelector,
-  getStepEffectParams,
-} from '../../../data/supplemental/schema';
+import type { UniversalCardFilter, CardLocationSelector } from '../../../data/supplemental/schema';
+import { getStepEffectParams } from '../../../data/supplemental/runtime';
 import { FormattedCardText } from '../cards/FormattedCardText';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 import { locateCard, readCardResources } from '../../../engine/queries/card-inspector';

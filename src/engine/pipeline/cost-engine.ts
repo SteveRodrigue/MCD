@@ -13,7 +13,8 @@ import {
 import { getEffectiveMaxHealth } from './stat-calculator';
 import { removeCardFromAllZones } from '../state/state-validator';
 import { randomInt } from '../state/rng';
-import { getStepEffectParams, type ResourceCost } from '../../data/supplemental/schema';
+import { getStepEffectParams } from '../../data/supplemental/runtime';
+import type { ResourceCost } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
 import { locateCard, readCardResources } from '../queries/card-inspector';
 import { getCardEnrichment } from '../../data/supplemental';

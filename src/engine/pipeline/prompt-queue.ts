@@ -24,7 +24,7 @@ import {
   continueAttackAfterInitiation,
 } from './villain-phase';
 import { evaluateStepGate } from './step-gate-evaluator';
-import { isEffectType } from '../../data/supplemental/schema-primitives';
+import { isEffectType } from '../../data/supplemental/runtime';
 import { abilityCancelsEncounterReveal } from './encounter-cancel';
 import { dispatchTrigger, type TriggerContext } from '../triggers/trigger-dispatcher';
 import { discardResolvedObligation } from './obligations';

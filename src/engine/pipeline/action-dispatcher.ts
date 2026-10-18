@@ -100,7 +100,7 @@ import {
   getEligibleTargets,
   TargetFilterOptions,
 } from '../effects/target-resolver';
-import { getStepEffectParams } from '../../data/supplemental/schema';
+import { getStepEffectParams } from '../../data/supplemental/runtime';
 import { isStepGateClosedByState } from './step-gate-evaluator';
 import { applyDamageToTarget, dispatchDefeat } from './damage-pipeline';
 import { applyThwart, applyThreatPlacement } from './threat-pipeline';

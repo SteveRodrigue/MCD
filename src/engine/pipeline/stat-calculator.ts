@@ -11,7 +11,8 @@ import {
   hasDashPower,
 } from '../models';
 import { parseKeywordItem } from '../models/keyword';
-import { getStepEffectParams, type DynamicValueSource } from '../../data/supplemental/schema';
+import { getStepEffectParams } from '../../data/supplemental/runtime';
+import type { DynamicValueSource } from '../../data/supplemental/schema';
 import { evaluateDynamicAmount } from '../effects/dynamic-formula-evaluator';
 import { AbilityStep } from '../models/abilities';
 import { evaluateStepGate } from './step-gate-evaluator';

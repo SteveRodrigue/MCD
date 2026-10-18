@@ -39,7 +39,7 @@ import {
   resolveActiveEncounterCardAfterInterrupt,
 } from '../pipeline/villain-phase';
 import type { SearchZone } from '../../data/supplemental/schema';
-import { getStepEffectParams, getStepGateParams } from '../../data/supplemental/schema';
+import { getStepEffectParams, getStepGateParams } from '../../data/supplemental/runtime';
 import {
   discardFromEncounterDeckUntil,
   drawEncounterCard,

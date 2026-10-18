@@ -13,7 +13,7 @@ import {
   getVillainsInPlay,
   getMainSchemesInPlay,
 } from '@engine/models';
-import { TargetSelector } from '../../data/supplemental/schema';
+import type { TargetSelector } from '../../data/supplemental/schema';
 import type { EffectExecutionContext } from './index';
 import { getEffectiveMaxHealth, getEffectivePlayerTraits } from '../pipeline/stat-calculator';
 import { hasCrisisInPlay } from '../pipeline/legality-checker';

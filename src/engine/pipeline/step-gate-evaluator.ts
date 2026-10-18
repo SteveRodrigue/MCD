@@ -6,7 +6,8 @@ import {
   getVillainsInPlay,
 } from '../models';
 import { AbilityStep } from '../models/abilities';
-import { getStepGateParams, GATE_REGISTRY, AttackerKind } from '../../data/supplemental/schema';
+import { getStepGateParams, GATE_KINDS } from '../../data/supplemental/runtime';
+import type { AttackerKind } from '../../data/supplemental/schema';
 import { hasPlayerTrait } from './stat-calculator';
 
 /**
@@ -282,8 +283,7 @@ export function isStepGateClosedByState(
 ): boolean {
   const gate = step.gate;
   if (!gate) return false;
-  const meta = GATE_REGISTRY[gate];
-  if (!meta || meta.kind !== 'STATE') return false;
+  if (GATE_KINDS[gate] !== 'STATE') return false;
   return !evaluateStepGate(step, undefined, state, context);
 }
 

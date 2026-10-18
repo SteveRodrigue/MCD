@@ -13,6 +13,7 @@ import {
   AllyCard,
   AbilityTiming,
   CharacterPower,
+  registerSharedCardDefinition,
 } from '@engine/models';
 
 /**
@@ -457,9 +458,15 @@ export class CardCatalog {
   public registerCards(rawCards: RawUpstreamCard[]): void {
     for (const raw of rawCards) {
       const normalized = normalizeRawCard(raw);
-      this.cards.set(normalized.code, normalized);
+      this.store(normalized);
     }
     this.markHeroSetMembership();
+  }
+
+  /** Catalog cards are immutable definitions that game-state clones share (F005). */
+  private store(card: NormalizedCard): void {
+    registerSharedCardDefinition(card);
+    this.cards.set(card.code, card);
   }
 
   /**
@@ -473,8 +480,8 @@ export class CardCatalog {
         heroSetCodes.add(card.setCode);
       }
     }
-    for (const [code, card] of this.cards) {
-      this.cards.set(code, {
+    for (const card of this.cards.values()) {
+      this.store({
         ...card,
         belongsToHeroSet: Boolean(card.setCode && heroSetCodes.has(card.setCode)),
       });
@@ -486,7 +493,7 @@ export class CardCatalog {
       if (!trans.code) continue;
       const existing = this.cards.get(trans.code);
       if (existing) {
-        this.cards.set(trans.code, applyTranslationOverlay(existing, trans));
+        this.store(applyTranslationOverlay(existing, trans));
       }
     }
   }

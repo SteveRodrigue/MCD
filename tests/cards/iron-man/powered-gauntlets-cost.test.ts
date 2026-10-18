@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { overrideCard } from '../../support/card-overrides';
 import { setupGame, createCardInstance } from '../../../src/engine/state/game-setup';
 import { cardCatalog } from '../../../src/data/importer/card-loader';
 import { dispatchAction } from '../../../src/engine/pipeline/action-dispatcher';
@@ -85,7 +86,9 @@ describe('Powered Gauntlets (01038) Ability Cost & Resolution Contract (RR v1.8 
     // 5. Ready Powered Gauntlets, give Iron Man the Aerial trait, and verify 2 damage is dealt
     updatedGauntlets.exhausted = false;
     const currentHero = activationRes.state.players[0].hero as HeroCard;
-    currentHero.traits = [...(currentHero.traits || []), 'Aerial'];
+    overrideCard(activationRes.state, currentHero, {
+      traits: [...(currentHero.traits || []), 'Aerial'],
+    });
 
     const aerialActivationRes = dispatchAction(activationRes.state, {
       type: 'USE_CARD_ABILITY',

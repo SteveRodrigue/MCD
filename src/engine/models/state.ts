@@ -799,12 +799,48 @@ export function replaceActiveMainScheme(state: GameState, next: MainSchemeState)
  * clone (#194; removed with the legacy fields in #215).
  */
 export function cloneGameState(state: GameState): GameState {
-  const clone: GameState = JSON.parse(JSON.stringify(state));
+  const clone = cloneJsonValue(state) as GameState;
   if (clone.villains && clone.villains.length > 0) clone.villain = getActiveVillain(clone);
   if (clone.mainSchemes && clone.mainSchemes.length > 0) {
     clone.mainScheme = getActiveMainScheme(clone);
   }
   return clone;
+}
+
+/**
+ * Card definitions loaded by the card catalog never change during a game, so state clones share
+ * them by reference instead of copying them (they are most of a state's bytes).
+ */
+const sharedCardDefinitions = new WeakSet<object>();
+
+export function registerSharedCardDefinition(card: object): void {
+  sharedCardDefinitions.add(card);
+}
+
+export function isSharedCardDefinition(card: object): boolean {
+  return sharedCardDefinitions.has(card);
+}
+
+/**
+ * Deep copy with `JSON.parse(JSON.stringify())` semantics (functions and `undefined` properties
+ * dropped, `undefined` and functions in arrays become `null`, non-finite numbers become `null`),
+ * except that registered card definitions are kept by reference.
+ */
+function cloneJsonValue(value: unknown): unknown {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (value === null || typeof value !== 'object') return value;
+  if (sharedCardDefinitions.has(value)) return value;
+  if (Array.isArray(value)) {
+    return value.map((item) =>
+      item === undefined || typeof item === 'function' ? null : cloneJsonValue(item),
+    );
+  }
+  const copy: Record<string, unknown> = {};
+  for (const [key, item] of Object.entries(value)) {
+    if (item === undefined || typeof item === 'function' || typeof item === 'symbol') continue;
+    copy[key] = cloneJsonValue(item);
+  }
+  return copy;
 }
 
 /**

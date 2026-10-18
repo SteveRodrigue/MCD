@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { overrideCard } from '../support/card-overrides';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, VillainCard, MainSchemeCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
@@ -499,7 +500,7 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       player.dealtEncounterCards = [];
       // Mock Alter-Ego hand size to 3 for boundary test
       player.currentForm = 'alter_ego';
-      player.alterEgo.handSize = 3;
+      overrideCard(state, player.alterEgo, { handSize: 3 });
 
       const res = executeEffect(
         state,

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { overrideCard } from '../support/card-overrides';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { AlterEgoCard, CardInstance, GameState, HeroCard, StatusCard } from '@engine/models';
 import type { CardAbility } from '@engine/models';
@@ -174,16 +175,19 @@ describe('lifecycle triggers, hero/alter-ego timings and STATUS_REMOVED (#276)',
 
     it('ALTER_EGO_RESOURCE identity ability only generates a resource in alter-ego form', () => {
       const player = state.players[0];
-      const alterEgo = player.alterEgo;
-      alterEgo.enrichment = {
-        abilities: [
-          {
-            id: 'ego_resource',
-            timing: 'ALTER_EGO_RESOURCE',
-            steps: [{ effect: 'GENERATE_RESOURCE', effectParams: { resource: 'wild', amount: 1 } }],
-          },
-        ],
-      } as never;
+      const alterEgo = overrideCard(state, player.alterEgo, {
+        enrichment: {
+          abilities: [
+            {
+              id: 'ego_resource',
+              timing: 'ALTER_EGO_RESOURCE',
+              steps: [
+                { effect: 'GENERATE_RESOURCE', effectParams: { resource: 'wild', amount: 1 } },
+              ],
+            },
+          ],
+        },
+      });
       player.activeFormCard = alterEgo;
 
       player.currentForm = 'alter_ego';

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { overrideCard } from '../support/card-overrides';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
@@ -127,7 +128,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
   describe('Retaliate X Return Damage (Step 7)', () => {
     it('deals Retaliate damage to attacking enemy when defending hero survives', () => {
       // Give Spider-Man hero a card with Retaliate 1 in tableau (or keyword)
-      (state.players[0].hero as any).keywords = ['Retaliate 1'];
+      overrideCard(state, state.players[0].hero, { keywords: ['Retaliate 1'] });
 
       const initialVillainHp = state.villain.health;
 
@@ -138,7 +139,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
     });
 
     it('does NOT trigger Retaliate if defending character is defeated', () => {
-      (state.players[0].hero as any).keywords = ['Retaliate 1'];
+      overrideCard(state, state.players[0].hero, { keywords: ['Retaliate 1'] });
       state.players[0].health = 1; // 1 HP left
 
       const initialVillainHp = state.villain.health;
@@ -220,7 +221,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
   describe('Promoted Core Set Cards (Wave 2C)', () => {
     it('executes Gamma Slam (01021) dealing damage equal to sustained damage (max 15)', () => {
       // Set hero max health to 15, current health to 5 (sustained 10 damage)
-      (state.players[0].hero as any).health = 15;
+      overrideCard(state, state.players[0].hero, { health: 15 });
       state.players[0].health = 5;
 
       const initialVillainHp = state.villain.health;

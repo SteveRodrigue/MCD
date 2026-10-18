@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { overrideCard } from '../support/card-overrides';
 import { setupGame } from '@engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { dispatchTrigger } from '../../src/engine/triggers/trigger-dispatcher';
@@ -26,23 +27,25 @@ describe('Canonical defeat trigger dispatch (ADR-0058)', () => {
   it('resolves universal and character defeat triggers with the canonical event context', () => {
     const state = createState();
     const activeForm = state.players[0].activeFormCard as any;
-    activeForm.enrichment = {
-      ...(activeForm.enrichment || {}),
-      abilities: [
-        {
-          id: 'canonical_defeat_counter',
-          timing: 'FORCED_RESPONSE',
-          trigger: 'DEFEATED',
-          steps: [{ effect: 'ADD_COUNTERS', effectParams: { target: 'IDENTITY', amount: 1 } }],
-        },
-        {
-          id: 'canonical_character_defeat_counter',
-          timing: 'FORCED_RESPONSE',
-          trigger: 'CHARACTER_DEFEATED',
-          steps: [{ effect: 'ADD_COUNTERS', effectParams: { target: 'IDENTITY', amount: 1 } }],
-        },
-      ],
-    };
+    overrideCard(state, activeForm, {
+      enrichment: {
+        ...(activeForm.enrichment || {}),
+        abilities: [
+          {
+            id: 'canonical_defeat_counter',
+            timing: 'FORCED_RESPONSE',
+            trigger: 'DEFEATED',
+            steps: [{ effect: 'ADD_COUNTERS', effectParams: { target: 'IDENTITY', amount: 1 } }],
+          },
+          {
+            id: 'canonical_character_defeat_counter',
+            timing: 'FORCED_RESPONSE',
+            trigger: 'CHARACTER_DEFEATED',
+            steps: [{ effect: 'ADD_COUNTERS', effectParams: { target: 'IDENTITY', amount: 1 } }],
+          },
+        ],
+      },
+    });
 
     dispatchTrigger(state, 'DEFEATED', {
       targetPlayerId: 'p1',
@@ -61,17 +64,19 @@ describe('Canonical defeat trigger dispatch (ADR-0058)', () => {
   it('accepts canonical scheme defeat context without replacing legacy trigger vocabulary', () => {
     const state = createState();
     const activeForm = state.players[0].activeFormCard as any;
-    activeForm.enrichment = {
-      ...(activeForm.enrichment || {}),
-      abilities: [
-        {
-          id: 'canonical_scheme_defeat_counter',
-          timing: 'FORCED_RESPONSE',
-          trigger: 'SCHEME_DEFEATED',
-          steps: [{ effect: 'ADD_COUNTERS', effectParams: { target: 'IDENTITY', amount: 1 } }],
-        },
-      ],
-    };
+    overrideCard(state, activeForm, {
+      enrichment: {
+        ...(activeForm.enrichment || {}),
+        abilities: [
+          {
+            id: 'canonical_scheme_defeat_counter',
+            timing: 'FORCED_RESPONSE',
+            trigger: 'SCHEME_DEFEATED',
+            steps: [{ effect: 'ADD_COUNTERS', effectParams: { target: 'IDENTITY', amount: 1 } }],
+          },
+        ],
+      },
+    });
 
     dispatchTrigger(state, 'SCHEME_DEFEATED', {
       targetPlayerId: 'p1',
@@ -85,21 +90,23 @@ describe('Canonical defeat trigger dispatch (ADR-0058)', () => {
   it('filters enemy attack triggers by attacker kind and target scope', () => {
     const state = createState();
     const activeForm = state.players[0].activeFormCard as any;
-    activeForm.enrichment = {
-      ...(activeForm.enrichment || {}),
-      abilities: [
-        {
-          id: 'spider_sense',
-          timing: 'FORCED_RESPONSE',
-          trigger: 'ENEMY_INITIATES_ATTACK',
-          triggerFilter: {
-            attackerKind: 'VILLAIN',
-            targetPlayerScope: 'SELF',
+    overrideCard(state, activeForm, {
+      enrichment: {
+        ...(activeForm.enrichment || {}),
+        abilities: [
+          {
+            id: 'spider_sense',
+            timing: 'FORCED_RESPONSE',
+            trigger: 'ENEMY_INITIATES_ATTACK',
+            triggerFilter: {
+              attackerKind: 'VILLAIN',
+              targetPlayerScope: 'SELF',
+            },
+            steps: [{ effect: 'ADD_COUNTERS', effectParams: { target: 'IDENTITY', amount: 1 } }],
           },
-          steps: [{ effect: 'ADD_COUNTERS', effectParams: { target: 'IDENTITY', amount: 1 } }],
-        },
-      ],
-    };
+        ],
+      },
+    });
 
     dispatchTrigger(state, 'ENEMY_INITIATES_ATTACK', {
       targetPlayerId: 'p1',

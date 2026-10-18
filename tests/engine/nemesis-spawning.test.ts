@@ -38,7 +38,10 @@ describe('Nemesis Spawning Pipeline (Rules Reference v1.8 p. 19)', () => {
   it('01190 Shadow of the Past: Spawns Vulture, Highway Robbery, and shuffles remaining cards into encounter deck', () => {
     // Add an unrelated set-aside card to ensure set-aside isolation
     const unrelatedSetAsideCard = createCardInstance(cardCatalog.getCard('01008')!);
-    unrelatedSetAsideCard.card.setCode = 'custom_quest';
+    unrelatedSetAsideCard.card = {
+      ...unrelatedSetAsideCard.card,
+      setCode: 'custom_quest',
+    } as typeof unrelatedSetAsideCard.card;
     state.players[0].setAsideCards.push(unrelatedSetAsideCard);
 
     const initialEncounterDeckSize = state.encounterDeck.length;
@@ -104,8 +107,8 @@ describe('Nemesis Spawning Pipeline (Rules Reference v1.8 p. 19)', () => {
   it('Supports heroes with multiple Nemesis Minions entering play simultaneously', () => {
     const minion1 = createCardInstance(cardCatalog.getCard('01167')!); // Vulture clone 1
     const minion2 = createCardInstance(cardCatalog.getCard('01167')!); // Vulture clone 2
-    minion1.card.setCode = 'spider_man_nemesis';
-    minion2.card.setCode = 'spider_man_nemesis';
+    minion1.card = { ...minion1.card, setCode: 'spider_man_nemesis' } as typeof minion1.card;
+    minion2.card = { ...minion2.card, setCode: 'spider_man_nemesis' } as typeof minion2.card;
 
     state.players[0].setAsideCards = [minion1, minion2];
 

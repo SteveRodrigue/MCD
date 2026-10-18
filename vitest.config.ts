@@ -22,6 +22,7 @@ export default defineConfig({
           name: 'engine',
           globals: true,
           environment: 'node',
+          setupFiles: ['tests/setup/freeze-card-catalog.ts'],
           include: [
             'tests/engine/**/*.test.ts',
             'tests/cards/**/*.test.ts',
@@ -41,7 +42,7 @@ export default defineConfig({
           environment: 'happy-dom',
           // A non-resolving origin, so UI tests never reach the dev server on port 3000 (#324)
           environmentOptions: { happyDOM: { url: 'http://mcd-ui-tests.invalid' } },
-          setupFiles: ['tests/ui/setup/offline-dev-api.ts'],
+          setupFiles: ['tests/ui/setup/offline-dev-api.ts', 'tests/setup/freeze-card-catalog.ts'],
           include: ['tests/ui/**/*.test.tsx'],
         },
         resolve: { alias },

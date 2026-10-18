@@ -1,6 +1,30 @@
-import { CardInstance, NormalizedCard, Keyword, StatusCard, hasKeyword } from '@engine/models';
+import {
+  CardInstance,
+  NormalizedCard,
+  Keyword,
+  StatusCard,
+  hasKeyword,
+  isSharedCardDefinition,
+  registerSharedCardDefinition,
+} from '@engine/models';
 
 let instanceCounter = 0;
+
+const emptyEnrichmentDefinitions = new WeakMap<NormalizedCard, NormalizedCard>();
+
+/**
+ * A card without supplemental data plays with an empty enrichment. Each such card gets one copy,
+ * shared by all its instances like the catalog definition it comes from (AUD-20261017-232534 F005).
+ */
+function withEmptyEnrichment(card: NormalizedCard): NormalizedCard {
+  let definition = emptyEnrichmentDefinitions.get(card);
+  if (!definition) {
+    definition = { ...card, enrichment: { abilities: [] } };
+    emptyEnrichmentDefinitions.set(card, definition);
+    if (isSharedCardDefinition(card)) registerSharedCardDefinition(definition);
+  }
+  return definition;
+}
 
 export function resetInstanceCounter(): void {
   instanceCounter = 0;
@@ -21,10 +45,7 @@ export function createCardInstance(card: NormalizedCard, ownerId?: string): Card
   }
   return {
     instanceId: `inst_${instanceCounter}_${card.code}`,
-    card: {
-      ...card,
-      enrichment: card.enrichment || { abilities: [] },
-    },
+    card: card.enrichment ? card : withEmptyEnrichment(card),
     exhausted: false,
     tokens: {
       damage: 0,

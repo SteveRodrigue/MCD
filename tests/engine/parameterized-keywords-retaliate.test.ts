@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { overrideCard } from '../support/card-overrides';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, MinionCard, Keyword } from '@engine/models';
 import { parseKeywordItem } from '@engine/models/keyword';
@@ -146,7 +147,9 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
       expect(getEffectiveRetaliate(state.players[0])).toBe(0);
 
       // Give base Retaliate 1 to Hero
-      (state.players[0].hero as any).keywords = [{ keyword: 'Retaliate', amount: 1 }];
+      overrideCard(state, state.players[0].hero, {
+        keywords: [{ keyword: 'Retaliate', amount: 1 }],
+      });
       expect(getEffectiveRetaliate(state.players[0])).toBe(1);
       expect(hasEntityKeyword(state.players[0], 'Retaliate')).toBe(true);
 
@@ -242,7 +245,9 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
   describe('4. Combat Pipeline Step 7 Enemy Attack Resolution with Stacking', () => {
     it('deals stacked Retaliate 2 to attacking Villain when defending hero survives', () => {
       // Give Spider-Man stacked Retaliate 2
-      (state.players[0].hero as any).keywords = [{ keyword: 'Retaliate', amount: 1 }];
+      overrideCard(state, state.players[0].hero, {
+        keywords: [{ keyword: 'Retaliate', amount: 1 }],
+      });
       state.players[0].tableau.push({
         instanceId: 'up_stacked',
         card: {
@@ -276,7 +281,9 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
     });
 
     it('does NOT deal Retaliate damage if defending hero is defeated', () => {
-      (state.players[0].hero as any).keywords = [{ keyword: 'Retaliate', amount: 2 }];
+      overrideCard(state, state.players[0].hero, {
+        keywords: [{ keyword: 'Retaliate', amount: 2 }],
+      });
       state.players[0].health = 1; // 1 HP left, will be defeated by Rhino ATK 2+
       const hero = state.players[0];
 
@@ -295,8 +302,12 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
     it('triggers Retaliate from defending Ally when ally survives attack', () => {
       const daredevilCard = cardCatalog.getCard('01083') || cardCatalog.getCard('01011');
       const allyInstance = createCardInstance(daredevilCard!);
-      (allyInstance.card as any).health = 10;
-      (allyInstance.card as any).keywords = [{ keyword: 'Retaliate', amount: 1 }];
+      // Parameterized keyword objects are not in the Keyword type
+      allyInstance.card = {
+        ...allyInstance.card,
+        health: 10,
+        keywords: [{ keyword: 'Retaliate', amount: 1 }],
+      } as unknown as typeof allyInstance.card;
       state.players[0].allies.push(allyInstance);
 
       const initialVillainHp = state.villain.health;
@@ -404,8 +415,8 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
       // Add Ally
       const allyCard = cardCatalog.getCard('01011')!; // Nick Fury
       const allyInst = createCardInstance(allyCard);
-      (allyInst.card as any).attack = 1;
-      (allyInst.card as any).health = 5;
+      allyInst.card = { ...allyInst.card, attack: 1 } as typeof allyInst.card;
+      allyInst.card = { ...allyInst.card, health: 5 } as typeof allyInst.card;
       state.players[0].allies.push(allyInst);
 
       const { state: nextState, result } = dispatchAction(state, {

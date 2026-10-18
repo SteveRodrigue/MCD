@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTimeout } from '../../hooks/useTimeout';
 import { CardDetailsResponse } from '../../../tools/editor/api-middleware';
 import { CardView } from '../cards/CardView';
 import { FormattedCardText } from '../cards/FormattedCardText';
@@ -34,6 +35,7 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
   loading,
   onSaveSupplemental,
 }) => {
+  const later = useTimeout();
   const [activeTab, setActiveTab] = useState<'form' | 'raw'>('form');
   const [copiedRaw, setCopiedRaw] = useState(false);
 
@@ -157,9 +159,16 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
       });
     } finally {
       setIsSaving(false);
-      setTimeout(() => setSaveToast(null), 6000);
+      later(() => setSaveToast(null), 6000);
     }
-  }, [cardDetails, liveValidation.valid, jsonSyntaxError, onSaveSupplemental, editedSupplemental]);
+  }, [
+    cardDetails,
+    liveValidation.valid,
+    jsonSyntaxError,
+    onSaveSupplemental,
+    editedSupplemental,
+    later,
+  ]);
 
   // Hotkey listener (Ctrl+S / Cmd+S)
   useEffect(() => {
@@ -214,7 +223,7 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
     };
     navigator.clipboard.writeText(JSON.stringify(rawCombined, null, 2));
     setCopiedRaw(true);
-    setTimeout(() => setCopiedRaw(false), 2000);
+    later(() => setCopiedRaw(false), 2000);
   };
 
   return (

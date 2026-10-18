@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ModalLayer } from '../layout/ModalLayer';
 import { Skull, AlertTriangle, Eye, X } from 'lucide-react';
 import { CardInstance } from '../../../engine/models';
-import { useGameSettings } from '../../context/useGameSettings';
+import { useOptionalGameSettings } from '../../context/useGameSettings';
 import { CardView } from './CardView';
 import { getCardBackUrl, getCardBackFallbackColor } from '../../services/card-cache-service';
 
@@ -20,15 +20,8 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
   const [isPeekOpen, setIsPeekOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  let isDevMode = devModeProp ?? false;
-  try {
-    const settings = useGameSettings();
-    if (devModeProp === undefined && settings) {
-      isDevMode = settings.devMode;
-    }
-  } catch {
-    // Rendered outside GameSettingsProvider
-  }
+  const settings = useOptionalGameSettings();
+  const isDevMode = devModeProp ?? settings?.devMode ?? false;
 
   if (!cards || cards.length === 0) {
     return null;

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTimeout } from '../../hooks/useTimeout';
 import { ModalLayer } from '../layout/ModalLayer';
 import { Layers, Sparkles, Skull, X, Eye, Filter, ArrowDownUp, Plus } from 'lucide-react';
 import {
@@ -103,6 +104,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   onDispatchAction,
 }) => {
   const { devMode } = useGameSettings();
+  const later = useTimeout();
   const palette = useMemo(() => getHeroColorPalette(player), [player]);
   const [showDeckModal, setShowDeckModal] = useState(false);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
@@ -130,7 +132,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
     if (playability) {
       if (!playability.isPlayable) {
         setTurnWarning(`Cannot play ${cardInst.card.name}: ${playability.reasons.join(' • ')}`);
-        setTimeout(() => setTurnWarning(null), 4500);
+        later(() => setTurnWarning(null), 4500);
         return;
       }
     }

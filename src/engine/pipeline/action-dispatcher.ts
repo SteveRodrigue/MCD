@@ -67,6 +67,7 @@ import {
   completeEncounterAttachment,
 } from './villain-phase';
 import { initiatePlayerPhaseCleanup, executePlayerCleanup } from './player-phase-cleanup';
+import { expireLastingEffects } from './player-phase';
 import { checkDeckExhaustionInvariants } from './deck-exhaustion';
 import {
   getEffectiveAllyStats,
@@ -2118,26 +2119,8 @@ function dispatchSingleAction(
         onomatopoeia: 'PASS',
       });
 
-      // Expire TURN-duration cost reductions and stat modifiers on current player and controlled cards (RR v1.8)
-      currentPlayer.activeCostReductions = (currentPlayer.activeCostReductions || []).filter(
-        (r) => r.duration !== 'TURN',
-      );
-      currentPlayer.costReductions = currentPlayer.activeCostReductions.reduce(
-        (sum, r) => sum + r.amount,
-        0,
-      );
-      currentPlayer.activeStatModifiers = (currentPlayer.activeStatModifiers || []).filter(
-        (m) => m.duration !== 'TURN',
-      );
-      for (const card of [
-        ...currentPlayer.allies,
-        ...currentPlayer.tableau,
-        ...(currentPlayer.attachments || []),
-      ]) {
-        card.activeStatModifiers = (card.activeStatModifiers || []).filter(
-          (m) => m.duration !== 'TURN',
-        );
-      }
+      // Effects lasting until the end of the turn end (RR v1.8 Lasting Effects)
+      expireLastingEffects([currentPlayer], ['TURN']);
 
       // If all players have taken their turns in this round -> proceed to End of Player Phase Clean-Up (RR v1.8 p. 23)
       if (nextIndex === nextState.firstPlayerIndex) {

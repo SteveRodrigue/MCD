@@ -44,6 +44,7 @@ import {
   step6_endVillainPhaseAndRound,
   step6_passFirstPlayerAndRoundUpkeep,
 } from './round-upkeep';
+import { endPlayerPhase } from './player-phase';
 export {
   step5_passFirstPlayerToken,
   step6_endVillainPhaseAndRound,
@@ -685,33 +686,9 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
   if (!nextState.options) nextState.options = {};
   nextState.options.villainPhaseStepping = true;
 
-  // Case 0: Phase transition from PLAYER_PHASE to VILLAIN_PHASE
-  if (nextState.phase !== GamePhase.VILLAIN_PHASE) {
-    nextState.phase = GamePhase.VILLAIN_PHASE;
-
-    // Reset phase-level ability limits and expire phase cost reductions for all players
-    for (const player of nextState.players) {
-      player.usedAbilitiesThisPhase = {};
-      player.activeCostReductions = (player.activeCostReductions || []).filter(
-        (r) => r.duration !== 'PHASE',
-      );
-      player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
-      player.activeStatModifiers = (player.activeStatModifiers || []).filter(
-        (m) => m.duration !== 'PHASE',
-      );
-      player.activeTraitModifiers = (player.activeTraitModifiers || []).filter(
-        (m) => m.duration !== 'PHASE',
-      );
-      for (const card of [...player.allies, ...player.tableau, ...(player.attachments || [])]) {
-        card.activeStatModifiers = (card.activeStatModifiers || []).filter(
-          (m) => m.duration !== 'PHASE',
-        );
-        if (card.tokens) {
-          delete (card.tokens as any).thwBonus;
-          delete (card.tokens as any).atkBonus;
-        }
-      }
-    }
+  // Case 0: the villain phase starts; from the player phase it first ends that phase
+  if (nextState.phase !== GamePhase.VILLAIN_PHASE || nextState.villainPhaseStep === undefined) {
+    if (nextState.phase !== GamePhase.VILLAIN_PHASE) endPlayerPhase(nextState);
 
     nextState.log.push({
       id: `log_${Date.now()}`,
@@ -1059,7 +1036,7 @@ export function continueVillainPhase(state: GameState, options?: CombatOptions):
 
 /**
  * Complete Villain Phase Automation Runner (RR v1.8 p. 22)
- * 1. Sets phase to VILLAIN_PHASE and resets usedAbilitiesThisPhase for all players.
+ * 1. Ends the player phase when called from it (endPlayerPhase) and sets VILLAIN_PHASE.
  * 2. Dispatches VILLAIN_PHASE_BEGAN.
  * 3. Executes Steps 1 through 5 sequentially (pausing cleanly when interactive prompts are enqueued).
  * 4. Dispatches VILLAIN_PHASE_ENDED.
@@ -1071,28 +1048,7 @@ export function executeVillainPhase(state: GameState, options?: CombatOptions): 
   }
 
   const nextState: GameState = cloneGameState(state);
-  nextState.phase = GamePhase.VILLAIN_PHASE;
-
-  // Reset phase-level ability limits and expire phase cost reductions for all players during Villain Phase
-  for (const player of nextState.players) {
-    player.usedAbilitiesThisPhase = {};
-    player.activeCostReductions = (player.activeCostReductions || []).filter(
-      (r) => r.duration !== 'PHASE',
-    );
-    player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
-    player.activeStatModifiers = (player.activeStatModifiers || []).filter(
-      (m) => m.duration !== 'PHASE',
-    );
-    for (const card of [...player.allies, ...player.tableau, ...(player.attachments || [])]) {
-      card.activeStatModifiers = (card.activeStatModifiers || []).filter(
-        (m) => m.duration !== 'PHASE',
-      );
-      if (card.tokens) {
-        delete (card.tokens as any).thwBonus;
-        delete (card.tokens as any).atkBonus;
-      }
-    }
-  }
+  if (nextState.phase !== GamePhase.VILLAIN_PHASE) endPlayerPhase(nextState);
 
   nextState.log.push({
     id: `log_${Date.now()}`,

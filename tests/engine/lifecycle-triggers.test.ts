@@ -3,7 +3,8 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { HeroCard, AlterEgoCard } from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
 import { executeVillainPhase } from '@engine/pipeline/villain-phase';
-import { startPlayerPhase, endPlayerPhase, passActivePlayer } from '@engine/pipeline/player-phase';
+import { startPlayerPhase, endPlayerPhase } from '@engine/pipeline/player-phase';
+import { dispatchAction } from '@engine/pipeline';
 
 describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 32)', () => {
   let spiderManHero: HeroCard;
@@ -61,7 +62,7 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
     expect(nextState.phase).toBe('PLAYER_PHASE');
   });
 
-  it('rotates active players and concludes Player Phase via passActivePlayer', () => {
+  it('rotates active players and ends the Player Phase through END_PLAYER_TURN', () => {
     const state = setupGame({
       scenarioId: 'rhino',
       players: [
@@ -90,13 +91,14 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
     startPlayerPhase(state);
     expect(state.activePlayerIndex).toBe(0); // P1 active
 
-    // P1 passes turn -> P2 becomes active
-    passActivePlayer(state);
-    expect(state.activePlayerIndex).toBe(1); // P2 active
+    // P1 ends their turn -> P2 becomes active
+    const afterP1 = dispatchAction(state, { type: 'END_PLAYER_TURN', playerId: 'p1' }).state;
+    expect(afterP1.activePlayerIndex).toBe(1);
+    expect(afterP1.log.some((l) => l.key === 'phase.player_phase.end')).toBe(false);
 
-    // P2 passes turn -> All players done -> Player Phase concludes
-    passActivePlayer(state);
-    expect(state.phase).toBe('VILLAIN_PHASE');
+    // P2 ends their turn -> clean-up (empty hands) -> the Player Phase ends
+    const afterP2 = dispatchAction(afterP1, { type: 'END_PLAYER_TURN', playerId: 'p2' }).state;
+    expect(afterP2.log.some((l) => l.key === 'phase.player_phase.end')).toBe(true);
   });
 
   it('records lifecycle events in game log', () => {

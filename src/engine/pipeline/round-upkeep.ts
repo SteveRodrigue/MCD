@@ -1,6 +1,6 @@
 import { GameState, VillainPhaseStep } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
-import { startPlayerPhase } from './player-phase';
+import { startPlayerPhase, expireLastingEffects } from './player-phase';
 
 /**
  * Step 5: Pass First Player Token (RR v1.8 p. 47)
@@ -38,28 +38,8 @@ export function step6_endVillainPhaseAndRound(state: GameState): GameState {
     player.recoveryUsedThisRound = false;
     player.usedAbilitiesThisRound = {};
     player.usedAbilitiesThisPhase = {};
-
-    player.activeCostReductions = (player.activeCostReductions || []).filter(
-      (r) => r.duration !== 'ROUND' && r.duration !== 'PHASE',
-    );
-    player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
-
-    player.activeStatModifiers = (player.activeStatModifiers || []).filter(
-      (m) => m.duration !== 'ROUND' && m.duration !== 'PHASE',
-    );
-    player.activeTraitModifiers = (player.activeTraitModifiers || []).filter(
-      (m) => m.duration !== 'ROUND' && m.duration !== 'PHASE',
-    );
-    for (const card of [...player.allies, ...player.tableau, ...(player.attachments || [])]) {
-      card.activeStatModifiers = (card.activeStatModifiers || []).filter(
-        (m) => m.duration !== 'ROUND' && m.duration !== 'PHASE',
-      );
-      if (card.tokens) {
-        delete (card.tokens as any).thwBonus;
-        delete (card.tokens as any).atkBonus;
-      }
-    }
   }
+  expireLastingEffects(state.players, ['PHASE', 'ROUND']);
 
   // Step 6b: Dispatch VILLAIN_PHASE_ENDED triggers in player turn order starting from firstPlayerIndex
   for (let i = 0; i < state.players.length; i++) {

@@ -1,4 +1,4 @@
-import { GameState, GamePhase } from '@engine/models';
+import { GameState, GamePhase, PlayerState, Duration } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
 
 /**
@@ -19,28 +19,9 @@ export function startPlayerPhase(state: GameState): GameState {
   delete state.pendingActivations;
   delete state.pendingThreatPlacements;
 
-  // Reset phase-level ability limits and expire phase cost reductions for all players
+  // Phase-level ability limits start over (PHASE effects already ended with the previous phase)
   for (const player of state.players) {
     player.usedAbilitiesThisPhase = {};
-    player.activeCostReductions = (player.activeCostReductions || []).filter(
-      (r) => r.duration !== 'PHASE',
-    );
-    player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
-    player.activeStatModifiers = (player.activeStatModifiers || []).filter(
-      (m) => m.duration !== 'PHASE',
-    );
-    player.activeTraitModifiers = (player.activeTraitModifiers || []).filter(
-      (m) => m.duration !== 'PHASE',
-    );
-    for (const card of [...player.allies, ...player.tableau, ...(player.attachments || [])]) {
-      card.activeStatModifiers = (card.activeStatModifiers || []).filter(
-        (m) => m.duration !== 'PHASE',
-      );
-      if (card.tokens) {
-        delete (card.tokens as any).thwBonus;
-        delete (card.tokens as any).atkBonus;
-      }
-    }
   }
 
   state.log.push({
@@ -62,32 +43,32 @@ export function startPlayerPhase(state: GameState): GameState {
 }
 
 /**
- * Concludes the Player Phase (RR v1.8 p. 22).
- * 1. Dispatches PLAYER_PHASE_ENDED lifecycle trigger.
- * 2. Transitions state.phase to VILLAIN_PHASE.
+ * Ends the lasting effects of the given durations on these players and the cards they control
+ * (RR v1.8 "Lasting Effects"): cost reductions, stat modifiers and granted traits.
+ */
+export function expireLastingEffects(players: PlayerState[], durations: readonly Duration[]): void {
+  const lasts = (effect: { duration?: Duration }) =>
+    !effect.duration || !durations.includes(effect.duration);
+  for (const player of players) {
+    player.activeCostReductions = (player.activeCostReductions || []).filter(lasts);
+    player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
+    player.activeStatModifiers = (player.activeStatModifiers || []).filter(lasts);
+    player.activeTraitModifiers = (player.activeTraitModifiers || []).filter(lasts);
+    for (const card of [...player.allies, ...player.tableau, ...(player.attachments || [])]) {
+      card.activeStatModifiers = (card.activeStatModifiers || []).filter(lasts);
+    }
+  }
+}
+
+/**
+ * End of Player Phase steps 4 and 5 (RR v1.8 "End of Player Phase"), after the clean-up discard,
+ * draw and ready: effects lasting until the end of the phase end, then "when/after the player
+ * phase ends" abilities resolve in player order. The villain phase starts from here.
  */
 export function endPlayerPhase(state: GameState): GameState {
-  // Expire phase cost reductions and phase stat modifiers
+  expireLastingEffects(state.players, ['PHASE']);
   for (const player of state.players) {
-    player.activeCostReductions = (player.activeCostReductions || []).filter(
-      (r) => r.duration !== 'PHASE',
-    );
-    player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
-    player.activeStatModifiers = (player.activeStatModifiers || []).filter(
-      (m) => m.duration !== 'PHASE',
-    );
-    player.activeTraitModifiers = (player.activeTraitModifiers || []).filter(
-      (m) => m.duration !== 'PHASE',
-    );
-    for (const card of [...player.allies, ...player.tableau, ...(player.attachments || [])]) {
-      card.activeStatModifiers = (card.activeStatModifiers || []).filter(
-        (m) => m.duration !== 'PHASE',
-      );
-      if (card.tokens) {
-        delete (card.tokens as any).thwBonus;
-        delete (card.tokens as any).atkBonus;
-      }
-    }
+    player.usedAbilitiesThisPhase = {};
   }
 
   state.log.push({
@@ -100,38 +81,12 @@ export function endPlayerPhase(state: GameState): GameState {
     onomatopoeia: 'PLAYERS PASS!',
   });
 
-  // Dispatch Player Phase Ended triggers across all players
-  for (const player of state.players) {
+  for (let i = 0; i < state.players.length; i++) {
+    const player = state.players[(state.firstPlayerIndex + i) % state.players.length];
     dispatchTrigger(state, 'PLAYER_PHASE_ENDED', { targetPlayerId: player.id });
   }
 
   delete state.pendingCleanUpPlayerIds;
   state.phase = GamePhase.VILLAIN_PHASE;
-  return state;
-}
-
-/**
- * Advances the active player pointer during Player Phase.
- * When all players have taken their turns, concludes the Player Phase.
- */
-export function passActivePlayer(state: GameState): GameState {
-  const playerCount = state.players.length;
-  if (playerCount === 0) return endPlayerPhase(state);
-
-  const nextActiveIndex = (state.activePlayerIndex + 1) % playerCount;
-
-  // If we wrapped back to the First Player, all players have completed their turns
-  if (nextActiveIndex === state.firstPlayerIndex) {
-    return endPlayerPhase(state);
-  }
-
-  state.activePlayerIndex = nextActiveIndex;
-  state.log.push({
-    id: `log_${Date.now()}`,
-    timestamp: Date.now(),
-    key: 'player.turn.passed',
-    params: { nextPlayer: state.players[nextActiveIndex]?.name },
-  });
-
   return state;
 }

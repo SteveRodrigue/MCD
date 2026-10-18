@@ -8,6 +8,7 @@ import { executeVillainPhase } from '@engine/pipeline/villain-phase';
 import { dispatchTrigger } from '@engine/triggers/trigger-dispatcher';
 import { executeEffect } from '@engine/effects';
 import { getGeneratorProvidedResources } from '@engine/pipeline/cost-engine';
+import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 
 /**
  * #276: schema members that no test exercised. Each ability below is attached to a support in
@@ -73,6 +74,29 @@ describe('lifecycle triggers, hero/alter-ego timings and STATUS_REMOVED (#276)',
       support = withAbility(counterAbility('ended', 'FORCED_RESPONSE', 'PLAYER_PHASE_ENDED'));
       endPlayerPhase(state);
       expect(fired(support)).toBe(1);
+    });
+
+    it('END_PLAYER_TURN fires PLAYER_PHASE_ENDED once, after the clean-up draw (RR v1.8 End of Player Phase)', () => {
+      support = withAbility(counterAbility('ended', 'FORCED_RESPONSE', 'PLAYER_PHASE_ENDED'));
+      const ended = dispatchAction(state, { type: 'END_PLAYER_TURN', playerId: 'p1' });
+      const cleanup = peekDecisionPrompt(ended.state)!;
+      expect(cleanup.options.some((o) => o.id === 'done_cleanup')).toBe(true);
+
+      const next = dispatchAction(ended.state, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: 'done_cleanup',
+      }).state;
+
+      const keys = next.log.map((l) => l.key);
+      expect(keys.indexOf('player.phase.cleanup.complete')).toBeGreaterThanOrEqual(0);
+      expect(keys.indexOf('phase.player_phase.end')).toBeGreaterThan(
+        keys.indexOf('player.phase.cleanup.complete'),
+      );
+      expect(keys.filter((k) => k === 'phase.player_phase.end')).toHaveLength(1);
+      expect(fired(next.players[0].tableau.find((c) => c.instanceId === support.instanceId)!)).toBe(
+        1,
+      );
     });
 
     it('VILLAIN_PHASE_BEGAN and ROUND_BEGAN fire during the villain phase and the next round', () => {

@@ -63,19 +63,19 @@ The plan may live in the host's user-facing artifact location or a repository-re
 
 Run only the narrowest relevant check during development. **Never re-run a test, `typecheck`, or `lint` command when zero files have changed since it last passed.** Leave the full test suite (`npm test`) to `.githooks/pre-push` on push.
 
-| Change surface                                             | Task verification (run once after edits)                                                                                                  |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Agent or Markdown documentation only                       | `rtk git diff --check`                                                                                                                    |
-| Local UI, card data, or single-subsystem change (Tier 1)   | `rtk npx vitest run <targeted-test-files>`, `rtk npm run typecheck`, `rtk npm run lint`, and `rtk npx prettier --check <changed-files>`   |
+| Change surface                                             | Task verification (run once after edits)                                                                                                    |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Agent or Markdown documentation only                       | `rtk git diff --check`                                                                                                                      |
+| Local UI, card data, or single-subsystem change (Tier 1)   | `rtk npx vitest run <targeted-test-files>`, `rtk npm run typecheck`, `rtk npm run lint`, and `rtk npx prettier --check <changed-files>`     |
 | Shared engine, schema, taxonomy, or cross-cutting (Tier 2) | `rtk npx vitest related <changed-files> --run`, `rtk npm run typecheck`, `rtk npm run lint`, and `rtk npx prettier --check <changed-files>` |
-| Supplemental declarations or related primitives            | Also run `rtk npm run report:declarations` once after affected data is updated                                                            |
+| Supplemental declarations or related primitives            | Also run `rtk npm run report:declarations` once after affected data is updated                                                              |
 
 Report unavailable commands rather than inventing results. Compress shell outputs with `rtk` across all `git`, `npm`, `vitest`, and `npx` commands per [`antigravity-rtk-rules.md`](antigravity-rtk-rules.md).
+Coverage thresholds in `vitest.config.ts` are a ratchet; raise them when coverage rises, never lower them.
 
 ## Delivery authorization
 
 Commit and push only happen in response to the user's explicit request in the current message (e.g. "commit and push", "commit this"); the agent never initiates delivery on its own. Once requested, the workflow stages the reviewed file set, states the commit message, and proceeds through `git commit` (which runs `pre-commit`: `format:check`, `lint`, `typecheck`) and `git push` (which runs `pre-push`: `npm test`) directly without manually duplicating those checks beforehand.
-
 
 ### Primitive and Card Retrofit Ordering
 

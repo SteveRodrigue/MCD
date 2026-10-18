@@ -14,6 +14,20 @@ export default defineConfig({
     coverage: {
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['src/**/*.d.ts'],
+      thresholds: {
+        'src/engine/**': {
+          statements: 85,
+          branches: 71,
+          functions: 89,
+          lines: 87,
+        },
+        'src/ui/**': {
+          statements: 74,
+          branches: 67,
+          functions: 66,
+          lines: 76,
+        },
+      },
     },
     projects: [
       {

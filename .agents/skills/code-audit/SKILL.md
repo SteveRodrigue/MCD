@@ -154,6 +154,7 @@ rtk npm run lint
 rtk npm run typecheck
 rtk npm test
 rtk npm run test:coverage
+rtk npm run deadcode
 rtk npm run build
 ```
 

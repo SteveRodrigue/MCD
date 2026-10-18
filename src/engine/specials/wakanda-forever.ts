@@ -103,6 +103,7 @@ const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
       sourceCardName: 'Wakanda Forever!',
       options: availableUpgrades.map((u) => ({
         id: u.instanceId,
+        cardCode: u.card.code,
         label: u.card.name,
         description: u.card.text || 'Black Panther Upgrade Special',
         effect: 'SELECT_WAKANDA_UPGRADE',

@@ -82,7 +82,6 @@ The 21 findings were remediated on 2026-10-17/18 (`94ebc97..f6e470f`, pushed). W
 
 | #   | Item                                                                                             | Gate / milestone   | Tier | Estimate   | Plan                                                                                               |
 | --- | ------------------------------------------------------------------------------------------------ | ------------------ | ---- | ---------- | -------------------------------------------------------------------------------------------------- |
-| R1  | Wakanda Forever! modal matches upgrades by card code (01049 shown as "Panther Suit")             | Gate 1             | 1    | 2–3 h      | [plan_audit_r01_wakanda_modal_card_data.md](plan_audit_r01_wakanda_modal_card_data.md)             |
 | R2  | One available-resource estimate (generators counted as 1; three estimates)                       | Gate 1             | 2    | 4–6 h      | [plan_audit_r02_single_resource_estimate.md](plan_audit_r02_single_resource_estimate.md)           |
 | R3  | Event `discardSelf` rule enforced by `card:validate`, not only the editor                        | Tech Debt          | 1    | 1–2 h      | [plan_audit_r03_event_discard_self_validation.md](plan_audit_r03_event_discard_self_validation.md) |
 | R4  | Coverage thresholds; dead-export report (knip) — **owner decision** (dev dependency)             | Tech Debt          | 1    | 3–4 h      | [plan_audit_r04_quality_ratchets.md](plan_audit_r04_quality_ratchets.md)                           |
@@ -99,7 +98,7 @@ The 21 findings were remediated on 2026-10-17/18 (`94ebc97..f6e470f`, pushed). W
 | R15 | Audit open questions: log growth, art fallback CORS, bundled packs                               | Tech Debt          | 1    | 2–4 h      | [plan_audit_r15_open_questions.md](plan_audit_r15_open_questions.md)                               |
 | R16 | Review all documentation (ADRs, specs, guides) against the code — **last, after R1–R15**         | Tech Debt          | 1    | 1–2 days   | [plan_audit_r16_documentation_review.md](plan_audit_r16_documentation_review.md)                   |
 
-**Gate 1 is done when** sections 3.1 to 3.4 and rows R1 and R2 of section 3.5 are empty, the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
+**Gate 1 is done when** sections 3.1 to 3.4 and row R2 of section 3.5 are empty, the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
 
 ---
 

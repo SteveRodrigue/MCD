@@ -14,7 +14,7 @@ const HEROES = [
     name: 'Black Panther',
     difficulty: 'STANDARD',
     // Foresight: the Setup ability waits for an upgrade choice on the mulligan screen
-    setupChoice: /Vibranium Suit/,
+    setupChoice: 'Vibranium Suit',
   },
 ] as const;
 
@@ -35,9 +35,8 @@ describe('Rhino release smoke: setup to first end of turn', () => {
 
       fireEvent.click(await screen.findByText(/CONFIRM ALL & START SCENARIO/, {}, LOAD));
       if ('setupChoice' in hero) {
-        fireEvent.click(await screen.findByRole('button', { name: hero.setupChoice }, LOAD));
-        const confirm = screen.queryByRole('button', { name: /confirm/i });
-        if (confirm) fireEvent.click(confirm);
+        // A text query: role queries scan the accessible names of the whole board and time out under load
+        fireEvent.click((await screen.findAllByText(hero.setupChoice, { exact: false }, LOAD))[0]);
         fireEvent.click(await screen.findByText(/START THE SCENARIO & BEGIN ROUND 1/, {}, LOAD));
       }
 

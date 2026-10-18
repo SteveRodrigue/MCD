@@ -1,6 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, StatusCard, CardInstance } from '@engine/models';
+import {
+  GameState,
+  GamePhase,
+  VillainPhaseStep,
+  HeroCard,
+  AlterEgoCard,
+  StatusCard,
+  CardInstance,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
@@ -220,6 +228,22 @@ describe('Explosion (01111): assign X damage among heroes and allies (#296)', ()
     expect(peekDecisionPrompt(result.state)).toBeUndefined();
     expect(state.players[0].health).toBe(hp);
     expect(state.players[0].dealtEncounterCards.length).toBe(dealt + 1);
+  });
+
+  it('an instant villain phase continues to the next round once the damage is assigned', () => {
+    setup(2);
+    bombScare(2);
+    state.phase = GamePhase.VILLAIN_PHASE;
+    state.villainPhaseStep = VillainPhaseStep.REVEAL_ENCOUNTER_CARDS;
+    const round = state.roundNumber;
+    reveal(0);
+    expect(peekDecisionPrompt(state)?.kind).toBe('DISTRIBUTE_POINTS');
+
+    const res = resolve({ p1: 1, p2: 1 });
+
+    expect(res.result.success).toBe(true);
+    expect(res.state.phase).toBe(GamePhase.PLAYER_PHASE);
+    expect(res.state.roundNumber).toBe(round + 1);
   });
 
   describe('data', () => {

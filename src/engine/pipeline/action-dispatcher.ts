@@ -257,6 +257,25 @@ function resolveEventAbilities(
 }
 
 /**
+ * A decision answered during the villain phase lets the phase continue once nothing waits.
+ * A stepped phase stops instead to show a combat outcome or a placed threat (#266).
+ */
+function resumeVillainPhaseAfterDecision(
+  state: GameState,
+  hadPausedThreatPlacement: boolean,
+): GameState {
+  if (state.phase !== GamePhase.VILLAIN_PHASE || state.winner) return state;
+  if (peekDecisionPrompt(state) || hasPendingSequence(state)) return state;
+  if (
+    state.options?.villainPhaseStepping &&
+    (state.lastCombatOutcome || hadPausedThreatPlacement)
+  ) {
+    return state;
+  }
+  return continueVillainPhase(state);
+}
+
+/**
  * Pure state reducer / action dispatcher executing player commands in accordance with RR v1.8.
  * After a successful action, an ability sequence that paused on a decision prompt resumes
  * as soon as the prompt queue is empty (#248).
@@ -265,12 +284,16 @@ export function dispatchAction(
   state: GameState,
   action: GameAction,
 ): { state: GameState; result: ActionResult } {
+  const hadPausedThreatPlacement = (state.pendingThreatPlacements?.length ?? 0) > 0;
   const outcome = dispatchSingleAction(state, action);
   if (!outcome.result.success) return outcome;
 
   let next = outcome.state;
   if (hasPendingSequence(next) && !peekDecisionPrompt(next)) {
     next = resumePendingSequence(next);
+  }
+  if (action.type === 'RESOLVE_DECISION_PROMPT' || action.type === 'DECLARE_DEFENDER') {
+    next = resumeVillainPhaseAfterDecision(next, hadPausedThreatPlacement);
   }
   // Player Setup abilities (step 16) continue once the decision they waited for is answered.
   if (next.setupState?.stage === 'PLAYER_SETUP') {
@@ -3379,30 +3402,12 @@ function dispatchSingleAction(
               generatorInstanceIds: action.generatorInstanceIds,
             }
           : undefined;
-      const hadPausedThreatPlacement = (nextState.pendingThreatPlacements?.length ?? 0) > 0;
-      const promptRes = resolveDecisionPrompt(
+      return resolveDecisionPrompt(
         nextState,
         action.playerId,
         action.selectedOptionId,
         paymentOptions,
       );
-      let resultingState = promptRes.state;
-
-      // If in villain phase and no decision prompts are pending, continue villain phase sequence
-      if (resultingState.phase === GamePhase.VILLAIN_PHASE && !peekDecisionPrompt(resultingState)) {
-        if (resultingState.options?.villainPhaseStepping && resultingState.lastCombatOutcome) {
-          // Allow resolved combat state and lastCombatOutcome to return to UI for math modal
-        } else if (resultingState.options?.villainPhaseStepping && hadPausedThreatPlacement) {
-          // Stepped phase: the step event now shows the placed threat (#266); the next step continues.
-        } else {
-          resultingState = continueVillainPhase(resultingState);
-        }
-      }
-
-      return {
-        ...promptRes,
-        state: resultingState,
-      };
     }
 
     case 'DECLARE_DEFENDER': {
@@ -3413,19 +3418,11 @@ function dispatchSingleAction(
         recordBasicAction(nextState, 'heroDefense', player.activeFormCard?.code);
       }
 
-      let updatedState = resolveDefenderDeclaration(nextState, {
+      const updatedState = resolveDefenderDeclaration(nextState, {
         type: action.defenderType,
         playerId: action.playerId,
         allyInstanceId: action.allyInstanceId,
       });
-
-      if (updatedState.phase === GamePhase.VILLAIN_PHASE && !peekDecisionPrompt(updatedState)) {
-        if (updatedState.options?.villainPhaseStepping && updatedState.lastCombatOutcome) {
-          // Allow resolved combat state and lastCombatOutcome to return to UI for math modal
-        } else {
-          updatedState = continueVillainPhase(updatedState);
-        }
-      }
 
       return {
         state: updatedState,

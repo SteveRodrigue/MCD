@@ -37,54 +37,18 @@ export const RECOGNIZED_PASSIVE_EFFECTS = new Set<string>([
 export const RECOGNIZED_EFFECT_ALIASES = new Set<string>(['DISCARD_CARDS']);
 
 /**
- * Extracts only top-level case 'XYZ': clauses in switch (step.effect).
- * Tracks curly brace depth so nested switches (e.g. switch (zone)) are ignored.
+ * Effects that have a step handler: the keys of the `*_HANDLERS` objects in
+ * `src/engine/effects/handlers/` (the registry executeStep dispatches through, F010-A).
  */
-export function extractExecuteEffectCases(effectsFilePath: string): Set<string> {
-  const content = fs.readFileSync(effectsFilePath, 'utf8');
-
-  const fnIndex = content.indexOf('export function executeStep(');
-  const targetIndex = fnIndex !== -1 ? fnIndex : content.indexOf('export function executeEffect(');
-  if (targetIndex === -1) {
-    throw new Error('executeStep or executeEffect function not found in ' + effectsFilePath);
-  }
-
-  const switchPattern = 'switch (step.effect) {';
-  const switchIndex = content.indexOf(switchPattern, targetIndex);
-  if (switchIndex === -1) {
-    throw new Error('switch (step.effect) not found in executeStep/executeEffect');
-  }
-
-  const cases = new Set<string>();
-  let depth = 0;
-  let pos = switchIndex + switchPattern.length - 1; // pointing at opening '{'
-
-  // Tokenize scan
-  const len = content.length;
-  while (pos < len) {
-    const char = content[pos];
-
-    if (char === '{') {
-      depth++;
-    } else if (char === '}') {
-      depth--;
-      if (depth === 0) {
-        break;
-      }
-    } else if (depth === 1) {
-      if (content.startsWith('case ', pos)) {
-        const caseMatch = content.slice(pos).match(/^case\s+'([A-Z0-9_]+)':/);
-        if (caseMatch) {
-          cases.add(caseMatch[1]);
-          pos += caseMatch[0].length - 1;
-        }
-      }
+export function extractEffectHandlerKeys(handlersDir: string): Set<string> {
+  const keys = new Set<string>();
+  for (const file of fs.readdirSync(handlersDir)) {
+    const content = fs.readFileSync(path.join(handlersDir, file), 'utf8');
+    for (const block of content.matchAll(/export const \w+_HANDLERS = \{([^}]*)\}/g)) {
+      for (const key of block[1].matchAll(/^\s*([A-Z0-9_]+):/gm)) keys.add(key[1]);
     }
-
-    pos++;
   }
-
-  return cases;
+  return keys;
 }
 
 export function extractTargetResolverCases(targetResolverPath: string): Set<string> {
@@ -166,13 +130,13 @@ export interface DetailedCoverageResult {
 }
 
 export function auditSchemaEngineCoverage(): DetailedCoverageResult {
-  const effectsFilePath = path.join(ROOT_DIR, 'src/engine/effects/index.ts');
+  const handlersDir = path.join(ROOT_DIR, 'src/engine/effects/handlers');
   const targetResolverPath = path.join(ROOT_DIR, 'src/engine/effects/target-resolver.ts');
   const gateEvaluatorPath = path.join(ROOT_DIR, 'src/engine/pipeline/step-gate-evaluator.ts');
   const engineDir = path.join(ROOT_DIR, 'src/engine');
 
   // 1. Effects
-  const executeEffectCases = extractExecuteEffectCases(effectsFilePath);
+  const executeEffectCases = extractEffectHandlerKeys(handlersDir);
   const schemaEffects = EffectTypeSchema.options;
   const effectsHandledSet = new Set<string>();
 

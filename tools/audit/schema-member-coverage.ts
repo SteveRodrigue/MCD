@@ -186,13 +186,14 @@ export function readEngineTestSources(root: string): string {
 
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-/** True when the member name is read in `source` (property access, bracket access, destructuring or enum literal). */
+/** True when the member name is read in `source` (property access, bracket access, destructuring, enum literal or handler registry key). */
 export function isMemberRead(member: SchemaMember, source: string): boolean {
   const name = escapeRegExp(member.name);
   const pattern =
     member.kind === 'field'
       ? new RegExp(String.raw`(\.|\?\.|\[['"]|[{,]\s*)${name}\b`)
-      : new RegExp(String.raw`['"]${name}['"]`);
+      : // an enum literal, or a key of an effect handler registry (`DRAW: handleDraw`)
+        new RegExp(String.raw`['"]${name}['"]|^\s*${name}: handle\w+,$`, 'm');
   return pattern.test(source);
 }
 

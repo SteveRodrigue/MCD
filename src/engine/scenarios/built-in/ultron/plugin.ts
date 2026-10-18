@@ -20,6 +20,7 @@ import { shuffleArray, nextEngineId } from '../../../state/rng';
 import { ScenarioPlugin, ScenarioDefinition, ScenarioGameSetupOptions } from '../../types';
 import { advanceVillainStage, villainStageHitPoints } from '../../advance-villain-stage';
 import definitionData from './definition.json';
+import { appendLog } from '../../../state/game-log';
 
 export const ultronDefinition: ScenarioDefinition = definitionData as ScenarioDefinition;
 
@@ -98,7 +99,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     const maxHealth = villainStageHitPoints(villainCard, numPlayers);
 
     const initialVillain: VillainState = {
-      instanceId: `villain_${Date.now()}_${startingStageCode}`,
+      instanceId: `villain_${nextEngineId(state, 'id')}_${startingStageCode}`,
       card: villainCard,
       health: maxHealth,
       maxHealth,
@@ -120,7 +121,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
       (mainSchemeCard.targetThreat || this.definition.mainSchemeSetup.targetThreatPerPlayer) *
       numPlayers;
     const initialMainScheme: MainSchemeState = {
-      instanceId: `main_scheme_${Date.now()}_${mainSchemeCard.code}`,
+      instanceId: `main_scheme_${nextEngineId(state, 'id')}_${mainSchemeCard.code}`,
       card: mainSchemeCard,
       threat: mainSchemeCard.baseThreat || this.definition.mainSchemeSetup.startingThreat,
       targetThreat,
@@ -180,9 +181,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     // 4. Resolve Stage 1A Declarative Setup Hook
     this.resolveStage1ASetup(state, options);
 
-    state.log.push({
-      id: nextEngineId(state, 'log'),
-      timestamp: Date.now(),
+    appendLog(state, {
       category: 'phase',
       key: 'scenario.setup',
       params: {
@@ -204,9 +203,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     if (ultronDronesCard) {
       const envInstance = createCardInstance(ultronDronesCard);
       state.environments.push(envInstance);
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
+      appendLog(state, {
         category: 'phase',
         key: 'scenario.setup.environment',
         params: { environment: ultronDronesCard.name },
@@ -221,9 +218,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
         const droneMinion = createDroneMinionInstance(topDeckCard);
         player.engagedMinions.push(droneMinion);
 
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
+        appendLog(state, {
           category: 'combat',
           key: 'scenario.setup.drone',
           params: { player: player.name },
@@ -250,9 +245,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     // Skirmish Mode: Stage I defeated -> Immediate Victory
     if (difficulty === 'SKIRMISH') {
       state.winner = 'HEROES';
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
+      appendLog(state, {
         category: 'combat',
         key: 'scenario.victory',
         params: { mode: 'SKIRMISH', villain: villain.card.name },
@@ -267,9 +260,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
         return advanceVillainStage(state, villain.instanceId!, '01135');
       } else {
         state.winner = 'HEROES';
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
+        appendLog(state, {
           category: 'combat',
           key: 'scenario.victory',
           params: { mode: 'STANDARD', villain: villain.card.name },
@@ -285,9 +276,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
         return advanceVillainStage(state, villain.instanceId!, '01136');
       } else {
         state.winner = 'HEROES';
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
+        appendLog(state, {
           category: 'combat',
           key: 'scenario.victory',
           params: { mode: 'EXPERT', villain: villain.card.name },
@@ -320,7 +309,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
       const targetThreat = (nextSchemeCard.targetThreat || 10) * numPlayers;
 
       const nextMainScheme: MainSchemeState = {
-        instanceId: `main_scheme_${Date.now()}_${nextSchemeCard.code}`,
+        instanceId: `main_scheme_${nextEngineId(state, 'id')}_${nextSchemeCard.code}`,
         card: nextSchemeCard,
         threat: nextSchemeCard.baseThreat || 0,
         targetThreat,
@@ -329,9 +318,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
 
       replaceActiveMainScheme(state, nextMainScheme);
 
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
+      appendLog(state, {
         category: 'scheme',
         key: 'scenario.mainSchemeAdvance',
         params: { stage: '2B', scheme: 'Assault on NORAD', targetThreat },
@@ -350,7 +337,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
       const targetThreat = (nextSchemeCard.targetThreat || 5) * numPlayers;
 
       const nextMainScheme: MainSchemeState = {
-        instanceId: `main_scheme_${Date.now()}_${nextSchemeCard.code}`,
+        instanceId: `main_scheme_${nextEngineId(state, 'id')}_${nextSchemeCard.code}`,
         card: nextSchemeCard,
         threat: nextSchemeCard.baseThreat || 0,
         targetThreat,
@@ -359,9 +346,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
 
       replaceActiveMainScheme(state, nextMainScheme);
 
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
+      appendLog(state, {
         category: 'scheme',
         key: 'scenario.mainSchemeAdvance',
         params: { stage: '3B', scheme: 'Countdown to Oblivion', targetThreat },
@@ -373,9 +358,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
 
     // Stage 3B completed -> Defeat
     state.winner = 'VILLAIN';
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
+    appendLog(state, {
       category: 'scheme',
       key: 'scenario.defeat',
       params: { scheme: 'Countdown to Oblivion' },

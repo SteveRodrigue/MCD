@@ -26,6 +26,7 @@ import {
 } from '../pipeline/encounter-cancel';
 import { InfiniteLoopError, TriggerCallNode } from '../errors/infinite-loop-error';
 import { nextEngineId } from '../state/rng';
+import { appendLog } from '../state/game-log';
 
 export const MAX_TRIGGER_DEPTH = 15;
 
@@ -363,9 +364,7 @@ function checkAndRecordTriggerNode(
         depth: chain.length,
       },
     );
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
+    appendLog(state, {
       key: 'engine.infinite_loop_detected',
       params: {
         message: loopErr.message,
@@ -391,9 +390,7 @@ function checkAndRecordTriggerNode(
         cycle: nextChain.slice(-5),
       },
     );
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
+    appendLog(state, {
       key: 'engine.infinite_loop_detected',
       params: {
         message: loopErr.message,
@@ -627,9 +624,7 @@ export function dispatchTrigger(
         cycle: currentChain.slice(-5),
       },
     );
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
+    appendLog(state, {
       key: 'engine.infinite_loop_detected',
       params: {
         message: loopErr.message,
@@ -757,9 +752,7 @@ export function dispatchTrigger(
             currentDamage = effCtx.damageAmount;
             if (currentDamage === 0) isPrevented = true;
           }
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
+          appendLog(state, {
             key: `ability.${ability.id}.triggered`,
             params: { player: identityPlayer.name },
             onomatopoeia: 'ABILITY TRIGGERED!',
@@ -1161,9 +1154,7 @@ export function dispatchTrigger(
           } else if (threatStep?.effect === 'REMOVE_THREAT') {
             const reduction = Number(threatStep.effectParams?.amount ?? 1);
             currentThreat = Math.max(0, currentThreat - reduction);
-            state.log.push({
-              id: `log_${Date.now()}`,
-              timestamp: Date.now(),
+            appendLog(state, {
               key: `card.${card.card.code}.threatReduced`,
               params: { player: p.name, reduction },
               onomatopoeia: 'EMERGENCY!',

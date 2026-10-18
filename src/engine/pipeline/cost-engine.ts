@@ -17,6 +17,7 @@ import { getStepEffectParams, type ResourceCost } from '../../data/supplemental/
 import { matchesCardFilter } from '../filters/card-filter';
 import { locateCard, readCardResources } from '../queries/card-inspector';
 import { getCardEnrichment } from '../../data/supplemental';
+import { appendLog } from '../state/game-log';
 
 export interface AbilityPaymentOptions {
   paymentCardInstanceIds?: string[];
@@ -622,11 +623,7 @@ export function executeAbilityCost(
       const maxHp = getEffectiveMaxHealth(player, state);
       const actualHealed = Math.min(healAmount, maxHp - player.health);
       player.health = Math.min(maxHp, player.health + actualHealed);
-      state.log.push({
-        id: `log_${Date.now()}_cost_heal`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         key: 'card.cost.heal',
         params: { player: player.name, healed: actualHealed, currentHealth: player.health },
         onomatopoeia: `HEAL! +${actualHealed} HP (COST)`,
@@ -637,11 +634,7 @@ export function executeAbilityCost(
   // 2. Direct Damage Cost to Hero
   if (cost.damageHero && cost.damageHero > 0) {
     player.health = Math.max(1, player.health - cost.damageHero);
-    state.log.push({
-      id: `log_${Date.now()}_cost_dmg`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
+    appendLog(state, {
       key: 'card.cost.damageHero',
       params: { player: player.name, damagePaid: cost.damageHero, remainingHealth: player.health },
       onomatopoeia: `OUCH! -${cost.damageHero} HP (COST)`,
@@ -661,11 +654,7 @@ export function executeAbilityCost(
         // Defeated from self-damage cost -> remove and discard
         removeCardFromAllZones(state, sourceCardInst.instanceId);
         player.discard.push(sourceCardInst);
-        state.log.push({
-          id: `log_${Date.now()}_wm_defeat`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           key: 'card.ally.defeated',
           params: { ally: sourceCardInst.card.name },
           onomatopoeia: `${sourceCardInst.card.name.toUpperCase()} DEFEATED!`,
@@ -860,11 +849,7 @@ export function executeResourceCostPayment(
           resourcesSpent.push('wild');
         }
       }
-      state.log.push({
-        id: `log_${Date.now()}_id_res`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         key: 'identity.ability.used',
         params: { ability: idAbility?.id || 'resource', hero: player.activeFormCard.name },
         onomatopoeia: 'RESOURCE GENERATED!',
@@ -939,11 +924,7 @@ export function executeResourceCostPayment(
           }
           checkAndDiscardZeroCounterCard(state, player, gCard, counterType);
         }
-        state.log.push({
-          id: `log_${Date.now()}_gen_res`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           key: 'card.ability.used',
           params: { card: gCard.card.name },
           onomatopoeia: 'GENERATED RESOURCE!',
@@ -1144,11 +1125,7 @@ export function checkAndDiscardZeroCounterCard(
     owner.discard.push(cardInstance);
 
     // 4. Append comic log entry card.discarded.uses_exhausted with onomatopoeia 'USES EXHAUSTED!'
-    state.log.push({
-      id: `log_${Date.now()}_uses_exhausted`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
+    appendLog(state, {
       category: 'card_play',
       actor: { name: player.name, type: player.currentForm },
       key: 'card.discarded.uses_exhausted',

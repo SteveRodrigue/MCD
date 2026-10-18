@@ -11,6 +11,7 @@ import {
 import { executeEffect, type EffectExecutionContext } from '../effects';
 import { drawEncounterCard } from './deck-exhaustion';
 import { hasEntityKeyword } from './stat-calculator';
+import { appendLog } from '../state/game-log';
 
 /**
  * The one boost resolution used by every activation: villain attack, villain scheme, minion attack
@@ -80,11 +81,7 @@ export function dealBoostCards(
     const extraCard = drawEncounterCard(state);
     if (!extraCard) continue;
     queue.push(extraCard);
-    state.log.push({
-      id: `log_${Date.now()}_extra_${i}`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
+    appendLog(state, {
       category: log.category,
       actor: log.actor,
       key: 'villain.boost.extra',
@@ -131,11 +128,7 @@ export function resolveBoostCards(state: GameState, options: ResolveBoostCardsOp
           sourceCardInstance: boostCard,
           ...options.abilityContext,
         });
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
+        appendLog(state, {
           category,
           actor,
           key: 'villain.boost.starResolved',
@@ -147,11 +140,7 @@ export function resolveBoostCards(state: GameState, options: ResolveBoostCardsOp
 
     const icons = boostCard.card.boostIcons ?? 0;
     totalIcons += icons;
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
+    appendLog(state, {
       category,
       actor,
       key: 'villain.boost.revealed',

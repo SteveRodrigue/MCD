@@ -1,5 +1,6 @@
 import { GameState, GamePhase, PlayerState, Duration } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
+import { appendLog } from '../state/game-log';
 
 /**
  * Initiates the Player Phase (RR v1.8 p. 22).
@@ -24,10 +25,7 @@ export function startPlayerPhase(state: GameState): GameState {
     player.usedAbilitiesThisPhase = {};
   }
 
-  state.log.push({
-    id: `log_${Date.now()}`,
-    timestamp: Date.now(),
-    round: state.roundNumber,
+  appendLog(state, {
     phase: GamePhase.PLAYER_PHASE,
     key: 'phase.player_phase.start',
     params: { round: state.roundNumber, firstPlayer: state.players[state.firstPlayerIndex]?.name },
@@ -71,11 +69,7 @@ export function endPlayerPhase(state: GameState): GameState {
     player.usedAbilitiesThisPhase = {};
   }
 
-  state.log.push({
-    id: `log_${Date.now()}`,
-    timestamp: Date.now(),
-    round: state.roundNumber,
-    phase: state.phase,
+  appendLog(state, {
     key: 'phase.player_phase.end',
     params: { round: state.roundNumber },
     onomatopoeia: 'PLAYERS PASS!',

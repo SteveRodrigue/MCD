@@ -97,6 +97,15 @@ describe('Fast Multi-Hero Match Simulator Battery (Roadmap 1.4)', () => {
       expect(player.hand.length).toBeGreaterThanOrEqual(getEffectiveHandSize(player, state));
     });
 
+    it('replays byte-identically from the same seed (ADR-0081)', () => {
+      const seed = 'f009_determinism';
+      const play = () => {
+        resetInstanceCounter();
+        return JSON.stringify(runMatch(spideyGame(seed), { maxRounds: 4, seed }).finalState);
+      };
+      expect(play()).toBe(play());
+    });
+
     it('keeps acting after round 1', () => {
       const seed = 'f001_actions_floor';
       const result = runMatch(spideyGame(seed), { maxRounds: 5, seed });

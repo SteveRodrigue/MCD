@@ -12,6 +12,7 @@ import { handleMainSchemeCompletion } from './scenario-helpers';
 import { defeatSideScheme } from '../effects';
 import { nextEngineId } from '../state/rng';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
+import { appendLog } from '../state/game-log';
 
 export type ThreatTargetType = 'main_scheme' | 'side_scheme';
 
@@ -201,11 +202,7 @@ function placeThreat(
 
     if (sourceType === 'VILLAIN_PHASE_STEP_1') {
       onomatopoeia = 'SCHEME GROWS!';
-      state.log.push({
-        id: nextEngineId(state, 'log'),
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         key: 'villainPhase.step1.threatPlaced',
         params: {
           amount: finalThreat,
@@ -220,11 +217,7 @@ function placeThreat(
       const targetPlayer = sourcePlayerId
         ? state.players.find((p) => p.id === sourcePlayerId)
         : undefined;
-      state.log.push({
-        id: nextEngineId(state, 'log'),
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         key: sourceType === 'MINION_SCHEME' ? 'minion.scheme.threat' : 'villain.scheme.threat',
         params: {
           who: sourceEntityName || 'Enemy',
@@ -239,11 +232,7 @@ function placeThreat(
       });
     } else {
       onomatopoeia = `+${finalThreat} THREAT!`;
-      state.log.push({
-        id: nextEngineId(state, 'log'),
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         key: 'scheme.threat.added',
         params: {
           scheme: targetSchemeName,
@@ -277,11 +266,7 @@ function placeThreat(
       currentThreat = sideScheme.threat;
 
       onomatopoeia = `+${finalThreat} THREAT!`;
-      state.log.push({
-        id: nextEngineId(state, 'log'),
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         key: 'scheme.threat.added',
         params: {
           scheme: targetSchemeName,
@@ -390,11 +375,7 @@ export function applyThwart(
         : (thwarterEntity as CardInstance).card?.name || 'Character';
 
     const onomatopoeia = 'CONFUSION CLEARED!';
-    state.log.push({
-      id: nextEngineId(state, 'log'),
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
+    appendLog(state, {
       key: 'status.confused.cleared',
       params: { player: thwarterName },
       onomatopoeia,
@@ -419,11 +400,7 @@ export function applyThwart(
   // ---------------------------------------------------------------------------
   if (targetType === 'main_scheme' && !ignoresCrisis && hasCrisisInPlay(state)) {
     const onomatopoeia = 'CRISIS BLOCKS!';
-    state.log.push({
-      id: nextEngineId(state, 'log'),
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
+    appendLog(state, {
       category: 'ability',
       key: 'card.effect.threatBlockedByCrisis',
       params: {
@@ -464,11 +441,7 @@ export function applyThwart(
     remainingThreat = mainScheme.threat;
 
     onomatopoeia = 'FOILED!';
-    state.log.push({
-      id: nextEngineId(state, 'log'),
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
+    appendLog(state, {
       key: 'player.action.thwartMainScheme',
       params: {
         player: player.name,
@@ -500,11 +473,7 @@ export function applyThwart(
         onomatopoeia = 'THWARTED!';
       }
 
-      state.log.push({
-        id: nextEngineId(state, 'log'),
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
+      appendLog(state, {
         key: schemeDefeated ? 'side_scheme.defeated' : 'player.action.thwartSideScheme',
         params: {
           player: player.name,

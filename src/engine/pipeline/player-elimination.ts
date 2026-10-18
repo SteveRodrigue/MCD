@@ -1,5 +1,6 @@
 import type { CardInstance, GameState, PlayerState } from '../models';
 import { isEncounterCard, resetCardState } from '../effects';
+import { appendLog } from '../state/game-log';
 
 /** The card lists of a player's play area that hold cards in play (the identity's attachments, the tableau, allies, obligations). */
 function playAreaHosts(player: PlayerState): CardInstance[][] {
@@ -56,11 +57,7 @@ export function eliminatePlayer(state: GameState, playerId: string): void {
   state.players.splice(index, 1);
   state.eliminatedPlayers = [...(state.eliminatedPlayers ?? []), player];
 
-  state.log.push({
-    id: `log_${Date.now()}_${playerId}`,
-    timestamp: Date.now(),
-    round: state.roundNumber,
-    phase: state.phase,
+  appendLog(state, {
     category: 'combat',
     key: 'player.eliminated',
     params: { player: player.name, remaining: state.players.length },

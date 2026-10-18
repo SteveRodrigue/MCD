@@ -30,6 +30,7 @@ import { dispatchTrigger, type TriggerContext } from '../triggers/trigger-dispat
 import { discardResolvedObligation } from './obligations';
 import { finishPendingThreatPlacements } from './threat-pipeline';
 import { nextEngineId } from '../state/rng';
+import { appendLog } from '../state/game-log';
 
 let finishDamagePlacementsHook: ((state: GameState) => GameState) | undefined;
 export function registerFinishDamagePlacementsHook(fn: (state: GameState) => GameState): void {
@@ -604,11 +605,7 @@ export function resolveSimultaneousAbilitiesOrderPrompt(
   const player = poppedState.players.find((p) => p.id === playerId);
   const playerName = player ? player.name : playerId;
 
-  poppedState.log.push({
-    id: nextEngineId(poppedState, 'log'),
-    timestamp: Date.now(),
-    round: poppedState.roundNumber,
-    phase: poppedState.phase,
+  appendLog(poppedState, {
     category: 'ability',
     actor: { name: playerName, type: player?.currentForm || 'hero' },
     key: 'decision.order_simultaneous.resolved',
@@ -687,11 +684,7 @@ export function resolveDecisionPrompt(
     isPassOption ||
     (selectedOption && (selectedOption.effect === 'PASS' || selectedOption.id === 'pass'))
   ) {
-    nextState.log.push({
-      id: nextEngineId(nextState, 'log'),
-      timestamp: Date.now(),
-      round: nextState.roundNumber,
-      phase: nextState.phase,
+    appendLog(nextState, {
       category: 'ability',
       key: 'decision.prompt.passed',
       params: { player: playerName, promptId: prompt.promptId, source: prompt.sourceCardName },
@@ -726,11 +719,7 @@ export function resolveDecisionPrompt(
 
   const optionLabel = selectedOption ? selectedOption.label : selectedOptionId;
 
-  nextState.log.push({
-    id: nextEngineId(nextState, 'log'),
-    timestamp: Date.now(),
-    round: nextState.roundNumber,
-    phase: nextState.phase,
+  appendLog(nextState, {
     category: 'ability',
     key: 'decision.prompt.resolved',
     params: { player: playerName, option: optionLabel, promptId: prompt.promptId },
@@ -755,11 +744,7 @@ export function resolveDecisionPrompt(
     const canInitiate =
       !player || abilityHasValidTarget(nextState, player, optAbility, sourceCardInst);
     if (!canInitiate) {
-      nextState.log.push({
-        id: nextEngineId(nextState, 'log'),
-        timestamp: Date.now(),
-        round: nextState.roundNumber,
-        phase: nextState.phase,
+      appendLog(nextState, {
         category: 'ability',
         key: 'ability.aborted.noValidTarget',
         params: { player: playerName, ability: optAbility.id },
@@ -840,11 +825,7 @@ export function resolveDecisionPrompt(
     }
 
     if (canInitiate) {
-      nextState.log.push({
-        id: nextEngineId(nextState, 'log'),
-        timestamp: Date.now(),
-        round: nextState.roundNumber,
-        phase: nextState.phase,
+      appendLog(nextState, {
         category: 'ability',
         key: `ability.${optAbility.id}.triggered`,
         params: { player: playerName },

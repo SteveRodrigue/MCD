@@ -19,6 +19,7 @@ import {
   villainStageHitPoints,
 } from '../../advance-villain-stage';
 import definitionData from './definition.json';
+import { appendLog } from '../../../state/game-log';
 
 export const rhinoDefinition: ScenarioDefinition = definitionData as ScenarioDefinition;
 
@@ -51,7 +52,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     const maxHealth = villainStageHitPoints(villainCard, numPlayers);
 
     const initialVillain: VillainState = {
-      instanceId: `villain_${Date.now()}_${startingStageCode}`,
+      instanceId: `villain_${nextEngineId(state, 'id')}_${startingStageCode}`,
       card: villainCard,
       health: maxHealth,
       maxHealth,
@@ -73,7 +74,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
       (mainSchemeCard.targetThreat || this.definition.mainSchemeSetup.targetThreatPerPlayer) *
       numPlayers;
     const initialMainScheme: MainSchemeState = {
-      instanceId: `main_scheme_${Date.now()}_${mainSchemeCard.code}`,
+      instanceId: `main_scheme_${nextEngineId(state, 'id')}_${mainSchemeCard.code}`,
       card: mainSchemeCard,
       threat: mainSchemeCard.baseThreat || this.definition.mainSchemeSetup.startingThreat,
       targetThreat,
@@ -124,9 +125,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     // The starting stage is revealed: its When Revealed (Expert starts on Stage II) comes from supplemental data
     revealVillainStage(state, initialVillain);
 
-    state.log.push({
-      id: nextEngineId(state, 'log'),
-      timestamp: Date.now(),
+    appendLog(state, {
       category: 'phase',
       key: 'scenario.setup',
       params: {
@@ -162,9 +161,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     }
 
     state.winner = 'HEROES';
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
+    appendLog(state, {
       category: 'combat',
       key: 'scenario.victory',
       params: { mode: difficulty, villain: villain.card.name },
@@ -183,9 +180,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
   } {
     // The Break-In! 1B: If completed, the players lose the game.
     state.winner = 'VILLAIN';
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
+    appendLog(state, {
       category: 'scheme',
       key: 'scenario.defeat',
       params: { scheme: 'The Break-In!' },

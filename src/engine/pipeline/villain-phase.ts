@@ -45,6 +45,7 @@ import {
   step6_passFirstPlayerAndRoundUpkeep,
 } from './round-upkeep';
 import { endPlayerPhase } from './player-phase';
+import { appendLog } from '../state/game-log';
 export {
   step5_passFirstPlayerToken,
   step6_endVillainPhaseAndRound,
@@ -97,11 +98,7 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
   const villain = getActiveVillain(state);
   // Check Confused status on Villain (taking into account Steady - RR v1.8 p. 28)
   if (consumeEntityStatusCards(villain, StatusCard.CONFUSED)) {
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
+    appendLog(state, {
       category: 'status',
       actor: { name: villain.card?.name || 'Villain', type: 'villain' },
       key: 'villain.confused.cancelled',
@@ -168,11 +165,7 @@ export function executeMinionSchemeAgainstPlayer(
 ): void {
   // Check Confused status on Minion (taking into account Steady - RR v1.8 p. 28)
   if (consumeEntityStatusCards(minion, StatusCard.CONFUSED)) {
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
+    appendLog(state, {
       category: 'status',
       actor: { name: minion.card.name, type: 'minion' },
       key: 'minion.confused.cancelled',
@@ -369,9 +362,7 @@ export function step3_dealEncounterCards(state: GameState): GameState {
     }
   }
 
-  state.log.push({
-    id: `log_${Date.now()}`,
-    timestamp: Date.now(),
+  appendLog(state, {
     key: 'villainPhase.step3.encounterCardsDealt',
     params: {
       basePerPlayer: baseCardsPerPlayer,
@@ -483,9 +474,7 @@ export function completeEncounterAttachment(
   isCancelled: boolean,
 ): void {
   attachCardToHost(state, cardInstance, 'ENEMY', hostInstanceId);
-  state.log.push({
-    id: `log_${Date.now()}`,
-    timestamp: Date.now(),
+  appendLog(state, {
     key: 'encounter.reveal.attachment',
     params: { attachment: cardInstance.card.name, host: hostName },
     onomatopoeia: 'ATTACHED!',
@@ -519,9 +508,7 @@ function resolveRevealedAttachment(
     );
   } else if (resolution.kind === 'surge') {
     state.encounterDiscard.push(cardInstance);
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
+    appendLog(state, {
       key: 'encounter.reveal.attachmentNoHost',
       params: { attachment: card.name },
       onomatopoeia: 'NO HOST!',
@@ -583,9 +570,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
     if (!state.removedFromGame.some((c) => c.instanceId === cardInstance.instanceId)) {
       state.encounterDiscard.push(cardInstance);
     }
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
+    appendLog(state, {
       key: 'encounter.reveal.cancelledAndDiscarded',
       params: { card: card.name },
       onomatopoeia: 'CANCELLED!',
@@ -600,9 +585,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
 
     // Enters play engaged with this player
     player.engagedMinions.push(cardInstance);
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
+    appendLog(state, {
       key: 'encounter.reveal.minion',
       params: { player: player.name, minion: card.name },
       onomatopoeia: 'MINION SPAWNS!',
@@ -624,9 +607,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
       card: sideSchemeCard,
       threat: baseThreat,
     });
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
+    appendLog(state, {
       key: 'encounter.reveal.sideScheme',
       params: { sideScheme: card.name, threat: baseThreat },
       onomatopoeia: 'SIDE SCHEME!',
@@ -643,9 +624,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
     if (!state.removedFromGame.some((c) => c.instanceId === cardInstance.instanceId)) {
       state.encounterDiscard.push(cardInstance);
     }
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
+    appendLog(state, {
       key: 'encounter.reveal.treachery',
       params: { card: card.name },
       onomatopoeia: isCancelled ? 'CANCELLED!' : 'TREACHERY!',
@@ -690,10 +669,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
   if (nextState.phase !== GamePhase.VILLAIN_PHASE || nextState.villainPhaseStep === undefined) {
     if (nextState.phase !== GamePhase.VILLAIN_PHASE) endPlayerPhase(nextState);
 
-    nextState.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
-      round: nextState.roundNumber,
+    appendLog(nextState, {
       phase: GamePhase.VILLAIN_PHASE,
       key: 'phase.villain_phase.start',
       params: { round: nextState.roundNumber },
@@ -1050,10 +1026,7 @@ export function executeVillainPhase(state: GameState, options?: CombatOptions): 
   const nextState: GameState = cloneGameState(state);
   if (nextState.phase !== GamePhase.VILLAIN_PHASE) endPlayerPhase(nextState);
 
-  nextState.log.push({
-    id: `log_${Date.now()}`,
-    timestamp: Date.now(),
-    round: nextState.roundNumber,
+  appendLog(nextState, {
     phase: GamePhase.VILLAIN_PHASE,
     key: 'phase.villain_phase.start',
     params: { round: nextState.roundNumber },

@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-18 (code audit AUD-20261017-232534 remediated; R1–R4 delivered; remaining work R5–R16 in section 3.5)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
-> **Verification baseline:** 🟢 3,025 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
+> **Verification baseline:** 🟢 3,031 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
 ---

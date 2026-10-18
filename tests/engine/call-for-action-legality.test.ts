@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { overrideCard } from '../support/card-overrides';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import {
   GamePhase,
@@ -158,8 +159,11 @@ describe('Call for Action Legality & Generator (Issue #314 / RR v1.8 p. 5, 23)',
     ).toBe(true);
 
     // Case C: Usage limit ONCE_PER_ROUND exhausted on Avengers Mansion -> removed from callForActionItems
-    const mansionAb = avengersMansion.card.enrichment!.abilities![0];
-    mansionAb.limit = 'ONCE_PER_ROUND';
+    const [firstAbility, ...otherAbilities] = avengersMansion.card.enrichment!.abilities!;
+    const mansionAb = { ...firstAbility, limit: 'ONCE_PER_ROUND' as const };
+    overrideCard(state, avengersMansion.card, {
+      enrichment: { ...avengersMansion.card.enrichment, abilities: [mansionAb, ...otherAbilities] },
+    });
     state.players[1].usedAbilitiesThisRound = {
       [`${avengersMansion.instanceId}_${mansionAb.id}`]: 1,
     };

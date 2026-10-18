@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { overrideCard } from '../support/card-overrides';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import {
   GameState,
@@ -172,7 +173,7 @@ describe('Status Cancellation for Labeled Abilities (#270)', () => {
   });
 
   it('Steady hero with 1 Stunned playing Uppercut: not incapacitated, resolves attack normally without clearing the 1 Stunned', () => {
-    state.players[0].hero.keywords = [Keyword.STEADY];
+    overrideCard(state, state.players[0].hero, { keywords: [Keyword.STEADY] });
     state.players[0].statusCards = [StatusCard.STUNNED];
     const initialVillainHp = state.villain.health;
 

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { overrideCard } from '../support/card-overrides';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
@@ -111,17 +112,22 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
       state.villain.health = 1;
       const allyCard = cardCatalog.getCard('01058')!;
       const ally = createCardInstance(allyCard);
-      (ally.card as any).health = 5;
-      ally.card.enrichment = {
-        ...ally.card.enrichment,
-        abilities: [
-          {
-            id: 'ally_retaliate',
-            timing: 'CONSTANT',
-            steps: [{ effect: 'GRANT_KEYWORD', effectParams: { keyword: 'Retaliate', amount: 1 } }],
-          },
-        ],
-      };
+      ally.card = { ...ally.card, health: 5 } as typeof ally.card;
+      ally.card = {
+        ...ally.card,
+        enrichment: {
+          ...ally.card.enrichment,
+          abilities: [
+            {
+              id: 'ally_retaliate',
+              timing: 'CONSTANT',
+              steps: [
+                { effect: 'GRANT_KEYWORD', effectParams: { keyword: 'Retaliate', amount: 1 } },
+              ],
+            },
+          ],
+        },
+      } as typeof ally.card;
       state.players[0].allies.push(ally);
       mockZeroBoostDeck(state);
 
@@ -169,17 +175,22 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
       const state = buildTestGame({ heroCodes: [['01001a', '01001b']] });
       const allyCard = cardCatalog.getCard('01058')!;
       const ally = createCardInstance(allyCard);
-      (ally.card as any).health = 5;
-      ally.card.enrichment = {
-        ...ally.card.enrichment,
-        abilities: [
-          {
-            id: 'ally_retaliate',
-            timing: 'CONSTANT',
-            steps: [{ effect: 'GRANT_KEYWORD', effectParams: { keyword: 'Retaliate', amount: 1 } }],
-          },
-        ],
-      };
+      ally.card = { ...ally.card, health: 5 } as typeof ally.card;
+      ally.card = {
+        ...ally.card,
+        enrichment: {
+          ...ally.card.enrichment,
+          abilities: [
+            {
+              id: 'ally_retaliate',
+              timing: 'CONSTANT',
+              steps: [
+                { effect: 'GRANT_KEYWORD', effectParams: { keyword: 'Retaliate', amount: 1 } },
+              ],
+            },
+          ],
+        },
+      } as typeof ally.card;
       state.players[0].allies.push(ally);
 
       const minionCard = cardCatalog.getCard('01168')!;
@@ -206,22 +217,25 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
       const minionCard = cardCatalog.getCard('01168')!;
       const minion = createCardInstance(minionCard);
       minion.tokens = { damage: 1 };
-      minion.card.enrichment = {
-        ...minion.card.enrichment,
-        abilities: [
-          {
-            id: 'post_attack_threat',
-            timing: 'FORCED_RESPONSE',
-            trigger: 'MINION_ATTACKED',
-            steps: [
-              {
-                effect: 'ADD_THREAT',
-                effectParams: { amount: 3 },
-              },
-            ],
-          },
-        ],
-      };
+      minion.card = {
+        ...minion.card,
+        enrichment: {
+          ...minion.card.enrichment,
+          abilities: [
+            {
+              id: 'post_attack_threat',
+              timing: 'FORCED_RESPONSE',
+              trigger: 'MINION_ATTACKED',
+              steps: [
+                {
+                  effect: 'ADD_THREAT',
+                  effectParams: { amount: 3 },
+                },
+              ],
+            },
+          ],
+        },
+      } as typeof minion.card;
       state.players[0].engagedMinions.push(minion);
       const initialThreat = state.mainScheme.threat;
 
@@ -270,11 +284,11 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
 
       const allyCard = cardCatalog.getCard('01002')!;
       const ally = createCardInstance(allyCard);
-      (ally.card as any).health = 2;
+      ally.card = { ...ally.card, health: 2 } as typeof ally.card;
       state.players[0].allies.push(ally);
 
-      (state.villain.card as any).attack = 4;
-      (state.villain.card as any).keywords = ['Overkill'];
+      overrideCard(state, state.villain.card, { attack: 4 });
+      overrideCard(state, state.villain.card, { keywords: ['Overkill'] });
       mockZeroBoostDeck(state);
 
       initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1');
@@ -359,7 +373,7 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
         ],
       });
       const ally = createCardInstance(cardCatalog.getCard('01002')!);
-      (ally.card as any).health = 5;
+      ally.card = { ...ally.card, health: 5 } as typeof ally.card;
       state.players[1].allies.push(ally);
       const initialVillainHp = state.villain.health;
       mockZeroBoostDeck(state);
@@ -421,7 +435,7 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
         ],
       });
       const ally = createCardInstance(cardCatalog.getCard('01002')!);
-      (ally.card as any).health = 5;
+      ally.card = { ...ally.card, health: 5 } as typeof ally.card;
       state.players[0].allies.push(ally);
       const initialVillainHp = state.villain.health;
       mockZeroBoostDeck(state);
@@ -466,16 +480,18 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
 
     it('18. Retaliate against damage immunity', () => {
       const state = buildTestGame({ heroCodes: [['01040a', '01040b']] });
-      state.villain.card.enrichment = {
-        ...state.villain.card.enrichment,
-        abilities: [
-          {
-            id: 'invulnerable',
-            timing: 'CONSTANT',
-            steps: [{ effect: 'CANNOT_TAKE_DAMAGE' }],
-          },
-        ],
-      };
+      overrideCard(state, state.villain.card, {
+        enrichment: {
+          ...state.villain.card.enrichment,
+          abilities: [
+            {
+              id: 'invulnerable',
+              timing: 'CONSTANT',
+              steps: [{ effect: 'CANNOT_TAKE_DAMAGE' }],
+            },
+          ],
+        },
+      });
       const initialVillainHp = state.villain.health;
       mockZeroBoostDeck(state);
 
@@ -512,17 +528,22 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
       const state = buildTestGame({ heroCodes: [['01001a', '01001b']] });
       const allyCard = cardCatalog.getCard('01058')!;
       const ally = createCardInstance(allyCard);
-      (ally.card as any).health = 5;
-      ally.card.enrichment = {
-        ...ally.card.enrichment,
-        abilities: [
-          {
-            id: 'ally_retaliate',
-            timing: 'CONSTANT',
-            steps: [{ effect: 'GRANT_KEYWORD', effectParams: { keyword: 'Retaliate', amount: 1 } }],
-          },
-        ],
-      };
+      ally.card = { ...ally.card, health: 5 } as typeof ally.card;
+      ally.card = {
+        ...ally.card,
+        enrichment: {
+          ...ally.card.enrichment,
+          abilities: [
+            {
+              id: 'ally_retaliate',
+              timing: 'CONSTANT',
+              steps: [
+                { effect: 'GRANT_KEYWORD', effectParams: { keyword: 'Retaliate', amount: 1 } },
+              ],
+            },
+          ],
+        },
+      } as typeof ally.card;
       state.players[0].allies.push(ally);
       mockZeroBoostDeck(state);
 

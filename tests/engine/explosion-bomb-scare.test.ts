@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { overrideCard } from '../support/card-overrides';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import {
   GameState,
@@ -119,16 +120,18 @@ describe('Explosion (01111): assign X damage among heroes and allies (#296)', ()
     });
 
     it('2 damage on the 2-HP ally defeats it: discard and CHARACTER_DEFEATED response', () => {
-      state.players[1].activeFormCard!.enrichment = {
-        abilities: [
-          {
-            id: 'p2_character_defeat_listener',
-            timing: 'FORCED_RESPONSE',
-            trigger: 'CHARACTER_DEFEATED',
-            steps: [{ effect: 'ADD_COUNTERS', effectParams: { target: 'IDENTITY', amount: 1 } }],
-          },
-        ],
-      } as any;
+      overrideCard(state, state.players[1].activeFormCard, {
+        enrichment: {
+          abilities: [
+            {
+              id: 'p2_character_defeat_listener',
+              timing: 'FORCED_RESPONSE',
+              trigger: 'CHARACTER_DEFEATED',
+              steps: [{ effect: 'ADD_COUNTERS', effectParams: { target: 'IDENTITY', amount: 1 } }],
+            },
+          ],
+        } as any,
+      });
       reveal(1);
 
       const res = resolve({ p1: 1, [blackCat.instanceId]: 2 });

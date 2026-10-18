@@ -268,7 +268,7 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     // Add ally to player 1
     const catCard = cardCatalog.getCard('01002') || cardCatalog.getCard('01005')!;
     const allyInst = createCardInstance(catCard);
-    (allyInst.card as any).health = 3;
+    allyInst.card = { ...allyInst.card, health: 3 } as typeof allyInst.card;
     state.players[0].allies.push(allyInst);
 
     const initialHeroHp = state.players[0].health;

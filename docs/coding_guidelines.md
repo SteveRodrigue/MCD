@@ -11,7 +11,7 @@ To maintain high code quality, rules accuracy, and architectural integrity acros
 ```
 +-------------------------------------------------------------------------+
 |                              src/ui/                                    |
-|   (React Components, Tailwind, Framer Motion, Dialogs, Comic Panels)    |
+|   (React Components, Tailwind, Dialogs, Comic Panels)                    |
 |   ❌ NEVER contains rules calculations, HP math, or card effect logic.   |
 |   ✅ ONLY renders GameState and dispatches Action commands.              |
 +------------------------------------+------------------------------------+
@@ -48,7 +48,7 @@ To maintain high code quality, rules accuracy, and architectural integrity acros
 src/ui/ ──> src/engine/ ──> src/data/ (supplemental + importer) ──> data/upstream/ (read-only)
 ```
 
-- `src/data/` has **ZERO** dependencies on `src/engine/` or `src/ui/`.
+- `src/data/` may import only `@engine/models` (types and enums). It never imports engine pipeline or effects code, or `src/ui/`.
 - `src/engine/` has **ZERO** dependencies on React, DOM, or `src/ui/`.
 - `src/ui/` imports state and actions from `src/engine/` and never mutates state directly.
 
@@ -64,9 +64,7 @@ src/ui/ ──> src/engine/ ──> src/data/ (supplemental + importer) ──> 
 
 ## 2. Rules Authority, Algorithmic Specification & Errata Standards
 
-- **The Golden Rule:** Card text overrides general rules; when card text is ambiguous, RR v1.8 governs.
-- **Official Errata Enforcement:** Any card with an official FFG errata in RR v1.8 must have its corrected text and behavior declared via `errata: "..."` in `src/data/supplemental/`.
-- **Clarifications & Ambiguities:** If any rule or card interaction is ambiguous or underspecified, proactively ask the user.
+The Golden Rule, errata enforcement and algorithmic-spec sync are defined in §1.4. If a rule or card interaction is ambiguous or underspecified, ask the user (§1.6).
 
 ---
 
@@ -223,7 +221,7 @@ Current state: only the comic game log is localized. There is no general `t()` h
 | Category                  | Convention                                         | Example                                     |
 | :------------------------ | :------------------------------------------------- | :------------------------------------------ |
 | **Interfaces / Types**    | PascalCase                                         | `GameState`, `CardDefinition`, `GameAction` |
-| **Enums / Const Objects** | PascalCase (name) / UPPER_SNAKE (values)           | `Phase.PLAYER_PHASE`, `Trait.WEB_WARRIOR`   |
+| **Enums / Const Objects** | PascalCase (name) / UPPER_SNAKE (members)           | `CardType`, `Keyword.GUARD`, `StatusCard.TOUGH` |
 | **Functions / Methods**   | camelCase                                          | `calculateDamage()`, `resolveTrigger()`     |
 | **React Components**      | PascalCase                                         | `HeroPlaymat.tsx`, `ComicOnomatopoeia.tsx`  |
 | **Constants**             | UPPER_SNAKE_CASE                                   | `MAX_HAND_SIZE`, `DEFAULT_THREAT`           |
@@ -233,12 +231,12 @@ Current state: only the comic game log is localized. There is no general `t()` h
 
 ## 10. Git & Commit Message Standards
 
-We use [Conventional Commits](https://www.conventionalcommits.org/):
+We use [Conventional Commits](https://www.conventionalcommits.org/). Scopes: `engine`, `ui`, `data`, `tooling`, `docs`, `tests` (full matrix in the `commit-and-push` skill):
 
 - `feat:` A new feature or card ability implementation (e.g. `feat(engine): implement Tough replacement effect`)
-- `fix:` A bug fix in rules or UI (e.g. `fix(rules): prevent thwart when Patrol minion is active`)
-- `test:` Adding or refactoring test suites (e.g. `test(hero): add unit tests for Spider-Man Backflip`)
-- `docs:` Documentation or ADR updates (e.g. `docs(adr): add ADR-0006`)
+- `fix:` A bug fix in rules or UI (e.g. `fix(engine): prevent thwart when Patrol minion is active`)
+- `test:` Adding or refactoring test suites (e.g. `test(engine): add unit tests for Spider-Man Backflip`)
+- `docs:` Documentation or ADR updates (e.g. `docs(docs): add ADR-0006`)
 - `refactor:` Code restructuring without changing external behavior
 - `chore:` Build scripts, package updates, CI changes
 

@@ -342,12 +342,13 @@ export type CardAuditRecord = z.infer<typeof CardAuditRecordSchema>;
  */
 export function findEventDiscardSelfViolations(
   cardTypeCode: string | undefined,
-  enrichment: { abilities?: Array<{ id?: string; cost?: { discardSelf?: boolean } }> } | undefined,
+  enrichment: { abilities?: unknown } | undefined,
 ): string | null {
   if (cardTypeCode === 'event') {
-    const hasDiscardSelf = (enrichment?.abilities || []).some(
-      (a) => a?.cost?.discardSelf === true,
-    );
+    const abilities = Array.isArray(enrichment?.abilities)
+      ? (enrichment.abilities as Array<{ cost?: { discardSelf?: unknown } } | null>)
+      : [];
+    const hasDiscardSelf = abilities.some((a) => Boolean(a?.cost?.discardSelf));
     if (hasDiscardSelf) {
       return "Event cards cannot declare 'cost.discardSelf'; events discard intrinsically per RR v1.8 Event";
     }

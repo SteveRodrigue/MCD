@@ -18,7 +18,8 @@ export function validateCardInput(input: string, upstreamTypeCode?: string): Val
   let jsonString = input.trim();
 
   // If input is a file path
-  if (fs.existsSync(input)) {
+  const fileExists = fs.existsSync(input);
+  if (fileExists) {
     const fileContent = fs.readFileSync(input, 'utf8');
     // If markdown, extract JSON block
     if (input.endsWith('.md') || fileContent.includes('```json')) {
@@ -46,50 +47,34 @@ export function validateCardInput(input: string, upstreamTypeCode?: string): Val
   }
 
   let resolvedTypeCode = upstreamTypeCode;
-
-  if (!resolvedTypeCode && parsed && typeof parsed === 'object') {
-    if (typeof (parsed as any).type_code === 'string') {
-      resolvedTypeCode = (parsed as any).type_code;
-    } else if (typeof (parsed as any).type === 'string') {
-      resolvedTypeCode = (parsed as any).type;
-    }
-  }
+  const errors: Array<{ path: string; message: string }> = [];
 
   if (!resolvedTypeCode) {
-    let cardCode: string | undefined;
-    if (parsed && typeof parsed === 'object') {
-      if (typeof (parsed as any).code === 'string') {
-        cardCode = (parsed as any).code;
-      } else if (typeof (parsed as any).card_code === 'string') {
-        cardCode = (parsed as any).card_code;
-      } else if (typeof (parsed as any).cardCode === 'string') {
-        cardCode = (parsed as any).cardCode;
-      }
-    }
-
-    if (!cardCode) {
-      const filenameMatch = input.match(/(?:supp_)?(\d{5})/);
-      if (filenameMatch) {
-        cardCode = filenameMatch[1];
-      }
-    }
-
+    // Only trust the card code from a file name (supp_<id>.*), never from inline JSON text.
+    const cardCode = fileExists
+      ? path.basename(input).match(/^(?:supp_)?(\d{5})\b/)?.[1]
+      : undefined;
+    let lookupError = '';
     if (cardCode) {
       try {
-        const card = extractCard(cardCode);
-        if (card?.type_code) {
-          resolvedTypeCode = card.type_code;
-        }
-      } catch {
-        // Ignore lookup failure
+        resolvedTypeCode = extractCard(cardCode)?.type_code;
+      } catch (err: any) {
+        lookupError = ` (lookup of ${cardCode} failed: ${err.message})`;
       }
+    }
+    if (!resolvedTypeCode) {
+      errors.push({
+        path: 'type',
+        message: `Card type unresolved${lookupError}; name the file supp_<id>.* or pass the upstream type as the 2nd argument.`,
+      });
     }
   }
 
   const result = CardEnrichmentSchema.safeParse(parsed);
-  const eventViolation = findEventDiscardSelfViolations(resolvedTypeCode, parsed as any);
-
-  const errors: Array<{ path: string; message: string }> = [];
+  const eventViolation = findEventDiscardSelfViolations(
+    resolvedTypeCode,
+    parsed as { abilities?: unknown },
+  );
 
   if (!result.success) {
     errors.push(

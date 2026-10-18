@@ -68,7 +68,7 @@ export function findAttachCandidates(
 
   let pool = all.filter((c) => host.type === 'ENEMY' || c.kind === 'minion');
   if (host.filter) {
-    pool = pool.filter((c) => matchesCardFilter(c.card, host.filter, { state }));
+    pool = pool.filter((c) => matchesCardFilter(c, host.filter, { state }));
   }
   if (host.withoutCopyAttached) {
     pool = pool.filter((c) => !c.attachments.some((a) => a.card.code === attachment.card.code));

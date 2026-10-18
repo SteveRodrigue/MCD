@@ -83,7 +83,6 @@ Plan (approved 2026-10-17): [plan_audit_20261017_remediation.md](plan_audit_2026
 | #   | Finding                                                                | Tier | Estimate |
 | --- | ---------------------------------------------------------------------- | ---- | -------- |
 | 4   | F004 setup reads `ScenarioRegistry`; delete legacy `catalog.ts`        | 2    | 4–6 h    |
-| 12  | F008 typed card filter; fix `isIdentitySpecific`                       | 2    | 1 day    |
 | 13  | F016 remove `state.villain` / `mainScheme` (#215) — **owner decision** | 3    | 1 day    |
 | 14  | F017 delete unused exports and aliases                                 | 1    | 2 h      |
 | 15  | F013 shared test fixtures                                              | 1    | 1 day    |

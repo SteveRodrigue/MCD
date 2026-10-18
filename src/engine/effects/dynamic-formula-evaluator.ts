@@ -75,7 +75,7 @@ export function evaluateDynamicAmount(
         context.previousResult?.discardedCards || context.discardedCards || [];
       const cards = filter
         ? discarded.filter(
-            (inst) => inst?.card && matchesCardFilter(inst.card, filter, { player, state }),
+            (inst) => inst?.card && matchesCardFilter(inst, filter, { player, state }),
           )
         : discarded;
 
@@ -323,12 +323,11 @@ export function evaluateDynamicAmount(
     }
     case 'ENTITY_COUNT': {
       if (state) {
-        if (filter?.types?.includes('side_scheme') || (filter as any)?.type === 'side_scheme') {
+        if (filter?.types?.includes('side_scheme')) {
           baseValue = (state.sideSchemes || []).length;
         } else if (filter) {
-          const cardsToCheck = (player?.tableau || []).map((t: any) => t.card);
-          baseValue = cardsToCheck.filter((c: any) =>
-            matchesCardFilter(c, filter, { player, state }),
+          baseValue = (player?.tableau || []).filter((inst: CardInstance) =>
+            matchesCardFilter(inst, filter, { player, state }),
           ).length;
         }
       }

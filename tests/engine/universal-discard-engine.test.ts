@@ -293,7 +293,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
           source: 'DECK',
           count: 2,
           filter: {
-            resource: 'mental',
+            resourceIcons: ['mental'],
           },
           matchingDestination: 'HAND',
         },

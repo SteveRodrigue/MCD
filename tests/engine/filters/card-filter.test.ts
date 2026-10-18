@@ -3,6 +3,7 @@ import { matchesCardFilter } from '../../../src/engine/filters/card-filter';
 import { KeywordSchema, UniversalCardFilterSchema } from '../../../src/data/supplemental/schema';
 import { Keyword } from '../../../src/engine/models/enums';
 import { cardCatalog } from '../../../src/data/importer/card-loader';
+import type { CardInstance, NormalizedCard, PlayerState } from '../../../src/engine/models';
 
 describe('matchesCardFilter (ADR-0046 Universal Card Filtering Engine)', () => {
   const sampleCard = {
@@ -13,31 +14,27 @@ describe('matchesCardFilter (ADR-0046 Universal Card Filtering Engine)', () => {
     cost: 4,
     isUnique: true,
     resources: { mental: 1 },
-    raw: {
-      type_code: 'support',
-      faction_code: 'basic',
-      card_set_code: 'iron_man',
-      text: 'Support. Avenger.',
-    },
-  };
+    faction: 'basic',
+    setCode: 'iron_man',
+  } as unknown as NormalizedCard;
 
+  // A card in play: exhaustion and status cards live on the instance
   const sampleMinion = {
-    code: '01100',
-    name: 'Armored Rhino Suit',
-    type: 'attachment',
-    traits: ['Armor', 'Tech'],
-    cost: 0,
-    isUnique: false,
-    resources: { physical: 1 },
-    raw: {
-      type_code: 'attachment',
-      faction_code: 'encounter',
-      card_set_code: 'rhino',
-      text: 'Toughness. Guard.',
+    instanceId: 'inst_suit',
+    card: {
+      code: '01100',
+      name: 'Armored Rhino Suit',
+      type: 'attachment',
+      traits: ['Armor', 'Tech'],
+      cost: 0,
+      isUnique: false,
+      resources: { physical: 1 },
+      faction: 'encounter',
+      setCode: 'rhino',
     },
-    isExhausted: true,
-    statusTokens: ['TOUGH'],
-  };
+    exhausted: true,
+    statusCards: ['TOUGH'],
+  } as unknown as CardInstance;
 
   describe('Empty and Undefined Filters', () => {
     it('returns true when filter is undefined', () => {
@@ -62,7 +59,7 @@ describe('matchesCardFilter (ADR-0046 Universal Card Filtering Engine)', () => {
   });
 
   describe('Types & Factions Matching', () => {
-    it('matches card types against normalized and raw type', () => {
+    it('matches card types', () => {
       expect(matchesCardFilter(sampleCard, { types: ['support'] })).toBe(true);
       expect(matchesCardFilter(sampleCard, { types: ['upgrade', 'support'] })).toBe(true);
       expect(matchesCardFilter(sampleCard, { types: ['event'] })).toBe(false);
@@ -137,7 +134,7 @@ describe('matchesCardFilter (ADR-0046 Universal Card Filtering Engine)', () => {
       };
       expect(matchesCardFilter(sampleCard, orFilter)).toBe(true);
       expect(matchesCardFilter(sampleMinion, orFilter)).toBe(true); // Tech matches
-      expect(matchesCardFilter({ code: 'x', traits: ['Civilian'] }, orFilter)).toBe(false);
+      expect(matchesCardFilter({ code: 'x', traits: ['Civilian'] } as never, orFilter)).toBe(false);
     });
 
     it('evaluates all (Logical AND)', () => {
@@ -170,6 +167,50 @@ describe('matchesCardFilter (ADR-0046 Universal Card Filtering Engine)', () => {
       };
       expect(matchesCardFilter(sampleMinion, complexFilter)).toBe(true); // matches first branch
       expect(matchesCardFilter(sampleCard, complexFilter)).toBe(false); // cost is 4, not 5
+    });
+  });
+
+  describe('In-play criteria on a card that is not in play', () => {
+    it('a card definition is neither exhausted nor holding a status', () => {
+      const definition = (sampleMinion as CardInstance).card;
+      expect(matchesCardFilter(definition, { isExhausted: true })).toBe(false);
+      expect(matchesCardFilter(definition, { isExhausted: false })).toBe(false);
+      expect(matchesCardFilter(definition, { hasStatus: ['TOUGH'] })).toBe(false);
+    });
+  });
+
+  describe('Sets and identity (AUD-20261017-232534 F008)', () => {
+    const spiderMan = { hero: cardCatalog.getCard('01001a')! } as unknown as PlayerState;
+    const spiderManCard = cardCatalog.getCard('01005')!; // Black Cat, Spider-Man set
+    const sheHulkCard = cardCatalog.getCard('01023')!; // Legal Practice, She-Hulk set
+    const vulture = cardCatalog.getCard('01167')!; // Spider-Man nemesis set
+
+    it('isIdentitySpecific matches only the context hero set', () => {
+      expect(spiderManCard.setCode).toBe(spiderMan.hero.setCode);
+      expect(
+        matchesCardFilter(spiderManCard, { isIdentitySpecific: true }, { player: spiderMan }),
+      ).toBe(true);
+      expect(
+        matchesCardFilter(sheHulkCard, { isIdentitySpecific: true }, { player: spiderMan }),
+      ).toBe(false);
+      expect(
+        matchesCardFilter(sheHulkCard, { isIdentitySpecific: false }, { player: spiderMan }),
+      ).toBe(true);
+    });
+
+    it('PLAYER_NEMESIS is the nemesis set of the context hero', () => {
+      expect(matchesCardFilter(vulture, { sets: ['PLAYER_NEMESIS'] }, { player: spiderMan })).toBe(
+        true,
+      );
+      expect(
+        matchesCardFilter(sheHulkCard, { sets: ['PLAYER_NEMESIS'] }, { player: spiderMan }),
+      ).toBe(false);
+      expect(matchesCardFilter(vulture, { sets: ['PLAYER_NEMESIS'] })).toBe(false);
+    });
+
+    it('a set code matches exactly, not as a prefix', () => {
+      expect(matchesCardFilter(vulture, { sets: ['spider_man_nemesis'] })).toBe(true);
+      expect(matchesCardFilter(vulture, { sets: ['spider_man'] })).toBe(false);
     });
   });
 
@@ -226,12 +267,9 @@ describe('matchesCardFilter (ADR-0046 Universal Card Filtering Engine)', () => {
 
     it('a character holding only a tough status does not match hasKeyword Toughness', () => {
       const statusOnly = {
-        code: 'x1',
-        name: 'Plain Minion',
-        type: 'minion',
-        keywords: [],
-        raw: { text: '' },
-        statusTokens: ['TOUGH'],
+        instanceId: 'inst_plain',
+        card: { code: 'x1', name: 'Plain Minion', type: 'minion', keywords: [] },
+        statusCards: ['TOUGH'],
       };
       expect(matchesCardFilter(statusOnly as any, { hasKeyword: Keyword.TOUGHNESS })).toBe(false);
       expect(matchesCardFilter(statusOnly as any, { hasStatus: ['TOUGH'] })).toBe(true);

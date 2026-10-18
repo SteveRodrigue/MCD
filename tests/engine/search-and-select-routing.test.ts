@@ -84,7 +84,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
               source: 'PLAYER_DECK',
               lookCount: 3,
               filter: {
-                trait: 'Tech',
+                traits: ['Tech'],
               },
               takeCount: 1,
               selectedDestination: 'HAND',
@@ -195,7 +195,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
               source: 'PLAYER_DECK',
               lookCount: 3,
               filter: {
-                trait: 'Tech',
+                traits: ['Tech'],
               },
               takeCount: 1,
               selectedDestination: 'HAND',
@@ -282,7 +282,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
             effectParams: {
               source: 'PLAYER_DECK',
               filter: {
-                targetCardCode: 'cap_shield',
+                codes: ['cap_shield'],
               },
               takeCount: 1,
               selectedDestination: 'HAND',
@@ -362,8 +362,8 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
             effectParams: {
               source: 'PLAYER_DECK',
               filter: {
-                trait: 'Black Panther',
-                type: 'upgrade',
+                traits: ['Black Panther'],
+                types: ['upgrade'],
               },
               takeCount: 1,
               selectedDestination: 'TABLEAU',
@@ -442,8 +442,8 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
             effectParams: {
               source: 'ENCOUNTER_DECK',
               filter: {
-                trait: 'Masters of Evil',
-                type: 'minion',
+                traits: ['Masters of Evil'],
+                types: ['minion'],
               },
               takeCount: 1,
               selectedDestination: 'TABLEAU',
@@ -601,7 +601,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
             effect: 'SEARCH',
             effectParams: {
               source: 'PLAYER_DECK',
-              filter: { trait: 'Tech' },
+              filter: { traits: ['Tech'] },
               takeCount: 1,
               selectedDestination: 'HAND',
               autoSelectIfUnambiguous: true,

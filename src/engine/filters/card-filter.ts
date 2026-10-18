@@ -1,4 +1,5 @@
 import type { NormalizedCard, PlayerState, GameState } from '../models';
+import { hasKeyword } from '../models/keyword-helpers';
 import type { UniversalCardFilter } from '../../data/supplemental/schema';
 
 export interface FilterContext {
@@ -6,246 +7,121 @@ export interface FilterContext {
   state?: GameState;
 }
 
+/** A card in play (card instance, villain): the in-play criteria read its exhaustion and status. */
+export interface InPlayCard {
+  card: NormalizedCard;
+  exhausted?: boolean;
+  statusCards?: string[];
+}
+
+/** What a filter is evaluated on: a card definition, or a card in play. */
+export type FilterSubject = NormalizedCard | InPlayCard;
+
+const normalize = (value: string) => value.toLowerCase().trim();
+const alphanumeric = (value: string) => normalize(value).replace(/[^a-z0-9]/g, '');
+
+/** "Avenger" matches "Avenger", "Avengers" and "S.H.I.E.L.D." matches "SHIELD". */
+function hasMatchingTrait(cardTraits: string[], wanted: string): boolean {
+  const target = normalize(wanted);
+  const targetStripped = alphanumeric(wanted);
+  return cardTraits.some((trait) => {
+    const raw = normalize(trait);
+    const stripped = alphanumeric(trait);
+    return raw.includes(target) || (targetStripped.length > 0 && stripped.includes(targetStripped));
+  });
+}
+
 /**
  * Universal declarative card filter evaluator (ADR-0046, RR v1.8 p. 19, 26, 28).
- * Pure, card-agnostic predicate evaluation for any card or in-play card instance.
+ * Pure, card-agnostic predicate evaluation on the normalized card fields; all listed criteria
+ * must hold (logical AND).
  */
 export function matchesCardFilter(
-  card:
-    | NormalizedCard
-    | {
-        code: string;
-        name?: string;
-        type?: string;
-        traits?: string[];
-        cost?: number;
-        isUnique?: boolean;
-        raw?: any;
-        resources?: Record<string, number>;
-        isExhausted?: boolean;
-        statusTokens?: string[];
-        [k: string]: any;
-      },
+  subject: FilterSubject,
   filter?: UniversalCardFilter,
   context?: FilterContext,
 ): boolean {
   if (!filter) return true;
+  const instance = 'card' in subject ? subject : undefined;
+  const card: NormalizedCard = instance ? instance.card : (subject as NormalizedCard);
 
-  // 1. Boolean Combinator: ALL (Logical AND)
-  if (filter.all && filter.all.length > 0) {
-    const allMatch = filter.all.every((subFilter) => matchesCardFilter(card, subFilter, context));
-    if (!allMatch) return false;
+  // Boolean combinators
+  if (filter.all?.length && !filter.all.every((f) => matchesCardFilter(subject, f, context))) {
+    return false;
+  }
+  if (filter.any?.length && !filter.any.some((f) => matchesCardFilter(subject, f, context))) {
+    return false;
+  }
+  if (filter.none?.length && filter.none.some((f) => matchesCardFilter(subject, f, context))) {
+    return false;
   }
 
-  // 2. Boolean Combinator: ANY (Logical OR)
-  if (filter.any && filter.any.length > 0) {
-    const anyMatch = filter.any.some((subFilter) => matchesCardFilter(card, subFilter, context));
-    if (!anyMatch) return false;
+  if (filter.codes?.length && !filter.codes.includes(card.code)) return false;
+
+  if (filter.names?.length && !filter.names.some((n) => normalize(n) === normalize(card.name))) {
+    return false;
   }
 
-  // 3. Boolean Combinator: NONE (Logical NOT / Exclusion)
-  if (filter.none && filter.none.length > 0) {
-    const noneMatch = filter.none.every(
-      (subFilter) => !matchesCardFilter(card, subFilter, context),
-    );
-    if (!noneMatch) return false;
-  }
+  if (filter.types?.length && !filter.types.some((t) => normalize(t) === card.type)) return false;
 
-  // 4. Exact Card Codes
-  const codes =
-    filter.codes ||
-    ((filter as any).code
-      ? [(filter as any).code as string]
-      : (filter as any).targetCardCode
-        ? [(filter as any).targetCardCode as string]
-        : undefined);
-  if (codes && codes.length > 0) {
-    if (!codes.includes(card.code)) return false;
-  }
-
-  // 5. Card Names (Case-insensitive matching)
-  const names =
-    filter.names ||
-    ((filter as any).name
-      ? [(filter as any).name as string]
-      : (filter as any).targetCardName
-        ? [(filter as any).targetCardName as string]
-        : undefined);
-  if (names && names.length > 0) {
-    const cardName = (card.name || '').toLowerCase().trim();
-    const matchesName = names.some((n) => n.toLowerCase().trim() === cardName);
-    if (!matchesName) return false;
-  }
-
-  // 6. Card Types (Matches normalized or raw type_code)
-  const types =
-    filter.types ||
-    ((filter as any).type
-      ? [(filter as any).type as string]
-      : (filter as any).type_code
-        ? [(filter as any).type_code as string]
-        : (filter as any).cardType
-          ? [(filter as any).cardType as string]
-          : undefined);
-  if (types && types.length > 0) {
-    const cardType = (card.type || '').toLowerCase().trim();
-    const rawType = ((card.raw as any)?.type_code || '').toLowerCase().trim();
-    const normalizedTargetTypes = types.map((t) => t.toLowerCase().trim());
-    if (!normalizedTargetTypes.includes(cardType) && !normalizedTargetTypes.includes(rawType)) {
-      return false;
-    }
-  }
-
-  // 7. Traits (Case- and punctuation-resilient matching, matches if card has ANY listed trait)
-  const traits =
-    filter.traits || ((filter as any).trait ? [(filter as any).trait as string] : undefined);
-  if (traits && traits.length > 0) {
+  if (filter.traits?.length) {
     const cardTraits = card.traits || [];
-    const normalizedCardTraits = cardTraits.map((t: string) => ({
-      raw: t.toLowerCase().trim(),
-      stripped: t.toLowerCase().replace(/[^a-z0-9]/g, ''),
-    }));
-
-    const matchesAnyTrait = traits.some((targetTrait) => {
-      const targetLower = targetTrait.toLowerCase().trim();
-      const targetStripped = targetLower.replace(/[^a-z0-9]/g, '');
-
-      return normalizedCardTraits.some(
-        (ct: { raw: string; stripped: string }) =>
-          ct.raw === targetLower ||
-          ct.raw.includes(targetLower) ||
-          (targetStripped.length > 0 &&
-            (ct.stripped === targetStripped || ct.stripped.includes(targetStripped))),
-      );
-    });
-
-    if (!matchesAnyTrait) return false;
+    if (!filter.traits.some((trait) => hasMatchingTrait(cardTraits, trait))) return false;
   }
 
-  // 8. Aspects / Factions
-  const aspects =
-    filter.aspects ||
-    ((filter as any).aspect
-      ? [(filter as any).aspect as string]
-      : (filter as any).faction
-        ? [(filter as any).faction as string]
-        : undefined);
-  if (aspects && aspects.length > 0) {
-    const cardFaction = ((card.raw as any)?.faction_code || '').toLowerCase().trim();
-    const normalizedTargetAspects = aspects.map((a) => a.toLowerCase().trim());
-    if (!normalizedTargetAspects.includes(cardFaction)) return false;
+  if (filter.aspects?.length && !filter.aspects.some((a) => normalize(a) === card.faction)) {
+    return false;
   }
 
-  // 9. Card Sets
-  const sets = filter.sets || ((filter as any).set ? [(filter as any).set as string] : undefined);
-  if (sets && sets.length > 0) {
-    const cardSet = (
-      (card as any).setCode ||
-      (card.raw as any)?.card_set_code ||
-      (card.raw as any)?.set_code ||
-      (card as any).card_set_code ||
-      ''
-    )
-      .toLowerCase()
-      .trim();
-    const matchesSet = sets.some((s) => {
-      const targetSet = s.toLowerCase().trim();
-      if (targetSet === 'player_nemesis') {
-        const heroSetCode = (
-          context?.player?.hero?.setCode ||
-          (context?.player?.hero?.raw as any)?.card_set_code ||
-          ''
-        )
-          .toLowerCase()
-          .trim();
-        const nemesisSetCode = heroSetCode ? `${heroSetCode}_nemesis` : '';
-        return (
-          cardSet.includes('nemesis') ||
-          (nemesisSetCode.length > 0 && cardSet.includes(nemesisSetCode)) ||
-          (heroSetCode.length > 0 &&
-            cardSet.includes(heroSetCode) &&
-            cardSet.includes('nemesis')) ||
-          (card.raw as any)?.set_type === 'nemesis'
-        );
+  // Sets: PLAYER_NEMESIS is the nemesis set of the context player's hero
+  if (filter.sets?.length) {
+    const heroSetCode = context?.player?.hero.setCode;
+    const matchesSet = filter.sets.some((set) => {
+      const target = normalize(set);
+      if (target === 'player_nemesis') {
+        return Boolean(heroSetCode) && card.setCode === `${heroSetCode}_nemesis`;
       }
-      return cardSet === targetSet || cardSet.includes(targetSet);
+      return card.setCode === target;
     });
     if (!matchesSet) return false;
   }
 
-  // 10. Unicity
-  if (filter.isUnique !== undefined) {
-    if (card.isUnique !== filter.isUnique) return false;
+  if (filter.isUnique !== undefined && Boolean(card.isUnique) !== filter.isUnique) return false;
+
+  // Identity-specific: a card of the context player's hero set
+  if (filter.isIdentitySpecific !== undefined) {
+    const heroSetCode = context?.player?.hero.setCode;
+    const identitySpecific =
+      Boolean(card.belongsToHeroSet) && Boolean(heroSetCode) && card.setCode === heroSetCode;
+    if (identitySpecific !== filter.isIdentitySpecific) return false;
   }
 
-  // 11. Identity Specificity
-  if (filter.isIdentitySpecific && context?.player) {
-    const heroCode = context.player.hero.code;
-    const heroSet =
-      (context.player.hero.raw as any)?.card_set_code || context.player.hero.name.toLowerCase();
-    const cardSet = (card.raw as any)?.card_set_code || '';
-    if (cardSet !== heroSet && !(card.code || '').startsWith(heroCode.slice(0, 3))) {
-      return false;
-    }
-  }
-
-  // 12. Cost Comparisons
   if (filter.cost) {
-    const cardCost = card.cost;
-    if (typeof cardCost !== 'number') return false;
-    if (filter.cost.min !== undefined && cardCost < filter.cost.min) return false;
-    if (filter.cost.max !== undefined && cardCost > filter.cost.max) return false;
-    if (filter.cost.equals !== undefined && cardCost !== filter.cost.equals) return false;
+    const cost = card.cost;
+    if (typeof cost !== 'number') return false;
+    if (filter.cost.min !== undefined && cost < filter.cost.min) return false;
+    if (filter.cost.max !== undefined && cost > filter.cost.max) return false;
+    if (filter.cost.equals !== undefined && cost !== filter.cost.equals) return false;
   }
 
-  // 13. Resource Icons
-  const resourceIcons =
-    filter.resourceIcons ||
-    ((filter as any).resource
-      ? [(filter as any).resource as string]
-      : (filter as any).resourceIcon
-        ? [(filter as any).resourceIcon as string]
-        : undefined);
-  if (resourceIcons && resourceIcons.length > 0) {
-    const resources = (card.resources || {}) as Record<string, number | undefined>;
-    const matchesAnyResource = resourceIcons.some((r) => {
-      const targetResource = r.toLowerCase().trim();
-      const count = resources[targetResource] || 0;
-      const wildCount = targetResource !== 'wild' ? resources['wild'] || 0 : 0;
-      return count > 0 || wildCount > 0;
-    });
-    if (!matchesAnyResource) return false;
-  }
-
-  // 14. Keywords
-  if (filter.hasKeyword) {
-    const targetKeyword = filter.hasKeyword.toLowerCase().trim();
-    const rawText = ((card.raw as any)?.text || '').toLowerCase();
-    const keywords = (card as any).keywords || [];
-    const hasKw =
-      keywords.some((kw: string) => kw.toLowerCase().trim() === targetKeyword) ||
-      rawText.includes(targetKeyword);
-    if (!hasKw) return false;
-  }
-
-  // 15. In-Play Exhaustion State
-  if (filter.isExhausted !== undefined) {
-    const cardExhausted = Boolean((card as any).isExhausted || (card as any).exhausted);
-    if (cardExhausted !== filter.isExhausted) return false;
-  }
-
-  // 16. In-Play Status Conditions
-  if (filter.hasStatus && filter.hasStatus.length > 0) {
-    const statusTokens: string[] =
-      (card as any).statusTokens ||
-      ((card as any).isStunned ? ['STUNNED'] : [])
-        .concat((card as any).isConfused ? ['CONFUSED'] : [])
-        .concat((card as any).isTough ? ['TOUGH'] : []);
-
-    const matchesAllStatus = filter.hasStatus.every((st) =>
-      statusTokens.map((s) => s.toUpperCase()).includes(st.toUpperCase()),
+  // Resource icons: a wild icon counts as any type
+  if (filter.resourceIcons?.length) {
+    const resources = card.resources as unknown as Record<string, number | undefined>;
+    const matchesResource = filter.resourceIcons.some(
+      (icon) => (resources[icon] || 0) > 0 || (icon !== 'wild' && (resources.wild || 0) > 0),
     );
-    if (!matchesAllStatus) return false;
+    if (!matchesResource) return false;
+  }
+
+  if (filter.hasKeyword && !hasKeyword(card, filter.hasKeyword)) return false;
+
+  // In-play criteria hold only for a card in play
+  if (filter.isExhausted !== undefined) {
+    if (!instance || Boolean(instance.exhausted) !== filter.isExhausted) return false;
+  }
+  if (filter.hasStatus?.length) {
+    const statusCards: string[] = instance?.statusCards || [];
+    if (!filter.hasStatus.every((status) => statusCards.includes(status))) return false;
   }
 
   return true;

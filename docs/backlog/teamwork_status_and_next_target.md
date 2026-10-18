@@ -1,6 +1,6 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-18 (code audit AUD-20261017-232534 remediated; R1–R3 delivered; remaining work R4–R16 in section 3.5)
+> **Last updated:** 2026-10-18 (code audit AUD-20261017-232534 remediated; R1–R4 delivered; remaining work R5–R16 in section 3.5)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
 > **Verification baseline:** 🟢 3,025 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
@@ -82,7 +82,6 @@ The 21 findings were remediated on 2026-10-17/18 (`94ebc97..f6e470f`, pushed). W
 
 | #   | Item                                                                                             | Gate / milestone   | Tier | Estimate   | Plan                                                                                               |
 | --- | ------------------------------------------------------------------------------------------------ | ------------------ | ---- | ---------- | -------------------------------------------------------------------------------------------------- |
-| R4  | Coverage thresholds; dead-export report (knip) — **owner decision** (dev dependency)             | Tech Debt          | 1    | 3–4 h      | [plan_audit_r04_quality_ratchets.md](plan_audit_r04_quality_ratchets.md)                           |
 | R5  | Typed `effectParams`; `no-explicit-any` per engine folder (#127)                                 | Tech Debt          | 2    | 2–3 days   | [plan_audit_r05_typed_effect_params.md](plan_audit_r05_typed_effect_params.md)                     |
 | R6  | Split engine god functions (action handler registry; `dispatchSingleAction` is 3,000 lines)      | Tech Debt          | 2    | 2–3 days   | [plan_audit_r06_action_handler_registry.md](plan_audit_r06_action_handler_registry.md)             |
 | R7  | Typed log catalog; shrink `normalizeLogParams`                                                   | Tech Debt          | 2    | 1–2 days   | [plan_audit_r07_typed_log_catalog.md](plan_audit_r07_typed_log_catalog.md)                         |
@@ -110,7 +109,6 @@ Run the `next-task` skill (it reads this file). Plan anatomy and owner preferenc
 
 From the audit plans (section 3.5); each plan states the options and a recommendation:
 
-- R4: approve `knip` as a dev dependency.
 - R8 (OQ-3): are `autoResolveUnambiguous` / `villainPhaseStepping` UI preferences (pass per dispatch) or engine options?
 - R9: approve the supplemental data change for Klaw II (01114) and The "Immortal" Klaw (01127).
 - R10, R11, R12: Tier 3 design choices (catalog injection, engine kernel, structural sharing).

@@ -117,27 +117,21 @@ Each card implementation must follow a predictable, declarative pattern:
 
 1. **Card Code Identification:**
    - Every card must reference its canonical MarvelsDB code (e.g. `01001a` for Peter Parker, `01001b` for Spider-Man, `01005` for Web-Shooter).
-2. **Standardized Trigger Windows:**
-   - Abilities must explicitly declare their trigger window:
-     - `Action` / `Hero Action` / `Alter-Ego Action`
-     - `Forced Interrupt` / `Interrupt`
-     - `Forced Response` / `Response`
-     - `Resource` / `Hero Resource`
-     - `Constant`
-3. **Keyword & Trait Constants:**
-   - Never use raw string comparisons for traits or keywords. Use defined enums/consts:
+2. **Standardized Timing Windows:**
+   - Every ability declares `timing` from `TimingTypeSchema` (`src/data/supplemental/schema-primitives.ts`), e.g. `ACTION`, `HERO_ACTION`, `INTERRUPT`, `FORCED_RESPONSE`, `RESOURCE`, `CONSTANT`. Do not invent timing strings.
+3. **Trait Checks Go Through Helpers:**
+   - Traits are plain card strings. Do not hand-roll `traits.includes(...)` chains in new code; use `hasPlayerTrait` / `getEffectiveCardTraits` (`src/engine/pipeline/stat-calculator.ts`) so trait modifiers apply.
    ```typescript
-   // ❌ BAD
-   if (card.traits.includes("Avenger")) { ... }
+   // ❌ BAD: ignores effective-trait modifiers
+   if (card.traits?.includes('Avenger')) { ... }
 
    // ✅ GOOD
-   import { Trait } from '@engine/models/traits';
-   if (card.traits.includes(Trait.AVENGER)) { ... }
+   if (hasPlayerTrait(player, 'Avenger', state)) { ... }
    ```
 
 ---
 
-## 5. Iterative Development, Refactor-First & Targeted Testing
+## 6. Iterative Development, Refactor-First & Targeted Testing
 
 To ensure stability, prevent technical debt, and maintain high velocity, all development follows a **Refactor-First, Targeted-Verification workflow**:
 
@@ -161,7 +155,7 @@ To ensure stability, prevent technical debt, and maintain high velocity, all dev
 |     (Full suite `npm test` runs once via `.githooks/pre-push`)          |
 |                                   │                                     |
 |                                   ▼                                     |
-|  6. Commit atomically (e.g. `feat(card): implement Backflip interrupt`) |
+|  6. Commit atomically (e.g. `feat(data): implement Backflip interrupt`) |
 +-------------------------------------------------------------------------+
 ```
 
@@ -174,30 +168,27 @@ To ensure stability, prevent technical debt, and maintain high velocity, all dev
 
 ---
 
-## 6. Test-Driven Development (TDD) Standards
+## 7. Test-Driven Development (TDD) Standards
 
 1. **No Card Without a Test:**
    - Every hero ability, event card, upgrade, attachment, and villain activation must have automated tests in `tests/`.
 2. **Follow the AAA Pattern (Arrange - Act - Assert):**
    ```typescript
-   it('triggers Spider-Sense when the villain initiates an attack', () => {
+   // See tests/engine/heart-shaped-herb.test.ts for the full setup helper.
+   it('gives the villain a tough status card when Heart-Shaped Herb is revealed', () => {
      // Arrange
-     const state = createTestGame({
-       hero: '01001b', // Spider-Man
-       villain: '01094', // Rhino
-       hand: ['01009'], // Backflip in hand
-     });
-     const initialHandSize = state.players[0].hand.length;
+     const state = setup(); // setupGame({ scenarioId: 'rhino', players: [...], skipMulligan: true })
+     state.players[0].dealtEncounterCards.push(createCardInstance(cardCatalog.getCard('01158')!));
 
      // Act
-     const nextState = engine.stepVillainAttack(state, { targetPlayerId: 'player-1' });
+     const next = step4_revealEncounterCards(state);
 
      // Assert
-     expect(nextState.players[0].hand.length).toBe(initialHandSize + 1); // Spider-Sense drew 1 card
+     expect(toughCount(getActiveVillain(next))).toBe(1);
    });
    ```
 3. **Fast Execution:**
-   - Unit tests must remain lightweight and headless. The entire test suite should execute in < 2 seconds.
+   - Unit tests must remain lightweight and headless. Keep each test file fast (no I/O, no timers, no network); the full suite takes about 20-30 seconds and runs once via `.githooks/pre-push`.
 4. **🚫 Zero Skipped Tests Invariant (Never Allow Skipped Tests):**
    - **Binary Outcome Only:** Tests must either strictly PASS or FAIL. There is no middle ground, no deferred state, and no `it.skip`, `describe.skip`, `test.skip`, `it.todo`, `fit`, `fdescribe`, or commented-out test assertions.
    - **Fix Problems As They Are Found:** When a test fails or a regression is discovered, diagnose and resolve it immediately at the root cause. Never bypass, skip, or disable tests to force a green pipeline.
@@ -208,28 +199,26 @@ To ensure stability, prevent technical debt, and maintain high velocity, all dev
 
 ---
 
-## 7. Localization (i18n) Standards
+## 8. Localization (i18n) Standards (ADR-0005)
 
-1. **Zero Hardcoded Display Strings:**
-   - All user-facing text, dialogs, button labels, and system log descriptions must use translation keys via `t('key')` or locale catalogs.
-   ```tsx
-   // ❌ BAD
-   <button>End Turn</button>
+Current state: only the comic game log is localized. There is no general `t()` helper yet; the rest of the UI uses plain strings.
 
-   // ✅ GOOD
-   <button>{t('game.actions.endTurn')}</button>
+1. **Comic Log Text Lives in Locale Files:**
+   - Narrator, onomatopoeia and dialogue strings are templates in `src/locales/<lang>/combat-log.json` (`en`, `fr`), filled with `interpolateTemplate` in `src/ui/utils/comic-log-formatter.ts` (`{{round}}`-style placeholders).
+   - Add a key to every language file in the same change.
+   ```typescript
+   // ❌ BAD: display text hardcoded in the formatter
+   return 'ROUND ' + round + ': THE BATTLE INTENSIFIES!';
+
+   // ✅ GOOD: template in combat-log.json, filled at render time
+   interpolateTemplate(dict.narrator.round_header, { round });
    ```
-2. **Translation Key Hierarchy:**
-   - Keys must be structured hierarchically in JSON:
-     - `game.phases.*`
-     - `game.actions.*`
-     - `keywords.*`
-     - `status.*`
-     - `prompts.*`
+2. **Do Not Invent an i18n API:**
+   - Do not add `t('...')` calls or new key trees outside the combat log without a plan and ADR-0005 update. New localization infrastructure is a planned feature, not a side effect of a UI change.
 
 ---
 
-## 8. Code Style & Naming Conventions
+## 9. Code Style & Naming Conventions
 
 | Category                  | Convention                                         | Example                                     |
 | :------------------------ | :------------------------------------------------- | :------------------------------------------ |
@@ -242,7 +231,7 @@ To ensure stability, prevent technical debt, and maintain high velocity, all dev
 
 ---
 
-## 9. Git & Commit Message Standards
+## 10. Git & Commit Message Standards
 
 We use [Conventional Commits](https://www.conventionalcommits.org/):
 
@@ -255,7 +244,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ---
 
-## 10. UI Layering, Stacking Contexts & Z-Axis Zoom Standards
+## 11. UI Layering, Stacking Contexts & Z-Axis Zoom Standards
 
 1. **Unconstrained Z-Axis Elevation for Interactive Elements:**
    - Interactive card containers (such as `PlayerHandTray` and tabletop zones) must maintain `overflow-visible` so elevated/hovered elements can project into the 3D Z-axis without triggering clipping boundaries or scrollbar spawning.
@@ -269,7 +258,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ---
 
-## 11. Comic Typography & UI Scaling Standards (ADR-0004, ADR-0037)
+## 12. Comic Typography & UI Scaling Standards (ADR-0004, ADR-0037)
 
 1. **Local-First Font Assets:**
    - Never rely on runtime external CDNs for typography. All comic fonts (`Komika Text`, `Comic Relief`, `Bangers`) must be bundled locally in `public/fonts/` or `@fontsource` packages for complete offline play.
@@ -282,7 +271,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ---
 
-## 12. Local-First Card Art & Static Asset Pipeline (ADR-0011)
+## 13. Local-First Card Art & Static Asset Pipeline (ADR-0011)
 
 1. **Local Static Art Resolution (`/cards/:fileName`):**
    - The primary resolution route for all card artwork is the local static endpoint `/cards/${code}${side}.png`.
@@ -294,7 +283,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ---
 
-## 13. Declarative Schema Taxonomy & Naming Invariants (ADR-0058)
+## 14. Declarative Schema Taxonomy & Naming Invariants (ADR-0058)
 
 All card ability definitions in `src/data/supplemental/` and primitive handlers in `src/engine/` must strictly adhere to the 5 core naming invariants:
 
@@ -307,3 +296,64 @@ All card ability definitions in `src/data/supplemental/` and primitive handlers 
    - **Responses (Post-Resolution):** Past participle (e.g. `DAMAGE_TAKEN`, `THREAT_PLACED`, `CARD_PLAYED`, `DEFEATED`, `ROUND_ENDED`).
 4. **Strict Pluralization for Multi-Entity Operations:** Operations that can affect 1 to $N$ items use plural names (e.g. `ADD_COUNTERS`, `REMOVE_COUNTERS`, `DRAW`, `DISCARD`). Dual single/plural variant names (like `ADD_COUNTER` / `ADD_COUNTERS`) are prohibited.
 5. **Zero Single-Use / Legacy Tech Debt:** Bespoke, single-card primitives (e.g. `NICK_FURY_CHOICE`, `EXPLOSION`, `REPULSOR_BLAST`) are deprecated and decomposed into composable primitives + `DynamicValueSource`.
+
+---
+
+## 15. Recurring-Error Guardrails
+
+Each rule below comes from a defect found in code review or a fix commit. Check them before you open a PR.
+
+1. **Validators fail closed.** A check that could not run is an error, never a pass. No empty `catch`, no silent skip.
+
+   ```typescript
+   // ❌ BAD: lookup fails, check is skipped, validation still "passes"
+   try { type = extractCard(code)?.type_code; } catch { /* ignore */ }
+
+   // ✅ GOOD: say the check could not run
+   if (!type) errors.push({ path: 'type', message: 'Card type unresolved; pass it as the 2nd argument.' });
+   ```
+
+2. **Identify by code, never by text.** Match cards by `cardCode` or an enum. Do not use name substrings or a regex over free-form input.
+
+   ```typescript
+   // ❌ BAD
+   if (option.label.includes('Wakanda')) ...      // input.match(/\d{5}/) on raw JSON
+   // ✅ GOOD
+   if (option.cardCode === WAKANDA_FOREVER_CODE) ... // code taken from a field or a file name
+   ```
+
+3. **One source of truth.** Derive lists, schemas and UI tiles from the engine enums or card data. Do not retype them. When legality and payment need the same number, share one function.
+
+   ```typescript
+   // ❌ BAD: second hand-typed list that drifts
+   const TYPES = ['hero', 'event', 'upgrade'];
+   // ✅ GOOD
+   const TYPES = Object.values(CardType);
+   ```
+
+4. **Untrusted data gets a type guard, not a cast.** No `as any`. Check shape (`Array.isArray`, `typeof`) before use. Use one typed helper instead of repeated casts.
+
+   ```typescript
+   // ❌ BAD
+   (parsed as any).abilities.some(...)
+   // ✅ GOOD
+   const abilities = Array.isArray(data?.abilities) ? data.abilities : [];
+   ```
+
+5. **Engine is deterministic.** No `Date.now()`, `new Date()` or `Math.random()` in `src/engine/`. Write the log through `appendLog`. Use the seeded RNG in `src/engine/state/rng.ts` (its unseeded bootstrap is the only permitted `Math.random()`).
+
+6. **UI timers are owned.** Use the `useTimeout` hook. A bare `setTimeout` that sets state leaks after unmount.
+
+7. **Dev-server writes are confined.** Resolve the target path and check that it stays inside the intended folder before writing.
+
+8. **Tests exercise the path that changed.** Cover resolution and fallback paths, not only the explicit-argument path. Never assume a random seed: pick by text or seed the deck.
+
+   ```typescript
+   // ❌ BAD: always passes 'event', so the lookup path is never tested
+   validateCardInput(payload, 'event');
+   // ✅ GOOD: also test the file-name path (supp_01003.json) and the unresolved case
+   ```
+
+9. **Match the existing check.** If the schema tests a flag by truthiness, a helper that re-checks it must too (`Boolean(x)`, not `x === true`). Otherwise a bad value passes one layer and fails another.
+
+10. **Delete what you orphan.** Run `rtk npm run deadcode` after refactors. Remove unused exports in the same change.

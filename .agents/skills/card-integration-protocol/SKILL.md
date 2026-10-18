@@ -185,7 +185,7 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
   - If a trigger is not dispatched for that card type (e.g. `WHEN_REVEALED` on Minions / Side Schemes, or Villain Stage transitions), the mechanic is **inactive in the engine**.
 - **Sub-step 6C (Code-Level Gap Routing — Refactor-First):**
   - If the underlying TypeScript code has gaps, missing clauses, un-emitted triggers, or card-specific anti-patterns:
-    - **Tier 2 (Parameterize, Merge, or Generic Dispatch Fix):** Prefer adding a parameter to an existing generic primitive or merging similar handlers over adding a parallel primitive. Never propose "supporting both". Implement the clean generic fix and write/extend a targeted regression unit test.
+    - **Tier 2 (Parameterize, Merge, or Generic Dispatch Fix):** Prefer adding a parameter to an existing generic primitive or merging similar handlers over adding a parallel primitive. Implement the clean generic fix and write/extend a targeted regression unit test.
     - **Tier 3 (Structural Blocker / Interactive UI Modal):** If the card requires interactive decision modals, new state machines, state schema redesigns, or phase loop redesigns, **confidence CANNOT exceed 80%**; isolate the card to `docs/ambiguities/` and strip `abilities: [...]`.
 
 ### Step 7: Differential Comparison, Blast-Radius Gate & Mandatory User Peer Review

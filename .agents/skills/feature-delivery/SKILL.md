@@ -37,7 +37,7 @@ Before writing any implementation code or tests for a new feature, verify the fo
    - Headless & decoupled engine (`src/engine/` contains no UI/DOM/CSS dependencies).
    - Declarative data-first (generic primitives in `src/engine/effects/`, card-specific parameters in `src/data/supplemental/`).
     - Rhino release scope boundary (Core set player cards & Rhino encounters for Gate 1).
-   - **Refactor-First & Zero Tech Debt:** Never propose "supporting both" or duplicating functions for minor variations. Prefer merging similar functions, adding a parameter to an existing function, or refactoring tangled/spaghetti code in the path of the change and updating all callers/data in scope.
+   - **Refactor-First & Zero Tech Debt:** Follow `coding-and-testing-rules.md`; the plan must list what is merged, parameterized, or deleted.
 
 
 ---
@@ -148,7 +148,7 @@ flowchart TD
   - **Happy Path:** Standard execution and expected state transitions.
   - **Edge Cases:** Boundary conditions, 0-amount scenarios, empty decks, defeated characters.
   - **Rules Invariants:** Unicity checks, form restrictions, timing priorities.
-- **Zero Skipped Tests Invariant:** Tests must pass or fail. A hook blocks skipped, todo, and focused tests in `tests/**`; do not comment out assertions either.
+- No skipped, todo, focused, or commented-out tests (a hook enforces this).
 - Run the targeted test file (`rtk npx vitest run tests/<file>.test.ts`) and confirm it fails because the capability is not yet implemented (**Red**). If it passes before implementation, go back and tighten the test.
 
 ---

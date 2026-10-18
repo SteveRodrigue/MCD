@@ -109,7 +109,7 @@ Use the command and body in [`issue-template.md`](issue-template.md) (strict: ke
 ### Step 4: Root-Cause Diagnosis & Implementation Plan Review 🛑
 
 - Diagnose the exact line of code, mutation logic, or missing condition responsible for the failure.
-- **Refactor-First Check:** Inspect surrounding functions and callers. If the bug is caused by duplicated logic, parallel code paths, or tangled conditionals, plan to **merge the similar functions**, **add a parameter to an existing function**, or **refactor the debt in path** rather than adding another branch or "supporting both".
+- **Refactor-First Check:** Inspect surrounding functions and callers; if the bug comes from duplicated or tangled logic, plan the merge/parameterize fix per `coding-and-testing-rules.md`.
 - **MANDATORY REVIEW GATE:** Create an `implementation_plan.md` artifact detailing:
   1. **Root-Cause Analysis:** Why the defect occurs with reference to game state snapshots in `logs/gamestates/` and RR v1.8 rules.
   2. **Simplification & Refactor Check:** What existing functions/helpers are being merged, parameterized, or cleaned up so minimal net-new code is added.
@@ -151,7 +151,7 @@ rtk npx prettier --check <changed-files> && rtk npm run lint && rtk npm run type
 ```
 
 - If supplemental data changed, also run `rtk npm run report:declarations` once.
-- **Enforce Zero Skipped Tests Invariant:** Confirm all targeted/related tests pass with **0 failed and 0 skipped** (`passed: N, failed: 0, skipped: 0`).
+- Confirm the targeted tests show 0 failed and 0 skipped.
 - **Do NOT run the full `npm test` suite or `npm run build` here:** `.githooks/pre-push` runs the full suite once on push.
 
 ---

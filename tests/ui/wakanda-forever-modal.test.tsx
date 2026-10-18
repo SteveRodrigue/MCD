@@ -1,28 +1,53 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { WakandaForeverModal } from '../../src/ui/components/board/WakandaForeverModal';
-import type { PendingDecisionPrompt } from '../../src/engine/models';
+import type { DecisionPromptOption, PendingDecisionPrompt } from '../../src/engine/models';
+
+function makePrompt(options: DecisionPromptOption[]): PendingDecisionPrompt {
+  return {
+    promptId: 'prompt_wakanda',
+    playerId: 'p1',
+    title: 'Wakanda Forever!',
+    description: 'Select the resolution order for your Black Panther upgrades.',
+    sourceCardName: 'Wakanda Forever!',
+    options,
+  };
+}
+
+function upgradeOption(
+  id: string,
+  cardCode: string,
+  label: string,
+  specialEffect: string,
+  amount: number,
+  finisherAmount: number,
+): DecisionPromptOption {
+  return {
+    id,
+    cardCode,
+    label,
+    description: `<b>Special</b>: ${label} special.`,
+    effect: 'SELECT_WAKANDA_UPGRADE',
+    params: { specialEffect, amount, finisherAmount },
+  };
+}
+
+const daggers = upgradeOption('wf_daggers', '01046', 'Energy Daggers', 'DEAL_DAMAGE', 1, 2);
+const claws = upgradeOption('wf_claws', '01047', 'Panther Claws', 'DEAL_DAMAGE', 2, 4);
+const genius = upgradeOption('wf_genius', '01048', 'Tactical Genius', 'REMOVE_THREAT', 1, 2);
+const suit = upgradeOption('wf_suit', '01049', 'Vibranium Suit', 'TRANSFER_DAMAGE', 1, 2);
 
 // Black Panther's Wakanda Forever! lets the player order the upgrade Specials; the last one
 // resolves as the finisher (AUD-20261017-232534 F007: the modal had no test).
 describe('WakandaForeverModal', () => {
-  const prompt = {
-    promptId: 'prompt_wakanda',
-    playerId: 'p1',
-    title: 'Wakanda Forever!',
-    sourceCardName: 'Wakanda Forever!',
-    options: [
-      { id: 'wf_daggers', cardCode: '01046', label: 'Energy Daggers' },
-      { id: 'wf_claws', cardCode: '01047', label: 'Panther Claws' },
-      { id: 'wf_genius', cardCode: '01048', label: 'Tactical Genius' },
-    ],
-  } as PendingDecisionPrompt;
+  const prompt = makePrompt([daggers, claws, genius]);
 
   it('lists every upgrade Special and marks the last one as the finisher', () => {
     render(<WakandaForeverModal prompt={prompt} onExecuteSequence={vi.fn()} />);
     expect(screen.getAllByText('Energy Daggers').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Panther Claws').length).toBeGreaterThan(0);
-    expect(screen.getByText('REMOVE 2 THREAT FROM SCHEME (FINISHER)')).toBeTruthy();
+    expect(screen.getAllByText('1 DMG').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('💥 2 THW').length).toBeGreaterThan(0);
   });
 
   it('executes the sequence in the order the player sets', () => {
@@ -35,51 +60,45 @@ describe('WakandaForeverModal', () => {
     expect(onExecuteSequence).toHaveBeenCalledWith(['wf_claws', 'wf_daggers', 'wf_genius']);
   });
 
-  it('renders styled tiles for all four upgrades with Vibranium Suit (01049) showing its icon', () => {
-    const fullPrompt = {
-      promptId: 'prompt_wakanda_full',
-      playerId: 'p1',
-      title: 'Wakanda Forever!',
-      sourceCardName: 'Wakanda Forever!',
-      options: [
-        { id: 'wf_daggers', cardCode: '01046', label: 'Energy Daggers' },
-        { id: 'wf_claws', cardCode: '01047', label: 'Panther Claws' },
-        { id: 'wf_genius', cardCode: '01048', label: 'Tactical Genius' },
-        { id: 'wf_suit', cardCode: '01049', label: 'Vibranium Suit' },
-      ],
-    } as PendingDecisionPrompt;
+  it('styles Vibranium Suit (01049) from its Special effect and amounts', () => {
+    render(
+      <WakandaForeverModal
+        prompt={makePrompt([daggers, claws, genius, suit])}
+        onExecuteSequence={vi.fn()}
+      />,
+    );
 
-    render(<WakandaForeverModal prompt={fullPrompt} onExecuteSequence={vi.fn()} />);
-
-    expect(screen.getAllByText('Energy Daggers').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Panther Claws').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Tactical Genius').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Vibranium Suit').length).toBeGreaterThan(0);
     expect(screen.getByText('🛡️')).toBeTruthy();
-    expect(screen.getByText('MOVE 2 DAMAGE TO ENEMY (FINISHER)')).toBeTruthy();
+    expect(screen.getAllByText('💥 2 MOVE').length).toBeGreaterThan(0);
   });
 
-  it('renders fallback tile for an unknown card code', () => {
-    const unknownPrompt = {
-      promptId: 'prompt_wakanda_unknown',
-      playerId: 'p1',
-      title: 'Wakanda Forever!',
-      sourceCardName: 'Wakanda Forever!',
-      options: [
-        {
-          id: 'wf_custom',
-          cardCode: '99999',
-          label: 'Custom Upgrade',
-          description: 'Custom special effect',
-        },
-      ],
-    } as PendingDecisionPrompt;
+  it('renders the card text as formatted HTML, not raw markup', () => {
+    render(<WakandaForeverModal prompt={prompt} onExecuteSequence={vi.fn()} />);
 
-    render(<WakandaForeverModal prompt={unknownPrompt} onExecuteSequence={vi.fn()} />);
+    expect(screen.queryByText(/<b>Special<\/b>/)).toBeNull();
+    expect(screen.getAllByText('Special', { selector: 'b' }).length).toBe(3);
+  });
+
+  it('renders the fallback tile for an option without Special amounts', () => {
+    render(
+      <WakandaForeverModal
+        prompt={makePrompt([
+          {
+            id: 'wf_custom',
+            cardCode: '99999',
+            label: 'Custom Upgrade',
+            description: 'Custom special effect',
+            effect: 'SELECT_WAKANDA_UPGRADE',
+          },
+        ])}
+        onExecuteSequence={vi.fn()}
+      />,
+    );
 
     expect(screen.getAllByText('Custom Upgrade').length).toBeGreaterThan(0);
     expect(screen.getByText('⚡')).toBeTruthy();
-    expect(screen.getByText('Custom special effect (BOOSTED)')).toBeTruthy();
-    expect(screen.getByText('💥 FINISHER')).toBeTruthy();
+    expect(screen.getByText('Custom special effect')).toBeTruthy();
+    expect(screen.getAllByText('💥 FINISHER').length).toBeGreaterThan(0);
   });
 });

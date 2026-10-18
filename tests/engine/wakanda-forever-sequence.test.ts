@@ -290,11 +290,13 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
           id: claws.instanceId,
           cardCode: '01047',
           label: 'Panther Claws',
+          params: { specialEffect: 'DEAL_DAMAGE', amount: 2, finisherAmount: 4 },
         }),
         expect.objectContaining({
           id: daggers.instanceId,
           cardCode: '01046',
           label: 'Energy Daggers',
+          params: { specialEffect: 'DEAL_DAMAGE', amount: 1, finisherAmount: 2 },
         }),
       ]),
     );

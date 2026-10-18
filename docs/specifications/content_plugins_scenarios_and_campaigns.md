@@ -110,6 +110,8 @@ Sources: `references/rules/glossary/V.md#villain-defeat`, Main Scheme, Appendix 
 
 ### A2. Base scenario behavior + composition
 
+> **Status (2026-10-18, AUD-20261017-232534 F011-A):** the default behaviour below is implemented as the `DeclarativeScenarioPlugin` class (`src/engine/scenarios/declarative-plugin.ts`): setup, encounter deck, villain stage progression and main scheme progression come from `definition.json`. Scenarios override protected members instead of composing `(state, ctx, next)` hooks: `resolveStage1ASetup`, `onVillainStageAdvanced`, `excludedEncounterTypes`. Rhino has no override; Klaw and Ultron keep their stage 1A setup (and Klaw II's reveal) in code until their cards get supplemental data. The `defineScenarioPlugin` composition API is not built.
+
 `src/engine/scenarios/base-scenario-plugin.ts` holds the default implementations. `defineScenarioPlugin(definition, hooks?)` composes them:
 
 ```ts

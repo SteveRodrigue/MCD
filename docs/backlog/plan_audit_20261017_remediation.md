@@ -293,3 +293,13 @@ Detailed plans are written into this section before each item starts. Tier 3 ite
 - **F019** delivered: shared `readJsonBody`/`sendJson`/`handleJsonPost`/`downloadFile` in `vite.config.ts` (566 → 353 lines); write endpoints (snapshots, reports, stats, Card Editor) run on the dev server only, not on `vite preview`; Card Editor pack file names must be a bare `<name>.json` (a `../` path could write outside the pack folder). **Not moved:** the Event `discardSelf` check needs the card's upstream type, which `CardEnrichmentSchema` cannot see, so it stays in the editor middleware.
 - **F020** delivered: `useTimeout` and `useOptionalGameSettings`.
 - **F021** delivered: lint covers `tests/`, `tools/`, `scripts/`; `ENGINE_VERSION` from `package.json`; root plan deleted. `no-explicit-any` stays off: as `warn` it would fail `--max-warnings 0` on the 452 existing `any`.
+
+---
+
+## 18–19. Handler registry, import cycles, declarative scenarios (detail)
+
+Owner approved both rows on 2026-10-18.
+
+- **F010-A** delivered: `executeStep` dispatches through `EFFECT_HANDLERS` (seven family modules, compile-time complete), ADR-0085. Not done: typing `effectParams` per effect from `effect-params.ts`.
+- **F014-C** not delivered, needs an owner design decision. The engine has one import cycle of 30 modules (effects, handlers, triggers, pipeline, scenarios, specials) because the rules recurse: triggers execute effects, effects dispatch triggers, pipeline steps call both. Moving shared helpers to leaf modules does not remove it. Removing the load-time `registerFinishDamagePlacementsHook` changed module load order and made 18 tests that mock `trigger-dispatcher` with `importOriginal` bind the real module; reverted. A real fix is an engine "kernel" that wires the trigger dispatcher, effect executor and pipeline at boot (dependency injection), which changes how every engine module is reached (Tier 3).
+- **F011-A** delivered: `DeclarativeScenarioPlugin` drives Rhino, Klaw and Ultron from `definition.json` (plugins 919 → 456 lines, behaviour unchanged, all scenario tests green). Left in code for Gate 2 card integration: Klaw's Defense Network setup and Klaw II's Immortal Klaw attach, Ultron's drones. **Rules question for Gate 2:** Klaw Expert starts on Klaw II, but Klaw II's reveal (attach The "Immortal" Klaw) runs only when Klaw I advances, not at Expert setup, unlike Rhino II whose reveal runs at Expert setup. Confidence below 95 % without reading the card text; not changed.

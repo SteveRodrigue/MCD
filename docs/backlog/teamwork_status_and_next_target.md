@@ -80,13 +80,12 @@ _None currently._
 
 Plan (approved 2026-10-17): [plan_audit_20261017_remediation.md](plan_audit_20261017_remediation.md). One commit per row, in this order. Rows 1 to 11 are Gate 1 (🔴 blocker / 🟠 affects Rhino); rows 12 and later are Tech Debt & Tooling and run after them.
 
-| #   | Finding                                                                                         | Tier | Estimate |
-| --- | ----------------------------------------------------------------------------------------------- | ---- | -------- |
-| 4   | F004 setup reads `ScenarioRegistry`; delete legacy `catalog.ts`                                 | 2    | 4–6 h    |
-| 13  | F016 remove `state.villain` / `mainScheme` (#215) — **deferred by owner** to multi-villain work | 3    | 1 day    |
-| 15  | F013 shared test fixtures — **deferred** (depends on F016)                                      | 1    | 1 day    |
-| 18  | F010-A / F014-C handler registries (F014-B catalog injection **deferred by owner**)             | 2    | 3+ days  |
-| 19  | F011-A declarative scenario plugin (Gate 2)                                                     | 2    | 1–2 days |
+| #   | Finding                                                                                                         | Tier | Estimate |
+| --- | --------------------------------------------------------------------------------------------------------------- | ---- | -------- |
+| 4   | F004 setup reads `ScenarioRegistry`; delete legacy `catalog.ts`                                                 | 2    | 4–6 h    |
+| 13  | F016 remove `state.villain` / `mainScheme` (#215) — **deferred by owner** to multi-villain work                 | 3    | 1 day    |
+| 15  | F013 shared test fixtures — **deferred** (depends on F016)                                                      | 1    | 1 day    |
+| 18  | F014-C break the 30-module engine import cycle — **owner design decision** (kernel wiring, Tier 3; F010-A done) | 3    | 3+ days  |
 
 **Gate 1 is done when** sections 3.1 to 3.4 and rows 1 to 11 of section 3.5 are empty, the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
 

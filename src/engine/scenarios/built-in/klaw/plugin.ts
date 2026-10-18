@@ -1,149 +1,18 @@
-import {
-  GameState,
-  VillainState,
-  MainSchemeState,
-  SideSchemeCard,
-  StatusCard,
-  VillainCard,
-  NormalizedCard,
-  getActiveVillain,
-  getActiveMainScheme,
-  getVillainById,
-  setActiveVillain,
-  replaceActiveMainScheme,
-  getPerPlayerCount,
-} from '@engine/models';
+import { GameState, SideSchemeCard, getActiveVillain, getPerPlayerCount } from '@engine/models';
 import { cardCatalog } from '../../../../data/importer/card-loader';
 import { createCardInstance } from '../../../state/card-instance';
-import { shuffleArray, nextEngineId } from '../../../state/rng';
-import { ScenarioPlugin, ScenarioDefinition, ScenarioGameSetupOptions } from '../../types';
-import { advanceVillainStage, villainStageHitPoints } from '../../advance-villain-stage';
-import definitionData from './definition.json';
 import { appendLog } from '../../../state/game-log';
-
-const klawDefinition: ScenarioDefinition = definitionData as ScenarioDefinition;
+import { DeclarativeScenarioPlugin } from '../../declarative-plugin';
+import type { ScenarioDefinition, ScenarioGameSetupOptions } from '../../types';
+import definitionData from './definition.json';
 
 /**
- * Klaw Scenario Plugin implementation.
- * Encapsulates setup, multi-stage villain transitions (I -> II -> III),
- * Stage 1A (Defense Network search & starting minion discard/deal),
- * Stage 1B -> 2B progression, and victory/defeat evaluation.
+ * Klaw (Underground Distribution). Stage 1A setup and the Klaw II reveal are still code, not
+ * supplemental data (Gate 2 card integration).
  */
-export class KlawScenarioPlugin implements ScenarioPlugin {
-  definition = klawDefinition;
-
-  onGameSetup(state: GameState, options: ScenarioGameSetupOptions): GameState {
-    const difficulty = options.difficulty || 'STANDARD';
-    state.difficulty = difficulty;
-    state.heroicLevel = options.heroicLevel || 0;
-    state.scenarioId = this.definition.id;
-    state.scenarioCardCode = this.definition.scenarioCardCode;
-
-    const numPlayers = state.players.length || 1;
-
-    // 1. Determine Starting Villain Stage based on Difficulty
-    const startingStageCode = this.definition.villainSetup.stages[difficulty][0];
-    const villainCard = cardCatalog.getCard(startingStageCode) as VillainCard;
-    if (!villainCard) {
-      throw new Error(
-        `Villain card '${startingStageCode}' not found in catalog for scenario '${this.definition.id}'.`,
-      );
-    }
-
-    const maxHealth = villainStageHitPoints(villainCard, numPlayers);
-
-    const initialVillain: VillainState = {
-      instanceId: `villain_${nextEngineId(state, 'id')}_${startingStageCode}`,
-      card: villainCard,
-      health: maxHealth,
-      maxHealth,
-      exhausted: false,
-      statusCards: startingStageCode === '01115' ? [StatusCard.TOUGH] : [],
-      attachments: [],
-    };
-
-    state.villains = [initialVillain];
-    setActiveVillain(state, initialVillain.instanceId!);
-
-    // 2. Setup Main Scheme (Underground Distribution Stage 1B)
-    const mainSchemeCard = cardCatalog.getMainSchemeByStage('klaw', '1B');
-    if (!mainSchemeCard) {
-      throw new Error(`Main scheme stage '1B' not found in catalog for scenario 'klaw'.`);
-    }
-
-    const targetThreat =
-      (mainSchemeCard.targetThreat || this.definition.mainSchemeSetup.targetThreatPerPlayer) *
-      numPlayers;
-    const initialMainScheme: MainSchemeState = {
-      instanceId: `main_scheme_${nextEngineId(state, 'id')}_${mainSchemeCard.code}`,
-      card: mainSchemeCard,
-      threat: mainSchemeCard.baseThreat || this.definition.mainSchemeSetup.startingThreat,
-      targetThreat,
-      stage: '1B',
-    };
-
-    replaceActiveMainScheme(state, initialMainScheme);
-
-    // 3. Build Encounter Deck based on Difficulty
-    const modularSetCodes =
-      options.modularSetCodes || this.definition.modularEncounterSets.defaults[difficulty];
-    const allEncounterCards: NormalizedCard[] = [];
-
-    // Add scenario cards (Klaw set)
-    allEncounterCards.push(...cardCatalog.getExpandedCardsBySet('klaw'));
-
-    // Add Standard set
-    allEncounterCards.push(...cardCatalog.getExpandedCardsBySet('standard'));
-
-    // Add Expert set if difficulty is EXPERT
-    if (difficulty === 'EXPERT') {
-      allEncounterCards.push(...cardCatalog.getExpandedCardsBySet('expert'));
-    }
-
-    // Add modular sets
-    for (const setCode of modularSetCodes) {
-      if (setCode !== 'standard' && setCode !== 'expert') {
-        allEncounterCards.push(...cardCatalog.getExpandedCardsBySet(setCode));
-      }
-    }
-
-    // Filter out villain cards and main scheme cards from encounter deck
-    const deckCards = allEncounterCards.filter(
-      (c: NormalizedCard) =>
-        c.type !== 'villain' &&
-        c.type !== 'main_scheme' &&
-        c.code !== '01113' &&
-        c.code !== '01114' &&
-        c.code !== '01115' &&
-        c.code !== '01116a' &&
-        c.code !== '01116b' &&
-        c.code !== '01117a' &&
-        c.code !== '01117b',
-    );
-
-    // Shuffle and create instances
-    const shuffled = shuffleArray(state, deckCards);
-    state.encounterDeck = shuffled.map((c) => createCardInstance(c));
-    state.encounterDiscard = [];
-    state.sideSchemes = [];
-
-    // 4. Resolve Stage 1A Declarative Setup Hook
-    this.resolveStage1ASetup(state, options);
-
-    appendLog(state, {
-      category: 'phase',
-      key: 'scenario.setup',
-      params: {
-        scenario: this.definition.name,
-        difficulty,
-        villain: villainCard.name,
-        health: maxHealth,
-        threatTarget: targetThreat,
-      },
-      onomatopoeia: 'UNDERGROUND DISTRIBUTION COMMENCES!',
-    });
-
-    return state;
+export class KlawScenarioPlugin extends DeclarativeScenarioPlugin {
+  constructor() {
+    super(definitionData as ScenarioDefinition, 'UNDERGROUND DISTRIBUTION COMMENCES!');
   }
 
   resolveStage1ASetup(state: GameState, _options?: ScenarioGameSetupOptions): GameState {
@@ -202,65 +71,8 @@ export class KlawScenarioPlugin implements ScenarioPlugin {
     return state;
   }
 
-  onVillainDefeated(
-    state: GameState,
-    defeatedVillainInstanceId: string,
-  ): {
-    state: GameState;
-    advancedStage?: boolean;
-    victory?: boolean;
-  } {
-    const villain = getVillainById(state, defeatedVillainInstanceId) || getActiveVillain(state);
-    const currentCode = villain.card.code;
-    const difficulty = state.difficulty || 'STANDARD';
-
-    // Skirmish Mode: Stage I defeated -> Immediate Victory
-    if (difficulty === 'SKIRMISH') {
-      state.winner = 'HEROES';
-      appendLog(state, {
-        category: 'combat',
-        key: 'scenario.victory',
-        params: { mode: 'SKIRMISH', villain: villain.card.name },
-        onomatopoeia: 'KLAW DEFEATED! HERO VICTORY!',
-      });
-      return { state, victory: true };
-    }
-
-    // Standard Mode: Stage I -> Stage II, Stage II -> Victory
-    if (difficulty === 'STANDARD') {
-      if (currentCode === '01113') {
-        return advanceVillainStage(state, villain.instanceId!, '01114', () => {
-          this.resolveStageIIWhenRevealed(state);
-        });
-      } else {
-        state.winner = 'HEROES';
-        appendLog(state, {
-          category: 'combat',
-          key: 'scenario.victory',
-          params: { mode: 'STANDARD', villain: villain.card.name },
-          onomatopoeia: 'KLAW STAGE II DEFEATED! HERO VICTORY!',
-        });
-        return { state, victory: true };
-      }
-    }
-
-    // Expert Mode: Stage II -> Stage III, Stage III -> Victory
-    if (difficulty === 'EXPERT') {
-      if (currentCode === '01114') {
-        return advanceVillainStage(state, villain.instanceId!, '01115');
-      } else {
-        state.winner = 'HEROES';
-        appendLog(state, {
-          category: 'combat',
-          key: 'scenario.victory',
-          params: { mode: 'EXPERT', villain: villain.card.name },
-          onomatopoeia: 'KLAW STAGE III DEFEATED! HERO VICTORY!',
-        });
-        return { state, victory: true };
-      }
-    }
-
-    return { state };
+  protected onVillainStageAdvanced(state: GameState, stageCode: string): void {
+    if (stageCode === '01114') this.resolveStageIIWhenRevealed(state);
   }
 
   private resolveStageIIWhenRevealed(state: GameState): void {
@@ -297,57 +109,6 @@ export class KlawScenarioPlugin implements ScenarioPlugin {
         onomatopoeia: 'IMMORTAL KLAW ATTACHES!',
       });
     }
-  }
-
-  onMainSchemeCompleted(
-    state: GameState,
-    _completedSchemeInstanceId: string,
-  ): {
-    state: GameState;
-    advancedStage?: boolean;
-    defeat?: boolean;
-  } {
-    const numPlayers = getPerPlayerCount(state) || 1;
-    const currentStage = getActiveMainScheme(state).stage;
-
-    if (currentStage === '1B') {
-      // Advance to Stage 2B (Secret Rendezvous)
-      const nextSchemeCard = cardCatalog.getMainSchemeByStage('klaw', '2B');
-      if (!nextSchemeCard) {
-        throw new Error(`Main scheme stage '2B' not found in catalog for scenario 'klaw'.`);
-      }
-      const targetThreat = (nextSchemeCard.targetThreat || 8) * numPlayers;
-
-      const nextMainScheme: MainSchemeState = {
-        instanceId: `main_scheme_${nextEngineId(state, 'id')}_${nextSchemeCard.code}`,
-        card: nextSchemeCard,
-        threat: nextSchemeCard.baseThreat || 0,
-        targetThreat,
-        stage: '2B',
-      };
-
-      replaceActiveMainScheme(state, nextMainScheme);
-
-      appendLog(state, {
-        category: 'scheme',
-        key: 'scenario.mainSchemeAdvance',
-        params: { stage: '2B', scheme: 'Secret Rendezvous', targetThreat },
-        onomatopoeia: 'SCHEME ADVANCES TO SECRET RENDEZVOUS!',
-      });
-
-      return { state, advancedStage: true };
-    }
-
-    // Stage 2B completed -> Defeat
-    state.winner = 'VILLAIN';
-    appendLog(state, {
-      category: 'scheme',
-      key: 'scenario.defeat',
-      params: { scheme: 'Secret Rendezvous' },
-      onomatopoeia: 'SECRET RENDEZVOUS COMPLETED! HEROES DEFEATED!',
-    });
-
-    return { state, defeat: true };
   }
 }
 

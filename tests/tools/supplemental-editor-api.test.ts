@@ -4,6 +4,7 @@ import fs from 'fs';
 import os from 'os';
 import {
   CardSupplementalService,
+  isPackFileName,
   createCardSupplementalMiddleware,
 } from '../../src/tools/editor/api-middleware';
 
@@ -122,6 +123,25 @@ describe('CardSupplementalService & Editor API Middleware', () => {
     it('returns null for an unknown card code', () => {
       const details = service.getCardDetails('99999999_invalid');
       expect(details).toBeNull();
+    });
+  });
+
+  describe('Pack file names (AUD-20261017-232534 F019)', () => {
+    it('accepts a bare pack file and rejects paths', () => {
+      expect(isPackFileName('core.json')).toBe(true);
+      expect(isPackFileName('../core.json')).toBe(false);
+      expect(isPackFileName('..\\..\\package.json')).toBe(false);
+      expect(isPackFileName('sub/core.json')).toBe(false);
+    });
+
+    it('never reads or writes outside the pack directory', () => {
+      expect(service.readSupplementalPack('../../package.json')).toBeNull();
+      const result = service.saveCardSupplemental('01001a', {
+        packFile: '../../escaped.json',
+        supplemental: {},
+      });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Invalid pack file name');
     });
   });
 

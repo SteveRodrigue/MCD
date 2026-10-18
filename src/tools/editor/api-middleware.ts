@@ -41,6 +41,11 @@ export interface CardDetailsResponse {
 /**
  * Service to manage reading and writing card supplemental and upstream data for the editor.
  */
+/** A pack file is a bare `<name>.json` in the pack directory: no path separators, no `..`. */
+export function isPackFileName(name: string): boolean {
+  return /^[a-z0-9_-]+\.json$/i.test(name);
+}
+
 export class CardSupplementalService {
   private upstreamDir: string;
   private supplementalPackDir: string;
@@ -102,6 +107,7 @@ export class CardSupplementalService {
   }
 
   public readSupplementalPack(packFile: string): Record<string, any> | null {
+    if (!isPackFileName(packFile)) return null;
     const filePath = path.join(this.supplementalPackDir, packFile);
     if (!fs.existsSync(filePath)) {
       return null;
@@ -321,6 +327,9 @@ export class CardSupplementalService {
     if (!targetPackFile) {
       return { success: false, error: `Cannot resolve target pack file for card ${code}` };
     }
+    if (!isPackFileName(targetPackFile)) {
+      return { success: false, error: `Invalid pack file name '${targetPackFile}'` };
+    }
 
     // Ensure supplemental object
     const supplemental = payload.supplemental || {};
@@ -513,10 +522,8 @@ export function cardSupplementalEditorPlugin() {
 
   return {
     name: 'mcd-card-supplemental-editor-plugin',
+    // Dev server only: `vite preview` serves a build and must not write to disk
     configureServer(server: any) {
-      server.middlewares.use(middleware);
-    },
-    configurePreviewServer(server: any) {
       server.middlewares.use(middleware);
     },
   };

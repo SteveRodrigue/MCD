@@ -284,3 +284,12 @@ Detailed plans are written into this section before each item starts. Tier 3 ite
 **Simplification & Refactor Check.** The tray computes one playability map per hand and state (`useMemo`) used by the click guard, the end-turn pulse and the fan. `App` gets one `withUiOptions(state)` helper for every new state. **Not done:** moving `gameState`/`onDispatchAction` from props to a context. Memoised children only pay off once state objects keep their identity between actions (structural sharing, audit F012-B / Appendix A1), and the switch rewrites the props of six components and their tests. Revisit with a React Profiler capture.
 
 **File changes.** `src/ui/components/board/PlayerHandTray.tsx`, `src/ui/App.tsx`. **Tests.** Existing tray, App smoke and related UI tests (behaviour unchanged). **Open decisions.** None. **UI impact.** None visible.
+
+---
+
+## 20. Hygiene items (detail)
+
+- **F015** delivered: `CardTypeSchema` and `ResourceTypeSchema` take the engine enum values (`player_side_scheme` was missing). `AspectSchema` stays a deliberate subset of `FactionCode`.
+- **F019** delivered: shared `readJsonBody`/`sendJson`/`handleJsonPost`/`downloadFile` in `vite.config.ts` (566 → 353 lines); write endpoints (snapshots, reports, stats, Card Editor) run on the dev server only, not on `vite preview`; Card Editor pack file names must be a bare `<name>.json` (a `../` path could write outside the pack folder). **Not moved:** the Event `discardSelf` check needs the card's upstream type, which `CardEnrichmentSchema` cannot see, so it stays in the editor middleware.
+- **F020** delivered: `useTimeout` and `useOptionalGameSettings`.
+- **F021** delivered: lint covers `tests/`, `tools/`, `scripts/`; `ENGINE_VERSION` from `package.json`; root plan deleted. `no-explicit-any` stays off: as `warn` it would fail `--max-warnings 0` on the 452 existing `any`.

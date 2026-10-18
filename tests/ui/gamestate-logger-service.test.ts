@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { logGameStateSnapshot } from '../../src/ui/services/gamestate-logger-service';
+import {
+  logGameStateSnapshot,
+  scheduleGameStateSnapshot,
+} from '../../src/ui/services/gamestate-logger-service';
 import { GameState, GamePhase } from '../../src/engine/models';
 
 describe('GameState Logger Service', () => {
@@ -30,6 +33,7 @@ describe('GameState Logger Service', () => {
 
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it('posts snapshot to /api/logs/gamestate endpoint', async () => {
@@ -62,5 +66,32 @@ describe('GameState Logger Service', () => {
     await expect(
       logGameStateSnapshot(mockGameState, undefined, 'Offline Test'),
     ).resolves.not.toThrow();
+  });
+
+  it('keeps no sessionStorage copy of the state', async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: true }) as any;
+    const setItem = vi.fn();
+    vi.stubGlobal('sessionStorage', { setItem });
+
+    await logGameStateSnapshot(mockGameState);
+
+    expect(setItem).not.toHaveBeenCalled();
+  });
+
+  it('schedules the snapshot for idle time and lets a newer state cancel it', () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('requestIdleCallback', undefined);
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    global.fetch = fetchMock as any;
+
+    const cancel = scheduleGameStateSnapshot(mockGameState);
+    expect(fetchMock).not.toHaveBeenCalled();
+    cancel();
+    scheduleGameStateSnapshot({ ...mockGameState, roundNumber: 3 });
+    vi.runAllTimers();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).state.roundNumber).toBe(3);
+    vi.useRealTimers();
   });
 });

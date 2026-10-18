@@ -3,7 +3,7 @@ import { ModalLayer } from './components/layout/ModalLayer';
 import { cardCatalog } from '../data/importer/card-loader';
 import { setupGame, dispatchAction, getStarterDeck, GameState, InfiniteLoopError } from '../engine';
 import type { SetupSelection } from './components/setup/ScenarioSelector';
-import { logGameStateSnapshot } from './services/gamestate-logger-service';
+import { scheduleGameStateSnapshot } from './services/gamestate-logger-service';
 import { resetSessionSyncTracking } from './services/stats-storage-service';
 
 import { GameSettingsProvider } from './context/GameSettingsProvider';
@@ -76,12 +76,11 @@ export const AppContent: React.FC = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [stage, gameState]);
 
-  // Automatically snapshot game state changes to logs/gamestates/
+  // Dev Mode on the dev server: snapshot each state change to logs/gamestates/ for problem reports
   React.useEffect(() => {
-    if (gameState) {
-      logGameStateSnapshot(gameState);
-    }
-  }, [gameState]);
+    if (!gameState || !import.meta.env.DEV || !settings.devMode) return;
+    return scheduleGameStateSnapshot(gameState);
+  }, [gameState, settings.devMode]);
 
   const handleStartSetup = (selection: SetupSelection) => {
     const players = Array.from({ length: selection.playerCount }).map((_, index) => {

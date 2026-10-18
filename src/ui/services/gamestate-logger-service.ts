@@ -9,7 +9,6 @@ export interface GameStateSnapshotPayload {
 
 /**
  * Saves a GameState snapshot to the local logs/gamestates/ directory via the Vite dev server endpoint.
- * Also persists the latest state to client-side localStorage/sessionStorage as backup.
  */
 export async function logGameStateSnapshot(
   state: GameState,
@@ -23,14 +22,6 @@ export async function logGameStateSnapshot(
     timestamp: Date.now(),
   };
 
-  // 1. Backup to sessionStorage
-  try {
-    sessionStorage.setItem('mcd_latest_gamestate', JSON.stringify(payload));
-  } catch (e) {
-    // Ignore storage quota limits in browser
-  }
-
-  // 2. Post to Vite / Server snapshot endpoint
   try {
     await fetch('/api/logs/gamestate', {
       method: 'POST',
@@ -39,20 +30,21 @@ export async function logGameStateSnapshot(
       },
       body: JSON.stringify(payload),
     });
-  } catch (err) {
+  } catch {
     // Gracefully ignore network errors when running standalone
   }
 }
 
-export function getLatestGameStateSnapshot(): GameState | null {
-  try {
-    const saved = sessionStorage.getItem('mcd_latest_gamestate');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      return parsed.state || parsed;
-    }
-  } catch (e) {
-    // Ignore errors
+/**
+ * Snapshots `state` once the browser is idle, so serialising it never delays an action.
+ * Returns a cancel function: a newer state replaces a snapshot that is still waiting.
+ */
+export function scheduleGameStateSnapshot(state: GameState): () => void {
+  const snapshot = () => void logGameStateSnapshot(state);
+  if (typeof requestIdleCallback === 'function') {
+    const handle = requestIdleCallback(snapshot);
+    return () => cancelIdleCallback(handle);
   }
-  return null;
+  const handle = setTimeout(snapshot, 0);
+  return () => clearTimeout(handle);
 }

@@ -3,6 +3,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { ReportProblemModal } from '../../src/ui/components/board/ReportProblemModal';
 import * as problemReportService from '../../src/ui/services/problem-report-service';
+import { GameStateProvider } from '../../src/ui/context/GameStateContext';
+import type { GameState } from '../../src/engine/models';
 
 vi.mock('../../src/ui/services/problem-report-service', async (importOriginal) => {
   const actual =
@@ -42,6 +44,27 @@ describe('ReportProblemModal (Issue #164)', () => {
     // Verify modal header is rendered inside document.body
     expect(screen.getByText('BULLPEN FIELD DISPATCH')).not.toBeNull();
     expect(screen.getByText('Report a Problem')).not.toBeNull();
+  });
+
+  it('reads the live game state from the board context when no prop is given (AUD-20261017-232534 F006)', async () => {
+    vi.mocked(problemReportService.submitProblemReport).mockResolvedValue({
+      success: true,
+      file: 'report_context.json',
+    });
+    const liveState = { id: 'live_game', roundNumber: 3 } as GameState;
+    render(
+      <GameStateProvider value={liveState}>
+        <ReportProblemModal isOpen={true} onClose={vi.fn()} initialDescription="Card bug" />
+      </GameStateProvider>,
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /save report/i }));
+    });
+
+    expect(problemReportService.submitProblemReport).toHaveBeenCalledWith(
+      expect.objectContaining({ gameState: liveState }),
+    );
   });
 
   it('Test 2: Verifies that submitting a valid report calls submitProblemReport, resets the form, disables submission, and triggers auto-close (onClose)', async () => {

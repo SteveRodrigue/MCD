@@ -5,7 +5,6 @@ import {
   mapReportTypeToLabels,
   submitProblemReport,
 } from '../../src/ui/services/problem-report-service';
-import { getLatestGameStateSnapshot } from '../../src/ui/services/gamestate-logger-service';
 import { GameState, GamePhase } from '../../src/engine/models';
 
 describe('Problem Report Service', () => {
@@ -152,40 +151,6 @@ describe('Problem Report Service', () => {
       expect(body.priority).toBe('P3-low');
       expect(body.gameState).toBeUndefined();
       expect(result).toEqual({ success: true, file: 'report_456_improvement.json' });
-    });
-  });
-
-  describe('getLatestGameStateSnapshot', () => {
-    it('retrieves and parses gameState from sessionStorage when wrapped in payload', () => {
-      const getItemMock = vi.fn().mockReturnValue(JSON.stringify({ state: mockGameState }));
-      vi.stubGlobal('sessionStorage', { getItem: getItemMock });
-
-      const retrieved = getLatestGameStateSnapshot();
-      expect(getItemMock).toHaveBeenCalledWith('mcd_latest_gamestate');
-      expect(retrieved).toEqual(mockGameState);
-    });
-
-    it('retrieves and parses direct gameState from sessionStorage when unwrapped', () => {
-      const getItemMock = vi.fn().mockReturnValue(JSON.stringify(mockGameState));
-      vi.stubGlobal('sessionStorage', { getItem: getItemMock });
-
-      const retrieved = getLatestGameStateSnapshot();
-      expect(getItemMock).toHaveBeenCalledWith('mcd_latest_gamestate');
-      expect(retrieved).toEqual(mockGameState);
-    });
-
-    it('returns null when sessionStorage returns null', () => {
-      const getItemMock = vi.fn().mockReturnValue(null);
-      vi.stubGlobal('sessionStorage', { getItem: getItemMock });
-
-      expect(getLatestGameStateSnapshot()).toBeNull();
-    });
-
-    it('returns null and catches gracefully on malformed JSON', () => {
-      const getItemMock = vi.fn().mockReturnValue('invalid-json{{{');
-      vi.stubGlobal('sessionStorage', { getItem: getItemMock });
-
-      expect(getLatestGameStateSnapshot()).toBeNull();
     });
   });
 });

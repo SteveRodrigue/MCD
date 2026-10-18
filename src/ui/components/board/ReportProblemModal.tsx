@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ModalLayer } from '../layout/ModalLayer';
 import { Bug, X, Check, Send, ExternalLink, AlertTriangle } from 'lucide-react';
 import { GameState } from '../../../engine/models';
-import { getLatestGameStateSnapshot } from '../../services/gamestate-logger-service';
+import { useGameState } from '../../context/GameStateContext';
 import {
   ProblemReportPriority,
   ProblemReportType,
@@ -44,7 +44,9 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
   const [githubUrl, setGithubUrl] = useState<string | null>(null);
   const autoCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const activeGameState = gameState || getLatestGameStateSnapshot();
+  // Opened from a card context menu, the modal reads the live state from the board context
+  const contextGameState = useGameState();
+  const activeGameState = gameState ?? contextGameState ?? null;
 
   useEffect(() => {
     if (isOpen) {

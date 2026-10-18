@@ -39,6 +39,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
   if (prompt.sourceCardName === 'Wakanda Forever!' || prompt.title?.includes('Wakanda Forever')) {
     return (
       <WakandaForeverModal
+        key={prompt.promptId}
         prompt={prompt}
         onExecuteSequence={(sequenceOrder) => {
           onSelectOption(sequenceOrder[0] || 'wf_execute', { sequenceOrder });

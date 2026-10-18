@@ -1,88 +1,80 @@
 import React, { useState } from 'react';
 import { ModalLayer } from '../layout/ModalLayer';
-import { PendingDecisionPrompt } from '../../../engine/models';
+import { DecisionPromptOption, PendingDecisionPrompt } from '../../../engine/models';
+import { FormattedCardText } from '../cards/FormattedCardText';
 
 interface WakandaForeverModalProps {
   prompt: PendingDecisionPrompt;
   onExecuteSequence: (sequenceOrder: string[]) => void;
 }
 
-interface UpgradeStyle {
+interface EffectStyle {
   icon: string;
-  baseEffect: string;
-  finisherEffect: string;
-  baseBadge: string;
-  finisherBadge: string;
+  unit: string;
   colorClass: string;
 }
 
-interface UpgradeMeta extends UpgradeStyle {
+interface UpgradeMeta {
   id: string;
   name: string;
+  text: string;
+  icon: string;
+  colorClass: string;
+  baseBadge: string;
+  finisherBadge: string;
 }
 
-const UPGRADE_STYLES: Record<string, UpgradeStyle> = {
-  '01046': {
+// Keyed by the Special's effect type (generic), never by card code: the card text and amounts
+// come from the card data through the prompt option.
+const EFFECT_STYLES: Record<string, EffectStyle> = {
+  DEAL_DAMAGE: {
     icon: '🗡️',
-    baseEffect: '1 dmg to villain & engaged minions',
-    finisherEffect: '2 DMG TO ALL ENEMIES (FINISHER)',
-    baseBadge: '1 DMG AOE',
-    finisherBadge: '💥 2 DMG AOE',
-    colorClass: 'border-emerald-500 bg-emerald-950/80 text-emerald-100',
-  },
-  '01047': {
-    icon: '🐾',
-    baseEffect: 'Deal 2 damage to an enemy',
-    finisherEffect: 'DEAL 4 DAMAGE TO ENEMY (FINISHER)',
-    baseBadge: '2 DMG',
-    finisherBadge: '💥 4 DMG',
+    unit: 'DMG',
     colorClass: 'border-rose-500 bg-rose-950/80 text-rose-100',
   },
-  '01048': {
+  REMOVE_THREAT: {
     icon: '🧠',
-    baseEffect: 'Remove 1 threat from a scheme',
-    finisherEffect: 'REMOVE 2 THREAT FROM SCHEME (FINISHER)',
-    baseBadge: '1 THW',
-    finisherBadge: '💥 2 THW',
+    unit: 'THW',
     colorClass: 'border-sky-500 bg-sky-950/80 text-sky-100',
   },
-  '01049': {
+  TRANSFER_DAMAGE: {
     icon: '🛡️',
-    baseEffect: 'Move 1 damage from BP to enemy',
-    finisherEffect: 'MOVE 2 DAMAGE TO ENEMY (FINISHER)',
-    baseBadge: '1 MOVE',
-    finisherBadge: '💥 2 MOVE',
+    unit: 'MOVE',
     colorClass: 'border-purple-500 bg-purple-950/80 text-purple-100',
   },
 };
+
+const FALLBACK_STYLE: EffectStyle = {
+  icon: '⚡',
+  unit: '',
+  colorClass: 'border-amber-500 bg-slate-900 text-amber-100',
+};
+
+function buildUpgrades(options: DecisionPromptOption[]): UpgradeMeta[] {
+  return options.map((opt) => {
+    const { specialEffect, amount, finisherAmount } = opt.params ?? {};
+    const style =
+      (typeof specialEffect === 'string' && EFFECT_STYLES[specialEffect]) || FALLBACK_STYLE;
+    const hasAmounts = typeof amount === 'number' && typeof finisherAmount === 'number';
+    return {
+      id: opt.id,
+      name: opt.label,
+      text: opt.description || 'Special effect',
+      icon: style.icon,
+      colorClass: style.colorClass,
+      baseBadge: hasAmounts ? `${amount} ${style.unit}`.trim() : 'BASE',
+      finisherBadge: hasAmounts ? `💥 ${finisherAmount} ${style.unit}`.trim() : '💥 FINISHER',
+    };
+  });
+}
 
 export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
   prompt,
   onExecuteSequence,
 }) => {
-  // Initialize upgrades from prompt options
-  const initialUpgrades: UpgradeMeta[] = prompt.options.map((opt) => {
-    const style = opt.cardCode ? UPGRADE_STYLES[opt.cardCode] : undefined;
-    if (style) {
-      return {
-        id: opt.id,
-        name: opt.label,
-        ...style,
-      };
-    }
-    return {
-      id: opt.id,
-      name: opt.label,
-      icon: '⚡',
-      baseEffect: opt.description || 'Special effect',
-      finisherEffect: `${opt.description || 'Special effect'} (BOOSTED)`,
-      baseBadge: 'BASE',
-      finisherBadge: '💥 FINISHER',
-      colorClass: 'border-amber-500 bg-slate-900 text-amber-100',
-    };
-  });
-
-  const [orderedUpgrades, setOrderedUpgrades] = useState<UpgradeMeta[]>(initialUpgrades);
+  const [orderedUpgrades, setOrderedUpgrades] = useState<UpgradeMeta[]>(() =>
+    buildUpgrades(prompt.options),
+  );
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const moveCard = (index: number, direction: number) => {
@@ -110,7 +102,7 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
   };
 
   const resetDefaultOrder = () => {
-    setOrderedUpgrades(initialUpgrades);
+    setOrderedUpgrades(buildUpgrades(prompt.options));
   };
 
   const handleExecute = () => {
@@ -261,7 +253,7 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
                           : 'bg-comic-black/60 text-slate-200'
                       }`}
                     >
-                      {isFinal ? card.finisherEffect : card.baseEffect}
+                      <FormattedCardText text={card.text} />
                     </div>
 
                     {/* Stat Badge */}
@@ -293,7 +285,7 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
                         {i + 1}. {u.name}
                       </span>
                       <span className={isFinal ? 'text-purple-800 font-black' : 'text-slate-600'}>
-                        ➔ {isFinal ? u.finisherEffect : u.baseEffect}
+                        ➔ {isFinal ? u.finisherBadge : u.baseBadge}
                       </span>
                     </div>
                   );

@@ -1,4 +1,4 @@
-import { GameState, CardInstance, AbilityStep } from '../models';
+import { GameState, CardInstance, AbilityStep, CardAbility } from '../models';
 import { EffectExecutionContext, EffectResult, executeSequence } from '../effects';
 import { SpecialAbilityHandler, registerSpecialHandler } from './special-registry';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
@@ -16,6 +16,16 @@ function getPlayerBlackPantherUpgrades(playerState: { tableau: CardInstance[] })
       t.card.traits?.includes('Black Panther') ||
       BLACK_PANTHER_UPGRADE_CODES.includes(t.card.code) ||
       t.card.enrichment?.abilities?.some((a) => a.timing === 'SPECIAL'),
+  );
+}
+
+/** The upgrade's Special ability, from the instance enrichment or the catalog copy of the card. */
+function getSpecialAbility(upgrade: CardInstance): CardAbility | undefined {
+  return (
+    upgrade.card.enrichment?.abilities?.find((a) => a.timing === 'SPECIAL') ||
+    cardCatalog
+      .getCard(upgrade.card.code)
+      ?.enrichment?.abilities?.find((a) => a.timing === 'SPECIAL')
   );
 }
 
@@ -43,11 +53,7 @@ const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
       for (let i = 0; i < upgrades.length; i++) {
         const upg = upgrades[i];
         const isFinal = i === upgrades.length - 1;
-        const special =
-          upg.card.enrichment?.abilities?.find((a) => a.timing === 'SPECIAL') ||
-          cardCatalog
-            .getCard(upg.card.code)
-            ?.enrichment?.abilities?.find((a) => a.timing === 'SPECIAL');
+        const special = getSpecialAbility(upg);
         if (special?.steps) {
           for (const step of special.steps) {
             allSteps.push({
@@ -101,13 +107,27 @@ const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
       description:
         'Select the resolution order for your Black Panther upgrades. The last upgrade gets its boosted Finisher bonus!',
       sourceCardName: 'Wakanda Forever!',
-      options: availableUpgrades.map((u) => ({
-        id: u.instanceId,
-        cardCode: u.card.code,
-        label: u.card.name,
-        description: u.card.text || 'Black Panther Upgrade Special',
-        effect: 'SELECT_WAKANDA_UPGRADE',
-      })),
+      options: availableUpgrades.map((u) => {
+        // The first Special step carries the amount and its finisher bonus, read from the card data.
+        const step = getSpecialAbility(u)?.steps?.[0];
+        const amount = step?.effectParams?.amount;
+        const finisherBonus = step?.effectParams?.finisherBonus;
+        return {
+          id: u.instanceId,
+          cardCode: u.card.code,
+          label: u.card.name,
+          description: u.card.text || 'Black Panther Upgrade Special',
+          effect: 'SELECT_WAKANDA_UPGRADE',
+          params:
+            step && typeof amount === 'number'
+              ? {
+                  specialEffect: step.effect,
+                  amount,
+                  finisherAmount: amount + (typeof finisherBonus === 'number' ? finisherBonus : 0),
+                }
+              : undefined,
+        };
+      }),
       isVoluntary: false,
     });
 
@@ -116,7 +136,7 @@ const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
       success: true,
       mutatedState: true,
       value: 0,
-      onomatopoeia: 'SELECT WAKANDA SEQUENCE ➔',
+      onomatopoeia: 'SELECT WAKANDA SEQUENCE âž”',
     };
   },
 };

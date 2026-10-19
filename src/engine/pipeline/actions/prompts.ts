@@ -41,7 +41,9 @@ import { applyToughnessOnEntry } from '../../state/card-instance';
 import { dispatchTrigger } from '../../triggers/trigger-dispatcher';
 import { resolveEntityByInstanceId } from '../../effects/target-resolver';
 import { appendLog } from '../../state/game-log';
-import { routeCardInstances, resolveEventAbilities, dispatchAction } from '../action-dispatcher';
+import { resolveEventAbilities } from './shared';
+import { routeCardInstances } from '../../effects/card-routing';
+import { dispatchAction } from '../action-dispatcher';
 import type { ActionHandler, TypedAction } from './types';
 
 export function resolveDistributionPrompt(
@@ -544,14 +546,9 @@ export function resolveSearchAndSelectPrompt(
   }
 
   for (const { card, zone } of chosenCards) {
-    routeCardInstances(
-      poppedState,
-      targetPlayer,
-      [card],
-      selectedDestination,
-      zone,
-      params?.target,
-    );
+    routeCardInstances(poppedState, targetPlayer, [card], selectedDestination, zone, {
+      host: params?.target,
+    });
   }
 
   if (isLookCountSpliced && unchosenCards.length > 0) {

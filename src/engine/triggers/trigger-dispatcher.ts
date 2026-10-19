@@ -603,11 +603,6 @@ function scanHandReactions(
   return hasPendingPrompt;
 }
 
-/**
- * Generic Trigger Dispatcher: Resolves all matching declarative abilities for a given trigger event.
- * Eliminates all hardcoded card codes from engine pipelines!
- * Prompts player for optional interrupts and responses per RR v1.8 while auto-executing FORCED_ triggers.
- */
 interface TriggerScanState {
   currentDamage: number;
   isPrevented: boolean;
@@ -1032,7 +1027,6 @@ function scanAllHandTriggerReactions(
 ): void {
   // 3. In-hand reactions to damage about to be taken (e.g. Backflip 01003).
   if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && scanState.currentDamage > 0) {
-    const isDamageTrigger = triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN');
     if (
       scanHandReactions(state, trigger, context, currentChain, playersInTurnOrder(state), {
         isActive: () => scanState.currentDamage > 0,
@@ -1059,15 +1053,13 @@ function scanAllHandTriggerReactions(
             });
           }
         },
-        promptTitleSuffix: isDamageTrigger ? ` (Incoming Damage: ${scanState.currentDamage})` : '',
-        promptDescriptionSuffix: isDamageTrigger
-          ? ` [Incoming Damage: ${scanState.currentDamage}]`
-          : '',
+        promptTitleSuffix: ` (Incoming Damage: ${scanState.currentDamage})`,
+        promptDescriptionSuffix: ` [Incoming Damage: ${scanState.currentDamage}]`,
         promptFields: (p, ability) => {
           const preventAmount = getAbilityPreventAmount(ability);
           const sourceFields = getTriggerSourceFields(state, context);
           return {
-            incomingDamage: isDamageTrigger ? scanState.currentDamage : undefined,
+            incomingDamage: scanState.currentDamage,
             attackerCardCode: context.attackerCardCode as string | undefined,
             attackerName: context.attackerName as string | undefined,
             defenderCardCode: context.defenderCardCode as string | undefined,
@@ -1324,6 +1316,11 @@ function finalizeQueuedTriggerPrompts(
   }
 }
 
+/**
+ * Generic Trigger Dispatcher: Resolves all matching declarative abilities for a given trigger event.
+ * Eliminates all hardcoded card codes from engine pipelines!
+ * Prompts player for optional interrupts and responses per RR v1.8 while auto-executing FORCED_ triggers.
+ */
 export function dispatchTrigger(
   state: GameState,
   trigger: TriggerType,

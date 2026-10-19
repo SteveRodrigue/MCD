@@ -29,6 +29,8 @@ export function runActionHandler(
   action: GameAction,
 ): { state: GameState; result: ActionResult } {
   const handler = ACTION_HANDLERS[action.type] as ActionHandler | undefined;
-  if (!handler) throw new Error(`dispatchAction: no handler for action '${String(action.type)}'`);
+  // A stale or hand-written action (replay, dev tool, network payload) can carry a type outside
+  // the union; it fails the action and leaves the state untouched.
+  if (!handler) return { state, result: { success: false, error: 'Unknown action type' } };
   return handler(nextState, state, action);
 }

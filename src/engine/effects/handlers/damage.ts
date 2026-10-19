@@ -2,10 +2,10 @@
 import {
   GameState,
   CardInstance,
-  AbilityStep,
   PendingDecisionPrompt,
   DistributionPromptConfig,
   PlayerState,
+  VillainState,
   Keyword,
   hasKeyword,
   getActiveVillain,
@@ -39,48 +39,47 @@ import {
   resolveNumericAmount,
   villainTargetRef,
 } from '../index';
-import type { StepHandler } from './types';
-import type { EffectType } from '../../../data/supplemental/runtime';
+import type { TypedStep, StepHandlerMap } from './types';
 
 function handleDealDamage(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'DEAL_DAMAGE'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
+  const params = getStepEffectParams(step);
+  const rawParams = step.effectParams as Record<string, unknown> | undefined;
+  const targetInstanceId =
+    (rawParams?.['targetInstanceId'] as string | undefined) || context.chosenTargetInstanceId;
   let amount = resolveNumericAmount(
-    step.effectParams?.amount ?? step.effectParams?.baseAmount,
+    params.amount ?? (rawParams?.['baseAmount'] as number | undefined),
     context,
     0,
     {
       state,
       player,
       sourceCardInstance: context.sourceCardInstance,
-      targetInstanceId:
-        (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
+      targetInstanceId,
     },
   );
-  if (step.effectParams?.dynamicBonus) {
-    const bonus = resolveNumericAmount(step.effectParams.dynamicBonus as any, context, 0, {
+  if (params.dynamicBonus) {
+    const bonus = resolveNumericAmount(params.dynamicBonus, context, 0, {
       state,
       player,
       sourceCardInstance: context.sourceCardInstance,
-      targetInstanceId:
-        (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
+      targetInstanceId,
     });
     amount += bonus;
   }
-  if (context.isFinalStep && step.effectParams?.finisherBonus) {
-    amount += (step.effectParams.finisherBonus as number) || 0;
+  if (context.isFinalStep && params.finisherBonus) {
+    amount += params.finisherBonus || 0;
   }
-  const targetParam = step.effectParams?.target as string | undefined;
+  const targetParam = params.target;
 
-  const isAttack = Boolean(
-    step.effectParams?.isAttack || context.isAttack || context.labelledAttack,
-  );
+  const isAttack = Boolean(rawParams?.['isAttack'] || context.isAttack || context.labelledAttack);
   const hasPiercing = Boolean(
-    step.effectParams?.piercing ||
-    step.effectParams?.keyword === 'Piercing' ||
+    rawParams?.['piercing'] ||
+    rawParams?.['keyword'] === 'Piercing' ||
     hasKeyword(context.sourceCardInstance, Keyword.PIERCING),
   );
   const damageOpts: AbilityDamageOptions = {
@@ -206,10 +205,10 @@ function handleDealDamage(
 
   const targetType =
     targetParam === 'ALL_HEROES' ||
-    targetParam === 'HERO' ||
+    (targetParam as string) === 'HERO' ||
     targetParam === 'SELF_IDENTITY' ||
     targetParam === 'SELF_HERO' ||
-    targetParam === 'IDENTITY' ||
+    (targetParam as string) === 'IDENTITY' ||
     targetParam === 'SELF'
       ? 'hero'
       : context.chosenTargetType || 'villain';
@@ -222,7 +221,7 @@ function handleDealDamage(
   if (
     targetParam === 'SELF_IDENTITY' ||
     targetParam === 'SELF_HERO' ||
-    targetParam === 'IDENTITY' ||
+    (targetParam as string) === 'IDENTITY' ||
     targetParam === 'SELF'
   ) {
     state = dealDamageToIdentity(state, player, amount, damageOpts);
@@ -365,22 +364,31 @@ function handleDealDamage(
 
 function handleDistributeAmount(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'DISTRIBUTE_AMOUNT'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
   const stepParams = getStepEffectParams(step);
-  const budget = resolveNumericAmount(stepParams.budget ?? stepParams.amount ?? 0, context, 0, {
-    state,
-    player,
-    sourceCardInstance: context.sourceCardInstance,
-    targetInstanceId: (stepParams.targetInstanceId as string) || context.chosenTargetInstanceId,
-  });
-  const allocationDomain = (stepParams.allocationDomain as any) || 'DAMAGE';
+  const rawParams = step.effectParams as Record<string, unknown> | undefined;
+  const budget = resolveNumericAmount(
+    stepParams.budget ?? (rawParams?.['amount'] as number | undefined) ?? 0,
+    context,
+    0,
+    {
+      state,
+      player,
+      sourceCardInstance: context.sourceCardInstance,
+      targetInstanceId:
+        (rawParams?.['targetInstanceId'] as string | undefined) || context.chosenTargetInstanceId,
+    },
+  );
+  const allocationDomain = stepParams.allocationDomain || 'DAMAGE';
   const targetScope =
-    (stepParams.targetScope as string) || (stepParams.target as string) || 'ALL_HEROES_AND_ALLIES';
-  const canCancel = Boolean(stepParams.canCancel);
-  const exactMatchRequired = stepParams.exactMatchRequired !== false;
+    (stepParams.targetScope as string) ||
+    (rawParams?.['target'] as string | undefined) ||
+    'ALL_HEROES_AND_ALLIES';
+  const canCancel = Boolean(rawParams?.['canCancel']);
+  const exactMatchRequired = rawParams?.['exactMatchRequired'] !== false;
 
   // 1. If assignments already provided, execute immediately
   if (context.assignments && typeof context.assignments === 'object') {
@@ -530,15 +538,16 @@ function handleDistributeAmount(
   }
 
   const unitSingular =
-    stepParams.unitSingular ||
+    (rawParams?.['unitSingular'] as string | undefined) ||
     (allocationDomain === 'DAMAGE' ? 'DMG' : allocationDomain === 'THREAT_REMOVAL' ? 'THW' : 'PT');
   const unitPlural =
-    stepParams.unitPlural ||
+    (rawParams?.['unitPlural'] as string | undefined) ||
     (allocationDomain === 'DAMAGE' ? 'DMG' : allocationDomain === 'THREAT_REMOVAL' ? 'THW' : 'PTS');
   const config: DistributionPromptConfig = {
     totalBudget: budget,
     effectiveBudget: budget,
-    budgetLabel: stepParams.budgetLabel || `${allocationDomain.replace('_', ' ')}`,
+    budgetLabel:
+      (rawParams?.['budgetLabel'] as string | undefined) || `${allocationDomain.replace('_', ' ')}`,
     unitSingular,
     unitPlural,
     exactMatchRequired,
@@ -557,9 +566,10 @@ function handleDistributeAmount(
   const prompt: PendingDecisionPrompt = {
     promptId: nextEngineId(state, 'dist'),
     playerId: assigner.id,
-    title: stepParams.promptTitle || `Distribute ${config.budgetLabel}`,
+    title: (rawParams?.['promptTitle'] as string | undefined) || `Distribute ${config.budgetLabel}`,
     description:
-      stepParams.promptDescription || `Assign ${budget} ${unitPlural} among eligible targets:`,
+      (rawParams?.['promptDescription'] as string | undefined) ||
+      `Assign ${budget} ${unitPlural} among eligible targets:`,
     sourceCardName: context.sourceCardInstance?.card.name || 'Game Effect',
     sourceCardCode: context.sourceCardInstance?.card.code,
     sourceCardInstanceId: context.sourceCardInstance?.instanceId,
@@ -585,24 +595,25 @@ function handleDistributeAmount(
 
 function handleHealDamage(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'HEAL_DAMAGE'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
+  const params = getStepEffectParams(step);
   const amount =
-    step.effectParams?.amount === 'ALL'
+    params.amount === 'ALL'
       ? Number.MAX_SAFE_INTEGER
-      : resolveNumericAmount(step.effectParams?.amount, context, 0, { state, player });
-  const target = (step.effectParams?.target as string) || 'SELF';
+      : resolveNumericAmount(params.amount, context, 0, { state, player });
+  const target = (params.target as string) || 'SELF';
   let healed = 0;
 
-  const targetCharacters = resolveCharacterTargets(state, target as any, context);
+  const targetCharacters = resolveCharacterTargets(state, target, context);
   const charsToHeal = targetCharacters;
 
   let isFullyHealed = true;
   for (const targetChar of charsToHeal) {
-    const ent: any = targetChar.entity;
     if (targetChar.entityType === 'villain') {
+      const ent = targetChar.entity as VillainState;
       const currentHp = ent.health;
       const maxHp = ent.maxHealth || 100;
       const h = Math.min(maxHp - currentHp, amount);
@@ -610,19 +621,15 @@ function handleHealDamage(
       healed += h;
       if (ent.health < maxHp) isFullyHealed = false;
     } else if (targetChar.entityType === 'hero' || targetChar.entityType === 'alter_ego') {
+      const ent = targetChar.entity as PlayerState;
       const currentHp = ent.health;
       const maxHp = ent.maxHealth;
       const h = Math.min(maxHp - currentHp, amount);
       ent.health += h;
       healed += h;
       if (ent.health < maxHp) isFullyHealed = false;
-    } else if (targetChar.entityType === 'ally') {
-      const currentDmg = ent.tokens?.damage || 0;
-      const h = Math.min(currentDmg, amount);
-      if (ent.tokens) ent.tokens.damage = Math.max(0, currentDmg - h);
-      healed += h;
-      if ((ent.tokens?.damage || 0) > 0) isFullyHealed = false;
-    } else if (targetChar.entityType === 'minion') {
+    } else if (targetChar.entityType === 'ally' || targetChar.entityType === 'minion') {
+      const ent = targetChar.entity as CardInstance;
       const currentDmg = ent.tokens?.damage || 0;
       const h = Math.min(currentDmg, amount);
       if (ent.tokens) ent.tokens.damage = Math.max(0, currentDmg - h);
@@ -657,10 +664,11 @@ function handleHealDamage(
 
 function handlePreventDamage(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'PREVENT_DAMAGE'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
+  const params = getStepEffectParams(step);
   const currentVal =
     context.remainingInterceptedValue ?? context.interceptedValue ?? context.damageAmount ?? 0;
 
@@ -669,14 +677,16 @@ function handlePreventDamage(
     context.interceptedValue !== undefined ||
     context.damageAmount !== undefined;
 
+  const rawParams = step.effectParams as Record<string, unknown> | undefined;
+  const preventAll = Boolean(rawParams?.['preventAll']);
   const amountToPrevent =
-    step.effectParams?.amount !== undefined
-      ? step.effectParams.amount === 'ALL' || step.effectParams.preventAll
+    params.amount !== undefined
+      ? params.amount === 'ALL' || preventAll
         ? currentVal
-        : resolveNumericAmount(step.effectParams.amount, context, currentVal)
+        : resolveNumericAmount(params.amount, context, currentVal)
       : hasInterceptContext
         ? currentVal
-        : step.effectParams?.preventAll
+        : preventAll
           ? 999
           : 3;
 
@@ -715,7 +725,7 @@ function handlePreventDamage(
 
 function handleGrantKeyword(
   state: GameState,
-  _step: AbilityStep,
+  _step: TypedStep,
   _context: EffectExecutionContext,
   _player: PlayerState,
 ): EffectResult {
@@ -725,38 +735,39 @@ function handleGrantKeyword(
 
 function handleTransferDamage(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'TRANSFER_DAMAGE'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
+  const params = getStepEffectParams(step);
+  const rawParams = step.effectParams as Record<string, unknown> | undefined;
+  const targetInstanceId =
+    (rawParams?.['targetInstanceId'] as string | undefined) || context.chosenTargetInstanceId;
   let amount = resolveNumericAmount(
-    step.effectParams?.amount ?? step.effectParams?.baseAmount,
+    params.amount ?? (rawParams?.['baseAmount'] as number | undefined),
     context,
     1,
     {
       state,
       player,
       sourceCardInstance: context.sourceCardInstance,
-      targetInstanceId:
-        (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
+      targetInstanceId,
     },
   );
-  if (step.effectParams?.dynamicBonus) {
-    const bonus = resolveNumericAmount(step.effectParams.dynamicBonus as any, context, 0, {
+  if (params.dynamicBonus) {
+    const bonus = resolveNumericAmount(params.dynamicBonus, context, 0, {
       state,
       player,
       sourceCardInstance: context.sourceCardInstance,
-      targetInstanceId:
-        (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
+      targetInstanceId,
     });
     amount += bonus;
   }
-  if (context.isFinalStep && step.effectParams?.finisherBonus) {
-    amount += (step.effectParams.finisherBonus as number) || 0;
+  if (context.isFinalStep && params.finisherBonus) {
+    amount += params.finisherBonus || 0;
   }
 
-  const targetEnemyId =
-    (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId;
+  const targetEnemyId = targetInstanceId;
   // A character that cannot take this damage is not a valid target: nothing moves (#297).
   const transferTarget = targetEnemyId
     ? targetEnemyId === 'villain'
@@ -828,4 +839,4 @@ export const DAMAGE_HANDLERS = {
   GRANT_KEYWORD: handleGrantKeyword,
   ATTACHMENT_DAMAGE_SHIELD: handleGrantKeyword,
   TRANSFER_DAMAGE: handleTransferDamage,
-} satisfies Partial<Record<EffectType, StepHandler>>;
+} satisfies Partial<StepHandlerMap>;

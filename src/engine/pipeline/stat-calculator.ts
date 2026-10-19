@@ -9,6 +9,9 @@ import {
   NormalizedCard,
   CardType,
   hasDashPower,
+  StatusCard,
+  CardAbility,
+  Keyword,
 } from '../models';
 import { parseKeywordItem } from '../models/keyword';
 import { getStepEffectParams } from '../../data/supplemental/runtime';
@@ -17,6 +20,25 @@ import { evaluateDynamicAmount } from '../effects/dynamic-formula-evaluator';
 import { AbilityStep } from '../models/abilities';
 import { evaluateStepGate } from './step-gate-evaluator';
 import { findInPlayCardInstance } from '../state/state-validator';
+import type { TypedStep } from '../effects/handlers/types';
+
+export interface EntityWithStatusCards {
+  statusCards?: StatusCard[];
+  card?: NormalizedCard;
+  activeFormCard?: NormalizedCard;
+  hero?: HeroCard;
+  alterEgo?: AlterEgoCard;
+  type?: CardType | string;
+  keywords?: (Keyword | string | { keyword?: string; amount?: number })[];
+  abilities?: CardAbility[];
+  traits?: string[];
+  currentForm?: string;
+  attachments?: CardInstance[];
+  tableau?: CardInstance[];
+}
+
+export type StatEntity =
+  PlayerState | CardInstance | VillainState | NormalizedCard | EntityWithStatusCards;
 
 export interface EffectiveTraitsResult {
   traits: string[]; // Deduplicated canonical traits (printed + dynamic)
@@ -102,8 +124,8 @@ export function getEffectiveVillainStats(
   state: GameState,
   villain: VillainState,
 ): EffectiveVillainStats {
-  let attack = villain.card?.attack ?? (villain.card as any)?.atk ?? 0;
-  let scheme = villain.card?.scheme ?? (villain.card as any)?.sch ?? 0;
+  let attack = villain.card?.attack ?? (villain.card as { atk?: number })?.atk ?? 0;
+  let scheme = villain.card?.scheme ?? (villain.card as { sch?: number })?.sch ?? 0;
   const keywords: string[] = [];
 
   for (const attachment of villain.attachments || []) {
@@ -111,8 +133,8 @@ export function getEffectiveVillainStats(
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
-          const stepParams = getStepEffectParams(step);
           if (step.effect === 'MODIFY_STAT') {
+            const stepParams = getStepEffectParams<'MODIFY_STAT'>(step as TypedStep<'MODIFY_STAT'>);
             const amount = evaluateDynamicAmount(
               stepParams.amount as number | DynamicValueSource | undefined,
               {},
@@ -121,8 +143,13 @@ export function getEffectiveVillainStats(
             if (stepParams.stat === 'ATTACK') attack += amount;
             if (stepParams.stat === 'SCHEME') scheme += amount;
           }
-          if (step.effect === 'GRANT_KEYWORD' && stepParams.keyword) {
-            keywords.push(stepParams.keyword as string);
+          if (step.effect === 'GRANT_KEYWORD') {
+            const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
+              step as TypedStep<'GRANT_KEYWORD'>,
+            );
+            if (stepParams.keyword) {
+              keywords.push(stepParams.keyword as string);
+            }
           }
         }
       }
@@ -146,8 +173,8 @@ export function getEffectiveVillainStats(
  */
 export function getEffectiveAllyStats(state: GameState, ally: CardInstance): EffectiveAllyStats {
   const allyCard = ally.card as AllyCard;
-  let thwart = allyCard.thwart ?? (allyCard as any).thw ?? 0;
-  let attack = allyCard.attack ?? (allyCard as any).atk ?? 0;
+  let thwart = allyCard.thwart ?? (allyCard as { thw?: number }).thw ?? 0;
+  let attack = allyCard.attack ?? (allyCard as { atk?: number }).atk ?? 0;
   const keywords: string[] = [];
 
   // Check constant abilities on the ally itself
@@ -155,8 +182,8 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
   for (const ab of selfAbilities) {
     if (ab.timing === 'CONSTANT') {
       for (const step of ab.steps || []) {
-        const stepParams = getStepEffectParams(step);
         if (step.effect === 'MODIFY_STAT') {
+          const stepParams = getStepEffectParams<'MODIFY_STAT'>(step as TypedStep<'MODIFY_STAT'>);
           const amount = evaluateDynamicAmount(
             stepParams.amount as number | DynamicValueSource | undefined,
             {},
@@ -175,8 +202,8 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
-          const stepParams = getStepEffectParams(step);
           if (step.effect === 'MODIFY_STAT') {
+            const stepParams = getStepEffectParams<'MODIFY_STAT'>(step as TypedStep<'MODIFY_STAT'>);
             const amount = evaluateDynamicAmount(
               stepParams.amount as number | DynamicValueSource | undefined,
               {},
@@ -185,8 +212,13 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
             if (stepParams.stat === 'THWART') thwart += amount;
             if (stepParams.stat === 'ATTACK') attack += amount;
           }
-          if (step.effect === 'GRANT_KEYWORD' && stepParams.keyword) {
-            keywords.push(stepParams.keyword as string);
+          if (step.effect === 'GRANT_KEYWORD') {
+            const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
+              step as TypedStep<'GRANT_KEYWORD'>,
+            );
+            if (stepParams.keyword) {
+              keywords.push(stepParams.keyword as string);
+            }
           }
         }
       }
@@ -233,7 +265,10 @@ function evaluateConstantStepGate(
 ): boolean {
   if (!step.gate) return true;
   if (step.gate === 'IF_FORM') {
-    return evaluateStepGate(step, undefined, state as any, { playerId: player.id, player });
+    return evaluateStepGate(step, undefined, state ?? ({} as unknown as GameState), {
+      playerId: player.id,
+      player,
+    });
   }
   if (!state) return false;
   return evaluateStepGate(step, undefined, state, { playerId: player.id, player });
@@ -254,7 +289,7 @@ function extractAddTraitEffects(
           if (step.effect === 'ADD_TRAIT') {
             if (step.gate && !player) continue;
             if (player && !evaluateConstantStepGate(step, player, state)) continue;
-            const stepParams = getStepEffectParams(step);
+            const stepParams = getStepEffectParams<'ADD_TRAIT'>(step as TypedStep<'ADD_TRAIT'>);
             const trait = stepParams.trait as string | undefined;
             if (trait && trait.trim()) {
               dynamicTraits.push(trait.trim());
@@ -359,7 +394,7 @@ export function getEffectiveCardTraitsDetails(
   }
   if (
     context?.villain &&
-    (card.type === CardType.VILLAIN || (card as any).type === 'villain') &&
+    (card.type === CardType.VILLAIN || (card.type as string) === 'villain') &&
     context.villain.attachments
   ) {
     attachmentSources.push(...context.villain.attachments);
@@ -404,28 +439,29 @@ export function hasPlayerTrait(player: PlayerState, trait: string, state?: GameS
  */
 export function getEffectiveHeroStats(state: GameState, player: PlayerState): EffectiveHeroStats {
   const isHero = player.currentForm === 'hero';
+  type FormCardWithStats = { thw?: number; atk?: number; def?: number; rec?: number };
   let thwart = isHero
     ? ((player.hero as HeroCard).thwart ??
-      (player.hero as any)?.thw ??
-      (player.activeFormCard as any)?.thw ??
+      (player.hero as FormCardWithStats)?.thw ??
+      (player.activeFormCard as FormCardWithStats)?.thw ??
       0)
     : 0;
   let attack = isHero
     ? ((player.hero as HeroCard).attack ??
-      (player.hero as any)?.atk ??
-      (player.activeFormCard as any)?.atk ??
+      (player.hero as FormCardWithStats)?.atk ??
+      (player.activeFormCard as FormCardWithStats)?.atk ??
       0)
     : 0;
   let defense = isHero
     ? ((player.hero as HeroCard).defense ??
-      (player.hero as any)?.def ??
-      (player.activeFormCard as any)?.def ??
+      (player.hero as FormCardWithStats)?.def ??
+      (player.activeFormCard as FormCardWithStats)?.def ??
       0)
     : 0;
   let recovery = !isHero
     ? ((player.alterEgo as AlterEgoCard).recover ??
-      (player.alterEgo as any)?.rec ??
-      (player.activeFormCard as any)?.rec ??
+      (player.alterEgo as FormCardWithStats)?.rec ??
+      (player.activeFormCard as FormCardWithStats)?.rec ??
       0)
     : 0;
   const keywords: string[] = [];
@@ -438,8 +474,8 @@ export function getEffectiveHeroStats(state: GameState, player: PlayerState): Ef
         for (const step of ab.steps || []) {
           if (!evaluateConstantStepGate(step, player, state)) continue;
 
-          const stepParams = getStepEffectParams(step);
           if (step.effect === 'MODIFY_STAT') {
+            const stepParams = getStepEffectParams<'MODIFY_STAT'>(step as TypedStep<'MODIFY_STAT'>);
             const amount = evaluateDynamicAmount(
               stepParams.amount as number | DynamicValueSource | undefined,
               {},
@@ -450,8 +486,13 @@ export function getEffectiveHeroStats(state: GameState, player: PlayerState): Ef
             if (stepParams.stat === 'DEFENSE') defense += amount;
             if (stepParams.stat === 'RECOVERY') recovery += amount;
           }
-          if (step.effect === 'GRANT_KEYWORD' && stepParams.keyword) {
-            keywords.push(stepParams.keyword as string);
+          if (step.effect === 'GRANT_KEYWORD') {
+            const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
+              step as TypedStep<'GRANT_KEYWORD'>,
+            );
+            if (stepParams.keyword) {
+              keywords.push(stepParams.keyword as string);
+            }
           }
         }
       }
@@ -607,16 +648,25 @@ export function getEffectiveAllyLimit(player: PlayerState, state?: GameState): n
  * aggregating base card keywords, constant abilities, attachments, and tableau upgrades (RR v1.8 p. 24, ADR-0054).
  * "If a character has multiple instances of retaliate, the values of each instance are added together."
  */
-export function getEffectiveRetaliate(entity: any, _state?: GameState): number {
+export function getEffectiveRetaliate(
+  entity: StatEntity | undefined | null,
+  _state?: GameState,
+): number {
   if (!entity) return 0;
   let retaliateTotal = 0;
 
-  const targetCard =
-    entity.card || entity.activeFormCard || entity.hero || (entity.type ? entity : undefined);
+  const ent = entity as Record<string, unknown>;
+  const targetCard = (ent.card ||
+    ent.activeFormCard ||
+    ent.hero ||
+    (ent.type ? ent : undefined)) as NormalizedCard | undefined;
 
   // 1. Direct card/entity keywords
   let baseCardRetaliate = 0;
-  const directKeywords = entity.keywords || targetCard?.keywords || [];
+  const directKeywords =
+    (ent.keywords as (Keyword | string | { keyword?: string; amount?: number })[] | undefined) ||
+    targetCard?.keywords ||
+    [];
   for (const k of directKeywords) {
     const parsed = parseKeywordItem(k);
     if (parsed && parsed.name.toLowerCase() === 'retaliate') {
@@ -626,12 +676,15 @@ export function getEffectiveRetaliate(entity: any, _state?: GameState): number {
 
   // 2. Constant abilities on the entity's card itself (e.g. Black Panther 01040a or Whiplash 01172)
   let selfAbilitiesRetaliate = 0;
-  const selfAbilities = targetCard?.enrichment?.abilities || entity.abilities || [];
+  const selfAbilities =
+    targetCard?.enrichment?.abilities || (ent.abilities as CardAbility[] | undefined) || [];
   for (const ab of selfAbilities) {
     if (ab.timing === 'CONSTANT') {
       for (const step of ab.steps || []) {
-        const stepParams = getStepEffectParams(step);
         if (step.effect === 'GRANT_KEYWORD') {
+          const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
+            step as TypedStep<'GRANT_KEYWORD'>,
+          );
           const parsed = parseKeywordItem({
             keyword: stepParams.keyword,
             amount: stepParams.amount,
@@ -648,7 +701,7 @@ export function getEffectiveRetaliate(entity: any, _state?: GameState): number {
   retaliateTotal += Math.max(baseCardRetaliate, selfAbilitiesRetaliate);
 
   // 3. In-play attachments on the entity (e.g. Concussion Blasters on Villain, or upgrade attached to Ally/Minion)
-  const attachments = entity.attachments || [];
+  const attachments = (ent.attachments as CardInstance[] | undefined) || [];
   for (const att of attachments) {
     for (const k of att.card?.keywords || []) {
       const parsed = parseKeywordItem(k);
@@ -660,8 +713,10 @@ export function getEffectiveRetaliate(entity: any, _state?: GameState): number {
     for (const ab of attAbilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
-          const stepParams = getStepEffectParams(step);
           if (step.effect === 'GRANT_KEYWORD') {
+            const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
+              step as TypedStep<'GRANT_KEYWORD'>,
+            );
             const parsed = parseKeywordItem({
               keyword: stepParams.keyword,
               amount: stepParams.amount,
@@ -676,8 +731,9 @@ export function getEffectiveRetaliate(entity: any, _state?: GameState): number {
   }
 
   // 4. In-play tableau upgrades for player (e.g. Electrostatic Armor, Dauntless)
-  if (entity.tableau) {
-    for (const item of entity.tableau) {
+  const tableau = ent.tableau as CardInstance[] | undefined;
+  if (tableau) {
+    for (const item of tableau) {
       for (const k of item.card?.keywords || []) {
         const parsed = parseKeywordItem(k);
         if (parsed && parsed.name.toLowerCase() === 'retaliate') {
@@ -688,8 +744,10 @@ export function getEffectiveRetaliate(entity: any, _state?: GameState): number {
       for (const ab of itemAbilities) {
         if (ab.timing === 'CONSTANT') {
           for (const step of ab.steps || []) {
-            const stepParams = getStepEffectParams(step);
             if (step.effect === 'GRANT_KEYWORD') {
+              const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
+                step as TypedStep<'GRANT_KEYWORD'>,
+              );
               const parsed = parseKeywordItem({
                 keyword: stepParams.keyword,
                 amount: stepParams.amount,
@@ -710,7 +768,10 @@ export function getEffectiveRetaliate(entity: any, _state?: GameState): number {
 /**
  * Checks if an entity (Player, Villain, Minion, CardInstance, or Card) has a specific keyword (ADR-0054).
  */
-export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
+export function hasEntityKeyword(
+  entity: StatEntity | undefined | null,
+  targetKeyword: string,
+): boolean {
   if (!entity) return false;
   const kw = targetKeyword.toLowerCase().trim();
 
@@ -719,8 +780,14 @@ export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
     return true;
   }
 
+  const ent = entity as Record<string, unknown>;
+
   // 1. Direct keywords array on card/entity
-  const directKeywords = entity.keywords || entity.card?.keywords || entity.hero?.keywords || [];
+  const directKeywords =
+    (ent.keywords as (Keyword | string | { keyword?: string; amount?: number })[] | undefined) ||
+    (ent.card as NormalizedCard | undefined)?.keywords ||
+    (ent.hero as HeroCard | undefined)?.keywords ||
+    [];
   for (const k of directKeywords) {
     const parsed = parseKeywordItem(k);
     if (parsed && parsed.name.toLowerCase() === kw) return true;
@@ -730,25 +797,29 @@ export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
 
   // 2. Entity traits check (e.g. traits array)
   const traits =
-    entity.traits ||
-    entity.card?.traits ||
-    entity.activeFormCard?.traits ||
-    (entity.currentForm === 'alter_ego' ? entity.alterEgo?.traits : entity.hero?.traits) ||
-    entity.hero?.traits ||
+    (ent.traits as string[] | undefined) ||
+    (ent.card as NormalizedCard | undefined)?.traits ||
+    (ent.activeFormCard as NormalizedCard | undefined)?.traits ||
+    (ent.currentForm === 'alter_ego'
+      ? (ent.alterEgo as AlterEgoCard | undefined)?.traits
+      : (ent.hero as HeroCard | undefined)?.traits) ||
+    (ent.hero as HeroCard | undefined)?.traits ||
     [];
-  if (traits.some((t: any) => String(t).toLowerCase().trim() === kw)) {
+  if (traits.some((t: unknown) => String(t).toLowerCase().trim() === kw)) {
     return true;
   }
 
   // 3. Attachments granting keyword
-  const attachments = entity.attachments || [];
+  const attachments = (ent.attachments as CardInstance[] | undefined) || [];
   for (const att of attachments) {
     const abilities = att.card?.enrichment?.abilities || [];
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
-          const stepParams = getStepEffectParams(step);
           if (step.effect === 'GRANT_KEYWORD') {
+            const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
+              step as TypedStep<'GRANT_KEYWORD'>,
+            );
             const parsed = parseKeywordItem({
               keyword: stepParams.keyword,
               amount: stepParams.amount,
@@ -765,14 +836,17 @@ export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
   }
 
   // 4. Tableau upgrades granting keyword to hero (for player)
-  if (entity.tableau) {
-    for (const item of entity.tableau) {
+  const tableau = ent.tableau as CardInstance[] | undefined;
+  if (tableau) {
+    for (const item of tableau) {
       const abilities = item.card?.enrichment?.abilities || [];
       for (const ab of abilities) {
         if (ab.timing === 'CONSTANT') {
           for (const step of ab.steps || []) {
-            const stepParams = getStepEffectParams(step);
             if (step.effect === 'GRANT_KEYWORD') {
+              const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
+                step as TypedStep<'GRANT_KEYWORD'>,
+              );
               const parsed = parseKeywordItem({
                 keyword: stepParams.keyword,
                 amount: stepParams.amount,
@@ -795,9 +869,12 @@ export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
 /**
  * Checks if a character is incapacitated by a status card (taking into account Steady - RR v1.8 p. 28).
  */
-export function isEntityIncapacitatedByStatus(entity: any, status: any): boolean {
+export function isEntityIncapacitatedByStatus(
+  entity: EntityWithStatusCards | undefined | null,
+  status: StatusCard | string,
+): boolean {
   if (!entity || !entity.statusCards) return false;
-  const count = (entity.statusCards as any[]).filter((s) => s === status).length;
+  const count = entity.statusCards.filter((s) => s === status).length;
   const isSteady = hasEntityKeyword(entity, 'Steady');
   if (isSteady) {
     return count >= 2;
@@ -809,7 +886,11 @@ export function isEntityIncapacitatedByStatus(entity: any, status: any): boolean
  * Consumes status cards when an incapacitated character attempts an action (RR v1.8 p. 28).
  * Discards 2 copies if Steady, or 1 copy if Standard. Returns true if status was consumed.
  */
-export function consumeEntityStatusCards(entity: any, status: any): boolean {
+export function consumeEntityStatusCards(
+  entity: EntityWithStatusCards | undefined | null,
+  status: StatusCard | string,
+): boolean {
+  if (!entity || !entity.statusCards) return false;
   if (!isEntityIncapacitatedByStatus(entity, status)) return false;
   const isSteady = hasEntityKeyword(entity, 'Steady');
   const discardCount = isSteady ? 2 : 1;

@@ -45,4 +45,10 @@ export default [
       ],
     },
   },
+  {
+    files: ['src/engine/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'error',
+    },
+  },
 ];

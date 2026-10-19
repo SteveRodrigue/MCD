@@ -1,7 +1,6 @@
 /** Encounter reveals, surge and threat (step handlers, AUD-20261017-232534 F010-A). */
 import {
   GameState,
-  AbilityStep,
   PlayerState,
   Keyword,
   hasKeyword,
@@ -21,15 +20,16 @@ import {
   cancelActiveEncounterReveal,
   resolveNumericAmount,
 } from '../index';
-import type { StepHandler } from './types';
-import type { EffectType } from '../../../data/supplemental/runtime';
+import type { TypedStep, StepHandlerMap } from './types';
+import { getStepEffectParams } from '../../../data/supplemental/runtime';
 
 function handlePreventThreat(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'PREVENT_THREAT'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
+  const params = getStepEffectParams(step);
   const currentVal =
     context.remainingInterceptedValue ?? context.threatAmount ?? context.interceptedValue ?? 0;
 
@@ -38,14 +38,16 @@ function handlePreventThreat(
     context.interceptedValue !== undefined ||
     context.threatAmount !== undefined;
 
+  const rawParams = step.effectParams as Record<string, unknown> | undefined;
+  const preventAll = Boolean(rawParams?.['preventAll']);
   const amountToPrevent =
-    step.effectParams?.amount !== undefined
-      ? step.effectParams.amount === 'ALL' || step.effectParams.preventAll
+    params.amount !== undefined
+      ? params.amount === 'ALL' || preventAll
         ? currentVal
-        : resolveNumericAmount(step.effectParams.amount, context, currentVal)
+        : resolveNumericAmount(params.amount, context, currentVal)
       : hasInterceptContext
         ? currentVal
-        : step.effectParams?.preventAll
+        : preventAll
           ? 999
           : 1;
 
@@ -89,45 +91,43 @@ function handlePreventThreat(
 
 function handleRemoveThreat(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'REMOVE_THREAT'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
+  const params = getStepEffectParams(step);
+  const rawParams = step.effectParams as Record<string, unknown> | undefined;
+  const targetInstanceId =
+    (rawParams?.['targetInstanceId'] as string | undefined) || context.chosenTargetInstanceId;
   let amount = resolveNumericAmount(
-    step.effectParams?.amount ?? step.effectParams?.baseAmount,
+    params.amount ?? (rawParams?.['baseAmount'] as number | undefined),
     context,
     1,
     { state, player },
   );
-  if (step.effectParams?.dynamicBonus) {
-    const bonus = resolveNumericAmount(step.effectParams.dynamicBonus as any, context, 0, {
+  if (params.dynamicBonus) {
+    const bonus = resolveNumericAmount(params.dynamicBonus, context, 0, {
       state,
       player,
       sourceCardInstance: context.sourceCardInstance,
-      targetInstanceId:
-        (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
+      targetInstanceId,
     });
     amount += bonus;
   }
-  if (context.isFinalStep && step.effectParams?.finisherBonus) {
-    amount += (step.effectParams.finisherBonus as number) || 0;
+  if (context.isFinalStep && params.finisherBonus) {
+    amount += params.finisherBonus || 0;
   }
   const targetParam =
-    (step.effectParams?.target as string) ||
-    (step.effectParams?.targetInstanceId ? 'CHOSEN_SCHEME' : undefined) ||
-    'MAIN_SCHEME';
+    (params.target as string) || (targetInstanceId ? 'CHOSEN_SCHEME' : undefined) || 'MAIN_SCHEME';
   const targetContext: EffectContext = {
     ...context,
-    chosenTargetInstanceId:
-      (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
+    chosenTargetInstanceId: targetInstanceId,
   };
   let removed = 0;
   let targetSchemeName = getActiveMainScheme(state)?.card?.name || 'Main Scheme';
   let remainingThreat = getActiveMainScheme(state)?.threat || 0;
 
-  const ignoresCrisis = Boolean(
-    step.effectParams?.ignoresCrisis || (step as any).ignoresCrisis || context.ignoresCrisis,
-  );
+  const ignoresCrisis = Boolean(rawParams?.['ignoresCrisis'] || context.ignoresCrisis);
   const isPlayerSource = context.sourceCardInstance?.card?.faction !== 'encounter';
   // The main scheme cannot be thwarted by cards while a Crisis icon is in play (RR v1.8 p. 11)
   // or while the resolving player is engaged with a Patrol minion (Patrol keyword).
@@ -141,7 +141,7 @@ function handleRemoveThreat(
 
   let targetSchemes: SchemeTarget[];
 
-  const schemes = resolveSchemeTargets(state, targetParam as any, targetContext);
+  const schemes = resolveSchemeTargets(state, targetParam, targetContext);
   if (isMainSchemeBlocked) {
     const nonMainSchemes = schemes.filter(
       (s) =>
@@ -243,12 +243,13 @@ function handleRemoveThreat(
 
 function handleAddAcceleration(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'ADD_ACCELERATION'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
   // Acceleration tokens sit on the main scheme (RR v1.8 "Acceleration"): +1 threat per token each villain phase
-  const amount = evaluateDynamicAmount(step.effectParams?.amount as any, context, {
+  const params = getStepEffectParams(step);
+  const amount = evaluateDynamicAmount(params.amount, context, {
     fallback: 1,
     state,
     player,
@@ -270,7 +271,7 @@ function handleAddAcceleration(
 
 function handleSurge(
   state: GameState,
-  _step: AbilityStep,
+  _step: TypedStep<'SURGE'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
@@ -287,7 +288,7 @@ function handleSurge(
 
 function handleRevealEncounterCard(
   state: GameState,
-  _step: AbilityStep,
+  _step: TypedStep<'REVEAL_ENCOUNTER_CARD'>,
   _context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
@@ -312,26 +313,25 @@ function handleRevealEncounterCard(
 
 function handleAddThreat(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'ADD_THREAT'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const baseAmount = resolveNumericAmount(
-    step.effectParams?.amount ?? step.effectParams?.amountPerPlayer,
-    context,
-    1,
-    { state, player },
-  );
-  const isPerPlayer = !!(step.effectParams?.perPlayer || step.effectParams?.amountPerPlayer);
+  const params = getStepEffectParams(step);
+  const rawParams = step.effectParams as Record<string, unknown> | undefined;
+  const rawAmountPerPlayer = rawParams?.['amountPerPlayer'] as number | undefined;
+  const baseAmount = resolveNumericAmount(params.amount ?? rawAmountPerPlayer, context, 1, {
+    state,
+    player,
+  });
+  const isPerPlayer = !!(params.perPlayer || rawAmountPerPlayer);
   const amount = isPerPlayer ? baseAmount * getPerPlayerCount(state) : baseAmount;
+  const targetInstanceId = rawParams?.['targetInstanceId'] as string | undefined;
   const targetParam =
-    (step.effectParams?.target as string) ||
-    (step.effectParams?.targetInstanceId ? 'CHOSEN_SCHEME' : undefined) ||
-    'MAIN_SCHEME';
+    (params.target as string) || (targetInstanceId ? 'CHOSEN_SCHEME' : undefined) || 'MAIN_SCHEME';
   const targetContext: EffectContext = {
     ...context,
-    chosenTargetInstanceId:
-      (step.effectParams?.targetInstanceId as string) || context?.chosenTargetInstanceId,
+    chosenTargetInstanceId: targetInstanceId || context?.chosenTargetInstanceId,
   };
 
   if (targetParam === 'ALL_SIDE_SCHEMES') {
@@ -418,11 +418,11 @@ function handleAddThreat(
     };
   }
 
-  const targetSchemes = resolveSchemeTargets(state, targetParam as any, targetContext);
+  const targetSchemes = resolveSchemeTargets(state, targetParam, targetContext);
   if (targetSchemes.length > 0) {
     let totalPlaced = 0;
     let paused = false;
-    let lastResult: any;
+    let lastResult: { onomatopoeia?: string } | undefined;
     for (const st of targetSchemes) {
       const isSide =
         st.entityType === 'side_scheme' ||
@@ -463,7 +463,7 @@ function handleAddThreat(
 
 function handleCancelWhenRevealed(
   state: GameState,
-  _step: AbilityStep,
+  _step: TypedStep<'CANCEL_WHEN_REVEALED'>,
   _context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
@@ -486,7 +486,7 @@ function handleCancelWhenRevealed(
 
 function handleCancelWhenRevealedAndRevealAnother(
   state: GameState,
-  _step: AbilityStep,
+  _step: TypedStep<'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER'>,
   _context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
@@ -517,4 +517,4 @@ export const ENCOUNTER_HANDLERS = {
   ADD_THREAT: handleAddThreat,
   CANCEL_WHEN_REVEALED: handleCancelWhenRevealed,
   CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER: handleCancelWhenRevealedAndRevealAnother,
-} satisfies Partial<Record<EffectType, StepHandler>>;
+} satisfies Partial<StepHandlerMap>;

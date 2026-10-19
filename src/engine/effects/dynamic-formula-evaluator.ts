@@ -8,9 +8,20 @@
  * - Clamping bounds (clamp.min, clamp.max) for limits and ceilings.
  */
 
-import type { GameState, PlayerState, CardInstance } from '../models';
+import type {
+  GameState,
+  PlayerState,
+  CardInstance,
+  SideSchemeState,
+  VillainState,
+  NormalizedCard,
+} from '../models';
 import { getActiveVillain, getActiveMainScheme, getVillainById } from '../models';
-import type { DynamicValueSource } from '../../data/supplemental/schema';
+import type {
+  DynamicValueSource,
+  CardLocationSelector,
+  CardInspectionAttribute,
+} from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
 import {
   getEffectiveHeroStats,
@@ -18,6 +29,18 @@ import {
   hasPlayerTrait,
 } from '../pipeline/stat-calculator';
 import { locateCard, readCardAttribute } from '../queries/card-inspector';
+import type { EffectExecutionContext } from './index';
+
+type ExtendedDynamicSource = DynamicValueSource & {
+  discardAttribute?: string;
+  resourceType?: string;
+  targetCardCode?: string;
+  fromCard?: CardLocationSelector;
+  targetCard?: CardLocationSelector;
+  trait?: string;
+  resource?: string;
+  amount?: number;
+};
 
 export interface DynamicEvaluationOptions {
   state?: GameState;
@@ -30,7 +53,11 @@ export interface DynamicEvaluationOptions {
 
 export function evaluateDynamicAmount(
   amountParam: number | DynamicValueSource | undefined,
-  context: Record<string, any> = {},
+  context: Partial<EffectExecutionContext> & {
+    state?: GameState;
+    player?: PlayerState;
+    resourcesSpent?: string[];
+  } = {},
   options: DynamicEvaluationOptions = {},
 ): number {
   if (typeof amountParam === 'number') {
@@ -39,6 +66,8 @@ export function evaluateDynamicAmount(
   if (!amountParam || typeof amountParam !== 'object') {
     return options.fallback ?? 0;
   }
+
+  const extParam = amountParam as ExtendedDynamicSource;
 
   const {
     from,
@@ -52,8 +81,8 @@ export function evaluateDynamicAmount(
     clamp,
   } = amountParam;
 
-  const state = options.state || (context as any).state;
-  const player = options.player || (context as any).player;
+  const state = options.state || context.state;
+  const player = options.player || context.player;
 
   let baseValue = 0;
 
@@ -80,8 +109,7 @@ export function evaluateDynamicAmount(
         : discarded;
 
       const discardAttribute =
-        (amountParam as any).discardAttribute ||
-        ((amountParam as any).resourceType ? 'RESOURCE_ICONS' : 'COUNT');
+        extParam.discardAttribute || (extParam.resourceType ? 'RESOURCE_ICONS' : 'COUNT');
 
       switch (discardAttribute) {
         case 'COUNT': {
@@ -89,22 +117,25 @@ export function evaluateDynamicAmount(
           break;
         }
         case 'RESOURCE_ICONS': {
-          const resType = (amountParam as any).resourceType;
+          const resType = extParam.resourceType;
           let count = 0;
           for (const inst of cards) {
             if (!inst?.card) continue;
             const res = inst.card.resources;
-            const raw = inst.card.raw as any;
+            const raw = inst.card.raw as unknown as Record<string, unknown> | undefined;
             if (resType) {
-              const val = res?.[resType as keyof typeof res] ?? raw?.[`resource_${resType}`] ?? 0;
+              const val =
+                res?.[resType as keyof typeof res] ??
+                (raw?.[`resource_${resType}`] as number | undefined) ??
+                0;
               count += typeof val === 'number' ? val : 0;
             } else {
               const totalVal =
                 res?.total ??
-                (raw?.resource_physical || 0) +
-                  (raw?.resource_energy || 0) +
-                  (raw?.resource_mental || 0) +
-                  (raw?.resource_wild || 0);
+                ((raw?.resource_physical as number | undefined) || 0) +
+                  ((raw?.resource_energy as number | undefined) || 0) +
+                  ((raw?.resource_mental as number | undefined) || 0) +
+                  ((raw?.resource_wild as number | undefined) || 0);
               count += typeof totalVal === 'number' ? totalVal : 0;
             }
           }
@@ -116,10 +147,10 @@ export function evaluateDynamicAmount(
           for (const inst of cards) {
             if (!inst?.card) continue;
             const res = inst.card.resources;
-            const raw = inst.card.raw as any;
+            const raw = inst.card.raw as unknown as Record<string, unknown> | undefined;
             const resourceKeys = ['physical', 'energy', 'mental', 'wild'] as const;
             for (const rk of resourceKeys) {
-              const val = res?.[rk] ?? raw?.[`resource_${rk}`] ?? 0;
+              const val = res?.[rk] ?? (raw?.[`resource_${rk}`] as number | undefined) ?? 0;
               if (typeof val === 'number' && val > 0) {
                 distinctTypes.add(rk);
               }
@@ -132,10 +163,12 @@ export function evaluateDynamicAmount(
           let totalBoost = 0;
           for (const inst of cards) {
             if (!inst?.card) continue;
+            const cardRec = inst.card as unknown as Record<string, unknown>;
+            const rawRec = inst.card.raw as unknown as Record<string, unknown> | undefined;
             const boostVal =
-              (inst.card as any).boostIcons ??
-              (inst.card as any).boost ??
-              (inst.card.raw as any)?.boost ??
+              (cardRec.boostIcons as number | undefined) ??
+              (cardRec.boost as number | undefined) ??
+              (rawRec?.boost as number | undefined) ??
               0;
             totalBoost += typeof boostVal === 'number' ? boostVal : 0;
           }
@@ -146,7 +179,8 @@ export function evaluateDynamicAmount(
           const distinctTypes = new Set<string>();
           for (const inst of cards) {
             if (!inst?.card) continue;
-            const cardType = inst.card.type || (inst.card.raw as any)?.type_code;
+            const rawRec = inst.card.raw as unknown as Record<string, unknown> | undefined;
+            const cardType = inst.card.type || (rawRec?.type_code as string | undefined);
             if (cardType) {
               distinctTypes.add(cardType);
             }
@@ -158,7 +192,8 @@ export function evaluateDynamicAmount(
           let totalCost = 0;
           for (const inst of cards) {
             if (!inst?.card) continue;
-            const costVal = inst.card.cost ?? (inst.card.raw as any)?.cost ?? 0;
+            const rawRec = inst.card.raw as unknown as Record<string, unknown> | undefined;
+            const costVal = inst.card.cost ?? (rawRec?.cost as number | undefined) ?? 0;
             totalCost += typeof costVal === 'number' ? costVal : 0;
           }
           baseValue = totalCost;
@@ -194,7 +229,7 @@ export function evaluateDynamicAmount(
         if (player) {
           const effectiveMax = state
             ? getEffectiveMaxHealth(player, state)
-            : player.hero?.hitPoints || player.health;
+            : player.hero?.health || player.health;
           baseValue = Math.max(0, effectiveMax - player.health);
         }
       } else if (stat === 'ATTACK' || stat === 'HERO_ATK') {
@@ -223,11 +258,10 @@ export function evaluateDynamicAmount(
         }
       } else if (stat === 'THREAT') {
         if (state) {
+          const targetObj = target as { code?: string } | undefined;
+          const filterObj = filter as { code?: string; codes?: string[] } | undefined;
           const targetCardCode =
-            (amountParam as any).targetCardCode ||
-            (target as any)?.code ||
-            (filter as any)?.code ||
-            (filter as any)?.codes?.[0];
+            extParam.targetCardCode || targetObj?.code || filterObj?.code || filterObj?.codes?.[0];
           if (targetCardCode) {
             const located = locateCard(
               state,
@@ -237,8 +271,9 @@ export function evaluateDynamicAmount(
             baseValue = located ? readCardAttribute(located, 'THREAT') : 0;
           } else if (options.targetInstanceId) {
             const sideScheme = state.sideSchemes?.find(
-              (s: any) =>
-                s.instanceId === options.targetInstanceId || s.id === options.targetInstanceId,
+              (s: SideSchemeState) =>
+                s.instanceId === options.targetInstanceId ||
+                (s as unknown as { id?: string }).id === options.targetInstanceId,
             );
             baseValue = sideScheme ? sideScheme.threat : (getActiveMainScheme(state)?.threat ?? 0);
           } else {
@@ -247,35 +282,40 @@ export function evaluateDynamicAmount(
         }
       } else if (stat === 'DAMAGE') {
         if (state) {
+          const targetObj = target as { code?: string } | undefined;
+          const filterObj = filter as { code?: string; codes?: string[] } | undefined;
           const targetCardCode =
-            (amountParam as any).targetCardCode ||
-            (target as any)?.code ||
-            (filter as any)?.code ||
-            (filter as any)?.codes?.[0];
+            extParam.targetCardCode || targetObj?.code || filterObj?.code || filterObj?.codes?.[0];
           if (options.targetInstanceId) {
             const minion = state.players
               .flatMap((p: PlayerState) => p.engagedMinions || [])
               .find(
-                (m: any) =>
-                  m.instanceId === options.targetInstanceId || m.id === options.targetInstanceId,
+                (m: CardInstance) =>
+                  m.instanceId === options.targetInstanceId ||
+                  (m as unknown as { id?: string }).id === options.targetInstanceId,
               );
             if (minion) {
-              baseValue = minion.tokens?.damage ?? (minion as any).damage ?? 0;
+              baseValue =
+                minion.tokens?.damage ?? (minion as unknown as { damage?: number }).damage ?? 0;
             } else {
               const ally = state.players
                 .flatMap((p: PlayerState) => p.allies || [])
                 .find(
-                  (a: any) =>
-                    a.instanceId === options.targetInstanceId || a.id === options.targetInstanceId,
+                  (a: CardInstance) =>
+                    a.instanceId === options.targetInstanceId ||
+                    (a as unknown as { id?: string }).id === options.targetInstanceId,
                 );
               if (ally) {
-                baseValue = ally.tokens?.damage ?? (ally as any).damage ?? 0;
+                baseValue =
+                  ally.tokens?.damage ?? (ally as unknown as { damage?: number }).damage ?? 0;
               } else {
                 const targetPlayer = state.players.find(
                   (p: PlayerState) =>
                     p.id === options.targetInstanceId ||
-                    (p as any).instanceId === options.targetInstanceId ||
-                    (p as any).identity?.instanceId === options.targetInstanceId,
+                    (p as unknown as { instanceId?: string }).instanceId ===
+                      options.targetInstanceId ||
+                    (p as unknown as { identity?: { instanceId?: string } }).identity
+                      ?.instanceId === options.targetInstanceId,
                 );
                 if (targetPlayer) {
                   baseValue = Math.max(
@@ -286,9 +326,9 @@ export function evaluateDynamicAmount(
                   const targetVillain =
                     getVillainById(state, options.targetInstanceId) ||
                     (state.villains || []).find(
-                      (v: any) =>
+                      (v: VillainState) =>
                         v.instanceId === options.targetInstanceId ||
-                        v.id === options.targetInstanceId,
+                        (v as unknown as { id?: string }).id === options.targetInstanceId,
                     );
                   if (targetVillain) {
                     baseValue = Math.max(
@@ -334,8 +374,8 @@ export function evaluateDynamicAmount(
       break;
     }
     case 'CARD_ATTRIBUTE': {
-      const cardSelector = (amountParam as any).fromCard || (amountParam as any).targetCard;
-      let targetEntity: any = undefined;
+      const cardSelector = extParam.fromCard || extParam.targetCard;
+      let targetEntity: CardInstance | NormalizedCard | undefined = undefined;
 
       if (cardSelector && state) {
         targetEntity = locateCard(state, cardSelector, {
@@ -349,15 +389,16 @@ export function evaluateDynamicAmount(
       }
 
       if (targetEntity) {
-        baseValue = readCardAttribute(targetEntity, (attribute as any) || 'PRINTED_RESOURCES');
+        baseValue = readCardAttribute(
+          targetEntity,
+          (attribute as CardInspectionAttribute) || 'PRINTED_RESOURCES',
+        );
       }
       break;
     }
     case 'HAS_TRAIT': {
       if (player) {
-        const traitsToCheck =
-          filter?.traits ||
-          ((amountParam as any).trait ? [(amountParam as any).trait as string] : []);
+        const traitsToCheck = filter?.traits || (extParam.trait ? [extParam.trait] : []);
         const hasTrait = traitsToCheck.some((t: string) => hasPlayerTrait(player, t, state));
         baseValue = hasTrait ? 1 : 0;
       }
@@ -373,7 +414,7 @@ export function evaluateDynamicAmount(
       break;
     }
     case 'PAID_WITH_RESOURCE': {
-      const requiredResource = (amountParam as any).resource || (amountParam as any).resourceType;
+      const requiredResource = extParam.resource || extParam.resourceType;
       const spent: string[] = context.resourcesSpent || [];
       const hasMatchingResource = requiredResource
         ? spent.some((r) => {
@@ -381,11 +422,11 @@ export function evaluateDynamicAmount(
             return lower === String(requiredResource).toLowerCase() || lower === 'wild';
           })
         : spent.length > 0;
-      baseValue = hasMatchingResource ? ((amountParam as any).amount ?? 1) : 0;
+      baseValue = hasMatchingResource ? (extParam.amount ?? 1) : 0;
       break;
     }
     case 'RESOURCES_SPENT': {
-      const targetResource = (amountParam as any).resource || (amountParam as any).resourceType;
+      const targetResource = extParam.resource || extParam.resourceType;
       const spent: string[] = context.resourcesSpent || [];
       if (targetResource) {
         const count = spent.filter((r) => {

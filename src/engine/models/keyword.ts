@@ -21,17 +21,18 @@ export interface ParsedKeyword {
  * into a canonical keyword name and numeric magnitude (ADR-0054).
  * Defaults magnitude to 1 when omitted.
  */
-export function parseKeywordItem(item: CardKeyword | any): ParsedKeyword | null {
+export function parseKeywordItem(item: CardKeyword | unknown): ParsedKeyword | null {
   if (!item) return null;
 
   if (typeof item === 'object' && item !== null && 'keyword' in item) {
-    const rawName = String(item.keyword).trim();
+    const kwObj = item as { keyword: unknown; amount?: unknown };
+    const rawName = String(kwObj.keyword).trim();
     // In case the object's keyword field itself has a number like { keyword: 'Retaliate 1' }
     const match = rawName.match(/^([a-zA-Z\s_-]+?)(?:\s+(\d+))?$/);
     const name = match ? match[1].trim() : rawName;
-    let amount =
-      typeof item.amount === 'number' && !isNaN(item.amount)
-        ? item.amount
+    const amount =
+      typeof kwObj.amount === 'number' && !isNaN(kwObj.amount)
+        ? kwObj.amount
         : match && match[2]
           ? parseInt(match[2], 10)
           : 1;

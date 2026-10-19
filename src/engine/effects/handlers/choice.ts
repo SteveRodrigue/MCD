@@ -1,25 +1,27 @@
 /** Player choices and special handlers (step handlers, AUD-20261017-232534 F010-A). */
-import { GameState, AbilityStep, CardType, PlayerState } from '@engine/models';
+import { GameState, CardType, PlayerState, DecisionPromptOption } from '@engine/models';
 import { enqueueDecisionPrompt } from '../../pipeline/prompt-queue';
 import { getSpecialHandler } from '../../specials/special-registry';
 import { nextEngineId } from '../../state/rng';
 import { appendLog } from '../../state/game-log';
 import { EffectExecutionContext, EffectResult } from '../index';
-import type { StepHandler } from './types';
-import type { EffectType } from '../../../data/supplemental/runtime';
+import type { TypedStep, StepHandlerMap } from './types';
+import { getStepEffectParams } from '../../../data/supplemental/runtime';
 
 function handlePlayerChoice(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'PLAYER_CHOICE'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const options = ((step.effectParams?.options as any[]) || []).map((opt: any) => ({ ...opt }));
+  const params = getStepEffectParams(step);
+  const rawParams = step.effectParams as Record<string, unknown> | undefined;
+  const options: DecisionPromptOption[] = (
+    (params.options as unknown as DecisionPromptOption[]) || []
+  ).map((opt) => ({ ...opt }));
   const title =
-    (step.effectParams?.title as string) ||
-    (step.effectParams?.promptTitle as string) ||
-    'Choose an Option';
-  const description = (step.effectParams?.description as string) || '';
+    params.title || (rawParams?.['promptTitle'] as string | undefined) || 'Choose an Option';
+  const description = params.description || '';
   const sourceCardName = context.sourceCardInstance?.card.name || step.id || 'Card Ability';
   const promptId = `prompt_${nextEngineId(state, 'id')}_${step.id || 'choice'}`;
   state = enqueueDecisionPrompt(state, {
@@ -33,7 +35,7 @@ function handlePlayerChoice(
     triggerSourceCard: context.sourceCardInstance?.card,
     options,
     discardedCards: context.discardedCards,
-    isVoluntary: (step.effectParams?.isVoluntary as boolean) ?? false,
+    isVoluntary: params.isVoluntary ?? false,
     completion:
       context.sourceCardInstance?.card.type === CardType.OBLIGATION
         ? 'DISCARD_SOURCE_OBLIGATION'
@@ -52,11 +54,12 @@ function handlePlayerChoice(
 
 function handleExecuteSpecial(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'EXECUTE_SPECIAL'>,
   context: EffectExecutionContext,
   _player: PlayerState,
 ): EffectResult {
-  const specialId = step.effectParams?.specialId as string | undefined;
+  const params = getStepEffectParams(step);
+  const specialId = params.specialId;
   if (!specialId) {
     return { state, success: false, error: 'EXECUTE_SPECIAL requires effectParams.specialId' };
   }
@@ -68,10 +71,10 @@ function handleExecuteSpecial(
       error: `Special handler not found for ${specialId}`,
     };
   }
-  return handler.execute(state, context, step.effectParams);
+  return handler.execute(state, context, params);
 }
 
 export const CHOICE_HANDLERS = {
   PLAYER_CHOICE: handlePlayerChoice,
   EXECUTE_SPECIAL: handleExecuteSpecial,
-} satisfies Partial<Record<EffectType, StepHandler>>;
+} satisfies Partial<StepHandlerMap>;

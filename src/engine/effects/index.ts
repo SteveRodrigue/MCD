@@ -21,6 +21,8 @@ import {
   PendingSequence,
   DamagedCharacter,
 } from '@engine/models';
+import type { UniversalCardFilter, DynamicValueSource } from '../../data/supplemental/schema';
+import type { TypedStep } from './handlers/types';
 import { matchesCardFilter, type FilterSubject } from '../filters/card-filter';
 import { resolveActiveEncounterCardAfterInterrupt } from '../pipeline/villain-phase';
 import { getStepEffectParams, getStepGateParams } from '../../data/supplemental/runtime';
@@ -68,7 +70,7 @@ import { nextEngineId, randomInt } from '../state/rng';
 export function filterResolvedTargets(
   state: GameState,
   targets: ResolvedTarget[],
-  filter: Record<string, any> | undefined,
+  filter: UniversalCardFilter | Record<string, unknown> | undefined,
   player: PlayerState,
 ): ResolvedTarget[] {
   if (!filter) return targets;
@@ -98,6 +100,7 @@ export interface EffectExecutionContext {
   sourceCardInstance?: CardInstance;
   targetCardInstance?: CardInstance;
   sourceCardId?: string;
+  forEachPlayerIds?: string[];
   /**
    * The target the player chose for this ability: the UI selection carried by a player action,
    * or the answer to a target prompt. Never the target of the triggering event.
@@ -157,6 +160,10 @@ export interface EffectExecutionContext {
   activationDamage?: number;
   /** The hero or ally that took that damage, resolved by the DAMAGED_CHARACTER selector. */
   damagedCharacter?: DamagedCharacter;
+  attackCancelled?: boolean;
+  step?: AbilityStep;
+  state?: GameState;
+  player?: PlayerState;
 }
 
 export { evaluateDynamicAmount } from './dynamic-formula-evaluator';
@@ -184,7 +191,7 @@ import { resolvePlayerTargets, type ResolvedTarget } from './target-resolver';
  * Resolves literal numbers, tokens, and DynamicValueSource with full math, fractions, and clamping.
  */
 export function resolveNumericAmount(
-  amountParam: any,
+  amountParam: number | DynamicValueSource | unknown,
   context: Partial<EffectExecutionContext>,
   fallback: number = 0,
   options?: {
@@ -195,12 +202,12 @@ export function resolveNumericAmount(
     sourceCardInstance?: CardInstance;
   },
 ): number {
-  return evaluateDynamicAmount(amountParam, context, {
+  return evaluateDynamicAmount(amountParam as number | DynamicValueSource | undefined, context, {
     fallback,
-    state: options?.state || (context as any)?.state,
-    player: options?.player || (context as any)?.player,
+    state: options?.state || context?.state,
+    player: options?.player || context?.player,
     targetInstanceId: options?.targetInstanceId || context?.chosenTargetInstanceId,
-    targetCardInstance: options?.targetCardInstance || (context as any)?.targetCardInstance,
+    targetCardInstance: options?.targetCardInstance || context?.targetCardInstance,
     sourceCardInstance: options?.sourceCardInstance || context?.sourceCardInstance,
   });
 }
@@ -282,8 +289,9 @@ export function isEncounterCard(card: NormalizedCard): boolean {
     t === 'villain' ||
     t === 'obligation' ||
     t === 'environment' ||
-    (card as any).faction_code === 'encounter' ||
-    Boolean((card as any).card_set_code)
+    card.faction === 'encounter' ||
+    card.raw?.faction_code === 'encounter' ||
+    Boolean((card.raw as unknown as Record<string, unknown> | undefined)?.card_set_code)
   );
 }
 
@@ -303,7 +311,7 @@ export function discardHostAttachmentsAndTuckedCards(
       if (isEncounterCard(attachment.card)) {
         state.encounterDiscard.push(attachment);
       } else {
-        const ownerId = (attachment as any).ownerId || ownerPlayerId;
+        const ownerId = attachment.ownerId || ownerPlayerId;
         const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
         targetP.discard.push(attachment);
       }
@@ -317,7 +325,7 @@ export function discardHostAttachmentsAndTuckedCards(
       if (isEncounterCard(tucked.card)) {
         state.encounterDiscard.push(tucked);
       } else {
-        const ownerId = (tucked as any).ownerId || ownerPlayerId;
+        const ownerId = tucked.ownerId || ownerPlayerId;
         const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
         targetP.discard.push(tucked);
       }
@@ -418,11 +426,11 @@ export function processHostDefeated(
   if (attachments.length === 0 && cardsUnderneath.length === 0) return;
 
   for (const att of attachments) {
-    (att as any).hostInstanceId = (att as any).hostInstanceId || hostCard.instanceId;
+    att.hostInstanceId = att.hostInstanceId || hostCard.instanceId;
     const abilities = att.card.enrichment?.abilities || [];
     for (const ab of abilities) {
       if (ab.trigger === 'CHARACTER_DEFEATED' || ab.trigger === 'DEFEATED') {
-        const ownerId = (att as any).ownerId;
+        const ownerId = att.ownerId;
         const owner =
           (ownerId ? state.players.find((p) => p.id === ownerId) : undefined) ||
           context?.player ||
@@ -641,7 +649,8 @@ export function compileDistributionTargets(
 
     if (includeAllies) {
       for (const ally of p.allies) {
-        const allyHp = (ally.card as any).health || 1;
+        const allyHp =
+          'health' in ally.card && typeof ally.card.health === 'number' ? ally.card.health : 1;
         const currentDmg = ally.tokens?.damage || 0;
         const currentHp = Math.max(0, allyHp - currentDmg);
         const hasTough = (ally.statusCards || []).includes(StatusCard.TOUGH);
@@ -1225,11 +1234,14 @@ export function executeSequence(
 
     const isDistinctFromPrevious = effectParams.distinctFrom === 'PREVIOUS_TARGET';
 
+    const stepExt = step as AbilityStep & {
+      sourceCardInstance?: CardInstance;
+      isFinalStep?: boolean;
+    };
     const stepContext: EffectExecutionContext = {
       ...context,
-      sourceCardInstance: (step as any).sourceCardInstance ?? context.sourceCardInstance,
-      isFinalStep:
-        (step as any).isFinalStep ?? (i === steps.length - 1 ? context.isFinalStep : false),
+      sourceCardInstance: stepExt.sourceCardInstance ?? context.sourceCardInstance,
+      isFinalStep: stepExt.isFinalStep ?? (i === steps.length - 1 ? context.isFinalStep : false),
       previousResult: lastExecutedResult,
       distinctFromId: isDistinctFromPrevious
         ? lastExecutedResult?.targetId || context.chosenTargetInstanceId
@@ -1550,15 +1562,16 @@ function executeEffectInternal(
     return executeSequence(state, abilityOrStep.steps, context);
   }
 
+  const sequenceObj = abilityOrStep as { sequence?: AbilityStep[] };
   if (
     'sequence' in abilityOrStep &&
-    Array.isArray((abilityOrStep as any).sequence) &&
-    (abilityOrStep as any).sequence.length > 0
+    Array.isArray(sequenceObj.sequence) &&
+    sequenceObj.sequence.length > 0
   ) {
     if ((abilityOrStep as CardAbility).timing) {
       context.ability = abilityOrStep as CardAbility;
     }
-    return executeSequence(state, (abilityOrStep as any).sequence, context);
+    return executeSequence(state, sequenceObj.sequence, context);
   }
 
   if ('effect' in abilityOrStep && abilityOrStep.effect) {
@@ -1631,7 +1644,7 @@ function findAnyCardInstance(state?: GameState, idOrCode?: string): CardInstance
  * Dynamic prompt title, description, and source card metadata generator for tableau discard prompts (Issue #233).
  */
 function getTableauDiscardPromptMeta(
-  filter?: any,
+  filter?: (UniversalCardFilter & { trait?: string; type?: string }) | Record<string, unknown>,
   sourceCardInstance?: CardInstance,
   sourceCardId?: string,
   state?: GameState,
@@ -1742,7 +1755,7 @@ export function executeDiscard(
   const player = state.players.find((p) => p.id === context.playerId);
   if (!player) return { state, success: false, error: 'Player not found' };
 
-  const params = getStepEffectParams(step);
+  const params = getStepEffectParams<'DISCARD'>(step as TypedStep<'DISCARD'>);
   const source = (params.source as string) || 'HAND';
   const rawCount = params.count;
   const isCountAll = rawCount === 'ALL';
@@ -1751,11 +1764,11 @@ export function executeDiscard(
     (params.mode as string) ||
     (source === 'DECK' || source === 'ENCOUNTER_DECK' ? 'TOP' : 'CHOSEN');
   const fallback = params.fallback as string | undefined;
-  const filter = params.filter as any;
+  const filter = params.filter;
 
   // 1. DISCARD FROM HAND
   if (source === 'HAND') {
-    const resolved = resolvePlayerTargets(state, params.target as any, context);
+    const resolved = resolvePlayerTargets(state, params.target, context);
     const targetPlayers = resolved.length > 0 ? resolved : [player];
     const isRandom = mode === 'RANDOM';
     const discardedCards: CardInstance[] = [];
@@ -1892,7 +1905,7 @@ export function executeDiscard(
       // "Discard cards from the top of the encounter deck until <match>" (RR v1.8 glossary
       // "Encounter Deck"): stops at the match, or when the deck is emptied (the effect is then
       // fulfilled and the deck is reset; it does not continue into the new deck).
-      const untilFilter = params.untilFilter as any;
+      const untilFilter = params.untilFilter;
       if (!untilFilter) {
         return { state, success: false, error: 'DISCARD UNTIL_MATCH requires untilFilter' };
       }
@@ -1988,8 +2001,8 @@ export function executeDiscard(
 
   // 4. DISCARD FROM TABLEAU
   if (source === 'TABLEAU') {
-    const targetInstanceId = (params.targetInstanceId || context.chosenTargetInstanceId) as
-      string | undefined;
+    const targetInstanceId = ((params as { targetInstanceId?: string }).targetInstanceId ||
+      context.chosenTargetInstanceId) as string | undefined;
     if (targetInstanceId) {
       const targetCard = player.tableau.find((c) => c.instanceId === targetInstanceId);
       if (targetCard) {
@@ -2142,7 +2155,7 @@ export function executeDiscard(
       if (isEncounterCard(card.card)) {
         state.encounterDiscard.push(card);
       } else {
-        const owner = state.players.find((p) => p.id === (card as any).ownerId) || player;
+        const owner = state.players.find((p) => p.id === card.ownerId) || player;
         owner.discard.push(card);
       }
     }
@@ -2190,7 +2203,7 @@ export function executeStep(
     };
   }
 
-  const handler: StepHandler | undefined = EFFECT_HANDLERS[step.effect];
+  const handler = EFFECT_HANDLERS[step.effect] as StepHandler | undefined;
   // An effect without a handler must fail loudly, never resolve as a silent no-op
   if (!handler) throw new Error(`executeStep: no handler for effect '${String(step.effect)}'`);
   return handler(state, step, context, player);

@@ -34,5 +34,5 @@ Adding an effect: add it to `EFFECT_TYPES` (`src/data/supplemental/runtime.ts`, 
 
 - `effects/index.ts` fell from 5,687 to about 2,200 lines; the largest family module is about 1,300 lines.
 - Handlers import shared helpers from `effects/index.ts`, which imports the registry: a function-level cycle, safe because no module calls into it at load. `effects/index.ts` imports `./handlers` after all its other imports, so pipeline modules that register hooks at load (`combat-pipeline` → `prompt-queue`) keep their initialization order.
-- Effect parameters are still read as `Record<string, any>`; typing them per effect from `effect-params.ts` is a follow-up.
+- Effect parameters are now typed per effect via `EffectParamsMap` (`src/data/supplemental/effect-params.ts`), `getStepEffectParams<E>` (`src/data/supplemental/runtime.ts`), and `StepHandler<E>` (`src/engine/effects/handlers/types.ts`).
 - `git blame` of the moved bodies starts at this change.

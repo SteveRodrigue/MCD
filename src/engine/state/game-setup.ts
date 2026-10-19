@@ -109,7 +109,8 @@ export function setupGame(options: GameSetupOptions): GameState {
     const drawDeckCards: NormalizedCard[] = [];
 
     for (const card of pConfig.deckCards) {
-      const isPermanent = hasKeyword(card, Keyword.PERMANENT) || (card as any).permanent === true;
+      const isPermanent =
+        hasKeyword(card, Keyword.PERMANENT) || (card as { permanent?: boolean }).permanent === true;
 
       if (isPermanent) {
         permanentCards.push(createCardInstance(card, pConfig.id));

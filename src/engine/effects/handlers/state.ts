@@ -3,7 +3,6 @@ import {
   GameState,
   CardInstance,
   StatusCard,
-  AbilityStep,
   CardType,
   PlayerState,
   VillainState,
@@ -28,28 +27,36 @@ import {
   filterResolvedTargets,
   resolveNumericAmount,
 } from '../index';
-import type { StepHandler } from './types';
-import type { EffectType } from '../../../data/supplemental/runtime';
+import type { TypedStep, StepHandlerMap } from './types';
 
 function handleAddStatus(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'ADD_STATUS'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
+  const params = getStepEffectParams(step);
+  const rawParams = step.effectParams as Record<string, unknown> | undefined;
   let status: StatusCard = StatusCard.STUNNED;
-  const statusParam = step.effectParams?.status;
-  if (statusParam === 'TOUGH' || statusParam === StatusCard.TOUGH) status = StatusCard.TOUGH;
-  if (statusParam === 'CONFUSED' || statusParam === StatusCard.CONFUSED)
-    status = StatusCard.CONFUSED;
-  if (statusParam === 'STUNNED' || statusParam === StatusCard.STUNNED) status = StatusCard.STUNNED;
+  const statusParam = (rawParams?.['status'] as string | undefined) || params.status;
+  const normalizedStatus = statusParam?.toUpperCase();
+  if (normalizedStatus === 'TOUGH') status = StatusCard.TOUGH;
+  else if (normalizedStatus === 'CONFUSED') status = StatusCard.CONFUSED;
+  else if (normalizedStatus === 'STUNNED') status = StatusCard.STUNNED;
 
   let mutatedState = false;
   let alreadyHadStatus = false;
   let isImmune = false;
 
   // Helper to apply status to a target entity considering Stalwart and Steady
-  const applyStatusToEntity = (entity: any) => {
+  const applyStatusToEntity = (
+    entity:
+      | ({ statusCards?: StatusCard[] } & Record<string, unknown>)
+      | PlayerState
+      | VillainState
+      | CardInstance
+      | undefined,
+  ) => {
     if (!entity) return;
     if (!entity.statusCards) entity.statusCards = [];
 
@@ -76,13 +83,13 @@ function handleAddStatus(
     }
   };
 
-  const targetParam = (step.effectParams?.target as string) || 'VILLAIN';
+  const targetParam = (params.target as string) || 'VILLAIN';
   const targetContext: EffectContext = {
     ...context,
     chosenTargetInstanceId:
-      (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
+      (rawParams?.['targetInstanceId'] as string | undefined) || context.chosenTargetInstanceId,
   };
-  const targetCharacters = resolveCharacterTargets(state, targetParam as any, targetContext);
+  const targetCharacters = resolveCharacterTargets(state, targetParam, targetContext);
   for (const targetChar of targetCharacters) {
     applyStatusToEntity(targetChar.entity);
   }
@@ -173,11 +180,12 @@ function handleAddStatus(
 
 function handleRemoveStatus(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'REMOVE_STATUS'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const requestedStatus = String(step.effectParams?.status || 'ALL');
+  const params = getStepEffectParams(step);
+  const requestedStatus = String(params.status || 'ALL');
   const normalizedStatus =
     requestedStatus === 'STUNNED'
       ? StatusCard.STUNNED
@@ -190,11 +198,11 @@ function handleRemoveStatus(
     normalizedStatus === 'ALL'
       ? [StatusCard.STUNNED, StatusCard.CONFUSED, StatusCard.TOUGH]
       : [normalizedStatus as StatusCard];
-  const target = String(step.effectParams?.target || 'VILLAIN');
+  const target = String(params.target || 'VILLAIN');
   const targetPlayer =
     state.players.find((candidate) => candidate.id === context.targetPlayerId) || player;
-  const targets: any[] = [];
-  const resolved = resolveTargets(state, target as any, context);
+  const targets: Array<{ statusCards?: StatusCard[]; instanceId?: string }> = [];
+  const resolved = resolveTargets(state, target, context);
   for (const r of resolved) {
     targets.push(r.entity);
   }
@@ -205,12 +213,11 @@ function handleRemoveStatus(
 
   let removedCount = 0;
   for (const entity of targets) {
-    if (!Array.isArray(entity?.statusCards)) continue;
-    const removedStatuses = statuses.filter((status) => entity.statusCards.includes(status));
-    const before = entity.statusCards.length;
-    entity.statusCards = entity.statusCards.filter(
-      (status: StatusCard) => !statuses.includes(status),
-    );
+    const statusCards = entity?.statusCards;
+    if (!statusCards) continue;
+    const removedStatuses = statuses.filter((status) => statusCards.includes(status));
+    const before = statusCards.length;
+    entity.statusCards = statusCards.filter((status: StatusCard) => !statuses.includes(status));
     if (removedStatuses.length > 0) {
       removedCount += before - entity.statusCards.length;
       for (const status of removedStatuses) {
@@ -237,7 +244,7 @@ function handleRemoveStatus(
 
 function handleAddTrait(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'ADD_TRAIT'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
@@ -281,7 +288,7 @@ function handleAddTrait(
 
 function handleModifyStat(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'MODIFY_STAT'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
@@ -316,9 +323,10 @@ function handleModifyStat(
         : 0) ||
       0;
 
+    const rawStepParams = step.effectParams as Record<string, unknown> | undefined;
     // "Choose a player": the characters that player controls get the bonus
     const chosenPlayerId =
-      (stepParams.targetPlayerId as string) ||
+      (rawStepParams?.['targetPlayerId'] as string | undefined) ||
       context.targetPlayerId ||
       (stepParams.targetPlayer === 'CHOSEN_PLAYER' && state.players.length > 1
         ? undefined
@@ -350,7 +358,10 @@ function handleModifyStat(
     }
     const recipient = state.players.find((p) => p.id === chosenPlayerId) || player;
 
-    const pushBonuses = (mods: { stat: 'ATTACK' | 'THWART'; amount: number }[], into: any) => {
+    const pushBonuses = (
+      mods: { stat: 'ATTACK' | 'THWART'; amount: number }[],
+      into: PlayerState | CardInstance,
+    ) => {
       if (!into.activeStatModifiers) into.activeStatModifiers = [];
       for (const m of mods) {
         into.activeStatModifiers.push({ ...m, duration, sourceCardName, sourceCardCode });
@@ -378,8 +389,12 @@ function handleModifyStat(
     targetParam === 'CHOSEN_CHARACTER' ||
     targetParam === 'CHOSEN_ALLY'
   ) {
-    const stat = (stepParams.stat as any) || (step.effectParams?.stat as any) || 'ATTACK';
-    const amount = (stepParams.amount as number) || (step.effectParams?.amount as number) || 1;
+    const rawStepParams = step.effectParams as Record<string, unknown> | undefined;
+    const rawStat = stepParams.stat || 'ATTACK';
+    const stat: 'ATTACK' | 'THWART' | 'DEFENSE' | 'RECOVERY' =
+      rawStat === 'SCHEME' ? 'ATTACK' : rawStat;
+    const amount =
+      (stepParams.amount as number) || (rawStepParams?.['amount'] as number | undefined) || 1;
 
     // Resolve target card instance
     let targetCard = context.sourceCardInstance;
@@ -435,16 +450,17 @@ function handleModifyStat(
 
 function handleReady(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'READY'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const targetParam = (step.effectParams?.target as string) || 'SELF_IDENTITY';
+  const params = getStepEffectParams(step);
+  const targetParam = (params.target as string) || 'SELF_IDENTITY';
 
-  const readyFilter = step.effectParams?.filter as Record<string, any> | undefined;
+  const readyFilter = params.filter;
   const targets = filterResolvedTargets(
     state,
-    resolveTargets(state, targetParam as any, context),
+    resolveTargets(state, targetParam, context),
     readyFilter,
     player,
   );
@@ -493,17 +509,18 @@ function handleReady(
 
 function handleExhaust(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'EXHAUST'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const targetParam = (step.effectParams?.target as string) || 'SELF_IDENTITY';
+  const params = getStepEffectParams(step);
+  const targetParam = (params.target as string) || 'SELF_IDENTITY';
   let exhaustTargetName = player.name;
 
-  const exhaustFilter = step.effectParams?.filter as Record<string, any> | undefined;
+  const exhaustFilter = params.filter;
   const targets = filterResolvedTargets(
     state,
-    resolveTargets(state, targetParam as any, context),
+    resolveTargets(state, targetParam, context),
     exhaustFilter,
     player,
   );
@@ -557,20 +574,19 @@ function handleExhaust(
 
 function handleFlipForm(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'FLIP_FORM' | 'CHANGE_FORM'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
+  const params = getStepEffectParams(step);
   const nextFormCard = player.availableForms.find((f) => f.code !== player.activeFormCard.code);
-  const requestedForm = (step.effectParams?.form as string | undefined)
-    ?.toLowerCase()
-    .replace('-', '_');
+  const requestedForm = (params.form as string | undefined)?.toLowerCase().replace('-', '_');
   // A requested form the identity is already in is a no-op (e.g. "you may flip to alter-ego form")
   if (requestedForm && requestedForm === player.currentForm) {
     return { state, success: true, mutatedState: false, value: 0 };
   }
   // Optional flip: offer a voluntary choice instead of flipping immediately
-  if (step.effectParams?.optional && nextFormCard) {
+  if (params.optional && nextFormCard) {
     enqueueDecisionPrompt(state, {
       promptId: nextEngineId(state, 'prompt_optional_flip'),
       playerId: context.playerId || player.id,
@@ -613,13 +629,14 @@ function handleFlipForm(
 
 function handleAddCounters(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'ADD_COUNTERS'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const targetParam = (step.effectParams?.target as string) || 'SELF';
-  const counterType = (step.effectParams?.counterType as string) || 'all_purpose';
-  const amount = resolveNumericAmount(step.effectParams?.amount, context, 1, { state, player });
+  const params = getStepEffectParams(step);
+  const targetParam = (params.target as string) || 'SELF';
+  const counterType = (params.counterType as string) || 'all_purpose';
+  const amount = resolveNumericAmount(params.amount, context, 1, { state, player });
 
   if (targetParam === 'IDENTITY') {
     player.counters = player.counters || {};
@@ -649,13 +666,14 @@ function handleAddCounters(
 
 function handleSpendCounters(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'SPEND_COUNTERS' | 'REMOVE_COUNTERS'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const targetParam = (step.effectParams?.target as string) || 'SELF';
-  const counterType = (step.effectParams?.counterType as string) || 'all_purpose';
-  const amount = resolveNumericAmount(step.effectParams?.amount, context, 1, { state, player });
+  const params = getStepEffectParams(step);
+  const targetParam = (params.target as string) || 'SELF';
+  const counterType = (params.counterType as string) || 'all_purpose';
+  const amount = resolveNumericAmount(params.amount, context, 1, { state, player });
 
   if (targetParam === 'IDENTITY') {
     player.counters = player.counters || {};
@@ -689,14 +707,15 @@ function handleSpendCounters(
 
 function handleRemoveCountersMatchingFilter(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'REMOVE_COUNTERS_MATCHING_FILTER'>,
   _context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const targetZone = (step.effectParams?.targetZone as string) || 'TABLEAU';
-  const traitFilter = step.effectParams?.traitFilter as string | undefined;
-  const counterType = step.effectParams?.counterType as string | undefined;
-  const amountParam = step.effectParams?.amount;
+  const params = getStepEffectParams(step);
+  const targetZone = (params.targetZone as string) || 'TABLEAU';
+  const traitFilter = params.traitFilter as string | undefined;
+  const counterType = params.counterType as string | undefined;
+  const amountParam = params.amount;
 
   let targetCards: CardInstance[] = [];
   if (targetZone === 'TABLEAU' || targetZone === 'ALL_CONTROLLED') {
@@ -766,4 +785,4 @@ export const STATE_HANDLERS = {
   SPEND_COUNTERS: handleSpendCounters,
   REMOVE_COUNTERS: handleSpendCounters,
   REMOVE_COUNTERS_MATCHING_FILTER: handleRemoveCountersMatchingFilter,
-} satisfies Partial<Record<EffectType, StepHandler>>;
+} satisfies Partial<StepHandlerMap>;

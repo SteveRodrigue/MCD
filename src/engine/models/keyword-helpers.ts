@@ -2,6 +2,7 @@ import { NormalizedCard } from './card';
 import { CardInstance } from './state';
 import { Keyword } from './enums';
 import { parseKeywordItem } from './keyword';
+import type { AbilityStep } from './abilities';
 import { getStepEffectParams } from '../../data/supplemental/runtime';
 
 /**
@@ -24,7 +25,7 @@ export function hasKeyword(
 
   const kwStr = String(keyword).toLowerCase().trim();
 
-  const matches = (k: any) => {
+  const matches = (k: unknown) => {
     if (!k) return false;
     const parsed = parseKeywordItem(k);
     if (parsed && parsed.name.toLowerCase() === kwStr) return true;
@@ -44,8 +45,11 @@ export function hasKeyword(
   for (const ab of abilities) {
     if (ab.timing === 'CONSTANT') {
       for (const step of ab.steps || []) {
-        const stepParams = getStepEffectParams(step);
-        if (step.effect === 'GRANT_KEYWORD' && stepParams.keyword) {
+        if (step.effect !== 'GRANT_KEYWORD') continue;
+        const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
+          step as AbilityStep & { effect: 'GRANT_KEYWORD' },
+        );
+        if (stepParams.keyword) {
           const parsed = parseKeywordItem({
             keyword: stepParams.keyword,
             amount: stepParams.amount,
@@ -83,7 +87,7 @@ export function getKeywordValue(
 
   let total: number | undefined = undefined;
 
-  const allKws: any[] = [...(card.keywords || [])];
+  const allKws: unknown[] = [...(card.keywords || [])];
 
   for (const k of allKws) {
     if (!k) continue;
@@ -106,8 +110,11 @@ export function getKeywordValue(
   for (const ab of abilities) {
     if (ab.timing === 'CONSTANT') {
       for (const step of ab.steps || []) {
-        const stepParams = getStepEffectParams(step);
-        if (step.effect === 'GRANT_KEYWORD' && stepParams.keyword) {
+        if (step.effect !== 'GRANT_KEYWORD') continue;
+        const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
+          step as AbilityStep & { effect: 'GRANT_KEYWORD' },
+        );
+        if (stepParams.keyword) {
           const parsed = parseKeywordItem({
             keyword: stepParams.keyword,
             amount: stepParams.amount,

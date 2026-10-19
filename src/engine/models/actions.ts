@@ -106,14 +106,14 @@ export interface DevAddCardToHandAction {
 export interface MinionEngagesPlayerAction {
   type: 'MINION_ENGAGES_PLAYER';
   playerId: string;
-  minionInstance: any;
+  minionInstance: import('./state').CardInstance;
 }
 
 export interface RevealEncounterCardAction {
   type: 'REVEAL_ENCOUNTER_CARD';
   playerId?: string;
   targetPlayerId?: string;
-  encounterCard: any;
+  encounterCard: import('./state').CardInstance;
 }
 
 export interface AdvanceVillainPhaseAction {

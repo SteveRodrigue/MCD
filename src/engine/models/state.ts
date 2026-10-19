@@ -8,8 +8,9 @@ import {
   PlayerSideSchemeCard,
 } from './card';
 import { StatusCard } from './enums';
-import { AbilityStep, AbilityCost, StepGate, CardAbility } from './abilities';
+import { AbilityStep, AbilityCost, StepGate, CardAbility, StepResolutionResult } from './abilities';
 import { GameStats } from './stats';
+import type { UniversalCardFilter } from '../../data/supplemental/schema';
 
 /**
  * Runtime card instance in a zone (hand, deck, discard, or play)
@@ -34,6 +35,8 @@ export interface CardInstance {
    * in the order they were dealt, and go to the encounter discard if the enemy leaves play.
    */
   facedownBoostCards?: CardInstance[];
+  /** Host card instance ID if this card is attached as an attachment */
+  hostInstanceId?: string;
 }
 
 export type IdentityFormType = 'hero' | 'alter_ego';
@@ -112,7 +115,7 @@ export interface ActiveCostReduction {
   sourceCardName: string;
   sourceCardCode?: string;
   amount: number;
-  cardFilter?: any;
+  cardFilter?: UniversalCardFilter;
   duration: Duration;
   appliesTo: 'NEXT_CARD';
 }
@@ -244,7 +247,7 @@ export interface ExecutionFrame {
   playerId?: string;
   stepIndex: number;
   steps: AbilityStep[];
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 export type CombatPhase =
@@ -313,6 +316,7 @@ export interface AttackExecutionContext {
   /** Who took the activation's damage, recorded in step 6 for DAMAGED_CHARACTER. */
   damagedCharacter?: DamagedCharacter;
   cancelled?: boolean;
+  isCancelled?: boolean;
   cancellationReason?: string;
 }
 
@@ -509,9 +513,9 @@ export interface PendingDamagePlacement {
 export interface PendingSequence {
   sequenceId?: string;
   remainingSteps: AbilityStep[];
-  context: Record<string, any>;
-  previousResult?: Record<string, any>;
-  stepResultsMap?: Record<string, any>;
+  context: import('../effects').EffectExecutionContext;
+  previousResult?: StepResolutionResult;
+  stepResultsMap?: Record<string, StepResolutionResult>;
   onomatopoeias?: string[];
   anyStepMutated?: boolean;
   /** The last step started an enemy attack that was still open: its damage facts join the previous result on resume (#295). */

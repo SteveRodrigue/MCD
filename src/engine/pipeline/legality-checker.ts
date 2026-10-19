@@ -16,7 +16,10 @@ import {
   getMainSchemesInPlay,
   getVillainsInPlay,
   StatusCard,
+  VillainState,
 } from '@engine/models';
+import type { EffectParamsMap } from '../../data/supplemental/effect-params';
+import type { TypedStep } from '../effects/handlers/types';
 import {
   canPayAbilityCost,
   getEventAbilityExtraCost,
@@ -521,7 +524,12 @@ export function getPlayerRestrictedLimit(state: GameState, playerId: string): nu
     for (const ab of abilities) {
       const limitStep = ab.steps?.find((s) => s.effect === 'MODIFY_RESTRICTED_LIMIT');
       if (ab.timing === 'CONSTANT' && limitStep) {
-        bonus += Number(getStepEffectParams(limitStep).amount) || 1;
+        bonus +=
+          Number(
+            getStepEffectParams<'MODIFY_RESTRICTED_LIMIT'>(
+              limitStep as TypedStep<'MODIFY_RESTRICTED_LIMIT'>,
+            ).amount,
+          ) || 1;
       }
     }
   }
@@ -729,12 +737,12 @@ function evaluatePlayFromZoneRequirement(
     return { allowed: true };
   }
 
-  const stepParams = (getStepEffectParams(playFromZoneStep) || playFromZoneStep.effectParams) as
-    Record<string, any> | undefined;
+  const stepParams =
+    getStepEffectParams<'PLAY_FROM_ZONE'>(playFromZoneStep as TypedStep<'PLAY_FROM_ZONE'>) ||
+    (playFromZoneStep.effectParams as EffectParamsMap['PLAY_FROM_ZONE'] | undefined);
   const source =
     ((stepParams?.source || playFromZoneStep.effectParams?.source) as string) || 'PLAYER_DISCARD';
-  const filter = (stepParams?.filter || playFromZoneStep.effectParams?.filter) as
-    Record<string, any> | undefined;
+  const filter = stepParams?.filter || playFromZoneStep.effectParams?.filter;
 
   let candidates: CardInstance[] = [];
   if (source === 'ANY_PLAYER_DISCARD') {
@@ -970,7 +978,11 @@ function evaluateEnemyTargetRequirement(
   }
 
   if (requiresEnemy) {
-    const allEnemies: { entity: any; id: string; attachments?: CardInstance[] }[] = [];
+    const allEnemies: {
+      entity: VillainState | CardInstance;
+      id: string;
+      attachments?: CardInstance[];
+    }[] = [];
     for (const villain of getVillainsInPlay(state)) {
       allEnemies.push({
         entity: villain,
@@ -997,7 +1009,7 @@ function evaluateEnemyTargetRequirement(
 
     if (targetEnemyId) {
       const targetEnemy = allEnemies.find(
-        (e) => e.id === targetEnemyId || (e.entity as any)?.card?.code === targetEnemyId,
+        (e) => e.id === targetEnemyId || e.entity.card?.code === targetEnemyId,
       );
       if (targetEnemy && maxPerHost !== undefined && maxPerHost > 0) {
         const attachedCount = (targetEnemy.attachments || []).filter(
@@ -1187,10 +1199,10 @@ function evaluateSearchLegality(
   player: PlayerState,
   step: AbilityStep,
 ): { allowed: boolean; reason?: string } {
-  const stepParams = getStepEffectParams(step);
+  const stepParams = getStepEffectParams<'SEARCH'>(step as TypedStep<'SEARCH'>);
   const source = stepParams.source || 'PLAYER_DECK';
   const target = (stepParams.target as string) || 'SELF';
-  const filter = stepParams.filter as Record<string, any> | undefined;
+  const filter = stepParams.filter;
 
   const sources = Array.isArray(source) ? source : [source];
 

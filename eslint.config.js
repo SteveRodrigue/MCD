@@ -49,6 +49,22 @@ export default [
     files: ['src/engine/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
+      // Narrow a step with `isStep`; asserting its effect hides a wrong-effect read from the type checker.
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "TSAsExpression > TSTypeReference[typeName.name='TypedStep']",
+          message: 'Narrow with isStep(step, effect) instead of asserting `as TypedStep<...>`.',
+        },
+        {
+          selector: "TSAsExpression > TSUnionType > TSTypeReference[typeName.name='StepHandler']",
+          message: 'Only runStepHandler in effects/handlers/index.ts may assert a StepHandler.',
+        },
+      ],
     },
+  },
+  {
+    files: ['src/engine/effects/handlers/index.ts'],
+    rules: { 'no-restricted-syntax': 'off' },
   },
 ];

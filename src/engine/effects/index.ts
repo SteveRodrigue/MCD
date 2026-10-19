@@ -270,8 +270,7 @@ export { matchesCardFilter } from '../filters/card-filter';
 import { checkAndDiscardZeroCounterCard } from '../pipeline/cost-engine';
 import { appendLog } from '../state/game-log';
 // Loaded last: handler modules import the pipeline, whose init order depends on this file's imports
-import { EFFECT_HANDLERS } from './handlers';
-import type { StepHandler } from './handlers/types';
+import { runStepHandler } from './handlers';
 export { checkAndDiscardZeroCounterCard };
 
 /**
@@ -289,8 +288,6 @@ export function isEncounterCard(card: NormalizedCard): boolean {
     t === 'villain' ||
     t === 'obligation' ||
     t === 'environment' ||
-    card.faction === 'encounter' ||
-    card.raw?.faction_code === 'encounter' ||
     Boolean((card.raw as unknown as Record<string, unknown> | undefined)?.card_set_code)
   );
 }
@@ -1749,13 +1746,13 @@ function getTableauDiscardPromptMeta(
  */
 export function executeDiscard(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'DISCARD'>,
   context: EffectExecutionContext,
 ): EffectResult {
   const player = state.players.find((p) => p.id === context.playerId);
   if (!player) return { state, success: false, error: 'Player not found' };
 
-  const params = getStepEffectParams<'DISCARD'>(step as TypedStep<'DISCARD'>);
+  const params = getStepEffectParams(step);
   const source = (params.source as string) || 'HAND';
   const rawCount = params.count;
   const isCountAll = rawCount === 'ALL';
@@ -2203,8 +2200,5 @@ export function executeStep(
     };
   }
 
-  const handler = EFFECT_HANDLERS[step.effect] as StepHandler | undefined;
-  // An effect without a handler must fail loudly, never resolve as a silent no-op
-  if (!handler) throw new Error(`executeStep: no handler for effect '${String(step.effect)}'`);
-  return handler(state, step, context, player);
+  return runStepHandler(state, step, context, player);
 }

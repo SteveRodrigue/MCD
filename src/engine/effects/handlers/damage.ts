@@ -39,7 +39,7 @@ import {
   resolveNumericAmount,
   villainTargetRef,
 } from '../index';
-import type { TypedStep, StepHandlerMap } from './types';
+import { getRuntimeParams, type TypedStep, type StepHandlerMap } from './types';
 
 function handleDealDamage(
   state: GameState,
@@ -48,20 +48,14 @@ function handleDealDamage(
   player: PlayerState,
 ): EffectResult {
   const params = getStepEffectParams(step);
-  const rawParams = step.effectParams as Record<string, unknown> | undefined;
-  const targetInstanceId =
-    (rawParams?.['targetInstanceId'] as string | undefined) || context.chosenTargetInstanceId;
-  let amount = resolveNumericAmount(
-    params.amount ?? (rawParams?.['baseAmount'] as number | undefined),
-    context,
-    0,
-    {
-      state,
-      player,
-      sourceCardInstance: context.sourceCardInstance,
-      targetInstanceId,
-    },
-  );
+  const runtime = getRuntimeParams(step);
+  const targetInstanceId = runtime.targetInstanceId || context.chosenTargetInstanceId;
+  let amount = resolveNumericAmount(params.amount, context, 0, {
+    state,
+    player,
+    sourceCardInstance: context.sourceCardInstance,
+    targetInstanceId,
+  });
   if (params.dynamicBonus) {
     const bonus = resolveNumericAmount(params.dynamicBonus, context, 0, {
       state,
@@ -76,12 +70,8 @@ function handleDealDamage(
   }
   const targetParam = params.target;
 
-  const isAttack = Boolean(rawParams?.['isAttack'] || context.isAttack || context.labelledAttack);
-  const hasPiercing = Boolean(
-    rawParams?.['piercing'] ||
-    rawParams?.['keyword'] === 'Piercing' ||
-    hasKeyword(context.sourceCardInstance, Keyword.PIERCING),
-  );
+  const isAttack = Boolean(runtime.isAttack || context.isAttack || context.labelledAttack);
+  const hasPiercing = hasKeyword(context.sourceCardInstance, Keyword.PIERCING);
   const damageOpts: AbilityDamageOptions = {
     // A labelled "(attack)" ability is an attack by the player's identity (#247)
     sourceType: context.labelledAttack ? 'HERO' : undefined,
@@ -369,26 +359,17 @@ function handleDistributeAmount(
   player: PlayerState,
 ): EffectResult {
   const stepParams = getStepEffectParams(step);
-  const rawParams = step.effectParams as Record<string, unknown> | undefined;
-  const budget = resolveNumericAmount(
-    stepParams.budget ?? (rawParams?.['amount'] as number | undefined) ?? 0,
-    context,
-    0,
-    {
-      state,
-      player,
-      sourceCardInstance: context.sourceCardInstance,
-      targetInstanceId:
-        (rawParams?.['targetInstanceId'] as string | undefined) || context.chosenTargetInstanceId,
-    },
-  );
+  const runtime = getRuntimeParams(step);
+  const budget = resolveNumericAmount(stepParams.budget ?? 0, context, 0, {
+    state,
+    player,
+    sourceCardInstance: context.sourceCardInstance,
+    targetInstanceId: runtime.targetInstanceId || context.chosenTargetInstanceId,
+  });
   const allocationDomain = stepParams.allocationDomain || 'DAMAGE';
-  const targetScope =
-    (stepParams.targetScope as string) ||
-    (rawParams?.['target'] as string | undefined) ||
-    'ALL_HEROES_AND_ALLIES';
-  const canCancel = Boolean(rawParams?.['canCancel']);
-  const exactMatchRequired = rawParams?.['exactMatchRequired'] !== false;
+  const targetScope = (stepParams.targetScope as string) || 'ALL_HEROES_AND_ALLIES';
+  const canCancel = Boolean(runtime.canCancel);
+  const exactMatchRequired = runtime.exactMatchRequired !== false;
 
   // 1. If assignments already provided, execute immediately
   if (context.assignments && typeof context.assignments === 'object') {
@@ -538,16 +519,15 @@ function handleDistributeAmount(
   }
 
   const unitSingular =
-    (rawParams?.['unitSingular'] as string | undefined) ||
+    runtime.unitSingular ||
     (allocationDomain === 'DAMAGE' ? 'DMG' : allocationDomain === 'THREAT_REMOVAL' ? 'THW' : 'PT');
   const unitPlural =
-    (rawParams?.['unitPlural'] as string | undefined) ||
+    runtime.unitPlural ||
     (allocationDomain === 'DAMAGE' ? 'DMG' : allocationDomain === 'THREAT_REMOVAL' ? 'THW' : 'PTS');
   const config: DistributionPromptConfig = {
     totalBudget: budget,
     effectiveBudget: budget,
-    budgetLabel:
-      (rawParams?.['budgetLabel'] as string | undefined) || `${allocationDomain.replace('_', ' ')}`,
+    budgetLabel: runtime.budgetLabel || `${allocationDomain.replace('_', ' ')}`,
     unitSingular,
     unitPlural,
     exactMatchRequired,
@@ -566,10 +546,8 @@ function handleDistributeAmount(
   const prompt: PendingDecisionPrompt = {
     promptId: nextEngineId(state, 'dist'),
     playerId: assigner.id,
-    title: (rawParams?.['promptTitle'] as string | undefined) || `Distribute ${config.budgetLabel}`,
-    description:
-      (rawParams?.['promptDescription'] as string | undefined) ||
-      `Assign ${budget} ${unitPlural} among eligible targets:`,
+    title: `Distribute ${config.budgetLabel}`,
+    description: `Assign ${budget} ${unitPlural} among eligible targets:`,
     sourceCardName: context.sourceCardInstance?.card.name || 'Game Effect',
     sourceCardCode: context.sourceCardInstance?.card.code,
     sourceCardInstanceId: context.sourceCardInstance?.instanceId,
@@ -677,18 +655,14 @@ function handlePreventDamage(
     context.interceptedValue !== undefined ||
     context.damageAmount !== undefined;
 
-  const rawParams = step.effectParams as Record<string, unknown> | undefined;
-  const preventAll = Boolean(rawParams?.['preventAll']);
   const amountToPrevent =
     params.amount !== undefined
-      ? params.amount === 'ALL' || preventAll
+      ? params.amount === 'ALL'
         ? currentVal
         : resolveNumericAmount(params.amount, context, currentVal)
       : hasInterceptContext
         ? currentVal
-        : preventAll
-          ? 999
-          : 3;
+        : 3;
 
   const consumed = hasInterceptContext ? Math.min(currentVal, amountToPrevent) : amountToPrevent;
   const remaining = hasInterceptContext ? Math.max(0, currentVal - consumed) : 0;
@@ -740,20 +714,14 @@ function handleTransferDamage(
   player: PlayerState,
 ): EffectResult {
   const params = getStepEffectParams(step);
-  const rawParams = step.effectParams as Record<string, unknown> | undefined;
-  const targetInstanceId =
-    (rawParams?.['targetInstanceId'] as string | undefined) || context.chosenTargetInstanceId;
-  let amount = resolveNumericAmount(
-    params.amount ?? (rawParams?.['baseAmount'] as number | undefined),
-    context,
-    1,
-    {
-      state,
-      player,
-      sourceCardInstance: context.sourceCardInstance,
-      targetInstanceId,
-    },
-  );
+  const runtime = getRuntimeParams(step);
+  const targetInstanceId = runtime.targetInstanceId || context.chosenTargetInstanceId;
+  let amount = resolveNumericAmount(params.amount, context, 1, {
+    state,
+    player,
+    sourceCardInstance: context.sourceCardInstance,
+    targetInstanceId,
+  });
   if (params.dynamicBonus) {
     const bonus = resolveNumericAmount(params.dynamicBonus, context, 0, {
       state,

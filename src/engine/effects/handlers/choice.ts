@@ -15,12 +15,10 @@ function handlePlayerChoice(
   player: PlayerState,
 ): EffectResult {
   const params = getStepEffectParams(step);
-  const rawParams = step.effectParams as Record<string, unknown> | undefined;
   const options: DecisionPromptOption[] = (
     (params.options as unknown as DecisionPromptOption[]) || []
   ).map((opt) => ({ ...opt }));
-  const title =
-    params.title || (rawParams?.['promptTitle'] as string | undefined) || 'Choose an Option';
+  const title = params.title || 'Choose an Option';
   const description = params.description || '';
   const sourceCardName = context.sourceCardInstance?.card.name || step.id || 'Card Ability';
   const promptId = `prompt_${nextEngineId(state, 'id')}_${step.id || 'choice'}`;

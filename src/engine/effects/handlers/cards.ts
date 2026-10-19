@@ -45,7 +45,7 @@ import {
   resolveNumericAmount,
   resolveSourceHostZone,
 } from '../index';
-import type { TypedStep, StepHandlerMap } from './types';
+import { getRuntimeParams, type TypedStep, type StepHandlerMap } from './types';
 import { getStepEffectParams } from '../../../data/supplemental/runtime';
 
 function handleDiscard(
@@ -64,9 +64,8 @@ function handleDraw(
   player: PlayerState,
 ): EffectResult {
   const params = getStepEffectParams(step);
-  const rawParams = step.effectParams as Record<string, unknown> | undefined;
-  const targetInstanceId =
-    (rawParams?.['targetInstanceId'] as string | undefined) || context.chosenTargetInstanceId;
+  const runtime = getRuntimeParams(step);
+  const targetInstanceId = runtime.targetInstanceId || context.chosenTargetInstanceId;
   const rawCount = params.count;
   let count =
     rawCount !== undefined
@@ -90,7 +89,6 @@ function handleDraw(
   const targetParam = params.target;
   const targetPlayerId =
     params.targetPlayerId ||
-    (rawParams?.['playerId'] as string | undefined) ||
     (context.chosenTargetInstanceId &&
     state.players.some((p) => p.id === context.chosenTargetInstanceId)
       ? context.chosenTargetInstanceId
@@ -244,7 +242,8 @@ function handleAttachToHost(
   _player: PlayerState,
 ): EffectResult {
   const params = getStepEffectParams(step);
-  const targetHost = (params.target as string) || 'VILLAIN';
+  const targetHost = params.target as string | undefined;
+  if (!targetHost) return { state, success: false };
   const sourceCard = context.sourceCardInstance;
   if (!sourceCard) return { state, success: true };
 

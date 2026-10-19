@@ -372,7 +372,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     expect(result.state.players[0].health).toBe(7);
   });
 
-  it('7. Robustness: DEAL_DAMAGE, REMOVE_THREAT, and TRANSFER_DAMAGE resolve baseAmount and evaluate finisherBonus based on isFinalStep', () => {
+  it('7. Robustness: DEAL_DAMAGE, REMOVE_THREAT, and TRANSFER_DAMAGE resolve amount and evaluate finisherBonus based on isFinalStep', () => {
     const state = setupGame({
       scenarioId: 'rhino',
       players: [
@@ -396,17 +396,17 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     state.mainScheme.threat = 6;
     const initialVillainHp = state.villain.health;
 
-    // A. Non-final step with legacy baseAmount: should NOT receive finisherBonus
+    // A. Non-final step with a plain amount: should NOT receive finisherBonus
     const dealResNonFinal = executeEffect(
       state,
       {
-        id: 'legacy_deal_dmg',
+        id: 'plain_deal_dmg',
         timing: 'HERO_ACTION',
         steps: [
           {
             effect: 'DEAL_DAMAGE',
             effectParams: {
-              baseAmount: 2,
+              amount: 2,
               finisherBonus: 2,
               target: 'CHOSEN_ENEMY',
             },
@@ -418,17 +418,17 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     expect(dealResNonFinal.success).toBe(true);
     expect(state.villain.health).toBe(initialVillainHp - 2);
 
-    // B. Final step with legacy baseAmount: SHOULD receive finisherBonus
+    // B. Final step with a plain amount: SHOULD receive finisherBonus
     const dealResFinal = executeEffect(
       state,
       {
-        id: 'legacy_deal_dmg_final',
+        id: 'plain_deal_dmg_final',
         timing: 'HERO_ACTION',
         steps: [
           {
             effect: 'DEAL_DAMAGE',
             effectParams: {
-              baseAmount: 2,
+              amount: 2,
               finisherBonus: 2,
               target: 'CHOSEN_ENEMY',
             },
@@ -440,17 +440,17 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     expect(dealResFinal.success).toBe(true);
     expect(state.villain.health).toBe(initialVillainHp - 2 - 4); // 2 + 4 = 6 total damage
 
-    // C. REMOVE_THREAT with legacy baseAmount and finisherBonus
+    // C. REMOVE_THREAT with amount and finisherBonus
     const thwResFinal = executeEffect(
       state,
       {
-        id: 'legacy_remove_threat_final',
+        id: 'plain_remove_threat_final',
         timing: 'HERO_ACTION',
         steps: [
           {
             effect: 'REMOVE_THREAT',
             effectParams: {
-              baseAmount: 1,
+              amount: 1,
               finisherBonus: 1,
               target: 'MAIN_SCHEME',
             },
@@ -462,17 +462,17 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     expect(thwResFinal.success).toBe(true);
     expect(state.mainScheme.threat).toBe(6 - 2); // 1 base + 1 finisher = 2 threat removed
 
-    // D. TRANSFER_DAMAGE with legacy baseAmount and finisherBonus
+    // D. TRANSFER_DAMAGE with amount and finisherBonus
     const transferResFinal = executeEffect(
       state,
       {
-        id: 'legacy_transfer_final',
+        id: 'plain_transfer_final',
         timing: 'HERO_ACTION',
         steps: [
           {
             effect: 'TRANSFER_DAMAGE',
             effectParams: {
-              baseAmount: 1,
+              amount: 1,
               finisherBonus: 1,
             },
           },

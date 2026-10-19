@@ -20,7 +20,7 @@ import {
   cancelActiveEncounterReveal,
   resolveNumericAmount,
 } from '../index';
-import type { TypedStep, StepHandlerMap } from './types';
+import { getRuntimeParams, type TypedStep, type StepHandlerMap } from './types';
 import { getStepEffectParams } from '../../../data/supplemental/runtime';
 
 function handlePreventThreat(
@@ -38,18 +38,14 @@ function handlePreventThreat(
     context.interceptedValue !== undefined ||
     context.threatAmount !== undefined;
 
-  const rawParams = step.effectParams as Record<string, unknown> | undefined;
-  const preventAll = Boolean(rawParams?.['preventAll']);
   const amountToPrevent =
     params.amount !== undefined
-      ? params.amount === 'ALL' || preventAll
+      ? params.amount === 'ALL'
         ? currentVal
         : resolveNumericAmount(params.amount, context, currentVal)
       : hasInterceptContext
         ? currentVal
-        : preventAll
-          ? 999
-          : 1;
+        : 1;
 
   const consumed = hasInterceptContext ? Math.min(currentVal, amountToPrevent) : amountToPrevent;
   const remaining = hasInterceptContext ? Math.max(0, currentVal - consumed) : 0;
@@ -96,15 +92,9 @@ function handleRemoveThreat(
   player: PlayerState,
 ): EffectResult {
   const params = getStepEffectParams(step);
-  const rawParams = step.effectParams as Record<string, unknown> | undefined;
-  const targetInstanceId =
-    (rawParams?.['targetInstanceId'] as string | undefined) || context.chosenTargetInstanceId;
-  let amount = resolveNumericAmount(
-    params.amount ?? (rawParams?.['baseAmount'] as number | undefined),
-    context,
-    1,
-    { state, player },
-  );
+  const runtime = getRuntimeParams(step);
+  const targetInstanceId = runtime.targetInstanceId || context.chosenTargetInstanceId;
+  let amount = resolveNumericAmount(params.amount, context, 1, { state, player });
   if (params.dynamicBonus) {
     const bonus = resolveNumericAmount(params.dynamicBonus, context, 0, {
       state,
@@ -127,7 +117,7 @@ function handleRemoveThreat(
   let targetSchemeName = getActiveMainScheme(state)?.card?.name || 'Main Scheme';
   let remainingThreat = getActiveMainScheme(state)?.threat || 0;
 
-  const ignoresCrisis = Boolean(rawParams?.['ignoresCrisis'] || context.ignoresCrisis);
+  const ignoresCrisis = Boolean(params.ignoresCrisis || context.ignoresCrisis);
   const isPlayerSource = context.sourceCardInstance?.card?.faction !== 'encounter';
   // The main scheme cannot be thwarted by cards while a Crisis icon is in play (RR v1.8 p. 11)
   // or while the resolving player is engaged with a Patrol minion (Patrol keyword).
@@ -318,15 +308,14 @@ function handleAddThreat(
   player: PlayerState,
 ): EffectResult {
   const params = getStepEffectParams(step);
-  const rawParams = step.effectParams as Record<string, unknown> | undefined;
-  const rawAmountPerPlayer = rawParams?.['amountPerPlayer'] as number | undefined;
-  const baseAmount = resolveNumericAmount(params.amount ?? rawAmountPerPlayer, context, 1, {
+  const runtime = getRuntimeParams(step);
+  const baseAmount = resolveNumericAmount(params.amount, context, 1, {
     state,
     player,
   });
-  const isPerPlayer = !!(params.perPlayer || rawAmountPerPlayer);
+  const isPerPlayer = Boolean(params.perPlayer);
   const amount = isPerPlayer ? baseAmount * getPerPlayerCount(state) : baseAmount;
-  const targetInstanceId = rawParams?.['targetInstanceId'] as string | undefined;
+  const targetInstanceId = runtime.targetInstanceId as string | undefined;
   const targetParam =
     (params.target as string) || (targetInstanceId ? 'CHOSEN_SCHEME' : undefined) || 'MAIN_SCHEME';
   const targetContext: EffectContext = {

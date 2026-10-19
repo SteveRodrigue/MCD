@@ -27,7 +27,7 @@ import {
   filterResolvedTargets,
   resolveNumericAmount,
 } from '../index';
-import type { TypedStep, StepHandlerMap } from './types';
+import { getRuntimeParams, type TypedStep, type StepHandlerMap } from './types';
 
 function handleAddStatus(
   state: GameState,
@@ -36,9 +36,9 @@ function handleAddStatus(
   player: PlayerState,
 ): EffectResult {
   const params = getStepEffectParams(step);
-  const rawParams = step.effectParams as Record<string, unknown> | undefined;
+  const runtime = getRuntimeParams(step);
   let status: StatusCard = StatusCard.STUNNED;
-  const statusParam = (rawParams?.['status'] as string | undefined) || params.status;
+  const statusParam = params.status;
   const normalizedStatus = statusParam?.toUpperCase();
   if (normalizedStatus === 'TOUGH') status = StatusCard.TOUGH;
   else if (normalizedStatus === 'CONFUSED') status = StatusCard.CONFUSED;
@@ -86,8 +86,7 @@ function handleAddStatus(
   const targetParam = (params.target as string) || 'VILLAIN';
   const targetContext: EffectContext = {
     ...context,
-    chosenTargetInstanceId:
-      (rawParams?.['targetInstanceId'] as string | undefined) || context.chosenTargetInstanceId,
+    chosenTargetInstanceId: runtime.targetInstanceId || context.chosenTargetInstanceId,
   };
   const targetCharacters = resolveCharacterTargets(state, targetParam, targetContext);
   for (const targetChar of targetCharacters) {
@@ -323,10 +322,10 @@ function handleModifyStat(
         : 0) ||
       0;
 
-    const rawStepParams = step.effectParams as Record<string, unknown> | undefined;
+    const runtime = getRuntimeParams(step);
     // "Choose a player": the characters that player controls get the bonus
     const chosenPlayerId =
-      (rawStepParams?.['targetPlayerId'] as string | undefined) ||
+      runtime.targetPlayerId ||
       context.targetPlayerId ||
       (stepParams.targetPlayer === 'CHOSEN_PLAYER' && state.players.length > 1
         ? undefined
@@ -389,12 +388,12 @@ function handleModifyStat(
     targetParam === 'CHOSEN_CHARACTER' ||
     targetParam === 'CHOSEN_ALLY'
   ) {
-    const rawStepParams = step.effectParams as Record<string, unknown> | undefined;
     const rawStat = stepParams.stat || 'ATTACK';
-    const stat: 'ATTACK' | 'THWART' | 'DEFENSE' | 'RECOVERY' =
-      rawStat === 'SCHEME' ? 'ATTACK' : rawStat;
-    const amount =
-      (stepParams.amount as number) || (rawStepParams?.['amount'] as number | undefined) || 1;
+    // SCHEME is only read from constant step params by the stat calculator; it is not a
+    // temporary-modifier stat, so there is nothing to apply here.
+    if (rawStat === 'SCHEME') return { state, success: true };
+    const stat = rawStat;
+    const amount = (stepParams.amount as number) || 1;
 
     // Resolve target card instance
     let targetCard = context.sourceCardInstance;

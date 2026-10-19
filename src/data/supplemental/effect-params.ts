@@ -623,6 +623,10 @@ export const EFFECT_PARAM_SCHEMAS = {
         primary: true,
       }),
       target: target('Target Scheme', 'MAIN_SCHEME'),
+      ignoresCrisis: optional(z.boolean(), {
+        label: 'Ignores Crisis',
+        description: 'This card may remove threat from the main scheme while Crisis is in play',
+      }),
       finisherBonus: optional(z.number(), {
         label: 'Finisher Bonus Threat',
         placeholder: 'e.g. 1',

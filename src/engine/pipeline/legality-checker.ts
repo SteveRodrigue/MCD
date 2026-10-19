@@ -9,7 +9,6 @@ import {
   hasKeyword,
   getKeywordValue,
   CardAbility,
-  AbilityStep,
   getActiveMainScheme,
   hasDashPower,
   CharacterPower,
@@ -18,8 +17,7 @@ import {
   StatusCard,
   VillainState,
 } from '@engine/models';
-import type { EffectParamsMap } from '../../data/supplemental/effect-params';
-import type { TypedStep } from '../effects/handlers/types';
+import { isStep, type TypedStep } from '../effects/handlers/types';
 import {
   canPayAbilityCost,
   getEventAbilityExtraCost,
@@ -522,14 +520,9 @@ export function getPlayerRestrictedLimit(state: GameState, playerId: string): nu
   for (const item of player.tableau) {
     const abilities = item.card.enrichment?.abilities || [];
     for (const ab of abilities) {
-      const limitStep = ab.steps?.find((s) => s.effect === 'MODIFY_RESTRICTED_LIMIT');
-      if (ab.timing === 'CONSTANT' && limitStep) {
-        bonus +=
-          Number(
-            getStepEffectParams<'MODIFY_RESTRICTED_LIMIT'>(
-              limitStep as TypedStep<'MODIFY_RESTRICTED_LIMIT'>,
-            ).amount,
-          ) || 1;
+      const limitStep = ab.steps?.find((s) => isStep(s, 'MODIFY_RESTRICTED_LIMIT'));
+      if (ab.timing === 'CONSTANT' && limitStep && isStep(limitStep, 'MODIFY_RESTRICTED_LIMIT')) {
+        bonus += Number(getStepEffectParams(limitStep).amount) || 1;
       }
     }
   }
@@ -722,10 +715,10 @@ function evaluatePlayFromZoneRequirement(
   cardInstance: CardInstance,
 ): { allowed: boolean; reason?: string } {
   const card = cardInstance.card;
-  let playFromZoneStep: AbilityStep | undefined;
+  let playFromZoneStep: TypedStep<'PLAY_FROM_ZONE'> | undefined;
   for (const ability of card.enrichment?.abilities || []) {
     for (const step of ability.steps || []) {
-      if (step.effect === 'PLAY_FROM_ZONE') {
+      if (isStep(step, 'PLAY_FROM_ZONE')) {
         playFromZoneStep = step;
         break;
       }
@@ -737,12 +730,9 @@ function evaluatePlayFromZoneRequirement(
     return { allowed: true };
   }
 
-  const stepParams =
-    getStepEffectParams<'PLAY_FROM_ZONE'>(playFromZoneStep as TypedStep<'PLAY_FROM_ZONE'>) ||
-    (playFromZoneStep.effectParams as EffectParamsMap['PLAY_FROM_ZONE'] | undefined);
-  const source =
-    ((stepParams?.source || playFromZoneStep.effectParams?.source) as string) || 'PLAYER_DISCARD';
-  const filter = stepParams?.filter || playFromZoneStep.effectParams?.filter;
+  const stepParams = getStepEffectParams(playFromZoneStep);
+  const source = (stepParams.source as string) || 'PLAYER_DISCARD';
+  const filter = stepParams.filter;
 
   let candidates: CardInstance[] = [];
   if (source === 'ANY_PLAYER_DISCARD') {
@@ -1197,9 +1187,9 @@ function evaluateSchemeTargetRequirement(
 function evaluateSearchLegality(
   state: GameState,
   player: PlayerState,
-  step: AbilityStep,
+  step: TypedStep<'SEARCH'>,
 ): { allowed: boolean; reason?: string } {
-  const stepParams = getStepEffectParams<'SEARCH'>(step as TypedStep<'SEARCH'>);
+  const stepParams = getStepEffectParams(step);
   const source = stepParams.source || 'PLAYER_DECK';
   const target = (stepParams.target as string) || 'SELF';
   const filter = stepParams.filter;
@@ -1413,7 +1403,7 @@ export function canInitiateAbility(
     }
 
     // 5C. Search / Deck / Discard Target (RR v1.8 p. 2, 28)
-    if (step.effect === 'SEARCH') {
+    if (isStep(step, 'SEARCH')) {
       const searchCheck = evaluateSearchLegality(state, player, step);
       if (!searchCheck.allowed) {
         return searchCheck;

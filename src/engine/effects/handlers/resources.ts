@@ -6,7 +6,7 @@ import { locateCard, readCardResources } from '../../queries/card-inspector';
 import { nextEngineId } from '../../state/rng';
 import { appendLog } from '../../state/game-log';
 import { EffectExecutionContext, EffectResult, resolveNumericAmount } from '../index';
-import type { TypedStep, StepHandlerMap } from './types';
+import { getRuntimeParams, type TypedStep, type StepHandlerMap } from './types';
 
 function handleGenerateResource(
   state: GameState,
@@ -46,7 +46,7 @@ function handleGenerateResource(
   }
 
   const resourceType = params.resource || 'wild';
-  const amount = resolveNumericAmount(params.amount, context, 1, { state, player });
+  const amount = resolveNumericAmount(params.amount, context, 1, { state, player }) || 1;
 
   return {
     state,
@@ -63,16 +63,13 @@ function handleReduceNextCardCost(
   player: PlayerState,
 ): EffectResult {
   const stepParams = getStepEffectParams(step);
-  const rawParams = step.effectParams as Record<string, unknown> | undefined;
+  const runtime = getRuntimeParams(step);
   const amount = stepParams.amount || 1;
   const targetParam = stepParams.target || 'CHOSEN_PLAYER';
   const duration = stepParams.duration || 'PHASE';
-  const cardFilter =
-    stepParams.cardFilter || (rawParams?.['filter'] as typeof stepParams.cardFilter);
+  const cardFilter = stepParams.cardFilter;
   const targetPlayerId =
-    context.targetPlayerId ||
-    context.chosenTargetInstanceId ||
-    (rawParams?.['targetPlayerId'] as string | undefined);
+    context.targetPlayerId || context.chosenTargetInstanceId || runtime.targetPlayerId;
 
   // In multiplayer mode, if targeting CHOSEN_PLAYER and no target player specified yet, prompt player to choose
   if (targetParam === 'CHOSEN_PLAYER' && state.players.length > 1 && !targetPlayerId) {

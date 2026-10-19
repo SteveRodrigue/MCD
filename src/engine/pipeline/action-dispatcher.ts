@@ -1528,10 +1528,7 @@ function dispatchSingleAction(
               (s.effect === 'MODIFY_STAT' && s.effectParams?.stat === 'HEALTH'),
           );
           if (ability.timing === 'CONSTANT' && matchingStep) {
-            const hpBonus =
-              (matchingStep.effectParams?.amount as number) ||
-              (matchingStep.effectParams?.healthBonus as number) ||
-              0;
+            const hpBonus = (matchingStep.effectParams?.amount as number) || 0;
             if (hpBonus > 0) {
               controllingPlayer.health += hpBonus;
               controllingPlayer.maxHealth = getEffectiveMaxHealth(controllingPlayer, nextState);
@@ -1584,11 +1581,7 @@ function dispatchSingleAction(
                 filterOpts = { exhausted: true };
               } else if (step.effect === 'REMOVE_THREAT') {
                 filterOpts = {
-                  ignoresCrisis: Boolean(
-                    stepParams.ignoresCrisis ||
-                    step.effectParams?.ignoresCrisis ||
-                    (step as { ignoresCrisis?: boolean }).ignoresCrisis,
-                  ),
+                  ignoresCrisis: Boolean(stepParams.ignoresCrisis),
                 };
               }
               break;
@@ -1890,11 +1883,7 @@ function dispatchSingleAction(
             abilityFilterOpts = { exhausted: true };
           } else if (step.effect === 'REMOVE_THREAT') {
             abilityFilterOpts = {
-              ignoresCrisis: Boolean(
-                stepParams.ignoresCrisis ||
-                step.effectParams?.ignoresCrisis ||
-                (step as { ignoresCrisis?: boolean }).ignoresCrisis,
-              ),
+              ignoresCrisis: Boolean(stepParams.ignoresCrisis),
             };
           }
           break;
@@ -2861,10 +2850,7 @@ function dispatchSingleAction(
               (s.effect === 'MODIFY_STAT' && s.effectParams?.stat === 'HEALTH'),
           );
           if (ability.timing === 'CONSTANT' && matchingStep) {
-            const hpBonus =
-              (matchingStep.effectParams?.amount as number) ||
-              (matchingStep.effectParams?.healthBonus as number) ||
-              0;
+            const hpBonus = (matchingStep.effectParams?.amount as number) || 0;
             if (hpBonus > 0) {
               targetPlayer.health += hpBonus;
               targetPlayer.maxHealth = getEffectiveMaxHealth(targetPlayer, poppedState);
@@ -2919,6 +2905,12 @@ function dispatchSingleAction(
                 targetInstanceId?: string;
               }
             | undefined;
+          if (!params?.pendingCardInstanceId) {
+            return {
+              state,
+              result: { success: false, error: 'Missing pending card for replacement' },
+            };
+          }
           const discardId = params?.discardCardInstanceId || selectedOption.id;
           const discardIdx = player.tableau.findIndex((c) => c.instanceId === discardId);
           if (discardIdx !== -1) {
@@ -2941,7 +2933,7 @@ function dispatchSingleAction(
           return dispatchAction(poppedState, {
             type: 'PLAY_CARD',
             playerId: action.playerId,
-            cardInstanceId: params?.pendingCardInstanceId ?? '',
+            cardInstanceId: params.pendingCardInstanceId,
             paymentCardInstanceIds: params?.paymentCardInstanceIds || [],
             generatorInstanceIds: params?.generatorInstanceIds || [],
             targetInstanceId: params?.targetInstanceId,

@@ -20,7 +20,7 @@ import { evaluateDynamicAmount } from '../effects/dynamic-formula-evaluator';
 import { AbilityStep } from '../models/abilities';
 import { evaluateStepGate } from './step-gate-evaluator';
 import { findInPlayCardInstance } from '../state/state-validator';
-import type { TypedStep } from '../effects/handlers/types';
+import { isStep } from '../effects/handlers/types';
 
 export interface EntityWithStatusCards {
   statusCards?: StatusCard[];
@@ -63,8 +63,9 @@ export function getEffectiveMinionAttack(state: GameState, minion: CardInstance)
   for (const ab of minion.card.enrichment?.abilities || []) {
     if (ab.timing !== 'CONSTANT') continue;
     for (const step of ab.steps || []) {
+      if (!isStep(step, 'MODIFY_STAT')) continue;
       const stepParams = getStepEffectParams(step);
-      if (step.effect === 'MODIFY_STAT' && stepParams.stat === 'ATTACK') {
+      if (stepParams.stat === 'ATTACK') {
         attack += evaluateDynamicAmount(
           stepParams.amount as number | DynamicValueSource | undefined,
           {},
@@ -133,8 +134,8 @@ export function getEffectiveVillainStats(
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
-          if (step.effect === 'MODIFY_STAT') {
-            const stepParams = getStepEffectParams<'MODIFY_STAT'>(step as TypedStep<'MODIFY_STAT'>);
+          if (isStep(step, 'MODIFY_STAT')) {
+            const stepParams = getStepEffectParams(step);
             const amount = evaluateDynamicAmount(
               stepParams.amount as number | DynamicValueSource | undefined,
               {},
@@ -143,10 +144,8 @@ export function getEffectiveVillainStats(
             if (stepParams.stat === 'ATTACK') attack += amount;
             if (stepParams.stat === 'SCHEME') scheme += amount;
           }
-          if (step.effect === 'GRANT_KEYWORD') {
-            const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
-              step as TypedStep<'GRANT_KEYWORD'>,
-            );
+          if (isStep(step, 'GRANT_KEYWORD')) {
+            const stepParams = getStepEffectParams(step);
             if (stepParams.keyword) {
               keywords.push(stepParams.keyword as string);
             }
@@ -182,8 +181,8 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
   for (const ab of selfAbilities) {
     if (ab.timing === 'CONSTANT') {
       for (const step of ab.steps || []) {
-        if (step.effect === 'MODIFY_STAT') {
-          const stepParams = getStepEffectParams<'MODIFY_STAT'>(step as TypedStep<'MODIFY_STAT'>);
+        if (isStep(step, 'MODIFY_STAT')) {
+          const stepParams = getStepEffectParams(step);
           const amount = evaluateDynamicAmount(
             stepParams.amount as number | DynamicValueSource | undefined,
             {},
@@ -202,8 +201,8 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
-          if (step.effect === 'MODIFY_STAT') {
-            const stepParams = getStepEffectParams<'MODIFY_STAT'>(step as TypedStep<'MODIFY_STAT'>);
+          if (isStep(step, 'MODIFY_STAT')) {
+            const stepParams = getStepEffectParams(step);
             const amount = evaluateDynamicAmount(
               stepParams.amount as number | DynamicValueSource | undefined,
               {},
@@ -212,10 +211,8 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
             if (stepParams.stat === 'THWART') thwart += amount;
             if (stepParams.stat === 'ATTACK') attack += amount;
           }
-          if (step.effect === 'GRANT_KEYWORD') {
-            const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
-              step as TypedStep<'GRANT_KEYWORD'>,
-            );
+          if (isStep(step, 'GRANT_KEYWORD')) {
+            const stepParams = getStepEffectParams(step);
             if (stepParams.keyword) {
               keywords.push(stepParams.keyword as string);
             }
@@ -286,10 +283,10 @@ function extractAddTraitEffects(
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
-          if (step.effect === 'ADD_TRAIT') {
+          if (isStep(step, 'ADD_TRAIT')) {
             if (step.gate && !player) continue;
             if (player && !evaluateConstantStepGate(step, player, state)) continue;
-            const stepParams = getStepEffectParams<'ADD_TRAIT'>(step as TypedStep<'ADD_TRAIT'>);
+            const stepParams = getStepEffectParams(step);
             const trait = stepParams.trait as string | undefined;
             if (trait && trait.trim()) {
               dynamicTraits.push(trait.trim());
@@ -474,8 +471,8 @@ export function getEffectiveHeroStats(state: GameState, player: PlayerState): Ef
         for (const step of ab.steps || []) {
           if (!evaluateConstantStepGate(step, player, state)) continue;
 
-          if (step.effect === 'MODIFY_STAT') {
-            const stepParams = getStepEffectParams<'MODIFY_STAT'>(step as TypedStep<'MODIFY_STAT'>);
+          if (isStep(step, 'MODIFY_STAT')) {
+            const stepParams = getStepEffectParams(step);
             const amount = evaluateDynamicAmount(
               stepParams.amount as number | DynamicValueSource | undefined,
               {},
@@ -486,10 +483,8 @@ export function getEffectiveHeroStats(state: GameState, player: PlayerState): Ef
             if (stepParams.stat === 'DEFENSE') defense += amount;
             if (stepParams.stat === 'RECOVERY') recovery += amount;
           }
-          if (step.effect === 'GRANT_KEYWORD') {
-            const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
-              step as TypedStep<'GRANT_KEYWORD'>,
-            );
+          if (isStep(step, 'GRANT_KEYWORD')) {
+            const stepParams = getStepEffectParams(step);
             if (stepParams.keyword) {
               keywords.push(stepParams.keyword as string);
             }
@@ -579,13 +574,8 @@ export function getEffectiveMaxHealth(player: PlayerState, _state?: GameState): 
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
-          const stepParams = getStepEffectParams(step);
-          if (step.effect === 'MODIFY_MAX_HEALTH') {
-            bonus += (stepParams.amount as number) || (stepParams.healthBonus as number) || 0;
-          } else if (
-            step.effect === 'MODIFY_STAT' &&
-            (stepParams.stat === 'HEALTH' || stepParams.stat === 'MAX_HEALTH')
-          ) {
+          if (isStep(step, 'MODIFY_MAX_HEALTH')) {
+            const stepParams = getStepEffectParams(step);
             bonus += (stepParams.amount as number) || 0;
           }
         }
@@ -681,10 +671,8 @@ export function getEffectiveRetaliate(
   for (const ab of selfAbilities) {
     if (ab.timing === 'CONSTANT') {
       for (const step of ab.steps || []) {
-        if (step.effect === 'GRANT_KEYWORD') {
-          const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
-            step as TypedStep<'GRANT_KEYWORD'>,
-          );
+        if (isStep(step, 'GRANT_KEYWORD')) {
+          const stepParams = getStepEffectParams(step);
           const parsed = parseKeywordItem({
             keyword: stepParams.keyword,
             amount: stepParams.amount,
@@ -713,10 +701,8 @@ export function getEffectiveRetaliate(
     for (const ab of attAbilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
-          if (step.effect === 'GRANT_KEYWORD') {
-            const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
-              step as TypedStep<'GRANT_KEYWORD'>,
-            );
+          if (isStep(step, 'GRANT_KEYWORD')) {
+            const stepParams = getStepEffectParams(step);
             const parsed = parseKeywordItem({
               keyword: stepParams.keyword,
               amount: stepParams.amount,
@@ -744,10 +730,8 @@ export function getEffectiveRetaliate(
       for (const ab of itemAbilities) {
         if (ab.timing === 'CONSTANT') {
           for (const step of ab.steps || []) {
-            if (step.effect === 'GRANT_KEYWORD') {
-              const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
-                step as TypedStep<'GRANT_KEYWORD'>,
-              );
+            if (isStep(step, 'GRANT_KEYWORD')) {
+              const stepParams = getStepEffectParams(step);
               const parsed = parseKeywordItem({
                 keyword: stepParams.keyword,
                 amount: stepParams.amount,
@@ -816,10 +800,8 @@ export function hasEntityKeyword(
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
-          if (step.effect === 'GRANT_KEYWORD') {
-            const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
-              step as TypedStep<'GRANT_KEYWORD'>,
-            );
+          if (isStep(step, 'GRANT_KEYWORD')) {
+            const stepParams = getStepEffectParams(step);
             const parsed = parseKeywordItem({
               keyword: stepParams.keyword,
               amount: stepParams.amount,
@@ -843,10 +825,8 @@ export function hasEntityKeyword(
       for (const ab of abilities) {
         if (ab.timing === 'CONSTANT') {
           for (const step of ab.steps || []) {
-            if (step.effect === 'GRANT_KEYWORD') {
-              const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
-                step as TypedStep<'GRANT_KEYWORD'>,
-              );
+            if (isStep(step, 'GRANT_KEYWORD')) {
+              const stepParams = getStepEffectParams(step);
               const parsed = parseKeywordItem({
                 keyword: stepParams.keyword,
                 amount: stepParams.amount,

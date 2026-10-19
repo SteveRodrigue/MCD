@@ -163,24 +163,13 @@ export function resolveEntityByInstanceId(
   return undefined;
 }
 
-/**
- * Universal Target Resolution Engine.
- * Maps any canonical TargetSelector (or context string) to an array of live ResolvedTargets.
- */
-export function resolveTargets(
+function resolveIdentityAndSelfTarget(
   state: GameState,
-  selector: TargetSelector | string | undefined,
-  context?: EffectContext,
-): ResolvedTarget[] {
-  if (!selector) return [];
-
-  const resolvingPlayer =
-    (context?.playerId ? state.players.find((p) => p.id === context.playerId) : undefined) ||
-    state.players[state.activePlayerIndex] ||
-    state.players[0];
-
+  selector: string,
+  context: EffectContext | undefined,
+  resolvingPlayer: PlayerState,
+): ResolvedTarget[] | undefined {
   switch (selector) {
-    // 1. IDENTITY & SELF
     case 'SELF': {
       if (context?.sourceCardInstance) {
         const inst = context.sourceCardInstance;
@@ -390,6 +379,18 @@ export function resolveTargets(
       ];
     }
 
+    default:
+      return undefined;
+  }
+}
+
+function resolvePlayerSelectorTarget(
+  state: GameState,
+  selector: string,
+  context: EffectContext | undefined,
+  resolvingPlayer: PlayerState,
+): ResolvedTarget[] | undefined {
+  switch (selector) {
     case 'DEFENDING_PLAYER': {
       const p =
         (state.activeAttackContext?.targetPlayerId
@@ -398,7 +399,6 @@ export function resolveTargets(
       return [{ kind: 'player', entity: p, id: p.id }];
     }
 
-    // 2. PLAYERS
     case 'PLAYER':
     case 'ACTIVE_PLAYER': {
       const activeP = state.players[state.activePlayerIndex] || resolvingPlayer || state.players[0];
@@ -437,7 +437,18 @@ export function resolveTargets(
       }));
     }
 
-    // 3. CONTROLLED ENTITIES
+    default:
+      return undefined;
+  }
+}
+
+function resolveFriendlyAndUniversalCharacterTarget(
+  state: GameState,
+  selector: string,
+  context: EffectContext | undefined,
+  resolvingPlayer: PlayerState,
+): ResolvedTarget[] | undefined {
+  switch (selector) {
     case 'CHOSEN_CONTROLLED_ALLY': {
       const ally =
         (context?.chosenTargetInstanceId
@@ -674,6 +685,77 @@ export function resolveTargets(
       return results;
     }
 
+    // 6. UNIVERSAL CHARACTERS
+    case 'CHOSEN_CHARACTER': {
+      if (context?.chosenTargetInstanceId) {
+        const found = resolveEntityByInstanceId(state, context.chosenTargetInstanceId);
+        if (found && found.kind === 'character') {
+          return [found];
+        }
+      }
+      return [
+        {
+          kind: 'character',
+          entityType: resolvingPlayer.currentForm === 'hero' ? 'hero' : 'alter_ego',
+          entity: resolvingPlayer,
+          id: resolvingPlayer.id,
+          player: resolvingPlayer,
+        },
+      ];
+    }
+
+    case 'ALL_CHARACTERS': {
+      const results: ResolvedTarget[] = [];
+      for (const villain of getVillainsInPlay(state)) {
+        results.push({
+          kind: 'character',
+          entityType: 'villain',
+          entity: villain,
+          id: villain.instanceId || 'villain',
+        });
+      }
+      for (const p of state.players) {
+        results.push({
+          kind: 'character',
+          entityType: p.currentForm === 'hero' ? 'hero' : 'alter_ego',
+          entity: p,
+          id: p.id,
+          player: p,
+        });
+        for (const a of p.allies || []) {
+          results.push({
+            kind: 'character',
+            entityType: 'ally',
+            entity: a,
+            id: a.instanceId,
+            player: p,
+          });
+        }
+        for (const m of p.engagedMinions || []) {
+          results.push({
+            kind: 'character',
+            entityType: 'minion',
+            entity: m,
+            id: m.instanceId,
+            player: p,
+          });
+        }
+      }
+      return results;
+    }
+
+    default:
+      return undefined;
+  }
+}
+
+function resolveEnemyAndMinionTarget(
+  state: GameState,
+  selector: string,
+  context: EffectContext | undefined,
+  resolvingPlayer: PlayerState,
+): ResolvedTarget[] | undefined {
+  switch (selector) {
     // 5. ENEMIES & MINIONS
     case 'VILLAIN': {
       const activeVillain = getActiveVillain(state);
@@ -959,65 +1041,18 @@ export function resolveTargets(
       return [];
     }
 
-    // 6. UNIVERSAL CHARACTERS
-    case 'CHOSEN_CHARACTER': {
-      if (context?.chosenTargetInstanceId) {
-        const found = resolveEntityByInstanceId(state, context.chosenTargetInstanceId);
-        if (found && found.kind === 'character') {
-          return [found];
-        }
-      }
-      return [
-        {
-          kind: 'character',
-          entityType: resolvingPlayer.currentForm === 'hero' ? 'hero' : 'alter_ego',
-          entity: resolvingPlayer,
-          id: resolvingPlayer.id,
-          player: resolvingPlayer,
-        },
-      ];
-    }
+    default:
+      return undefined;
+  }
+}
 
-    case 'ALL_CHARACTERS': {
-      const results: ResolvedTarget[] = [];
-      for (const villain of getVillainsInPlay(state)) {
-        results.push({
-          kind: 'character',
-          entityType: 'villain',
-          entity: villain,
-          id: villain.instanceId || 'villain',
-        });
-      }
-      for (const p of state.players) {
-        results.push({
-          kind: 'character',
-          entityType: p.currentForm === 'hero' ? 'hero' : 'alter_ego',
-          entity: p,
-          id: p.id,
-          player: p,
-        });
-        for (const a of p.allies || []) {
-          results.push({
-            kind: 'character',
-            entityType: 'ally',
-            entity: a,
-            id: a.instanceId,
-            player: p,
-          });
-        }
-        for (const m of p.engagedMinions || []) {
-          results.push({
-            kind: 'character',
-            entityType: 'minion',
-            entity: m,
-            id: m.instanceId,
-            player: p,
-          });
-        }
-      }
-      return results;
-    }
-
+function resolveSchemeAndContinuityTarget(
+  state: GameState,
+  selector: string,
+  context: EffectContext | undefined,
+  resolvingPlayer: PlayerState,
+): ResolvedTarget[] | undefined {
+  switch (selector) {
     // 7. SCHEMES
     case 'MAIN_SCHEME': {
       const activeMainScheme = getActiveMainScheme(state);
@@ -1276,31 +1311,69 @@ export function resolveTargets(
       return [];
     }
 
-    default: {
-      // Fallback for custom or direct instance id strings
-      if (context?.chosenTargetInstanceId) {
-        const found = resolveEntityByInstanceId(state, context.chosenTargetInstanceId);
-        if (found) return [found];
-      }
-      // Check if selector matches a side scheme card code or id
-      const side = (state.sideSchemes || []).find(
-        (s) => s.instanceId === selector || s.card?.code === selector,
-      );
-      if (side) {
-        return [
-          {
-            kind: 'scheme',
-            entityType: 'side_scheme',
-            entity: side,
-            id: side.instanceId,
-          },
-        ];
-      }
-      const direct = resolveEntityByInstanceId(state, selector);
-      if (direct) return [direct];
-      return [];
-    }
+    default:
+      return undefined;
   }
+}
+
+/**
+ * Universal Target Resolution Engine.
+ * Maps any canonical TargetSelector (or context string) to an array of live ResolvedTargets.
+ */
+export function resolveTargets(
+  state: GameState,
+  selector: TargetSelector | string | undefined,
+  context?: EffectContext,
+): ResolvedTarget[] {
+  if (!selector) return [];
+
+  const resolvingPlayer =
+    (context?.playerId ? state.players.find((p) => p.id === context.playerId) : undefined) ||
+    state.players[state.activePlayerIndex] ||
+    state.players[0];
+
+  const identity = resolveIdentityAndSelfTarget(state, selector, context, resolvingPlayer);
+  if (identity) return identity;
+
+  const playerTargets = resolvePlayerSelectorTarget(state, selector, context, resolvingPlayer);
+  if (playerTargets) return playerTargets;
+
+  const friendly = resolveFriendlyAndUniversalCharacterTarget(
+    state,
+    selector,
+    context,
+    resolvingPlayer,
+  );
+  if (friendly) return friendly;
+
+  const enemy = resolveEnemyAndMinionTarget(state, selector, context, resolvingPlayer);
+  if (enemy) return enemy;
+
+  const scheme = resolveSchemeAndContinuityTarget(state, selector, context, resolvingPlayer);
+  if (scheme) return scheme;
+
+  // Fallback for custom or direct instance id strings
+  if (context?.chosenTargetInstanceId) {
+    const found = resolveEntityByInstanceId(state, context.chosenTargetInstanceId);
+    if (found) return [found];
+  }
+  // Check if selector matches a side scheme card code or id
+  const side = (state.sideSchemes || []).find(
+    (s) => s.instanceId === selector || s.card?.code === selector,
+  );
+  if (side) {
+    return [
+      {
+        kind: 'scheme',
+        entityType: 'side_scheme',
+        entity: side,
+        id: side.instanceId,
+      },
+    ];
+  }
+  const direct = resolveEntityByInstanceId(state, selector);
+  if (direct) return [direct];
+  return [];
 }
 
 /**

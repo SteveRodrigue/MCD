@@ -602,6 +602,206 @@ function handleReturnToHand(
   };
 }
 
+function getSearchZonePile(
+  state: GameState,
+  targetPlayer: PlayerState,
+  zone: SearchZone,
+): { pile: CardInstance[]; isDeck: boolean } {
+  switch (zone) {
+    case 'PLAYER_DISCARD':
+      return { pile: targetPlayer.discard, isDeck: false };
+    case 'PLAYER_HAND':
+      return { pile: targetPlayer.hand, isDeck: false };
+    case 'ENCOUNTER_DECK':
+      return { pile: state.encounterDeck, isDeck: true };
+    case 'ENCOUNTER_DISCARD':
+      return { pile: state.encounterDiscard, isDeck: false };
+    case 'PLAYER_DECK':
+    default:
+      return { pile: targetPlayer.deck, isDeck: true };
+  }
+}
+
+function shuffleSearchedDecks(
+  state: GameState,
+  targetPlayer: PlayerState,
+  sourceZones: SearchZone[],
+): void {
+  if (sourceZones.includes('ENCOUNTER_DECK')) {
+    state.encounterDeck = shuffleArray(state, state.encounterDeck);
+  }
+  if (sourceZones.includes('PLAYER_DECK')) {
+    targetPlayer.deck = shuffleArray(state, targetPlayer.deck);
+  }
+}
+
+function collectSearchCandidates(
+  state: GameState,
+  targetPlayer: PlayerState,
+  sourceZones: SearchZone[],
+  isLookCountSpliced: boolean,
+  resolvedLookCount: number | 'ALL' | undefined,
+  fromTop: boolean | undefined,
+  cardOriginMap: Map<string, SearchZone>,
+): CardInstance[] {
+  const lookedCards: CardInstance[] = [];
+  if (isLookCountSpliced) {
+    let remainingToLook = resolvedLookCount as number;
+    for (const zone of sourceZones) {
+      if (remainingToLook <= 0) break;
+      const { pile } = getSearchZonePile(state, targetPlayer, zone);
+      const isDiscardZone = zone === 'PLAYER_DISCARD' || zone === 'ENCOUNTER_DISCARD';
+      const shouldReverse = isDiscardZone && fromTop === true;
+      const workingPile = shouldReverse ? [...pile].reverse() : pile;
+      const sliceCount = Math.min(remainingToLook, workingPile.length);
+      const spliced = workingPile.splice(0, sliceCount);
+      if (shouldReverse) {
+        const splicedIds = new Set(spliced.map((c) => c.instanceId));
+        const actualPile = getSearchZonePile(state, targetPlayer, zone).pile;
+        for (let i = actualPile.length - 1; i >= 0; i--) {
+          if (splicedIds.has(actualPile[i].instanceId)) {
+            actualPile.splice(i, 1);
+          }
+        }
+      }
+      for (const card of spliced) {
+        cardOriginMap.set(card.instanceId, zone);
+      }
+      lookedCards.push(...spliced);
+      remainingToLook -= sliceCount;
+    }
+  } else {
+    for (const zone of sourceZones) {
+      const { pile } = getSearchZonePile(state, targetPlayer, zone);
+      const isDiscardZone = zone === 'PLAYER_DISCARD' || zone === 'ENCOUNTER_DISCARD';
+      const shouldReverse = isDiscardZone && fromTop === true;
+      const cardsToLook = shouldReverse ? [...pile].reverse() : pile;
+      for (const card of cardsToLook) {
+        cardOriginMap.set(card.instanceId, zone);
+        lookedCards.push(card);
+      }
+    }
+  }
+  return lookedCards;
+}
+
+function routeSearchedCards(
+  state: GameState,
+  targetPlayer: PlayerState,
+  cards: CardInstance[],
+  destination: string | null | undefined,
+  cardOriginMap: Map<string, SearchZone>,
+  sourceZones: SearchZone[],
+  step: TypedStep<'SEARCH'>,
+  context: EffectExecutionContext,
+): void {
+  if (cards.length === 0) return;
+  if (!destination || destination === 'LEAVE_IN_PLACE') {
+    for (const card of cards) {
+      const origin = cardOriginMap.get(card.instanceId) || sourceZones[0];
+      if (origin === 'PLAYER_DISCARD') targetPlayer.discard.push(card);
+      else if (origin === 'PLAYER_HAND') targetPlayer.hand.push(card);
+      else if (origin === 'ENCOUNTER_DECK') state.encounterDeck.unshift(card);
+      else if (origin === 'ENCOUNTER_DISCARD') state.encounterDiscard.push(card);
+      else targetPlayer.deck.unshift(card);
+    }
+    return;
+  }
+
+  if (destination === 'REVEAL') {
+    for (const card of cards) {
+      resolveActiveEncounterCardAfterInterrupt(state, card, targetPlayer, false);
+    }
+  } else if (destination === 'TABLEAU') {
+    for (const card of cards) {
+      if (card.card.type === CardType.SIDE_SCHEME) {
+        const sideSchemeCard = card.card as SideSchemeCard;
+        const baseThreat =
+          sideSchemeCard.baseThreat *
+          (sideSchemeCard.baseThreatFixed ? 1 : getPerPlayerCount(state));
+        state.sideSchemes.push({
+          instanceId: card.instanceId,
+          card: sideSchemeCard,
+          threat: baseThreat,
+        });
+        appendLog(state, {
+          key: 'encounter.reveal.sideScheme',
+          params: { sideScheme: card.card.name, threat: baseThreat },
+          onomatopoeia: 'SIDE SCHEME!',
+        });
+        const abilities = card.card.enrichment?.abilities || [];
+        for (const ability of abilities) {
+          if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'WHEN_REVEALED') {
+            executeEffect(state, ability, {
+              playerId: targetPlayer.id,
+              sourceCardInstance: card,
+            });
+          }
+        }
+      } else {
+        targetPlayer.tableau.push(card);
+      }
+    }
+  } else if (destination === 'HAND') {
+    targetPlayer.hand.push(...cards);
+  } else if (destination === 'DISCARD') {
+    for (const card of cards) {
+      const origin = cardOriginMap.get(card.instanceId) || sourceZones[0];
+      if (origin.startsWith('ENCOUNTER') || card.card.faction === 'encounter') {
+        state.encounterDiscard.push(card);
+      } else {
+        targetPlayer.discard.push(card);
+      }
+    }
+  } else if (destination === 'DECK_TOP') {
+    for (const card of cards) {
+      const origin = cardOriginMap.get(card.instanceId) || sourceZones[0];
+      if (origin.startsWith('ENCOUNTER') || card.card.faction === 'encounter') {
+        state.encounterDeck.unshift(card);
+      } else {
+        targetPlayer.deck.unshift(card);
+      }
+    }
+  } else if (destination === 'DECK_BOTTOM') {
+    for (const card of cards) {
+      const origin = cardOriginMap.get(card.instanceId) || sourceZones[0];
+      if (origin.startsWith('ENCOUNTER') || card.card.faction === 'encounter') {
+        state.encounterDeck.push(card);
+      } else {
+        targetPlayer.deck.push(card);
+      }
+    }
+  } else if (destination === 'DECK_SHUFFLE') {
+    let shuffledEncounter = false;
+    let shuffledPlayer = false;
+    for (const card of cards) {
+      const origin = cardOriginMap.get(card.instanceId) || sourceZones[0];
+      if (origin.startsWith('ENCOUNTER') || card.card.faction === 'encounter') {
+        state.encounterDeck.push(card);
+        shuffledEncounter = true;
+      } else {
+        targetPlayer.deck.push(card);
+        shuffledPlayer = true;
+      }
+    }
+    if (shuffledEncounter) {
+      state.encounterDeck = shuffleArray(state, state.encounterDeck);
+    }
+    if (shuffledPlayer) {
+      targetPlayer.deck = shuffleArray(state, targetPlayer.deck);
+    }
+  } else if (destination === 'ATTACH_TO_TARGET') {
+    for (const card of cards) {
+      attachCardToHost(
+        state,
+        card,
+        (step.effectParams?.target as string) || 'VILLAIN',
+        context.chosenTargetInstanceId || context.targetPlayerId || targetPlayer.id,
+      );
+    }
+  }
+}
+
 function handleSearch(
   state: GameState,
   step: TypedStep<'SEARCH'>,
@@ -744,178 +944,17 @@ function handleSearch(
       : 'Search & Select: Choose card(s)');
 
   const cardOriginMap = new Map<string, SearchZone>();
-  const getZonePile = (zone: SearchZone): { pile: CardInstance[]; isDeck: boolean } => {
-    switch (zone) {
-      case 'PLAYER_DISCARD':
-        return { pile: targetPlayer.discard, isDeck: false };
-      case 'PLAYER_HAND':
-        return { pile: targetPlayer.hand, isDeck: false };
-      case 'ENCOUNTER_DECK':
-        return { pile: state.encounterDeck, isDeck: true };
-      case 'ENCOUNTER_DISCARD':
-        return { pile: state.encounterDiscard, isDeck: false };
-      case 'PLAYER_DECK':
-      default:
-        return { pile: targetPlayer.deck, isDeck: true };
-    }
-  };
-
-  const shuffleSearchedDecks = () => {
-    if (sourceZones.includes('ENCOUNTER_DECK')) {
-      state.encounterDeck = shuffleArray(state, state.encounterDeck);
-    }
-    if (sourceZones.includes('PLAYER_DECK')) {
-      targetPlayer.deck = shuffleArray(state, targetPlayer.deck);
-    }
-  };
 
   // Determine candidate pool
-  let lookedCards: CardInstance[] = [];
-  if (isLookCountSpliced) {
-    let remainingToLook = resolvedLookCount as number;
-    for (const zone of sourceZones) {
-      if (remainingToLook <= 0) break;
-      const { pile } = getZonePile(zone);
-      const isDiscardZone = zone === 'PLAYER_DISCARD' || zone === 'ENCOUNTER_DISCARD';
-      const shouldReverse = isDiscardZone && step.effectParams?.fromTop === true;
-      const workingPile = shouldReverse ? [...pile].reverse() : pile;
-      const sliceCount = Math.min(remainingToLook, workingPile.length);
-      const spliced = workingPile.splice(0, sliceCount);
-      if (shouldReverse) {
-        const splicedIds = new Set(spliced.map((c) => c.instanceId));
-        const actualPile = getZonePile(zone).pile;
-        for (let i = actualPile.length - 1; i >= 0; i--) {
-          if (splicedIds.has(actualPile[i].instanceId)) {
-            actualPile.splice(i, 1);
-          }
-        }
-      }
-      for (const card of spliced) {
-        cardOriginMap.set(card.instanceId, zone);
-      }
-      lookedCards.push(...spliced);
-      remainingToLook -= sliceCount;
-    }
-  } else {
-    for (const zone of sourceZones) {
-      const { pile } = getZonePile(zone);
-      const isDiscardZone = zone === 'PLAYER_DISCARD' || zone === 'ENCOUNTER_DISCARD';
-      const shouldReverse = isDiscardZone && step.effectParams?.fromTop === true;
-      const cardsToLook = shouldReverse ? [...pile].reverse() : pile;
-      for (const card of cardsToLook) {
-        cardOriginMap.set(card.instanceId, zone);
-        lookedCards.push(card);
-      }
-    }
-  }
-
-  const routeCards = (cards: CardInstance[], destination: string | null | undefined) => {
-    if (cards.length === 0) return;
-    if (!destination || destination === 'LEAVE_IN_PLACE') {
-      for (const card of cards) {
-        const origin = cardOriginMap.get(card.instanceId) || sourceZones[0];
-        if (origin === 'PLAYER_DISCARD') targetPlayer.discard.push(card);
-        else if (origin === 'PLAYER_HAND') targetPlayer.hand.push(card);
-        else if (origin === 'ENCOUNTER_DECK') state.encounterDeck.unshift(card);
-        else if (origin === 'ENCOUNTER_DISCARD') state.encounterDiscard.push(card);
-        else targetPlayer.deck.unshift(card);
-      }
-      return;
-    }
-
-    if (destination === 'REVEAL') {
-      for (const card of cards) {
-        resolveActiveEncounterCardAfterInterrupt(state, card, targetPlayer, false);
-      }
-    } else if (destination === 'TABLEAU') {
-      for (const card of cards) {
-        if (card.card.type === CardType.SIDE_SCHEME) {
-          const sideSchemeCard = card.card as SideSchemeCard;
-          const baseThreat =
-            sideSchemeCard.baseThreat *
-            (sideSchemeCard.baseThreatFixed ? 1 : getPerPlayerCount(state));
-          state.sideSchemes.push({
-            instanceId: card.instanceId,
-            card: sideSchemeCard,
-            threat: baseThreat,
-          });
-          appendLog(state, {
-            key: 'encounter.reveal.sideScheme',
-            params: { sideScheme: card.card.name, threat: baseThreat },
-            onomatopoeia: 'SIDE SCHEME!',
-          });
-          const abilities = card.card.enrichment?.abilities || [];
-          for (const ability of abilities) {
-            if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'WHEN_REVEALED') {
-              executeEffect(state, ability, {
-                playerId: targetPlayer.id,
-                sourceCardInstance: card,
-              });
-            }
-          }
-        } else {
-          targetPlayer.tableau.push(card);
-        }
-      }
-    } else if (destination === 'HAND') {
-      targetPlayer.hand.push(...cards);
-    } else if (destination === 'DISCARD') {
-      for (const card of cards) {
-        const origin = cardOriginMap.get(card.instanceId) || sourceZones[0];
-        if (origin.startsWith('ENCOUNTER') || card.card.faction === 'encounter') {
-          state.encounterDiscard.push(card);
-        } else {
-          targetPlayer.discard.push(card);
-        }
-      }
-    } else if (destination === 'DECK_TOP') {
-      for (const card of cards) {
-        const origin = cardOriginMap.get(card.instanceId) || sourceZones[0];
-        if (origin.startsWith('ENCOUNTER') || card.card.faction === 'encounter') {
-          state.encounterDeck.unshift(card);
-        } else {
-          targetPlayer.deck.unshift(card);
-        }
-      }
-    } else if (destination === 'DECK_BOTTOM') {
-      for (const card of cards) {
-        const origin = cardOriginMap.get(card.instanceId) || sourceZones[0];
-        if (origin.startsWith('ENCOUNTER') || card.card.faction === 'encounter') {
-          state.encounterDeck.push(card);
-        } else {
-          targetPlayer.deck.push(card);
-        }
-      }
-    } else if (destination === 'DECK_SHUFFLE') {
-      let shuffledEncounter = false;
-      let shuffledPlayer = false;
-      for (const card of cards) {
-        const origin = cardOriginMap.get(card.instanceId) || sourceZones[0];
-        if (origin.startsWith('ENCOUNTER') || card.card.faction === 'encounter') {
-          state.encounterDeck.push(card);
-          shuffledEncounter = true;
-        } else {
-          targetPlayer.deck.push(card);
-          shuffledPlayer = true;
-        }
-      }
-      if (shuffledEncounter) {
-        state.encounterDeck = shuffleArray(state, state.encounterDeck);
-      }
-      if (shuffledPlayer) {
-        targetPlayer.deck = shuffleArray(state, targetPlayer.deck);
-      }
-    } else if (destination === 'ATTACH_TO_TARGET') {
-      for (const card of cards) {
-        attachCardToHost(
-          state,
-          card,
-          (step.effectParams?.target as string) || 'VILLAIN',
-          context.chosenTargetInstanceId || context.targetPlayerId || targetPlayer.id,
-        );
-      }
-    }
-  };
+  const lookedCards = collectSearchCandidates(
+    state,
+    targetPlayer,
+    sourceZones,
+    isLookCountSpliced,
+    resolvedLookCount,
+    step.effectParams?.fromTop as boolean | undefined,
+    cardOriginMap,
+  );
 
   // Filter matching candidate cards
   let matchingCandidates = lookedCards.filter((c) =>
@@ -939,13 +978,31 @@ function handleSearch(
     });
     if (isLookCountSpliced) {
       if (unselectedDestination === 'DISCARD') {
-        routeCards(lookedCards, 'DISCARD');
+        routeSearchedCards(
+          state,
+          targetPlayer,
+          lookedCards,
+          'DISCARD',
+          cardOriginMap,
+          sourceZones,
+          step,
+          context,
+        );
       } else {
-        routeCards(lookedCards, 'LEAVE_IN_PLACE');
+        routeSearchedCards(
+          state,
+          targetPlayer,
+          lookedCards,
+          'LEAVE_IN_PLACE',
+          cardOriginMap,
+          sourceZones,
+          step,
+          context,
+        );
       }
     }
     if (shuffleAfter) {
-      shuffleSearchedDecks();
+      shuffleSearchedDecks(state, targetPlayer, sourceZones);
     }
     return {
       state,
@@ -978,15 +1035,37 @@ function handleSearch(
     if (!isLookCountSpliced) {
       for (const selectedCard of selectedCards) {
         const zone = cardOriginMap.get(selectedCard.instanceId) || sourceZones[0];
-        const { pile } = getZonePile(zone);
+        const { pile } = getSearchZonePile(state, targetPlayer, zone);
         const selectedIndex = pile.findIndex((card) => card.instanceId === selectedCard.instanceId);
         if (selectedIndex !== -1) pile.splice(selectedIndex, 1);
       }
     }
 
-    routeCards(selectedCards, selectedDestination);
-    if (isLookCountSpliced) routeCards(unselectedCards, unselectedDestination);
-    if (shuffleAfter) shuffleSearchedDecks();
+    routeSearchedCards(
+      state,
+      targetPlayer,
+      selectedCards,
+      selectedDestination,
+      cardOriginMap,
+      sourceZones,
+      step,
+      context,
+    );
+    if (isLookCountSpliced) {
+      routeSearchedCards(
+        state,
+        targetPlayer,
+        unselectedCards,
+        unselectedDestination,
+        cardOriginMap,
+        sourceZones,
+        step,
+        context,
+      );
+    }
+    if (shuffleAfter) {
+      shuffleSearchedDecks(state, targetPlayer, sourceZones);
+    }
 
     return {
       state,

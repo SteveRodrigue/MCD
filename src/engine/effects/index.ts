@@ -1742,8 +1742,348 @@ function getTableauDiscardPromptMeta(
 
 /**
  * Universal DISCARD Primitive Handler (RR v1.8 p. 10, Issue #66)
- * Handles card attrition/removal across all valid game zones (hand, deck, encounter deck, tableau, host, self, cards under host).
  */
+type DiscardEffectParams = ReturnType<typeof getStepEffectParams<'DISCARD'>>;
+
+function discardFromHand(
+  state: GameState,
+  player: PlayerState,
+  params: DiscardEffectParams,
+  context: EffectExecutionContext,
+  isCountAll: boolean,
+  count: number,
+  mode: string,
+  filter: UniversalCardFilter | undefined,
+): EffectResult {
+  const resolved = resolvePlayerTargets(state, params.target, context);
+  const targetPlayers = resolved.length > 0 ? resolved : [player];
+  const isRandom = mode === 'RANDOM';
+  const discardedCards: CardInstance[] = [];
+
+  for (const targetPlayer of targetPlayers) {
+    const candidates = filter
+      ? targetPlayer.hand.filter((c) => matchesCardFilter(c, filter, { player: targetPlayer }))
+      : [...targetPlayer.hand];
+    const toDiscardCount = isCountAll ? candidates.length : Math.min(count, candidates.length);
+    const chosen: CardInstance[] = [];
+    for (let i = 0; i < toDiscardCount; i++) {
+      const idx = isRandom ? randomInt(state, candidates.length) : 0;
+      chosen.push(...candidates.splice(idx, 1));
+    }
+    if (chosen.length === 0) continue;
+
+    for (const discarded of chosen) {
+      const handIdx = targetPlayer.hand.indexOf(discarded);
+      targetPlayer.hand.splice(handIdx, 1);
+      targetPlayer.discard.push(discarded);
+      discardedCards.push(discarded);
+    }
+    appendLog(state, {
+      category: 'combat',
+      key: 'card.discarded.fromHand',
+      params: {
+        who: targetPlayer.name,
+        player: targetPlayer.name,
+        count: chosen.length,
+        source: 'hand',
+        cards: chosen.map((c) => c.card.name).join(', '),
+      },
+      onomatopoeia: isRandom ? 'RANDOM DISCARD!' : `DISCARDED ${chosen.length} CARDS!`,
+    });
+  }
+
+  const discardedCount = discardedCards.length;
+  return {
+    state,
+    success: true,
+    mutatedState: discardedCount > 0,
+    value: discardedCount,
+    discardedCards,
+    onomatopoeia: isRandom ? 'RANDOM DISCARD!' : `DISCARDED ${discardedCount} CARDS!`,
+  };
+}
+
+function discardFromPlayerDeck(
+  state: GameState,
+  player: PlayerState,
+  params: DiscardEffectParams,
+  count: number,
+  filter: UniversalCardFilter | undefined,
+): EffectResult {
+  let discardedCount = 0;
+  const discardedCards: CardInstance[] = [];
+  const addedToHandCards: CardInstance[] = [];
+  const matchingDestination = params.matchingDestination as string | undefined;
+
+  // RR v1.8 "Player Deck": if deck is already empty, reset it; no further cards are discarded from the new deck.
+  if (player.deck.length === 0) {
+    checkAndResetPlayerDeck(state, player.id);
+    return {
+      state,
+      success: true,
+      mutatedState: true,
+      value: 0,
+      discardedCards: [],
+      onomatopoeia: 'DECK RESHUFFLED!',
+    };
+  }
+
+  for (let i = 0; i < count; i++) {
+    const card = player.deck.shift();
+    if (card) {
+      if (matchingDestination && filter && matchesCardFilter(card, filter, { player })) {
+        if (matchingDestination === 'HAND') {
+          player.hand.push(card);
+          addedToHandCards.push(card);
+        } else if (matchingDestination === 'PLAY') {
+          player.tableau.push(card);
+        } else {
+          player.discard.push(card);
+          discardedCards.push(card);
+        }
+      } else {
+        player.discard.push(card);
+        discardedCards.push(card);
+      }
+      discardedCount++;
+
+      // RR v1.8 "Player Deck": a deck that empties while discarding is reset, but no further card is discarded
+      if (player.deck.length === 0) {
+        checkAndResetPlayerDeck(state, player.id);
+        break;
+      }
+    }
+  }
+  if (discardedCards.length > 0) {
+    appendLog(state, {
+      category: 'combat',
+      key: 'card.discarded.fromDeck',
+      params: {
+        who: player.name,
+        player: player.name,
+        count: discardedCards.length,
+        source: 'deck',
+        cards: discardedCards.map((c) => c.card.name).join(', '),
+      },
+      onomatopoeia: `DISCARDED ${discardedCards.length} CARDS!`,
+    });
+  }
+  for (const card of addedToHandCards) {
+    appendLog(state, {
+      category: 'ability',
+      key: 'black_cat.fetch',
+      params: {
+        who: player.name,
+        player: player.name,
+        card: card.card.name,
+      },
+      onomatopoeia: 'RETRIEVED!',
+    });
+  }
+  return {
+    state,
+    success: true,
+    mutatedState: discardedCount > 0,
+    value: discardedCount,
+    discardedCards,
+    onomatopoeia: `DISCARDED ${discardedCount} CARDS!`,
+  };
+}
+
+function discardFromEncounterDeck(
+  state: GameState,
+  player: PlayerState,
+  params: DiscardEffectParams,
+  count: number,
+  mode: string,
+): EffectResult {
+  if (mode === 'UNTIL_MATCH') {
+    const untilFilter = params.untilFilter;
+    if (!untilFilter) {
+      return { state, success: false, error: 'DISCARD UNTIL_MATCH requires untilFilter' };
+    }
+    const matchingDestination = (params.matchingDestination as string | undefined) ?? 'DISCARD';
+    if (matchingDestination !== 'DISCARD' && matchingDestination !== 'REVEAL') {
+      return {
+        state,
+        success: false,
+        error: `DISCARD from ENCOUNTER_DECK does not support matchingDestination ${matchingDestination}`,
+      };
+    }
+    const { found, discarded } = discardFromEncounterDeckUntil(state, (c) =>
+      matchesCardFilter(c, untilFilter, { player, state }),
+    );
+    if (found && matchingDestination === 'DISCARD') {
+      state.encounterDiscard.push(found);
+    }
+    if (discarded.length > 0) {
+      appendLog(state, {
+        category: 'combat',
+        key: 'card.discarded.fromDeck',
+        params: {
+          who: 'Encounter',
+          count: discarded.length,
+          source: 'encounter deck',
+          cards: discarded.map((c) => c.card.name).join(', '),
+        },
+        onomatopoeia: `DISCARDED ${discarded.length} ENCOUNTER CARDS!`,
+      });
+    }
+    if (found && matchingDestination === 'REVEAL') {
+      resolveActiveEncounterCardAfterInterrupt(state, found, player, false);
+    }
+    return {
+      state,
+      success: true,
+      mutatedState: discarded.length > 0,
+      value: discarded.length,
+      discardedCards: discarded,
+      onomatopoeia: `DISCARDED ${discarded.length} ENCOUNTER CARDS!`,
+    };
+  }
+  if (state.encounterDeck.length === 0) {
+    exhaustEncounterDeck(state);
+    return {
+      state,
+      success: true,
+      mutatedState: true,
+      value: 0,
+      discardedCards: [],
+      onomatopoeia: 'ENCOUNTER DECK RESHUFFLED!',
+    };
+  }
+
+  let discardedCount = 0;
+  const discardedCards: CardInstance[] = [];
+  for (let i = 0; i < count; i++) {
+    const card = state.encounterDeck.shift();
+    if (card) {
+      state.encounterDiscard.push(card);
+      discardedCards.push(card);
+      discardedCount++;
+      if (state.encounterDeck.length === 0) {
+        exhaustEncounterDeck(state);
+        break;
+      }
+    }
+  }
+  if (discardedCount > 0) {
+    appendLog(state, {
+      category: 'combat',
+      key: 'card.discarded.fromDeck',
+      params: {
+        who: 'Encounter',
+        count: discardedCount,
+        source: 'encounter deck',
+        cards: discardedCards.map((c) => c.card.name).join(', '),
+      },
+      onomatopoeia: `DISCARDED ${discardedCount} ENCOUNTER CARDS!`,
+    });
+  }
+  return {
+    state,
+    success: true,
+    mutatedState: discardedCount > 0,
+    value: discardedCount,
+    discardedCards,
+    onomatopoeia: `DISCARDED ${discardedCount} ENCOUNTER CARDS!`,
+  };
+}
+
+function discardFromTableau(
+  state: GameState,
+  player: PlayerState,
+  params: DiscardEffectParams,
+  context: EffectExecutionContext,
+  fallback: string | undefined,
+  filter: UniversalCardFilter | undefined,
+): EffectResult {
+  const targetInstanceId = ((params as { targetInstanceId?: string }).targetInstanceId ||
+    context.chosenTargetInstanceId) as string | undefined;
+  if (targetInstanceId) {
+    const targetCard = player.tableau.find((c) => c.instanceId === targetInstanceId);
+    if (targetCard) {
+      discardCardInstance(state, targetCard, player.id);
+      appendLog(state, {
+        category: 'combat',
+        key: 'player.tableau.discarded',
+        params: { who: player.name, player: player.name, card: targetCard.card.name },
+        onomatopoeia: 'TABLEAU DISCARDED!',
+      });
+      return {
+        state,
+        success: true,
+        mutatedState: true,
+        onomatopoeia: `DISCARDED ${targetCard.card.name.toUpperCase()}!`,
+      };
+    }
+    return { state, success: false, error: 'Target card not found in tableau' };
+  }
+
+  const matchingCards = player.tableau.filter(
+    (inst) => !filter || matchesCardFilter(inst, filter, { player, state }),
+  );
+
+  if (matchingCards.length === 0) {
+    if (fallback === 'SURGE') {
+      dealSurgeCard(state, player, context.sourceCardInstance?.card.name);
+      return { state, success: true, mutatedState: true, onomatopoeia: 'SURGE!' };
+    }
+    return { state, success: true, mutatedState: false };
+  }
+
+  if (matchingCards.length === 1) {
+    const targetCard = matchingCards[0];
+    discardCardInstance(state, targetCard, player.id);
+    appendLog(state, {
+      category: 'combat',
+      key: 'player.tableau.discarded',
+      params: { who: player.name, player: player.name, card: targetCard.card.name },
+      onomatopoeia: 'TABLEAU DISCARDED!',
+    });
+    return {
+      state,
+      success: true,
+      mutatedState: true,
+      onomatopoeia: `DISCARDED ${targetCard.card.name.toUpperCase()}!`,
+    };
+  }
+
+  const options: DecisionPromptOption[] = matchingCards.map((c) => ({
+    id: c.instanceId,
+    label: c.card.name,
+    cardCode: c.card.code,
+    description: c.card.text || `Discard ${c.card.name} from your tableau`,
+    effect: 'DISCARD',
+    params: { source: 'TABLEAU', targetInstanceId: c.instanceId },
+  }));
+
+  const promptMeta = getTableauDiscardPromptMeta(
+    filter,
+    context.sourceCardInstance,
+    context.sourceCardId,
+    state,
+  );
+
+  enqueueDecisionPrompt(state, {
+    promptId: nextEngineId(state, 'prompt_discard_tableau'),
+    playerId: player.id,
+    title: promptMeta.title,
+    description: promptMeta.description,
+    sourceCardName: promptMeta.sourceCardName,
+    sourceCardCode: promptMeta.sourceCardCode,
+    isVoluntary: false,
+    options,
+  });
+
+  return {
+    state,
+    success: true,
+    mutatedState: true,
+    onomatopoeia: 'CHOOSE CARD TO DISCARD!',
+  };
+}
+
 export function executeDiscard(
   state: GameState,
   step: TypedStep<'DISCARD'>,
@@ -1763,325 +2103,20 @@ export function executeDiscard(
   const fallback = params.fallback as string | undefined;
   const filter = params.filter;
 
-  // 1. DISCARD FROM HAND
   if (source === 'HAND') {
-    const resolved = resolvePlayerTargets(state, params.target, context);
-    const targetPlayers = resolved.length > 0 ? resolved : [player];
-    const isRandom = mode === 'RANDOM';
-    const discardedCards: CardInstance[] = [];
-
-    for (const targetPlayer of targetPlayers) {
-      const candidates = filter
-        ? targetPlayer.hand.filter((c) => matchesCardFilter(c, filter, { player: targetPlayer }))
-        : [...targetPlayer.hand];
-      const toDiscardCount = isCountAll ? candidates.length : Math.min(count, candidates.length);
-      const chosen: CardInstance[] = [];
-      for (let i = 0; i < toDiscardCount; i++) {
-        const idx = isRandom ? randomInt(state, candidates.length) : 0;
-        chosen.push(...candidates.splice(idx, 1));
-      }
-      if (chosen.length === 0) continue;
-
-      for (const discarded of chosen) {
-        const handIdx = targetPlayer.hand.indexOf(discarded);
-        targetPlayer.hand.splice(handIdx, 1);
-        targetPlayer.discard.push(discarded);
-        discardedCards.push(discarded);
-      }
-      appendLog(state, {
-        category: 'combat',
-        key: 'card.discarded.fromHand',
-        params: {
-          who: targetPlayer.name,
-          player: targetPlayer.name,
-          count: chosen.length,
-          source: 'hand',
-          cards: chosen.map((c) => c.card.name).join(', '),
-        },
-        onomatopoeia: isRandom ? 'RANDOM DISCARD!' : `DISCARDED ${chosen.length} CARDS!`,
-      });
-    }
-
-    const discardedCount = discardedCards.length;
-    return {
-      state,
-      success: true,
-      mutatedState: discardedCount > 0,
-      value: discardedCount,
-      discardedCards,
-      onomatopoeia: isRandom ? 'RANDOM DISCARD!' : `DISCARDED ${discardedCount} CARDS!`,
-    };
+    return discardFromHand(state, player, params, context, isCountAll, count, mode, filter);
   }
 
-  // 2. DISCARD FROM PLAYER DECK
   if (source === 'DECK') {
-    let discardedCount = 0;
-    const discardedCards: CardInstance[] = [];
-    const addedToHandCards: CardInstance[] = [];
-    const matchingDestination = params.matchingDestination as string | undefined;
-
-    // RR v1.8 "Player Deck": if deck is already empty, reset it; no further cards are discarded from the new deck.
-    if (player.deck.length === 0) {
-      checkAndResetPlayerDeck(state, player.id);
-      return {
-        state,
-        success: true,
-        mutatedState: true,
-        value: 0,
-        discardedCards: [],
-        onomatopoeia: 'DECK RESHUFFLED!',
-      };
-    }
-
-    for (let i = 0; i < count; i++) {
-      const card = player.deck.shift();
-      if (card) {
-        if (matchingDestination && filter && matchesCardFilter(card, filter, { player })) {
-          if (matchingDestination === 'HAND') {
-            player.hand.push(card);
-            addedToHandCards.push(card);
-          } else if (matchingDestination === 'PLAY') {
-            player.tableau.push(card);
-          } else {
-            player.discard.push(card);
-            discardedCards.push(card);
-          }
-        } else {
-          player.discard.push(card);
-          discardedCards.push(card);
-        }
-        discardedCount++;
-
-        // RR v1.8 "Player Deck": a deck that empties while discarding is reset, but no further card
-        // is discarded from the new deck.
-        if (player.deck.length === 0) {
-          checkAndResetPlayerDeck(state, player.id);
-          break;
-        }
-      }
-    }
-    if (discardedCards.length > 0) {
-      appendLog(state, {
-        category: 'combat',
-        key: 'card.discarded.fromDeck',
-        params: {
-          who: player.name,
-          player: player.name,
-          count: discardedCards.length,
-          source: 'deck',
-          cards: discardedCards.map((c) => c.card.name).join(', '),
-        },
-        onomatopoeia: `DISCARDED ${discardedCards.length} CARDS!`,
-      });
-    }
-    for (const card of addedToHandCards) {
-      appendLog(state, {
-        category: 'ability',
-        key: 'black_cat.fetch',
-        params: {
-          who: player.name,
-          player: player.name,
-          card: card.card.name,
-        },
-        onomatopoeia: 'RETRIEVED!',
-      });
-    }
-    return {
-      state,
-      success: true,
-      mutatedState: discardedCount > 0,
-      value: discardedCount,
-      discardedCards,
-      onomatopoeia: `DISCARDED ${discardedCount} CARDS!`,
-    };
+    return discardFromPlayerDeck(state, player, params, count, filter);
   }
 
-  // 3. DISCARD FROM ENCOUNTER DECK
   if (source === 'ENCOUNTER_DECK') {
-    if (mode === 'UNTIL_MATCH') {
-      // "Discard cards from the top of the encounter deck until <match>" (RR v1.8 glossary
-      // "Encounter Deck"): stops at the match, or when the deck is emptied (the effect is then
-      // fulfilled and the deck is reset; it does not continue into the new deck).
-      const untilFilter = params.untilFilter;
-      if (!untilFilter) {
-        return { state, success: false, error: 'DISCARD UNTIL_MATCH requires untilFilter' };
-      }
-      const matchingDestination = (params.matchingDestination as string | undefined) ?? 'DISCARD';
-      if (matchingDestination !== 'DISCARD' && matchingDestination !== 'REVEAL') {
-        return {
-          state,
-          success: false,
-          error: `DISCARD from ENCOUNTER_DECK does not support matchingDestination ${matchingDestination}`,
-        };
-      }
-      const { found, discarded } = discardFromEncounterDeckUntil(state, (c) =>
-        matchesCardFilter(c, untilFilter, { player, state }),
-      );
-      if (found && matchingDestination === 'DISCARD') {
-        state.encounterDiscard.push(found);
-      }
-      if (discarded.length > 0) {
-        appendLog(state, {
-          category: 'combat',
-          key: 'card.discarded.fromDeck',
-          params: {
-            who: 'Encounter',
-            count: discarded.length,
-            source: 'encounter deck',
-            cards: discarded.map((c) => c.card.name).join(', '),
-          },
-          onomatopoeia: `DISCARDED ${discarded.length} ENCOUNTER CARDS!`,
-        });
-      }
-      if (found && matchingDestination === 'REVEAL') {
-        // The player resolving the ability reveals the matching card (RR v1.8 glossary "Reveal").
-        resolveActiveEncounterCardAfterInterrupt(state, found, player, false);
-      }
-      return {
-        state,
-        success: true,
-        mutatedState: discarded.length > 0,
-        value: discarded.length,
-        discardedCards: discarded,
-        onomatopoeia: `DISCARDED ${discarded.length} ENCOUNTER CARDS!`,
-      };
-    }
-    // RR v1.8 "Encounter Deck": if deck is already empty, reset it; do not continue discard with the newly shuffled deck.
-    if (state.encounterDeck.length === 0) {
-      exhaustEncounterDeck(state);
-      return {
-        state,
-        success: true,
-        mutatedState: true,
-        value: 0,
-        discardedCards: [],
-        onomatopoeia: 'ENCOUNTER DECK RESHUFFLED!',
-      };
-    }
-
-    let discardedCount = 0;
-    const discardedCards: CardInstance[] = [];
-    for (let i = 0; i < count; i++) {
-      const card = state.encounterDeck.shift();
-      if (card) {
-        state.encounterDiscard.push(card);
-        discardedCards.push(card);
-        discardedCount++;
-        if (state.encounterDeck.length === 0) {
-          exhaustEncounterDeck(state);
-          break;
-        }
-      }
-    }
-    if (discardedCount > 0) {
-      appendLog(state, {
-        category: 'combat',
-        key: 'card.discarded.fromDeck',
-        params: {
-          who: 'Encounter',
-          count: discardedCount,
-          source: 'encounter deck',
-          cards: discardedCards.map((c) => c.card.name).join(', '),
-        },
-        onomatopoeia: `DISCARDED ${discardedCount} ENCOUNTER CARDS!`,
-      });
-    }
-    return {
-      state,
-      success: true,
-      mutatedState: discardedCount > 0,
-      value: discardedCount,
-      discardedCards,
-      onomatopoeia: `DISCARDED ${discardedCount} ENCOUNTER CARDS!`,
-    };
+    return discardFromEncounterDeck(state, player, params, count, mode);
   }
 
-  // 4. DISCARD FROM TABLEAU
   if (source === 'TABLEAU') {
-    const targetInstanceId = ((params as { targetInstanceId?: string }).targetInstanceId ||
-      context.chosenTargetInstanceId) as string | undefined;
-    if (targetInstanceId) {
-      const targetCard = player.tableau.find((c) => c.instanceId === targetInstanceId);
-      if (targetCard) {
-        discardCardInstance(state, targetCard, player.id);
-        appendLog(state, {
-          category: 'combat',
-          key: 'player.tableau.discarded',
-          params: { who: player.name, player: player.name, card: targetCard.card.name },
-          onomatopoeia: 'TABLEAU DISCARDED!',
-        });
-        return {
-          state,
-          success: true,
-          mutatedState: true,
-          onomatopoeia: `DISCARDED ${targetCard.card.name.toUpperCase()}!`,
-        };
-      }
-      return { state, success: false, error: 'Target card not found in tableau' };
-    }
-
-    const matchingCards = player.tableau.filter(
-      (inst) => !filter || matchesCardFilter(inst, filter, { player, state }),
-    );
-
-    if (matchingCards.length === 0) {
-      if (fallback === 'SURGE') {
-        dealSurgeCard(state, player, context.sourceCardInstance?.card.name);
-        return { state, success: true, mutatedState: true, onomatopoeia: 'SURGE!' };
-      }
-      return { state, success: true, mutatedState: false };
-    }
-
-    if (matchingCards.length === 1) {
-      const targetCard = matchingCards[0];
-      discardCardInstance(state, targetCard, player.id);
-      appendLog(state, {
-        category: 'combat',
-        key: 'player.tableau.discarded',
-        params: { who: player.name, player: player.name, card: targetCard.card.name },
-        onomatopoeia: 'TABLEAU DISCARDED!',
-      });
-      return {
-        state,
-        success: true,
-        mutatedState: true,
-        onomatopoeia: `DISCARDED ${targetCard.card.name.toUpperCase()}!`,
-      };
-    }
-
-    const options: DecisionPromptOption[] = matchingCards.map((c) => ({
-      id: c.instanceId,
-      label: c.card.name,
-      cardCode: c.card.code,
-      description: c.card.text || `Discard ${c.card.name} from your tableau`,
-      effect: 'DISCARD',
-      params: { source: 'TABLEAU', targetInstanceId: c.instanceId },
-    }));
-
-    const promptMeta = getTableauDiscardPromptMeta(
-      filter,
-      context.sourceCardInstance,
-      context.sourceCardId,
-      state,
-    );
-
-    enqueueDecisionPrompt(state, {
-      promptId: nextEngineId(state, 'prompt_discard_tableau'),
-      playerId: player.id,
-      title: promptMeta.title,
-      description: promptMeta.description,
-      sourceCardName: promptMeta.sourceCardName,
-      sourceCardCode: promptMeta.sourceCardCode,
-      isVoluntary: false,
-      options,
-    });
-
-    return {
-      state,
-      success: true,
-      mutatedState: true,
-      onomatopoeia: 'CHOOSE CARD TO DISCARD!',
-    };
+    return discardFromTableau(state, player, params, context, fallback, filter);
   }
 
   // 5. DISCARD SELF

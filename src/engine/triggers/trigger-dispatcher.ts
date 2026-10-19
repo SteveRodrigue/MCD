@@ -608,69 +608,50 @@ function scanHandReactions(
  * Eliminates all hardcoded card codes from engine pipelines!
  * Prompts player for optional interrupts and responses per RR v1.8 while auto-executing FORCED_ triggers.
  */
-export function dispatchTrigger(
+interface TriggerScanState {
+  currentDamage: number;
+  isPrevented: boolean;
+  currentThreat: number;
+  isCancelled: boolean;
+  hasPendingPrompt: boolean;
+}
+
+function getAbilityPreventAmount(ability: CardAbility): number | 'ALL' | undefined {
+  const preventStep = ability.steps?.find(
+    (s): s is AbilityStep & { effect: 'PREVENT_DAMAGE' } => s.effect === 'PREVENT_DAMAGE',
+  );
+  const preventParams = preventStep
+    ? getStepEffectParams<'PREVENT_DAMAGE'>(preventStep)
+    : undefined;
+  return typeof preventParams?.amount === 'number'
+    ? preventParams.amount
+    : preventParams?.amount === 'ALL' ||
+        (preventParams as { preventAll?: boolean } | undefined)?.preventAll ||
+        ability.steps?.some((s) => s.effect === 'CANCEL_ATTACK')
+      ? 'ALL'
+      : undefined;
+}
+
+function getTriggerSourceFields(state: GameState, context: TriggerContext) {
+  const villainSource =
+    context.targetType === 'villain' ? targetedVillain(state, context) : undefined;
+  return {
+    triggerSourceName: context.encounterCardInstance?.card?.name || villainSource?.card.name,
+    triggerSourceCode: context.encounterCardInstance?.card?.code || villainSource?.card.code,
+    triggerSourceCard: context.encounterCardInstance?.card || villainSource?.card,
+  };
+}
+
+function scanIdentityTriggerAbilities(
   state: GameState,
   trigger: TriggerType,
   context: TriggerContext,
-  triggerChainOverride?: TriggerCallNode[],
-): TriggerDispatchResult {
-  const currentChain = triggerChainOverride || context.triggerChain || [];
-
-  // Immediate depth ceiling check (ADR-0053, Issue #48)
-  if (currentChain.length >= MAX_TRIGGER_DEPTH) {
-    const loopErr = new InfiniteLoopError(
-      `[INFINITE LOOP DETECTED] Trigger recursion depth limit exceeded (${MAX_TRIGGER_DEPTH}). Unbounded cascade halted.`,
-      {
-        triggerChain: currentChain,
-        depth: currentChain.length,
-        cycle: currentChain.slice(-5),
-      },
-    );
-    appendLog(state, {
-      key: 'engine.infinite_loop_detected',
-      params: {
-        message: loopErr.message,
-        cycle: loopErr.formattedCycle,
-      },
-      onomatopoeia: 'INFINITE LOOP DETECTED!',
-    });
-    state.lastError = {
-      type: 'INFINITE_LOOP',
-      message: loopErr.message,
-      formattedDetails: loopErr.formattedCycle,
-    };
-    throw loopErr;
-  }
-
-  const player =
-    state.players.find((p) => p.id === context.targetPlayerId) ||
-    state.players[state.firstPlayerIndex] ||
-    state.players[0];
-  if (!player) return { state };
-
-  let currentDamage = context.damageAmount ?? 0;
-  let isPrevented = context.preventedDamage ?? false;
-  let currentThreat = context.threatAmount ?? 0;
-  let isCancelled = false;
-  let hasPendingPrompt = false;
-
-  const queueLenBefore = state.pendingDecisionQueue?.length ?? 0;
-
-  const priorityOrder =
-    trigger === 'MINION_ENTERS_PLAY' || trigger === 'ENCOUNTER_CARD_REVEALED'
-      ? revealReactors(state, player)
-      : playersInTurnOrder(state);
-
-  const isGlobalTrigger =
-    trigger === 'THREAT_WOULD_BE_PLACED' ||
-    trigger === 'MINION_ENTERS_PLAY' ||
-    trigger === 'ENCOUNTER_CARD_REVEALED';
-
-  // 1. Scan in-play identity card abilities (e.g. Spider-Sense on Spider-Man 01001a)
+  currentChain: TriggerCallNode[],
+  playersToScan: PlayerState[],
+  scanState: TriggerScanState,
+): void {
   const playerAbilitiesSuspended = arePlayerAbilitiesSuspended(state);
-  const playersToScanForIdentity: PlayerState[] = isGlobalTrigger ? priorityOrder : [player];
-
-  for (const identityPlayer of playersToScanForIdentity) {
+  for (const identityPlayer of playersToScan) {
     const identityAbilities =
       identityPlayer && !playerAbilitiesSuspended
         ? identityPlayer.activeFormCard?.enrichment?.abilities || []
@@ -741,18 +722,18 @@ export function dispatchTrigger(
             playerId: identityPlayer.id,
             eventTargetType: context.targetType,
             eventTargetInstanceId: context.targetInstanceId,
-            threatAmount: currentThreat,
-            damageAmount: currentDamage,
-            interceptedValue: currentThreat || currentDamage,
+            threatAmount: scanState.currentThreat,
+            damageAmount: scanState.currentDamage,
+            interceptedValue: scanState.currentThreat || scanState.currentDamage,
             triggerChain: nextChain,
           };
           executeEffect(state, ability, effCtx);
           if (trigger === 'THREAT_WOULD_BE_PLACED' && effCtx.threatAmount !== undefined) {
-            currentThreat = effCtx.threatAmount;
+            scanState.currentThreat = effCtx.threatAmount;
           }
           if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && effCtx.damageAmount !== undefined) {
-            currentDamage = effCtx.damageAmount;
-            if (currentDamage === 0) isPrevented = true;
+            scanState.currentDamage = effCtx.damageAmount;
+            if (scanState.currentDamage === 0) scanState.isPrevented = true;
           }
           appendLog(state, {
             key: `ability.${ability.id}.triggered`,
@@ -782,30 +763,23 @@ export function dispatchTrigger(
           const cardName = identityPlayer.activeFormCard.name;
           const isDamageTrigger = triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN');
           const damageSuffix =
-            isDamageTrigger && currentDamage > 0 ? ` (Incoming Damage: ${currentDamage})` : '';
+            isDamageTrigger && scanState.currentDamage > 0
+              ? ` (Incoming Damage: ${scanState.currentDamage})`
+              : '';
           const damageDescSuffix =
-            isDamageTrigger && currentDamage > 0 ? ` [Incoming Damage: ${currentDamage}]` : '';
+            isDamageTrigger && scanState.currentDamage > 0
+              ? ` [Incoming Damage: ${scanState.currentDamage}]`
+              : '';
+          const sourceFields = getTriggerSourceFields(state, context);
           enqueueDecisionPrompt(state, {
             promptId: nextEngineId(state, `prompt_trigger_${ability.id}`),
             playerId: identityPlayer.id,
             title: `Do you want to use the following ability from ${cardName}?${damageSuffix}`,
             description: `${formatAbilityStepsSummary(trigger, ability.steps || [])}${damageDescSuffix}`,
-            incomingDamage: isDamageTrigger ? currentDamage : undefined,
+            incomingDamage: isDamageTrigger ? scanState.currentDamage : undefined,
             sourceCardName: cardName,
             sourceCardCode: identityPlayer.activeFormCard.code,
-            triggerSourceName:
-              context.encounterCardInstance?.card?.name ||
-              (context.targetType === 'villain'
-                ? targetedVillain(state, context).card.name
-                : undefined),
-            triggerSourceCode:
-              context.encounterCardInstance?.card?.code ||
-              (context.targetType === 'villain'
-                ? targetedVillain(state, context).card.code
-                : undefined),
-            triggerSourceCard:
-              context.encounterCardInstance?.card ||
-              (context.targetType === 'villain' ? targetedVillain(state, context).card : undefined),
+            ...sourceFields,
             triggerType: ability.timing,
             isVoluntary: true,
             options: [
@@ -817,9 +791,9 @@ export function dispatchTrigger(
                   ability,
                   context: {
                     ...context,
-                    threatAmount: currentThreat,
-                    damageAmount: currentDamage,
-                    interceptedValue: currentThreat || currentDamage,
+                    threatAmount: scanState.currentThreat,
+                    damageAmount: scanState.currentDamage,
+                    interceptedValue: scanState.currentThreat || scanState.currentDamage,
                   },
                 },
               },
@@ -830,19 +804,24 @@ export function dispatchTrigger(
               },
             ],
           });
-          hasPendingPrompt = true;
+          scanState.hasPendingPrompt = true;
         }
       }
     }
   }
+}
 
-  // 2. Scan tableau, allies & in-play cards
-  // A card revealed for one player can be interrupted by the cards in play of every player
-  // ("When a card is revealed from the encounter deck", Black Widow 01075).
-  const playersToScanForInPlay: PlayerState[] = isGlobalTrigger ? priorityOrder : [player];
-
-  for (const controller of playersToScanForInPlay) {
-    if (hasPendingPrompt && trigger !== 'THREAT_WOULD_BE_PLACED') break;
+function scanInPlayTriggerAbilities(
+  state: GameState,
+  trigger: TriggerType,
+  context: TriggerContext,
+  currentChain: TriggerCallNode[],
+  playersToScan: PlayerState[],
+  scanState: TriggerScanState,
+): void {
+  const playerAbilitiesSuspended = arePlayerAbilitiesSuspended(state);
+  for (const controller of playersToScan) {
+    if (scanState.hasPendingPrompt && trigger !== 'THREAT_WOULD_BE_PLACED') break;
     const inPlayCards: CardInstance[] = [
       ...(playerAbilitiesSuspended ? [] : controller.tableau || []),
       ...(playerAbilitiesSuspended ? [] : controller.allies || []),
@@ -876,8 +855,6 @@ export function dispatchTrigger(
             continue;
           }
           // Universal guard for self-referential in-play play/entry triggers (ADR-0050):
-          // Abilities on in-play cards (allies, upgrades, supports, attachments) triggered by
-          // ENTERS_PLAY or CARD_PLAYED must only fire if this specific card was the event source (RR v1.8 pp. 11, 21).
           if (trigger === 'ENTERS_PLAY' || trigger === 'CARD_PLAYED') {
             if (context.sourceInstanceId && context.sourceInstanceId !== cardInst.instanceId) {
               continue;
@@ -888,9 +865,6 @@ export function dispatchTrigger(
           }
 
           // Ally action-resolution guard:
-          // An ally's ability triggered by THWART_RESOLVED or ATTACK_RESOLVED must only fire
-          // if this specific ally was the character that attacked or thwarted.
-          // Upgrades in the tableau (e.g. Superhuman Strength 01028) trigger on the hero's attack/thwart.
           if (
             cardInst.card.type === 'ally' &&
             (trigger === 'THWART_RESOLVED' || trigger === 'ATTACK_RESOLVED')
@@ -914,8 +888,7 @@ export function dispatchTrigger(
             };
             const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
 
-            // RR v1.8 Forced: a forced ability that requires a target and has no valid one does
-            // not initiate, and no cost is paid.
+            // RR v1.8 Forced: a forced ability that requires a target and has no valid one does not initiate
             if (
               !abilityHasValidTarget(state, controller, ability, cardInst, {
                 targetType: context.targetType,
@@ -935,22 +908,25 @@ export function dispatchTrigger(
               eventTargetType: context.targetType,
               eventTargetInstanceId: context.targetInstanceId,
               resourcesSpent: context.resourcesSpent,
-              threatAmount: currentThreat,
-              damageAmount: currentDamage,
-              interceptedValue: currentThreat || currentDamage,
+              threatAmount: scanState.currentThreat,
+              damageAmount: scanState.currentDamage,
+              interceptedValue: scanState.currentThreat || scanState.currentDamage,
               triggerChain: nextChain,
             };
             executeEffect(state, ability, effCtx);
             if (trigger === 'THREAT_WOULD_BE_PLACED' && effCtx.threatAmount !== undefined) {
-              currentThreat = effCtx.threatAmount;
+              scanState.currentThreat = effCtx.threatAmount;
             }
             if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && effCtx.damageAmount !== undefined) {
-              currentDamage = effCtx.damageAmount;
-              if (currentDamage === 0) isPrevented = true;
+              scanState.currentDamage = effCtx.damageAmount;
+              if (scanState.currentDamage === 0) scanState.isPrevented = true;
             }
           } else {
             // Optional In-Play Ability: Check cost & limits before prompting
-            if (triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN') && currentDamage <= 0) {
+            if (
+              triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN') &&
+              scanState.currentDamage <= 0
+            ) {
               continue;
             }
             const costCheck = canPayAbilityCost(state, controller, ability, cardInst);
@@ -978,33 +954,24 @@ export function dispatchTrigger(
               continue;
             }
 
-            const preventStep = ability.steps?.find(
-              (s): s is AbilityStep & { effect: 'PREVENT_DAMAGE' } => s.effect === 'PREVENT_DAMAGE',
-            );
-            const preventParams = preventStep
-              ? getStepEffectParams<'PREVENT_DAMAGE'>(preventStep)
-              : undefined;
-            const preventAmount: number | 'ALL' | undefined =
-              typeof preventParams?.amount === 'number'
-                ? preventParams.amount
-                : preventParams?.amount === 'ALL' ||
-                    (preventParams as { preventAll?: boolean } | undefined)?.preventAll ||
-                    ability.steps?.some((s) => s.effect === 'CANCEL_ATTACK')
-                  ? 'ALL'
-                  : undefined;
-
+            const preventAmount = getAbilityPreventAmount(ability);
             const cardName = cardInst.card.name;
             const isDamageTrigger = triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN');
             const damageSuffix =
-              isDamageTrigger && currentDamage > 0 ? ` (Incoming Damage: ${currentDamage})` : '';
+              isDamageTrigger && scanState.currentDamage > 0
+                ? ` (Incoming Damage: ${scanState.currentDamage})`
+                : '';
             const damageDescSuffix =
-              isDamageTrigger && currentDamage > 0 ? ` [Incoming Damage: ${currentDamage}]` : '';
+              isDamageTrigger && scanState.currentDamage > 0
+                ? ` [Incoming Damage: ${scanState.currentDamage}]`
+                : '';
+            const sourceFields = getTriggerSourceFields(state, context);
             enqueueDecisionPrompt(state, {
               promptId: nextEngineId(state, `prompt_trigger_${ability.id}`),
               playerId: controller.id,
               title: `Do you want to use the following ability from ${cardName}?${damageSuffix}`,
               description: `${formatAbilityStepsSummary(trigger, ability.steps || [])}${damageDescSuffix}`,
-              incomingDamage: isDamageTrigger ? currentDamage : undefined,
+              incomingDamage: isDamageTrigger ? scanState.currentDamage : undefined,
               attackerCardCode: context.attackerCardCode as string | undefined,
               attackerName: context.attackerName as string | undefined,
               defenderCardCode: context.defenderCardCode as string | undefined,
@@ -1021,21 +988,7 @@ export function dispatchTrigger(
               preventAmount,
               sourceCardName: cardName,
               sourceCardCode: cardInst.card.code,
-              triggerSourceName:
-                context.encounterCardInstance?.card?.name ||
-                (context.targetType === 'villain'
-                  ? targetedVillain(state, context).card.name
-                  : undefined),
-              triggerSourceCode:
-                context.encounterCardInstance?.card?.code ||
-                (context.targetType === 'villain'
-                  ? targetedVillain(state, context).card.code
-                  : undefined),
-              triggerSourceCard:
-                context.encounterCardInstance?.card ||
-                (context.targetType === 'villain'
-                  ? targetedVillain(state, context).card
-                  : undefined),
+              ...sourceFields,
               triggerType: ability.timing,
               isVoluntary: true,
               options: [
@@ -1047,7 +1000,7 @@ export function dispatchTrigger(
                     ability,
                     context: {
                       ...context,
-                      damageAmount: currentDamage,
+                      damageAmount: scanState.currentDamage,
                     },
                     sourceCardInstanceId: cardInst.instanceId,
                   },
@@ -1059,35 +1012,44 @@ export function dispatchTrigger(
                 },
               ],
             });
-            hasPendingPrompt = true;
+            scanState.hasPendingPrompt = true;
             break;
           }
         }
       }
-      if (hasPendingPrompt && trigger !== 'THREAT_WOULD_BE_PLACED') break;
+      if (scanState.hasPendingPrompt && trigger !== 'THREAT_WOULD_BE_PLACED') break;
     }
   }
+}
 
+function scanAllHandTriggerReactions(
+  state: GameState,
+  trigger: TriggerType,
+  context: TriggerContext,
+  currentChain: TriggerCallNode[],
+  player: PlayerState,
+  scanState: TriggerScanState,
+): void {
   // 3. In-hand reactions to damage about to be taken (e.g. Backflip 01003).
-  if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && currentDamage > 0) {
+  if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && scanState.currentDamage > 0) {
     const isDamageTrigger = triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN');
     if (
       scanHandReactions(state, trigger, context, currentChain, playersInTurnOrder(state), {
-        isActive: () => currentDamage > 0,
+        isActive: () => scanState.currentDamage > 0,
         allEligibleCards: true,
         resolve: ({ player: p, card, ability, chain }) => {
           if (ability.steps?.some((s) => s.effect === 'PREVENT_DAMAGE')) {
             const effCtx = {
               playerId: p.id,
               sourceCardInstance: card,
-              damageAmount: currentDamage,
-              interceptedValue: currentDamage,
+              damageAmount: scanState.currentDamage,
+              interceptedValue: scanState.currentDamage,
               triggerChain: chain,
             };
             executeEffect(state, ability, effCtx);
-            currentDamage = effCtx.damageAmount ?? 0;
-            if (currentDamage === 0) {
-              isPrevented = true;
+            scanState.currentDamage = effCtx.damageAmount ?? 0;
+            if (scanState.currentDamage === 0) {
+              scanState.isPrevented = true;
             }
           } else {
             executeEffect(state, ability, {
@@ -1097,27 +1059,15 @@ export function dispatchTrigger(
             });
           }
         },
-        promptTitleSuffix: isDamageTrigger ? ` (Incoming Damage: ${currentDamage})` : '',
-        promptDescriptionSuffix: isDamageTrigger ? ` [Incoming Damage: ${currentDamage}]` : '',
+        promptTitleSuffix: isDamageTrigger ? ` (Incoming Damage: ${scanState.currentDamage})` : '',
+        promptDescriptionSuffix: isDamageTrigger
+          ? ` [Incoming Damage: ${scanState.currentDamage}]`
+          : '',
         promptFields: (p, ability) => {
-          const preventStep = ability.steps?.find(
-            (s): s is AbilityStep & { effect: 'PREVENT_DAMAGE' } => s.effect === 'PREVENT_DAMAGE',
-          );
-          const preventParams = preventStep
-            ? getStepEffectParams<'PREVENT_DAMAGE'>(preventStep)
-            : undefined;
-          const preventAmount: number | 'ALL' | undefined =
-            typeof preventParams?.amount === 'number'
-              ? preventParams.amount
-              : preventParams?.amount === 'ALL' ||
-                  (preventParams as { preventAll?: boolean } | undefined)?.preventAll ||
-                  ability.steps?.some((s) => s.effect === 'CANCEL_ATTACK')
-                ? 'ALL'
-                : undefined;
-          const villainSource =
-            context.targetType === 'villain' ? targetedVillain(state, context) : undefined;
+          const preventAmount = getAbilityPreventAmount(ability);
+          const sourceFields = getTriggerSourceFields(state, context);
           return {
-            incomingDamage: isDamageTrigger ? currentDamage : undefined,
+            incomingDamage: isDamageTrigger ? scanState.currentDamage : undefined,
             attackerCardCode: context.attackerCardCode as string | undefined,
             attackerName: context.attackerName as string | undefined,
             defenderCardCode: context.defenderCardCode as string | undefined,
@@ -1130,26 +1080,24 @@ export function dispatchTrigger(
             targetCurrentHp: (context.targetCurrentHp as number | undefined) ?? p.health,
             targetMaxHp: (context.targetMaxHp as number | undefined) ?? p.maxHealth,
             preventAmount,
-            triggerSourceName:
-              context.encounterCardInstance?.card?.name || villainSource?.card.name,
-            triggerSourceCode:
-              context.encounterCardInstance?.card?.code || villainSource?.card.code,
-            triggerSourceCard: context.encounterCardInstance?.card || villainSource?.card,
+            ...sourceFields,
           };
         },
-        promptContext: () => ({ damageAmount: currentDamage, interceptedValue: currentDamage }),
+        promptContext: () => ({
+          damageAmount: scanState.currentDamage,
+          interceptedValue: scanState.currentDamage,
+        }),
       })
     ) {
-      hasPendingPrompt = true;
+      scanState.hasPendingPrompt = true;
     }
   }
 
-  // 4. In-hand reactions to threat about to be placed (e.g. Emergency 01085, Great Responsibility
-  // 01061). Every player may react.
-  if (trigger === 'THREAT_WOULD_BE_PLACED' && currentThreat > 0) {
+  // 4. In-hand reactions to threat about to be placed (e.g. Emergency 01085, Great Responsibility 01061). Every player may react.
+  if (trigger === 'THREAT_WOULD_BE_PLACED' && scanState.currentThreat > 0) {
     if (
       scanHandReactions(state, trigger, context, currentChain, playersInTurnOrder(state), {
-        isActive: () => currentThreat > 0,
+        isActive: () => scanState.currentThreat > 0,
         allEligibleCards: true,
         resolve: ({ player: p, card, ability, chain }) => {
           const hasConsume = ability.steps?.some((s) => s.effect === 'PREVENT_THREAT');
@@ -1158,16 +1106,16 @@ export function dispatchTrigger(
           if (hasConsume) {
             const effCtx = {
               playerId: p.id,
-              threatAmount: currentThreat,
-              interceptedValue: currentThreat,
+              threatAmount: scanState.currentThreat,
+              interceptedValue: scanState.currentThreat,
               sourceCardInstance: card,
               triggerChain: chain,
             };
             executeEffect(state, ability, effCtx);
-            currentThreat = effCtx.threatAmount ?? 0;
+            scanState.currentThreat = effCtx.threatAmount ?? 0;
           } else if (threatStep?.effect === 'REMOVE_THREAT') {
             const reduction = Number(threatStep.effectParams?.amount ?? 1);
-            currentThreat = Math.max(0, currentThreat - reduction);
+            scanState.currentThreat = Math.max(0, scanState.currentThreat - reduction);
             appendLog(state, {
               key: `card.${card.card.code}.threatReduced`,
               params: { player: p.name, reduction },
@@ -1187,15 +1135,17 @@ export function dispatchTrigger(
           triggerSourceCode: context.encounterCardInstance?.card?.code,
           triggerSourceCard: context.encounterCardInstance?.card,
         }),
-        promptContext: () => ({ threatAmount: currentThreat, interceptedValue: currentThreat }),
+        promptContext: () => ({
+          threatAmount: scanState.currentThreat,
+          interceptedValue: scanState.currentThreat,
+        }),
       })
     ) {
-      hasPendingPrompt = true;
+      scanState.hasPendingPrompt = true;
     }
   }
 
-  // 5. In-hand reactions to an encounter card being revealed (e.g. Enhanced Spider-Sense 01004,
-  // Get Behind Me! 01078). Their text has no "you", so any player may react, the revealing one first.
+  // 5. In-hand reactions to an encounter card being revealed (e.g. Enhanced Spider-Sense 01004, Get Behind Me! 01078).
   if (trigger === 'ENCOUNTER_CARD_REVEALED') {
     if (
       scanHandReactions(state, trigger, context, currentChain, revealReactors(state, player), {
@@ -1207,7 +1157,7 @@ export function dispatchTrigger(
             sourceCardInstance: card,
             triggerChain: chain,
           });
-          isCancelled = true;
+          scanState.isCancelled = true;
         },
         promptFields: () => ({
           triggerSourceName: context.encounterCardInstance?.card?.name || 'Encounter Card',
@@ -1216,12 +1166,11 @@ export function dispatchTrigger(
         }),
       })
     ) {
-      hasPendingPrompt = true;
+      scanState.hasPendingPrompt = true;
     }
   }
 
-  // 6. In-hand reactions after a hero or ally defends an attack (e.g. Counter-Punch 01077). Every
-  // player may react; each card's own triggerFilter decides who qualifies.
+  // 6. In-hand reactions after a hero or ally defends an attack (e.g. Counter-Punch 01077).
   if (triggersAreEquivalent('ATTACK_DEFENDED', trigger)) {
     if (
       scanHandReactions(state, trigger, context, currentChain, playersInTurnOrder(state), {
@@ -1237,14 +1186,11 @@ export function dispatchTrigger(
         },
       })
     ) {
-      hasPendingPrompt = true;
+      scanState.hasPendingPrompt = true;
     }
   }
 
-  // 7. In-hand Responses after a character is defeated (e.g. Chase Them Down 01052). One scan per
-  // defeat, on the DEFEATED dispatch only (dispatchDefeat also fires CHARACTER_DEFEATED); hand
-  // abilities on either trigger match, every eligible card is offered, first player first. A
-  // Response happens after the event, so there is no window to close.
+  // 7. In-hand Responses after a character is defeated (e.g. Chase Them Down 01052).
   if (trigger === 'DEFEATED' && context.entityType === 'CHARACTER') {
     if (
       scanHandReactions(state, trigger, context, currentChain, playersInTurnOrder(state), {
@@ -1261,12 +1207,11 @@ export function dispatchTrigger(
         },
       })
     ) {
-      hasPendingPrompt = true;
+      scanState.hasPendingPrompt = true;
     }
   }
 
-  // 8. In-hand Responses after a hero makes a basic attack (e.g. One-Two Punch 01024). The text
-  // says "you", so only the attacking player's hand is scanned.
+  // 8. In-hand Responses after a hero makes a basic attack (e.g. One-Two Punch 01024).
   if (trigger === 'BASIC_ATTACK_PERFORMED') {
     if (
       scanHandReactions(state, trigger, context, currentChain, [player], {
@@ -1280,10 +1225,18 @@ export function dispatchTrigger(
         },
       })
     ) {
-      hasPendingPrompt = true;
+      scanState.hasPendingPrompt = true;
     }
   }
+}
 
+function finalizeQueuedTriggerPrompts(
+  state: GameState,
+  priorityOrder: PlayerState[],
+  queueLenBefore: number,
+  context: TriggerContext,
+  scanState: TriggerScanState,
+): void {
   if (state.pendingDecisionQueue && state.pendingDecisionQueue.length > queueLenBefore) {
     const turnOrder = priorityOrder.map((p) => p.id);
     const existing = state.pendingDecisionQueue.slice(0, queueLenBefore);
@@ -1366,16 +1319,91 @@ export function dispatchTrigger(
     }
     if (state.pendingDecisionQueue.length > 0) {
       refreshPromptOptionAvailability(state, state.pendingDecisionQueue[0]);
-      hasPendingPrompt = true;
+      scanState.hasPendingPrompt = true;
     }
   }
+}
+
+export function dispatchTrigger(
+  state: GameState,
+  trigger: TriggerType,
+  context: TriggerContext,
+  triggerChainOverride?: TriggerCallNode[],
+): TriggerDispatchResult {
+  const currentChain = triggerChainOverride || context.triggerChain || [];
+
+  // Immediate depth ceiling check (ADR-0053, Issue #48)
+  if (currentChain.length >= MAX_TRIGGER_DEPTH) {
+    const loopErr = new InfiniteLoopError(
+      `[INFINITE LOOP DETECTED] Trigger recursion depth limit exceeded (${MAX_TRIGGER_DEPTH}). Unbounded cascade halted.`,
+      {
+        triggerChain: currentChain,
+        depth: currentChain.length,
+        cycle: currentChain.slice(-5),
+      },
+    );
+    appendLog(state, {
+      key: 'engine.infinite_loop_detected',
+      params: {
+        message: loopErr.message,
+        cycle: loopErr.formattedCycle,
+      },
+      onomatopoeia: 'INFINITE LOOP DETECTED!',
+    });
+    state.lastError = {
+      type: 'INFINITE_LOOP',
+      message: loopErr.message,
+      formattedDetails: loopErr.formattedCycle,
+    };
+    throw loopErr;
+  }
+
+  const player =
+    state.players.find((p) => p.id === context.targetPlayerId) ||
+    state.players[state.firstPlayerIndex] ||
+    state.players[0];
+  if (!player) return { state };
+
+  const scanState: TriggerScanState = {
+    currentDamage: context.damageAmount ?? 0,
+    isPrevented: context.preventedDamage ?? false,
+    currentThreat: context.threatAmount ?? 0,
+    isCancelled: false,
+    hasPendingPrompt: false,
+  };
+
+  const queueLenBefore = state.pendingDecisionQueue?.length ?? 0;
+
+  const priorityOrder =
+    trigger === 'MINION_ENTERS_PLAY' || trigger === 'ENCOUNTER_CARD_REVEALED'
+      ? revealReactors(state, player)
+      : playersInTurnOrder(state);
+
+  const isGlobalTrigger =
+    trigger === 'THREAT_WOULD_BE_PLACED' ||
+    trigger === 'MINION_ENTERS_PLAY' ||
+    trigger === 'ENCOUNTER_CARD_REVEALED';
+
+  const playersToScan: PlayerState[] = isGlobalTrigger ? priorityOrder : [player];
+
+  // 1. Scan in-play identity card abilities (e.g. Spider-Sense on Spider-Man 01001a)
+  scanIdentityTriggerAbilities(state, trigger, context, currentChain, playersToScan, scanState);
+
+  // 2. Scan tableau, allies & in-play cards
+  scanInPlayTriggerAbilities(state, trigger, context, currentChain, playersToScan, scanState);
+
+  // 3. Scan in-hand reactions
+  scanAllHandTriggerReactions(state, trigger, context, currentChain, player, scanState);
+
+  // 4. Finalize queued prompts
+  finalizeQueuedTriggerPrompts(state, priorityOrder, queueLenBefore, context, scanState);
 
   return {
     state,
-    damageAmount: currentDamage,
-    preventedDamage: isPrevented,
-    threatAmount: currentThreat,
-    cancelled: isCancelled,
-    hasPendingPrompt,
+    damageAmount: scanState.currentDamage,
+    preventedDamage: scanState.isPrevented,
+    threatAmount: scanState.currentThreat,
+    cancelled: scanState.isCancelled,
+    hasPendingPrompt: scanState.hasPendingPrompt,
   };
 }

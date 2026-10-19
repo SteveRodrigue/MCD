@@ -231,15 +231,288 @@ function resolveDamageShieldForHost(
   };
 }
 
-/**
- * Universal RR v1.8 9-Step Damage Pipeline.
- * Single source of truth for all damage application across MCD.
- */
+function applyDamageAndCheckDefeat(
+  state: GameState,
+  target: TargetEntityRef,
+  damageTaken: number,
+  sourcePlayerId: string | undefined,
+  defeatSource: DefeatSource,
+  onomatopoeia: string | undefined,
+): {
+  state: GameState;
+  targetDefeated: boolean;
+  excessDamage: number;
+  onomatopoeia: string | undefined;
+} {
+  let targetDefeated = false;
+  let excessDamage = 0;
+  let resultOnomatopoeia = onomatopoeia;
+
+  if (damageTaken > 0) {
+    resultOnomatopoeia = resultOnomatopoeia || 'POW!';
+    switch (target.type) {
+      case 'villain': {
+        const villain = target.entity as VillainState;
+        const healthBefore = villain.health;
+        villain.health = Math.max(0, villain.health - damageTaken);
+        appendLog(state, {
+          category: 'combat',
+          key: 'damage.applied.villain',
+          params: {
+            villain: villain.card?.name || (villain as { name?: string }).name || 'Villain',
+            damage: damageTaken,
+            remainingHealth: villain.health,
+          },
+          onomatopoeia: resultOnomatopoeia,
+        });
+
+        // STEPS 6-8: Villain Defeat
+        if (villain.health <= 0) {
+          targetDefeated = true;
+          excessDamage = Math.max(0, damageTaken - healthBefore);
+          const instId = villain.instanceId || 'villain';
+          const activePlayerId =
+            state.players[state.activePlayerIndex]?.id || state.players[0]?.id || '';
+          dispatchDefeat(state, {
+            targetPlayerId: sourcePlayerId || activePlayerId,
+            targetInstanceId: instId,
+            targetType: 'VILLAIN',
+            defeatSource,
+          });
+          state = handleVillainDefeat(state, instId);
+        }
+        break;
+      }
+
+      case 'minion': {
+        const minion = target.entity as CardInstance;
+        if (!minion.tokens) minion.tokens = {};
+        const currentDmg = minion.tokens.damage || 0;
+        const newDmg = currentDmg + damageTaken;
+        minion.tokens.damage = newDmg;
+        const minionHealth = getEffectiveMinionHitPoints(state, minion);
+
+        appendLog(state, {
+          category: 'combat',
+          key: 'damage.applied.minion',
+          params: {
+            minion: minion.card.name,
+            damage: damageTaken,
+            totalDamage: newDmg,
+            health: minionHealth,
+          },
+          onomatopoeia: resultOnomatopoeia,
+        });
+
+        // STEPS 6-8: Minion Defeat
+        if (newDmg >= minionHealth) {
+          targetDefeated = true;
+          excessDamage = newDmg - minionHealth;
+          const targetPlayer =
+            state.players.find((p) =>
+              p.engagedMinions.some((m) => m.instanceId === minion.instanceId),
+            ) || state.players.find((p) => p.id === target.targetPlayerId);
+
+          if (targetPlayer) {
+            const idx = targetPlayer.engagedMinions.findIndex(
+              (m) => m.instanceId === minion.instanceId,
+            );
+            if (idx !== -1) {
+              const [defeatedMinion] = targetPlayer.engagedMinions.splice(idx, 1);
+              processHostDefeated(state, defeatedMinion);
+              dispatchDefeat(state, {
+                targetPlayerId: targetPlayer.id,
+                targetInstanceId: defeatedMinion.instanceId,
+                targetType: 'MINION',
+                defeatSource,
+              });
+              moveDefeatedCardToPile(state, defeatedMinion, state.encounterDiscard);
+            }
+          }
+        }
+        break;
+      }
+
+      case 'player': {
+        const player = target.entity as PlayerState;
+        const healthBefore = player.health;
+        player.health = Math.max(0, player.health - damageTaken);
+        appendLog(state, {
+          category: 'combat',
+          key: 'damage.applied.player',
+          params: {
+            player: player.name,
+            damage: damageTaken,
+            remainingHealth: player.health,
+          },
+          onomatopoeia: resultOnomatopoeia,
+        });
+
+        // STEPS 6-8: Player Defeat
+        if (player.health <= 0) {
+          targetDefeated = true;
+          excessDamage = Math.max(0, damageTaken - healthBefore);
+          dispatchDefeat(state, {
+            targetPlayerId: player.id,
+            targetInstanceId: player.id,
+            targetType: 'PLAYER',
+            defeatSource,
+          });
+          eliminatePlayer(state, player.id);
+        }
+        break;
+      }
+
+      case 'ally': {
+        const ally = target.entity as CardInstance;
+        if (!ally.tokens) ally.tokens = {};
+        const currentDmg = ally.tokens.damage || 0;
+        const newDmg = currentDmg + damageTaken;
+        ally.tokens.damage = newDmg;
+        const allyMaxHp = (ally.card as AllyCard)?.health || 2;
+
+        appendLog(state, {
+          category: 'combat',
+          key: 'damage.applied.ally',
+          params: {
+            ally: ally.card?.name || 'Ally',
+            damage: damageTaken,
+            totalDamage: newDmg,
+            health: allyMaxHp,
+          },
+          onomatopoeia: resultOnomatopoeia,
+        });
+
+        // STEPS 6-8: Ally Defeat
+        if (newDmg >= allyMaxHp) {
+          targetDefeated = true;
+          excessDamage = newDmg - allyMaxHp;
+          const ownerPlayer =
+            state.players.find((p) => p.allies.some((a) => a.instanceId === ally.instanceId)) ||
+            state.players.find((p) => p.id === target.targetPlayerId);
+
+          if (ownerPlayer) {
+            const idx = ownerPlayer.allies.findIndex((a) => a.instanceId === ally.instanceId);
+            if (idx !== -1) {
+              const [defeatedAlly] = ownerPlayer.allies.splice(idx, 1);
+              processHostDefeated(state, defeatedAlly);
+              dispatchDefeat(state, {
+                targetPlayerId: ownerPlayer.id,
+                targetInstanceId: defeatedAlly.instanceId,
+                targetType: 'ALLY',
+                defeatSource,
+              });
+              const discardOwner =
+                (defeatedAlly.ownerId
+                  ? state.players.find((p) => p.id === defeatedAlly.ownerId)
+                  : undefined) || ownerPlayer;
+              moveDefeatedCardToPile(state, defeatedAlly, discardOwner.discard);
+            }
+          }
+        }
+        break;
+      }
+    }
+  }
+
+  return {
+    state,
+    targetDefeated,
+    excessDamage,
+    onomatopoeia: resultOnomatopoeia,
+  };
+}
+
+function applyRetaliateDamage(
+  state: GameState,
+  request: DamageRequest,
+  target: TargetEntityRef,
+  targetDefeated: boolean,
+  damageDealt: number,
+): { state: GameState; retaliateDamageDealt: number | undefined } {
+  let retaliateDamageDealt: number | undefined;
+  const { skipRetaliate, isAttack, sourcePlayerId } = request;
+
+  if (!skipRetaliate && isAttack && !targetDefeated && damageDealt > 0) {
+    let retaliateX = 0;
+    if (target.type === 'villain') {
+      retaliateX = getEffectiveRetaliate(target.entity as VillainState, state);
+    } else if (target.type === 'minion' || target.type === 'ally') {
+      retaliateX = getEffectiveRetaliate(target.entity as CardInstance, state);
+    } else if (target.type === 'player') {
+      retaliateX = getEffectiveRetaliate(target.entity as PlayerState, state);
+    }
+
+    if (retaliateX > 0) {
+      if (request.sourceType === 'ALLY' && request.sourceCardInstance) {
+        retaliateDamageDealt = retaliateX;
+        applyDamageToTarget(state, {
+          target: {
+            type: 'ally',
+            entity: request.sourceCardInstance,
+            instanceId: request.sourceCardInstance.instanceId,
+            name: request.sourceCardInstance.card.name,
+            targetPlayerId: sourcePlayerId,
+            attachments: request.sourceCardInstance.attachments,
+            statusCards: request.sourceCardInstance.statusCards,
+          },
+          amount: retaliateX,
+          sourceType: 'RETALIATE',
+          isAttack: false,
+          skipRetaliate: true,
+        });
+
+        appendLog(state, {
+          category: 'combat',
+          key: 'retaliate.hit',
+          params: {
+            damage: retaliateX,
+            source: target.name,
+            player: request.sourceCardInstance.card.name,
+          },
+          onomatopoeia: 'RETALIATE!',
+        });
+      } else if (sourcePlayerId) {
+        retaliateDamageDealt = retaliateX;
+        const attackingPlayer = state.players.find((p) => p.id === sourcePlayerId);
+        if (attackingPlayer) {
+          applyDamageToTarget(state, {
+            target: {
+              type: 'player',
+              entity: attackingPlayer,
+              name: attackingPlayer.name,
+              attachments: attackingPlayer.attachments,
+              statusCards: attackingPlayer.statusCards,
+            },
+            amount: retaliateX,
+            sourceType: 'RETALIATE',
+            isAttack: false,
+            skipRetaliate: true,
+          });
+
+          appendLog(state, {
+            category: 'combat',
+            key: 'retaliate.hit',
+            params: {
+              damage: retaliateX,
+              source: target.name,
+              player: attackingPlayer.name,
+            },
+            onomatopoeia: 'RETALIATE!',
+          });
+        }
+      }
+    }
+  }
+
+  return { state, retaliateDamageDealt };
+}
+
 export function applyDamageToTarget(
   state: GameState,
   request: DamageRequest,
 ): { state: GameState; result: DamageResult } {
-  const { target, amount, isAttack, hasPiercing, skipRetaliate, sourcePlayerId } = request;
+  const { target, amount, isAttack, hasPiercing, sourcePlayerId } = request;
   const defeatSource = defeatSourceOf(request);
 
   let currentDamage = amount;
@@ -248,8 +521,7 @@ export function applyDamageToTarget(
   let onomatopoeia: string | undefined;
 
   // ---------------------------------------------------------------------------
-  // STEP 0: a character that cannot take damage from this source ignores it (#297). Before
-  // step 1: no shield, Tough or Retaliate is used.
+  // STEP 0: a character that cannot take damage from this source ignores it (#297).
   // ---------------------------------------------------------------------------
   if (
     amount > 0 &&
@@ -353,178 +625,22 @@ export function applyDamageToTarget(
   }
 
   const damageTaken = currentDamage;
-  let targetDefeated = false;
-  let excessDamage = 0;
 
   // ---------------------------------------------------------------------------
-  // STEP 5: Placing of damage on character (RR v1.8 Step 5)
+  // STEPS 5-8: Placing of damage on character & Defeat handling
   // ---------------------------------------------------------------------------
-  if (damageTaken > 0) {
-    onomatopoeia = onomatopoeia || 'POW!';
-    switch (target.type) {
-      case 'villain': {
-        const villain = target.entity as VillainState;
-        const healthBefore = villain.health;
-        villain.health = Math.max(0, villain.health - damageTaken);
-        appendLog(state, {
-          category: 'combat',
-          key: 'damage.applied.villain',
-          params: {
-            villain: villain.card?.name || (villain as { name?: string }).name || 'Villain',
-            damage: damageTaken,
-            remainingHealth: villain.health,
-          },
-          onomatopoeia,
-        });
-
-        // STEPS 6-8: Villain Defeat
-        if (villain.health <= 0) {
-          targetDefeated = true;
-          excessDamage = Math.max(0, damageTaken - healthBefore);
-          const instId = villain.instanceId || 'villain';
-          const activePlayerId =
-            state.players[state.activePlayerIndex]?.id || state.players[0]?.id || '';
-          dispatchDefeat(state, {
-            targetPlayerId: sourcePlayerId || activePlayerId,
-            targetInstanceId: instId,
-            targetType: 'VILLAIN',
-            defeatSource,
-          });
-          state = handleVillainDefeat(state, instId);
-        }
-        break;
-      }
-
-      case 'minion': {
-        const minion = target.entity as CardInstance;
-        if (!minion.tokens) minion.tokens = {};
-        const currentDmg = minion.tokens.damage || 0;
-        const newDmg = currentDmg + damageTaken;
-        minion.tokens.damage = newDmg;
-        const minionHealth = getEffectiveMinionHitPoints(state, minion);
-
-        appendLog(state, {
-          category: 'combat',
-          key: 'damage.applied.minion',
-          params: {
-            minion: minion.card.name,
-            damage: damageTaken,
-            totalDamage: newDmg,
-            health: minionHealth,
-          },
-          onomatopoeia,
-        });
-
-        // STEPS 6-8: Minion Defeat
-        if (newDmg >= minionHealth) {
-          targetDefeated = true;
-          excessDamage = newDmg - minionHealth;
-          const targetPlayer =
-            state.players.find((p) =>
-              p.engagedMinions.some((m) => m.instanceId === minion.instanceId),
-            ) || state.players.find((p) => p.id === target.targetPlayerId);
-
-          if (targetPlayer) {
-            const idx = targetPlayer.engagedMinions.findIndex(
-              (m) => m.instanceId === minion.instanceId,
-            );
-            if (idx !== -1) {
-              const [defeatedMinion] = targetPlayer.engagedMinions.splice(idx, 1);
-              processHostDefeated(state, defeatedMinion);
-              dispatchDefeat(state, {
-                targetPlayerId: targetPlayer.id,
-                targetInstanceId: defeatedMinion.instanceId,
-                targetType: 'MINION',
-                defeatSource,
-              });
-              moveDefeatedCardToPile(state, defeatedMinion, state.encounterDiscard);
-            }
-          }
-        }
-        break;
-      }
-
-      case 'player': {
-        const player = target.entity as PlayerState;
-        const healthBefore = player.health;
-        player.health = Math.max(0, player.health - damageTaken);
-        appendLog(state, {
-          category: 'combat',
-          key: 'damage.applied.player',
-          params: {
-            player: player.name,
-            damage: damageTaken,
-            remainingHealth: player.health,
-          },
-          onomatopoeia,
-        });
-
-        // STEPS 6-8: Player Defeat
-        if (player.health <= 0) {
-          targetDefeated = true;
-          excessDamage = Math.max(0, damageTaken - healthBefore);
-          dispatchDefeat(state, {
-            targetPlayerId: player.id,
-            targetInstanceId: player.id,
-            targetType: 'PLAYER',
-            defeatSource,
-          });
-          eliminatePlayer(state, player.id);
-        }
-        break;
-      }
-
-      case 'ally': {
-        const ally = target.entity as CardInstance;
-        if (!ally.tokens) ally.tokens = {};
-        const currentDmg = ally.tokens.damage || 0;
-        const newDmg = currentDmg + damageTaken;
-        ally.tokens.damage = newDmg;
-        const allyMaxHp = (ally.card as AllyCard)?.health || 2;
-
-        appendLog(state, {
-          category: 'combat',
-          key: 'damage.applied.ally',
-          params: {
-            ally: ally.card?.name || 'Ally',
-            damage: damageTaken,
-            totalDamage: newDmg,
-            health: allyMaxHp,
-          },
-          onomatopoeia,
-        });
-
-        // STEPS 6-8: Ally Defeat
-        if (newDmg >= allyMaxHp) {
-          targetDefeated = true;
-          excessDamage = newDmg - allyMaxHp;
-          const ownerPlayer =
-            state.players.find((p) => p.allies.some((a) => a.instanceId === ally.instanceId)) ||
-            state.players.find((p) => p.id === target.targetPlayerId);
-
-          if (ownerPlayer) {
-            const idx = ownerPlayer.allies.findIndex((a) => a.instanceId === ally.instanceId);
-            if (idx !== -1) {
-              const [defeatedAlly] = ownerPlayer.allies.splice(idx, 1);
-              processHostDefeated(state, defeatedAlly);
-              dispatchDefeat(state, {
-                targetPlayerId: ownerPlayer.id,
-                targetInstanceId: defeatedAlly.instanceId,
-                targetType: 'ALLY',
-                defeatSource,
-              });
-              const discardOwner =
-                (defeatedAlly.ownerId
-                  ? state.players.find((p) => p.id === defeatedAlly.ownerId)
-                  : undefined) || ownerPlayer;
-              moveDefeatedCardToPile(state, defeatedAlly, discardOwner.discard);
-            }
-          }
-        }
-        break;
-      }
-    }
-  }
+  const defeatRes = applyDamageAndCheckDefeat(
+    state,
+    target,
+    damageTaken,
+    sourcePlayerId,
+    defeatSource,
+    onomatopoeia,
+  );
+  state = defeatRes.state;
+  const targetDefeated = defeatRes.targetDefeated;
+  const excessDamage = defeatRes.excessDamage;
+  onomatopoeia = defeatRes.onomatopoeia;
 
   // ---------------------------------------------------------------------------
   // Overkill: excess damage over a defeated minion goes to the villain (RR v1.8 glossary O)
@@ -561,78 +677,9 @@ export function applyDamageToTarget(
   // ---------------------------------------------------------------------------
   // STEP 9: Retaliate X & Post-Resolution Triggers (RR v1.8 Step 9)
   // ---------------------------------------------------------------------------
-  let retaliateDamageDealt: number | undefined;
-  if (!skipRetaliate && isAttack && !targetDefeated && damageDealt > 0) {
-    let retaliateX = 0;
-    if (target.type === 'villain') {
-      retaliateX = getEffectiveRetaliate(target.entity as VillainState, state);
-    } else if (target.type === 'minion' || target.type === 'ally') {
-      retaliateX = getEffectiveRetaliate(target.entity as CardInstance, state);
-    } else if (target.type === 'player') {
-      retaliateX = getEffectiveRetaliate(target.entity as PlayerState, state);
-    }
-
-    if (retaliateX > 0) {
-      if (request.sourceType === 'ALLY' && request.sourceCardInstance) {
-        retaliateDamageDealt = retaliateX;
-        applyDamageToTarget(state, {
-          target: {
-            type: 'ally',
-            entity: request.sourceCardInstance,
-            instanceId: request.sourceCardInstance.instanceId,
-            name: request.sourceCardInstance.card.name,
-            targetPlayerId: sourcePlayerId,
-            attachments: request.sourceCardInstance.attachments,
-            statusCards: request.sourceCardInstance.statusCards,
-          },
-          amount: retaliateX,
-          sourceType: 'RETALIATE',
-          isAttack: false,
-          skipRetaliate: true,
-        });
-
-        appendLog(state, {
-          category: 'combat',
-          key: 'retaliate.hit',
-          params: {
-            damage: retaliateX,
-            source: target.name,
-            player: request.sourceCardInstance.card.name,
-          },
-          onomatopoeia: 'RETALIATE!',
-        });
-      } else if (sourcePlayerId) {
-        retaliateDamageDealt = retaliateX;
-        const attackingPlayer = state.players.find((p) => p.id === sourcePlayerId);
-        if (attackingPlayer) {
-          applyDamageToTarget(state, {
-            target: {
-              type: 'player',
-              entity: attackingPlayer,
-              name: attackingPlayer.name,
-              attachments: attackingPlayer.attachments,
-              statusCards: attackingPlayer.statusCards,
-            },
-            amount: retaliateX,
-            sourceType: 'RETALIATE',
-            isAttack: false,
-            skipRetaliate: true,
-          });
-
-          appendLog(state, {
-            category: 'combat',
-            key: 'retaliate.hit',
-            params: {
-              damage: retaliateX,
-              source: target.name,
-              player: attackingPlayer.name,
-            },
-            onomatopoeia: 'RETALIATE!',
-          });
-        }
-      }
-    }
-  }
+  const retaliateRes = applyRetaliateDamage(state, request, target, targetDefeated, damageDealt);
+  state = retaliateRes.state;
+  const retaliateDamageDealt = retaliateRes.retaliateDamageDealt;
 
   return {
     state,

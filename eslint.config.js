@@ -49,6 +49,7 @@ export default [
     files: ['src/engine/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
+      'max-lines-per-function': ['error', { max: 400, skipBlankLines: false, skipComments: false }],
       // Narrow a step with `isStep`; asserting its effect hides a wrong-effect read from the type checker.
       'no-restricted-syntax': [
         'error',
@@ -60,11 +61,16 @@ export default [
           selector: "TSAsExpression > TSUnionType > TSTypeReference[typeName.name='StepHandler']",
           message: 'Only runStepHandler in effects/handlers/index.ts may assert a StepHandler.',
         },
+        {
+          selector: "TSAsExpression > TSUnionType > TSTypeReference[typeName.name='ActionHandler']",
+          message:
+            'Only runActionHandler in pipeline/actions/index.ts may assert an ActionHandler.',
+        },
       ],
     },
   },
   {
-    files: ['src/engine/effects/handlers/index.ts'],
+    files: ['src/engine/effects/handlers/index.ts', 'src/engine/pipeline/actions/index.ts'],
     rules: { 'no-restricted-syntax': 'off' },
   },
 ];

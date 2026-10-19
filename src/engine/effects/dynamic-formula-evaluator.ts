@@ -51,6 +51,112 @@ export interface DynamicEvaluationOptions {
   fallback?: number;
 }
 
+function evaluateDiscardedCardsValue(
+  context: Partial<EffectExecutionContext> & {
+    state?: GameState;
+    player?: PlayerState;
+    resourcesSpent?: string[];
+  },
+  filter: DynamicValueSource['filter'],
+  extParam: ExtendedDynamicSource,
+  state: GameState | undefined,
+  player: PlayerState | undefined,
+): number {
+  const discarded: CardInstance[] =
+    context.previousResult?.discardedCards || context.discardedCards || [];
+  const cards = filter
+    ? discarded.filter((inst) => inst?.card && matchesCardFilter(inst, filter, { player, state }))
+    : discarded;
+
+  const discardAttribute =
+    extParam.discardAttribute || (extParam.resourceType ? 'RESOURCE_ICONS' : 'COUNT');
+
+  switch (discardAttribute) {
+    case 'COUNT':
+      return cards.length;
+    case 'RESOURCE_ICONS': {
+      const resType = extParam.resourceType;
+      let count = 0;
+      for (const inst of cards) {
+        if (!inst?.card) continue;
+        const res = inst.card.resources;
+        const raw = inst.card.raw as unknown as Record<string, unknown> | undefined;
+        if (resType) {
+          const val =
+            res?.[resType as keyof typeof res] ??
+            (raw?.[`resource_${resType}`] as number | undefined) ??
+            0;
+          count += typeof val === 'number' ? val : 0;
+        } else {
+          const totalVal =
+            res?.total ??
+            ((raw?.resource_physical as number | undefined) || 0) +
+              ((raw?.resource_energy as number | undefined) || 0) +
+              ((raw?.resource_mental as number | undefined) || 0) +
+              ((raw?.resource_wild as number | undefined) || 0);
+          count += typeof totalVal === 'number' ? totalVal : 0;
+        }
+      }
+      return count;
+    }
+    case 'DIFFERENT_RESOURCES': {
+      const distinctTypes = new Set<string>();
+      for (const inst of cards) {
+        if (!inst?.card) continue;
+        const res = inst.card.resources;
+        const raw = inst.card.raw as unknown as Record<string, unknown> | undefined;
+        const resourceKeys = ['physical', 'energy', 'mental', 'wild'] as const;
+        for (const rk of resourceKeys) {
+          const val = res?.[rk] ?? (raw?.[`resource_${rk}`] as number | undefined) ?? 0;
+          if (typeof val === 'number' && val > 0) {
+            distinctTypes.add(rk);
+          }
+        }
+      }
+      return distinctTypes.size;
+    }
+    case 'BOOST_ICONS': {
+      let totalBoost = 0;
+      for (const inst of cards) {
+        if (!inst?.card) continue;
+        const cardRec = inst.card as unknown as Record<string, unknown>;
+        const rawRec = inst.card.raw as unknown as Record<string, unknown> | undefined;
+        const boostVal =
+          (cardRec.boostIcons as number | undefined) ??
+          (cardRec.boost as number | undefined) ??
+          (rawRec?.boost as number | undefined) ??
+          0;
+        totalBoost += typeof boostVal === 'number' ? boostVal : 0;
+      }
+      return totalBoost;
+    }
+    case 'DIFFERENT_CARD_TYPES': {
+      const distinctTypes = new Set<string>();
+      for (const inst of cards) {
+        if (!inst?.card) continue;
+        const rawRec = inst.card.raw as unknown as Record<string, unknown> | undefined;
+        const cardType = inst.card.type || (rawRec?.type_code as string | undefined);
+        if (cardType) {
+          distinctTypes.add(cardType);
+        }
+      }
+      return distinctTypes.size;
+    }
+    case 'PRINTED_COST': {
+      let totalCost = 0;
+      for (const inst of cards) {
+        if (!inst?.card) continue;
+        const rawRec = inst.card.raw as unknown as Record<string, unknown> | undefined;
+        const costVal = inst.card.cost ?? (rawRec?.cost as number | undefined) ?? 0;
+        totalCost += typeof costVal === 'number' ? costVal : 0;
+      }
+      return totalCost;
+    }
+    default:
+      return cards.length;
+  }
+}
+
 export function evaluateDynamicAmount(
   amountParam: number | DynamicValueSource | undefined,
   context: Partial<EffectExecutionContext> & {
@@ -100,108 +206,7 @@ export function evaluateDynamicAmount(
       break;
     }
     case 'DISCARDED_CARDS': {
-      const discarded: CardInstance[] =
-        context.previousResult?.discardedCards || context.discardedCards || [];
-      const cards = filter
-        ? discarded.filter(
-            (inst) => inst?.card && matchesCardFilter(inst, filter, { player, state }),
-          )
-        : discarded;
-
-      const discardAttribute =
-        extParam.discardAttribute || (extParam.resourceType ? 'RESOURCE_ICONS' : 'COUNT');
-
-      switch (discardAttribute) {
-        case 'COUNT': {
-          baseValue = cards.length;
-          break;
-        }
-        case 'RESOURCE_ICONS': {
-          const resType = extParam.resourceType;
-          let count = 0;
-          for (const inst of cards) {
-            if (!inst?.card) continue;
-            const res = inst.card.resources;
-            const raw = inst.card.raw as unknown as Record<string, unknown> | undefined;
-            if (resType) {
-              const val =
-                res?.[resType as keyof typeof res] ??
-                (raw?.[`resource_${resType}`] as number | undefined) ??
-                0;
-              count += typeof val === 'number' ? val : 0;
-            } else {
-              const totalVal =
-                res?.total ??
-                ((raw?.resource_physical as number | undefined) || 0) +
-                  ((raw?.resource_energy as number | undefined) || 0) +
-                  ((raw?.resource_mental as number | undefined) || 0) +
-                  ((raw?.resource_wild as number | undefined) || 0);
-              count += typeof totalVal === 'number' ? totalVal : 0;
-            }
-          }
-          baseValue = count;
-          break;
-        }
-        case 'DIFFERENT_RESOURCES': {
-          const distinctTypes = new Set<string>();
-          for (const inst of cards) {
-            if (!inst?.card) continue;
-            const res = inst.card.resources;
-            const raw = inst.card.raw as unknown as Record<string, unknown> | undefined;
-            const resourceKeys = ['physical', 'energy', 'mental', 'wild'] as const;
-            for (const rk of resourceKeys) {
-              const val = res?.[rk] ?? (raw?.[`resource_${rk}`] as number | undefined) ?? 0;
-              if (typeof val === 'number' && val > 0) {
-                distinctTypes.add(rk);
-              }
-            }
-          }
-          baseValue = distinctTypes.size;
-          break;
-        }
-        case 'BOOST_ICONS': {
-          let totalBoost = 0;
-          for (const inst of cards) {
-            if (!inst?.card) continue;
-            const cardRec = inst.card as unknown as Record<string, unknown>;
-            const rawRec = inst.card.raw as unknown as Record<string, unknown> | undefined;
-            const boostVal =
-              (cardRec.boostIcons as number | undefined) ??
-              (cardRec.boost as number | undefined) ??
-              (rawRec?.boost as number | undefined) ??
-              0;
-            totalBoost += typeof boostVal === 'number' ? boostVal : 0;
-          }
-          baseValue = totalBoost;
-          break;
-        }
-        case 'DIFFERENT_CARD_TYPES': {
-          const distinctTypes = new Set<string>();
-          for (const inst of cards) {
-            if (!inst?.card) continue;
-            const rawRec = inst.card.raw as unknown as Record<string, unknown> | undefined;
-            const cardType = inst.card.type || (rawRec?.type_code as string | undefined);
-            if (cardType) {
-              distinctTypes.add(cardType);
-            }
-          }
-          baseValue = distinctTypes.size;
-          break;
-        }
-        case 'PRINTED_COST': {
-          let totalCost = 0;
-          for (const inst of cards) {
-            if (!inst?.card) continue;
-            const rawRec = inst.card.raw as unknown as Record<string, unknown> | undefined;
-            const costVal = inst.card.cost ?? (rawRec?.cost as number | undefined) ?? 0;
-            totalCost += typeof costVal === 'number' ? costVal : 0;
-          }
-          baseValue = totalCost;
-          break;
-        }
-        default:
-          baseValue = cards.length;
-      }
+      baseValue = evaluateDiscardedCardsValue(context, filter, extParam, state, player);
       break;
     }
     case 'COUNTERS': {

@@ -44,12 +44,98 @@ import {
 import { getStepEffectParams } from '../../../data/supplemental/runtime';
 import { isStepGateClosedByState } from '../step-gate-evaluator';
 import { enqueueDecisionPrompt } from '../prompt-queue';
-import { resolveAttackedVillain, resolveEventAbilities } from '../action-dispatcher';
+import { resolveAttackedVillain, resolveEventAbilities } from './shared';
 import type { ActionHandler, TypedAction } from './types';
 import type { ActionResult, GameState } from '../../models';
 
+interface HostCandidate {
+  id: string;
+  /** Label shown in the prompt and written to the log. */
+  name: string;
+}
+
+interface HostKind {
+  hosts: readonly string[];
+  /** Prompt id slug, option flag and text for the "choose a host" decision. */
+  slug: 'minion' | 'ally' | 'enemy';
+  choiceFlag: 'isAttachmentMinionChoice' | 'isAttachmentAllyChoice' | 'isAttachmentEnemyChoice';
+  title: string;
+  onomatopoeia: string;
+  collect: (state: GameState, hasRoom: (host: HostLike) => boolean) => HostCandidate[];
+  /** Display name for a host picked explicitly, or the fallback when none is picked. */
+  describe: (state: GameState, hostId: string | undefined) => string;
+}
+
+type HostLike = { attachments?: CardInstance[] };
+
+const withController = (card: CardInstance, player: PlayerState) =>
+  `${card.card.name} (${player.name})`;
+
+const findControlled = (
+  state: GameState,
+  zone: 'engagedMinions' | 'allies',
+  instanceId: string | undefined,
+): string | undefined => {
+  for (const p of state.players) {
+    const found = p[zone]?.find((c) => c.instanceId === instanceId);
+    if (found) return withController(found, p);
+  }
+  return undefined;
+};
+
+const controlledCandidates = (state: GameState, zone: 'engagedMinions' | 'allies') =>
+  state.players.flatMap((p) =>
+    (p[zone] || []).map((c) => ({ host: c, id: c.instanceId, name: withController(c, p) })),
+  );
+
+const HOST_KINDS: readonly HostKind[] = [
+  {
+    hosts: ['CHOSEN_MINION', 'MINION'],
+    slug: 'minion',
+    choiceFlag: 'isAttachmentMinionChoice',
+    title: 'Choose Minion Host',
+    onomatopoeia: 'CHOOSE MINION!',
+    collect: (state, hasRoom) =>
+      controlledCandidates(state, 'engagedMinions').filter((c) => hasRoom(c.host)),
+    describe: (state, id) => findControlled(state, 'engagedMinions', id) ?? (id || 'Minion'),
+  },
+  {
+    hosts: ['CHOSEN_ALLY', 'ALLY'],
+    slug: 'ally',
+    choiceFlag: 'isAttachmentAllyChoice',
+    title: 'Choose Ally Host',
+    onomatopoeia: 'CHOOSE ALLY!',
+    collect: (state, hasRoom) =>
+      controlledCandidates(state, 'allies').filter((c) => hasRoom(c.host)),
+    describe: (state, id) => findControlled(state, 'allies', id) ?? (id || 'Ally'),
+  },
+  {
+    hosts: ['CHOSEN_ENEMY', 'ENEMY'],
+    slug: 'enemy',
+    choiceFlag: 'isAttachmentEnemyChoice',
+    title: 'Choose Enemy Host',
+    onomatopoeia: 'CHOOSE ENEMY!',
+    collect: (state, hasRoom) => [
+      ...getVillainsInPlay(state)
+        .filter(hasRoom)
+        .map((v) => ({ id: v.instanceId || 'villain', name: v.card.name })),
+      ...controlledCandidates(state, 'engagedMinions').filter((c) => hasRoom(c.host)),
+    ],
+    describe: (state, id) =>
+      findControlled(state, 'engagedMinions', id) ??
+      resolveAttackedVillain(state, id)?.card.name ??
+      '',
+  },
+];
+
+// Any other host (e.g. VILLAIN) attaches to the villain the player is attacking.
+const VILLAIN_HOST: Pick<HostKind, 'describe'> = {
+  describe: (state, id) => resolveAttackedVillain(state, id)?.card.name ?? '',
+};
+
 /**
  * Attaches an upgrade or support to a chosen host or enqueues a selection prompt when multiple hosts exist.
+ * A host that already holds `maxPerHost` copies of the card is not a candidate.
  */
 export function resolveChosenHostAttachment(
   nextState: GameState,
@@ -59,351 +145,73 @@ export function resolveChosenHostAttachment(
   targetHost: string,
   attachStep: AbilityStep | undefined,
 ): { state: GameState; result: ActionResult } | undefined {
-  const isMinionHost = targetHost === 'CHOSEN_MINION' || targetHost === 'MINION';
-  const isAllyHost = targetHost === 'CHOSEN_ALLY' || targetHost === 'ALLY';
-  const isEnemyHost = targetHost === 'CHOSEN_ENEMY' || targetHost === 'ENEMY';
-
+  const kind = HOST_KINDS.find((k) => k.hosts.includes(targetHost));
   const maxPerHost =
     attachStep?.effectParams?.maxPerHost !== undefined
       ? Number(attachStep.effectParams.maxPerHost)
       : undefined;
+  const hasRoom = (host: HostLike) =>
+    maxPerHost === undefined ||
+    maxPerHost <= 0 ||
+    (host.attachments || []).filter(
+      (att) =>
+        att.card.code === playedCardInstance.card.code ||
+        att.card.name === playedCardInstance.card.name,
+    ).length < maxPerHost;
 
-  if (isMinionHost) {
-    if (!action.targetInstanceId) {
-      const allMinions: { minion: CardInstance; player: PlayerState }[] = [];
-      for (const p of nextState.players) {
-        for (const m of p.engagedMinions || []) {
-          allMinions.push({ minion: m, player: p });
-        }
-      }
+  const attachAndLog = (hostId: string | undefined, hostName: string) => {
+    attachCardToHost(nextState, playedCardInstance, targetHost, hostId);
+    appendLog(nextState, {
+      category: 'ability',
+      actor: { name: player.name, type: player.currentForm },
+      key: 'card.attached.to_host',
+      params: {
+        player: player.name,
+        card: playedCardInstance.card.name,
+        host: hostName,
+        target: hostName,
+      },
+      onomatopoeia: 'ATTACHED!',
+    });
+  };
 
-      if (allMinions.length > 1) {
-        const options: DecisionPromptOption[] = allMinions.map(({ minion, player: engPlayer }) => ({
-          id: minion.instanceId,
-          label: `${minion.card.name} (${engPlayer.name})`,
-          description: `Attach ${playedCardInstance.card.name} to ${minion.card.name}`,
-          effect: 'ATTACH_TO_HOST',
-          params: {
-            isAttachmentMinionChoice: true,
-            attachmentCard: playedCardInstance,
-            ownerId: action.playerId,
-          },
-        }));
-
-        const prompt: PendingDecisionPrompt = {
-          promptId: `prompt_attach_minion_${nextEngineId(nextState, 'id')}`,
-          playerId: action.playerId,
-          title: 'Choose Minion Host',
-          description: `Choose which minion to attach ${playedCardInstance.card.name} to:`,
-          sourceCardName: playedCardInstance.card.name,
-          options,
-          isVoluntary: false,
-        };
-
-        const enqueuedState = enqueueDecisionPrompt(nextState, prompt);
-        return {
-          state: enqueuedState,
-          result: { success: true, onomatopoeia: 'CHOOSE MINION!' },
-        };
-      } else if (allMinions.length === 1) {
-        attachCardToHost(
-          nextState,
-          playedCardInstance,
-          targetHost,
-          allMinions[0].minion.instanceId,
-        );
-        const hostName = `${allMinions[0].minion.card.name} (${allMinions[0].player.name})`;
-        appendLog(nextState, {
-          category: 'ability',
-          actor: { name: player.name, type: player.currentForm },
-          key: 'card.attached.to_host',
-          params: {
-            player: player.name,
-            card: playedCardInstance.card.name,
-            host: hostName,
-            target: hostName,
-          },
-          onomatopoeia: 'ATTACHED!',
-        });
-      } else {
-        attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
-        appendLog(nextState, {
-          category: 'ability',
-          actor: { name: player.name, type: player.currentForm },
-          key: 'card.attached.to_host',
-          params: {
-            player: player.name,
-            card: playedCardInstance.card.name,
-            host: 'Minion',
-            target: 'Minion',
-          },
-          onomatopoeia: 'ATTACHED!',
-        });
-      }
-    } else {
-      attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
-      let hostName = action.targetInstanceId || 'Minion';
-      for (const p of nextState.players) {
-        const m = p.engagedMinions?.find((min) => min.instanceId === action.targetInstanceId);
-        if (m) {
-          hostName = `${m.card.name} (${p.name})`;
-          break;
-        }
-      }
-      appendLog(nextState, {
-        category: 'ability',
-        actor: { name: player.name, type: player.currentForm },
-        key: 'card.attached.to_host',
-        params: {
-          player: player.name,
-          card: playedCardInstance.card.name,
-          host: hostName,
-          target: hostName,
-        },
-        onomatopoeia: 'ATTACHED!',
-      });
-    }
+  const { describe } = kind ?? VILLAIN_HOST;
+  if (!kind || action.targetInstanceId) {
+    attachAndLog(action.targetInstanceId, describe(nextState, action.targetInstanceId));
     return undefined;
   }
 
-  if (isAllyHost) {
-    if (!action.targetInstanceId) {
-      const allAllies: { ally: CardInstance; player: PlayerState }[] = [];
-      for (const p of nextState.players) {
-        for (const a of p.allies || []) {
-          if (maxPerHost !== undefined && maxPerHost > 0) {
-            const currentAttached = (a.attachments || []).filter(
-              (att) =>
-                att.card.code === playedCardInstance.card.code ||
-                att.card.name === playedCardInstance.card.name,
-            ).length;
-            if (currentAttached >= maxPerHost) continue;
-          }
-          allAllies.push({ ally: a, player: p });
-        }
-      }
-
-      if (allAllies.length > 1) {
-        const options: DecisionPromptOption[] = allAllies.map(({ ally, player: ctrlPlayer }) => ({
-          id: ally.instanceId,
-          label: `${ally.card.name} (${ctrlPlayer.name})`,
-          description: `Attach ${playedCardInstance.card.name} to ${ally.card.name}`,
-          effect: 'ATTACH_TO_HOST',
-          params: {
-            isAttachmentAllyChoice: true,
-            attachmentCard: playedCardInstance,
-            ownerId: action.playerId,
-          },
-        }));
-
-        const prompt: PendingDecisionPrompt = {
-          promptId: `prompt_attach_ally_${nextEngineId(nextState, 'id')}`,
-          playerId: action.playerId,
-          title: 'Choose Ally Host',
-          description: `Choose which ally to attach ${playedCardInstance.card.name} to:`,
-          sourceCardName: playedCardInstance.card.name,
-          options,
-          isVoluntary: false,
-        };
-
-        const enqueuedState = enqueueDecisionPrompt(nextState, prompt);
-        return {
-          state: enqueuedState,
-          result: { success: true, onomatopoeia: 'CHOOSE ALLY!' },
-        };
-      } else if (allAllies.length === 1) {
-        attachCardToHost(nextState, playedCardInstance, targetHost, allAllies[0].ally.instanceId);
-        const hostName = `${allAllies[0].ally.card.name} (${allAllies[0].player.name})`;
-        appendLog(nextState, {
-          category: 'ability',
-          actor: { name: player.name, type: player.currentForm },
-          key: 'card.attached.to_host',
-          params: {
-            player: player.name,
-            card: playedCardInstance.card.name,
-            host: hostName,
-            target: hostName,
-          },
-          onomatopoeia: 'ATTACHED!',
-        });
-      } else {
-        attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
-        appendLog(nextState, {
-          category: 'ability',
-          actor: { name: player.name, type: player.currentForm },
-          key: 'card.attached.to_host',
-          params: {
-            player: player.name,
-            card: playedCardInstance.card.name,
-            host: 'Ally',
-            target: 'Ally',
-          },
-          onomatopoeia: 'ATTACHED!',
-        });
-      }
-    } else {
-      attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
-      let hostName = action.targetInstanceId || 'Ally';
-      for (const p of nextState.players) {
-        const a = p.allies?.find((al) => al.instanceId === action.targetInstanceId);
-        if (a) {
-          hostName = `${a.card.name} (${p.name})`;
-          break;
-        }
-      }
-      appendLog(nextState, {
-        category: 'ability',
-        actor: { name: player.name, type: player.currentForm },
-        key: 'card.attached.to_host',
-        params: {
-          player: player.name,
-          card: playedCardInstance.card.name,
-          host: hostName,
-          target: hostName,
-        },
-        onomatopoeia: 'ATTACHED!',
-      });
-    }
-    return undefined;
+  const candidates = kind.collect(nextState, hasRoom);
+  if (candidates.length > 1) {
+    const options: DecisionPromptOption[] = candidates.map(({ id, name }) => ({
+      id,
+      label: name,
+      description: `Attach ${playedCardInstance.card.name} to ${name}`,
+      effect: 'ATTACH_TO_HOST',
+      params: {
+        [kind.choiceFlag]: true,
+        attachmentCard: playedCardInstance,
+        ownerId: action.playerId,
+      },
+    }));
+    const prompt: PendingDecisionPrompt = {
+      promptId: `prompt_attach_${kind.slug}_${nextEngineId(nextState, 'id')}`,
+      playerId: action.playerId,
+      title: kind.title,
+      description: `Choose which ${kind.slug} to attach ${playedCardInstance.card.name} to:`,
+      sourceCardName: playedCardInstance.card.name,
+      options,
+      isVoluntary: false,
+    };
+    return {
+      state: enqueueDecisionPrompt(nextState, prompt),
+      result: { success: true, onomatopoeia: kind.onomatopoeia },
+    };
   }
 
-  if (isEnemyHost) {
-    if (!action.targetInstanceId) {
-      const allEnemies: { enemy: CardInstance | VillainState; id: string; name: string }[] = [];
-      for (const villain of getVillainsInPlay(nextState)) {
-        const currentAttached = (villain.attachments || []).filter(
-          (att) =>
-            att.card.code === playedCardInstance.card.code ||
-            att.card.name === playedCardInstance.card.name,
-        ).length;
-        if (maxPerHost === undefined || maxPerHost <= 0 || currentAttached < maxPerHost) {
-          allEnemies.push({
-            enemy: villain,
-            id: villain.instanceId || 'villain',
-            name: villain.card.name,
-          });
-        }
-      }
-
-      for (const p of nextState.players) {
-        for (const m of p.engagedMinions || []) {
-          if (maxPerHost !== undefined && maxPerHost > 0) {
-            const currentAttached = (m.attachments || []).filter(
-              (att) =>
-                att.card.code === playedCardInstance.card.code ||
-                att.card.name === playedCardInstance.card.name,
-            ).length;
-            if (currentAttached >= maxPerHost) continue;
-          }
-          allEnemies.push({
-            enemy: m,
-            id: m.instanceId,
-            name: `${m.card.name} (${p.name})`,
-          });
-        }
-      }
-
-      if (allEnemies.length > 1) {
-        const options: DecisionPromptOption[] = allEnemies.map(({ id, name }) => ({
-          id,
-          label: name,
-          description: `Attach ${playedCardInstance.card.name} to ${name}`,
-          effect: 'ATTACH_TO_HOST',
-          params: {
-            isAttachmentEnemyChoice: true,
-            attachmentCard: playedCardInstance,
-            ownerId: action.playerId,
-          },
-        }));
-
-        const prompt: PendingDecisionPrompt = {
-          promptId: `prompt_attach_enemy_${nextEngineId(nextState, 'id')}`,
-          playerId: action.playerId,
-          title: 'Choose Enemy Host',
-          description: `Choose which enemy to attach ${playedCardInstance.card.name} to:`,
-          sourceCardName: playedCardInstance.card.name,
-          options,
-          isVoluntary: false,
-        };
-
-        const enqueuedState = enqueueDecisionPrompt(nextState, prompt);
-        return {
-          state: enqueuedState,
-          result: { success: true, onomatopoeia: 'CHOOSE ENEMY!' },
-        };
-      } else if (allEnemies.length === 1) {
-        attachCardToHost(nextState, playedCardInstance, targetHost, allEnemies[0].id);
-        const hostName = allEnemies[0].name;
-        appendLog(nextState, {
-          category: 'ability',
-          actor: { name: player.name, type: player.currentForm },
-          key: 'card.attached.to_host',
-          params: {
-            player: player.name,
-            card: playedCardInstance.card.name,
-            host: hostName,
-            target: hostName,
-          },
-          onomatopoeia: 'ATTACHED!',
-        });
-      } else {
-        attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
-        const villainName =
-          resolveAttackedVillain(nextState, action.targetInstanceId)?.card.name ?? '';
-        appendLog(nextState, {
-          category: 'ability',
-          actor: { name: player.name, type: player.currentForm },
-          key: 'card.attached.to_host',
-          params: {
-            player: player.name,
-            card: playedCardInstance.card.name,
-            host: villainName,
-            target: villainName,
-          },
-          onomatopoeia: 'ATTACHED!',
-        });
-      }
-    } else {
-      attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
-      let hostName = resolveAttackedVillain(nextState, action.targetInstanceId)?.card.name ?? '';
-      for (const p of nextState.players) {
-        const m = p.engagedMinions?.find((min) => min.instanceId === action.targetInstanceId);
-        if (m) {
-          hostName = `${m.card.name} (${p.name})`;
-          break;
-        }
-      }
-      appendLog(nextState, {
-        category: 'ability',
-        actor: { name: player.name, type: player.currentForm },
-        key: 'card.attached.to_host',
-        params: {
-          player: player.name,
-          card: playedCardInstance.card.name,
-          host: hostName,
-          target: hostName,
-        },
-        onomatopoeia: 'ATTACHED!',
-      });
-    }
-    return undefined;
-  }
-
-  // Generic host attachment fallback (e.g. VILLAIN)
-  attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
-  const villainName = resolveAttackedVillain(nextState, action.targetInstanceId)?.card.name ?? '';
-  appendLog(nextState, {
-    category: 'ability',
-    actor: { name: player.name, type: player.currentForm },
-    key: 'card.attached.to_host',
-    params: {
-      player: player.name,
-      card: playedCardInstance.card.name,
-      host: villainName,
-      target: villainName,
-    },
-    onomatopoeia: 'ATTACHED!',
-  });
+  // One candidate attaches to it; none attaches without a chosen host.
+  const only = candidates[0];
+  attachAndLog(only?.id, only?.name ?? describe(nextState, undefined));
   return undefined;
 }
 

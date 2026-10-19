@@ -18,7 +18,7 @@ import { appendLog } from '../../state/game-log';
 import { dispatchTrigger } from '../../triggers/trigger-dispatcher';
 import { processHostDefeated, resetCardState } from '../../effects';
 import { resolveDefenderDeclaration } from '../combat-pipeline';
-import { resolveAttackedVillain } from '../action-dispatcher';
+import { resolveAttackedVillain } from './shared';
 import type { ActionHandler } from './types';
 
 export const handleBasicAttack: ActionHandler<'BASIC_ATTACK'> = (nextState, state, action) => {

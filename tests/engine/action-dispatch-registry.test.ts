@@ -48,10 +48,12 @@ describe('action dispatch registry', () => {
     expect(ACTION_HANDLERS[actionType]).toBeTypeOf('function');
   });
 
-  it('throws on an action that has no handler', () => {
+  it('fails an action that has no handler and leaves the state untouched', () => {
+    const state = newState();
     const action = { type: 'NOT_A_REAL_ACTION', playerId: 'p1' } as unknown as GameAction;
-    expect(() => dispatchAction(newState(), action)).toThrow(
-      "dispatchAction: no handler for action 'NOT_A_REAL_ACTION'",
-    );
+    const { state: next, result } = dispatchAction(state, action);
+
+    expect(result).toEqual({ success: false, error: 'Unknown action type' });
+    expect(next).toBe(state);
   });
 });

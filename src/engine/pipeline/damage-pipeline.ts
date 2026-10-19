@@ -423,13 +423,14 @@ function applyDamageAndCheckDefeat(
   };
 }
 
+/** Mutates `state` in place (the pipeline's damage steps do); returns the retaliate damage dealt. */
 function applyRetaliateDamage(
   state: GameState,
   request: DamageRequest,
   target: TargetEntityRef,
   targetDefeated: boolean,
   damageDealt: number,
-): { state: GameState; retaliateDamageDealt: number | undefined } {
+): number | undefined {
   let retaliateDamageDealt: number | undefined;
   const { skipRetaliate, isAttack, sourcePlayerId } = request;
 
@@ -505,9 +506,13 @@ function applyRetaliateDamage(
     }
   }
 
-  return { state, retaliateDamageDealt };
+  return retaliateDamageDealt;
 }
 
+/**
+ * Universal RR v1.8 9-Step Damage Pipeline.
+ * Single source of truth for all damage application across MCD.
+ */
 export function applyDamageToTarget(
   state: GameState,
   request: DamageRequest,
@@ -677,9 +682,13 @@ export function applyDamageToTarget(
   // ---------------------------------------------------------------------------
   // STEP 9: Retaliate X & Post-Resolution Triggers (RR v1.8 Step 9)
   // ---------------------------------------------------------------------------
-  const retaliateRes = applyRetaliateDamage(state, request, target, targetDefeated, damageDealt);
-  state = retaliateRes.state;
-  const retaliateDamageDealt = retaliateRes.retaliateDamageDealt;
+  const retaliateDamageDealt = applyRetaliateDamage(
+    state,
+    request,
+    target,
+    targetDefeated,
+    damageDealt,
+  );
 
   return {
     state,

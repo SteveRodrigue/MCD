@@ -1740,9 +1740,6 @@ function getTableauDiscardPromptMeta(
   };
 }
 
-/**
- * Universal DISCARD Primitive Handler (RR v1.8 p. 10, Issue #66)
- */
 type DiscardEffectParams = ReturnType<typeof getStepEffectParams<'DISCARD'>>;
 
 function discardFromHand(
@@ -2084,6 +2081,10 @@ function discardFromTableau(
   };
 }
 
+/**
+ * Universal DISCARD Primitive Handler (RR v1.8 p. 10, Issue #66)
+ * Handles card attrition/removal across all valid game zones (hand, deck, encounter deck, tableau, host, self, cards under host).
+ */
 export function executeDiscard(
   state: GameState,
   step: TypedStep<'DISCARD'>,

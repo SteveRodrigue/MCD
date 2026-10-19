@@ -45,7 +45,7 @@ const target = (label: string, defaultValue?: string, description?: string) =>
 const BONUS_DESCRIPTION = 'Dynamic bonus calculated from game state or discarded cards';
 const effectOnly = () => z.object({}).strict();
 
-export const EFFECT_PARAM_SCHEMAS: Record<EffectType, z.ZodObject<any>> = {
+export const EFFECT_PARAM_SCHEMAS = {
   ADD_ACCELERATION: z
     .object({
       amount: optional(AMOUNT, { label: 'Acceleration Tokens', defaultValue: 1, primary: true }),
@@ -757,6 +757,11 @@ export const EFFECT_PARAM_SCHEMAS: Record<EffectType, z.ZodObject<any>> = {
       target: target('Target Player', 'SELF'),
     })
     .strict(),
+} satisfies Record<EffectType, z.ZodObject<any>>;
+
+/** Static parameter contract per effect, derived from `EFFECT_PARAM_SCHEMAS` (Issue #127, R5). */
+export type EffectParamsMap = {
+  [E in EffectType]: z.infer<(typeof EFFECT_PARAM_SCHEMAS)[E]>;
 };
 
 /** Allowed `effectParams` keys per effect, derived from `EFFECT_PARAM_SCHEMAS`. */

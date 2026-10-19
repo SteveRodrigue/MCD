@@ -923,7 +923,7 @@ export function resolveTargets(
           }
         }
         // 4. Check hostInstanceId stored on source card if already detached
-        const hostId = (context.sourceCardInstance as any).hostInstanceId;
+        const hostId = context.sourceCardInstance.hostInstanceId;
         if (hostId) {
           const found = resolveEntityByInstanceId(state, hostId);
           if (found) {
@@ -1098,9 +1098,8 @@ export function resolveTargets(
     }
 
     case 'CHOSEN_SCHEME': {
-      const ignoresCrisis = Boolean(
-        context?.ignoresCrisis || (context as any)?.step?.effectParams?.ignoresCrisis,
-      );
+      const stepParams = context?.step?.effectParams as Record<string, unknown> | undefined;
+      const ignoresCrisis = Boolean(context?.ignoresCrisis || stepParams?.['ignoresCrisis']);
       const isPlayerSource = context?.sourceCardInstance?.card?.faction !== 'encounter';
       const player = context?.playerId
         ? state.players.find((p) => p.id === context.playerId)

@@ -23,6 +23,7 @@ import {
   getVillainsInPlay,
   getVillainById,
   getPerPlayerCount,
+  ResolveDecisionPromptAction,
 } from '@engine/models';
 import {
   getPlayer,
@@ -494,7 +495,8 @@ function dispatchSingleAction(
           target: {
             type: 'villain',
             entity: targetVillain,
-            name: targetVillain.card?.name || (targetVillain as any).name || 'Villain',
+            name:
+              targetVillain.card?.name || (targetVillain as { name?: string }).name || 'Villain',
             attachments: targetVillain.attachments,
             statusCards: targetVillain.statusCards,
           },
@@ -622,7 +624,8 @@ function dispatchSingleAction(
           target: {
             type: 'villain',
             entity: targetVillain,
-            name: targetVillain.card?.name || (targetVillain as any).name || 'Villain',
+            name:
+              targetVillain.card?.name || (targetVillain as { name?: string }).name || 'Villain',
             attachments: targetVillain.attachments,
             statusCards: targetVillain.statusCards,
           },
@@ -1082,7 +1085,7 @@ function dispatchSingleAction(
         if (attachAbility) {
           const attachStep = attachAbility.steps.find((s) => s.effect === 'ATTACH_TO_HOST');
           const targetHost = (attachStep?.effectParams?.target as string) || 'VILLAIN';
-          (playedCardInstance as any).ownerId = action.playerId;
+          playedCardInstance.ownerId = action.playerId;
 
           // If target is CHOSEN_MINION / MINION and no targetInstanceId was supplied
           if (
@@ -1584,7 +1587,7 @@ function dispatchSingleAction(
                   ignoresCrisis: Boolean(
                     stepParams.ignoresCrisis ||
                     step.effectParams?.ignoresCrisis ||
-                    (step as any).ignoresCrisis,
+                    (step as { ignoresCrisis?: boolean }).ignoresCrisis,
                   ),
                 };
               }
@@ -1637,7 +1640,7 @@ function dispatchSingleAction(
               } else if (t.kind === 'player') {
                 label = (t.entity as PlayerState).name;
               } else if (t.kind === 'scheme') {
-                label = (t.entity as any).card?.name || t.id;
+                label = (t.entity as { card?: { name?: string } }).card?.name || t.id;
               }
               return {
                 id: t.id,
@@ -1890,7 +1893,7 @@ function dispatchSingleAction(
               ignoresCrisis: Boolean(
                 stepParams.ignoresCrisis ||
                 step.effectParams?.ignoresCrisis ||
-                (step as any).ignoresCrisis,
+                (step as { ignoresCrisis?: boolean }).ignoresCrisis,
               ),
             };
           }
@@ -1929,7 +1932,7 @@ function dispatchSingleAction(
             } else if (t.kind === 'player') {
               label = (t.entity as PlayerState).name;
             } else if (t.kind === 'scheme') {
-              label = (t.entity as any).card?.name || t.id;
+              label = (t.entity as { card?: { name?: string } }).card?.name || t.id;
             }
             return {
               id: t.id,
@@ -2293,7 +2296,7 @@ function dispatchSingleAction(
       ) {
         const { state: poppedState } = popDecisionPrompt(nextState);
         const sequenceOrder: string[] =
-          (action as any).sequenceOrder ||
+          (action as ResolveDecisionPromptAction).sequenceOrder ||
           (action.selectedOptionId ? [action.selectedOptionId] : []);
         const wfHandler = getSpecialHandler('WAKANDA_FOREVER');
         if (wfHandler) {
@@ -2473,7 +2476,7 @@ function dispatchSingleAction(
         }
 
         if (attachmentCard) {
-          (attachmentCard as any).ownerId = ownerId;
+          attachmentCard.ownerId = ownerId;
           attachCardToHost(poppedState, attachmentCard, 'CHOSEN_MINION', chosenMinionId);
         }
 
@@ -2549,7 +2552,7 @@ function dispatchSingleAction(
         }
 
         if (attachmentCard) {
-          (attachmentCard as any).ownerId = ownerId;
+          attachmentCard.ownerId = ownerId;
           attachCardToHost(poppedState, attachmentCard, 'CHOSEN_ALLY', chosenAllyId);
         }
 
@@ -2625,7 +2628,7 @@ function dispatchSingleAction(
         }
 
         if (attachmentCard) {
-          (attachmentCard as any).ownerId = ownerId;
+          attachmentCard.ownerId = ownerId;
           attachCardToHost(poppedState, attachmentCard, 'CHOSEN_ENEMY', chosenEnemyId);
         }
 
@@ -2821,7 +2824,13 @@ function dispatchSingleAction(
         }
 
         const { state: poppedState } = popDecisionPrompt(nextState);
-        const params = selectedOption.params as any;
+        const params = selectedOption.params as
+          | {
+              targetPlayerId?: string;
+              playedCardInstance?: CardInstance;
+              ownerId?: string;
+            }
+          | undefined;
         const targetPlayerId = params?.targetPlayerId as string;
         const playedCardInstance = params?.playedCardInstance as CardInstance;
         const ownerId = (params?.ownerId as string) || action.playerId;
@@ -2901,7 +2910,15 @@ function dispatchSingleAction(
         }
 
         if (selectedOption.effect === 'DISCARD_RESTRICTED_REPLACEMENT') {
-          const params = selectedOption.params as any;
+          const params = selectedOption.params as
+            | {
+                discardCardInstanceId?: string;
+                pendingCardInstanceId?: string;
+                paymentCardInstanceIds?: string[];
+                generatorInstanceIds?: string[];
+                targetInstanceId?: string;
+              }
+            | undefined;
           const discardId = params?.discardCardInstanceId || selectedOption.id;
           const discardIdx = player.tableau.findIndex((c) => c.instanceId === discardId);
           if (discardIdx !== -1) {
@@ -2924,10 +2941,10 @@ function dispatchSingleAction(
           return dispatchAction(poppedState, {
             type: 'PLAY_CARD',
             playerId: action.playerId,
-            cardInstanceId: params.pendingCardInstanceId,
-            paymentCardInstanceIds: params.paymentCardInstanceIds || [],
-            generatorInstanceIds: params.generatorInstanceIds || [],
-            targetInstanceId: params.targetInstanceId,
+            cardInstanceId: params?.pendingCardInstanceId ?? '',
+            paymentCardInstanceIds: params?.paymentCardInstanceIds || [],
+            generatorInstanceIds: params?.generatorInstanceIds || [],
+            targetInstanceId: params?.targetInstanceId,
           });
         }
       }
@@ -2945,7 +2962,19 @@ function dispatchSingleAction(
           return { state, result: { success: false, error: selectionError } };
         }
         const { state: poppedState } = popDecisionPrompt(nextState);
-        const params = activePrompt.options[0]?.params as any;
+        const params = activePrompt.options[0]?.params as
+          | {
+              lookedCards?: CardInstance[];
+              sourceZone?: string;
+              sourceZones?: string[];
+              selectedDestination?: string;
+              unselectedDestination?: string | null;
+              shuffleAfter?: boolean;
+              isLookCountSpliced?: boolean;
+              targetPlayerId?: string;
+              target?: string;
+            }
+          | undefined;
 
         const lookedCards: CardInstance[] = params?.lookedCards || [];
         const sourceZone: string = params?.sourceZone || 'PLAYER_DECK';
@@ -3129,9 +3158,10 @@ function dispatchSingleAction(
           return { state: poppedState, result: { success: true, onomatopoeia: 'PASSED' } };
         }
 
-        const params = selectedOption.params as any;
-        const chosenInstanceId = params.chosenInstanceId;
-        const ownerId = params.ownerId;
+        const params = selectedOption.params as
+          { chosenInstanceId?: string; ownerId?: string } | undefined;
+        const chosenInstanceId = params?.chosenInstanceId;
+        const ownerId = params?.ownerId;
         const ownerPlayer = poppedState.players.find((p) => p.id === ownerId) || player;
 
         // Splice from owner discard
@@ -3249,7 +3279,7 @@ function dispatchSingleAction(
       const player = getPlayer(nextState, action.playerId);
       if (!player) return { state, result: { success: false, error: 'Player not found' } };
 
-      const minionInst = (action as any).minionInstance as CardInstance;
+      const minionInst = action.minionInstance;
       if (minionInst) {
         player.engagedMinions.push(minionInst);
 
@@ -3267,15 +3297,15 @@ function dispatchSingleAction(
 
     case 'REVEAL_ENCOUNTER_CARD': {
       const targetPlayer =
-        getPlayer(nextState, (action as any).targetPlayerId || (action as any).playerId) ||
+        getPlayer(nextState, action.targetPlayerId || action.playerId || '') ||
         nextState.players[0];
-      const encounterCard = (action as any).encounterCard as CardInstance;
+      const encounterCard = action.encounterCard;
       if (!encounterCard)
         return { state, result: { success: false, error: 'Encounter card required' } };
 
       // Incite X Keyword check (RR v1.8 p. 16, ADR-0019)
       const inciteAmount =
-        (encounterCard.card.enrichment as any)?.incite ||
+        (encounterCard.card.enrichment as { incite?: number } | undefined)?.incite ||
         getKeywordValue(encounterCard.card, Keyword.INCITE) ||
         0;
       if (inciteAmount > 0) {

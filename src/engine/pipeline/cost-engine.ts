@@ -9,12 +9,13 @@ import {
   NormalizedCard,
   ActiveCostReduction,
   CardType,
+  CardResources,
 } from '../models';
 import { getEffectiveMaxHealth } from './stat-calculator';
 import { removeCardFromAllZones } from '../state/state-validator';
 import { randomInt } from '../state/rng';
 import { getStepEffectParams } from '../../data/supplemental/runtime';
-import type { ResourceCost } from '../../data/supplemental/schema';
+import type { ResourceCost, DynamicValueSource } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
 import { locateCard, readCardResources } from '../queries/card-inspector';
 import { getCardEnrichment } from '../../data/supplemental';
@@ -104,12 +105,12 @@ function getCardProvidedResources(
   const res = cardInst.card?.resources;
   if (!res) return requirePrinted ? 0 : !requiredType ? 1 : 0;
   if (requirePrinted && requiredType) {
-    return (res as any)[requiredType] || 0;
+    return (res[requiredType as keyof CardResources] as number | undefined) || 0;
   }
   if (!requiredType) {
     return res.total || 1;
   }
-  return ((res as any)[requiredType] || 0) + (res.wild || 0);
+  return ((res[requiredType as keyof CardResources] as number | undefined) || 0) + (res.wild || 0);
 }
 
 /**
@@ -200,7 +201,7 @@ export function getGeneratorProvidedResources(
   // Uses counters alone do not make a card a resource generator (Tac Team, #43)
   if (!tableAbility) return 0;
 
-  if (!isAbilityPlayableInForm(tableAbility.timing as any, player.currentForm)) return 0;
+  if (!isAbilityPlayableInForm(tableAbility.timing, player.currentForm)) return 0;
 
   const abilityKey = `${gCard.instanceId}_${tableAbility.id}`;
   if (
@@ -262,7 +263,7 @@ function getEffectiveAbilityCost(
   const hasInHandEventCost =
     ability.zone === 'HAND' &&
     sourceCardInst?.card &&
-    ((sourceCardInst.card.type as any) === 'event' ||
+    ((sourceCardInst.card.type as string) === 'event' ||
       sourceCardInst.card.type === CardType.EVENT) &&
     (sourceCardInst.card.cost ?? 0) > 0;
   return ability.cost ?? (hasInHandEventCost ? {} : undefined);
@@ -433,7 +434,8 @@ export function canPayAbilityCost(
     !resCost.hasCost &&
     ability.zone === 'HAND' &&
     sourceCardInst?.card &&
-    ((sourceCardInst.card.type as any) === 'event' || sourceCardInst.card.type === CardType.EVENT)
+    ((sourceCardInst.card.type as string) === 'event' ||
+      sourceCardInst.card.type === CardType.EVENT)
   ) {
     const cardCost = sourceCardInst.card.cost ?? 0;
     if (cardCost > 0) {
@@ -556,7 +558,7 @@ export function canPayAbilityCost(
     const stepParams = getStepEffectParams(step);
     const amountObj =
       typeof stepParams.amount === 'object' && stepParams.amount !== null
-        ? (stepParams.amount as Record<string, any>)
+        ? (stepParams.amount as DynamicValueSource)
         : null;
     if (amountObj?.from === 'COUNTERS') {
       const counterType = (amountObj.counterType as string) || 'energy';
@@ -669,7 +671,7 @@ export function executeAbilityCost(
         ...sourceCardInst.tokens,
         damage: (sourceCardInst.tokens?.damage || 0) + selfDamage,
       };
-      const health = (sourceCardInst.card as any).health;
+      const health = (sourceCardInst.card as { health?: number }).health;
       if (health && (sourceCardInst.tokens.damage || 0) >= health) {
         // Defeated from self-damage cost -> remove and discard
         removeCardFromAllZones(state, sourceCardInst.instanceId);
@@ -759,7 +761,8 @@ export function executeAbilityCost(
     !resCost.hasCost &&
     ability.zone === 'HAND' &&
     sourceCardInst?.card &&
-    ((sourceCardInst.card.type as any) === 'event' || sourceCardInst.card.type === CardType.EVENT)
+    ((sourceCardInst.card.type as string) === 'event' ||
+      sourceCardInst.card.type === CardType.EVENT)
   ) {
     const cardCost = sourceCardInst.card.cost ?? 0;
     if (cardCost > 0) {
@@ -1062,7 +1065,7 @@ function cascadeAttachmentsAndTuckedCards(
       if (isEncounter) {
         state.encounterDiscard.push(attachment);
       } else {
-        const ownerId = (attachment as any).ownerId || defaultPlayerId;
+        const ownerId = attachment.ownerId || defaultPlayerId;
         const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
         targetP.discard.push(attachment);
       }
@@ -1082,7 +1085,7 @@ function cascadeAttachmentsAndTuckedCards(
       if (isEncounter) {
         state.encounterDiscard.push(tucked);
       } else {
-        const ownerId = (tucked as any).ownerId || defaultPlayerId;
+        const ownerId = tucked.ownerId || defaultPlayerId;
         const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
         targetP.discard.push(tucked);
       }
@@ -1109,7 +1112,7 @@ export function checkAndDiscardZeroCounterCard(
   // Check if card has 'Uses' keyword or enrichment discardOnEmpty
   const hasUsesKeyword =
     Boolean(cardInstance.card.enrichment?.uses?.discardOnEmpty) ||
-    Boolean((cardInstance.card as any).uses) ||
+    Boolean((cardInstance.card as { uses?: unknown }).uses) ||
     hasKeyword(cardInstance.card, Keyword.USES);
 
   if (!hasUsesKeyword) return false;

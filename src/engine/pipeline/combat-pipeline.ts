@@ -14,6 +14,7 @@ import {
   getActiveVillain,
   getVillainById,
   PendingDamagePlacement,
+  AllyCard,
 } from '../models';
 import {
   enqueueDecisionPrompt,
@@ -326,7 +327,7 @@ function step3_openDefenderDeclarationPrompt(
     if (!ally.exhausted) {
       const allyRetaliate = getEffectiveRetaliate(ally, state);
       const isTough = (ally.statusCards || []).includes(StatusCard.TOUGH);
-      const allyCard = ally.card as any;
+      const allyCard = ally.card as AllyCard;
       const allyHp = allyCard.health || 2;
       const currentDmg = ally.tokens?.damage || 0;
       const remHp = Math.max(0, allyHp - currentDmg);
@@ -372,7 +373,7 @@ function step3_openDefenderDeclarationPrompt(
       if (!ally.exhausted) {
         const allyRetaliate = getEffectiveRetaliate(ally, state);
         const isTough = (ally.statusCards || []).includes(StatusCard.TOUGH);
-        const allyCard = ally.card as any;
+        const allyCard = ally.card as AllyCard;
         const allyHp = allyCard.health || 2;
         const currentDmg = ally.tokens?.damage || 0;
         const remHp = Math.max(0, allyHp - currentDmg);
@@ -602,10 +603,10 @@ export function resolveDefenderDeclaration(
   if (
     state.phase !== GamePhase.VILLAIN_PHASE &&
     !peekDecisionPrompt(state) &&
-    (state as any).pendingActivations &&
-    (state as any).pendingActivations.length > 0
+    state.pendingActivations &&
+    state.pendingActivations.length > 0
   ) {
-    const act = (state as any).pendingActivations.shift()!;
+    const act = state.pendingActivations.shift()!;
     const targetPlayer = state.players.find((p) => p.id === act.playerId);
     if (targetPlayer) {
       if (act.type === 'VILLAIN') {
@@ -822,7 +823,7 @@ export function applyCalculatedAttackDamage(
         playerId: player.id,
         allyInstanceId: ally.instanceId,
       };
-      const allyCard = ally.card as any;
+      const allyCard = ally.card as AllyCard;
       const allyMaxHp = allyCard.health || 2;
       const currentDamage = ally.tokens?.damage || 0;
       const remainingHp = Math.max(0, allyMaxHp - currentDamage);

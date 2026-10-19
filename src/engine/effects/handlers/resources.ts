@@ -1,21 +1,21 @@
 /** Resources and constant limits (step handlers, AUD-20261017-232534 F010-A). */
-import { GameState, AbilityStep, PlayerState, ActiveCostReduction } from '@engine/models';
+import { GameState, PlayerState, ActiveCostReduction } from '@engine/models';
 import { getStepEffectParams } from '../../../data/supplemental/runtime';
 import { enqueueDecisionPrompt } from '../../pipeline/prompt-queue';
 import { locateCard, readCardResources } from '../../queries/card-inspector';
 import { nextEngineId } from '../../state/rng';
 import { appendLog } from '../../state/game-log';
-import { EffectExecutionContext, EffectResult } from '../index';
-import type { StepHandler } from './types';
-import type { EffectType } from '../../../data/supplemental/runtime';
+import { EffectExecutionContext, EffectResult, resolveNumericAmount } from '../index';
+import type { TypedStep, StepHandlerMap } from './types';
 
 function handleGenerateResource(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'GENERATE_RESOURCE'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const fromCardSelector = step.effectParams?.fromCard;
+  const params = getStepEffectParams(step);
+  const fromCardSelector = params.fromCard;
   if (fromCardSelector) {
     const located = locateCard(state, fromCardSelector, {
       player,
@@ -45,8 +45,8 @@ function handleGenerateResource(
     };
   }
 
-  const resourceType = (step.effectParams?.resource as string) || 'wild';
-  const amount = (step.effectParams?.amount as number) || 1;
+  const resourceType = params.resource || 'wild';
+  const amount = resolveNumericAmount(params.amount, context, 1, { state, player });
 
   return {
     state,
@@ -58,19 +58,21 @@ function handleGenerateResource(
 
 function handleReduceNextCardCost(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'REDUCE_NEXT_CARD_COST'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
   const stepParams = getStepEffectParams(step);
-  const amount = (stepParams.amount as number) || (step.effectParams?.amount as number) || 1;
-  const targetParam =
-    (stepParams.target as string) || (step.effectParams?.target as string) || 'CHOSEN_PLAYER';
-  const duration = (stepParams.duration as 'PHASE' | 'ROUND' | 'TURN') || 'PHASE';
-  const cardFilter = stepParams.cardFilter || (stepParams.filter as any);
-  const targetPlayerId = (context.targetPlayerId ||
+  const rawParams = step.effectParams as Record<string, unknown> | undefined;
+  const amount = stepParams.amount || 1;
+  const targetParam = stepParams.target || 'CHOSEN_PLAYER';
+  const duration = stepParams.duration || 'PHASE';
+  const cardFilter =
+    stepParams.cardFilter || (rawParams?.['filter'] as typeof stepParams.cardFilter);
+  const targetPlayerId =
+    context.targetPlayerId ||
     context.chosenTargetInstanceId ||
-    stepParams.targetPlayerId) as string | undefined;
+    (rawParams?.['targetPlayerId'] as string | undefined);
 
   // In multiplayer mode, if targeting CHOSEN_PLAYER and no target player specified yet, prompt player to choose
   if (targetParam === 'CHOSEN_PLAYER' && state.players.length > 1 && !targetPlayerId) {
@@ -162,7 +164,7 @@ function handleReduceNextCardCost(
 
 function handleModifyRestrictedLimit(
   state: GameState,
-  _step: AbilityStep,
+  _step: TypedStep,
   _context: EffectExecutionContext,
   _player: PlayerState,
 ): EffectResult {
@@ -180,4 +182,4 @@ export const RESOURCES_HANDLERS = {
   MODIFY_MAX_HEALTH: handleModifyRestrictedLimit,
   CANNOT_TAKE_DAMAGE: handleModifyRestrictedLimit,
   DOUBLE_RESOURCE_FOR_ASPECT: handleModifyRestrictedLimit,
-} satisfies Partial<Record<EffectType, StepHandler>>;
+} satisfies Partial<StepHandlerMap>;

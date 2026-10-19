@@ -1,8 +1,9 @@
 /**
  * The parts of the supplemental schema the engine needs at runtime, without Zod. The Zod schemas
  * (`schema-primitives.ts`, `gate-params.ts`) derive their enums from these lists, so each list
- * exists once and the game bundle does not load Zod (AUD-20261017-232534 F014-A).
  */
+
+import type { EffectParamsMap } from './effect-params';
 
 /** Every effect a step can execute (ADR-0046). */
 export const EFFECT_TYPES = [
@@ -91,8 +92,12 @@ export type StepGate = keyof typeof GATE_KINDS;
 export type GateKind = (typeof GATE_KINDS)[StepGate];
 export const STEP_GATES = Object.keys(GATE_KINDS) as [StepGate, ...StepGate[]];
 
-export function getStepEffectParams(step: { effectParams?: Record<string, any> }): Record<string, any> {
-  return step.effectParams ?? {};
+export function getStepEffectParams<E extends EffectType = EffectType>(
+  step: { effect?: E; effectParams?: Record<string, unknown> },
+): EffectType extends E ? Record<string, any> : EffectParamsMap[E] {
+  return (step.effectParams ?? {}) as EffectType extends E
+    ? Record<string, any>
+    : EffectParamsMap[E];
 }
 
 export function getStepGateParams(step: { gateParams?: Record<string, any> }): Record<string, any> {

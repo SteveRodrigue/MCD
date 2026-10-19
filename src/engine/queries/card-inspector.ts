@@ -10,6 +10,15 @@ export interface CardLocatorContext {
   targetCardInstance?: CardInstance;
 }
 
+export interface RawCardData {
+  cost?: number;
+  boost?: number;
+  resource_physical?: number;
+  resource_energy?: number;
+  resource_mental?: number;
+  resource_wild?: number;
+}
+
 /**
  * Universal Card Locator Subsystem (ADR-0046, Issue #13, RR v1.8)
  *
@@ -61,11 +70,12 @@ export function locateCard(
 
   const player = context?.player || state.players?.[state.activePlayerIndex] || state.players?.[0];
 
-  const matchesCard = (c: CardInstance | NormalizedCard | any): boolean => {
+  const matchesCard = (c: CardInstance | NormalizedCard | undefined): boolean => {
     if (!c) return false;
-    const normCard: NormalizedCard = 'card' in c ? c.card : c;
+    const normCard: NormalizedCard = 'card' in c && c.card ? c.card : (c as NormalizedCard);
+    const cardCode = 'card' in c && c.card ? c.card.code : (c as { code?: string }).code;
     if (selector.cardCode) {
-      if (normCard.code !== selector.cardCode && (c as any).code !== selector.cardCode) {
+      if (normCard.code !== selector.cardCode && cardCode !== selector.cardCode) {
         return false;
       }
     }
@@ -76,7 +86,7 @@ export function locateCard(
   };
 
   const pickFromList = (
-    list: (CardInstance | NormalizedCard | any)[],
+    list: (CardInstance | NormalizedCard)[],
   ): CardInstance | NormalizedCard | undefined => {
     if (!list || list.length === 0) return undefined;
     const pos = selector.position;
@@ -134,7 +144,7 @@ export function locateCard(
             attachments: s.attachments,
             cardsUnderneath: s.cardsUnderneath,
             ownerId: s.ownerId,
-          } as any;
+          } as unknown as CardInstance;
         }
       }
       return undefined;
@@ -148,13 +158,21 @@ export function locateCard(
     case 'TUCKED': {
       const host =
         context?.sourceCardInstance || context?.targetCardInstance || player?.activeFormCard;
-      const cardsUnder = (host as any)?.cardsUnderneath || player?.cardsUnderneath || [];
+      const cardsUnder =
+        (host && 'cardsUnderneath' in host
+          ? (host as { cardsUnderneath?: CardInstance[] }).cardsUnderneath
+          : undefined) ||
+        player?.cardsUnderneath ||
+        [];
       return pickFromList(cardsUnder);
     }
 
     case 'ATTACHED': {
       const host = context?.sourceCardInstance || context?.targetCardInstance || player;
-      const attachments = (host as any)?.attachments || [];
+      const attachments =
+        (host && 'attachments' in host
+          ? (host as { attachments?: CardInstance[] }).attachments
+          : undefined) || [];
       return pickFromList(attachments);
     }
 
@@ -169,7 +187,7 @@ export function locateCard(
             tokens: { threat: s.threat },
             attachments: s.attachments,
             cardsUnderneath: s.cardsUnderneath,
-          } as any;
+          } as unknown as CardInstance;
         }
       }
 
@@ -183,7 +201,7 @@ export function locateCard(
             tokens: { threat: ms.threat },
             attachments: ms.attachments,
             cardsUnderneath: ms.cardsUnderneath,
-          } as any;
+          } as unknown as CardInstance;
         }
       }
 
@@ -198,7 +216,7 @@ export function locateCard(
             maxHealth: v.maxHealth,
             attachments: v.attachments,
             cardsUnderneath: v.cardsUnderneath,
-          } as any;
+          } as unknown as CardInstance;
         }
       }
 
@@ -240,50 +258,63 @@ export function locateCard(
  * Reads a numeric property or resource yield from a card or in-play entity.
  */
 export function readCardAttribute(
-  card: CardInstance | NormalizedCard | any,
+  card: CardInstance | NormalizedCard | Record<string, unknown> | null | undefined,
   attribute: CardInspectionAttribute,
 ): number {
   if (!card) return 0;
 
-  const cardData: NormalizedCard = 'card' in card ? card.card : card;
+  const cardObj = card as Record<string, unknown>;
+  const cardData: NormalizedCard | undefined =
+    'card' in cardObj && cardObj.card
+      ? (cardObj.card as NormalizedCard)
+      : 'code' in cardObj && 'name' in cardObj
+        ? (card as NormalizedCard)
+        : undefined;
+  const raw = cardData?.raw as RawCardData | undefined;
 
   switch (attribute) {
     case 'PRINTED_COST': {
-      const cost = cardData?.cost ?? (cardData?.raw as any)?.cost;
+      const cost = cardData?.cost ?? raw?.cost;
       return typeof cost === 'number' ? cost : 0;
     }
 
     case 'BOOST_ICONS': {
-      const boost =
-        cardData?.boostIcons ?? (cardData as any)?.boost ?? (cardData?.raw as any)?.boost;
+      const boost = cardData?.boostIcons ?? (cardData as { boost?: number })?.boost ?? raw?.boost;
       return typeof boost === 'number' ? boost : 0;
     }
 
     case 'THREAT': {
-      const threat = card?.threat ?? card?.tokens?.threat ?? (card as any)?.card?.threat ?? 0;
+      const tokensThreat = (cardObj.tokens as { threat?: number } | undefined)?.threat;
+      const cardThreat = (cardObj.card as { threat?: number } | undefined)?.threat;
+      const threat = (cardObj.threat as number | undefined) ?? tokensThreat ?? cardThreat ?? 0;
       return typeof threat === 'number' ? threat : 0;
     }
 
     case 'DAMAGE': {
-      if (typeof card?.maxHealth === 'number' && typeof card?.health === 'number') {
-        return Math.max(0, card.maxHealth - card.health);
+      const maxHealth = cardObj.maxHealth as number | undefined;
+      const health = cardObj.health as number | undefined;
+      if (typeof maxHealth === 'number' && typeof health === 'number') {
+        return Math.max(0, maxHealth - health);
       }
-      const damage = card?.tokens?.damage ?? card?.damage ?? 0;
+      const tokensDamage = (cardObj.tokens as { damage?: number } | undefined)?.damage;
+      const damage = tokensDamage ?? (cardObj.damage as number | undefined) ?? 0;
       return typeof damage === 'number' ? damage : 0;
     }
 
     case 'REMAINING_HIT_POINTS': {
-      const health = (cardData as { health?: number })?.health;
-      const damage = card?.tokens?.damage ?? 0;
-      return typeof health === 'number' ? Math.max(0, health - damage) : 0;
+      const health = (cardData as { health?: number } | undefined)?.health;
+      const tokensDamage = (cardObj.tokens as { damage?: number } | undefined)?.damage ?? 0;
+      return typeof health === 'number' ? Math.max(0, health - tokensDamage) : 0;
     }
 
     case 'COUNTERS': {
-      if (typeof card?.tokens?.counters === 'number') {
-        return card.tokens.counters;
+      const tokensCounters = (cardObj.tokens as { counters?: number } | undefined)?.counters;
+      if (typeof tokensCounters === 'number') {
+        return tokensCounters;
       }
-      if (card?.counters && typeof card.counters === 'object') {
-        return Object.values(card.counters as Record<string, number>).reduce(
+      const counters = cardObj.counters;
+      if (counters && typeof counters === 'object') {
+        return Object.values(counters as Record<string, number>).reduce(
           (sum, val) => sum + (typeof val === 'number' ? val : 0),
           0,
         );
@@ -296,26 +327,26 @@ export function readCardAttribute(
       if (cardData?.resources?.total !== undefined) {
         return cardData.resources.total;
       }
-      return readCardResources(cardData).length;
+      return cardData ? readCardResources(cardData).length : 0;
     }
 
     case 'PHYSICAL_RESOURCES': {
-      const p = cardData?.resources?.physical ?? (cardData?.raw as any)?.resource_physical;
+      const p = cardData?.resources?.physical ?? raw?.resource_physical;
       return typeof p === 'number' ? p : 0;
     }
 
     case 'ENERGY_RESOURCES': {
-      const e = cardData?.resources?.energy ?? (cardData?.raw as any)?.resource_energy;
+      const e = cardData?.resources?.energy ?? raw?.resource_energy;
       return typeof e === 'number' ? e : 0;
     }
 
     case 'MENTAL_RESOURCES': {
-      const m = cardData?.resources?.mental ?? (cardData?.raw as any)?.resource_mental;
+      const m = cardData?.resources?.mental ?? raw?.resource_mental;
       return typeof m === 'number' ? m : 0;
     }
 
     case 'WILD_RESOURCES': {
-      const w = cardData?.resources?.wild ?? (cardData?.raw as any)?.resource_wild;
+      const w = cardData?.resources?.wild ?? raw?.resource_wild;
       return typeof w === 'number' ? w : 0;
     }
 
@@ -328,12 +359,20 @@ export function readCardAttribute(
  * Reads the array of printed resource types on a card.
  * (e.g. Energy 01088 returns ['energy', 'energy'], The Power of Leadership returns ['wild', 'wild']).
  */
-export function readCardResources(card: CardInstance | NormalizedCard | any): ResourceType[] {
+export function readCardResources(
+  card: CardInstance | NormalizedCard | Record<string, unknown> | null | undefined,
+): ResourceType[] {
   if (!card) return [];
 
-  const cardData: NormalizedCard = 'card' in card ? card.card : card;
+  const cardObj = card as Record<string, unknown>;
+  const cardData: NormalizedCard | undefined =
+    'card' in cardObj && cardObj.card
+      ? (cardObj.card as NormalizedCard)
+      : 'code' in cardObj && 'name' in cardObj
+        ? (card as NormalizedCard)
+        : undefined;
   const res = cardData?.resources;
-  const raw = cardData?.raw as any;
+  const raw = cardData?.raw as RawCardData | undefined;
 
   const result: ResourceType[] = [];
 

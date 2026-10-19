@@ -202,7 +202,7 @@ export function attachCardToHost(
     const host = resolveVillainHost(state, targetHostId);
     if (!host.attachments) host.attachments = [];
     host.attachments.push(cardInstance);
-    (cardInstance as any).hostInstanceId = host.instanceId || 'villain';
+    cardInstance.hostInstanceId = host.instanceId || 'villain';
   } else if (uTarget === 'ENEMY' || uTarget === 'CHOSEN_ENEMY') {
     let minion: CardInstance | undefined;
     if (targetHostId) {
@@ -214,12 +214,12 @@ export function attachCardToHost(
     if (minion) {
       if (!minion.attachments) minion.attachments = [];
       minion.attachments.push(cardInstance);
-      (cardInstance as any).hostInstanceId = minion.instanceId;
+      cardInstance.hostInstanceId = minion.instanceId;
     } else {
       const host = resolveVillainHost(state, targetHostId);
       if (!host.attachments) host.attachments = [];
       host.attachments.push(cardInstance);
-      (cardInstance as any).hostInstanceId = host.instanceId || 'villain';
+      cardInstance.hostInstanceId = host.instanceId || 'villain';
     }
   } else if (
     uTarget === 'HERO' ||
@@ -234,7 +234,7 @@ export function attachCardToHost(
     if (targetPlayer) {
       if (!targetPlayer.attachments) targetPlayer.attachments = [];
       targetPlayer.attachments.push(cardInstance);
-      (cardInstance as any).hostInstanceId = targetPlayer.id;
+      cardInstance.hostInstanceId = targetPlayer.id;
     }
   } else if (uTarget === 'CHOSEN_ALLY' || uTarget === 'ALLY') {
     let ally: CardInstance | undefined;
@@ -255,7 +255,7 @@ export function attachCardToHost(
     if (ally) {
       if (!ally.attachments) ally.attachments = [];
       ally.attachments.push(cardInstance);
-      (cardInstance as any).hostInstanceId = ally.instanceId;
+      cardInstance.hostInstanceId = ally.instanceId;
     }
   } else if (uTarget === 'CHOSEN_MINION' || uTarget === 'MINION' || uTarget === 'ALL_MINIONS') {
     let minion: CardInstance | undefined;
@@ -276,7 +276,7 @@ export function attachCardToHost(
     if (minion) {
       if (!minion.attachments) minion.attachments = [];
       minion.attachments.push(cardInstance);
-      (cardInstance as any).hostInstanceId = minion.instanceId;
+      cardInstance.hostInstanceId = minion.instanceId;
     } else {
       const p = state.players.find((p) => p.id === targetHostId) || state.players[0];
       if (p) {
@@ -456,7 +456,7 @@ export function assertGameStateInvariants(state: GameState): void {
     hostId?: string,
   ) => {
     for (const att of attachments || []) {
-      const explicitHostId = (att as any).hostInstanceId;
+      const explicitHostId = att.hostInstanceId;
       if (explicitHostId && !activeHostIds.has(explicitHostId)) {
         throw new Error(
           `[INVARIANT VIOLATION] Attachment '${att.card?.name || att.instanceId}' on ${hostLabel} (${hostId || 'unknown'}) references missing host '${explicitHostId}'.`,

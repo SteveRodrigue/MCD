@@ -61,15 +61,15 @@ const canAffect = (
   target: ResolvedTarget,
   sourceCard?: CardInstance,
 ): boolean => {
-  const entity = target.entity as any;
   switch (step.effect) {
     case 'DEAL_DAMAGE':
     case 'TRANSFER_DAMAGE':
       // RR v1.8 "Targets": a character that cannot take damage (from this source) is not a valid
       // target of an ability whose only effect is damage (#297).
-      return !(target.kind === 'character' && isImmuneToDamage(state, entity, sourceCard));
+      return !(target.kind === 'character' && isImmuneToDamage(state, target.entity, sourceCard));
     case 'ADD_STATUS': {
       if (target.kind !== 'character') return false;
+      const entity = target.entity;
       const status = String(step.effectParams?.status ?? 'STUNNED').toUpperCase();
       const statusCard =
         status === 'TOUGH'
@@ -84,23 +84,27 @@ const canAffect = (
       return held.length < limit;
     }
     case 'REMOVE_THREAT':
-      return target.kind === 'scheme' && (entity.threat ?? 0) > 0;
+      return target.kind === 'scheme' && (target.entity.threat ?? 0) > 0;
     case 'HEAL_DAMAGE': {
       if (target.kind !== 'character') return false;
       if (target.entityType === 'hero' || target.entityType === 'alter_ego') {
-        const p = entity as PlayerState;
+        const p = target.entity as PlayerState;
         return p.health < getEffectiveMaxHealth(p, state);
       }
       if (target.entityType === 'villain') {
-        const v = entity as VillainState;
+        const v = target.entity as VillainState;
         return v.health < v.maxHealth;
       }
-      return ((entity as CardInstance).tokens?.damage ?? 0) > 0;
+      return ((target.entity as CardInstance).tokens?.damage ?? 0) > 0;
     }
-    case 'EXHAUST':
-      return !entity.exhausted;
-    case 'READY':
-      return Boolean(entity.exhausted);
+    case 'EXHAUST': {
+      const exhausted = 'exhausted' in target.entity ? Boolean(target.entity.exhausted) : false;
+      return !exhausted;
+    }
+    case 'READY': {
+      const exhausted = 'exhausted' in target.entity ? Boolean(target.entity.exhausted) : false;
+      return exhausted;
+    }
     default:
       return true;
   }
@@ -128,18 +132,26 @@ export function getValidStepTargets(
 }
 
 const targetLabel = (target: ResolvedTarget): { label: string; cardCode?: string } => {
-  const entity = target.entity as any;
-  const isIdentity =
-    target.kind === 'player' ||
-    (target.kind === 'character' &&
-      (target.entityType === 'hero' || target.entityType === 'alter_ego'));
-  if (isIdentity) {
-    const p = entity as PlayerState;
+  if (target.kind === 'player') {
+    const p = target.entity;
     return { label: p.activeFormCard?.name || p.name, cardCode: p.activeFormCard?.code };
   }
-  const name = entity.card?.name ?? 'Target';
-  const suffix = target.kind === 'scheme' ? ` (${entity.threat ?? 0} Threat)` : '';
-  return { label: `${name}${suffix}`, cardCode: entity.card?.code };
+  if (target.kind === 'character') {
+    if (target.entityType === 'hero' || target.entityType === 'alter_ego') {
+      const p = target.entity as PlayerState;
+      return { label: p.activeFormCard?.name || p.name, cardCode: p.activeFormCard?.code };
+    }
+    const card = (target.entity as CardInstance | VillainState).card;
+    return { label: card?.name ?? 'Target', cardCode: card?.code };
+  }
+  if (target.kind === 'scheme') {
+    const s = target.entity;
+    const name = s.card?.name ?? 'Target';
+    const suffix = ` (${s.threat ?? 0} Threat)`;
+    return { label: `${name}${suffix}`, cardCode: s.card?.code };
+  }
+  const card = target.entity.card;
+  return { label: card?.name ?? 'Target', cardCode: card?.code };
 };
 
 /**

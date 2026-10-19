@@ -11,6 +11,7 @@ import {
   getVillainById,
 } from '@engine/models';
 import type { TriggerFilter } from '../../data/supplemental/schema';
+import { getStepEffectParams } from '../../data/supplemental/runtime';
 import { matchesCardFilter } from '../filters/card-filter';
 import { executeEffect, type EffectExecutionContext } from '../effects';
 import { abilityHasValidTarget } from '../effects/target-choice';
@@ -75,7 +76,7 @@ export function matchesTriggerFilter(
   cardInst?: CardInstance,
   trigger?: TriggerType | string,
 ): boolean {
-  const hostId = (cardInst as any)?.hostInstanceId;
+  const hostId = cardInst?.hostInstanceId;
   const targetId =
     context.targetInstanceId ||
     (trigger === 'CHARACTER_DEFEATED' || trigger === 'DEFEATED'
@@ -289,10 +290,10 @@ export interface TriggerContext {
   attackerKind?: 'VILLAIN' | 'MINION' | 'ANY_ENEMY';
   targetPlayerScope?: 'SELF' | 'OTHER' | 'ANY';
   targetForm?: 'HERO' | 'ALTER_EGO';
-  attackerCard?: any;
+  attackerCard?: CardInstance;
   status?: string;
   acceptOptionalTriggers?: boolean;
-  encounterCardInstance?: any;
+  encounterCardInstance?: CardInstance;
   resourcesSpent?: string[];
   attackerCardCode?: string;
   attackerName?: string;
@@ -977,14 +978,20 @@ export function dispatchTrigger(
               continue;
             }
 
-            const preventStep = ability.steps?.find((s: any) => s.effect === 'PREVENT_DAMAGE');
-            const preventParams = preventStep?.effectParams as any;
+            const preventStep = ability.steps?.find(
+              (s): s is AbilityStep & { effect: 'PREVENT_DAMAGE' } => s.effect === 'PREVENT_DAMAGE',
+            );
+            const preventParams = preventStep
+              ? getStepEffectParams<'PREVENT_DAMAGE'>(preventStep)
+              : undefined;
             const preventAmount: number | 'ALL' | undefined =
-              preventParams?.amount ??
-              (preventParams?.preventAll ||
-              ability.steps?.some((s: any) => s.effect === 'CANCEL_ATTACK')
-                ? 'ALL'
-                : undefined);
+              typeof preventParams?.amount === 'number'
+                ? preventParams.amount
+                : preventParams?.amount === 'ALL' ||
+                    (preventParams as { preventAll?: boolean } | undefined)?.preventAll ||
+                    ability.steps?.some((s) => s.effect === 'CANCEL_ATTACK')
+                  ? 'ALL'
+                  : undefined;
 
             const cardName = cardInst.card.name;
             const isDamageTrigger = triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN');
@@ -1002,7 +1009,7 @@ export function dispatchTrigger(
               attackerName: context.attackerName as string | undefined,
               defenderCardCode: context.defenderCardCode as string | undefined,
               defenderName: context.defenderName as string | undefined,
-              defenderType: context.defenderType as any,
+              defenderType: context.defenderType,
               targetCardCode:
                 (context.targetCardCode as string | undefined) || controller.activeFormCard?.code,
               targetName:
@@ -1093,14 +1100,20 @@ export function dispatchTrigger(
         promptTitleSuffix: isDamageTrigger ? ` (Incoming Damage: ${currentDamage})` : '',
         promptDescriptionSuffix: isDamageTrigger ? ` [Incoming Damage: ${currentDamage}]` : '',
         promptFields: (p, ability) => {
-          const preventStep = ability.steps?.find((s: any) => s.effect === 'PREVENT_DAMAGE');
-          const preventParams = preventStep?.effectParams as any;
+          const preventStep = ability.steps?.find(
+            (s): s is AbilityStep & { effect: 'PREVENT_DAMAGE' } => s.effect === 'PREVENT_DAMAGE',
+          );
+          const preventParams = preventStep
+            ? getStepEffectParams<'PREVENT_DAMAGE'>(preventStep)
+            : undefined;
           const preventAmount: number | 'ALL' | undefined =
-            preventParams?.amount ??
-            (preventParams?.preventAll ||
-            ability.steps?.some((s: any) => s.effect === 'CANCEL_ATTACK')
-              ? 'ALL'
-              : undefined);
+            typeof preventParams?.amount === 'number'
+              ? preventParams.amount
+              : preventParams?.amount === 'ALL' ||
+                  (preventParams as { preventAll?: boolean } | undefined)?.preventAll ||
+                  ability.steps?.some((s) => s.effect === 'CANCEL_ATTACK')
+                ? 'ALL'
+                : undefined;
           const villainSource =
             context.targetType === 'villain' ? targetedVillain(state, context) : undefined;
           return {
@@ -1109,7 +1122,7 @@ export function dispatchTrigger(
             attackerName: context.attackerName as string | undefined,
             defenderCardCode: context.defenderCardCode as string | undefined,
             defenderName: context.defenderName as string | undefined,
-            defenderType: context.defenderType as any,
+            defenderType: context.defenderType,
             targetCardCode:
               (context.targetCardCode as string | undefined) || p.activeFormCard?.code,
             targetName:

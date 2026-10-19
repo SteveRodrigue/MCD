@@ -4,7 +4,6 @@ import {
   GameState,
   CardInstance,
   MinionCard,
-  AbilityStep,
   CardType,
   SideSchemeCard,
   DecisionPromptOption,
@@ -46,12 +45,12 @@ import {
   resolveNumericAmount,
   resolveSourceHostZone,
 } from '../index';
-import type { StepHandler } from './types';
-import type { EffectType } from '../../../data/supplemental/runtime';
+import type { TypedStep, StepHandlerMap } from './types';
+import { getStepEffectParams } from '../../../data/supplemental/runtime';
 
 function handleDiscard(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'DISCARD'>,
   context: EffectExecutionContext,
   _player: PlayerState,
 ): EffectResult {
@@ -60,36 +59,38 @@ function handleDiscard(
 
 function handleDraw(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'DRAW'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const rawCount = step.effectParams?.count;
+  const params = getStepEffectParams(step);
+  const rawParams = step.effectParams as Record<string, unknown> | undefined;
+  const targetInstanceId =
+    (rawParams?.['targetInstanceId'] as string | undefined) || context.chosenTargetInstanceId;
+  const rawCount = params.count;
   let count =
     rawCount !== undefined
       ? resolveNumericAmount(rawCount, context, 1, {
           state,
           player,
           sourceCardInstance: context.sourceCardInstance,
-          targetInstanceId:
-            (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
+          targetInstanceId,
         })
       : undefined;
-  if (step.effectParams?.dynamicBonus) {
-    const bonus = resolveNumericAmount(step.effectParams.dynamicBonus as any, context, 0, {
+  if (params.dynamicBonus) {
+    const bonus = resolveNumericAmount(params.dynamicBonus, context, 0, {
       state,
       player,
       sourceCardInstance: context.sourceCardInstance,
-      targetInstanceId:
-        (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
+      targetInstanceId,
     });
     count = (count ?? 1) + bonus;
   }
-  const limit = step.effectParams?.limit as 'HAND_SIZE' | 'PRINTED_HAND_SIZE' | undefined;
-  const targetParam = step.effectParams?.target as string | undefined;
+  const limit = params.limit;
+  const targetParam = params.target;
   const targetPlayerId =
-    (step.effectParams?.targetPlayerId as string) ||
-    (step.effectParams?.playerId as string) ||
+    params.targetPlayerId ||
+    (rawParams?.['playerId'] as string | undefined) ||
     (context.chosenTargetInstanceId &&
     state.players.some((p) => p.id === context.chosenTargetInstanceId)
       ? context.chosenTargetInstanceId
@@ -100,8 +101,8 @@ function handleDraw(
     if (limit === 'PRINTED_HAND_SIZE') {
       const isHero = p.currentForm === 'hero';
       return isHero
-        ? ((p.hero as any)?.handSize ?? p.activeFormCard.raw?.hand_size ?? 5)
-        : ((p.alterEgo as any)?.handSize ?? p.activeFormCard.raw?.hand_size ?? 6);
+        ? (p.hero?.handSize ?? p.activeFormCard.raw?.hand_size ?? 5)
+        : (p.alterEgo?.handSize ?? p.activeFormCard.raw?.hand_size ?? 6);
     }
     // limit === 'HAND_SIZE'
     return getEffectiveHandSize(p, state);
@@ -134,8 +135,8 @@ function handleDraw(
           player: targetP.name,
           count: drawnForP,
           handSize: targetP.hand.length,
-          cards: drawnCardsForP.map((c: any) => c?.card?.name || c?.name || 'Card').join(', '),
-          drawnCards: drawnCardsForP.map((c: any) => c?.card?.name || c?.name || 'Card'),
+          cards: drawnCardsForP.map((c) => c?.card?.name || 'Card').join(', '),
+          drawnCards: drawnCardsForP.map((c) => c?.card?.name || 'Card'),
           ...(targetLimit !== undefined ? { targetLimit } : {}),
           ...(drawSource ? { source: drawSource } : {}),
         },
@@ -190,7 +191,7 @@ function handleDraw(
     };
   }
 
-  const resolvedPlayers = resolvePlayerTargets(state, targetParam as any, context);
+  const resolvedPlayers = resolvePlayerTargets(state, targetParam, context);
   const targetPlayers = resolvedPlayers.length > 0 ? resolvedPlayers : [player];
   let totalDrawn = 0;
 
@@ -217,8 +218,8 @@ function handleDraw(
         player: p.name,
         count: drawnForP,
         handSize: p.hand.length,
-        cards: drawnCardsForP.map((c: any) => c?.card?.name || c?.name || 'Card').join(', '),
-        drawnCards: drawnCardsForP.map((c: any) => c?.card?.name || c?.name || 'Card'),
+        cards: drawnCardsForP.map((c) => c?.card?.name || 'Card').join(', '),
+        drawnCards: drawnCardsForP.map((c) => c?.card?.name || 'Card'),
         ...(targetLimit !== undefined ? { targetLimit } : {}),
         ...(drawSource ? { source: drawSource } : {}),
       },
@@ -238,15 +239,16 @@ function handleDraw(
 
 function handleAttachToHost(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'ATTACH_TO_HOST'>,
   context: EffectExecutionContext,
   _player: PlayerState,
 ): EffectResult {
-  const targetHost = step.effectParams?.target as string;
+  const params = getStepEffectParams(step);
+  const targetHost = (params.target as string) || 'VILLAIN';
   const sourceCard = context.sourceCardInstance;
   if (!sourceCard) return { state, success: true };
 
-  (sourceCard as any).ownerId = context.playerId;
+  sourceCard.ownerId = context.playerId;
 
   attachCardToHost(
     state,
@@ -264,11 +266,12 @@ function handleAttachToHost(
 
 function handlePlaceCardUnderHost(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'PLACE_CARD_UNDER_HOST'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const targetHost = (step.effectParams?.target as string) || 'SELF';
+  const params = getStepEffectParams(step);
+  const targetHost = (params.target as string) || 'SELF';
   const sourceCard = context.sourceCardInstance;
   if (!sourceCard) return { state, success: true };
 
@@ -309,17 +312,18 @@ function handlePlaceCardUnderHost(
 
 function handlePutIntoPlay(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'PUT_INTO_PLAY'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const fromZone = (step.effectParams?.from as string) || 'SET_ASIDE';
-  const toZone = (step.effectParams?.to as string) || 'ENGAGED_WITH_PLAYER';
-  const filter = step.effectParams?.filter as Record<string, any> | undefined;
+  const params = getStepEffectParams(step);
+  const fromZone = (params.from as string) || 'SET_ASIDE';
+  const toZone = (params.to as string) || 'ENGAGED_WITH_PLAYER';
+  const filter = params.filter;
 
   // "Reveal ... and put it into play" (RR v1.8 glossary R, W): the When Revealed abilities and
   // keyword-provided Surge resolve. A card only put into play never triggers them.
-  const reveal = step.effectParams?.reveal === true;
+  const reveal = params.reveal === true;
 
   let sourceList: CardInstance[] = [];
   if (fromZone === 'SET_ASIDE') {
@@ -461,18 +465,17 @@ function handlePutIntoPlay(
 
 function handleShuffleIntoDeck(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'SHUFFLE_INTO_DECK'>,
   _context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
+  const params = getStepEffectParams(step);
   const fromZone =
-    (step.effectParams?.from as string) ||
-    (step.effectParams?.count !== undefined ? 'DISCARD' : 'SET_ASIDE');
+    (params.from as string) || (params.count !== undefined ? 'DISCARD' : 'SET_ASIDE');
   const toDeck =
-    (step.effectParams?.toDeck as string) ||
-    (step.effectParams?.count !== undefined ? 'PLAYER_DECK' : 'ENCOUNTER_DECK');
-  const filter = step.effectParams?.filter as Record<string, any> | undefined;
-  const count = step.effectParams?.count as number | undefined;
+    (params.toDeck as string) || (params.count !== undefined ? 'PLAYER_DECK' : 'ENCOUNTER_DECK');
+  const filter = params.filter;
+  const count = params.count;
   let sourceList: CardInstance[] = [];
   if (fromZone === 'SET_ASIDE') {
     sourceList = player.setAsideCards || [];
@@ -542,7 +545,7 @@ function handleShuffleIntoDeck(
 
 function handleRemoveFromGame(
   state: GameState,
-  _step: AbilityStep,
+  _step: TypedStep<'REMOVE_FROM_GAME'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
@@ -561,7 +564,7 @@ function handleRemoveFromGame(
 
 function handleReturnToHand(
   state: GameState,
-  _step: AbilityStep,
+  _step: TypedStep<'RETURN_TO_HAND'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
@@ -602,7 +605,7 @@ function handleReturnToHand(
 
 function handleSearch(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'SEARCH'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
@@ -1051,7 +1054,7 @@ function handleSearch(
 
 function handleAttachFacedownCardsFromHand(
   state: GameState,
-  _step: AbilityStep,
+  _step: TypedStep<'ATTACH_FACEDOWN_CARDS_FROM_HAND'>,
   context: EffectExecutionContext,
   _player: PlayerState,
 ): EffectResult {
@@ -1079,18 +1082,19 @@ function handleAttachFacedownCardsFromHand(
 
 function handlePlayFromZone(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'PLAY_FROM_ZONE'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const source = (step.effectParams?.source as string) || 'PLAYER_DISCARD';
-  const filter = step.effectParams?.filter as Record<string, any> | undefined;
-  const costMode = (step.effectParams?.costMode as string) || 'PRINTED_COST';
-  const costReduction = (step.effectParams?.costReduction as number) || 0;
-  const destination = (step.effectParams?.destination as string) || 'TABLEAU';
-  const control = (step.effectParams?.control as string) || 'SELF';
+  const params = getStepEffectParams(step);
+  const source = (params.source as string) || 'PLAYER_DISCARD';
+  const filter = params.filter;
+  const costMode = (params.costMode as string) || 'PRINTED_COST';
+  const costReduction = params.costReduction || 0;
+  const destination = (params.destination as string) || 'TABLEAU';
+  const control = (params.control as string) || 'SELF';
   const promptTitle =
-    (step.effectParams?.promptTitle as string) ||
+    params.promptTitle ||
     (context.sourceCardInstance
       ? `${context.sourceCardInstance.card.name}: Choose a card to play`
       : 'Choose a card to play:');
@@ -1292,4 +1296,4 @@ export const CARDS_HANDLERS = {
   SEARCH: handleSearch,
   ATTACH_FACEDOWN_CARDS_FROM_HAND: handleAttachFacedownCardsFromHand,
   PLAY_FROM_ZONE: handlePlayFromZone,
-} satisfies Partial<Record<EffectType, StepHandler>>;
+} satisfies Partial<StepHandlerMap>;

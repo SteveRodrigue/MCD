@@ -1,5 +1,5 @@
 /** Attacks, schemes, defenders and boosts (step handlers, AUD-20261017-232534 F010-A). */
-import { GameState, AbilityStep, PlayerState, getVillainsInPlay } from '@engine/models';
+import { GameState, PlayerState, getVillainsInPlay } from '@engine/models';
 import {
   executeVillainAttackAgainstPlayer,
   executeVillainSchemeAgainstPlayer,
@@ -10,17 +10,18 @@ import { beginEnemyAttack, resolveDefenderDeclaration } from '../../pipeline/com
 import { recordBasicAction } from '../../pipeline/stats';
 import { appendLog } from '../../state/game-log';
 import { EffectExecutionContext, EffectResult, attackOutcome } from '../index';
-import type { StepHandler } from './types';
-import type { EffectType } from '../../../data/supplemental/runtime';
+import type { TypedStep, StepHandlerMap } from './types';
+import { getStepEffectParams } from '../../../data/supplemental/runtime';
 
 function handleGrantAttackKeyword(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'GRANT_ATTACK_KEYWORD'>,
   context: EffectExecutionContext,
   _player: PlayerState,
 ): EffectResult {
   // "This attack gains <keyword>": kept on the running ability's context, so it ends with it.
-  const keyword = step.effectParams?.keyword as string | undefined;
+  const params = getStepEffectParams(step);
+  const keyword = params.keyword;
   if (!keyword) {
     return {
       state,
@@ -34,14 +35,14 @@ function handleGrantAttackKeyword(
 
 function handleCancelAttack(
   state: GameState,
-  _step: AbilityStep,
+  _step: TypedStep<'CANCEL_ATTACK'>,
   context: EffectExecutionContext,
   _player: PlayerState,
 ): EffectResult {
   if (state.activeAttackContext) {
-    (state.activeAttackContext as any).isCancelled = true;
+    state.activeAttackContext.isCancelled = true;
   }
-  (context as any).attackCancelled = true;
+  context.attackCancelled = true;
   const cancelledBy = context.sourceCardInstance?.card.name || 'Ability';
   appendLog(state, {
     category: 'combat',
@@ -61,7 +62,7 @@ function handleCancelAttack(
 
 function handleGiveAdditionalBoostCard(
   state: GameState,
-  _step: AbilityStep,
+  _step: TypedStep<'GIVE_ADDITIONAL_BOOST_CARD'>,
   _context: EffectExecutionContext,
   _player: PlayerState,
 ): EffectResult {
@@ -84,14 +85,14 @@ function handleGiveAdditionalBoostCard(
 
 function handleDeclareDefender(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'DECLARE_DEFENDER'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const defenderType =
-    (step.effectParams?.defenderType as 'HERO' | 'ALLY' | 'UNDEFENDED') || 'UNDEFENDED';
-  const allyInstanceId = step.effectParams?.allyInstanceId as string | undefined;
-  const playerId = (step.effectParams?.playerId as string) || context.playerId || player.id;
+  const params = getStepEffectParams(step);
+  const defenderType = params.defenderType || 'UNDEFENDED';
+  const allyInstanceId = params.allyInstanceId;
+  const playerId = params.playerId || context.playerId || player.id;
   if (defenderType === 'HERO') {
     const defendingPlayer = state.players.find((p) => p.id === playerId) || player;
     recordBasicAction(state, 'heroDefense', defendingPlayer.activeFormCard?.code);
@@ -110,7 +111,7 @@ function handleDeclareDefender(
 
 function handleVillainSchemes(
   state: GameState,
-  _step: AbilityStep,
+  _step: TypedStep<'VILLAIN_SCHEMES'>,
   _context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
@@ -120,7 +121,7 @@ function handleVillainSchemes(
 
 function handleVillainAttacks(
   state: GameState,
-  _step: AbilityStep,
+  _step: TypedStep<'VILLAIN_ATTACKS'>,
   _context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
@@ -135,15 +136,16 @@ function handleVillainAttacks(
 
 function handleEnemyAttacks(
   state: GameState,
-  step: AbilityStep,
+  step: TypedStep<'ENEMY_ATTACKS'>,
   _context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
   // A specific enemy (card code) attacks the resolving player's hero or identity. The result
   // is `success` and `mutatedState` only when the attack happened, so a later step can gate
   // on "if it did not attack" with `IF_FAILED`; `targetId` is the enemy, attacked or not.
-  const enemyCode = step.effectParams?.enemy as string | undefined;
-  const targetParam = (step.effectParams?.target as string) || 'SELF_HERO';
+  const params = getStepEffectParams(step);
+  const enemyCode = params.enemy;
+  const targetParam = params.target || 'SELF_HERO';
   const minion = state.players
     .flatMap((p) => p.engagedMinions)
     .find((m) => m.card.code === enemyCode);
@@ -178,7 +180,7 @@ function handleEnemyAttacks(
 
 function handleVillainAndEngagedMinionsAttack(
   state: GameState,
-  _step: AbilityStep,
+  _step: TypedStep<'VILLAIN_AND_ENGAGED_MINIONS_ATTACK'>,
   _context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
@@ -194,13 +196,10 @@ function handleVillainAndEngagedMinionsAttack(
       minionInstanceId: m.instanceId,
     })),
   ];
-  (state as any).pendingActivations = [
-    ...((state as any).pendingActivations || []),
-    ...activations,
-  ];
+  state.pendingActivations = [...(state.pendingActivations || []), ...activations];
 
-  if ((state as any).pendingActivations.length > 0) {
-    const act = (state as any).pendingActivations.shift()!;
+  if (state.pendingActivations.length > 0) {
+    const act = state.pendingActivations.shift()!;
     if (act.type === 'VILLAIN') {
       executeVillainAttackAgainstPlayer(state, player);
     } else {
@@ -220,4 +219,4 @@ export const COMBAT_HANDLERS = {
   VILLAIN_ATTACKS: handleVillainAttacks,
   ENEMY_ATTACKS: handleEnemyAttacks,
   VILLAIN_AND_ENGAGED_MINIONS_ATTACK: handleVillainAndEngagedMinionsAttack,
-} satisfies Partial<Record<EffectType, StepHandler>>;
+} satisfies Partial<StepHandlerMap>;

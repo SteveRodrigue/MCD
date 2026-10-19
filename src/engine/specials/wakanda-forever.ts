@@ -36,7 +36,11 @@ const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
     const upgrades = getPlayerBlackPantherUpgrades(player);
     return upgrades.length > 0;
   },
-  execute: (state: GameState, context: EffectExecutionContext, payload?: any): EffectResult => {
+  execute: (
+    state: GameState,
+    context: EffectExecutionContext,
+    payload?: Record<string, unknown>,
+  ): EffectResult => {
     const player = state.players.find((p) => p.id === context.playerId) || state.players[0];
     const availableUpgrades = getPlayerBlackPantherUpgrades(player);
 
@@ -60,13 +64,15 @@ const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
               ...step,
               sourceCardInstance: upg,
               isFinalStep: isFinal,
-            } as any);
+            } as unknown as AbilityStep);
           }
         }
       }
       const seqRes = executeSequence(state, allSteps, {
         playerId: player.id,
-        chosenTargetInstanceId: payload?.targetEnemyId || payload?.targetSchemeId,
+        chosenTargetInstanceId:
+          (payload?.targetEnemyId as string | undefined) ||
+          (payload?.targetSchemeId as string | undefined),
       });
       return {
         ...seqRes,

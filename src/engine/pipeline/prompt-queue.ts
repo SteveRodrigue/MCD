@@ -5,12 +5,15 @@ import {
   ExecutionFrame,
   ActionResult,
   CardAbility,
+  AbilityStep,
+  ResourceType,
 } from '../models';
 import {
   executeEffect,
   hasPendingSequence,
   resumePendingSequence,
   type EffectExecutionContext,
+  type EffectResult,
 } from '../effects';
 import { abilityHasValidTarget } from '../effects/target-choice';
 import {
@@ -61,7 +64,11 @@ export function refreshPromptOptionAvailability(
 
     if (option.gate) {
       const ok = evaluateStepGate(
-        { effect: 'RESOLVED', gate: option.gate, gateParams: option.gateParams } as any,
+        {
+          effect: 'RESOLVED',
+          gate: option.gate,
+          gateParams: option.gateParams,
+        } as unknown as AbilityStep,
         undefined,
         state,
         { playerId: player.id },
@@ -570,10 +577,14 @@ export function resolveSimultaneousAbilitiesOrderPrompt(
   // Propagate placement IDs from ordering prompt options to candidate prompts
   for (const cand of orderedPrompts) {
     const matchingOpt = prompt.options.find(
-      (o) => o.id === cand.promptId || (o.params as any)?.promptId === cand.promptId,
+      (o) =>
+        o.id === cand.promptId ||
+        (o.params as { promptId?: string } | undefined)?.promptId === cand.promptId,
     );
-    const threatPlacementId = (matchingOpt?.params?.context as any)?.threatPlacementId;
-    const damagePlacementId = (matchingOpt?.params?.context as any)?.damagePlacementId;
+    const optContext = matchingOpt?.params?.context as
+      { threatPlacementId?: string; damagePlacementId?: string } | undefined;
+    const threatPlacementId = optContext?.threatPlacementId;
+    const damagePlacementId = optContext?.damagePlacementId;
     if (threatPlacementId || damagePlacementId) {
       for (const opt of cand.options) {
         if (opt.effect === 'EXECUTE_OPTIONAL_TRIGGER' && opt.params) {
@@ -631,7 +642,7 @@ export function resolveDecisionPrompt(
 ): {
   state: GameState;
   result: ActionResult;
-  executedEffectRes?: any;
+  executedEffectRes?: EffectResult;
 } {
   const prompt = peekDecisionPrompt(state);
   if (!prompt) {
@@ -727,7 +738,12 @@ export function resolveDecisionPrompt(
   });
 
   // Handle optional trigger execution
-  const optContext = selectedOption?.params?.context as any;
+  const optContext = selectedOption?.params?.context as
+    | (TriggerContext & {
+        threatPlacementId?: string;
+        damagePlacementId?: string;
+      })
+    | undefined;
   if (selectedOption?.effect === 'EXECUTE_OPTIONAL_TRIGGER' && selectedOption.params?.ability) {
     const optAbility = selectedOption.params.ability as CardAbility;
     const sourceCardInstanceId = selectedOption.params.sourceCardInstanceId as string | undefined;
@@ -806,7 +822,9 @@ export function resolveDecisionPrompt(
         : pendingDamagePlacement
           ? pendingDamagePlacement.amount
           : (optContext?.interceptedValue ?? optContext?.threatAmount ?? optContext?.damageAmount),
-      resourcesSpent: selectedOption?.params?.resourcesSpent || optContext?.resourcesSpent,
+      resourcesSpent:
+        (selectedOption?.params?.resourcesSpent as string[] | undefined) ||
+        optContext?.resourcesSpent,
     };
     const effectRes = canInitiate
       ? executeEffect(nextState, optAbility, effectContext)
@@ -903,15 +921,25 @@ export function resolveDecisionPrompt(
     ((paymentOptions.generatorInstanceIds && paymentOptions.generatorInstanceIds.length > 0) ||
       (paymentOptions.paymentCardInstanceIds && paymentOptions.paymentCardInstanceIds.length > 0))
   ) {
-    const optParams = selectedOption?.params as Record<string, any> | undefined;
+    const optParams = selectedOption?.params as
+      | {
+          resourceCost?: number | { amount?: number; resourceType?: ResourceType };
+          amount?: number;
+          requiresPayment?: boolean;
+        }
+      | undefined;
+    const costObj =
+      typeof optParams?.resourceCost === 'object' && optParams.resourceCost !== null
+        ? optParams.resourceCost
+        : undefined;
     const reqAmount =
-      optParams?.resourceCost?.amount ??
+      costObj?.amount ??
       (typeof optParams?.resourceCost === 'number' ? optParams.resourceCost : undefined) ??
       (typeof optParams?.amount === 'number' && optParams.requiresPayment
         ? optParams.amount
         : undefined) ??
       1;
-    const reqType = optParams?.resourceCost?.resourceType;
+    const reqType = costObj?.resourceType;
 
     executeResourceCostPayment(
       nextState,
@@ -952,8 +980,8 @@ export function resolveDecisionPrompt(
     // An option runs its own steps, or its effect when that is an executable effect; a routing
     // marker (PASS, CANCEL_PLAY, ...) runs no step
     steps:
-      (selectedOption as any)?.steps && Array.isArray((selectedOption as any).steps)
-        ? (selectedOption as any).steps
+      selectedOption?.steps && Array.isArray(selectedOption.steps)
+        ? selectedOption.steps
         : selectedOption?.effect && isEffectType(selectedOption.effect)
           ? [{ effect: selectedOption.effect, effectParams: selectedOption.params || {} }]
           : [],
@@ -963,7 +991,9 @@ export function resolveDecisionPrompt(
     playerId,
     sourceCardInstance: promptCardInst,
     sourceCardId: prompt.sourceCardInstanceId || prompt.sourceCardCode,
-    resourcesSpent: selectedOption?.params?.resourcesSpent || optContext?.resourcesSpent,
+    resourcesSpent:
+      (selectedOption?.params?.resourcesSpent as string[] | undefined) ||
+      optContext?.resourcesSpent,
     discardedCards: prompt.discardedCards,
     isFinalStep: prompt.isFinalStep,
   });

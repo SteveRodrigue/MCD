@@ -191,11 +191,13 @@ export function evaluateStepGate(
           gateSatisfied = discarded.some((inst) => {
             if (!inst?.card) return false;
             const res = inst.card.resources;
-            const raw = inst.card.raw as any;
-            const wildCount = res?.wild ?? raw?.resource_wild ?? 0;
+            const raw = inst.card.raw as unknown as Record<string, unknown> | undefined;
+            const wildCount = res?.wild ?? (raw?.resource_wild as number | undefined) ?? 0;
             if (!requirePrinted && wildCount > 0) return true;
             const matchCount =
-              res?.[reqAspect as keyof typeof res] ?? raw?.[`resource_${reqAspect}`] ?? 0;
+              res?.[reqAspect as keyof typeof res] ??
+              (raw?.[`resource_${reqAspect}`] as number | undefined) ??
+              0;
             return typeof matchCount === 'number' && matchCount > 0;
           });
         } else {
@@ -221,7 +223,7 @@ export function evaluateStepGate(
     }
 
     default:
-      throw new Error(`Unknown step gate: ${(step as any).gate}`);
+      throw new Error(`Unknown step gate: ${String(step.gate)}`);
   }
 
   // 4. If the gate has a form qualifier, it must also match

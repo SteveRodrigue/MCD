@@ -72,7 +72,7 @@ export function resolveRevealedObligation(
   }
 
   removeCardFromAllZones(state, card.instanceId);
-  (card as any).ownerId = recipient.id;
+  card.ownerId = recipient.id;
   if (!recipient.obligations) recipient.obligations = [];
   recipient.obligations.push(card);
   appendLog(state, {

@@ -177,7 +177,7 @@ export function executeMinionSchemeAgainstPlayer(
   recordBasicAction(state, 'minionScheme', minion.card.code);
 
   const minionCard = minion.card as MinionCard;
-  const baseScheme = minionCard.scheme ?? (minionCard as any).sch ?? 1;
+  const baseScheme = minionCard.scheme ?? (minionCard as unknown as { sch?: number }).sch ?? 1;
 
   // A Villainous minion deals a base boost card (RR v1.8 p. 30); any minion resolves the ones it holds.
   const boostLog: BoostLogContext = {

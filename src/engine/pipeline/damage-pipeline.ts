@@ -301,7 +301,10 @@ export function applyDamageToTarget(
   // STEP 2: Tough Status Cards (RR v1.8 Step 2)
   // ---------------------------------------------------------------------------
   if (currentDamage > 0) {
-    const statusCards = target.statusCards || (target.entity as any).statusCards || [];
+    const statusCards =
+      target.statusCards ||
+      ('statusCards' in target.entity ? target.entity.statusCards : undefined) ||
+      [];
     const toughIndex = statusCards.indexOf(StatusCard.TOUGH);
     if (toughIndex !== -1) {
       statusCards.splice(toughIndex, 1);
@@ -367,7 +370,7 @@ export function applyDamageToTarget(
           category: 'combat',
           key: 'damage.applied.villain',
           params: {
-            villain: villain.card?.name || (villain as any).name || 'Villain',
+            villain: villain.card?.name || (villain as { name?: string }).name || 'Villain',
             damage: damageTaken,
             remainingHealth: villain.health,
           },

@@ -23,7 +23,7 @@ export interface MarvelCDBDeckMeta {
   aspect?: string;
   aspect_name?: string;
   extra_hero_cards?: string[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**

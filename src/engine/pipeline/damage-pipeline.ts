@@ -210,9 +210,9 @@ function resolveDamageShieldForHost(
     category: 'combat',
     key: discarded ? 'attachment.damageShield.broken' : 'attachment.damageShield.absorbed',
     params: {
-      host: hostName,
-      attachment: shieldCard.card.name,
-      damage: damageAmount,
+      target: hostName,
+      card: shieldCard.card.name,
+      amount: damageAmount,
       totalDamage: newDamageOnShield,
       threshold,
     },
@@ -259,8 +259,8 @@ function applyDamageAndCheckDefeat(
           category: 'combat',
           key: 'damage.applied.villain',
           params: {
-            villain: villain.card?.name || (villain as { name?: string }).name || 'Villain',
-            damage: damageTaken,
+            target: villain.card?.name || (villain as { name?: string }).name || 'Villain',
+            amount: damageTaken,
             remainingHealth: villain.health,
           },
           onomatopoeia: resultOnomatopoeia,
@@ -296,8 +296,8 @@ function applyDamageAndCheckDefeat(
           category: 'combat',
           key: 'damage.applied.minion',
           params: {
-            minion: minion.card.name,
-            damage: damageTaken,
+            target: minion.card.name,
+            amount: damageTaken,
             totalDamage: newDmg,
             health: minionHealth,
           },
@@ -341,8 +341,8 @@ function applyDamageAndCheckDefeat(
           category: 'combat',
           key: 'damage.applied.player',
           params: {
-            player: player.name,
-            damage: damageTaken,
+            target: player.name,
+            amount: damageTaken,
             remainingHealth: player.health,
           },
           onomatopoeia: resultOnomatopoeia,
@@ -375,8 +375,8 @@ function applyDamageAndCheckDefeat(
           category: 'combat',
           key: 'damage.applied.ally',
           params: {
-            ally: ally.card?.name || 'Ally',
-            damage: damageTaken,
+            target: ally.card?.name || 'Ally',
+            amount: damageTaken,
             totalDamage: newDmg,
             health: allyMaxHp,
           },
@@ -467,9 +467,9 @@ function applyRetaliateDamage(
           category: 'combat',
           key: 'retaliate.hit',
           params: {
-            damage: retaliateX,
-            source: target.name,
-            player: request.sourceCardInstance.card.name,
+            actor: target.name,
+            target: request.sourceCardInstance.card.name,
+            amount: retaliateX,
           },
           onomatopoeia: 'RETALIATE!',
         });
@@ -495,9 +495,9 @@ function applyRetaliateDamage(
             category: 'combat',
             key: 'retaliate.hit',
             params: {
-              damage: retaliateX,
-              source: target.name,
-              player: attackingPlayer.name,
+              actor: target.name,
+              target: attackingPlayer.name,
+              amount: retaliateX,
             },
             onomatopoeia: 'RETALIATE!',
           });
@@ -673,7 +673,7 @@ export function applyDamageToTarget(
       appendLog(state, {
         category: 'combat',
         key: 'overkill.villain.hit',
-        params: { damage: overkillRes.result.damageTaken, villain: villain.card?.name },
+        params: { amount: overkillRes.result.damageTaken, target: villain.card?.name || 'Villain' },
         onomatopoeia: `OVERKILL! ${overkillRes.result.damageTaken} DAMAGE TO VILLAIN!`,
       });
     }

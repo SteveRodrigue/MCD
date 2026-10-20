@@ -166,10 +166,11 @@ export function resolveChosenHostAttachment(
       actor: { name: player.name, type: player.currentForm },
       key: 'card.attached.to_host',
       params: {
+        actor: player.name,
         player: player.name,
         card: playedCardInstance.card.name,
-        host: hostName,
         target: hostName,
+        host: hostName,
       },
       onomatopoeia: 'ATTACHED!',
     });
@@ -561,7 +562,7 @@ export function playPlayerSideScheme(
 
   appendLog(nextState, {
     key: 'encounter.reveal.sideScheme',
-    params: { sideScheme: playedCardInstance.card.name, threat: baseThreat },
+    params: { card: playedCardInstance.card.name, amount: baseThreat },
     onomatopoeia: 'SIDE SCHEME!',
   });
 
@@ -729,7 +730,7 @@ export const handlePlayCard: ActionHandler<'PLAY_CARD'> = (nextState, state, act
         category: 'ability',
         key: 'cost.reduction.consumed',
         params: {
-          player: player.name,
+          actor: player.name,
           source: r.sourceCardName,
           card: targetCard.card.name,
           amount: r.amount,
@@ -807,9 +808,9 @@ export const handlePlayCard: ActionHandler<'PLAY_CARD'> = (nextState, state, act
     },
     key: 'CARD_PLAYED',
     params: {
-      who: player.hero?.name || player.name,
+      actor: player.hero?.name || player.name,
       card: playedCardInstance.card.name,
-      cost: playedCardInstance.card.cost ?? 0,
+      amount: playedCardInstance.card.cost ?? 0,
     },
     onomatopoeia,
   });

@@ -171,7 +171,7 @@ describe('Weapons Runner (01121): boost puts it into play engaged with the attac
         state = step2_villainAndMinionActivations(state, { synchronousPolicy: 'TAKE_UNDEFENDED' });
         return state.log
           .filter((l) => l.key === 'combat.attack.undefended')
-          .map((l) => `${l.params!.who_attacks}>${l.params!.player}`);
+          .map((l) => `${l.params!.actor}>${l.params!.player}`);
       }
       const events: string[] = [];
       for (let i = 0; i < 20; i++) {

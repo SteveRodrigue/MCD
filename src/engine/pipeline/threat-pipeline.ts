@@ -206,7 +206,7 @@ function placeThreat(
         key: 'villainPhase.step1.threatPlaced',
         params: {
           amount: finalThreat,
-          scheme: targetSchemeName,
+          target: targetSchemeName,
           currentThreat,
           targetThreat,
         },
@@ -220,13 +220,11 @@ function placeThreat(
       appendLog(state, {
         key: sourceType === 'MINION_SCHEME' ? 'minion.scheme.threat' : 'villain.scheme.threat',
         params: {
-          who: sourceEntityName || 'Enemy',
-          villain: sourceEntityName || 'Enemy',
-          player: targetPlayer?.name || 'Player',
-          threat: finalThreat,
+          actor: sourceEntityName || 'Enemy',
+          target: targetSchemeName,
           amount: finalThreat,
           boost: boostIcons || 0,
-          scheme: targetSchemeName,
+          ...(targetPlayer?.name ? { player: targetPlayer.name } : {}),
         },
         onomatopoeia,
       });
@@ -235,7 +233,7 @@ function placeThreat(
       appendLog(state, {
         key: 'scheme.threat.added',
         params: {
-          scheme: targetSchemeName,
+          target: targetSchemeName,
           amount: finalThreat,
           currentThreat,
         },
@@ -269,7 +267,7 @@ function placeThreat(
       appendLog(state, {
         key: 'scheme.threat.added',
         params: {
-          scheme: targetSchemeName,
+          target: targetSchemeName,
           amount: finalThreat,
           currentThreat,
         },
@@ -377,7 +375,7 @@ export function applyThwart(
     const onomatopoeia = 'CONFUSION CLEARED!';
     appendLog(state, {
       key: 'status.confused.cleared',
-      params: { player: thwarterName },
+      params: { actor: thwarterName },
       onomatopoeia,
     });
 
@@ -404,8 +402,8 @@ export function applyThwart(
       category: 'ability',
       key: 'card.effect.threatBlockedByCrisis',
       params: {
-        player: player.name,
-        scheme: getActiveMainScheme(state)?.card?.name || 'Main Scheme',
+        actor: player.name,
+        target: getActiveMainScheme(state)?.card?.name || 'Main Scheme',
       },
       onomatopoeia,
     });
@@ -444,8 +442,8 @@ export function applyThwart(
     appendLog(state, {
       key: 'player.action.thwartMainScheme',
       params: {
-        player: player.name,
-        removed,
+        actor: player.name,
+        amount: removed,
         remainingThreat,
       },
       onomatopoeia,
@@ -476,9 +474,9 @@ export function applyThwart(
       appendLog(state, {
         key: schemeDefeated ? 'side_scheme.defeated' : 'player.action.thwartSideScheme',
         params: {
-          player: player.name,
-          scheme: targetSchemeName,
-          removed,
+          actor: player.name,
+          target: targetSchemeName,
+          amount: removed,
           remainingThreat,
         },
         onomatopoeia,

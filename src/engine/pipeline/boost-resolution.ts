@@ -85,7 +85,7 @@ export function dealBoostCards(
       category: log.category,
       actor: log.actor,
       key: 'villain.boost.extra',
-      params: { villain: entity.card.name },
+      params: { actor: entity.card.name },
       onomatopoeia: 'EXTRA BOOST DEALT!',
     });
   }
@@ -132,7 +132,11 @@ export function resolveBoostCards(state: GameState, options: ResolveBoostCardsOp
           category,
           actor,
           key: 'villain.boost.starResolved',
-          params: { card: boostCard.card.name, abilityId: boostAbility.id },
+          params: {
+            card: boostCard.card.name,
+            source: boostAbility.id,
+            abilityId: boostAbility.id,
+          },
           onomatopoeia: 'STAR BOOST ACTIVATED!',
         });
       }
@@ -144,7 +148,12 @@ export function resolveBoostCards(state: GameState, options: ResolveBoostCardsOp
       category,
       actor,
       key: 'villain.boost.revealed',
-      params: { villain: actor.name, card: boostCard.card.name, boostIcons: icons },
+      params: {
+        actor: actor.name,
+        card: boostCard.card.name,
+        amount: icons,
+        boostIcons: icons,
+      },
       onomatopoeia: 'BOOST REVEALED!',
     });
 

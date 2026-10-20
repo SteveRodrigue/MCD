@@ -157,7 +157,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
       params: {
         scenario: this.definition.name,
         difficulty,
-        villain: villainCard.name,
+        actor: villainCard.name,
         health: maxHealth,
         threatTarget: mainScheme.targetThreat,
       },
@@ -187,7 +187,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     appendLog(state, {
       category: 'combat',
       key: 'scenario.victory',
-      params: { mode: difficulty, villain: villain.card.name },
+      params: { mode: difficulty, actor: villain.card.name },
       onomatopoeia: `${villain.card.name.toUpperCase()} DEFEATED! HERO VICTORY!`,
     });
     return { state, victory: true };
@@ -210,7 +210,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
         key: 'scenario.mainSchemeAdvance',
         params: {
           stage: nextScheme.stage,
-          scheme: next.name,
+          card: next.name,
           targetThreat: nextScheme.targetThreat,
         },
         onomatopoeia: `SCHEME ADVANCES TO ${next.name.toUpperCase()}!`,
@@ -222,7 +222,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     appendLog(state, {
       category: 'scheme',
       key: 'scenario.defeat',
-      params: { scheme: current.card.name },
+      params: { card: current.card.name },
       onomatopoeia: `${current.card.name.toUpperCase()} COMPLETED! HEROES DEFEATED!`,
     });
     return { state, defeat: true };

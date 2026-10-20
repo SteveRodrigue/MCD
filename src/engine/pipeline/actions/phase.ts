@@ -34,8 +34,7 @@ export const handleEndPlayerTurn: ActionHandler<'END_PLAYER_TURN'> = (nextState,
     },
     key: 'player.turn.ended',
     params: {
-      player: characterName,
-      who: characterName,
+      actor: characterName,
     },
     onomatopoeia: 'PASS',
   });

@@ -56,7 +56,7 @@ export const handleChangeForm: ActionHandler<'CHANGE_FORM'> = (nextState, state,
   appendLog(nextState, {
     key: 'player.action.changeForm',
     params: {
-      player: player.name,
+      actor: player.name,
       form: nextFormCard.name,
     },
     onomatopoeia,
@@ -86,7 +86,7 @@ export const handleBasicRecover: ActionHandler<'BASIC_RECOVER'> = (nextState, st
   appendLog(nextState, {
     key: 'player.action.recover',
     params: {
-      player: player.name,
+      actor: player.name,
       amount: healedAmount,
       health: player.health,
     },

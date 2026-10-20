@@ -100,7 +100,7 @@ function handleReduceNextCardCost(
     appendLog(state, {
       category: 'ability',
       key: 'decision.prompt.opened',
-      params: { player: player.name, promptId, source: sourceCardName },
+      params: { actor: player.name, promptId, source: sourceCardName },
       onomatopoeia: 'CHOOSE PLAYER!',
     });
 
@@ -144,7 +144,7 @@ function handleReduceNextCardCost(
     category: 'ability',
     key: 'cost.reduced',
     params: {
-      player: targetPlayer.name,
+      actor: targetPlayer.name,
       source: sourceCardName,
       amount,
     },

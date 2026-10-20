@@ -85,14 +85,14 @@ function step1_preAttackAndStunCheck(
       appendLog(state, {
         category: 'combat',
         key: 'villain.stunned.cancelled',
-        params: { villain: villain.card.name },
+        params: { actor: villain.card.name },
         onomatopoeia: 'STUN CLEARED!',
       });
     } else if (attackerCard) {
       appendLog(state, {
         category: 'combat',
         key: 'minion.stunned.cancelled',
-        params: { minion: attackerCard.card.name },
+        params: { actor: attackerCard.card.name },
         onomatopoeia: 'STUN CLEARED!',
       });
     }
@@ -125,9 +125,8 @@ function step1_preAttackAndStunCheck(
         category: 'combat',
         key: attackerType === 'VILLAIN' ? 'villain.attack.cancelled' : 'minion.attack.cancelled',
         params: {
-          ...(attackerType === 'VILLAIN' ? { villain: villain.card.name } : {}),
-          ...(attackerType === 'MINION' && attackerCard ? { minion: attackerCard.card.name } : {}),
-          cancelledBy: att.card.name,
+          actor: attackerType === 'VILLAIN' ? villain.card.name : attackerCard?.card.name || '',
+          source: att.card.name,
         },
         onomatopoeia: `${att.card.name.toUpperCase()}! ATTACK CANCELLED & STUNNED!`,
       });
@@ -524,11 +523,10 @@ export function resolveDefenderDeclaration(
       category: 'combat',
       key: 'combat.hero.defended',
       params: {
-        player: player.name,
-        defense: attackContext.defenseValue,
-        who_attacks: attackerName,
-        who_defends: heroOrPlayerName,
+        actor: heroOrPlayerName,
+        source: attackerName,
         target: heroOrPlayerName,
+        amount: attackContext.defenseValue,
       },
       onomatopoeia: 'DEFENSE DECLARED!',
     });
@@ -543,10 +541,8 @@ export function resolveDefenderDeclaration(
         category: 'combat',
         key: 'combat.ally.defended',
         params: {
-          player: player.name,
-          ally: ally.card.name,
-          who_attacks: attackerName,
-          who_defends: ally.card.name,
+          actor: ally.card.name,
+          source: attackerName,
           target: heroOrPlayerName,
         },
         onomatopoeia: 'ALLY BLOCKS!',
@@ -560,10 +556,9 @@ export function resolveDefenderDeclaration(
       category: 'combat',
       key: 'combat.attack.undefended',
       params: {
-        player: player.name,
-        who_attacks: attackerName,
-        who_defends: heroOrPlayerName,
+        actor: attackerName,
         target: heroOrPlayerName,
+        player: player.name,
       },
       onomatopoeia: 'UNDEFENDED!',
     });
@@ -705,8 +700,7 @@ export function step6_calculateAndApplyAttackDamage(
       category: 'combat',
       key: 'ally.defeated.boost.undefended',
       params: {
-        player: player.name,
-        who_attacks:
+        actor:
           attackContext.attackerType === 'VILLAIN'
             ? attackingVillain(state, attackContext).card.name
             : attackContext.attackerCard?.card.name || 'Minion',
@@ -835,7 +829,7 @@ export function applyCalculatedAttackDamage(
           appendLog(state, {
             category: 'combat',
             key: 'ally.piercing.tough.discarded',
-            params: { ally: ally.card.name },
+            params: { target: ally.card.name },
             onomatopoeia: 'PIERCING SHRED! (ALLY TOUGH LOST)',
           });
         } else {
@@ -843,7 +837,7 @@ export function applyCalculatedAttackDamage(
           appendLog(state, {
             category: 'combat',
             key: 'ally.tough.absorbed',
-            params: { ally: ally.card.name },
+            params: { target: ally.card.name },
             onomatopoeia: 'CLANG! (ALLY TOUGH)',
           });
           rawDamage = 0;
@@ -860,7 +854,7 @@ export function applyCalculatedAttackDamage(
         appendLog(state, {
           category: 'combat',
           key: 'ally.attack.hit',
-          params: { ally: ally.card.name, damage: damageToAlly },
+          params: { target: ally.card.name, amount: damageToAlly },
           onomatopoeia: 'OOF! (ALLY HIT)',
         });
 
@@ -876,7 +870,7 @@ export function applyCalculatedAttackDamage(
           appendLog(state, {
             category: 'combat',
             key: 'ally.defeated',
-            params: { ally: ally.card.name },
+            params: { target: ally.card.name },
             onomatopoeia: 'DEFEATED!',
           });
 
@@ -893,7 +887,7 @@ export function applyCalculatedAttackDamage(
             appendLog(state, {
               category: 'combat',
               key: 'overkill.hit',
-              params: { damage: excessDamage, player: player.name },
+              params: { amount: excessDamage, target: player.name },
               onomatopoeia: 'OVERKILL SPILLOVER!',
             });
             if (player.health <= 0) {
@@ -919,7 +913,7 @@ export function applyCalculatedAttackDamage(
         appendLog(state, {
           category: 'combat',
           key: 'hero.piercing.tough.discarded',
-          params: { player: player.name },
+          params: { target: player.name },
           onomatopoeia: 'PIERCING SHRED! (TOUGH LOST)',
         });
       } else {
@@ -927,7 +921,7 @@ export function applyCalculatedAttackDamage(
         appendLog(state, {
           category: 'combat',
           key: 'hero.tough.absorbed',
-          params: { player: player.name },
+          params: { target: player.name },
           onomatopoeia: 'CLANG! (TOUGH)',
         });
         rawDamage = 0;
@@ -940,16 +934,19 @@ export function applyCalculatedAttackDamage(
         category: 'combat',
         key: attackContext.attackerType === 'VILLAIN' ? 'villain.attack.hit' : 'minion.attack.hit',
         params: {
+          actor:
+            attackContext.attackerType === 'VILLAIN'
+              ? attackingVillain(state, attackContext).card.name
+              : attackContext.attackerCard?.card.name || 'Minion',
           who_attacks:
             attackContext.attackerType === 'VILLAIN'
               ? attackingVillain(state, attackContext).card.name
               : attackContext.attackerCard?.card.name || 'Minion',
+          target: player.name,
           who_is_taking_damage: player.name,
-          villain: attackingVillain(state, attackContext).card.name,
-          minion: attackContext.attackerCard?.card.name || 'Minion',
           player: player.name,
-          damage: rawDamage,
           amount: rawDamage,
+          damage: rawDamage,
           remainingHp: player.health,
           defended: attackContext.heroDefended ? 'true' : 'false',
         },
@@ -1034,7 +1031,11 @@ function resolveDeferredBoostAbilities(
     appendLog(state, {
       category: 'combat',
       key: 'villain.boost.starResolved',
-      params: { card: sourceCardInstance.card.name, abilityId: ability.id },
+      params: {
+        card: sourceCardInstance.card.name,
+        source: ability.id,
+        abilityId: ability.id,
+      },
       onomatopoeia: 'STAR BOOST ACTIVATED!',
     });
   }
@@ -1211,6 +1212,7 @@ function step7_resolvePostAttackAndRetaliate(
         params: {
           actor: characterName,
           who: characterName,
+          amount: retaliateX,
           damage: retaliateX,
           target: targetName,
         },
@@ -1280,6 +1282,7 @@ function step7_resolvePostAttackAndRetaliate(
           params: {
             actor: characterName,
             who: characterName,
+            amount: allyRetaliate,
             damage: allyRetaliate,
             target: targetName,
           },

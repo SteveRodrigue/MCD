@@ -68,7 +68,7 @@ function handlePreventThreat(
     category: 'ability',
     key: 'card.effect.preventThreat',
     params: {
-      player: player.name,
+      actor: player.name,
       amount: consumed,
       consumed,
       remaining,
@@ -126,8 +126,8 @@ function handleRemoveThreat(
     isPlayerSource && (player.engagedMinions || []).some((m) => hasKeyword(m.card, Keyword.PATROL));
   const isMainSchemeBlocked = isMainSchemeBlockedByCrisis || isMainSchemeBlockedByPatrol;
   const mainSchemeBlock = isMainSchemeBlockedByCrisis
-    ? { key: 'card.effect.threatBlockedByCrisis', onomatopoeia: 'CRISIS BLOCKS!' }
-    : { key: 'card.effect.threatBlockedByPatrol', onomatopoeia: 'PATROL BLOCKS!' };
+    ? ({ key: 'card.effect.threatBlockedByCrisis', onomatopoeia: 'CRISIS BLOCKS!' } as const)
+    : ({ key: 'card.effect.threatBlockedByPatrol', onomatopoeia: 'PATROL BLOCKS!' } as const);
 
   let targetSchemes: SchemeTarget[];
 
@@ -145,8 +145,8 @@ function handleRemoveThreat(
         category: 'ability',
         key: mainSchemeBlock.key,
         params: {
-          player: player.name,
-          scheme: getActiveMainScheme(state)?.card?.name || 'Main Scheme',
+          actor: player.name,
+          target: getActiveMainScheme(state)?.card?.name || 'Main Scheme',
         },
         onomatopoeia: mainSchemeBlock.onomatopoeia,
       });
@@ -209,9 +209,9 @@ function handleRemoveThreat(
   appendLog(state, {
     key: 'card.effect.removeThreat',
     params: {
-      player: player.name,
+      actor: player.name,
       amount: removed,
-      scheme: targetSchemeName,
+      target: targetSchemeName,
       remainingThreat,
     },
     onomatopoeia,
@@ -289,7 +289,7 @@ function handleRevealEncounterCard(
   const onomatopoeia = 'REVEAL ENCOUNTER CARD!';
   appendLog(state, {
     key: 'encounter.card.revealed',
-    params: { player: player.name },
+    params: { actor: player.name },
     onomatopoeia,
   });
   return {
@@ -397,7 +397,7 @@ function handleAddThreat(
     // Targeted scheme is not in play: effect fizzles per RR v1.8 p. 29
     appendLog(state, {
       key: 'scheme.threat.target_missing',
-      params: { cardCode, amount },
+      params: { card: cardCode, amount },
     });
     return {
       state,
@@ -461,7 +461,7 @@ function handleCancelWhenRevealed(
   const onomatopoeia = 'CANCELLED!';
   appendLog(state, {
     key: 'encounter.whenRevealed.cancelled',
-    params: { player: player.name },
+    params: { actor: player.name },
     onomatopoeia,
   });
   return {

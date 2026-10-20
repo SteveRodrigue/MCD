@@ -10,6 +10,7 @@ import {
 import { StatusCard } from './enums';
 import { AbilityStep, AbilityCost, StepGate, CardAbility, StepResolutionResult } from './abilities';
 import { GameStats } from './stats';
+import type { LogEvents } from './log-events';
 import type { UniversalCardFilter } from '../../data/supplemental/schema';
 
 /**
@@ -197,10 +198,18 @@ export interface GameLogEntry {
     type: 'hero' | 'alter_ego' | 'villain' | 'minion' | 'ally' | 'environment';
   };
   key: string;
-  params?: Record<string, string | number | boolean | string[]>;
+  params?: Record<string, string | number | boolean | string[] | undefined>;
   onomatopoeia?: string; // e.g. "POW!", "BAM!", "THWIP!", "CLANG!"
   text?: string;
 }
+
+export type TypedGameLogEntry<K extends keyof LogEvents = keyof LogEvents> = {
+  [P in K]: Omit<GameLogEntry, 'key' | 'params'> & {
+    key: P;
+  } & ([LogEvents[P]] extends [Record<string, never>]
+      ? { params?: LogEvents[P] }
+      : { params: LogEvents[P] });
+}[K];
 
 export interface DecisionPromptOption {
   id: string;

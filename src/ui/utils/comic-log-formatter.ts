@@ -215,7 +215,7 @@ function getCharacterQuote(
  * - villain.attack / villain.boost -> `${villainName}: attack` / `${villainName}: boost`
  */
 function formatHierarchicalLogKey(key: string, entry: GameLogEntry): string {
-  const params = entry.params || {};
+  const params = (entry.params || {}) as Record<string, any>;
 
   if (key.startsWith('card.')) {
     const remainder = key.slice(5);
@@ -233,9 +233,9 @@ function formatHierarchicalLogKey(key: string, entry: GameLogEntry): string {
   if (key.startsWith('player.')) {
     const remainder = key.slice(7);
     const rawPlayerName =
+      (params.actor ? String(params.actor) : undefined) ||
       entry.actor?.name ||
       (params.player ? String(params.player) : undefined) ||
-      (params.actor ? String(params.actor) : undefined) ||
       'Player';
     const playerName = cleanCharacterName(rawPlayerName);
     return `${playerName}: ${remainder}`;
@@ -244,9 +244,9 @@ function formatHierarchicalLogKey(key: string, entry: GameLogEntry): string {
   if (key.startsWith('villain.')) {
     const remainder = key.slice(8);
     const villainName =
+      (params.actor ? String(params.actor) : undefined) ||
       entry.actor?.name ||
       (params.villain ? String(params.villain) : undefined) ||
-      (params.actor ? String(params.actor) : undefined) ||
       'Villain';
     return `${villainName}: ${remainder}`;
   }
@@ -254,6 +254,7 @@ function formatHierarchicalLogKey(key: string, entry: GameLogEntry): string {
   if (key.startsWith('minion.')) {
     const remainder = key.slice(7);
     const minionName =
+      (params.actor ? String(params.actor) : undefined) ||
       (params.minion ? String(params.minion) : undefined) ||
       (entry.actor?.type === 'minion' ? entry.actor.name : undefined) ||
       'Minion';
@@ -263,8 +264,8 @@ function formatHierarchicalLogKey(key: string, entry: GameLogEntry): string {
   if (key.startsWith('attachment.')) {
     const remainder = key.slice(11);
     const attachmentName =
-      (params.attachment ? String(params.attachment) : undefined) ||
       (params.card ? String(params.card) : undefined) ||
+      (params.attachment ? String(params.attachment) : undefined) ||
       'Attachment';
     return `${attachmentName}: ${remainder}`;
   }
@@ -272,15 +273,19 @@ function formatHierarchicalLogKey(key: string, entry: GameLogEntry): string {
   if (key.startsWith('identity.')) {
     const remainder = key.slice(9);
     const idName =
-      (params.hero ? String(params.hero) : undefined) || entry.actor?.name || 'Identity';
+      (params.actor ? String(params.actor) : undefined) ||
+      (params.hero ? String(params.hero) : undefined) ||
+      entry.actor?.name ||
+      'Identity';
     return `${idName}: ${remainder}`;
   }
 
   if (key.startsWith('scheme.')) {
     const remainder = key.slice(7);
     const schemeName =
-      (params.scheme ? String(params.scheme) : undefined) ||
+      (params.card ? String(params.card) : undefined) ||
       (params.target ? String(params.target) : undefined) ||
+      (params.scheme ? String(params.scheme) : undefined) ||
       'Scheme';
     return `${schemeName}: ${remainder}`;
   }
@@ -457,119 +462,63 @@ function normalizeLogParams(
   entry: GameLogEntry,
   gameState?: GameState,
 ): Record<string, string | number | boolean> {
-  const p = entry.params || {};
-
-  const actorName = cleanCharacterName(entry.actor?.name);
-  const paramWho = p.who !== undefined ? cleanCharacterName(String(p.who)) : undefined;
-  const paramPlayer = p.player !== undefined ? cleanCharacterName(String(p.player)) : undefined;
-  const paramActor = p.actor !== undefined ? cleanCharacterName(String(p.actor)) : undefined;
-  const paramVillain = p.villain !== undefined ? cleanCharacterName(String(p.villain)) : undefined;
-  const paramMinion = p.minion !== undefined ? cleanCharacterName(String(p.minion)) : undefined;
-
-  const matchedPlayer =
-    gameState?.players?.find(
-      (pl) =>
-        pl.name === actorName ||
-        pl.hero?.name === actorName ||
-        cleanCharacterName(pl.name) === actorName ||
-        pl.name === paramWho ||
-        pl.hero?.name === paramWho ||
-        pl.name === paramPlayer ||
-        pl.name === paramActor,
-    ) || gameState?.players?.[0];
+  const p = (entry.params || {}) as Record<string, any>;
 
   const defaultHeroName =
-    cleanCharacterName(matchedPlayer?.hero?.name || matchedPlayer?.name, matchedPlayer) || 'Hero';
+    cleanCharacterName(
+      gameState?.players?.[0]?.hero?.name || gameState?.players?.[0]?.name,
+      gameState?.players?.[0],
+    ) || 'Hero';
   const defaultVillainName =
     (gameState ? getActiveVillain(gameState) : undefined)?.card?.name || 'Villain';
   const defaultMainSchemeName =
     (gameState ? getActiveMainScheme(gameState) : undefined)?.card?.name || 'Main Scheme';
 
-  // 1. Resolve 'who'
-  let who =
-    paramWho ??
-    actorName ??
-    (entry.actor?.type === 'villain' || entry.key?.startsWith('villain')
-      ? (paramVillain ?? defaultVillainName)
-      : undefined) ??
-    (entry.actor?.type === 'minion' || entry.key?.startsWith('minion')
-      ? (paramMinion ?? 'Minion')
-      : undefined) ??
-    (p.card !== undefined && entry.key?.startsWith('card.effect') ? String(p.card) : undefined) ??
-    paramActor ??
-    paramPlayer ??
-    (p.hero !== undefined ? cleanCharacterName(String(p.hero)) : undefined) ??
-    paramVillain ??
-    defaultHeroName;
-  who = cleanCharacterName(who, matchedPlayer);
+  const isDefenseKey =
+    entry.key === 'HERO_DEFENDED' ||
+    entry.key === 'ALLY_DEFENDED' ||
+    entry.key?.startsWith('combat.hero.defended') ||
+    entry.key?.startsWith('combat.ally.defended');
 
-  // 2. Resolve 'who_attacks'
-  const who_attacks =
-    (p.who_attacks !== undefined ? String(p.who_attacks) : undefined) ??
-    (p.attacker !== undefined ? String(p.attacker) : undefined) ??
-    (entry.actor?.type === 'villain' || entry.actor?.type === 'minion'
-      ? entry.actor.name
-      : undefined) ??
-    (entry.key?.startsWith('villain') ? (paramVillain ?? defaultVillainName) : undefined) ??
-    (entry.key?.startsWith('minion') ? (paramMinion ?? 'Minion') : undefined) ??
-    paramVillain ??
-    actorName ??
-    paramActor ??
-    paramPlayer ??
-    defaultHeroName;
+  // 1. Resolve canonical 'actor'
+  const rawActor =
+    p.actor !== undefined
+      ? p.actor
+      : isDefenseKey
+        ? (p.who_defends ?? p.defender ?? entry.actor?.name ?? defaultHeroName)
+        : (entry.actor?.name ??
+          p.who_attacks ??
+          p.villain ??
+          p.minion ??
+          p.who ??
+          p.player ??
+          defaultHeroName);
+  const actor = cleanCharacterName(String(rawActor));
 
-  // 3. Resolve 'who_is_taking_damage' and 'target'
-  const isHeroAttacking =
-    entry.actor?.type === 'hero' ||
-    entry.actor?.type === 'alter_ego' ||
-    entry.key === 'BASIC_ATTACK' ||
-    entry.key === 'DEAL_DAMAGE' ||
-    entry.key === 'player.action.attackVillain';
-
-  const isVillainAttacking =
-    entry.actor?.type === 'villain' ||
-    entry.actor?.type === 'minion' ||
-    entry.key === 'VILLAIN_ATTACK' ||
-    entry.key === 'MINION_ATTACK' ||
-    entry.key?.startsWith('combat.');
-
-  const isRecovering = entry.key === 'BASIC_RECOVER' || entry.key === 'HEAL_DAMAGE';
-
-  let defaultTarget = 'Target';
-  if (isRecovering) {
-    defaultTarget = who;
-  } else if (isHeroAttacking) {
-    defaultTarget = defaultVillainName;
-  } else if (isVillainAttacking) {
-    defaultTarget = defaultHeroName;
-  }
-
-  const explicitTarget =
-    (p.who_is_taking_damage !== undefined ? String(p.who_is_taking_damage) : undefined) ??
-    (p.target !== undefined ? String(p.target) : undefined) ??
-    (p.host !== undefined ? String(p.host) : undefined) ??
-    (p.defender !== undefined ? String(p.defender) : undefined) ??
-    (p.victim !== undefined ? String(p.victim) : undefined);
-
-  let who_is_taking_damage = explicitTarget ?? defaultTarget;
-  if (who_is_taking_damage.toUpperCase() === 'VILLAIN') {
-    who_is_taking_damage = defaultVillainName;
-  }
-
-  let target = explicitTarget ?? defaultTarget;
+  // 2. Resolve canonical 'target'
+  const rawTarget =
+    p.target !== undefined
+      ? p.target
+      : (p.who_is_taking_damage ??
+        p.host ??
+        p.victim ??
+        (isDefenseKey ? p.target : undefined) ??
+        (entry.actor?.type === 'villain' || entry.actor?.type === 'minion'
+          ? defaultHeroName
+          : defaultVillainName));
+  let target = String(rawTarget);
   if (target.toUpperCase() === 'VILLAIN') {
     target = defaultVillainName;
   }
 
-  // 4. Resolve 'who_defends'
-  const who_defends =
-    (p.who_defends !== undefined ? String(p.who_defends) : undefined) ??
-    (p.defender !== undefined ? String(p.defender) : undefined) ??
-    (p.hero !== undefined ? String(p.hero) : undefined) ??
-    (p.ally !== undefined ? String(p.ally) : undefined) ??
-    defaultHeroName;
+  // 3. Resolve canonical 'card'
+  const rawCard =
+    p.card !== undefined
+      ? p.card
+      : (p.cardName ?? p.upgrade ?? p.attachment ?? p.sourceCard ?? 'Card');
+  const card = String(rawCard);
 
-  // 5. Resolve 'amount'
+  // 4. Resolve canonical 'amount'
   let amount: string | number = 0;
   if (typeof p.amount === 'number' || typeof p.amount === 'string') amount = p.amount;
   else if (typeof p.damage === 'number' || typeof p.damage === 'string') amount = p.damage;
@@ -582,43 +531,36 @@ function normalizeLogParams(
     amount = p.boostIcons;
   else if (typeof p.boost === 'number' || typeof p.boost === 'string') amount = p.boost;
 
-  // 6. Resolve 'card' and 'upgrade'
-  const card =
-    (p.card !== undefined ? String(p.card) : undefined) ??
-    (p.cardName !== undefined ? String(p.cardName) : undefined) ??
-    (p.sourceCard !== undefined ? String(p.sourceCard) : undefined) ??
-    (p.attachment !== undefined ? String(p.attachment) : undefined) ??
-    'Card';
+  // 5. Resolve canonical 'source'
+  const rawSource =
+    p.source !== undefined
+      ? p.source
+      : ((isDefenseKey ? (p.who_attacks ?? p.attacker) : undefined) ??
+        p.ability ??
+        p.sourceCardName ??
+        p.cancelledBy ??
+        'Source');
+  const source = String(rawSource);
 
-  const upgrade =
-    (p.upgrade !== undefined ? String(p.upgrade) : undefined) ??
-    (p.card !== undefined ? String(p.card) : undefined) ??
-    (p.cardName !== undefined ? String(p.cardName) : undefined) ??
-    (p.attachment !== undefined ? String(p.attachment) : undefined) ??
-    card;
-
-  // 7. Resolve 'scheme'
+  // Additional fields
   const scheme =
-    (p.scheme !== undefined ? String(p.scheme) : undefined) ??
-    (p.mainScheme !== undefined ? String(p.mainScheme) : undefined) ??
-    (p.sideScheme !== undefined ? String(p.sideScheme) : undefined) ??
-    defaultMainSchemeName;
+    p.scheme !== undefined
+      ? String(p.scheme)
+      : p.mainScheme !== undefined
+        ? String(p.mainScheme)
+        : p.sideScheme !== undefined
+          ? String(p.sideScheme)
+          : defaultMainSchemeName;
 
-  // 8. Resolve 'status'
-  const status = (p.status !== undefined ? String(p.status) : undefined) ?? 'Status';
-
-  // 9. Resolve 'source'
-  const source =
-    (p.source !== undefined ? String(p.source) : undefined) ??
-    (p.sourceCardName !== undefined ? String(p.sourceCardName) : undefined) ??
-    (p.ability !== undefined ? String(p.ability) : undefined) ??
-    'Source';
-
-  // 10. Resolve 'form'
+  const status = p.status !== undefined ? String(p.status) : 'Status';
   const form =
-    (p.form !== undefined ? String(p.form) : undefined) ??
-    (p.newForm !== undefined ? String(p.newForm) : undefined) ??
-    (entry.actor?.type === 'alter_ego' ? 'alter-ego' : 'hero');
+    p.form !== undefined
+      ? String(p.form)
+      : p.newForm !== undefined
+        ? String(p.newForm)
+        : entry.actor?.type === 'alter_ego'
+          ? 'alter-ego'
+          : 'hero';
 
   // Format card arrays into comma-separated strings
   let cardsStr = '';
@@ -655,29 +597,43 @@ function normalizeLogParams(
     }
   }
 
-  normalized.who = who;
-  normalized.player = paramPlayer ?? who;
-  if (p.actor !== undefined) {
-    normalized.actor = String(p.actor);
-  } else if (
-    entry.key === 'card.attached.to_host' ||
-    entry.key === 'UPGRADE_ATTACHED' ||
-    mapToCanonicalTemplateKey(entry.key, entry) === 'UPGRADE_ATTACHED'
-  ) {
-    normalized.actor =
-      (p.player !== undefined ? cleanCharacterName(String(p.player)) : undefined) ?? who;
-  }
-  normalized.who_attacks = who_attacks;
-  normalized.who_is_taking_damage = who_is_taking_damage;
+  // Set canonical roles
+  normalized.actor = actor;
   normalized.target = target;
-  normalized.host = (p.host !== undefined ? String(p.host) : undefined) ?? target;
-  normalized.who_defends = who_defends;
-  normalized.amount = amount;
   normalized.card = card;
-  normalized.upgrade = upgrade;
-  normalized.scheme = scheme;
-  normalized.status = status;
+  normalized.amount = amount;
   normalized.source = source;
+
+  // Compatibility aliases for legacy templates and test assertions
+  normalized.who = actor;
+  normalized.player = actor;
+  normalized.who_attacks =
+    (p.who_attacks !== undefined ? String(p.who_attacks) : undefined) ?? actor;
+  normalized.villain = (p.villain !== undefined ? String(p.villain) : undefined) ?? actor;
+  normalized.minion = (p.minion !== undefined ? String(p.minion) : undefined) ?? actor;
+
+  normalized.who_is_taking_damage =
+    (p.who_is_taking_damage !== undefined ? String(p.who_is_taking_damage) : undefined) ?? target;
+  normalized.host = (p.host !== undefined ? String(p.host) : undefined) ?? target;
+  normalized.who_defends =
+    (p.who_defends !== undefined ? String(p.who_defends) : undefined) ??
+    (p.defender !== undefined ? String(p.defender) : undefined) ??
+    defaultHeroName;
+
+  normalized.scheme = scheme;
+  normalized.upgrade = (p.upgrade !== undefined ? String(p.upgrade) : undefined) ?? card;
+  normalized.damage = (p.damage !== undefined ? (p.damage as any) : undefined) ?? amount;
+  normalized.threat = (p.threat !== undefined ? (p.threat as any) : undefined) ?? amount;
+  normalized.recovery = (p.recovery !== undefined ? (p.recovery as any) : undefined) ?? amount;
+  normalized.cost = (p.cost !== undefined ? (p.cost as any) : undefined) ?? amount;
+  normalized.baseAtk = (p.baseAtk !== undefined ? (p.baseAtk as any) : undefined) ?? 0;
+  normalized.baseSch = (p.baseSch !== undefined ? (p.baseSch as any) : undefined) ?? 0;
+  normalized.boost = (p.boost !== undefined ? (p.boost as any) : undefined) ?? p.boostIcons ?? 0;
+  normalized.totalDamage =
+    (p.totalDamage !== undefined ? (p.totalDamage as any) : undefined) ?? amount;
+  normalized.totalThreat =
+    (p.totalThreat !== undefined ? (p.totalThreat as any) : undefined) ?? amount;
+  normalized.status = status;
   normalized.form = form;
   if (cardsStr) {
     normalized.cards = cardsStr;
@@ -686,6 +642,7 @@ function normalizeLogParams(
     if (Array.isArray(p.cards)) normalized.count = p.cards.length;
     else if (Array.isArray(p.discardedCards)) normalized.count = p.discardedCards.length;
     else if (Array.isArray(p.drawnCards)) normalized.count = p.drawnCards.length;
+    else if (typeof amount === 'number') normalized.count = amount;
   }
 
   return normalized;

@@ -14,7 +14,7 @@ export function step5_passFirstPlayerToken(state: GameState): GameState {
 
   appendLog(state, {
     key: 'first_player.passed',
-    params: { player: state.players[state.firstPlayerIndex]?.name },
+    params: { actor: state.players[state.firstPlayerIndex]?.name },
     onomatopoeia: 'TOKEN PASS!',
   });
 

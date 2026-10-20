@@ -1,6 +1,6 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-19 (code audit AUD-20261017-232534 remediated; R1–R6 delivered; remaining work R7–R16 in section 3.5)
+> **Last updated:** 2026-10-19 (code audit AUD-20261017-232534 remediated; R1–R7 delivered; remaining work R8–R16 in section 3.5)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
 > **Verification baseline:** 🟢 3,053 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
@@ -82,7 +82,6 @@ The 21 findings were remediated on 2026-10-17/18 (`94ebc97..f6e470f`, pushed). W
 
 | #   | Item                                                                                             | Gate / milestone   | Tier | Estimate   | Plan                                                                                             |
 | --- | ------------------------------------------------------------------------------------------------ | ------------------ | ---- | ---------- | ------------------------------------------------------------------------------------------------ |
-| R7  | Typed log catalog; shrink `normalizeLogParams`                                                   | Tech Debt          | 2    | 1–2 days   | [plan_audit_r07_typed_log_catalog.md](plan_audit_r07_typed_log_catalog.md)                       |
 | R8  | One game session context; UI settings out of `state.options` — **owner decision** (OQ-3)         | Tech Debt          | 2    | 1–1.5 days | [plan_audit_r08_ui_session_context.md](plan_audit_r08_ui_session_context.md)                     |
 | R9  | Klaw II When Revealed at Expert setup; The "Immortal" Klaw as a side scheme — **data approval**  | Gate 2             | 2    | 3–4 h      | [plan_audit_r09_klaw_ii_setup_reveal.md](plan_audit_r09_klaw_ii_setup_reveal.md)                 |
 | R10 | Inject the card catalog (F014-B); close out #275 — **owner decision**                            | Tech Debt / Gate 2 | 3    | 2–3 days   | [plan_audit_r10_catalog_injection.md](plan_audit_r10_catalog_injection.md)                       |

@@ -142,7 +142,7 @@ export function advanceVillainStage(
   appendLog(state, {
     category: 'combat',
     key: 'villain.stageAdvance',
-    params: { villain: nextCard.name, stage: nextCard.stage, health: maxHealth },
+    params: { actor: nextCard.name, stage: nextCard.stage, health: maxHealth },
     onomatopoeia: `${nextCard.name.toUpperCase()} ADVANCES TO STAGE ${nextCard.stage}!`,
   });
 

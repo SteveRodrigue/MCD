@@ -452,7 +452,7 @@ export function processHostDefeated(
 
         appendLog(state, {
           key: `ability.${ab.id}.triggered`,
-          params: { card: att.card.name, host: hostCard.card.name },
+          params: { card: att.card.name, target: hostCard.card.name },
           onomatopoeia: 'HOST DEFEATED!',
         });
       }
@@ -541,8 +541,9 @@ export function defeatSideScheme(
     category: 'scheme',
     key: 'scheme.defeated',
     params: {
+      target: sideScheme.card.name,
       scheme: sideScheme.card.name,
-      player: player?.name || 'Player',
+      actor: player?.name || 'Player',
     },
     onomatopoeia: 'SCHEME DEFEATED!',
   });
@@ -1486,7 +1487,7 @@ function executeEffectInternal(
         onom = 'STUN CLEARED!';
         appendLog(state, {
           key: 'status.stunned.cleared',
-          params: { player: player.name },
+          params: { actor: player.name },
           onomatopoeia: 'STUN CLEARED!',
         });
       }
@@ -1495,7 +1496,7 @@ function executeEffectInternal(
         onom = 'CONFUSION CLEARED!';
         appendLog(state, {
           key: 'status.confused.cleared',
-          params: { player: player.name },
+          params: { actor: player.name },
           onomatopoeia: 'CONFUSION CLEARED!',
         });
       }
@@ -1779,9 +1780,8 @@ function discardFromHand(
       category: 'combat',
       key: 'card.discarded.fromHand',
       params: {
-        who: targetPlayer.name,
-        player: targetPlayer.name,
-        count: chosen.length,
+        actor: targetPlayer.name,
+        amount: chosen.length,
         source: 'hand',
         cards: chosen.map((c) => c.card.name).join(', '),
       },
@@ -1856,9 +1856,9 @@ function discardFromPlayerDeck(
       category: 'combat',
       key: 'card.discarded.fromDeck',
       params: {
-        who: player.name,
+        actor: player.name,
         player: player.name,
-        count: discardedCards.length,
+        amount: discardedCards.length,
         source: 'deck',
         cards: discardedCards.map((c) => c.card.name).join(', '),
       },
@@ -1870,8 +1870,7 @@ function discardFromPlayerDeck(
       category: 'ability',
       key: 'black_cat.fetch',
       params: {
-        who: player.name,
-        player: player.name,
+        actor: player.name,
         card: card.card.name,
       },
       onomatopoeia: 'RETRIEVED!',
@@ -1918,8 +1917,8 @@ function discardFromEncounterDeck(
         category: 'combat',
         key: 'card.discarded.fromDeck',
         params: {
-          who: 'Encounter',
-          count: discarded.length,
+          actor: 'Encounter',
+          amount: discarded.length,
           source: 'encounter deck',
           cards: discarded.map((c) => c.card.name).join(', '),
         },
@@ -1969,8 +1968,8 @@ function discardFromEncounterDeck(
       category: 'combat',
       key: 'card.discarded.fromDeck',
       params: {
-        who: 'Encounter',
-        count: discardedCount,
+        actor: 'Encounter',
+        amount: discardedCount,
         source: 'encounter deck',
         cards: discardedCards.map((c) => c.card.name).join(', '),
       },
@@ -2004,7 +2003,11 @@ function discardFromTableau(
       appendLog(state, {
         category: 'combat',
         key: 'player.tableau.discarded',
-        params: { who: player.name, player: player.name, card: targetCard.card.name },
+        params: {
+          actor: player.name,
+          player: player.name,
+          card: targetCard.card.name,
+        },
         onomatopoeia: 'TABLEAU DISCARDED!',
       });
       return {
@@ -2035,7 +2038,11 @@ function discardFromTableau(
     appendLog(state, {
       category: 'combat',
       key: 'player.tableau.discarded',
-      params: { who: player.name, player: player.name, card: targetCard.card.name },
+      params: {
+        actor: player.name,
+        player: player.name,
+        card: targetCard.card.name,
+      },
       onomatopoeia: 'TABLEAU DISCARDED!',
     });
     return {

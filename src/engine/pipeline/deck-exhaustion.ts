@@ -92,7 +92,7 @@ export function exhaustPlayerDeck(state: GameState, playerId: string): boolean {
   appendLog(state, {
     category: 'phase',
     key: 'player.deck.exhausted',
-    params: { player: player.name },
+    params: { actor: player.name },
     onomatopoeia: 'EXTRA ENCOUNTER CARD!',
   });
 

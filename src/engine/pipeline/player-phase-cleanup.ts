@@ -164,8 +164,7 @@ export function executePlayerCleanup(
     actor: { name: player.name, type: player.currentForm },
     key: 'player.phase.cleanup.complete',
     params: {
-      who: player.name,
-      player: player.name,
+      actor: player.name,
       discardedCount: discardedCardInstanceIds.length,
       drawnCount: cardsToDraw,
       handSize: player.hand.length,

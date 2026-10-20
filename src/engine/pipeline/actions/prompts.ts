@@ -73,7 +73,7 @@ export function resolveDistributionPrompt(
       category: 'ability',
       actor: { name: player.name, type: player.currentForm },
       key: 'decision.distribution.cancelled',
-      params: { player: player.name, source: activePrompt.sourceCardName },
+      params: { actor: player.name, source: activePrompt.sourceCardName },
       onomatopoeia: 'CANCELLED',
     });
     return { state: poppedState, result: { success: true, onomatopoeia: 'CANCELLED' } };
@@ -190,7 +190,7 @@ export function resolveDistributionPrompt(
     actor: { name: player.name, type: player.currentForm },
     key: 'decision.distribution.resolved',
     params: {
-      player: player.name,
+      actor: player.name,
       domain,
       amount: assignedTotal,
       source: activePrompt.sourceCardName,
@@ -256,7 +256,7 @@ export function resolveAttachmentChoicePrompt(
       actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
       key: 'decision.prompt.cancelled',
       params: {
-        player: targetPlayer.name,
+        actor: targetPlayer.name,
         source: activePrompt.sourceCardName,
       },
       onomatopoeia: 'CANCELLED',
@@ -275,10 +275,11 @@ export function resolveAttachmentChoicePrompt(
     actor: { name: player.name, type: player.currentForm },
     key: 'card.attached.to_host',
     params: {
+      actor: player.name,
       player: player.name,
       card: activePrompt.sourceCardName,
-      host: selectedOption?.label || chosenHostId,
-      target: selectedOption?.label || chosenHostId,
+      target: selectedOption?.label || chosenHostId || '',
+      host: selectedOption?.label || chosenHostId || '',
     },
     onomatopoeia: 'ATTACHED!',
   });
@@ -342,7 +343,7 @@ export function resolveEventOrAbilityTargetPrompt(
         actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
         key: 'decision.prompt.cancelled',
         params: {
-          player: targetPlayer.name,
+          actor: targetPlayer.name,
           source: activePrompt.sourceCardName,
         },
         onomatopoeia: 'CANCELLED',
@@ -508,7 +509,7 @@ export function resolveSearchAndSelectPrompt(
       category: 'ability',
       actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
       key: 'card.search.passed',
-      params: { player: targetPlayer.name, prompt: activePrompt.title },
+      params: { actor: targetPlayer.name, source: activePrompt.title },
       onomatopoeia: 'PASSED',
     });
 
@@ -569,7 +570,7 @@ export function resolveSearchAndSelectPrompt(
     actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
     key: 'card.searched.selected',
     params: {
-      player: targetPlayer.name,
+      actor: targetPlayer.name,
       card: chosenCards.map((c) => c.card.card.name).join(', '),
     },
     onomatopoeia: 'SELECTED!',
@@ -636,7 +637,7 @@ export function resolveOptionalTriggerOrEffectPrompt(
         category: 'ability',
         actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
         key: 'card.playFromZone.passed',
-        params: { player: targetPlayer.name, prompt: activePrompt.title },
+        params: { actor: targetPlayer.name, source: activePrompt.title },
         onomatopoeia: 'PASSED',
       });
 
@@ -715,7 +716,7 @@ export function resolveOptionalTriggerOrEffectPrompt(
         actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
         key: 'card.playFromZone.resolved',
         params: {
-          player: targetPlayer.name,
+          actor: targetPlayer.name,
           card: chosenCard.card.name,
         },
         onomatopoeia,
@@ -769,7 +770,7 @@ function resolvePlayerCleanupPrompt(
         category: 'phase',
         actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
         key: 'player.phase.cleanup.cardDiscarded',
-        params: { player: targetPlayer.name, card: discarded.card.name },
+        params: { actor: targetPlayer.name, card: discarded.card.name },
         onomatopoeia: 'DISCARD',
       });
     }
@@ -860,9 +861,9 @@ function resolvePlayUnderPlayerControlPrompt(
     actor: { name: player.name, type: player.currentForm },
     key: 'card.playUnderControl.resolved',
     params: {
-      player: player.name,
+      actor: player.name,
       card: playedCardInstance.card.name,
-      targetPlayer: targetPlayer.name,
+      target: targetPlayer.name,
     },
     onomatopoeia,
   });
@@ -915,7 +916,7 @@ function resolveRestrictedReplacementPrompt(
       category: 'card_play',
       actor: { name: player.name, type: player.currentForm },
       key: 'card.play.cancelled',
-      params: { player: player.name, card: activePrompt.sourceCardName },
+      params: { actor: player.name, card: activePrompt.sourceCardName },
       onomatopoeia: 'CANCELLED',
     });
 
@@ -949,9 +950,9 @@ function resolveRestrictedReplacementPrompt(
         actor: { name: player.name, type: player.currentForm },
         key: 'card.discarded.to_make_room',
         params: {
-          player: player.name,
-          discardedCard: discarded.card.name,
-          incomingCard: activePrompt.sourceCardName,
+          actor: player.name,
+          card: discarded.card.name,
+          source: activePrompt.sourceCardName,
         },
         onomatopoeia: 'REPLACED!',
       });

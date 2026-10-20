@@ -40,7 +40,7 @@ export const handleBasicAttack: ActionHandler<'BASIC_ATTACK'> = (nextState, stat
     const onomatopoeia = 'STUN CLEARED!';
     appendLog(nextState, {
       key: 'status.stunned.cleared',
-      params: { player: player.name },
+      params: { actor: player.name },
       onomatopoeia,
     });
     return { state: nextState, result: { success: true, onomatopoeia } };
@@ -162,9 +162,9 @@ export const handleAllyAttack: ActionHandler<'ALLY_ATTACK'> = (nextState, state,
   appendLog(nextState, {
     key: 'player.action.allyAttack',
     params: {
-      player: player.name,
-      ally: allyCard.name,
-      damage: attackDmg,
+      actor: player.name,
+      card: allyCard.name,
+      amount: attackDmg,
       target: action.targetType,
     },
     onomatopoeia: 'ALLY ATTACK!',

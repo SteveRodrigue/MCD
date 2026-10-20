@@ -519,6 +519,7 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
       expect(retaliateLog?.params).toEqual({
         actor: 'Black Panther',
         who: 'Black Panther',
+        amount: 1,
         damage: 1,
         target: 'Rhino',
       });
@@ -564,6 +565,7 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
       expect(retaliateLog?.params).toEqual({
         actor: 'Daredevil',
         who: 'Daredevil',
+        amount: 1,
         damage: 1,
         target: 'Rhino',
       });

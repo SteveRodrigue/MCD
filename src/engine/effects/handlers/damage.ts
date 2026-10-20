@@ -1,4 +1,5 @@
 /** Damage, healing and damage prevention (step handlers, AUD-20261017-232534 F010-A). */
+import { kernel } from '../../kernel';
 import {
   GameState,
   CardInstance,
@@ -13,10 +14,9 @@ import {
   getFirstPlayer,
 } from '@engine/models';
 import { getStepEffectParams } from '../../../data/supplemental/runtime';
-import { enqueueDecisionPrompt, enqueueDistributionPrompt } from '../../pipeline/prompt-queue';
+import { enqueueDistributionPrompt } from '../../pipeline/prompt-queue';
 import { isImmuneToDamage } from '../../pipeline/damage-immunity';
 import { getEffectiveMaxHealth, getEffectiveMinionHitPoints } from '../../pipeline/stat-calculator';
-import { dispatchTrigger } from '../../triggers/trigger-dispatcher';
 import { nextEngineId } from '../../state/rng';
 import { resolveCharacterTargets } from '../target-resolver';
 import { appendLog } from '../../state/game-log';
@@ -157,7 +157,7 @@ function handleDealDamage(
       const sourceCardName =
         context.sourceCardInstance?.card.name || player.activeFormCard?.name || 'Ability';
       const promptId = `prompt_${nextEngineId(state, 'id')}_choose_player`;
-      state = enqueueDecisionPrompt(state, {
+      state = kernel.enqueueDecisionPrompt(state, {
         promptId,
         playerId: player.id,
         title: 'Choose a Player',
@@ -390,7 +390,7 @@ function handleDistributeAmount(
           const prevThreat = activeMain.threat;
           activeMain.threat = Math.max(0, activeMain.threat - amount);
           if (prevThreat > 0 && activeMain.threat === 0) {
-            dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
+            kernel.dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
               targetPlayerId: player.id,
               sourceInstanceId: activeMain.instanceId || 'main_scheme',
               entityType: 'SCHEME',
@@ -408,7 +408,7 @@ function handleDistributeAmount(
             if (side.threat <= 0) {
               defeatSideScheme(state, side.instanceId, player.id);
               if (prevThreat > 0) {
-                dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
+                kernel.dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
                   targetPlayerId: player.id,
                   sourceInstanceId: side.instanceId,
                   entityType: 'SCHEME',

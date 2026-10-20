@@ -38,4 +38,4 @@ Nine engine modules imported the module-level `cardCatalog` singleton from `src/
 
 - A test runs the engine on a fake repository (`tests/engine/catalog-injection.test.ts`), including a scenario that is only a `definition.json` (a `DeclarativeScenarioPlugin` with no subclass).
 - A saved game state does not contain the catalog; whoever restores one must set `options.catalog` again.
-- This is a first step of the engine kernel (R11), where the repository would be wired.
+- ADR-0088 (engine kernel) later broke the engine's import cycles; the catalog stayed state-carried because it is data, while the kernel is code bound once at boot.

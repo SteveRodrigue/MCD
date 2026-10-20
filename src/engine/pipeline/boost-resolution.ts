@@ -1,3 +1,4 @@
+import { kernel } from '../kernel';
 import {
   CardAbility,
   CardInstance,
@@ -8,7 +9,7 @@ import {
   VillainCard,
   VillainState,
 } from '../models';
-import { executeEffect, type EffectExecutionContext } from '../effects';
+import { type EffectExecutionContext } from '../effects';
 import { drawEncounterCard } from './deck-exhaustion';
 import { hasEntityKeyword } from './stat-calculator';
 import { appendLog } from '../state/game-log';
@@ -123,7 +124,7 @@ export function resolveBoostCards(state: GameState, options: ResolveBoostCardsOp
       );
       for (const boostAbility of boostAbilities) {
         if (options.onDeferred?.(boostAbility, boostCard)) continue;
-        executeEffect(state, boostAbility, {
+        kernel.executeEffect(state, boostAbility, {
           playerId,
           sourceCardInstance: boostCard,
           ...options.abilityContext,

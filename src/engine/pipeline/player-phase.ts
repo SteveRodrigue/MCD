@@ -1,5 +1,5 @@
+import { kernel } from '../kernel';
 import { GameState, GamePhase, PlayerState, Duration } from '@engine/models';
-import { dispatchTrigger } from '../triggers';
 import { appendLog } from '../state/game-log';
 
 /**
@@ -34,7 +34,7 @@ export function startPlayerPhase(state: GameState): GameState {
 
   // Dispatch Player Phase Began triggers across all players
   for (const player of state.players) {
-    dispatchTrigger(state, 'PLAYER_PHASE_BEGAN', { targetPlayerId: player.id });
+    kernel.dispatchTrigger(state, 'PLAYER_PHASE_BEGAN', { targetPlayerId: player.id });
   }
 
   return state;
@@ -77,7 +77,7 @@ export function endPlayerPhase(state: GameState): GameState {
 
   for (let i = 0; i < state.players.length; i++) {
     const player = state.players[(state.firstPlayerIndex + i) % state.players.length];
-    dispatchTrigger(state, 'PLAYER_PHASE_ENDED', { targetPlayerId: player.id });
+    kernel.dispatchTrigger(state, 'PLAYER_PHASE_ENDED', { targetPlayerId: player.id });
   }
 
   delete state.pendingCleanUpPlayerIds;

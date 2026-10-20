@@ -1,8 +1,7 @@
+import { bindKernel, kernel } from '../kernel';
 import { GameState, GameAction, ActionResult, GamePhase, cloneGameState } from '@engine/models';
-import { hasPendingSequence, resumePendingSequence } from '../effects';
 import { continueVillainPhase } from './villain-phase';
 import { checkDeckExhaustionInvariants } from './deck-exhaustion';
-import { peekDecisionPrompt } from './prompt-queue';
 import { advancePlayerSetup } from '../state/game-setup';
 // Import `./actions` after all other imports so module-load hook registrations stay unchanged (ADR-0085/ADR-0086)
 import { runActionHandler } from './actions';
@@ -16,7 +15,7 @@ export function resumeVillainPhaseAfterDecision(
   hadPausedThreatPlacement: boolean,
 ): GameState {
   if (state.phase !== GamePhase.VILLAIN_PHASE || state.winner) return state;
-  if (peekDecisionPrompt(state) || hasPendingSequence(state)) return state;
+  if (kernel.peekDecisionPrompt(state) || kernel.hasPendingSequence(state)) return state;
   if (
     state.options?.villainPhaseStepping &&
     (state.lastCombatOutcome || hadPausedThreatPlacement)
@@ -41,8 +40,8 @@ export function dispatchAction(
   if (!outcome.result.success) return outcome;
 
   let next = outcome.state;
-  if (hasPendingSequence(next) && !peekDecisionPrompt(next)) {
-    next = resumePendingSequence(next);
+  if (kernel.hasPendingSequence(next) && !kernel.peekDecisionPrompt(next)) {
+    next = kernel.resumePendingSequence(next);
   }
   if (action.type === 'RESOLVE_DECISION_PROMPT' || action.type === 'DECLARE_DEFENDER') {
     next = resumeVillainPhaseAfterDecision(next, hadPausedThreatPlacement);
@@ -54,3 +53,5 @@ export function dispatchAction(
   checkDeckExhaustionInvariants(next);
   return next === outcome.state ? outcome : { state: next, result: outcome.result };
 }
+
+bindKernel({ dispatchAction });

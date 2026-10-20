@@ -1,4 +1,5 @@
 /** Statuses, exhaustion, counters, traits, stats and form (step handlers, AUD-20261017-232534 F010-A). */
+import { kernel } from '../../kernel';
 import {
   GameState,
   CardInstance,
@@ -9,9 +10,7 @@ import {
   getActiveVillain,
 } from '@engine/models';
 import { getStepEffectParams } from '../../../data/supplemental/runtime';
-import { enqueueDecisionPrompt } from '../../pipeline/prompt-queue';
 import { hasEntityKeyword } from '../../pipeline/stat-calculator';
-import { dispatchTrigger } from '../../triggers/trigger-dispatcher';
 import { nextEngineId } from '../../state/rng';
 import {
   resolveTargets,
@@ -219,7 +218,7 @@ function handleRemoveStatus(
     if (removedStatuses.length > 0) {
       removedCount += before - entity.statusCards.length;
       for (const status of removedStatuses) {
-        dispatchTrigger(state, 'STATUS_REMOVED', {
+        kernel.dispatchTrigger(state, 'STATUS_REMOVED', {
           targetPlayerId: targetPlayer.id,
           targetInstanceId: entity.instanceId,
           status,
@@ -331,7 +330,7 @@ function handleModifyStat(
         : player.id);
     if (!chosenPlayerId) {
       const promptId = `prompt_${nextEngineId(state, 'id')}_choose_player`;
-      state = enqueueDecisionPrompt(state, {
+      state = kernel.enqueueDecisionPrompt(state, {
         promptId,
         playerId: player.id,
         title: 'Choose a Player',
@@ -585,7 +584,7 @@ function handleFlipForm(
   }
   // Optional flip: offer a voluntary choice instead of flipping immediately
   if (params.optional && nextFormCard) {
-    enqueueDecisionPrompt(state, {
+    kernel.enqueueDecisionPrompt(state, {
       promptId: nextEngineId(state, 'prompt_optional_flip'),
       playerId: context.playerId || player.id,
       title: `Flip to ${nextFormCard.name}?`,

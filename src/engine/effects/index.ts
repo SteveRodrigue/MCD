@@ -1,5 +1,6 @@
+import { bindKernel, kernel } from '../kernel';
 import { evaluateStepGate } from '../pipeline/step-gate-evaluator';
-import { handleVillainDefeat } from '../pipeline/scenario-helpers';
+
 import {
   GameState,
   CardInstance,
@@ -26,7 +27,7 @@ import {
 import type { UniversalCardFilter, DynamicValueSource } from '../../data/supplemental/schema';
 import type { TypedStep } from './handlers/types';
 import { matchesCardFilter, type FilterSubject } from '../filters/card-filter';
-import { resolveActiveEncounterCardAfterInterrupt } from '../pipeline/villain-phase';
+
 import { getStepEffectParams, getStepGateParams } from '../../data/supplemental/runtime';
 import {
   discardFromEncounterDeckUntil,
@@ -38,11 +39,8 @@ import {
 import { dealSurgeCard } from '../pipeline/surge';
 import { canCancelEncounterReveal } from '../pipeline/encounter-cancel';
 import { chooseStepTarget } from './target-choice';
-import { enqueueDecisionPrompt, peekDecisionPrompt } from '../pipeline/prompt-queue';
-import { getAttackOutcomeFacts } from '../pipeline/combat-pipeline';
+
 import {
-  applyDamageToTarget,
-  defeatMinionsBeyondHitPoints,
   type DamageRequest,
   type DamageResult,
   type TargetEntityRef,
@@ -55,13 +53,8 @@ import {
   isEntityIncapacitatedByStatus,
   syncVillainMaxHealth,
 } from '../pipeline/stat-calculator';
-import {
-  dispatchTrigger,
-  matchesTriggerFilter,
-  type AttackSource,
-} from '../triggers/trigger-dispatcher';
+import { type AttackSource } from '../triggers/trigger-dispatcher';
 import { TriggerCallNode } from '../errors/infinite-loop-error';
-import '../specials/wakanda-forever';
 import { removeCardFromAllZones } from '../state/state-validator';
 import { nextEngineId, randomInt } from '../state/rng';
 
@@ -271,8 +264,7 @@ export { matchesCardFilter } from '../filters/card-filter';
 
 import { checkAndDiscardZeroCounterCard } from '../pipeline/cost-engine';
 import { appendLog } from '../state/game-log';
-// Loaded last: handler modules import the pipeline, whose init order depends on this file's imports
-import { runStepHandler } from './handlers';
+
 export { checkAndDiscardZeroCounterCard };
 
 /**
@@ -353,7 +345,7 @@ export function discardCardInstance(
   resetCardState(card);
 
   // A hit point bonus that left with the card may leave a minion with damage at its new maximum.
-  defeatMinionsBeyondHitPoints(state);
+  kernel.defeatMinionsBeyondHitPoints(state);
 
   // 4. Proper destination routing based on encounter vs. player card ownership
   if (isEncounterCard(card.card)) {
@@ -442,7 +434,7 @@ export function processHostDefeated(
             sourceInstanceId: hostCard.instanceId,
             targetType: hostCard.card.type ? hostCard.card.type.toUpperCase() : undefined,
           };
-          if (!matchesTriggerFilter(ab.triggerFilter, filterCtx, owner, att, ab.trigger)) {
+          if (!kernel.matchesTriggerFilter(ab.triggerFilter, filterCtx, owner, att, ab.trigger)) {
             continue;
           }
         }
@@ -508,8 +500,8 @@ export function defeatSideScheme(
     sourceInstanceId: defeatedInstance.instanceId,
     entityType: 'SCHEME' as const,
   };
-  dispatchTrigger(state, 'DEFEATED', defeatContext);
-  dispatchTrigger(state, 'SCHEME_DEFEATED', defeatContext);
+  kernel.dispatchTrigger(state, 'DEFEATED', defeatContext);
+  kernel.dispatchTrigger(state, 'SCHEME_DEFEATED', defeatContext);
 
   // 2. Resolve 'When Defeated' abilities declared on the scheme itself, before its attachments and
   // facedown cards are cleaned up, so "return each card here" still sees them (#238)
@@ -552,7 +544,7 @@ export function defeatSideScheme(
     onomatopoeia: 'SCHEME DEFEATED!',
   });
 
-  if (villainDefeated) handleVillainDefeat(state);
+  if (villainDefeated) kernel.handleVillainDefeat(state);
 
   return true;
 }
@@ -867,7 +859,7 @@ export function applyAbilityDamage(
   opts: AbilityDamageOptions,
   extra: Partial<DamageRequest> = {},
 ): { state: GameState; result: DamageResult } {
-  return applyDamageToTarget(state, {
+  return kernel.applyDamageToTarget(state, {
     target,
     amount,
     sourceType: opts.sourceType ?? 'CARD_EFFECT',
@@ -1039,7 +1031,7 @@ export function hasPendingSequence(state: GameState): boolean {
  * started it, which the remaining steps read as their previous result (#295).
  */
 function joinAttackOutcome(state: GameState, pending: PendingSequence): void {
-  const facts = getAttackOutcomeFacts(state);
+  const facts = kernel.getAttackOutcomeFacts(state);
   if (pending.previousResult) {
     pending.previousResult = {
       ...pending.previousResult,
@@ -1054,7 +1046,7 @@ function joinAttackOutcome(state: GameState, pending: PendingSequence): void {
 
 export function resumePendingSequence(state: GameState): GameState {
   let currentState = state;
-  while (!peekDecisionPrompt(currentState) && hasPendingSequence(currentState)) {
+  while (!kernel.peekDecisionPrompt(currentState) && hasPendingSequence(currentState)) {
     // The attack that paused the sequence is still open: its remaining steps keep waiting (#295).
     if (
       peekPendingSequence(currentState)?.awaitsAttackOutcome &&
@@ -1384,7 +1376,7 @@ export function attackOutcome(
 ): Pick<EffectResult, 'facts' | 'attackPending'> {
   if (!attacked) return {};
   if (state.activeAttackContext) return { attackPending: true };
-  return { facts: getAttackOutcomeFacts(state) };
+  return { facts: kernel.getAttackOutcomeFacts(state) };
 }
 
 export function recordAttackedEnemy(
@@ -1406,7 +1398,7 @@ function finishLabelledAttack(state: GameState, context: EffectExecutionContext)
   if (!context.labelledAttack || !enemy || context.attackResolvedDispatched) return;
   context.attackResolvedDispatched = true;
   const attackSource: AttackSource = { kind: 'HERO', playerId: context.playerId };
-  dispatchTrigger(
+  kernel.dispatchTrigger(
     state,
     'ATTACK_RESOLVED',
     enemy.targetType === 'villain'
@@ -1435,7 +1427,7 @@ function finishLabelledThwart(state: GameState, context: EffectExecutionContext)
   context.thwartResolvedDispatched = true;
   const player = state.players.find((p) => p.id === context.playerId) || state.players[0];
   const scheme = context.thwartedScheme;
-  dispatchTrigger(state, 'THWART_RESOLVED', {
+  kernel.dispatchTrigger(state, 'THWART_RESOLVED', {
     targetPlayerId: context.playerId,
     targetType: scheme?.targetType || 'main_scheme',
     targetInstanceId: scheme?.instanceId,
@@ -1933,7 +1925,7 @@ function discardFromEncounterDeck(
       });
     }
     if (found && matchingDestination === 'REVEAL') {
-      resolveActiveEncounterCardAfterInterrupt(state, found, player, false);
+      kernel.resolveActiveEncounterCardAfterInterrupt(state, found, player, false);
     }
     return {
       state,
@@ -2076,7 +2068,7 @@ function discardFromTableau(
     state,
   );
 
-  enqueueDecisionPrompt(state, {
+  kernel.enqueueDecisionPrompt(state, {
     promptId: nextEngineId(state, 'prompt_discard_tableau'),
     playerId: player.id,
     title: promptMeta.title,
@@ -2250,5 +2242,12 @@ export function executeStep(
     };
   }
 
-  return runStepHandler(state, step, context, player);
+  return kernel.runStepHandler(state, step, context, player);
 }
+
+bindKernel({
+  executeEffect,
+  hasPendingSequence,
+  resumePendingSequence,
+  discardHostAttachmentsAndTuckedCards,
+});

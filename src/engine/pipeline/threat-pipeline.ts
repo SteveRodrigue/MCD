@@ -1,3 +1,4 @@
+import { bindKernel, kernel } from '../kernel';
 import {
   GameState,
   PlayerState,
@@ -7,11 +8,10 @@ import {
   getActiveMainScheme,
 } from '@engine/models';
 import { consumeEntityStatusCards } from './stat-calculator';
-import { hasCrisisInPlay } from './legality-checker';
+import { hasCrisisInPlay } from './crisis';
 import { handleMainSchemeCompletion } from './scenario-helpers';
 import { defeatSideScheme } from '../effects';
 import { nextEngineId } from '../state/rng';
-import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 import { appendLog } from '../state/game-log';
 
 export type ThreatTargetType = 'main_scheme' | 'side_scheme';
@@ -110,7 +110,7 @@ export function applyThreatPlacement(
   const promptsBefore = new Set(
     (state.pendingDecisionQueue ?? []).map((prompt) => prompt.promptId),
   );
-  const triggerRes = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
+  const triggerRes = kernel.dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
     targetPlayerId:
       sourcePlayerId || state.players[state.activePlayerIndex]?.id || state.players[0]?.id,
     threatAmount: amount,
@@ -279,7 +279,7 @@ function placeThreat(
   // ---------------------------------------------------------------------------
   // STEP 4: Post-Placement Triggers
   // ---------------------------------------------------------------------------
-  dispatchTrigger(state, 'THREAT_PLACED', {
+  kernel.dispatchTrigger(state, 'THREAT_PLACED', {
     targetPlayerId:
       sourcePlayerId || state.players[state.activePlayerIndex]?.id || state.players[0]?.id || '',
     targetType,
@@ -488,7 +488,7 @@ export function applyThwart(
   // STEP 5: Post-Thwart Triggers
   // ---------------------------------------------------------------------------
   if (remainingThreat === 0 && removed > 0) {
-    dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
+    kernel.dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
       targetPlayerId: player.id,
       sourceInstanceId:
         targetType === 'main_scheme'
@@ -514,7 +514,7 @@ export function applyThwart(
         : undefined;
 
   if (!request.suppressTrigger) {
-    dispatchTrigger(state, 'THWART_RESOLVED', {
+    kernel.dispatchTrigger(state, 'THWART_RESOLVED', {
       targetPlayerId: player.id,
       targetType,
       targetInstanceId,
@@ -537,3 +537,5 @@ export function applyThwart(
     },
   };
 }
+
+bindKernel({ finishPendingThreatPlacements });

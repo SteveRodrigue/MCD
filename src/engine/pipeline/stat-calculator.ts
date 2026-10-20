@@ -19,9 +19,8 @@ import {
 import { parseKeywordItem } from '../models/keyword';
 import { getStepEffectParams } from '../../data/supplemental/runtime';
 import type { DynamicValueSource } from '../../data/supplemental/schema';
-import { evaluateDynamicAmount } from '../effects/dynamic-formula-evaluator';
 import { AbilityStep } from '../models/abilities';
-import { evaluateStepGate } from './step-gate-evaluator';
+import { kernel } from '../kernel';
 import { findInPlayCardInstance } from '../state/state-validator';
 import { isStep } from '../effects/handlers/types';
 
@@ -69,7 +68,7 @@ export function getEffectiveMinionAttack(state: GameState, minion: CardInstance)
       if (!isStep(step, 'MODIFY_STAT')) continue;
       const stepParams = getStepEffectParams(step);
       if (stepParams.stat === 'ATTACK') {
-        attack += evaluateDynamicAmount(
+        attack += kernel.evaluateDynamicAmount(
           stepParams.amount as number | DynamicValueSource | undefined,
           {},
           { state, sourceCardInstance: minion, targetCardInstance: minion },
@@ -100,7 +99,7 @@ function sumConstantMaxHealthBonus(
         if (step.effect !== 'MODIFY_MAX_HEALTH') continue;
         const params = getStepEffectParams(step);
         if (target && params.target && params.target !== target) continue;
-        bonus += evaluateDynamicAmount(
+        bonus += kernel.evaluateDynamicAmount(
           params.amount as number | DynamicValueSource | undefined,
           {},
           { state, sourceCardInstance: source, targetCardInstance },
@@ -154,7 +153,7 @@ export function getEffectiveVillainStats(
         for (const step of ab.steps || []) {
           if (isStep(step, 'MODIFY_STAT')) {
             const stepParams = getStepEffectParams(step);
-            const amount = evaluateDynamicAmount(
+            const amount = kernel.evaluateDynamicAmount(
               stepParams.amount as number | DynamicValueSource | undefined,
               {},
               { state, sourceCardInstance: attachment },
@@ -237,7 +236,7 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
       for (const step of ab.steps || []) {
         if (isStep(step, 'MODIFY_STAT')) {
           const stepParams = getStepEffectParams(step);
-          const amount = evaluateDynamicAmount(
+          const amount = kernel.evaluateDynamicAmount(
             stepParams.amount as number | DynamicValueSource | undefined,
             {},
             { state, sourceCardInstance: ally, targetCardInstance: ally },
@@ -257,7 +256,7 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
         for (const step of ab.steps || []) {
           if (isStep(step, 'MODIFY_STAT')) {
             const stepParams = getStepEffectParams(step);
-            const amount = evaluateDynamicAmount(
+            const amount = kernel.evaluateDynamicAmount(
               stepParams.amount as number | DynamicValueSource | undefined,
               {},
               { state, sourceCardInstance: attachment, targetCardInstance: ally },
@@ -316,13 +315,13 @@ function evaluateConstantStepGate(
 ): boolean {
   if (!step.gate) return true;
   if (step.gate === 'IF_FORM') {
-    return evaluateStepGate(step, undefined, state ?? ({} as unknown as GameState), {
+    return kernel.evaluateStepGate(step, undefined, state ?? ({} as unknown as GameState), {
       playerId: player.id,
       player,
     });
   }
   if (!state) return false;
-  return evaluateStepGate(step, undefined, state, { playerId: player.id, player });
+  return kernel.evaluateStepGate(step, undefined, state, { playerId: player.id, player });
 }
 
 function extractAddTraitEffects(
@@ -527,7 +526,7 @@ export function getEffectiveHeroStats(state: GameState, player: PlayerState): Ef
 
           if (isStep(step, 'MODIFY_STAT')) {
             const stepParams = getStepEffectParams(step);
-            const amount = evaluateDynamicAmount(
+            const amount = kernel.evaluateDynamicAmount(
               stepParams.amount as number | DynamicValueSource | undefined,
               {},
               { state, player, sourceCardInstance: item },
@@ -598,7 +597,7 @@ export function getEffectiveHandSize(player: PlayerState, state: GameState): num
         for (const step of ab.steps || []) {
           const stepParams = getStepEffectParams(step);
           if (step.effect === 'MODIFY_HAND_SIZE') {
-            bonus += evaluateDynamicAmount(
+            bonus += kernel.evaluateDynamicAmount(
               stepParams.amount as number | DynamicValueSource | undefined,
               {},
               { state, player },

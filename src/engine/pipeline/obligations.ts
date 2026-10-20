@@ -1,6 +1,6 @@
+import { bindKernel, kernel } from '../kernel';
 import { GameState, CardInstance, PlayerState } from '../models';
 import { drawEncounterCard } from './deck-exhaustion';
-import { dispatchTrigger } from '../triggers';
 import { removeCardFromAllZones } from '../state/state-validator';
 import { appendLog } from '../state/game-log';
 
@@ -81,7 +81,7 @@ export function resolveRevealedObligation(
     onomatopoeia: 'OBLIGATION!',
   });
 
-  dispatchTrigger(state, 'ENTERS_PLAY', {
+  kernel.dispatchTrigger(state, 'ENTERS_PLAY', {
     targetPlayerId: recipient.id,
     sourceInstanceId: card.instanceId,
   });
@@ -106,3 +106,5 @@ export function discardResolvedObligation(state: GameState, instanceId: string):
     return;
   }
 }
+
+bindKernel({ discardResolvedObligation });

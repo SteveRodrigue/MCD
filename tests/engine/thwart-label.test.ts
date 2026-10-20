@@ -1,25 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { recordDispatchedTriggers } from '../helpers/kernel-spy';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, StatusCard, SideSchemeCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
 import { canPlayCard } from '@engine/pipeline/legality-checker';
 
-const dispatched = vi.hoisted(
-  () => [] as Array<{ trigger: string; context: Record<string, unknown> }>,
-);
-
-vi.mock('../../src/engine/triggers/trigger-dispatcher', async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import('../../src/engine/triggers/trigger-dispatcher')>();
-  return {
-    ...actual,
-    dispatchTrigger: ((state: any, trigger: any, context: any) => {
-      dispatched.push({ trigger, context: { ...context } });
-      return actual.dispatchTrigger(state, trigger, context);
-    }) as typeof actual.dispatchTrigger,
-  };
-});
+const dispatched = recordDispatchedTriggers();
 
 describe('THWART Labeled Ability Resolution (#270)', () => {
   let state: GameState;

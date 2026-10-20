@@ -9,12 +9,12 @@ import {
   CardInstance,
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
+import { canBasicThwart } from '@engine/pipeline/legality-checker';
 import {
-  canBasicThwart,
   hasCrisisInPlay,
   getCrisisIconCount,
   countCrisisIconsInPlay,
-} from '@engine/pipeline/legality-checker';
+} from '@engine/pipeline/crisis';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { executeSequence } from '@engine/effects';
 import { resolveActiveEncounterCardAfterInterrupt } from '@engine/pipeline/villain-phase';

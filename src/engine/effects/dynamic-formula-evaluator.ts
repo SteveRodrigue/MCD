@@ -30,6 +30,7 @@ import {
 } from '../pipeline/stat-calculator';
 import { locateCard, readCardAttribute } from '../queries/card-inspector';
 import type { EffectExecutionContext } from './index';
+import { bindKernel } from '../kernel';
 
 type ExtendedDynamicSource = DynamicValueSource & {
   discardAttribute?: string;
@@ -462,3 +463,5 @@ export function evaluateDynamicAmount(
   // RR v1.8 p. 11: A quantity cannot be reduced below 0
   return Math.max(0, calculated);
 }
+
+bindKernel({ evaluateDynamicAmount });

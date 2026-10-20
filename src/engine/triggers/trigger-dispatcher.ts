@@ -1,3 +1,4 @@
+import { bindKernel, kernel } from '../kernel';
 import {
   GameState,
   PendingDecisionPrompt,
@@ -13,14 +14,12 @@ import {
 import type { TriggerFilter } from '../../data/supplemental/schema';
 import { getStepEffectParams } from '../../data/supplemental/runtime';
 import { matchesCardFilter } from '../filters/card-filter';
-import { executeEffect, type EffectExecutionContext } from '../effects';
-import { abilityHasValidTarget } from '../effects/target-choice';
+import { type EffectExecutionContext } from '../effects';
 import {
   executeAbilityCost,
   canPayAbilityCost,
   extractResourceCost,
 } from '../pipeline/cost-engine';
-import { enqueueDecisionPrompt, refreshPromptOptionAvailability } from '../pipeline/prompt-queue';
 import {
   abilityCancelsEncounterReveal,
   canCancelEncounterReveal,
@@ -517,7 +516,7 @@ function scanHandReactions(
         if (a.timing.startsWith('HERO_') && p.currentForm !== 'hero') return false;
         if (a.timing.startsWith('ALTER_EGO_') && p.currentForm !== 'alter_ego') return false;
         if (!canPayAbilityCost(state, p, a, card).allowed) return false;
-        if (!abilityHasValidTarget(state, p, a, card)) return false;
+        if (!kernel.abilityHasValidTarget(state, p, a, card)) return false;
         return matchesTriggerFilter(a.triggerFilter, context, p, card, trigger);
       });
       if (!ability) continue;
@@ -561,7 +560,7 @@ function scanHandReactions(
         ? ` (Cost: ${reqAmount} resource${reqAmount === 1 ? '' : 's'})`
         : '';
 
-      enqueueDecisionPrompt(state, {
+      kernel.enqueueDecisionPrompt(state, {
         promptId: nextEngineId(state, `prompt_trigger_${ability.id}`),
         playerId: p.id,
         title: `Do you want to use the following ability from ${cardName}${costSuffix}?${spec.promptTitleSuffix ?? ''}`,
@@ -722,7 +721,7 @@ function scanIdentityTriggerAbilities(
             interceptedValue: scanState.currentThreat || scanState.currentDamage,
             triggerChain: nextChain,
           };
-          executeEffect(state, ability, effCtx);
+          kernel.executeEffect(state, ability, effCtx);
           if (trigger === 'THREAT_WOULD_BE_PLACED' && effCtx.threatAmount !== undefined) {
             scanState.currentThreat = effCtx.threatAmount;
           }
@@ -740,7 +739,7 @@ function scanIdentityTriggerAbilities(
           const costCheck = canPayAbilityCost(state, identityPlayer, ability);
           if (!costCheck.allowed) continue;
           // RR v1.8 "Target": an ability that requires a target needs at least one valid target.
-          if (!abilityHasValidTarget(state, identityPlayer, ability)) continue;
+          if (!kernel.abilityHasValidTarget(state, identityPlayer, ability)) continue;
 
           if (
             ability.limit === 'ONCE_PER_ROUND' &&
@@ -766,7 +765,7 @@ function scanIdentityTriggerAbilities(
               ? ` [Incoming Damage: ${scanState.currentDamage}]`
               : '';
           const sourceFields = getTriggerSourceFields(state, context);
-          enqueueDecisionPrompt(state, {
+          kernel.enqueueDecisionPrompt(state, {
             promptId: nextEngineId(state, `prompt_trigger_${ability.id}`),
             playerId: identityPlayer.id,
             title: `Do you want to use the following ability from ${cardName}?${damageSuffix}`,
@@ -885,7 +884,7 @@ function scanInPlayTriggerAbilities(
 
             // RR v1.8 Forced: a forced ability that requires a target and has no valid one does not initiate
             if (
-              !abilityHasValidTarget(state, controller, ability, cardInst, {
+              !kernel.abilityHasValidTarget(state, controller, ability, cardInst, {
                 targetType: context.targetType,
                 targetInstanceId: context.targetInstanceId,
               })
@@ -908,7 +907,7 @@ function scanInPlayTriggerAbilities(
               interceptedValue: scanState.currentThreat || scanState.currentDamage,
               triggerChain: nextChain,
             };
-            executeEffect(state, ability, effCtx);
+            kernel.executeEffect(state, ability, effCtx);
             if (trigger === 'THREAT_WOULD_BE_PLACED' && effCtx.threatAmount !== undefined) {
               scanState.currentThreat = effCtx.threatAmount;
             }
@@ -928,7 +927,7 @@ function scanInPlayTriggerAbilities(
             if (!costCheck.allowed) continue;
             // RR v1.8 "Target": an ability that requires a target needs at least one valid target.
             if (
-              !abilityHasValidTarget(state, controller, ability, cardInst, {
+              !kernel.abilityHasValidTarget(state, controller, ability, cardInst, {
                 targetType: context.targetType,
                 targetInstanceId: context.targetInstanceId,
               })
@@ -961,7 +960,7 @@ function scanInPlayTriggerAbilities(
                 ? ` [Incoming Damage: ${scanState.currentDamage}]`
                 : '';
             const sourceFields = getTriggerSourceFields(state, context);
-            enqueueDecisionPrompt(state, {
+            kernel.enqueueDecisionPrompt(state, {
               promptId: nextEngineId(state, `prompt_trigger_${ability.id}`),
               playerId: controller.id,
               title: `Do you want to use the following ability from ${cardName}?${damageSuffix}`,
@@ -1040,13 +1039,13 @@ function scanAllHandTriggerReactions(
               interceptedValue: scanState.currentDamage,
               triggerChain: chain,
             };
-            executeEffect(state, ability, effCtx);
+            kernel.executeEffect(state, ability, effCtx);
             scanState.currentDamage = effCtx.damageAmount ?? 0;
             if (scanState.currentDamage === 0) {
               scanState.isPrevented = true;
             }
           } else {
-            executeEffect(state, ability, {
+            kernel.executeEffect(state, ability, {
               playerId: p.id,
               sourceCardInstance: card,
               triggerChain: chain,
@@ -1103,7 +1102,7 @@ function scanAllHandTriggerReactions(
               sourceCardInstance: card,
               triggerChain: chain,
             };
-            executeEffect(state, ability, effCtx);
+            kernel.executeEffect(state, ability, effCtx);
             scanState.currentThreat = effCtx.threatAmount ?? 0;
           } else if (threatStep?.effect === 'REMOVE_THREAT') {
             const reduction = Number(threatStep.effectParams?.amount ?? 1);
@@ -1114,7 +1113,7 @@ function scanAllHandTriggerReactions(
               onomatopoeia: 'EMERGENCY!',
             });
           } else {
-            executeEffect(state, ability, {
+            kernel.executeEffect(state, ability, {
               playerId: p.id,
               sourceCardInstance: card,
               triggerChain: chain,
@@ -1144,7 +1143,7 @@ function scanAllHandTriggerReactions(
         isActive: () => !state.activeEncounterContext?.cancelled,
         allEligibleCards: true,
         resolve: ({ player: p, card, ability, chain }) => {
-          executeEffect(state, ability, {
+          kernel.executeEffect(state, ability, {
             playerId: p.id,
             sourceCardInstance: card,
             triggerChain: chain,
@@ -1168,7 +1167,7 @@ function scanAllHandTriggerReactions(
       scanHandReactions(state, trigger, context, currentChain, playersInTurnOrder(state), {
         allEligibleCards: true,
         resolve: ({ player: p, card, ability, chain }) => {
-          executeEffect(state, ability, {
+          kernel.executeEffect(state, ability, {
             playerId: p.id,
             sourceCardInstance: card,
             eventTargetType: context.targetType,
@@ -1189,7 +1188,7 @@ function scanAllHandTriggerReactions(
         allEligibleCards: true,
         alsoTriggers: ['CHARACTER_DEFEATED'],
         resolve: ({ player: p, card, ability, chain }) => {
-          executeEffect(state, ability, {
+          kernel.executeEffect(state, ability, {
             playerId: p.id,
             sourceCardInstance: card,
             eventTargetType: context.targetType,
@@ -1209,7 +1208,7 @@ function scanAllHandTriggerReactions(
       scanHandReactions(state, trigger, context, currentChain, [player], {
         allEligibleCards: true,
         resolve: ({ player: p, card, ability, chain }) => {
-          executeEffect(state, ability, {
+          kernel.executeEffect(state, ability, {
             playerId: p.id,
             sourceCardInstance: card,
             triggerChain: chain,
@@ -1310,7 +1309,7 @@ function finalizeQueuedTriggerPrompts(
       state.pendingDecisionQueue[i].totalQueued = total;
     }
     if (state.pendingDecisionQueue.length > 0) {
-      refreshPromptOptionAvailability(state, state.pendingDecisionQueue[0]);
+      kernel.refreshPromptOptionAvailability(state, state.pendingDecisionQueue[0]);
       scanState.hasPendingPrompt = true;
     }
   }
@@ -1404,3 +1403,5 @@ export function dispatchTrigger(
     hasPendingPrompt: scanState.hasPendingPrompt,
   };
 }
+
+bindKernel({ dispatchTrigger, matchesTriggerFilter });

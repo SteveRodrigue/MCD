@@ -5,6 +5,8 @@
 
 export { version as ENGINE_VERSION } from '../../package.json';
 
+import './boot';
+
 export * from './models';
 export * from './state';
 export * from './effects';

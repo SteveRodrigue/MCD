@@ -151,11 +151,10 @@ function handleAddStatus(
     },
     key: 'card.effect.addStatus',
     params: {
-      who: actorName,
+      actor: actorName,
       card: sourceCardName || 'Card',
       status,
       target: targetName,
-      who_is_taking_damage: targetName,
       mutatedState,
       alreadyHadStatus,
       isImmune,
@@ -279,7 +278,7 @@ function handleAddTrait(
   appendLog(state, {
     category: 'status',
     key: 'card.effect.addTrait',
-    params: { player: player.name, trait, duration: duration ?? 'WHILE_SOURCE_IN_PLAY' },
+    params: { actor: player.name, trait, duration: duration ?? 'WHILE_SOURCE_IN_PLAY' },
     onomatopoeia: 'POWER UP!',
   });
   return { state, success: true, mutatedState: true, onomatopoeia: 'POWER UP!' };
@@ -350,7 +349,7 @@ function handleModifyStat(
       appendLog(state, {
         category: 'ability',
         key: 'decision.prompt.opened',
-        params: { player: player.name, promptId, source: sourceCardName },
+        params: { actor: player.name, promptId, source: sourceCardName },
         onomatopoeia: 'CHOOSE PLAYER!',
       });
       return { state, success: true, onomatopoeia: 'CHOOSE PLAYER!' };
@@ -495,7 +494,7 @@ function handleReady(
   appendLog(state, {
     category: 'ability',
     key: 'card.effect.readyCharacter',
-    params: { player: player.name, target: readyTargetName },
+    params: { actor: player.name, target: readyTargetName },
     onomatopoeia: 'READY!',
   });
   return {
@@ -560,7 +559,7 @@ function handleExhaust(
   appendLog(state, {
     category: 'status',
     key: 'card.state.exhausted',
-    params: { card: exhaustTargetName, player: player.name },
+    params: { card: exhaustTargetName, actor: player.name },
     onomatopoeia: 'EXHAUST',
   });
   return {
@@ -614,7 +613,7 @@ function handleFlipForm(
   const onomatopoeia = 'FLIP FORM!';
   appendLog(state, {
     key: 'card.effect.flipForm',
-    params: { player: player.name, form: player.activeFormCard.name },
+    params: { actor: player.name, form: player.activeFormCard.name },
     onomatopoeia,
   });
   return {

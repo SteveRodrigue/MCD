@@ -6,3 +6,4 @@ export * from './actions';
 export * from './deck';
 export * from './keyword-helpers';
 export * from './stats';
+export * from './log-events';

@@ -96,3 +96,21 @@ All call sites in `src/engine/` were refactored:
 ## Addendum (2026-10-17): One log writer, no wall clock (AUD-20261017-232534 F009)
 
 The engine had about 200 hand-written `state.log.push({ id: log_${Date.now()}, timestamp: Date.now(), ... })` sites and built villain, main scheme and prompt ids from `Date.now()`, so two runs with the same seed differed. `appendLog(state, entry)` (`src/engine/state/game-log.ts`) is now the only log writer: the id comes from `nextEngineId(state, 'log')`, the `timestamp` is the same `idCounter` value (a logical clock; the UI only uses it as a fallback key), and round and phase default to the state's current ones. Every other engine id uses `nextEngineId`. `tests/engine/engine-clock-guard.test.ts` fails on any `Date.now()` or direct `log.push` in `src/engine`, and `tests/engine/match-simulator.test.ts` replays a seeded game twice and compares the serialized states.
+
+## Addendum (2026-10-19): Typed log catalog & canonical role vocabulary (Plan R7, AUD-20261017-232534 R7)
+
+`GameLogEntry.params` was previously untyped (`Record<string, string | number | boolean | ...>`), causing runtime guessing cascades (~100 lines of heuristic property fallbacks) in `normalizeLogParams` (`comic-log-formatter.ts`) and silent typos across engine call sites.
+
+1. **Single Source of Truth Catalog (`src/engine/models/log-events.ts`):** Defined the `LogEvents` interface covering all 126+ engine and narrative log event keys, each with strongly typed parameters. Includes open template literal index signatures (`ability.${string}.triggered` and `card.${string}.threatReduced`) for dynamic extensible events.
+2. **Canonical 5-Role Vocabulary:** Standardized all parameter payloads on 5 canonical role keys:
+   - `actor`: Entity initiating the action (hero, villain, minion, player).
+   - `target`: Entity receiving the effect (defending hero/ally, scheme thwarted, attacked minion).
+   - `card`: Specific card name involved in the action.
+   - `amount`: Numeric value (damage dealt, threat placed, cards drawn, resources reduced).
+   - `source`: Triggering mechanism or origin (ability id, source card name, attacking entity in defense).
+3. **Type-Safe Log Appender (`src/engine/state/game-log.ts`):** `appendLog<K extends keyof LogEvents>(state, entry: LogEntryInput<K>): TypedGameLogEntry<K>` strictly enforces key existence and parameter typing at compile time.
+4. **Zero-Bloat UI Formatter (`src/ui/utils/comic-log-formatter.ts`):** Simplified `normalizeLogParams` to direct assignment of the canonical vocabulary, deleting legacy guessing cascades while preserving template compatibility.
+5. **Guard & Type Tests:**
+   - `tests/engine/typed-game-log.test.ts`: Verifies compile-time type enforcement via `@ts-expect-error` for missing params, invalid keys, and type mismatches.
+   - `tests/ui/log-catalog-guard.test.ts`: Iterates over `ALL_LOG_EVENT_KEYS` verifying that every single catalog key produces a non-empty `narrativeAction` without raw un-interpolated template placeholders in both English and French.
+

@@ -48,7 +48,7 @@ function handleCancelAttack(
     category: 'combat',
     key: 'combat.attack.cancelled',
     params: {
-      cancelledBy,
+      source: cancelledBy,
     },
     onomatopoeia: 'ATTACK CANCELLED!',
   });

@@ -60,7 +60,7 @@ export function eliminatePlayer(state: GameState, playerId: string): void {
   appendLog(state, {
     category: 'combat',
     key: 'player.eliminated',
-    params: { player: player.name, remaining: state.players.length },
+    params: { actor: player.name, remaining: state.players.length },
     onomatopoeia: 'HERO DOWN!',
   });
 

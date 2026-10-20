@@ -28,7 +28,7 @@ export function startPlayerPhase(state: GameState): GameState {
   appendLog(state, {
     phase: GamePhase.PLAYER_PHASE,
     key: 'phase.player_phase.start',
-    params: { round: state.roundNumber, firstPlayer: state.players[state.firstPlayerIndex]?.name },
+    params: { round: state.roundNumber, actor: state.players[state.firstPlayerIndex]?.name },
     onomatopoeia: 'HEROES ASSEMBLE!',
   });
 

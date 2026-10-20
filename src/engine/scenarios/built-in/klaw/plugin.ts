@@ -38,7 +38,7 @@ export class KlawScenarioPlugin extends DeclarativeScenarioPlugin {
       appendLog(state, {
         category: 'scheme',
         key: 'scenario.setup.sideScheme',
-        params: { scheme: defenseNetworkCard.card.name, threat },
+        params: { card: defenseNetworkCard.card.name, amount: threat },
         onomatopoeia: 'DEFENSE NETWORK ONLINE!',
       });
     }
@@ -62,7 +62,7 @@ export class KlawScenarioPlugin extends DeclarativeScenarioPlugin {
         appendLog(state, {
           category: 'combat',
           key: 'scenario.setup.minion',
-          params: { player: firstPlayer.name, minion: minionInstance.card.name },
+          params: { actor: firstPlayer.name, card: minionInstance.card.name },
           onomatopoeia: 'MINION ENGAGES!',
         });
       }
@@ -105,7 +105,7 @@ export class KlawScenarioPlugin extends DeclarativeScenarioPlugin {
       appendLog(state, {
         category: 'status',
         key: 'attachment.attached',
-        params: { attachment: immortalCard.card.name, target: getActiveVillain(state).card.name },
+        params: { card: immortalCard.card.name, target: getActiveVillain(state).card.name },
         onomatopoeia: 'IMMORTAL KLAW ATTACHES!',
       });
     }

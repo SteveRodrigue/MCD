@@ -732,7 +732,7 @@ function scanIdentityTriggerAbilities(
           }
           appendLog(state, {
             key: `ability.${ability.id}.triggered`,
-            params: { player: identityPlayer.name },
+            params: { actor: identityPlayer.name },
             onomatopoeia: 'ABILITY TRIGGERED!',
           });
         } else {
@@ -1110,7 +1110,7 @@ function scanAllHandTriggerReactions(
             scanState.currentThreat = Math.max(0, scanState.currentThreat - reduction);
             appendLog(state, {
               key: `card.${card.card.code}.threatReduced`,
-              params: { player: p.name, reduction },
+              params: { actor: p.name, amount: reduction },
               onomatopoeia: 'EMERGENCY!',
             });
           } else {

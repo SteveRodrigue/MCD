@@ -1,15 +1,28 @@
-import type { GameLogEntry, GameState } from '@engine/models';
+import type { GameLogEntry, GameState, LogEvents, TypedGameLogEntry } from '@engine/models';
 import { nextEngineId } from './rng';
 
+type EmptyObject = Record<string, never>;
+
 /** A log entry as written by the engine: id, timestamp, round and phase are filled in. */
-export type LogEntryInput = Omit<GameLogEntry, 'id' | 'timestamp'>;
+export type LogEntryInput<K extends keyof LogEvents = keyof LogEvents> = {
+  key: K;
+  category?: GameLogEntry['category'];
+  actor?: GameLogEntry['actor'];
+  onomatopoeia?: string;
+  text?: string;
+  round?: number;
+  phase?: GameLogEntry['phase'];
+} & ([LogEvents[K]] extends [EmptyObject] ? { params?: LogEvents[K] } : { params: LogEvents[K] });
 
 /**
  * Appends an entry to the game log (ADR-0081). The id and the timestamp come from the engine id
  * counter, so the same seed always produces the same log; round and phase default to the
  * state's current ones.
  */
-export function appendLog(state: GameState, entry: LogEntryInput): GameLogEntry {
+export function appendLog<K extends keyof LogEvents>(
+  state: GameState,
+  entry: LogEntryInput<K>,
+): TypedGameLogEntry<K> {
   const id = nextEngineId(state, 'log');
   const logEntry: GameLogEntry = {
     id,
@@ -17,7 +30,11 @@ export function appendLog(state: GameState, entry: LogEntryInput): GameLogEntry 
     round: state.roundNumber,
     phase: state.phase,
     ...entry,
+    params: entry.params as Record<string, string | number | boolean | string[] | undefined>,
   };
+  if (!state.log) {
+    state.log = [];
+  }
   state.log.push(logEntry);
-  return logEntry;
+  return logEntry as unknown as TypedGameLogEntry<K>;
 }

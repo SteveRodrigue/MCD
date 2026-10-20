@@ -63,7 +63,7 @@ export function resolveRevealedObligation(
     state.removedFromGame.push(card);
     appendLog(state, {
       key: 'encounter.reveal.obligationRemoved',
-      params: { obligation: card.card.name },
+      params: { card: card.card.name },
       onomatopoeia: 'REMOVED FROM THE GAME!',
     });
     const extra = drawEncounterCard(state);
@@ -77,7 +77,7 @@ export function resolveRevealedObligation(
   recipient.obligations.push(card);
   appendLog(state, {
     key: 'encounter.reveal.obligation',
-    params: { player: recipient.name, obligation: card.card.name },
+    params: { actor: recipient.name, card: card.card.name },
     onomatopoeia: 'OBLIGATION!',
   });
 
@@ -100,7 +100,7 @@ export function discardResolvedObligation(state: GameState, instanceId: string):
     state.encounterDiscard.push(card);
     appendLog(state, {
       key: 'encounter.obligation.discarded',
-      params: { player: player.name, obligation: card.card.name },
+      params: { actor: player.name, card: card.card.name },
       onomatopoeia: 'OBLIGATION RESOLVED!',
     });
     return;

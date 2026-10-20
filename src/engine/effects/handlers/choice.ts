@@ -43,7 +43,7 @@ function handlePlayerChoice(
   appendLog(state, {
     category: 'ability',
     key: 'decision.prompt.opened',
-    params: { player: player.name, promptId, source: sourceCardName },
+    params: { actor: player.name, promptId, source: sourceCardName },
     onomatopoeia: 'CHOICE REQUIRED!',
   });
 

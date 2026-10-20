@@ -101,7 +101,7 @@ function handleDealDamage(
     const onomatopoeia = `WHAM! ${amount} DAMAGE TO ALL CHARACTERS!`;
     appendLog(state, {
       key: 'card.effect.dealDamage',
-      params: { player: player.name, target: 'all_characters', amount },
+      params: { actor: player.name, target: 'all_characters', amount },
       onomatopoeia,
     });
 
@@ -124,7 +124,7 @@ function handleDealDamage(
     const onomatopoeia = `BOOM! ${amount} DAMAGE TO HEROES AND ALLIES!`;
     appendLog(state, {
       key: 'card.effect.dealDamage',
-      params: { player: player.name, target: 'all_heroes_and_allies', amount },
+      params: { actor: player.name, target: 'all_heroes_and_allies', amount },
       onomatopoeia,
     });
 
@@ -137,7 +137,7 @@ function handleDealDamage(
     const onomatopoeia = `BOOM! ${amount} DAMAGE TO ALL ENEMIES!`;
     appendLog(state, {
       key: 'card.effect.dealDamage',
-      params: { player: player.name, target: 'all_enemies', amount },
+      params: { actor: player.name, target: 'all_enemies', amount },
       onomatopoeia,
     });
 
@@ -174,7 +174,7 @@ function handleDealDamage(
       appendLog(state, {
         category: 'ability',
         key: 'decision.prompt.opened',
-        params: { player: player.name, promptId, source: sourceCardName },
+        params: { actor: player.name, promptId, source: sourceCardName },
         onomatopoeia: 'CHOOSE PLAYER!',
       });
       return { state, success: true, onomatopoeia: 'CHOOSE PLAYER!' };
@@ -186,7 +186,7 @@ function handleDealDamage(
     const onomatopoeia = `BOOM! ${amount} DAMAGE TO ${chosenPlayer.name.toUpperCase()}'S ENGAGED ENEMIES!`;
     appendLog(state, {
       key: 'card.effect.dealDamage',
-      params: { player: player.name, target: 'engaged_enemies', amount },
+      params: { actor: player.name, target: 'engaged_enemies', amount },
       onomatopoeia,
     });
 
@@ -278,7 +278,7 @@ function handleDealDamage(
         appendLog(state, {
           key: 'card.effect.dealDamage',
           params: {
-            player: player.name,
+            actor: player.name,
             target: minion.card.name,
             amount: 0,
             toughAbsorbed: true,
@@ -302,7 +302,7 @@ function handleDealDamage(
       appendLog(state, {
         key: 'card.effect.dealDamage',
         params: {
-          player: player.name,
+          actor: player.name,
           target: minion.card.name,
           amount,
           ...(res.targetDefeated
@@ -492,7 +492,7 @@ function handleDistributeAmount(
       actor: { name: player.name, type: player.currentForm },
       key: 'decision.distribution.noLegalTarget',
       params: {
-        player: player.name,
+        actor: player.name,
         domain: allocationDomain,
         amount: budget,
         source: context.sourceCardInstance?.card.name || 'Game Effect',
@@ -620,7 +620,7 @@ function handleHealDamage(
   appendLog(state, {
     key: 'card.effect.heal',
     params: {
-      player: player.name,
+      actor: player.name,
       target,
       amount: healed,
       health: target === 'VILLAIN' ? getActiveVillain(state).health : player.health,
@@ -680,7 +680,7 @@ function handlePreventDamage(
     category: 'ability',
     key: 'combat.damage.prevented',
     params: {
-      player: player.name,
+      actor: player.name,
       amount: consumed,
       consumed,
       remaining,

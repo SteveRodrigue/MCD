@@ -652,9 +652,8 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
           key: 'card.attached.to_host',
           actor: { name: 'Spider-Man', type: 'hero' },
           params: {
-            player: 'Spider-Man',
+            actor: 'Spider-Man',
             card: 'Spider-Tracer',
-            host: 'Hydra Soldier (Spider-Man)',
             target: 'Hydra Soldier (Spider-Man)',
           },
         };
@@ -677,8 +676,7 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
           round: 1,
           key: 'player.tableau.discarded',
           params: {
-            who: 'Spider-Man',
-            player: 'Spider-Man',
+            actor: 'Spider-Man',
             card: 'Avengers Mansion',
           },
         };
@@ -691,6 +689,63 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
         const frDiscard = formatComicLogEntry(discardEntry, 'fr', mockGameState);
         expect(frDiscard.narrativeAction).toBe(
           'Spider-Man a défaussé Avengers Mansion de son tableau.',
+        );
+      });
+
+      it('formats entries using the canonical 5-role vocabulary (actor, target, card, amount, source)', () => {
+        // 1. actor & source
+        const defenseEntry: GameLogEntry = {
+          id: 'log-canon-1',
+          timestamp: 1,
+          key: 'HERO_DEFENDED',
+          params: { actor: 'Spider-Man', source: 'Rhino' },
+        };
+        expect(formatComicLogEntry(defenseEntry, 'en', mockGameState).narrativeAction).toBe(
+          'Spider-Man defended an attack from Rhino.',
+        );
+
+        // 2. target
+        const defeatEntry: GameLogEntry = {
+          id: 'log-canon-2',
+          timestamp: 2,
+          key: 'CHARACTER_DEFEATED',
+          params: { target: 'Armored Rhino' },
+        };
+        expect(formatComicLogEntry(defeatEntry, 'en', mockGameState).narrativeAction).toBe(
+          'Armored Rhino has been defeated!',
+        );
+
+        // 3. actor & card
+        const discardEntry: GameLogEntry = {
+          id: 'log-canon-3',
+          timestamp: 3,
+          key: 'CARD_DISCARDED',
+          params: { actor: 'Peter Parker', card: 'Web-Shooter' },
+        };
+        expect(formatComicLogEntry(discardEntry, 'en', mockGameState).narrativeAction).toBe(
+          'Peter Parker discards Web-Shooter.',
+        );
+
+        // 4. actor, target, amount
+        const retaliateEntry: GameLogEntry = {
+          id: 'log-canon-4',
+          timestamp: 4,
+          key: 'RETALIATE_DAMAGE',
+          params: { actor: 'Black Panther', target: 'Klaw', amount: 1 },
+        };
+        expect(formatComicLogEntry(retaliateEntry, 'en', mockGameState).narrativeAction).toBe(
+          'Black Panther retaliated for 1 damage.',
+        );
+
+        // 5. actor, target, card, amount
+        const attackEntry: GameLogEntry = {
+          id: 'log-canon-5',
+          timestamp: 5,
+          key: 'DEAL_DAMAGE',
+          params: { actor: 'Spider-Man', target: 'Rhino', amount: 8 },
+        };
+        expect(formatComicLogEntry(attackEntry, 'en', mockGameState).narrativeAction).toBe(
+          'Spider-Man dealt 8 damage to Rhino.',
         );
       });
     });

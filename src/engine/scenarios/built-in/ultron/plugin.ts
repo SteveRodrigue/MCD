@@ -71,7 +71,7 @@ export class UltronScenarioPlugin extends DeclarativeScenarioPlugin {
       appendLog(state, {
         category: 'phase',
         key: 'scenario.setup.environment',
-        params: { environment: ultronDronesCard.name },
+        params: { card: ultronDronesCard.name },
         onomatopoeia: 'ULTRON DRONES ENVIRONMENT ONLINE!',
       });
     }
@@ -86,7 +86,7 @@ export class UltronScenarioPlugin extends DeclarativeScenarioPlugin {
         appendLog(state, {
           category: 'combat',
           key: 'scenario.setup.drone',
-          params: { player: player.name },
+          params: { actor: player.name },
           onomatopoeia: 'DRONE DEPLOYED!',
         });
       }

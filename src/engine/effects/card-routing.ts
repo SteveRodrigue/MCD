@@ -73,7 +73,7 @@ export function routeCardInstances(
         });
         appendLog(state, {
           key: 'encounter.reveal.sideScheme',
-          params: { sideScheme: card.card.name, threat: baseThreat },
+          params: { card: card.card.name, amount: baseThreat },
           onomatopoeia: 'SIDE SCHEME!',
         });
         const abilities = card.card.enrichment?.abilities || [];

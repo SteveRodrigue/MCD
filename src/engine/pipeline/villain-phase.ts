@@ -102,7 +102,7 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
       category: 'status',
       actor: { name: villain.card?.name || 'Villain', type: 'villain' },
       key: 'villain.confused.cancelled',
-      params: { villain: villain.card?.name || 'Villain' },
+      params: { actor: villain.card?.name || 'Villain' },
       onomatopoeia: 'CONFUSION CLEARED!',
     });
     return;
@@ -169,7 +169,7 @@ export function executeMinionSchemeAgainstPlayer(
       category: 'status',
       actor: { name: minion.card.name, type: 'minion' },
       key: 'minion.confused.cancelled',
-      params: { minion: minion.card.name },
+      params: { actor: minion.card.name },
       onomatopoeia: 'CONFUSION CLEARED!',
     });
     return;
@@ -476,7 +476,7 @@ export function completeEncounterAttachment(
   attachCardToHost(state, cardInstance, 'ENEMY', hostInstanceId);
   appendLog(state, {
     key: 'encounter.reveal.attachment',
-    params: { attachment: cardInstance.card.name, host: hostName },
+    params: { card: cardInstance.card.name, target: hostName },
     onomatopoeia: 'ATTACHED!',
   });
   resolveWhenRevealedAbilities(state, cardInstance, player, isCancelled);
@@ -510,7 +510,7 @@ function resolveRevealedAttachment(
     state.encounterDiscard.push(cardInstance);
     appendLog(state, {
       key: 'encounter.reveal.attachmentNoHost',
-      params: { attachment: card.name },
+      params: { card: card.name },
       onomatopoeia: 'NO HOST!',
     });
     dealSurgeCard(state, player, card.name);
@@ -587,7 +587,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
     player.engagedMinions.push(cardInstance);
     appendLog(state, {
       key: 'encounter.reveal.minion',
-      params: { player: player.name, minion: card.name },
+      params: { actor: player.name, card: card.name },
       onomatopoeia: 'MINION SPAWNS!',
     });
     resolveWhenRevealedAbilities(state, cardInstance, player, isCancelled);
@@ -609,7 +609,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
     });
     appendLog(state, {
       key: 'encounter.reveal.sideScheme',
-      params: { sideScheme: card.name, threat: baseThreat },
+      params: { card: card.name, amount: baseThreat },
       onomatopoeia: 'SIDE SCHEME!',
     });
     resolveWhenRevealedAbilities(state, cardInstance, player, isCancelled);

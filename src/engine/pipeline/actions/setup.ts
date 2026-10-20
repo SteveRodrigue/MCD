@@ -55,7 +55,7 @@ export const handleResolveMulligan: ActionHandler<'RESOLVE_MULLIGAN'> = (
     phase: GamePhase.SETUP_PHASE,
     key: 'player.setup.mulligan',
     params: {
-      player: player.name,
+      actor: player.name,
       discardedCount: replacementCount,
       handSize: player.hand.length,
     },
@@ -95,7 +95,7 @@ export const handleDevAddCardToHand: ActionHandler<'DEV_ADD_CARD_TO_HAND'> = (
     category: 'ability',
     actor: { name: player.name, type: player.currentForm },
     key: 'dev.card.tutor',
-    params: { card: selectedCard.card.name, hero: player.name },
+    params: { card: selectedCard.card.name, actor: player.name },
     onomatopoeia: 'DEV TUTOR!',
   });
 

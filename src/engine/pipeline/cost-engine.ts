@@ -647,7 +647,7 @@ export function executeAbilityCost(
       player.health = Math.min(maxHp, player.health + actualHealed);
       appendLog(state, {
         key: 'card.cost.heal',
-        params: { player: player.name, healed: actualHealed, currentHealth: player.health },
+        params: { actor: player.name, amount: actualHealed, currentHealth: player.health },
         onomatopoeia: `HEAL! +${actualHealed} HP (COST)`,
       });
     }
@@ -658,7 +658,7 @@ export function executeAbilityCost(
     player.health = Math.max(1, player.health - cost.damageHero);
     appendLog(state, {
       key: 'card.cost.damageHero',
-      params: { player: player.name, damagePaid: cost.damageHero, remainingHealth: player.health },
+      params: { actor: player.name, amount: cost.damageHero, remainingHealth: player.health },
       onomatopoeia: `OUCH! -${cost.damageHero} HP (COST)`,
     });
   }
@@ -678,7 +678,7 @@ export function executeAbilityCost(
         player.discard.push(sourceCardInst);
         appendLog(state, {
           key: 'card.ally.defeated',
-          params: { ally: sourceCardInst.card.name },
+          params: { card: sourceCardInst.card.name },
           onomatopoeia: `${sourceCardInst.card.name.toUpperCase()} DEFEATED!`,
         });
       }
@@ -874,7 +874,7 @@ export function executeResourceCostPayment(
       }
       appendLog(state, {
         key: 'identity.ability.used',
-        params: { ability: idAbility?.id || 'resource', hero: player.activeFormCard.name },
+        params: { source: idAbility?.id || 'resource', actor: player.activeFormCard.name },
         onomatopoeia: 'RESOURCE GENERATED!',
       });
     } else {
@@ -1152,7 +1152,7 @@ export function checkAndDiscardZeroCounterCard(
       category: 'card_play',
       actor: { name: player.name, type: player.currentForm },
       key: 'card.discarded.uses_exhausted',
-      params: { player: player.name, card: cardInstance.card.name },
+      params: { actor: player.name, card: cardInstance.card.name },
       onomatopoeia: 'USES EXHAUSTED!',
     });
 

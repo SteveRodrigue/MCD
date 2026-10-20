@@ -127,9 +127,8 @@ function handleDraw(
       appendLog(state, {
         key: 'card.effect.drawCards',
         params: {
-          who: targetP.name,
-          player: targetP.name,
-          count: drawnForP,
+          actor: targetP.name,
+          amount: drawnForP,
           handSize: targetP.hand.length,
           cards: drawnCardsForP.map((c) => c?.card?.name || 'Card').join(', '),
           drawnCards: drawnCardsForP.map((c) => c?.card?.name || 'Card'),
@@ -176,7 +175,7 @@ function handleDraw(
     appendLog(state, {
       category: 'ability',
       key: 'decision.prompt.opened',
-      params: { player: player.name, promptId, source: sourceCardName },
+      params: { actor: player.name, promptId, source: sourceCardName },
       onomatopoeia: 'CHOOSE PLAYER!',
     });
 
@@ -210,9 +209,8 @@ function handleDraw(
     appendLog(state, {
       key: 'card.effect.drawCards',
       params: {
-        who: p.name,
-        player: p.name,
-        count: drawnForP,
+        actor: p.name,
+        amount: drawnForP,
         handSize: p.hand.length,
         cards: drawnCardsForP.map((c) => c?.card?.name || 'Card').join(', '),
         drawnCards: drawnCardsForP.map((c) => c?.card?.name || 'Card'),
@@ -443,7 +441,7 @@ function handlePutIntoPlay(
     category: 'ability',
     key: 'card.putIntoPlay',
     params: {
-      player: player.name,
+      actor: player.name,
       cards: cardNames,
       destination: toZone,
     },
@@ -523,8 +521,8 @@ function handleShuffleIntoDeck(
     category: 'ability',
     key: 'deck.shuffled',
     params: {
-      player: player.name,
-      count: matches.length,
+      actor: player.name,
+      amount: matches.length,
       destination: toDeck,
     },
     onomatopoeia,
@@ -553,7 +551,7 @@ function handleRemoveFromGame(
   state.removedFromGame.push(source);
   appendLog(state, {
     key: 'card.removedFromGame',
-    params: { card: source.card.name, player: player.name },
+    params: { card: source.card.name, actor: player.name },
     onomatopoeia: 'REMOVED FROM THE GAME!',
   });
   return { state, success: true, mutatedState: true, onomatopoeia: 'REMOVED FROM THE GAME!' };
@@ -787,7 +785,7 @@ function handleSearch(
       appendLog(state, {
         category: 'ability',
         key: 'decision.prompt.opened',
-        params: { player: player.name, promptId, source: sourceCardName },
+        params: { actor: player.name, promptId, source: sourceCardName },
         onomatopoeia: 'CHOOSE PLAYER!',
       });
 
@@ -863,7 +861,7 @@ function handleSearch(
       actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
       key: 'card.search.nothingFound',
       params: {
-        player: targetPlayer.name,
+        actor: targetPlayer.name,
         source: context.sourceCardInstance?.card.name || promptTitle,
         zone: sourceZones.join(', '),
       },
@@ -1118,7 +1116,7 @@ function handlePlayFromZone(
         category: 'ability',
         key: 'card.playFromZone',
         params: {
-          player: player.name,
+          actor: player.name,
           card: chosenCard.card.name,
           source,
         },

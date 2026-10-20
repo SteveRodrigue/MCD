@@ -621,8 +621,8 @@ export function resolveSimultaneousAbilitiesOrderPrompt(
     actor: { name: playerName, type: player?.currentForm || 'hero' },
     key: 'decision.order_simultaneous.resolved',
     params: {
-      player: playerName,
-      count: orderedPrompts.length,
+      actor: playerName,
+      amount: orderedPrompts.length,
     },
     onomatopoeia: 'ORDER SET!',
   });
@@ -698,7 +698,7 @@ export function resolveDecisionPrompt(
     appendLog(nextState, {
       category: 'ability',
       key: 'decision.prompt.passed',
-      params: { player: playerName, promptId: prompt.promptId, source: prompt.sourceCardName },
+      params: { actor: playerName, promptId: prompt.promptId, source: prompt.sourceCardName },
       onomatopoeia: 'PASSED',
     });
 
@@ -733,7 +733,7 @@ export function resolveDecisionPrompt(
   appendLog(nextState, {
     category: 'ability',
     key: 'decision.prompt.resolved',
-    params: { player: playerName, option: optionLabel, promptId: prompt.promptId },
+    params: { actor: playerName, option: optionLabel, promptId: prompt.promptId },
     onomatopoeia: 'CHOICE MADE!',
   });
 
@@ -763,7 +763,7 @@ export function resolveDecisionPrompt(
       appendLog(nextState, {
         category: 'ability',
         key: 'ability.aborted.noValidTarget',
-        params: { player: playerName, ability: optAbility.id },
+        params: { actor: playerName, source: optAbility.id },
         onomatopoeia: 'NO VALID TARGET!',
       });
     }
@@ -846,7 +846,7 @@ export function resolveDecisionPrompt(
       appendLog(nextState, {
         category: 'ability',
         key: `ability.${optAbility.id}.triggered`,
-        params: { player: playerName },
+        params: { actor: playerName },
         onomatopoeia: 'ABILITY TRIGGERED!',
       });
     }

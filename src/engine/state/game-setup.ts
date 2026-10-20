@@ -401,7 +401,7 @@ export function advancePlayerSetup(state: GameState): GameState {
       category: 'ability',
       actor: { name: player.name, type: player.currentForm },
       key: 'character.setup.resolved',
-      params: { player: player.name, card: card.name },
+      params: { actor: player.name, card: card.name },
       onomatopoeia: `SETUP: ${card.name.toUpperCase()} READY!`,
     });
   }

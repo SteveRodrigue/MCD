@@ -21,7 +21,7 @@ export function dealSurgeCard(state: GameState, player: PlayerState, cardName?: 
   }
   appendLog(state, {
     key: 'encounter.surge.triggered',
-    params: { card: cardName || 'Encounter', player: player.name },
+    params: { card: cardName || 'Encounter', actor: player.name },
     onomatopoeia: 'SURGE!',
   });
   return Boolean(surgeCard);

@@ -21,6 +21,7 @@ describe('attack outcome facts for later steps (#295)', () => {
   const setup = (heroCode: [string, string] = ['01001a', '01001b']) => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

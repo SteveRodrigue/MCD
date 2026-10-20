@@ -16,6 +16,7 @@ describe('Med Team (01080): heal 2 damage from a friendly character', () => {
     const carol = cardCatalog.getCard('01010b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

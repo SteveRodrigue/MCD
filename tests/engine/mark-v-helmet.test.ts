@@ -43,6 +43,7 @@ describe('Mark V Helmet (01037): remove 1 threat from a scheme, from each scheme
     const ironMan = cardCatalog.getCard('01029a') as HeroCard;
     const tony = cardCatalog.getCard('01029b') as AlterEgoCard;
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

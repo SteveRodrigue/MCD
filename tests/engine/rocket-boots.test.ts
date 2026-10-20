@@ -25,6 +25,7 @@ describe('Rocket Boots (01039) (Issue #131)', () => {
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

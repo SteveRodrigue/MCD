@@ -18,6 +18,7 @@ describe('Helicarrier Multiplayer Lifecycle & Prompt Clearance (#165)', () => {
 
   beforeEach(() => {
     gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

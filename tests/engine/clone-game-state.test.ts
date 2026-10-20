@@ -9,6 +9,7 @@ import type { AlterEgoCard, GameState, HeroCard } from '@engine/models';
 describe('cloneGameState', () => {
   const newState = (): GameState =>
     setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       skipMulligan: true,
       players: [
@@ -42,7 +43,10 @@ describe('cloneGameState', () => {
 
     const clone = cloneGameState(state);
 
-    expect(clone).toEqual(JSON.parse(JSON.stringify(state)));
+    // The catalog is kept by reference, not serialised
+    expect(clone.options!.catalog).toBe(state.options!.catalog);
+    const jsonState = JSON.parse(JSON.stringify({ ...state, options: {} }));
+    expect({ ...clone, options: {} }).toEqual(jsonState);
     expect('shuffleFn' in clone.options!).toBe(false);
     expect('leftover' in clone).toBe(false);
   });

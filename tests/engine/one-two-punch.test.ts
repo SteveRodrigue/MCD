@@ -27,6 +27,7 @@ describe('One-Two Punch (01024): Response after you make a basic attack, ready S
     const tony = cardCatalog.getCard('01029b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

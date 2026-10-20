@@ -30,6 +30,7 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

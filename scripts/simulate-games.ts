@@ -120,6 +120,7 @@ async function run100GameSimulationGate() {
 
     try {
       const initialState = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         difficulty: config.difficulty,
         seed: config.seed,

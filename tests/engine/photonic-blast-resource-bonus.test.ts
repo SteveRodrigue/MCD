@@ -31,6 +31,7 @@ describe('Photonic Blast (01013) Resource Bonus Acceptance Test Suite (Issue #20
     carolDanversAlterEgo = cardCatalog.getCard('01010a') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

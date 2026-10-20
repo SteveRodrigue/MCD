@@ -4,6 +4,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { DecisionPromptModal } from '../../src/ui/components/board/DecisionPromptModal';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
+import { cloneGameState } from '@engine/models';
 import type { AlterEgoCard, GameState, HeroCard, SideSchemeState } from '@engine/models';
 
 /**
@@ -15,6 +16,7 @@ describe('Spider-Tracer scheme prompt, engine to modal to engine (Issue #249)', 
     const spiderMan = cardCatalog.getCard('01001a') as HeroCard;
     const peter = cardCatalog.getCard('01001b') as AlterEgoCard;
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -104,7 +106,7 @@ describe('Spider-Tracer scheme prompt, engine to modal to engine (Issue #249)', 
       fireEvent.click(screen.getAllByRole('button')[index]);
       unmount();
 
-      const resolved = dispatchAction(structuredClone(afterAttack), {
+      const resolved = dispatchAction(cloneGameState(afterAttack), {
         type: 'RESOLVE_DECISION_PROMPT',
         playerId: 'p1',
         selectedOptionId: chosen!,

@@ -38,6 +38,7 @@ describe('Weapons Runner (01121): boost puts it into play engaged with the attac
     const players = [player('p1', firstHero[0], firstHero[1])];
     if (playerCount === 2) players.push(player('p2', '01010a', '01010b'));
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players,
       villain: cardCatalog.getCard('01094') as any,

@@ -92,6 +92,7 @@ describe('Fan-Made Custom Scenario Extensibility (Universal Scenario Package For
     expect(ScenarioRegistry.has('fan_made_hydra_base')).toBe(true);
 
     const baseState = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'fan_made_hydra_base',
       players: [
         {

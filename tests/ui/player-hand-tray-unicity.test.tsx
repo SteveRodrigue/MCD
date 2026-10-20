@@ -44,6 +44,7 @@ describe('PlayerHandTray Global Unicity UI Enforcement (Issue #187)', () => {
     nickFuryCard = cardCatalog.getCard('01084') as AllyCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

@@ -19,6 +19,7 @@ describe('Event Intrinsic Discard Lifecycle (Issue #271 / RR v1.8 Event)', () =>
 
   beforeEach(() => {
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [player('p1', '01001a', '01001b'), player('p2', '01010a', '01010b')],
       villain: cardCatalog.getCard('01094') as any,

@@ -40,6 +40,7 @@ describe('Feature Delivery: Vision (01068) Once-Per-Round Limit & Temporary Stat
 
   beforeEach(() => {
     gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

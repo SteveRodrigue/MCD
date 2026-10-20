@@ -19,6 +19,7 @@ describe('State Lifecycle Duration & Zone Cleanup', () => {
 
   beforeEach(() => {
     gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

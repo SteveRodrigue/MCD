@@ -45,6 +45,7 @@ describe('Boost resolution: one shared helper for every activation (#263)', () =
   const setup = () => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

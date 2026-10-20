@@ -28,6 +28,7 @@ describe('Target Scopes & Form Invariants Contract Tests (ADR-0064 & RR v1.8)', 
 
     // Case 1A: Player in Hero form takes 1 damage
     const heroState = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -57,6 +58,7 @@ describe('Target Scopes & Form Invariants Contract Tests (ADR-0064 & RR v1.8)', 
 
     // Case 1B: Player in Alter-Ego form takes 0 damage (RR v1.8 p. 11, 13)
     const alterEgoState = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -87,6 +89,7 @@ describe('Target Scopes & Form Invariants Contract Tests (ADR-0064 & RR v1.8)', 
 
   it('Test 2: Shocker in 2-player game (P1 in Hero, P2 in Alter-Ego) damages P1 only', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -136,6 +139,7 @@ describe('Target Scopes & Form Invariants Contract Tests (ADR-0064 & RR v1.8)', 
 
   it('Test 3: Rhino Stage III (01096) stuns all heroes in multiplayer (P1 Hero, P2 Hero stunned; P3 Alter-Ego immune)', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -194,6 +198,7 @@ describe('Target Scopes & Form Invariants Contract Tests (ADR-0064 & RR v1.8)', 
 
   it('Test 4: Explosion (01111) targets ALL_HEROES_AND_ALLIES across multiple players', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

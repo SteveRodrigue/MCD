@@ -28,6 +28,7 @@ describe('Facedown Encounter Card Display in Hero Zone (Issue #138)', () => {
     }));
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players,
       villain: cardCatalog.getCard('01094') as any,

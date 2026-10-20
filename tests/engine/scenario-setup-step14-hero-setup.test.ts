@@ -55,6 +55,7 @@ describe('Player Setup abilities (RR v1.8 Appendix II step 16, #283)', () => {
 
   it("asks which Black Panther upgrade to add (T'Challa 01040b), then the game begins", () => {
     let state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [bp()],
       shuffleFn: (arr) => arr,
@@ -83,6 +84,7 @@ describe('Player Setup abilities (RR v1.8 Appendix II step 16, #283)', () => {
 
   it('adds the only candidate without a prompt', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         bp([...Array(14).fill(cardCatalog.getCard('01044')!), cardCatalog.getCard('01049')!]),
@@ -98,6 +100,7 @@ describe('Player Setup abilities (RR v1.8 Appendix II step 16, #283)', () => {
 
   it('does nothing when the deck holds no Black Panther upgrade', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [bp(Array(15).fill(cardCatalog.getCard('01044')!))],
       shuffleFn: (arr) => arr,
@@ -111,6 +114,7 @@ describe('Player Setup abilities (RR v1.8 Appendix II step 16, #283)', () => {
 
   it('resolves Setup after the mulligan, so the fetched upgrade cannot be mulliganed', () => {
     let state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [bp()],
       shuffleFn: (arr) => arr,
@@ -137,6 +141,7 @@ describe('Player Setup abilities (RR v1.8 Appendix II step 16, #283)', () => {
 
   it('leaves heroes without Setup abilities unaffected (Spider-Man 01001b)', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -182,6 +187,7 @@ describe('Player Setup abilities (RR v1.8 Appendix II step 16, #283)', () => {
     } as AlterEgoCard;
 
     let state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

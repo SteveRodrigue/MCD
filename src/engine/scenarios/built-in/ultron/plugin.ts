@@ -1,5 +1,4 @@
-import { CardInstance, CardType, GameState, MinionCard } from '@engine/models';
-import { cardCatalog } from '../../../../data/importer/card-loader';
+import { CardInstance, CardType, GameState, MinionCard, getCatalog } from '@engine/models';
 import { createCardInstance } from '../../../state/card-instance';
 import { appendLog } from '../../../state/game-log';
 import { DeclarativeScenarioPlugin } from '../../declarative-plugin';
@@ -64,7 +63,7 @@ export class UltronScenarioPlugin extends DeclarativeScenarioPlugin {
 
   resolveStage1ASetup(state: GameState, _options?: ScenarioGameSetupOptions): GameState {
     // 1A Setup: Put Ultron Drones (01140) environment into play
-    const ultronDronesCard = cardCatalog.getCard('01140');
+    const ultronDronesCard = getCatalog(state).getCard('01140');
     if (ultronDronesCard) {
       const envInstance = createCardInstance(ultronDronesCard);
       state.environments.push(envInstance);

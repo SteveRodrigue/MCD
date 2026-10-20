@@ -1,3 +1,4 @@
+import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CardCatalog } from '@data/importer/card-loader';
 import {
@@ -43,6 +44,7 @@ describe('Universal Event Interception and Scalar Value Binding (ADR-0049 & Issu
     const mainScheme = catalog.getCard('01097b') as MainSchemeCard;
 
     gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

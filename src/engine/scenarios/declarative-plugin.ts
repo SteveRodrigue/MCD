@@ -7,13 +7,13 @@ import {
   VillainCard,
   VillainState,
   getActiveMainScheme,
+  getCatalog,
   getActiveVillain,
   getPerPlayerCount,
   getVillainById,
   replaceActiveMainScheme,
   setActiveVillain,
 } from '@engine/models';
-import { cardCatalog } from '../../data/importer/card-loader';
 import { createCardInstance } from '../state/card-instance';
 import { appendLog } from '../state/game-log';
 import { nextEngineId, shuffleArray } from '../state/rng';
@@ -41,9 +41,9 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
   }
 
   /** The B sides of the main scheme stages, in order. */
-  private mainSchemeStages(): MainSchemeCard[] {
+  private mainSchemeStages(state: GameState): MainSchemeCard[] {
     return this.definition.mainSchemeSetup.stages
-      .map((code) => cardCatalog.getCard(code))
+      .map((code) => getCatalog(state).getCard(code))
       .filter(
         (card): card is MainSchemeCard =>
           card?.type === CardType.MAIN_SCHEME &&
@@ -91,7 +91,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
       ...this.excludedEncounterTypes,
     ]);
     const deckCards = setCodes
-      .flatMap((code) => cardCatalog.getExpandedCardsBySet(code))
+      .flatMap((code) => getCatalog(state).getExpandedCardsBySet(code))
       .filter((c: NormalizedCard) => !excludedTypes.has(c.type) && !stageCodes.has(c.code));
 
     state.encounterDeck = shuffleArray(state, deckCards).map((c) => createCardInstance(c));
@@ -109,7 +109,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
 
     // 1. The first villain stage of the difficulty
     const startingStageCode = this.definition.villainSetup.stages[difficulty][0];
-    const villainCard = cardCatalog.getCard(startingStageCode) as VillainCard | undefined;
+    const villainCard = getCatalog(state).getCard(startingStageCode) as VillainCard | undefined;
     if (!villainCard) {
       throw new Error(
         `Villain card '${startingStageCode}' not found in catalog for scenario '${this.definition.id}'.`,
@@ -129,7 +129,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     setActiveVillain(state, villain.instanceId!);
 
     // 2. The first main scheme stage (1B)
-    const [firstScheme] = this.mainSchemeStages();
+    const [firstScheme] = this.mainSchemeStages(state);
     if (!firstScheme) {
       throw new Error(`Main scheme stage '1B' not found for scenario '${this.definition.id}'.`);
     }
@@ -190,7 +190,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     _completedSchemeInstanceId: string,
   ): { state: GameState; advancedStage?: boolean; defeat?: boolean } {
     const current = getActiveMainScheme(state);
-    const stages = this.mainSchemeStages();
+    const stages = this.mainSchemeStages(state);
     const next = stages[stages.findIndex((card) => card.code === current.card.code) + 1];
 
     // The next main scheme stage, or the players lose with the last one

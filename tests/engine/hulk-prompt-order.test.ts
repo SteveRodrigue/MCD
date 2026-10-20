@@ -28,6 +28,7 @@ describe('Hulk 01050 pausable sequence prompt ordering (#248)', () => {
   const setup = () => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

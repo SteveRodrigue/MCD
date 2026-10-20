@@ -20,6 +20,7 @@ describe('trigger filter members (#276)', () => {
 
   beforeEach(() => {
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

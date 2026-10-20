@@ -29,6 +29,7 @@ function createTestGame(
 ): GameState {
   resetInstanceCounter();
   const state = setupGame({
+    catalog: cardCatalog,
     scenarioId: 'rhino',
     players: playerConfigs.map((cfg, i) => ({
       id: `p${i + 1}`,

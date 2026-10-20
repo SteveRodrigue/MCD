@@ -3,6 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { executeEffect } from '@engine/effects';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
+import { cloneGameState } from '@engine/models';
 import type {
   AlterEgoCard,
   CardAbility,
@@ -84,6 +85,7 @@ describe('Spider-Tracer removes exactly 3 threat per defeated host (Issue #249)'
     const captainMarvel = cardCatalog.getCard('01010a') as HeroCard;
     const carol = cardCatalog.getCard('01010b') as AlterEgoCard;
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -304,7 +306,7 @@ describe('Spider-Tracer removes exactly 3 threat per defeated host (Issue #249)'
   describe('multi-scheme prompt', () => {
     it('main scheme plus two side schemes: three options, each choice removes 3 from that scheme only', () => {
       const setup = () => {
-        const fresh = structuredClone(state);
+        const fresh = cloneGameState(state);
         fresh.sideSchemes = [bombScare(4), breakin(3)];
         return fresh;
       };

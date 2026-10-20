@@ -16,6 +16,7 @@ describe('Pepper Potts (01033) Dynamic Resource Generator — RR v1.8 & Issue #1
     tonyStarkAlterEgo = cardCatalog.getCard('01029b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

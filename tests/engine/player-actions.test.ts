@@ -1,3 +1,4 @@
+import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CardCatalog } from '@data/importer/card-loader';
 import {
@@ -50,6 +51,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
     const mainScheme = catalog.getCard('01097b') as MainSchemeCard;
 
     gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

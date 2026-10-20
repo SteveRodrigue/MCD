@@ -13,6 +13,7 @@ describe('Round & Phase Synchronization (Issue #169)', () => {
 
   function createTwoPlayerGame() {
     return setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

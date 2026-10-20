@@ -10,6 +10,7 @@ describe('assertGameStateInvariants', () => {
 
   function createBaseGame() {
     return setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

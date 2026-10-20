@@ -23,6 +23,7 @@ describe('Keyword-only minions carry no invented ability (item 14 read-through)'
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

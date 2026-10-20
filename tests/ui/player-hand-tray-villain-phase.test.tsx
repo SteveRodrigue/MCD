@@ -38,6 +38,7 @@ describe('PlayerHandTray during Villain Phase (Issue #182)', () => {
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

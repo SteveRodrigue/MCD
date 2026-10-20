@@ -35,6 +35,7 @@ describe('Player elimination (#246)', () => {
       ...(count === 3 ? [makePlayer('p3', '01029a', '01029b')] : []),
     ];
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players,
       villain: cardCatalog.getCard('01094') as any,

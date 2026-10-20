@@ -14,6 +14,7 @@ describe('Feature Delivery: Webbed Up (01009) & Host Attack Interception (Issue 
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

@@ -28,6 +28,7 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
     mainScheme = cardCatalog.getCard('01097b') as MainSchemeCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

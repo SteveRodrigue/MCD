@@ -18,6 +18,7 @@ describe('Defeat Trigger Filtering (Issue #167)', () => {
     carolDanversAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

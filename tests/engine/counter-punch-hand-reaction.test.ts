@@ -29,6 +29,7 @@ describe('Counter-Punch (01077): hand reaction after your hero defends', () => {
     const carol = cardCatalog.getCard('01010b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

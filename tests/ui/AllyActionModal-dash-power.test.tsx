@@ -9,6 +9,7 @@ import { TestSession } from '../support/render-with-session';
 describe('AllyActionModal dash (–) power display (Issue #316)', () => {
   it('shows THW – for Hulk and disables the thwart button', () => {
     const state: GameState = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

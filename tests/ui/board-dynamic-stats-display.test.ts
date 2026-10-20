@@ -19,6 +19,7 @@ describe('UI Dynamic Board Stats Display Contract (Issue #103)', () => {
     tonyStarkAlterEgo = cardCatalog.getCard('01029b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

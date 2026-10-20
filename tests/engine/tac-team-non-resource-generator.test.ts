@@ -10,6 +10,7 @@ describe('Resource Payment Generator Validation (RR v1.8 p. 25, Issue #43)', () 
 
   it('1. Rejects Tac Team (01056) as a payment generator during PLAY_CARD', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -60,6 +61,7 @@ describe('Resource Payment Generator Validation (RR v1.8 p. 25, Issue #43)', () 
 
   it('2. Accepts Web-Shooter (01008) as a genuine payment generator during PLAY_CARD', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

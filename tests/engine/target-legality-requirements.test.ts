@@ -22,6 +22,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
 
   it('1. Rejects Surveillance Team (01064) activation when no scheme has threat (RR v1.8 p. 15-16, 29)', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -76,6 +77,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
 
   it('2. Excludes Surveillance Team from legal actions when no schemes have threat', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -110,6 +112,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
 
   it('3. Rejects playing For Justice! (01060) from hand when no schemes have threat', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -148,6 +151,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
 
   it('4. Allows Surveillance Team activation and removes threat when main scheme has threat > 0', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -190,6 +194,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
 
   it('5. Rejects threat removal targeting main scheme when a Crisis side scheme is in play with 0 threat', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -230,6 +235,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
 
   it('6. Rejects threat removal targeting main scheme when player is engaged with a Patrol minion and no side schemes have threat', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -269,6 +275,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
 
   it('7. Allows threat removal targeting a side scheme with threat even when Crisis is in play', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -308,6 +315,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
 
   it('8. Rejects attack ability targeting villain when player is engaged with a Guard minion', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -354,6 +362,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
 
   it('9. First Aid (01086, Event) is unplayable when no character is damaged, and playable when damaged', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -409,6 +418,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
 
   it('10. Med Team (01080, Support) is playable from hand at full health, enters tableau with 3 counters, and its action is rejected when undamaged', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

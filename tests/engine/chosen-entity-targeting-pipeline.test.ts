@@ -27,6 +27,7 @@ describe('Systemic CHOSEN_* Entity Targeting Pipeline (Fixes #146)', () => {
 
   const createTwoPlayerGame = () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

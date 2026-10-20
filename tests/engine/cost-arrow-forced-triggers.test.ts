@@ -11,6 +11,7 @@ describe('Cost Arrow Mandatory Resolution & Trigger Pipeline (RR v1.8 p. 8, 15, 
 
   it('1. Superhuman Strength (01028): gives +2 ATK, automatically pays discardSelf cost on attack, and stuns target', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -59,6 +60,7 @@ describe('Cost Arrow Mandatory Resolution & Trigger Pipeline (RR v1.8 p. 8, 15, 
 
   it('2. War Machine (01030): exhausts and deals 2 damage to self to deal 1 damage to all enemies (Issue #11)', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

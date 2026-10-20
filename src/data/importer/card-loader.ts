@@ -13,6 +13,7 @@ import {
   AllyCard,
   AbilityTiming,
   CharacterPower,
+  CardRepository,
   registerSharedCardDefinition,
 } from '@engine/models';
 
@@ -448,7 +449,7 @@ export function applyTranslationOverlay<T extends NormalizedCard = NormalizedCar
 /**
  * Card Catalog Repository
  */
-export class CardCatalog {
+export class CardCatalog implements CardRepository {
   private cards: Map<string, NormalizedCard> = new Map();
 
   constructor(initialCards: RawUpstreamCard[] = []) {

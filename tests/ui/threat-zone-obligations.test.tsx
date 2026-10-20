@@ -17,6 +17,7 @@ vi.mock('../../src/ui/hooks/useCardArt', () => ({
 describe('Threat Zone sub-zones: Obligations (Issue #158)', () => {
   function createGame(): GameState {
     return setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

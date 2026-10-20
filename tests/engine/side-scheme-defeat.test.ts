@@ -20,6 +20,7 @@ describe('Canonical Side Scheme Defeat & Zero-Threat Scheme Pipeline (Issue #149
     mainScheme = JSON.parse(JSON.stringify(cardCatalog.getCard('01097b')!));
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -132,6 +133,7 @@ describe('Canonical Side Scheme Defeat & Zero-Threat Scheme Pipeline (Issue #149
       const blackPantherAlterEgo = JSON.parse(JSON.stringify(cardCatalog.getCard('01040b')!));
 
       const bpState = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {

@@ -23,6 +23,7 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
 
   it('deals cards sequentially for hazard icons in a 3-player game starting from First Player (RR v1.8 p. 11)', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -73,6 +74,7 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
 
   it('wraps around and respects firstPlayerIndex rotation during sequential hazard dealing', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -116,6 +118,7 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
 
   it('deals additional base cards for Heroic Mode (Heroic 1, Heroic 2)', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       difficulty: 'EXPERT',
       heroicLevel: 1, // Heroic 1 -> +1 base card per player (2 cards each)
@@ -152,6 +155,7 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
 
   it('combines Heroic Mode and Sequential Hazard Dealing', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       difficulty: 'EXPERT',
       heroicLevel: 2, // Heroic 2 -> +2 base cards per player (3 cards each)

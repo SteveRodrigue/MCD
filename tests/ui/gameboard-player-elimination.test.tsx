@@ -13,6 +13,7 @@ import { TestSession } from '../support/render-with-session';
 describe('GameBoard with eliminated players (#246)', () => {
   const build = (): GameState =>
     setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         ['01001a', '01001b', 'Peter Parker'],

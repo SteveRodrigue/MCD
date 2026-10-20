@@ -38,6 +38,7 @@ describe('Make the Call Payment UI Flow (Issue #173)', () => {
 
   function createTestGame() {
     const state = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

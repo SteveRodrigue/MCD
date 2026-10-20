@@ -22,6 +22,7 @@ describe('Milestone 2A.2: Unified Dynamic Stat & Aura Calculator', () => {
     tonyStarkAlterEgo = cardCatalog.getCard('01029b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

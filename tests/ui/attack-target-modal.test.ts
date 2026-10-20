@@ -1,3 +1,4 @@
+import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setupGame, resetInstanceCounter, createCardInstance } from '@engine/index';
 import { CardCatalog } from '@data/importer/card-loader';
@@ -35,6 +36,7 @@ describe('Attack Target Selection & Guard Invariants (RR v1.8 p. 5-6, 15)', () =
     const mainScheme = catalog.getCard('01097b') as any;
 
     gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

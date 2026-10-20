@@ -14,6 +14,7 @@ describe('Shared step-gate evaluator (ADR-0080, Issues #289, #290)', () => {
     hero = cardCatalog.getCard('01001a') as HeroCard;
     const alterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

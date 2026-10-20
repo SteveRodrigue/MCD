@@ -1,3 +1,4 @@
+import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CardCatalog } from '../../src/data/importer/card-loader';
 import {
@@ -42,6 +43,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
     const mainScheme = catalog.getCard('01097b') as MainSchemeCard;
 
     gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

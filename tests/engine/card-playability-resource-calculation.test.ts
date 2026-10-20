@@ -12,6 +12,7 @@ describe('Card Playability Potential Resource Calculation (Issue #153, RR v1.8 p
 
   function createTestState() {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

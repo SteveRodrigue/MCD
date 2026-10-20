@@ -1,9 +1,8 @@
-import { GameState, CardInstance, AbilityStep, CardAbility } from '../models';
+import { GameState, CardInstance, AbilityStep, CardAbility, getCatalog } from '../models';
 import { EffectExecutionContext, EffectResult, executeSequence } from '../effects';
 import { SpecialAbilityHandler, registerSpecialHandler } from './special-registry';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
 import { nextEngineId } from '../state/rng';
-import { cardCatalog } from '../../data/importer/card-loader';
 
 const BLACK_PANTHER_UPGRADE_CODES = ['01046', '01047', '01048', '01049'];
 
@@ -20,10 +19,10 @@ function getPlayerBlackPantherUpgrades(playerState: { tableau: CardInstance[] })
 }
 
 /** The upgrade's Special ability, from the instance enrichment or the catalog copy of the card. */
-function getSpecialAbility(upgrade: CardInstance): CardAbility | undefined {
+function getSpecialAbility(state: GameState, upgrade: CardInstance): CardAbility | undefined {
   return (
     upgrade.card.enrichment?.abilities?.find((a) => a.timing === 'SPECIAL') ||
-    cardCatalog
+    getCatalog(state)
       .getCard(upgrade.card.code)
       ?.enrichment?.abilities?.find((a) => a.timing === 'SPECIAL')
   );
@@ -57,7 +56,7 @@ const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
       for (let i = 0; i < upgrades.length; i++) {
         const upg = upgrades[i];
         const isFinal = i === upgrades.length - 1;
-        const special = getSpecialAbility(upg);
+        const special = getSpecialAbility(state, upg);
         if (special?.steps) {
           for (const step of special.steps) {
             allSteps.push({
@@ -115,7 +114,7 @@ const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
       sourceCardName: 'Wakanda Forever!',
       options: availableUpgrades.map((u) => {
         // The first Special step carries the amount and its finisher bonus, read from the card data.
-        const step = getSpecialAbility(u)?.steps?.[0];
+        const step = getSpecialAbility(state, u)?.steps?.[0];
         const amount = step?.effectParams?.amount;
         const finisherBonus = step?.effectParams?.finisherBonus;
         return {

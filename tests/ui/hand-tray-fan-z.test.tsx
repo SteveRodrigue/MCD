@@ -23,6 +23,7 @@ describe('PlayerHandTray fan z-index (Issue #312)', () => {
 
   it('keeps every card of a 50-card hand above z 0 and raises the hovered card to count + 1', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

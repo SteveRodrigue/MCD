@@ -17,6 +17,7 @@ describe('Conditional (gated) ADD_TRAIT (Issue #154, RR v1.8)', () => {
     captainMarvel = cardCatalog.getCard('01010a') as HeroCard;
     carolDanvers = cardCatalog.getCard('01010b') as AlterEgoCard;
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

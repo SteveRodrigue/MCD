@@ -61,6 +61,7 @@ function expertSetup(
   deck: () => NormalizedCard[] = deckWithReactions,
 ): GameState {
   return setupGame({
+    catalog: cardCatalog,
     scenarioId: 'rhino',
     difficulty: 'EXPERT',
     players: players.map((p) => ({ ...p, deckCards: deck() })),
@@ -105,6 +106,7 @@ describe('Setup order: opening hands drawn after the scenario setup (Issue #240)
     );
     const deck = () => [...distinct, ...distinct, ...distinct, ...distinct, ...distinct];
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       difficulty: 'STANDARD',
       players: [{ ...SPIDER_MAN, deckCards: deck() }],
@@ -210,6 +212,7 @@ describe('Setup order: opening hands drawn after the scenario setup (Issue #240)
     function probeSetup(skipMulligan: boolean): GameState {
       ScenarioRegistry.register(probe);
       return setupGame({
+        catalog: cardCatalog,
         scenarioId: 'setup_phase_probe',
         players: [{ ...SPIDER_MAN, deckCards: deckWithReactions() }],
         villain: card('01094') as any,

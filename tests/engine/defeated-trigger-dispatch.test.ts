@@ -6,6 +6,7 @@ import { dispatchTrigger } from '../../src/engine/triggers/trigger-dispatcher';
 
 function createState() {
   return setupGame({
+    catalog: cardCatalog,
     scenarioId: 'rhino',
     players: [
       {

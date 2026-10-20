@@ -29,6 +29,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -338,6 +339,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
     const carolDanversAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
 
     const twoPlayerState = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -410,6 +412,7 @@ describe('Crisis icon count (#243): an icon is counted from scheme_crisis, never
 
   it('counts every icon in play: 2 on one card and 1 on another make 3, and legality only needs one', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

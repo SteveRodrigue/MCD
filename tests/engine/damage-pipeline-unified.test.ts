@@ -47,6 +47,7 @@ describe('One damage pipeline for ability damage (#247 part 1)', () => {
   beforeEach(() => {
     dispatched.length = 0;
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [makePlayer('p1', '01001a', '01001b'), makePlayer('p2', '01010a', '01010b')],
       villain: cardCatalog.getCard('01094') as any,

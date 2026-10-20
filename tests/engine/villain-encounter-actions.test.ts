@@ -26,6 +26,7 @@ describe('Villain & Encounter Card Action Discovery & Legality (Issue #314 / RR 
     tonyStarkAlterEgo = cardCatalog.getCard('01029b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

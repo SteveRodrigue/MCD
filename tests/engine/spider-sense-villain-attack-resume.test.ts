@@ -1,3 +1,4 @@
+import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CardCatalog } from '@data/importer/card-loader';
 import {
@@ -48,6 +49,7 @@ describe('Issue #264: Villain attack resumes after declining/accepting Spider-Se
     const mainScheme = catalog.getCard('01097b') as MainSchemeCard; // The Break-In! (Threat 0, Target 7)
 
     gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

@@ -18,6 +18,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
     mainScheme = cardCatalog.getCard('01097b') as MainSchemeCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

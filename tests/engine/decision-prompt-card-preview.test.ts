@@ -16,6 +16,7 @@ describe('Decision Prompt Card Preview Invariant (Issue #104)', () => {
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

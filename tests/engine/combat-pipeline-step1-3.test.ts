@@ -20,6 +20,7 @@ describe('Sub-Milestone 2B-1: Core Combat Lifecycle & Defender Declaration Engin
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

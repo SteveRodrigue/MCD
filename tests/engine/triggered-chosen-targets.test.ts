@@ -21,6 +21,7 @@ describe('Triggered abilities with a CHOSEN_* target let the player choose (#234
   const setup = (hero = '01001a', alterEgo = '01001b') => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

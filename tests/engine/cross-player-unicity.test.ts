@@ -47,6 +47,7 @@ describe('Cross-Player Global Unicity Enforcement (RR v1.8 pp. 28-29, Issue #187
       const nickFuryCard = cardCatalog.getCard('01084') as AllyCard;
 
       state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -134,6 +135,7 @@ describe('Cross-Player Global Unicity Enforcement (RR v1.8 pp. 28-29, Issue #187
 
       // Player 1 is Spider-Man (Peter Parker), Player 2 is She-Hulk (Jennifer Walters)
       state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -241,6 +243,7 @@ describe('Cross-Player Global Unicity Enforcement (RR v1.8 pp. 28-29, Issue #187
 
       // Player 1 is Spider-Man, Player 2 is Iron Man
       state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -296,6 +299,7 @@ describe('Cross-Player Global Unicity Enforcement (RR v1.8 pp. 28-29, Issue #187
       expect(triskelionCard.isUnique).toBe(true);
 
       state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -352,6 +356,7 @@ describe('Cross-Player Global Unicity Enforcement (RR v1.8 pp. 28-29, Issue #187
       const nickFuryCard = cardCatalog.getCard('01084') as AllyCard;
 
       state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {

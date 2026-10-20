@@ -15,8 +15,8 @@ import {
   hasKeyword,
   PendingSetupAbility,
   createInitialGameStats,
+  CardRepository,
 } from '@engine/models';
-import { cardCatalog } from '../../data/importer/card-loader';
 import { ScenarioRegistry } from '../scenarios';
 import { executeEffect, hasPendingSequence } from '../effects';
 import { peekDecisionPrompt } from '../pipeline/prompt-queue';
@@ -38,6 +38,8 @@ export interface PlayerSetupConfig {
 }
 
 export interface GameSetupOptions {
+  /** The card catalog the game reads card definitions from. */
+  catalog: CardRepository;
   id?: string;
   scenarioId?: string;
   difficulty?: DifficultyMode;
@@ -84,8 +86,10 @@ export function setupGame(options: GameSetupOptions): GameState {
     idCounter: 0,
     options: {
       shuffleFn: options.shuffleFn,
+      catalog: options.catalog,
     },
   } as GameState;
+  const catalog = options.catalog;
   const shuffle = <T>(arr: T[]): T[] => shuffleArray(tempRngState, arr);
   const playerCount = options.players.length;
   const skipMulligan = options.skipMulligan ?? false;
@@ -123,7 +127,7 @@ export function setupGame(options: GameSetupOptions): GameState {
     const shuffledDeck = shuffle(drawDeckCards.map((c) => createCardInstance(c, pConfig.id)));
 
     const defaultNemesisCards = pConfig.hero.setCode
-      ? cardCatalog.getNemesisCardsForHero(pConfig.hero.setCode)
+      ? catalog.getNemesisCardsForHero(pConfig.hero.setCode)
       : [];
     const setAsideCards = (
       pConfig.nemesisCards && pConfig.nemesisCards.length > 0
@@ -161,8 +165,8 @@ export function setupGame(options: GameSetupOptions): GameState {
   // 2. Setup Default / Fallback Villain
   const rawVillain =
     options.villain ||
-    (cardCatalog.getVillainByStage(options.scenarioId || 'rhino', 'I') as VillainCard) ||
-    (cardCatalog.getCard('01094') as VillainCard);
+    (catalog.getVillainByStage(options.scenarioId || 'rhino', 'I') as VillainCard) ||
+    (catalog.getCard('01094') as VillainCard);
   const villainHealth = rawVillain.healthPerHero
     ? rawVillain.health * playerCount
     : rawVillain.health;
@@ -180,8 +184,8 @@ export function setupGame(options: GameSetupOptions): GameState {
   // 3. Setup Default / Fallback Main Scheme
   const rawMainScheme =
     options.mainScheme ||
-    (cardCatalog.getMainSchemeByStage(options.scenarioId || 'rhino', '1B') as MainSchemeCard) ||
-    (cardCatalog.getCard('01097b') as MainSchemeCard);
+    (catalog.getMainSchemeByStage(options.scenarioId || 'rhino', '1B') as MainSchemeCard) ||
+    (catalog.getCard('01097b') as MainSchemeCard);
 
   const mainScheme: MainSchemeState = {
     instanceId: `main_scheme_${nextEngineId(tempRngState, 'id')}_${rawMainScheme.code}`,
@@ -203,7 +207,7 @@ export function setupGame(options: GameSetupOptions): GameState {
 
   const rawEncounterCards =
     options.encounterCards ||
-    cardCatalog
+    catalog
       .getExpandedCardsBySet(options.scenarioId || 'rhino')
       .filter((c: NormalizedCard) => c.type !== 'villain' && c.type !== 'main_scheme');
   const allEncounterCards = [...rawEncounterCards, ...playerObligations];
@@ -221,6 +225,7 @@ export function setupGame(options: GameSetupOptions): GameState {
     idCounter: tempRngState.idCounter,
     options: {
       shuffleFn: options.shuffleFn,
+      catalog,
     },
     setupState: { stage: 'SCENARIO_SETUP', mulliganCompleted: {} },
     scenarioId: options.scenarioId || 'rhino',

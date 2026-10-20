@@ -41,6 +41,7 @@ describe('Lead from the Front (01070) asks which player (#251)', () => {
       },
     ].slice(0, playerCount);
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players,
       villain: cardCatalog.getCard('01094') as any,

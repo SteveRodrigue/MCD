@@ -11,6 +11,7 @@ describe('Universal Card Conservation & Attachment Deduplication (RR v1.8 p. 5, 
 
   it('1. Passes assertCardConservation on initial game setup and fails on duplicate injection', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -37,6 +38,7 @@ describe('Universal Card Conservation & Attachment Deduplication (RR v1.8 p. 5, 
 
   it('2. Attaches encounter cards to Villain with zero duplicates (Issue #44)', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -72,6 +74,7 @@ describe('Universal Card Conservation & Attachment Deduplication (RR v1.8 p. 5, 
 
   it('3. Plays Webbed Up (01009) onto minion with exact 1 attachment and zero duplicates', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -129,6 +132,7 @@ describe('Universal Card Conservation & Attachment Deduplication (RR v1.8 p. 5, 
 
   it('4. Automatically removes card from previous host when re-attaching', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

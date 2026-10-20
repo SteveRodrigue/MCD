@@ -13,6 +13,7 @@ describe('Resource Abilities Timing, Stance Isolation & Form Gating (RR v1.8 p. 
 
   it('1. Excludes Web-Shooter (01008) from board turn actions in both Hero and Alter-Ego forms', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -52,6 +53,7 @@ describe('Resource Abilities Timing, Stance Isolation & Form Gating (RR v1.8 p. 
 
   it('2. Allows Web-Shooter (HERO_RESOURCE) as generator when paying for cards in Hero form', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -98,6 +100,7 @@ describe('Resource Abilities Timing, Stance Isolation & Form Gating (RR v1.8 p. 
 
   it('3. Excludes Pepper Potts (01033) from board turn actions', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -133,6 +136,7 @@ describe('Resource Abilities Timing, Stance Isolation & Form Gating (RR v1.8 p. 
 
   it('4. Rejects Web-Shooter (HERO_RESOURCE) when paying for cards in Alter-Ego form', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

@@ -24,6 +24,7 @@ describe("ENEMY_ATTACKS: Titania's Fury (01164) and Titania's attack X (01162), 
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

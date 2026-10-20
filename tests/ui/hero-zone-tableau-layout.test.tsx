@@ -20,6 +20,7 @@ describe('HeroZone Nested Allies & 2-Tier Tableau Architecture (Issue #156)', ()
 
   function createTestGame() {
     return setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

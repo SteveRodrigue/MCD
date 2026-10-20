@@ -20,6 +20,7 @@ function newGame(heroCode: string, altCode: string, players = 1): GameState {
     deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
   });
   return setupGame({
+    catalog: cardCatalog,
     scenarioId: 'rhino',
     players: Array.from({ length: players }, (_, i) => make(`p${i + 1}`, pairs[i])),
     skipMulligan: true,

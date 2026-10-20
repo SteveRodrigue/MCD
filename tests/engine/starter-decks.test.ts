@@ -1,3 +1,4 @@
+import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect } from 'vitest';
 import { CardCatalog } from '../../src/data/importer/card-loader';
 import { getStarterDeck, listStarterDecks } from '../../src/engine/decks/starter-decks';
@@ -105,6 +106,7 @@ describe('Data-Driven Starter Deck Registry & Multi-Hero Integration (ADR-0016)'
     const bpDeck = getStarterDeck('black_panther_protection')!.loadDeck(catalog);
 
     const gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'player_1',

@@ -20,6 +20,7 @@ describe('Attachment Discard Cost & Form Validation (Issue #108 / ADR-0055)', ()
     mainScheme = cardCatalog.getCard('01097')!;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

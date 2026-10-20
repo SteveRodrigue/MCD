@@ -1,5 +1,4 @@
-import { GameState, SideSchemeCard } from '@engine/models';
-import { cardCatalog } from '../../../../data/importer/card-loader';
+import { GameState, SideSchemeCard, getCatalog } from '@engine/models';
 import { createCardInstance } from '../../../state/card-instance';
 import { appendLog } from '../../../state/game-log';
 import { DeclarativeScenarioPlugin } from '../../declarative-plugin';
@@ -23,7 +22,7 @@ export class KlawScenarioPlugin extends DeclarativeScenarioPlugin {
     let defenseNetworkCard =
       defenseNetworkIdx !== -1 ? state.encounterDeck.splice(defenseNetworkIdx, 1)[0] : null;
     if (!defenseNetworkCard) {
-      const card = cardCatalog.getCard('01124');
+      const card = getCatalog(state).getCard('01124');
       if (card) defenseNetworkCard = createCardInstance(card);
     }
 

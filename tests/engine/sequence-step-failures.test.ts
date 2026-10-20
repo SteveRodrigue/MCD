@@ -22,6 +22,7 @@ describe('executeSequence step failures (Issue #225)', () => {
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

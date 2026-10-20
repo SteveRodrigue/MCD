@@ -46,6 +46,7 @@ const TWO_ICON_BOOST = '01099'; // Charge, 2 boost icons
 function setup(players: PlayerSetup[], opts: { firstPlayerIndex?: number } = {}): GameState {
   resetInstanceCounter();
   const state = setupGame({
+    catalog: cardCatalog,
     scenarioId: 'rhino',
     players: players.map((p, i) => ({
       id: `p${i + 1}`,

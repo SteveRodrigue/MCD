@@ -23,6 +23,7 @@ describe('Unified Payment Subsystem & Exhaust Lifecycle Invariants (Issue #155)'
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

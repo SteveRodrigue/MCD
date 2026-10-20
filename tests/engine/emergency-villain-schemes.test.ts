@@ -22,6 +22,7 @@ describe('Emergency 01085 is scoped to the villain scheme (Issue #240)', () => {
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

@@ -299,6 +299,7 @@ describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060
       carolDanversAlterEgo = cardCatalog.getCard('01010a') as AlterEgoCard;
 
       state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {

@@ -27,6 +27,7 @@ describe('False Alarm (01112): surge when you are already confused (#242)', () =
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

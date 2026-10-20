@@ -27,6 +27,7 @@ describe('Target Resolution Engine Contract Tests (Issue #68 & RR v1.8)', () => 
 
   const createTwoPlayerState = () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

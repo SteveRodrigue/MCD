@@ -16,6 +16,7 @@ describe('Scenario Plugin & Difficulty Modes (Rules Reference v1.8 p. 28)', () =
   function createGame(difficulty: 'SKIRMISH' | 'STANDARD' | 'EXPERT'): GameState {
     const plugin = ScenarioRegistry.get('rhino');
     const baseState = setupGame({
+      catalog: cardCatalog,
       difficulty,
       scenarioId: 'rhino',
       players: [

@@ -14,6 +14,7 @@ describe('Available Resources Calculation (Issue #162)', () => {
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

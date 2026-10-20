@@ -1,3 +1,4 @@
+import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CardCatalog } from '@data/importer/card-loader';
 import {
@@ -52,6 +53,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
     const mainScheme = catalog.getCard('01097b') as MainSchemeCard; // The Break-In! (Threat 0, Target 7)
 
     gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

@@ -33,6 +33,7 @@ describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
     }));
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players,
       villain: cardCatalog.getCard('01094') as any,

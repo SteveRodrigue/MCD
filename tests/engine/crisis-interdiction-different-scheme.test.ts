@@ -1,3 +1,4 @@
+import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect } from 'vitest';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
@@ -87,6 +88,7 @@ function createMockState(options: {
     roundNumber: 1,
     firstPlayerIndex: 0,
     log: [],
+    options: { catalog: cardCatalog },
   } as any as GameState;
 }
 

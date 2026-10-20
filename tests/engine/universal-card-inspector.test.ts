@@ -14,6 +14,7 @@ describe('Universal Card Inspector Subsystem (Issue #13, ADR-0046)', () => {
     tonyStarkAlterEgo = cardCatalog.getCard('01029b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

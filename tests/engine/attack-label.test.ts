@@ -43,6 +43,7 @@ describe('The (attack) label (#247 part 2)', () => {
   beforeEach(() => {
     dispatched.length = 0;
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [makePlayer('p1', '01001a', '01001b')],
       villain: cardCatalog.getCard('01094') as any,

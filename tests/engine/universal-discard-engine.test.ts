@@ -21,6 +21,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
 
   function createTestGame() {
     return setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -406,6 +407,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
 
     function createTwoPlayerGame() {
       return setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -627,6 +629,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
 
     function twoPlayers() {
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: ['p1', 'p2'].map((id, i) => ({
           id,

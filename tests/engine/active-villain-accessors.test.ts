@@ -50,6 +50,7 @@ const makeVillain = (instanceId: string, code: string, health: number): VillainS
 
 const buildHeroState = (): GameState => {
   const state = setupGame({
+    catalog: cardCatalog,
     scenarioId: 'rhino',
     players: [
       {

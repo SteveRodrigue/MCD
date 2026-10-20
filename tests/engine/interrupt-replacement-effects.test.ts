@@ -19,6 +19,7 @@ describe('Feature #26 Contract Tests: Interrupt Replacement Effects (01078 & 010
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

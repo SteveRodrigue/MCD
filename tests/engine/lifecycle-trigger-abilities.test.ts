@@ -45,6 +45,7 @@ describe('lifecycle triggers, hero/alter-ego timings and STATUS_REMOVED (#276)',
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

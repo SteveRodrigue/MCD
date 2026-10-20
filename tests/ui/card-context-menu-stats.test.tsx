@@ -17,6 +17,7 @@ describe('CardContextMenu Stats Recap & Modals (#315)', () => {
     vi.restoreAllMocks();
 
     mockGameState = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

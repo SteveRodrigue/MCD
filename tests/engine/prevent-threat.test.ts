@@ -26,6 +26,7 @@ describe('PREVENT_THREAT Primitive Acceptance & Contract Tests (Issue #123, ADR-
     jenniferWaltersAlterEgo = cardCatalog.getCard('01019b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

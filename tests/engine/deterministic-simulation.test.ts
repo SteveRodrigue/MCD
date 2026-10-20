@@ -19,6 +19,7 @@ describe('Deterministic Simulation from Seed (Issue #252)', () => {
   function createTestGame(seed?: number | string): GameState {
     resetInstanceCounter();
     return setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

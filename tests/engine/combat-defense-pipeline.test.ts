@@ -135,6 +135,7 @@ function createInitialTestState(): GameState {
     encounterDiscard: [],
     players: [player1 as PlayerState, player2 as PlayerState],
     log: [],
+    options: { catalog: cardCatalog },
   } as any as GameState;
 }
 
@@ -471,7 +472,7 @@ describe('Combat & Defense Pipeline (RR v1.8)', () => {
   });
 
   it('Test 10: Issue #183 Regression: Cross-Table Hero Defense via RESOLVE_DECISION_PROMPT declares Spider-Man, exhausts Spider-Man, and applies 3 DEF', () => {
-    state.options = { villainPhaseStepping: true };
+    state.options = { ...state.options, villainPhaseStepping: true };
     const p1 = state.players[0]; // Spider-Man, DEF: 3, HP: 10
     const p2 = state.players[1]; // Iron Man, DEF: 2, HP: 9
 
@@ -518,7 +519,7 @@ describe('Combat & Defense Pipeline (RR v1.8)', () => {
   });
 
   it('Test 11: Issue #183 Regression: Cross-Table Ally Defense via RESOLVE_DECISION_PROMPT correctly declares and exhausts defending ally', () => {
-    state.options = { villainPhaseStepping: true };
+    state.options = { ...state.options, villainPhaseStepping: true };
     const p1 = state.players[0];
     const p2 = state.players[1];
 
@@ -562,7 +563,7 @@ describe('Combat & Defense Pipeline (RR v1.8)', () => {
 
   it('Test 12: Issue #183 Regression: Direct/Solo Hero Defense via RESOLVE_DECISION_PROMPT functions seamlessly', () => {
     let currentState = state;
-    currentState.options = { villainPhaseStepping: true };
+    currentState.options = { ...currentState.options, villainPhaseStepping: true };
     const p1 = currentState.players[0]; // Spider-Man, DEF: 3, HP: 10
 
     currentState.encounterDeck = [];
@@ -592,7 +593,7 @@ describe('Combat & Defense Pipeline (RR v1.8)', () => {
   });
 
   it('Test 13: Issue #183 Regression: Cross-Table Hero Defense with excess attack damage deals remaining damage to defending hero, not attacked player', () => {
-    state.options = { villainPhaseStepping: true };
+    state.options = { ...state.options, villainPhaseStepping: true };
     const p1 = state.players[0]; // Spider-Man, DEF: 3, HP: 10
     const p2 = state.players[1]; // Iron Man, DEF: 2, HP: 9
 

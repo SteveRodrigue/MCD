@@ -44,6 +44,7 @@ describe('Player Side Schemes, Victory Display & Auxiliary Scenario Decks (ADR-0
     mainScheme = cardCatalog.getCard('01097')!;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

@@ -31,6 +31,7 @@ describe('Surge keyword (#218): reveal 1 additional encounter card after the car
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

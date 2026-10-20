@@ -34,6 +34,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
     };
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -118,6 +119,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
     };
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -170,6 +172,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
 
   it('adds and spends named counters on Player IDENTITY (e.g. Gambit charge counters, Groot growth counters)', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -244,6 +247,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
     };
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -311,6 +315,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
     };
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -388,6 +393,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
     };
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -460,6 +466,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
     };
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -508,6 +515,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
   it('ADD_COUNTERS evaluates a dynamic amount (resources spent), not just a number', () => {
     const channel = createCardInstance(cardCatalog.getCard('01018')!);
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

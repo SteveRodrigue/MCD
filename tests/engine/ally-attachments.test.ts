@@ -16,6 +16,7 @@ describe('Issue #95: Ally Attachment Rules Compliance & Cascading Cleanup', () =
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -189,6 +190,7 @@ describe('Issue #95: Ally Attachment Rules Compliance & Cascading Cleanup', () =
     const tonyStarkAlterEgo = cardCatalog.getCard('01029b') as AlterEgoCard;
 
     const twoPlayerState = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

@@ -24,3 +24,9 @@
 1. **Stage II When Revealed (`01095`):** Search the encounter deck and discard pile for _Breakin' & Takin'_ (`01107`) and reveal it. Shuffle the encounter deck.
 2. **Stage III When Revealed (`01096`):** Stun each hero. Rhino gains _Tough_.
 3. **Main Scheme Defeat (`01097b`):** If _The Break-In!_ reaches $7 \times P$ threat, the players immediately lose the game.
+
+---
+
+## Packaging
+
+Rhino has no scenario code: `plugin.ts` is a `DeclarativeScenarioPlugin` built from `definition.json` (ADR-0033 addendum, Issue #275). Setup, stage progression, per-player scaling and win/loss are generic. The two Special Rules above are card data (supplemental `WHEN_REVEALED` abilities), not plugin code.

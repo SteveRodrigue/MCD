@@ -37,6 +37,7 @@ describe('Electric Whip Attack (01173): boost discards an upgrade only on an und
     const spiderMan = cardCatalog.getCard('01001a') as HeroCard;
     const peter = cardCatalog.getCard('01001b') as AlterEgoCard;
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

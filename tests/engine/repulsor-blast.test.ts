@@ -14,6 +14,7 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
     tonyStarkAlterEgo = cardCatalog.getCard('01029b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

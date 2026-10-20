@@ -29,6 +29,7 @@ describe('Fast Multi-Hero Match Simulator Battery (Roadmap 1.4)', () => {
       const loaded = starter!.loadDeck(cardCatalog);
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         difficulty,
         seed: `test_fast_${deckId}_${difficulty.toLowerCase()}`,
@@ -64,6 +65,7 @@ describe('Fast Multi-Hero Match Simulator Battery (Roadmap 1.4)', () => {
     const spideyGame = (seed: string) => {
       const loaded = getStarterDeck('spider_man_justice')!.loadDeck(cardCatalog);
       return setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         difficulty: 'STANDARD',
         seed,
@@ -120,6 +122,7 @@ describe('Fast Multi-Hero Match Simulator Battery (Roadmap 1.4)', () => {
     const marvelStarter = getStarterDeck('captain_marvel_leadership')!.loadDeck(cardCatalog);
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       difficulty: 'STANDARD',
       seed: 'test_coop_spidey_marvel_standard',
@@ -162,6 +165,7 @@ describe('Fast Multi-Hero Match Simulator Battery (Roadmap 1.4)', () => {
     it('eliminating a solo hero during attack with Charge attachment completes step 7 cleanly', () => {
       const sheHulkStarter = getStarterDeck('she_hulk_aggression')!.loadDeck(cardCatalog);
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         difficulty: 'STANDARD',
         skipMulligan: true,

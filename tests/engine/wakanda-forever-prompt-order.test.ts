@@ -13,6 +13,7 @@ import { GameState, StatusCard, getActiveVillain, getActiveMainScheme } from '@e
  */
 function buildGame(): GameState {
   const state = setupGame({
+    catalog: cardCatalog,
     scenarioId: 'rhino',
     players: [
       {

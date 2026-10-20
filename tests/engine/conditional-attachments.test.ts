@@ -39,6 +39,7 @@ describe('Conditional encounter attachments (#209)', () => {
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

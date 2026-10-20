@@ -1,6 +1,6 @@
 # Plan R10: Inject the card catalog into the engine; close out #275
 
-> **Status:** Proposed. **Tier 3 (public contract): owner decision required before any code.** Deferred by the owner on 2026-10-17 (F014-B).
+> **Status:** Implemented (owner chose option A, alone before R11, with the #275 close-out, on 2026-10-20). Delete this file in the delivery commit.
 > **Source:** post-remediation report of code audit AUD-20261017-232534 (item R10): F014 option B; architecture move M4. Issue [#275](https://github.com/SteveRodrigue/MCD/issues/275) (Gate 2, scenario packaging).
 > **Gate:** Tech Debt & Tooling (#275 part: Gate 2). **Estimate:** 2–3 days (catalog), 1–2 h (#275 close-out).
 > **Queue:** section 3.5 of [teamwork_status_and_next_target.md](teamwork_status_and_next_target.md).

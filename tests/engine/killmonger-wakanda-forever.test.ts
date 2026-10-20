@@ -21,6 +21,7 @@ const upgrade = (code: string) => createCardInstance(cardCatalog.getCard(code)!)
 
 function buildGame(): { state: GameState; killmonger: CardInstance; guard: CardInstance } {
   const state = setupGame({
+    catalog: cardCatalog,
     scenarioId: 'rhino',
     players: [
       {

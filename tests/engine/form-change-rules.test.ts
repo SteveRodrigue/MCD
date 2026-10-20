@@ -19,6 +19,7 @@ describe('Turn-Gated Form Changes (RR v1.8 p. 8)', () => {
 
   it('allows basic change form once per round and rejects a second basic attempt in the same round', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -55,6 +56,7 @@ describe('Turn-Gated Form Changes (RR v1.8 p. 8)', () => {
   it('allows card abilities (Split Personality 01025) to flip form independently without consuming basic flip', () => {
     const splitPersonalityCard = cardCatalog.getCard('01025')!;
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -102,6 +104,7 @@ describe('Turn-Gated Form Changes (RR v1.8 p. 8)', () => {
   it('allows card abilities (Split Personality 01025) even after basic change form has already been used', () => {
     const splitPersonalityCard = cardCatalog.getCard('01025')!;
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -134,6 +137,7 @@ describe('Turn-Gated Form Changes (RR v1.8 p. 8)', () => {
 
   it('resets basicChangeFormUsedThisRound when the round advances', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

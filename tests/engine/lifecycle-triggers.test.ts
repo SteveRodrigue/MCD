@@ -21,6 +21,7 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
 
   it('resets usedAbilitiesThisPhase upon starting Player Phase and Villain Phase', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -64,6 +65,7 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
 
   it('rotates active players and ends the Player Phase through END_PLAYER_TURN', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -103,6 +105,7 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
 
   it('records lifecycle events in game log', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -135,6 +138,7 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
 
   it('purges ephemeral villain phase states and queues on startPlayerPhase', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

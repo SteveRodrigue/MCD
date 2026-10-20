@@ -24,6 +24,7 @@ describe('End of Player Phase Clean-Up & Voluntary Hand Discard (Issue #41, RR v
 
   it('enqueues voluntary discard prompt when player has cards in hand at end of player phase', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -78,6 +79,7 @@ describe('End of Player Phase Clean-Up & Voluntary Hand Discard (Issue #41, RR v
 
   it('discards selected cards, draws up to printed hand size, and readies player cards', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -134,6 +136,7 @@ describe('End of Player Phase Clean-Up & Voluntary Hand Discard (Issue #41, RR v
 
   it('draws remaining deficit up to printed hand size when keeping all cards (0 discarded)', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -189,6 +192,7 @@ describe('End of Player Phase Clean-Up & Voluntary Hand Discard (Issue #41, RR v
 
   it('records discarded and drawn card names in cleanup log when cards are voluntarily discarded', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

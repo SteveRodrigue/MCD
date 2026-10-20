@@ -49,6 +49,7 @@ describe('Black Widow 01075 cancels any revealed encounter card (#255)', () => {
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -229,6 +230,7 @@ describe('Black Widow 01075 offers, surge and other players (#255)', () => {
   const twoPlayerGame = (): GameState => {
     resetInstanceCounter();
     const game = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -395,6 +397,7 @@ describe('Several cancel abilities queued for the same reveal (#255)', () => {
       deckCards: Array(10).fill(cardCatalog.getCard(DECK_FILLER)!),
     });
     const game = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [mk('p1', '01001a', '01001b'), mk('p2', '01029a', '01029b')],
       villain: cardCatalog.getCard('01094') as any,
@@ -494,6 +497,7 @@ describe('Effects that cannot be canceled (Eternity 21054, #255)', () => {
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

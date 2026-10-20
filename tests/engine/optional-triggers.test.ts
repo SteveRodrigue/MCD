@@ -1,3 +1,4 @@
+import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CardCatalog } from '@data/importer/card-loader';
 import {
@@ -46,6 +47,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
     const mainScheme = catalog.getCard('01097b') as MainSchemeCard;
 
     gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

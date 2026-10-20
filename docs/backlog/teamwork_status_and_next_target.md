@@ -88,6 +88,8 @@ The 21 findings were remediated on 2026-10-17/18 (`94ebc97..f6e470f`, pushed). W
 | R15 | Audit open questions: log growth, art fallback CORS, bundled packs                               | Tech Debt        | 1    | 2–4 h    | [plan_audit_r15_open_questions.md](plan_audit_r15_open_questions.md)                             |
 | R16 | Review all documentation (ADRs, specs, guides) against the code — **last, after R1–R15**         | Tech Debt        | 1    | 1–2 days | [plan_audit_r16_documentation_review.md](plan_audit_r16_documentation_review.md)                 |
 
+Follow-up from R11 (delivered): [#339](https://github.com/SteveRodrigue/MCD/issues/339) extends the import-cycle audit to the `@data`, `@ui` and `@assets` aliases (Tech Debt, P3, about 20 minutes).
+
 **Gate 1 is done when** sections 3.1 to 3.4 are empty (R2, the last Gate 1 row of section 3.5, is delivered), the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
 
 ---

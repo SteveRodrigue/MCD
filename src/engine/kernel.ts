@@ -94,8 +94,17 @@ function unbound(name: KernelEntry): never {
   throw new Error(`kernel.${name} is not bound: import '@engine/boot' before using the engine`);
 }
 
+const unboundStubs = new WeakSet<object>();
+
 function makeUnbound<K extends KernelEntry>(name: K): Kernel[K] {
-  return ((..._args: unknown[]) => unbound(name)) as unknown as Kernel[K];
+  const stub = (..._args: unknown[]) => unbound(name);
+  unboundStubs.add(stub);
+  return stub as unknown as Kernel[K];
+}
+
+/** True once an owner module has bound the entry (a spy wrapping a bound entry counts as bound). */
+export function isKernelBound(name: KernelEntry): boolean {
+  return !unboundStubs.has(kernel[name]);
 }
 
 /** The late-bound entry points. Read at call time, so a rebound entry is seen by every caller. */

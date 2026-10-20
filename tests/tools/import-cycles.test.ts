@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { describe, expect, it } from 'vitest';
 import {
   buildRuntimeImportGraph,
@@ -39,5 +41,27 @@ describe('src/engine runtime import graph', () => {
   it('has no more import cycles than the ratchet (target 0, ADR-0088)', () => {
     const cycles = findStronglyConnectedComponents(buildRuntimeImportGraph());
     expect(cycles.map((c) => c.length)).toEqual(CYCLE_RATCHET);
+  });
+});
+
+describe('engine boot reachability (ADR-0088)', () => {
+  it('imports every module that binds a kernel entry or registers a special handler', () => {
+    const root = path.resolve(__dirname, '../..');
+    const boot = fs.readFileSync(path.join(root, 'src/engine/boot.ts'), 'utf8');
+    const booted = new Set(
+      [...boot.matchAll(/^import '\.\/(.+)';$/gm)].map((m) =>
+        path.posix.normalize(`src/engine/${m[1]}`),
+      ),
+    );
+    const graph = buildRuntimeImportGraph();
+    const missing: string[] = [];
+    for (const file of graph.keys()) {
+      if (file === 'src/engine/kernel.ts' || file.endsWith('special-registry.ts')) continue;
+      const source = fs.readFileSync(path.join(root, file), 'utf8');
+      if (!/\b(bindKernel|registerSpecialHandler)\(/.test(source)) continue;
+      const stem = file.replace(/\.ts$/, '').replace(/\/index$/, '');
+      if (!booted.has(stem)) missing.push(file);
+    }
+    expect(missing).toEqual([]);
   });
 });

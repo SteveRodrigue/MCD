@@ -11,7 +11,7 @@ import { drawEncounterCard } from '../../pipeline/deck-exhaustion';
 import { dealSurgeCard } from '../../pipeline/surge';
 import { applyThreatPlacement, applyThwart } from '../../pipeline/threat-pipeline';
 import { hasCrisisInPlay } from '../../pipeline/crisis';
-import { evaluateDynamicAmount } from '../dynamic-formula-evaluator';
+import { kernel } from '../../kernel';
 import { resolveSchemeTargets, type EffectContext, type SchemeTarget } from '../target-resolver';
 import { appendLog } from '../../state/game-log';
 import {
@@ -239,7 +239,7 @@ function handleAddAcceleration(
 ): EffectResult {
   // Acceleration tokens sit on the main scheme (RR v1.8 "Acceleration"): +1 threat per token each villain phase
   const params = getStepEffectParams(step);
-  const amount = evaluateDynamicAmount(params.amount, context, {
+  const amount = kernel.evaluateDynamicAmount(params.amount, context, {
     fallback: 1,
     state,
     player,

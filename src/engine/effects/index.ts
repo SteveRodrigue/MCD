@@ -1,5 +1,4 @@
 import { bindKernel, kernel } from '../kernel';
-import { evaluateStepGate } from '../pipeline/step-gate-evaluator';
 
 import {
   GameState,
@@ -162,7 +161,6 @@ export interface EffectExecutionContext {
 }
 
 export { evaluateDynamicAmount } from './dynamic-formula-evaluator';
-import { evaluateDynamicAmount } from './dynamic-formula-evaluator';
 export {
   resolveTargets,
   resolveCharacterTargets,
@@ -197,14 +195,18 @@ export function resolveNumericAmount(
     sourceCardInstance?: CardInstance;
   },
 ): number {
-  return evaluateDynamicAmount(amountParam as number | DynamicValueSource | undefined, context, {
-    fallback,
-    state: options?.state || context?.state,
-    player: options?.player || context?.player,
-    targetInstanceId: options?.targetInstanceId || context?.chosenTargetInstanceId,
-    targetCardInstance: options?.targetCardInstance || context?.targetCardInstance,
-    sourceCardInstance: options?.sourceCardInstance || context?.sourceCardInstance,
-  });
+  return kernel.evaluateDynamicAmount(
+    amountParam as number | DynamicValueSource | undefined,
+    context,
+    {
+      fallback,
+      state: options?.state || context?.state,
+      player: options?.player || context?.player,
+      targetInstanceId: options?.targetInstanceId || context?.chosenTargetInstanceId,
+      targetCardInstance: options?.targetCardInstance || context?.targetCardInstance,
+      sourceCardInstance: options?.sourceCardInstance || context?.sourceCardInstance,
+    },
+  );
 }
 
 export interface EffectResult {
@@ -779,7 +781,7 @@ function shouldExecuteStep(
   stepResultsMap?: Map<string, StepResolutionResult>,
 ): boolean {
   if (typeof stepOrGate === 'object' && stepOrGate !== null && 'effect' in stepOrGate) {
-    return evaluateStepGate(
+    return kernel.evaluateStepGate(
       stepOrGate as AbilityStep,
       prevResult,
       state,
@@ -787,7 +789,7 @@ function shouldExecuteStep(
       contextOrMap as Map<string, StepResolutionResult> | undefined,
     );
   }
-  return evaluateStepGate(
+  return kernel.evaluateStepGate(
     stepOrContext as AbilityStep,
     prevResult,
     state,

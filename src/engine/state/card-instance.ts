@@ -5,6 +5,7 @@ import {
   StatusCard,
   hasKeyword,
   asCatalogCard,
+  isCatalogCard,
 } from '@engine/models';
 
 let instanceCounter = 0;
@@ -18,7 +19,8 @@ const emptyEnrichmentDefinitions = new WeakMap<NormalizedCard, NormalizedCard>()
 function withEmptyEnrichment(card: NormalizedCard): NormalizedCard {
   let definition = emptyEnrichmentDefinitions.get(card);
   if (!definition) {
-    definition = asCatalogCard({ ...card, enrichment: { abilities: [] } });
+    definition = { ...card, enrichment: { abilities: [] } };
+    if (isCatalogCard(card)) definition = asCatalogCard(definition);
     emptyEnrichmentDefinitions.set(card, definition);
   }
   return definition;

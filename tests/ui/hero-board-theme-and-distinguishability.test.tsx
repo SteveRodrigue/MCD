@@ -7,6 +7,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { GameState, HeroCard, AlterEgoCard, PlayerState } from '../../src/engine/models';
 import { DEFAULT_HERO_PALETTE } from '../../src/ui/utils/hero-theme';
+import { TestSession } from '../support/render-with-session';
 
 describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
   const heroes = [
@@ -66,13 +67,9 @@ describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
 
       const { container } = render(
         <GameSettingsProvider>
-          <HeroZone
-            player={spideyPlayer}
-            gameState={state}
-            seatNumber={1}
-            isFocused={true}
-            isMultiHero={false}
-          />
+          <TestSession state={state}>
+            <HeroZone player={spideyPlayer} seatNumber={1} isFocused={true} isMultiHero={false} />
+          </TestSession>
         </GameSettingsProvider>,
       );
 
@@ -145,7 +142,9 @@ describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
 
       const { container } = render(
         <GameSettingsProvider>
-          <HeroZone player={fallbackPlayer} seatNumber={1} isFocused={true} isMultiHero={false} />
+          <TestSession state={createTestGameState(1, 0)}>
+            <HeroZone player={fallbackPlayer} seatNumber={1} isFocused={true} isMultiHero={false} />
+          </TestSession>
         </GameSettingsProvider>,
       );
 
@@ -170,7 +169,9 @@ describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
 
       const { container } = render(
         <GameSettingsProvider>
-          <GameBoard gameState={multiState} onReset={vi.fn()} />
+          <TestSession state={multiState}>
+            <GameBoard onReset={vi.fn()} />
+          </TestSession>
         </GameSettingsProvider>,
       );
 
@@ -206,7 +207,9 @@ describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
 
       const { container } = render(
         <GameSettingsProvider>
-          <GameBoard gameState={multiState} onReset={vi.fn()} />
+          <TestSession state={multiState}>
+            <GameBoard onReset={vi.fn()} />
+          </TestSession>
         </GameSettingsProvider>,
       );
 
@@ -233,14 +236,15 @@ describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
 
       const { container } = render(
         <GameSettingsProvider>
-          <HeroZone
-            player={inactivePlayer}
-            gameState={state}
-            seatNumber={2}
-            isFocused={false}
-            isMultiHero={true}
-            onFocus={onFocusMock}
-          />
+          <TestSession state={state}>
+            <HeroZone
+              player={inactivePlayer}
+              seatNumber={2}
+              isFocused={false}
+              isMultiHero={true}
+              onFocus={onFocusMock}
+            />
+          </TestSession>
         </GameSettingsProvider>,
       );
 

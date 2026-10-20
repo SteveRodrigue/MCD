@@ -5,6 +5,7 @@ import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider'
 import { GamePhase, GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
+import { TestSession } from '../support/render-with-session';
 
 describe('GameBoard Call for Action Top-Left Hover Button', () => {
   let spiderManHero: HeroCard;
@@ -72,7 +73,9 @@ describe('GameBoard Call for Action Top-Left Hover Button', () => {
 
     render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onReset={vi.fn()} />
+        <TestSession state={state}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -97,7 +100,9 @@ describe('GameBoard Call for Action Top-Left Hover Button', () => {
 
     render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onReset={vi.fn()} />
+        <TestSession state={state}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -131,7 +136,9 @@ describe('GameBoard Call for Action Top-Left Hover Button', () => {
 
     const { rerender } = render(
       <GameSettingsProvider>
-        <GameBoard gameState={singleState} onReset={vi.fn()} />
+        <TestSession state={singleState}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -167,7 +174,9 @@ describe('GameBoard Call for Action Top-Left Hover Button', () => {
 
     rerender(
       <GameSettingsProvider>
-        <GameBoard gameState={multiNoActionsState} onReset={vi.fn()} />
+        <TestSession state={multiNoActionsState}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 

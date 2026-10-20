@@ -1,14 +1,7 @@
 import React from 'react';
 import { ModalLayer } from '../layout/ModalLayer';
 import { RefreshCw, Heart, Zap, Swords, Target, X, Sparkles } from 'lucide-react';
-import {
-  PlayerState,
-  GameState,
-  GameAction,
-  HeroCard,
-  AlterEgoCard,
-  CardInstance,
-} from '../../../engine/models';
+import { PlayerState, HeroCard, AlterEgoCard, CardInstance } from '../../../engine/models';
 import {
   LegalActionItem,
   formatTimingBadge,
@@ -26,13 +19,12 @@ import {
 } from '../../../engine/pipeline/legality-checker';
 import { getIdentityAttackState } from './identity-action-utils';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
+import { useGameSession } from '../../context/GameStateContext';
 
 interface IdentityActionModalProps {
   isOpen: boolean;
   player: PlayerState;
-  gameState?: GameState;
   onClose: () => void;
-  onDispatchAction?: (action: GameAction) => void;
   onInitiateAction?: (item: LegalActionItem) => void;
   onInitiateHeroAttack?: () => void;
   onInitiateHeroThwart?: () => void;
@@ -41,38 +33,29 @@ interface IdentityActionModalProps {
 export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
   isOpen,
   player,
-  gameState,
   onClose,
-  onDispatchAction,
   onInitiateAction,
   onInitiateHeroAttack,
   onInitiateHeroThwart,
 }) => {
+  const { state: gameState, dispatch: onDispatchAction } = useGameSession();
   if (!isOpen) return null;
 
   const isHero = player.currentForm === 'hero';
   const effectiveMaxHealth = getEffectiveMaxHealth(player, gameState);
-  const effectiveStats = getEffectiveHeroStats(
-    gameState || ({ sideSchemes: [], players: [] } as any),
-    player,
-  );
+  const effectiveStats = getEffectiveHeroStats(gameState, player);
   const traitsDetails = getEffectivePlayerTraitsDetails(player);
-  const isPlayerPhase = gameState ? gameState.phase === 'PLAYER_PHASE' : true;
-  const isPlayerTurn = gameState
-    ? gameState.phase === 'PLAYER_PHASE' &&
-      gameState.players[gameState.activePlayerIndex]?.id === player.id
-    : true;
+  const isPlayerPhase = gameState.phase === 'PLAYER_PHASE';
+  const isPlayerTurn =
+    gameState.phase === 'PLAYER_PHASE' &&
+    gameState.players[gameState.activePlayerIndex]?.id === player.id;
 
   // 1. Change Form Check
-  const flipCheck = gameState
-    ? canChangeForm(gameState, player.id)
-    : { allowed: !player.formChangedThisRound };
+  const flipCheck = canChangeForm(gameState, player.id);
   const canFlip = isPlayerTurn && flipCheck.allowed;
 
   // 2. Recover Check
-  const recoverCheck = gameState
-    ? canBasicRecover(gameState, player.id)
-    : { allowed: !player.exhausted && player.health < effectiveMaxHealth };
+  const recoverCheck = canBasicRecover(gameState, player.id);
   const canRecover =
     !isHero && isPlayerTurn && recoverCheck.allowed && player.health < effectiveMaxHealth;
 
@@ -81,10 +64,8 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
   const { canAttack, canAttackVillain, eligibleMinion } = attackState;
 
   // 4. Thwart Check
-  const canThwartMain = gameState
-    ? canBasicThwart(gameState, player.id, 'main_scheme').allowed
-    : false;
-  const eligibleSideScheme = gameState?.sideSchemes.find(
+  const canThwartMain = canBasicThwart(gameState, player.id, 'main_scheme').allowed;
+  const eligibleSideScheme = gameState.sideSchemes.find(
     (s) => canBasicThwart(gameState, player.id, 'side_scheme', s.instanceId).allowed,
   );
   const canThwart = isHero && isPlayerTurn && (canThwartMain || !!eligibleSideScheme);
@@ -200,7 +181,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
             <button
               disabled={!canRecover}
               onClick={() => {
-                onDispatchAction?.({ type: 'BASIC_RECOVER', playerId: player.id });
+                onDispatchAction({ type: 'BASIC_RECOVER', playerId: player.id });
                 onClose();
               }}
               className={`w-full text-left p-2.5 rounded-lg border-2 border-comic-black transition-all flex items-center justify-between gap-2 shadow-comic-sm ${
@@ -244,9 +225,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
           {actionableAbilities.map((ab) => {
             const abilityKey = ab.id;
             const alreadyUsed = (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1;
-            const costCheck = gameState
-              ? canInitiateAbility(gameState, player.id, ab, undefined, {})
-              : { allowed: !alreadyUsed };
+            const costCheck = canInitiateAbility(gameState, player.id, ab, undefined, {});
             const canTrigger = isPlayerPhase && !alreadyUsed && costCheck.allowed;
             const actionLabel = !isPlayerTurn
               ? `Ask ${player.name}: ${ab.id.replace(/_/g, ' ').toUpperCase()}`
@@ -287,7 +266,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                       ownerName: isPlayerTurn ? undefined : player.name,
                     });
                   } else {
-                    onDispatchAction?.({
+                    onDispatchAction({
                       type: 'USE_CARD_ABILITY',
                       playerId: player.id,
                       cardInstanceId: player.activeFormCard.code,
@@ -357,13 +336,13 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                   if (onInitiateHeroAttack) {
                     onInitiateHeroAttack();
                   } else if (canAttackVillain) {
-                    onDispatchAction?.({
+                    onDispatchAction({
                       type: 'BASIC_ATTACK',
                       playerId: player.id,
                       targetType: 'villain',
                     });
                   } else if (eligibleMinion?.instanceId) {
-                    onDispatchAction?.({
+                    onDispatchAction({
                       type: 'BASIC_ATTACK',
                       playerId: player.id,
                       targetType: 'minion',
@@ -409,13 +388,13 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                   if (onInitiateHeroThwart) {
                     onInitiateHeroThwart();
                   } else if (canThwartMain) {
-                    onDispatchAction?.({
+                    onDispatchAction({
                       type: 'BASIC_THWART',
                       playerId: player.id,
                       targetType: 'main_scheme',
                     });
                   } else if (eligibleSideScheme) {
-                    onDispatchAction?.({
+                    onDispatchAction({
                       type: 'BASIC_THWART',
                       playerId: player.id,
                       targetType: 'side_scheme',
@@ -467,7 +446,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
           <button
             disabled={!canFlip}
             onClick={() => {
-              onDispatchAction?.({ type: 'CHANGE_FORM', playerId: player.id });
+              onDispatchAction({ type: 'CHANGE_FORM', playerId: player.id });
               onClose();
             }}
             className={`w-full text-left p-2.5 rounded-lg border-2 border-comic-black transition-all flex items-center justify-between gap-2 shadow-comic-sm ${

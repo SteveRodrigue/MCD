@@ -6,6 +6,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { eliminatePlayer } from '../../src/engine/pipeline/player-elimination';
 import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { TestSession } from '../support/render-with-session';
 
 // Issue #246: the board keeps working when a hero is eliminated, and shows a game-over screen when
 // the game ends.
@@ -32,7 +33,9 @@ describe('GameBoard with eliminated players (#246)', () => {
   const show = (state: GameState) =>
     render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onReset={vi.fn()} />
+        <TestSession state={state}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 

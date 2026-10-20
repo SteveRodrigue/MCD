@@ -14,11 +14,9 @@ import {
 import {
   PlayerState,
   StatusCard,
-  GameState,
   HeroCard,
   AlterEgoCard,
   CardInstance,
-  GameAction,
   Keyword,
   hasKeyword,
   hasDashPower,
@@ -52,30 +50,28 @@ import {
 } from '../../../engine/pipeline/stat-calculator';
 import { canInitiateAbility } from '../../../engine/pipeline/legality-checker';
 import { getAvailableResources } from '../../../engine/pipeline/cost-engine';
+import { useGameSession } from '../../context/GameStateContext';
 
 interface HeroZoneProps {
   player: PlayerState;
-  gameState?: GameState;
   seatNumber?: number;
   isFocused?: boolean;
   isMultiHero?: boolean;
   devMode?: boolean;
   onFocus?: () => void;
-  onDispatchAction?: (action: GameAction) => void;
   onInitiateAction?: (item: LegalActionItem) => void;
 }
 
 export const HeroZone: React.FC<HeroZoneProps> = ({
   player,
-  gameState,
   seatNumber,
   isFocused = true,
   isMultiHero = false,
   devMode: devModeProp,
   onFocus,
-  onDispatchAction,
   onInitiateAction,
 }) => {
+  const { state: gameState, dispatch: onDispatchAction } = useGameSession();
   const [isIdentityModalOpen, setIsIdentityModalOpen] = useState(false);
   const palette = useMemo(() => getHeroColorPalette(player), [player]);
 
@@ -83,10 +79,9 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const isDevMode = devModeProp ?? settings?.devMode ?? false;
 
   const isHero = player.currentForm === 'hero';
-  const isPlayerTurn = gameState
-    ? gameState.phase === 'PLAYER_PHASE' &&
-      gameState.players[gameState.activePlayerIndex]?.id === player.id
-    : true;
+  const isPlayerTurn =
+    gameState.phase === 'PLAYER_PHASE' &&
+    gameState.players[gameState.activePlayerIndex]?.id === player.id;
   const heroCard = player.hero as HeroCard;
   const alterEgoCard = player.alterEgo as AlterEgoCard;
 
@@ -102,13 +97,11 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const obligations = player.obligations || [];
   const hasObligations = obligations.length > 0;
 
-  // Stat formulas need a game state; a bare player (isolated renders) gets an empty board.
-  const statState = gameState || ({ sideSchemes: [], players: [] } as any);
-  const effectiveStats = getEffectiveHeroStats(statState, player);
-  const effectiveHandSize = getEffectiveHandSize(player, statState);
+  const effectiveStats = getEffectiveHeroStats(gameState, player);
+  const effectiveHandSize = getEffectiveHandSize(player, gameState);
   const effectiveAllyLimit = getEffectiveAllyLimit(player, gameState);
   const identityTraitsDetails = getEffectivePlayerTraitsDetails(player);
-  const availableResources = getAvailableResources(player, statState);
+  const availableResources = getAvailableResources(player, gameState);
 
   const baseAtk = isHero ? heroCard.attack || 0 : 0;
   const baseThw = isHero ? heroCard.thwart || 0 : 0;
@@ -123,12 +116,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const handBonus = effectiveHandSize - baseHandSize;
 
   // Action Permissions
-  const validHeroAttackTargets = gameState
-    ? getValidAttackTargets(gameState, player.id, 'hero')
-    : [];
-  const validHeroThwartTargets = gameState
-    ? getValidThwartTargets(gameState, player.id, 'hero')
-    : [];
+  const validHeroAttackTargets = getValidAttackTargets(gameState, player.id, 'hero');
+  const validHeroThwartTargets = getValidThwartTargets(gameState, player.id, 'hero');
   const canFlip = !player.basicChangeFormUsedThisRound && !player.formChangedThisRound;
   const canRecover =
     !isHero &&
@@ -140,7 +129,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const canThwart =
     isHero && !player.exhausted && isPlayerTurn && validHeroThwartTargets.some((t) => t.allowed);
 
-  const stepEvent = gameState?.villainPhaseStepEvent;
+  const stepEvent = gameState.villainPhaseStepEvent;
   const isTargetOfDamageEvent = Boolean(
     stepEvent &&
     stepEvent.targetPlayerId === player.id &&
@@ -151,7 +140,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const splashDamageAmount = isTargetOfDamageEvent ? stepEvent!.amount! : 0;
 
   const isTargetOfIncomingAttack = Boolean(
-    gameState?.activeAttackContext?.targetPlayerId === player.id ||
+    gameState.activeAttackContext?.targetPlayerId === player.id ||
     (stepEvent?.targetPlayerId === player.id &&
       stepEvent?.type === 'VILLAIN_ATTACK' &&
       !stepEvent?.combatOutcome),
@@ -196,8 +185,6 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   });
 
   const handleInitiateAttack = (attackerType: 'hero' | 'ally', allyInstanceId?: string) => {
-    if (!gameState || !onDispatchAction) return;
-
     if (attackerType === 'hero') {
       const targets = getValidAttackTargets(gameState, player.id, 'hero');
       if (targets.length === 0) return;
@@ -226,8 +213,6 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   };
 
   const handleInitiateThwart = (thwarterType: 'hero' | 'ally', allyInstanceId?: string) => {
-    if (!gameState || !onDispatchAction) return;
-
     if (thwarterType === 'hero') {
       const targets = getValidThwartTargets(gameState, player.id, 'hero');
       if (targets.length === 0) return;
@@ -287,7 +272,6 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
       return;
     }
 
-    if (!onDispatchAction) return;
     onDispatchAction({
       type: 'USE_CARD_ABILITY',
       playerId: player.id,
@@ -776,121 +760,117 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
             </div>
 
             {/* Bottom Action Row: Single horizontal row */}
-            {onDispatchAction && (
-              <div
-                className="w-full pt-1 border-t border-slate-200"
-                data-testid="identity-action-row"
-              >
-                {!isHero ? (
-                  <div className="grid grid-cols-2 gap-1.5 w-full">
-                    {/* Suit Up / Flip */}
-                    <button
-                      disabled={!canFlip}
-                      onClick={() => onDispatchAction({ type: 'CHANGE_FORM', playerId: player.id })}
-                      className={`font-comic text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
-                        canFlip
-                          ? 'bg-comic-red hover:bg-red-600 text-white active:translate-y-0.5'
-                          : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                      }`}
-                      title={
-                        canFlip
-                          ? 'Suit Up (Hero Form) (Limit once per round)'
-                          : 'Already changed form this round'
-                      }
-                    >
-                      <RefreshCw className={`w-3 h-3 shrink-0 ${canFlip ? 'animate-pulse' : ''}`} />
-                      <span className="truncate">Suit Up</span>
-                    </button>
+            <div
+              className="w-full pt-1 border-t border-slate-200"
+              data-testid="identity-action-row"
+            >
+              {!isHero ? (
+                <div className="grid grid-cols-2 gap-1.5 w-full">
+                  {/* Suit Up / Flip */}
+                  <button
+                    disabled={!canFlip}
+                    onClick={() => onDispatchAction({ type: 'CHANGE_FORM', playerId: player.id })}
+                    className={`font-comic text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
+                      canFlip
+                        ? 'bg-comic-red hover:bg-red-600 text-white active:translate-y-0.5'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                    }`}
+                    title={
+                      canFlip
+                        ? 'Suit Up (Hero Form) (Limit once per round)'
+                        : 'Already changed form this round'
+                    }
+                  >
+                    <RefreshCw className={`w-3 h-3 shrink-0 ${canFlip ? 'animate-pulse' : ''}`} />
+                    <span className="truncate">Suit Up</span>
+                  </button>
 
-                    {/* Recover */}
-                    <button
-                      disabled={!canRecover}
-                      onClick={() =>
-                        onDispatchAction({ type: 'BASIC_RECOVER', playerId: player.id })
-                      }
-                      className={`font-comic text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
-                        canRecover
-                          ? 'bg-amber-300 hover:bg-amber-400 text-slate-950 active:translate-y-0.5'
-                          : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                      }`}
-                      title={
-                        player.exhausted
-                          ? 'Identity is exhausted'
-                          : player.health >= effectiveMaxHealth
-                            ? 'Already at maximum health'
-                            : `Exhaust to recover ${effectiveStats.recovery} HP`
-                      }
-                    >
-                      <Heart className="w-3 h-3 shrink-0 fill-rose-600 text-rose-600" />
-                      <span className="truncate">Recover (+{effectiveStats.recovery})</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-3 gap-1.5 w-full">
-                    {/* Flip */}
-                    <button
-                      disabled={!canFlip}
-                      onClick={() => onDispatchAction({ type: 'CHANGE_FORM', playerId: player.id })}
-                      className={`font-comic text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
-                        canFlip
-                          ? 'bg-amber-300 hover:bg-amber-400 text-slate-950 active:translate-y-0.5'
-                          : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                      }`}
-                      title={
-                        canFlip
-                          ? 'Flip to Alter-Ego (Limit once per round)'
-                          : 'Already changed form this round'
-                      }
-                    >
-                      <RefreshCw className={`w-3 h-3 shrink-0 ${canFlip ? 'animate-pulse' : ''}`} />
-                      <span className="truncate">Flip</span>
-                    </button>
+                  {/* Recover */}
+                  <button
+                    disabled={!canRecover}
+                    onClick={() => onDispatchAction({ type: 'BASIC_RECOVER', playerId: player.id })}
+                    className={`font-comic text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
+                      canRecover
+                        ? 'bg-amber-300 hover:bg-amber-400 text-slate-950 active:translate-y-0.5'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                    }`}
+                    title={
+                      player.exhausted
+                        ? 'Identity is exhausted'
+                        : player.health >= effectiveMaxHealth
+                          ? 'Already at maximum health'
+                          : `Exhaust to recover ${effectiveStats.recovery} HP`
+                    }
+                  >
+                    <Heart className="w-3 h-3 shrink-0 fill-rose-600 text-rose-600" />
+                    <span className="truncate">Recover (+{effectiveStats.recovery})</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-1.5 w-full">
+                  {/* Flip */}
+                  <button
+                    disabled={!canFlip}
+                    onClick={() => onDispatchAction({ type: 'CHANGE_FORM', playerId: player.id })}
+                    className={`font-comic text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
+                      canFlip
+                        ? 'bg-amber-300 hover:bg-amber-400 text-slate-950 active:translate-y-0.5'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                    }`}
+                    title={
+                      canFlip
+                        ? 'Flip to Alter-Ego (Limit once per round)'
+                        : 'Already changed form this round'
+                    }
+                  >
+                    <RefreshCw className={`w-3 h-3 shrink-0 ${canFlip ? 'animate-pulse' : ''}`} />
+                    <span className="truncate">Flip</span>
+                  </button>
 
-                    {/* Attack */}
-                    <button
-                      disabled={!canAttack}
-                      onClick={() => handleInitiateAttack('hero')}
-                      className={`font-comic text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
-                        canAttack
-                          ? 'bg-comic-red hover:bg-red-600 text-white active:translate-y-0.5'
-                          : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                      }`}
-                      title={
-                        player.exhausted
-                          ? 'Hero is exhausted'
-                          : !canAttack
-                            ? 'No valid attack targets'
-                            : `Exhaust to attack for ${effectiveStats.attack} DMG`
-                      }
-                    >
-                      <Swords className="w-3 h-3 shrink-0" />
-                      <span className="truncate">Attack ({effectiveStats.attack})</span>
-                    </button>
+                  {/* Attack */}
+                  <button
+                    disabled={!canAttack}
+                    onClick={() => handleInitiateAttack('hero')}
+                    className={`font-comic text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
+                      canAttack
+                        ? 'bg-comic-red hover:bg-red-600 text-white active:translate-y-0.5'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                    }`}
+                    title={
+                      player.exhausted
+                        ? 'Hero is exhausted'
+                        : !canAttack
+                          ? 'No valid attack targets'
+                          : `Exhaust to attack for ${effectiveStats.attack} DMG`
+                    }
+                  >
+                    <Swords className="w-3 h-3 shrink-0" />
+                    <span className="truncate">Attack ({effectiveStats.attack})</span>
+                  </button>
 
-                    {/* Thwart */}
-                    <button
-                      disabled={!canThwart}
-                      onClick={() => handleInitiateThwart('hero')}
-                      className={`font-comic text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
-                        canThwart
-                          ? 'bg-comic-blue hover:bg-sky-600 text-white active:translate-y-0.5'
-                          : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                      }`}
-                      title={
-                        player.exhausted
-                          ? 'Hero is exhausted'
-                          : !canThwart
-                            ? 'No threat to thwart'
-                            : `Exhaust to remove ${effectiveStats.thwart} threat`
-                      }
-                    >
-                      <Target className="w-3 h-3 shrink-0" />
-                      <span className="truncate">Thwart ({effectiveStats.thwart})</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+                  {/* Thwart */}
+                  <button
+                    disabled={!canThwart}
+                    onClick={() => handleInitiateThwart('hero')}
+                    className={`font-comic text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
+                      canThwart
+                        ? 'bg-comic-blue hover:bg-sky-600 text-white active:translate-y-0.5'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                    }`}
+                    title={
+                      player.exhausted
+                        ? 'Hero is exhausted'
+                        : !canThwart
+                          ? 'No threat to thwart'
+                          : `Exhaust to remove ${effectiveStats.thwart} threat`
+                    }
+                  >
+                    <Target className="w-3 h-3 shrink-0" />
+                    <span className="truncate">Thwart ({effectiveStats.thwart})</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Vertical comic divider on md+ screens */}
@@ -914,12 +894,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   const allyCard = ally.card as any;
                   const baseAtk = allyCard.attack ?? 0;
                   const baseThw = allyCard.thwart ?? 0;
-                  const allyStats = gameState
-                    ? getEffectiveAllyStats(gameState, ally)
-                    : {
-                        attack: baseAtk || 1,
-                        thwart: baseThw || 1,
-                      };
+                  const allyStats = getEffectiveAllyStats(gameState, ally);
                   const atkDash = hasDashPower(allyCard, 'attack');
                   const thwDash = hasDashPower(allyCard, 'thwart');
                   const atkBonus = atkDash ? 0 : allyStats.attack - baseAtk;
@@ -932,8 +907,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   const canThw =
                     canAct &&
                     !thwDash &&
-                    (((gameState ? getActiveMainScheme(gameState) : undefined)?.threat || 0) > 0 ||
-                      (gameState?.sideSchemes || []).some((s) => s.threat > 0));
+                    ((getActiveMainScheme(gameState)?.threat || 0) > 0 ||
+                      gameState.sideSchemes.some((s) => s.threat > 0));
 
                   const attachmentCount = ally.attachments?.length || 0;
                   // Dynamic vertical expansion: each fan-down attachment offsets ~68-70px
@@ -1075,11 +1050,10 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     (isHero && ab.timing === 'HERO_ACTION') ||
                     (!isHero && ab.timing === 'ALTER_EGO_ACTION'),
                 );
-                const legality = evaluateTableauCardLegality(
-                  cardInst,
-                  player.currentForm,
-                  gameState ? { gameState, playerId: player.id } : undefined,
-                );
+                const legality = evaluateTableauCardLegality(cardInst, player.currentForm, {
+                  gameState,
+                  playerId: player.id,
+                });
 
                 return (
                   <div key={cardInst.instanceId} className="flex flex-col items-center gap-1">
@@ -1098,10 +1072,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       }
                     />
                     {activeAbilities.map((ab) => {
-                      const costCheck = gameState
-                        ? canInitiateAbility(gameState, player.id, ab, cardInst, {})
-                        : { allowed: false, reason: 'Game state not loaded' };
-                      const isPlayerPhase = gameState ? gameState.phase === 'PLAYER_PHASE' : true;
+                      const costCheck = canInitiateAbility(gameState, player.id, ab, cardInst, {});
+                      const isPlayerPhase = gameState.phase === 'PLAYER_PHASE';
                       const canUse = isPlayerPhase && costCheck.allowed;
                       const isCoopCall = isPlayerPhase && !isPlayerTurn;
                       const label = isCoopCall
@@ -1142,7 +1114,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                               });
                               return;
                             }
-                            onDispatchAction?.({
+                            onDispatchAction({
                               type: 'USE_CARD_ABILITY',
                               playerId: player.id,
                               cardInstanceId: cardInst.instanceId,
@@ -1180,9 +1152,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
       <IdentityActionModal
         isOpen={isIdentityModalOpen}
         player={player}
-        gameState={gameState}
         onClose={() => setIsIdentityModalOpen(false)}
-        onDispatchAction={onDispatchAction}
         onInitiateAction={onInitiateAction}
         onInitiateHeroAttack={() => handleInitiateAttack('hero')}
         onInitiateHeroThwart={() => handleInitiateThwart('hero')}
@@ -1194,11 +1164,9 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           isOpen={!!selectedAllyForModal}
           ally={selectedAllyForModal}
           player={player}
-          gameState={gameState}
           onClose={() => setSelectedAllyForModal(null)}
           onInitiateAllyAttack={(id) => handleInitiateAttack('ally', id)}
           onInitiateAllyThwart={(id) => handleInitiateThwart('ally', id)}
-          onDispatchAction={onDispatchAction}
         />
       )}
 
@@ -1208,7 +1176,6 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           isOpen={!!selectedTableauCardForModal}
           cardInstance={selectedTableauCardForModal}
           player={player}
-          gameState={gameState}
           onClose={() => setSelectedTableauCardForModal(null)}
           onSelectAbility={handleSelectTableauAbility}
         />
@@ -1223,14 +1190,14 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
         targets={attackModalState.targets}
         onSelectTarget={(target) => {
           if (attackModalState.attackerType === 'hero') {
-            onDispatchAction?.({
+            onDispatchAction({
               type: 'BASIC_ATTACK',
               playerId: player.id,
               targetType: target.type,
               targetInstanceId: target.instanceId,
             });
           } else if (attackModalState.allyInstanceId) {
-            onDispatchAction?.({
+            onDispatchAction({
               type: 'ALLY_ATTACK',
               playerId: player.id,
               allyInstanceId: attackModalState.allyInstanceId,
@@ -1253,14 +1220,14 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
         targets={thwartModalState.targets}
         onSelectTarget={(target) => {
           if (thwartModalState.thwarterType === 'hero') {
-            onDispatchAction?.({
+            onDispatchAction({
               type: 'BASIC_THWART',
               playerId: player.id,
               targetType: target.type,
               targetInstanceId: target.instanceId,
             });
           } else if (thwartModalState.allyInstanceId) {
-            onDispatchAction?.({
+            onDispatchAction({
               type: 'ALLY_THWART',
               playerId: player.id,
               allyInstanceId: thwartModalState.allyInstanceId,

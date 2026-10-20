@@ -1,6 +1,6 @@
 # Plan R8: One game session context; UI settings out of the game state
 
-> **Status:** Proposed, waiting for owner approval and an answer to open decision 1.
+> **Status:** Implemented with decision 1 = keep in `state.options` (ADR-0013 addendum; per-dispatch argument tracked in #337).
 > **Source:** post-remediation report of code audit AUD-20261017-232534 (item R8): F012 option A rest (the part deliberately skipped in `e3dea07`) and open question OQ-3.
 > **Gate:** Tech Debt & Tooling. **Tier:** 2. **Estimate:** 1–1.5 days.
 > **Queue:** section 3.5 of [teamwork_status_and_next_target.md](teamwork_status_and_next_target.md).

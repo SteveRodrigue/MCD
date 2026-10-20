@@ -6,6 +6,7 @@ import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider'
 import { GameLogEntry, GamePhase, GameState } from '../../src/engine/models';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
+import { TestSession } from '../support/render-with-session';
 
 describe('CombatLogDrawer Component (Issue #142)', () => {
   const mockLogs: GameLogEntry[] = [
@@ -76,12 +77,9 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
   it('renders Daily Bugle masthead and action chronicle headline', () => {
     const onClose = vi.fn();
     render(
-      <CombatLogDrawer
-        isOpen={true}
-        onClose={onClose}
-        logs={mockLogs}
-        gameState={mockGameState as GameState}
-      />,
+      <TestSession state={mockGameState as GameState}>
+        <CombatLogDrawer isOpen={true} onClose={onClose} logs={mockLogs} />
+      </TestSession>,
     );
 
     expect(screen.getByText('DAILY BUGLE')).toBeDefined();
@@ -92,12 +90,9 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
   it('applies docked desktop classes to drawer container', () => {
     const onClose = vi.fn();
     render(
-      <CombatLogDrawer
-        isOpen={true}
-        onClose={onClose}
-        logs={mockLogs}
-        gameState={mockGameState as GameState}
-      />,
+      <TestSession state={mockGameState as GameState}>
+        <CombatLogDrawer isOpen={true} onClose={onClose} logs={mockLogs} />
+      </TestSession>,
     );
 
     // The drawer renders through ModalLayer (portal under document.body).
@@ -111,12 +106,9 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
   it('filters log items when category buttons are clicked', () => {
     const onClose = vi.fn();
     render(
-      <CombatLogDrawer
-        isOpen={true}
-        onClose={onClose}
-        logs={mockLogs}
-        gameState={mockGameState as GameState}
-      />,
+      <TestSession state={mockGameState as GameState}>
+        <CombatLogDrawer isOpen={true} onClose={onClose} logs={mockLogs} />
+      </TestSession>,
     );
 
     // Initial state: ALL logs displayed
@@ -141,13 +133,9 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
   it('switches between English and French locales via language toggle', () => {
     const onClose = vi.fn();
     render(
-      <CombatLogDrawer
-        isOpen={true}
-        onClose={onClose}
-        logs={mockLogs}
-        currentLocale="en"
-        gameState={mockGameState as GameState}
-      />,
+      <TestSession state={mockGameState as GameState}>
+        <CombatLogDrawer isOpen={true} onClose={onClose} logs={mockLogs} currentLocale="en" />
+      </TestSession>,
     );
 
     expect(screen.getByText('Iron-Man dealt 2 damage to Rhino.')).toBeDefined();
@@ -178,12 +166,9 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
     ];
 
     render(
-      <CombatLogDrawer
-        isOpen={true}
-        onClose={vi.fn()}
-        logs={logWithSource}
-        gameState={mockGameState as GameState}
-      />,
+      <TestSession state={mockGameState as GameState}>
+        <CombatLogDrawer isOpen={true} onClose={vi.fn()} logs={logWithSource} />
+      </TestSession>,
     );
 
     expect(screen.getByText(/🃏 Photonic Blast/)).toBeDefined();
@@ -212,7 +197,9 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
 
     render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+        <TestSession state={state} dispatch={vi.fn()}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 

@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Newspaper } from 'lucide-react';
 import {
-  GameState,
   GameAction,
   CardInstance,
   CombatResolutionSummary,
@@ -27,7 +26,7 @@ import { EndTurnConfirmationModal } from './EndTurnConfirmationModal';
 import { CardPaymentModal } from './CardPaymentModal';
 import { useEdgeScroll } from '../../hooks/useEdgeScroll';
 import { useGameSettings } from '../../context/useGameSettings';
-import { GameStateProvider } from '../../context/GameStateContext';
+import { GameSessionContext, useGameSession } from '../../context/GameStateContext';
 import { syncGameStats } from '../../services/stats-storage-service';
 import {
   getLegalActionsForPlayer,
@@ -40,9 +39,7 @@ import { peekDecisionPrompt } from '../../../engine/pipeline';
 import { optionRequiresPayment } from '../../utils/option-requires-payment';
 
 interface GameBoardProps {
-  gameState: GameState;
   onReset: () => void;
-  onDispatchAction?: (action: GameAction) => void;
 }
 
 const SPEED_MAP: Record<string, number> = {
@@ -55,25 +52,23 @@ const SPEED_MAP: Record<string, number> = {
  * The table, or the end screen alone when every hero is eliminated (#246): with no player left
  * there is no seat to show.
  */
-export const GameBoard: React.FC<GameBoardProps> = (props) => {
-  const { stats, winner } = props.gameState;
+export const GameBoard: React.FC<GameBoardProps> = ({ onReset }) => {
+  const { stats, winner, players } = useGameSession().state;
   // Synced here, not in the table, so the final state of a game lost by elimination still counts.
   useEffect(() => {
     if (stats) syncGameStats(stats, !!winner).catch(() => {});
   }, [stats, winner]);
 
-  return (
-    <GameStateProvider value={props.gameState}>
-      {props.gameState.players.length === 0 ? (
-        <GameOverScreen gameState={props.gameState} onReset={props.onReset} />
-      ) : (
-        <GameTable {...props} />
-      )}
-    </GameStateProvider>
+  return players.length === 0 ? (
+    <GameOverScreen onReset={onReset} />
+  ) : (
+    <GameTable onReset={onReset} />
   );
 };
 
-const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAction }) => {
+const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
+  const session = useGameSession();
+  const { state: gameState, dispatch: onDispatchAction } = session;
   const [selectedSeatIndex, setActiveSeatIndex] = useState<number>(0);
   // An eliminated hero leaves the table (#246): a seat past the last one falls back to the last.
   const activeSeatIndex = Math.min(selectedSeatIndex, gameState.players.length - 1);
@@ -105,9 +100,7 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
     if (gameState.phase !== 'VILLAIN_PHASE') return;
     if (decisionPrompt) return;
     setIsBoostModalOpen(false);
-    if (onDispatchAction) {
-      onDispatchAction({ type: 'ADVANCE_VILLAIN_PHASE' });
-    }
+    onDispatchAction({ type: 'ADVANCE_VILLAIN_PHASE' });
   }, [gameState.phase, decisionPrompt, onDispatchAction]);
 
   const handleSkipVillainPacing = useCallback(() => {
@@ -115,9 +108,7 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
     if (setVillainPhasePacing) {
       setVillainPhasePacing('instant');
     }
-    if (onDispatchAction) {
-      onDispatchAction({ type: 'ADVANCE_VILLAIN_PHASE' });
-    }
+    onDispatchAction({ type: 'ADVANCE_VILLAIN_PHASE' });
   }, [setVillainPhasePacing, onDispatchAction]);
 
   const prevOutcomeIdRef = useRef<string | undefined>(undefined);
@@ -276,8 +267,6 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
 
   // Centralized Action Dispatcher with Payment Interception (Option A / Issue #162)
   const handleDispatchAction = (action: GameAction) => {
-    if (!onDispatchAction) return;
-
     if (action.type === 'USE_CARD_ABILITY') {
       const hasPaymentCards = (action.paymentCardInstanceIds?.length || 0) > 0;
       const hasGenerators = (action.generatorInstanceIds?.length || 0) > 0;
@@ -352,450 +341,443 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
   // Single Hero (Active Player)
   const singlePlayer = gameState.players[0];
 
+  // Everything below dispatches through the payment interception above
   return (
-    <div className="relative min-h-screen w-full flex flex-col justify-between bg-comic-paper overflow-x-clip">
-      <div
-        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
-          isLogOpen ? 'w-full lg:w-[calc(100%-420px)]' : 'w-full'
-        }`}
-      >
-        {/* 1. Sticky Top Navigation Bar */}
-        <TopBar
-          gameState={gameState}
-          activeSeatIndex={activeSeatIndex}
-          legalActionCount={legalReport.activeActionCount}
-          onSelectSeat={handleSelectSeat}
-          onToggleLog={() => setIsLogOpen((prev) => !prev)}
-          isLogOpen={isLogOpen}
-          onReset={onReset}
-          onOpenNewspaper={() => setIsNewspaperOpen((prev) => !prev)}
-        />
+    <GameSessionContext.Provider value={{ ...session, dispatch: handleDispatchAction }}>
+      <div className="relative min-h-screen w-full flex flex-col justify-between bg-comic-paper overflow-x-clip">
+        <div
+          className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
+            isLogOpen ? 'w-full lg:w-[calc(100%-420px)]' : 'w-full'
+          }`}
+        >
+          {/* 1. Sticky Top Navigation Bar */}
+          <TopBar
+            activeSeatIndex={activeSeatIndex}
+            legalActionCount={legalReport.activeActionCount}
+            onSelectSeat={handleSelectSeat}
+            onToggleLog={() => setIsLogOpen((prev) => !prev)}
+            isLogOpen={isLogOpen}
+            onReset={onReset}
+            onOpenNewspaper={() => setIsNewspaperOpen((prev) => !prev)}
+          />
 
-        {/* Floating Hover "EXTRA!" Action Pill Button at Top-Left */}
-        {gameState.phase === GamePhase.PLAYER_PHASE &&
-          (isMultiHero ? legalReport.callForActionCount : 0) +
-            (legalReport.villainActionCount || 0) >
-            0 && (
-            <div className="fixed top-14 left-4 z-content">
-              <button
-                onClick={() => setIsNewspaperOpen(true)}
-                className="bg-[#fbf7ee] hover:bg-amber-100 text-slate-900 border-2 border-comic-black shadow-comic-md font-serif font-black flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-all hover:scale-105 active:translate-y-0.5 animate-pulse"
-                title={`EXTRA! Daily Bugle Action Bulletin (${isMultiHero && legalReport.callForActionCount > 0 ? `${legalReport.callForActionCount} Call for Action` : ''}${isMultiHero && legalReport.callForActionCount > 0 && legalReport.villainActionCount > 0 ? ', ' : ''}${legalReport.villainActionCount > 0 ? `${legalReport.villainActionCount} Villain Actions` : ''})`}
-              >
-                <div className="flex items-center gap-1.5">
-                  <Newspaper className="w-4 h-4 text-comic-red" />
-                  <span className="font-serif font-black tracking-tight text-xs uppercase text-slate-950">
-                    EXTRA!
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {isMultiHero && legalReport.callForActionCount > 0 && (
-                    <span
-                      data-testid="extra-call-count"
-                      className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-comic-yellow text-comic-black border border-comic-black"
-                      title={`${legalReport.callForActionCount} Teammate Action${legalReport.callForActionCount > 1 ? 's' : ''}`}
-                    >
-                      {legalReport.callForActionCount} TEAM
-                    </span>
-                  )}
-                  {legalReport.villainActionCount > 0 && (
-                    <span
-                      data-testid="extra-villain-count"
-                      className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-comic-red text-white border border-comic-black"
-                      title={`${legalReport.villainActionCount} Villain/Scheme Action${legalReport.villainActionCount > 1 ? 's' : ''}`}
-                    >
-                      {legalReport.villainActionCount} VILLAIN
-                    </span>
-                  )}
-                </div>
-              </button>
-            </div>
-          )}
-
-        {/* 2. Panoramic Tabletop Main Stage */}
-        <main className="flex-1 flex flex-col items-center justify-start p-2 md:p-4 gap-4 max-w-full">
-          {/* Villain Phase Stepper Ribbon (Issue #140) */}
-          {gameState.phase === 'VILLAIN_PHASE' && (
-            <VillainPhaseStepper
-              gameState={gameState}
-              pacing={villainPhasePacing}
-              onNextStep={handleNextVillainStep}
-              onToggleAutoPlay={() => setIsAutoPlaying((prev) => !prev)}
-              onSkip={handleSkipVillainPacing}
-              isAutoPlaying={isAutoPlaying}
-            />
-          )}
-
-          {/* Scenario Main Villain & Out of Play Console */}
-          <div className="w-full flex flex-wrap items-start justify-center gap-4">
-            <RemovedFromGameBox cards={gameState.removedFromGame || []} />
-            <VillainZone
-              villain={getActiveVillain(gameState)}
-              mainScheme={getActiveMainScheme(gameState)}
-              sideSchemes={gameState.sideSchemes}
-              encounterDeck={gameState.encounterDeck}
-              encounterDiscard={gameState.encounterDiscard}
-              accelerationTokens={gameState.accelerationTokens}
-              onSelectAttachment={(att) => {
-                const matchAction = legalReport.boardActions.find(
-                  (a) =>
-                    a.targetCardInstance?.instanceId === att.instanceId ||
-                    (a.action as any)?.cardInstanceId === att.instanceId,
-                );
-                if (matchAction) {
-                  handleSelectNewspaperAction(matchAction);
-                }
-              }}
-            />
-          </div>
-
-          {/* Multi-Hero Panoramic Track (or Solo Play Area) */}
-          {isMultiHero ? (
-            <div className="relative w-full overflow-hidden px-2 py-1">
-              {/* Edge Navigation Buttons */}
-              {canScrollLeft && (
+          {/* Floating Hover "EXTRA!" Action Pill Button at Top-Left */}
+          {gameState.phase === GamePhase.PLAYER_PHASE &&
+            (isMultiHero ? legalReport.callForActionCount : 0) +
+              (legalReport.villainActionCount || 0) >
+              0 && (
+              <div className="fixed top-14 left-4 z-content">
                 <button
-                  onClick={() => scrollByAmount(-400)}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 z-raised bg-comic-yellow hover:bg-amber-400 text-comic-black p-2 rounded-full border-2 border-comic-black shadow-comic transition-all cursor-pointer"
-                  title="Scroll Left"
+                  onClick={() => setIsNewspaperOpen(true)}
+                  className="bg-[#fbf7ee] hover:bg-amber-100 text-slate-900 border-2 border-comic-black shadow-comic-md font-serif font-black flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-all hover:scale-105 active:translate-y-0.5 animate-pulse"
+                  title={`EXTRA! Daily Bugle Action Bulletin (${isMultiHero && legalReport.callForActionCount > 0 ? `${legalReport.callForActionCount} Call for Action` : ''}${isMultiHero && legalReport.callForActionCount > 0 && legalReport.villainActionCount > 0 ? ', ' : ''}${legalReport.villainActionCount > 0 ? `${legalReport.villainActionCount} Villain Actions` : ''})`}
                 >
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
-              )}
-              {canScrollRight && (
-                <button
-                  onClick={() => scrollByAmount(400)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 z-raised bg-comic-yellow hover:bg-amber-400 text-comic-black p-2 rounded-full border-2 border-comic-black shadow-comic transition-all cursor-pointer"
-                  title="Scroll Right"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </button>
-              )}
-
-              {/* Scrollable Panoramic Track */}
-              <div
-                ref={containerRef}
-                className="w-full overflow-x-auto no-scrollbar scroll-smooth px-4 py-2"
-              >
-                <div className="flex items-start justify-center min-w-full w-max gap-6">
-                  {gameState.players.map((player, idx) => {
-                    const isFocused = activeSeatIndex === idx;
-
-                    return (
-                      <div
-                        key={player.id}
-                        ref={(el) => {
-                          heroStationRefs.current[idx] = el;
-                        }}
-                        onClick={!isFocused ? () => handleSelectSeat(idx) : undefined}
-                        className={`w-[820px] lg:w-[880px] shrink-0 space-y-4 ${
-                          isFocused
-                            ? 'opacity-100 z-content transition-all duration-300'
-                            : 'opacity-60 grayscale-[35%] hover:opacity-95 hover:grayscale-0 z-table transition-all duration-300 cursor-pointer'
-                        }`}
+                  <div className="flex items-center gap-1.5">
+                    <Newspaper className="w-4 h-4 text-comic-red" />
+                    <span className="font-serif font-black tracking-tight text-xs uppercase text-slate-950">
+                      EXTRA!
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {isMultiHero && legalReport.callForActionCount > 0 && (
+                      <span
+                        data-testid="extra-call-count"
+                        className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-comic-yellow text-comic-black border border-comic-black"
+                        title={`${legalReport.callForActionCount} Teammate Action${legalReport.callForActionCount > 1 ? 's' : ''}`}
                       >
-                        {/* Hero Play Area */}
-                        <HeroZone
-                          player={player}
-                          gameState={gameState}
-                          seatNumber={idx + 1}
-                          isFocused={isFocused}
-                          isMultiHero={true}
-                          onFocus={() => handleSelectSeat(idx)}
-                          onDispatchAction={handleDispatchAction}
-                          onInitiateAction={handleSelectNewspaperAction}
-                        />
+                        {legalReport.callForActionCount} TEAM
+                      </span>
+                    )}
+                    {legalReport.villainActionCount > 0 && (
+                      <span
+                        data-testid="extra-villain-count"
+                        className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-comic-red text-white border border-comic-black"
+                        title={`${legalReport.villainActionCount} Villain/Scheme Action${legalReport.villainActionCount > 1 ? 's' : ''}`}
+                      >
+                        {legalReport.villainActionCount} VILLAIN
+                      </span>
+                    )}
+                  </div>
+                </button>
+              </div>
+            )}
 
-                        {/* Hero Hand Tray */}
-                        <PlayerHandTray
-                          hand={player.hand}
-                          deck={player.deck}
-                          discard={player.discard}
-                          setAsideCards={player.setAsideCards}
-                          heroName={player.name}
-                          handSizeLimit={getEffectiveHandSize(player, gameState)}
-                          seatNumber={idx + 1}
-                          isFocused={isFocused}
-                          isMultiHero={true}
-                          player={player}
-                          gameState={gameState}
-                          onDispatchAction={handleDispatchAction}
-                          onFocus={() => handleSelectSeat(idx)}
-                        />
-                      </div>
-                    );
-                  })}
+          {/* 2. Panoramic Tabletop Main Stage */}
+          <main className="flex-1 flex flex-col items-center justify-start p-2 md:p-4 gap-4 max-w-full">
+            {/* Villain Phase Stepper Ribbon (Issue #140) */}
+            {gameState.phase === 'VILLAIN_PHASE' && (
+              <VillainPhaseStepper
+                pacing={villainPhasePacing}
+                onNextStep={handleNextVillainStep}
+                onToggleAutoPlay={() => setIsAutoPlaying((prev) => !prev)}
+                onSkip={handleSkipVillainPacing}
+                isAutoPlaying={isAutoPlaying}
+              />
+            )}
+
+            {/* Scenario Main Villain & Out of Play Console */}
+            <div className="w-full flex flex-wrap items-start justify-center gap-4">
+              <RemovedFromGameBox cards={gameState.removedFromGame || []} />
+              <VillainZone
+                villain={getActiveVillain(gameState)}
+                mainScheme={getActiveMainScheme(gameState)}
+                sideSchemes={gameState.sideSchemes}
+                encounterDeck={gameState.encounterDeck}
+                encounterDiscard={gameState.encounterDiscard}
+                accelerationTokens={gameState.accelerationTokens}
+                onSelectAttachment={(att) => {
+                  const matchAction = legalReport.boardActions.find(
+                    (a) =>
+                      a.targetCardInstance?.instanceId === att.instanceId ||
+                      (a.action as any)?.cardInstanceId === att.instanceId,
+                  );
+                  if (matchAction) {
+                    handleSelectNewspaperAction(matchAction);
+                  }
+                }}
+              />
+            </div>
+
+            {/* Multi-Hero Panoramic Track (or Solo Play Area) */}
+            {isMultiHero ? (
+              <div className="relative w-full overflow-hidden px-2 py-1">
+                {/* Edge Navigation Buttons */}
+                {canScrollLeft && (
+                  <button
+                    onClick={() => scrollByAmount(-400)}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-raised bg-comic-yellow hover:bg-amber-400 text-comic-black p-2 rounded-full border-2 border-comic-black shadow-comic transition-all cursor-pointer"
+                    title="Scroll Left"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                )}
+                {canScrollRight && (
+                  <button
+                    onClick={() => scrollByAmount(400)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-raised bg-comic-yellow hover:bg-amber-400 text-comic-black p-2 rounded-full border-2 border-comic-black shadow-comic transition-all cursor-pointer"
+                    title="Scroll Right"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                )}
+
+                {/* Scrollable Panoramic Track */}
+                <div
+                  ref={containerRef}
+                  className="w-full overflow-x-auto no-scrollbar scroll-smooth px-4 py-2"
+                >
+                  <div className="flex items-start justify-center min-w-full w-max gap-6">
+                    {gameState.players.map((player, idx) => {
+                      const isFocused = activeSeatIndex === idx;
+
+                      return (
+                        <div
+                          key={player.id}
+                          ref={(el) => {
+                            heroStationRefs.current[idx] = el;
+                          }}
+                          onClick={!isFocused ? () => handleSelectSeat(idx) : undefined}
+                          className={`w-[820px] lg:w-[880px] shrink-0 space-y-4 ${
+                            isFocused
+                              ? 'opacity-100 z-content transition-all duration-300'
+                              : 'opacity-60 grayscale-[35%] hover:opacity-95 hover:grayscale-0 z-table transition-all duration-300 cursor-pointer'
+                          }`}
+                        >
+                          {/* Hero Play Area */}
+                          <HeroZone
+                            player={player}
+                            seatNumber={idx + 1}
+                            isFocused={isFocused}
+                            isMultiHero={true}
+                            onFocus={() => handleSelectSeat(idx)}
+                            onInitiateAction={handleSelectNewspaperAction}
+                          />
+
+                          {/* Hero Hand Tray */}
+                          <PlayerHandTray
+                            hand={player.hand}
+                            deck={player.deck}
+                            discard={player.discard}
+                            setAsideCards={player.setAsideCards}
+                            heroName={player.name}
+                            handSizeLimit={getEffectiveHandSize(player, gameState)}
+                            seatNumber={idx + 1}
+                            isFocused={isFocused}
+                            isMultiHero={true}
+                            player={player}
+                            onFocus={() => handleSelectSeat(idx)}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            /* Single Player (Solo Mode Tabletop) */
-            <div className="max-w-5xl lg:max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-6 space-y-6">
-              <HeroZone
-                player={singlePlayer}
-                gameState={gameState}
-                seatNumber={1}
-                isFocused={true}
-                isMultiHero={false}
-                onDispatchAction={handleDispatchAction}
-                onInitiateAction={handleSelectNewspaperAction}
-              />
-              <PlayerHandTray
-                hand={singlePlayer.hand}
-                deck={singlePlayer.deck}
-                discard={singlePlayer.discard}
-                setAsideCards={singlePlayer.setAsideCards}
-                heroName={singlePlayer.name}
-                handSizeLimit={getEffectiveHandSize(singlePlayer, gameState)}
-                seatNumber={1}
-                isFocused={true}
-                isMultiHero={false}
-                player={singlePlayer}
-                gameState={gameState}
-                onDispatchAction={handleDispatchAction}
-              />
-            </div>
-          )}
-        </main>
-      </div>
+            ) : (
+              /* Single Player (Solo Mode Tabletop) */
+              <div className="max-w-5xl lg:max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-6 space-y-6">
+                <HeroZone
+                  player={singlePlayer}
+                  seatNumber={1}
+                  isFocused={true}
+                  isMultiHero={false}
+                  onInitiateAction={handleSelectNewspaperAction}
+                />
+                <PlayerHandTray
+                  hand={singlePlayer.hand}
+                  deck={singlePlayer.deck}
+                  discard={singlePlayer.discard}
+                  setAsideCards={singlePlayer.setAsideCards}
+                  heroName={singlePlayer.name}
+                  handSizeLimit={getEffectiveHandSize(singlePlayer, gameState)}
+                  seatNumber={1}
+                  isFocused={true}
+                  isMultiHero={false}
+                  player={singlePlayer}
+                />
+              </div>
+            )}
+          </main>
+        </div>
 
-      {/* 3. 1960s Daily Bugle Newspaper Action Popover */}
-      <DailyBugleActionNewspaper
-        report={legalReport}
-        isOpen={isNewspaperOpen}
-        onClose={() => setIsNewspaperOpen(false)}
-        onSelectAction={handleSelectNewspaperAction}
-      />
+        {/* 3. 1960s Daily Bugle Newspaper Action Popover */}
+        <DailyBugleActionNewspaper
+          report={legalReport}
+          isOpen={isNewspaperOpen}
+          onClose={() => setIsNewspaperOpen(false)}
+          onSelectAction={handleSelectNewspaperAction}
+        />
 
-      {/* 5. Automatic End Turn Confirmation Modal */}
-      <EndTurnConfirmationModal
-        isOpen={isEndTurnPromptOpen}
-        playerName={activePlayer.name}
-        turnAction={legalReport.turnAction}
-        onConfirmEndTurn={() => {
-          setIsEndTurnPromptOpen(false);
-          if (legalReport.turnAction && onDispatchAction) {
-            onDispatchAction(legalReport.turnAction.action);
-          }
-        }}
-        onDismiss={() => setIsEndTurnPromptOpen(false)}
-      />
-
-      {/* 6. Card Payment Modal (Triggered via Newspaper, In-Play Interaction, or Decision Prompt) */}
-      {(paymentModalCard || pendingPromptPayment) && (
-        <CardPaymentModal
-          isOpen={true}
-          cardToPlay={pendingPromptPayment?.card || paymentModalCard}
-          abilityCost={
-            pendingPromptPayment
-              ? pendingPromptPayment.abilityCost
-              : pendingPaymentAction?.action.type === 'USE_CARD_ABILITY'
-                ? (() => {
-                    const ab = paymentModalCard?.card.enrichment?.abilities?.find(
-                      (a) => a.id === (pendingPaymentAction.action as any).abilityId,
-                    );
-                    if (!ab?.cost) return undefined;
-                    const reqType = ab.cost.resourceCost
-                      ? (Object.keys(ab.cost.resourceCost)[0] as keyof ResourceCost | undefined)
-                      : undefined;
-                    const amount = reqType ? ab.cost.resourceCost?.[reqType] || 1 : 0;
-                    const discardBounds =
-                      ab.cost.discardCard?.from === 'HAND'
-                        ? getDiscardCostBounds(ab.cost.discardCard)
-                        : undefined;
-                    const discardCount = discardBounds?.max ?? 0;
-                    const discardFilter = ab.cost.discardCard?.filter;
-                    const scalesWithResources = ab.steps?.some(
-                      (s) =>
-                        typeof s.effectParams?.amount === 'object' &&
-                        (s.effectParams.amount as { from?: string } | null)?.from ===
-                          'RESOURCES_SPENT',
-                    );
-                    if (amount > 0 || discardCount > 0) {
-                      return {
-                        amount,
-                        resourceType: reqType,
-                        requirePrinted: ab.cost.requirePrinted,
-                        scalesWithResources,
-                        title: pendingPaymentAction.headline,
-                        discardCount,
-                        discardMin: discardBounds?.min,
-                        discardFilter,
-                      };
-                    }
-                    return undefined;
-                  })()
-                : undefined
-          }
-          player={
-            pendingPromptPayment
-              ? gameState.players.find((p) => p.id === pendingPromptPayment.playerId) ||
-                activePlayer
-              : pendingPaymentAction?.action?.playerId
-                ? gameState.players.find((p) => p.id === pendingPaymentAction.action.playerId) ||
-                  activePlayer
-                : activePlayer
-          }
-          gameState={gameState}
-          onClose={() => {
-            if (pendingPromptPayment && onDispatchAction) {
-              const activePrompt = peekDecisionPrompt(gameState);
-              const passOption = activePrompt?.options?.find(
-                (o) => o.id === 'pass_play_from_zone' || o.effect === 'PLAY_CARD_FROM_ZONE_PASS',
-              );
-              if (passOption) {
-                onDispatchAction({
-                  type: 'RESOLVE_DECISION_PROMPT',
-                  playerId: pendingPromptPayment.playerId,
-                  selectedOptionId: passOption.id,
-                });
-              }
+        {/* 5. Automatic End Turn Confirmation Modal */}
+        <EndTurnConfirmationModal
+          isOpen={isEndTurnPromptOpen}
+          playerName={activePlayer.name}
+          turnAction={legalReport.turnAction}
+          onConfirmEndTurn={() => {
+            setIsEndTurnPromptOpen(false);
+            if (legalReport.turnAction && onDispatchAction) {
+              onDispatchAction(legalReport.turnAction.action);
             }
-            setPaymentModalCard(null);
-            setPendingPaymentAction(null);
-            setPendingPromptPayment(null);
           }}
-          onConfirmPlay={(
-            paymentHandCardIds: string[],
-            generatorCardIds: string[],
-            targetInstanceId?: string,
-            selectedDiscardCardIds?: string[],
-          ) => {
-            if (onDispatchAction) {
-              if (pendingPromptPayment) {
-                onDispatchAction({
-                  type: 'RESOLVE_DECISION_PROMPT',
-                  playerId: pendingPromptPayment.playerId,
-                  selectedOptionId: pendingPromptPayment.optionId,
-                  paymentCardInstanceIds: paymentHandCardIds,
-                  generatorInstanceIds: generatorCardIds,
-                });
-              } else if (pendingPaymentAction?.action.type === 'USE_CARD_ABILITY') {
-                onDispatchAction({
-                  ...pendingPaymentAction.action,
-                  paymentCardInstanceIds: paymentHandCardIds,
-                  generatorInstanceIds: generatorCardIds,
-                  targetInstanceId,
-                  discardCardInstanceIds: selectedDiscardCardIds,
-                });
-              } else if (paymentModalCard) {
-                onDispatchAction({
-                  type: 'PLAY_CARD',
-                  playerId: activePlayer.id,
-                  cardInstanceId: paymentModalCard.instanceId,
-                  paymentCardInstanceIds: paymentHandCardIds,
-                  generatorInstanceIds: generatorCardIds,
-                  discardCardInstanceIds: selectedDiscardCardIds,
-                  targetInstanceId,
-                });
-              }
+          onDismiss={() => setIsEndTurnPromptOpen(false)}
+        />
+
+        {/* 6. Card Payment Modal (Triggered via Newspaper, In-Play Interaction, or Decision Prompt) */}
+        {(paymentModalCard || pendingPromptPayment) && (
+          <CardPaymentModal
+            isOpen={true}
+            cardToPlay={pendingPromptPayment?.card || paymentModalCard}
+            abilityCost={
+              pendingPromptPayment
+                ? pendingPromptPayment.abilityCost
+                : pendingPaymentAction?.action.type === 'USE_CARD_ABILITY'
+                  ? (() => {
+                      const ab = paymentModalCard?.card.enrichment?.abilities?.find(
+                        (a) => a.id === (pendingPaymentAction.action as any).abilityId,
+                      );
+                      if (!ab?.cost) return undefined;
+                      const reqType = ab.cost.resourceCost
+                        ? (Object.keys(ab.cost.resourceCost)[0] as keyof ResourceCost | undefined)
+                        : undefined;
+                      const amount = reqType ? ab.cost.resourceCost?.[reqType] || 1 : 0;
+                      const discardBounds =
+                        ab.cost.discardCard?.from === 'HAND'
+                          ? getDiscardCostBounds(ab.cost.discardCard)
+                          : undefined;
+                      const discardCount = discardBounds?.max ?? 0;
+                      const discardFilter = ab.cost.discardCard?.filter;
+                      const scalesWithResources = ab.steps?.some(
+                        (s) =>
+                          typeof s.effectParams?.amount === 'object' &&
+                          (s.effectParams.amount as { from?: string } | null)?.from ===
+                            'RESOURCES_SPENT',
+                      );
+                      if (amount > 0 || discardCount > 0) {
+                        return {
+                          amount,
+                          resourceType: reqType,
+                          requirePrinted: ab.cost.requirePrinted,
+                          scalesWithResources,
+                          title: pendingPaymentAction.headline,
+                          discardCount,
+                          discardMin: discardBounds?.min,
+                          discardFilter,
+                        };
+                      }
+                      return undefined;
+                    })()
+                  : undefined
             }
-            setPaymentModalCard(null);
-            setPendingPaymentAction(null);
-            setPendingPromptPayment(null);
+            player={
+              pendingPromptPayment
+                ? gameState.players.find((p) => p.id === pendingPromptPayment.playerId) ||
+                  activePlayer
+                : pendingPaymentAction?.action?.playerId
+                  ? gameState.players.find((p) => p.id === pendingPaymentAction.action.playerId) ||
+                    activePlayer
+                  : activePlayer
+            }
+            onClose={() => {
+              if (pendingPromptPayment && onDispatchAction) {
+                const activePrompt = peekDecisionPrompt(gameState);
+                const passOption = activePrompt?.options?.find(
+                  (o) => o.id === 'pass_play_from_zone' || o.effect === 'PLAY_CARD_FROM_ZONE_PASS',
+                );
+                if (passOption) {
+                  onDispatchAction({
+                    type: 'RESOLVE_DECISION_PROMPT',
+                    playerId: pendingPromptPayment.playerId,
+                    selectedOptionId: passOption.id,
+                  });
+                }
+              }
+              setPaymentModalCard(null);
+              setPendingPaymentAction(null);
+              setPendingPromptPayment(null);
+            }}
+            onConfirmPlay={(
+              paymentHandCardIds: string[],
+              generatorCardIds: string[],
+              targetInstanceId?: string,
+              selectedDiscardCardIds?: string[],
+            ) => {
+              if (onDispatchAction) {
+                if (pendingPromptPayment) {
+                  onDispatchAction({
+                    type: 'RESOLVE_DECISION_PROMPT',
+                    playerId: pendingPromptPayment.playerId,
+                    selectedOptionId: pendingPromptPayment.optionId,
+                    paymentCardInstanceIds: paymentHandCardIds,
+                    generatorInstanceIds: generatorCardIds,
+                  });
+                } else if (pendingPaymentAction?.action.type === 'USE_CARD_ABILITY') {
+                  onDispatchAction({
+                    ...pendingPaymentAction.action,
+                    paymentCardInstanceIds: paymentHandCardIds,
+                    generatorInstanceIds: generatorCardIds,
+                    targetInstanceId,
+                    discardCardInstanceIds: selectedDiscardCardIds,
+                  });
+                } else if (paymentModalCard) {
+                  onDispatchAction({
+                    type: 'PLAY_CARD',
+                    playerId: activePlayer.id,
+                    cardInstanceId: paymentModalCard.instanceId,
+                    paymentCardInstanceIds: paymentHandCardIds,
+                    generatorInstanceIds: generatorCardIds,
+                    discardCardInstanceIds: selectedDiscardCardIds,
+                    targetInstanceId,
+                  });
+                }
+              }
+              setPaymentModalCard(null);
+              setPendingPaymentAction(null);
+              setPendingPromptPayment(null);
+            }}
+          />
+        )}
+
+        {/* 7. Slide-Out Combat Log & History Drawer */}
+        <CombatLogDrawer
+          isOpen={isLogOpen}
+          onClose={() => setIsLogOpen(false)}
+          logs={gameState.log}
+          devMode={devMode}
+        />
+        <DevStepErrorBanner logs={gameState.log} devMode={devMode} />
+        <GameOverScreen onReset={onReset} />
+
+        {/* 8. Interactive Decision Prompt Modal (ADR-0020 / ADR-0032 / ADR-0038) */}
+        <DecisionPromptModal
+          prompt={decisionPrompt}
+          onSelectOption={(optionId, payload) => {
+            const activePrompt = decisionPrompt;
+            if (!activePrompt) return;
+
+            const selectedOption = activePrompt.options?.find((o) => o.id === optionId);
+            const promptPlayer =
+              gameState.players.find((p) => p.id === activePrompt.playerId) || activePlayer;
+
+            const optParams = selectedOption?.params as Record<string, any> | undefined;
+            const requiresPayment = selectedOption ? optionRequiresPayment(selectedOption) : false;
+
+            if (requiresPayment && selectedOption) {
+              const cardInstanceId =
+                (optParams?.costCardInstanceId as string | undefined) ||
+                (optParams?.sourceCardInstanceId as string | undefined);
+              const inPlayCard =
+                (optParams?.cardInstance as CardInstance | undefined) ||
+                (cardInstanceId
+                  ? promptPlayer.hand.find((c) => c.instanceId === cardInstanceId) ||
+                    promptPlayer.tableau.find((c) => c.instanceId === cardInstanceId) ||
+                    promptPlayer.discard.find((c) => c.instanceId === cardInstanceId) ||
+                    gameState.players
+                      .flatMap((p) => p.discard)
+                      .find((c) => c.instanceId === cardInstanceId)
+                  : undefined) ||
+                (activePrompt.sourceCardCode
+                  ? promptPlayer.hand.find((c) => c.card.code === activePrompt.sourceCardCode) ||
+                    promptPlayer.tableau.find((c) => c.card.code === activePrompt.sourceCardCode)
+                  : undefined);
+
+              const resCost = optParams?.resourceCost;
+              const ability = optParams?.ability;
+              const costAmount = resCost?.amount ?? inPlayCard?.card?.cost ?? 1;
+              const resourceType =
+                resCost?.resourceType ??
+                (ability?.cost?.resourceCost
+                  ? Object.keys(ability.cost.resourceCost)[0]
+                  : undefined);
+
+              // Fallback synthetic card if prompt is from an encounter card or villain attachment
+              const paymentCard = inPlayCard || {
+                instanceId: cardInstanceId || activePrompt.promptId,
+                card: activePrompt.triggerSourceCard || {
+                  code: activePrompt.sourceCardCode || 'encounter_cost',
+                  name: activePrompt.sourceCardName || 'Card Cost',
+                  type: 'encounter' as any,
+                  cost: costAmount,
+                },
+                ownerId: activePrompt.playerId,
+              };
+
+              setPendingPromptPayment({
+                optionId,
+                playerId: activePrompt.playerId,
+                card: paymentCard as CardInstance,
+                abilityCost: {
+                  amount: costAmount,
+                  resourceType: resourceType as any,
+                  requirePrinted: ability?.cost?.requirePrinted,
+                },
+              });
+              setPaymentModalCard(paymentCard as CardInstance);
+              return;
+            }
+
+            if (onDispatchAction) {
+              onDispatchAction({
+                type: 'RESOLVE_DECISION_PROMPT',
+                playerId: activePrompt.playerId,
+                selectedOptionId: optionId,
+                ...payload,
+              });
+            }
           }}
         />
-      )}
 
-      {/* 7. Slide-Out Combat Log & History Drawer */}
-      <CombatLogDrawer
-        isOpen={isLogOpen}
-        onClose={() => setIsLogOpen(false)}
-        logs={gameState.log}
-        gameState={gameState}
-        devMode={devMode}
-      />
-      <DevStepErrorBanner logs={gameState.log} devMode={devMode} />
-      <GameOverScreen gameState={gameState} onReset={onReset} />
-
-      {/* 8. Interactive Decision Prompt Modal (ADR-0020 / ADR-0032 / ADR-0038) */}
-      <DecisionPromptModal
-        prompt={decisionPrompt}
-        onSelectOption={(optionId, payload) => {
-          const activePrompt = decisionPrompt;
-          if (!activePrompt) return;
-
-          const selectedOption = activePrompt.options?.find((o) => o.id === optionId);
-          const promptPlayer =
-            gameState.players.find((p) => p.id === activePrompt.playerId) || activePlayer;
-
-          const optParams = selectedOption?.params as Record<string, any> | undefined;
-          const requiresPayment = selectedOption ? optionRequiresPayment(selectedOption) : false;
-
-          if (requiresPayment && selectedOption) {
-            const cardInstanceId =
-              (optParams?.costCardInstanceId as string | undefined) ||
-              (optParams?.sourceCardInstanceId as string | undefined);
-            const inPlayCard =
-              (optParams?.cardInstance as CardInstance | undefined) ||
-              (cardInstanceId
-                ? promptPlayer.hand.find((c) => c.instanceId === cardInstanceId) ||
-                  promptPlayer.tableau.find((c) => c.instanceId === cardInstanceId) ||
-                  promptPlayer.discard.find((c) => c.instanceId === cardInstanceId) ||
-                  gameState.players
-                    .flatMap((p) => p.discard)
-                    .find((c) => c.instanceId === cardInstanceId)
-                : undefined) ||
-              (activePrompt.sourceCardCode
-                ? promptPlayer.hand.find((c) => c.card.code === activePrompt.sourceCardCode) ||
-                  promptPlayer.tableau.find((c) => c.card.code === activePrompt.sourceCardCode)
-                : undefined);
-
-            const resCost = optParams?.resourceCost;
-            const ability = optParams?.ability;
-            const costAmount = resCost?.amount ?? inPlayCard?.card?.cost ?? 1;
-            const resourceType =
-              resCost?.resourceType ??
-              (ability?.cost?.resourceCost ? Object.keys(ability.cost.resourceCost)[0] : undefined);
-
-            // Fallback synthetic card if prompt is from an encounter card or villain attachment
-            const paymentCard = inPlayCard || {
-              instanceId: cardInstanceId || activePrompt.promptId,
-              card: activePrompt.triggerSourceCard || {
-                code: activePrompt.sourceCardCode || 'encounter_cost',
-                name: activePrompt.sourceCardName || 'Card Cost',
-                type: 'encounter' as any,
-                cost: costAmount,
-              },
-              ownerId: activePrompt.playerId,
-            };
-
-            setPendingPromptPayment({
-              optionId,
-              playerId: activePrompt.playerId,
-              card: paymentCard as CardInstance,
-              abilityCost: {
-                amount: costAmount,
-                resourceType: resourceType as any,
-                requirePrinted: ability?.cost?.requirePrinted,
-              },
-            });
-            setPaymentModalCard(paymentCard as CardInstance);
-            return;
-          }
-
-          if (onDispatchAction) {
-            onDispatchAction({
-              type: 'RESOLVE_DECISION_PROMPT',
-              playerId: activePrompt.playerId,
-              selectedOptionId: optionId,
-              ...payload,
-            });
-          }
-        }}
-      />
-
-      {/* 9. Combat Boost & Damage Resolution Modal (Issue #140) */}
-      <CombatBoostModal
-        isOpen={isBoostModalOpen && Boolean(activeCombatOutcome)}
-        outcome={activeCombatOutcome || undefined}
-        onContinue={() => {
-          setIsBoostModalOpen(false);
-          setActiveCombatOutcome(null);
-          handleNextVillainStep();
-        }}
-      />
-    </div>
+        {/* 9. Combat Boost & Damage Resolution Modal (Issue #140) */}
+        <CombatBoostModal
+          isOpen={isBoostModalOpen && Boolean(activeCombatOutcome)}
+          outcome={activeCombatOutcome || undefined}
+          onContinue={() => {
+            setIsBoostModalOpen(false);
+            setActiveCombatOutcome(null);
+            handleNextVillainStep();
+          }}
+        />
+      </div>
+    </GameSessionContext.Provider>
   );
 };
 

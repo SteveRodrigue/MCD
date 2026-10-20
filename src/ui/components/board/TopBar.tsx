@@ -10,13 +10,13 @@ import {
   Newspaper,
   Bug,
 } from 'lucide-react';
-import { GameState, GamePhase } from '../../../engine';
+import { GamePhase } from '../../../engine';
 import { useGameSettings } from '../../context/useGameSettings';
 import { OptionsMenu } from './OptionsMenu';
 import { ReportProblemModal } from './ReportProblemModal';
+import { useGameSession } from '../../context/GameStateContext';
 
 interface TopBarProps {
-  gameState: GameState;
   activeSeatIndex: number;
   legalActionCount?: number;
   onSelectSeat: (index: number) => void;
@@ -27,7 +27,6 @@ interface TopBarProps {
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
-  gameState,
   activeSeatIndex,
   legalActionCount = 0,
   onSelectSeat,
@@ -36,6 +35,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   onReset,
   onOpenNewspaper,
 }) => {
+  const { state: gameState } = useGameSession();
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   let devMode = false;
@@ -207,18 +207,10 @@ export const TopBar: React.FC<TopBarProps> = ({
       </header>
 
       {/* Options Menu Modal */}
-      <OptionsMenu
-        isOpen={isOptionsOpen}
-        onClose={() => setIsOptionsOpen(false)}
-        gameState={gameState}
-      />
+      <OptionsMenu isOpen={isOptionsOpen} onClose={() => setIsOptionsOpen(false)} />
 
       {/* Report a Problem Modal */}
-      <ReportProblemModal
-        isOpen={isReportOpen}
-        onClose={() => setIsReportOpen(false)}
-        gameState={gameState}
-      />
+      <ReportProblemModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} />
     </>
   );
 };

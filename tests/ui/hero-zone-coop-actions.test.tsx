@@ -11,6 +11,7 @@ import {
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { HeroZone } from '../../src/ui/components/board/HeroZone';
 import { IdentityActionModal } from '../../src/ui/components/board/IdentityActionModal';
+import { TestSession } from '../support/render-with-session';
 
 vi.mock('../../src/ui/hooks/useCardArt', () => ({
   useCardArt: vi.fn().mockReturnValue({
@@ -72,15 +73,15 @@ describe('HeroZone Cooperative Tableau Actions (Issue #314)', () => {
 
     // Render HeroZone for player 2 (Tony Stark), while active player is player 1 (Peter Parker)
     render(
-      <HeroZone
-        player={state.players[1]}
-        gameState={state}
-        seatNumber={2}
-        isFocused={false}
-        isMultiHero={true}
-        onDispatchAction={onDispatchAction}
-        onInitiateAction={onInitiateAction}
-      />,
+      <TestSession state={state} dispatch={onDispatchAction}>
+        <HeroZone
+          player={state.players[1]}
+          seatNumber={2}
+          isFocused={false}
+          isMultiHero={true}
+          onInitiateAction={onInitiateAction}
+        />
+      </TestSession>,
     );
 
     // Ability button on Avengers Mansion should be enabled and show cooperative badge or USE
@@ -115,14 +116,14 @@ describe('HeroZone Cooperative Tableau Actions (Issue #314)', () => {
     const onClose = vi.fn();
 
     render(
-      <IdentityActionModal
-        isOpen={true}
-        player={state.players[1]}
-        gameState={state}
-        onClose={onClose}
-        onDispatchAction={onDispatchAction}
-        onInitiateAction={onInitiateAction}
-      />,
+      <TestSession state={state} dispatch={onDispatchAction}>
+        <IdentityActionModal
+          isOpen={true}
+          player={state.players[1]}
+          onClose={onClose}
+          onInitiateAction={onInitiateAction}
+        />
+      </TestSession>,
     );
 
     // In Alter-Ego, basic Recover is disabled for teammate during Player 1's turn

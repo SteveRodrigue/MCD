@@ -11,6 +11,7 @@ import {
   GamePhase,
   VillainPhaseStep,
 } from '../../src/engine/models';
+import { TestSession } from '../support/render-with-session';
 
 describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
   const ironManHero = cardCatalog.getCard('01029a') as HeroCard;
@@ -69,7 +70,9 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
 
     const { rerender, queryByText } = render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+        <TestSession state={state} dispatch={vi.fn()}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -95,7 +98,9 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
     act(() => {
       rerender(
         <GameSettingsProvider>
-          <GameBoard gameState={nextRoundState} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+          <TestSession state={nextRoundState} dispatch={vi.fn()}>
+            <GameBoard onReset={vi.fn()} />
+          </TestSession>
         </GameSettingsProvider>,
       );
     });
@@ -113,7 +118,9 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
 
     const { rerender, queryByText } = render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+        <TestSession state={state} dispatch={vi.fn()}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -134,7 +141,9 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
     act(() => {
       rerender(
         <GameSettingsProvider>
-          <GameBoard gameState={nextPlayerState} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+          <TestSession state={nextPlayerState} dispatch={vi.fn()}>
+            <GameBoard onReset={vi.fn()} />
+          </TestSession>
         </GameSettingsProvider>,
       );
     });
@@ -152,7 +161,9 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
 
     const { rerender, queryByText } = render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+        <TestSession state={state} dispatch={vi.fn()}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -175,7 +186,9 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
     act(() => {
       rerender(
         <GameSettingsProvider>
-          <GameBoard gameState={nextRoundState} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+          <TestSession state={nextRoundState} dispatch={vi.fn()}>
+            <GameBoard onReset={vi.fn()} />
+          </TestSession>
         </GameSettingsProvider>,
       );
     });
@@ -201,7 +214,9 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
 
     const { rerender, queryByText } = render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+        <TestSession state={state} dispatch={vi.fn()}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -217,7 +232,9 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
     act(() => {
       rerender(
         <GameSettingsProvider>
-          <GameBoard gameState={stateAfterAction} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+          <TestSession state={stateAfterAction} dispatch={vi.fn()}>
+            <GameBoard onReset={vi.fn()} />
+          </TestSession>
         </GameSettingsProvider>,
       );
     });
@@ -243,7 +260,9 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
 
     const { rerender, queryByText } = render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+        <TestSession state={state} dispatch={vi.fn()}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -272,7 +291,9 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
     act(() => {
       rerender(
         <GameSettingsProvider>
-          <GameBoard gameState={stateWithPrompt} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+          <TestSession state={stateWithPrompt} dispatch={vi.fn()}>
+            <GameBoard onReset={vi.fn()} />
+          </TestSession>
         </GameSettingsProvider>,
       );
     });
@@ -298,7 +319,9 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
 
     const { rerender, queryByText } = render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+        <TestSession state={state} dispatch={vi.fn()}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -314,7 +337,9 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
     act(() => {
       rerender(
         <GameSettingsProvider>
-          <GameBoard gameState={stateExhausted} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+          <TestSession state={stateExhausted} dispatch={vi.fn()}>
+            <GameBoard onReset={vi.fn()} />
+          </TestSession>
         </GameSettingsProvider>,
       );
     });
@@ -328,7 +353,9 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
     act(() => {
       rerender(
         <GameSettingsProvider>
-          <GameBoard gameState={stateReadied} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+          <TestSession state={stateReadied} dispatch={vi.fn()}>
+            <GameBoard onReset={vi.fn()} />
+          </TestSession>
         </GameSettingsProvider>,
       );
     });
@@ -354,7 +381,9 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
 
     const { rerender, queryByText } = render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+        <TestSession state={state} dispatch={vi.fn()}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -383,7 +412,9 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
     act(() => {
       rerender(
         <GameSettingsProvider>
-          <GameBoard gameState={stateWithPrompt} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+          <TestSession state={stateWithPrompt} dispatch={vi.fn()}>
+            <GameBoard onReset={vi.fn()} />
+          </TestSession>
         </GameSettingsProvider>,
       );
     });
@@ -397,7 +428,9 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
     act(() => {
       rerender(
         <GameSettingsProvider>
-          <GameBoard gameState={stateAfterPass} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+          <TestSession state={stateAfterPass} dispatch={vi.fn()}>
+            <GameBoard onReset={vi.fn()} />
+          </TestSession>
         </GameSettingsProvider>,
       );
     });

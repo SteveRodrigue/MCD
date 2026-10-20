@@ -4,6 +4,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { AllyActionModal } from '../../src/ui/components/board/AllyActionModal';
 import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
+import { TestSession } from '../support/render-with-session';
 
 describe('AllyActionModal dash (–) power display (Issue #316)', () => {
   it('shows THW – for Hulk and disables the thwart button', () => {
@@ -30,15 +31,16 @@ describe('AllyActionModal dash (–) power display (Issue #316)', () => {
     state.mainScheme.threat = 4;
 
     render(
-      <AllyActionModal
-        isOpen
-        ally={hulk}
-        player={player}
-        gameState={state}
-        onClose={vi.fn()}
-        onInitiateAllyAttack={vi.fn()}
-        onInitiateAllyThwart={vi.fn()}
-      />,
+      <TestSession state={state}>
+        <AllyActionModal
+          isOpen
+          ally={hulk}
+          player={player}
+          onClose={vi.fn()}
+          onInitiateAllyAttack={vi.fn()}
+          onInitiateAllyThwart={vi.fn()}
+        />
+      </TestSession>,
     );
 
     expect(screen.getAllByText(/– THW/).length).toBeGreaterThanOrEqual(1);

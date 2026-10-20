@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { ReportProblemModal } from '../../src/ui/components/board/ReportProblemModal';
 import * as problemReportService from '../../src/ui/services/problem-report-service';
-import { GameStateProvider } from '../../src/ui/context/GameStateContext';
+import { TestSession } from '../support/render-with-session';
 import type { GameState } from '../../src/engine/models';
 
 vi.mock('../../src/ui/services/problem-report-service', async (importOriginal) => {
@@ -53,9 +53,9 @@ describe('ReportProblemModal (Issue #164)', () => {
     });
     const liveState = { id: 'live_game', roundNumber: 3 } as GameState;
     render(
-      <GameStateProvider value={liveState}>
+      <TestSession state={liveState}>
         <ReportProblemModal isOpen={true} onClose={vi.fn()} initialDescription="Card bug" />
-      </GameStateProvider>,
+      </TestSession>,
     );
 
     await act(async () => {

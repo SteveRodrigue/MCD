@@ -5,6 +5,7 @@ import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider'
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { GameState, HeroCard, AlterEgoCard, GamePhase, AllyCard } from '../../src/engine/models';
+import { TestSession } from '../support/render-with-session';
 
 vi.mock('../../src/ui/hooks/useCardArt', () => ({
   useCardArt: vi.fn().mockReturnValue({
@@ -89,15 +90,16 @@ describe('PlayerHandTray Global Unicity UI Enforcement (Issue #187)', () => {
 
     render(
       <GameSettingsProvider>
-        <PlayerHandTray
-          hand={state.players[0].hand}
-          deck={state.players[0].deck}
-          discard={state.players[0].discard}
-          heroName="Spider-Man"
-          handSizeLimit={5}
-          player={state.players[0]}
-          gameState={state}
-        />
+        <TestSession state={state}>
+          <PlayerHandTray
+            hand={state.players[0].hand}
+            deck={state.players[0].deck}
+            discard={state.players[0].discard}
+            heroName="Spider-Man"
+            handSizeLimit={5}
+            player={state.players[0]}
+          />
+        </TestSession>
       </GameSettingsProvider>,
     );
 

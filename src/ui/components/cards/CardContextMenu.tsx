@@ -7,7 +7,7 @@ import { ExternalLink, Copy, Check, Info, X, Bug, BarChart2, Trash2 } from 'luci
 import { ReportProblemModal } from '../board/ReportProblemModal';
 import { CardStatsModal } from './CardStatsModal';
 import { ResetCardStatsConfirmModal } from './ResetCardStatsConfirmModal';
-import { useGameState } from '../../context/GameStateContext';
+import { useOptionalGameSession } from '../../context/GameStateContext';
 import { useGameSettings } from '../../context/useGameSettings';
 import { getAllTimeStats, resetCardStats } from '../../services/stats-storage-service';
 
@@ -28,7 +28,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [showResetConfirmModal, setShowResetConfirmModal] = useState(false);
 
-  const gameState = useGameState();
+  const gameState = useOptionalGameSession()?.state;
   const { devMode } = useGameSettings();
   const [allTimeStats, setAllTimeStats] = useState<AllTimeStats | undefined>(undefined);
 

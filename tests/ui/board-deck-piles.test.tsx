@@ -12,7 +12,15 @@ import {
   MainSchemeState,
   VillainCard,
   MainSchemeCard,
+  GameState,
 } from '../../src/engine/models';
+import { TestSession } from '../support/render-with-session';
+
+const trayState = {
+  phase: 'PLAYER_PHASE',
+  activePlayerIndex: 0,
+  players: [],
+} as unknown as GameState;
 
 vi.mock('../../src/ui/hooks/useCardArt', () => ({
   useCardArt: vi.fn().mockReturnValue({
@@ -49,13 +57,15 @@ describe('Board Deck Piles & Facedown Card Backs (Issue #141)', () => {
 
       render(
         <GameSettingsProvider>
-          <PlayerHandTray
-            hand={[]}
-            deck={deck}
-            discard={[]}
-            heroName="Spider-Man"
-            handSizeLimit={6}
-          />
+          <TestSession state={trayState}>
+            <PlayerHandTray
+              hand={[]}
+              deck={deck}
+              discard={[]}
+              heroName="Spider-Man"
+              handSizeLimit={6}
+            />
+          </TestSession>
         </GameSettingsProvider>,
       );
 
@@ -84,13 +94,15 @@ describe('Board Deck Piles & Facedown Card Backs (Issue #141)', () => {
 
       render(
         <GameSettingsProvider>
-          <PlayerHandTray
-            hand={[]}
-            deck={deck}
-            discard={[]}
-            heroName="Spider-Man"
-            handSizeLimit={6}
-          />
+          <TestSession state={trayState}>
+            <PlayerHandTray
+              hand={[]}
+              deck={deck}
+              discard={[]}
+              heroName="Spider-Man"
+              handSizeLimit={6}
+            />
+          </TestSession>
         </GameSettingsProvider>,
       );
 

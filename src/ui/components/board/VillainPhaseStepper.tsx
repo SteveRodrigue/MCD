@@ -1,11 +1,11 @@
 import React from 'react';
 import { FastForward, Play, Pause, ChevronRight, AlertTriangle } from 'lucide-react';
-import { GameState, VillainPhaseStep } from '../../../engine/models';
+import { VillainPhaseStep } from '../../../engine/models';
 import { peekDecisionPrompt } from '../../../engine/pipeline';
 import { VillainPhasePacing } from '../../context/game-settings-context';
+import { useGameSession } from '../../context/GameStateContext';
 
 export interface VillainPhaseStepperProps {
-  gameState: GameState;
   pacing: VillainPhasePacing;
   onNextStep: () => void;
   onToggleAutoPlay?: () => void;
@@ -14,13 +14,13 @@ export interface VillainPhaseStepperProps {
 }
 
 export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
-  gameState,
   pacing,
   onNextStep,
   onToggleAutoPlay,
   onSkip,
   isAutoPlaying = true,
 }) => {
+  const { state: gameState } = useGameSession();
   if (gameState.phase !== 'VILLAIN_PHASE') return null;
 
   const stepEvent = gameState.villainPhaseStepEvent;

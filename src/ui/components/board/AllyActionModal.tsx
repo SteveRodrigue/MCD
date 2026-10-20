@@ -1,14 +1,7 @@
 import React from 'react';
 import { ModalLayer } from '../layout/ModalLayer';
 import { Swords, Target, Zap, X, Shield, Skull } from 'lucide-react';
-import {
-  CardInstance,
-  PlayerState,
-  GameState,
-  GameAction,
-  AllyCard,
-  hasDashPower,
-} from '../../../engine/models';
+import { CardInstance, PlayerState, AllyCard, hasDashPower } from '../../../engine/models';
 import {
   getEffectiveAllyStats,
   getEffectiveCardTraitsDetails,
@@ -16,42 +9,34 @@ import {
 import { getValidAttackTargets } from './attack-target-utils';
 import { getValidThwartTargets } from './thwart-target-utils';
 import { canPayAbilityCost } from '../../../engine/pipeline/cost-engine';
+import { useGameSession } from '../../context/GameStateContext';
 
 interface AllyActionModalProps {
   isOpen: boolean;
   ally: CardInstance;
   player: PlayerState;
-  gameState?: GameState;
   onClose: () => void;
   onInitiateAllyAttack: (allyInstanceId: string) => void;
   onInitiateAllyThwart: (allyInstanceId: string) => void;
-  onDispatchAction?: (action: GameAction) => void;
 }
 
 export const AllyActionModal: React.FC<AllyActionModalProps> = ({
   isOpen,
   ally,
   player,
-  gameState,
   onClose,
   onInitiateAllyAttack,
   onInitiateAllyThwart,
-  onDispatchAction,
 }) => {
+  const { state: gameState, dispatch: onDispatchAction } = useGameSession();
   if (!isOpen || !ally) return null;
 
   const allyCard = ally.card as AllyCard;
-  const allyStats = gameState
-    ? getEffectiveAllyStats(gameState, ally)
-    : {
-        attack: allyCard.attack,
-        thwart: allyCard.thwart,
-      };
+  const allyStats = getEffectiveAllyStats(gameState, ally);
 
-  const isPlayerTurn = gameState
-    ? gameState.phase === 'PLAYER_PHASE' &&
-      gameState.players[gameState.activePlayerIndex]?.id === player.id
-    : true;
+  const isPlayerTurn =
+    gameState.phase === 'PLAYER_PHASE' &&
+    gameState.players[gameState.activePlayerIndex]?.id === player.id;
 
   const baseAtk = (allyCard as any).attack ?? 0;
   const baseThw = (allyCard as any).thwart ?? 0;
@@ -67,14 +52,10 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
   const maxHealth = allyCard.health || 2;
   const currentHealth = Math.max(0, maxHealth - currentDamage);
 
-  const attackTargets = gameState
-    ? getValidAttackTargets(gameState, player.id, 'ally', ally.instanceId)
-    : [];
+  const attackTargets = getValidAttackTargets(gameState, player.id, 'ally', ally.instanceId);
   const canAttack = isPlayerTurn && !ally.exhausted && attackTargets.length > 0;
 
-  const thwartTargets = gameState
-    ? getValidThwartTargets(gameState, player.id, 'ally', ally.instanceId)
-    : [];
+  const thwartTargets = getValidThwartTargets(gameState, player.id, 'ally', ally.instanceId);
   const canThwart = isPlayerTurn && !ally.exhausted && thwartTargets.some((t) => t.allowed);
 
   const consequentialAtk =
@@ -311,9 +292,7 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
             {/* Action 3: Ally Activated Abilities (if declared) */}
             {actionableAbilities.map((ab) => {
               const alreadyUsed = (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
-              const costCheck = gameState
-                ? canPayAbilityCost(gameState, player, ab, ally, {})
-                : { allowed: false };
+              const costCheck = canPayAbilityCost(gameState, player, ab, ally, {});
               const canTrigger = isPlayerTurn && !alreadyUsed && costCheck.allowed;
 
               return (

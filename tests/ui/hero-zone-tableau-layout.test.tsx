@@ -4,6 +4,7 @@ import { HeroZone } from '../../src/ui/components/board/HeroZone';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { HeroCard, AlterEgoCard, AllyCard } from '../../src/engine/models';
+import { TestSession } from '../support/render-with-session';
 
 vi.mock('../../src/ui/hooks/useCardArt', () => ({
   useCardArt: vi.fn().mockReturnValue({
@@ -44,13 +45,9 @@ describe('HeroZone Nested Allies & 2-Tier Tableau Architecture (Issue #156)', ()
     const player = gameState.players[0];
 
     render(
-      <HeroZone
-        player={player}
-        gameState={gameState}
-        seatNumber={1}
-        isFocused={true}
-        isMultiHero={false}
-      />,
+      <TestSession state={gameState}>
+        <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+      </TestSession>,
     );
 
     const rosterContainer = screen.getByTestId('hero-allies-roster');
@@ -69,13 +66,9 @@ describe('HeroZone Nested Allies & 2-Tier Tableau Architecture (Issue #156)', ()
     const player = gameState.players[0];
 
     render(
-      <HeroZone
-        player={player}
-        gameState={gameState}
-        seatNumber={1}
-        isFocused={true}
-        isMultiHero={false}
-      />,
+      <TestSession state={gameState}>
+        <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+      </TestSession>,
     );
 
     const rosterContainer = screen.getByTestId('hero-allies-roster');
@@ -92,13 +85,9 @@ describe('HeroZone Nested Allies & 2-Tier Tableau Architecture (Issue #156)', ()
     player.allies = [];
 
     render(
-      <HeroZone
-        player={player}
-        gameState={gameState}
-        seatNumber={1}
-        isFocused={true}
-        isMultiHero={false}
-      />,
+      <TestSession state={gameState}>
+        <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+      </TestSession>,
     );
 
     const nestedAllies = screen.getByTestId('nested-allies-section');
@@ -116,13 +105,9 @@ describe('HeroZone Nested Allies & 2-Tier Tableau Architecture (Issue #156)', ()
     player.allies = [createCardInstance(blackCatCard), createCardInstance(daredevilCard)];
 
     render(
-      <HeroZone
-        player={player}
-        gameState={gameState}
-        seatNumber={1}
-        isFocused={true}
-        isMultiHero={false}
-      />,
+      <TestSession state={gameState}>
+        <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+      </TestSession>,
     );
 
     const nestedAllies = screen.getByTestId('nested-allies-section');
@@ -140,13 +125,9 @@ describe('HeroZone Nested Allies & 2-Tier Tableau Architecture (Issue #156)', ()
     player.tableau = [webShooter];
 
     render(
-      <HeroZone
-        player={player}
-        gameState={gameState}
-        seatNumber={1}
-        isFocused={true}
-        isMultiHero={false}
-      />,
+      <TestSession state={gameState}>
+        <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+      </TestSession>,
     );
 
     const tableauSection = screen.getByTestId('tableau-section');
@@ -164,14 +145,9 @@ describe('HeroZone Nested Allies & 2-Tier Tableau Architecture (Issue #156)', ()
     player.allies = [catInst];
 
     render(
-      <HeroZone
-        player={player}
-        gameState={gameState}
-        seatNumber={1}
-        isFocused={true}
-        isMultiHero={false}
-        onDispatchAction={onDispatchAction}
-      />,
+      <TestSession state={gameState} dispatch={onDispatchAction}>
+        <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+      </TestSession>,
     );
 
     const nestedAllies = screen.getByTestId('nested-allies-section');
@@ -193,14 +169,9 @@ describe('HeroZone Nested Allies & 2-Tier Tableau Architecture (Issue #156)', ()
     player.tableau = [mansion];
 
     render(
-      <HeroZone
-        player={player}
-        gameState={gameState}
-        seatNumber={1}
-        isFocused={true}
-        isMultiHero={false}
-        onDispatchAction={onDispatchAction}
-      />,
+      <TestSession state={gameState} dispatch={onDispatchAction}>
+        <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+      </TestSession>,
     );
 
     const tableauSection = screen.getByTestId('tableau-section');
@@ -221,14 +192,9 @@ describe('HeroZone Nested Allies & 2-Tier Tableau Architecture (Issue #156)', ()
       player.exhausted = true;
 
       render(
-        <HeroZone
-          player={player}
-          gameState={gameState}
-          seatNumber={1}
-          isFocused={true}
-          isMultiHero={false}
-          onDispatchAction={vi.fn()}
-        />,
+        <TestSession state={gameState} dispatch={vi.fn()}>
+          <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+        </TestSession>,
       );
 
       const identityStation = screen.getByTestId('identity-station');
@@ -248,14 +214,9 @@ describe('HeroZone Nested Allies & 2-Tier Tableau Architecture (Issue #156)', ()
     const onDispatchAction = vi.fn();
 
     render(
-      <HeroZone
-        player={player}
-        gameState={gameState}
-        seatNumber={1}
-        isFocused={true}
-        isMultiHero={false}
-        onDispatchAction={onDispatchAction}
-      />,
+      <TestSession state={gameState} dispatch={onDispatchAction}>
+        <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+      </TestSession>,
     );
 
     const identityStation = screen.getByTestId('identity-station');
@@ -304,14 +265,9 @@ describe('HeroZone Nested Allies & 2-Tier Tableau Architecture (Issue #156)', ()
     const onDispatchAction = vi.fn();
 
     render(
-      <HeroZone
-        player={player}
-        gameState={gameState}
-        seatNumber={1}
-        isFocused={true}
-        isMultiHero={false}
-        onDispatchAction={onDispatchAction}
-      />,
+      <TestSession state={gameState} dispatch={onDispatchAction}>
+        <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+      </TestSession>,
     );
 
     const identityStation = screen.getByTestId('identity-station');

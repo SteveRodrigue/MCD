@@ -62,3 +62,11 @@ We need a clean, persistent UI settings system that supports developer tooling (
 * Clean architecture separating client UI preferences from pure game rules.
 * Instant visual feedback for testers and developers.
 * Flexible foundation for all future game parameters (audio, keybindings, accessibility).
+
+---
+
+## Addendum (2026-10-19): Two engine behaviour flags in `state.options`
+
+`autoResolveUnambiguous` and `villainPhaseStepping` are copied from the settings into `state.options` before every dispatch (`App.tsx`, `withUiOptions`). They are not display preferences: the first decides whether a one-option prompt opens, the second decides where the villain phase stops, so both change the action sequence. The engine reads them from the state, which keeps it a pure `(state, action)` reducer.
+
+Passing them as a per-dispatch argument instead is tracked in [#337](https://github.com/SteveRodrigue/MCD/issues/337).

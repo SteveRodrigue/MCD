@@ -5,6 +5,7 @@ import { setupGame, createCardInstance } from '../../src/engine/state/game-setup
 import { HeroCard, AlterEgoCard, GameState, CardInstance } from '../../src/engine/models';
 import { CardPaymentModal } from '../../src/ui/components/board/CardPaymentModal';
 import { isGeneratorIneligibleForCost } from '../../src/ui/components/board/payment-eligibility';
+import { TestSession } from '../support/render-with-session';
 
 vi.mock('../../src/ui/hooks/useCardArt', () => ({
   useCardArt: vi.fn().mockReturnValue({
@@ -49,15 +50,16 @@ describe('CardPaymentModal typed resource eligibility (Issues #180, #129)', () =
       handCard('Blank Card', {}),
     ];
     render(
-      <CardPaymentModal
-        isOpen={true}
-        onClose={() => {}}
-        cardToPlay={source}
-        abilityCost={abilityCost}
-        player={state.players[0]}
-        gameState={state}
-        onConfirmPlay={() => {}}
-      />,
+      <TestSession state={state}>
+        <CardPaymentModal
+          isOpen={true}
+          onClose={() => {}}
+          cardToPlay={source}
+          abilityCost={abilityCost}
+          player={state.players[0]}
+          onConfirmPlay={() => {}}
+        />
+      </TestSession>,
     );
   }
 

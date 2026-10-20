@@ -5,6 +5,7 @@ import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider'
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { HeroCard, AlterEgoCard, GamePhase } from '../../src/engine/models';
+import { TestSession } from '../support/render-with-session';
 
 vi.mock('../../src/ui/hooks/useCardArt', () => ({
   useCardArt: vi.fn().mockReturnValue({
@@ -45,15 +46,16 @@ describe('PlayerHandTray fan z-index (Issue #312)', () => {
 
     const { getByTestId } = render(
       <GameSettingsProvider>
-        <PlayerHandTray
-          hand={hand}
-          deck={state.players[0].deck}
-          discard={state.players[0].discard}
-          heroName="Spider-Man"
-          handSizeLimit={5}
-          player={state.players[0]}
-          gameState={state}
-        />
+        <TestSession state={state}>
+          <PlayerHandTray
+            hand={hand}
+            deck={state.players[0].deck}
+            discard={state.players[0].discard}
+            heroName="Spider-Man"
+            handSizeLimit={5}
+            player={state.players[0]}
+          />
+        </TestSession>
       </GameSettingsProvider>,
     );
 

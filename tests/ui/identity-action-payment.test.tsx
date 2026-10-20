@@ -8,6 +8,7 @@ import { HeroZone } from '../../src/ui/components/board/HeroZone';
 import { GameBoard } from '../../src/ui/components/board/GameBoard';
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
 import { GamePhase } from '../../src/engine/models';
+import { TestSession } from '../support/render-with-session';
 
 describe('Identity & Card Payment Subsystem Integration (Issue #162)', () => {
   const captainMarvelIdentity = cardCatalog.getHeroIdentity('captain_marvel')!;
@@ -64,14 +65,14 @@ describe('Identity & Card Payment Subsystem Integration (Issue #162)', () => {
       ];
 
       render(
-        <IdentityActionModal
-          isOpen={true}
-          player={player}
-          gameState={gameState}
-          onClose={onClose}
-          onDispatchAction={onDispatchAction}
-          onInitiateAction={onInitiateAction}
-        />,
+        <TestSession state={gameState} dispatch={onDispatchAction}>
+          <IdentityActionModal
+            isOpen={true}
+            player={player}
+            onClose={onClose}
+            onInitiateAction={onInitiateAction}
+          />
+        </TestSession>,
       );
 
       const rechannelButton = screen.getByText('RECHANNEL').closest('button');
@@ -107,14 +108,14 @@ describe('Identity & Card Payment Subsystem Integration (Issue #162)', () => {
       const onClose = vi.fn();
 
       render(
-        <IdentityActionModal
-          isOpen={true}
-          player={player}
-          gameState={gameState}
-          onClose={onClose}
-          onDispatchAction={onDispatchAction}
-          onInitiateAction={onInitiateAction}
-        />,
+        <TestSession state={gameState} dispatch={onDispatchAction}>
+          <IdentityActionModal
+            isOpen={true}
+            player={player}
+            onClose={onClose}
+            onInitiateAction={onInitiateAction}
+          />
+        </TestSession>,
       );
 
       const commanderButton = screen.getByText('COMMANDER').closest('button');
@@ -153,7 +154,9 @@ describe('Identity & Card Payment Subsystem Integration (Issue #162)', () => {
 
       render(
         <GameSettingsProvider>
-          <GameBoard gameState={gameState} onReset={vi.fn()} onDispatchAction={onDispatchAction} />
+          <TestSession state={gameState} dispatch={onDispatchAction}>
+            <GameBoard onReset={vi.fn()} />
+          </TestSession>
         </GameSettingsProvider>,
       );
 
@@ -195,23 +198,24 @@ describe('Identity & Card Payment Subsystem Integration (Issue #162)', () => {
       ];
 
       render(
-        <CardPaymentModal
-          isOpen={true}
-          onClose={onClose}
-          cardToPlay={{
-            instanceId: ident.hero.code,
-            card: ident.hero,
-            exhausted: false,
-          }}
-          abilityCost={{
-            amount: 1,
-            resourceType: 'energy',
-            title: 'Action: RECHANNEL',
-          }}
-          player={player}
-          gameState={gameState}
-          onConfirmPlay={onConfirmPlay}
-        />,
+        <TestSession state={gameState}>
+          <CardPaymentModal
+            isOpen={true}
+            onClose={onClose}
+            cardToPlay={{
+              instanceId: ident.hero.code,
+              card: ident.hero,
+              exhausted: false,
+            }}
+            abilityCost={{
+              amount: 1,
+              resourceType: 'energy',
+              title: 'Action: RECHANNEL',
+            }}
+            player={player}
+            onConfirmPlay={onConfirmPlay}
+          />
+        </TestSession>,
       );
 
       // Verify all 3 hand cards are displayed
@@ -261,23 +265,24 @@ describe('Identity & Card Payment Subsystem Integration (Issue #162)', () => {
       ];
 
       render(
-        <CardPaymentModal
-          isOpen={true}
-          onClose={onClose}
-          cardToPlay={{
-            instanceId: ident.hero.code,
-            card: ident.hero,
-            exhausted: false,
-          }}
-          abilityCost={{
-            amount: 1,
-            resourceType: 'wild',
-            title: 'Action: RECHANNEL',
-          }}
-          player={player}
-          gameState={gameState}
-          onConfirmPlay={onConfirmPlay}
-        />,
+        <TestSession state={gameState}>
+          <CardPaymentModal
+            isOpen={true}
+            onClose={onClose}
+            cardToPlay={{
+              instanceId: ident.hero.code,
+              card: ident.hero,
+              exhausted: false,
+            }}
+            abilityCost={{
+              amount: 1,
+              resourceType: 'wild',
+              title: 'Action: RECHANNEL',
+            }}
+            player={player}
+            onConfirmPlay={onConfirmPlay}
+          />
+        </TestSession>,
       );
 
       // Both hand card and generator should be displayed
@@ -308,14 +313,9 @@ describe('Identity & Card Payment Subsystem Integration (Issue #162)', () => {
       ];
 
       render(
-        <HeroZone
-          player={player}
-          gameState={gameState}
-          seatNumber={1}
-          isFocused={true}
-          isMultiHero={false}
-          onDispatchAction={vi.fn()}
-        />,
+        <TestSession state={gameState} dispatch={vi.fn()}>
+          <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+        </TestSession>,
       );
 
       const resCounter = screen.getByTestId('hero-available-resources-counter');
@@ -333,14 +333,9 @@ describe('Identity & Card Payment Subsystem Integration (Issue #162)', () => {
       ];
 
       render(
-        <HeroZone
-          player={player}
-          gameState={gameState}
-          seatNumber={1}
-          isFocused={true}
-          isMultiHero={false}
-          onDispatchAction={vi.fn()}
-        />,
+        <TestSession state={gameState} dispatch={vi.fn()}>
+          <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+        </TestSession>,
       );
 
       const resCounter = screen.getByTestId('hero-available-resources-counter');
@@ -359,14 +354,9 @@ describe('Identity & Card Payment Subsystem Integration (Issue #162)', () => {
       ];
 
       const { rerender } = render(
-        <HeroZone
-          player={player}
-          gameState={gameState}
-          seatNumber={1}
-          isFocused={true}
-          isMultiHero={false}
-          onDispatchAction={vi.fn()}
-        />,
+        <TestSession state={gameState} dispatch={vi.fn()}>
+          <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+        </TestSession>,
       );
 
       let resCounter = screen.getByTestId('hero-available-resources-counter');
@@ -375,14 +365,9 @@ describe('Identity & Card Payment Subsystem Integration (Issue #162)', () => {
       // Discard 1 card
       player.hand = [{ instanceId: 'c1', card: cardCatalog.getCard('01005')! }];
       rerender(
-        <HeroZone
-          player={player}
-          gameState={gameState}
-          seatNumber={1}
-          isFocused={true}
-          isMultiHero={false}
-          onDispatchAction={vi.fn()}
-        />,
+        <TestSession state={gameState} dispatch={vi.fn()}>
+          <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+        </TestSession>,
       );
 
       resCounter = screen.getByTestId('hero-available-resources-counter');

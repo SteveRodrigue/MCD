@@ -2,7 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DevStepErrorBanner } from '../../src/ui/components/board/DevStepErrorBanner';
 import { CombatLogDrawer } from '../../src/ui/components/board/CombatLogDrawer';
-import { GameLogEntry } from '../../src/engine/models';
+import { GameLogEntry, GameState } from '../../src/engine/models';
+import { TestSession } from '../support/render-with-session';
+
+const state = { players: [] } as unknown as GameState;
 
 const stepError = (id: string, text: string): GameLogEntry => ({
   id,
@@ -38,11 +41,17 @@ describe('Dev Mode step error message (Issue #225)', () => {
   it('lists the error in the combat log in Dev Mode only', () => {
     const logs = [stepError('l1', '01039 ADD_TRAIT failed: boom')];
     const { unmount } = render(
-      <CombatLogDrawer isOpen onClose={() => {}} logs={logs} devMode={false} />,
+      <TestSession state={state}>
+        <CombatLogDrawer isOpen onClose={() => {}} logs={logs} devMode={false} />
+      </TestSession>,
     );
     expect(screen.queryByText(/ADD_TRAIT failed/)).toBeNull();
     unmount();
-    render(<CombatLogDrawer isOpen onClose={() => {}} logs={logs} devMode />);
+    render(
+      <TestSession state={state}>
+        <CombatLogDrawer isOpen onClose={() => {}} logs={logs} devMode />
+      </TestSession>,
+    );
     expect(screen.getAllByText(/ADD_TRAIT failed: boom/).length).toBeGreaterThan(0);
   });
 });

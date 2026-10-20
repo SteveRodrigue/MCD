@@ -5,6 +5,7 @@ import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider'
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { GameState, HeroCard, AlterEgoCard, GamePhase } from '../../src/engine/models';
+import { TestSession } from '../support/render-with-session';
 
 vi.mock('../../src/ui/hooks/useCardArt', () => ({
   useCardArt: vi.fn().mockReturnValue({
@@ -61,15 +62,16 @@ describe('PlayerHandTray during Villain Phase (Issue #182)', () => {
   it('renders header with • (VILLAIN PHASE) indicator', () => {
     render(
       <GameSettingsProvider>
-        <PlayerHandTray
-          hand={[]}
-          deck={state.players[0].deck}
-          discard={[]}
-          heroName="Spider-Man"
-          handSizeLimit={5}
-          player={state.players[0]}
-          gameState={state}
-        />
+        <TestSession state={state}>
+          <PlayerHandTray
+            hand={[]}
+            deck={state.players[0].deck}
+            discard={[]}
+            heroName="Spider-Man"
+            handSizeLimit={5}
+            player={state.players[0]}
+          />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -82,15 +84,16 @@ describe('PlayerHandTray during Villain Phase (Issue #182)', () => {
   it('does not render the End Turn button during Villain Phase', () => {
     render(
       <GameSettingsProvider>
-        <PlayerHandTray
-          hand={[]}
-          deck={state.players[0].deck}
-          discard={[]}
-          heroName="Spider-Man"
-          handSizeLimit={5}
-          player={state.players[0]}
-          gameState={state}
-        />
+        <TestSession state={state}>
+          <PlayerHandTray
+            hand={[]}
+            deck={state.players[0].deck}
+            discard={[]}
+            heroName="Spider-Man"
+            handSizeLimit={5}
+            player={state.players[0]}
+          />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -101,18 +104,20 @@ describe('PlayerHandTray during Villain Phase (Issue #182)', () => {
 
   it('shows warning when clicking hand cards during Villain Phase', () => {
     const cardInst = createCardInstance(cardCatalog.getCard('01005')!); // Web-Shooter
+    state.players[0].hand = [cardInst];
 
     render(
       <GameSettingsProvider>
-        <PlayerHandTray
-          hand={[cardInst]}
-          deck={state.players[0].deck}
-          discard={[]}
-          heroName="Spider-Man"
-          handSizeLimit={5}
-          player={state.players[0]}
-          gameState={state}
-        />
+        <TestSession state={state}>
+          <PlayerHandTray
+            hand={[cardInst]}
+            deck={state.players[0].deck}
+            discard={[]}
+            heroName="Spider-Man"
+            handSizeLimit={5}
+            player={state.players[0]}
+          />
+        </TestSession>
       </GameSettingsProvider>,
     );
 

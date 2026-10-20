@@ -11,6 +11,7 @@ import {
   VillainPhaseStep,
   CombatResolutionSummary,
 } from '../../src/engine/models';
+import { TestSession } from '../support/render-with-session';
 
 describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
   describe('VillainPhaseStepper', () => {
@@ -31,13 +32,14 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
       const onToggleAutoPlay = vi.fn();
 
       render(
-        <VillainPhaseStepper
-          gameState={mockState as GameState}
-          pacing="auto_normal"
-          onNextStep={onNextStep}
-          onToggleAutoPlay={onToggleAutoPlay}
-          isAutoPlaying={true}
-        />,
+        <TestSession state={mockState as GameState}>
+          <VillainPhaseStepper
+            pacing="auto_normal"
+            onNextStep={onNextStep}
+            onToggleAutoPlay={onToggleAutoPlay}
+            isAutoPlaying={true}
+          />
+        </TestSession>,
       );
 
       expect(screen.getByTestId('villain-phase-stepper')).toBeDefined();
@@ -60,11 +62,9 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
       };
 
       render(
-        <VillainPhaseStepper
-          gameState={attackState as GameState}
-          pacing="manual"
-          onNextStep={vi.fn()}
-        />,
+        <TestSession state={attackState as GameState}>
+          <VillainPhaseStepper pacing="manual" onNextStep={vi.fn()} />
+        </TestSession>,
       );
 
       expect(screen.getByText('2. VILLAIN ➔ Peter Parker')).toBeDefined();
@@ -80,11 +80,9 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
         villainPhaseStep: VillainPhaseStep.DEAL_ENCOUNTER_CARDS,
       };
       const { rerender } = render(
-        <VillainPhaseStepper
-          gameState={dealState as GameState}
-          pacing="manual"
-          onNextStep={vi.fn()}
-        />,
+        <TestSession state={dealState as GameState}>
+          <VillainPhaseStepper pacing="manual" onNextStep={vi.fn()} />
+        </TestSession>,
       );
       expect(screen.getByText('3. DEAL CARDS')).toBeDefined();
 
@@ -94,11 +92,9 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
         villainPhaseStep: VillainPhaseStep.REVEAL_ENCOUNTER_CARDS,
       };
       rerender(
-        <VillainPhaseStepper
-          gameState={revealState as GameState}
-          pacing="manual"
-          onNextStep={vi.fn()}
-        />,
+        <TestSession state={revealState as GameState}>
+          <VillainPhaseStepper pacing="manual" onNextStep={vi.fn()} />
+        </TestSession>,
       );
       expect(screen.getByText('4. REVEAL')).toBeDefined();
 
@@ -108,11 +104,9 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
         villainPhaseStep: VillainPhaseStep.PASS_FIRST_PLAYER,
       };
       rerender(
-        <VillainPhaseStepper
-          gameState={passState as GameState}
-          pacing="manual"
-          onNextStep={vi.fn()}
-        />,
+        <TestSession state={passState as GameState}>
+          <VillainPhaseStepper pacing="manual" onNextStep={vi.fn()} />
+        </TestSession>,
       );
       expect(screen.getByText('5. FIRST PLAYER')).toBeDefined();
       expect(screen.getByText('Pass first player token and round upkeep.')).toBeDefined();
@@ -133,11 +127,9 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
       };
 
       render(
-        <VillainPhaseStepper
-          gameState={transitionalState as GameState}
-          pacing="manual"
-          onNextStep={vi.fn()}
-        />,
+        <TestSession state={transitionalState as GameState}>
+          <VillainPhaseStepper pacing="manual" onNextStep={vi.fn()} />
+        </TestSession>,
       );
 
       // Badge must match the event (VILLAIN ➔ Hero Seat 2), NOT 3. DEAL CARDS
@@ -150,11 +142,9 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
       const onNextStep = vi.fn();
 
       render(
-        <VillainPhaseStepper
-          gameState={mockState as GameState}
-          pacing="manual"
-          onNextStep={onNextStep}
-        />,
+        <TestSession state={mockState as GameState}>
+          <VillainPhaseStepper pacing="manual" onNextStep={onNextStep} />
+        </TestSession>,
       );
 
       const nextButton = screen.getByRole('button', { name: /next step/i });
@@ -180,11 +170,9 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
       };
 
       render(
-        <VillainPhaseStepper
-          gameState={stateWithPrompt as GameState}
-          pacing="auto_normal"
-          onNextStep={onNextStep}
-        />,
+        <TestSession state={stateWithPrompt as GameState}>
+          <VillainPhaseStepper pacing="auto_normal" onNextStep={onNextStep} />
+        </TestSession>,
       );
 
       expect(screen.getByText(/Awaiting player decision prompt/i)).toBeDefined();
@@ -201,11 +189,9 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
       };
 
       const { container } = render(
-        <VillainPhaseStepper
-          gameState={playerPhaseState as GameState}
-          pacing="auto_normal"
-          onNextStep={vi.fn()}
-        />,
+        <TestSession state={playerPhaseState as GameState}>
+          <VillainPhaseStepper pacing="auto_normal" onNextStep={vi.fn()} />
+        </TestSession>,
       );
 
       expect(container.firstChild).toBeNull();

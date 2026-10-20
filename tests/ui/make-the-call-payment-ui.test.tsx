@@ -12,6 +12,7 @@ import type {
 } from '../../src/engine/models';
 import { GamePhase } from '../../src/engine/models';
 import { dispatchAction, enqueueDecisionPrompt } from '../../src/engine/pipeline';
+import { TestSession } from '../support/render-with-session';
 
 describe('Make the Call Payment UI Flow (Issue #173)', () => {
   const spiderManHero = cardCatalog.getCard('01001a') as HeroCard;
@@ -132,7 +133,9 @@ describe('Make the Call Payment UI Flow (Issue #173)', () => {
 
     render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onDispatchAction={onDispatchAction} onReset={vi.fn()} />
+        <TestSession state={state} dispatch={onDispatchAction}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -228,7 +231,9 @@ describe('Make the Call Payment UI Flow (Issue #173)', () => {
 
     render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onDispatchAction={onDispatchAction} onReset={vi.fn()} />
+        <TestSession state={state} dispatch={onDispatchAction}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 

@@ -3,6 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
 import { updateGameState, getActiveVillain } from '@engine/models';
+import { createCardInstance } from '@engine/state/card-instance';
 import type { AlterEgoCard, GameState, HeroCard } from '@engine/models';
 
 // updateGameState shares every branch an update leaves alone and never changes the previous state
@@ -89,5 +90,39 @@ describe('updateGameState', () => {
     expect(accepted.result.success).toBe(true);
     expect(JSON.stringify(state.players[0])).toBe(before);
     expect(accepted.state).not.toBe(state);
+  });
+  it('a recipe that returns another state after editing the draft keeps that state', () => {
+    const state = newState();
+    const replacement = updateGameState(state, (draft) => {
+      draft.roundNumber += 5;
+    });
+
+    const next = updateGameState(state, (draft) => {
+      draft.players[0].health = 1;
+      return replacement;
+    });
+
+    expect(next.roundNumber).toBe(replacement.roundNumber);
+    expect(next.players[0].health).toBe(replacement.players[0].health);
+  });
+
+  it('a rejected action dispatched from inside an update leaves the draft untouched', () => {
+    const state = newState();
+    const health = state.players[0].health;
+
+    const next = updateGameState(state, (draft) => {
+      const outcome = dispatchAction(draft, { type: 'END_PLAYER_TURN', playerId: 'nobody' });
+      expect(outcome.result.success).toBe(false);
+      expect(outcome.state).toBe(draft);
+    });
+
+    expect(next).toEqual(state);
+    expect(next.players[0].health).toBe(health);
+  });
+
+  it('an empty-enrichment copy of a non-catalog card stays a plain, draftable object', () => {
+    const plain = { ...(cardCatalog.getCard('01005') as object) } as never;
+    const instance = createCardInstance(plain);
+    expect(Object.getPrototypeOf(instance.card)).toBe(Object.prototype);
   });
 });

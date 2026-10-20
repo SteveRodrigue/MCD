@@ -813,15 +813,31 @@ export function updateGameState(
   state: GameState,
   recipe: (draft: GameState) => GameState | void,
 ): GameState {
-  if (isDraft(state)) return recipe(state) ?? state;
+  if (isDraft(state)) {
+    const next = recipe(state);
+    if (next && next !== state) adoptGameState(state, next);
+    return state;
+  }
   return produce(state, (draft) => {
     if (draft.villains && draft.villains.length > 0) draft.villain = getActiveVillain(draft);
     if (draft.mainSchemes && draft.mainSchemes.length > 0) {
       draft.mainScheme = getActiveMainScheme(draft);
     }
     const next = recipe(draft);
-    return next === draft ? undefined : next;
+    // Immer rejects a returned value on a modified draft, so a recipe that hands back another
+    // state has that state copied into the draft instead.
+    if (next && next !== draft) adoptGameState(draft, next);
   });
+}
+
+/** Makes `draft` hold exactly the fields of `next`; unchanged fields are no-ops for Immer. */
+export function adoptGameState(draft: GameState, next: GameState): void {
+  const target = draft as unknown as Record<string, unknown>;
+  const source = next as unknown as Record<string, unknown>;
+  for (const key of Object.keys(target)) {
+    if (!(key in source)) delete target[key];
+  }
+  for (const key of Object.keys(source)) target[key] = source[key];
 }
 
 /**

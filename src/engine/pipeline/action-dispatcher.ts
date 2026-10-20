@@ -1,5 +1,13 @@
 import { bindKernel, kernel } from '../kernel';
-import { GameState, GameAction, ActionResult, GamePhase, updateGameState } from '@engine/models';
+import { current, isDraft } from 'immer';
+import {
+  GameState,
+  GameAction,
+  ActionResult,
+  GamePhase,
+  updateGameState,
+  adoptGameState,
+} from '@engine/models';
 import { continueVillainPhase } from './villain-phase';
 import { checkDeckExhaustionInvariants } from './deck-exhaustion';
 import { advancePlayerSetup } from '../state/game-setup';
@@ -34,6 +42,13 @@ export function dispatchAction(
   state: GameState,
   action: GameAction,
 ): { state: GameState; result: ActionResult } {
+  if (isDraft(state)) {
+    // An action dispatched from inside another update runs on a snapshot, so a rejection cannot
+    // leave its partial changes in the outer draft.
+    const nested = dispatchAction(current(state), action);
+    if (nested.result.success) adoptGameState(state, nested.state);
+    return { state, result: nested.result };
+  }
   const hadPausedThreatPlacement = (state.pendingThreatPlacements?.length ?? 0) > 0;
   let result: ActionResult | undefined;
   try {
@@ -58,7 +73,8 @@ export function dispatchAction(
       checkDeckExhaustionInvariants(next);
       return next;
     });
-    return { state: next, result: result! };
+    if (!result) throw new Error('[dispatchAction] The action handler produced no result.');
+    return { state: next, result };
   } catch (error) {
     if (error instanceof ActionRejected) return { state, result: error.result };
     throw error;

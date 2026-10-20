@@ -89,6 +89,10 @@ export function asCatalogCard<T extends object>(card: T): T {
   return Object.assign(Object.create(CatalogCardDefinition.prototype), card) as T;
 }
 
+export function isCatalogCard(card: object): boolean {
+  return card instanceof CatalogCardDefinition;
+}
+
 /**
  * Base normalized card model used across engine and UI
  */

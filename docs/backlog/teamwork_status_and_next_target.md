@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-19 (code audit AUD-20261017-232534 remediated; R1–R8 delivered; remaining work R9–R16 in section 3.5)
+> **Last updated:** 2026-10-20 (code audit AUD-20261017-232534 remediated; R1–R9 delivered; remaining work R10–R16 in section 3.5)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
-> **Verification baseline:** 🟢 3,053 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
+> **Verification baseline:** 🟢 3,479 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
 ---
@@ -82,7 +82,6 @@ The 21 findings were remediated on 2026-10-17/18 (`94ebc97..f6e470f`, pushed). W
 
 | #   | Item                                                                                             | Gate / milestone   | Tier | Estimate | Plan                                                                                             |
 | --- | ------------------------------------------------------------------------------------------------ | ------------------ | ---- | -------- | ------------------------------------------------------------------------------------------------ |
-| R9  | Klaw II When Revealed at Expert setup; The "Immortal" Klaw as a side scheme — **data approval**  | Gate 2             | 2    | 3–4 h    | [plan_audit_r09_klaw_ii_setup_reveal.md](plan_audit_r09_klaw_ii_setup_reveal.md)                 |
 | R10 | Inject the card catalog (F014-B); close out #275 — **owner decision**                            | Tech Debt / Gate 2 | 3    | 2–3 days | [plan_audit_r10_catalog_injection.md](plan_audit_r10_catalog_injection.md)                       |
 | R11 | Engine kernel to break the 31-module import cycle (F014-C) — **owner decision**                  | Tech Debt          | 3    | 3+ days  | [plan_audit_r11_engine_kernel.md](plan_audit_r11_engine_kernel.md)                               |
 | R12 | Structural sharing for state updates (Immer?) — **owner decision**; after R8                     | Tech Debt          | 3    | 2–3 days | [plan_audit_r12_structural_sharing.md](plan_audit_r12_structural_sharing.md)                     |
@@ -105,7 +104,6 @@ Run the `next-task` skill (it reads this file). Plan anatomy and owner preferenc
 
 From the audit plans (section 3.5); each plan states the options and a recommendation:
 
-- R9: approve the supplemental data change for Klaw II (01114) and The "Immortal" Klaw (01127).
 - R10, R11, R12: Tier 3 design choices (catalog injection, engine kernel, structural sharing).
 
 Decisions taken are recorded in the row they affect (section 3) and on the issue.

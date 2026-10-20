@@ -15,7 +15,7 @@ A commit and push only ever happen in response to the user's explicit request in
 
 Copy this checklist and tick each step as you go:
 
-- [ ] Step 1: Inspect the working tree and record the intended file set
+- [ ] Step 1: Inspect the working tree, delete completed plans, update progress docs, and record the intended file set
 - [ ] Step 2: Format and stage by name
 - [ ] Step 3: Rely on the git hooks (no manual gate runs)
 - [ ] Step 4: Pick category and scope
@@ -33,6 +33,7 @@ If the pre-commit or pre-push hook fails, fix the cause, re-stage, and go back t
 2. Run `rtk git diff` and `rtk git diff --cached` to inspect the exact lines of code changed.
 3. Verify that no unwanted files (e.g. debug scripts in `scratch/`, OS artifacts, temporary logs) are inadvertently staged.
 4. Record the intended file set. Do not silently absorb unrelated staged or unstaged changes.
+5. Check the progress documentation: if the change completes a plan, delete that plan file in the same delivery, and update the queue, status headers, and any other progress or tracking document (e.g. `docs/backlog/`) the change affects. Include these files in the intended file set.
 
 ---
 

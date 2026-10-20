@@ -1,7 +1,8 @@
+import { kernel } from '../kernel';
 import { GameState, CardInstance, AbilityStep, CardAbility, getCatalog } from '../models';
 import { EffectExecutionContext, EffectResult, executeSequence } from '../effects';
 import { SpecialAbilityHandler, registerSpecialHandler } from './special-registry';
-import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
+
 import { nextEngineId } from '../state/rng';
 
 const BLACK_PANTHER_UPGRADE_CODES = ['01046', '01047', '01048', '01049'];
@@ -105,7 +106,7 @@ const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
     }
 
     // 3. Multiple upgrades in play & no sequence order yet: Enqueue Interactive Decision Prompt (ADR-0038 / ADR-0032)
-    enqueueDecisionPrompt(state, {
+    kernel.enqueueDecisionPrompt(state, {
       promptId: `prompt_wf_${nextEngineId(state, 'id')}`,
       playerId: player.id,
       title: 'Wakanda Forever! Sequence Order',

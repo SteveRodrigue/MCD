@@ -1,6 +1,6 @@
 /** Player choices and special handlers (step handlers, AUD-20261017-232534 F010-A). */
+import { kernel } from '../../kernel';
 import { GameState, CardType, PlayerState, DecisionPromptOption } from '@engine/models';
-import { enqueueDecisionPrompt } from '../../pipeline/prompt-queue';
 import { getSpecialHandler } from '../../specials/special-registry';
 import { nextEngineId } from '../../state/rng';
 import { appendLog } from '../../state/game-log';
@@ -22,7 +22,7 @@ function handlePlayerChoice(
   const description = params.description || '';
   const sourceCardName = context.sourceCardInstance?.card.name || step.id || 'Card Ability';
   const promptId = `prompt_${nextEngineId(state, 'id')}_${step.id || 'choice'}`;
-  state = enqueueDecisionPrompt(state, {
+  state = kernel.enqueueDecisionPrompt(state, {
     promptId,
     playerId: context.playerId || player.id,
     title,

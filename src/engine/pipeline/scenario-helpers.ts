@@ -1,3 +1,4 @@
+import { bindKernel } from '../kernel';
 import { GameState, getActiveVillain } from '@engine/models';
 import { ScenarioRegistry } from '@engine/scenarios';
 
@@ -40,3 +41,5 @@ export function handleMainSchemeCompletion(
   state.winner = 'VILLAIN';
   return state;
 }
+
+bindKernel({ handleVillainDefeat });

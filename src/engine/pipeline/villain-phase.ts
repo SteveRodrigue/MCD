@@ -1,3 +1,4 @@
+import { bindKernel, kernel } from '../kernel';
 import { applyToughnessOnEntry } from '../state/card-instance';
 import {
   GameState,
@@ -18,25 +19,19 @@ import {
   getFirstPlayer,
   getPerPlayerCount,
 } from '@engine/models';
-import { dispatchTrigger } from '../triggers';
-import { executeEffect } from '../effects';
+
 import { applyThreatPlacement } from './threat-pipeline';
 import { getEffectiveVillainStats, consumeEntityStatusCards } from './stat-calculator';
 import { recordCardPlay, recordBasicAction } from './stats';
-import {
-  initiateEnemyAttack,
-  continueAttackAfterInitiation,
-  CombatOptions,
-} from './combat-pipeline';
+import { initiateEnemyAttack, CombatOptions } from './combat-pipeline';
 export type { CombatOptions };
-export { continueAttackAfterInitiation };
 import { drawEncounterCard } from './deck-exhaustion';
 import { dealBoostCards, resolveBoostCards, type BoostLogContext } from './boost-resolution';
 import { dealSurgeCard } from './surge';
 import { getResolvingRevealAbilities } from './encounter-cancel';
 import { resolveRevealedObligation } from './obligations';
 export { drawEncounterCard };
-import { enqueueDecisionPrompt, peekDecisionPrompt } from './prompt-queue';
+
 import { resolveAttachmentHost } from './attachment-host';
 import { attachCardToHost } from '../state/state-validator';
 import { placeSideScheme } from '../state/side-scheme';
@@ -282,7 +277,7 @@ export function step2_villainAndMinionActivations(
   state: GameState,
   options?: CombatOptions,
 ): GameState {
-  if (peekDecisionPrompt(state) || state.winner) return state;
+  if (kernel.peekDecisionPrompt(state) || state.winner) return state;
   state.phase = GamePhase.VILLAIN_PHASE;
   state.villainPhaseStep = VillainPhaseStep.VILLAIN_ACTIVATIONS;
 
@@ -312,7 +307,7 @@ export function step2_villainAndMinionActivations(
       }
     }
 
-    if (peekDecisionPrompt(state) || state.winner) {
+    if (kernel.peekDecisionPrompt(state) || state.winner) {
       return state;
     }
   }
@@ -413,13 +408,13 @@ export function step4_revealEncounterCards(
       const isCancelled = dispatchRevealInterrupts(state, cardInstance, player.id, options);
 
       // If a decision prompt was queued for the player to interrupt, halt and wait for choice
-      if (peekDecisionPrompt(state)) {
+      if (kernel.peekDecisionPrompt(state)) {
         return state;
       }
 
       resolveActiveEncounterCardAfterInterrupt(state, cardInstance, player, isCancelled);
 
-      if (peekDecisionPrompt(state) || state.winner) {
+      if (kernel.peekDecisionPrompt(state) || state.winner) {
         return state;
       }
     }
@@ -443,7 +438,7 @@ function dispatchRevealInterrupts(
     encounterCardInstance: cardInstance,
     acceptOptionalTriggers: options?.acceptOptionalTriggers,
   };
-  const whenRevealed = dispatchTrigger(state, 'ENCOUNTER_CARD_REVEALED', context);
+  const whenRevealed = kernel.dispatchTrigger(state, 'ENCOUNTER_CARD_REVEALED', context);
   return Boolean(whenRevealed.cancelled || state.activeEncounterContext?.cancelled);
 }
 
@@ -458,7 +453,7 @@ function resolveWhenRevealedAbilities(
   isCancelled: boolean,
 ): void {
   for (const ability of getResolvingRevealAbilities(cardInstance, isCancelled)) {
-    executeEffect(state, ability, { playerId: player.id, sourceCardInstance: cardInstance });
+    kernel.executeEffect(state, ability, { playerId: player.id, sourceCardInstance: cardInstance });
   }
 }
 
@@ -517,7 +512,7 @@ function resolveRevealedAttachment(
     dealSurgeCard(state, player, card.name);
   } else {
     const firstPlayer = getFirstPlayer(state);
-    enqueueDecisionPrompt(state, {
+    kernel.enqueueDecisionPrompt(state, {
       promptId: `prompt_attachment_host_${cardInstance.instanceId}`,
       playerId: firstPlayer.id,
       title: 'Choose Host',
@@ -593,7 +588,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
     });
     resolveWhenRevealedAbilities(state, cardInstance, player, isCancelled);
 
-    dispatchTrigger(state, 'MINION_ENTERS_PLAY', {
+    kernel.dispatchTrigger(state, 'MINION_ENTERS_PLAY', {
       targetPlayerId: player.id,
       sourceInstanceId: cardInstance.instanceId,
       targetInstanceId: cardInstance.instanceId,
@@ -653,7 +648,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
   if (state.winner) return state;
 
   // Halt if an interactive decision prompt is currently waiting for player input
-  if (peekDecisionPrompt(state)) return state;
+  if (kernel.peekDecisionPrompt(state)) return state;
 
   const nextState: GameState = cloneGameState(state);
   if (!nextState.options) nextState.options = {};
@@ -672,7 +667,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
 
     // Dispatch Villain Phase Began triggers across all players
     for (const player of nextState.players) {
-      dispatchTrigger(nextState, 'VILLAIN_PHASE_BEGAN', { targetPlayerId: player.id });
+      kernel.dispatchTrigger(nextState, 'VILLAIN_PHASE_BEGAN', { targetPlayerId: player.id });
     }
 
     // Step 1: Place threat on main scheme
@@ -690,7 +685,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
 
     if (nextState.winner) return nextState;
 
-    if (peekDecisionPrompt(nextState)) {
+    if (kernel.peekDecisionPrompt(nextState)) {
       nextState.villainPhaseStep = VillainPhaseStep.MAIN_SCHEME_THREAT;
       return nextState;
     }
@@ -735,7 +730,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
             player,
             resolvedOptions,
           );
-          if (peekDecisionPrompt(mutatedState)) {
+          if (kernel.peekDecisionPrompt(mutatedState)) {
             mutatedState.villainPhaseStepEvent = {
               type: 'VILLAIN_ATTACK',
               step: VillainPhaseStep.VILLAIN_ACTIVATIONS,
@@ -783,7 +778,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
             description: `${activatingVillain.card.name} schemed against ${player.name} (+${threatAdded} threat).`,
             onomatopoeia: 'SCHEME!',
           };
-          if (peekDecisionPrompt(nextState) || nextState.winner) {
+          if (kernel.peekDecisionPrompt(nextState) || nextState.winner) {
             return nextState;
           }
           if (!hasPendingActivation(nextState)) {
@@ -802,7 +797,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
               player,
               resolvedOptions,
             );
-            if (peekDecisionPrompt(mutatedState)) {
+            if (kernel.peekDecisionPrompt(mutatedState)) {
               mutatedState.villainPhaseStepEvent = {
                 type: 'MINION_ATTACK',
                 step: VillainPhaseStep.VILLAIN_ACTIVATIONS,
@@ -850,7 +845,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
               description: `${minion.card.name} schemed against ${player.name} (+${threatAdded} threat).`,
               onomatopoeia: 'MINION SCHEMES!',
             };
-            if (peekDecisionPrompt(nextState) || nextState.winner) {
+            if (kernel.peekDecisionPrompt(nextState) || nextState.winner) {
               return nextState;
             }
             if (!hasPendingActivation(nextState)) {
@@ -923,7 +918,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
         options,
       );
 
-      if (peekDecisionPrompt(nextState)) {
+      if (kernel.peekDecisionPrompt(nextState)) {
         return nextState;
       }
 
@@ -940,7 +935,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
         card: cardInstance,
       };
 
-      if (peekDecisionPrompt(nextState) || nextState.winner) {
+      if (kernel.peekDecisionPrompt(nextState) || nextState.winner) {
         return nextState;
       }
 
@@ -983,7 +978,7 @@ export function continueVillainPhase(state: GameState, options?: CombatOptions):
   // Step 2: Activations
   if (state.villainPhaseStep === VillainPhaseStep.VILLAIN_ACTIVATIONS) {
     state = step2_villainAndMinionActivations(state, options);
-    if (peekDecisionPrompt(state) || state.winner) return state;
+    if (kernel.peekDecisionPrompt(state) || state.winner) return state;
     state.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
   }
 
@@ -997,7 +992,7 @@ export function continueVillainPhase(state: GameState, options?: CombatOptions):
   // Step 4: Reveal Encounter Cards
   if (state.villainPhaseStep === VillainPhaseStep.REVEAL_ENCOUNTER_CARDS) {
     state = step4_revealEncounterCards(state);
-    if (peekDecisionPrompt(state) || state.winner) return state;
+    if (kernel.peekDecisionPrompt(state) || state.winner) return state;
   }
 
   state = step5_passFirstPlayerToken(state);
@@ -1029,7 +1024,7 @@ export function executeVillainPhase(state: GameState, options?: CombatOptions): 
 
   // Dispatch Villain Phase Began triggers across all players
   for (const player of nextState.players) {
-    dispatchTrigger(nextState, 'VILLAIN_PHASE_BEGAN', { targetPlayerId: player.id });
+    kernel.dispatchTrigger(nextState, 'VILLAIN_PHASE_BEGAN', { targetPlayerId: player.id });
   }
 
   step1_placeThreat(nextState);
@@ -1039,7 +1034,9 @@ export function executeVillainPhase(state: GameState, options?: CombatOptions): 
   delete nextState.pendingActivations;
 
   // A step 1 interrupt prompt pauses the phase; it resumes at step 2 once answered (#266).
-  if (peekDecisionPrompt(nextState)) return nextState;
+  if (kernel.peekDecisionPrompt(nextState)) return nextState;
 
   return continueVillainPhase(nextState, options);
 }
+
+bindKernel({ resolveActiveEncounterCardAfterInterrupt });

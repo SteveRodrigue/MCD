@@ -1,3 +1,4 @@
+import { bindKernel, kernel } from '../kernel';
 import {
   GameState,
   PendingDecisionPrompt,
@@ -8,37 +9,19 @@ import {
   AbilityStep,
   ResourceType,
 } from '../models';
-import {
-  executeEffect,
-  hasPendingSequence,
-  resumePendingSequence,
-  type EffectExecutionContext,
-  type EffectResult,
-} from '../effects';
-import { abilityHasValidTarget } from '../effects/target-choice';
+import { type EffectExecutionContext, type EffectResult } from '../effects';
 import {
   executeAbilityCost,
   executeResourceCostPayment,
   canPayAbilityCost,
   AbilityPaymentOptions,
 } from './cost-engine';
-import {
-  resolveActiveEncounterCardAfterInterrupt,
-  continueAttackAfterInitiation,
-} from './villain-phase';
 import { evaluateStepGate } from './step-gate-evaluator';
 import { isEffectType } from '../../data/supplemental/runtime';
 import { abilityCancelsEncounterReveal } from './encounter-cancel';
-import { dispatchTrigger, type TriggerContext } from '../triggers/trigger-dispatcher';
-import { discardResolvedObligation } from './obligations';
-import { finishPendingThreatPlacements } from './threat-pipeline';
+import { type TriggerContext } from '../triggers/trigger-dispatcher';
 import { nextEngineId } from '../state/rng';
 import { appendLog } from '../state/game-log';
-
-let finishDamagePlacementsHook: ((state: GameState) => GameState) | undefined;
-export function registerFinishDamagePlacementsHook(fn: (state: GameState) => GameState): void {
-  finishDamagePlacementsHook = fn;
-}
 
 /**
  * Re-evaluates per-option availability (`gate`, `cost`) against the current state (Issue #158).
@@ -494,16 +477,16 @@ function resumeAfterPromptResolved(state: GameState): GameState {
 
   let current = state;
   if (current.pendingThreatPlacements && current.pendingThreatPlacements.length > 0) {
-    current = finishPendingThreatPlacements(current);
+    current = kernel.finishPendingThreatPlacements(current);
   }
   if (current.pendingDamagePlacements && current.pendingDamagePlacements.length > 0) {
-    current = finishDamagePlacementsHook ? finishDamagePlacementsHook(current) : current;
+    current = kernel.finishPendingDamagePlacements(current);
   }
   if (!peekDecisionPrompt(current) && current.activeAttackContext?.phase === 'INITIATION') {
-    current = continueAttackAfterInitiation(current, current.activeAttackContext);
+    current = kernel.continueAttackAfterInitiation(current, current.activeAttackContext);
   }
-  if (!peekDecisionPrompt(current) && hasPendingSequence(current)) {
-    current = resumePendingSequence(current);
+  if (!peekDecisionPrompt(current) && kernel.hasPendingSequence(current)) {
+    current = kernel.resumePendingSequence(current);
   }
   return current;
 }
@@ -711,7 +694,7 @@ export function resolveDecisionPrompt(
       const activeCtx = nextState.activeEncounterContext;
       const targetPlayer = nextState.players.find((p) => p.id === activeCtx.targetPlayerId);
       if (targetPlayer && activeCtx.encounterCard) {
-        resolveActiveEncounterCardAfterInterrupt(
+        kernel.resolveActiveEncounterCardAfterInterrupt(
           nextState,
           activeCtx.encounterCard,
           targetPlayer,
@@ -758,7 +741,7 @@ export function resolveDecisionPrompt(
     // RR v1.8 "Initiating Abilities" steps 2-5: the board may have changed since the ability was
     // offered. Without a valid target it cannot be initiated: abort before paying any cost.
     const canInitiate =
-      !player || abilityHasValidTarget(nextState, player, optAbility, sourceCardInst);
+      !player || kernel.abilityHasValidTarget(nextState, player, optAbility, sourceCardInst);
     if (!canInitiate) {
       appendLog(nextState, {
         category: 'ability',
@@ -827,7 +810,7 @@ export function resolveDecisionPrompt(
         optContext?.resourcesSpent,
     };
     const effectRes = canInitiate
-      ? executeEffect(nextState, optAbility, effectContext)
+      ? kernel.executeEffect(nextState, optAbility, effectContext)
       : { state: nextState, success: true, mutatedState: false, onomatopoeia: 'NO VALID TARGET!' };
     if (canInitiate && pendingPlacement && effectContext.threatAmount !== undefined) {
       pendingPlacement.amount = Math.max(0, effectContext.threatAmount);
@@ -860,7 +843,7 @@ export function resolveDecisionPrompt(
       const activeCtx = nextState.activeEncounterContext;
       const targetPlayer = nextState.players.find((p) => p.id === activeCtx.targetPlayerId);
       if (targetPlayer && activeCtx.encounterCard) {
-        resolveActiveEncounterCardAfterInterrupt(
+        kernel.resolveActiveEncounterCardAfterInterrupt(
           nextState,
           activeCtx.encounterCard,
           targetPlayer,
@@ -883,7 +866,7 @@ export function resolveDecisionPrompt(
         if (!player.discard.some((c) => c.instanceId === sourceCardInst!.instanceId)) {
           player.discard.push(sourceCardInst);
         }
-        dispatchTrigger(nextState, 'CARD_PLAYED', {
+        kernel.dispatchTrigger(nextState, 'CARD_PLAYED', {
           targetPlayerId: player.id,
           sourceInstanceId: sourceCardInst.instanceId,
         });
@@ -987,7 +970,7 @@ export function resolveDecisionPrompt(
           : [],
   };
 
-  const effectRes = executeEffect(nextState, syntheticAbility, {
+  const effectRes = kernel.executeEffect(nextState, syntheticAbility, {
     playerId,
     sourceCardInstance: promptCardInst,
     sourceCardId: prompt.sourceCardInstanceId || prompt.sourceCardCode,
@@ -1000,7 +983,7 @@ export function resolveDecisionPrompt(
 
   // Completion default for obligations: discard unless an option already removed it from play
   if (prompt.completion === 'DISCARD_SOURCE_OBLIGATION' && prompt.sourceCardInstanceId) {
-    discardResolvedObligation(effectRes.state, prompt.sourceCardInstanceId);
+    kernel.discardResolvedObligation(effectRes.state, prompt.sourceCardInstanceId);
   }
 
   // Completion for resolving events: discard once the sub-prompt finishes (Issue #271 / RR v1.8 Event)
@@ -1011,7 +994,7 @@ export function resolveDecisionPrompt(
       !eventOwner.discard.some((c) => c.instanceId === prompt.sourceCardInstance!.instanceId)
     ) {
       eventOwner.discard.push(prompt.sourceCardInstance);
-      dispatchTrigger(effectRes.state, 'CARD_PLAYED', {
+      kernel.dispatchTrigger(effectRes.state, 'CARD_PLAYED', {
         targetPlayerId: eventOwner.id,
         sourceInstanceId: prompt.sourceCardInstance.instanceId,
       });
@@ -1032,3 +1015,5 @@ export function resolveDecisionPrompt(
     executedEffectRes: effectRes,
   };
 }
+
+bindKernel({ enqueueDecisionPrompt, peekDecisionPrompt, refreshPromptOptionAvailability });

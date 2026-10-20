@@ -1,7 +1,7 @@
 /** Resources and constant limits (step handlers, AUD-20261017-232534 F010-A). */
+import { kernel } from '../../kernel';
 import { GameState, PlayerState, ActiveCostReduction } from '@engine/models';
 import { getStepEffectParams } from '../../../data/supplemental/runtime';
-import { enqueueDecisionPrompt } from '../../pipeline/prompt-queue';
 import { locateCard, readCardResources } from '../../queries/card-inspector';
 import { nextEngineId } from '../../state/rng';
 import { appendLog } from '../../state/game-log';
@@ -76,7 +76,7 @@ function handleReduceNextCardCost(
     const sourceCardName =
       context.sourceCardInstance?.card.name || player.activeFormCard?.name || 'Helicarrier';
     const promptId = `prompt_${nextEngineId(state, 'id')}_choose_cost_reduction_player`;
-    state = enqueueDecisionPrompt(state, {
+    state = kernel.enqueueDecisionPrompt(state, {
       promptId,
       playerId: player.id,
       title: 'Choose a Player',

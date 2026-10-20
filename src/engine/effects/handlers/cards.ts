@@ -1,4 +1,5 @@
 /** Card movement between zones: draw, discard, search, play, attach (step handlers, AUD-20261017-232534 F010-A). */
+import { kernel } from '../../kernel';
 import { applyToughnessOnEntry } from '../../state/card-instance';
 import {
   GameState,
@@ -19,9 +20,9 @@ import { executeMinionAttackAgainstPlayer } from '../../pipeline/villain-phase';
 import type { SearchZone } from '../../../data/supplemental/schema';
 import { drawPlayerCard } from '../../pipeline/deck-exhaustion';
 import { dealSurgeCard } from '../../pipeline/surge';
-import { enqueueDecisionPrompt } from '../../pipeline/prompt-queue';
+
 import { getEffectiveHandSize } from '../../pipeline/stat-calculator';
-import { dispatchTrigger } from '../../triggers/trigger-dispatcher';
+
 import {
   attachCardToHost,
   removeCardFromAllZones,
@@ -38,7 +39,6 @@ import {
   EffectExecutionContext,
   EffectResult,
   executeDiscard,
-  executeEffect,
   resetCardState,
   resolveNumericAmount,
   resolveSourceHostZone,
@@ -153,7 +153,7 @@ function handleDraw(
     const sourceCardName =
       context.sourceCardInstance?.card.name || player.activeFormCard?.name || 'Ability';
     const promptId = `prompt_${nextEngineId(state, 'id')}_choose_player`;
-    state = enqueueDecisionPrompt(state, {
+    state = kernel.enqueueDecisionPrompt(state, {
       promptId,
       playerId: player.id,
       title: 'Choose a Player',
@@ -375,7 +375,7 @@ function handlePutIntoPlay(
         const schemeAbilities = sideCard.enrichment?.abilities || [];
         for (const ab of schemeAbilities) {
           if (ab.timing === 'WHEN_REVEALED' || ab.trigger === 'WHEN_REVEALED') {
-            executeEffect(state, ab, {
+            kernel.executeEffect(state, ab, {
               playerId: player.id,
               sourceCardInstance: cardInst,
             });
@@ -409,7 +409,7 @@ function handlePutIntoPlay(
         const abilities = cardInst.card.enrichment?.abilities || [];
         for (const ab of abilities) {
           if (ab.timing === 'WHEN_REVEALED' || ab.trigger === 'WHEN_REVEALED') {
-            executeEffect(state, ab, {
+            kernel.executeEffect(state, ab, {
               playerId: player.id,
               sourceCardInstance: cardInst,
             });
@@ -420,7 +420,7 @@ function handlePutIntoPlay(
         }
       }
 
-      dispatchTrigger(state, 'MINION_ENTERS_PLAY', {
+      kernel.dispatchTrigger(state, 'MINION_ENTERS_PLAY', {
         targetPlayerId: player.id,
         sourceInstanceId: cardInst.instanceId,
         targetInstanceId: cardInst.instanceId,
@@ -775,7 +775,7 @@ function handleSearch(
         }),
       };
 
-      state = enqueueDecisionPrompt(state, prompt);
+      state = kernel.enqueueDecisionPrompt(state, prompt);
       appendLog(state, {
         category: 'ability',
         key: 'decision.prompt.opened',
@@ -971,7 +971,7 @@ function handleSearch(
     }),
   };
 
-  const enqueuedState = enqueueDecisionPrompt(state, prompt);
+  const enqueuedState = kernel.enqueueDecisionPrompt(state, prompt);
   return {
     state: enqueuedState,
     success: true,
@@ -1100,7 +1100,7 @@ function handlePlayFromZone(
 
       // Dispatch ENTERS_PLAY only — card is put into play, NOT played (RR v1.8 p.21)
       // CARD_PLAYED does NOT fire here (no cost was paid via the play action)
-      dispatchTrigger(state, 'ENTERS_PLAY', {
+      kernel.dispatchTrigger(state, 'ENTERS_PLAY', {
         targetPlayerId: player.id,
         sourceInstanceId: chosenCard.instanceId,
       });
@@ -1203,7 +1203,7 @@ function handlePlayFromZone(
     isVoluntary: true,
   };
 
-  const enqueuedState = enqueueDecisionPrompt(state, prompt);
+  const enqueuedState = kernel.enqueueDecisionPrompt(state, prompt);
   return {
     state: enqueuedState,
     success: true,

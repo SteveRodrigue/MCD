@@ -6,11 +6,8 @@ import {
   hasKeyword,
   getActiveMainScheme,
 } from '../../../engine/models';
-import {
-  canAllyThwart,
-  canBasicThwart,
-  getCrisisIconCount,
-} from '../../../engine/pipeline/legality-checker';
+import { canAllyThwart, canBasicThwart } from '../../../engine/pipeline/legality-checker';
+import { getCrisisIconCount } from '../../../engine/pipeline/crisis';
 
 export interface SchemeTarget {
   id: string;

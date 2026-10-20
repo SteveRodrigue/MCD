@@ -1,3 +1,4 @@
+import { bindKernel } from '../../kernel';
 import type { AbilityStep, GameState, PlayerState } from '../../models';
 import type { EffectExecutionContext, EffectResult } from '../index';
 import type { StepHandler, StepHandlerMap } from './types';
@@ -35,3 +36,5 @@ export function runStepHandler(
   if (!handler) throw new Error(`executeStep: no handler for effect '${String(step.effect)}'`);
   return handler(state, step, context, player);
 }
+
+bindKernel({ runStepHandler });

@@ -1,6 +1,6 @@
+import { kernel } from '../kernel';
 import { CardInstance, CardType, GameState, PlayerState } from '@engine/models';
-import { executeEffect } from './index';
-import { resolveActiveEncounterCardAfterInterrupt } from '../pipeline/villain-phase';
+
 import { shuffleArray } from '../state/rng';
 import { attachCardToHost } from '../state/state-validator';
 import { appendLog } from '../state/game-log';
@@ -49,7 +49,7 @@ export function routeCardInstances(
     }
   } else if (destination === 'REVEAL') {
     for (const card of cards) {
-      resolveActiveEncounterCardAfterInterrupt(state, card, player, false);
+      kernel.resolveActiveEncounterCardAfterInterrupt(state, card, player, false);
     }
   } else if (destination === 'HAND') {
     player.hand.push(...cards);
@@ -65,7 +65,7 @@ export function routeCardInstances(
         const abilities = card.card.enrichment?.abilities || [];
         for (const ability of abilities) {
           if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'WHEN_REVEALED') {
-            executeEffect(state, ability, {
+            kernel.executeEffect(state, ability, {
               playerId: player.id,
               sourceCardInstance: card,
             });

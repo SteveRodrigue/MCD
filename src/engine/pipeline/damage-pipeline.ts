@@ -1,3 +1,4 @@
+import { bindKernel, kernel } from '../kernel';
 import {
   GameState,
   StatusCard,
@@ -10,10 +11,9 @@ import {
   getActiveVillain,
 } from '@engine/models';
 import { getEffectiveMinionHitPoints, getEffectiveRetaliate } from './stat-calculator';
-import { handleVillainDefeat } from './scenario-helpers';
 import { isImmuneToDamage } from './damage-immunity';
 import { eliminatePlayer } from './player-elimination';
-import { dispatchTrigger, type DefeatSource } from '../triggers/trigger-dispatcher';
+import { type DefeatSource } from '../triggers/trigger-dispatcher';
 import type { TriggerCallNode } from '../errors/infinite-loop-error';
 import { moveDefeatedCardToPile, isEncounterCard, processHostDefeated } from '../effects';
 import { appendLog } from '../state/game-log';
@@ -116,8 +116,8 @@ export function dispatchDefeat(state: GameState, defeat: DefeatDispatch): void {
     targetType: defeat.targetType,
     ...(defeat.defeatSource ? { defeatSource: defeat.defeatSource } : {}),
   };
-  dispatchTrigger(state, 'DEFEATED', context);
-  dispatchTrigger(
+  kernel.dispatchTrigger(state, 'DEFEATED', context);
+  kernel.dispatchTrigger(
     state,
     entityType === 'CHARACTER' ? 'CHARACTER_DEFEATED' : 'SCHEME_DEFEATED',
     context,
@@ -279,7 +279,7 @@ function applyDamageAndCheckDefeat(
             targetType: 'VILLAIN',
             defeatSource,
           });
-          state = handleVillainDefeat(state, instId);
+          state = kernel.handleVillainDefeat(state, instId);
         }
         break;
       }
@@ -620,7 +620,7 @@ export function applyDamageToTarget(
   }
 
   if (request.dispatchDamageTaken && target.type === 'player' && currentDamage > 0) {
-    const interrupted = dispatchTrigger(state, 'DAMAGE_TAKEN', {
+    const interrupted = kernel.dispatchTrigger(state, 'DAMAGE_TAKEN', {
       targetPlayerId: (target.entity as PlayerState).id,
       targetType: 'player',
       damageAmount: currentDamage,
@@ -705,3 +705,5 @@ export function applyDamageToTarget(
     },
   };
 }
+
+bindKernel({ applyDamageToTarget, defeatMinionsBeyondHitPoints });

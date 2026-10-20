@@ -17,7 +17,7 @@ import {
 import { setupGame } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
 import { executeEnemyAttackSynchronously } from '@engine/pipeline/combat-pipeline';
-import { hasCrisisInPlay } from '@engine/pipeline/legality-checker';
+import { hasCrisisInPlay } from '@engine/pipeline/crisis';
 import {
   attachCardToHost,
   getAllCardInstances,

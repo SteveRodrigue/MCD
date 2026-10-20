@@ -10,7 +10,7 @@ import {
 import { drawEncounterCard } from '../../pipeline/deck-exhaustion';
 import { dealSurgeCard } from '../../pipeline/surge';
 import { applyThreatPlacement, applyThwart } from '../../pipeline/threat-pipeline';
-import { hasCrisisInPlay } from '../../pipeline/legality-checker';
+import { hasCrisisInPlay } from '../../pipeline/crisis';
 import { evaluateDynamicAmount } from '../dynamic-formula-evaluator';
 import { resolveSchemeTargets, type EffectContext, type SchemeTarget } from '../target-resolver';
 import { appendLog } from '../../state/game-log';

@@ -1,3 +1,4 @@
+import { kernel } from '../../kernel';
 import {
   CardAbility,
   CardInstance,
@@ -13,7 +14,6 @@ import {
 import { getPlayer } from '../legality-checker';
 import { executeResourceCostPayment } from '../cost-engine';
 import {
-  executeEffect,
   applyDistributedDamage,
   validateDistributionAssignments,
   defeatSideScheme,
@@ -26,8 +26,6 @@ import { getEffectiveMaxHealth } from '../stat-calculator';
 import {
   resolveDecisionPrompt,
   resolveSimultaneousAbilitiesOrderPrompt,
-  enqueueDecisionPrompt,
-  peekDecisionPrompt,
   popDecisionPrompt,
   validateSearchSelection,
 } from '../prompt-queue';
@@ -38,12 +36,10 @@ import {
   findInPlayCardInstance,
 } from '../../state/state-validator';
 import { applyToughnessOnEntry } from '../../state/card-instance';
-import { dispatchTrigger } from '../../triggers/trigger-dispatcher';
 import { resolveEntityByInstanceId } from '../../effects/target-resolver';
 import { appendLog } from '../../state/game-log';
 import { resolveEventAbilities } from './shared';
 import { routeCardInstances } from '../../effects/card-routing';
-import { dispatchAction } from '../action-dispatcher';
 import type { ActionHandler, TypedAction } from './types';
 
 export function resolveDistributionPrompt(
@@ -114,7 +110,7 @@ export function resolveDistributionPrompt(
         const prevThreat = targetMainScheme.threat;
         targetMainScheme.threat = Math.max(0, targetMainScheme.threat - amount);
         if (prevThreat > 0 && targetMainScheme.threat === 0) {
-          dispatchTrigger(poppedState, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
+          kernel.dispatchTrigger(poppedState, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
             targetPlayerId: player.id,
             sourceInstanceId: targetMainScheme.instanceId || 'main_scheme',
             entityType: 'SCHEME',
@@ -132,7 +128,7 @@ export function resolveDistributionPrompt(
           if (side.threat <= 0) {
             defeatSideScheme(poppedState, side.instanceId, player.id);
             if (prevThreat > 0) {
-              dispatchTrigger(poppedState, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
+              kernel.dispatchTrigger(poppedState, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
                 targetPlayerId: player.id,
                 sourceInstanceId: side.instanceId,
                 entityType: 'SCHEME',
@@ -385,7 +381,7 @@ export function resolveEventOrAbilityTargetPrompt(
         discardCardInstanceIds,
       });
       targetPlayer.discard.push(playedCardInstance);
-      dispatchTrigger(poppedState, 'CARD_PLAYED', {
+      kernel.dispatchTrigger(poppedState, 'CARD_PLAYED', {
         targetPlayerId: ownerId,
         sourceInstanceId: playedCardInstance.instanceId,
         resourcesSpent,
@@ -413,7 +409,7 @@ export function resolveEventOrAbilityTargetPrompt(
     action.playerId) as string;
 
   if (promptAbility) {
-    const effectRes = executeEffect(poppedState, promptAbility, {
+    const effectRes = kernel.executeEffect(poppedState, promptAbility, {
       playerId: executingPlayerId,
       sourceCardInstance: sourceCardInst,
       chosenTargetInstanceId: chosenTargetId,
@@ -701,11 +697,11 @@ export function resolveOptionalTriggerOrEffectPrompt(
       initializeCardUses(chosenCard);
 
       // Trigger CARD_PLAYED (card was played, cost paid per ADR-0047) and ENTERS_PLAY (per RR v1.8 p.11)
-      dispatchTrigger(poppedState, 'CARD_PLAYED', {
+      kernel.dispatchTrigger(poppedState, 'CARD_PLAYED', {
         targetPlayerId: targetPlayer.id,
         sourceInstanceId: chosenCard.instanceId,
       });
-      dispatchTrigger(poppedState, 'ENTERS_PLAY', {
+      kernel.dispatchTrigger(poppedState, 'ENTERS_PLAY', {
         targetPlayerId: targetPlayer.id,
         sourceInstanceId: chosenCard.instanceId,
       });
@@ -803,7 +799,7 @@ function resolvePlayerCleanupPrompt(
         isVoluntary: true,
       };
 
-      const enqueuedState = enqueueDecisionPrompt(poppedState, rePrompt);
+      const enqueuedState = kernel.enqueueDecisionPrompt(poppedState, rePrompt);
       return { state: enqueuedState, result: { success: true, onomatopoeia: 'DISCARDED' } };
     } else {
       // No more cards in hand -> finish cleanup
@@ -885,11 +881,11 @@ function resolvePlayUnderPlayerControlPrompt(
     }
   }
 
-  dispatchTrigger(poppedState, 'CARD_PLAYED', {
+  kernel.dispatchTrigger(poppedState, 'CARD_PLAYED', {
     targetPlayerId: ownerId,
     sourceInstanceId: playedCardInstance.instanceId,
   });
-  dispatchTrigger(poppedState, 'ENTERS_PLAY', {
+  kernel.dispatchTrigger(poppedState, 'ENTERS_PLAY', {
     targetPlayerId: targetPlayer.id,
     sourceInstanceId: playedCardInstance.instanceId,
   });
@@ -958,7 +954,7 @@ function resolveRestrictedReplacementPrompt(
       });
     }
 
-    return dispatchAction(poppedState, {
+    return kernel.dispatchAction(poppedState, {
       type: 'PLAY_CARD',
       playerId: action.playerId,
       cardInstanceId: params.pendingCardInstanceId,
@@ -976,7 +972,7 @@ export const handleResolveDecisionPrompt: ActionHandler<'RESOLVE_DECISION_PROMPT
   state,
   action,
 ) => {
-  const activePrompt = peekDecisionPrompt(nextState);
+  const activePrompt = kernel.peekDecisionPrompt(nextState);
   const targetPlayerId = action.playerId || activePrompt?.playerId;
   const player = targetPlayerId ? getPlayer(nextState, targetPlayerId) : undefined;
   if (!player) return { state, result: { success: false, error: 'Player not found' } };

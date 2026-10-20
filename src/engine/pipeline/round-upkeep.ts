@@ -1,5 +1,5 @@
+import { kernel } from '../kernel';
 import { GameState, VillainPhaseStep } from '@engine/models';
-import { dispatchTrigger } from '../triggers';
 import { startPlayerPhase, expireLastingEffects } from './player-phase';
 import { appendLog } from '../state/game-log';
 
@@ -44,14 +44,14 @@ export function step6_endVillainPhaseAndRound(state: GameState): GameState {
   for (let i = 0; i < state.players.length; i++) {
     const playerIdx = (state.firstPlayerIndex + i) % state.players.length;
     const player = state.players[playerIdx];
-    dispatchTrigger(state, 'VILLAIN_PHASE_ENDED', { targetPlayerId: player.id });
+    kernel.dispatchTrigger(state, 'VILLAIN_PHASE_ENDED', { targetPlayerId: player.id });
   }
 
   // Step 6b: Dispatch ROUND_ENDED triggers in player turn order starting from firstPlayerIndex
   for (let i = 0; i < state.players.length; i++) {
     const playerIdx = (state.firstPlayerIndex + i) % state.players.length;
     const player = state.players[playerIdx];
-    dispatchTrigger(state, 'ROUND_ENDED', { targetPlayerId: player.id });
+    kernel.dispatchTrigger(state, 'ROUND_ENDED', { targetPlayerId: player.id });
   }
 
   // Round transition: Increment Round Number
@@ -67,7 +67,7 @@ export function step6_endVillainPhaseAndRound(state: GameState): GameState {
   for (let i = 0; i < state.players.length; i++) {
     const playerIdx = (state.firstPlayerIndex + i) % state.players.length;
     const player = state.players[playerIdx];
-    dispatchTrigger(state, 'ROUND_BEGAN', { targetPlayerId: player.id });
+    kernel.dispatchTrigger(state, 'ROUND_BEGAN', { targetPlayerId: player.id });
   }
 
   // Transition to and initialize the new Player Phase

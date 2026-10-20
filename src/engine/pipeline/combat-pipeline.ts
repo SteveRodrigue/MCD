@@ -1,3 +1,4 @@
+import { bindKernel, kernel } from '../kernel';
 import {
   GameState,
   PlayerState,
@@ -16,18 +17,13 @@ import {
   PendingDamagePlacement,
   AllyCard,
 } from '../models';
-import {
-  enqueueDecisionPrompt,
-  popDecisionPrompt,
-  peekDecisionPrompt,
-  registerFinishDamagePlacementsHook,
-} from './prompt-queue';
+import { popDecisionPrompt } from './prompt-queue';
 import { dealBoostCards, resolveBoostCards, type BoostLogContext } from './boost-resolution';
 import { nextEngineId } from '../state/rng';
-import { dispatchTrigger, TriggerDispatchResult } from '../triggers/trigger-dispatcher';
-import { applyDamageToTarget, dispatchDefeat, type DefeatSource } from './damage-pipeline';
+import { TriggerDispatchResult } from '../triggers/trigger-dispatcher';
+import { dispatchDefeat, type DefeatSource } from './damage-pipeline';
 import { eliminatePlayer } from './player-elimination';
-import { executeEffect, processHostDefeated, resetCardState } from '../effects';
+import { processHostDefeated, resetCardState } from '../effects';
 import { recordBasicAction } from './stats';
 import {
   getEffectiveHeroStats,
@@ -115,7 +111,7 @@ function step1_preAttackAndStunCheck(
           ? villain.instanceId || 'villain'
           : attackerCard?.instanceId || 'minion';
 
-      executeEffect(state, ability, {
+      kernel.executeEffect(state, ability, {
         playerId: owner.id,
         sourceCardInstance: att,
         eventTargetInstanceId: targetInstanceId,
@@ -147,7 +143,7 @@ function step2_dispatchInitiationTriggers(
   targetPlayerId: string,
   acceptOptionalTriggers?: boolean,
 ): TriggerDispatchResult {
-  return dispatchTrigger(state, 'ENEMY_INITIATES_ATTACK', {
+  return kernel.dispatchTrigger(state, 'ENEMY_INITIATES_ATTACK', {
     targetPlayerId,
     attackerType,
     attackerKind: attackerType,
@@ -410,7 +406,7 @@ function step3_openDefenderDeclarationPrompt(
 
   const targetRetaliate = getEffectiveRetaliate(player, state);
 
-  state = enqueueDecisionPrompt(state, {
+  state = kernel.enqueueDecisionPrompt(state, {
     promptId: `prompt_defend_${attackContext.attackId}`,
     playerId: player.id,
     title: `Enemy Attack: ${attackerName} (Base ATK: ${attackContext.baseAttack})`,
@@ -592,14 +588,14 @@ export function resolveDefenderDeclaration(
   state.activeAttackContext = undefined;
 
   // Clear defender decision prompt from queue if present
-  if (peekDecisionPrompt(state)?.options.some((o) => o.effect === 'DECLARE_DEFENDER')) {
+  if (kernel.peekDecisionPrompt(state)?.options.some((o) => o.effect === 'DECLARE_DEFENDER')) {
     popDecisionPrompt(state);
   }
 
   // Trigger next pending activation if outside of Villain Phase (e.g. Gang-Up treachery)
   if (
     state.phase !== GamePhase.VILLAIN_PHASE &&
-    !peekDecisionPrompt(state) &&
+    !kernel.peekDecisionPrompt(state) &&
     state.pendingActivations &&
     state.pendingActivations.length > 0
   ) {
@@ -738,7 +734,7 @@ export function step6_calculateAndApplyAttackDamage(
     const promptsBefore = new Set(
       (state.pendingDecisionQueue ?? []).map((prompt) => prompt.promptId),
     );
-    const defenseResult = dispatchTrigger(state, 'DAMAGE_WOULD_BE_TAKEN', {
+    const defenseResult = kernel.dispatchTrigger(state, 'DAMAGE_WOULD_BE_TAKEN', {
       targetPlayerId: player.id,
       damageAmount: rawDamage,
       damageSource: 'ATTACK',
@@ -1021,7 +1017,7 @@ function resolveDeferredBoostAbilities(
   attackContext.deferredBoostAbilities = [];
 
   for (const { ability, sourceCardInstance } of deferred) {
-    executeEffect(state, ability, {
+    kernel.executeEffect(state, ability, {
       playerId: attackContext.targetPlayerId,
       sourceCardInstance,
       attackerType: attackContext.attackerType,
@@ -1085,7 +1081,7 @@ export function finishAttackDamageAndPostResolution(
  * Applies remaining damage for finished damage placements (#267). Called once all the interrupt
  * prompts of the window are answered.
  */
-function finishPendingDamagePlacements(state: GameState): GameState {
+export function finishPendingDamagePlacements(state: GameState): GameState {
   const pending: PendingDamagePlacement[] = state.pendingDamagePlacements ?? [];
   delete state.pendingDamagePlacements;
   let current = state;
@@ -1108,8 +1104,6 @@ function finishPendingDamagePlacements(state: GameState): GameState {
   return current;
 }
 
-registerFinishDamagePlacementsHook(finishPendingDamagePlacements);
-
 /**
  * Step 7: Post-Attack Reactions, Retaliate & Cleanup.
  */
@@ -1125,7 +1119,7 @@ function step7_resolvePostAttackAndRetaliate(
   const attackerInstanceId =
     attackContext.attackerCard?.instanceId ?? attackContext.attackerVillainId;
   if (attackContext.heroDefended && player) {
-    dispatchTrigger(state, 'ATTACK_DEFENDED', {
+    kernel.dispatchTrigger(state, 'ATTACK_DEFENDED', {
       targetPlayerId: player.id,
       defenderType: 'HERO',
       targetInstanceId: attackerInstanceId,
@@ -1134,7 +1128,7 @@ function step7_resolvePostAttackAndRetaliate(
       acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
     });
   } else if (attackContext.defender?.type === 'ALLY' && player) {
-    dispatchTrigger(state, 'ATTACK_DEFENDED', {
+    kernel.dispatchTrigger(state, 'ATTACK_DEFENDED', {
       targetPlayerId: player.id,
       defenderType: 'ALLY',
       targetInstanceId: attackerInstanceId,
@@ -1144,7 +1138,7 @@ function step7_resolvePostAttackAndRetaliate(
     });
   }
 
-  dispatchTrigger(state, 'ATTACK_RESOLVED', {
+  kernel.dispatchTrigger(state, 'ATTACK_RESOLVED', {
     targetPlayerId: attackContext.targetPlayerId,
     damageAmount: attackContext.finalDamage,
     acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
@@ -1161,7 +1155,7 @@ function step7_resolvePostAttackAndRetaliate(
     if (retaliateX > 0) {
       if (attackContext.attackerType === 'VILLAIN') {
         const villain = attackingVillain(state, attackContext);
-        const damageRes = applyDamageToTarget(state, {
+        const damageRes = kernel.applyDamageToTarget(state, {
           target: {
             type: 'villain',
             entity: villain,
@@ -1179,7 +1173,7 @@ function step7_resolvePostAttackAndRetaliate(
         state = damageRes.state;
       } else if (attackContext.attackerCard) {
         const minion = attackContext.attackerCard;
-        const damageRes = applyDamageToTarget(state, {
+        const damageRes = kernel.applyDamageToTarget(state, {
           target: {
             type: 'minion',
             entity: minion,
@@ -1229,7 +1223,7 @@ function step7_resolvePostAttackAndRetaliate(
       if (allyRetaliate > 0) {
         if (attackContext.attackerType === 'VILLAIN') {
           const villain = attackingVillain(state, attackContext);
-          const damageRes = applyDamageToTarget(state, {
+          const damageRes = kernel.applyDamageToTarget(state, {
             target: {
               type: 'villain',
               entity: villain,
@@ -1248,7 +1242,7 @@ function step7_resolvePostAttackAndRetaliate(
           state = damageRes.state;
         } else if (attackContext.attackerCard) {
           const minion = attackContext.attackerCard;
-          const damageRes = applyDamageToTarget(state, {
+          const damageRes = kernel.applyDamageToTarget(state, {
             target: {
               type: 'minion',
               entity: minion,
@@ -1314,7 +1308,7 @@ function step7_resolvePostAttackAndRetaliate(
       '';
     for (const ability of att.card.enrichment?.abilities || []) {
       if (ability.trigger !== 'HOST_ATTACK_ENDED') continue;
-      executeEffect(state, ability, { playerId: ownerId, sourceCardInstance: att });
+      kernel.executeEffect(state, ability, { playerId: ownerId, sourceCardInstance: att });
     }
   }
 
@@ -1339,7 +1333,7 @@ function step7_resolvePostAttackAndRetaliate(
         ability.trigger === 'MINION_ATTACKED' ||
         (ability.timing === 'FORCED_RESPONSE' && ability.trigger === 'ATTACK')
       ) {
-        executeEffect(state, ability, {
+        kernel.executeEffect(state, ability, {
           playerId: attackContext.targetPlayerId,
           sourceCardInstance: minion,
         });
@@ -1366,3 +1360,5 @@ export function executeEnemyAttackSynchronously(
     acceptOptionalTriggers: options?.acceptOptionalTriggers ?? true,
   });
 }
+
+bindKernel({ continueAttackAfterInitiation, getAttackOutcomeFacts, finishPendingDamagePlacements });

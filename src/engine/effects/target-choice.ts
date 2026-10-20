@@ -1,3 +1,4 @@
+import { bindKernel, kernel } from '../kernel';
 import type {
   AbilityStep,
   CardAbility,
@@ -10,7 +11,6 @@ import type {
 import { StatusCard } from '../models';
 import { getEffectiveMaxHealth, hasEntityKeyword } from '../pipeline/stat-calculator';
 import { isImmuneToDamage } from '../pipeline/damage-immunity';
-import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
 import { nextEngineId } from '../state/rng';
 import { getEligibleTargets, resolveTargets, type ResolvedTarget } from './target-resolver';
 import type { EffectExecutionContext } from './index';
@@ -197,7 +197,7 @@ export function chooseStepTarget(
     };
   });
 
-  enqueueDecisionPrompt(state, {
+  kernel.enqueueDecisionPrompt(state, {
     promptId: nextEngineId(state, 'choose_target'),
     playerId: player.id,
     title: `${sourceName ? `${sourceName}: ` : ''}Choose ${noun}`,
@@ -270,3 +270,5 @@ export function abilityHasValidTarget(
     }).some((t) => canAffect(state, step, t, sourceCardInstance));
   });
 }
+
+bindKernel({ abilityHasValidTarget });

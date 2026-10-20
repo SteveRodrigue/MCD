@@ -1,3 +1,4 @@
+import { kernel } from '../kernel';
 import {
   CardAbility,
   GameState,
@@ -9,7 +10,7 @@ import {
   replaceVillain,
   getPerPlayerCount,
 } from '@engine/models';
-import { executeEffect, discardHostAttachmentsAndTuckedCards } from '../effects';
+
 import { applyToughnessOnEntry } from '../state/card-instance';
 import {
   getEffectiveVillainStats,
@@ -30,7 +31,7 @@ export function revealVillainStage(state: GameState, villain: VillainState): voi
   const playerId = state.players[state.firstPlayerIndex ?? 0]?.id ?? state.players[0]?.id ?? '';
   for (const ability of villain.card.enrichment?.abilities ?? []) {
     if (ability.timing === 'WHEN_REVEALED' || ability.trigger === 'WHEN_REVEALED') {
-      executeEffect(state, ability, { playerId });
+      kernel.executeEffect(state, ability, { playerId });
     }
   }
   syncVillainMaxHealth(state, villain);
@@ -122,7 +123,7 @@ export function advanceVillainStage(
     replaceVillain(state, instanceId, next);
     resumeVillainAttack(state, defeated, next, instanceId);
   } else {
-    discardHostAttachmentsAndTuckedCards(state, defeated);
+    kernel.discardHostAttachmentsAndTuckedCards(state, defeated);
     if (defeated.facedownBoostCards?.length) {
       state.encounterDiscard.push(...defeated.facedownBoostCards);
     }

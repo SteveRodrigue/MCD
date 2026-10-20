@@ -1,5 +1,5 @@
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { CardCatalog } from '@data/importer/card-loader';
 import {
   setupGame,
@@ -9,7 +9,7 @@ import {
   GamePhase,
   VillainPhaseStep,
 } from '@engine/index';
-import * as triggers from '@engine/triggers';
+import { spyKernel } from '../helpers/kernel-spy';
 import {
   step2_villainAndMinionActivations,
   step3_dealEncounterCards,
@@ -86,10 +86,6 @@ describe('Villain Phase End Ordering & RR v1.8 Step Alignment (Issue #145)', () 
     gameState.villainPhaseStep = VillainPhaseStep.PASS_FIRST_PLAYER;
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it('a) In a 2-player game, when VILLAIN_PHASE_ENDED and ROUND_ENDED fire, state.firstPlayerIndex is already 1 (P2), and triggers fire in P2->P1 order', () => {
     const capturedCalls: Array<{
       trigger: string;
@@ -97,8 +93,7 @@ describe('Villain Phase End Ordering & RR v1.8 Step Alignment (Issue #145)', () 
       firstPlayerIndex: number;
     }> = [];
 
-    const originalDispatch = triggers.dispatchTrigger;
-    vi.spyOn(triggers, 'dispatchTrigger').mockImplementation((state, trigger, context) => {
+    spyKernel('dispatchTrigger', (originalDispatch) => (state, trigger, context) => {
       if (trigger === 'VILLAIN_PHASE_ENDED' || trigger === 'ROUND_ENDED') {
         capturedCalls.push({
           trigger: String(trigger),
@@ -171,8 +166,7 @@ describe('Villain Phase End Ordering & RR v1.8 Step Alignment (Issue #145)', () 
       usedAbilitiesThisPhase: Record<string, number>;
     }> = [];
 
-    const originalDispatch = triggers.dispatchTrigger;
-    vi.spyOn(triggers, 'dispatchTrigger').mockImplementation((state, trigger, context) => {
+    spyKernel('dispatchTrigger', (originalDispatch) => (state, trigger, context) => {
       if (trigger === 'VILLAIN_PHASE_ENDED') {
         const p1 = state.players.find((p) => p.id === 'p1')!;
         capturedStatesAtTrigger.push({

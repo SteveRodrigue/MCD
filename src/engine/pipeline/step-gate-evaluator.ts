@@ -9,6 +9,7 @@ import { AbilityStep } from '../models/abilities';
 import { getStepGateParams, GATE_KINDS } from '../../data/supplemental/runtime';
 import type { AttackerKind } from '../../data/supplemental/schema';
 import { hasPlayerTrait } from './stat-calculator';
+import { bindKernel } from '../kernel';
 
 /**
  * Minimal context the gate evaluator needs. `EffectExecutionContext` satisfies it structurally,
@@ -305,3 +306,5 @@ function evaluateFormGate(
   const target = rawForm.toLowerCase().replace('-', '_');
   return current === target;
 }
+
+bindKernel({ evaluateStepGate });

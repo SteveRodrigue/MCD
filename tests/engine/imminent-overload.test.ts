@@ -12,11 +12,8 @@ import {
   step4_revealEncounterCards,
   getActiveMainScheme,
 } from '@engine/index';
-import {
-  canBasicThwart,
-  hasCrisisInPlay,
-  getCrisisIconCount,
-} from '@engine/pipeline/legality-checker';
+import { canBasicThwart } from '@engine/pipeline/legality-checker';
+import { hasCrisisInPlay, getCrisisIconCount } from '@engine/pipeline/crisis';
 
 /**
  * Imminent Overload (01171), Iron Man nemesis side scheme. Printed: Base threat 3 (fixed, not

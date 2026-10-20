@@ -5,6 +5,7 @@ import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
 import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { getEffectiveCardCost } from '@engine/pipeline/cost-engine';
+import { thaw } from '../support/thaw-state';
 
 describe('Helicarrier Multiplayer Lifecycle & Prompt Clearance (#165)', () => {
   const spiderManHero = cardCatalog.getCard('01001a') as HeroCard;
@@ -90,7 +91,7 @@ describe('Helicarrier Multiplayer Lifecycle & Prompt Clearance (#165)', () => {
     expect(endTurnRes.state.activePlayerIndex).toBe(1);
 
     // Discount must persist across P1 turn end because duration is PHASE
-    const stateP2Turn = endTurnRes.state;
+    const stateP2Turn = thaw(endTurnRes.state);
     expect(stateP2Turn.players[1].costReductions).toBe(1);
     expect(stateP2Turn.players[1].activeCostReductions?.length).toBe(1);
 

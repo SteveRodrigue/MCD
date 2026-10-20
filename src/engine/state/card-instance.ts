@@ -4,8 +4,7 @@ import {
   Keyword,
   StatusCard,
   hasKeyword,
-  isSharedCardDefinition,
-  registerSharedCardDefinition,
+  asCatalogCard,
 } from '@engine/models';
 
 let instanceCounter = 0;
@@ -19,9 +18,8 @@ const emptyEnrichmentDefinitions = new WeakMap<NormalizedCard, NormalizedCard>()
 function withEmptyEnrichment(card: NormalizedCard): NormalizedCard {
   let definition = emptyEnrichmentDefinitions.get(card);
   if (!definition) {
-    definition = { ...card, enrichment: { abilities: [] } };
+    definition = asCatalogCard({ ...card, enrichment: { abilities: [] } });
     emptyEnrichmentDefinitions.set(card, definition);
-    if (isSharedCardDefinition(card)) registerSharedCardDefinition(definition);
   }
   return definition;
 }

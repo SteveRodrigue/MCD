@@ -8,7 +8,7 @@ import {
   resetInstanceCounter,
   createCardInstance,
   dispatchAction,
-  cloneGameState,
+  updateGameState,
   resolveActiveEncounterCardAfterInterrupt,
   getActiveMainScheme,
 } from '@engine/index';
@@ -22,6 +22,7 @@ import { recordBasicAction, recordCardPlay, recordAbilityUsage } from '@engine/p
 import { executeEffect } from '@engine/effects';
 import { StatusCard } from '@engine/models';
 import { getActiveVillain } from '@engine/index';
+import { thaw } from '../../support/thaw-state';
 
 describe('Engine Card Play and Usage Stats (#315)', () => {
   let state: GameState;
@@ -121,9 +122,10 @@ describe('Engine Card Play and Usage Stats (#315)', () => {
     expect(attackRes.state.stats?.cards['01001a']?.basicActions?.attack).toBe(1);
 
     // 2. BASIC_THWART
-    attackRes.state.players[0].exhausted = false;
-    getActiveMainScheme(attackRes.state).threat = 5;
-    const thwartRes = dispatchAction(attackRes.state, {
+    const thwartArmed = thaw(attackRes.state);
+    thwartArmed.players[0].exhausted = false;
+    getActiveMainScheme(thwartArmed).threat = 5;
+    const thwartRes = dispatchAction(thwartArmed, {
       type: 'BASIC_THWART',
       playerId: p1().id,
       targetType: 'main_scheme',
@@ -133,8 +135,9 @@ describe('Engine Card Play and Usage Stats (#315)', () => {
     expect(thwartRes.state.stats?.cards['01001a']?.basicActions?.thwart).toBe(1);
 
     // 3. CHANGE_FORM to alter-ego
-    thwartRes.state.players[0].basicChangeFormUsedThisRound = false;
-    const changeRes = dispatchAction(thwartRes.state, {
+    const changeArmed = thaw(thwartRes.state);
+    changeArmed.players[0].basicChangeFormUsedThisRound = false;
+    const changeRes = dispatchAction(changeArmed, {
       type: 'CHANGE_FORM',
       playerId: p1().id,
     });
@@ -143,10 +146,11 @@ describe('Engine Card Play and Usage Stats (#315)', () => {
     expect(changeRes.state.stats?.cards['01001b']?.basicActions?.changeForm).toBe(1);
 
     // 4. BASIC_RECOVER
-    changeRes.state.players[0].exhausted = false;
-    changeRes.state.players[0].recoveryUsedThisRound = false;
-    changeRes.state.players[0].health = 5;
-    const recoverRes = dispatchAction(changeRes.state, {
+    const recoverArmed = thaw(changeRes.state);
+    recoverArmed.players[0].exhausted = false;
+    recoverArmed.players[0].recoveryUsedThisRound = false;
+    recoverArmed.players[0].health = 5;
+    const recoverRes = dispatchAction(recoverArmed, {
       type: 'BASIC_RECOVER',
       playerId: p1().id,
     });
@@ -157,9 +161,10 @@ describe('Engine Card Play and Usage Stats (#315)', () => {
     // 5. ALLY_ATTACK & ALLY_THWART
     const allyCard = cardCatalog.getCard('01011')!; // Black Cat (01011)
     const allyInst = createCardInstance(allyCard);
-    recoverRes.state.players[0].allies.push(allyInst);
+    const allyArmed = thaw(recoverRes.state);
+    allyArmed.players[0].allies.push(allyInst);
 
-    const allyAttackRes = dispatchAction(recoverRes.state, {
+    const allyAttackRes = dispatchAction(allyArmed, {
       type: 'ALLY_ATTACK',
       playerId: p1().id,
       allyInstanceId: allyInst.instanceId,
@@ -169,12 +174,11 @@ describe('Engine Card Play and Usage Stats (#315)', () => {
     expect(allyAttackRes.state.stats?.basicActions.allyAttack).toBe(1);
     expect(allyAttackRes.state.stats?.cards['01011']?.basicActions?.attack).toBe(1);
 
-    const activeAlly = allyAttackRes.state.players[0].allies.find(
-      (a) => a.instanceId === allyInst.instanceId,
-    )!;
-    activeAlly.exhausted = false;
-    getActiveMainScheme(allyAttackRes.state).threat = 5;
-    const allyThwartRes = dispatchAction(allyAttackRes.state, {
+    const thwartReady = thaw(allyAttackRes.state);
+    thwartReady.players[0].allies.find((a) => a.instanceId === allyInst.instanceId)!.exhausted =
+      false;
+    getActiveMainScheme(thwartReady).threat = 5;
+    const allyThwartRes = dispatchAction(thwartReady, {
       type: 'ALLY_THWART',
       playerId: p1().id,
       allyInstanceId: allyInst.instanceId,
@@ -186,31 +190,24 @@ describe('Engine Card Play and Usage Stats (#315)', () => {
 
     // 6. Villain and Minion basic actions
     const villainCardCode = state.villains[0].card.code;
-    executeVillainAttackAgainstPlayer(allyThwartRes.state, allyThwartRes.state.players[0]);
-    expect(allyThwartRes.state.stats?.basicActions.villainAttack).toBe(1);
-    expect(allyThwartRes.state.stats?.cards[villainCardCode]?.basicActions?.attack).toBe(1);
+    const afterAllies = thaw(allyThwartRes.state);
+    executeVillainAttackAgainstPlayer(afterAllies, afterAllies.players[0]);
+    expect(afterAllies.stats?.basicActions.villainAttack).toBe(1);
+    expect(afterAllies.stats?.cards[villainCardCode]?.basicActions?.attack).toBe(1);
 
-    executeVillainSchemeAgainstPlayer(allyThwartRes.state, allyThwartRes.state.players[0]);
-    expect(allyThwartRes.state.stats?.basicActions.villainScheme).toBe(1);
-    expect(allyThwartRes.state.stats?.cards[villainCardCode]?.basicActions?.scheme).toBe(1);
+    executeVillainSchemeAgainstPlayer(afterAllies, afterAllies.players[0]);
+    expect(afterAllies.stats?.basicActions.villainScheme).toBe(1);
+    expect(afterAllies.stats?.cards[villainCardCode]?.basicActions?.scheme).toBe(1);
 
     const minionCard = cardCatalog.getCard('01109')!; // Armored Guard
     const minionInst = createCardInstance(minionCard);
-    executeMinionAttackAgainstPlayer(
-      allyThwartRes.state,
-      minionInst,
-      allyThwartRes.state.players[0],
-    );
-    expect(allyThwartRes.state.stats?.basicActions.minionAttack).toBe(1);
-    expect(allyThwartRes.state.stats?.cards['01109']?.basicActions?.attack).toBe(1);
+    executeMinionAttackAgainstPlayer(afterAllies, minionInst, afterAllies.players[0]);
+    expect(afterAllies.stats?.basicActions.minionAttack).toBe(1);
+    expect(afterAllies.stats?.cards['01109']?.basicActions?.attack).toBe(1);
 
-    executeMinionSchemeAgainstPlayer(
-      allyThwartRes.state,
-      minionInst,
-      allyThwartRes.state.players[0],
-    );
-    expect(allyThwartRes.state.stats?.basicActions.minionScheme).toBe(1);
-    expect(allyThwartRes.state.stats?.cards['01109']?.basicActions?.scheme).toBe(1);
+    executeMinionSchemeAgainstPlayer(afterAllies, minionInst, afterAllies.players[0]);
+    expect(afterAllies.stats?.basicActions.minionScheme).toBe(1);
+    expect(afterAllies.stats?.cards['01109']?.basicActions?.scheme).toBe(1);
   });
 
   it('DECLARE_DEFENDER with HERO records heroDefense', () => {
@@ -234,13 +231,15 @@ describe('Engine Card Play and Usage Stats (#315)', () => {
     expect(state.stats?.cards['custom_card_99999']?.basicActions?.attack).toBe(1);
   });
 
-  it('cloneGameState preserves state.stats accurately', () => {
+  it('updateGameState keeps state.stats when the update does not touch them', () => {
     recordCardPlay(state, '01001a');
     recordBasicAction(state, 'heroAttack', '01001a');
 
-    const cloned = cloneGameState(state);
-    expect(cloned.stats).toEqual(state.stats);
-    expect(cloned.stats?.cards['01001a']?.played).toBe(1);
+    const next = updateGameState(state, (draft) => {
+      draft.roundNumber += 1;
+    });
+    expect(next.stats).toBe(state.stats);
+    expect(next.stats?.cards['01001a']?.played).toBe(1);
   });
 
   it('a cancelled encounter reveal does not count as played', () => {
@@ -262,10 +261,11 @@ describe('Engine Card Play and Usage Stats (#315)', () => {
     expect(attackRes.result.success).toBe(true);
     expect(attackRes.state.stats?.basicActions.heroAttack).toBe(0);
 
-    const villain = getActiveVillain(attackRes.state);
+    const afterAttack = thaw(attackRes.state);
+    const villain = getActiveVillain(afterAttack);
     villain.statusCards = [StatusCard.CONFUSED];
-    executeVillainSchemeAgainstPlayer(attackRes.state, attackRes.state.players[0]);
-    expect(attackRes.state.stats?.basicActions.villainScheme).toBe(0);
+    executeVillainSchemeAgainstPlayer(afterAttack, afterAttack.players[0]);
+    expect(afterAttack.stats?.basicActions.villainScheme).toBe(0);
   });
 
   it('synthetic ability ids not declared on the source card are not counted', () => {

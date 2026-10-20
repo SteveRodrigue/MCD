@@ -7,6 +7,7 @@ import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { initiateEnemyAttack } from '@engine/pipeline/combat-pipeline';
 import { step4_revealEncounterCards } from '@engine/pipeline/villain-phase';
 import { dispatchTrigger } from '@engine/triggers/trigger-dispatcher';
+import { thaw } from '../support/thaw-state';
 
 const SPIDER_MAN_HERO = '01001a';
 const SPIDER_MAN_AE = '01001b';
@@ -586,6 +587,7 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
       expect(state.pendingDecisionQueue?.length).toBe(1);
 
       // Hero gets exhausted again
+      state = thaw(state);
       state.players[0].exhausted = true;
 
       const pay2 = state.players[0].hand.find((c) => c.card.code === RESOURCE_CARD)!;

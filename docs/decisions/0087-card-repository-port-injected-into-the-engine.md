@@ -29,7 +29,7 @@ Nine engine modules imported the module-level `cardCatalog` singleton from `src/
 **Chosen option 1.**
 
 - `CardRepository` (`src/engine/models/card-repository.ts`) lists the reads the engine makes: `getCard`, `getCardsBySet`, `getCardsByType`, `getExpandedCardsBySet`, `getNemesisCardsForHero`, `getVillainByStage`, `getMainSchemeByStage`. `CardCatalog` implements it; no second catalog class exists.
-- `setupGame` requires `catalog: CardRepository` and stores it in `state.options.catalog`. `cloneGameState` carries it by reference, so a clone never copies the catalog.
+- `setupGame` requires `catalog: CardRepository` and stores it in `state.options.catalog`. `updateGameState` (ADR-0089) leaves it alone, as it is a class instance Immer does not draft.
 - Engine code reads it with `getCatalog(state)`, which throws a clear error for a state built without a catalog. Scenario plugins, `advanceVillainStage`, the effect executor and the Wakanda Forever special all have the state in hand; no signature needed a new parameter except `getSpecialAbility`.
 - `src/engine` no longer imports `cardCatalog`. The UI and the simulation script pass the bundled `cardCatalog` to `setupGame`; the Card Editor keeps using it directly.
 - Hand-built test states set `options: { catalog: cardCatalog }`.

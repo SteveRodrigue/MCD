@@ -47,7 +47,7 @@ export interface CardViewProps {
   className?: string;
 }
 
-export const CardView: React.FC<CardViewProps> = ({
+const CardViewImpl: React.FC<CardViewProps> = ({
   card,
   instance,
   isFacedown: isFacedownProp,
@@ -490,5 +490,8 @@ export const CardView: React.FC<CardViewProps> = ({
     </div>
   );
 };
+
+/** Skips re-rendering when a state update leaves its props identical (ADR-0089). */
+export const CardView = React.memo(CardViewImpl);
 
 export default CardView;

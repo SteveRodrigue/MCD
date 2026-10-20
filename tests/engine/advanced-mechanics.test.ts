@@ -18,6 +18,7 @@ import {
 
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import { thaw } from '../support/thaw-state';
 
 describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
@@ -252,7 +253,7 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       expect(resolveRes.state.players[0].deck.length).toBe(initialDeck - 3);
 
       // Advance to round upkeep (Pass First Player and Round Upkeep)
-      const endRoundState = step6_passFirstPlayerAndRoundUpkeep(resolveRes.state);
+      const endRoundState = step6_passFirstPlayerAndRoundUpkeep(thaw(resolveRes.state));
 
       // Nick Fury was discarded at round end (RR v1.8 p. 32, Nick Fury 01084)
       expect(endRoundState.players[0].allies.some((a) => a.card.code === '01084')).toBe(false);

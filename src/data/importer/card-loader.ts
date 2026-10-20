@@ -14,7 +14,7 @@ import {
   AbilityTiming,
   CharacterPower,
   CardRepository,
-  registerSharedCardDefinition,
+  asCatalogCard,
 } from '@engine/models';
 
 /**
@@ -464,10 +464,8 @@ export class CardCatalog implements CardRepository {
     this.markHeroSetMembership();
   }
 
-  /** Catalog cards are immutable definitions that game-state clones share (F005). */
   private store(card: NormalizedCard): void {
-    registerSharedCardDefinition(card);
-    this.cards.set(card.code, card);
+    this.cards.set(card.code, asCatalogCard(card));
   }
 
   /**

@@ -104,8 +104,8 @@ Whenever an architectural subsystem, engine pipeline, or effect primitive is imp
 3. **State Immutability & Serialization:**
    - `GameState` must be 100% JSON-serializable (plain objects, arrays, numbers, strings, booleans).
    - **Do not** store class instances, closures, functions, DOM elements, or circular references inside `GameState`.
-   - State updates must be immutable (using pure functions, structural cloning, or state reducers).
-   - Card definitions (`CardInstance.card`, `player.hero`, `villain.card`, ...) are catalog objects shared by every state clone. **Never** write to them (`inst.card.health = 5`); replace the reference instead (`inst.card = { ...inst.card, health: 5 }`). Tests run with the catalog frozen; `tests/support/card-overrides.ts` swaps a card everywhere in a test state.
+   - State updates must be immutable. Produce a next state with `updateGameState(state, (draft) => { ... })` (ADR-0089); **never** write to a state the engine returned (it is frozen and shared with the previous state).
+   - Card definitions (`CardInstance.card`, `player.hero`, `villain.card`, ...) are catalog objects shared by every state. **Never** write to them (`inst.card.health = 5`); replace the reference instead (`inst.card = { ...inst.card, health: 5 }`). Tests run with the catalog frozen; `tests/support/card-overrides.ts` swaps a card everywhere in a test state.
 
 ---
 

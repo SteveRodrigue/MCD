@@ -8,6 +8,7 @@ import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { discardCardInstance } from '@engine/effects';
 import { assertCardConservation } from '@engine/state/state-validator';
 import { getEffectiveHeroStats, getEffectiveAllyStats } from '@engine/pipeline/stat-calculator';
+import { thaw } from '../support/thaw-state';
 
 describe('Cross-Player Attachments & Card Ownership Invariants (RR v1.8 p. 23, ADR-0068, Issue #23)', () => {
   const smHero = cardCatalog.getCard('01001a') as HeroCard;
@@ -267,27 +268,32 @@ describe('Cross-Player Attachments & Card Ownership Invariants (RR v1.8 p. 23, A
     assertCardConservation(res.state);
 
     // Daredevil is discarded / defeated
-    discardCardInstance(res.state, ddInPlay, 'p2');
+    const discardedState = thaw(res.state);
+    discardCardInstance(
+      discardedState,
+      discardedState.players[1].allies.find((x) => x.instanceId === ddInPlay.instanceId)!,
+      'p2',
+    );
 
     // Daredevil is no longer in play
-    expect(res.state.players[1].allies.some((a) => a.instanceId === daredevil.instanceId)).toBe(
-      false,
-    );
+    expect(
+      discardedState.players[1].allies.some((a) => a.instanceId === daredevil.instanceId),
+    ).toBe(false);
 
     // Daredevil goes to Player 2's discard pile (owner of Daredevil)
-    expect(res.state.players[1].discard.some((c) => c.instanceId === daredevil.instanceId)).toBe(
-      true,
-    );
+    expect(
+      discardedState.players[1].discard.some((c) => c.instanceId === daredevil.instanceId),
+    ).toBe(true);
 
     // Inspired goes to Player 1's discard pile (owner of Inspired)
-    expect(res.state.players[0].discard.some((c) => c.instanceId === inspired.instanceId)).toBe(
-      true,
-    );
-    expect(res.state.players[1].discard.some((c) => c.instanceId === inspired.instanceId)).toBe(
-      false,
-    );
+    expect(
+      discardedState.players[0].discard.some((c) => c.instanceId === inspired.instanceId),
+    ).toBe(true);
+    expect(
+      discardedState.players[1].discard.some((c) => c.instanceId === inspired.instanceId),
+    ).toBe(false);
 
-    assertCardConservation(res.state);
+    assertCardConservation(discardedState);
   });
 
   it('6. Solo Play: automatically places card under sole player control without decision prompt', () => {

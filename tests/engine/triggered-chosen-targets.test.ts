@@ -11,6 +11,7 @@ import {
 } from '@engine/models';
 import { setupGame, createCardInstance, resetInstanceCounter } from '@engine/state/game-setup';
 import { dispatchAction, peekDecisionPrompt } from '@engine/index';
+import { thaw } from '../support/thaw-state';
 
 // #234: an ability whose effect targets "an enemy" / "a scheme" (CHOSEN_*) lets the player choose
 // among the valid targets when it resolves. Optional abilities keep their "Do you want to use" prompt
@@ -136,6 +137,7 @@ describe('Triggered abilities with a CHOSEN_* target let the player choose (#234
     const villainHp = getActiveVillain(state).health;
     daredevilThwarts();
     // The board changes before the player answers (e.g. another effect defeats the minion).
+    state = thaw(state);
     p1().engagedMinions = p1().engagedMinions.filter((x) => x.instanceId !== m.instanceId);
     answerYes();
     expect(peekDecisionPrompt(state)).toBeUndefined();
@@ -202,8 +204,10 @@ describe('Triggered abilities with a CHOSEN_* target let the player choose (#234
     });
 
     it('a target that disappears before Yes aborts the ability and the cost is not paid', () => {
+      state = thaw(state);
       state.sideSchemes = [];
       defeatMinion();
+      state = thaw(state);
       state.mainScheme.threat = 0; // no scheme with removable threat remains
       answerYes();
       expect(peekDecisionPrompt(state)).toBeUndefined();

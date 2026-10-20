@@ -1,4 +1,4 @@
-import { GameState, GamePhase, cloneGameState, getActiveVillain } from '@engine/models';
+import { GameState, GamePhase, getActiveVillain } from '@engine/models';
 import { dispatchAction, peekDecisionPrompt } from '../pipeline';
 import { chooseBotAction } from './player-bot';
 import { assertGameStateInvariants } from '../state/state-validator';
@@ -175,7 +175,7 @@ export function runMatch(
   const difficulty = initialState.difficulty || 'STANDARD';
   const playerCount = initialState.players.length;
 
-  let state: GameState = cloneGameState(initialState);
+  let state: GameState = initialState;
   let totalActions = 0;
 
   // 0. Auto-resolve mulligan if match starts in SETUP_PHASE

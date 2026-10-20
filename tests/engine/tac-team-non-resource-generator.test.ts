@@ -3,6 +3,7 @@ import { setupGame, createCardInstance } from '../../src/engine/state/game-setup
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { thaw } from '../support/thaw-state';
 
 describe('Resource Payment Generator Validation (RR v1.8 p. 25, Issue #43)', () => {
   const smHero = cardCatalog.getCard('01001a') as HeroCard;
@@ -25,7 +26,7 @@ describe('Resource Payment Generator Validation (RR v1.8 p. 25, Issue #43)', () 
     });
 
     // Flip to Hero form
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
     player.health = 8; // Sustain damage so First Aid has an eligible heal target per RR v1.8 p. 3
 
@@ -76,7 +77,7 @@ describe('Resource Payment Generator Validation (RR v1.8 p. 25, Issue #43)', () 
     });
 
     // Flip to Hero form
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
     player.health = 8; // Sustain damage so First Aid has an eligible heal target per RR v1.8 p. 3
 

@@ -13,6 +13,7 @@ import {
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { discardCardInstance, resetCardState, executeEffect } from '../../src/engine/effects';
 import { applyCalculatedAttackDamage } from '../../src/engine/pipeline/combat-pipeline';
+import { thaw } from '../support/thaw-state';
 
 describe('Universal Card State Reset on Discard / Leaves Play (Issue #157, RR v1.8 p. 15)', () => {
   let state: GameState;
@@ -208,9 +209,10 @@ describe('Universal Card State Reset on Discard / Leaves Play (Issue #157, RR v1
     const res1 = createCardInstance('res_1', '01088', 'Resource 1', CardType.RESOURCE, 0);
     const res2 = createCardInstance('res_2', '01089', 'Resource 2', CardType.RESOURCE, 0);
 
-    p1.hand = [makeTheCall, res1, res2];
+    const armedState = thaw(attackRes.state);
+    armedState.players[0].hand = [makeTheCall, res1, res2];
 
-    const replayRes = dispatchAction(attackRes.state, {
+    const replayRes = dispatchAction(armedState, {
       type: 'PLAY_CARD',
       playerId: 'player_1',
       cardInstanceId: 'mtc_inst',
@@ -325,8 +327,9 @@ describe('Universal Card State Reset on Discard / Leaves Play (Issue #157, RR v1
     expect(playedAlly?.exhausted).toBe(false);
 
     // Player 2 commands Maria Hill to thwart, taking fatal consequential damage
-    playRes.state.mainScheme.threat = 3;
-    const thwartRes = dispatchAction(playRes.state, {
+    const armedThwart = thaw(playRes.state);
+    armedThwart.mainScheme.threat = 3;
+    const thwartRes = dispatchAction(armedThwart, {
       type: 'ALLY_THWART',
       playerId: 'player_2',
       allyInstanceId: 'maria_p1',

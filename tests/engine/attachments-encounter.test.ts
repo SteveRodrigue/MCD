@@ -4,6 +4,7 @@ import { GameState, HeroCard, AlterEgoCard, CardInstance } from '@engine/models'
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
 import { getEffectiveVillainStats } from '@engine/pipeline/stat-calculator';
+import { thaw } from '../support/thaw-state';
 
 describe('Encounter Attachments Subsystem (Armored Rhino Suit, Charge, Enhanced Ivory Horn)', () => {
   let state: GameState;
@@ -59,10 +60,11 @@ describe('Encounter Attachments Subsystem (Armored Rhino Suit, Charge, Enhanced 
     expect(res1.state.encounterDiscard.some((c) => c.card.code === '01098')).toBe(false);
 
     // Ready hero for second attack
-    res1.state.players[0].exhausted = false;
+    const readied = thaw(res1.state);
+    readied.players[0].exhausted = false;
 
     // 2. Player attacks Rhino again (2 ATK) -> total damage reaches 4 (still < 5)
-    const res2 = dispatchAction(res1.state, {
+    const res2 = dispatchAction(readied, {
       type: 'BASIC_ATTACK',
       playerId: 'p1',
       targetType: 'villain',
@@ -75,10 +77,11 @@ describe('Encounter Attachments Subsystem (Armored Rhino Suit, Charge, Enhanced 
     expect(res2.state.encounterDiscard.some((c) => c.card.code === '01098')).toBe(false);
 
     // Ready hero for third attack
-    res2.state.players[0].exhausted = false;
+    const readied2 = thaw(res2.state);
+    readied2.players[0].exhausted = false;
 
     // 3. Player attacks Rhino a third time (2 ATK) -> total damage reaches 6 (>= 5) -> Discards suit!
-    const res3 = dispatchAction(res2.state, {
+    const res3 = dispatchAction(readied2, {
       type: 'BASIC_ATTACK',
       playerId: 'p1',
       targetType: 'villain',
@@ -91,10 +94,11 @@ describe('Encounter Attachments Subsystem (Armored Rhino Suit, Charge, Enhanced 
     expect(res3.state.encounterDiscard.some((c) => c.card.code === '01098')).toBe(true);
 
     // Ready hero for fourth attack
-    res3.state.players[0].exhausted = false;
+    const readied3 = thaw(res3.state);
+    readied3.players[0].exhausted = false;
 
     // 4. Now that suit is discarded, subsequent attack damages Rhino directly
-    const res4 = dispatchAction(res3.state, {
+    const res4 = dispatchAction(readied3, {
       type: 'BASIC_ATTACK',
       playerId: 'p1',
       targetType: 'villain',

@@ -7,7 +7,7 @@ import {
   MainSchemeCard,
   NormalizedCard,
   VillainCard,
-  cloneGameState,
+  updateGameState,
   getCatalog,
 } from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
@@ -99,10 +99,12 @@ describe('Card catalog injection (ADR-0087)', () => {
     expect(state.encounterDeck.map((c) => c.card.code)).toContain('fake_treachery');
   });
 
-  it('keeps the catalog by reference in state clones', () => {
-    const clone = cloneGameState(newGame());
+  it('keeps the catalog by reference across state updates', () => {
+    const next = updateGameState(newGame(), (draft) => {
+      draft.roundNumber += 1;
+    });
 
-    expect(getCatalog(clone)).toBe(catalog);
+    expect(getCatalog(next)).toBe(catalog);
   });
 
   it('plays a scenario defined only by a definition.json through a stage change (#275)', () => {

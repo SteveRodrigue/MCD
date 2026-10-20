@@ -19,6 +19,7 @@ import { resolveDecisionPrompt, peekDecisionPrompt } from '@engine/pipeline/prom
 import { endPlayerPhase } from '@engine/pipeline/player-phase';
 import { executeVillainPhase } from '@engine/pipeline/villain-phase';
 import { executeEffect } from '@engine/effects';
+import { thaw } from '../support/thaw-state';
 
 describe('Feature Delivery: Vision (01068) Once-Per-Round Limit & Temporary Stat Modifiers (Issue #119)', () => {
   const spiderManHero = cardCatalog.getCard('01001a') as HeroCard;
@@ -123,7 +124,7 @@ describe('Feature Delivery: Vision (01068) Once-Per-Round Limit & Temporary Stat
     gameState = actionRes.state;
 
     // Resolve prompt by picking boost_thw
-    const resolveRes = resolveDecisionPrompt(gameState, player.id, 'boost_thw');
+    const resolveRes = resolveDecisionPrompt(thaw(gameState), player.id, 'boost_thw');
     expect(resolveRes.result.success).toBe(true);
     gameState = resolveRes.state;
 
@@ -155,7 +156,7 @@ describe('Feature Delivery: Vision (01068) Once-Per-Round Limit & Temporary Stat
       cardInstanceId: visionInstance.instanceId,
       paymentCardInstanceIds: [player.hand[0].instanceId],
     }).state;
-    gameState = resolveDecisionPrompt(gameState, player.id, 'boost_atk').state;
+    gameState = resolveDecisionPrompt(thaw(gameState), player.id, 'boost_atk').state;
 
     const updatedVision = gameState.players[0].allies.find(
       (a) => a.instanceId === visionInstance.instanceId,
@@ -183,7 +184,7 @@ describe('Feature Delivery: Vision (01068) Once-Per-Round Limit & Temporary Stat
     expect(firstRes.result.success).toBe(true);
     gameState = firstRes.state;
 
-    const resolveRes = resolveDecisionPrompt(gameState, player.id, 'boost_thw');
+    const resolveRes = resolveDecisionPrompt(thaw(gameState), player.id, 'boost_thw');
     expect(resolveRes.result.success).toBe(true);
     gameState = resolveRes.state;
 
@@ -219,7 +220,7 @@ describe('Feature Delivery: Vision (01068) Once-Per-Round Limit & Temporary Stat
     expect(actionRes.result.success).toBe(true);
     gameState = actionRes.state;
 
-    const resolveRes = resolveDecisionPrompt(gameState, player.id, 'boost_atk');
+    const resolveRes = resolveDecisionPrompt(thaw(gameState), player.id, 'boost_atk');
     expect(resolveRes.result.success).toBe(true);
     gameState = resolveRes.state;
 

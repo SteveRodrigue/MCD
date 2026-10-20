@@ -17,6 +17,7 @@ import {
 
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import { thaw } from '../support/thaw-state';
 
 describe('Issue #264: Villain attack resumes after declining/accepting Spider-Sense (01001a)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
@@ -90,7 +91,7 @@ describe('Issue #264: Villain attack resumes after declining/accepting Spider-Se
     expect(pausedState.activeAttackContext?.phase).toBe('INITIATION');
 
     // Decline Spider-Sense ('pass')
-    const afterPass = resolveDecisionPrompt(pausedState, 'p1', 'pass').state;
+    const afterPass = resolveDecisionPrompt(thaw(pausedState), 'p1', 'pass').state;
 
     // Verifies defender prompt (prompt_defend_...) is now active
     const defenderPrompt = peekDecisionPrompt(afterPass);
@@ -99,7 +100,7 @@ describe('Issue #264: Villain attack resumes after declining/accepting Spider-Se
     expect(afterPass.activeAttackContext?.phase).toBe('DECLARE_DEFENDER');
 
     // Resolve defender prompt ('undefended')
-    const afterDefend = resolveDecisionPrompt(afterPass, 'p1', 'undefended').state;
+    const afterDefend = resolveDecisionPrompt(thaw(afterPass), 'p1', 'undefended').state;
 
     // Verifies damage is dealt to Spider-Man (Rhino ATK 2 + 0 boost), lastCombatOutcome populated
     expect(afterDefend.lastCombatOutcome).toBeDefined();
@@ -130,7 +131,7 @@ describe('Issue #264: Villain attack resumes after declining/accepting Spider-Se
 
     // Accept Spider-Sense
     const yesOption = ssPrompt!.options.find((o) => o.id !== 'pass' && o.label === 'Yes')!;
-    const afterAccept = resolveDecisionPrompt(pausedState, 'p1', yesOption.id).state;
+    const afterAccept = resolveDecisionPrompt(thaw(pausedState), 'p1', yesOption.id).state;
 
     // Verifies player drew 1 card
     expect(afterAccept.players[0].hand.length).toBe(1);
@@ -142,7 +143,7 @@ describe('Issue #264: Villain attack resumes after declining/accepting Spider-Se
     expect(defenderPrompt?.promptId).toMatch(/^prompt_defend_/);
 
     // Resolve defense ('undefended')
-    const afterDefend = resolveDecisionPrompt(afterAccept, 'p1', 'undefended').state;
+    const afterDefend = resolveDecisionPrompt(thaw(afterAccept), 'p1', 'undefended').state;
 
     expect(afterDefend.lastCombatOutcome).toBeDefined();
     expect(afterDefend.lastCombatOutcome?.finalDamage).toBe(2);
@@ -169,7 +170,7 @@ describe('Issue #264: Villain attack resumes after declining/accepting Spider-Se
     expect(ssPrompt?.title).toContain('Spider-Man');
 
     // Decline Spider-Sense
-    const afterPass = resolveDecisionPrompt(pausedState, 'p1', 'pass').state;
+    const afterPass = resolveDecisionPrompt(thaw(pausedState), 'p1', 'pass').state;
 
     // Attack immediately resolves synchronously with TAKE_UNDEFENDED policy
     expect(afterPass.lastCombatOutcome).toBeDefined();
@@ -197,7 +198,7 @@ describe('Issue #264: Villain attack resumes after declining/accepting Spider-Se
     expect(ssPrompt).toBeDefined();
 
     const yesOption = ssPrompt!.options.find((o) => o.id !== 'pass' && o.label === 'Yes')!;
-    const afterAccept = resolveDecisionPrompt(pausedState, 'p1', yesOption.id).state;
+    const afterAccept = resolveDecisionPrompt(thaw(pausedState), 'p1', yesOption.id).state;
 
     // Card drawn and attack resolved
     expect(afterAccept.players[0].hand.length).toBe(1);
@@ -231,11 +232,11 @@ describe('Issue #264: Villain attack resumes after declining/accepting Spider-Se
     expect(peekDecisionPrompt(pausedState)?.title).toContain('Spider-Man');
 
     // Decline Spider-Sense
-    const afterPass = resolveDecisionPrompt(pausedState, 'p1', 'pass').state;
+    const afterPass = resolveDecisionPrompt(thaw(pausedState), 'p1', 'pass').state;
     expect(peekDecisionPrompt(afterPass)?.promptId).toMatch(/^prompt_defend_/);
 
     // Resolve defense for Rhino attack
-    const afterDefend = resolveDecisionPrompt(afterPass, 'p1', 'undefended').state;
+    const afterDefend = resolveDecisionPrompt(thaw(afterPass), 'p1', 'undefended').state;
     expect(afterDefend.lastCombatOutcome?.attackerName).toBe('Rhino');
     expect(afterDefend.players[0].health).toBe(initialHealth - 2);
 
@@ -245,7 +246,11 @@ describe('Issue #264: Villain attack resumes after declining/accepting Spider-Se
     expect(peekDecisionPrompt(minionAttackState)?.attackerName).toBe('Hydra Mercenary');
 
     // Resolve defense for minion attack
-    const afterMinionDefend = resolveDecisionPrompt(minionAttackState, 'p1', 'undefended').state;
+    const afterMinionDefend = resolveDecisionPrompt(
+      thaw(minionAttackState),
+      'p1',
+      'undefended',
+    ).state;
     expect(afterMinionDefend.lastCombatOutcome?.attackerName).toBe('Hydra Mercenary');
     expect(afterMinionDefend.players[0].health).toBe(initialHealth - 2 - 1); // 2 from Rhino, 1 from Minion
 

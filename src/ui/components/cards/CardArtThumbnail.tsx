@@ -11,7 +11,7 @@ export interface CardArtThumbnailProps {
   className?: string;
 }
 
-export const CardArtThumbnail: React.FC<CardArtThumbnailProps> = ({
+const CardArtThumbnailImpl: React.FC<CardArtThumbnailProps> = ({
   cardCode,
   cardName,
   fallbackIcon,
@@ -50,3 +50,6 @@ export const CardArtThumbnail: React.FC<CardArtThumbnailProps> = ({
     </div>
   );
 };
+
+/** Skips re-rendering when a state update leaves its props identical (ADR-0089). */
+export const CardArtThumbnail = React.memo(CardArtThumbnailImpl);

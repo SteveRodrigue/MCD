@@ -4,6 +4,7 @@ import { cardCatalog } from '../../../src/data/importer/card-loader';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
 import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
+import { thaw } from '../../support/thaw-state';
 
 function makeResources(type: 'physical' | 'energy' | 'mental' | 'wild', count: number) {
   return {
@@ -240,12 +241,12 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
   }
 
   function playAssault(paying: ReturnType<typeof payment>[], minionInstanceId: string) {
-    const p1 = state.players[0];
+    const armed = thaw(state);
     const assault = createCardInstance(cardCatalog.getCard('01053')!);
-    p1.hand = [assault, ...paying];
-    return dispatchAction(state, {
+    armed.players[0].hand = [assault, ...paying];
+    return dispatchAction(armed, {
       type: 'PLAY_CARD',
-      playerId: p1.id,
+      playerId: armed.players[0].id,
       cardInstanceId: assault.instanceId,
       targetInstanceId: minionInstanceId,
       paymentCardInstanceIds: paying.map((c) => c.instanceId),

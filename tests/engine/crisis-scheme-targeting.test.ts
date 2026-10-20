@@ -3,6 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, SideSchemeCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
+import { thaw } from '../support/thaw-state';
 
 describe('Crisis Scheme Targeting (Issue #181, RR v1.8 p. 11)', () => {
   let state: GameState;
@@ -185,13 +186,11 @@ describe('Crisis Scheme Targeting (Issue #181, RR v1.8 p. 11)', () => {
     expect(res1.state.mainScheme.threat).toBe(5);
 
     // Ready Surveillance Team for second activation
-    const inPlaySurv = res1.state.players[0].tableau.find(
-      (c) => c.instanceId === survTeam.instanceId,
-    )!;
-    inPlaySurv.exhausted = false;
+    const readied = thaw(res1.state);
+    readied.players[0].tableau.find((c) => c.instanceId === survTeam.instanceId)!.exhausted = false;
 
     // Action 2: With Crisis side scheme gone, Surveillance Team targets Main Scheme
-    const res2 = dispatchAction(res1.state, {
+    const res2 = dispatchAction(readied, {
       type: 'USE_CARD_ABILITY',
       playerId: 'p1',
       cardInstanceId: survTeam.instanceId,

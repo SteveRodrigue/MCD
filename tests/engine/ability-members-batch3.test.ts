@@ -17,6 +17,7 @@ import { evaluatePlayRequirements } from '@engine/pipeline/legality-checker';
 import { resolveTargets } from '@engine/effects/target-resolver';
 import { executeEffect } from '@engine/effects';
 import { registerSpecialHandler } from '@engine/specials/special-registry';
+import { thaw } from '../support/thaw-state';
 
 /**
  * #276, batch 3: ability gating (zone, once-per-phase limit), hero damage as a cost, special
@@ -95,7 +96,7 @@ describe('ability members (#276, batch 3)', () => {
       expect(second.result.success).toBe(false);
       expect(counter(card)).toBe(1);
 
-      startPlayerPhase(state);
+      state = startPlayerPhase(thaw(state));
       expect(use(card, 'once_phase').result.success).toBe(true);
       expect(counter(card)).toBe(2);
     });

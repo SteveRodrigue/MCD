@@ -4,6 +4,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { assertCardConservation, attachCardToHost } from '../../src/engine/state/state-validator';
 import { HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { thaw } from '../support/thaw-state';
 
 describe('Universal Card Conservation & Attachment Deduplication (RR v1.8 p. 5, Issue #44, ADR-0040)', () => {
   const smHero = cardCatalog.getCard('01001a') as HeroCard;
@@ -88,7 +89,7 @@ describe('Universal Card Conservation & Attachment Deduplication (RR v1.8 p. 5, 
       skipMulligan: true,
     });
 
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
     // Spawn an engaged minion (Hydra Mercenary 01110)

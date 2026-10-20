@@ -13,6 +13,7 @@ import {
 
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import { thaw } from '../support/thaw-state';
 
 describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
@@ -189,9 +190,10 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
       ).toBeFalsy();
 
       // 4. Verify USE_CARD_ABILITY succeeds, exhausts Aunt May, and heals Peter Parker once damaged
-      abilityResAtFullHealth.state.players[0].health = 5;
+      const abilityResAtFullHealthArmed = thaw(abilityResAtFullHealth.state);
+      abilityResAtFullHealthArmed.players[0].health = 5;
 
-      const abilityResDamaged = dispatchAction(abilityResAtFullHealth.state, {
+      const abilityResDamaged = dispatchAction(abilityResAtFullHealthArmed, {
         type: 'USE_CARD_ABILITY',
         playerId: 'p1',
         cardInstanceId: auntMayInst.instanceId,

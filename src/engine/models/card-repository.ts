@@ -3,7 +3,7 @@ import type { CardType } from './enums';
 import type { MainSchemeCard, NormalizedCard, VillainCard } from './card';
 
 /**
- * The card catalog as the engine sees it (ADR-0098). The engine reads card definitions only
+ * The card catalog as the engine sees it (ADR-0087). The engine reads card definitions only
  * through this port, so a test or a future pack can hand it any catalog.
  */
 export interface CardRepository {

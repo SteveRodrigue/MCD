@@ -29,6 +29,7 @@ describe('Milestone 2C: Modular Encounter Set Hot-Swapping & Customization (ADR-
     const mainSchemeCard = cardCatalog.getCard('01097b') as MainSchemeCard;
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       difficulty: 'STANDARD',
       players: [
@@ -80,6 +81,7 @@ describe('Milestone 2C: Modular Encounter Set Hot-Swapping & Customization (ADR-
     const mainSchemeCard = cardCatalog.getCard('01116b') as MainSchemeCard;
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'klaw',
       difficulty: 'STANDARD',
       players: [

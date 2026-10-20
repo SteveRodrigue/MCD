@@ -31,6 +31,7 @@ describe('Daily Bugle & TopBar Call for Action & Villain Actions UI (Issue #314)
     tonyStarkAlterEgo = cardCatalog.getCard('01029b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

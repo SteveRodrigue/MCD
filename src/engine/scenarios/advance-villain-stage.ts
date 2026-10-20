@@ -5,10 +5,10 @@ import {
   VillainCard,
   getVillainById,
   getActiveVillain,
+  getCatalog,
   replaceVillain,
   getPerPlayerCount,
 } from '@engine/models';
-import { cardCatalog } from '../../data/importer/card-loader';
 import { executeEffect, discardHostAttachmentsAndTuckedCards } from '../effects';
 import { applyToughnessOnEntry } from '../state/card-instance';
 import {
@@ -106,7 +106,7 @@ export function advanceVillainStage(
   nextStageCode: string,
   onRevealed?: (newVillain: VillainState) => void,
 ): { state: GameState; advancedStage: true } {
-  const nextCard = cardCatalog.getCard(nextStageCode) as VillainCard | undefined;
+  const nextCard = getCatalog(state).getCard(nextStageCode) as VillainCard | undefined;
   if (!nextCard) {
     throw new Error(`Next villain stage card '${nextStageCode}' not found in catalog.`);
   }

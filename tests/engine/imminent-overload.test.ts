@@ -38,6 +38,7 @@ const newGame = (playerCount: 1 | 2): GameState => {
   const players = [player('p1', '01001a', '01001b')];
   if (playerCount === 2) players.push(player('p2', '01029a', '01029b'));
   const state = setupGame({
+    catalog: cardCatalog,
     scenarioId: 'rhino',
     players,
     villain: cardCatalog.getCard('01094') as any,

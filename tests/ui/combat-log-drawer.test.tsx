@@ -179,6 +179,7 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
 
   it('GameBoard initializes with Combat Log drawer open by default (Issue #204)', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

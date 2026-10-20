@@ -35,6 +35,7 @@ describe('GameBoard Call for Action Top-Left Hover Button', () => {
 
   function createMultiplayerState(): GameState {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -117,6 +118,7 @@ describe('GameBoard Call for Action Top-Left Hover Button', () => {
   it('does not render hover button when in single player mode or when no teammate actions exist', () => {
     // Single player game
     const singleState = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -146,6 +148,7 @@ describe('GameBoard Call for Action Top-Left Hover Button', () => {
 
     // Multiplayer game with no teammate actions (Tony has no tableau cards)
     const multiNoActionsState = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

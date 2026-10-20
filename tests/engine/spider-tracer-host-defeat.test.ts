@@ -15,6 +15,7 @@ describe('Spider-Tracer (01007) Attached Host Defeat Trigger (Issue #176)', () =
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

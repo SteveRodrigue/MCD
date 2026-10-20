@@ -1,3 +1,4 @@
+import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   GameState,
@@ -171,7 +172,7 @@ function create3PlayerTestState(): GameState {
     encounterDiscard: [],
     players: [player1 as PlayerState, player2 as PlayerState, player3 as PlayerState],
     log: [],
-    options: { villainPhaseStepping: true },
+    options: { villainPhaseStepping: true, catalog: cardCatalog },
   } as any as GameState;
 }
 

@@ -18,6 +18,7 @@ describe('Obligation recipient resolution (Issue #158, RR v1.8 Obligation)', () 
 
   function twoPlayerGame(): GameState {
     return setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -99,6 +100,7 @@ describe('Obligation recipient resolution (Issue #158, RR v1.8 Obligation)', () 
 
     it('rule 2: hero-set obligation whose hero is not in the game is removed and another card is revealed', () => {
       const solo = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {

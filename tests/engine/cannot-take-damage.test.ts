@@ -12,6 +12,7 @@ import { getValidStepTargets } from '@engine/effects/target-choice';
  */
 function build() {
   const state = setupGame({
+    catalog: cardCatalog,
     scenarioId: 'rhino',
     players: [
       {

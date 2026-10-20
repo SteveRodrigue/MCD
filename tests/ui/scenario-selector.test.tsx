@@ -50,6 +50,7 @@ describe('ScenarioSelector', () => {
 
     const deck = getStarterDeck(selection.deckIds[0])!.loadDeck(cardCatalog);
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: selection.scenarioId,
       difficulty: selection.difficulty,
       modularSetCodes: selection.selectedModularSetCodes,

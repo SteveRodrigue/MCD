@@ -19,6 +19,7 @@ describe('SEARCH selectedDestination Routing - All 8 Choices (RR v1.8 p. 19, 26)
 
   function createTestState() {
     return setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

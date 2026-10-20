@@ -33,6 +33,7 @@ describe('Per-player iteration, ability-level forEachPlayer (#220)', () => {
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

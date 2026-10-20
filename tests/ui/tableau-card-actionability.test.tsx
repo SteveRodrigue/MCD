@@ -30,6 +30,7 @@ describe('Tableau Card Actionability Graying (Issue #185)', () => {
 
   beforeEach(() => {
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

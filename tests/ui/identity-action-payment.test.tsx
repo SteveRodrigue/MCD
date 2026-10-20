@@ -22,6 +22,7 @@ describe('Identity & Card Payment Subsystem Integration (Issue #162)', () => {
   }) {
     const ident = options?.heroKey === 'spider_man' ? spiderManIdentity : captainMarvelIdentity;
     const gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

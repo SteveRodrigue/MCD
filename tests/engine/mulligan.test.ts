@@ -1,3 +1,4 @@
+import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CardCatalog } from '../../src/data/importer/card-loader';
 import {
@@ -24,6 +25,7 @@ describe('Mulligan Phase State Machine & Rules (RR v1.8 p. 23)', () => {
     const deck = starterDeck.loadDeck(catalog);
 
     const initialState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'player_1',
@@ -77,6 +79,7 @@ describe('Mulligan Phase State Machine & Rules (RR v1.8 p. 23)', () => {
     const d2 = getStarterDeck('captain_marvel_leadership')!.loadDeck(catalog);
 
     const initialState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'player_1',

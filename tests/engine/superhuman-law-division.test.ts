@@ -21,6 +21,7 @@ describe('Superhuman Law Division (01026): pay once, then choose the scheme (#29
     const ironMan = cardCatalog.getCard('01029a') as HeroCard;
     const tony = cardCatalog.getCard('01029b') as AlterEgoCard;
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

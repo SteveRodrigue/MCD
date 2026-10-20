@@ -19,6 +19,7 @@ import {
   getActiveMainScheme,
   getVillainsInPlay,
   getVillainById,
+  getCatalog,
   PendingSequence,
   DamagedCharacter,
 } from '@engine/models';
@@ -62,7 +63,6 @@ import {
 import { TriggerCallNode } from '../errors/infinite-loop-error';
 import '../specials/wakanda-forever';
 import { removeCardFromAllZones } from '../state/state-validator';
-import { cardCatalog } from '../../data/importer/card-loader';
 import { nextEngineId, randomInt } from '../state/rng';
 
 /**
@@ -1616,7 +1616,7 @@ function recordDeclaredAbilityUsage(
   const sourceCard =
     context.sourceCardInstance?.card ??
     (context.sourceCardId
-      ? (cardCatalog.getCard(context.sourceCardId) ??
+      ? (getCatalog(state).getCard(context.sourceCardId) ??
         findAnyCardInstance(state, context.sourceCardId)?.card)
       : undefined);
   if (sourceCard?.enrichment?.abilities?.some((a) => a.id === abilityId)) {
@@ -1648,24 +1648,25 @@ function findAnyCardInstance(state?: GameState, idOrCode?: string): CardInstance
  * Dynamic prompt title, description, and source card metadata generator for tableau discard prompts (Issue #233).
  */
 function getTableauDiscardPromptMeta(
-  filter?: (UniversalCardFilter & { trait?: string; type?: string }) | Record<string, unknown>,
-  sourceCardInstance?: CardInstance,
-  sourceCardId?: string,
-  state?: GameState,
+  filter:
+    (UniversalCardFilter & { trait?: string; type?: string }) | Record<string, unknown> | undefined,
+  sourceCardInstance: CardInstance | undefined,
+  sourceCardId: string | undefined,
+  state: GameState,
 ): { title: string; description: string; sourceCardName: string; sourceCardCode?: string } {
   const resolvedInstance =
     sourceCardInstance ||
     (sourceCardId ? findAnyCardInstance(state, sourceCardId) : undefined) ||
-    state?.activeEncounterContext?.encounterCard;
+    state.activeEncounterContext?.encounterCard;
 
   const sourceCardName =
     resolvedInstance?.card?.name ||
-    (sourceCardId ? cardCatalog.getCard(sourceCardId)?.name : undefined) ||
+    (sourceCardId ? getCatalog(state).getCard(sourceCardId)?.name : undefined) ||
     'Encounter Card';
 
   const sourceCardCode =
     resolvedInstance?.card?.code ||
-    (sourceCardId && cardCatalog.getCard(sourceCardId) ? sourceCardId : undefined);
+    (sourceCardId && getCatalog(state).getCard(sourceCardId) ? sourceCardId : undefined);
 
   const rawTraits = filter?.traits || (filter?.trait ? [filter.trait] : []);
   const traits = Array.isArray(rawTraits) ? rawTraits.filter(Boolean) : [];

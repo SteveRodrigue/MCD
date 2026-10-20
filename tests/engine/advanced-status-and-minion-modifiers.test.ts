@@ -30,6 +30,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
       };
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -105,6 +106,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
       };
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -149,6 +151,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
       };
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -209,6 +212,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
       };
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -269,6 +273,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
       };
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -316,6 +321,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
       };
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {

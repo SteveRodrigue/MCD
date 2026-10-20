@@ -34,6 +34,7 @@ describe('TopBar and GameBoard Layout In-Flow Architecture (Issue #301)', () => 
     }));
 
     return setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players,
       villain: cardCatalog.getCard('01094') as any,

@@ -14,6 +14,7 @@ const card = (id: string, code = '01088'): CardInstance => ({
 
 function buildState(): GameState {
   return setupGame({
+    catalog: cardCatalog,
     scenarioId: 'rhino',
     players: [
       {

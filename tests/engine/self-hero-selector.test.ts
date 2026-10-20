@@ -25,6 +25,7 @@ describe('SELF_HERO selector (#222)', () => {
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -152,6 +153,7 @@ describe('False Alarm (01112) confuses the resolving identity in either form', (
   const revealFalseAlarm = (alterEgo: boolean) => {
     resetInstanceCounter();
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

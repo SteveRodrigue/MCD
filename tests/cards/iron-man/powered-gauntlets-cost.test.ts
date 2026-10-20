@@ -11,6 +11,7 @@ describe('Powered Gauntlets (01038) Ability Cost & Resolution Contract (RR v1.8 
 
   it('verifies Iron Man can activate Powered Gauntlets with 0 cards in hand and 0 resources, exhausts card, deals 1 damage (2 if Aerial), and fails when exhausted or in Alter-Ego', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

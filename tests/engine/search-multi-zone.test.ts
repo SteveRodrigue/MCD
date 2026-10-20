@@ -22,6 +22,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
 
   it('multi-zone search finds target in encounter deck, splices it, and shuffles deck', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -69,6 +70,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
 
   it('multi-zone search finds target in encounter discard pile, splices it, and shuffles encounter deck', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -118,6 +120,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
   it('Rhino Stage II When Revealed searches deck & discard and reveals Breakin & Takin with threat', () => {
     const rhinoStage2Card = cardCatalog.getCard('01095')! as any;
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -155,6 +158,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
 
   it('lookCount: 0 searches entire pile while lookCount: 3 looks at top 3 only', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -228,6 +232,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
 
   it('takeCount: 0 / takeCount: "ALL" takes all matching cards without prompt', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -299,6 +304,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
 
   it('minimumTake 0 opens a multi-select prompt that may stay empty, the default minimumTake 1 enforces a pick', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

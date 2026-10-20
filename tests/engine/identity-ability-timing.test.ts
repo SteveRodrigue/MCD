@@ -33,6 +33,7 @@ describe('identity ability timings (#261)', () => {
     const hero = cardCatalog.getCard('01010a') as HeroCard;
     const alterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

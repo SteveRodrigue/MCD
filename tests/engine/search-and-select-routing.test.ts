@@ -46,6 +46,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     };
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -157,6 +158,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     };
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -246,6 +248,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     };
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -329,6 +332,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     };
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -410,6 +414,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     };
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -493,6 +498,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     };
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -570,6 +576,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     };
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

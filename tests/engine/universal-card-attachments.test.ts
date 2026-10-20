@@ -20,6 +20,7 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
   describe('1. Universal Cardinality & Multi-Target Attachment (RR v1.8 p. 5)', () => {
     it('attaches cards to Villain, Player Identity, Ally, Minion, and Scheme', () => {
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -142,6 +143,7 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
   describe('2. Cascading Discard on Host Leaving Play (RR v1.8 p. 5, 6)', () => {
     it('discards all active attachments and face-down cards underneath when a host leaves play', () => {
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -184,6 +186,7 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
   describe('3. Cards Underneath (Tucked Reserves - RR v1.8 p. 6)', () => {
     it('places and retrieves cards under host entity', () => {
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -223,6 +226,7 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
   describe('4. Legal Actions Discovery for Attachment Discard Abilities', () => {
     it('surfaces USE_CARD_ABILITY in legal actions for attachment discard when affordable', () => {
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {

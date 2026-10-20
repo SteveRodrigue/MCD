@@ -1,3 +1,4 @@
+import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CardCatalog } from '@data/importer/card-loader';
 import {
@@ -74,6 +75,7 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
     const { villain, mainScheme, encounterCards } = createRhinoEncounterDeck();
 
     const gameState = setupGame({
+      catalog: cardCatalog,
       id: 'test_game_1',
       players: [
         {
@@ -148,6 +150,7 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
     const { villain, mainScheme, encounterCards } = createRhinoEncounterDeck();
 
     const gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'player_1',
@@ -191,6 +194,7 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
       .flatMap((c) => Array(c.quantity).fill(c));
 
     const gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'player_1',
@@ -229,6 +233,7 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
 
     expect(() =>
       setupGame({
+        catalog: cardCatalog,
         players: [
           {
             id: 'player_1',
@@ -266,6 +271,7 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
 
     expect(() =>
       setupGame({
+        catalog: cardCatalog,
         players: [
           {
             id: 'player_1',
@@ -290,6 +296,7 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
     const stage1ACard = catalog.getCard('01097a') as MainSchemeCard;
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       difficulty: 'STANDARD',
       players: [

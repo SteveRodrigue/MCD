@@ -41,6 +41,7 @@ describe('GameBoard Multiplayer Centered Alignment & Active-Player Focus (Issue 
     }));
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players,
       villain: cardCatalog.getCard('01094') as any,

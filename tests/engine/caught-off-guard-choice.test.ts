@@ -25,6 +25,7 @@ describe('Caught Off Guard (01188) Discard Choice and Surge Behavior (Issue #184
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -165,6 +166,7 @@ describe('Caught Off Guard (01188) Discard Choice and Surge Behavior (Issue #184
     const carolDanversAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
 
     const twoPlayerState = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

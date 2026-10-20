@@ -11,6 +11,7 @@ describe('EXECUTE_SPECIAL (#254)', () => {
 
   it('fails when specialId is missing (no hidden default)', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

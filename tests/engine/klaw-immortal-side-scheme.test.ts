@@ -18,6 +18,7 @@ describe('Plan R9: Klaw II setup reveal and The "Immortal" Klaw side scheme', ()
     const mainSchemeCard = cardCatalog.getCard('01116b') as MainSchemeCard;
 
     return setupGame({
+      catalog: cardCatalog,
       scenarioId: 'klaw',
       difficulty,
       players: Array.from({ length: playerCount }, (_, i) => ({

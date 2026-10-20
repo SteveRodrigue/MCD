@@ -14,6 +14,7 @@ describe('Bug #28 Regression: Interactive Defender Declaration during Enemy Atta
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

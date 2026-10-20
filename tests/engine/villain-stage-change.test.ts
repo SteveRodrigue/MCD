@@ -55,6 +55,7 @@ function build(
   scenarioId = 'rhino',
 ): GameState {
   const state = setupGame({
+    catalog: cardCatalog,
     scenarioId,
     difficulty,
     players: HEROES.slice(0, playerCount).map(([id, hero, alterEgo]) => ({

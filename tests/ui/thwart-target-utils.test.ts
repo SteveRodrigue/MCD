@@ -1,3 +1,4 @@
+import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setupGame, resetInstanceCounter, createCardInstance } from '@engine/index';
 import { CardCatalog } from '@data/importer/card-loader';
@@ -29,6 +30,7 @@ describe('Thwart Target Selection & Legality Utils (RR v1.8 p. 3, 11, 20, 29)', 
     const mainScheme = catalog.getCard('01097b') as any;
 
     gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

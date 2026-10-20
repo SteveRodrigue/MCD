@@ -31,6 +31,7 @@ function buildGame(playerCount: 1 | 2) {
     });
   }
   const state = setupGame({
+    catalog: cardCatalog,
     scenarioId: 'rhino',
     players,
     villain: cardCatalog.getCard('01094')! as any,

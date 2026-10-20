@@ -16,6 +16,7 @@ describe('Core obligations: resolution flow (Issue #158, RR v1.8 Obligation)', (
     ],
   ): GameState {
     return setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: seats.map(([id, name, hero, alterEgo]) => ({
         id,

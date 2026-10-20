@@ -22,6 +22,7 @@ describe('Ancestral Knowledge (01042) - Deck Shuffle Destination (Fixes #189, RR
 
   function createTestState() {
     return setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

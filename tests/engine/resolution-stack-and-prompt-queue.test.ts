@@ -28,6 +28,7 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
     carolDanversAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

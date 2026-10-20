@@ -29,6 +29,7 @@ describe('Heart-Shaped Herb (01158): tough status cards, no healing (#244)', () 
   const setup = (twoPlayers = false) => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: twoPlayers
         ? [player('p1', '01001a', '01001b'), player('p2', '01010a', '01010b')]

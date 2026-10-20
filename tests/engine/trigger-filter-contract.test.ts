@@ -19,6 +19,7 @@ describe('Universal Trigger Filter Contract Tests (Spider-Sense 01001a & Scope M
     tonyStarkAlterEgo = cardCatalog.getCard('01029b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

@@ -43,6 +43,7 @@ describe('Superhuman Strength (01028) reacts only to an attack by your hero (#25
 
   beforeEach(() => {
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [makePlayer('p1', '01019a', '01019b'), makePlayer('p2', '01001a', '01001b')],
       villain: cardCatalog.getCard('01094') as any,

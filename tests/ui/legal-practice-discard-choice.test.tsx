@@ -10,6 +10,7 @@ import { TestSession } from '../support/render-with-session';
 describe('Legal Practice discard choice in the payment modal (#277)', () => {
   const setup = (handSize: number) => {
     const gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

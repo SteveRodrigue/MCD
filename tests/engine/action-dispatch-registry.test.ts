@@ -8,6 +8,7 @@ import type { AlterEgoCard, GameAction, HeroCard } from '@engine/models';
 describe('action dispatch registry', () => {
   const newState = () =>
     setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       skipMulligan: true,
       players: [

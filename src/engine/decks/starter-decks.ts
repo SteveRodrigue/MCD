@@ -1,4 +1,3 @@
-import { CardCatalog } from '../../data/importer/card-loader';
 import {
   HeroCard,
   AlterEgoCard,
@@ -6,6 +5,7 @@ import {
   MarvelCDBDeck,
   parseMarvelCDBDeckMeta,
   CardType,
+  CardRepository,
 } from '../models';
 
 // 1-File-Per-Deck prebuilt imports from data/prebuilt_decks/
@@ -23,7 +23,7 @@ export interface StarterDeckDefinition {
   name: string;
   description: string;
   rawDeck: MarvelCDBDeck;
-  loadDeck: (catalog: CardCatalog) => {
+  loadDeck: (catalog: CardRepository) => {
     hero: HeroCard;
     alterEgo: AlterEgoCard;
     deckCards: NormalizedCard[];
@@ -35,7 +35,7 @@ export interface StarterDeckDefinition {
 /**
  * Loads a playable deck from any MarvelCDB-compliant Deck object.
  */
-function loadDeckFromMarvelCDB(deck: MarvelCDBDeck, catalog: CardCatalog) {
+function loadDeckFromMarvelCDB(deck: MarvelCDBDeck, catalog: CardRepository) {
   const hero = catalog.getCard(deck.hero_code) as HeroCard | undefined;
   if (!hero) {
     throw new Error(`Hero card ${deck.hero_code} not found in catalog for deck ${deck.name}`);
@@ -117,7 +117,7 @@ function createStarterDeckFromMarvelCDB(deck: MarvelCDBDeck): StarterDeckDefinit
     name: deck.name,
     description: deck.description_md || `Prebuilt ${aspect} deck for ${deck.hero_name}.`,
     rawDeck: deck,
-    loadDeck: (catalog: CardCatalog) => loadDeckFromMarvelCDB(deck, catalog),
+    loadDeck: (catalog: CardRepository) => loadDeckFromMarvelCDB(deck, catalog),
   };
 }
 

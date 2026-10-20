@@ -16,6 +16,7 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

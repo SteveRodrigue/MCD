@@ -1,3 +1,4 @@
+import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame, resetInstanceCounter, getStarterDeck, GamePhase } from '../../src/engine';
@@ -18,6 +19,7 @@ describe('Multi-Hero Solo Mode & Scenario Setup', () => {
     const deck = starterDeck.loadDeck(catalog);
 
     const state = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'player_1',
@@ -51,6 +53,7 @@ describe('Multi-Hero Solo Mode & Scenario Setup', () => {
     const deck2 = getStarterDeck('captain_marvel_leadership')!.loadDeck(catalog);
 
     const state = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'player_1',
@@ -91,6 +94,7 @@ describe('Multi-Hero Solo Mode & Scenario Setup', () => {
     ];
 
     const state = setupGame({
+      catalog: cardCatalog,
       players: deckIds.map((deckId, i) => {
         const d = getStarterDeck(deckId)!.loadDeck(catalog);
         return {

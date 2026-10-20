@@ -33,6 +33,7 @@ describe('For Justice! (01060) Resource Bonus Acceptance Test Suite (Issue #186)
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

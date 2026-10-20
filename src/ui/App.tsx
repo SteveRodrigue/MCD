@@ -106,6 +106,7 @@ const AppContent: React.FC = () => {
 
     // The scenario plugin builds the villain, main scheme and encounter deck (ADR-0033)
     const newGameState = setupGame({
+      catalog: cardCatalog,
       scenarioId: selection.scenarioId,
       players,
       difficulty: selection.difficulty,

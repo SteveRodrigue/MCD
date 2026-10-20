@@ -20,6 +20,7 @@ describe('Hand Card Discard Ability Cost & Alpha Flight Station (#45 / ADR-0055)
     mainScheme = cardCatalog.getCard('01097')!;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

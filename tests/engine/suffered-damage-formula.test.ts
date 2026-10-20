@@ -41,6 +41,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
     const mainScheme = cardCatalog.getCard('01097b') as MainSchemeCard;
 
     gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

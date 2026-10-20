@@ -7,3 +7,4 @@ export * from './deck';
 export * from './keyword-helpers';
 export * from './stats';
 export * from './log-events';
+export * from './card-repository';

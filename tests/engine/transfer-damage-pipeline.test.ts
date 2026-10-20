@@ -35,6 +35,7 @@ describe('TRANSFER_DAMAGE goes through the damage pipeline (#247)', () => {
   beforeEach(() => {
     dispatched.length = 0;
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

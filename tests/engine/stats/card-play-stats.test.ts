@@ -29,6 +29,7 @@ describe('Engine Card Play and Usage Stats (#315)', () => {
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

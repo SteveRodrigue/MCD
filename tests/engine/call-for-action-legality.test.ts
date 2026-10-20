@@ -28,6 +28,7 @@ describe('Call for Action Legality & Generator (Issue #314 / RR v1.8 p. 5, 23)',
     tonyStarkAlterEgo = cardCatalog.getCard('01029b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

@@ -50,6 +50,7 @@ describe('Hulk (01050) Forced Response Contract Tests — RR v1.8 & Issue #113',
     jenniferWaltersAlterEgo = cardCatalog.getCard('01019b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

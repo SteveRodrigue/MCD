@@ -28,6 +28,7 @@ describe('Cards that say "your hero" (#222)', () => {
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

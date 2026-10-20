@@ -14,6 +14,7 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
       const mainSchemeCard = cardCatalog.getCard('01116b') as MainSchemeCard;
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'klaw',
         difficulty: 'STANDARD',
         players: [
@@ -51,6 +52,7 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
       const mainSchemeCard = cardCatalog.getCard('01116b') as MainSchemeCard;
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'klaw',
         difficulty: 'STANDARD',
         players: [
@@ -90,6 +92,7 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
       const mainSchemeCard = cardCatalog.getCard('01137b') as MainSchemeCard;
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'ultron',
         difficulty: 'STANDARD',
         players: [
@@ -128,6 +131,7 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
       const mainSchemeCard = cardCatalog.getCard('01137b') as MainSchemeCard;
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'ultron',
         difficulty: 'STANDARD',
         players: [

@@ -14,6 +14,7 @@ describe('Sub-Milestone 2B-2: 0-to-Many Boost Queue, Star Abilities (★) & Boos
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

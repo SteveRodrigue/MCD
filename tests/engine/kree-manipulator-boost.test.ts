@@ -23,6 +23,7 @@ describe('Kree Manipulator (01178): boost places 1 threat only if the villain is
     const spiderMan = cardCatalog.getCard('01001a') as HeroCard;
     const peter = cardCatalog.getCard('01001b') as AlterEgoCard;
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

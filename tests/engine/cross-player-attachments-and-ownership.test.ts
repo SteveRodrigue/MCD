@@ -22,6 +22,7 @@ describe('Cross-Player Attachments & Card Ownership Invariants (RR v1.8 p. 23, A
 
   beforeEach(() => {
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -292,6 +293,7 @@ describe('Cross-Player Attachments & Card Ownership Invariants (RR v1.8 p. 23, A
   it('6. Solo Play: automatically places card under sole player control without decision prompt', () => {
     // Solo game setup
     const soloState = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

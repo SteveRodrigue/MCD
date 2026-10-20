@@ -28,6 +28,7 @@ describe('Milestone 2C: Official 15-Step Scenario Setup State Machine (RR v1.8 p
     const standardCard = cardCatalog.getCard('01005')!;
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -74,6 +75,7 @@ describe('Milestone 2C: Official 15-Step Scenario Setup State Machine (RR v1.8 p
     };
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -101,6 +103,7 @@ describe('Milestone 2C: Official 15-Step Scenario Setup State Machine (RR v1.8 p
 
     // Skirmish Mode (Stage I only)
     const skirmishState = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       difficulty: 'SKIRMISH',
       players: [
@@ -129,6 +132,7 @@ describe('Milestone 2C: Official 15-Step Scenario Setup State Machine (RR v1.8 p
 
     // Expert Mode (Stage II -> III)
     const expertState = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       difficulty: 'EXPERT',
       players: [

@@ -19,6 +19,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

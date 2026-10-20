@@ -49,6 +49,7 @@ describe('Masterplan 01192 (Issue #245)', () => {
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

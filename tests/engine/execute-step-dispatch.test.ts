@@ -9,6 +9,7 @@ import type { AbilityStep, AlterEgoCard, HeroCard } from '@engine/models';
 describe('executeStep dispatch', () => {
   const newState = () =>
     setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       skipMulligan: true,
       players: [

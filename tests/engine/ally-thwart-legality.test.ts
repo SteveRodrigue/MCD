@@ -26,6 +26,7 @@ describe('Ally Thwart Legality & Dispatch Invariants (RR v1.8 p. 3, 11, 20)', ()
     allyCard = cardCatalog.getCard('01011') as AllyCard; // Spider-Woman ally (THW 2, ATK 2, HP 2)
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

@@ -20,6 +20,7 @@ describe('HeroZone Engaged Minion Attachments Rendering (Issue #134)', () => {
 
   function createTestGame() {
     return setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

@@ -14,6 +14,7 @@ describe('Crisis Scheme Targeting (Issue #181, RR v1.8 p. 11)', () => {
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

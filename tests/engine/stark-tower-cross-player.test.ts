@@ -30,6 +30,7 @@ describe('Stark Tower (01034): Cross-Player Targeting, Discard Legality & Auto-R
     mainScheme = cardCatalog.getCard('01097b') as MainSchemeCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

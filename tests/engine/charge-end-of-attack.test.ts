@@ -30,6 +30,7 @@ describe('#294 HOST_ATTACK_ENDED: Charge (01099) discards at the end of the atta
     const hero = cardCatalog.getCard('01001a') as HeroCard;
     const alterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

@@ -26,6 +26,7 @@ describe('Hydra Bomber (01110) When Revealed (Issue #133)', () => {
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

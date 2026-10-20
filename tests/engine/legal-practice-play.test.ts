@@ -35,6 +35,7 @@ describe('01023 Legal Practice played from hand (#277)', () => {
 
   beforeEach(() => {
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

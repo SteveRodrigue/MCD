@@ -19,6 +19,7 @@ describe('Promoted Core Player Cards', () => {
     jenniferWaltersAlterEgo = cardCatalog.getCard('01019b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

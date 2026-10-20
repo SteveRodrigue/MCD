@@ -22,6 +22,7 @@ const FILLER_CODES = ['01088', '01089', '01090', '01088', '01089', '01090'];
 const newGame = (deckId: string): GameState => {
   const loaded = getStarterDeck(deckId)!.loadDeck(cardCatalog);
   const state = setupGame({
+    catalog: cardCatalog,
     scenarioId: 'rhino',
     skipMulligan: true,
     players: [

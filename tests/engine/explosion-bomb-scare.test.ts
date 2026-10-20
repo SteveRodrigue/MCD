@@ -33,6 +33,7 @@ describe('Explosion (01111): assign X damage among heroes and allies (#296)', ()
 
   const setup = (playerCount: 1 | 2) => {
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players:
         playerCount === 1

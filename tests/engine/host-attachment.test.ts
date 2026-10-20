@@ -17,6 +17,7 @@ const ALLY_CODE = '01067';
 
 function buildState(): GameState {
   const state = setupGame({
+    catalog: cardCatalog,
     scenarioId: 'rhino',
     players: [
       ['p1', '01001'],

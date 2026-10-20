@@ -21,6 +21,7 @@ describe('Affairs of State (01155): two-stage choice and Black Panther upgrade d
     tchallaAlterEgo = cardCatalog.getCard('01040b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

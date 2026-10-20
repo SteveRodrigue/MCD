@@ -21,6 +21,7 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
 
   function createTestGameState(): GameState {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

@@ -21,6 +21,7 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
     jenniferWaltersAlterEgo = cardCatalog.getCard('01019b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

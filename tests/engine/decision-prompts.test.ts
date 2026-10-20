@@ -15,6 +15,7 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

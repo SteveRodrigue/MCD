@@ -10,6 +10,7 @@ import {
 import { StatusCard } from './enums';
 import { AbilityStep, AbilityCost, StepGate, CardAbility, StepResolutionResult } from './abilities';
 import { GameStats } from './stats';
+import type { CardRepository } from './card-repository';
 import type { LogEvents } from './log-events';
 import type { UniversalCardFilter } from '../../data/supplemental/schema';
 
@@ -551,6 +552,8 @@ export interface GameOptions {
   autoResolveUnambiguous?: boolean;
   villainPhaseStepping?: boolean;
   shuffleFn?: <T>(array: T[]) => T[];
+  /** Not serialised: state clones keep it by reference. */
+  catalog?: CardRepository;
 }
 
 export interface RngState {
@@ -798,10 +801,15 @@ export function replaceActiveMainScheme(state: GameState, next: MainSchemeState)
 /**
  * Deep-clones a GameState. The JSON round trip splits the legacy `villain` / `mainScheme`
  * pointers from their collection entries, so they are re-linked to the active entities of the
- * clone (#194; removed with the legacy fields in #215).
+ * clone (#194; removed with the legacy fields in #215). `options.catalog` is carried by reference.
  */
 export function cloneGameState(state: GameState): GameState {
-  const clone = cloneJsonValue(state) as GameState;
+  // The card catalog is a shared service, not state: the clone keeps it by reference.
+  const catalog = state.options?.catalog;
+  const clone = cloneJsonValue(
+    catalog ? { ...state, options: { ...state.options, catalog: undefined } } : state,
+  ) as GameState;
+  if (catalog) clone.options = { ...clone.options, catalog };
   if (clone.villains && clone.villains.length > 0) clone.villain = getActiveVillain(clone);
   if (clone.mainSchemes && clone.mainSchemes.length > 0) {
     clone.mainScheme = getActiveMainScheme(clone);

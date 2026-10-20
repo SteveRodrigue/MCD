@@ -25,6 +25,7 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

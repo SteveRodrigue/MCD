@@ -63,6 +63,7 @@ describe('Feature Delivery: Universal Cost Reduction Aura & Helicarrier (Issue #
   };
 
   let gameState = setupGame({
+    catalog: cardCatalog,
     players: [
       {
         id: 'p1',
@@ -79,6 +80,7 @@ describe('Feature Delivery: Universal Cost Reduction Aura & Helicarrier (Issue #
 
   beforeEach(() => {
     gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',
@@ -312,6 +314,7 @@ describe('Feature Delivery: Universal Cost Reduction Aura & Helicarrier (Issue #
 
   it('7. Multiplayer CHOSEN_PLAYER decision prompt routing', () => {
     const multiGameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

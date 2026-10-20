@@ -26,6 +26,7 @@ describe('ADD_TRAIT as an effect step (Issue #131)', () => {
   beforeEach(() => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

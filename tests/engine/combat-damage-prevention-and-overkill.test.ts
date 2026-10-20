@@ -21,6 +21,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
     peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -282,6 +283,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
       cmAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
 
       cmState = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {

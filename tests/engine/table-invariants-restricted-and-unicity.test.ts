@@ -81,6 +81,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
 
     it('enforces maximum 2 restricted cards per player by default', () => {
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -129,6 +130,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
 
     it('allows playing heavy 2-slot restricted card when 1 restricted card is in play (player can discard to make room)', () => {
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -175,6 +177,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
 
     it('dynamically expands restricted limit with limit modifiers (e.g. Side Holster +1)', () => {
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -249,6 +252,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       const paymentCard = cardCatalog.getCard('01005')!;
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -329,6 +333,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
 
       // Game has Player 1 (Spider-Man) and Player 2 (Captain Marvel / Carol Danvers)
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -395,6 +400,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       const paymentCard = cardCatalog.getCard('01005')!;
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -447,6 +453,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
 
       // Game has Player 1: Spider-Man (Peter Parker)
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -498,6 +505,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       const paymentCard = cardCatalog.getCard('01005')!;
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -557,6 +565,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       const paymentCard = cardCatalog.getCard('01005')!;
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -601,6 +610,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       const paymentCard = cardCatalog.getCard('01005')!;
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {
@@ -639,6 +649,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       const paymentCard = cardCatalog.getCard('01005')!;
 
       const state = setupGame({
+        catalog: cardCatalog,
         scenarioId: 'rhino',
         players: [
           {

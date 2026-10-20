@@ -1,3 +1,4 @@
+import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { CardCatalog } from '@data/importer/card-loader';
 import {
@@ -56,6 +57,7 @@ describe('Villain Phase End Ordering & RR v1.8 Step Alignment (Issue #145)', () 
 
     // Setup 2-player game: P1 (index 0, first player) and P2 (index 1)
     gameState = setupGame({
+      catalog: cardCatalog,
       players: [
         {
           id: 'p1',

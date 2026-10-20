@@ -7,6 +7,7 @@ import { executeEffect } from '@engine/effects';
 describe('REMOVE_STATUS additive effect (ADR-0058, RR v1.8 p. 28)', () => {
   it('removes a selected status and leaves other status cards intact', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {
@@ -44,6 +45,7 @@ describe('REMOVE_STATUS additive effect (ADR-0058, RR v1.8 p. 28)', () => {
 
   it('removes all supported statuses without mutating an already-clear target', () => {
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

@@ -18,6 +18,7 @@ describe('Spider-Tracer & Engaged Minion Attachment Engine Invariants (Issue #13
     carolDanversAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

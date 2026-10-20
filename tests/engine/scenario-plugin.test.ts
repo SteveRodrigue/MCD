@@ -124,6 +124,7 @@ describe('Scenario Plugin Registry & Multi-Entity Accessors', () => {
       log: [],
       difficulty: 'STANDARD',
       heroicLevel: 0,
+      options: { catalog: cardCatalog },
     });
 
     const rhinoPlugin = ScenarioRegistry.get('rhino');

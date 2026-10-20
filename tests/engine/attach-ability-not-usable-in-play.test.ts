@@ -14,6 +14,7 @@ import { evaluateTableauCardLegality } from '../../src/ui/components/board/table
 function buildGame() {
   const hero = cardCatalog.getCard('01001a') as HeroCard;
   const state = setupGame({
+    catalog: cardCatalog,
     scenarioId: 'rhino',
     players: [
       {

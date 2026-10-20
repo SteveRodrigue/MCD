@@ -14,6 +14,7 @@ describe('Backflip (01003) reacts only to damage from an attack (#256)', () => {
 
   beforeEach(() => {
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

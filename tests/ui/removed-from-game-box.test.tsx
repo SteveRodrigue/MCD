@@ -125,6 +125,7 @@ describe('Visible Removed from Game Pile (Issue #282)', () => {
     const cardInstance = createCardInstance(obligationCard);
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

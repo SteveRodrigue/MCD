@@ -33,6 +33,7 @@ function buildTestGame(options?: {
   const heroes = options?.heroCodes || [['01040a', '01040b']];
   const count = options?.playerCount || heroes.length;
   const state = setupGame({
+    catalog: cardCatalog,
     scenarioId: 'rhino',
     difficulty: options?.difficulty || 'STANDARD',
     players: heroes.slice(0, count).map(([hCode, aeCode], idx) => {

@@ -12,6 +12,7 @@ describe('Core obligations: Legal Work, Business Problems and shared Option A (I
 
   function game(): GameState {
     return setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

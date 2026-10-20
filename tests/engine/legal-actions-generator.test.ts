@@ -14,6 +14,7 @@ describe('Legal Actions Generator (The Daily Bugle Action Bulletins)', () => {
     tonyStarkAlterEgo = cardCatalog.getCard('01029b') as AlterEgoCard;
 
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

@@ -68,6 +68,7 @@ describe('CardPaymentModal typed resource eligibility (Issues #180, #129)', () =
 
   beforeEach(() => {
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

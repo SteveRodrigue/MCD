@@ -96,6 +96,7 @@ describe('Scenario Encounter Deck Composition & Card Quantities (RR v1.8 p. 27, 
     const obligation = cardCatalog.getCard('01165')!;
 
     const state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [
         {

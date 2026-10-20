@@ -44,6 +44,7 @@ describe('Sweeping Swoop (01168): boost stuns the friendly character the activat
   const setup = (heroCode: [string, string] = ['01001a', '01001b']) => {
     resetInstanceCounter();
     state = setupGame({
+      catalog: cardCatalog,
       scenarioId: 'rhino',
       players: [player('p1', heroCode[0], heroCode[1])],
       villain: cardCatalog.getCard('01094') as any,

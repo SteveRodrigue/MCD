@@ -41,3 +41,8 @@ The runtime imports of `src/engine` (type-only imports ignored) formed one stron
 - An entry point that imports a single engine module (not the `engine` barrel) must import `engine/boot` first; the unbound error says so.
 - `stat-calculator` calls `evaluateDynamicAmount` and `evaluateStepGate` through the kernel, because both call back into it.
 - A new recursion that closes a cycle is caught by the cycle test; the fix is a new kernel entry or a leaf module, not a load-order comment.
+
+## Known limits
+
+- **Audit coverage.** `audit:import-cycles` scans `src/engine` and follows relative and `@engine/…` imports only. A cycle that leaves the engine through `@data`, `@ui` or `@assets` and re-enters it is not detected. Tracked in [#339](https://github.com/SteveRodrigue/MCD/issues/339).
+- **Double binding.** `bindKernel` does not reject a second binding of an entry; the later one wins. A strict throw would break dev-server hot reload, which re-evaluates an owner module and binds its entries again. Each entry has one owner file, so a duplicate means a copy-pasted `bindKernel` call. A guard, if ever needed, must allow re-binding from the same module.

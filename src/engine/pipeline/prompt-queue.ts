@@ -16,7 +16,6 @@ import {
   canPayAbilityCost,
   AbilityPaymentOptions,
 } from './cost-engine';
-import { evaluateStepGate } from './step-gate-evaluator';
 import { isEffectType } from '../../data/supplemental/runtime';
 import { abilityCancelsEncounterReveal } from './encounter-cancel';
 import { type TriggerContext } from '../triggers/trigger-dispatcher';
@@ -46,7 +45,7 @@ export function refreshPromptOptionAvailability(
     let reason: string | undefined;
 
     if (option.gate) {
-      const ok = evaluateStepGate(
+      const ok = kernel.evaluateStepGate(
         {
           effect: 'RESOLVED',
           gate: option.gate,

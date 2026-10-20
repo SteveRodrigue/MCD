@@ -1,12 +1,17 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { kernel, bindKernel, resetKernel, KERNEL_ENTRIES } from '../../src/engine/kernel';
-import { spyKernel } from '../helpers/kernel-spy';
+import {
+  kernel,
+  bindKernel,
+  resetKernel,
+  isKernelBound,
+  KERNEL_ENTRIES,
+} from '../../src/engine/kernel';
+import { spyKernel, restoreKernelSpies } from '../helpers/kernel-spy';
 
 describe('engine kernel (ADR-0088)', () => {
   it('has every entry bound once the engine is booted', () => {
-    for (const name of KERNEL_ENTRIES) {
-      expect(() => (kernel[name] as () => unknown).call(undefined)).not.toThrow(/not bound/);
-    }
+    const unbound = KERNEL_ENTRIES.filter((name) => !isKernelBound(name));
+    expect(unbound).toEqual([]);
   });
 
   describe('unbound entry', () => {
@@ -22,20 +27,19 @@ describe('engine kernel (ADR-0088)', () => {
   });
 
   describe('spy', () => {
-    const calls: unknown[] = [];
-
-    it('wraps one entry for a single test', () => {
-      spyKernel('hasPendingSequence', (original) => (state) => {
+    it('wraps one entry for a single test and restores it afterwards', () => {
+      const original = kernel.hasPendingSequence;
+      const calls: unknown[] = [];
+      spyKernel('hasPendingSequence', (orig) => (state) => {
         calls.push(state);
-        return original(state);
+        return orig(state);
       });
       const state = {} as never;
       kernel.hasPendingSequence(state);
       expect(calls).toEqual([state]);
-    });
-
-    it('is restored after the test', () => {
-      kernel.hasPendingSequence({} as never);
+      restoreKernelSpies();
+      expect(kernel.hasPendingSequence).toBe(original);
+      kernel.hasPendingSequence(state);
       expect(calls).toHaveLength(1);
     });
   });

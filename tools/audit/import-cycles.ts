@@ -78,7 +78,20 @@ export function buildRuntimeImportGraph(root = REPO_ROOT, dir = ENGINE_DIR): Imp
       },
     }).outputText;
     const sf = ts.createSourceFile(file, emitted, ts.ScriptTarget.ESNext, true);
-    const sourceLines = source.split('\n');
+    // Line of each import/re-export in the original source, per specifier, in source order.
+    const original = ts.createSourceFile(file, source, ts.ScriptTarget.ESNext, true);
+    const linesBySpec = new Map<string, number[]>();
+    original.forEachChild((node) => {
+      if (
+        (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+        node.moduleSpecifier &&
+        ts.isStringLiteral(node.moduleSpecifier)
+      ) {
+        const line = original.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+        const spec = node.moduleSpecifier.text;
+        linesBySpec.set(spec, [...(linesBySpec.get(spec) ?? []), line]);
+      }
+    });
     const edges: ImportEdge[] = [];
     sf.forEachChild((node) => {
       const isImport = ts.isImportDeclaration(node);
@@ -87,8 +100,7 @@ export function buildRuntimeImportGraph(root = REPO_ROOT, dir = ENGINE_DIR): Imp
       const spec = (node.moduleSpecifier as ts.StringLiteral).text;
       const to = resolveSpecifier(file, spec, known);
       if (!to) return;
-      const line =
-        sourceLines.findIndex((l) => l.includes(`'${spec}'`) || l.includes(`"${spec}"`)) + 1;
+      const line = linesBySpec.get(spec)?.shift() ?? 0;
       edges.push({ to, line, names: importedNames(node) });
     });
     graph.set(file, edges);

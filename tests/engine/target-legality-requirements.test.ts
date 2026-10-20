@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
+import { thaw } from '../support/thaw-state';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import {
   canPlayCard,
@@ -36,7 +37,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
       skipMulligan: true,
     });
 
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
     // Main scheme starts with 0 threat
@@ -91,7 +92,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
       skipMulligan: true,
     });
 
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
     heroState.mainScheme.threat = 0;
@@ -126,7 +127,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
       skipMulligan: true,
     });
 
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
     heroState.mainScheme.threat = 0;
@@ -165,7 +166,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
       skipMulligan: true,
     });
 
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
     heroState.mainScheme.threat = 3;
@@ -208,7 +209,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
       skipMulligan: true,
     });
 
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
     heroState.mainScheme.threat = 3;
@@ -249,7 +250,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
       skipMulligan: true,
     });
 
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
     heroState.mainScheme.threat = 3;
@@ -289,7 +290,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
       skipMulligan: true,
     });
 
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
     heroState.mainScheme.threat = 3;
@@ -329,7 +330,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
       skipMulligan: true,
     });
 
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
     // Engage minion with Guard
@@ -376,7 +377,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
       skipMulligan: true,
     });
 
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
     player.health = 10; // Full health (10/10)
 
@@ -432,7 +433,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
       skipMulligan: true,
     });
 
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
     player.health = 10; // Full health (10/10)
 

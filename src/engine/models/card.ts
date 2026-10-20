@@ -79,6 +79,17 @@ export interface CardResources {
 export type CharacterPower = 'attack' | 'thwart' | 'defense' | 'recover' | 'scheme';
 
 /**
+ * Prototype of card definitions that come from the catalog. They never change during a game, and
+ * Immer drafts only plain objects, so a state update leaves them shared and unfrozen instead of
+ * wrapping every `.card` read in a proxy (ADR-0089).
+ */
+class CatalogCardDefinition {}
+
+export function asCatalogCard<T extends object>(card: T): T {
+  return Object.assign(Object.create(CatalogCardDefinition.prototype), card) as T;
+}
+
+/**
  * Base normalized card model used across engine and UI
  */
 export interface NormalizedCard {

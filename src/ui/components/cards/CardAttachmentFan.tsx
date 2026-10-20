@@ -25,7 +25,7 @@ const FacedownUnderneathCard: React.FC<{ card: CardInstance }> = ({ card }) => (
   </div>
 );
 
-export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
+const CardAttachmentFanImpl: React.FC<CardAttachmentFanProps> = ({
   attachments = [],
   cardsUnderneath = [],
   onSelectAttachment,
@@ -126,3 +126,6 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
     </div>
   );
 };
+
+/** Skips re-rendering when a state update leaves its props identical (ADR-0089). */
+export const CardAttachmentFan = React.memo(CardAttachmentFanImpl);

@@ -3,6 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, SideSchemeState } from '../../src/engine/models';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { dispatchAction, peekDecisionPrompt } from '../../src/engine/pipeline';
+import { thaw } from '../support/thaw-state';
 
 describe('Spider-Tracer & Engaged Minion Attachment Engine Invariants (Issue #134)', () => {
   let state: GameState;
@@ -98,9 +99,10 @@ describe('Spider-Tracer & Engaged Minion Attachment Engine Invariants (Issue #13
     // Also verify direct targeting bypassing prompt
     const tracer2 = createCardInstance(cardCatalog.getCard('01007')!);
     const payment2 = createCardInstance(cardCatalog.getCard('01005')!);
-    resolveRes.state.players[0].hand = [tracer2, payment2];
+    const resolveResArmed = thaw(resolveRes.state);
+    resolveResArmed.players[0].hand = [tracer2, payment2];
 
-    const directRes = dispatchAction(resolveRes.state, {
+    const directRes = dispatchAction(resolveResArmed, {
       type: 'PLAY_CARD',
       playerId: 'p1',
       cardInstanceId: tracer2.instanceId,
@@ -219,8 +221,9 @@ describe('Spider-Tracer & Engaged Minion Attachment Engine Invariants (Issue #13
     expect((attachedTracer as any).ownerId).toBe('p1');
 
     // Defeat Minion C via P1 attacking it
-    p2MinionInState.tokens = { damage: 1 }; // 1 + 2 = 3 (defeats 3 HP Hydra Mercenary)
-    const attackRes = dispatchAction(playRes.state, {
+    const attackArmed = thaw(playRes.state);
+    attackArmed.players[1].engagedMinions[0].tokens = { damage: 1 }; // 1 + 2 = 3 (defeats 3 HP Hydra Mercenary)
+    const attackRes = dispatchAction(attackArmed, {
       type: 'BASIC_ATTACK',
       playerId: 'p1',
       targetType: 'minion',

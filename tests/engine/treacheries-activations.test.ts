@@ -5,6 +5,7 @@ import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
 import { resolveDefenderDeclaration } from '@engine/pipeline/combat-pipeline';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
+import { thaw } from '../support/thaw-state';
 
 describe('Standard Set & Modular Extra Activation Treacheries', () => {
   let state: GameState;
@@ -113,7 +114,7 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     }
 
     // Resolve villain attack
-    const resAfterVillain = resolveDefenderDeclaration(res.state, {
+    const resAfterVillain = resolveDefenderDeclaration(thaw(res.state), {
       type: 'UNDEFENDED',
       playerId: 'p1',
     });
@@ -127,6 +128,7 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     expect(resAfterMinion.players[0].health).toBeLessThanOrEqual(initialHp - 3);
 
     // 2. In Alter-Ego Form -> Surges (deals encounter card), no attacks
+    state = thaw(state);
     state.pendingDecisionQueue = [];
     delete (state as any).pendingActivations;
     state.players[0].engagedMinions = [];

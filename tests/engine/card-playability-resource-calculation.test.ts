@@ -5,6 +5,7 @@ import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { evaluateCardPlayability } from '../../src/engine/pipeline/legality-checker';
 import { getEffectiveCardCost } from '../../src/engine/pipeline/cost-engine';
 import { HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { thaw } from '../support/thaw-state';
 
 describe('Card Playability Potential Resource Calculation (Issue #153, RR v1.8 p. 4, 15-16, 24)', () => {
   const smHero = cardCatalog.getCard('01001a') as HeroCard;
@@ -26,7 +27,7 @@ describe('Card Playability Potential Resource Calculation (Issue #153, RR v1.8 p
       skipMulligan: true,
     });
     // Switch to Hero form so alter-ego Scientist ability is not active
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     return heroState;
   }
 

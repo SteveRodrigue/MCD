@@ -4,6 +4,7 @@ import { setupGame, createCardInstance } from '../../../src/engine/state/game-se
 import { cardCatalog } from '../../../src/data/importer/card-loader';
 import { dispatchAction } from '../../../src/engine/pipeline/action-dispatcher';
 import { HeroCard, AlterEgoCard } from '../../../src/engine/models';
+import { thaw } from '../../support/thaw-state';
 
 describe('Powered Gauntlets (01038) Ability Cost & Resolution Contract (RR v1.8 p. 9, Issue #139)', () => {
   const ironManHero = cardCatalog.getCard('01029a') as HeroCard;
@@ -85,13 +86,15 @@ describe('Powered Gauntlets (01038) Ability Cost & Resolution Contract (RR v1.8 
     expect(exhaustedAttempt.result.error).toContain('exhausted');
 
     // 5. Ready Powered Gauntlets, give Iron Man the Aerial trait, and verify 2 damage is dealt
-    updatedGauntlets.exhausted = false;
-    const currentHero = activationRes.state.players[0].hero as HeroCard;
-    overrideCard(activationRes.state, currentHero, {
+    const armed = thaw(activationRes.state);
+    armed.players[0].tableau.find((c) => c.instanceId === gauntletsInst.instanceId)!.exhausted =
+      false;
+    const currentHero = armed.players[0].hero as HeroCard;
+    overrideCard(armed, currentHero, {
       traits: [...(currentHero.traits || []), 'Aerial'],
     });
 
-    const aerialActivationRes = dispatchAction(activationRes.state, {
+    const aerialActivationRes = dispatchAction(armed, {
       type: 'USE_CARD_ABILITY',
       playerId: 'p1',
       cardInstanceId: gauntletsInst.instanceId,

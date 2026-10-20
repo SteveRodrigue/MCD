@@ -2,7 +2,7 @@ import {
   GameState,
   DecisionPromptOption,
   PendingDecisionPrompt,
-  cloneGameState,
+  updateGameState,
 } from '@engine/models';
 import { getEffectiveHandSize } from './stat-calculator';
 import { drawPlayerCard } from './deck-exhaustion';
@@ -27,18 +27,18 @@ export function initiatePlayerPhaseCleanup(
   state: GameState,
   options?: PlayerPhaseCleanupOptions,
 ): GameState {
-  const nextState: GameState = cloneGameState(state);
+  return updateGameState(state, (nextState) => {
+    // Initialize player-by-player cleanup queue in player order starting from firstPlayerIndex
+    const queue: string[] = [];
+    for (let i = 0; i < nextState.players.length; i++) {
+      const idx = (nextState.firstPlayerIndex + i) % nextState.players.length;
+      queue.push(nextState.players[idx].id);
+    }
 
-  // Initialize player-by-player cleanup queue in player order starting from firstPlayerIndex
-  const queue: string[] = [];
-  for (let i = 0; i < nextState.players.length; i++) {
-    const idx = (nextState.firstPlayerIndex + i) % nextState.players.length;
-    queue.push(nextState.players[idx].id);
-  }
+    nextState.pendingCleanUpPlayerIds = queue;
 
-  nextState.pendingCleanUpPlayerIds = queue;
-
-  return processNextPlayerInCleanupQueue(nextState, options);
+    return processNextPlayerInCleanupQueue(nextState, options);
+  });
 }
 
 /**

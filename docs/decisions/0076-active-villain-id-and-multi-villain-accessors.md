@@ -56,7 +56,7 @@ MC03 Wrecking Crew (rules insert p.5-7) puts four villains in play at once. Only
 
    An architecture guard (`tests/engine/legacy-villain-pointer-guard.test.ts`) allows each file only its current number of legacy accesses; the allowance only shrinks, and ends at `models/state.ts` (the accessors' fallback) and `state/game-setup.ts` (initial construction).
 
-5. **Clone re-link (temporary).** `cloneGameState` (`state.ts`) replaces the raw JSON clones in `dispatchAction`, the villain phase, player-phase cleanup and the simulator, and re-links `villain` / `mainScheme` to the clone's active entities. That removes the divergence at its source and makes the migration order-independent: migrated code writes `villains[]`, unmigrated readers (and test fixtures) still see the same objects. It is deleted with the legacy fields in #215.
+5. **Clone re-link (temporary; the clone is replaced by `updateGameState` in ADR-0089, which links the pointers the same way).** `cloneGameState` (`state.ts`) replaces the raw JSON clones in `dispatchAction`, the villain phase, player-phase cleanup and the simulator, and re-links `villain` / `mainScheme` to the clone's active entities. That removes the divergence at its source and makes the migration order-independent: migrated code writes `villains[]`, unmigrated readers (and test fixtures) still see the same objects. It is deleted with the legacy fields in #215.
 
 ## Evaluation of Options
 

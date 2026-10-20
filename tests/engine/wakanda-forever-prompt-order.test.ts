@@ -5,6 +5,7 @@ import { executeEffect, resumePendingSequence } from '@engine/effects';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { enqueueDecisionPrompt, popDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { GameState, StatusCard, getActiveVillain, getActiveMainScheme } from '@engine/models';
+import { thaw } from '../support/thaw-state';
 
 /**
  * Wakanda Forever! resolves each Black Panther upgrade's Special as an ordered step (RR v1.8 p. 28,
@@ -175,7 +176,7 @@ describe('Wakanda Forever! pauses for a mid-sequence decision (Issue #207)', () 
       daggers.instanceId,
       genius.instanceId,
     ]);
-    const afterDaggersPrompt = chooseVillainTarget(res.state); // Claws' enemy, then Daggers asks
+    const afterDaggersPrompt = thaw(chooseVillainTarget(res.state)); // Claws' enemy, then Daggers asks
     // Another prompt arrives behind Daggers' prompt.
     enqueueDecisionPrompt(afterDaggersPrompt, {
       promptId: 'unrelated',
@@ -187,7 +188,7 @@ describe('Wakanda Forever! pauses for a mid-sequence decision (Issue #207)', () 
       isVoluntary: false,
     } as any);
 
-    const answered = choosePlayer(afterDaggersPrompt, 'p2');
+    const answered = thaw(choosePlayer(afterDaggersPrompt, 'p2'));
     expect(peekDecisionPrompt(answered)?.promptId).toBe('unrelated');
     expect(answered.pendingSequences?.length).toBe(1);
     expect(getActiveMainScheme(answered).threat).toBe(5);

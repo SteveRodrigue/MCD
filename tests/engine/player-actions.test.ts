@@ -18,6 +18,7 @@ import {
 
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import { thaw } from '../support/thaw-state';
 
 describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
@@ -564,9 +565,10 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
 
       // Attempting to use Scientist a 2nd time in the same round must be rejected
       const webShooter2 = createCardInstance(webShooterCard);
-      res.state.players[0].hand = [webShooter2];
+      const resArmed = thaw(res.state);
+      resArmed.players[0].hand = [webShooter2];
 
-      const res2 = dispatchAction(res.state, {
+      const res2 = dispatchAction(resArmed, {
         type: 'PLAY_CARD',
         playerId: 'p1',
         cardInstanceId: webShooter2.instanceId,

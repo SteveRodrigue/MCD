@@ -12,8 +12,10 @@ import {
   dispatchAction,
   peekDecisionPrompt,
   step4_revealEncounterCards,
+  updateGameState,
 } from '@engine/index';
 import { resolveActiveEncounterCardAfterInterrupt } from '@engine/pipeline/villain-phase';
+import { thaw } from '../support/thaw-state';
 
 const PRINTED_SURGE = ['01121', '01158', '01178', '01185', '01191', '01193'];
 
@@ -54,13 +56,16 @@ describe('Surge keyword (#218): reveal 1 additional encounter card after the car
   const p1 = () => state.players[0];
   const deckWithFillers = (...names: string[]) => {
     const cards = names.map(filler);
+    state = thaw(state);
     state.encounterDeck = [...cards, ...state.encounterDeck];
     return cards;
   };
   const revealCode = (code: string) => {
     const inst = createCardInstance(cardCatalog.getCard(code)!);
-    p1().dealtEncounterCards.push(inst);
-    state = step4_revealEncounterCards(state);
+    state = updateGameState(state, (draft) => {
+      draft.players[0].dealtEncounterCards.push(inst);
+      return step4_revealEncounterCards(draft);
+    });
     return inst;
   };
   const revealed = (card: CardInstance) =>
@@ -154,8 +159,10 @@ describe('Surge keyword (#218): reveal 1 additional encounter card after the car
         },
       };
       const [a, b] = deckWithFillers('a', 'b');
-      p1().dealtEncounterCards.push(createCardInstance(synthetic));
-      state = step4_revealEncounterCards(state);
+      state = updateGameState(state, (draft) => {
+        draft.players[0].dealtEncounterCards.push(createCardInstance(synthetic));
+        return step4_revealEncounterCards(draft);
+      });
       expect(revealed(a)).toBe(true);
       expect(revealed(b)).toBe(false);
     });
@@ -168,8 +175,10 @@ describe('Surge keyword (#218): reveal 1 additional encounter card after the car
         keywords: [...((cardCatalog.getCard('01110') as any).keywords ?? []), Keyword.SURGE],
       };
       const [a] = deckWithFillers('a');
-      p1().dealtEncounterCards.push(createCardInstance(bomber));
-      state = step4_revealEncounterCards(state);
+      state = updateGameState(state, (draft) => {
+        draft.players[0].dealtEncounterCards.push(createCardInstance(bomber));
+        return step4_revealEncounterCards(draft);
+      });
 
       expect(peekDecisionPrompt(state)).toBeDefined();
       expect(revealed(a)).toBe(false);
@@ -183,7 +192,7 @@ describe('Surge keyword (#218): reveal 1 additional encounter card after the car
       expect(revealed(a)).toBe(false);
 
       // The villain phase resumes its reveal step once the prompt queue is empty.
-      state = step4_revealEncounterCards(state);
+      state = updateGameState(state, step4_revealEncounterCards);
       expect(revealed(a)).toBe(true);
     });
 

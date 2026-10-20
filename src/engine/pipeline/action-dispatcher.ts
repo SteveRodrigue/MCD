@@ -1,5 +1,5 @@
 import { bindKernel, kernel } from '../kernel';
-import { GameState, GameAction, ActionResult, GamePhase, cloneGameState } from '@engine/models';
+import { GameState, GameAction, ActionResult, GamePhase, updateGameState } from '@engine/models';
 import { continueVillainPhase } from './villain-phase';
 import { checkDeckExhaustionInvariants } from './deck-exhaustion';
 import { advancePlayerSetup } from '../state/game-setup';
@@ -35,23 +35,38 @@ export function dispatchAction(
   action: GameAction,
 ): { state: GameState; result: ActionResult } {
   const hadPausedThreatPlacement = (state.pendingThreatPlacements?.length ?? 0) > 0;
-  // The handler gets a clone to mutate and the original to return when it rejects the action.
-  const outcome = runActionHandler(cloneGameState(state), state, action);
-  if (!outcome.result.success) return outcome;
+  let result: ActionResult | undefined;
+  try {
+    const next = updateGameState(state, (draft) => {
+      // The handler mutates the draft and gets the original to return when it rejects the action.
+      const outcome = runActionHandler(draft, state, action);
+      // A rejected action discards the draft, whatever the handler changed before rejecting.
+      if (!outcome.result.success) throw new ActionRejected(outcome.result);
+      result = outcome.result;
 
-  let next = outcome.state;
-  if (kernel.hasPendingSequence(next) && !kernel.peekDecisionPrompt(next)) {
-    next = kernel.resumePendingSequence(next);
+      let next = outcome.state;
+      if (kernel.hasPendingSequence(next) && !kernel.peekDecisionPrompt(next)) {
+        next = kernel.resumePendingSequence(next);
+      }
+      if (action.type === 'RESOLVE_DECISION_PROMPT' || action.type === 'DECLARE_DEFENDER') {
+        next = resumeVillainPhaseAfterDecision(next, hadPausedThreatPlacement);
+      }
+      // Player Setup abilities (step 16) continue once the decision they waited for is answered.
+      if (next.setupState?.stage === 'PLAYER_SETUP') {
+        next = advancePlayerSetup(next);
+      }
+      checkDeckExhaustionInvariants(next);
+      return next;
+    });
+    return { state: next, result: result! };
+  } catch (error) {
+    if (error instanceof ActionRejected) return { state, result: error.result };
+    throw error;
   }
-  if (action.type === 'RESOLVE_DECISION_PROMPT' || action.type === 'DECLARE_DEFENDER') {
-    next = resumeVillainPhaseAfterDecision(next, hadPausedThreatPlacement);
-  }
-  // Player Setup abilities (step 16) continue once the decision they waited for is answered.
-  if (next.setupState?.stage === 'PLAYER_SETUP') {
-    next = advancePlayerSetup(next);
-  }
-  checkDeckExhaustionInvariants(next);
-  return next === outcome.state ? outcome : { state: next, result: outcome.result };
+}
+
+class ActionRejected {
+  constructor(readonly result: ActionResult) {}
 }
 
 bindKernel({ dispatchAction });

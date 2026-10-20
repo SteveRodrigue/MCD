@@ -6,7 +6,7 @@ interface FormattedCardTextProps {
   className?: string;
 }
 
-export const FormattedCardText: React.FC<FormattedCardTextProps> = ({ text, className = '' }) => {
+const FormattedCardTextImpl: React.FC<FormattedCardTextProps> = ({ text, className = '' }) => {
   if (!text) {
     return <span className={`italic text-slate-400 ${className}`}>No special text.</span>;
   }
@@ -17,3 +17,6 @@ export const FormattedCardText: React.FC<FormattedCardTextProps> = ({ text, clas
     <span className={`leading-relaxed ${className}`} dangerouslySetInnerHTML={{ __html: html }} />
   );
 };
+
+/** Skips re-rendering when a state update leaves its props identical (ADR-0089). */
+export const FormattedCardText = React.memo(FormattedCardTextImpl);

@@ -4,6 +4,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { getLegalActionsForPlayer } from '../../src/engine/pipeline/legal-actions-generator';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { thaw } from '../support/thaw-state';
 
 describe('Resource Abilities Timing, Stance Isolation & Form Gating (RR v1.8 p. 25, Issue #42, ADR-0039)', () => {
   const smHero = cardCatalog.getCard('01001a') as HeroCard;
@@ -68,7 +69,7 @@ describe('Resource Abilities Timing, Stance Isolation & Form Gating (RR v1.8 p. 
     });
 
     // Flip to Hero form
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
     player.health = 8; // Sustain damage so First Aid has an eligible heal target per RR v1.8 p. 3
 

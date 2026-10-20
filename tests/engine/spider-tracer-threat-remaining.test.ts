@@ -3,7 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { executeEffect } from '@engine/effects';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { cloneGameState } from '@engine/models';
+import { updateGameState } from '@engine/models';
 import type {
   AlterEgoCard,
   CardAbility,
@@ -12,6 +12,7 @@ import type {
   HeroCard,
   SideSchemeState,
 } from '@engine/models';
+import { thaw } from '../support/thaw-state';
 
 /**
  * Spider-Tracer (01007) "remove 3 threat from a scheme" must remove exactly 3, exactly once per
@@ -55,8 +56,9 @@ describe('Spider-Tracer removes exactly 3 threat per defeated host (Issue #249)'
   const defeatTracerHost = (s: GameState) => {
     const minion = withTracer(createCardInstance(cardCatalog.getCard('01101')!));
     minion.tokens = { damage: 2 };
-    s.players[0].engagedMinions = [minion];
-    return dispatchAction(s, {
+    const armed = thaw(s);
+    armed.players[0].engagedMinions = [minion];
+    return dispatchAction(armed, {
       type: 'BASIC_ATTACK',
       playerId: 'p1',
       targetType: 'minion',
@@ -202,7 +204,7 @@ describe('Spider-Tracer removes exactly 3 threat per defeated host (Issue #249)'
     });
     expect(played.result.success).toBe(true);
 
-    const st = played.state;
+    const st = thaw(played.state);
     st.sideSchemes = [crowdControl(4)];
     st.players[1].engagedMinions[0].tokens = { damage: 2 };
     st.activePlayerIndex = 1;
@@ -306,9 +308,9 @@ describe('Spider-Tracer removes exactly 3 threat per defeated host (Issue #249)'
   describe('multi-scheme prompt', () => {
     it('main scheme plus two side schemes: three options, each choice removes 3 from that scheme only', () => {
       const setup = () => {
-        const fresh = cloneGameState(state);
-        fresh.sideSchemes = [bombScare(4), breakin(3)];
-        return fresh;
+        return updateGameState(state, (fresh) => {
+          fresh.sideSchemes = [bombScare(4), breakin(3)];
+        });
       };
       const ids = ['side_bomb_scare', 'side_breakin', state.mainScheme.instanceId!];
       const expected = [

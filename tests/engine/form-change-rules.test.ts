@@ -7,6 +7,7 @@ import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { executeEffect } from '@engine/effects';
 import { executeVillainPhase } from '@engine/pipeline/villain-phase';
 import { endPlayerPhase } from '@engine/pipeline/player-phase';
+import { thaw } from '../support/thaw-state';
 
 describe('Turn-Gated Form Changes (RR v1.8 p. 8)', () => {
   let sheHulkHero: HeroCard;
@@ -129,10 +130,11 @@ describe('Turn-Gated Form Changes (RR v1.8 p. 8)', () => {
 
     // 2. Execute Split Personality: Hero -> Alter-Ego
     const splitAbility = splitPersonalityCard.enrichment!.abilities![0];
-    const effectRes = executeEffect(res1.state, splitAbility, { playerId: 'p1' });
+    const afterChange = thaw(res1.state);
+    const effectRes = executeEffect(afterChange, splitAbility, { playerId: 'p1' });
     expect(effectRes.success).toBe(true);
-    expect(res1.state.players[0].currentForm).toBe('alter_ego');
-    expect(res1.state.players[0].basicChangeFormUsedThisRound).toBe(true); // Remains true
+    expect(afterChange.players[0].currentForm).toBe('alter_ego');
+    expect(afterChange.players[0].basicChangeFormUsedThisRound).toBe(true); // Remains true
   });
 
   it('resets basicChangeFormUsedThisRound when the round advances', () => {
@@ -172,6 +174,7 @@ describe('Turn-Gated Form Changes (RR v1.8 p. 8)', () => {
         selectedOptionId: passOption!.id,
       }).state;
     }
+    postFormState = thaw(postFormState);
     postFormState.players[0].health = 50;
 
     // Run Villain Phase -> Upkeep -> New Round

@@ -4,6 +4,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { assertCardConservation } from '../../src/engine/state/state-validator';
 import { HeroCard, AlterEgoCard, StatusCard } from '../../src/engine/models';
+import { thaw } from '../support/thaw-state';
 
 describe('Cost Arrow Mandatory Resolution & Trigger Pipeline (RR v1.8 p. 8, 15, Issues #8 & #11)', () => {
   const shHero = cardCatalog.getCard('01019a') as HeroCard; // She-Hulk (Base ATK 3)
@@ -26,7 +27,7 @@ describe('Cost Arrow Mandatory Resolution & Trigger Pipeline (RR v1.8 p. 8, 15, 
     });
 
     // Change to Hero form
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
     // Put Superhuman Strength (01028) into play in tableau
@@ -74,7 +75,7 @@ describe('Cost Arrow Mandatory Resolution & Trigger Pipeline (RR v1.8 p. 8, 15, 
       skipMulligan: true,
     });
 
-    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
     // Spawn an engaged minion (Hydra Mercenary 01110, 3 HP)
@@ -112,8 +113,10 @@ describe('Cost Arrow Mandatory Resolution & Trigger Pipeline (RR v1.8 p. 8, 15, 
     expect(minionInstance.tokens?.damage).toBe(1);
 
     // Ready War Machine and trigger again -> takes 2 more damage (4 total = 4 HP max) -> defeated & discarded
-    wmInstance.exhausted = false;
-    const res2 = dispatchAction(res.state, {
+    const readied = thaw(res.state);
+    readied.players[0].allies.find((a) => a.instanceId === warMachine.instanceId)!.exhausted =
+      false;
+    const res2 = dispatchAction(readied, {
       type: 'USE_CARD_ABILITY',
       playerId: 'p1',
       cardInstanceId: warMachine.instanceId,

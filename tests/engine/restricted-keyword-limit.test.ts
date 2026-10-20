@@ -9,6 +9,7 @@ import {
   getCardRestrictedWeight,
 } from '@engine/pipeline/legality-checker';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
+import { thaw } from '../support/thaw-state';
 
 describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, ADR-0018, ADR-0032)', () => {
   let spiderManHero: any;
@@ -75,9 +76,10 @@ describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, A
     // 2. Play 2nd Restricted Card
     const r2 = createCardInstance(restrictedCard);
     const pay2 = createCardInstance(paymentCard);
-    res1.state.players[0].hand = [r2, pay2];
+    const res1Armed = thaw(res1.state);
+    res1Armed.players[0].hand = [r2, pay2];
 
-    const res2 = dispatchAction(res1.state, {
+    const res2 = dispatchAction(res1Armed, {
       type: 'PLAY_CARD',
       playerId: 'p1',
       cardInstanceId: r2.instanceId,

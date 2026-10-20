@@ -7,6 +7,7 @@ import {
   SideSchemeCard,
   PlayerSideSchemeCard,
 } from './card';
+import { isDraft, produce } from 'immer';
 import { StatusCard } from './enums';
 import { AbilityStep, AbilityCost, StepGate, CardAbility, StepResolutionResult } from './abilities';
 import { GameStats } from './stats';
@@ -799,58 +800,28 @@ export function replaceActiveMainScheme(state: GameState, next: MainSchemeState)
 }
 
 /**
- * Deep-clones a GameState. The JSON round trip splits the legacy `villain` / `mainScheme`
- * pointers from their collection entries, so they are re-linked to the active entities of the
- * clone (#194; removed with the legacy fields in #215). `options.catalog` is carried by reference.
+ * Runs `recipe` against a mutable draft of `state` and returns the next state (ADR-0089). Branches
+ * the recipe leaves alone keep their identity, so the previous state is never changed and UI
+ * memoisation can skip what did not change. A recipe returns the draft it mutated (or nothing).
+ * Called with a draft already (a phase runner inside an action), the recipe edits it in place.
+ *
+ * The legacy `villain` / `mainScheme` pointers are linked to the active entities of the collections
+ * before the recipe runs, so a write through either path reaches the same object (#194; removed
+ * with the legacy fields in #215).
  */
-export function cloneGameState(state: GameState): GameState {
-  // The card catalog is a shared service, not state: the clone keeps it by reference.
-  const catalog = state.options?.catalog;
-  const clone = cloneJsonValue(
-    catalog ? { ...state, options: { ...state.options, catalog: undefined } } : state,
-  ) as GameState;
-  if (catalog) clone.options = { ...clone.options, catalog };
-  if (clone.villains && clone.villains.length > 0) clone.villain = getActiveVillain(clone);
-  if (clone.mainSchemes && clone.mainSchemes.length > 0) {
-    clone.mainScheme = getActiveMainScheme(clone);
-  }
-  return clone;
-}
-
-/**
- * Card definitions loaded by the card catalog never change during a game, so state clones share
- * them by reference instead of copying them (they are most of a state's bytes).
- */
-const sharedCardDefinitions = new WeakSet<object>();
-
-export function registerSharedCardDefinition(card: object): void {
-  sharedCardDefinitions.add(card);
-}
-
-export function isSharedCardDefinition(card: object): boolean {
-  return sharedCardDefinitions.has(card);
-}
-
-/**
- * Deep copy with `JSON.parse(JSON.stringify())` semantics (functions and `undefined` properties
- * dropped, `undefined` and functions in arrays become `null`, non-finite numbers become `null`),
- * except that registered card definitions are kept by reference.
- */
-function cloneJsonValue(value: unknown): unknown {
-  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-  if (value === null || typeof value !== 'object') return value;
-  if (sharedCardDefinitions.has(value)) return value;
-  if (Array.isArray(value)) {
-    return value.map((item) =>
-      item === undefined || typeof item === 'function' ? null : cloneJsonValue(item),
-    );
-  }
-  const copy: Record<string, unknown> = {};
-  for (const [key, item] of Object.entries(value)) {
-    if (item === undefined || typeof item === 'function' || typeof item === 'symbol') continue;
-    copy[key] = cloneJsonValue(item);
-  }
-  return copy;
+export function updateGameState(
+  state: GameState,
+  recipe: (draft: GameState) => GameState | void,
+): GameState {
+  if (isDraft(state)) return recipe(state) ?? state;
+  return produce(state, (draft) => {
+    if (draft.villains && draft.villains.length > 0) draft.villain = getActiveVillain(draft);
+    if (draft.mainSchemes && draft.mainSchemes.length > 0) {
+      draft.mainScheme = getActiveMainScheme(draft);
+    }
+    const next = recipe(draft);
+    return next === draft ? undefined : next;
+  });
 }
 
 /**

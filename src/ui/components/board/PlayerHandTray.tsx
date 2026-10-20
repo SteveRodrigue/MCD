@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useTimeout } from '../../hooks/useTimeout';
 import { ModalLayer } from '../layout/ModalLayer';
 import { Layers, Sparkles, Skull, X, Eye, Filter, ArrowDownUp, Plus } from 'lucide-react';
@@ -26,6 +26,35 @@ interface PlayerHandTrayProps {
   onFocus?: () => void;
   onCardClick?: (cardInst: CardInstance) => void;
 }
+
+interface HandCardProps {
+  cardInst: CardInstance;
+  isPlayable: boolean;
+  unplayableReason?: string;
+  onSelect: (cardInst: CardInstance) => void;
+}
+
+/** One hand card; props are stable across a state update that leaves the card alone (ADR-0089). */
+const HandCard = React.memo(function HandCard({
+  cardInst,
+  isPlayable,
+  unplayableReason,
+  onSelect,
+}: HandCardProps) {
+  const handleClick = useCallback(() => onSelect(cardInst), [onSelect, cardInst]);
+  return (
+    <CardView
+      card={cardInst.card}
+      instance={cardInst}
+      size="hand"
+      isPlayable={isPlayable}
+      unplayableReason={unplayableReason}
+      enableHoverZoom={true}
+      zoomOrigin="bottom"
+      onClick={handleClick}
+    />
+  );
+});
 
 type PlayerSortMode = 'deck_order' | 'card_type' | 'affinity' | 'cost';
 type DeckDirection = 'top_to_bottom' | 'bottom_to_top';
@@ -122,6 +151,16 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
       setPlayingCard(cardInst);
     }
   };
+
+  // The latest click handler behind one stable function, so memoised hand cards keep their props.
+  const handleCardClickRef = useRef(handleCardClick);
+  useEffect(() => {
+    handleCardClickRef.current = handleCardClick;
+  });
+  const selectHandCard = useCallback(
+    (cardInst: CardInstance) => handleCardClickRef.current(cardInst),
+    [],
+  );
 
   const handleEndTurn = () => {
     if (player) {
@@ -450,15 +489,11 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                       isHovered ? '-translate-y-8' : 'hover:-translate-y-2'
                     }`}
                   >
-                    <CardView
-                      card={cardInst.card}
-                      instance={cardInst}
-                      size="hand"
+                    <HandCard
+                      cardInst={cardInst}
                       isPlayable={playability.isPlayable}
                       unplayableReason={playability.reasons[0]}
-                      enableHoverZoom={true}
-                      zoomOrigin="bottom"
-                      onClick={() => handleCardClick(cardInst)}
+                      onSelect={selectHandCard}
                     />
                   </div>
                 );

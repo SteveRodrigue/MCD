@@ -13,7 +13,7 @@ import {
   Keyword,
   hasKeyword,
   PendingActivation,
-  cloneGameState,
+  updateGameState,
   getActiveVillain,
   getActiveMainScheme,
   getFirstPlayer,
@@ -650,7 +650,10 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
   // Halt if an interactive decision prompt is currently waiting for player input
   if (kernel.peekDecisionPrompt(state)) return state;
 
-  const nextState: GameState = cloneGameState(state);
+  return updateGameState(state, (nextState) => advanceStepOnDraft(nextState, options));
+}
+
+function advanceStepOnDraft(nextState: GameState, options?: CombatOptions): GameState {
   if (!nextState.options) nextState.options = {};
   nextState.options.villainPhaseStepping = true;
 
@@ -1012,7 +1015,10 @@ export function executeVillainPhase(state: GameState, options?: CombatOptions): 
     return advanceVillainPhaseStep(state, options);
   }
 
-  const nextState: GameState = cloneGameState(state);
+  return updateGameState(state, (nextState) => runVillainPhaseOnDraft(nextState, options));
+}
+
+function runVillainPhaseOnDraft(nextState: GameState, options?: CombatOptions): GameState {
   if (nextState.phase !== GamePhase.VILLAIN_PHASE) endPlayerPhase(nextState);
 
   appendLog(nextState, {

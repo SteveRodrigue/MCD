@@ -25,6 +25,7 @@ import {
 } from '@engine/index';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import { thaw } from '../support/thaw-state';
 
 describe('ADR-0048: CARD_PLAYED vs ENTERS_PLAY trigger contract (RR v1.8 pp.11,21)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
@@ -228,9 +229,10 @@ describe('ADR-0048: CARD_PLAYED vs ENTERS_PLAY trigger contract (RR v1.8 pp.11,2
     const mockingbird = catalog.getCard('01083')!;
     const mockingbirdInst = createCardInstance(mockingbird);
     const payment2 = makePaymentCards(3);
-    res2.state.players[0].hand = [mockingbirdInst, ...payment2];
+    const res2Armed = thaw(res2.state);
+    res2Armed.players[0].hand = [mockingbirdInst, ...payment2];
 
-    const res3 = dispatchAction(res2.state, {
+    const res3 = dispatchAction(res2Armed, {
       type: 'PLAY_CARD',
       playerId: 'p1',
       cardInstanceId: mockingbirdInst.instanceId,
@@ -269,9 +271,10 @@ describe('ADR-0048: CARD_PLAYED vs ENTERS_PLAY trigger contract (RR v1.8 pp.11,2
     const mockingbird = catalog.getCard('01083')!;
     const mockingbirdInst = createCardInstance(mockingbird);
     const payment2 = makePaymentCards(3);
-    res1.state.players[0].hand = [mockingbirdInst, ...payment2];
+    const res1Armed = thaw(res1.state);
+    res1Armed.players[0].hand = [mockingbirdInst, ...payment2];
 
-    const res2 = dispatchAction(res1.state, {
+    const res2 = dispatchAction(res1Armed, {
       type: 'PLAY_CARD',
       playerId: 'p1',
       cardInstanceId: mockingbirdInst.instanceId,

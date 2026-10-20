@@ -4,6 +4,7 @@ import { GameState, HeroCard, AlterEgoCard, CardInstance, CardResources } from '
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
 import { executeEffect } from '@engine/effects';
+import { thaw } from '../support/thaw-state';
 
 // Chase Them Down (01052), #247:
 // "Response (thwart): After your hero attacks and defeats an enemy, remove 2 threat from a scheme."
@@ -236,6 +237,7 @@ describe('Responses to a defeat by an attack (#247): Chase Them Down and Tigra',
       answer('p1', 'pass');
       expect(chasePrompts()).toHaveLength(0);
 
+      state = thaw(state);
       state.activePlayerIndex = 1;
       basicAttack('p2', 'minion', m2.instanceId);
       expect(chasePrompts().map((p) => p.playerId)).toEqual(['p2']);

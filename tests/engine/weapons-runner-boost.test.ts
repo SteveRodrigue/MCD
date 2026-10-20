@@ -18,6 +18,7 @@ import {
   resolveDecisionPrompt,
   step2_villainAndMinionActivations,
 } from '@engine/pipeline';
+import { thaw } from '../support/thaw-state';
 
 // Weapons Runner (01121): "Surge. [star] Boost: Put Weapons Runner into play engaged with you."
 // Villain phase step 2 (RR v1.8): each minion engaged with the player activates, including one
@@ -282,7 +283,7 @@ describe('Weapons Runner (01121): boost puts it into play engaged with the attac
         events.push(`${ev.sourceName}>${ev.targetPlayerId}`);
         let prompt = peekDecisionPrompt(state);
         while (prompt) {
-          state = resolveDecisionPrompt(state, 'p1', prompt.options[0].id).state;
+          state = resolveDecisionPrompt(thaw(state), 'p1', prompt.options[0].id).state;
           prompt = peekDecisionPrompt(state);
         }
       }

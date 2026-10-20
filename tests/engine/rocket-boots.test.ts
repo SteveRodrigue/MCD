@@ -12,6 +12,7 @@ import {
   getEffectiveMaxHealth,
   getEffectivePlayerTraits,
 } from '@engine/index';
+import { thaw } from '../support/thaw-state';
 
 /**
  * Rocket Boots (01039), Iron Man upgrade. Printed: "You get +1 hit point. Hero Action: Exhaust
@@ -88,7 +89,7 @@ describe('Rocket Boots (01039) (Issue #131)', () => {
     const { state: next } = useAction(boots, [payment.instanceId]);
     expect(getEffectivePlayerTraits(next.players[0], next)).toContain('Aerial');
 
-    const after = endPlayerPhase(next);
+    const after = endPlayerPhase(thaw(next));
     expect(getEffectivePlayerTraits(after.players[0], after)).not.toContain('Aerial');
   });
 

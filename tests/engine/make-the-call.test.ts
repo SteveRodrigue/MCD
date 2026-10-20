@@ -10,6 +10,7 @@ import {
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 import { canPlayCard } from '../../src/engine/pipeline/legality-checker';
+import { thaw } from '../support/thaw-state';
 
 describe('Make the Call & PLAY_FROM_ZONE (ADR-0047)', () => {
   let state: GameState;
@@ -453,8 +454,9 @@ describe('Make the Call & PLAY_FROM_ZONE (ADR-0047)', () => {
     expect(playedAlly?.ownerId).toBe('player_2');
 
     // Player 1 commands Maria Hill to thwart, taking fatal consequential damage
-    stateAfterPlay.mainScheme.threat = 3;
-    const { state: stateAfterThwart, result: thwartResult } = dispatchAction(stateAfterPlay, {
+    const armedAfterPlay = thaw(stateAfterPlay);
+    armedAfterPlay.mainScheme.threat = 3;
+    const { state: stateAfterThwart, result: thwartResult } = dispatchAction(armedAfterPlay, {
       type: 'ALLY_THWART',
       playerId: 'player_1',
       allyInstanceId: 'maria_inst',

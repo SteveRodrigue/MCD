@@ -19,6 +19,7 @@ import {
 } from '@engine/pipeline/villain-phase';
 import { dispatchTrigger } from '@engine/triggers/trigger-dispatcher';
 import { executeEffect } from '@engine/effects';
+import { thaw } from '../support/thaw-state';
 
 /**
  * Issue #266: accepting a threat interrupt from its prompt must change the threat that is placed.
@@ -192,7 +193,7 @@ describe('threat interrupt prompts change the placed threat (Issue #266)', () =>
     expect(peekDecisionPrompt(state)?.sourceCardCode).toBe('01019b');
     expect(threat(state)).toBe(before);
 
-    const after = accept(state);
+    const after = thaw(accept(state));
     expect(threat(after)).toBe(before + 1);
     expect(after.players[0].usedAbilitiesThisRound?.['i_object']).toBe(1);
 
@@ -264,7 +265,7 @@ describe('threat interrupt prompts change the placed threat (Issue #266)', () =>
     expect(threat(state)).toBe(before);
     expect(state.players[0].hand.length).toBe(handBefore);
 
-    const after = accept(state);
+    const after = thaw(accept(state));
     expect(threat(after)).toBe(before + 1);
     expect(after.players[0].hand.length).toBe(handBefore + 1);
   });
@@ -526,7 +527,7 @@ describe('threat interrupt prompts change the placed threat (Issue #266)', () =>
     step1_placeThreat(state);
 
     // Confirm order for P2
-    state = answer(state, 'p2', 'confirm_order');
+    state = thaw(answer(state, 'p2', 'confirm_order'));
 
     // Player 1 flips form to hero while prompt is queued
     state.players[0].currentForm = 'hero';

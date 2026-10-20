@@ -1,6 +1,6 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-20 (code audit AUD-20261017-232534 remediated; R1–R11 delivered; remaining work R12–R16 in section 3.5)
+> **Last updated:** 2026-10-20 (code audit AUD-20261017-232534 remediated; R1–R12 delivered; remaining work R13–R16 in section 3.5)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
 > **Verification baseline:** 🟢 3,479 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
@@ -82,7 +82,6 @@ The 21 findings were remediated on 2026-10-17/18 (`94ebc97..f6e470f`, pushed). W
 
 | #   | Item                                                                                             | Gate / milestone | Tier | Estimate | Plan                                                                                             |
 | --- | ------------------------------------------------------------------------------------------------ | ---------------- | ---- | -------- | ------------------------------------------------------------------------------------------------ |
-| R12 | Structural sharing for state updates (Immer?) — **owner decision**; after R8                     | Tech Debt        | 3    | 2–3 days | [plan_audit_r12_structural_sharing.md](plan_audit_r12_structural_sharing.md)                     |
 | R13 | Remove `state.villain` / `mainScheme` (F016, #215) — **deferred by owner** to multi-villain work | Gate 4           | 3    | 1 day    | [plan_audit_r13_remove_legacy_state_pointers.md](plan_audit_r13_remove_legacy_state_pointers.md) |
 | R14 | Shared test fixtures; drop test-only execution frames (F013) — **deferred** (after R13)          | Tech Debt        | 1    | 1 day    | [plan_audit_r14_shared_test_fixtures.md](plan_audit_r14_shared_test_fixtures.md)                 |
 | R15 | Audit open questions: log growth, art fallback CORS, bundled packs                               | Tech Debt        | 1    | 2–4 h    | [plan_audit_r15_open_questions.md](plan_audit_r15_open_questions.md)                             |
@@ -104,7 +103,7 @@ Run the `next-task` skill (it reads this file). Plan anatomy and owner preferenc
 
 From the audit plans (section 3.5); each plan states the options and a recommendation:
 
-- R12: Tier 3 design choice (structural sharing).
+_None currently._
 
 Decisions taken are recorded in the row they affect (section 3) and on the issue.
 

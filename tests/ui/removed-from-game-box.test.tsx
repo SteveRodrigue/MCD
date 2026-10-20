@@ -6,6 +6,7 @@ import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider'
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { createCardInstance, setupGame } from '../../src/engine/state/game-setup';
 import { HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { TestSession } from '../support/render-with-session';
 
 vi.mock('../../src/ui/hooks/useCardArt', () => ({
   useCardArt: vi.fn().mockReturnValue({
@@ -144,7 +145,9 @@ describe('Visible Removed from Game Pile (Issue #282)', () => {
 
     render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onReset={vi.fn()} />
+        <TestSession state={state}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 

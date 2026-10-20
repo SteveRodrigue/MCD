@@ -18,18 +18,18 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useGameSettings } from '../../context/useGameSettings';
-import { GameState } from '../../../engine/models';
 import { logGameStateSnapshot } from '../../services/gamestate-logger-service';
 import { ResetCardStatsConfirmModal } from '../cards/ResetCardStatsConfirmModal';
 import { resetAllStats } from '../../services/stats-storage-service';
+import { useGameSession } from '../../context/GameStateContext';
 
 interface OptionsMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  gameState?: GameState;
 }
 
-export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameState }) => {
+export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => {
+  const { state: gameState } = useGameSession();
   const later = useTimeout();
   const [snapshotSuccess, setSnapshotSuccess] = useState<string | null>(null);
   const [showResetAllConfirm, setShowResetAllConfirm] = useState(false);
@@ -348,45 +348,43 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
           </div>
 
           {/* Diagnostic GameState Snapshot */}
-          {gameState && (
-            <div className="bg-amber-50 p-4 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Camera className="w-5 h-5 text-comic-red" />
-                  <span className="font-comic text-base text-comic-black">
-                    Diagnostic GameState Snapshot
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await logGameStateSnapshot(gameState, undefined, 'Manual User Snapshot');
-                    setSnapshotSuccess('Snapshot saved to logs/gamestates/latest_gamestate.json');
-                    later(() => setSnapshotSuccess(null), 3000);
-                  }}
-                  className="px-3 py-1 font-comic text-xs rounded border-2 border-comic-black bg-comic-yellow hover:bg-amber-300 text-comic-black font-bold shadow-comic-sm cursor-pointer transition-all hover:scale-105"
-                >
-                  📸 Save Snapshot
-                </button>
+          <div className="bg-amber-50 p-4 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Camera className="w-5 h-5 text-comic-red" />
+                <span className="font-comic text-base text-comic-black">
+                  Diagnostic GameState Snapshot
+                </span>
               </div>
 
-              <p className="text-xs text-slate-600">
-                Exports full table state to{' '}
-                <code className="bg-white px-1 py-0.5 rounded border font-mono text-[10px]">
-                  logs/gamestates/latest_gamestate.json
-                </code>{' '}
-                for instant debugging and test generation.
-              </p>
-
-              {snapshotSuccess && (
-                <div className="p-2 rounded bg-emerald-100 border border-emerald-500 text-emerald-900 text-xs font-bold flex items-center gap-1.5 animate-in fade-in duration-200">
-                  <span>✅</span>
-                  <span>{snapshotSuccess}</span>
-                </div>
-              )}
+              <button
+                type="button"
+                onClick={async () => {
+                  await logGameStateSnapshot(gameState, undefined, 'Manual User Snapshot');
+                  setSnapshotSuccess('Snapshot saved to logs/gamestates/latest_gamestate.json');
+                  later(() => setSnapshotSuccess(null), 3000);
+                }}
+                className="px-3 py-1 font-comic text-xs rounded border-2 border-comic-black bg-comic-yellow hover:bg-amber-300 text-comic-black font-bold shadow-comic-sm cursor-pointer transition-all hover:scale-105"
+              >
+                📸 Save Snapshot
+              </button>
             </div>
-          )}
+
+            <p className="text-xs text-slate-600">
+              Exports full table state to{' '}
+              <code className="bg-white px-1 py-0.5 rounded border font-mono text-[10px]">
+                logs/gamestates/latest_gamestate.json
+              </code>{' '}
+              for instant debugging and test generation.
+            </p>
+
+            {snapshotSuccess && (
+              <div className="p-2 rounded bg-emerald-100 border border-emerald-500 text-emerald-900 text-xs font-bold flex items-center gap-1.5 animate-in fade-in duration-200">
+                <span>✅</span>
+                <span>{snapshotSuccess}</span>
+              </div>
+            )}
+          </div>
 
           {/* Supplemental Reviewer & Editor */}
           <div className="bg-amber-50 p-4 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2">

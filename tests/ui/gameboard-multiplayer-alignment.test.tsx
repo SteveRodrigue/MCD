@@ -5,6 +5,7 @@ import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider'
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { TestSession } from '../support/render-with-session';
 
 describe('GameBoard Multiplayer Centered Alignment & Active-Player Focus (Issue #50)', () => {
   const heroes = [
@@ -72,7 +73,9 @@ describe('GameBoard Multiplayer Centered Alignment & Active-Player Focus (Issue 
     const soloState = createTestGameState(1, 0);
     const { container } = render(
       <GameSettingsProvider>
-        <GameBoard gameState={soloState} onReset={vi.fn()} />
+        <TestSession state={soloState}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -90,7 +93,9 @@ describe('GameBoard Multiplayer Centered Alignment & Active-Player Focus (Issue 
     const multiState = createTestGameState(2, 0);
     const { container } = render(
       <GameSettingsProvider>
-        <GameBoard gameState={multiState} onReset={vi.fn()} />
+        <TestSession state={multiState}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -118,7 +123,9 @@ describe('GameBoard Multiplayer Centered Alignment & Active-Player Focus (Issue 
       const multiState = createTestGameState(count, 0);
       const { container } = render(
         <GameSettingsProvider>
-          <GameBoard gameState={multiState} onReset={vi.fn()} />
+          <TestSession state={multiState}>
+            <GameBoard onReset={vi.fn()} />
+          </TestSession>
         </GameSettingsProvider>,
       );
 
@@ -135,7 +142,9 @@ describe('GameBoard Multiplayer Centered Alignment & Active-Player Focus (Issue 
     const multiState = createTestGameState(3, 0);
     const { container, rerender } = render(
       <GameSettingsProvider>
-        <GameBoard gameState={multiState} onReset={vi.fn()} />
+        <TestSession state={multiState}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -161,7 +170,9 @@ describe('GameBoard Multiplayer Centered Alignment & Active-Player Focus (Issue 
     act(() => {
       rerender(
         <GameSettingsProvider>
-          <GameBoard gameState={updatedState1} onReset={vi.fn()} />
+          <TestSession state={updatedState1}>
+            <GameBoard onReset={vi.fn()} />
+          </TestSession>
         </GameSettingsProvider>,
       );
     });
@@ -184,7 +195,9 @@ describe('GameBoard Multiplayer Centered Alignment & Active-Player Focus (Issue 
     act(() => {
       rerender(
         <GameSettingsProvider>
-          <GameBoard gameState={updatedState2} onReset={vi.fn()} />
+          <TestSession state={updatedState2}>
+            <GameBoard onReset={vi.fn()} />
+          </TestSession>
         </GameSettingsProvider>,
       );
     });

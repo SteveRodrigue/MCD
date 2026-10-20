@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { CardContextMenu } from '../../src/ui/components/cards/CardContextMenu';
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
-import { GameStateProvider } from '../../src/ui/context/GameStateContext';
+import { TestSession } from '../support/render-with-session';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, setupGame } from '../../src/engine';
 import { STORAGE_KEY } from '../../src/ui/context/game-settings-context';
@@ -69,9 +69,9 @@ describe('CardContextMenu Stats Recap & Modals (#315)', () => {
 
     render(
       <GameSettingsProvider>
-        <GameStateProvider value={mockGameState}>
+        <TestSession state={mockGameState}>
           <CardContextMenu card={spiderManCard} position={{ x: 100, y: 100 }} onClose={vi.fn()} />
-        </GameStateProvider>
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -90,9 +90,9 @@ describe('CardContextMenu Stats Recap & Modals (#315)', () => {
 
     render(
       <GameSettingsProvider>
-        <GameStateProvider value={mockGameState}>
+        <TestSession state={mockGameState}>
           <CardContextMenu card={spiderManCard} position={{ x: 100, y: 100 }} onClose={vi.fn()} />
-        </GameStateProvider>
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -111,9 +111,9 @@ describe('CardContextMenu Stats Recap & Modals (#315)', () => {
 
     render(
       <GameSettingsProvider>
-        <GameStateProvider value={mockGameState}>
+        <TestSession state={mockGameState}>
           <CardContextMenu card={spiderManCard} position={{ x: 100, y: 100 }} onClose={vi.fn()} />
-        </GameStateProvider>
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -124,9 +124,9 @@ describe('CardContextMenu Stats Recap & Modals (#315)', () => {
   it('clicking "View Detailed Stats" opens CardStatsModal', async () => {
     render(
       <GameSettingsProvider>
-        <GameStateProvider value={mockGameState}>
+        <TestSession state={mockGameState}>
           <CardContextMenu card={spiderManCard} position={{ x: 100, y: 100 }} onClose={vi.fn()} />
-        </GameStateProvider>
+        </TestSession>
       </GameSettingsProvider>,
     );
 

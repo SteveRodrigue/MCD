@@ -4,6 +4,7 @@ import { HeroZone } from '../../src/ui/components/board/HeroZone';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { HeroCard, AlterEgoCard, GameState } from '../../src/engine/models';
+import { TestSession } from '../support/render-with-session';
 
 vi.mock('../../src/ui/hooks/useCardArt', () => ({
   useCardArt: vi.fn().mockReturnValue({
@@ -34,13 +35,9 @@ describe('Threat Zone sub-zones: Obligations (Issue #158)', () => {
 
   const renderZone = (state: GameState) =>
     render(
-      <HeroZone
-        player={state.players[0]}
-        gameState={state}
-        seatNumber={1}
-        isFocused={true}
-        isMultiHero={false}
-      />,
+      <TestSession state={state}>
+        <HeroZone player={state.players[0]} seatNumber={1} isFocused={true} isMultiHero={false} />
+      </TestSession>,
     );
 
   it('keeps the existing header strings when the player holds no obligations', () => {

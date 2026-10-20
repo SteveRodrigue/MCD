@@ -8,6 +8,7 @@ import { resetSessionSyncTracking } from './services/stats-storage-service';
 
 import { GameSettingsProvider } from './context/GameSettingsProvider';
 import { useGameSettings } from './context/useGameSettings';
+import { GameSessionProvider } from './context/GameStateContext';
 
 const ScenarioSelector = React.lazy(() =>
   import('./components/setup/ScenarioSelector').then((m) => ({ default: m.ScenarioSelector })),
@@ -207,11 +208,9 @@ const AppContent: React.FC = () => {
           )}
 
           {stage === 'IN_GAME' && gameState && (
-            <GameBoard
-              gameState={gameState}
-              onReset={handleReset}
-              onDispatchAction={handleDispatchAction}
-            />
+            <GameSessionProvider state={gameState} dispatch={handleDispatchAction}>
+              <GameBoard onReset={handleReset} />
+            </GameSessionProvider>
           )}
         </React.Suspense>
 

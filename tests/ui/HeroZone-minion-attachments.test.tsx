@@ -4,6 +4,7 @@ import { HeroZone } from '../../src/ui/components/board/HeroZone';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { TestSession } from '../support/render-with-session';
 
 vi.mock('../../src/ui/hooks/useCardArt', () => ({
   useCardArt: vi.fn().mockReturnValue({
@@ -54,13 +55,9 @@ describe('HeroZone Engaged Minion Attachments Rendering (Issue #134)', () => {
     player.engagedMinions = [minion];
 
     render(
-      <HeroZone
-        player={player}
-        gameState={gameState}
-        seatNumber={1}
-        isFocused={true}
-        isMultiHero={false}
-      />,
+      <TestSession state={gameState}>
+        <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+      </TestSession>,
     );
 
     // Host minion card is rendered

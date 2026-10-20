@@ -1,15 +1,15 @@
 import React from 'react';
 import { ModalLayer } from '../layout/ModalLayer';
 import { Zap, X, Layers } from 'lucide-react';
-import { CardInstance, PlayerState, GameState, CardAbility } from '../../../engine/models';
+import { CardInstance, PlayerState, CardAbility } from '../../../engine/models';
 import { canInitiateAbility } from '../../../engine/pipeline/legality-checker';
 import { evaluateTableauCardLegality } from './tableau-card-legality';
+import { useGameSession } from '../../context/GameStateContext';
 
 interface TableauActionModalProps {
   isOpen: boolean;
   cardInstance: CardInstance | null;
   player: PlayerState;
-  gameState?: GameState;
   onClose: () => void;
   onSelectAbility: (ability: CardAbility, cardInstance: CardInstance) => void;
 }
@@ -18,23 +18,21 @@ export const TableauActionModal: React.FC<TableauActionModalProps> = ({
   isOpen,
   cardInstance,
   player,
-  gameState,
   onClose,
   onSelectAbility,
 }) => {
+  const { state: gameState } = useGameSession();
   if (!isOpen || !cardInstance) return null;
 
   const isHero = player.currentForm === 'hero';
-  const isPlayerTurn = gameState
-    ? gameState.phase === 'PLAYER_PHASE' &&
-      gameState.players[gameState.activePlayerIndex]?.id === player.id
-    : true;
+  const isPlayerTurn =
+    gameState.phase === 'PLAYER_PHASE' &&
+    gameState.players[gameState.activePlayerIndex]?.id === player.id;
 
-  const legality = evaluateTableauCardLegality(
-    cardInstance,
-    player.currentForm,
-    gameState ? { gameState, playerId: player.id } : undefined,
-  );
+  const legality = evaluateTableauCardLegality(cardInstance, player.currentForm, {
+    gameState,
+    playerId: player.id,
+  });
 
   const abilities = cardInstance.card.enrichment?.abilities || [];
   const actionableAbilities = abilities.filter(
@@ -126,9 +124,7 @@ export const TableauActionModal: React.FC<TableauActionModalProps> = ({
           <div className="grid grid-cols-1 gap-2.5">
             {actionableAbilities.map((ab) => {
               const alreadyUsed = (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
-              const abilityCheck = gameState
-                ? canInitiateAbility(gameState, player.id, ab, cardInstance, {})
-                : { allowed: false, reason: 'Game state unavailable' };
+              const abilityCheck = canInitiateAbility(gameState, player.id, ab, cardInstance, {});
               const canTrigger = isPlayerTurn && !alreadyUsed && abilityCheck.allowed;
 
               const description =

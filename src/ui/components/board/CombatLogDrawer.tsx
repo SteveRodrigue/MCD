@@ -1,17 +1,17 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { ModalLayer } from '../layout/ModalLayer';
 import { X, BookOpen, ChevronDown, ChevronRight, Globe, Type } from 'lucide-react';
-import { GameLogEntry, GameState } from '../../../engine/models';
+import { GameLogEntry } from '../../../engine/models';
 import { formatComicLogEntry } from '../../utils/comic-log-formatter';
 import { ComicSpeechBalloon } from './ComicSpeechBalloon';
 import { FONT_PRESETS } from './combat-log-presets';
+import { useGameSession } from '../../context/GameStateContext';
 
 interface CombatLogDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   logs: GameLogEntry[];
   currentLocale?: 'en' | 'fr';
-  gameState?: GameState;
   /** Engine step errors (`engine.stepError`) are listed in Dev Mode only (#225). */
   devMode?: boolean;
 }
@@ -23,9 +23,9 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
   onClose,
   logs,
   currentLocale = 'en',
-  gameState,
   devMode = false,
 }) => {
+  const { state: gameState } = useGameSession();
   const [selectedCategory, setSelectedCategory] = useState<FilterCategory>('all');
   const [locale, setLocale] = useState<'en' | 'fr'>(currentLocale);
   const [showRawDebug, setShowRawDebug] = useState<boolean>(false);

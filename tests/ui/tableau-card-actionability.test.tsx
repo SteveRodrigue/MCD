@@ -12,6 +12,7 @@ import {
 } from '../../src/engine/models';
 import { evaluateTableauCardLegality } from '../../src/ui/components/board/tableau-card-legality';
 import { HeroZone } from '../../src/ui/components/board/HeroZone';
+import { TestSession } from '../support/render-with-session';
 
 vi.mock('../../src/ui/hooks/useCardArt', () => ({
   useCardArt: vi.fn().mockReturnValue({
@@ -105,13 +106,9 @@ describe('Tableau Card Actionability Graying (Issue #185)', () => {
   it('HeroZone grays Surveillance Team and does not open the action modal with no threat', () => {
     state.mainScheme.threat = 0;
     const { container } = render(
-      <HeroZone
-        player={state.players[0]}
-        gameState={state}
-        seatNumber={1}
-        isFocused={true}
-        isMultiHero={false}
-      />,
+      <TestSession state={state}>
+        <HeroZone player={state.players[0]} seatNumber={1} isFocused={true} isMultiHero={false} />
+      </TestSession>,
     );
 
     const tableau = screen.getByTestId('tableau-section');
@@ -126,13 +123,9 @@ describe('Tableau Card Actionability Graying (Issue #185)', () => {
   it('HeroZone keeps Surveillance Team in color and opens the modal when threat exists', () => {
     state.mainScheme.threat = 3;
     render(
-      <HeroZone
-        player={state.players[0]}
-        gameState={state}
-        seatNumber={1}
-        isFocused={true}
-        isMultiHero={false}
-      />,
+      <TestSession state={state}>
+        <HeroZone player={state.players[0]} seatNumber={1} isFocused={true} isMultiHero={false} />
+      </TestSession>,
     );
 
     const tableau = screen.getByTestId('tableau-section');
@@ -173,13 +166,9 @@ describe('Tableau Card Actionability Graying (Issue #185)', () => {
     it('HeroZone grays the card when the hand is empty', () => {
       state.players[0].hand = [];
       render(
-        <HeroZone
-          player={state.players[0]}
-          gameState={state}
-          seatNumber={1}
-          isFocused={true}
-          isMultiHero={false}
-        />,
+        <TestSession state={state}>
+          <HeroZone player={state.players[0]} seatNumber={1} isFocused={true} isMultiHero={false} />
+        </TestSession>,
       );
       expect(
         screen.getByTestId('tableau-section').querySelector('.filter.grayscale'),

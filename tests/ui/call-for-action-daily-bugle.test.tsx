@@ -7,6 +7,7 @@ import { TopBar } from '../../src/ui/components/board/TopBar';
 import { DailyBugleActionNewspaper } from '../../src/ui/components/board/DailyBugleActionNewspaper';
 import { LegalActionReport } from '../../src/engine/pipeline/legal-actions-generator';
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
+import { TestSession } from '../support/render-with-session';
 
 vi.mock('../../src/ui/hooks/useCardArt', () => ({
   useCardArt: vi.fn().mockReturnValue({
@@ -62,16 +63,17 @@ describe('Daily Bugle & TopBar Call for Action & Villain Actions UI (Issue #314)
 
     render(
       <GameSettingsProvider>
-        <TopBar
-          gameState={state}
-          activeSeatIndex={0}
-          legalActionCount={3}
-          onSelectSeat={vi.fn()}
-          onToggleLog={vi.fn()}
-          isLogOpen={false}
-          onReset={vi.fn()}
-          onOpenNewspaper={onOpenNewspaper}
-        />
+        <TestSession state={state}>
+          <TopBar
+            activeSeatIndex={0}
+            legalActionCount={3}
+            onSelectSeat={vi.fn()}
+            onToggleLog={vi.fn()}
+            isLogOpen={false}
+            onReset={vi.fn()}
+            onOpenNewspaper={onOpenNewspaper}
+          />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -84,16 +86,17 @@ describe('Daily Bugle & TopBar Call for Action & Villain Actions UI (Issue #314)
 
     render(
       <GameSettingsProvider>
-        <TopBar
-          gameState={state}
-          activeSeatIndex={0}
-          legalActionCount={3}
-          onSelectSeat={vi.fn()}
-          onToggleLog={vi.fn()}
-          isLogOpen={false}
-          onReset={vi.fn()}
-          onOpenNewspaper={onOpenNewspaper}
-        />
+        <TestSession state={state}>
+          <TopBar
+            activeSeatIndex={0}
+            legalActionCount={3}
+            onSelectSeat={vi.fn()}
+            onToggleLog={vi.fn()}
+            isLogOpen={false}
+            onReset={vi.fn()}
+            onOpenNewspaper={onOpenNewspaper}
+          />
+        </TestSession>
       </GameSettingsProvider>,
     );
 

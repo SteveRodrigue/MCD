@@ -14,7 +14,6 @@ import {
 import {
   CardInstance,
   PlayerState,
-  GameState,
   CardType,
   getActiveVillain,
   getActiveMainScheme,
@@ -38,6 +37,7 @@ import { FormattedCardText } from '../cards/FormattedCardText';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 import { locateCard, readCardResources } from '../../../engine/queries/card-inspector';
 import { isHandCardIneligibleForCost, isGeneratorIneligibleForCost } from './payment-eligibility';
+import { useGameSession } from '../../context/GameStateContext';
 
 interface CardPaymentModalProps {
   isOpen: boolean;
@@ -57,7 +57,6 @@ interface CardPaymentModalProps {
     discardFilter?: UniversalCardFilter;
   };
   player: PlayerState;
-  gameState: GameState;
   onConfirmPlay: (
     paymentHandCardIds: string[],
     generatorCardIds: string[],
@@ -72,9 +71,9 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   cardToPlay,
   abilityCost,
   player,
-  gameState,
   onConfirmPlay,
 }) => {
+  const { state: gameState } = useGameSession();
   const [selectedHandCardIds, setSelectedHandCardIds] = useState<string[]>([]);
   const [selectedGeneratorIds, setSelectedGeneratorIds] = useState<string[]>([]);
   const [selectedDiscardCardIds, setSelectedDiscardCardIds] = useState<string[]>([]);

@@ -1,9 +1,8 @@
 import React from 'react';
 import { ModalLayer } from '../layout/ModalLayer';
-import { GameState } from '../../../engine/models';
+import { useGameSession } from '../../context/GameStateContext';
 
 interface GameOverScreenProps {
-  gameState: GameState;
   onReset: () => void;
 }
 
@@ -12,7 +11,8 @@ interface GameOverScreenProps {
  * the group (RR v1.8 Player Elimination), so every hero is listed, those who fell on the way
  * marked as defeated.
  */
-export const GameOverScreen: React.FC<GameOverScreenProps> = ({ gameState, onReset }) => {
+export const GameOverScreen: React.FC<GameOverScreenProps> = ({ onReset }) => {
+  const { state: gameState } = useGameSession();
   if (!gameState.winner) return null;
   const victory = gameState.winner === 'HEROES';
   const fallen = gameState.eliminatedPlayers ?? [];

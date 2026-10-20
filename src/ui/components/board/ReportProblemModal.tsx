@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ModalLayer } from '../layout/ModalLayer';
 import { Bug, X, Check, Send, ExternalLink, AlertTriangle } from 'lucide-react';
-import { GameState } from '../../../engine/models';
-import { useGameState } from '../../context/GameStateContext';
+import { useOptionalGameSession } from '../../context/GameStateContext';
 import {
   ProblemReportPriority,
   ProblemReportType,
@@ -14,7 +13,6 @@ import {
 interface ReportProblemModalProps {
   isOpen: boolean;
   onClose: () => void;
-  gameState?: GameState | null;
   initialDescription?: string;
 }
 
@@ -34,7 +32,6 @@ const PRIORITIES: { value: ProblemReportPriority; label: string }[] = [
 export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
   isOpen,
   onClose,
-  gameState,
   initialDescription = '',
 }) => {
   const [type, setType] = useState<ProblemReportType>('bug');
@@ -44,9 +41,8 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
   const [githubUrl, setGithubUrl] = useState<string | null>(null);
   const autoCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Opened from a card context menu, the modal reads the live state from the board context
-  const contextGameState = useGameState();
-  const activeGameState = gameState ?? contextGameState ?? null;
+  // Opened from the top bar or a card context menu, the modal reads the live state from the board session
+  const activeGameState = useOptionalGameSession()?.state ?? null;
 
   useEffect(() => {
     if (isOpen) {

@@ -4,6 +4,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { CardPaymentModal } from '../../src/ui/components/board/CardPaymentModal';
 import { GamePhase, HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { TestSession } from '../support/render-with-session';
 
 // #277: the payment modal asks for the discard choice of an event ("up to 5") before it resolves.
 describe('Legal Practice discard choice in the payment modal (#277)', () => {
@@ -47,14 +48,15 @@ describe('Legal Practice discard choice in the payment modal (#277)', () => {
     const { gameState, player, legalPractice } = setup(handSize);
     const onConfirmPlay = vi.fn();
     render(
-      <CardPaymentModal
-        isOpen={true}
-        onClose={vi.fn()}
-        cardToPlay={legalPractice as any}
-        player={player}
-        gameState={gameState}
-        onConfirmPlay={onConfirmPlay}
-      />,
+      <TestSession state={gameState}>
+        <CardPaymentModal
+          isOpen={true}
+          onClose={vi.fn()}
+          cardToPlay={legalPractice as any}
+          player={player}
+          onConfirmPlay={onConfirmPlay}
+        />
+      </TestSession>,
     );
     return onConfirmPlay;
   };

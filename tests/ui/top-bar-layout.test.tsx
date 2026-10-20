@@ -8,6 +8,7 @@ import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider'
 import { GamePhase, GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame } from '../../src/engine/state/game-setup';
+import { TestSession } from '../support/render-with-session';
 
 describe('TopBar and GameBoard Layout In-Flow Architecture (Issue #301)', () => {
   const heroes = [
@@ -61,7 +62,9 @@ describe('TopBar and GameBoard Layout In-Flow Architecture (Issue #301)', () => 
     const state = createTestGameState(1);
     const { container } = render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onReset={vi.fn()} />
+        <TestSession state={state}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -84,7 +87,9 @@ describe('TopBar and GameBoard Layout In-Flow Architecture (Issue #301)', () => 
     const state = createTestGameState(1);
     const { container } = render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onReset={vi.fn()} />
+        <TestSession state={state}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -122,7 +127,9 @@ describe('TopBar and GameBoard Layout In-Flow Architecture (Issue #301)', () => 
     const state = createTestGameState(1);
     const { container } = render(
       <GameSettingsProvider>
-        <GameBoard gameState={state} onReset={vi.fn()} />
+        <TestSession state={state}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -147,14 +154,15 @@ describe('TopBar and GameBoard Layout In-Flow Architecture (Issue #301)', () => 
     const state = createTestGameState(2);
     render(
       <GameSettingsProvider>
-        <TopBar
-          gameState={state}
-          activeSeatIndex={0}
-          onSelectSeat={vi.fn()}
-          onToggleLog={vi.fn()}
-          isLogOpen={false}
-          onReset={vi.fn()}
-        />
+        <TestSession state={state}>
+          <TopBar
+            activeSeatIndex={0}
+            onSelectSeat={vi.fn()}
+            onToggleLog={vi.fn()}
+            isLogOpen={false}
+            onReset={vi.fn()}
+          />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -175,14 +183,15 @@ describe('TopBar and GameBoard Layout In-Flow Architecture (Issue #301)', () => 
 
     const { rerender } = render(
       <GameSettingsProvider>
-        <TopBar
-          gameState={state}
-          activeSeatIndex={0}
-          onSelectSeat={vi.fn()}
-          onToggleLog={vi.fn()}
-          isLogOpen={false}
-          onReset={vi.fn()}
-        />
+        <TestSession state={state}>
+          <TopBar
+            activeSeatIndex={0}
+            onSelectSeat={vi.fn()}
+            onToggleLog={vi.fn()}
+            isLogOpen={false}
+            onReset={vi.fn()}
+          />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -197,14 +206,15 @@ describe('TopBar and GameBoard Layout In-Flow Architecture (Issue #301)', () => 
     const villainState = { ...state, phase: GamePhase.VILLAIN_PHASE };
     rerender(
       <GameSettingsProvider>
-        <TopBar
-          gameState={villainState}
-          activeSeatIndex={0}
-          onSelectSeat={vi.fn()}
-          onToggleLog={vi.fn()}
-          isLogOpen={false}
-          onReset={vi.fn()}
-        />
+        <TestSession state={villainState}>
+          <TopBar
+            activeSeatIndex={0}
+            onSelectSeat={vi.fn()}
+            onToggleLog={vi.fn()}
+            isLogOpen={false}
+            onReset={vi.fn()}
+          />
+        </TestSession>
       </GameSettingsProvider>,
     );
 
@@ -217,16 +227,17 @@ describe('TopBar and GameBoard Layout In-Flow Architecture (Issue #301)', () => 
 
     render(
       <GameSettingsProvider>
-        <TopBar
-          gameState={state}
-          activeSeatIndex={0}
-          legalActionCount={3}
-          onSelectSeat={vi.fn()}
-          onToggleLog={vi.fn()}
-          isLogOpen={false}
-          onReset={vi.fn()}
-          onOpenNewspaper={vi.fn()}
-        />
+        <TestSession state={state}>
+          <TopBar
+            activeSeatIndex={0}
+            legalActionCount={3}
+            onSelectSeat={vi.fn()}
+            onToggleLog={vi.fn()}
+            isLogOpen={false}
+            onReset={vi.fn()}
+            onOpenNewspaper={vi.fn()}
+          />
+        </TestSession>
       </GameSettingsProvider>,
     );
 

@@ -7,6 +7,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
 import { getCardBackUrl, getCardBackFallbackColor } from '../../src/ui/services/card-cache-service';
+import { TestSession } from '../support/render-with-session';
 
 describe('Facedown Encounter Card Display in Hero Zone (Issue #138)', () => {
   const heroes = [
@@ -142,7 +143,9 @@ describe('Facedown Encounter Card Display in Hero Zone (Issue #138)', () => {
 
       render(
         <GameSettingsProvider>
-          <HeroZone player={player} gameState={state} seatNumber={1} isFocused={true} />
+          <TestSession state={state}>
+            <HeroZone player={player} seatNumber={1} isFocused={true} />
+          </TestSession>
         </GameSettingsProvider>,
       );
 
@@ -158,7 +161,9 @@ describe('Facedown Encounter Card Display in Hero Zone (Issue #138)', () => {
 
       render(
         <GameSettingsProvider>
-          <HeroZone player={player} gameState={state} seatNumber={1} isFocused={true} />
+          <TestSession state={state}>
+            <HeroZone player={player} seatNumber={1} isFocused={true} />
+          </TestSession>
         </GameSettingsProvider>,
       );
 
@@ -185,7 +190,9 @@ describe('Facedown Encounter Card Display in Hero Zone (Issue #138)', () => {
 
       render(
         <GameSettingsProvider>
-          <HeroZone player={player} gameState={state} seatNumber={1} isFocused={true} />
+          <TestSession state={state}>
+            <HeroZone player={player} seatNumber={1} isFocused={true} />
+          </TestSession>
         </GameSettingsProvider>,
       );
 
@@ -210,7 +217,9 @@ describe('Facedown Encounter Card Display in Hero Zone (Issue #138)', () => {
 
       render(
         <GameSettingsProvider>
-          <HeroZone player={player} gameState={state} seatNumber={1} isFocused={true} />
+          <TestSession state={state}>
+            <HeroZone player={player} seatNumber={1} isFocused={true} />
+          </TestSession>
         </GameSettingsProvider>,
       );
 
@@ -231,13 +240,9 @@ describe('Facedown Encounter Card Display in Hero Zone (Issue #138)', () => {
 
       render(
         <GameSettingsProvider>
-          <HeroZone
-            player={player}
-            gameState={state}
-            seatNumber={1}
-            isFocused={true}
-            devMode={true}
-          />
+          <TestSession state={state}>
+            <HeroZone player={player} seatNumber={1} isFocused={true} devMode={true} />
+          </TestSession>
         </GameSettingsProvider>,
       );
 

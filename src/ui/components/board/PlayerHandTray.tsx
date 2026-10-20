@@ -2,20 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { useTimeout } from '../../hooks/useTimeout';
 import { ModalLayer } from '../layout/ModalLayer';
 import { Layers, Sparkles, Skull, X, Eye, Filter, ArrowDownUp, Plus } from 'lucide-react';
-import {
-  CardInstance,
-  NormalizedCard,
-  PlayerState,
-  GameState,
-  GameAction,
-} from '../../../engine/models';
+import { CardInstance, NormalizedCard, PlayerState } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
 import { useGameSettings } from '../../context/useGameSettings';
 import { CardPaymentModal } from './CardPaymentModal';
-import {
-  evaluateCardPlayability,
-  type CardPlayabilityStatus,
-} from '../../../engine/pipeline/legality-checker';
+import { useGameSession } from '../../context/GameStateContext';
 import { useHandFanLayout } from '../../hooks/useHandFanLayout';
 import { getHeroColorPalette } from '../../utils/hero-theme';
 import { getCardBackUrl, getCardBackFallbackColor } from '../../services/card-cache-service';
@@ -32,10 +23,8 @@ interface PlayerHandTrayProps {
   isFocused?: boolean;
   isMultiHero?: boolean;
   player?: PlayerState;
-  gameState?: GameState;
   onFocus?: () => void;
   onCardClick?: (cardInst: CardInstance) => void;
-  onDispatchAction?: (action: GameAction) => void;
 }
 
 type PlayerSortMode = 'deck_order' | 'card_type' | 'affinity' | 'cost';
@@ -98,11 +87,11 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   isFocused = true,
   isMultiHero = false,
   player,
-  gameState,
   onFocus,
   onCardClick,
-  onDispatchAction,
 }) => {
+  const { state: gameState, dispatch: onDispatchAction, getPlayability } = useGameSession();
+  const playabilityById = getPlayability();
   const { devMode } = useGameSettings();
   const later = useTimeout();
   const palette = useMemo(() => getHeroColorPalette(player), [player]);
@@ -113,19 +102,8 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   const [turnWarning, setTurnWarning] = useState<string | null>(null);
   const [deckImageError, setDeckImageError] = useState(false);
 
-  // One evaluation per hand card and state, shared by the click guard, the end-turn pulse and the fan
-  const playabilityById = useMemo(() => {
-    const byId = new Map<string, CardPlayabilityStatus>();
-    if (player && gameState) {
-      for (const cardInst of hand) {
-        byId.set(cardInst.instanceId, evaluateCardPlayability(gameState, player.id, cardInst));
-      }
-    }
-    return byId;
-  }, [hand, player, gameState]);
-
-  const activePlayer = gameState?.players[gameState?.activePlayerIndex ?? 0];
-  const isActivePlayerTurn = gameState?.phase === 'PLAYER_PHASE' && activePlayer?.id === player?.id;
+  const activePlayer = gameState.players[gameState.activePlayerIndex ?? 0];
+  const isActivePlayerTurn = gameState.phase === 'PLAYER_PHASE' && activePlayer?.id === player?.id;
 
   const handleCardClick = (cardInst: CardInstance) => {
     const playability = playabilityById.get(cardInst.instanceId);
@@ -140,13 +118,13 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
     if (onCardClick) {
       onCardClick(cardInst);
     }
-    if (onDispatchAction && player && gameState) {
+    if (player) {
       setPlayingCard(cardInst);
     }
   };
 
   const handleEndTurn = () => {
-    if (onDispatchAction && player) {
+    if (player) {
       onDispatchAction({
         type: 'END_PLAYER_TURN',
         playerId: player.id,
@@ -155,7 +133,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   };
 
   const handleDevAddCard = (cardInstanceId: string) => {
-    if (onDispatchAction && player) {
+    if (player) {
       onDispatchAction({
         type: 'DEV_ADD_CARD_TO_HAND',
         playerId: player.id,
@@ -297,7 +275,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               <span>
                 {seatNumber && isMultiHero ? `SEAT ${seatNumber}: ` : ''}
                 {heroName}'s HAND ({hand.length} / {handSizeLimit})
-                {gameState?.phase === 'VILLAIN_PHASE'
+                {gameState.phase === 'VILLAIN_PHASE'
                   ? ' • (VILLAIN PHASE)'
                   : isActivePlayerTurn
                     ? ' • (ACTIVE TURN)'
@@ -315,7 +293,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             )}
           </div>
 
-          {gameState?.phase === 'PLAYER_PHASE' && isActivePlayerTurn && (
+          {gameState.phase === 'PLAYER_PHASE' && isActivePlayerTurn && (
             <button
               onClick={handleEndTurn}
               className={`bg-comic-yellow hover:bg-yellow-400 text-comic-black font-comic text-xs px-3 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-black flex items-center gap-1 transition-all hover:scale-105 ${
@@ -804,13 +782,12 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
       )}
 
       {/* Card Payment & Action Modal */}
-      {playingCard && player && gameState && onDispatchAction && (
+      {playingCard && player && (
         <CardPaymentModal
           isOpen={Boolean(playingCard)}
           onClose={() => setPlayingCard(null)}
           cardToPlay={playingCard}
           player={player}
-          gameState={gameState}
           onConfirmPlay={(
             paymentHandCardIds,
             generatorCardIds,

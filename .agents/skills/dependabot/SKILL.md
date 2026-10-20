@@ -25,6 +25,19 @@ Use this skill to turn GitHub Dependabot alerts into evidence-backed remediation
 
 ## Procedure
 
+Copy this checklist and tick each step as you go:
+
+- [ ] 1. Establish scope and repository state
+- [ ] 2. Retrieve live alerts (2a: no open alerts, report and stop)
+- [ ] 3. Normalize and prioritize findings
+- [ ] 4. Trace repository impact
+- [ ] 5. Assess upgrade risk
+- [ ] 6. Prepare the implementation plan
+- [ ] 7. Stop for review
+- [ ] 8. Implement only after approval
+
+If the user rejects or narrows the plan, go back to Step 4 and update the analysis. If a verification command in Step 8 fails, fix the cause and re-run it from the failed command.
+
 ### 1. Establish Scope and Repository State
 
 1. Read the requested scope. Default to all open alerts if no scope is provided.

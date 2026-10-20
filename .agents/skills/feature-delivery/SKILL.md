@@ -15,8 +15,6 @@ hooks:
 
 **Needs:** `rtk` (see [`antigravity-rtk-rules.md`](../../rules/antigravity-rtk-rules.md)), Node.js with `npm ci`, Python 3 (for `npm run rule`), and the GitHub CLI authenticated via `gh auth login` (check with `gh auth status`).
 
-This skill guides the agent through an authoritative, rules-verified, specification-first, and milestone-tracked protocol to deliver new features cleanly, composably, and with zero regressions.
-
 ---
 
 ## Architectural Pre-Conditions & Rules Authority
@@ -61,18 +59,18 @@ If the rules interpretation, timing trigger sequence, or card interactions are a
 
 ## 🔄 The 8-Step Feature Delivery Lifecycle
 
-```mermaid
-flowchart TD
-    S1["1. Scope & GitHub Issue Linkage (gh issue view/create)"] --> S2["2. Rules Reference Audit (RR v1.8) & ADR Alignment"]
-    S2 --> S2Check{"Confidence ≥ 95%?"}
-    S2Check -- "No (< 95%)" --> RFC["🛑 Trigger RFC Circuit Breaker<br/>• Post RFC Comment on GitHub<br/>• Tag 'needs-review' & pause"]
-    S2Check -- "Yes (≥ 95%)" --> S3Plan["3. Author Implementation Plan & Wait for User Approval (implementation_plan.md)"]
-    S3Plan --> S4["4. Write Acceptance / Contract Tests (BDD Red)"]
-    S4 --> S5["5. Composable & Modular Implementation (Green)"]
-    S5 --> S6["6. Declarative Supplemental Wiring & Card Promotion"]
-    S6 --> S7["7. Targeted Verification (vitest related, typecheck, lint, declarations)"]
-    S7 --> S8["8. Prepare walkthrough, recap, and proposed commit"]
-```
+Copy this checklist and tick each step as you go:
+
+- [ ] Step 1: Scope and link the GitHub issue
+- [ ] Step 2: Rules Reference audit and ADR alignment (confidence below 95%: trigger the RFC circuit breaker and stop)
+- [ ] Step 3: Author the implementation plan, wait for approval
+- [ ] Step 4: Write acceptance and contract tests (Red)
+- [ ] Step 5: Implement (Green)
+- [ ] Step 6: Supplemental wiring and card promotion
+- [ ] Step 7: Targeted verification
+- [ ] Step 8: Post-task hygiene, recap, and proposed commit
+
+If a check fails in Step 4, 5 or 7, go back to the step named on that check line.
 
 ---
 
@@ -134,7 +132,7 @@ flowchart TD
   4. **Verification Plan:** Complete targeted test inventory covering engine/data behavior, integration contracts, boundary conditions, and UI/Card Editor behavior whenever affected. Prefer extending existing test files or `it.each` tables over duplicating test setup boilerplate.
   5. **Open Questions & Design Decisions:** Any trade-offs or design choices highlighted for user review.
 - **STOP AND WAIT:** Set `request_feedback: true` in the artifact metadata. Create `temp/.plan-pending` when you post the plan and delete it once the user approves. While it exists, a hook blocks edits under `src/`, `tests/`, `data/`, `tools/` and `scripts/`; implementing before approval skips the review gate.
-- **Execution Handoff:** Before approval, feature-delivery must stop and must not delegate implementation. After explicit approval, hand the approved plan to `/execute-plan`; `/execute-plan` performs its own ambiguity gate and delegates execution only for the plan's unambiguous, explicitly authorized work. Feature-delivery must not interpret missing requirements or bypass that handoff.
+- **Execution Handoff:** Before approval, feature-delivery must stop and must not delegate implementation. After explicit approval, hand the approved plan to `/execute-plan`; `/execute-plan` performs its own ambiguity gate and implements only the plan's unambiguous, explicitly authorized work. Feature-delivery must not interpret missing requirements or bypass that handoff.
 
 ---
 
@@ -189,7 +187,8 @@ rtk npx prettier --check <changed-files> && rtk npm run lint && rtk npm run type
 
 - **Related Vitest Suite:** All related test files pass with 0 failures and **0 skipped tests** (Zero Skipped Tests Invariant: `passed: N, failed: 0, skipped: 0`).
 - **TypeScript & Lint:** 0 compilation errors (`tsc --noEmit`) and 0 ESLint warnings/errors.
-- **Do NOT run the full `npm test` suite or `npm run build` here:** `.githooks/pre-push` executes the full test suite once on push.
+- If any check fails, fix it and go back to Step 5, then re-run the failed check.
+- Skip the full `npm test` suite and `npm run build` (the pre-push hook runs them; see the shared quality gates).
 
 ---
 

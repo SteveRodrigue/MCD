@@ -30,17 +30,8 @@ hooks:
   - **In Single-Card Mode:** If Tier 3 (structural refactor required), stop immediately, log to `docs/ambiguities/`, create `implementation_plan.md`, and wait for user approval.
   - **In Batch-Mode (Scanning multiple cards/sets):** Do not halt the batch. Log a dedicated ambiguity file to `docs/ambiguities/{pack}_{code}_{slug}.md` with `blocker_category: "TIER_3_STRUCTURAL_REFACTOR"`, skip the blocked card, continue scanning, and present a consolidated report at the end.
 - **Zero Tech Debt Invariant:** Never introduce temporary shims or backwards-compatibility aliases; prefer direct refactoring of schemas and supplemental data.
-- **🔍 Zero Assumption of Existing Supplemental Correctness:**
-  - Never assume existing supplemental data in `src/data/supplemental/` is accurate, complete, or up to canonical standard.
-  - As `docs/specifications/supplemental/` evolves, existing card supplemental data can become outdated or eligible for refactoring.
-  - Always independently translate the card from printed text and specifications, then contrast proposed data against the existing baseline to surface gaps or drift.
-- **Mandatory User Peer Review Gate:**
-  Any change to a card's supplemental data must be peer-reviewed by the user before implementation. Always present:
-  1. `card.text` (exact printed text from upstream)
-  2. **Original Supplemental Data** (existing JSON)
-  3. **Proposed Supplemental Data** (new/refactored JSON)
-  4. **The "Why?"** (rationale: spec evolution, gap resolution, or rule correction)
-     In Single-Card Mode, this halts execution immediately. In Batch Mode, this is presented as a consolidated artifact covering all ready cards in the batch before any disk mutations occur.
+- **Zero Assumption of Existing Supplemental Correctness:** Existing data in `src/data/supplemental/` may be outdated as `docs/specifications/supplemental/` evolves. Always translate the card independently from printed text and the specs, then contrast against the existing baseline to surface gaps or drift.
+- **Mandatory User Peer Review Gate:** Any change to a card's supplemental data needs user approval first. The required 4-part review content is defined in Step 7.
 
 ---
 
@@ -69,6 +60,19 @@ flowchart TD
     S7Single -- "Approved" --> S8Single["8. Author JSON, Stamp Audit & Verify"]
     S7Batch -- "Approved" --> S8Batch["8. Batch Author JSON, Stamp Audits & Single Verification"]
 ```
+
+Copy this checklist and tick each step as you go:
+
+- [ ] Step 1: Ingest the upstream card and existing baseline
+- [ ] Step 2: Spec consultation and 8-point deconstruction
+- [ ] Step 3: Draft the supplemental JSON and audit block
+- [ ] Step 4: Consult ground-truth references
+- [ ] Step 5: Round-trip validation (confidence at least 95%)
+- [ ] Step 6: Engine primitive and trigger audit
+- [ ] Step 7: Peer review gate (stop for approval)
+- [ ] Step 8: Author JSON, stamp audit, verify, prune ambiguity
+
+If Step 5 confidence is below 95%, go back to Step 3 (max 3 attempts, then the circuit breaker). If Step 6 finds a Tier 3 gap, trigger the circuit breaker.
 
 ### Step 1: Ingest Upstream Card & Existing Supplemental Baseline
 
@@ -196,13 +200,8 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
   2. **Original Supplemental Data:** The existing JSON entry in `src/data/supplemental/pack/{pack_code}.json` (or `None` if brand new).
   3. **Proposed Supplemental Data:** The newly drafted/refactored supplemental JSON entry conforming to current specifications.
   4. **The "Why?":** Explicit rationale explaining the motivation for the change (e.g. specification updates in `docs/specifications/`, gaps or ambiguities identified during differential comparison, rule corrections, or primitive refactoring).
-- **Execution Mode Handling:**
-  - **Single-Card Mode:** Stop immediately at Step 7, present the 4-part review breakdown, and wait for user approval before modifying code or data files.
-  - **Batch Mode:** Do not stop card-by-card. Collate the 4-part review breakdown for all ready cards across the batch into a single consolidated implementation plan / peer review artifact. Stop **once** for user approval for the entire batch.
-- **Blast-Radius Tier Handling:**
-  - **Tier 1 (No code change needed / Fast-track):** Card integrated or updated in supplemental JSON without engine code changes. Present the peer-review diff to the user.
-  - **Tier 2 (Parameterized or merged generic helper):** Parameterize/merge existing generic building blocks (or add a truly distinct primitive) and write a targeted regression unit test.
-  - **Tier 3 (Structural):** Isolate to `docs/ambiguities/{pack}_{code}_{slug}.md` and strip `abilities: [...]`. In single-card mode: stop and request approval; in batch mode: isolate, continue batch, and include in the consolidated end-of-batch report.
+- **Execution modes and blast-radius tiers:** Single-Card Mode stops here for approval. Batch Mode collates one consolidated review and stops once. Tier handling is defined in the guardrails and Step 6C.
+
 
 ### Step 8: Stamp Audit Metadata (HH:MM), Codify Specs & Prune Ambiguity
 
@@ -215,7 +214,7 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
 3. **Inbox Zero Pruning:** If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it**.
 4. **Canonical Card ID Sorting:** Keep `src/data/supplemental/pack/*.json` in ascending card ID order (`01001a` -> `01001b` -> `01002`); a hook reports any out-of-order key after each edit. Insert new entries in place, not at the bottom.
 5. **Regenerate Usage Audit & Targeted Verification:**
-   - **In Single-Card Mode:** Run `rtk npm run report:declarations` once to regenerate [`docs/reports/supplemental_data/usage_report.md`](../../../docs/reports/supplemental_data/usage_report.md). Run targeted verification: `rtk npx vitest run <card-test-file> tests/data/supplemental-validation.test.ts` and `rtk npm run typecheck` (confirming **0 failed and 0 skipped tests**). Do not run the full `npm test` suite or `npm run build` here; `.githooks/pre-push` runs `npm test` on push.
+   - **In Single-Card Mode:** Run `rtk npm run report:declarations` once to regenerate [`docs/reports/supplemental_data/usage_report.md`](../../../docs/reports/supplemental_data/usage_report.md). Run targeted verification: `rtk npx vitest run <card-test-file> tests/data/supplemental-validation.test.ts` and `rtk npm run typecheck` (confirming **0 failed and 0 skipped tests**).
    - **In Batch Mode:** Do **not** run verification repeatedly per card. Execute Step 8 authoring and sorting across all approved cards in the batch first, then execute `rtk npm run report:declarations`, `rtk npx vitest run <batch-test-files> tests/data/supplemental-validation.test.ts`, and `rtk npm run typecheck` **once as a single consolidated check** at the end of the batch.
 
 ---

@@ -61,6 +61,16 @@ flowchart TD
     S6 --> S2
 ```
 
+Copy this checklist per report and tick each step as you go:
+
+- [ ] Step 1: Scan `logs/reports/` (none pending: log `[DONE]` and end the turn)
+- [ ] Step 2: Build the issue title and body
+- [ ] Step 3: Duplicate check (merge via 3a, or continue to Step 4)
+- [ ] Step 4: File the new issue, verify (4a), write and verify the GameState (4b)
+- [ ] Step 5: Prune the local report, log `[PRUNE]`
+
+If issue creation, the merge, or snapshot verification fails, leave the report file in place, log the failure, and move to the next report.
+
 ### Step 1: Scan Pending Reports
 
 List all files matching `logs/reports/report_*.json` (ignore `logs/reports/processed/` if present from prior runs). If none exist, log `[DONE]` and end the turn immediately — do not create empty issues or fabricate reports.
@@ -177,9 +187,7 @@ Repeat Steps 2–5 for every pending report, then confirm `logs/reports/` contai
 
 - This skill only ever reads `logs/reports/*.json` and calls `gh issue list` / `gh issue create` / `gh issue comment` / `gh issue edit` / deletes the already-filed local JSON file. It never modifies `src/`, `tests/`, or any card supplemental data. `gh label create` should not be needed for a standard run since `bug`, `enhancement`, `needs-review`, `duplicate`, and all `priority:P?-*` labels already exist in the repository — if `gh issue create` reports a missing label, stop and treat it as a `[SCAN]`-logged anomaly rather than silently inventing a new label taxonomy.
 - **GameState and report deletion:** Enforced by hooks (see Step 2 guardrail and Step 5). Reference only the verified local `logs/gamestates/` path and local-only warning.
-- **Never fabricate or paraphrase the reporter's words.** The `### 📝 Original User Report (Verbatim — Preserved for Review)` section must always contain `report.description` character-for-character. Any restatement elsewhere in the body (e.g. "Describe the Bug") must be clearly a _summary of the section below_, never a substitute for it — a later triager must be able to trust the verbatim block as ground truth.
-- **Never guess at a duplicate match:** Card name, card code, and issue title similarity alone are NEVER sufficient to declare a duplicate. Multiple independent bugs can affect the same card. If the reported symptom, ability branch, rule calculation, or mechanic differs, always file a new issue rather than risk silently burying a distinct problem inside an unrelated thread. Every distinct bug requires its own isolated TDD lifecycle and reproduction test.
-- Deleting a local report file is irreversible; always confirm the outcome first — either the new Issue exists (Step 4a) or the merge comment/label was applied (Step 3a) — before Step 5.
+- **Verbatim and duplicates:** the `### 📝 Original User Report (Verbatim — Preserved for Review)` section holds `report.description` character-for-character, and duplicate calls follow the hard rules above.
 - **Historic issues #129–#139:** Retain the 291 GameState comments already published. Exact local reconstruction is not proven, so do not delete or claim local replacement snapshots. Add a transparent policy note that future reports retain GameState only locally.
 
 ---

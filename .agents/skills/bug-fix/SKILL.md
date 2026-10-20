@@ -20,16 +20,18 @@ hooks:
 ## 🔄 The 8-Step Bug Fix Lifecycle
 
 
-```mermaid
-flowchart TD
-    S1["1. Triage & Subsystem Scoping (Engine / UI / Data / Asset)"] --> S2["2. Open Tracked GitHub Issue (gh issue create)"]
-    S2 --> S3["3. Write Failing Regression Test First (Red TDD)"]
-    S3 --> S4["4. Root-Cause Analysis & Blast-Radius Check (Tier 1/2/3)"]
-    S4 --> S5["5. Apply Surgical Fix (Green)"]
-    S5 --> S6["6. Full Verification Suite (test, typecheck, build, declarations)"]
-    S6 --> S7["7. Execute canonical 8-point post-task protocol"]
-    S7 --> S8["8. Commit to Git (Fixes #Issue), Push & Verify Issue Closed"]
-```
+Copy this checklist and tick each step as you go:
+
+- [ ] Step 1: Triage and scope the subsystem (1B for card defects, 1C for roadmap impact)
+- [ ] Step 2: Open the tracked GitHub issue
+- [ ] Step 3: Write the failing regression test (Red)
+- [ ] Step 4: Diagnose the root cause, post the plan, wait for approval
+- [ ] Step 5: Apply the fix (Green); 5B if card data or a shared primitive changed
+- [ ] Step 6: Targeted verification
+- [ ] Step 7: Post-task hygiene
+- [ ] Step 8: Present the recap; commit and push only when asked
+
+If a check fails in Step 3, 5 or 6, go back to the step named on that check line.
 
 ---
 
@@ -151,8 +153,8 @@ rtk npx prettier --check <changed-files> && rtk npm run lint && rtk npm run type
 ```
 
 - If supplemental data changed, also run `rtk npm run report:declarations` once.
-- Confirm the targeted tests show 0 failed and 0 skipped.
-- **Do NOT run the full `npm test` suite or `npm run build` here:** `.githooks/pre-push` runs the full suite once on push.
+- Confirm the targeted tests show 0 failed and 0 skipped. If any check fails, fix it and go back to Step 5 (or Step 4 if the diagnosis was wrong).
+- Skip the full `npm test` suite and `npm run build` (the pre-push hook runs them; see the shared quality gates).
 
 ---
 

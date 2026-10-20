@@ -11,6 +11,19 @@ A commit and push only ever happen in response to the user's explicit request in
 
 **Needs:** `rtk` (see [`antigravity-rtk-rules.md`](../../rules/antigravity-rtk-rules.md)), Node.js with `npm ci`, and the GitHub CLI authenticated via `gh auth login` (check with `gh auth status`).
 
+---
+
+Copy this checklist and tick each step as you go:
+
+- [ ] Step 1: Inspect the working tree and record the intended file set
+- [ ] Step 2: Format and stage by name
+- [ ] Step 3: Rely on the git hooks (no manual gate runs)
+- [ ] Step 4: Pick category and scope
+- [ ] Step 5: Write the commit message
+- [ ] Step 6: Validate issue references, then commit
+- [ ] Step 7: Push and verify
+
+If the pre-commit or pre-push hook fails, fix the cause, re-stage, and go back to Step 6 to make a new commit. If a staged path is not in the intended file set, unstage it and go back to Step 2.
 
 ---
 

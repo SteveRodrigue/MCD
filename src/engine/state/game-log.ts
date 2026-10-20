@@ -30,11 +30,7 @@ export function appendLog<K extends keyof LogEvents>(
     round: state.roundNumber,
     phase: state.phase,
     ...entry,
-    params: entry.params as Record<string, string | number | boolean | string[] | undefined>,
   };
-  if (!state.log) {
-    state.log = [];
-  }
   state.log.push(logEntry);
   return logEntry as unknown as TypedGameLogEntry<K>;
 }

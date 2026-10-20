@@ -50,11 +50,11 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
   });
 
   it('interpolates template parameters accurately', () => {
-    const template = '{{actor}} strikes {{target}} for {{damage}} damage!';
+    const template = '{{actor}} strikes {{target}} for {{amount}} damage!';
     const result = interpolateTemplate(template, {
       actor: 'Spider-Man',
       target: 'Rhino',
-      damage: 8,
+      amount: 8,
     });
     expect(result).toBe('Spider-Man strikes Rhino for 8 damage!');
   });
@@ -248,9 +248,9 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
         timestamp: Date.now(),
         key: 'DEAL_DAMAGE',
         params: {
-          who_attacks: 'Iron-Man',
+          actor: 'Iron-Man',
           amount: 2,
-          who_is_taking_damage: 'Rhino',
+          target: 'Rhino',
         },
       };
 
@@ -282,7 +282,7 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
         timestamp: Date.now(),
         key: 'CARD_PLAYED',
         params: {
-          who: 'Captain Marvel',
+          actor: 'Captain Marvel',
           card: 'Photonic Blast',
         },
       };
@@ -300,8 +300,8 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
         timestamp: Date.now(),
         key: 'combat.hero.defended',
         params: {
-          who_defends: 'Spider-Man',
-          who_attacks: 'Rhino',
+          actor: 'Spider-Man',
+          source: 'Rhino',
         },
       };
 
@@ -318,7 +318,7 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
         timestamp: Date.now(),
         key: 'encounter.whenRevealed.cancelled',
         params: {
-          who: 'Spider-Man',
+          actor: 'Spider-Man',
           card: "I Think You're Right",
         },
       };
@@ -403,7 +403,7 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
         key: 'card.effect.addStatus',
         actor: { name: 'Mockingbird', type: 'ally' },
         params: {
-          who: 'Mockingbird',
+          actor: 'Mockingbird',
           card: 'Mockingbird',
           status: 'STUNNED',
           target: 'Rhino',
@@ -448,11 +448,8 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
           phase: GamePhase.VILLAIN_PHASE,
           key: 'villain.attack.hit',
           params: {
-            who_attacks: 'Rhino',
-            who_is_taking_damage: 'Iron-Man',
-            villain: 'Rhino',
-            player: 'Iron-Man',
-            damage: 3,
+            actor: 'Rhino',
+            target: 'Iron-Man',
             amount: 3,
             remainingHp: 6,
           },
@@ -478,11 +475,8 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
           phase: GamePhase.VILLAIN_PHASE,
           key: 'minion.attack.hit',
           params: {
-            who_attacks: 'Hydra Soldier',
-            who_is_taking_damage: 'Iron-Man',
-            minion: 'Hydra Soldier',
-            player: 'Iron-Man',
-            damage: 2,
+            actor: 'Hydra Soldier',
+            target: 'Iron-Man',
             amount: 2,
           },
         };
@@ -507,9 +501,7 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
           phase: GamePhase.VILLAIN_PHASE,
           key: 'villain.scheme.threat',
           params: {
-            who: 'Rhino',
-            villain: 'Rhino',
-            threat: 2,
+            actor: 'Rhino',
             amount: 2,
             boost: 1,
             scheme: 'The Break-In!',
@@ -538,7 +530,7 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
           round: 1,
           key: 'card.discarded.fromDeck',
           params: {
-            who: 'Iron-Man',
+            actor: 'Iron-Man',
             count: 2,
             source: 'deck',
             cards: 'Repulsor Blast, Haymaker',
@@ -561,7 +553,7 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
           round: 1,
           key: 'card.discarded.fromHand',
           params: {
-            who: 'Iron-Man',
+            actor: 'Iron-Man',
             count: 1,
             source: 'hand',
             cards: 'Genius',
@@ -579,7 +571,7 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
           round: 1,
           key: 'card.effect.drawCards',
           params: {
-            who: 'Iron-Man',
+            actor: 'Iron-Man',
             count: 2,
             cards: ['Web-Shooter', 'Backflip'] as any,
           },
@@ -601,7 +593,7 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
           round: 1,
           key: 'card.effect.drawCards',
           params: {
-            who: 'Carol Danvers',
+            actor: 'Carol Danvers',
             count: 1,
             cards: ['Energy Absorption'],
             source: 'Photonic Blast',
@@ -628,7 +620,7 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
           round: 1,
           key: 'black_cat.fetch',
           params: {
-            who: 'Spider-Man',
+            actor: 'Spider-Man',
             card: 'Web-Shooter',
           },
         };

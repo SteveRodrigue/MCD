@@ -276,6 +276,7 @@ describe('Villain stage change (#303)', () => {
     const charge = give(CHARGE);
     klaw.attachments = [charge];
     klaw.statusCards = [StatusCard.CONFUSED];
+    state.encounterDeck = [give('01127')];
 
     const result = plugin.onVillainDefeated(state, instanceId!);
 
@@ -284,7 +285,9 @@ describe('Villain stage change (#303)', () => {
     expect(state.villain.instanceId).toBe(instanceId);
     expect(state.villain.statusCards).toEqual([StatusCard.CONFUSED]);
     expect(state.villain.attachments.map((a) => a.instanceId)).toContain(charge.instanceId);
-    // Printed 18 + 10 from The "Immortal" Klaw (kept in the Klaw callback)
+    expect(state.villain.attachments.map((a) => a.card.code)).not.toContain('01127');
+    expect(state.sideSchemes.some((s) => s.card.code === '01127')).toBe(true);
+    // Printed 18 + 10 from The "Immortal" Klaw side scheme
     expect(state.villain.health).toBe(28);
     expect(state.villain.maxHealth).toBe(28);
   });

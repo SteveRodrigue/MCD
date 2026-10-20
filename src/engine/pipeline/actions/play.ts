@@ -6,11 +6,8 @@ import {
   DecisionPromptOption,
   PendingDecisionPrompt,
   PlayerState,
-  SideSchemeCard,
-  PlayerSideSchemeCard,
   StatusCard,
   VillainState,
-  getPerPlayerCount,
   getVillainsInPlay,
 } from '../../models';
 import {
@@ -30,6 +27,7 @@ import {
 } from '../cost-engine';
 import { resetCardState } from '../../effects';
 import { initializeCardUses, attachCardToHost } from '../../state/state-validator';
+import { placeSideScheme } from '../../state/side-scheme';
 import { getEffectiveMaxHealth, isEntityIncapacitatedByStatus } from '../stat-calculator';
 import { applyToughnessOnEntry } from '../../state/card-instance';
 import { dispatchTrigger } from '../../triggers/trigger-dispatcher';
@@ -536,16 +534,7 @@ export function playPlayerSideScheme(
 ): { state: GameState; result: ActionResult } {
   // Player Side Schemes enter the shared scheme area alongside encounter Side Schemes
   // (RR v1.8 p. 26, ADR-0034), scaled by player count like any other scheme.
-  const schemeCard = playedCardInstance.card as unknown as SideSchemeCard | PlayerSideSchemeCard;
-  const baseThreat =
-    (schemeCard.baseThreat ?? 0) * (schemeCard.baseThreatFixed ? 1 : getPerPlayerCount(nextState));
-
-  nextState.sideSchemes.push({
-    instanceId: playedCardInstance.instanceId,
-    card: schemeCard,
-    threat: baseThreat,
-    ownerId: player.id,
-  });
+  const baseThreat = placeSideScheme(nextState, playedCardInstance, player.id);
 
   // Dispatch CARD_PLAYED trigger (side scheme was played — cost paid)
   dispatchTrigger(nextState, 'CARD_PLAYED', {

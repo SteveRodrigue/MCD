@@ -17,11 +17,8 @@ import { cardCatalog } from '../../data/importer/card-loader';
 import { createCardInstance } from '../state/card-instance';
 import { appendLog } from '../state/game-log';
 import { nextEngineId, shuffleArray } from '../state/rng';
-import {
-  advanceVillainStage,
-  revealVillainStage,
-  villainStageHitPoints,
-} from './advance-villain-stage';
+import { advanceVillainStage, revealVillainStage } from './advance-villain-stage';
+import { villainStageHitPoints } from '../pipeline/stat-calculator';
 import type { ScenarioDefinition, ScenarioGameSetupOptions, ScenarioPlugin } from './types';
 
 /**
@@ -42,9 +39,6 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
   resolveStage1ASetup(state: GameState, _options?: ScenarioGameSetupOptions): GameState {
     return state;
   }
-
-  /** Effects of a villain stage entering play by advancing that are not supplemental data. */
-  protected onVillainStageAdvanced(_state: GameState, _stageCode: string): void {}
 
   /** The B sides of the main scheme stages, in order. */
   private mainSchemeStages(): MainSchemeCard[] {
@@ -121,7 +115,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
         `Villain card '${startingStageCode}' not found in catalog for scenario '${this.definition.id}'.`,
       );
     }
-    const maxHealth = villainStageHitPoints(villainCard, state.players.length || 1);
+    const maxHealth = villainStageHitPoints(villainCard, getPerPlayerCount(state));
     const villain: VillainState = {
       instanceId: `villain_${nextEngineId(state, 'id')}_${startingStageCode}`,
       card: villainCard,
@@ -158,7 +152,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
         scenario: this.definition.name,
         difficulty,
         actor: villainCard.name,
-        health: maxHealth,
+        health: villain.health,
         threatTarget: mainScheme.targetThreat,
       },
       onomatopoeia: this.setupOnomatopoeia,
@@ -178,9 +172,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     const stageIndex = stages.indexOf(villain.card.code);
     const nextStageCode = stageIndex >= 0 ? stages[stageIndex + 1] : undefined;
     if (nextStageCode) {
-      return advanceVillainStage(state, villain.instanceId!, nextStageCode, () =>
-        this.onVillainStageAdvanced(state, nextStageCode),
-      );
+      return advanceVillainStage(state, villain.instanceId!, nextStageCode);
     }
 
     state.winner = 'HEROES';

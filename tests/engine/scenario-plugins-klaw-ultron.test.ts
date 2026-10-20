@@ -45,7 +45,7 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
       expect(state.players[0].engagedMinions[0].card.type).toBe('minion');
     });
 
-    it('advances Klaw from Stage I to Stage II and attaches Immortal Klaw with bonus HP', () => {
+    it('advances Klaw from Stage I to Stage II and reveals Immortal Klaw as a side scheme with bonus HP', () => {
       const klawPlugin = ScenarioRegistry.get('klaw') as KlawScenarioPlugin;
       const villainCard = cardCatalog.getCard('01113') as VillainCard;
       const mainSchemeCard = cardCatalog.getCard('01116b') as MainSchemeCard;
@@ -78,8 +78,9 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
       expect(state.villain.card.code).toBe('01114'); // Klaw II
       // Base HP 18 + 10 from Immortal Klaw = 28 HP
       expect(state.villain.health).toBe(28);
-      // Immortal Klaw (01127) is attached
-      expect(state.villain.attachments.some((a) => a.card.code === '01127')).toBe(true);
+      // Immortal Klaw (01127) is revealed as a side scheme, not attached
+      expect(state.sideSchemes.some((s) => s.card.code === '01127')).toBe(true);
+      expect(state.villain.attachments.some((a) => a.card.code === '01127')).toBe(false);
     });
   });
 

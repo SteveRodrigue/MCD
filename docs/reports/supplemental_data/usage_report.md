@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-10-19T12:08:22.624Z`  
+> **Generated:** `2026-10-20T11:12:54.227Z`  
 > **Source Packs Scanned:** `aoa_encounter, core, core_encounter, cw_encounter, mts`
 
 ---
@@ -9,8 +9,8 @@
 
 | Metric | Count | Health / Coverage | Description |
 | :--- | :---: | :---: | :--- |
-| **Total Cards Registered** | **160** | 100% | Total cards present in `src/data/supplemental/` |
-| **Active Declared Cards** | **145** | - | Cards with executable `abilities: [...]` |
+| **Total Cards Registered** | **162** | 100% | Total cards present in `src/data/supplemental/` |
+| **Active Declared Cards** | **147** | - | Cards with executable `abilities: [...]` |
 | **No Supplemental Needed** | [14](detailed_reports/vanilla_and_passive_cards.md) | Verified | Vanilla / passive cards explicitly requiring no supplemental hooks |
 | **Open Ambiguity Reports** | **2** | Blocked | Cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🟢 0 | Cards marked `noSupplementalNeeded` that have printed rules text |
@@ -21,7 +21,7 @@
 | **Step Conditions Code Path Coverage** | **100.0%** | **0/0** | [0 In Use](detailed_reports/condition_gates_usage.md) |
 | **Trigger Types Code Path Coverage** | **100.0%** | **31/31** | [20 In Use](detailed_reports/timing_and_triggers_usage.md) |
 | **Timing Types Code Path Coverage** | **100.0%** | **19/19** | [15 In Use](detailed_reports/timing_and_triggers_usage.md) |
-| **Total Abilities Declared** | **164** | - | Total individual ability definitions declared |
+| **Total Abilities Declared** | **166** | - | Total individual ability definitions declared |
 | **Multi-Step Pipelines (2+ Steps)** | [32](detailed_reports/multi_ability_and_multistep_cards.md) | - | Abilities decomposed into sequenced execution pipelines |
 | **Cards with Multiple Abilities (2+)** | [17](detailed_reports/multi_ability_and_multistep_cards.md) | - | Cards declaring more than 1 distinct ability header |
 
@@ -70,9 +70,9 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | `CHOSEN_SCHEME` | **11** | 10 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-scheme) |
 | `SELF` | **10** | 10 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self) |
 | `SELF_IDENTITY` | **10** | 10 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self-identity) |
+| `VILLAIN` | **5** | 5 | [Inspect Cards](detailed_reports/target_selectors_usage.md#villain) |
 | `SELF_HERO` | **5** | 5 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self-hero) |
 | `CHOSEN_PLAYER` | **4** | 4 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-player) |
-| `VILLAIN` | **4** | 4 | [Inspect Cards](detailed_reports/target_selectors_usage.md#villain) |
 | `MAIN_SCHEME` | **4** | 3 | [Inspect Cards](detailed_reports/target_selectors_usage.md#main-scheme) |
 | `CHOSEN_MINION` | **2** | 2 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-minion) |
 | `ALL_ENEMIES` | **2** | 2 | [Inspect Cards](detailed_reports/target_selectors_usage.md#all-enemies) |
@@ -106,8 +106,9 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | `REMOVE_THREAT` | **10 cards** | 12 steps | [View Cards](detailed_reports/effects_usage.md#remove-threat) |
 | `PLAYER_CHOICE` | **10 cards** | 10 steps | [View Cards](detailed_reports/effects_usage.md#player-choice) |
 | `ADD_THREAT` | **9 cards** | 10 steps | [View Cards](detailed_reports/effects_usage.md#add-threat) |
+| `SEARCH` | **7 cards** | 7 steps | [View Cards](detailed_reports/effects_usage.md#search) |
 | `HEAL_DAMAGE` | **6 cards** | 6 steps | [View Cards](detailed_reports/effects_usage.md#heal-damage) |
-| `SEARCH` | **6 cards** | 6 steps | [View Cards](detailed_reports/effects_usage.md#search) |
+| `MODIFY_MAX_HEALTH` | **5 cards** | 5 steps | [View Cards](detailed_reports/effects_usage.md#modify-max-health) |
 | `READY` | **5 cards** | 5 steps | [View Cards](detailed_reports/effects_usage.md#ready) |
 | `CHANGE_FORM` | **5 cards** | 5 steps | [View Cards](detailed_reports/effects_usage.md#change-form) |
 
@@ -120,7 +121,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | Feature | In Use | Declared Keys / Resolvers |
 | :--- | :---: | :--- |
 | **Dynamic Value Sources** | **14** | `HAS_IDENTITY`, `RESOURCES_SPENT`, `COUNTERS (counter: energy)`, `STAT_VALUE (stat: SUFFERED_DAMAGE)`, `DISCARDED_CARDS (attr: COUNT)`, `ENTITY_COUNT` *(+8 more)* |
-| **Filter Criteria Keys** | **5** | `resourceIcons` (2), `codes` (2), `types` (17), `traits` (10), `sets` (3) |
+| **Filter Criteria Keys** | **5** | `resourceIcons` (2), `codes` (3), `types` (17), `traits` (10), `sets` (3) |
 | **Filter Compositions** | **0** | *(None declared)* |
 
 ---

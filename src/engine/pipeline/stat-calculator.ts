@@ -1,6 +1,7 @@
 import {
   GameState,
   VillainState,
+  VillainCard,
   CardInstance,
   AllyCard,
   HeroCard,
@@ -12,6 +13,8 @@ import {
   StatusCard,
   CardAbility,
   Keyword,
+  getActiveVillain,
+  getPerPlayerCount,
 } from '../models';
 import { parseKeywordItem } from '../models/keyword';
 import { getStepEffectParams } from '../../data/supplemental/runtime';
@@ -80,27 +83,42 @@ export function getEffectiveMinionAttack(state: GameState, minion: CardInstance)
 }
 
 /**
+ * Sum of the CONSTANT `MODIFY_MAX_HEALTH` steps on `sources` (attachments, side schemes), skipping
+ * steps aimed at a different `target` (a step without a target applies to whatever it modifies).
+ */
+function sumConstantMaxHealthBonus(
+  state: GameState,
+  sources: CardInstance[],
+  targetCardInstance?: CardInstance,
+  target?: string,
+): number {
+  let bonus = 0;
+  for (const source of sources) {
+    for (const ab of source.card.enrichment?.abilities || []) {
+      if (ab.timing !== 'CONSTANT') continue;
+      for (const step of ab.steps || []) {
+        if (step.effect !== 'MODIFY_MAX_HEALTH') continue;
+        const params = getStepEffectParams(step);
+        if (target && params.target && params.target !== target) continue;
+        bonus += evaluateDynamicAmount(
+          params.amount as number | DynamicValueSource | undefined,
+          {},
+          { state, sourceCardInstance: source, targetCardInstance },
+        );
+      }
+    }
+  }
+  return bonus;
+}
+
+/**
  * A minion's effective hit points: the printed value plus the CONSTANT `MODIFY_MAX_HEALTH` steps
  * of the cards attached to it (Genetically Enhanced: "Attached minion gets +3 hit points"). Damage
  * stays on the minion when a bonus is lost; only the ceiling changes.
  */
 export function getEffectiveMinionHitPoints(state: GameState, minion: CardInstance): number {
   const printed = (minion.card as { health?: number }).health || 1;
-  let bonus = 0;
-  for (const attachment of minion.attachments || []) {
-    for (const ab of attachment.card.enrichment?.abilities || []) {
-      if (ab.timing !== 'CONSTANT') continue;
-      for (const step of ab.steps || []) {
-        if (step.effect !== 'MODIFY_MAX_HEALTH') continue;
-        bonus += evaluateDynamicAmount(
-          getStepEffectParams(step).amount as number | DynamicValueSource | undefined,
-          {},
-          { state, sourceCardInstance: attachment, targetCardInstance: minion },
-        );
-      }
-    }
-  }
-  return Math.max(1, printed + bonus);
+  return Math.max(1, printed + sumConstantMaxHealthBonus(state, minion.attachments || [], minion));
 }
 
 export interface EffectiveAllyStats {
@@ -164,6 +182,42 @@ export function getEffectiveVillainStats(
     scheme: Math.max(0, scheme),
     keywords,
   };
+}
+
+/** Printed hit points of a villain stage: per player when the card says so (RR v1.8 hit points). */
+export function villainStageHitPoints(card: VillainCard, playerCount: number): number {
+  return card.health * (card.healthPerHero ? playerCount || 1 : 1);
+}
+
+/**
+ * Effective maximum hit points of a villain: the printed stage value plus constant modifiers on its
+ * attachments and, for the active villain, on side schemes in play (The "Immortal" Klaw: "Klaw gets
+ * +10 hit points"; RR v1.8 'Hit Points').
+ */
+export function getEffectiveVillainMaxHealth(state: GameState, villain?: VillainState): number {
+  const target = villain ?? getActiveVillain(state);
+  if (!target?.card) return 0;
+
+  const isActive = target.instanceId === getActiveVillain(state)?.instanceId;
+  const schemes = isActive ? state.sideSchemes || [] : [];
+  const bonus =
+    sumConstantMaxHealthBonus(state, target.attachments || [], undefined, 'VILLAIN') +
+    sumConstantMaxHealthBonus(state, schemes as unknown as CardInstance[], undefined, 'VILLAIN');
+  return Math.max(1, villainStageHitPoints(target.card, getPerPlayerCount(state)) + bonus);
+}
+
+/**
+ * Brings a villain's maxHealth and remaining health in line with its constant max hit point
+ * modifiers (damage stays on the villain). Returns true when that leaves it at 0 or fewer hit
+ * points; the caller defeats it once its own bookkeeping is done.
+ */
+export function syncVillainMaxHealth(state: GameState, villain?: VillainState): boolean {
+  const target = villain ?? getActiveVillain(state);
+  if (!target) return false;
+  const delta = getEffectiveVillainMaxHealth(state, target) - target.maxHealth;
+  target.maxHealth += delta;
+  target.health += delta;
+  return target.health <= 0;
 }
 
 /**

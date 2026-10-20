@@ -1,4 +1,5 @@
 import { evaluateStepGate } from '../pipeline/step-gate-evaluator';
+import { handleVillainDefeat } from '../pipeline/scenario-helpers';
 import {
   GameState,
   CardInstance,
@@ -51,6 +52,7 @@ import {
   hasEntityKeyword,
   consumeEntityStatusCards,
   isEntityIncapacitatedByStatus,
+  syncVillainMaxHealth,
 } from '../pipeline/stat-calculator';
 import {
   dispatchTrigger,
@@ -483,6 +485,8 @@ export function defeatSideScheme(
 
   const sideScheme = state.sideSchemes[schemeIndex];
   state.sideSchemes.splice(schemeIndex, 1);
+  // Losing a hit point bonus can leave the villain at 0; it is defeated after this scheme is routed
+  const villainDefeated = syncVillainMaxHealth(state);
 
   const defeatedInstance: CardInstance = {
     instanceId: sideScheme.instanceId,
@@ -547,6 +551,8 @@ export function defeatSideScheme(
     },
     onomatopoeia: 'SCHEME DEFEATED!',
   });
+
+  if (villainDefeated) handleVillainDefeat(state);
 
   return true;
 }

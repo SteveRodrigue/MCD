@@ -39,6 +39,7 @@ export { drawEncounterCard };
 import { enqueueDecisionPrompt, peekDecisionPrompt } from './prompt-queue';
 import { resolveAttachmentHost } from './attachment-host';
 import { attachCardToHost } from '../state/state-validator';
+import { placeSideScheme } from '../state/side-scheme';
 import {
   step5_passFirstPlayerToken,
   step6_endVillainPhaseAndRound,
@@ -599,14 +600,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
       encounterCardInstance: cardInstance,
     });
   } else if (card.type === CardType.SIDE_SCHEME) {
-    const sideSchemeCard = card as SideSchemeCard;
-    const baseThreat =
-      sideSchemeCard.baseThreat * (sideSchemeCard.baseThreatFixed ? 1 : getPerPlayerCount(state));
-    state.sideSchemes.push({
-      instanceId: cardInstance.instanceId,
-      card: sideSchemeCard,
-      threat: baseThreat,
-    });
+    const baseThreat = placeSideScheme(state, cardInstance);
     appendLog(state, {
       key: 'encounter.reveal.sideScheme',
       params: { card: card.name, amount: baseThreat },

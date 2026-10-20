@@ -1,16 +1,10 @@
-import {
-  CardInstance,
-  CardType,
-  GameState,
-  PlayerState,
-  SideSchemeCard,
-  getPerPlayerCount,
-} from '@engine/models';
+import { CardInstance, CardType, GameState, PlayerState } from '@engine/models';
 import { executeEffect } from './index';
 import { resolveActiveEncounterCardAfterInterrupt } from '../pipeline/villain-phase';
 import { shuffleArray } from '../state/rng';
 import { attachCardToHost } from '../state/state-validator';
 import { appendLog } from '../state/game-log';
+import { placeSideScheme } from '../state/side-scheme';
 
 /** Zone the cards came from: one for all of them, or looked up per card (multi-zone search). */
 export type CardOrigin = string | ((card: CardInstance) => string);
@@ -62,15 +56,7 @@ export function routeCardInstances(
   } else if (destination === 'TABLEAU') {
     for (const card of cards) {
       if (card.card.type === CardType.SIDE_SCHEME) {
-        const sideSchemeCard = card.card as SideSchemeCard;
-        const baseThreat =
-          sideSchemeCard.baseThreat *
-          (sideSchemeCard.baseThreatFixed ? 1 : getPerPlayerCount(state));
-        state.sideSchemes.push({
-          instanceId: card.instanceId,
-          card: sideSchemeCard,
-          threat: baseThreat,
-        });
+        const baseThreat = placeSideScheme(state, card);
         appendLog(state, {
           key: 'encounter.reveal.sideScheme',
           params: { card: card.card.name, amount: baseThreat },

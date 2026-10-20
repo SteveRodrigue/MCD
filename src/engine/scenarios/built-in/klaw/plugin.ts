@@ -1,4 +1,4 @@
-import { GameState, SideSchemeCard, getActiveVillain, getPerPlayerCount } from '@engine/models';
+import { GameState, SideSchemeCard } from '@engine/models';
 import { cardCatalog } from '../../../../data/importer/card-loader';
 import { createCardInstance } from '../../../state/card-instance';
 import { appendLog } from '../../../state/game-log';
@@ -7,8 +7,8 @@ import type { ScenarioDefinition, ScenarioGameSetupOptions } from '../../types';
 import definitionData from './definition.json';
 
 /**
- * Klaw (Underground Distribution). Stage 1A setup and the Klaw II reveal are still code, not
- * supplemental data (Gate 2 card integration).
+ * Klaw (Underground Distribution). Stage 1A setup is scenario code; Klaw II When Revealed
+ * and The "Immortal" Klaw are supplemental data.
  */
 export class KlawScenarioPlugin extends DeclarativeScenarioPlugin {
   constructor() {
@@ -69,46 +69,6 @@ export class KlawScenarioPlugin extends DeclarativeScenarioPlugin {
     }
 
     return state;
-  }
-
-  protected onVillainStageAdvanced(state: GameState, stageCode: string): void {
-    if (stageCode === '01114') this.resolveStageIIWhenRevealed(state);
-  }
-
-  private resolveStageIIWhenRevealed(state: GameState): void {
-    // Search encounter deck and discard for The "Immortal" Klaw (01127) and attach it to Klaw
-    const immortalKlawCode = '01127';
-    let immortalCard = null;
-
-    const deckIdx = state.encounterDeck.findIndex((c) => c.card.code === immortalKlawCode);
-    if (deckIdx !== -1) {
-      immortalCard = state.encounterDeck.splice(deckIdx, 1)[0];
-    } else {
-      const discardIdx = state.encounterDiscard.findIndex((c) => c.card.code === immortalKlawCode);
-      if (discardIdx !== -1) {
-        immortalCard = state.encounterDiscard.splice(discardIdx, 1)[0];
-      }
-    }
-
-    if (!immortalCard) {
-      const raw = cardCatalog.getCard(immortalKlawCode);
-      if (raw) immortalCard = createCardInstance(raw);
-    }
-
-    if (immortalCard) {
-      getActiveVillain(state).attachments.push(immortalCard);
-      // Immortal Klaw grants +10 health per player
-      const bonusHealth = 10 * (getPerPlayerCount(state) || 1);
-      getActiveVillain(state).health += bonusHealth;
-      getActiveVillain(state).maxHealth += bonusHealth;
-
-      appendLog(state, {
-        category: 'status',
-        key: 'attachment.attached',
-        params: { card: immortalCard.card.name, target: getActiveVillain(state).card.name },
-        onomatopoeia: 'IMMORTAL KLAW ATTACHES!',
-      });
-    }
   }
 }
 

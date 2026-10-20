@@ -1,6 +1,6 @@
 # Plan R9: Klaw II "When Revealed" at setup; The "Immortal" Klaw as a side scheme
 
-> **Status:** Proposed, waiting for owner approval (includes a supplemental data change).
+> **Status:** Implemented.
 > **Source:** post-remediation report of code audit AUD-20261017-232534 (item R9), found during F011-A (`1b44727`).
 > **Gate:** 2 (Klaw). Related: [#265](https://github.com/SteveRodrigue/MCD/issues/265) (Klaw encounter cards without supplemental entries), [#292](https://github.com/SteveRodrigue/MCD/issues/292) (Klaw's additional boost Forced Interrupt). **Tier:** 2. **Estimate:** 3–4 h.
 > **Queue:** section 3.5 of [teamwork_status_and_next_target.md](teamwork_status_and_next_target.md). File a Gate 2 issue for it when work starts.

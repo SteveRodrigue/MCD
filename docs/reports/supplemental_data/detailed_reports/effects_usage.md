@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-19T12:08:22.624Z` | **Active Effects In Use:** **48/56**
+> **Generated:** `2026-10-20T11:12:54.227Z` | **Active Effects In Use:** **48/56**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
@@ -163,6 +163,18 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_when_revealed` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 
+### <a id="search"></a>`SEARCH` (7 Cards, 7 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01029b` | **Tony Stark (alter_ego)** | `core` | `futurist` |
+| `01034` | **Stark Tower (support)** | `core` | `stark_tower_retrieve` |
+| `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
+| `01041` | **Shuri (ally)** | `core` | `shuri_enters_play` |
+| `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
+| `01095` | **Rhino (villain)** | `core_encounter` | `rhino_stage_ii_when_revealed` |
+| `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_when_revealed` |
+
 ### <a id="heal-damage"></a>`HEAL_DAMAGE` (6 Cards, 6 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -174,17 +186,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 
-### <a id="search"></a>`SEARCH` (6 Cards, 6 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01029b` | **Tony Stark (alter_ego)** | `core` | `futurist` |
-| `01034` | **Stark Tower (support)** | `core` | `stark_tower_retrieve` |
-| `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
-| `01041` | **Shuri (ally)** | `core` | `shuri_enters_play` |
-| `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
-| `01095` | **Rhino (villain)** | `core_encounter` | `rhino_stage_ii_when_revealed` |
-
 ### <a id="change-form"></a>`CHANGE_FORM` (5 Cards, 5 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -194,6 +195,16 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01165` | **Eviction Notice (obligation)** | `core_encounter` | `eviction_notice_resolve` |
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
+
+### <a id="modify-max-health"></a>`MODIFY_MAX_HEALTH` (5 Cards, 5 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01036` | **Mark V Armor (upgrade)** | `core` | `mark_v_armor_hp` |
+| `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_hp` |
+| `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
+| `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
+| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
 
 ### <a id="ready"></a>`READY` (5 Cards, 5 Step Occurrences)
 
@@ -222,15 +233,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01043b` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_b` |
 | `01043c` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_c` |
 | `01043d` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_d` |
-
-### <a id="modify-max-health"></a>`MODIFY_MAX_HEALTH` (4 Cards, 4 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01036` | **Mark V Armor (upgrade)** | `core` | `mark_v_armor_hp` |
-| `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_hp` |
-| `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
-| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
 
 ### <a id="attach-to-host"></a>`ATTACH_TO_HOST` (3 Cards, 3 Step Occurrences)
 

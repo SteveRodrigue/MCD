@@ -153,9 +153,10 @@ export interface LogEvents {
     actor: string;
     target: string;
     source: string;
+    player?: string;
     amount?: number;
   };
-  'combat.ally.defended': { actor: string; target: string; source: string };
+  'combat.ally.defended': { actor: string; target: string; source: string; player?: string };
   'combat.attack.cancelled': { source?: string };
   'combat.attack.undefended': { actor: string; target: string; player?: string };
   'combat.damage.prevented': {

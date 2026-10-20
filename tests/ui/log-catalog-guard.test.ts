@@ -81,6 +81,9 @@ const canonicalMockParams: Record<string, any> = {
   basePerPlayer: 1,
   round: 1,
   boost: 1,
+  baseAtk: 2,
+  baseSch: 2,
+  totalThreat: 3,
 };
 
 describe('Log Catalog Coverage Guard Test (Plan R7)', () => {

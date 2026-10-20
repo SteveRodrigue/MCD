@@ -125,7 +125,7 @@ function step1_preAttackAndStunCheck(
         category: 'combat',
         key: attackerType === 'VILLAIN' ? 'villain.attack.cancelled' : 'minion.attack.cancelled',
         params: {
-          actor: attackerType === 'VILLAIN' ? villain.card.name : attackerCard?.card.name || '',
+          actor: attackerEntity.card.name,
           source: att.card.name,
         },
         onomatopoeia: `${att.card.name.toUpperCase()}! ATTACK CANCELLED & STUNNED!`,
@@ -526,6 +526,7 @@ export function resolveDefenderDeclaration(
         actor: heroOrPlayerName,
         source: attackerName,
         target: heroOrPlayerName,
+        player: player.name,
         amount: attackContext.defenseValue,
       },
       onomatopoeia: 'DEFENSE DECLARED!',
@@ -544,6 +545,7 @@ export function resolveDefenderDeclaration(
           actor: ally.card.name,
           source: attackerName,
           target: heroOrPlayerName,
+          player: player.name,
         },
         onomatopoeia: 'ALLY BLOCKS!',
       });

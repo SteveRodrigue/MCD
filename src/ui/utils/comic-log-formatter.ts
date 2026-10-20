@@ -233,9 +233,9 @@ function formatHierarchicalLogKey(key: string, entry: GameLogEntry): string {
   if (key.startsWith('player.')) {
     const remainder = key.slice(7);
     const rawPlayerName =
-      (params.actor ? String(params.actor) : undefined) ||
       entry.actor?.name ||
       (params.player ? String(params.player) : undefined) ||
+      (params.actor ? String(params.actor) : undefined) ||
       'Player';
     const playerName = cleanCharacterName(rawPlayerName);
     return `${playerName}: ${remainder}`;
@@ -244,9 +244,9 @@ function formatHierarchicalLogKey(key: string, entry: GameLogEntry): string {
   if (key.startsWith('villain.')) {
     const remainder = key.slice(8);
     const villainName =
-      (params.actor ? String(params.actor) : undefined) ||
       entry.actor?.name ||
       (params.villain ? String(params.villain) : undefined) ||
+      (params.actor ? String(params.actor) : undefined) ||
       'Villain';
     return `${villainName}: ${remainder}`;
   }
@@ -455,7 +455,7 @@ function mapToCanonicalTemplateKey(key?: string, entry?: GameLogEntry): string |
 
 /**
  * Normalizes log entry parameters into canonical placeholder tokens:
- * who, who_attacks, who_is_taking_damage, who_defends, target, amount, card, scheme, status, source, form.
+ * actor, target, amount, card, scheme, status, source, form.
  * Uses gameState as fallback when parameters are omitted.
  */
 function normalizeLogParams(
@@ -464,11 +464,19 @@ function normalizeLogParams(
 ): Record<string, string | number | boolean> {
   const p = (entry.params || {}) as Record<string, any>;
 
+  const actorName = cleanCharacterName(entry.actor?.name);
+  const ownerNames = [p.player, p.actor].filter((n) => n !== undefined).map(String);
+  const matchedPlayer =
+    gameState?.players?.find(
+      (pl) =>
+        pl.name === actorName ||
+        pl.hero?.name === actorName ||
+        cleanCharacterName(pl.name) === actorName ||
+        ownerNames.some((n) => pl.name === n || pl.hero?.name === n),
+    ) || gameState?.players?.[0];
+
   const defaultHeroName =
-    cleanCharacterName(
-      gameState?.players?.[0]?.hero?.name || gameState?.players?.[0]?.name,
-      gameState?.players?.[0],
-    ) || 'Hero';
+    cleanCharacterName(matchedPlayer?.hero?.name || matchedPlayer?.name, matchedPlayer) || 'Hero';
   const defaultVillainName =
     (gameState ? getActiveVillain(gameState) : undefined)?.card?.name || 'Villain';
   const defaultMainSchemeName =
@@ -485,27 +493,17 @@ function normalizeLogParams(
     p.actor !== undefined
       ? p.actor
       : isDefenseKey
-        ? (p.who_defends ?? p.defender ?? entry.actor?.name ?? defaultHeroName)
-        : (entry.actor?.name ??
-          p.who_attacks ??
-          p.villain ??
-          p.minion ??
-          p.who ??
-          p.player ??
-          defaultHeroName);
+        ? (entry.actor?.name ?? defaultHeroName)
+        : (entry.actor?.name ?? p.player ?? defaultHeroName);
   const actor = cleanCharacterName(String(rawActor));
 
   // 2. Resolve canonical 'target'
   const rawTarget =
     p.target !== undefined
       ? p.target
-      : (p.who_is_taking_damage ??
-        p.host ??
-        p.victim ??
-        (isDefenseKey ? p.target : undefined) ??
-        (entry.actor?.type === 'villain' || entry.actor?.type === 'minion'
-          ? defaultHeroName
-          : defaultVillainName));
+      : entry.actor?.type === 'villain' || entry.actor?.type === 'minion'
+        ? defaultHeroName
+        : defaultVillainName;
   let target = String(rawTarget);
   if (target.toUpperCase() === 'VILLAIN') {
     target = defaultVillainName;
@@ -532,14 +530,7 @@ function normalizeLogParams(
   else if (typeof p.boost === 'number' || typeof p.boost === 'string') amount = p.boost;
 
   // 5. Resolve canonical 'source'
-  const rawSource =
-    p.source !== undefined
-      ? p.source
-      : ((isDefenseKey ? (p.who_attacks ?? p.attacker) : undefined) ??
-        p.ability ??
-        p.sourceCardName ??
-        p.cancelledBy ??
-        'Source');
+  const rawSource = p.source !== undefined ? p.source : (p.ability ?? p.sourceCardName ?? 'Source');
   const source = String(rawSource);
 
   // Additional fields
@@ -550,7 +541,11 @@ function normalizeLogParams(
         ? String(p.mainScheme)
         : p.sideScheme !== undefined
           ? String(p.sideScheme)
-          : defaultMainSchemeName;
+          : p.target !== undefined
+            ? String(p.target)
+            : p.card !== undefined
+              ? String(p.card)
+              : defaultMainSchemeName;
 
   const status = p.status !== undefined ? String(p.status) : 'Status';
   const form =
@@ -604,35 +599,7 @@ function normalizeLogParams(
   normalized.amount = amount;
   normalized.source = source;
 
-  // Compatibility aliases for legacy templates and test assertions
-  normalized.who = actor;
-  normalized.player = actor;
-  normalized.who_attacks =
-    (p.who_attacks !== undefined ? String(p.who_attacks) : undefined) ?? actor;
-  normalized.villain = (p.villain !== undefined ? String(p.villain) : undefined) ?? actor;
-  normalized.minion = (p.minion !== undefined ? String(p.minion) : undefined) ?? actor;
-
-  normalized.who_is_taking_damage =
-    (p.who_is_taking_damage !== undefined ? String(p.who_is_taking_damage) : undefined) ?? target;
-  normalized.host = (p.host !== undefined ? String(p.host) : undefined) ?? target;
-  normalized.who_defends =
-    (p.who_defends !== undefined ? String(p.who_defends) : undefined) ??
-    (p.defender !== undefined ? String(p.defender) : undefined) ??
-    defaultHeroName;
-
   normalized.scheme = scheme;
-  normalized.upgrade = (p.upgrade !== undefined ? String(p.upgrade) : undefined) ?? card;
-  normalized.damage = (p.damage !== undefined ? (p.damage as any) : undefined) ?? amount;
-  normalized.threat = (p.threat !== undefined ? (p.threat as any) : undefined) ?? amount;
-  normalized.recovery = (p.recovery !== undefined ? (p.recovery as any) : undefined) ?? amount;
-  normalized.cost = (p.cost !== undefined ? (p.cost as any) : undefined) ?? amount;
-  normalized.baseAtk = (p.baseAtk !== undefined ? (p.baseAtk as any) : undefined) ?? 0;
-  normalized.baseSch = (p.baseSch !== undefined ? (p.baseSch as any) : undefined) ?? 0;
-  normalized.boost = (p.boost !== undefined ? (p.boost as any) : undefined) ?? p.boostIcons ?? 0;
-  normalized.totalDamage =
-    (p.totalDamage !== undefined ? (p.totalDamage as any) : undefined) ?? amount;
-  normalized.totalThreat =
-    (p.totalThreat !== undefined ? (p.totalThreat as any) : undefined) ?? amount;
   normalized.status = status;
   normalized.form = form;
   if (cardsStr) {
@@ -642,7 +609,7 @@ function normalizeLogParams(
     if (Array.isArray(p.cards)) normalized.count = p.cards.length;
     else if (Array.isArray(p.discardedCards)) normalized.count = p.discardedCards.length;
     else if (Array.isArray(p.drawnCards)) normalized.count = p.drawnCards.length;
-    else if (typeof amount === 'number') normalized.count = amount;
+    else if (p.amount !== undefined) normalized.count = amount;
   }
 
   return normalized;

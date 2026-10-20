@@ -2,11 +2,11 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-19T12:08:22.624Z`
+> **Generated:** `2026-10-20T11:12:54.227Z`
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (32 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (33 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -21,6 +21,7 @@
 | `01110` | **Hydra Bomber (minion)** | `core_encounter` | `hydra_bomber_when_revealed` |
 | `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
+| `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_when_revealed` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed` |
 | `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` |
 | `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
@@ -73,7 +74,7 @@
 | `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
 
-### <a id="constant"></a>`CONSTANT` (20 Cards)
+### <a id="constant"></a>`CONSTANT` (21 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -93,6 +94,7 @@
 | `01099` | **Charge (attachment)** | `core_encounter` | `charge_atk_bonus`, `charge_overkill` |
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_atk_bonus` |
 | `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
+| `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
 | `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
 | `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
@@ -244,7 +246,7 @@
 
 ## 2. Trigger Windows (`TriggerTypeSchema` — 20/31 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (35 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (36 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -259,6 +261,7 @@
 | `01110` | **Hydra Bomber (minion)** | `core_encounter` | `hydra_bomber_when_revealed` |
 | `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
+| `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_when_revealed` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed` |
 | `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` |
 | `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |

@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-19T12:08:22.624Z` | **Active Target Selectors In Use:** **29/43**
+> **Generated:** `2026-10-20T11:12:54.227Z` | **Active Target Selectors In Use:** **29/43**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -80,6 +80,16 @@
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
 
+### <a id="villain"></a>`VILLAIN` (5 Cards, 5 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01011` | **Spider-Woman (ally)** | `core` | `spider_woman_enters_play` |
+| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
+| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
+| `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
+| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
+
 ### <a id="chosen-player"></a>`CHOSEN_PLAYER` (4 Cards, 4 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -96,15 +106,6 @@
 | `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
 | `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
 | `01194` | **Unknown Card #01194** | `core_encounter` | `masterplan_when_revealed` |
-
-### <a id="villain"></a>`VILLAIN` (4 Cards, 4 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01011` | **Spider-Woman (ally)** | `core` | `spider_woman_enters_play` |
-| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
-| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
-| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
 
 ### <a id="all-enemies"></a>`ALL_ENEMIES` (2 Cards, 2 Declarations)
 

@@ -13,7 +13,6 @@ import {
   hasKeyword,
   getActiveVillain,
   getActiveMainScheme,
-  getPerPlayerCount,
 } from '@engine/models';
 import { matchesCardFilter } from '../../filters/card-filter';
 import { executeMinionAttackAgainstPlayer } from '../../pipeline/villain-phase';
@@ -33,6 +32,7 @@ import { nextEngineId, randomInt, shuffleArray } from '../../state/rng';
 import { resolvePlayerTargets } from '../target-resolver';
 import { getAvailableResources } from '../../pipeline/cost-engine';
 import { appendLog } from '../../state/game-log';
+import { placeSideScheme } from '../../state/side-scheme';
 import { routeCardInstances } from '../card-routing';
 import {
   EffectExecutionContext,
@@ -369,13 +369,7 @@ function handlePutIntoPlay(
 
     if (toZone === 'SIDE_SCHEMES' || cardInst.card.type === CardType.SIDE_SCHEME) {
       const sideCard = cardInst.card as SideSchemeCard;
-      const baseThreat =
-        sideCard.baseThreat * (sideCard.baseThreatFixed ? 1 : getPerPlayerCount(state));
-      state.sideSchemes.push({
-        instanceId: cardInst.instanceId,
-        card: sideCard,
-        threat: baseThreat,
-      });
+      placeSideScheme(state, cardInst);
 
       if (reveal) {
         const schemeAbilities = sideCard.enrichment?.abilities || [];

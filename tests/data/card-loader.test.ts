@@ -331,8 +331,8 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         'black_panther_nemesis',
       ]);
 
-      // Single cards modelled ahead of their set's scan (#244: Weapons Runner, Klaw set)
-      const scannedEncounterCards = new Set(['01121']);
+      // Single cards modelled ahead of their set's scan (#244: Weapons Runner; Plan R9: Klaw II, Immortal Klaw)
+      const scannedEncounterCards = new Set(['01114', '01121', '01127']);
 
       coreEncounterPack.forEach((card) => {
         const enrichment = supplementalRegistry[card.code];

@@ -611,6 +611,44 @@
         "originalText": "<b>When Revealed</b>: You are confused. If you are already confused, this card gains surge."
       }
     },
+    "01114": {
+      "abilities": [
+        {
+          "id": "klaw_stage_ii_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "SEARCH",
+              "effectParams": {
+                "source": [
+                  "ENCOUNTER_DECK",
+                  "ENCOUNTER_DISCARD"
+                ],
+                "filter": {
+                  "codes": [
+                    "01127"
+                  ]
+                },
+                "takeCount": 1,
+                "selectedDestination": "REVEAL",
+                "shuffleAfter": true,
+                "autoSelectIfUnambiguous": true
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-10-19T22:25",
+        "updatedAt": "2026-10-19T22:25",
+        "reviewedAt": "2026-10-19T22:25",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Search the encounter deck and discard pile for The \"Immortal\" Klaw and reveal it. Shuffle the encounter deck.\n[star] <b>Forced Interrupt</b>: When Klaw attacks, give him 1 additional boost card for this activation."
+      }
+    },
     "01121": {
       "abilities": [
         {
@@ -637,6 +675,32 @@
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Surge. <i>(After this card is revealed, reveal 1 additional encounter card.)</i>\n<hr />\n[star] <b>Boost</b>: Put Weapons Runner into play engaged with you."
+      }
+    },
+    "01127": {
+      "abilities": [
+        {
+          "id": "the_immortal_klaw_hit_points",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "MODIFY_MAX_HEALTH",
+              "effectParams": {
+                "amount": 10,
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-10-19T22:25",
+        "updatedAt": "2026-10-19T22:25",
+        "reviewedAt": "2026-10-19T22:25",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Klaw gets +10 hit points. <i>(When this scheme is defeated, Klaw loses those hit points.)</i>"
       }
     },
     "01155": {

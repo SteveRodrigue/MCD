@@ -11,14 +11,13 @@ import {
 import { cardCatalog } from '../../data/importer/card-loader';
 import { executeEffect, discardHostAttachmentsAndTuckedCards } from '../effects';
 import { applyToughnessOnEntry } from '../state/card-instance';
-import { getEffectiveVillainStats } from '../pipeline/stat-calculator';
+import {
+  getEffectiveVillainStats,
+  villainStageHitPoints,
+  syncVillainMaxHealth,
+} from '../pipeline/stat-calculator';
 import { appendLog } from '../state/game-log';
 import { nextEngineId } from '../state/rng';
-
-/** Printed hit points of a villain stage: per player when the card says so (RR v1.8 hit points). */
-export function villainStageHitPoints(card: VillainCard, playerCount: number): number {
-  return card.health * (card.healthPerHero ? playerCount || 1 : 1);
-}
 
 /**
  * Reveals a villain stage that just entered play: Toughness (a tough status card, not a second one
@@ -34,6 +33,7 @@ export function revealVillainStage(state: GameState, villain: VillainState): voi
       executeEffect(state, ability, { playerId });
     }
   }
+  syncVillainMaxHealth(state, villain);
 }
 
 /** The activation of the defeated villain ends without resolving (different title). */

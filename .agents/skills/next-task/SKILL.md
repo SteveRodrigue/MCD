@@ -22,7 +22,7 @@ Sources, in this order:
 
 ## Step 1: Baseline
 
-1. `rtk git pull`, `rtk git status`. Stop and report if the tree is not clean or a plan file in `docs/backlog/` belongs to unfinished work. (Do not run `npm test` here; tests run on targeted files during implementation and on `git push`.)
+1. `rtk git pull`, `rtk git status`. Stop and report if the tree is not clean or a plan file in `docs/backlog/` belongs to unfinished work.
 
 ## Step 2: Pick the task
 
@@ -55,7 +55,7 @@ Sources, in this order:
 2. Research: the issue body, `npm run rule -- <term>` and `references/rules/` (raw PDF only below 95% confidence), the related ADRs and code.
 3. **Refactor-First Check:** Look for similar functions, duplicate paths, or tech debt in the path of the change. Plan to merge similar functions, add a parameter to an existing function, or clean up spaghetti code in scope—never propose "supporting both".
 4. Write `docs/backlog/plan_issue_<n>_<slug>.md` following the plan anatomy in [`docs/backlog/README.md`](../../../docs/backlog/README.md).
-5. **Stop.** No code, test or data change until the owner approves the plan. Create `temp/.plan-pending` when you post the plan and delete it once the owner approves. While it exists, a hook blocks edits under `src/`, `tests/`, `data/`, `tools/` and `scripts/`.
+5. **Stop.** If the owner asks for changes, revise the plan file and stop again. No code, test or data change until the owner approves the plan. Create `temp/.plan-pending` when you post the plan and delete it once the owner approves. While it exists, a hook blocks edits under `src/`, `tests/`, `data/`, `tools/` and `scripts/`.
 
 ## Presentation (fallback only)
 

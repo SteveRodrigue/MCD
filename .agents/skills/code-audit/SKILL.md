@@ -107,16 +107,18 @@ a false positive? What is the smallest safe remediation?
 
 ## The 8-Step Audit Lifecycle
 
-```mermaid
-flowchart TD
-    S1["1. Scope and Baseline"] --> S2["2. Map Entry Points and Contracts"]
-    S2 --> S3["3. Run Native Static and Test Checks"]
-    S3 --> S4["4. Audit Code, Tests, Duplication, and Names"]
-    S4 --> S5["5. Triangulate and Challenge Findings"]
-    S5 --> S6["6. Report Findings and Alternatives"]
-    S6 --> S7["7. Draft Selected Remediation Plan"]
-    S7 --> S8["8. Approval-Gated Handoff"]
-```
+Copy this checklist and tick each step as you go:
+
+- [ ] Step 1: Scope and baseline; reserve the report path
+- [ ] Step 2: Map entry points and contracts
+- [ ] Step 3: Run native static and test checks
+- [ ] Step 4: Four required reviews (4A orphans, 4B tests, 4C duplication, 4D naming)
+- [ ] Step 5: Additional senior-review risks
+- [ ] Step 6: Triangulate and challenge findings
+- [ ] Step 7: Write the report, then summarize in chat
+- [ ] Step 8: Approval-gated remediation handoff
+
+If a finding fails the Step 6 challenge, go back to Step 4 or 5 to gather more evidence, or demote it to an Open Question.
 
 ### Step 1 - Scope and Baseline
 
@@ -294,13 +296,7 @@ For each finding, include:
   and roadmap/milestone impact. The report must contain enough context to implement the finding
   without relying on the original chat transcript.
 
-Then provide:
-
-1. **Open Questions:** hypotheses below 80% confidence and the missing evidence.
-2. **Healthy Patterns:** at most three practices worth preserving, only when evidenced.
-3. **Remediation Order:** correctness and misleading tests first, then dead code, duplication,
-   naming, and low-impact cleanup.
-4. **Audit Coverage:** inspected scope, exclusions, commands run, failed/unavailable checks, and residual risk.
+Order remediation as correctness and misleading tests first, then dead code, duplication, naming, and low-impact cleanup.
 
 If no findings qualify, say so clearly. Never manufacture minor findings to make the audit appear useful.
 Still write the report with zero counts, completed coverage, open questions, and residual risks.

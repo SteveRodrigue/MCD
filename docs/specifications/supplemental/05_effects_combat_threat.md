@@ -161,7 +161,7 @@ Example: _Relentless Assault_ `01053` (this step, then `DEAL_DAMAGE` 5 to `CHOSE
 | `finisherBonus` | `number`                       | No       | -       | Bonus damage transferred when ability resolves as final step in a sequence (e.g. _Wakanda Forever!_). |
 | `dynamicBonus`  | `number \| DynamicValueSource` | No       | -       | Dynamic bonus damage added to amount.                                                                 |
 
-The destination is the chosen enemy of the ability and the source is the acting identity; there are no `from` / `to` parameters (removed in #232).
+The destination is the chosen enemy of the ability and the source is the acting identity.
 
 ---
 
@@ -190,7 +190,7 @@ The destination is the chosen enemy of the ability and the source is the acting 
 | `finisherBonus` | `number`                       | No       | -               | Bonus threat removed when ability resolves as final step in a sequence (e.g. _Wakanda Forever!_).                                                                                                                                     |
 | `dynamicBonus`  | `number \| DynamicValueSource` | No       | -               | Dynamic bonus threat added to amount.                                                                                                                                                                                                 |
 | `ignoresCrisis` | `boolean`                      | No       | `false`         | Removes threat from the Main Scheme even if a Crisis icon is in play.                                                                                                                                                                 |
-| `distinctFrom`  | `"PREVIOUS_TARGET"`            | No       | -               | With a chosen scheme: the scheme chosen by the previous step is excluded, so the player must pick a different one ("from a different scheme"). Declared only in `effectParams`; the step-level `distinctFrom` was removed (ADR-0083). |
+| `distinctFrom`  | `"PREVIOUS_TARGET"`            | No       | -               | With a chosen scheme: the scheme chosen by the previous step is excluded, so the player must pick a different one ("from a different scheme"). Declared only in `effectParams`. |
 
 ---
 
@@ -252,7 +252,7 @@ The destination is the chosen enemy of the ability and the source is the acting 
 | :-------- | :-------------------------------------- | :------- | :------ | :------------------------------------------------------------------------------------------ |
 | `amount`  | `number \| 'ALL' \| DynamicValueSource` | No       | `ALL`   | Amount of incoming damage to consume. If omitted or `'ALL'`, consumes all remaining damage. |
 
-The protected character is always the one the interrupt is about (the damage in the window); there is no `target` parameter (removed in #232).
+The protected character is always the one the interrupt is about (the damage in the window).
 
 ---
 

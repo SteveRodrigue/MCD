@@ -29,7 +29,7 @@
 }
 ```
 
-No parameters. (`alterEgoSurge` was documented but never read, removed in #232; the Surge of *Assault* is its printed keyword.)
+No parameters. (The Surge of *Assault* is its printed keyword.)
 
 ---
 
@@ -78,7 +78,7 @@ No parameters. (`alterEgoSurge` was documented but never read, removed in #232; 
 
 ## 2. Nemesis Spawning Pipeline
 
-Per ADR-0029, monolithic `SPAWN_NEMESIS` has been fully decomposed into a composable 4-step pipeline using canonical zone manipulation primitives.
+Nemesis spawning is a composable 4-step pipeline of canonical zone manipulation primitives (ADR-0029).
 
 ### Canonical Nemesis Pipeline (*Shadow of the Past* `01190`)
 
@@ -245,4 +245,4 @@ Not covered yet: a whole card that cannot be canceled (#286) and the global "Tre
 * **A cancel does not remove the keyword:** cancelling the "When Revealed" effects (`CANCEL_WHEN_REVEALED`, Enhanced Spider-Sense `01004`) cancels the printed text, not a standalone Surge keyword, which still deals the extra card (RR Cancel: only effects are cancelled; FAQ Spider-Man Noir: a keyword resolved on reveal like surge still resolves). "This card gains surge" written inside the When Revealed text is an effect and is cancelled with it. A card cancelled **and discarded** (`CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER`, Black Widow `01075`) does not surge.
 * **At most once per reveal:** the keyword and the effect share one helper that sets a flag on the active encounter context, so a card that prints Surge and also gains it by effect surges once.
 * **Cancelled When Revealed:** Surge is a When Revealed ability, so cancelling the card's When Revealed effects (Enhanced Spider-Sense `01004`, Get Behind Me! `01078`) cancels the surge too.
-* The former card-named composites `HEAL_DAMAGE_WITH_SURGE`, `ADD_STATUS_WITH_SURGE`, `REVEAL_ENCOUNTER_CARD_WITH_SURGE` and `DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE` were removed (unused by every pack, banned by ADR-0021): express them as the ordinary effect plus a gated `SURGE` step.
+* A conditional surge is the ordinary effect followed by a gated `SURGE` step; card-named composites are banned by ADR-0021.

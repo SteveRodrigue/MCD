@@ -13,15 +13,15 @@ Under **ADR-0060**, parameters configuring conditional step gates and parameters
 
 - `gateParams`: Key-value map configuring the conditional gate check (e.g. required kicker resource, card code check, status check).
 - `effectParams`: Key-value map configuring the effect primitive execution (e.g. damage amount, target selector, draw count).
-- Step-level `params` is obsolete and has been completely purged from `AbilityStepSchema`. All step parameters must reside in `effectParams` or `gateParams`. (Note: in interactive `PLAYER_CHOICE` prompts, individual option items in `options: []` use `params: { ... }` per `DecisionPromptOptionSchema`).
+- All step parameters reside in `effectParams` or `gateParams`; `AbilityStepSchema` has no step-level `params`. (Note: in interactive `PLAYER_CHOICE` prompts, individual option items in `options: []` use `params: { ... }` per `DecisionPromptOptionSchema`).
 
 ### Allowed `effectParams` Keys (Issue #230)
 
-`AbilityStepSchema.effectParams` is a record at the type level, but its `superRefine` validates it against `EFFECT_PARAM_SCHEMAS[step.effect]` in `src/data/supplemental/effect-params.ts` (ADR-0083). Each of the 56 effects has a strict Zod object schema annotated with `.meta()` (label, description, placeholder, `primary`, widget), so an unknown key or a wrongly typed value is rejected when a pack loads. `EFFECT_PARAM_KEYS` is derived from the schemas, and the Card Editor renders the same schemas through `<ZodSchemaForm />`. `target`, `filter` and `distinctFrom` exist only in `effectParams`; the step-level fields were removed.
+`AbilityStepSchema.effectParams` is a record at the type level, but its `superRefine` validates it against `EFFECT_PARAM_SCHEMAS[step.effect]` in `src/data/supplemental/effect-params.ts` (ADR-0083). Each of the 56 effects has a strict Zod object schema annotated with `.meta()` (label, description, placeholder, `primary`, widget), so an unknown key or a wrongly typed value is rejected when a pack loads. `EFFECT_PARAM_KEYS` is derived from the schemas, and the Card Editor renders the same schemas through `<ZodSchemaForm />`. `target`, `filter` and `distinctFrom` exist only in `effectParams`.
 
 - `tests/data/effect-params-keys.test.ts` walks every supplemental pack (including nested `PLAYER_CHOICE` option steps) and fails on a key that is not in the schema for its effect, naming the card, effect, and key.
 - `tests/ui/editor-schema-parity.test.ts` fails if an effect has no schema, if a schema contains a node the introspector cannot describe, or if the editor hardcodes a list that duplicates a schema enum.
-- The decorative keys `ATTACHMENT_DAMAGE_SHIELD.mode` / `.target`, `TRANSFER_DAMAGE.from` / `.to`, and `target` on `PREVENT_DAMAGE`, `RETURN_TO_HAND`, `VILLAIN_ATTACKS` were removed in #232 (the engine never read them). `scaling`, `multiplier` and `maxBonus` were retired in #231: scaled amounts are dynamic formulas (`09_dynamic_formulas.md`).
+- Scaled amounts are dynamic formulas (`09_dynamic_formulas.md`).
 - `tests/data/schema-member-coverage.test.ts` fails on any table key that nothing reads in `src/engine/` or `src/ui/` (#276; it replaced the report-only `effect-params-read-check.ts`).
 
 ### Conditional Gates (ADR-0080):

@@ -146,16 +146,4 @@ When an ability defines `triggerFilter`, the trigger matcher (`matchesTriggerFil
 | `threatSource`       | `'VILLAIN_PHASE_STEP_1' \| 'VILLAIN_SCHEME' \| 'MINION_SCHEME' \| 'CARD_EFFECT' \| 'INCITE' \| 'HAZARD'` | Matches what placed the threat on `THREAT_WOULD_BE_PLACED`. Emergency `01085` uses `VILLAIN_SCHEME` ("when the villain schemes"). Absent from the context never matches. | ✅ Yes               |
 | `damageSource`       | `'ATTACK'` | Matches what dealt the damage on `DAMAGE_WOULD_BE_TAKEN`. The attack path sends `ATTACK`; Backflip `01003` ("damage from an attack") uses it. Absent from the context never matches (#256). | ✅ Yes               |
 
-### Purged Speculative Orphan Fields (ADR-0069)
-
-Per [ADR-0069](../../decisions/0069-card-editor-field-binding-completeness-and-trigger-filter-orphan-purge.md), five speculative fields were discovered to have 0 engine evaluation logic and 0 occurrences in supplemental data packs:
-
-- `damageSourceType`
-- `damageTargetType`
-- `defeatEntityType`
-- `defeatByAttack`
-- `formChangeDirection`
-
-These 5 fields have been **permanently purged** from `TriggerFilterSchema` and removed from the Card Editor UI. Because `TriggerFilterSchema` enforces `.strict()`, any attempt to declare these properties in supplemental data packs will be rejected at compile and test time.
-
-> **Removed in #276:** the triggers `BOOST_STAR_RESOLVED` (boost abilities use `BOOST`), `MAIN_SCHEME_ADVANCED` and `RESOURCE_SPENT` were never fired by the engine. Re-add them together with a dispatcher when a card needs them (for example _Kang_ `11001`, _Pym Particles_ `12006`).
+`TriggerFilterSchema` is `.strict()`: a key that is not in the table above is rejected when a pack loads and in tests ([ADR-0069](../../decisions/0069-card-editor-field-binding-completeness-and-trigger-filter-orphan-purge.md)).

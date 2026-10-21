@@ -293,7 +293,7 @@ All card ability definitions in `src/data/supplemental/` and primitive handlers 
    - **Interrupts (Prospective/Pre-Resolution):** Subjunctive `_WOULD_BE_` or `_INITIATES_` (e.g. `DAMAGE_WOULD_BE_TAKEN`, `THREAT_WOULD_BE_PLACED`, `ENEMY_INITIATES_ATTACK`).
    - **Responses (Post-Resolution):** Past participle (e.g. `DAMAGE_TAKEN`, `THREAT_PLACED`, `CARD_PLAYED`, `DEFEATED`, `ROUND_ENDED`).
 4. **Strict Pluralization for Multi-Entity Operations:** Operations that can affect 1 to $N$ items use plural names (e.g. `ADD_COUNTERS`, `REMOVE_COUNTERS`, `DRAW`, `DISCARD`). Dual single/plural variant names (like `ADD_COUNTER` / `ADD_COUNTERS`) are prohibited.
-5. **Zero Single-Use / Legacy Tech Debt:** Bespoke, single-card primitives (e.g. `NICK_FURY_CHOICE`, `EXPLOSION`, `REPULSOR_BLAST`) are deprecated and decomposed into composable primitives + `DynamicValueSource`.
+5. **Zero Single-Use / Legacy Tech Debt:** Bespoke, single-card primitives are not allowed: express the card with composable primitives + `DynamicValueSource`.
 
 ---
 

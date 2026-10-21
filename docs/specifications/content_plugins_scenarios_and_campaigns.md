@@ -95,10 +95,12 @@ Sources: `references/rules/glossary/V.md#villain-defeat`, Main Scheme, Appendix 
 
 - Write the ADR **"Content Plugin Architecture"** (next free number, amends ADR-0033), recording decisions Q2–Q12.
 - File the GitHub issue for the Rhino deviations listed in §3.
-- **Seedable RNG:** all engine randomness goes through one injectable RNG/`shuffleFn`. This is required for the golden-parity gate; today about 18 `Math.random` call sites exist in `effects/`, the pipeline and `deck-utils`. Ids come from a deterministic counter or the RNG, not `Date.now()`.
+- **Seedable RNG:** all engine randomness goes through one injectable RNG/`shuffleFn`. This is required for the golden-parity gate; done by ADR-0081 (2026-10): the only `Math.random` call left in `src/engine/` is the seed bootstrap in `state/rng.ts`. Ids come from a deterministic counter or the RNG, not `Date.now()`.
 - Capture **golden baselines** with the current code: seeded Rhino setup and stage-transition snapshots (Standard, Expert, Skirmish; 1–4 players), plus a seeded 100-game simulation summary.
 
 ### A1. `@plugin-api` barrel
+
+> **Status (2026-10-21):** not built (`src/engine/plugin-api/` does not exist). The scenario base class that exists is `DeclarativeScenarioPlugin` (see the status note under A2); this section is the backlogged design.
 
 `src/engine/plugin-api/index.ts` exports:
 
@@ -126,7 +128,7 @@ type Hook<A extends unknown[], R> = (
 - `onGameSetup`: active villain stage, main scheme stage (from definition), encounter deck (scenario set + standard/expert + modular − `encounterDeckExclusions`), shuffle via `ctx.shuffle`. Then reveal the starting villain stage and main scheme, which fires their `WHEN_REVEALED`/`SETUP` supplemental abilities. This means Expert Rhino II's _Breakin' & Takin'_ search runs via data, not code.
 - `onVillainDefeated`: the full §3.1 behavior (title-match carryover, activation resume/end).
 - `onMainSchemeCompleted`: stage advance or villain victory.
-- Win and loss are decided by `onVillainDefeated`, `onMainSchemeCompleted` and the engine's hero-elimination check; there is no separate win/loss hook. Villain-phase hooks (`onVillainPhaseStep1/2`) were removed as never invoked (AUD-20261017-232534 F011-B); add one back only with an engine call site.
+- Win and loss are decided by `onVillainDefeated`, `onMainSchemeCompleted` and the engine's hero-elimination check; there is no separate win/loss hook.
 
 ### A3. `ScenarioDefinition` additions (removing hardcoded values)
 

@@ -147,7 +147,6 @@ export async function getCardArtUrl(card: CardArtIdentifier | string): Promise<s
 
   const artPromise = (async () => {
     const localUrl = getLocalCardArtUrl(card);
-    const remoteUrl = getRemoteMarvelCdbUrl(card);
 
     // If CacheStorage is unavailable (e.g. Node/test environment without mock), return local URL
     if (!isCacheStorageAvailable()) {
@@ -175,18 +174,6 @@ export async function getCardArtUrl(card: CardArtIdentifier | string): Promise<s
         }
       } catch {
         // Local server unavailable or failed
-      }
-
-      // If local server endpoint didn't provide image, fetch directly from remote CDN
-      if (!response && remoteUrl) {
-        try {
-          const remoteResp = await fetch(remoteUrl);
-          if (remoteResp.ok) {
-            response = remoteResp;
-          }
-        } catch {
-          // Remote CDN fetch failed
-        }
       }
 
       if (response && response.ok) {

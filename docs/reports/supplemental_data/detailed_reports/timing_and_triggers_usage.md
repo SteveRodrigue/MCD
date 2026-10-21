@@ -2,8 +2,6 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-20T11:12:54.227Z`
-
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
 ### <a id="when-revealed"></a>`WHEN_REVEALED` (33 Cards)

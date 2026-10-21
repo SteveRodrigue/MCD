@@ -2,8 +2,6 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-20T11:12:54.227Z`
-
 ## 1. Condition Gates (`StepGateSchema` — 9/9 In Use)
 
 ### <a id="if-form"></a>`IF_FORM` (4 Cards)

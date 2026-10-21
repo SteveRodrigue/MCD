@@ -2,8 +2,6 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-20T11:12:54.227Z`
-
 ## 1. Cards with Multiple Abilities (2+ Declared Abilities — 17 Cards)
 
 | Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |

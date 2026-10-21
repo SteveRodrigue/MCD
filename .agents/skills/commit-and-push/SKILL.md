@@ -46,9 +46,7 @@ If the pre-commit or pre-push hook fails, fix the cause, re-stage, and go back t
 2. Stage intentional changes by name:
    - For complete feature/fix deliveries: stage the reviewed file list explicitly (`rtk git add <file1> <file2> ...`).
    - A hook blocks `git add .`, `-A`, `--all`, and `git commit -a`, because a broad stage commits unrelated work.
-3. If supplemental card data (`src/data/supplemental/`) was modified and `report:declarations` has not yet been run since the last data edit:
-   - Run `rtk npm run report:declarations`
-   - Stage the updated reports: `rtk git add docs/reports/supplemental_data/ docs/reports/supplemental_declarations_usage_report.md`
+3. The declaration reports (`docs/reports/supplemental_data/` and `docs/reports/supplemental_declarations_usage_report.md`) are regenerated and re-staged by `.githooks/pre-commit` whenever `src/`, `data/upstream/`, `docs/ambiguities/` or `tools/audit/` is staged; do not run `report:declarations` by hand for a commit. Confirm the regenerated reports appear in the commit (`tests/tools/declarations-report-fresh.test.ts` fails the push if they are stale).
 4. Re-run `rtk git diff --cached --name-status` and confirm every staged path belongs to the intended file set.
 
 ---

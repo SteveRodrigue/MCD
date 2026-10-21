@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-21 (code audit AUD-20261017-232534 remediated; R1–R16 delivered)
+> **Last updated:** 2026-10-21 (code audit AUD-20261017-232534 remediated; R1–R16 delivered; Gate 1 reopened with 15 issues after triage)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
-> **Verification baseline:** 🟢 3,479 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean.
+> **Verification baseline:** run `npm run verify` (tests, types, lint, format, build). The pre-push hook enforces 0 failed and 0 skipped tests; no test count is recorded here because it goes stale with every commit.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
 ---
@@ -62,19 +62,38 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 ### 3.1 Bugs seen in real Rhino games (do first)
 
-_None currently._
+| Issue                                                   | Problem (from the Dev Mode report)                                                                                 | Notes                                                                              |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| [#342](https://github.com/SteveRodrigue/MCD/issues/342) | Relentless Assault `01053`: overkill did not trigger on a 3 HP minion; the remaining 2 damage never reached Rhino. | Rules; check against the `EXCESS_DAMAGE_DEALT` path.                               |
+| [#343](https://github.com/SteveRodrigue/MCD/issues/343) | Powered Gauntlets `01038`: Aerial interaction gave 1 instead of 2 (threat removal).                                | Rules.                                                                             |
+| [#341](https://github.com/SteveRodrigue/MCD/issues/341) | Superhuman Strength `01028`: not discarded after attacking the minion Whiplash.                                    | Rules (event/upgrade discard).                                                     |
+| [#340](https://github.com/SteveRodrigue/MCD/issues/340) | One-Two Punch `01024`: a second play was offered while the hero was already ready.                                 | Legality check.                                                                    |
+| [#331](https://github.com/SteveRodrigue/MCD/issues/331) | Legal Practice `01023`: proposed removing threat from the main scheme although an icon in play prevents it.        | Legality / prevention.                                                             |
+| [#329](https://github.com/SteveRodrigue/MCD/issues/329) | Indomitable `01082`: triggered when an ally defended instead of the hero.                                          | Same card as #334; read both reports before planning, one plan may close both.     |
+| [#334](https://github.com/SteveRodrigue/MCD/issues/334) | Indomitable `01082`: report text not captured in the issue body.                                                   | Probably a duplicate of #329; confirm from the report and the game-state snapshot. |
+| [#345](https://github.com/SteveRodrigue/MCD/issues/345) | Four encounter cards dealt in a 3-player villain phase.                                                            | Check against the dealing rules (RR v1.8, villain phase step 3).                   |
+| [#333](https://github.com/SteveRodrigue/MCD/issues/333) | Manual villain-phase steps skip the beginning (+2 threat and following steps).                                     | Villain phase stepper (ADR-0068).                                                  |
+| [#327](https://github.com/SteveRodrigue/MCD/issues/327) | "Current state for the Daily Bugle fix": report text not captured in the issue body.                               | Needs the original report and snapshot before it can be sized.                     |
 
 ### 3.2 Rules gaps that affect core cards
 
-_None currently._
+| Issue                                                   | Problem (from the Dev Mode report)                                                     | Notes                                                                                        |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| [#348](https://github.com/SteveRodrigue/MCD/issues/348) | `01156` and `01167` have no `audit.confidence`; `01156` prints no upstream rules text. | Data hygiene in the Black Panther nemesis set; needs the owner approval for any data change. |
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 
-_None currently._
+| Issue                                                   | Problem (from the Dev Mode report)                                                                                                                                 | Notes                                                                                     |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| [#309](https://github.com/SteveRodrigue/MCD/issues/309) | Strategic heuristic policy and card evaluation for the player bot (roadmap 1.4). The 100-game gate passes (0 crashes, 0 timeouts) but the bots win 0 of 100 games. | Moved back into Gate 1 on 2026-10-21. Do last: it needs the rules bugs above fixed first. |
 
 ### 3.4 UI should-haves
 
-_None currently._
+| Issue                                                   | Problem (from the Dev Mode report)                                                       | Notes           |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------- |
+| [#328](https://github.com/SteveRodrigue/MCD/issues/328) | Counter-Punch `01077`: the 2 damage dealt to Rhino is not shown in the combat log.       | Log display.    |
+| [#330](https://github.com/SteveRodrigue/MCD/issues/330) | Loss of Tough (and other) status cards is not shown in the combat log (seen on Sandman). | Log display.    |
+| [#344](https://github.com/SteveRodrigue/MCD/issues/344) | Interrupt modal does not show which player or seat is offered Emergency `01085`.         | UI, multi-hero. |
 
 ### 3.5 Code audit AUD-20261017-232534: delivered
 

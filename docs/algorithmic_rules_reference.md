@@ -285,7 +285,7 @@ The engine pipeline dispatches discrete lifecycle triggers and performs atomic l
 
 ---
 
-## 8. Reusable Effect Primitives Reference (`src/engine/effects/index.ts`)
+## 8. Reusable Effect Primitives Reference (`src/engine/effects/handlers/`)
 
 | Primitive Name      | Target Selector                                     | Description                                                                                                                    |
 | :------------------ | :-------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- |

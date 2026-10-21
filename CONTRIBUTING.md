@@ -27,7 +27,7 @@ Here is the recommended workflow to implement any Hero, Ally, Event, Upgrade, or
 
 ### Step 1: Verify the Card in Upstream JSON (`data/upstream/`)
 
-All official card metadata (stats, traits, cost, text, resource icons) lives in `data/upstream/pack/*.json`. Ensure the card is loaded in [`src/engine/decks/starter-decks.ts`](src/engine/decks/starter-decks.ts) or [`src/engine/scenarios/catalog.ts`](src/engine/scenarios/catalog.ts).
+All official card metadata (stats, traits, cost, text, resource icons) lives in `data/upstream/pack/*.json`. Ensure the card is loaded in [`src/engine/decks/starter-decks.ts`](src/engine/decks/starter-decks.ts) or in a scenario `definition.json` under [`src/engine/scenarios/built-in/`](src/engine/scenarios/built-in/).
 
 ### Step 2: Write a Failing Unit Test in `tests/engine/`
 
@@ -54,7 +54,7 @@ describe('Card: Swinging Web Kick', () => {
 
 ### Step 3: Implement the Ability Effect in `src/engine/`
 
-Add the effect handler in `src/engine/effects/index.ts`, or pipeline logic in `src/engine/pipeline/`. Run `npm test` to verify your test turns green!
+Add the effect handler in `src/engine/effects/handlers/` (register it in the matching `*_HANDLERS` map), or pipeline logic in `src/engine/pipeline/`. Run `npm test` to verify your test turns green!
 
 ---
 

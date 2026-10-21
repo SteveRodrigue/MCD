@@ -56,7 +56,7 @@ graph TD
 
 ## 3. Local Vite REST API Middleware Specification
 
-The API is served directly by the local Vite development server via a custom plugin (`cardSupplementalEditorPlugin` in `vite.config.ts`), active only during development.
+The API is served directly by the local Vite development server via a custom plugin (`cardSupplementalEditorPlugin` in `src/tools/editor/api-middleware.ts`, registered in `vite.config.ts`). It attaches through `configureServer`, so it runs on the dev server only: `vite preview` serves a build and exposes no write endpoint.
 
 ### 3.1. `GET /api/supplemental/packs`
 
@@ -158,7 +158,7 @@ Validates and persists changes to the card's supplemental definition:
   ```
 - **Server Behavior:**
   1. Validates payload using `CardEnrichmentSchema.safeParse(supplemental)`. Returns HTTP 400 with structured Zod errors if invalid.
-  2. Resolves target pack file: `src/data/supplemental/pack/${packCode}.json`.
+  2. Resolves the target pack file: `payload.packFile`, else the pack file of the card in the upstream data, else `${packCode}.json`, inside `src/data/supplemental/pack/`. The name must match `^[a-z0-9_-]+\.json$` (`isPackFileName`); anything else returns HTTP 400 with `Invalid pack file name '<name>'`.
   3. Reads existing pack JSON, merges/updates `cards[code]`, stamps `audit.updatedAt` with the current ISO timestamp (`YYYY-MM-DDTHH:MM:SSZ`), preserves existing fields, and formats JSON with 2-space indentation.
   4. Writes atomically to disk.
   5. Returns HTTP 200: `{ "success": true, "code": "01001a", "updatedAt": "..." }`.

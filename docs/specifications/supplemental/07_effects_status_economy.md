@@ -6,7 +6,7 @@
 
 ### `ADD_STATUS`
 
-- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts)
+- **References:** [`effects/handlers/state.ts`](../../../src/engine/effects/handlers/state.ts)
 - **Description:** Attaches a `STUNNED`, `CONFUSED`, or `TOUGH` status card to the target character. `target` defaults to `VILLAIN`; Stalwart immunity and Steady thresholds are enforced during application.
 
 ```json
@@ -23,7 +23,7 @@
 
 ### `ADD_TRAIT`
 
-- **References:** [`stat-calculator.ts`](../../../src/engine/pipeline/stat-calculator.ts) / _Cosmic Flight_ `01017` / Issue [#4](https://github.com/SteveRodrigue/MCD/issues/4)); as an effect step: [`effects/index.ts`](../../../src/engine/effects/index.ts) / _Rocket Boots_ `01039` / Issue [#131](https://github.com/SteveRodrigue/MCD/issues/131
+- **References:** [`stat-calculator.ts`](../../../src/engine/pipeline/stat-calculator.ts) / _Cosmic Flight_ `01017` / Issue [#4](https://github.com/SteveRodrigue/MCD/issues/4)); as an effect step: [`effects/handlers/state.ts`](../../../src/engine/effects/handlers/state.ts) / _Rocket Boots_ `01039` / Issue [#131](https://github.com/SteveRodrigue/MCD/issues/131
 - **Description:** Dynamically grants a trait (e.g. `Aerial`, `Avenger`, `Gamma`) to the target character (identity, ally, or enemy) as long as the source card remains in play. Typically declared on continuous abilities (`"timing": "CONSTANT"`) or attachments.
 - **As an effect step (Hero Action, Response, ...):** grants the trait to the **resolving player's identity** (`target: "SELF_IDENTITY"`, the only supported target) by recording an `ActiveTraitModifier` on the player. **Default duration: while the source card stays in play** (checked when traits are read, no cleanup needed). With `duration: "PHASE" | "ROUND" | "TURN"` the trait expires like a stat modifier instead (printed "until the end of the phase/round"). A data test (`tests/data/add-trait-duration.test.ts`) fails if the printed text says "until the end of ..." and the step has no `duration`.
 - **Engine Resolution:** Evaluated dynamically via `getEffectivePlayerTraits`, `getEffectiveCardTraits`, and `hasPlayerTrait` in `src/engine/pipeline/stat-calculator.ts`. Dynamically granted traits satisfy card play requirements (`identityTraits` in [**11. Play Requirements**](./11_play_requirements.md)) and conditional ability triggers (`TARGET_TRAIT_MATCH`).
@@ -58,7 +58,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 ### `EXHAUST`
 
-- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts) / Issue [#65](https://github.com/SteveRodrigue/MCD/issues/65)
+- **References:** [`effects/handlers/state.ts`](../../../src/engine/effects/handlers/state.ts) / Issue [#65](https://github.com/SteveRodrigue/MCD/issues/65)
 - **Description:** Rotates target entity 90 degrees into the exhausted state per RR v1.8 p. 13. A card that is already exhausted cannot be exhausted again. Emits onomatopoeia `'EXHAUSTED!'`.
 - **Target Resolution:**
   - `'SELF'`: Exhausts the host card instance in the player's tableau (`player.tableau`). If executed from an identity event, exhausts player identity (`player.exhausted = true`).
@@ -85,7 +85,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 ### `READY`
 
-- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts) / Issue [#65](https://github.com/SteveRodrigue/MCD/issues/65)
+- **References:** [`effects/handlers/state.ts`](../../../src/engine/effects/handlers/state.ts) / Issue [#65](https://github.com/SteveRodrigue/MCD/issues/65)
 - **Description:** Rotates an exhausted target upright into the ready state per RR v1.8 p. 23. A card that is already ready cannot be readied again. Emits onomatopoeia `'READY!'`.
 - **Target Resolution:**
   - `'SELF'`: Readies the host card instance in `player.tableau` (e.g. upgrades/supports). If resolved from an identity event, readies player identity.
@@ -131,7 +131,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 ### `GENERATE_RESOURCE`
 
-- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts) / _Web-Shooter_ `01008`
+- **References:** [`effects/handlers/resources.ts`](../../../src/engine/effects/handlers/resources.ts) / _Web-Shooter_ `01008`
 - **Description:** Contributes resources to the active payment window. `resource` defaults to `"wild"` and `amount` defaults to `1`.
 
 ```json
@@ -194,7 +194,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 ### `ADD_COUNTERS`
 
-- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts) / _Energy Channel_ `01018`
+- **References:** [`effects/handlers/state.ts`](../../../src/engine/effects/handlers/state.ts) / _Energy Channel_ `01018`
 - **Description:** Adds counters (e.g. charge, energy, web counters) to the host card or target entity.
 
 ```json
@@ -214,7 +214,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 ### `REMOVE_COUNTERS`
 
-- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts)
+- **References:** [`effects/handlers/state.ts`](../../../src/engine/effects/handlers/state.ts)
 - **Description:** Removes counters from the host card or target entity.
 
 ```json
@@ -232,7 +232,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 ### `SPEND_COUNTERS`
 
-- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts)
+- **References:** [`effects/handlers/state.ts`](../../../src/engine/effects/handlers/state.ts)
 - **Description:** Spends / decrements counters from the host card or target entity as part of an effect pipeline, with optional discard on empty.
 
 ```json

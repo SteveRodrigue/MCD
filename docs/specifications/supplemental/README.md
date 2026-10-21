@@ -10,7 +10,7 @@
 
 ## 🏛️ Codebase Grounding & Single Source of Truth
 
-Every primitive, trigger, timing, cost, and parameter documented in this specification suite is **100% grounded in the active codebase** (`src/data/supplemental/schema.ts`, `src/engine/effects/index.ts`, and `src/engine/triggers/`). There are no speculative or unimplemented roadmap primitives; all documented features are fully executable and verified via automated regression test suites.
+Every primitive, trigger, timing, cost, and parameter documented in this specification suite is **100% grounded in the active codebase** (`src/data/supplemental/schema.ts`, `src/engine/effects/handlers/`, and `src/engine/triggers/`). There are no speculative or unimplemented roadmap primitives; all documented features are fully executable and verified via automated regression test suites.
 
 ---
 
@@ -46,7 +46,7 @@ flowchart TD
     A["Upstream Raw Card<br/>(data/upstream/pack/*.json)"] --> B["Normalized Card Catalog<br/>(src/data/importer/card-loader.ts)"]
     C["Supplemental JSON<br/>(src/data/supplemental/pack/*.json)"] -->|Enriches card| B
     B --> D["Automated Schema Validator<br/>(src/data/supplemental/schema.ts)"]
-    D --> E["Rules Engine Execution<br/>(src/engine/effects/index.ts)"]
+    D --> E["Rules Engine Execution<br/>(src/engine/effects/handlers/)"]
 ```
 
 ---

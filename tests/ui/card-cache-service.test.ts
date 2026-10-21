@@ -294,6 +294,20 @@ describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
       expect(await isCardArtCached('01001a')).toBe(true);
     });
 
+    it('returns the local URL and never fetches the remote CDN when the local endpoint fails', async () => {
+      const fetched: string[] = [];
+
+      globalThis.fetch = async (input: any) => {
+        fetched.push(String(input));
+        return { ok: false } as any;
+      };
+
+      const url = await getCardArtUrl('01002');
+      expect(fetched).toEqual(['/cards/01002.png']);
+      expect(url).toBe('/cards/01002.png');
+      expect(mockStorage.has('/cards/01002.png')).toBe(false);
+    });
+
     it('deduplicates concurrent in-flight requests for identical card art', async () => {
       let fetchCount = 0;
       const mockBlob = new Blob(['data'], { type: 'image/png' });

@@ -60,6 +60,9 @@ or RR v1.8, in which case flag it as a defect instead of documenting the bug as 
    is ever touched; that exemption is void the moment a disallowed file changes.
 8. **Pessimism by default.** Assume you are wrong until the evidence proves otherwise. Every
    finding carries a confidence score (below) and nothing below the threshold is ever written.
+9. **Current state only.** Documentation never narrates removed, retired or renamed features
+   ("removed in #N"); delete such notes and keep the rule that still applies. History lives in ADRs and git.
+10. **No volatile numbers.** Never write test counts, card counts or timestamps; point at the command that prints them.
 
 ---
 
@@ -140,7 +143,7 @@ flowchart TD
 With no argument, the **full documentation surface is every file matching `docs/**/*.md`
 (recursively, with no subfolder excluded) plus every root-level `*.md` file** in the repository
 root (`README.md`, `CHANGELOG.md`, `AGENTS.md`, `CONTRIBUTING.md`, `SECURITY.md`,
-`CODE_OF_CONDUCT.md`, and any other root `*.md` file present). This is a live glob, not a fixed
+`CODE_OF_CONDUCT.md`, and any other root `*.md` file present). Rules and skills (`.agents/**/*.md`) and `docs/backlog/` are part of the surface too. This is a live glob, not a fixed
 enumeration — newly added files under `docs/` (e.g. a new ADR, a new `docs/visual-guides/*.md`
 entry, a new specification module) are automatically in scope without updating this skill.
 
@@ -166,6 +169,8 @@ Step 4 when any ADR, engine primitive, or architectural concept is touched.
 ---
 
 ### Step 2 — Build the Code-Truth Index
+
+Start with `rtk npm run docs:check -- --github`: it lists dead links and anchors, missing paths and scripts, symbols that are not in `src/`, ADR index mismatches, orphan documents, removed-feature wording, hard-coded counts, and roadmap checkboxes or untriaged issues that disagree with GitHub. Treat its findings as the first batch, then continue with the checks below.
 
 Extract the real vocabulary from source before reading a single prose claim. Use Grep
 with regex over `src/` and record exact symbol lists:

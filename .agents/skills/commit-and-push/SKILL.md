@@ -34,6 +34,7 @@ If the pre-commit or pre-push hook fails, fix the cause, re-stage, and go back t
 3. Verify that no unwanted files (e.g. debug scripts in `scratch/`, OS artifacts, temporary logs) are inadvertently staged.
 4. Record the intended file set. Do not silently absorb unrelated staged or unstaged changes.
 5. Check the progress documentation: if the change completes a plan, delete that plan file in the same delivery, and update the queue, status headers, and any other progress or tracking document (e.g. `docs/backlog/`) the change affects. Include these files in the intended file set.
+6. If the diff deletes, renames or merges a document, run `rtk rg -n "<old file name>"` over `docs/`, `.agents/` and the root `*.md` files and fix every inbound reference in the same delivery (`rtk npm run docs:check` also reports dead links and orphan documents).
 
 ---
 
@@ -54,7 +55,7 @@ If the pre-commit or pre-push hook fails, fix the cause, re-stage, and go back t
 ## 🛡️ Step 3: Rely on Git Hooks (No Duplicate Manual Runs)
 
 Do **not** manually run `npm run format:check`, `npm run lint`, `npm run typecheck`, or `npm test` before committing:
-- `git commit` automatically triggers `.githooks/pre-commit` (`format:check`, `lint`, `typecheck`).
+- `git commit` automatically triggers `.githooks/pre-commit` (`format:check`, `lint`, `typecheck`, and `docs:check` when documentation is staged).
 - `git push` automatically triggers `.githooks/pre-push` (`npm test` enforcing 0 failures and 0 skipped tests).
 - Running them manually in Step 3 duplicates every check back-to-back. Only run a targeted check manually if a hook fails and you are diagnosing the fix.
 

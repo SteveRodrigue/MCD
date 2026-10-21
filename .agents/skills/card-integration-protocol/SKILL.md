@@ -102,12 +102,11 @@ If Step 5 confidence is below 95%, go back to Step 3 (max 3 attempts, then the c
   2. **Q2 (Costs & Prerequisites):** What must be paid before execution (`exhaustSelf`, `discardSelf`, `removeCounter`, `resourceCost`, form requirement)?
   3. **Q3 (Primary Target/Subject):** What exact entity is affected or searched (e.g. `the villain`, `an enemy`, `a minion`, specific card code)?
   4. **Q4 (Zones & Boundaries):** Where does this take place, or where do we search? **MUST use Fully Qualified Game Zones (FQGZ)**:
-     - `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`, `SET_ASIDE_NEMESIS`, `SET_ASIDE_OUT_OF_PLAY`, `VICTORY_DISPLAY`
-     - `PLAYER_DECK`, `PLAYER_DISCARD`, `PLAYER_HAND`, `PLAYER_TABLEAU` (with `targetPlayer: "SELF" | "CHOSEN_PLAYER" | "ALL_PLAYERS"`)
-     - `ATTACHED_HOST`, `UNDER_CARD`
+     - The `CardLocationZone` values in `src/data/supplemental/schema-primitives.ts`: `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`, `PLAYER_DECK`, `PLAYER_DISCARD`, `SIDE_SCHEMES`, `IN_PLAY`, `TABLEAU`, `TUCKED`, `ATTACHED`
+     - Player zones take `targetPlayer: "SELF" | "CHOSEN_PLAYER" | "ALL_PLAYERS"`; hand cards use `PLAYER_HAND`
   5. **Q5 (State Mutation):** What exact state change occurs (deal damage, heal, remove threat, apply status, reveal, put into play)?
   6. **Q6 (Post-Resolution Side-Effects):** What mandatory rules follow completion (e.g. `shuffleDeck: "ENCOUNTER_DECK" | "PLAYER_DECK"`, `gainOverkill: true`)?
-  7. **Q7 (Source Destination):** What happens to the source card upon resolution (`DISCARD_SELF`, `ATTACH_TO_HOST`, `STAYS_IN_PLAY`)?
+  7. **Q7 (Source Destination):** What happens to the source card upon resolution (`discardSelf`, the `ATTACH_TO_HOST` effect, or nothing when it stays in play)?
   8. **Q8 (Contingencies & Branching):** Is there a fallback or conditional branch (e.g. "if you cannot...", "in alter-ego...", "if 0 healed -> surge")?
 
 ### Step 3: Draft Structured Supplemental Schema & Audit Block
@@ -124,7 +123,7 @@ If Step 5 confidence is below 95%, go back to Step 3 (max 3 attempts, then the c
 - **STRICT BAN ON CARD-SPECIFIC EFFECT NAMES (ADR-0021):**
   - **An effect primitive name MUST NEVER contain the name, title, or code of a specific card.**
   - ❌ _Anti-Patterns (Prohibited):_ `HYDRA_BOMBER_CHOICE`, `NICK_FURY_CHOICE`, `PEPPER_POTTS_RESOURCE`, `BLACK_CAT_SEARCH`.
-  - ✅ _Composable Generic Patterns (Mandatory):_ `PLAYER_CHOICE`, `DEAL_DAMAGE`, `ADD_THREAT_PER_PLAYER`, `DISCARD_TOP_DECK_FILTER`, `SEARCH_AND_REVEAL_SIDE_SCHEME`.
+  - ✅ _Composable Generic Patterns (Mandatory):_ `PLAYER_CHOICE`, `DEAL_DAMAGE`, `ADD_THREAT` (with `perPlayer`), `DISCARD` and `SEARCH` with a filter.
   - Multi-choice cards MUST be modeled with a generic composable schema (e.g. `PLAYER_CHOICE` with nested `options: [{ id, label, effect, params }]`).
 - **100% PARAMETER COMPLETENESS & FULLY QUALIFIED ZONES:** Every parameter identified in the 8-point Q&A checklist **MUST** be explicitly declared in `params` with **Fully Qualified Game Zones** (e.g. `searchZones: ["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"]`, `shuffleDeck: "ENCOUNTER_DECK"`, `revealTarget: true`). Generic unqualified strings like `["DECK", "DISCARD"]` are strictly prohibited as ambiguous and engine-breaking.
 - **Costs (ADR-0083):** declare ability resource costs only as the typed map `cost.resourceCost` (`{ "energy": 1 }`, `{ "mental": 1 }`; `wild` only for a printed "Spend a [wild] resource"). The `cost.resources` array and an untyped numeric `resourceCost` no longer exist. **Never copy a printed event cost into an ability `cost`**: the engine reads the event cost from upstream `raw.cost`; declare a resource cost on an event only for an extra cost the card prints. Variable "Spend X" costs are not expressible yet (#318).
@@ -185,7 +184,7 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
     - **Mandatory Side-Effects:** Does it execute all required secondary rules (e.g. shuffling the deck after a search per RR v1.8 p. 25, exhausting targets, applying status cards)?
     - **Targeting & Scaling:** Does it handle player scaling (e.g. `baseThreatFixed` vs `baseThreat * players`)?
 - **Sub-step 6B (Trigger Emission & Dispatch Window Trace):**
-  - Open `src/engine/pipeline/` (e.g. `villain-phase.ts`, `action-dispatcher.ts`, `damage-pipeline.ts`) and trace whether the trigger event (e.g. `WHEN_REVEALED`, `VILLAIN_STAGE_TRANSITION`, `MINION_ATTACKED`) is **actually dispatched for this specific card type and phase window**.
+  - Open `src/engine/pipeline/` (e.g. `villain-phase.ts`, `action-dispatcher.ts`, `damage-pipeline.ts`) and trace whether the trigger event (e.g. `WHEN_REVEALED`, `MINION_ATTACKED`) is **actually dispatched for this specific card type and phase window**.
   - If a trigger is not dispatched for that card type (e.g. `WHEN_REVEALED` on Minions / Side Schemes, or Villain Stage transitions), the mechanic is **inactive in the engine**.
 - **Sub-step 6C (Code-Level Gap Routing — Refactor-First):**
   - If the underlying TypeScript code has gaps, missing clauses, un-emitted triggers, or card-specific anti-patterns:

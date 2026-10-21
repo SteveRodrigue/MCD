@@ -77,6 +77,13 @@ Coverage thresholds in `vitest.config.ts` are a ratchet; raise them when coverag
 
 Commit and push only happen in response to the user's explicit request in the current message (e.g. "commit and push", "commit this"); the agent never initiates delivery on its own. Once requested, the workflow stages the reviewed file set, states the commit message, and proceeds through `git commit` (which runs `pre-commit`: `format:check`, `lint`, `typecheck`) and `git push` (which runs `pre-push`: `npm test`) directly without manually duplicating those checks beforehand.
 
+## Documentation invariants
+
+- Documentation, specifications and skills describe the **current state** only. History (what was removed, retired or renamed, and why) lives in ADRs and git, never as a "removed in #N" note.
+- Do not write numbers that change with every commit (test counts, card counts, report timestamps). Point at the command that prints them.
+- Before deleting, renaming or merging a document, `rg` for inbound references (links and plain-text paths) and fix them in the same commit.
+- `rtk npm run docs:check` must pass; it runs in the pre-commit hook (when docs are staged) and in the full test suite. An intentional exception goes in `tools/audit/docs-check.allow.json` with a reason, and an entry tied to an issue (`until`) is removed when that issue closes.
+
 ### Primitive and Card Retrofit Ordering
 
 When a card requires a new generic primitive, `feature-delivery` owns the primitive and `card-integration-protocol` owns the card retrofit; the plan must state the order.

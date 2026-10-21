@@ -24,13 +24,13 @@ After implementation and verification, execute this checklist before concluding.
 
 ### 2. Documentation Updates
 
-- Check if architectural guides, `README.md`, `docs/algorithmic_rules_reference.md`, or component documentation need updates.
-- Ensure all code references, paths, and invariants reflect current code reality.
+- Run `rtk npm run docs:check` (links, anchors, cited paths and scripts, symbols, ADR index, orphan docs, removed-feature wording, hard-coded counts).
+- Reverse lookup: `rg` every file and symbol you renamed, moved, removed or changed across `docs/`, `.agents/` and the root `*.md` files, and update each hit. Docs and skills describe the current state only (see `shared-quality-gates.md`).
 
 ### 3. Specifications Documentation Updates
 
 - Check if mechanics, effect primitives, state interfaces, data structures, or schemas were altered.
-- Update relevant specification documents in `docs/specifications/` (e.g. `docs/specifications/supplemental/` modular specs 01–09, `supplemental_data_schema.md`).
+- Update relevant specification documents in `docs/specifications/` (e.g. `docs/specifications/supplemental/` modular specs 01–11, `supplemental_data_schema.md`).
 
 ### 4. Guidelines Documentation Updates
 
@@ -55,6 +55,6 @@ After implementation and verification, execute this checklist before concluding.
 ### 8. Card Integration and Declarations
 
 - If any card definitions, abilities, or rules implementations (e.g. in `src/data/supplemental/` or `src/engine/effects/`) were added or modified:
-  - Verify supplemental data conformance (`npm run validate:supplemental` / schema checks).
+  - Verify supplemental data conformance (`rtk npx vitest run tests/data` and `rtk npm run schema:generate`).
   - Ensure ambiguity docs in `docs/ambiguities/` follow the 8-step Card Integration Protocol.
   - Run `npm run report:declarations` and review the generated report.

@@ -347,8 +347,8 @@ flowchart TD
     T8 --> Check
 ```
 
-If your event isn't listed, check `TRIGGER_EQUIVALENTS` in
-[`trigger-dispatcher.ts`](../../src/engine/triggers/trigger-dispatcher.ts) for an existing alias
+If your event isn't listed, check the `TriggerTypeSchema` enum in
+[`schema-primitives.ts`](../../src/data/supplemental/schema-primitives.ts) for an existing trigger
 before proposing a new trigger literal (new literals require an engine change, not just
 supplemental data — see [feature-delivery skill](../../.agents/skills/feature-delivery/SKILL.md)).
 

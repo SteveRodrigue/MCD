@@ -54,6 +54,7 @@ Do not edit files or continue implementation until the user resolves the ambigui
    - `rtk npx vitest run <relevant_test_files>` (0 failures, 0 skipped; do not run the full suite)
    - `rtk npm run typecheck`
    - `rtk npm run lint`
+   - `rtk npm run docs:check` when the plan touched documentation or `.agents/`, or renamed or removed a file, script or symbol that documentation may cite
    Do not re-run any check if zero files changed since it passed.
 3. Do not infer missing requirements, select between plausible designs, expand scope, or modify files not authorized by the plan. On ambiguity, stop and report using the "Why This Is Blocking" / "What I Need From You" headings.
 

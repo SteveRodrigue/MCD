@@ -30,7 +30,8 @@ Sources, in this order:
 
 1. Read sections 1, 3 and 5 of the status file.
 2. Take the first row of section 3. Skip a row only if it waits for an owner decision (section 5) or its issue is closed; say why in one line.
-3. Check the issue: `gh issue view <N> --json number,state,title,milestone,labels,body`.
+3. Before telling the user a queue, a section or a gate is done: `gh issue list --milestone "<gate>" --state open` must be empty and every open issue must have a milestone (`rtk npm run docs:check -- --github` reports the ones without). An empty status file is not proof.
+4. Check the issue: `gh issue view <N> --json number,state,title,milestone,labels,body`.
    - Closed: remove its row from the status file, tell the user, take the next row.
    - Open but not in the active gate milestone: say so and ask whether to keep it in the queue.
 

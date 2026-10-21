@@ -54,6 +54,8 @@ flowchart TD
 - **[Architecture Decision Records (ADRs)](docs/decisions/README.md)** — Comprehensive centralized registry of all architectural, technical, and gameplay design decisions (ADR-0001 onward).
 - **[Algorithmic Rules Reference](docs/algorithmic_rules_reference.md)** — Precise mathematical state machine and timing pipeline specifications derived from RR v1.8.
 - **[Project Roadmap & Milestones](docs/roadmap_and_milestones.md)** — Detailed 5-phase iterative development plan and status.
+- **[Supplemental Data Schema](docs/specifications/supplemental_data_schema.md)** and **[Supplemental Specification Suite](docs/specifications/supplemental/README.md)** — The declarative card-data contract and its validation ([tooling notes](docs/tools/supplemental_schema_validation.md)).
+- **[Content Plugins, Scenarios & Campaigns](docs/specifications/content_plugins_scenarios_and_campaigns.md)** — Backlogged design for scenario and card-hook plugins.
 - **[Coding Guidelines & Standards](docs/coding_guidelines.md)** — Strict architectural boundaries, typing rules, UI layering standards, and TDD requirements.
 - **[Contributing: Setup & Commands](CONTRIBUTING.md#-setup--commands)** — Environment setup, Windows PATH and credential troubleshooting, and the command table.
 - **[Changelog](CHANGELOG.md)** — Chronological release history and milestone log. Pending changes are tracked in `changes/unreleased/` and compiled with `npm run changelog:release -- <version>` (see [changes/README.md](changes/README.md)).

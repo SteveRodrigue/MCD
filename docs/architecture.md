@@ -222,9 +222,9 @@ flowchart LR
 
 - Full `trigger` catalog and source pipeline mapping:
   [02. Timings & Triggers §2](./specifications/supplemental/02_timings_and_triggers.md#2-event-trigger-windows-trigger).
-- Alias table (`TRIGGER_EQUIVALENTS`) lives in
-  [`trigger-dispatcher.ts`](../src/engine/triggers/trigger-dispatcher.ts) — e.g. a card
-  written against `CHARACTER_DEFEATED` also fires for `MINION_DEFEATED` and `HOST_DEFEATED`.
+- When a character is defeated, [`trigger-dispatcher.ts`](../src/engine/triggers/trigger-dispatcher.ts)
+  also offers in-hand `CHARACTER_DEFEATED` responses (for example _Chase Them Down_ `01052`);
+  an attachment reacts only when its own host is defeated.
 
 ---
 

@@ -1,0 +1,16 @@
+[
+  { "check": "symbol", "value": "HYDRA_BOMBER_CHOICE", "reason": "Banned card-named primitive, used as the anti-pattern example (ADR-0021)" },
+  { "check": "symbol", "value": "NICK_FURY_CHOICE", "reason": "Banned card-named primitive, used as the anti-pattern example (ADR-0021)" },
+  { "check": "symbol", "value": "PEPPER_POTTS_RESOURCE", "reason": "Banned card-named primitive, used as the anti-pattern example (ADR-0021)" },
+  { "check": "symbol", "value": "BLACK_CAT_SEARCH", "reason": "Banned card-named primitive, used as the anti-pattern example (ADR-0021)" },
+  { "check": "symbol", "value": "DANCE_OF_DEATH_ATTACK", "reason": "Banned card-named primitive, used as the anti-pattern example (ADR-0021)" },
+  { "check": "symbol", "value": "UPPER_SNAKE_CASE", "reason": "Naming convention label, not a symbol" },
+  { "check": "symbol", "value": "PREFIX_NOUN", "reason": "Naming pattern label for target selectors, not a symbol" },
+  { "check": "symbol", "value": "INVALID_PRIMITIVE", "reason": "Example of a rejected value in the editor spec" },
+  { "check": "symbol", "value": "SPEND_RESOURCES_TO_DISCARD_ATTACHMENT", "reason": "Names the old attachment-discard action; rewritten when #126 lands", "until": 126 },
+  { "check": "link", "value": "...", "reason": "Placeholder link in the documentation-audit skill's issue template" },
+  { "check": "link", "value": "file.md", "reason": "Placeholder link in the documentation-audit skill's status example" },
+  { "check": "link", "value": "XXXX-*.md", "reason": "Placeholder link in the documentation-audit skill's status example" },
+  { "check": "path", "value": "tests/engine/feature-name.test.ts", "reason": "Example file name in the feature-delivery skill" },
+  { "check": "path", "value": "src/auth.ts", "reason": "Example path in the i-have-adhd skill" }
+]

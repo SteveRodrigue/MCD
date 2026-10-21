@@ -3,7 +3,6 @@ import {
   GameState,
   PendingDecisionPrompt,
   DistributionPromptConfig,
-  ExecutionFrame,
   ActionResult,
   CardAbility,
   AbilityStep,
@@ -279,41 +278,6 @@ export function popDecisionPrompt(state: GameState): {
   if (queue.length > 0) refreshPromptOptionAvailability(state, queue[0]);
 
   return { state, prompt: popped };
-}
-
-/**
- * Push an execution frame onto the resolution stack (ADR-0032).
- */
-export function pushExecutionFrame(state: GameState, frame: ExecutionFrame): GameState {
-  const nextState = { ...state };
-  const stack = nextState.executionStack ? [...nextState.executionStack] : [];
-  stack.push(frame);
-  nextState.executionStack = stack;
-  return nextState;
-}
-
-/**
- * Peek at the top execution frame on the resolution stack.
- */
-export function peekExecutionFrame(state: GameState): ExecutionFrame | undefined {
-  if (state.executionStack && state.executionStack.length > 0) {
-    return state.executionStack[state.executionStack.length - 1];
-  }
-  return undefined;
-}
-
-/**
- * Pop the top execution frame from the resolution stack.
- */
-export function popExecutionFrame(state: GameState): {
-  state: GameState;
-  frame?: ExecutionFrame;
-} {
-  const nextState = { ...state };
-  const stack = nextState.executionStack ? [...nextState.executionStack] : [];
-  const popped = stack.pop();
-  nextState.executionStack = stack;
-  return { state: nextState, frame: popped };
 }
 
 /** The threat placement a queued interrupt prompt belongs to, if any (#266). */

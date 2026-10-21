@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
+import { createCardInstance } from '../../src/engine/state/game-setup';
+import { newRhinoGame } from '../support/game-fixtures';
 import {
   evaluateCardPlayability,
   checkUniqueCardPlayable,
@@ -8,37 +9,19 @@ import {
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { executeEffect } from '../../src/engine/effects';
 import { cardCatalog, normalizeRawCard } from '../../src/data/importer/card-loader';
-import {
-  GameState,
-  HeroCard,
-  AlterEgoCard,
-  AllyCard,
-  NormalizedCard,
-} from '../../src/engine/models';
+import { GameState, HeroCard, AllyCard, NormalizedCard } from '../../src/engine/models';
 import trorsPack from '../../data/upstream/pack/trors.json';
 import warmPack from '../../data/upstream/pack/warm.json';
 
 describe('Cross-Player Global Unicity Enforcement (RR v1.8 pp. 28-29, Issue #187)', () => {
   let state: GameState;
   let spiderManHero: HeroCard;
-  let peterParkerAlterEgo: AlterEgoCard;
-  let captainMarvelHero: HeroCard;
-  let carolDanversAlterEgo: AlterEgoCard;
   let sheHulkHero: HeroCard;
-  let jenniferWaltersAlterEgo: AlterEgoCard;
-  let ironManHero: HeroCard;
-  let tonyStarkAlterEgo: AlterEgoCard;
   let paymentCard: NormalizedCard;
 
   beforeEach(() => {
     spiderManHero = cardCatalog.getCard('01001a') as HeroCard;
-    peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
-    captainMarvelHero = cardCatalog.getCard('01010a') as HeroCard;
-    carolDanversAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
     sheHulkHero = cardCatalog.getCard('01019a') as HeroCard;
-    jenniferWaltersAlterEgo = cardCatalog.getCard('01019b') as AlterEgoCard;
-    ironManHero = cardCatalog.getCard('01029a') as HeroCard;
-    tonyStarkAlterEgo = cardCatalog.getCard('01029b') as AlterEgoCard;
     paymentCard = cardCatalog.getCard('01005')!; // Web-Shooter (1 resource)
   });
 
@@ -46,30 +29,7 @@ describe('Cross-Player Global Unicity Enforcement (RR v1.8 pp. 28-29, Issue #187
     it('disallows Player 1 from playing Nick Fury when Player 2 already controls Nick Fury', () => {
       const nickFuryCard = cardCatalog.getCard('01084') as AllyCard;
 
-      state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
-        players: [
-          {
-            id: 'p1',
-            name: 'Spider-Man',
-            hero: spiderManHero,
-            alterEgo: peterParkerAlterEgo,
-            deckCards: Array(10).fill(paymentCard),
-          },
-          {
-            id: 'p2',
-            name: 'Captain Marvel',
-            hero: captainMarvelHero,
-            alterEgo: carolDanversAlterEgo,
-            deckCards: Array(10).fill(paymentCard),
-          },
-        ],
-        villain: cardCatalog.getCard('01094') as any,
-        mainScheme: cardCatalog.getCard('01097b') as any,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
-      });
+      state = newRhinoGame({ players: [{ hero: '01001a' }, { hero: '01010a' }] });
 
       // Player 2 controls Nick Fury in their allies
       const p2Fury = createCardInstance(nickFuryCard);
@@ -134,30 +94,7 @@ describe('Cross-Player Global Unicity Enforcement (RR v1.8 pp. 28-29, Issue #187
       expect(spiderManAlly.isUnique).toBe(true);
 
       // Player 1 is Spider-Man (Peter Parker), Player 2 is She-Hulk (Jennifer Walters)
-      state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
-        players: [
-          {
-            id: 'p1',
-            name: 'Spider-Man',
-            hero: spiderManHero,
-            alterEgo: peterParkerAlterEgo,
-            deckCards: Array(10).fill(paymentCard),
-          },
-          {
-            id: 'p2',
-            name: 'She-Hulk',
-            hero: sheHulkHero,
-            alterEgo: jenniferWaltersAlterEgo,
-            deckCards: Array(10).fill(paymentCard),
-          },
-        ],
-        villain: cardCatalog.getCard('01094') as any,
-        mainScheme: cardCatalog.getCard('01097b') as any,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
-      });
+      state = newRhinoGame({ players: [{ hero: '01001a' }, { hero: '01019a' }] });
 
       state.players[1].currentForm = 'hero';
       state.players[1].activeFormCard = sheHulkHero;
@@ -242,30 +179,7 @@ describe('Cross-Player Global Unicity Enforcement (RR v1.8 pp. 28-29, Issue #187
       expect(ironManAlly.isUnique).toBe(true);
 
       // Player 1 is Spider-Man, Player 2 is Iron Man
-      state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
-        players: [
-          {
-            id: 'p1',
-            name: 'Spider-Man',
-            hero: spiderManHero,
-            alterEgo: peterParkerAlterEgo,
-            deckCards: Array(10).fill(paymentCard),
-          },
-          {
-            id: 'p2',
-            name: 'Iron Man',
-            hero: ironManHero,
-            alterEgo: tonyStarkAlterEgo,
-            deckCards: Array(10).fill(paymentCard),
-          },
-        ],
-        villain: cardCatalog.getCard('01094') as any,
-        mainScheme: cardCatalog.getCard('01097b') as any,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
-      });
+      state = newRhinoGame({ players: [{ hero: '01001a' }, { hero: '01029a' }] });
 
       const ironManAllyInst = createCardInstance(ironManAlly);
       const pay1 = createCardInstance(paymentCard);
@@ -298,30 +212,7 @@ describe('Cross-Player Global Unicity Enforcement (RR v1.8 pp. 28-29, Issue #187
       const triskelionCard = cardCatalog.getCard('01073')!;
       expect(triskelionCard.isUnique).toBe(true);
 
-      state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
-        players: [
-          {
-            id: 'p1',
-            name: 'Spider-Man',
-            hero: spiderManHero,
-            alterEgo: peterParkerAlterEgo,
-            deckCards: Array(10).fill(paymentCard),
-          },
-          {
-            id: 'p2',
-            name: 'Captain Marvel',
-            hero: captainMarvelHero,
-            alterEgo: carolDanversAlterEgo,
-            deckCards: Array(10).fill(paymentCard),
-          },
-        ],
-        villain: cardCatalog.getCard('01094') as any,
-        mainScheme: cardCatalog.getCard('01097b') as any,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
-      });
+      state = newRhinoGame({ players: [{ hero: '01001a' }, { hero: '01010a' }] });
 
       // Player 2 controls The Triskelion in tableau
       const p2Triskelion = createCardInstance(triskelionCard);
@@ -355,30 +246,7 @@ describe('Cross-Player Global Unicity Enforcement (RR v1.8 pp. 28-29, Issue #187
     it('prevents putting a unique card into play if a matching unique card is already in play', () => {
       const nickFuryCard = cardCatalog.getCard('01084') as AllyCard;
 
-      state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
-        players: [
-          {
-            id: 'p1',
-            name: 'Spider-Man',
-            hero: spiderManHero,
-            alterEgo: peterParkerAlterEgo,
-            deckCards: Array(10).fill(paymentCard),
-          },
-          {
-            id: 'p2',
-            name: 'Captain Marvel',
-            hero: captainMarvelHero,
-            alterEgo: carolDanversAlterEgo,
-            deckCards: Array(10).fill(paymentCard),
-          },
-        ],
-        villain: cardCatalog.getCard('01094') as any,
-        mainScheme: cardCatalog.getCard('01097b') as any,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
-      });
+      state = newRhinoGame({ players: [{ hero: '01001a' }, { hero: '01010a' }] });
 
       // Player 1 controls Nick Fury in their allies
       const p1Fury = createCardInstance(nickFuryCard);

@@ -12,6 +12,7 @@ describe('GameState Logger Service', () => {
     phase: GamePhase.PLAYER_PHASE,
     firstPlayerIndex: 0,
     activePlayerIndex: 0,
+    pendingDecisionQueue: [],
     players: [],
     villains: [],
     mainSchemes: [],

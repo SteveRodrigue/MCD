@@ -234,7 +234,6 @@ export function setupGame(options: GameSetupOptions): GameState {
     firstPlayerIndex: 0,
     activePlayerIndex: 0,
     pendingDecisionQueue: [],
-    executionStack: [],
     players,
     villains: [villain],
     activeVillainId: villain.instanceId,

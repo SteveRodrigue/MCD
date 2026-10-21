@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { setupGame, createCardInstance } from '@engine/state/game-setup';
+import { createCardInstance } from '@engine/state/game-setup';
+import { newRhinoGame } from '../support/game-fixtures';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { CardType, NormalizedCard, getActiveVillain } from '@engine/models';
 import { executeEffect } from '@engine/effects';
@@ -8,14 +9,10 @@ import { canPayAbilityCost, executeAbilityCost } from '@engine/pipeline/cost-eng
 describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035, RR v1.8 p. 30)', () => {
   let spiderManHero: any;
   let peterParkerAlterEgo: any;
-  let rhinoVillain: any;
-  let mainScheme: any;
 
   beforeEach(() => {
     spiderManHero = cardCatalog.getCard('01001a')!;
     peterParkerAlterEgo = cardCatalog.getCard('01001b')!;
-    rhinoVillain = cardCatalog.getCard('01094')!;
-    mainScheme = cardCatalog.getCard('01097')!;
   });
 
   it('adds and spends named counters on an in-play upgrade (SELF)', () => {
@@ -33,22 +30,15 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
       },
     };
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [webShooter],
+          deck: [webShooter],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -118,22 +108,15 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
       },
     };
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [webShooter],
+          deck: [webShooter],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -171,22 +154,15 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
   });
 
   it('adds and spends named counters on Player IDENTITY (e.g. Gambit charge counters, Groot growth counters)', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Groot',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [cardCatalog.getCard('01005')!],
+          deck: [cardCatalog.getCard('01005')!],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     state.players[0].counters = { growth: 2 };
@@ -246,22 +222,15 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
       type: CardType.SUPPORT,
     };
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Captain America',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [cardWithCounter],
+          deck: [cardWithCounter],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -314,22 +283,15 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
       type: CardType.UPGRADE,
     };
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Iron Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [energyChannel],
+          deck: [energyChannel],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -392,22 +354,15 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
       traits: ['Tech'],
     };
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Doctor Strange',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [spellUpgrade1, spellUpgrade2, techUpgrade],
+          deck: [spellUpgrade1, spellUpgrade2, techUpgrade],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -465,22 +420,15 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
       },
     };
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [tacTeam],
+          deck: [tacTeam],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -514,22 +462,16 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
 
   it('ADD_COUNTERS evaluates a dynamic amount (resources spent), not just a number', () => {
     const channel = createCardInstance(cardCatalog.getCard('01018')!);
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'P1',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: Array(15).fill(cardCatalog.getCard('01005')!),
+          deck: Array(15).fill(cardCatalog.getCard('01005')!),
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: [],
-      skipMulligan: true,
+      setup: { encounterCards: [] },
     });
     const ability = channel.card.enrichment!.abilities!.find((a) => a.id === 'energy_channel_add')!;
 

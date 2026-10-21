@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { setupGame, createCardInstance } from '@engine/state/game-setup';
+import { createCardInstance } from '@engine/state/game-setup';
+import { newRhinoGame } from '../support/game-fixtures';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { NormalizedCard } from '@engine/models';
 import { executeEffect } from '@engine/effects';
@@ -8,35 +9,24 @@ import { SearchAndSelectParamsSchema } from '../../src/data/supplemental/schema'
 describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)', () => {
   let spiderManHero: any;
   let peterParkerAlterEgo: any;
-  let rhinoVillain: any;
-  let mainScheme: any;
   let breakinTakinCard: NormalizedCard;
 
   beforeEach(() => {
     spiderManHero = cardCatalog.getCard('01001a')!;
     peterParkerAlterEgo = cardCatalog.getCard('01001b')!;
-    rhinoVillain = cardCatalog.getCard('01095') || cardCatalog.getCard('01094')!;
-    mainScheme = cardCatalog.getCard('01097')!;
     breakinTakinCard = cardCatalog.getCard('01107')!;
   });
 
   it('multi-zone search finds target in encounter deck, splices it, and shuffles deck', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [],
+          deck: [],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const breakinInst = createCardInstance(breakinTakinCard);
@@ -69,22 +59,15 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
   });
 
   it('multi-zone search finds target in encounter discard pile, splices it, and shuffles encounter deck', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [],
+          deck: [],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const breakinInst = createCardInstance(breakinTakinCard);
@@ -119,22 +102,16 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
 
   it('Rhino Stage II When Revealed searches deck & discard and reveals Breakin & Takin with threat', () => {
     const rhinoStage2Card = cardCatalog.getCard('01095')! as any;
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [],
+          deck: [],
         },
       ],
-      villain: rhinoStage2Card,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
+      setup: { villain: rhinoStage2Card },
     });
 
     const breakinInst = createCardInstance(breakinTakinCard);
@@ -157,21 +134,15 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
   });
 
   it('lookCount: 0 searches entire pile while lookCount: 3 looks at top 3 only', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [],
+          deck: [],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -231,21 +202,15 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
   });
 
   it('takeCount: 0 / takeCount: "ALL" takes all matching cards without prompt', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [],
+          deck: [],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -303,21 +268,15 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
   });
 
   it('minimumTake 0 opens a multi-select prompt that may stay empty, the default minimumTake 1 enforces a pick', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [],
+          deck: [],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      skipMulligan: true,
     });
 
     const player = state.players[0];

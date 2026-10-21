@@ -76,6 +76,7 @@ describe('Scenario Plugin Registry & Multi-Entity Accessors', () => {
       roundNumber: 1,
       firstPlayerIndex: 0,
       activePlayerIndex: 0,
+      pendingDecisionQueue: [],
       phase: GamePhase.PLAYER_PHASE,
       scenarioId: 'rhino',
       scenarioCardCode: '01094',

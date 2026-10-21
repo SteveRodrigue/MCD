@@ -248,19 +248,6 @@ export interface RevealedCardDisplay {
   dimmedReason?: string;
 }
 
-/**
- * Execution Frame for the Universal Resolution Stack (ADR-0032)
- */
-export interface ExecutionFrame {
-  id: string;
-  type: 'ACTION' | 'ACTIVATION' | 'PHASE_STEP' | 'INTERRUPT' | 'RESPONSE';
-  sourceCardCode?: string;
-  playerId?: string;
-  stepIndex: number;
-  steps: AbilityStep[];
-  context?: Record<string, unknown>;
-}
-
 export type CombatPhase =
   | 'PRE_ATTACK'
   | 'INITIATION'
@@ -573,14 +560,8 @@ export interface GameState {
   options?: GameOptions;
 
   /** Structured FIFO Prompt Queue (ADR-0032) */
-  pendingDecisionQueue?: PendingDecisionPrompt[];
-  /** Execution Frame Stack (ADR-0032) */
-  executionStack?: ExecutionFrame[];
+  pendingDecisionQueue: PendingDecisionPrompt[];
 
-  /**
-   * @deprecated Use `state.pendingDecisionQueue` and `peekDecisionPrompt(state)` per ADR-0032.
-   */
-  pendingDecisionPrompt?: PendingDecisionPrompt;
   /** Ordered enemy activation queue for Villain Phase (ADR-0068) */
   pendingActivations?: PendingActivation[];
   /** Ordered multi-step ability sequences paused on a decision prompt (#248) */

@@ -83,7 +83,7 @@ _Objective: Build an industrial-grade, capability-driven rules engine with compl
 ### 2. 🔴 `[Must-Have]` Milestone 2A: Universal Resolution Stack & Decision Prompt Queue ([ADR-0032](decisions/0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md)) ✅ (Completed)
 
 - [x] **Nested Action & Trigger Execution Stack (RR v1.8 p. 16, 24 / [ADR-0032](decisions/0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md)):**
-  - Supported interruption windows and execution frames (`ExecutionFrame`, `executionStack`) without state corruption.
+  - Supported interruption windows without state corruption (the unused `executionStack` was removed in R14).
   - Supported voluntary reaction windows with explicit "Pass / Do Nothing" options in `DecisionPromptModal`.
 - [x] **Decision Prompt Queue Management:**
   - Transitioned from single prompt overwrite to structured FIFO prompt queue (`pendingDecisionQueue`), ensuring multiple triggered prompts resolve sequentially with visual queue depth badges.

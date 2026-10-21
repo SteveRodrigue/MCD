@@ -5,6 +5,7 @@
 * **Authors:** MCD Core Team
 * **Deciders:** User & Antigravity
 * **Supersedes:** [ADR-0020](0020-optional-vs-forced-triggers-exact-event-scoping-and-interactive-interrupts.md)
+* **Amendment (2026-10-20, audit R14):** the `executionStack` / `ExecutionFrame` part of this design was never used by production code and was removed. Nested resolution runs on the call stack and `pendingDecisionQueue`.
 
 ---
 
@@ -28,7 +29,7 @@ How should we design a rock-solid, fully serializable, and deterministic Resolut
 * **Driver 1: Exact Rules Precision (RR v1.8 p. 16, 24):** Guarantee strict priority ordering and first-player resolution choice for simultaneous triggers.
 * **Driver 2: Zero Prompt Overwrites (Queue Integrity):** Support nested decisions (e.g., *Tony Stark Futurist* scrying prompt nested inside a round turn, or multiplayer defense prompts) without state loss.
 * **Driver 3: Headless & Interactive Decoupling (ADR-0002):** Support interactive human modal rendering while allowing automated heuristic resolution for headless test simulations.
-* **Driver 4: Complete State Serializability:** Ensure the entire execution stack and prompt queue can be serialized to JSON for save games, action replays, and undo/redo.
+* **Driver 4: Complete State Serializability:** Ensure the entire prompt queue can be serialized to JSON for save games, action replays, and undo/redo.
 
 ---
 
@@ -42,15 +43,15 @@ Pause the engine loop using async/await or generator functions (`function* runAc
   * Makes headless deterministic simulation and automated unit testing complex and flaky.
   * Violates our pure state machine principle (ADR-0002).
 
-### Option 2: Frame-Based Execution Stack & Multi-Prompt Queue (`ExecutionStack` & `pendingDecisionQueue`) (Chosen)
-Model game execution via an explicit stack of `ExecutionFrame` records and a FIFO/LIFO `pendingDecisionQueue: PendingDecisionPrompt[]` on `GameState`.
+### Option 2: Multi-Prompt Queue (`pendingDecisionQueue`) (Chosen)
+Model pending decisions as a FIFO/LIFO `pendingDecisionQueue: PendingDecisionPrompt[]` on `GameState`.
 * **Pros:**
   * 100% pure, deterministic, and serializable to JSON at any micro-step.
   * Native support for prompt queuing across multiplayer seats.
   * Explicit "Pass / Do Nothing" options for voluntary reaction windows.
   * Headless agents can pop and answer prompts deterministically in automated Monte Carlo simulations.
 * **Cons:**
-  * Requires explicit frame management and prompt resolution dispatchers in `src/engine/pipeline/`.
+  * Requires explicit prompt resolution dispatchers in `src/engine/pipeline/`.
 
 ### Option 3: Event-Emitter Pub/Sub with Asynchronous Callbacks
 Use an in-memory Node.js / Browser `EventEmitter` with listener callbacks.
@@ -64,7 +65,7 @@ Use an in-memory Node.js / Browser `EventEmitter` with listener callbacks.
 
 ## Decision Outcome
 
-**Chosen Option:** **Option 2: Frame-Based Execution Stack & Multi-Prompt Queue (`pendingDecisionQueue`)**
+**Chosen Option:** **Option 2: Multi-Prompt Queue (`pendingDecisionQueue`)**
 
 ### 🏗️ Proposed Architecture Specifications
 
@@ -91,7 +92,7 @@ flowchart TD
     ExecuteStep --> PopQueue["Pop resolved prompt from pendingDecisionQueue"]
     PopQueue --> MorePrompts{"Are more prompts pending in queue?"}
     MorePrompts -- Yes --> OpenPromptWindow
-    MorePrompts -- No --> ResumeParent["Resume Parent Action Execution Frame"]
+    MorePrompts -- No --> ResumeParent["Resume Parent Action"]
 ```
 
 ### 1. The Prompt Queue Model (`GameState`)
@@ -99,23 +100,11 @@ flowchart TD
 export interface GameState {
   // Structured FIFO prompt queue replacing single pendingDecisionPrompt
   pendingDecisionQueue: PendingDecisionPrompt[];
-  
-  // Active execution call stack for nested resolution
-  executionStack: ExecutionFrame[];
-}
-
-export interface ExecutionFrame {
-  frameId: string;
-  sourceCardInstanceId: string;
-  triggerEvent: TriggerType;
-  remainingSteps: AbilityStep[];
-  context: EffectExecutionContext;
-  parentFrameId?: string;
 }
 ```
 
 ### 2. Voluntary Reactions & Explicit "Pass" Support
-Every optional response or interrupt prompt generated for a player includes a standard `[Pass / Do Nothing]` action option. When all players have answered or passed, the execution stack resumes parent action resolution.
+Every optional response or interrupt prompt generated for a player includes a standard `[Pass / Do Nothing]` action option. When all players have answered or passed, the engine resumes parent action resolution.
 
 ---
 

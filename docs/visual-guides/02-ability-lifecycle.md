@@ -33,7 +33,7 @@ outcome of a previous step via `gate` / `target: "PREVIOUS_TARGET"`.
 ```mermaid
 flowchart TD
     Step(["Step N: { effect, gate?, gateParams?, effectParams? }"]) --> GateCheck{"gate present?"}
-    GateCheck -->|"no"| Run["Run effect primitive<br/>(src/engine/effects/index.ts)"]
+    GateCheck -->|"no"| Run["Run effect primitive<br/>(src/engine/effects/handlers/index.ts)"]
     GateCheck -->|"yes, e.g. THEN, IF_RESULT, IF_FORM,<br/>IF_PLAYER_HAS_TRAIT, IF_CARD_IN_PLAY"| Eval{"Evaluate gate against<br/>gateParams + prior step outcome"}
     Eval -->|false| Skip(["Step skipped, record { skipped: true }"])
     Eval -->|true| Run

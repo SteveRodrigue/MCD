@@ -66,6 +66,6 @@ Log to docs/ambiguities/"]
 3. **Draft Supplemental Schema:** Mandate executable `abilities: [...]` for any active text.
 4. **Consult Ground Truth:** Review Rules Reference v1.8 and MarvelCDB FAQ/rulings.
 5. **Round-Trip Decompiler Feedback Loop:** Decompile `abilities` into natural language; assert 100% equivalence.
-6. **Code-Level Primitive & Trigger Path Audit:** Open `src/engine/effects/index.ts` and `src/engine/pipeline/` to verify code handles all zones (deck/discard), shuffling, scaling, and actual runtime trigger emission.
+6. **Code-Level Primitive & Trigger Path Audit:** Open `src/engine/effects/handlers/` and `src/engine/pipeline/` to verify code handles all zones (deck/discard), shuffling, scaling, and actual runtime trigger emission.
 7. **Composable Primitives & Blast-Radius Check:** If code gaps exist, apply Tier 2 generic fix or isolate as Tier 3 blocker.
 8. **Stamp Audit Metadata, Sort Keys & Prune Ambiguities:** Stamp `YYYY-MM-DDTHH:mm`, sort keys canonically, and prune resolved files.

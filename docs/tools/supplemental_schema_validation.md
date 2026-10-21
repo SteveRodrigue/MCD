@@ -5,7 +5,7 @@
 In **Marvel Champions Digital (MCD)**, all card-specific enrichment data resides exclusively in `src/data/supplemental/pack/*.json`. To preserve the **Declarative Data-First Invariant** and prevent speculative or unhandled mechanics from entering the game engine, supplemental card declarations are strictly validated against **codebase-grounded** schemas.
 
 This architecture achieves two vital goals:
-1. **Zero Drift / No Speculative Data:** Any ability step effect, trigger, timing, cost, target, or keyword declared in supplemental JSON must have an active handler in the engine (`src/engine/effects/index.ts`, `src/engine/pipeline/stat-calculator.ts`, `src/engine/pipeline/legality-checker.ts`). Unknown or unsupported variants are immediately rejected at build, test, and edit time.
+1. **Zero Drift / No Speculative Data:** Any ability step effect, trigger, timing, cost, target, or keyword declared in supplemental JSON must have an active handler in the engine (`src/engine/effects/handlers/`, `src/engine/pipeline/stat-calculator.ts`, `src/engine/pipeline/legality-checker.ts`). Unknown or unsupported variants are immediately rejected at build, test, and edit time.
 2. **Real-Time VS Code Diagnostics & Autocomplete:** The Zod schema is exported to a standard Draft JSON Schema (`src/data/supplemental/schema.json`) mapped in `.vscode/settings.json`. Developers and agents get instant red squigglies on typos, property error tooltips, and `Ctrl+Space` autocomplete.
 
 ---
@@ -14,7 +14,7 @@ This architecture achieves two vital goals:
 
 ```mermaid
 flowchart LR
-    A["src/engine/effects/index.ts<br/>(Active Engine Handlers)"] --> B["src/data/supplemental/schema.ts<br/>(Codebase-Grounded Zod Enums)"]
+    A["src/engine/effects/handlers/<br/>(Active Engine Handlers)"] --> B["src/data/supplemental/schema.ts<br/>(Codebase-Grounded Zod Enums)"]
     B --> C["tools/generate-supplemental-schema.ts<br/>(npm run schema:generate)"]
     C --> D["src/data/supplemental/schema.json<br/>(Draft JSON Schema)"]
     D --> E[".vscode/settings.json<br/>(Live In-Editor Diagnostics)"]

@@ -87,7 +87,7 @@ Select the appropriate Conventional Commits category and scope based on the modi
 | `src/data/supplemental/` (Pack JSONs, card declarations)                                                                                                                      | `(data)`                              |
 | `src/data/importer/` (Card loader, normalization, i18n)                                                                                                                       | `(importer)`                          |
 | `src/tools/` or `tools/` (Analyzers, CLI tools, scripts)                                                                                                                      | `(tooling)`                           |
-| `changes/` (changelog fragments), `docs/` (all files, any depth) and root-level `.md` files (`README.md`, `CHANGELOG.md`, `AGENTS.md`, `CHEATSHEET.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`) | `(docs)`                              |
+| `changes/` (changelog fragments), `docs/` (all files, any depth) and root-level `.md` files (`README.md`, `CHANGELOG.md`, `AGENTS.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`) | `(docs)`                              |
 | `.githooks/` or `.github/` (Hooks, workflows, CI)                                                                                                                             | `(hooks)` or `(ci)`                   |
 | Test files in `tests/` across subsystems                                                                                                                                      | `(tests)` or matching subsystem scope |
 

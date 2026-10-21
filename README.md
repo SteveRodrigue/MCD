@@ -51,12 +51,11 @@ flowchart TD
     NewState -->|Rerenders Tabletop| ReactViews
 ```
 
-- **[Architecture Decision Records (ADRs)](docs/decisions/README.md)** — Comprehensive centralized registry of all architectural, technical, and gameplay design decisions (ADR-0001 through ADR-0046).
+- **[Architecture Decision Records (ADRs)](docs/decisions/README.md)** — Comprehensive centralized registry of all architectural, technical, and gameplay design decisions (ADR-0001 onward).
 - **[Algorithmic Rules Reference](docs/algorithmic_rules_reference.md)** — Precise mathematical state machine and timing pipeline specifications derived from RR v1.8.
 - **[Project Roadmap & Milestones](docs/roadmap_and_milestones.md)** — Detailed 5-phase iterative development plan and status.
 - **[Coding Guidelines & Standards](docs/coding_guidelines.md)** — Strict architectural boundaries, typing rules, UI layering standards, and TDD requirements.
-- **[Installation & Setup Guide](docs/installation_guide.md)** — Comprehensive environment setup, PATH troubleshooting, installation, and run instructions.
-- **[Technology Evaluation & Design](docs/technology_evaluation_and_architecture.md)** — Deep architectural analysis, engine evaluation, and state models.
+- **[Contributing: Setup & Commands](CONTRIBUTING.md#-setup--commands)** — Environment setup, Windows PATH and credential troubleshooting, and the command table.
 - **[Changelog](CHANGELOG.md)** — Chronological release history and milestone log. Pending changes are tracked in `changes/unreleased/` and compiled with `npm run changelog:release -- <version>` (see [changes/README.md](changes/README.md)).
 
 ---
@@ -69,7 +68,7 @@ flowchart TD
 - **npm:** v9.0.0 or higher
 
 > [!TIP]
-> For detailed platform-specific installation steps, PATH troubleshooting, and execution policy setup, consult the **[Installation & Setup Guide](docs/installation_guide.md)**.
+> For detailed platform-specific installation steps, PATH troubleshooting, and execution policy setup, consult **[Contributing: Setup & Commands](CONTRIBUTING.md#-setup--commands)**.
 
 ### Installation
 

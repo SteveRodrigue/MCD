@@ -139,7 +139,7 @@ flowchart TD
 
 With no argument, the **full documentation surface is every file matching `docs/**/*.md`
 (recursively, with no subfolder excluded) plus every root-level `*.md` file** in the repository
-root (`README.md`, `CHANGELOG.md`, `AGENTS.md`, `CHEATSHEET.md`, `CONTRIBUTING.md`, `SECURITY.md`,
+root (`README.md`, `CHANGELOG.md`, `AGENTS.md`, `CONTRIBUTING.md`, `SECURITY.md`,
 `CODE_OF_CONDUCT.md`, and any other root `*.md` file present). This is a live glob, not a fixed
 enumeration — newly added files under `docs/` (e.g. a new ADR, a new `docs/visual-guides/*.md`
 entry, a new specification module) are automatically in scope without updating this skill.
@@ -150,7 +150,7 @@ file you discover via the glob above to the right code-truth check in Step 2:
 | Surface        | Path (illustrative, not exhaustive)                                                                    | Primary Truth Source                                                        |
 | :------------- | :----------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
 | Agent contract | `AGENTS.md`                                                                                            | repo conventions, `package.json` scripts                                    |
-| Entry docs     | `README.md`, `CHEATSHEET.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `docs/README.md` | `package.json`, folder structure                                            |
+| Entry docs     | `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md` | `package.json`, folder structure                                            |
 | ADRs           | `docs/decisions/*.md`, `docs/decisions/README.md`                                                      | `src/` implementation reality                                               |
 | Specifications | `docs/specifications/**/*.md`                                                                          | `src/data/supplemental/schema.ts`, `src/engine/effects/index.ts`            |
 | Visual guides  | `docs/visual-guides/*.md`                                                                              | `src/engine/pipeline/*.ts`, `src/engine/triggers/*.ts`, linked spec modules |
@@ -315,8 +315,8 @@ Apply fixes in this order so later edits build on corrected facts:
 5. Guidelines and `docs/coding_guidelines.md`: commands, conventions, lint/test invocations.
 6. `docs/algorithmic_rules_reference.md`: RR citations and engine mapping.
 7. Remaining `docs/**/*.md` files not covered above.
-8. Root-level `*.md` files (`README.md`, `CHEATSHEET.md`, `AGENTS.md`, `CONTRIBUTING.md`,
-   `SECURITY.md`, `CODE_OF_CONDUCT.md`, `docs/README.md`): paths, scripts, counts.
+8. Root-level `*.md` files (`README.md`, `AGENTS.md`, `CONTRIBUTING.md`,
+   `SECURITY.md`, `CODE_OF_CONDUCT.md`): paths, scripts, counts.
 9. `docs/roadmap_and_milestones.md`: checkboxes and milestone badges.
 
 Editing standards:

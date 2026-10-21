@@ -85,7 +85,7 @@ How should the engine data model, supplemental packs, tooling, and documentation
 - `CardAuditRecordSchema` and `CardEnrichmentSchema` strictly reject `reconstructedText` and `mechanicSteps`.
 - Supplemental packs `core.json` and `core_encounter.json` are purged of 127 `mechanicSteps` arrays and 155 `reconstructedText` properties.
 - Tooling (`api-middleware.ts`, `supplemental-declarations-analyzer.ts`, `migrate-declarative-taxonomy.ts`, `card-text-parser.ts`, `run-ambiguity-cards-review.ts`) is streamlined and no longer references obsolete fields.
-- Agent instructions in [AGENTS.md](../../AGENTS.md), [CHEATSHEET.md](../../CHEATSHEET.md), and [card-integration-protocol](../../.agents/skills/card-integration-protocol/SKILL.md) are synchronized.
+- Agent instructions in [AGENTS.md](../../AGENTS.md), and [card-integration-protocol](../../.agents/skills/card-integration-protocol/SKILL.md) are synchronized.
 
 ### Negative Consequences / Risks & Mitigations
 

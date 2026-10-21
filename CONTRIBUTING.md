@@ -58,6 +58,43 @@ Add the effect handler in `src/engine/effects/handlers/` (register it in the mat
 
 ---
 
+## 🧰 Setup & Commands
+
+**Prerequisites:** Node.js >= 18 (20 or 22 LTS recommended), npm >= 9, Git >= 2.30, and the GitHub CLI (`gh`) for the issue and `next-task` tooling.
+
+```bash
+git clone https://github.com/SteveRodrigue/MCD.git
+cd MCD
+npm install
+npm run dev        # http://localhost:3000/ (strictPort; override with: npm run dev -- --port 3001)
+```
+
+`npm run dev` also mirrors Vite output to the newest 10 logs in `logs/dev-server/`. Cards are read from `data/upstream/` (official data), `src/data/supplemental/pack/*.json` (declarative rules) and `src/engine/` (rules engine).
+
+| Task                | Command                                             | Notes                                                                     |
+| :------------------ | :-------------------------------------------------- | :------------------------------------------------------------------------ |
+| Run all tests       | `npm test`                                          | `npm run test:watch` for watch mode, `npm run test:coverage`              |
+| Run one test file   | `npx vitest run tests/engine/villain-phase.test.ts` | Prefer targeted runs while implementing                                   |
+| Type check / lint   | `npm run typecheck`, `npm run lint`                 | Lint must report 0 warnings                                               |
+| Format              | `npm run format`, `npm run format:check`            |                                                                           |
+| Build / preview     | `npm run build`, `npm run preview`                  | `preview` serves a build and has no editor write endpoints                |
+| Headless simulation | `npm run simulate`                                  | 100-game gate for the release                                             |
+| Parse card text     | `npm run parse:card -- --code 01001b`               | Options: [docs/tools/card_text_parser.md](docs/tools/card_text_parser.md) |
+| Declarations report | `npm run report:declarations`                       | Schema usage and parity report                                            |
+| Export schema       | `npm run schema:generate`                           | Writes `src/data/supplemental/schema.json`                                |
+| Look up a rule      | `npm run rule -- <term>`                            | Reads `references/rules/`                                                 |
+| Full check          | `npm run verify`                                    | Format, lint, typecheck, tests, coverage, build                           |
+
+### Windows troubleshooting
+
+- **`npm` or `gh` is not recognized** (installed while the terminal was open): `$env:Path += ";C:\Program Files\nodejs;C:\Program Files\GitHub CLI"` for this session; add the same folders (and `%APPDATA%\npm`) to your user `Path` in `sysdm.cpl` to keep them.
+- **"Running scripts is disabled on this system":** `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force`.
+- **Agents hang on `git push` or `gh` (credential prompt with no terminal):** set `git config --global credential.helper manager`, run `git fetch origin` once in an interactive terminal and authorize, then `gh auth login` (GitHub.com, HTTPS, browser). Verify with `git ls-remote --exit-code origin` and `gh auth status`; both must return immediately.
+
+Recommended VS Code extensions are listed in `.vscode/extensions.json` (ESLint, Prettier, Tailwind CSS IntelliSense, Vitest).
+
+---
+
 ## 🛠️ Development Workflow
 
 1. **Fork & Branch:**

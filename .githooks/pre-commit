@@ -23,6 +23,16 @@ if git diff --cached --name-only | grep -Eq '^(src|data/upstream|docs/ambiguitie
   git add docs/reports/supplemental_data docs/reports/supplemental_declarations_usage_report.md
 fi
 
+# 0b. Documentation checks when docs, agent rules or root Markdown are staged
+if git diff --cached --name-only | grep -Eq '^(docs/|\.agents/|[^/]+\.md$)'; then
+  echo "  ↳ Checking documentation (docs:check)..."
+  "$NPM" run --silent docs:check || {
+    echo "❌ docs:check failed!"
+    echo "💡 Fix the findings above (or add a reasoned entry to tools/audit/docs-check.allow.json)."
+    exit 1
+  }
+fi
+
 # 1. Format check
 echo "  ↳ Checking code formatting (Prettier)..."
 "$NPM" run format:check || {

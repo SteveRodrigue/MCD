@@ -53,7 +53,7 @@ flowchart TD
 
 ## 🔗 Related Documentation
 
-- [Visual Guides — Engine Flow Atlas](../../visual-guides/README.md) (diagram-first onboarding companion)
+- [Architecture Atlas — Engine Flow Diagrams](../../architecture.md) (diagram-first onboarding companion)
 - [Hero & Identity Creation Guide](../../guidelines/hero_creation_guide.md)
 - [Scenario Creation & Extensibility Guide](../../guidelines/scenario_creation_guide.md)
 - [Card Integration Protocol (SKILL.md)](../../../.agents/skills/card-integration-protocol/SKILL.md)

@@ -1,6 +1,6 @@
 # Card Ambiguity & Blocker Queue (Inbox Zero)
 
-This directory serves as the **active ambiguity queue** for cards that could not achieve $\ge 95\%$ confidence after 3 refinement iterations during the [Card Integration Protocol](../guidelines/card_integration_protocol.md).
+This directory serves as the **active ambiguity queue** for cards that could not achieve $\ge 95\%$ confidence after 3 refinement iterations during the [Card Integration Protocol](../../.agents/skills/card-integration-protocol/SKILL.md).
 
 ---
 

@@ -29,21 +29,23 @@ graph TD
 > All base card definitions in `data/upstream/` **must strictly comply with the upstream zzorba format** ([`zzorba/marvelsdb-json-data`](https://github.com/zzorba/marvelsdb-json-data)), which is the canonical standard used by [MarvelCDB](https://marvelcdb.com).
 >
 > **Separation of Concerns:**
+>
 > 1. **Upstream zzorba JSON (`data/upstream/`):** Contains static presentation, card text, traits, costs, printed stats, and deckbuilding metadata.
 > 2. **Supplemental Rules JSON (`src/data/supplemental/`):** Contains pure engine-executable `abilities` with `steps: AbilityStep[]`, costs, timings, triggers, and audit proofs.
 
 ### Standard zzorba Card Fields:
-* `code` *(string, required)*: Unique identifier (e.g. `"custom_001a"`).
-* `name` *(string, required)*: Card title (e.g. `"Daredevil"`).
-* `type_code` *(string, required)*: Canonical type (`"hero"`, `"alter_ego"`, `"ally"`, `"event"`, `"resource"`, `"support"`, `"upgrade"`, `"obligation"`, `"minion"`, `"side_scheme"`, `"treachery"`, `"attachment"`).
-* `faction_code` *(string, required)*: Faction (`"hero"`, `"aggression"`, `"justice"`, `"leadership"`, `"protection"`, `"basic"`, `"encounter"`).
-* `pack_code` *(string, required)*: Pack identifier (e.g. `"custom"`).
-* `set_code` *(string, optional)*: Set grouping (e.g. `"daredevil"`, `"daredevil_nemesis"`).
-* `is_unique` *(boolean, optional)*: Whether unique diamond (`◆`) is printed.
-* `cost` *(number, optional)*: Resource play cost for player cards.
-* `health`, `hand_size`, `thwart`, `attack`, `defense`, `recover` *(number, optional)*: Printed stats.
-* `traits` *(string, optional)*: Period-delimited traits (e.g. `"Avenger. Defender."`).
-* `text` *(string, optional)*: HTML-formatted card text for presentation (engine never scrapes this).
+
+- `code` _(string, required)_: Unique identifier (e.g. `"custom_001a"`).
+- `name` _(string, required)_: Card title (e.g. `"Daredevil"`).
+- `type_code` _(string, required)_: Canonical type (`"hero"`, `"alter_ego"`, `"ally"`, `"event"`, `"resource"`, `"support"`, `"upgrade"`, `"obligation"`, `"minion"`, `"side_scheme"`, `"treachery"`, `"attachment"`).
+- `faction_code` _(string, required)_: Faction (`"hero"`, `"aggression"`, `"justice"`, `"leadership"`, `"protection"`, `"basic"`, `"encounter"`).
+- `pack_code` _(string, required)_: Pack identifier (e.g. `"custom"`).
+- `set_code` _(string, optional)_: Set grouping (e.g. `"daredevil"`, `"daredevil_nemesis"`).
+- `is_unique` _(boolean, optional)_: Whether unique diamond (`◆`) is printed.
+- `cost` _(number, optional)_: Resource play cost for player cards.
+- `health`, `hand_size`, `thwart`, `attack`, `defense`, `recover` _(number, optional)_: Printed stats.
+- `traits` _(string, optional)_: Period-delimited traits (e.g. `"Avenger. Defender."`).
+- `text` _(string, optional)_: HTML-formatted card text for presentation (engine never scrapes this).
 
 ---
 
@@ -52,6 +54,7 @@ graph TD
 The identity consists of two card entries sharing the same base code (`<code>a` for Hero, `<code>b` for Alter-Ego):
 
 ### Hero Card (`custom_001a`)
+
 ```json
 {
   "code": "custom_001a",
@@ -72,6 +75,7 @@ The identity consists of two card entries sharing the same base code (`<code>a` 
 ```
 
 ### Alter-Ego Card (`custom_001b`)
+
 ```json
 {
   "code": "custom_001b",
@@ -90,6 +94,7 @@ The identity consists of two card entries sharing the same base code (`<code>a` 
 ```
 
 ### Declarative Supplemental Enrichment (`src/data/supplemental/`)
+
 ```json
 {
   "custom_001a": {
@@ -159,15 +164,16 @@ The identity consists of two card entries sharing the same base code (`<code>a` 
 
 A hero's 15 signature cards must all have `set_code` matching the hero (`"daredevil"`):
 
-| Card Type | Typical Count | Purpose | Example |
-| :--- | :--- | :--- | :--- |
-| **Signature Ally** | 1 | Hero's iconic sidekick / partner. | *Elektra* or *Foggy Nelson* |
-| **Signature Upgrades** | 2–4 | Weapons, armor, suits, and combat tech. | *Billy Club*, *Baton* |
-| **Signature Supports** | 1–2 | Base of operations, personas, vehicles. | *Nelson & Murdock Law Office* |
-| **Signature Events** | 6–9 | Signature Attacks, Thwarts, and Defenses. | *Blind Justice*, *Radar Sense* |
-| **Signature Resources** | 1–2 | Triple or double wild resources. | *Heightened Senses* |
+| Card Type               | Typical Count | Purpose                                   | Example                        |
+| :---------------------- | :------------ | :---------------------------------------- | :----------------------------- |
+| **Signature Ally**      | 1             | Hero's iconic sidekick / partner.         | _Elektra_ or _Foggy Nelson_    |
+| **Signature Upgrades**  | 2–4           | Weapons, armor, suits, and combat tech.   | _Billy Club_, _Baton_          |
+| **Signature Supports**  | 1–2           | Base of operations, personas, vehicles.   | _Nelson & Murdock Law Office_  |
+| **Signature Events**    | 6–9           | Signature Attacks, Thwarts, and Defenses. | _Blind Justice_, _Radar Sense_ |
+| **Signature Resources** | 1–2           | Triple or double wild resources.          | _Heightened Senses_            |
 
-### Example: Signature Upgrade (*Billy Club*)
+### Example: Signature Upgrade (_Billy Club_)
+
 ```json
 {
   "code": "custom_002",
@@ -202,11 +208,12 @@ Every hero requires exactly 1 obligation card shuffled into the encounter deck d
 
 The Nemesis encounter set provides the nemesis cards set aside at the start of the game:
 
-1. **Nemesis Minion (1 card):** Unique minion entering play engaged with the hero (e.g. *Bullseye*, 4 HP, 2 SCH, 2 ATK, `Quickstrike`).
-2. **Nemesis Side Scheme (1 card):** Enters play with base threat (e.g. *Target in Sight*, 3 base threat per player, Hazard icon).
-3. **Nemesis Treacheries / Attachments (3 cards):** Thematic hazards shuffled into the encounter deck by *Shadow of the Past* (`01190`).
+1. **Nemesis Minion (1 card):** Unique minion entering play engaged with the hero (e.g. _Bullseye_, 4 HP, 2 SCH, 2 ATK, `Quickstrike`).
+2. **Nemesis Side Scheme (1 card):** Enters play with base threat (e.g. _Target in Sight_, 3 base threat per player, Hazard icon).
+3. **Nemesis Treacheries / Attachments (3 cards):** Thematic hazards shuffled into the encounter deck by _Shadow of the Past_ (`01190`).
 
-### Example: Nemesis Minion (*Bullseye*)
+### Example: Nemesis Minion (_Bullseye_)
+
 ```json
 {
   "code": "custom_017",
@@ -263,7 +270,9 @@ describe('Custom Hero: Daredevil', () => {
 ```
 
 ### Run Schema Validation & Declarations Audit
+
 After adding cards and writing tests, execute:
+
 ```bash
 npm run report:declarations   # Regenerates docs/reports/supplemental_declarations_usage_report.md
 npm test                      # Runs Vitest test suite including supplemental-schema.test.ts
@@ -273,6 +282,116 @@ npm run typecheck             # Verifies TypeScript types
 ---
 
 ## 7. Related References
-* [Supplemental Data Schema Specification](../specifications/supplemental/README.md)
-* [Scenario Creation Guide](./scenario_creation_guide.md)
-* [Card Integration Protocol (SKILL.md)](../../.agents/skills/card-integration-protocol/SKILL.md)
+
+- [Supplemental Data Schema Specification](../specifications/supplemental/README.md)
+- [Scenario Creation Guide](./scenario_creation_guide.md)
+- [Card Integration Protocol (SKILL.md)](../../.agents/skills/card-integration-protocol/SKILL.md)
+
+---
+
+## Appendix: Which `timing`, `trigger` and `effect` do I pick?
+
+> This appendix has no direct 1:1 spec equivalent: it's a practical
+> decision tree for turning printed card text into a first-draft supplemental JSON entry.
+> Always finish by checking your draft against the linked spec module before submitting.
+
+---
+
+### 1. "What `timing` do I use?"
+
+```mermaid
+flowchart TD
+    Start(["Read the printed card text"]) --> Q1{"Does the text start with<br/>a bold keyword like<br/>Interrupt / Response / Forced?"}
+    Q1 -->|"no keyword — it's a plain action"| Q2{"Form restriction<br/>printed (Hero/Alter-Ego icon)?"}
+    Q2 -->|Hero only| HA["HERO_ACTION"]
+    Q2 -->|Alter-Ego only| AA["ALTER_EGO_ACTION"]
+    Q2 -->|none| ACT["ACTION"]
+    Q1 -->|"Resource:"| Q3{"Form restriction?"}
+    Q3 -->|Hero| HR["HERO_RESOURCE"]
+    Q3 -->|Alter-Ego| AR["ALTER_EGO_RESOURCE"]
+    Q3 -->|none| RES["RESOURCE"]
+    Q1 -->|"Interrupt:"| Q4{"'Forced Interrupt'<br/>(mandatory) vs optional?"}
+    Q4 -->|forced| FI["FORCED_INTERRUPT"]
+    Q4 -->|optional| INT["INTERRUPT"]
+    Q1 -->|"Response:"| Q5{"'Forced Response'<br/>(mandatory) vs optional?"}
+    Q5 -->|forced| FR["FORCED_RESPONSE"]
+    Q5 -->|optional| RSP["RESPONSE"]
+    Q1 -->|"'When Revealed:' on an<br/>encounter card"| WR["WHEN_REVEALED"]
+    Q1 -->|"passive aura, always active<br/>while face-up in play"| CONST["CONSTANT"]
+```
+
+Full enum reference: [02. Timings & Triggers §1](../specifications/supplemental/02_timings_and_triggers.md#1-ability-timing-types-timing).
+
+---
+
+### 2. "What `trigger` does my Interrupt/Response bind to?"
+
+```mermaid
+flowchart TD
+    Start(["Card text names a moment,<br/>e.g. 'when the villain initiates an attack'"]) --> Q1{"What is happening<br/>at that moment?"}
+    Q1 -->|"enemy about to attack"| T1["ENEMY_INITIATES_ATTACK"]
+    Q1 -->|"you are about to take damage"| T2["DAMAGE_WOULD_BE_TAKEN"]
+    Q1 -->|"you already took damage"| T3["DAMAGE_TAKEN"]
+    Q1 -->|"a card entered play"| T4["CARD_PLAYED / ENTERS_PLAY"]
+    Q1 -->|"a character was defeated"| T5["CHARACTER_DEFEATED / DEFEATED"]
+    Q1 -->|"threat is about to be placed"| T6["THREAT_WOULD_BE_PLACED"]
+    Q1 -->|"a scheme was fully thwarted"| T7["SCHEME_DEFEATED"]
+    Q1 -->|"round/phase boundary"| T8["ROUND_BEGAN / ROUND_ENDED /<br/>PLAYER_PHASE_* / VILLAIN_PHASE_*"]
+    T1 --> Check(["Cross-check exact wording against<br/>02_timings_and_triggers.md §2 table"])
+    T2 --> Check
+    T3 --> Check
+    T4 --> Check
+    T5 --> Check
+    T6 --> Check
+    T7 --> Check
+    T8 --> Check
+```
+
+If your event isn't listed, check `TRIGGER_EQUIVALENTS` in
+[`trigger-dispatcher.ts`](../../src/engine/triggers/trigger-dispatcher.ts) for an existing alias
+before proposing a new trigger literal (new literals require an engine change, not just
+supplemental data — see [feature-delivery skill](../../.agents/skills/feature-delivery/SKILL.md)).
+
+---
+
+### 3. "Do I need `steps: []`, `gate`, or `condition`?"
+
+```mermaid
+flowchart TD
+    Start(["Ability has more than one effect,<br/>or an effect is conditional"]) --> Q1{"Does effect #2 only happen<br/>if effect #1 changed something?<br/>('Then, ...')"}
+    Q1 -->|yes| ThenGate["Step 2: gate: THEN"]
+    Q1 -->|no| Q2{"Does effect #2 depend on how<br/>the cost was paid?<br/>(e.g. spent an [energy] resource)"}
+    Q2 -->|yes| ResGate["Step 2: gate: IF_RESOURCE_MATCH<br/>+ gateParams"]
+    Q2 -->|no| Q3{"Does effect #2 depend on a<br/>milestone from step #1?<br/>(scheme cleared, target defeated...)"}
+    Q3 -->|yes| ResultGate["Step 2: gate: IF_RESULT<br/>gateParams: { fact: 'threatZero', ... }"]
+    Q3 -->|no| Q3b{"Does effect #2 depend on a fact about<br/>the player or board? (trait, form)<br/>e.g. if you have Aerial"}
+    Q3b -->|"yes, extra effect"| TraitMet["Step 2: gate: IF_PLAYER_HAS_TRAIT<br/>gateParams: { trait: 'Aerial' }"]
+    Q3b -->|"yes, instead of effect #1"| TraitNot["Step 1: gate: IF_PLAYER_HAS_TRAIT<br/>gateParams: { trait: 'Aerial', negate: true }<br/>Step 2: gate: IF_PLAYER_HAS_TRAIT<br/>gateParams: { trait: 'Aerial' }"]
+    Q3b -->|"no, only if #1 could not resolve"| FailGate["Step 2: gate: THEN<br/>gateParams: { negate: true }"]
+    Q3b -->|no| Q4{"Does the player pick between<br/>2+ discrete outcomes?"}
+    Q4 -->|yes| Choice["Single step: effect: PLAYER_CHOICE<br/>with options: []"]
+    Q4 -->|no| Plain["Just list effects as separate<br/>steps without a gate"]
+```
+
+Worked examples (additive `IF_PLAYER_HAS_TRAIT` on Crisis Interdiction `01012`, exclusive `IF_PLAYER_HAS_TRAIT` with `negate` on Mark V Helmet `01037`, `THEN` fallback with `negate`) and when each applies:
+[10. Sequences & Modals, Gating Patterns](../specifications/supplemental/10_sequences_and_prompts.md#gating-patterns-then-if_result-and-if_player_has_trait).
+
+Full gate catalog:
+[10. Sequences & Modals §1](../specifications/supplemental/10_sequences_and_prompts.md#conditional-gates-adr-0080).
+
+---
+
+### 4. Draft-to-Submission Checklist
+
+1. Pick `timing` → §1 above.
+2. Pick `trigger` (if reactive) → §2 above.
+3. Pick effect primitive(s) from
+   [05](../specifications/supplemental/05_effects_combat_threat.md)–[08](../specifications/supplemental/08_effects_villain_nemesis.md)
+   by category (combat, zones, status/economy, villain/nemesis).
+4. Sequence multi-effect abilities with `steps: []`, `gate`/`condition` → §3 above.
+5. Add `cost` ([03. Costs & Targeting](../specifications/supplemental/03_costs_and_targeting.md))
+   and `playRequirements` ([11. Play Requirements](../specifications/supplemental/11_play_requirements.md))
+   if the card restricts who/when it can be used.
+6. Validate against [`tests/data/supplemental-schema.test.ts`](../../tests/data/supplemental-schema.test.ts)
+   and follow the [Card Integration Protocol](../../.agents/skills/card-integration-protocol/SKILL.md)
+   for ambiguity handling.

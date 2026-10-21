@@ -226,20 +226,24 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
           },
         },
       ],
-      villain: {
-        card: {
-          name: 'Rhino',
-          code: '01094',
+      villains: [
+        {
+          card: {
+            name: 'Rhino',
+            code: '01094',
+          },
         },
-      },
-      mainScheme: {
-        card: {
-          name: 'The Break-In!',
-          code: '01097',
+      ],
+      mainSchemes: [
+        {
+          card: {
+            name: 'The Break-In!',
+            code: '01097',
+          },
+          threat: 1,
+          targetThreat: 7,
         },
-        threat: 1,
-        targetThreat: 7,
-      },
+      ],
     } as any;
 
     it('1. DEAL_DAMAGE: renders canonical attack narrative in English and French', () => {

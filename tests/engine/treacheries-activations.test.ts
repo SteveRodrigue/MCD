@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, SideSchemeCard } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  SideSchemeCard,
+  getActiveMainScheme,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
 import { resolveDefenderDeclaration } from '@engine/pipeline/combat-pipeline';
@@ -41,7 +47,7 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
   it('01186 Advance: Causes villain to scheme on demand', () => {
     const advanceCard = cardCatalog.getCard('01186')!;
     const advanceInst = createCardInstance(advanceCard);
-    const initialThreat = state.mainScheme.threat;
+    const initialThreat = getActiveMainScheme(state).threat;
 
     // Execute Advance
     const ability = advanceCard.enrichment!.abilities![0];
@@ -49,7 +55,7 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
 
     expect(res.success).toBe(true);
     // Scheme threat placed (base SCH 1 + boost cards)
-    expect(res.state.mainScheme.threat).toBeGreaterThanOrEqual(initialThreat + 1);
+    expect(getActiveMainScheme(res.state).threat).toBeGreaterThanOrEqual(initialThreat + 1);
   });
 
   it('01187 Assault: Causes villain to attack hero; surges if in alter-ego', () => {

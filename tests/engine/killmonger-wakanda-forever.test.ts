@@ -3,7 +3,13 @@ import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { executeEffect } from '@engine/effects';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
-import { GameState, StatusCard, CardInstance, getActiveVillain } from '@engine/models';
+import {
+  GameState,
+  StatusCard,
+  CardInstance,
+  getActiveVillain,
+  getActiveMainScheme,
+} from '@engine/models';
 import { applyDamageToTarget } from '@engine/pipeline/damage-pipeline';
 
 /**
@@ -259,7 +265,7 @@ describe('Killmonger 01157 vs Wakanda Forever! (#297)', () => {
 
   it('W9. Tactical Genius in the sequence: threat is removed, Killmonger is untouched', () => {
     const { state, killmonger } = buildGame();
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
     const claws = upgrade(PANTHER_CLAWS);
     const genius = upgrade(TACTICAL_GENIUS);
     state.players[0].tableau = [claws, genius];
@@ -269,7 +275,7 @@ describe('Killmonger 01157 vs Wakanda Forever! (#297)', () => {
     while (peekDecisionPrompt(after)) after = chooseVillain(after);
 
     expect(damageOf(after, killmonger.instanceId)).toBe(0);
-    expect(after.mainScheme.threat).toBe(3);
+    expect(getActiveMainScheme(after).threat).toBe(3);
   });
 
   it('W10. A Tough status card on Killmonger is not consumed by an immune Daggers hit', () => {

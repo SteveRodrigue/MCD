@@ -3,7 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { executeEffect } from '@engine/effects';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { updateGameState } from '@engine/models';
+import { updateGameState, getActiveMainScheme } from '@engine/models';
 import type {
   AlterEgoCard,
   CardAbility,
@@ -114,7 +114,7 @@ describe('Spider-Tracer removes exactly 3 threat per defeated host (Issue #249)'
     state.players[0].activeFormCard = spiderMan;
     state.players[1].currentForm = 'hero';
     state.players[1].activeFormCard = captainMarvel;
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
   });
 
   it('basic attack: Crowd Control (Crisis) 4 threat keeps 1, no prompt, one removal', () => {
@@ -133,7 +133,7 @@ describe('Spider-Tracer removes exactly 3 threat per defeated host (Issue #249)'
     expect(res.result.success).toBe(true);
     expect(peekDecisionPrompt(res.state)).toBeUndefined();
     expect(threatOf(res.state, 'side_crowd_control')).toBe(1);
-    expect(res.state.mainScheme.threat).toBe(5);
+    expect(getActiveMainScheme(res.state).threat).toBe(5);
     expect(removeThreatLogs(res.state)).toBe(1);
   });
 
@@ -160,7 +160,7 @@ describe('Spider-Tracer removes exactly 3 threat per defeated host (Issue #249)'
     expect(resolved.result.success).toBe(true);
     expect(peekDecisionPrompt(resolved.state)).toBeUndefined();
     expect(threatOf(resolved.state, 'side_bomb_scare')).toBe(1);
-    expect(resolved.state.mainScheme.threat).toBe(5);
+    expect(getActiveMainScheme(resolved.state).threat).toBe(5);
     expect(removeThreatLogs(resolved.state)).toBe(1);
   });
 
@@ -184,7 +184,7 @@ describe('Spider-Tracer removes exactly 3 threat per defeated host (Issue #249)'
       selectedOptionId: mainId,
     });
 
-    expect(resolved.state.mainScheme.threat).toBe(2);
+    expect(getActiveMainScheme(resolved.state).threat).toBe(2);
     expect(threatOf(resolved.state, 'side_bomb_scare')).toBe(4);
     expect(removeThreatLogs(resolved.state)).toBe(1);
   });
@@ -312,7 +312,7 @@ describe('Spider-Tracer removes exactly 3 threat per defeated host (Issue #249)'
           fresh.sideSchemes = [bombScare(4), breakin(3)];
         });
       };
-      const ids = ['side_bomb_scare', 'side_breakin', state.mainScheme.instanceId!];
+      const ids = ['side_bomb_scare', 'side_breakin', getActiveMainScheme(state).instanceId!];
       const expected = [
         { main: 5, bomb: 1, breakin: 3 },
         { main: 5, bomb: 4, breakin: undefined },
@@ -327,7 +327,7 @@ describe('Spider-Tracer removes exactly 3 threat per defeated host (Issue #249)'
         const resolved = choose(res.state, id);
         expect(resolved.result.success).toBe(true);
         expect(peekDecisionPrompt(resolved.state)).toBeUndefined();
-        expect(resolved.state.mainScheme.threat).toBe(expected[i].main);
+        expect(getActiveMainScheme(resolved.state).threat).toBe(expected[i].main);
         expect(threatOf(resolved.state, 'side_bomb_scare')).toBe(expected[i].bomb);
         expect(threatOf(resolved.state, 'side_breakin')).toBe(expected[i].breakin);
         expect(removeThreatLogs(resolved.state)).toBe(1);
@@ -347,7 +347,7 @@ describe('Spider-Tracer removes exactly 3 threat per defeated host (Issue #249)'
       const resolved = choose(res.state, 'side_crowd_control_2');
       expect(threatOf(resolved.state, 'side_crowd_control_2')).toBe(2);
       expect(threatOf(resolved.state, 'side_crowd_control')).toBe(4);
-      expect(resolved.state.mainScheme.threat).toBe(5);
+      expect(getActiveMainScheme(resolved.state).threat).toBe(5);
       expect(removeThreatLogs(resolved.state)).toBe(1);
     });
 
@@ -358,12 +358,12 @@ describe('Spider-Tracer removes exactly 3 threat per defeated host (Issue #249)'
       const prompt = peekDecisionPrompt(res.state)!;
       expect(prompt.options.map((o) => o.id)).not.toContain('side_bomb_scare');
       expect(prompt.options.map((o) => o.id).sort()).toEqual(
-        ['side_breakin', state.mainScheme.instanceId!].sort(),
+        ['side_breakin', getActiveMainScheme(state).instanceId!].sort(),
       );
     });
 
     it('the only scheme with threat is auto-targeted without a prompt', () => {
-      state.mainScheme.threat = 0;
+      getActiveMainScheme(state).threat = 0;
       state.sideSchemes = [bombScare(0), breakin(4)];
 
       const res = defeatTracerHost(state);

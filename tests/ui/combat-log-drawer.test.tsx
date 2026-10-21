@@ -60,18 +60,22 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
         } as any,
       } as any,
     ],
-    villain: {
-      card: {
-        name: 'Rhino',
-        code: '01094',
+    villains: [
+      {
+        card: {
+          name: 'Rhino',
+          code: '01094',
+        } as any,
       } as any,
-    } as any,
-    mainScheme: {
-      card: {
-        name: 'The Break-In!',
-        code: '01097',
+    ],
+    mainSchemes: [
+      {
+        card: {
+          name: 'The Break-In!',
+          code: '01097',
+        } as any,
       } as any,
-    } as any,
+    ],
   };
 
   it('renders Daily Bugle masthead and action chronicle headline', () => {

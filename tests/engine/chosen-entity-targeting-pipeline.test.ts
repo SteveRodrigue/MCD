@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { HeroCard, AlterEgoCard, MinionCard, AllyCard, CardInstance } from '@engine/models';
+import {
+  HeroCard,
+  AlterEgoCard,
+  MinionCard,
+  AllyCard,
+  CardInstance,
+  getActiveVillain,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { getEligibleTargets } from '@engine/effects/target-resolver';
 import { canPlayCard } from '@engine/pipeline/legality-checker';
@@ -77,7 +84,7 @@ describe('Systemic CHOSEN_* Entity Targeting Pipeline (Fixes #146)', () => {
       expect(targetIds).toContain('p2');
       expect(targetIds).toContain('black_cat_1');
       expect(targetIds).toContain('hydra_1');
-      expect(targetIds).toContain(state.villain.instanceId || 'villain');
+      expect(targetIds).toContain(getActiveVillain(state).instanceId || 'villain');
       expect(targets.length).toBe(5);
     });
 

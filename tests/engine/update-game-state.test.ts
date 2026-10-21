@@ -62,14 +62,16 @@ describe('updateGameState', () => {
     }).toThrow();
   });
 
-  it('keeps the legacy villain pointer and the villains entry one object', () => {
+  it('a write to the active villain lands in the villains collection', () => {
     const before = newState();
     const next = updateGameState(before, (draft) => {
-      draft.villain.health -= 4;
+      getActiveVillain(draft).health -= 4;
     });
 
     expect(getActiveVillain(next).health).toBe(getActiveVillain(before).health - 4);
-    expect(next.villain).toBe(getActiveVillain(next));
+    expect(getActiveVillain(next)).toBe(
+      next.villains.find((v) => v.instanceId === getActiveVillain(before).instanceId),
+    );
   });
 
   it('a rejected action returns the previous state unchanged', () => {

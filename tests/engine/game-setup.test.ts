@@ -12,6 +12,7 @@ import {
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 
+import { getActiveMainScheme, getActiveVillain } from '@engine/models';
 describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
 
@@ -122,16 +123,16 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
     expect(player.engagedMinions.length).toBe(0);
 
     // 3. Villain State Verification
-    expect(gameState.villain.card.code).toBe('01094');
-    expect(gameState.villain.card.name).toBe('Rhino');
-    expect(gameState.villain.health).toBe(14); // 14 * 1 player
-    expect(gameState.villain.maxHealth).toBe(14);
-    expect(gameState.villain.exhausted).toBe(false);
+    expect(getActiveVillain(gameState).card.code).toBe('01094');
+    expect(getActiveVillain(gameState).card.name).toBe('Rhino');
+    expect(getActiveVillain(gameState).health).toBe(14); // 14 * 1 player
+    expect(getActiveVillain(gameState).maxHealth).toBe(14);
+    expect(getActiveVillain(gameState).exhausted).toBe(false);
 
     // 4. Main Scheme Verification
-    expect(gameState.mainScheme.card.name).toBe('The Break-In!');
-    expect(gameState.mainScheme.threat).toBe(0); // Starts with 0 threat
-    expect(gameState.mainScheme.targetThreat).toBe(7); // 7 * 1 player
+    expect(getActiveMainScheme(gameState).card.name).toBe('The Break-In!');
+    expect(getActiveMainScheme(gameState).threat).toBe(0); // Starts with 0 threat
+    expect(getActiveMainScheme(gameState).targetThreat).toBe(7); // 7 * 1 player
 
     // 5. Encounter Deck Verification
     expect(gameState.encounterDeck.length).toBe(encounterCards.length);
@@ -177,11 +178,11 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
 
     // 2-Player Scaling:
     // Rhino I: 14 HP per hero = 28 HP
-    expect(gameState.villain.health).toBe(28);
-    expect(gameState.villain.maxHealth).toBe(28);
+    expect(getActiveVillain(gameState).health).toBe(28);
+    expect(getActiveVillain(gameState).maxHealth).toBe(28);
 
     // Main Scheme: 7 threat per hero = 14 target threat
-    expect(gameState.mainScheme.targetThreat).toBe(14);
+    expect(getActiveMainScheme(gameState).targetThreat).toBe(14);
   });
 
   it('correctly shuffles Obligation into encounter deck and sets aside Nemesis Set (Step 10 & 11 of Setup)', () => {
@@ -314,9 +315,9 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
     });
 
     // Verify setupGame invoked ScenarioPlugin to enforce Stage 1B active main scheme
-    expect(state.mainScheme.stage).toBe('1B');
-    expect(state.mainScheme.card.code).toBe('01097b');
-    expect(state.mainScheme.card.stage).toBe('1B');
-    expect(state.mainScheme.targetThreat).toBe(7); // 7 x 1
+    expect(getActiveMainScheme(state).stage).toBe('1B');
+    expect(getActiveMainScheme(state).card.code).toBe('01097b');
+    expect(getActiveMainScheme(state).card.stage).toBe('1B');
+    expect(getActiveMainScheme(state).targetThreat).toBe(7); // 7 x 1
   });
 });

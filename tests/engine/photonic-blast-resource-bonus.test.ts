@@ -6,6 +6,7 @@ import {
   AlterEgoCard,
   CardType,
   CardResources,
+  getActiveVillain,
 } from '../../src/engine/models';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { dispatchAction } from '../../src/engine/pipeline';
@@ -55,7 +56,7 @@ describe('Photonic Blast (01013) Resource Bonus Acceptance Test Suite (Issue #20
   it('Pays 2 Physical + 1 Energy: deals 5 damage and draws 1 card', () => {
     const p1 = state.players[0];
     const initialDeckCount = p1.deck.length;
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
 
     const pbCard = cardCatalog.getCard('01013')!;
     const pbInstance = createCardInstance(pbCard);
@@ -72,12 +73,12 @@ describe('Photonic Blast (01013) Resource Bonus Acceptance Test Suite (Issue #20
       type: 'PLAY_CARD',
       playerId: p1.id,
       cardInstanceId: pbInstance.instanceId,
-      targetInstanceId: state.villain.instanceId,
+      targetInstanceId: getActiveVillain(state).instanceId,
       paymentCardInstanceIds: [pay1.instanceId, pay2.instanceId, pay3.instanceId],
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.villain.health).toBe(initialVillainHp - 5);
+    expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 5);
     expect(res.state.players[0].hand.length).toBe(1);
     expect(res.state.players[0].deck.length).toBe(initialDeckCount - 1);
     const drawLog = res.state.log.find((l) => l.key === 'card.effect.drawCards');
@@ -87,7 +88,7 @@ describe('Photonic Blast (01013) Resource Bonus Acceptance Test Suite (Issue #20
   it('Pays 3 Physical: deals 5 damage and draws 0 cards', () => {
     const p1 = state.players[0];
     const initialDeckCount = p1.deck.length;
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
 
     const pbCard = cardCatalog.getCard('01013')!;
     const pbInstance = createCardInstance(pbCard);
@@ -103,12 +104,12 @@ describe('Photonic Blast (01013) Resource Bonus Acceptance Test Suite (Issue #20
       type: 'PLAY_CARD',
       playerId: p1.id,
       cardInstanceId: pbInstance.instanceId,
-      targetInstanceId: state.villain.instanceId,
+      targetInstanceId: getActiveVillain(state).instanceId,
       paymentCardInstanceIds: [pay1.instanceId, pay2.instanceId, pay3.instanceId],
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.villain.health).toBe(initialVillainHp - 5);
+    expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 5);
     expect(res.state.players[0].hand.length).toBe(0);
     expect(res.state.players[0].deck.length).toBe(initialDeckCount);
   });
@@ -116,7 +117,7 @@ describe('Photonic Blast (01013) Resource Bonus Acceptance Test Suite (Issue #20
   it('Pays with Energy Absorption (01014) providing 3 Energy: deals 5 damage and draws 1 card', () => {
     const p1 = state.players[0];
     const initialDeckCount = p1.deck.length;
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
 
     const pbCard = cardCatalog.getCard('01013')!;
     const pbInstance = createCardInstance(pbCard);
@@ -130,12 +131,12 @@ describe('Photonic Blast (01013) Resource Bonus Acceptance Test Suite (Issue #20
       type: 'PLAY_CARD',
       playerId: p1.id,
       cardInstanceId: pbInstance.instanceId,
-      targetInstanceId: state.villain.instanceId,
+      targetInstanceId: getActiveVillain(state).instanceId,
       paymentCardInstanceIds: [eaInstance.instanceId],
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.villain.health).toBe(initialVillainHp - 5);
+    expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 5);
     expect(res.state.players[0].hand.length).toBe(1);
     expect(res.state.players[0].deck.length).toBe(initialDeckCount - 1);
     const drawLog = res.state.log.find((l) => l.key === 'card.effect.drawCards');
@@ -145,7 +146,7 @@ describe('Photonic Blast (01013) Resource Bonus Acceptance Test Suite (Issue #20
   it('Pays with Wild resource: substitutes for Energy, deals 5 damage and draws 1 card', () => {
     const p1 = state.players[0];
     const initialDeckCount = p1.deck.length;
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
 
     const pbCard = cardCatalog.getCard('01013')!;
     const pbInstance = createCardInstance(pbCard);
@@ -161,12 +162,12 @@ describe('Photonic Blast (01013) Resource Bonus Acceptance Test Suite (Issue #20
       type: 'PLAY_CARD',
       playerId: p1.id,
       cardInstanceId: pbInstance.instanceId,
-      targetInstanceId: state.villain.instanceId,
+      targetInstanceId: getActiveVillain(state).instanceId,
       paymentCardInstanceIds: [pay1.instanceId, pay2.instanceId, pay3.instanceId],
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.villain.health).toBe(initialVillainHp - 5);
+    expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 5);
     expect(res.state.players[0].hand.length).toBe(1);
     expect(res.state.players[0].deck.length).toBe(initialDeckCount - 1);
     const drawLogWild = res.state.log.find((l) => l.key === 'card.effect.drawCards');
@@ -176,7 +177,7 @@ describe('Photonic Blast (01013) Resource Bonus Acceptance Test Suite (Issue #20
   it('Preserves resourcesSpent across enemy target selection decision prompt', () => {
     const p1 = state.players[0];
     const initialDeckCount = p1.deck.length;
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
 
     // Add a minion to create multiple enemies so a decision prompt is opened
     const minionCard = cardCatalog.getCard('01095')!;
@@ -209,11 +210,11 @@ describe('Photonic Blast (01013) Resource Bonus Acceptance Test Suite (Issue #20
     const resolveRes = dispatchAction(playRes.state, {
       type: 'RESOLVE_DECISION_PROMPT',
       playerId: p1.id,
-      selectedOptionId: state.villain.instanceId!,
+      selectedOptionId: getActiveVillain(state).instanceId!,
     });
 
     expect(resolveRes.result.success).toBe(true);
-    expect(resolveRes.state.villain.health).toBe(initialVillainHp - 5);
+    expect(getActiveVillain(resolveRes.state).health).toBe(initialVillainHp - 5);
     expect(resolveRes.state.players[0].hand.length).toBe(1);
     expect(resolveRes.state.players[0].deck.length).toBe(initialDeckCount - 1);
     const drawLogPrompt = resolveRes.state.log.find((l) => l.key === 'card.effect.drawCards');
@@ -223,7 +224,7 @@ describe('Photonic Blast (01013) Resource Bonus Acceptance Test Suite (Issue #20
   it('Pays with 2 Physical hand cards + 1 Tableau Energy generator: deals 5 damage and draws 1 card', () => {
     const p1 = state.players[0];
     const initialDeckCount = p1.deck.length;
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
 
     // Create a tableau energy generator
     const generatorCard = {
@@ -265,13 +266,13 @@ describe('Photonic Blast (01013) Resource Bonus Acceptance Test Suite (Issue #20
       type: 'PLAY_CARD',
       playerId: p1.id,
       cardInstanceId: pbInstance.instanceId,
-      targetInstanceId: state.villain.instanceId,
+      targetInstanceId: getActiveVillain(state).instanceId,
       paymentCardInstanceIds: [pay1.instanceId, pay2.instanceId],
       generatorInstanceIds: [genInstance.instanceId],
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.villain.health).toBe(initialVillainHp - 5);
+    expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 5);
     expect(res.state.players[0].hand.length).toBe(1);
     expect(res.state.players[0].deck.length).toBe(initialDeckCount - 1);
     const drawLogGen = res.state.log.find((l) => l.key === 'card.effect.drawCards');

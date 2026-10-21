@@ -7,6 +7,7 @@ import { setupGame } from '../../src/engine/state/game-setup';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 
+import { getActiveMainScheme, getActiveVillain } from '@engine/models';
 describe('Data-Driven Starter Deck Registry & Multi-Hero Integration (ADR-0016)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
 
@@ -165,10 +166,10 @@ describe('Data-Driven Starter Deck Registry & Multi-Hero Integration (ADR-0016)'
     expect(gameState.players[3].setAsideCards.map((c) => c.card.name)).toContain('Killmonger');
 
     // Multi-hero scaling: Rhino I HP = 14 * 4 = 56 HP
-    expect(gameState.villain.maxHealth).toBe(56);
-    expect(gameState.villain.health).toBe(56);
+    expect(getActiveVillain(gameState).maxHealth).toBe(56);
+    expect(getActiveVillain(gameState).health).toBe(56);
 
     // Scheme target threat = 7 * 4 = 28
-    expect(gameState.mainScheme.targetThreat).toBe(28);
+    expect(getActiveMainScheme(gameState).targetThreat).toBe(28);
   });
 });

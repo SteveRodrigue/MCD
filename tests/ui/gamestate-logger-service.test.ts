@@ -16,8 +16,6 @@ describe('GameState Logger Service', () => {
     villains: [],
     mainSchemes: [],
     activeMainSchemeIndex: 0,
-    villain: {} as any,
-    mainScheme: {} as any,
     sideSchemes: [],
     environments: [],
     encounterDeck: [],

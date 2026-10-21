@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, getActiveMainScheme } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction, initiateEnemyAttack, resolveDefenderDeclaration } from '@engine/pipeline';
 import { getLegalActionsForPlayer } from '@engine/pipeline/legal-actions-generator';
@@ -104,14 +104,14 @@ describe('Issue #95: Ally Attachment Rules Compliance & Cascading Cleanup', () =
     daredevil.attachments = [inspired];
     daredevil.tokens = { damage: 2 };
     state.players[0].allies = [daredevil];
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
 
     const res = dispatchAction(state, {
       type: 'ALLY_THWART',
       playerId: 'p1',
       allyInstanceId: daredevil.instanceId,
       targetType: 'main_scheme',
-      targetInstanceId: state.mainScheme.instanceId,
+      targetInstanceId: getActiveMainScheme(state).instanceId,
     });
 
     expect(res.result.success).toBe(true);

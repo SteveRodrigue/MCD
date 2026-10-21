@@ -240,8 +240,6 @@ export function setupGame(options: GameSetupOptions): GameState {
     activeVillainId: villain.instanceId,
     mainSchemes: [mainScheme],
     activeMainSchemeIndex: 0,
-    villain,
-    mainScheme,
     sideSchemes: [],
     environments: [],
     encounterDeck: shuffledEncounterDeck,

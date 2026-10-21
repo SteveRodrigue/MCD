@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { GameState, HeroCard, AlterEgoCard, getActiveMainScheme } from '../../src/engine/models';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { dispatchAction } from '../../src/engine/pipeline';
 import { peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
@@ -53,14 +53,14 @@ describe('01023 Legal Practice played from hand (#277)', () => {
     });
     state.players[0].currentForm = 'alter_ego';
     state.players[0].activeFormCard = state.players[0].alterEgo;
-    state.mainScheme.threat = 8;
+    getActiveMainScheme(state).threat = 8;
   });
 
   it('pays the chosen discards and removes one threat per discarded card', () => {
     const res = play(['h1', 'h2', 'h3'], 3);
     expect(res.result.success).toBe(true);
     const p = res.state.players[0];
-    expect(res.state.mainScheme.threat).toBe(5);
+    expect(getActiveMainScheme(res.state).threat).toBe(5);
     expect(p.hand).toHaveLength(0);
     expect(p.discard.map((c) => c.instanceId).sort()).toEqual(['h1', 'h2', 'h3', 'lp']);
   });
@@ -68,11 +68,11 @@ describe('01023 Legal Practice played from hand (#277)', () => {
   it('removes 5 threat with 5 cards and rejects a sixth', () => {
     const ok = play(['h1', 'h2', 'h3', 'h4', 'h5'], 6);
     expect(ok.result.success).toBe(true);
-    expect(ok.state.mainScheme.threat).toBe(3);
+    expect(getActiveMainScheme(ok.state).threat).toBe(3);
 
     const tooMany = play(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], 6);
     expect(tooMany.result.success).toBe(false);
-    expect(tooMany.state.mainScheme.threat).toBe(8);
+    expect(getActiveMainScheme(tooMany.state).threat).toBe(8);
     expect(tooMany.state.players[0].hand).toHaveLength(7);
   });
 
@@ -80,7 +80,7 @@ describe('01023 Legal Practice played from hand (#277)', () => {
     const res = play([], 3);
     expect(res.result.success).toBe(false);
     expect(res.state.players[0].hand).toHaveLength(4);
-    expect(res.state.mainScheme.threat).toBe(8);
+    expect(getActiveMainScheme(res.state).threat).toBe(8);
   });
 
   it('is not playable in hero form', () => {
@@ -99,7 +99,7 @@ describe('01023 Legal Practice played from hand (#277)', () => {
     const unknown = play(['nope'], 3);
     expect(unknown.result.success).toBe(false);
     expect(unknown.state.players[0].hand).toHaveLength(4);
-    expect(unknown.state.mainScheme.threat).toBe(8);
+    expect(getActiveMainScheme(unknown.state).threat).toBe(8);
   });
 
   describe('with two schemes', () => {
@@ -128,7 +128,7 @@ describe('01023 Legal Practice played from hand (#277)', () => {
       expect(resolved.state.sideSchemes.find((s) => s.instanceId === 'ss_legal')?.threat ?? 0).toBe(
         1,
       );
-      expect(resolved.state.mainScheme.threat).toBe(8);
+      expect(getActiveMainScheme(resolved.state).threat).toBe(8);
       const p = resolved.state.players[0];
       expect(p.hand).toHaveLength(0);
       expect(p.discard.map((c) => c.instanceId).sort()).toEqual(['h1', 'h2', 'h3', 'lp']);

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, getActiveVillain } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import {
   executeEnemyAttackSynchronously,
@@ -66,7 +66,7 @@ describe('DEFENSE Labeled Ability Resolution (#270)', () => {
     give('01003'); // Backflip
     give('01077'); // Counter-Punch (Reaction: After your hero defends against an attack, deal damage equal to your ATK to attacking enemy)
 
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
 
     state = executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
@@ -88,7 +88,7 @@ describe('DEFENSE Labeled Ability Resolution (#270)', () => {
     }
 
     // Counter-Punch should be triggered or executed, dealing Spider-Man ATK (2 damage) to Rhino
-    expect(state.villain.health).toBe(initialVillainHp - 2);
+    expect(getActiveVillain(state).health).toBe(initialVillainHp - 2);
     expect(state.players[0].discard.some((c) => c.card.code === '01077')).toBe(true);
   });
 });

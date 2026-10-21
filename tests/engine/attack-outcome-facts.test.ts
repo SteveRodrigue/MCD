@@ -7,6 +7,7 @@ import {
   CardInstance,
   StatusCard,
   CardAbility,
+  getActiveVillain,
 } from '@engine/models';
 import { setupGame, createCardInstance, resetInstanceCounter } from '@engine/state/game-setup';
 import { dispatchAction, peekDecisionPrompt, step4_revealEncounterCards } from '@engine/pipeline';
@@ -125,7 +126,7 @@ describe('attack outcome facts for later steps (#295)', () => {
   });
 
   it('a stunned villain does not attack: no prompt, no stun', () => {
-    state.villain.statusCards = [StatusCard.STUNNED];
+    getActiveVillain(state).statusCards = [StatusCard.STUNNED];
 
     start();
 

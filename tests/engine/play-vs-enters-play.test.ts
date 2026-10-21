@@ -27,6 +27,7 @@ import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 import { thaw } from '../support/thaw-state';
 
+import { getActiveVillain } from '@engine/models';
 describe('ADR-0048: CARD_PLAYED vs ENTERS_PLAY trigger contract (RR v1.8 pp.11,21)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
   let gameState: ReturnType<typeof setupGame>;
@@ -237,7 +238,7 @@ describe('ADR-0048: CARD_PLAYED vs ENTERS_PLAY trigger contract (RR v1.8 pp.11,2
       playerId: 'p1',
       cardInstanceId: mockingbirdInst.instanceId,
       paymentCardInstanceIds: payment2.map((c) => c.instanceId),
-      targetInstanceId: res2.state.villain.instanceId,
+      targetInstanceId: getActiveVillain(res2.state).instanceId,
     });
 
     expect(res3.result.success).toBe(true);
@@ -279,7 +280,7 @@ describe('ADR-0048: CARD_PLAYED vs ENTERS_PLAY trigger contract (RR v1.8 pp.11,2
       playerId: 'p1',
       cardInstanceId: mockingbirdInst.instanceId,
       paymentCardInstanceIds: payment2.map((c) => c.instanceId),
-      targetInstanceId: res1.state.villain.instanceId,
+      targetInstanceId: getActiveVillain(res1.state).instanceId,
     });
 
     expect(res2.result.success).toBe(true);

@@ -13,6 +13,7 @@ import { resolveNumericAmount } from '@engine/effects';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 
+import { getActiveMainScheme } from '@engine/models';
 describe('Universal Event Interception and Scalar Value Binding (ADR-0049 & Issue #90)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
   let gameState: ReturnType<typeof setupGame>;
@@ -95,7 +96,7 @@ describe('Universal Event Interception and Scalar Value Binding (ADR-0049 & Issu
       gameState.players[0].currentForm = 'hero';
       gameState.players[0].activeFormCard = gameState.players[0].hero;
       gameState.players[0].health = 10;
-      gameState.mainScheme.threat = 2;
+      getActiveMainScheme(gameState).threat = 2;
 
       const greatRespCard = catalog.getCard('01061')!;
       const greatRespInst = createCardInstance(greatRespCard);

@@ -1,7 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { overrideCard } from '../support/card-overrides';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, VillainCard, MainSchemeCard } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  VillainCard,
+  MainSchemeCard,
+  getActiveVillain,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import {
   drawEncounterCard,
@@ -411,7 +418,7 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       player.deck = [energyCard1, energyCard2];
       player.discard = [energyCard3];
       player.dealtEncounterCards = [];
-      state.villain.health = 20;
+      getActiveVillain(state).health = 20;
 
       // Execute DISCARD (requests 3 cards from deck across deck boundary)
       const res = executeEffect(
@@ -471,7 +478,7 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       player.deck = [];
       player.discard = [physicalCard];
       player.dealtEncounterCards = [];
-      state.villain.health = 14;
+      getActiveVillain(state).health = 14;
 
       const res = executeEffect(
         state,

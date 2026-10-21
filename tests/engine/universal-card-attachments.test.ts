@@ -4,6 +4,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { executeEffect, discardHostAttachmentsAndTuckedCards } from '@engine/effects';
 import { getLegalActionsForPlayer } from '@engine/pipeline/legal-actions-generator';
 
+import { getActiveMainScheme, getActiveVillain } from '@engine/models';
 describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 5, 6)', () => {
   let spiderManHero: any;
   let peterParkerAlterEgo: any;
@@ -57,7 +58,9 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
       );
       expect(resVillain.success).toBe(true);
       expect(
-        resVillain.state.villain.attachments.some((a) => a.instanceId === rhinoSuit.instanceId),
+        getActiveVillain(resVillain.state).attachments.some(
+          (a) => a.instanceId === rhinoSuit.instanceId,
+        ),
       ).toBe(true);
 
       // 2. Attach to Player Identity (e.g. Caught in a Web)
@@ -133,7 +136,7 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
       );
       expect(resScheme.success).toBe(true);
       expect(
-        resScheme.state.mainScheme.attachments?.some(
+        getActiveMainScheme(resScheme.state).attachments?.some(
           (a) => a.instanceId === schemeAttachment.instanceId,
         ),
       ).toBe(true);
@@ -218,7 +221,9 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
 
       expect(resPlace.success).toBe(true);
       expect(
-        resPlace.state.villain.cardsUnderneath?.some((c) => c.instanceId === droneCard.instanceId),
+        getActiveVillain(resPlace.state).cardsUnderneath?.some(
+          (c) => c.instanceId === droneCard.instanceId,
+        ),
       ).toBe(true);
     });
   });
@@ -254,7 +259,7 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
 
       // Attach Enhanced Ivory Horn to villain
       const ivoryHorn = createCardInstance(cardCatalog.getCard('01100')!);
-      state.villain.attachments = [ivoryHorn];
+      getActiveVillain(state).attachments = [ivoryHorn];
 
       const legalReport = getLegalActionsForPlayer(state, 'p1');
       const discardAction = legalReport.allActions.find(

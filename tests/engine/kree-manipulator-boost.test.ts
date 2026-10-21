@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, AllyCard, MinionCard } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  AllyCard,
+  MinionCard,
+  getActiveMainScheme,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEnemyAttackSynchronously, type DefensePolicy } from '@engine/pipeline';
 
@@ -41,23 +48,23 @@ describe('Kree Manipulator (01178): boost places 1 threat only if the villain is
     });
     state.players[0].currentForm = 'hero';
     state.players[0].activeFormCard = spiderMan;
-    startThreat = state.mainScheme.threat;
+    startThreat = getActiveMainScheme(state).threat;
   });
 
   it('adds 1 threat when the villain attack is undefended', () => {
     villainAttack('TAKE_UNDEFENDED');
-    expect(state.mainScheme.threat).toBe(startThreat + 1);
+    expect(getActiveMainScheme(state).threat).toBe(startThreat + 1);
   });
 
   it('adds no threat when the hero defends', () => {
     villainAttack('HERO_IF_READY');
-    expect(state.mainScheme.threat).toBe(startThreat);
+    expect(getActiveMainScheme(state).threat).toBe(startThreat);
   });
 
   it('adds no threat when an ally defends', () => {
     state.players[0].allies.push(createCardInstance(cardCatalog.getCard('01002') as AllyCard));
     villainAttack('ALLY_CHUMP_BLOCK');
-    expect(state.mainScheme.threat).toBe(startThreat);
+    expect(getActiveMainScheme(state).threat).toBe(startThreat);
   });
 
   it('adds no threat when a minion (not the villain) makes the undefended attack', () => {
@@ -70,6 +77,6 @@ describe('Kree Manipulator (01178): boost places 1 threat only if the villain is
       'p1',
       'TAKE_UNDEFENDED',
     );
-    expect(state.mainScheme.threat).toBe(startThreat);
+    expect(getActiveMainScheme(state).threat).toBe(startThreat);
   });
 });

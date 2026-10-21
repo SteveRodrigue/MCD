@@ -3,7 +3,14 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { canInitiateAbility } from '../../src/engine/pipeline/legality-checker';
-import { GameState, HeroCard, AlterEgoCard, AllyCard, CardInstance } from '../../src/engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  AllyCard,
+  CardInstance,
+  getActiveVillain,
+} from '../../src/engine/models';
 
 describe('Med Team (01080): heal 2 damage from a friendly character', () => {
   let state: GameState;
@@ -50,7 +57,7 @@ describe('Med Team (01080): heal 2 damage from a friendly character', () => {
   const ability = () => medTeam.card.enrichment!.abilities![0];
 
   it('is not usable when only the villain is damaged', () => {
-    state.villain.health = state.villain.maxHealth - 3;
+    getActiveVillain(state).health = getActiveVillain(state).maxHealth - 3;
 
     const check = canInitiateAbility(state, 'p1', ability(), medTeam);
 
@@ -59,19 +66,19 @@ describe('Med Team (01080): heal 2 damage from a friendly character', () => {
   });
 
   it('cannot be aimed at the villain, and spends nothing when rejected', () => {
-    state.villain.health = state.villain.maxHealth - 3;
-    const villainHp = state.villain.health;
+    getActiveVillain(state).health = getActiveVillain(state).maxHealth - 3;
+    const villainHp = getActiveVillain(state).health;
 
     const res = dispatchAction(state, {
       type: 'USE_CARD_ABILITY',
       playerId: 'p1',
       cardInstanceId: medTeam.instanceId,
       abilityId: 'med_team_heal',
-      targetInstanceId: state.villain.instanceId,
+      targetInstanceId: getActiveVillain(state).instanceId,
     });
 
     expect(res.result.success).toBe(false);
-    expect(res.state.villain.health).toBe(villainHp);
+    expect(getActiveVillain(res.state).health).toBe(villainHp);
     expect(medTeam.exhausted).toBeFalsy();
     expect(medTeam.tokens?.counters).toBe(3);
   });

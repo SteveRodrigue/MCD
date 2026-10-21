@@ -25,20 +25,24 @@ const mockGameState = {
       statusCards: [],
     },
   ],
-  villain: {
-    instanceId: 'v1',
-    card: { name: 'Rhino', code: '01094' },
-    health: 14,
-    stage: 1,
-    attachments: [],
-    statusCards: [],
-  },
-  mainScheme: {
-    instanceId: 'ms1',
-    card: { name: 'The Break-In', code: '01097' },
-    threat: 3,
-    targetThreat: 7,
-  },
+  villains: [
+    {
+      instanceId: 'v1',
+      card: { name: 'Rhino', code: '01094' },
+      health: 14,
+      stage: 1,
+      attachments: [],
+      statusCards: [],
+    },
+  ],
+  mainSchemes: [
+    {
+      instanceId: 'ms1',
+      card: { name: 'The Break-In', code: '01097' },
+      threat: 3,
+      targetThreat: 7,
+    },
+  ],
   sideSchemes: [],
   encounterDeck: [],
   encounterDiscard: [],

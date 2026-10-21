@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { CardType, NormalizedCard } from '@engine/models';
+import { CardType, NormalizedCard, getActiveMainScheme, getActiveVillain } from '@engine/models';
 import { executeEffect } from '@engine/effects';
 import { peekDecisionPrompt } from '@engine/pipeline';
 import { step4_revealEncounterCards } from '@engine/index';
@@ -233,7 +233,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
     const state = createTestGame();
     const attachmentCard = cardCatalog.getCard('01100')!;
     const inst = createCardInstance(attachmentCard);
-    state.villain.attachments = [inst];
+    getActiveVillain(state).attachments = [inst];
 
     const res = executeEffect(
       state,
@@ -247,14 +247,14 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
     );
 
     expect(res.success).toBe(true);
-    expect(state.villain.attachments.length).toBe(0);
+    expect(getActiveVillain(state).attachments.length).toBe(0);
     expect(state.encounterDiscard).toContain(inst);
   });
 
   it('discards cards tucked under villain via source: CARDS_UNDER_HOST', () => {
     const state = createTestGame();
     const encounterCard = createCardInstance(cardCatalog.getCard('01101')!); // Minion
-    state.villain.cardsUnderneath = [encounterCard];
+    getActiveVillain(state).cardsUnderneath = [encounterCard];
 
     const res = executeEffect(
       state,
@@ -269,7 +269,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
     );
 
     expect(res.success).toBe(true);
-    expect(state.villain.cardsUnderneath?.length).toBe(0);
+    expect(getActiveVillain(state).cardsUnderneath?.length).toBe(0);
     expect(state.encounterDiscard).toContain(encounterCard);
   });
 
@@ -696,13 +696,13 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
       const state = twoPlayers();
       state.players[0].hand = [withResources('ta', a)];
       state.players[1].hand = [withResources('tb', b)];
-      const before = state.mainScheme.threat;
+      const before = getActiveMainScheme(state).threat;
 
       const next = reveal(state, '01169');
 
       expect(next.players[0].hand.length).toBe(0);
       expect(next.players[1].hand.length).toBe(0);
-      expect(next.mainScheme.threat).toBe(before + threat);
+      expect(getActiveMainScheme(next).threat).toBe(before + threat);
     });
   });
 });

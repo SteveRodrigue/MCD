@@ -18,6 +18,7 @@ import {
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 
+import { getActiveMainScheme } from '@engine/models';
 describe('Villain Phase Stepping & Pacing Engine (ADR-0068 / Issue #140)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
   let gameState: ReturnType<typeof setupGame>;
@@ -74,7 +75,7 @@ describe('Villain Phase Stepping & Pacing Engine (ADR-0068 / Issue #140)', () =>
   it('advances step-by-step: threat -> activation -> deal cards -> reveal cards -> round upkeep', () => {
     // 1. Initial State: Player Phase
     expect(gameState.phase).toBe(GamePhase.PLAYER_PHASE);
-    expect(gameState.mainScheme.threat).toBe(0);
+    expect(getActiveMainScheme(gameState).threat).toBe(0);
 
     // Provide a known boost card for the attack
     const boostCard = createCardInstance({
@@ -88,7 +89,7 @@ describe('Villain Phase Stepping & Pacing Engine (ADR-0068 / Issue #140)', () =>
     // Step 1: Advance from PLAYER_PHASE to VILLAIN_PHASE -> executes Step 1 (Threat)
     let nextState = advanceVillainPhaseStep(gameState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
     expect(nextState.phase).toBe(GamePhase.VILLAIN_PHASE);
-    expect(nextState.mainScheme.threat).toBe(1);
+    expect(getActiveMainScheme(nextState).threat).toBe(1);
     expect(nextState.villainPhaseStepEvent).toBeDefined();
     expect(nextState.villainPhaseStepEvent?.type).toBe('THREAT_PLACED');
     expect(nextState.villainPhaseStepEvent?.amount).toBe(1);

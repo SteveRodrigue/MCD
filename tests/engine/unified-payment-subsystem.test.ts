@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, getActiveVillain } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { step4_revealEncounterCards } from '@engine/pipeline/villain-phase';
 import {
@@ -119,8 +119,8 @@ describe('Unified Payment Subsystem & Exhaust Lifecycle Invariants (Issue #155)'
 
     // Add Ivory Horn (01100) attachment to villain (costs 3 physical to discard)
     const ivoryHorn = createCardInstance(cardCatalog.getCard('01100')!);
-    if (!state.villain.attachments) state.villain.attachments = [];
-    state.villain.attachments.push(ivoryHorn);
+    if (!getActiveVillain(state).attachments) getActiveVillain(state).attachments = [];
+    getActiveVillain(state).attachments.push(ivoryHorn);
 
     // Player needs 3 physical resources: 2 physical cards in hand + Web-Shooter (wild)
     const card1 = createCardInstance({
@@ -150,7 +150,7 @@ describe('Unified Payment Subsystem & Exhaust Lifecycle Invariants (Issue #155)'
     expect(actionResult.result.success).toBe(true);
     // Attachment is discarded
     expect(
-      (actionResult.state.villain.attachments || []).some(
+      (getActiveVillain(actionResult.state).attachments || []).some(
         (a) => a.instanceId === ivoryHorn.instanceId,
       ),
     ).toBe(false);

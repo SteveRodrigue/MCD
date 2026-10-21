@@ -15,6 +15,7 @@ import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 import { thaw } from '../support/thaw-state';
 
+import { getActiveVillain } from '@engine/models';
 describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
 
@@ -125,7 +126,7 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
 
       gameState.players[0].hand = [kickInst, r1, r2, r3];
 
-      const initialVillainHealth = gameState.villain.health; // 14
+      const initialVillainHealth = getActiveVillain(gameState).health; // 14
 
       const res = dispatchAction(gameState, {
         type: 'PLAY_CARD',
@@ -136,7 +137,7 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
 
       expect(res.result.success).toBe(true);
       // 14 - 8 = 6 HP
-      expect(res.state.villain.health).toBe(initialVillainHealth - 8);
+      expect(getActiveVillain(res.state).health).toBe(initialVillainHealth - 8);
     });
   });
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { overrideCard } from '../support/card-overrides';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, StatusCard, getActiveVillain } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import {
   executeEnemyAttackSynchronously,
@@ -87,7 +87,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
 
       // Attach Charge (01099) to Rhino giving Overkill (+3 ATK on attack)
       const chargeCard = cardCatalog.getCard('01099')!;
-      state.villain.attachments.push(createCardInstance(chargeCard));
+      getActiveVillain(state).attachments.push(createCardInstance(chargeCard));
       state.encounterDeck = []; // No extra boost icons
 
       const initialHp = state.players[0].health;
@@ -107,7 +107,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
       const minionInst = createCardInstance(cardCatalog.getCard('01108')!);
       state.players[0].engagedMinions.push(minionInst);
 
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
 
       // Player plays Relentless Assault (01053) dealing 5 damage with Overkill
       const relentlessAssault = cardCatalog.getCard('01053')!;
@@ -122,7 +122,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
       // Minion is defeated
       expect(state.players[0].engagedMinions.length).toBe(0);
       // Excess damage (5 - 1 = 4 damage) dealt to Villain!
-      expect(state.villain.health).toBe(initialVillainHp - 4);
+      expect(getActiveVillain(state).health).toBe(initialVillainHp - 4);
     });
   });
 
@@ -131,19 +131,19 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
       // Give Spider-Man hero a card with Retaliate 1 in tableau (or keyword)
       overrideCard(state, state.players[0].hero, { keywords: ['Retaliate 1'] });
 
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
 
       executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'HERO_IF_READY');
 
       // Hero survived and dealt 1 Retaliate damage to Villain!
-      expect(state.villain.health).toBe(initialVillainHp - 1);
+      expect(getActiveVillain(state).health).toBe(initialVillainHp - 1);
     });
 
     it('does NOT trigger Retaliate if defending character is defeated', () => {
       overrideCard(state, state.players[0].hero, { keywords: ['Retaliate 1'] });
       state.players[0].health = 1; // 1 HP left
 
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
       const hero = state.players[0];
 
       executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
@@ -151,7 +151,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
       // Hero defeated and eliminated (#246)
       expect(hero.health).toBe(0);
       // Villain took 0 retaliate damage because hero was defeated
-      expect(state.villain.health).toBe(initialVillainHp);
+      expect(getActiveVillain(state).health).toBe(initialVillainHp);
     });
 
     it('deals Retaliate damage back to hero when hero attacks a minion with Retaliate 1 and minion survives', () => {
@@ -225,7 +225,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
       overrideCard(state, state.players[0].hero, { health: 15 });
       state.players[0].health = 5;
 
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
 
       const gammaSlam = cardCatalog.getCard('01021')!;
       const ability = gammaSlam.enrichment!.abilities![0];
@@ -235,7 +235,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
       });
 
       // Deals 10 damage to Villain!
-      expect(state.villain.health).toBe(initialVillainHp - 10);
+      expect(getActiveVillain(state).health).toBe(initialVillainHp - 10);
     });
   });
 

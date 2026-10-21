@@ -8,6 +8,7 @@ import {
   AlterEgoCard,
   CardInstance,
   MinionCard,
+  getActiveMainScheme,
 } from '@engine/models';
 import { setupGame, createCardInstance, resetInstanceCounter } from '@engine/state/game-setup';
 import {
@@ -102,14 +103,14 @@ describe('Weapons Runner (01121): boost puts it into play engaged with the attac
       toAlterEgo();
       const wr = weaponsRunner();
       stack(wr);
-      const startThreat = state.mainScheme.threat;
+      const startThreat = getActiveMainScheme(state).threat;
 
       executeVillainSchemeAgainstPlayer(state, state.players[0]);
 
       expect(state.players[0].engagedMinions.map((m) => m.instanceId)).toEqual([wr.instanceId]);
       expect(state.encounterDiscard.some((c) => c.instanceId === wr.instanceId)).toBe(false);
       // Rhino SCH 1 plus 0 boost icons.
-      expect(state.mainScheme.threat).toBe(startThreat + 1);
+      expect(getActiveMainScheme(state).threat).toBe(startThreat + 1);
     });
 
     it('two players: the boost engages the attacked player, not player 1', () => {
@@ -154,14 +155,14 @@ describe('Weapons Runner (01121): boost puts it into play engaged with the attac
       state.players[0].tableau.push(watcher);
       const wr = weaponsRunner();
       stack(wr);
-      const startThreat = state.mainScheme.threat;
+      const startThreat = getActiveMainScheme(state).threat;
       const dealtBefore = state.players[0].dealtEncounterCards.length;
 
       executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
       expect(state.players[0].engagedMinions.map((m) => m.instanceId)).toEqual([wr.instanceId]);
       expect(state.players[0].dealtEncounterCards).toHaveLength(dealtBefore);
-      expect(state.mainScheme.threat).toBe(startThreat + 1);
+      expect(getActiveMainScheme(state).threat).toBe(startThreat + 1);
     });
   });
 

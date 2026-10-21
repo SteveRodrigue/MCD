@@ -9,6 +9,7 @@ import {
   StatusCard,
   AttackExecutionContext,
   CardAbility,
+  getActiveMainScheme,
 } from '../../src/engine/models';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { discardCardInstance, resetCardState, executeEffect } from '../../src/engine/effects';
@@ -131,33 +132,37 @@ describe('Universal Card State Reset on Discard / Leaves Play (Issue #157, RR v1
       firstPlayerIndex: 0,
       activePlayerIndex: 0,
       players: [player1, player2],
-      villain: {
-        instanceId: 'villain_inst',
-        code: '01094',
-        name: 'Rhino',
-        card: {
+      villains: [
+        {
+          instanceId: 'villain_inst',
           code: '01094',
           name: 'Rhino',
-          type: CardType.VILLAIN,
+          card: {
+            code: '01094',
+            name: 'Rhino',
+            type: CardType.VILLAIN,
+          } as any,
+          stage: 'I',
+          health: 14,
+          maxHealth: 14,
+          scheme: 1,
+          attack: 2,
+          statusCards: [],
+          attachments: [],
+          tough: false,
         } as any,
-        stage: 'I',
-        health: 14,
-        maxHealth: 14,
-        scheme: 1,
-        attack: 2,
-        statusCards: [],
-        attachments: [],
-        tough: false,
-      } as any,
-      mainScheme: {
-        code: '01097',
-        name: 'The Break-In!',
-        stage: '1A',
-        threat: 0,
-        targetThreat: 7,
-        accelerationTokens: 0,
-        crisisTokens: 0,
-      } as any,
+      ],
+      mainSchemes: [
+        {
+          code: '01097',
+          name: 'The Break-In!',
+          stage: '1A',
+          threat: 0,
+          targetThreat: 7,
+          accelerationTokens: 0,
+          crisisTokens: 0,
+        } as any,
+      ],
       sideSchemes: [],
       encounterDeck: [],
       encounterDiscard: [],
@@ -328,7 +333,7 @@ describe('Universal Card State Reset on Discard / Leaves Play (Issue #157, RR v1
 
     // Player 2 commands Maria Hill to thwart, taking fatal consequential damage
     const armedThwart = thaw(playRes.state);
-    armedThwart.mainScheme.threat = 3;
+    getActiveMainScheme(armedThwart).threat = 3;
     const thwartRes = dispatchAction(armedThwart, {
       type: 'ALLY_THWART',
       playerId: 'player_2',

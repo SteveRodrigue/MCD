@@ -1,5 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { GameState, HeroCard, AlterEgoCard, StatusCard, GamePhase } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  StatusCard,
+  GamePhase,
+  getActiveMainScheme,
+  getActiveVillain,
+} from '@engine/models';
 import { cardCatalog } from '../../../src/data/importer/card-loader';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
@@ -52,8 +60,8 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
 
   it('Player pays with Physical resource: attack gains Overkill and routes excess damage to Villain, NOT scheme threat', () => {
     const p1 = state.players[0];
-    const initialVillainHp = state.villain.health;
-    const initialSchemeThreat = state.mainScheme.threat;
+    const initialVillainHp = getActiveVillain(state).health;
+    const initialSchemeThreat = getActiveMainScheme(state).threat;
 
     // Minion with 2 HP (Hydra Bomber 01110)
     const minionCard = cardCatalog.getCard('01110')!;
@@ -88,14 +96,14 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
     // Minion is defeated
     expect(res.state.players[0].engagedMinions.length).toBe(0);
     // Overkill excess damage: 5 damage - 2 HP = 3 excess damage dealt to Villain
-    expect(res.state.villain.health).toBe(initialVillainHp - 3);
+    expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 3);
     // Main scheme threat MUST remain completely unchanged by Overkill!
-    expect(res.state.mainScheme.threat).toBe(initialSchemeThreat);
+    expect(getActiveMainScheme(res.state).threat).toBe(initialSchemeThreat);
   });
 
   it('Player pays with non-Physical resources (Energy/Mental): attack does NOT gain Overkill', () => {
     const p1 = state.players[0];
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
 
     // Minion with 2 HP (Hydra Bomber 01110)
     const minionCard = cardCatalog.getCard('01110')!;
@@ -130,13 +138,13 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
     // Minion is defeated
     expect(res.state.players[0].engagedMinions.length).toBe(0);
     // WITHOUT physical resource kicker, NO overkill: Villain takes 0 damage!
-    expect(res.state.villain.health).toBe(initialVillainHp);
+    expect(getActiveVillain(res.state).health).toBe(initialVillainHp);
   });
 
   it('Overkill damage to Villain is absorbed by Tough status card per RR v1.8 p. 22', () => {
     const p1 = state.players[0];
-    state.villain.statusCards = [StatusCard.TOUGH];
-    const initialVillainHp = state.villain.health;
+    getActiveVillain(state).statusCards = [StatusCard.TOUGH];
+    const initialVillainHp = getActiveVillain(state).health;
 
     const minionCard = cardCatalog.getCard('01110')!;
     const minionInst = createCardInstance(minionCard);
@@ -168,13 +176,13 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
     // Minion defeated
     expect(res.state.players[0].engagedMinions.length).toBe(0);
     // Tough card absorbed the 3 excess overkill damage!
-    expect(res.state.villain.statusCards.includes(StatusCard.TOUGH)).toBe(false);
-    expect(res.state.villain.health).toBe(initialVillainHp);
+    expect(getActiveVillain(res.state).statusCards.includes(StatusCard.TOUGH)).toBe(false);
+    expect(getActiveVillain(res.state).health).toBe(initialVillainHp);
   });
 
   it('Minion with Spider-Tracer defeated by Relentless Assault: Overkill damages Villain AND Spider-Tracer removes threat with proper prompt provenance', () => {
     const p1 = state.players[0];
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
 
     // Minion with 2 HP (Hydra Bomber 01110)
     const minionCard = cardCatalog.getCard('01110')!;
@@ -190,7 +198,7 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
 
     // Add a side scheme so Spider-Tracer prompts for scheme choice. Both schemes need threat to be
     // valid targets for "remove 3 threat" (RR v1.8 "Target", #234).
-    state.mainScheme.threat = 3;
+    getActiveMainScheme(state).threat = 3;
     const sideSchemeCard = cardCatalog.getCard('01109')!; // Bomb Scare
     const sideSchemeInst = createCardInstance(sideSchemeCard);
     (sideSchemeInst as any).threat = 3;
@@ -222,7 +230,7 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
     // Minion is defeated
     expect(res.state.players[0].engagedMinions.length).toBe(0);
     // Overkill excess damage (5 - 2 = 3) was dealt to Villain
-    expect(res.state.villain.health).toBe(initialVillainHp - 3);
+    expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 3);
 
     // Spider-Tracer prompted for scheme choice with complete provenance metadata
     const activePrompt = peekDecisionPrompt(res.state);
@@ -255,7 +263,7 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
 
   it('Player pays with a Wild resource: the attack gains Overkill', () => {
     const p1 = state.players[0];
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
     const minion = createCardInstance(cardCatalog.getCard('01110')!);
     p1.engagedMinions.push(minion);
 
@@ -263,12 +271,12 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
 
     expect(res.result.success).toBe(true);
     expect(res.state.players[0].engagedMinions.length).toBe(0);
-    expect(res.state.villain.health).toBe(initialVillainHp - 3);
+    expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 3);
   });
 
   it('The Overkill granted by a physical payment ends with the attack: a base attack and a later energy-paid Relentless Assault have none', () => {
     const p1 = state.players[0];
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
     const m1 = createCardInstance(cardCatalog.getCard('01110')!);
     const m2 = createCardInstance(cardCatalog.getCard('01110')!);
     const m3 = createCardInstance(cardCatalog.getCard('01110')!);
@@ -279,7 +287,7 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
     // 1. Physical payment: Overkill, 3 excess damage to the villain.
     const first = playAssault([payment('physical', 2)], m1.instanceId);
     expect(first.result.success).toBe(true);
-    expect(first.state.villain.health).toBe(initialVillainHp - 3);
+    expect(getActiveVillain(first.state).health).toBe(initialVillainHp - 3);
     state = first.state;
 
     // 2. A base attack right after: 4 damage on a 2 HP minion, no Overkill.
@@ -293,14 +301,14 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
     expect(base.state.players[0].engagedMinions.some((m) => m.instanceId === m2.instanceId)).toBe(
       false,
     );
-    expect(base.state.villain.health).toBe(initialVillainHp - 3);
+    expect(getActiveVillain(base.state).health).toBe(initialVillainHp - 3);
     state = base.state;
 
     // 3. Relentless Assault paid with energy only: no Overkill.
     const third = playAssault([payment('energy', 2)], m3.instanceId);
     expect(third.result.success).toBe(true);
     expect(third.state.players[0].engagedMinions.length).toBe(0);
-    expect(third.state.villain.health).toBe(initialVillainHp - 3);
+    expect(getActiveVillain(third.state).health).toBe(initialVillainHp - 3);
 
     // Nothing persists on the card, the player or the game state.
     expect(JSON.stringify(third.state)).not.toContain('grantedAttackKeywords');

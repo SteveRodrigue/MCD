@@ -1,7 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { recordDispatchedTriggers } from '../helpers/kernel-spy';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, StatusCard, SideSchemeCard } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  StatusCard,
+  SideSchemeCard,
+  getActiveMainScheme,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
 import { canPlayCard } from '@engine/pipeline/legality-checker';
@@ -46,7 +53,7 @@ describe('THWART Labeled Ability Resolution (#270)', () => {
   const thwarted = () => dispatched.filter((d) => d.trigger === 'THWART_RESOLVED');
 
   it('For Justice! (01060) removes threat and dispatches THWART_RESOLVED once as a thwart by the identity', () => {
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
     const fj = give('01060');
     // Pay with 01003 (Backflip, physical resource) so no mental bonus applies (removes base 3 threat)
     const pay1 = give('01003');
@@ -57,11 +64,11 @@ describe('THWART Labeled Ability Resolution (#270)', () => {
       playerId: 'p1',
       cardInstanceId: fj.instanceId,
       paymentCardInstanceIds: [pay1.instanceId, pay2.instanceId],
-      targetInstanceId: state.mainScheme.instanceId,
+      targetInstanceId: getActiveMainScheme(state).instanceId,
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.mainScheme.threat).toBe(2); // 5 - 3 = 2
+    expect(getActiveMainScheme(res.state).threat).toBe(2); // 5 - 3 = 2
     expect(thwarted()).toHaveLength(1);
     expect(thwarted()[0].context).toMatchObject({
       targetPlayerId: 'p1',
@@ -80,7 +87,7 @@ describe('THWART Labeled Ability Resolution (#270)', () => {
     state.players[0].hero = cmHero;
     state.players[0].activeFormCard = cmHero;
 
-    state.mainScheme.threat = 4;
+    getActiveMainScheme(state).threat = 4;
     const sideSchemeCard = cardCatalog.getCard('01107') as SideSchemeCard; // The Break-In side scheme
     const sideSchemeInst = createCardInstance(sideSchemeCard);
     state.sideSchemes.push({
@@ -98,17 +105,17 @@ describe('THWART Labeled Ability Resolution (#270)', () => {
       playerId: 'p1',
       cardInstanceId: ci.instanceId,
       paymentCardInstanceIds: [pay1.instanceId, pay2.instanceId],
-      targetInstanceId: state.mainScheme.instanceId,
+      targetInstanceId: getActiveMainScheme(state).instanceId,
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.mainScheme.threat).toBe(2); // 4 - 2
+    expect(getActiveMainScheme(res.state).threat).toBe(2); // 4 - 2
     expect(res.state.sideSchemes[0].threat).toBe(1); // 3 - 2
     expect(thwarted()).toHaveLength(1);
   });
 
   it('Confused hero playing For Justice!: pays 2 resources, discards card, clears Confused status, removes 0 threat, dispatches no THWART_RESOLVED', () => {
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
     state.players[0].statusCards.push(StatusCard.CONFUSED);
 
     const fj = give('01060');
@@ -120,18 +127,18 @@ describe('THWART Labeled Ability Resolution (#270)', () => {
       playerId: 'p1',
       cardInstanceId: fj.instanceId,
       paymentCardInstanceIds: [pay1.instanceId, pay2.instanceId],
-      targetInstanceId: state.mainScheme.instanceId,
+      targetInstanceId: getActiveMainScheme(state).instanceId,
     });
 
     expect(res.result.success).toBe(true);
     expect(res.state.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
-    expect(res.state.mainScheme.threat).toBe(5); // 0 removed
+    expect(getActiveMainScheme(res.state).threat).toBe(5); // 0 removed
     expect(res.state.players[0].discard.some((c) => c.instanceId === fj.instanceId)).toBe(true);
     expect(thwarted()).toHaveLength(0);
   });
 
   it('Confused hero using Mark V Helmet (01037): exhausts helmet, clears Confused status, removes 0 threat', () => {
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
     state.players[0].statusCards.push(StatusCard.CONFUSED);
 
     const helmet = createCardInstance(cardCatalog.getCard('01037')!, 'p1');
@@ -147,12 +154,12 @@ describe('THWART Labeled Ability Resolution (#270)', () => {
     expect(res.result.success).toBe(true);
     expect(res.state.players[0].tableau[0].exhausted).toBe(true);
     expect(res.state.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
-    expect(res.state.mainScheme.threat).toBe(5);
+    expect(getActiveMainScheme(res.state).threat).toBe(5);
     expect(thwarted()).toHaveLength(0);
   });
 
   it('Confused hero playing For Justice! when all schemes have 0 threat is legally allowed to play it to clear Confused', () => {
-    state.mainScheme.threat = 0;
+    getActiveMainScheme(state).threat = 0;
     state.players[0].statusCards.push(StatusCard.CONFUSED);
 
     const fj = give('01060');
@@ -171,6 +178,6 @@ describe('THWART Labeled Ability Resolution (#270)', () => {
 
     expect(res.result.success).toBe(true);
     expect(res.state.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
-    expect(res.state.mainScheme.threat).toBe(0);
+    expect(getActiveMainScheme(res.state).threat).toBe(0);
   });
 });

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { AllyActionModal } from '../../src/ui/components/board/AllyActionModal';
-import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { GameState, HeroCard, AlterEgoCard, getActiveMainScheme } from '../../src/engine/models';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { TestSession } from '../support/render-with-session';
 
@@ -29,7 +29,7 @@ describe('AllyActionModal dash (–) power display (Issue #316)', () => {
     player.currentForm = 'hero';
     const hulk = createCardInstance(cardCatalog.getCard('01050')!);
     player.allies = [hulk];
-    state.mainScheme.threat = 4;
+    getActiveMainScheme(state).threat = 4;
 
     render(
       <TestSession state={state}>

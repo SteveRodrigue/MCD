@@ -10,6 +10,8 @@ import {
   Keyword,
   CardInstance,
   MinionCard,
+  getActiveMainScheme,
+  getActiveVillain,
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
@@ -103,8 +105,8 @@ describe('Status Cancellation for Labeled Abilities (#270)', () => {
 
     it('clears both statuses and cancels ability when hero has both Stunned and Confused', () => {
       state.players[0].statusCards = [StatusCard.STUNNED, StatusCard.CONFUSED];
-      state.mainScheme.threat = 5;
-      const villainHp = state.villain.health;
+      getActiveMainScheme(state).threat = 5;
+      const villainHp = getActiveVillain(state).health;
 
       const res = executeEffect(
         state,
@@ -117,14 +119,14 @@ describe('Status Cancellation for Labeled Abilities (#270)', () => {
       expect(res.success).toBe(true);
       expect(res.state.players[0].statusCards).not.toContain(StatusCard.STUNNED);
       expect(res.state.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
-      expect(res.state.villain.health).toBe(villainHp);
-      expect(res.state.mainScheme.threat).toBe(5);
+      expect(getActiveVillain(res.state).health).toBe(villainHp);
+      expect(getActiveMainScheme(res.state).threat).toBe(5);
     });
 
     it('clears Stunned and cancels ability when hero has only Stunned', () => {
       state.players[0].statusCards = [StatusCard.STUNNED];
-      state.mainScheme.threat = 5;
-      const villainHp = state.villain.health;
+      getActiveMainScheme(state).threat = 5;
+      const villainHp = getActiveVillain(state).health;
 
       const res = executeEffect(
         state,
@@ -136,14 +138,14 @@ describe('Status Cancellation for Labeled Abilities (#270)', () => {
 
       expect(res.success).toBe(true);
       expect(res.state.players[0].statusCards).not.toContain(StatusCard.STUNNED);
-      expect(res.state.villain.health).toBe(villainHp);
-      expect(res.state.mainScheme.threat).toBe(5);
+      expect(getActiveVillain(res.state).health).toBe(villainHp);
+      expect(getActiveMainScheme(res.state).threat).toBe(5);
     });
 
     it('clears Confused and cancels ability when hero has only Confused', () => {
       state.players[0].statusCards = [StatusCard.CONFUSED];
-      state.mainScheme.threat = 5;
-      const villainHp = state.villain.health;
+      getActiveMainScheme(state).threat = 5;
+      const villainHp = getActiveVillain(state).health;
 
       const res = executeEffect(
         state,
@@ -155,15 +157,15 @@ describe('Status Cancellation for Labeled Abilities (#270)', () => {
 
       expect(res.success).toBe(true);
       expect(res.state.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
-      expect(res.state.villain.health).toBe(villainHp);
-      expect(res.state.mainScheme.threat).toBe(5);
+      expect(getActiveVillain(res.state).health).toBe(villainHp);
+      expect(getActiveMainScheme(res.state).threat).toBe(5);
     });
   });
 
   it('Steady hero with 1 Stunned playing Uppercut: not incapacitated, resolves attack normally without clearing the 1 Stunned', () => {
     overrideCard(state, state.players[0].hero, { keywords: [Keyword.STEADY] });
     state.players[0].statusCards = [StatusCard.STUNNED];
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
 
     const uppercut = give('01054');
     const pay1 = give('01005');
@@ -175,12 +177,12 @@ describe('Status Cancellation for Labeled Abilities (#270)', () => {
       playerId: 'p1',
       cardInstanceId: uppercut.instanceId,
       paymentCardInstanceIds: [pay1.instanceId, pay2.instanceId, pay3.instanceId],
-      targetInstanceId: state.villain.instanceId || 'rhino',
+      targetInstanceId: getActiveVillain(state).instanceId || 'rhino',
     });
 
     expect(res.result.success).toBe(true);
     // Attack resolved normally: dealt 5 damage to Rhino
-    expect(res.state.villain.health).toBe(initialVillainHp - 5);
+    expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 5);
     // Stunned status was NOT consumed
     expect(res.state.players[0].statusCards).toContain(StatusCard.STUNNED);
     expect(dispatched.some((d) => d.trigger === 'ATTACK_RESOLVED')).toBe(true);

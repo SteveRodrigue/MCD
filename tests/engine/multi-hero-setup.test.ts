@@ -1,7 +1,14 @@
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CardCatalog } from '../../src/data/importer/card-loader';
-import { setupGame, resetInstanceCounter, getStarterDeck, GamePhase } from '../../src/engine';
+import {
+  setupGame,
+  resetInstanceCounter,
+  getStarterDeck,
+  GamePhase,
+  getActiveMainScheme,
+  getActiveVillain,
+} from '../../src/engine';
 
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
@@ -37,10 +44,10 @@ describe('Multi-Hero Solo Mode & Scenario Setup', () => {
     expect(state.setupState?.stage).toBe('MULLIGAN_PHASE');
 
     // 1 Player: Rhino HP is 14 (14 * 1), Scheme limit is 7 (7 * 1)
-    expect(state.villain.health).toBe(14);
-    expect(state.villain.maxHealth).toBe(14);
-    expect(state.mainScheme.targetThreat).toBe(7);
-    expect(state.mainScheme.threat).toBe(0);
+    expect(getActiveVillain(state).health).toBe(14);
+    expect(getActiveVillain(state).maxHealth).toBe(14);
+    expect(getActiveMainScheme(state).targetThreat).toBe(7);
+    expect(getActiveMainScheme(state).threat).toBe(0);
 
     // Peter Parker draws 6 starting hand cards
     expect(state.players[0].hand).toHaveLength(6);
@@ -76,9 +83,9 @@ describe('Multi-Hero Solo Mode & Scenario Setup', () => {
     expect(state.players).toHaveLength(2);
 
     // 2 Players: Rhino HP is 28 (14 * 2), Scheme limit is 14 (7 * 2)
-    expect(state.villain.health).toBe(28);
-    expect(state.villain.maxHealth).toBe(28);
-    expect(state.mainScheme.targetThreat).toBe(14);
+    expect(getActiveVillain(state).health).toBe(28);
+    expect(getActiveVillain(state).maxHealth).toBe(28);
+    expect(getActiveMainScheme(state).targetThreat).toBe(14);
 
     // Both players draw 6 starting cards
     expect(state.players[0].hand).toHaveLength(6);
@@ -111,8 +118,8 @@ describe('Multi-Hero Solo Mode & Scenario Setup', () => {
     expect(state.players).toHaveLength(4);
 
     // 4 Players: Rhino HP is 56 (14 * 4), Scheme limit is 28 (7 * 4)
-    expect(state.villain.health).toBe(56);
-    expect(state.villain.maxHealth).toBe(56);
-    expect(state.mainScheme.targetThreat).toBe(28);
+    expect(getActiveVillain(state).health).toBe(56);
+    expect(getActiveVillain(state).maxHealth).toBe(56);
+    expect(getActiveMainScheme(state).targetThreat).toBe(28);
   });
 });

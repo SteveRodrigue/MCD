@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, getActiveMainScheme } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
 
@@ -46,7 +46,7 @@ describe('Defeat Trigger Filtering (Issue #167)', () => {
     state.players[0].activeFormCard = spiderManHero;
     state.players[1].currentForm = 'hero';
     state.players[1].activeFormCard = captainMarvelHero;
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
   });
 
   it('Interrogation Room (01063) does NOT trigger when an Ally is defeated', () => {
@@ -85,7 +85,7 @@ describe('Defeat Trigger Filtering (Issue #167)', () => {
     // Assert: Interrogation Room did NOT trigger, no pending prompts
     expect(res.state.pendingDecisionQueue || []).toHaveLength(0);
     // Assert: Threat was not modified
-    expect(res.state.mainScheme.threat).toBe(5);
+    expect(getActiveMainScheme(res.state).threat).toBe(5);
   });
 
   it('Interrogation Room (01063) DOES trigger when a Minion is defeated by controlling player', () => {
@@ -129,7 +129,7 @@ describe('Defeat Trigger Filtering (Issue #167)', () => {
     // Interrogation Room should now be exhausted, and 1 threat removed
     const updatedRoom = acceptRes.state.players[0].tableau.find((c) => c.card.code === '01063')!;
     expect(updatedRoom.exhausted).toBe(true);
-    expect(acceptRes.state.mainScheme.threat).toBe(4);
+    expect(getActiveMainScheme(acceptRes.state).threat).toBe(4);
   });
 
   it('Interrogation Room (01063) does NOT trigger when ANOTHER player defeats a minion', () => {
@@ -159,7 +159,7 @@ describe('Defeat Trigger Filtering (Issue #167)', () => {
 
     // Player 1 should NOT be prompted (Interrogation Room is "After you defeat a minion")
     expect(res.state.pendingDecisionQueue || []).toHaveLength(0);
-    expect(res.state.mainScheme.threat).toBe(5);
+    expect(getActiveMainScheme(res.state).threat).toBe(5);
   });
 
   it('Tigra (01051) does NOT heal when an Ally is defeated', () => {

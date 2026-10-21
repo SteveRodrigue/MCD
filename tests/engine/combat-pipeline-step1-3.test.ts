@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, StatusCard, getActiveVillain } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import {
   dispatchAction,
@@ -43,13 +43,13 @@ describe('Sub-Milestone 2B-1: Core Combat Lifecycle & Defender Declaration Engin
 
   describe('Step 1: Pre-Attack & Status Intercepts', () => {
     it('clears Stun from villain and cancels attack without dealing damage or boost cards', () => {
-      state.villain.statusCards.push(StatusCard.STUNNED);
+      getActiveVillain(state).statusCards.push(StatusCard.STUNNED);
       const initialHp = state.players[0].health;
       const initialEncounterDiscard = state.encounterDiscard.length;
 
       const nextState = initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1');
 
-      expect(nextState.villain.statusCards).not.toContain(StatusCard.STUNNED);
+      expect(getActiveVillain(nextState).statusCards).not.toContain(StatusCard.STUNNED);
       expect(nextState.players[0].health).toBe(initialHp);
       expect(nextState.encounterDiscard.length).toBe(initialEncounterDiscard);
       expect(peekDecisionPrompt(nextState)).toBeUndefined();
@@ -58,15 +58,15 @@ describe('Sub-Milestone 2B-1: Core Combat Lifecycle & Defender Declaration Engin
     it('triggers Webbed Up attachment: discards attachment, stuns villain, and cancels attack', () => {
       const webbedUpCard = cardCatalog.getCard('01009')!;
       const webbedUpInst = createCardInstance(webbedUpCard);
-      state.villain.attachments.push(webbedUpInst);
+      getActiveVillain(state).attachments.push(webbedUpInst);
 
       const initialHp = state.players[0].health;
 
       const nextState = initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1');
 
-      expect(nextState.villain.attachments).not.toContain(webbedUpInst);
+      expect(getActiveVillain(nextState).attachments).not.toContain(webbedUpInst);
       expect(nextState.players[0].discard.some((c) => c.card.code === '01009')).toBe(true);
-      expect(nextState.villain.statusCards).toContain(StatusCard.STUNNED);
+      expect(getActiveVillain(nextState).statusCards).toContain(StatusCard.STUNNED);
       expect(nextState.players[0].health).toBe(initialHp);
     });
   });

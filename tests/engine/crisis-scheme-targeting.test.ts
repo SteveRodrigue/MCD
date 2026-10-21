@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, SideSchemeCard } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  SideSchemeCard,
+  getActiveMainScheme,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { thaw } from '../support/thaw-state';
@@ -45,7 +51,7 @@ describe('Crisis Scheme Targeting (Issue #181, RR v1.8 p. 11)', () => {
         threat: 2,
       },
     ];
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
 
     const player = state.players[0];
     const survTeam = createCardInstance(cardCatalog.getCard('01064')!);
@@ -69,7 +75,7 @@ describe('Crisis Scheme Targeting (Issue #181, RR v1.8 p. 11)', () => {
     expect(sideScheme!.threat).toBe(1);
 
     // Main scheme remains unaffected
-    expect(res.state.mainScheme.threat).toBe(5);
+    expect(getActiveMainScheme(res.state).threat).toBe(5);
 
     // Surveillance Team used 1 counter and is exhausted
     const inPlaySurv = res.state.players[0].tableau.find(
@@ -94,7 +100,7 @@ describe('Crisis Scheme Targeting (Issue #181, RR v1.8 p. 11)', () => {
         threat: 3,
       },
     ];
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
 
     const player = state.players[0];
     const survTeam = createCardInstance(cardCatalog.getCard('01064')!);
@@ -117,8 +123,8 @@ describe('Crisis Scheme Targeting (Issue #181, RR v1.8 p. 11)', () => {
     expect(optionIds).toContain('side-cc');
     expect(optionIds).toContain('side-bs');
     expect(optionIds).not.toContain('main_scheme');
-    if (res.state.mainScheme.instanceId) {
-      expect(optionIds).not.toContain(res.state.mainScheme.instanceId);
+    if (getActiveMainScheme(res.state).instanceId) {
+      expect(optionIds).not.toContain(getActiveMainScheme(res.state).instanceId);
     }
   });
 
@@ -131,7 +137,7 @@ describe('Crisis Scheme Targeting (Issue #181, RR v1.8 p. 11)', () => {
         threat: 3,
       },
     ];
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
 
     const player = state.players[0];
     const survTeam = createCardInstance(cardCatalog.getCard('01064')!);
@@ -152,7 +158,7 @@ describe('Crisis Scheme Targeting (Issue #181, RR v1.8 p. 11)', () => {
     const optionIds = prompt!.options.map((o) => o.id);
     expect(optionIds).toHaveLength(2);
     expect(optionIds).toContain('side-bs');
-    const mainId = res.state.mainScheme.instanceId || 'main_scheme';
+    const mainId = getActiveMainScheme(res.state).instanceId || 'main_scheme';
     expect(optionIds.some((id) => id === 'main_scheme' || id === mainId)).toBe(true);
   });
 
@@ -165,7 +171,7 @@ describe('Crisis Scheme Targeting (Issue #181, RR v1.8 p. 11)', () => {
         threat: 1,
       },
     ];
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
 
     const player = state.players[0];
     const survTeam = createCardInstance(cardCatalog.getCard('01064')!);
@@ -183,7 +189,7 @@ describe('Crisis Scheme Targeting (Issue #181, RR v1.8 p. 11)', () => {
     expect(res1.result.success).toBe(true);
     // Side scheme is defeated and removed from play
     expect(res1.state.sideSchemes).toHaveLength(0);
-    expect(res1.state.mainScheme.threat).toBe(5);
+    expect(getActiveMainScheme(res1.state).threat).toBe(5);
 
     // Ready Surveillance Team for second activation
     const readied = thaw(res1.state);
@@ -200,7 +206,7 @@ describe('Crisis Scheme Targeting (Issue #181, RR v1.8 p. 11)', () => {
     expect(res2.result.success).toBe(true);
     expect(peekDecisionPrompt(res2.state)).toBeUndefined();
     // Main scheme threat reduced from 5 to 4
-    expect(res2.state.mainScheme.threat).toBe(4);
+    expect(getActiveMainScheme(res2.state).threat).toBe(4);
     const inPlaySurv2 = res2.state.players[0].tableau.find(
       (c) => c.instanceId === survTeam.instanceId,
     )!;

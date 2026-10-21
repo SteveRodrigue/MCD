@@ -12,6 +12,7 @@ import type {
   SideSchemeState,
 } from '../../src/engine/models';
 
+import { getActiveMainScheme } from '@engine/models';
 function createCaptainMarvelPlayer(aerial: boolean = true): PlayerState {
   return {
     id: 'player-1',
@@ -66,21 +67,25 @@ function createMockState(options: {
   return {
     scenarioId: 'rhino',
     scenario: { id: 'rhino', name: 'Rhino' } as any,
-    villain: {
-      id: 'rhino-1',
-      card: { code: '01094', name: 'Rhino', hitPoints: 14 } as any,
-      health: 14,
-      maxHealth: 14,
-      statusCards: [],
-      attachments: [],
-    } as any,
-    mainScheme: {
-      id: 'main-scheme',
-      instanceId: 'main-scheme',
-      card: { code: '01097', name: 'The Break-In!' } as any,
-      threat: options.mainThreat ?? 5,
-      targetThreat: 7,
-    } as any,
+    villains: [
+      {
+        id: 'rhino-1',
+        card: { code: '01094', name: 'Rhino', hitPoints: 14 } as any,
+        health: 14,
+        maxHealth: 14,
+        statusCards: [],
+        attachments: [],
+      } as any,
+    ],
+    mainSchemes: [
+      {
+        id: 'main-scheme',
+        instanceId: 'main-scheme',
+        card: { code: '01097', name: 'The Break-In!' } as any,
+        threat: options.mainThreat ?? 5,
+        targetThreat: 7,
+      } as any,
+    ],
     sideSchemes: options.sideSchemes || [],
     players: [player],
     activePlayerId: player.id,
@@ -125,7 +130,7 @@ describe('Crisis Interdiction (01012) — Generic distinctFrom: PREVIOUS_TARGET'
     expect(res.result.success).toBe(true);
     // Step 1 removes 2 threat from Main Scheme (5 -> 3)
     // Step 2 fizzles because no different scheme is in play (removes 0 threat)
-    expect(res.state.mainScheme.threat).toBe(3);
+    expect(getActiveMainScheme(res.state).threat).toBe(3);
     expect(peekDecisionPrompt(res.state)).toBeUndefined();
 
     // Verify directly via executeSequence
@@ -135,7 +140,7 @@ describe('Crisis Interdiction (01012) — Generic distinctFrom: PREVIOUS_TARGET'
       playerId: 'player-1',
     });
     expect(seqRes.success).toBe(true);
-    expect(seqRes.state.mainScheme.threat).toBe(3);
+    expect(getActiveMainScheme(seqRes.state).threat).toBe(3);
   });
 
   it('2) Auto-Target Single Different Scheme: Main Scheme + 1 Side Scheme in play. Step 1 targets Side Scheme, Step 2 automatically removes 2 from Main Scheme', () => {
@@ -160,7 +165,7 @@ describe('Crisis Interdiction (01012) — Generic distinctFrom: PREVIOUS_TARGET'
     // Step 1 removes 2 from Side Scheme (4 -> 2)
     expect(res.state.sideSchemes[0].threat).toBe(2);
     // Step 2 automatically removes 2 from Main Scheme without prompting
-    expect(res.state.mainScheme.threat).toBe(3);
+    expect(getActiveMainScheme(res.state).threat).toBe(3);
     expect(peekDecisionPrompt(res.state)).toBeUndefined();
   });
 
@@ -184,7 +189,7 @@ describe('Crisis Interdiction (01012) — Generic distinctFrom: PREVIOUS_TARGET'
 
     expect(res.result.success).toBe(true);
     // Step 1 removes 2 from Main Scheme (5 -> 3)
-    expect(res.state.mainScheme.threat).toBe(3);
+    expect(getActiveMainScheme(res.state).threat).toBe(3);
     // Step 2 automatically removes 2 from Side Scheme without prompting
     expect(res.state.sideSchemes[0].threat).toBe(2);
     expect(peekDecisionPrompt(res.state)).toBeUndefined();
@@ -217,7 +222,7 @@ describe('Crisis Interdiction (01012) — Generic distinctFrom: PREVIOUS_TARGET'
     // Step 1 removes 2 from Side A (4 -> 2)
     expect(res.state.sideSchemes.find((s) => s.instanceId === 'side-A')?.threat).toBe(2);
     // Main Scheme and Side B are unaffected before prompt resolution
-    expect(res.state.mainScheme.threat).toBe(5);
+    expect(getActiveMainScheme(res.state).threat).toBe(5);
     expect(res.state.sideSchemes.find((s) => s.instanceId === 'side-B')?.threat).toBe(4);
 
     // Decision prompt must be pending
@@ -228,7 +233,7 @@ describe('Crisis Interdiction (01012) — Generic distinctFrom: PREVIOUS_TARGET'
     // Side Scheme A must be excluded
     expect(optionIds).not.toContain('side-A');
     // Must contain Main Scheme and Side Scheme B
-    expect(optionIds).toContain(res.state.mainScheme.instanceId);
+    expect(optionIds).toContain(getActiveMainScheme(res.state).instanceId);
     expect(optionIds).toContain('side-B');
     expect(prompt.options.length).toBe(2);
   });
@@ -273,7 +278,7 @@ describe('Crisis Interdiction (01012) — Generic distinctFrom: PREVIOUS_TARGET'
     // Side Scheme B threat was reduced by 2 from prompt resolution (4 -> 2)
     expect(resolveRes.state.sideSchemes.find((s) => s.instanceId === 'side-B')?.threat).toBe(2);
     // Main Scheme threat remains untouched (5)
-    expect(resolveRes.state.mainScheme.threat).toBe(5);
+    expect(getActiveMainScheme(resolveRes.state).threat).toBe(5);
   });
 
   it('4b) Prompt Resolution: Resolving that prompt selecting Main Scheme removes 2 threat from Main Scheme', () => {
@@ -303,7 +308,7 @@ describe('Crisis Interdiction (01012) — Generic distinctFrom: PREVIOUS_TARGET'
     const resolveRes = dispatchAction(playRes.state, {
       type: 'RESOLVE_DECISION_PROMPT',
       playerId: 'player-1',
-      selectedOptionId: playRes.state.mainScheme.instanceId!,
+      selectedOptionId: getActiveMainScheme(playRes.state).instanceId!,
     });
 
     expect(resolveRes.result.success).toBe(true);
@@ -312,7 +317,7 @@ describe('Crisis Interdiction (01012) — Generic distinctFrom: PREVIOUS_TARGET'
     // Side Scheme A threat was reduced by 2 in Step 1 (4 -> 2)
     expect(resolveRes.state.sideSchemes.find((s) => s.instanceId === 'side-A')?.threat).toBe(2);
     // Main Scheme threat was reduced by 2 from prompt resolution (5 -> 3)
-    expect(resolveRes.state.mainScheme.threat).toBe(3);
+    expect(getActiveMainScheme(resolveRes.state).threat).toBe(3);
     // Side Scheme B threat remains untouched (4)
     expect(resolveRes.state.sideSchemes.find((s) => s.instanceId === 'side-B')?.threat).toBe(4);
   });
@@ -337,7 +342,7 @@ describe('Crisis Interdiction (01012) — Generic distinctFrom: PREVIOUS_TARGET'
 
     expect(res.result.success).toBe(true);
     // Step 1 removes 2 from Main Scheme (5 -> 3)
-    expect(res.state.mainScheme.threat).toBe(3);
+    expect(getActiveMainScheme(res.state).threat).toBe(3);
     // Step 2 does not run because player lacks Aerial trait -> Side Scheme threat remains 4
     expect(res.state.sideSchemes[0].threat).toBe(4);
     expect(peekDecisionPrompt(res.state)).toBeUndefined();

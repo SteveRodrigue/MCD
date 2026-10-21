@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { setupGame } from '@engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { StatusCard } from '@engine/models';
+import { StatusCard, getActiveVillain } from '@engine/models';
 import { executeEffect } from '@engine/effects';
 
 describe('REMOVE_STATUS additive effect (ADR-0058, RR v1.8 p. 28)', () => {
@@ -24,7 +24,7 @@ describe('REMOVE_STATUS additive effect (ADR-0058, RR v1.8 p. 28)', () => {
       skipMulligan: true,
     });
 
-    state.villain.statusCards = [StatusCard.STUNNED, StatusCard.CONFUSED];
+    getActiveVillain(state).statusCards = [StatusCard.STUNNED, StatusCard.CONFUSED];
 
     const result = executeEffect(
       state,
@@ -40,7 +40,7 @@ describe('REMOVE_STATUS additive effect (ADR-0058, RR v1.8 p. 28)', () => {
 
     expect(result.success).toBe(true);
     expect(result.mutatedState).toBe(true);
-    expect(state.villain.statusCards).toEqual([StatusCard.CONFUSED]);
+    expect(getActiveVillain(state).statusCards).toEqual([StatusCard.CONFUSED]);
   });
 
   it('removes all supported statuses without mutating an already-clear target', () => {
@@ -62,7 +62,11 @@ describe('REMOVE_STATUS additive effect (ADR-0058, RR v1.8 p. 28)', () => {
       skipMulligan: true,
     });
 
-    state.villain.statusCards = [StatusCard.STUNNED, StatusCard.CONFUSED, StatusCard.TOUGH];
+    getActiveVillain(state).statusCards = [
+      StatusCard.STUNNED,
+      StatusCard.CONFUSED,
+      StatusCard.TOUGH,
+    ];
 
     const result = executeEffect(
       state,
@@ -75,7 +79,7 @@ describe('REMOVE_STATUS additive effect (ADR-0058, RR v1.8 p. 28)', () => {
     );
 
     expect(result.success).toBe(true);
-    expect(state.villain.statusCards).toEqual([]);
+    expect(getActiveVillain(state).statusCards).toEqual([]);
 
     const noOp = executeEffect(
       state,

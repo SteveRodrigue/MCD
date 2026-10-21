@@ -8,6 +8,7 @@ import {
   AllyCard,
   MinionCard,
   Keyword,
+  getActiveMainScheme,
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { canAllyThwart, canAllyAttack } from '@engine/pipeline/legality-checker';
@@ -51,7 +52,7 @@ describe('Ally Thwart Legality & Dispatch Invariants (RR v1.8 p. 3, 11, 20)', ()
     allyInstance.exhausted = false;
     allyInstanceId = allyInstance.instanceId;
     state.players[0].allies = [allyInstance];
-    state.mainScheme.threat = 4;
+    getActiveMainScheme(state).threat = 4;
   });
 
   describe('canAllyThwart Legality', () => {
@@ -68,7 +69,7 @@ describe('Ally Thwart Legality & Dispatch Invariants (RR v1.8 p. 3, 11, 20)', ()
     });
 
     it('rejects ally thwart on main scheme when main scheme threat is 0', () => {
-      state.mainScheme.threat = 0;
+      getActiveMainScheme(state).threat = 0;
       const check = canAllyThwart(state, 'p1', allyInstanceId, 'main_scheme');
       expect(check.allowed).toBe(false);
       expect(check.reason).toContain('no threat');
@@ -127,7 +128,7 @@ describe('Ally Thwart Legality & Dispatch Invariants (RR v1.8 p. 3, 11, 20)', ()
       });
 
       expect(res.result.success).toBe(true);
-      expect(res.state.mainScheme.threat).toBe(2); // 4 - 2 THW
+      expect(getActiveMainScheme(res.state).threat).toBe(2); // 4 - 2 THW
       expect(res.state.players[0].allies[0].exhausted).toBe(true);
       expect(res.state.players[0].allies[0].tokens?.damage).toBe(1); // 1 consequential damage
     });
@@ -221,7 +222,7 @@ describe('Ally Thwart Legality & Dispatch Invariants (RR v1.8 p. 3, 11, 20)', ()
       });
       expect(res.result.success).toBe(false);
       expect(res.state.players[0].allies[0].exhausted).toBe(false);
-      expect(res.state.mainScheme.threat).toBe(4);
+      expect(getActiveMainScheme(res.state).threat).toBe(4);
     });
 
     it('still permits Hulk to attack', () => {

@@ -161,10 +161,7 @@ describe('Zero Card Text Parsing Contract (ADR-0019)', () => {
         activePlayerIndex: 0,
         players: [player as PlayerState],
         sideSchemes: [],
-        mainScheme: {
-          ...mainSchemeInst,
-          threat: 5,
-        } as any,
+        mainSchemes: [{ ...mainSchemeInst, threat: 5 } as any],
       };
 
       const mainSchemeThwartCheck = canBasicThwart(state as GameState, 'p1', 'main_scheme');
@@ -196,10 +193,7 @@ describe('Zero Card Text Parsing Contract (ADR-0019)', () => {
         activePlayerIndex: 0,
         players: [player as PlayerState],
         sideSchemes: [{ ...crisisScheme, threat: 3 } as any],
-        mainScheme: {
-          ...mainSchemeInst,
-          threat: 5,
-        } as any,
+        mainSchemes: [{ ...mainSchemeInst, threat: 5 } as any],
       };
 
       const mainSchemeThwartCheck = canBasicThwart(state as GameState, 'p1', 'main_scheme');

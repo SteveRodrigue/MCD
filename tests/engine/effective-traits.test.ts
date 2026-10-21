@@ -10,6 +10,7 @@ import { evaluatePlayRequirements } from '../../src/engine/pipeline/legality-che
 import { CardType } from '../../src/engine/models/enums';
 import type { GameState, PlayerState, CardInstance, NormalizedCard } from '../../src/engine/models';
 
+import { getActiveVillain } from '@engine/models';
 function createMockPlayer(overrides?: Partial<PlayerState>): PlayerState {
   const heroCard: NormalizedCard = {
     code: '01010a',
@@ -64,28 +65,32 @@ function createMockState(playerOverrides?: Partial<PlayerState>): GameState {
   return {
     scenarioId: 'rhino',
     scenario: { id: 'rhino', name: 'Rhino' } as any,
-    villain: {
-      id: 'rhino-1',
-      card: {
-        code: '01094',
-        name: 'Rhino',
-        type: CardType.VILLAIN,
-        traits: ['Brute', 'Criminal'],
-        hitPoints: 14,
+    villains: [
+      {
+        id: 'rhino-1',
+        card: {
+          code: '01094',
+          name: 'Rhino',
+          type: CardType.VILLAIN,
+          traits: ['Brute', 'Criminal'],
+          hitPoints: 14,
+        } as any,
+        health: 14,
+        maxHealth: 14,
+        statusCards: [],
+        attachments: [],
       } as any,
-      health: 14,
-      maxHealth: 14,
-      statusCards: [],
-      attachments: [],
-    } as any,
-    mainScheme: {
-      id: 'main-scheme',
-      instanceId: 'main-scheme',
-      card: { code: '01097b', name: 'The Break-In!' } as any,
-      threat: 0,
-      targetThreat: 7,
-      accelerationTokens: 0,
-    } as any,
+    ],
+    mainSchemes: [
+      {
+        id: 'main-scheme',
+        instanceId: 'main-scheme',
+        card: { code: '01097b', name: 'The Break-In!' } as any,
+        threat: 0,
+        targetThreat: 7,
+        accelerationTokens: 0,
+      } as any,
+    ],
     sideSchemes: [],
     players: [player],
     activePlayerIndex: 0,
@@ -365,10 +370,10 @@ describe('Effective Traits Engine Pipeline', () => {
           },
         } as any,
       };
-      state.villain.attachments.push(attachment);
+      getActiveVillain(state).attachments.push(attachment);
 
-      const details = getEffectiveCardTraitsDetails(state.villain.card, undefined, {
-        villain: state.villain,
+      const details = getEffectiveCardTraitsDetails(getActiveVillain(state).card, undefined, {
+        villain: getActiveVillain(state),
       });
       expect(details.dynamicTraits).toContain('Gamma');
       expect(details.traits).toContain('Gamma');

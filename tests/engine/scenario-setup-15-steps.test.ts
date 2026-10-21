@@ -7,6 +7,7 @@ import {
   VillainCard,
   MainSchemeCard,
   CardType,
+  getActiveVillain,
 } from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
 import { ScenarioRegistry } from '@engine/scenarios';
@@ -119,13 +120,13 @@ describe('Milestone 2C: Official 15-Step Scenario Setup State Machine (RR v1.8 p
       mainScheme,
       encounterCards: cardCatalog.getCardsBySet('rhino'),
     });
-    expect(skirmishState.villain.card.code).toBe('01094'); // Stage I
-    expect(skirmishState.villain.health).toBe(14); // 14 x 1
+    expect(getActiveVillain(skirmishState).card.code).toBe('01094'); // Stage I
+    expect(getActiveVillain(skirmishState).health).toBe(14); // 14 x 1
 
     // Defeating Stage I in Skirmish triggers immediate Victory
     const skirmishResult = rhinoPlugin.onVillainDefeated(
       skirmishState,
-      skirmishState.villain.instanceId!,
+      getActiveVillain(skirmishState).instanceId!,
     );
     expect(skirmishResult.victory).toBe(true);
     expect(skirmishState.winner).toBe('HEROES');
@@ -149,16 +150,16 @@ describe('Milestone 2C: Official 15-Step Scenario Setup State Machine (RR v1.8 p
       encounterCards: cardCatalog.getCardsBySet('rhino'),
     });
 
-    expect(expertState.villain.card.code).toBe('01095'); // Starts on Stage II
-    expect(expertState.villain.health).toBe(15); // 15 x 1
+    expect(getActiveVillain(expertState).card.code).toBe('01095'); // Starts on Stage II
+    expect(getActiveVillain(expertState).health).toBe(15); // 15 x 1
 
     // Defeating Stage II in Expert advances to Stage III
     const expertResult = rhinoPlugin.onVillainDefeated(
       expertState,
-      expertState.villain.instanceId!,
+      getActiveVillain(expertState).instanceId!,
     );
     expect(expertResult.advancedStage).toBe(true);
-    expect(expertState.villain.card.code).toBe('01096'); // Stage III
-    expect(expertState.villain.health).toBe(16); // 16 x 1
+    expect(getActiveVillain(expertState).card.code).toBe('01096'); // Stage III
+    expect(getActiveVillain(expertState).health).toBe(16); // 16 x 1
   });
 });

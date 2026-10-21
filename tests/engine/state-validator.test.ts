@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { assertGameStateInvariants } from '../../src/engine/state/state-validator';
-import { CardInstance } from '../../src/engine/models';
+import { CardInstance, getActiveMainScheme, getActiveVillain } from '../../src/engine/models';
 
 describe('assertGameStateInvariants', () => {
   const spiderMan = cardCatalog.getHeroIdentity('spider_man')!;
@@ -55,7 +55,7 @@ describe('assertGameStateInvariants', () => {
 
     it('throws when an active villain has negative health', () => {
       const state = createBaseGame();
-      state.villain.health = -3;
+      getActiveVillain(state).health = -3;
 
       expect(() => assertGameStateInvariants(state)).toThrow(
         /Active villain .* has negative health: -3/,
@@ -64,7 +64,7 @@ describe('assertGameStateInvariants', () => {
 
     it('throws when main scheme threat is negative', () => {
       const state = createBaseGame();
-      state.mainScheme.threat = -2;
+      getActiveMainScheme(state).threat = -2;
 
       expect(() => assertGameStateInvariants(state)).toThrow(
         /Main scheme .* has negative threat: -2/,
@@ -116,7 +116,7 @@ describe('assertGameStateInvariants', () => {
         tokens: {},
       };
       (attInstance as any).hostInstanceId = 'missing_minion_id';
-      state.villain.attachments = [attInstance];
+      getActiveVillain(state).attachments = [attInstance];
 
       expect(() => assertGameStateInvariants(state)).toThrow(
         /Attachment '.*' on villain .* references missing host 'missing_minion_id'/,
@@ -145,7 +145,7 @@ describe('assertGameStateInvariants', () => {
     it('throws when HEROES win is declared while villain still has health > 0', () => {
       const state = createBaseGame();
       state.winner = 'HEROES';
-      state.villain.health = 10;
+      getActiveVillain(state).health = 10;
 
       expect(() => assertGameStateInvariants(state)).toThrow(
         /Game marked as won by HEROES, but villain has health > 0/,
@@ -155,7 +155,7 @@ describe('assertGameStateInvariants', () => {
     it('passes when HEROES win is declared and villain health is 0', () => {
       const state = createBaseGame();
       state.winner = 'HEROES';
-      state.villain.health = 0;
+      getActiveVillain(state).health = 0;
 
       expect(() => assertGameStateInvariants(state)).not.toThrow();
     });
@@ -163,7 +163,7 @@ describe('assertGameStateInvariants', () => {
     it('throws when VILLAIN win is declared without main scheme completion or hero elimination', () => {
       const state = createBaseGame();
       state.winner = 'VILLAIN';
-      state.mainScheme.threat = 2; // target is 7
+      getActiveMainScheme(state).threat = 2; // target is 7
       state.players[0].health = 10;
 
       expect(() => assertGameStateInvariants(state)).toThrow(
@@ -182,7 +182,7 @@ describe('assertGameStateInvariants', () => {
     it('passes when VILLAIN win is declared after main scheme reached target threat', () => {
       const state = createBaseGame();
       state.winner = 'VILLAIN';
-      state.mainScheme.threat = state.mainScheme.targetThreat;
+      getActiveMainScheme(state).threat = getActiveMainScheme(state).targetThreat;
 
       expect(() => assertGameStateInvariants(state)).not.toThrow();
     });

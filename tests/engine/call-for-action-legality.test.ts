@@ -7,6 +7,7 @@ import {
   HeroCard,
   AlterEgoCard,
   CardInstance,
+  getActiveMainScheme,
 } from '../../src/engine/models';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { canInitiateAbility } from '../../src/engine/pipeline/legality-checker';
@@ -54,7 +55,7 @@ describe('Call for Action Legality & Generator (Issue #314 / RR v1.8 p. 5, 23)',
 
     state.phase = GamePhase.PLAYER_PHASE;
     state.activePlayerIndex = 0; // p1 is active player
-    state.mainScheme.threat = 2;
+    getActiveMainScheme(state).threat = 2;
 
     // Give p2 Avengers Mansion (01091) in tableau: Action: Exhaust Avengers Mansion -> choose a player to draw 1 card
     avengersMansion = createCardInstance(cardCatalog.getCard('01091')!);

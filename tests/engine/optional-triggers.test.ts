@@ -16,6 +16,7 @@ import {
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 
+import { getActiveMainScheme, getActiveVillain } from '@engine/models';
 describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
   let gameState: ReturnType<typeof setupGame>;
@@ -272,7 +273,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       });
 
       expect(promptRes.result.success).toBe(true);
-      expect(promptRes.state.villain.statusCards).toContain(StatusCard.CONFUSED);
+      expect(getActiveVillain(promptRes.state).statusCards).toContain(StatusCard.CONFUSED);
     });
 
     it('does not confuse villain when player chooses No / Pass', () => {
@@ -302,7 +303,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       });
 
       expect(promptRes.result.success).toBe(true);
-      expect(promptRes.state.villain.statusCards).not.toContain('CONFUSED');
+      expect(getActiveVillain(promptRes.state).statusCards).not.toContain('CONFUSED');
     });
   });
 
@@ -344,7 +345,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       });
 
       expect(promptRes.result.success).toBe(true);
-      expect(promptRes.state.villain.statusCards).toContain(StatusCard.STUNNED);
+      expect(getActiveVillain(promptRes.state).statusCards).toContain(StatusCard.STUNNED);
     });
 
     it('does not stun enemy when player chooses No / Pass', () => {
@@ -378,7 +379,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       });
 
       expect(promptRes.result.success).toBe(true);
-      expect(promptRes.state.villain.statusCards).not.toContain(StatusCard.STUNNED);
+      expect(getActiveVillain(promptRes.state).statusCards).not.toContain(StatusCard.STUNNED);
     });
   });
 
@@ -391,8 +392,8 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       const daredevilInstance = createCardInstance(daredevilCard);
       gameState.players[0].allies = [daredevilInstance];
 
-      gameState.mainScheme.threat = 5;
-      const initialVillainHealth = gameState.villain.health;
+      getActiveMainScheme(gameState).threat = 5;
+      const initialVillainHealth = getActiveVillain(gameState).health;
 
       // Daredevil thwarts
       const thwartRes = dispatchAction(gameState, {
@@ -419,7 +420,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       });
 
       expect(promptRes.result.success).toBe(true);
-      expect(promptRes.state.villain.health).toBe(initialVillainHealth - 1);
+      expect(getActiveVillain(promptRes.state).health).toBe(initialVillainHealth - 1);
     });
 
     it('does not deal damage when player chooses No / Pass on Daredevil', () => {
@@ -430,8 +431,8 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       const daredevilInstance = createCardInstance(daredevilCard);
       gameState.players[0].allies = [daredevilInstance];
 
-      gameState.mainScheme.threat = 5;
-      const initialVillainHealth = gameState.villain.health;
+      getActiveMainScheme(gameState).threat = 5;
+      const initialVillainHealth = getActiveVillain(gameState).health;
 
       // Daredevil thwarts
       const thwartRes = dispatchAction(gameState, {
@@ -448,7 +449,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       });
 
       expect(promptRes.result.success).toBe(true);
-      expect(promptRes.state.villain.health).toBe(initialVillainHealth);
+      expect(getActiveVillain(promptRes.state).health).toBe(initialVillainHealth);
     });
   });
 

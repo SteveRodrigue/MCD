@@ -9,6 +9,8 @@ import {
   VillainCard,
   updateGameState,
   getCatalog,
+  getActiveMainScheme,
+  getActiveVillain,
 } from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
 import { DeclarativeScenarioPlugin, ScenarioDefinition, ScenarioRegistry } from '@engine/scenarios';
@@ -94,8 +96,8 @@ describe('Card catalog injection (ADR-0087)', () => {
     const state = newGame();
 
     expect(getCatalog(state)).toBe(catalog);
-    expect(state.villain.card.code).toBe('fake_villain_1');
-    expect(state.mainScheme.card.code).toBe('fake_scheme_1b');
+    expect(getActiveVillain(state).card.code).toBe('fake_villain_1');
+    expect(getActiveMainScheme(state).card.code).toBe('fake_scheme_1b');
     expect(state.encounterDeck.map((c) => c.card.code)).toContain('fake_treachery');
   });
 
@@ -111,11 +113,11 @@ describe('Card catalog injection (ADR-0087)', () => {
     const plugin = ScenarioRegistry.get('fake');
     const state = newGame();
 
-    const advanced = plugin.onVillainDefeated(state, state.villain.instanceId!);
+    const advanced = plugin.onVillainDefeated(state, getActiveVillain(state).instanceId!);
     expect(advanced.advancedStage).toBe(true);
-    expect(state.villain.card.code).toBe('fake_villain_2');
+    expect(getActiveVillain(state).card.code).toBe('fake_villain_2');
 
-    const last = plugin.onVillainDefeated(state, state.villain.instanceId!);
+    const last = plugin.onVillainDefeated(state, getActiveVillain(state).instanceId!);
     expect(last.victory).toBe(true);
     expect(state.winner).toBe('HEROES');
   });

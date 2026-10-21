@@ -15,6 +15,7 @@ import {
   StatusCard,
   CardAbility,
   DefenderDeclaration,
+  getActiveVillain,
 } from '@engine/models';
 import { setupGame, createCardInstance, resetInstanceCounter } from '@engine/state/game-setup';
 import {
@@ -217,7 +218,10 @@ describe('Sweeping Swoop (01168): boost stuns the friendly character the activat
 
     const attackUntilPrompt = () => {
       // Two boost cards (Swoop and a 2-icon card): 4 damage, so Cosmic Flight leaves 1.
-      state.villain.card = { ...state.villain.card, additionalBoostCards: 1 } as any;
+      getActiveVillain(state).card = {
+        ...getActiveVillain(state).card,
+        additionalBoostCards: 1,
+      } as any;
       stack(swoop(), filler('two', 2));
       executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED', {
         acceptOptionalTriggers: false,
@@ -256,7 +260,10 @@ describe('Sweeping Swoop (01168): boost stuns the friendly character the activat
   });
 
   it('7. two copies revealed on one activation: two stuns resolve, the second is a no-op, no crash', () => {
-    state.villain.card = { ...state.villain.card, additionalBoostCards: 1 } as any;
+    getActiveVillain(state).card = {
+      ...getActiveVillain(state).card,
+      additionalBoostCards: 1,
+    } as any;
     stack(swoop(), swoop());
 
     executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');

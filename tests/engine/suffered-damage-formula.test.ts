@@ -11,6 +11,7 @@ import {
 } from '@engine/index';
 import { executeEffect } from '@engine/effects';
 
+import { getActiveVillain } from '@engine/models';
 describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.8 p. 11, 31)', () => {
   let gameState: ReturnType<typeof setupGame>;
 
@@ -64,7 +65,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
       const player = gameState.players[0];
       // She-Hulk base max health is 15
       player.health = 5; // 10 sustained damage
-      gameState.villain.health = 14;
+      getActiveVillain(gameState).health = 14;
 
       const ability = {
         id: 'test_gamma_slam',
@@ -87,7 +88,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
       const result = executeEffect(gameState, ability, { playerId: player.id });
       expect(result.success).toBe(true);
       // Villain takes 10 damage: 14 - 10 = 4
-      expect(result.state.villain.health).toBe(4);
+      expect(getActiveVillain(result.state).health).toBe(4);
     });
 
     it('enforces max ceiling parameter when sustained damage exceeds max (18 sustained, max 15 -> 15 damage)', () => {
@@ -112,7 +113,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
         exhausted: false,
       });
       player.health = 2; // Sustained damage = (15 + 5) - 2 = 18
-      gameState.villain.health = 20;
+      getActiveVillain(gameState).health = 20;
 
       const ability = {
         id: 'test_gamma_slam_capped',
@@ -135,7 +136,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
       const result = executeEffect(gameState, ability, { playerId: player.id });
       expect(result.success).toBe(true);
       // Capped at 15 damage: 20 - 15 = 5
-      expect(result.state.villain.health).toBe(5);
+      expect(getActiveVillain(result.state).health).toBe(5);
     });
 
     it('scales uncapped when optional max parameter is omitted from ability params', () => {
@@ -160,7 +161,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
         exhausted: false,
       });
       player.health = 2; // 18 sustained damage (20 - 2)
-      gameState.villain.health = 25;
+      getActiveVillain(gameState).health = 25;
 
       const ability = {
         id: 'test_gamma_slam_uncapped',
@@ -182,13 +183,13 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
       const result = executeEffect(gameState, ability, { playerId: player.id });
       expect(result.success).toBe(true);
       // Uncapped 18 damage: 25 - 18 = 7
-      expect(result.state.villain.health).toBe(7);
+      expect(getActiveVillain(result.state).health).toBe(7);
     });
 
     it('deals 0 damage when player is at full health (0 sustained damage)', () => {
       const player = gameState.players[0];
       player.health = 15; // Full health -> 0 sustained damage
-      gameState.villain.health = 14;
+      getActiveVillain(gameState).health = 14;
 
       const ability = {
         id: 'test_gamma_slam_full_health',
@@ -211,7 +212,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
       const result = executeEffect(gameState, ability, { playerId: player.id });
       expect(result.success).toBe(true);
       // 0 damage dealt: Villain remains at 14 HP
-      expect(result.state.villain.health).toBe(14);
+      expect(getActiveVillain(result.state).health).toBe(14);
     });
 
     it('deals calculated damage to a chosen minion target when targetInstanceId is provided', () => {
@@ -253,7 +254,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
         result.state.encounterDiscard.some((c) => c.instanceId === minionInstance.instanceId),
       ).toBe(true);
       // Villain was untouched
-      expect(result.state.villain.health).toBe(14);
+      expect(getActiveVillain(result.state).health).toBe(14);
     });
   });
 
@@ -275,7 +276,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
       const pay4 = createCardInstance(resourceCard);
 
       player.hand = [gammaSlamInstance, pay1, pay2, pay3, pay4];
-      gameState.villain.health = 14;
+      getActiveVillain(gameState).health = 14;
 
       const res = dispatchAction(gameState, {
         type: 'PLAY_CARD',
@@ -291,7 +292,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
 
       expect(res.result.success).toBe(true);
       // 8 damage dealt to Rhino: 14 - 8 = 6
-      expect(res.state.villain.health).toBe(6);
+      expect(getActiveVillain(res.state).health).toBe(6);
       // Gamma Slam moved to discard
       expect(
         res.state.players[0].discard.some((c) => c.instanceId === gammaSlamInstance.instanceId),

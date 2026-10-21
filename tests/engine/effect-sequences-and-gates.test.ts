@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { GameState, CardInstance, CardType, StatusCard } from '../../src/engine/models';
+import {
+  GameState,
+  CardInstance,
+  CardType,
+  StatusCard,
+  getActiveMainScheme,
+  getActiveVillain,
+} from '../../src/engine/models';
 import { executeEffect } from '../../src/engine/effects';
 
 describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2, 24)', () => {
@@ -74,20 +81,24 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
           } as any,
         } as any,
       ],
-      villain: {
-        instanceId: 'v1',
-        health: 10,
-        maxHealth: 14,
-        statusCards: [],
-        attachments: [],
-        card: { code: '01094', name: 'Rhino', type: CardType.VILLAIN } as any,
-      } as any,
-      mainScheme: {
-        instanceId: 'ms1',
-        threat: 2,
-        targetThreat: 7,
-        card: { code: '01097', name: 'The Break-In!' } as any,
-      } as any,
+      villains: [
+        {
+          instanceId: 'v1',
+          health: 10,
+          maxHealth: 14,
+          statusCards: [],
+          attachments: [],
+          card: { code: '01094', name: 'Rhino', type: CardType.VILLAIN } as any,
+        } as any,
+      ],
+      mainSchemes: [
+        {
+          instanceId: 'ms1',
+          threat: 2,
+          targetThreat: 7,
+          card: { code: '01097', name: 'The Break-In!' } as any,
+        } as any,
+      ],
       sideSchemes: [],
       encounterDeck: [
         { instanceId: 'enc1', card: { code: '01103', name: 'Shocker' } } as CardInstance,
@@ -147,13 +158,13 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
 
       const res = executeEffect(state, ability as any, { playerId: 'p1' });
       expect(res.success).toBe(true);
-      expect(res.state.mainScheme.threat).toBe(0);
+      expect(getActiveMainScheme(res.state).threat).toBe(0);
       expect(res.state.players[0].hand.length).toBe(1); // THEN executed!
     });
 
     it('Skips THEN step when preceding step causes 0 state mutation', () => {
       // Threat is already 0
-      state.mainScheme.threat = 0;
+      getActiveMainScheme(state).threat = 0;
 
       const ability = {
         id: 'then_skipped_ability',
@@ -175,15 +186,15 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
 
       const res = executeEffect(state, ability as any, { playerId: 'p1' });
       expect(res.success).toBe(true);
-      expect(res.state.mainScheme.threat).toBe(0);
+      expect(getActiveMainScheme(res.state).threat).toBe(0);
       expect(res.state.players[0].hand.length).toBe(0); // THEN was skipped because 0 threat was removed!
     });
   });
 
   describe('IF_RESULT amountZero Gate (*Hard to Keep Down* 01104)', () => {
     it('Heals villain when damaged and does NOT trigger surge', () => {
-      state.villain.health = 8;
-      state.villain.maxHealth = 14;
+      getActiveVillain(state).health = 8;
+      getActiveVillain(state).maxHealth = 14;
       const initialDealtCount = state.players[0].dealtEncounterCards.length;
 
       const ability = {
@@ -206,13 +217,13 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
 
       const res = executeEffect(state, ability as any, { playerId: 'p1' });
       expect(res.success).toBe(true);
-      expect(res.state.villain.health).toBe(12); // Healed 4
+      expect(getActiveVillain(res.state).health).toBe(12); // Healed 4
       expect(res.state.players[0].dealtEncounterCards.length).toBe(initialDealtCount); // No surge!
     });
 
     it('Triggers surge when villain is already at full health (0 healed)', () => {
-      state.villain.health = 14;
-      state.villain.maxHealth = 14;
+      getActiveVillain(state).health = 14;
+      getActiveVillain(state).maxHealth = 14;
       const initialDealtCount = state.players[0].dealtEncounterCards.length;
 
       const ability = {
@@ -235,14 +246,14 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
 
       const res = executeEffect(state, ability as any, { playerId: 'p1' });
       expect(res.success).toBe(true);
-      expect(res.state.villain.health).toBe(14); // 0 healed
+      expect(getActiveVillain(res.state).health).toBe(14); // 0 healed
       expect(res.state.players[0].dealtEncounterCards.length).toBe(initialDealtCount + 1); // Surge triggered!
     });
   });
 
   describe('IF_RESULT statusAdded Gate (*"I\'m Tough"* 01105)', () => {
     it('Adds Tough status to villain when not tough (no surge)', () => {
-      state.villain.statusCards = [];
+      getActiveVillain(state).statusCards = [];
       const initialDealtCount = state.players[0].dealtEncounterCards.length;
 
       const ability = {
@@ -265,12 +276,12 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
 
       const res = executeEffect(state, ability as any, { playerId: 'p1' });
       expect(res.success).toBe(true);
-      expect(res.state.villain.statusCards).toContain(StatusCard.TOUGH);
+      expect(getActiveVillain(res.state).statusCards).toContain(StatusCard.TOUGH);
       expect(res.state.players[0].dealtEncounterCards.length).toBe(initialDealtCount); // No surge!
     });
 
     it('Triggers surge when villain already has Tough status card', () => {
-      state.villain.statusCards = [StatusCard.TOUGH];
+      getActiveVillain(state).statusCards = [StatusCard.TOUGH];
       const initialDealtCount = state.players[0].dealtEncounterCards.length;
 
       const ability = {

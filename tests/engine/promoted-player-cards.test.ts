@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, CardAbility } from '../../src/engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  CardAbility,
+  getActiveVillain,
+} from '../../src/engine/models';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { executeEffect } from '../../src/engine/effects/index';
 import { canPlayCard } from '../../src/engine/pipeline/legality-checker';
@@ -53,7 +59,7 @@ describe('Promoted Core Player Cards', () => {
       tokens: { damage: 0 },
       exhausted: false,
     });
-    const initialVillainHealth = state.villain.health;
+    const initialVillainHealth = getActiveVillain(state).health;
 
     const ability: CardAbility = {
       id: 'ground_stomp_action',
@@ -71,7 +77,7 @@ describe('Promoted Core Player Cards', () => {
 
     const res = executeEffect(state, ability, { playerId: p1.id });
     expect(res.success).toBe(true);
-    expect(res.state.villain.health).toBe(initialVillainHealth - 1);
+    expect(getActiveVillain(res.state).health).toBe(initialVillainHealth - 1);
     expect(res.state.players[0].engagedMinions[0].tokens?.damage).toBe(1);
   });
 

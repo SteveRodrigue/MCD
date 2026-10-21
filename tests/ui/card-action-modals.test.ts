@@ -7,6 +7,7 @@ import { getValidThwartTargets } from '../../src/ui/components/board/thwart-targ
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 
+import { getActiveMainScheme } from '@engine/models';
 describe('Card Action Selection & 2-Stage Interaction Invariants (Issue #98)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
   let gameState: ReturnType<typeof setupGame>;
@@ -48,7 +49,7 @@ describe('Card Action Selection & 2-Stage Interaction Invariants (Issue #98)', (
 
     gameState.players[0].currentForm = 'hero';
     gameState.players[0].activeFormCard = gameState.players[0].hero;
-    gameState.mainScheme.threat = 3;
+    getActiveMainScheme(gameState).threat = 3;
   });
 
   it('Stage 2 Attack Target Resolution: returns targets for player selection even when only 1 enemy exists', () => {

@@ -6,7 +6,7 @@ import { runMatch } from '../../src/engine/simulation/match-simulator';
 import { executeVillainAttackAgainstPlayer } from '../../src/engine/pipeline';
 import { attachCardToHost } from '../../src/engine/state/state-validator';
 import { createCardInstance } from '../../src/engine/state/card-instance';
-import { resetInstanceCounter } from '../../src/engine';
+import { resetInstanceCounter, getActiveVillain } from '../../src/engine';
 import { getEffectiveHandSize } from '../../src/engine/pipeline/stat-calculator';
 
 describe('Fast Multi-Hero Match Simulator Battery (Roadmap 1.4)', () => {
@@ -192,7 +192,7 @@ describe('Fast Multi-Hero Match Simulator Battery (Roadmap 1.4)', () => {
       const chargeInstance = createCardInstance(chargeCard);
       attachCardToHost(state, chargeInstance, 'VILLAIN');
 
-      expect(state.villain.attachments.some((a) => a.card.code === '01100')).toBe(true);
+      expect(getActiveVillain(state).attachments.some((a) => a.card.code === '01100')).toBe(true);
 
       // Execute attack against solo player - should eliminate player and trigger HOST_ATTACK_ENDED
       // without throwing "Cannot read properties of undefined (reading 'id')"

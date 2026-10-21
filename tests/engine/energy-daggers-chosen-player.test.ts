@@ -3,7 +3,7 @@ import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { executeEffect } from '@engine/effects';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
-import { StatusCard } from '@engine/models';
+import { StatusCard, getActiveVillain } from '@engine/models';
 
 const WF_ABILITY = {
   id: 'wf_test',
@@ -63,7 +63,7 @@ describe('Energy Daggers 01046: villain + enemies engaged with the CHOSEN player
   it('multiplayer: prompts for a player and damages only that player’s engaged minions', () => {
     const state = buildGame(2);
     const { m1, m2 } = giveMinions(state);
-    const villainHp = state.villain.health;
+    const villainHp = getActiveVillain(state).health;
 
     const res = playDaggersOnly(state);
     expect(res.success).toBe(true);
@@ -82,7 +82,7 @@ describe('Energy Daggers 01046: villain + enemies engaged with the CHOSEN player
 
     const after = resolved.state;
     // Single upgrade in play: final step, so 2 damage
-    expect(after.villain.health).toBe(villainHp - 2);
+    expect(getActiveVillain(after).health).toBe(villainHp - 2);
     expect(
       after.players[1].engagedMinions.find((m) => m.instanceId === m2.instanceId)?.tokens?.damage,
     ).toBe(2);
@@ -95,12 +95,12 @@ describe('Energy Daggers 01046: villain + enemies engaged with the CHOSEN player
   it('solo: no prompt, hits the villain and own engaged minions', () => {
     const state = buildGame(1);
     const { m1 } = giveMinions(state);
-    const villainHp = state.villain.health;
+    const villainHp = getActiveVillain(state).health;
 
     const res = playDaggersOnly(state);
 
     expect(peekDecisionPrompt(res.state)).toBeUndefined();
-    expect(res.state.villain.health).toBe(villainHp - 2);
+    expect(getActiveVillain(res.state).health).toBe(villainHp - 2);
     expect(
       res.state.players[0].engagedMinions.find((m) => m.instanceId === m1.instanceId)?.tokens
         ?.damage,
@@ -136,10 +136,10 @@ describe('Energy Daggers 01046: villain + enemies engaged with the CHOSEN player
   it('chosen player with no engaged minions: only the villain is damaged', () => {
     const state = buildGame(1);
     state.players[0].engagedMinions = [];
-    const villainHp = state.villain.health;
+    const villainHp = getActiveVillain(state).health;
 
     const res = playDaggersOnly(state);
 
-    expect(res.state.villain.health).toBe(villainHp - 2);
+    expect(getActiveVillain(res.state).health).toBe(villainHp - 2);
   });
 });

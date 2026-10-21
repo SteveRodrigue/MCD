@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { GameState, HeroCard, AlterEgoCard, getActiveMainScheme } from '../../src/engine/models';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { getLegalActionsForPlayer } from '../../src/engine/pipeline/legal-actions-generator';
 
@@ -77,7 +77,7 @@ describe('Legal Actions Generator (The Daily Bugle Action Bulletins)', () => {
       exhausted: false,
     });
 
-    state.mainScheme.threat = 2;
+    getActiveMainScheme(state).threat = 2;
 
     const report = getLegalActionsForPlayer(state, p1.id);
 
@@ -141,7 +141,7 @@ describe('Legal Actions Generator (The Daily Bugle Action Bulletins)', () => {
     p1.currentForm = 'hero';
     p1.activeFormCard = ironManHero;
     p1.exhausted = false;
-    state.mainScheme.threat = 0;
+    getActiveMainScheme(state).threat = 0;
     state.sideSchemes = [];
 
     const report = getLegalActionsForPlayer(state, p1.id);
@@ -334,7 +334,7 @@ describe('Legal Actions Generator (The Daily Bugle Action Bulletins)', () => {
     const hulk = createCardInstance(cardCatalog.getCard('01050')!);
     const spiderWoman = createCardInstance(cardCatalog.getCard('01011')!);
     p1.allies = [hulk, spiderWoman];
-    state.mainScheme.threat = 3;
+    getActiveMainScheme(state).threat = 3;
 
     const report = getLegalActionsForPlayer(state, p1.id);
     const thwarters = report.boardActions

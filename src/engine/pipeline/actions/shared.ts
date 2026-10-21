@@ -4,7 +4,6 @@ import {
   PlayerState,
   VillainState,
   getActiveVillain,
-  getVillainsInPlay,
   getVillainById,
 } from '@engine/models';
 import { executeAbilityCost, getEventAbilityExtraCost } from '../cost-engine';
@@ -20,10 +19,7 @@ export function resolveAttackedVillain(
   targetInstanceId?: string,
 ): VillainState | undefined {
   if (!targetInstanceId) return getActiveVillain(state);
-  const found = getVillainById(state, targetInstanceId);
-  if (found) return found;
-  // States without a villains collection only have the legacy pointer (#215).
-  return getVillainsInPlay(state).length === 0 ? getActiveVillain(state) : undefined;
+  return getVillainById(state, targetInstanceId);
 }
 
 /**

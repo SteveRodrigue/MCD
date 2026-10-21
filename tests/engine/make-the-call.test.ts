@@ -6,6 +6,7 @@ import {
   FactionCode,
   CardInstance,
   PlayerState,
+  getActiveMainScheme,
 } from '../../src/engine/models';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
@@ -108,27 +109,29 @@ describe('Make the Call & PLAY_FROM_ZONE (ADR-0047)', () => {
       firstPlayerIndex: 0,
       activePlayerIndex: 0,
       players: [player1, player2],
-      villain: {
-        code: '01094',
-        name: 'Rhino',
-        stage: 'I',
-        health: 14,
-        maxHealth: 14,
-        scheme: 1,
-        attack: 2,
-        statusCards: [],
-        attachments: [],
-        tough: false,
-      } as any,
-      mainScheme: {
-        code: '01097',
-        name: 'The Break-In!',
-        stage: '1A',
-        threat: 0,
-        targetThreat: 7,
-        accelerationTokens: 0,
-        crisisTokens: 0,
-      } as any,
+      villains: [
+        {
+          instanceId: 'villain_inst',
+          card: { code: '01094', name: 'Rhino', stage: 'I' },
+          stage: 'I',
+          health: 14,
+          maxHealth: 14,
+          statusCards: [],
+          attachments: [],
+          tough: false,
+        } as any,
+      ],
+      mainSchemes: [
+        {
+          code: '01097',
+          name: 'The Break-In!',
+          stage: '1A',
+          threat: 0,
+          targetThreat: 7,
+          accelerationTokens: 0,
+          crisisTokens: 0,
+        } as any,
+      ],
       sideSchemes: [],
       encounterDeck: [],
       encounterDiscard: [],
@@ -455,7 +458,7 @@ describe('Make the Call & PLAY_FROM_ZONE (ADR-0047)', () => {
 
     // Player 1 commands Maria Hill to thwart, taking fatal consequential damage
     const armedAfterPlay = thaw(stateAfterPlay);
-    armedAfterPlay.mainScheme.threat = 3;
+    getActiveMainScheme(armedAfterPlay).threat = 3;
     const { state: stateAfterThwart, result: thwartResult } = dispatchAction(armedAfterPlay, {
       type: 'ALLY_THWART',
       playerId: 'player_1',

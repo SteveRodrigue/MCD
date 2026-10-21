@@ -1,7 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { CardType, Keyword, NormalizedCard, StatusCard } from '@engine/models';
+import {
+  CardType,
+  Keyword,
+  NormalizedCard,
+  StatusCard,
+  getActiveMainScheme,
+  getActiveVillain,
+} from '@engine/models';
 import { executeEffect } from '@engine/effects';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
 import { executeVillainPhase } from '@engine/pipeline/villain-phase';
@@ -128,7 +135,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
       player.activeFormCard = steadyHero as any;
       player.exhausted = false;
       player.statusCards = [StatusCard.STUNNED];
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
 
       // Player performs basic attack on villain
       const res = dispatchAction(state, {
@@ -139,7 +146,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
 
       expect(res.result.success).toBe(true);
       // Hero attacks for 2 damage
-      expect(res.state.villain.health).toBe(initialVillainHp - 2);
+      expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 2);
       // Status card remains on hero (Steady requires 2 to incapacitate)
       expect(res.state.players[0].statusCards).toEqual([StatusCard.STUNNED]);
     });
@@ -173,7 +180,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
       player.activeFormCard = steadyHero as any;
       player.exhausted = false;
       player.statusCards = [StatusCard.STUNNED, StatusCard.STUNNED];
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
 
       // Player performs basic attack on villain
       const res = dispatchAction(state, {
@@ -184,7 +191,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
 
       expect(res.result.success).toBe(true);
       // Attack was cancelled -> 0 damage dealt
-      expect(res.state.villain.health).toBe(initialVillainHp);
+      expect(getActiveVillain(res.state).health).toBe(initialVillainHp);
       // Both Stun cards discarded
       expect(res.state.players[0].statusCards).toEqual([]);
       expect(res.state.players[0].exhausted).toBe(true);
@@ -338,7 +345,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
         skipMulligan: true,
       });
 
-      const initialThreat = state.mainScheme.threat;
+      const initialThreat = getActiveMainScheme(state).threat;
 
       const res = dispatchAction(state, {
         type: 'REVEAL_ENCOUNTER_CARD' as any,
@@ -347,7 +354,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
       });
 
       expect(res.result.success).toBe(true);
-      expect(res.state.mainScheme.threat).toBe(initialThreat + 2);
+      expect(getActiveMainScheme(res.state).threat).toBe(initialThreat + 2);
     });
   });
 });

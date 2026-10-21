@@ -3,7 +3,13 @@ import { CardCatalog } from '@data/importer/card-loader';
 import { createCardInstance } from '../../src/engine/state/card-instance';
 import { executeEffect } from '../../src/engine/effects';
 import { executeEnemyAttackSynchronously } from '../../src/engine/pipeline/combat-pipeline';
-import { GamePhase, GameState, PlayerState, SideSchemeState } from '../../src/engine/models';
+import {
+  GamePhase,
+  GameState,
+  PlayerState,
+  SideSchemeState,
+  getActiveMainScheme,
+} from '../../src/engine/models';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 
@@ -42,25 +48,29 @@ describe('Yon-Rogg (01177) Scheme Targeting and ADD_THREAT Primitive (Issue #106
       firstPlayerIndex: 0,
       activePlayerIndex: 0,
       players: [player],
-      villain: {
-        id: 'villain',
-        instanceId: 'villain_inst',
-        card: catalog.getCard('01094')!,
-        health: 14,
-        maxHealth: 14,
-        stage: 1,
-        attachments: [],
-        statusCards: [],
-      } as any,
-      mainScheme: {
-        id: 'main_scheme',
-        instanceId: 'main_scheme_inst',
-        card: catalog.getCard('01097')!,
-        stage: 1,
-        threat: 2,
-        targetThreat: 7,
-        accelerationTokens: 0,
-      } as any,
+      villains: [
+        {
+          id: 'villain',
+          instanceId: 'villain_inst',
+          card: catalog.getCard('01094')!,
+          health: 14,
+          maxHealth: 14,
+          stage: 1,
+          attachments: [],
+          statusCards: [],
+        } as any,
+      ],
+      mainSchemes: [
+        {
+          id: 'main_scheme',
+          instanceId: 'main_scheme_inst',
+          card: catalog.getCard('01097')!,
+          stage: 1,
+          threat: 2,
+          targetThreat: 7,
+          accelerationTokens: 0,
+        } as any,
+      ],
       sideSchemes: [],
       encounterDeck: [],
       encounterDiscard: [],
@@ -84,7 +94,7 @@ describe('Yon-Rogg (01177) Scheme Targeting and ADD_THREAT Primitive (Issue #106
     const yonRoggInstance = createCardInstance(yonRoggCard);
     player.engagedMinions.push(yonRoggInstance);
 
-    const initialMainThreat = state.mainScheme.threat;
+    const initialMainThreat = getActiveMainScheme(state).threat;
 
     // Yon-Rogg attacks the player
     const resultState = executeEnemyAttackSynchronously(
@@ -100,7 +110,7 @@ describe('Yon-Rogg (01177) Scheme Targeting and ADD_THREAT Primitive (Issue #106
     expect(updatedPsyche!.threat).toBe(3);
 
     // Main scheme threat must be untouched
-    expect(resultState.mainScheme.threat).toBe(initialMainThreat);
+    expect(getActiveMainScheme(resultState).threat).toBe(initialMainThreat);
   });
 
   it('fizzles threat placement when Yon-Rogg attacks but The Psyche-Magnitron is NOT in play (RR v1.8 p. 29)', () => {
@@ -111,7 +121,7 @@ describe('Yon-Rogg (01177) Scheme Targeting and ADD_THREAT Primitive (Issue #106
     const yonRoggInstance = createCardInstance(yonRoggCard);
     player.engagedMinions.push(yonRoggInstance);
 
-    const initialMainThreat = state.mainScheme.threat;
+    const initialMainThreat = getActiveMainScheme(state).threat;
 
     // Yon-Rogg attacks the player
     const resultState = executeEnemyAttackSynchronously(
@@ -122,7 +132,7 @@ describe('Yon-Rogg (01177) Scheme Targeting and ADD_THREAT Primitive (Issue #106
     );
 
     // Main scheme threat must NOT be modified
-    expect(resultState.mainScheme.threat).toBe(initialMainThreat);
+    expect(getActiveMainScheme(resultState).threat).toBe(initialMainThreat);
   });
 
   it('does NOT trigger threat placement when another minion attacks while Yon-Rogg is in play', () => {
@@ -186,7 +196,7 @@ describe('Yon-Rogg (01177) Scheme Targeting and ADD_THREAT Primitive (Issue #106
 
     const updatedPsyche = res.state.sideSchemes.find((s) => s.card.code === '01176');
     expect(updatedPsyche!.threat).toBe(4);
-    expect(res.state.mainScheme.threat).toBe(2);
+    expect(getActiveMainScheme(res.state).threat).toBe(2);
   });
 
   it('supports direct ADD_THREAT primitive targeting a side scheme by targetInstanceId', () => {
@@ -220,7 +230,7 @@ describe('Yon-Rogg (01177) Scheme Targeting and ADD_THREAT Primitive (Issue #106
       (s) => s.instanceId === psycheScheme.instanceId,
     );
     expect(updatedPsyche!.threat).toBe(3);
-    expect(res.state.mainScheme.threat).toBe(2);
+    expect(getActiveMainScheme(res.state).threat).toBe(2);
   });
 
   it('supports direct ADD_THREAT primitive with perPlayer: true targeting a side scheme by cardCode', () => {
@@ -253,6 +263,6 @@ describe('Yon-Rogg (01177) Scheme Targeting and ADD_THREAT Primitive (Issue #106
 
     const updatedPsyche = res.state.sideSchemes.find((s) => s.card.code === '01176');
     expect(updatedPsyche!.threat).toBe(2);
-    expect(res.state.mainScheme.threat).toBe(2);
+    expect(getActiveMainScheme(res.state).threat).toBe(2);
   });
 });

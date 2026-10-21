@@ -5,7 +5,7 @@ import { CombatLogDrawer } from '../../src/ui/components/board/CombatLogDrawer';
 import { GameLogEntry, GameState } from '../../src/engine/models';
 import { TestSession } from '../support/render-with-session';
 
-const state = { players: [] } as unknown as GameState;
+const state = { players: [], villains: [], mainSchemes: [] } as unknown as GameState;
 
 const stepError = (id: string, text: string): GameLogEntry => ({
   id,

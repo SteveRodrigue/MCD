@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, getActiveMainScheme } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { executeEffect } from '@engine/effects';
@@ -68,7 +68,7 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
   });
 
   it('01110 Hydra Bomber: PLAYER_CHOICE modal resolves "Place 1 Threat on Main Scheme"', () => {
-    state.mainScheme.threat = 2;
+    getActiveMainScheme(state).threat = 2;
 
     const bomberCard = cardCatalog.getCard('01110')!;
     const bomberInstance = createCardInstance(bomberCard);
@@ -93,7 +93,7 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
 
     expect(res.result.success).toBe(true);
     expect(peekDecisionPrompt(res.state)).toBeUndefined();
-    expect(res.state.mainScheme.threat).toBe(3);
+    expect(getActiveMainScheme(res.state).threat).toBe(3);
   });
 
   it('01191 Exhaustion: exhausts the revealing identity with no choice and no damage', () => {
@@ -325,7 +325,7 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
 
   it('DISTRIBUTE_POINTS auto-bypasses prompt when effectiveBudget is 0 (ADR-0064)', () => {
     // Threat removal when main scheme has 0 threat and no side schemes
-    state.mainScheme.threat = 0;
+    getActiveMainScheme(state).threat = 0;
     state.sideSchemes = [];
 
     const ability = {

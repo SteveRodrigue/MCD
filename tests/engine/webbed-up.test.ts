@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, StatusCard, getActiveVillain } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { initiateEnemyAttack, canPlayCard, peekDecisionPrompt } from '@engine/pipeline';
 
@@ -38,7 +38,7 @@ describe('Feature Delivery: Webbed Up (01009) & Host Attack Interception (Issue 
   it('Test 1: Villain attack cancelled by Webbed Up, Webbed Up discarded to Spider-Man discard pile, Villain gains STUNNED', () => {
     const webbedUpCard = cardCatalog.getCard('01009')!;
     const webbedUpInst = createCardInstance(webbedUpCard, 'p1');
-    state.villain.attachments = [webbedUpInst];
+    getActiveVillain(state).attachments = [webbedUpInst];
 
     const initialHp = state.players[0].health;
     const initialEncounterDiscard = state.encounterDiscard.length;
@@ -46,11 +46,11 @@ describe('Feature Delivery: Webbed Up (01009) & Host Attack Interception (Issue 
     const nextState = initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1');
 
     // Webbed Up discarded from villain
-    expect(nextState.villain.attachments).not.toContain(webbedUpInst);
+    expect(getActiveVillain(nextState).attachments).not.toContain(webbedUpInst);
     // Discarded to Spider-Man's discard pile
     expect(nextState.players[0].discard.some((c) => c.card.code === '01009')).toBe(true);
     // Villain gains STUNNED
-    expect(nextState.villain.statusCards).toContain(StatusCard.STUNNED);
+    expect(getActiveVillain(nextState).statusCards).toContain(StatusCard.STUNNED);
     // Attack cancelled without dealing damage or boost cards
     expect(nextState.players[0].health).toBe(initialHp);
     expect(nextState.encounterDiscard.length).toBe(initialEncounterDiscard);
@@ -60,11 +60,11 @@ describe('Feature Delivery: Webbed Up (01009) & Host Attack Interception (Issue 
   it('Test 2: Follow-up villain attack cancelled by STUNNED status card', () => {
     const webbedUpCard = cardCatalog.getCard('01009')!;
     const webbedUpInst = createCardInstance(webbedUpCard, 'p1');
-    state.villain.attachments = [webbedUpInst];
+    getActiveVillain(state).attachments = [webbedUpInst];
 
     // First attack: intercepted by Webbed Up, stuns Rhino
     const s1 = initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1');
-    expect(s1.villain.statusCards).toContain(StatusCard.STUNNED);
+    expect(getActiveVillain(s1).statusCards).toContain(StatusCard.STUNNED);
 
     const initialHp = s1.players[0].health;
     const initialEncounterDiscard = s1.encounterDiscard.length;
@@ -73,7 +73,7 @@ describe('Feature Delivery: Webbed Up (01009) & Host Attack Interception (Issue 
     const s2 = initiateEnemyAttack(s1, { type: 'VILLAIN' }, 'p1');
 
     // Stun consumed
-    expect(s2.villain.statusCards).not.toContain(StatusCard.STUNNED);
+    expect(getActiveVillain(s2).statusCards).not.toContain(StatusCard.STUNNED);
     // Attack cancelled
     expect(s2.players[0].health).toBe(initialHp);
     expect(s2.encounterDiscard.length).toBe(initialEncounterDiscard);
@@ -83,17 +83,17 @@ describe('Feature Delivery: Webbed Up (01009) & Host Attack Interception (Issue 
   it('Test 3: Pre-existing STUNNED status card on Villain takes timing priority over Webbed Up (Stun cleared, Webbed Up remains attached)', () => {
     const webbedUpCard = cardCatalog.getCard('01009')!;
     const webbedUpInst = createCardInstance(webbedUpCard, 'p1');
-    state.villain.attachments = [webbedUpInst];
-    state.villain.statusCards = [StatusCard.STUNNED];
+    getActiveVillain(state).attachments = [webbedUpInst];
+    getActiveVillain(state).statusCards = [StatusCard.STUNNED];
 
     const initialHp = state.players[0].health;
 
     const nextState = initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1');
 
     // Status card priority: Stun was cleared first
-    expect(nextState.villain.statusCards).not.toContain(StatusCard.STUNNED);
+    expect(getActiveVillain(nextState).statusCards).not.toContain(StatusCard.STUNNED);
     // Webbed Up was NOT triggered and remains attached to Rhino
-    expect(nextState.villain.attachments).toContain(webbedUpInst);
+    expect(getActiveVillain(nextState).attachments).toContain(webbedUpInst);
     expect(nextState.players[0].discard.some((c) => c.card.code === '01009')).toBe(false);
     // Attack cancelled
     expect(nextState.players[0].health).toBe(initialHp);
@@ -125,7 +125,7 @@ describe('Feature Delivery: Webbed Up (01009) & Host Attack Interception (Issue 
   it('Test 5: Max 1 Webbed Up per enemy invariant enforced', () => {
     const webbedUpCard = cardCatalog.getCard('01009')!;
     const webbedUpInst = createCardInstance(webbedUpCard, 'p1');
-    state.villain.attachments = [webbedUpInst];
+    getActiveVillain(state).attachments = [webbedUpInst];
 
     const newWebbedUp = createCardInstance(webbedUpCard, 'p1');
     const paymentCard1 = createCardInstance(cardCatalog.getCard('01005')!, 'p1');
@@ -172,7 +172,7 @@ describe('Feature Delivery: Webbed Up (01009) & Host Attack Interception (Issue 
       'HAND',
       undefined,
       undefined,
-      state.villain.instanceId || 'villain',
+      getActiveVillain(state).instanceId || 'villain',
     );
     expect(checkC.allowed).toBe(false);
     expect(checkC.reason?.toLowerCase()).toContain('already has the maximum number');

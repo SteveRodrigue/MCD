@@ -10,6 +10,8 @@ import {
   CardInstance,
   Keyword,
   MinionCard,
+  getActiveMainScheme,
+  getActiveVillain,
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
@@ -49,7 +51,7 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
 
     state.players[0].currentForm = 'alter_ego';
     state.players[0].activeFormCard = peterParkerAlterEgo;
-    state.mainScheme.threat = 1;
+    getActiveMainScheme(state).threat = 1;
     state.encounterDiscard = [];
   });
 
@@ -70,7 +72,7 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
     };
     state.encounterDeck = [mockBoostCard];
 
-    const initialThreat = state.mainScheme.threat;
+    const initialThreat = getActiveMainScheme(state).threat;
     const initialDeckCount = state.encounterDeck.length;
 
     // Execute Advance Treachery
@@ -92,7 +94,7 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
     expect(boostLog?.params?.boostIcons).toBe(2);
 
     // 3. Main Scheme threat placed = Rhino SCH (1) + Boost Icons (2) = 3
-    expect(res.state.mainScheme.threat).toBe(initialThreat + 1 + 2);
+    expect(getActiveMainScheme(res.state).threat).toBe(initialThreat + 1 + 2);
 
     // 4. Boost card discarded to encounter discard
     expect(res.state.encounterDiscard).toHaveLength(1);
@@ -131,7 +133,7 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
     };
     state.encounterDeck = [starBoostCard];
 
-    const initialThreat = state.mainScheme.threat;
+    const initialThreat = getActiveMainScheme(state).threat;
     expect(state.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
 
     executeVillainSchemeAgainstPlayer(state, state.players[0]);
@@ -150,7 +152,7 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
     expect(boostLog?.params?.boostIcons).toBe(1);
 
     // Main scheme threat: Rhino SCH (1) + Boost Icons (1) = 2
-    expect(state.mainScheme.threat).toBe(initialThreat + 1 + 1);
+    expect(getActiveMainScheme(state).threat).toBe(initialThreat + 1 + 1);
 
     // Boost card discarded
     expect(state.encounterDiscard).toHaveLength(1);
@@ -158,7 +160,7 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
   });
 
   it('3. Multiple Boost Cards: Villain with additionalBoostCards deals and resolves multiple boost cards during scheme', () => {
-    overrideCard(state, state.villain.card, { additionalBoostCards: 1 });
+    overrideCard(state, getActiveVillain(state).card, { additionalBoostCards: 1 });
 
     const boost1: CardInstance = {
       instanceId: 'boost_01',
@@ -183,7 +185,7 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
     // Top card is boost1, next is boost2
     state.encounterDeck = [boost1, boost2];
 
-    const initialThreat = state.mainScheme.threat;
+    const initialThreat = getActiveMainScheme(state).threat;
 
     executeVillainSchemeAgainstPlayer(state, state.players[0]);
 
@@ -199,7 +201,7 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
     expect(revealLogs[1].params?.boostIcons).toBe(2);
 
     // Total threat: Rhino SCH (1) + boost1 (1) + boost2 (2) = 4
-    expect(state.mainScheme.threat).toBe(initialThreat + 1 + 1 + 2);
+    expect(getActiveMainScheme(state).threat).toBe(initialThreat + 1 + 1 + 2);
   });
 
   it('4. Villainous Minion Scheme: Minion with Villainous keyword deals and resolves boost card when scheming', () => {
@@ -230,7 +232,7 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
     };
     state.encounterDeck = [boostCard];
 
-    const initialThreat = state.mainScheme.threat;
+    const initialThreat = getActiveMainScheme(state).threat;
 
     executeMinionSchemeAgainstPlayer(state, villainousMinion, state.players[0]);
 
@@ -246,7 +248,7 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
     expect(boostLog?.params?.boostIcons).toBe(2);
 
     // Main scheme threat: base minion SCH (1) + Boost Icons (2) = 3
-    expect(state.mainScheme.threat).toBe(initialThreat + 1 + 2);
+    expect(getActiveMainScheme(state).threat).toBe(initialThreat + 1 + 2);
   });
 
   it('5. Villainous Minion Attack: Minion with Villainous keyword deals and resolves boost card when attacking', () => {
@@ -330,7 +332,7 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
 
     // 1. Minion Schemes in Alter-Ego
     state.players[0].currentForm = 'alter_ego';
-    const initialThreat = state.mainScheme.threat;
+    const initialThreat = getActiveMainScheme(state).threat;
 
     executeMinionActivationAgainstPlayer(state, regularMinion, state.players[0]);
 
@@ -339,7 +341,7 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
     expect(state.encounterDiscard).toHaveLength(0);
     expect(state.log.filter((l) => l.key === 'villain.boost.revealed')).toHaveLength(0);
     // Base threat only
-    expect(state.mainScheme.threat).toBe(initialThreat + 1);
+    expect(getActiveMainScheme(state).threat).toBe(initialThreat + 1);
 
     // 2. Minion Attacks in Hero Form
     state.players[0].currentForm = 'hero';
@@ -359,7 +361,7 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
   });
 
   it('7. Confused Villain Invariant: Confused villain clears confusion and does not deal boost cards or place threat', () => {
-    state.villain.statusCards = [StatusCard.CONFUSED];
+    getActiveVillain(state).statusCards = [StatusCard.CONFUSED];
 
     const boostCard: CardInstance = {
       instanceId: 'should_not_draw',
@@ -373,12 +375,12 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
     };
     state.encounterDeck = [boostCard];
 
-    const initialThreat = state.mainScheme.threat;
+    const initialThreat = getActiveMainScheme(state).threat;
 
     executeVillainSchemeAgainstPlayer(state, state.players[0]);
 
     // Confusion cleared
-    expect(state.villain.statusCards).not.toContain(StatusCard.CONFUSED);
+    expect(getActiveVillain(state).statusCards).not.toContain(StatusCard.CONFUSED);
 
     // Confusion cancelled log emitted
     const confusedLog = state.log.find((l) => l.key === 'villain.confused.cancelled');
@@ -388,6 +390,6 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
     expect(state.encounterDeck).toHaveLength(1);
     expect(state.encounterDiscard).toHaveLength(0);
     expect(state.log.filter((l) => l.key === 'villain.boost.revealed')).toHaveLength(0);
-    expect(state.mainScheme.threat).toBe(initialThreat);
+    expect(getActiveMainScheme(state).threat).toBe(initialThreat);
   });
 });

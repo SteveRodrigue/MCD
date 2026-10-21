@@ -5,7 +5,7 @@ import { CardCatalog } from '@data/importer/card-loader';
 import { getValidThwartTargets } from '../../src/ui/components/board/thwart-target-utils';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
-import { Keyword } from '@engine/models';
+import { Keyword, getActiveMainScheme } from '@engine/models';
 
 describe('Thwart Target Selection & Legality Utils (RR v1.8 p. 3, 11, 20, 29)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
@@ -48,7 +48,7 @@ describe('Thwart Target Selection & Legality Utils (RR v1.8 p. 3, 11, 20, 29)', 
 
     gameState.players[0].currentForm = 'hero';
     gameState.players[0].activeFormCard = gameState.players[0].hero;
-    gameState.mainScheme.threat = 3;
+    getActiveMainScheme(gameState).threat = 3;
   });
 
   it('returns Main Scheme when no side schemes exist and threat > 0', () => {

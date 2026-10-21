@@ -107,9 +107,7 @@ describe('Scenario Plugin Registry & Multi-Entity Accessors', () => {
         },
       ],
       villains: [],
-      villain: {} as any,
       mainSchemes: [],
-      mainScheme: {} as any,
       activeMainSchemeIndex: 0,
       sideSchemes: [],
       encounterDeck: [],
@@ -132,24 +130,24 @@ describe('Scenario Plugin Registry & Multi-Entity Accessors', () => {
       scenarioId: 'rhino',
       difficulty: 'STANDARD',
     });
-    expect(rhinoSetupState.mainScheme.stage).toBe('1B');
-    expect(rhinoSetupState.mainScheme.card.code).toBe('01097b');
-    expect((rhinoSetupState.mainScheme.card as MainSchemeCard).stage).toBe('1B');
+    expect(getActiveMainScheme(rhinoSetupState).stage).toBe('1B');
+    expect(getActiveMainScheme(rhinoSetupState).card.code).toBe('01097b');
+    expect((getActiveMainScheme(rhinoSetupState).card as MainSchemeCard).stage).toBe('1B');
 
     const klawPlugin = ScenarioRegistry.get('klaw');
     const klawSetupState = klawPlugin.onGameSetup(createBaseState(), {
       scenarioId: 'klaw',
       difficulty: 'STANDARD',
     });
-    expect(klawSetupState.mainScheme.stage).toBe('1B');
-    expect(klawSetupState.mainScheme.card.code).toBe('01116b');
+    expect(getActiveMainScheme(klawSetupState).stage).toBe('1B');
+    expect(getActiveMainScheme(klawSetupState).card.code).toBe('01116b');
 
     const ultronPlugin = ScenarioRegistry.get('ultron');
     const ultronSetupState = ultronPlugin.onGameSetup(createBaseState(), {
       scenarioId: 'ultron',
       difficulty: 'STANDARD',
     });
-    expect(ultronSetupState.mainScheme.stage).toBe('1B');
-    expect(ultronSetupState.mainScheme.card.code).toBe('01137b');
+    expect(getActiveMainScheme(ultronSetupState).stage).toBe('1B');
+    expect(getActiveMainScheme(ultronSetupState).card.code).toBe('01137b');
   });
 });

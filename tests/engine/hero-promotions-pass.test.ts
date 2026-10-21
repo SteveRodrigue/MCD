@@ -7,6 +7,7 @@ import {
   VillainCard,
   MainSchemeCard,
   StatusCard,
+  getActiveVillain,
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
@@ -80,14 +81,14 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
       );
       expect(channel.tokens?.counters).toBe(3);
 
-      const initialHp = state.villain.health;
+      const initialHp = getActiveVillain(state).health;
 
       // Discard channel and blast villain: 3 counters * 2 damage = 6 damage
-      state.villain.health = Math.max(
+      getActiveVillain(state).health = Math.max(
         0,
-        state.villain.health - (channel.tokens?.counters || 0) * 2,
+        getActiveVillain(state).health - (channel.tokens?.counters || 0) * 2,
       );
-      expect(state.villain.health).toBe(initialHp - 6);
+      expect(getActiveVillain(state).health).toBe(initialHp - 6);
     });
 
     it('Hellcat returns from allies to hand', () => {
@@ -119,13 +120,13 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
       expect(stats.attack).toBe(4);
 
       // Stun trigger
-      state.villain.statusCards = [];
+      getActiveVillain(state).statusCards = [];
       executeEffect(
         state,
         { effect: 'ADD_STATUS', effectParams: { status: 'STUNNED', target: 'TRIGGERING_ENEMY' } },
         { playerId: 'p1', eventTargetType: 'villain' },
       );
-      expect(state.villain.statusCards).toContain(StatusCard.STUNNED);
+      expect(getActiveVillain(state).statusCards).toContain(StatusCard.STUNNED);
     });
   });
 
@@ -246,7 +247,7 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
       player.tableau.push(daggers, suit, claws);
       player.health = 5; // damaged hero
 
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
 
       // Execute Wakanda Forever:
       // 1. Energy Daggers: 1 damage to villain
@@ -268,7 +269,7 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
       expect(result.success).toBe(true);
       expect(result.value).toBe(3); // 3 upgrades executed
       expect(player.health).toBe(6);
-      expect(state.villain.health).toBe(initialVillainHp - 6);
+      expect(getActiveVillain(state).health).toBe(initialVillainHp - 6);
     });
   });
 });

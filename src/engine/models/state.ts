@@ -615,21 +615,6 @@ export interface GameState {
   mainSchemes: MainSchemeState[];
   activeMainSchemeIndex: number;
 
-  /**
-   * Legacy / direct reference to active villain for backwards-compatibility. Diverges from
-   * `villains[]` after the JSON clone in `dispatchAction`; use `getActiveVillain` (#194, #215).
-   *
-   * @deprecated Use `getActiveVillain(state)` / `getVillainsInPlay(state)` (ADR-0076). Removal: #215.
-   */
-  villain: VillainState;
-  /**
-   * Legacy / direct reference to active main scheme for backwards-compatibility. Use
-   * `getActiveMainScheme` (#194, #215).
-   *
-   * @deprecated Use `getActiveMainScheme(state)` / `getMainSchemesInPlay(state)` (ADR-0076). Removal: #215.
-   */
-  mainScheme: MainSchemeState;
-
   sideSchemes: SideSchemeState[];
   environments: CardInstance[];
   encounterDeck: CardInstance[];
@@ -681,37 +666,33 @@ export function getFirstPlayer(state: GameState): PlayerState {
 /**
  * Accessor returning the active villain (the one holding the active counter) from GameState.
  * "The villain" in card text and the villain phase activation resolve to this entity.
- * Falls back to the first villain when no active id is recorded, and to the legacy pointer only
- * when the collection is empty.
+ * Falls back to the first villain when no active id is recorded.
  */
 export function getActiveVillain(state: GameState): VillainState {
-  if (state.villains && state.villains.length > 0) {
-    const active = state.activeVillainId
-      ? state.villains.find((v) => v.instanceId === state.activeVillainId)
-      : undefined;
-    return active || state.villains[0];
-  }
-  return state.villain;
+  const active = state.activeVillainId
+    ? state.villains.find((v) => v.instanceId === state.activeVillainId)
+    : undefined;
+  const villain = active || state.villains[0];
+  if (!villain) throw new Error('No villain in play.');
+  return villain;
 }
 
 /**
  * Every villain in play, active or not. Players may attack any villain (MC03 rules insert p.6).
  */
 export function getVillainsInPlay(state: GameState): VillainState[] {
-  return state.villains || [];
+  return state.villains;
 }
 
 /**
- * Moves the active counter to the villain with the given instance id and re-syncs the legacy
- * `state.villain` pointer (by reference) until it is removed (#215).
+ * Moves the active counter to the villain with the given instance id.
  */
 export function setActiveVillain(state: GameState, villainInstanceId: string): void {
-  const villain = (state.villains || []).find((v) => v.instanceId === villainInstanceId);
+  const villain = state.villains.find((v) => v.instanceId === villainInstanceId);
   if (!villain) {
     throw new Error(`Cannot activate villain '${villainInstanceId}': not in play.`);
   }
   state.activeVillainId = villainInstanceId;
-  state.villain = villain;
 }
 
 /**
@@ -723,7 +704,7 @@ export function replaceVillain(
   villainInstanceId: string,
   next: VillainState,
 ): void {
-  const villains = state.villains || [];
+  const villains = state.villains;
   const index = villains.findIndex((v) => v.instanceId === villainInstanceId);
   if (index < 0) {
     throw new Error(`Cannot replace villain '${villainInstanceId}': not in play.`);
@@ -734,7 +715,6 @@ export function replaceVillain(
   if (wasActive && next.instanceId) {
     state.activeVillainId = next.instanceId;
   }
-  state.villain = getActiveVillain(state);
 }
 
 /**
@@ -747,7 +727,7 @@ export function removeVillain(
   villainInstanceId: string,
   pickSuccessor?: (remaining: VillainState[]) => VillainState | undefined,
 ): void {
-  const villains = state.villains || [];
+  const villains = state.villains;
   const index = villains.findIndex((v) => v.instanceId === villainInstanceId);
   if (index < 0) {
     throw new Error(`Cannot remove villain '${villainInstanceId}': not in play.`);
@@ -759,44 +739,38 @@ export function removeVillain(
     const successor = pickSuccessor?.(remaining) ?? remaining[0];
     state.activeVillainId = successor?.instanceId;
   }
-  if (remaining.length > 0) {
-    state.villain = getActiveVillain(state);
-  }
 }
 
 /**
  * Accessor returning the currently active main scheme from GameState.
  */
 export function getActiveMainScheme(state: GameState): MainSchemeState {
-  if (state.mainSchemes && state.mainSchemes.length > 0) {
-    const idx = state.activeMainSchemeIndex ?? 0;
-    return state.mainSchemes[idx] || state.mainSchemes[0];
-  }
-  return state.mainScheme;
+  const idx = state.activeMainSchemeIndex ?? 0;
+  const scheme = state.mainSchemes[idx] || state.mainSchemes[0];
+  if (!scheme) throw new Error('No main scheme in play.');
+  return scheme;
 }
 
 /**
  * Every main scheme in play.
  */
 export function getMainSchemesInPlay(state: GameState): MainSchemeState[] {
-  return state.mainSchemes || [];
+  return state.mainSchemes;
 }
 
 /**
  * Makes `next` the active main scheme: replaces the active entry (a stage advance) or installs it
- * as the sole main scheme during setup, and re-syncs the legacy `state.mainScheme` pointer.
+ * as the sole main scheme during setup.
  */
 export function replaceActiveMainScheme(state: GameState, next: MainSchemeState): void {
-  const schemes = state.mainSchemes || [];
+  const schemes = state.mainSchemes;
   if (schemes.length === 0) {
     state.mainSchemes = [next];
     state.activeMainSchemeIndex = 0;
   } else {
     const index = state.activeMainSchemeIndex ?? 0;
     schemes[schemes[index] ? index : 0] = next;
-    state.mainSchemes = schemes;
   }
-  state.mainScheme = getActiveMainScheme(state);
 }
 
 /**
@@ -804,10 +778,6 @@ export function replaceActiveMainScheme(state: GameState, next: MainSchemeState)
  * the recipe leaves alone keep their identity, so the previous state is never changed and UI
  * memoisation can skip what did not change. A recipe returns the draft it mutated (or nothing).
  * Called with a draft already (a phase runner inside an action), the recipe edits it in place.
- *
- * The legacy `villain` / `mainScheme` pointers are linked to the active entities of the collections
- * before the recipe runs, so a write through either path reaches the same object (#194; removed
- * with the legacy fields in #215).
  */
 export function updateGameState(
   state: GameState,
@@ -819,10 +789,6 @@ export function updateGameState(
     return state;
   }
   return produce(state, (draft) => {
-    if (draft.villains && draft.villains.length > 0) draft.villain = getActiveVillain(draft);
-    if (draft.mainSchemes && draft.mainSchemes.length > 0) {
-      draft.mainScheme = getActiveMainScheme(draft);
-    }
     const next = recipe(draft);
     // Immer rejects a returned value on a modified draft, so a recipe that hands back another
     // state has that state copied into the draft instead.
@@ -844,18 +810,12 @@ export function adoptGameState(draft: GameState, next: GameState): void {
  * Finds a villain by card code or instanceId across state.villains.
  */
 export function getVillainById(state: GameState, idOrCode: string): VillainState | undefined {
-  return (
-    (state.villains || []).find((v) => v.card?.code === idOrCode || v.instanceId === idOrCode) ||
-    (state.villain?.card?.code === idOrCode ? state.villain : undefined)
-  );
+  return state.villains.find((v) => v.card?.code === idOrCode || v.instanceId === idOrCode);
 }
 
 /**
  * Finds a main scheme by card code or instanceId across state.mainSchemes.
  */
 export function getMainSchemeById(state: GameState, idOrCode: string): MainSchemeState | undefined {
-  return (
-    (state.mainSchemes || []).find((m) => m.card.code === idOrCode || m.instanceId === idOrCode) ||
-    (state.mainScheme?.card.code === idOrCode ? state.mainScheme : undefined)
-  );
+  return state.mainSchemes.find((m) => m.card.code === idOrCode || m.instanceId === idOrCode);
 }

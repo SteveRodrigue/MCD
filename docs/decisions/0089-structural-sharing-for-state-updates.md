@@ -25,7 +25,7 @@ Every action started with `cloneGameState` (a JSON-style deep copy), and the vil
 - `updateGameState(state, recipe)` (`models/state.ts`) is the one way to produce a next state. Branches the recipe leaves alone keep their identity; the previous state is never changed. Called with a draft already, it edits that draft in place, so nested phase runners need no second copy.
 - `dispatchAction` runs the handler, the sequence and phase resumption, and the deck-exhaustion check inside one `updateGameState`. A rejected action throws internally and returns the previous state object.
 - The villain phase runners, `initiatePlayerPhaseCleanup` and `runMatch` use it; `cloneGameState`, its JSON-semantics copy and the shared-definition registry are deleted. Catalog card definitions are instances of a marker class (`asCatalogCard`), which Immer neither drafts nor freezes, so a state update shares them and `.card` reads create no proxies (without the marker the 100-game simulation was 43 % slower, with it 20 %).
-- **Legacy pointers (until #215):** `state.villain` / `state.mainScheme` are assigned the active collection entries as drafts before the recipe runs, so both paths write one object and finalize to one object.
+- **Legacy pointers:** removed in #215; the active villain and main scheme are read and written through `getActiveVillain` / `getActiveMainScheme`.
 - Immer auto-freeze stays on, including in tests: writing to a state returned by the engine throws.
 - UI: `CardView`, `FormattedCardText`, `CardArtThumbnail`, `CardAttachmentFan` and the hand tray's cards are memoised, the settings context value is memoised, and hand cards get a stable click handler.
 

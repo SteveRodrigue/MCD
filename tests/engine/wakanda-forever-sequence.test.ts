@@ -5,6 +5,7 @@ import { executeEffect } from '@engine/effects';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { canPlayCard } from '@engine/pipeline/legality-checker';
 
+import { getActiveMainScheme, getActiveVillain } from '@engine/models';
 describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0038, RR v1.8 p. 28)', () => {
   let blackPantherHero: any;
   let tchallaAlterEgo: any;
@@ -45,7 +46,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     const pantherClaws = createCardInstance(cardCatalog.getCard('01047')!);
     player.tableau = [pantherClaws];
 
-    const initialHp = state.villain.health;
+    const initialHp = getActiveVillain(state).health;
 
     // Execute Wakanda Forever!
     const wakandaForever = createCardInstance(cardCatalog.getCard('01043a')!);
@@ -61,7 +62,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
 
     expect(result.success).toBe(true);
     // Since Panther Claws is the only (and thus final) upgrade, it deals 4 damage instead of 2
-    expect(result.state.villain.health).toBe(initialHp - 4);
+    expect(getActiveVillain(result.state).health).toBe(initialHp - 4);
   });
 
   it('2. Multi-Upgrade Custom Order: Base effects for steps 1-3, Finisher for step 4', () => {
@@ -93,9 +94,9 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     player.engagedMinions = [minion];
 
     // Main scheme starts with 4 threat
-    state.mainScheme.threat = 4;
+    getActiveMainScheme(state).threat = 4;
 
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
 
     // Control all 4 upgrades
     const energyDaggers = createCardInstance(cardCatalog.getCard('01046')!);
@@ -139,15 +140,17 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     // Panther Claws deals its finisher to "an enemy": Rhino and Armored Guard are both valid,
     // so the player chooses (#234). Choose Rhino.
     const targetPrompt = peekDecisionPrompt(result.state)!;
-    expect(targetPrompt.options.map((o) => o.id)).toContain(result.state.villain.instanceId);
+    expect(targetPrompt.options.map((o) => o.id)).toContain(
+      getActiveVillain(result.state).instanceId,
+    );
     result.state = dispatchAction(result.state, {
       type: 'RESOLVE_DECISION_PROMPT',
       playerId: 'p1',
-      selectedOptionId: result.state.villain.instanceId!,
+      selectedOptionId: getActiveVillain(result.state).instanceId!,
     }).state;
 
     // 1. Threat: 4 - 1 = 3
-    expect(result.state.mainScheme.threat).toBe(3);
+    expect(getActiveMainScheme(result.state).threat).toBe(3);
 
     // 2. Hero Health: 8 + 1 (moved) = 9
     expect(result.state.players[0].health).toBe(9);
@@ -156,7 +159,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     expect(result.state.players[0].engagedMinions[0].tokens?.damage).toBe(1);
 
     // 4. Villain Health: initial - 1 (Daggers) - 1 (Suit) - 4 (Claws Finisher) = initial - 6
-    expect(result.state.villain.health).toBe(initialVillainHp - 6);
+    expect(getActiveVillain(result.state).health).toBe(initialVillainHp - 6);
   });
 
   it('3. Permutation Finisher: Tactical Genius as 4th upgrade removes 2 threat (Finisher)', () => {
@@ -181,8 +184,8 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     const player = state.players[0];
     player.currentForm = 'hero';
     player.activeFormCard = blackPantherHero;
-    state.mainScheme.threat = 5;
-    const initialVillainHp = state.villain.health;
+    getActiveMainScheme(state).threat = 5;
+    const initialVillainHp = getActiveVillain(state).health;
 
     const pantherClaws = createCardInstance(cardCatalog.getCard('01047')!);
     const tacticalGenius = createCardInstance(cardCatalog.getCard('01048')!);
@@ -210,9 +213,9 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
 
     expect(result.success).toBe(true);
     // Panther Claws base damage = 2
-    expect(result.state.villain.health).toBe(initialVillainHp - 2);
+    expect(getActiveVillain(result.state).health).toBe(initialVillainHp - 2);
     // Tactical Genius finisher threat = 2 (5 - 2 = 3)
-    expect(result.state.mainScheme.threat).toBe(3);
+    expect(getActiveMainScheme(result.state).threat).toBe(3);
   });
 
   it('4. Play Legality: Cannot play Wakanda Forever with 0 Black Panther upgrades in play', () => {
@@ -266,7 +269,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     const player = state.players[0];
     player.currentForm = 'hero';
     player.activeFormCard = blackPantherHero;
-    const initialHp = state.villain.health;
+    const initialHp = getActiveVillain(state).health;
 
     const claws = createCardInstance(cardCatalog.getCard('01047')!);
     const daggers = createCardInstance(cardCatalog.getCard('01046')!);
@@ -318,7 +321,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     // Prompt popped
     expect(dispatchRes.state.pendingDecisionQueue?.length).toBe(0);
     // Daggers (1 dmg) + Claws Finisher (4 dmg) = 5 total damage to villain
-    expect(dispatchRes.state.villain.health).toBe(initialHp - 5);
+    expect(getActiveVillain(dispatchRes.state).health).toBe(initialHp - 5);
   });
 
   it('6. Permutation Finisher: Vibranium Suit as final upgrade transfers 2 damage (Finisher)', () => {
@@ -344,7 +347,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     player.currentForm = 'hero';
     player.activeFormCard = blackPantherHero;
     player.health = 5; // damaged hero (max 11)
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
 
     const pantherClaws = createCardInstance(cardCatalog.getCard('01047')!);
     const vibraniumSuit = createCardInstance(cardCatalog.getCard('01049')!);
@@ -373,7 +376,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     expect(result.success).toBe(true);
     // Panther Claws base damage = 2, Vibranium Suit finisher = 2 damage moved to villain
     // Total villain damage = 4
-    expect(result.state.villain.health).toBe(initialVillainHp - 4);
+    expect(getActiveVillain(result.state).health).toBe(initialVillainHp - 4);
     // Hero healed 2: 5 -> 7
     expect(result.state.players[0].health).toBe(7);
   });
@@ -400,8 +403,8 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     const player = state.players[0];
     player.currentForm = 'hero';
     player.health = 5;
-    state.mainScheme.threat = 6;
-    const initialVillainHp = state.villain.health;
+    getActiveMainScheme(state).threat = 6;
+    const initialVillainHp = getActiveVillain(state).health;
 
     // A. Non-final step with a plain amount: should NOT receive finisherBonus
     const dealResNonFinal = executeEffect(
@@ -423,7 +426,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
       { playerId: 'p1', isFinalStep: false },
     );
     expect(dealResNonFinal.success).toBe(true);
-    expect(state.villain.health).toBe(initialVillainHp - 2);
+    expect(getActiveVillain(state).health).toBe(initialVillainHp - 2);
 
     // B. Final step with a plain amount: SHOULD receive finisherBonus
     const dealResFinal = executeEffect(
@@ -445,7 +448,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
       { playerId: 'p1', isFinalStep: true },
     );
     expect(dealResFinal.success).toBe(true);
-    expect(state.villain.health).toBe(initialVillainHp - 2 - 4); // 2 + 4 = 6 total damage
+    expect(getActiveVillain(state).health).toBe(initialVillainHp - 2 - 4); // 2 + 4 = 6 total damage
 
     // C. REMOVE_THREAT with amount and finisherBonus
     const thwResFinal = executeEffect(
@@ -467,7 +470,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
       { playerId: 'p1', isFinalStep: true },
     );
     expect(thwResFinal.success).toBe(true);
-    expect(state.mainScheme.threat).toBe(6 - 2); // 1 base + 1 finisher = 2 threat removed
+    expect(getActiveMainScheme(state).threat).toBe(6 - 2); // 1 base + 1 finisher = 2 threat removed
 
     // D. TRANSFER_DAMAGE with amount and finisherBonus
     const transferResFinal = executeEffect(
@@ -491,6 +494,6 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     // Hero healed 2: 5 -> 7
     expect(player.health).toBe(7);
     // Villain took 2 damage: initialVillainHp - 6 - 2 = initialVillainHp - 8
-    expect(state.villain.health).toBe(initialVillainHp - 8);
+    expect(getActiveVillain(state).health).toBe(initialVillainHp - 8);
   });
 });

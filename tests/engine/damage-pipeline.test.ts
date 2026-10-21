@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, CardInstance, StatusCard } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  CardInstance,
+  StatusCard,
+  getActiveVillain,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { applyDamageToTarget } from '@engine/pipeline/damage-pipeline';
 
@@ -38,45 +45,45 @@ describe('Canonical 9-Step Damage Pipeline (damage-pipeline.ts)', () => {
   it('Step 1 vs Step 2: Step 1 Damage Dealt Shield (Armored Rhino Suit) intercepts before Tough is consumed', () => {
     const suitCard = cardCatalog.getCard('01098')!;
     const suitInstance = createCardInstance(suitCard);
-    state.villain.attachments = [suitInstance];
-    state.villain.statusCards = [StatusCard.TOUGH];
+    getActiveVillain(state).attachments = [suitInstance];
+    getActiveVillain(state).statusCards = [StatusCard.TOUGH];
 
-    const initialHp = state.villain.health;
+    const initialHp = getActiveVillain(state).health;
 
     // Deal 2 damage to Villain
     const res = applyDamageToTarget(state, {
       target: {
         type: 'villain',
-        entity: state.villain,
-        name: state.villain.card.name,
-        attachments: state.villain.attachments,
-        statusCards: state.villain.statusCards,
+        entity: getActiveVillain(state),
+        name: getActiveVillain(state).card.name,
+        attachments: getActiveVillain(state).attachments,
+        statusCards: getActiveVillain(state).statusCards,
       },
       amount: 2,
       isAttack: true,
     });
 
     expect(res.result.damageTaken).toBe(0);
-    expect(res.state.villain.health).toBe(initialHp);
+    expect(getActiveVillain(res.state).health).toBe(initialHp);
     // Armored Rhino Suit absorbed the damage
     expect(suitInstance.tokens?.damage).toBe(2);
     // TOUGH status card should STILL be intact (absorbed in Step 1 before Step 2 Tough)
-    expect(res.state.villain.statusCards).toContain(StatusCard.TOUGH);
+    expect(getActiveVillain(res.state).statusCards).toContain(StatusCard.TOUGH);
     expect(res.result.toughRemoved).toBe(false);
   });
 
   it('Step 2: Tough status card prevents damage when no shield is present', () => {
-    state.villain.attachments = [];
-    state.villain.statusCards = [StatusCard.TOUGH];
-    const initialHp = state.villain.health;
+    getActiveVillain(state).attachments = [];
+    getActiveVillain(state).statusCards = [StatusCard.TOUGH];
+    const initialHp = getActiveVillain(state).health;
 
     const res = applyDamageToTarget(state, {
       target: {
         type: 'villain',
-        entity: state.villain,
-        name: state.villain.card.name,
-        attachments: state.villain.attachments,
-        statusCards: state.villain.statusCards,
+        entity: getActiveVillain(state),
+        name: getActiveVillain(state).card.name,
+        attachments: getActiveVillain(state).attachments,
+        statusCards: getActiveVillain(state).statusCards,
       },
       amount: 4,
       isAttack: true,
@@ -84,22 +91,22 @@ describe('Canonical 9-Step Damage Pipeline (damage-pipeline.ts)', () => {
 
     expect(res.result.damageTaken).toBe(0);
     expect(res.result.toughRemoved).toBe(true);
-    expect(res.state.villain.statusCards.length).toBe(0);
-    expect(res.state.villain.health).toBe(initialHp);
+    expect(getActiveVillain(res.state).statusCards.length).toBe(0);
+    expect(getActiveVillain(res.state).health).toBe(initialHp);
   });
 
   it('Step 2: Piercing keyword removes Tough and still deals full damage', () => {
-    state.villain.attachments = [];
-    state.villain.statusCards = [StatusCard.TOUGH];
-    const initialHp = state.villain.health;
+    getActiveVillain(state).attachments = [];
+    getActiveVillain(state).statusCards = [StatusCard.TOUGH];
+    const initialHp = getActiveVillain(state).health;
 
     const res = applyDamageToTarget(state, {
       target: {
         type: 'villain',
-        entity: state.villain,
-        name: state.villain.card.name,
-        attachments: state.villain.attachments,
-        statusCards: state.villain.statusCards,
+        entity: getActiveVillain(state),
+        name: getActiveVillain(state).card.name,
+        attachments: getActiveVillain(state).attachments,
+        statusCards: getActiveVillain(state).statusCards,
       },
       amount: 4,
       isAttack: true,
@@ -107,9 +114,9 @@ describe('Canonical 9-Step Damage Pipeline (damage-pipeline.ts)', () => {
     });
 
     expect(res.result.toughRemoved).toBe(true);
-    expect(res.state.villain.statusCards.length).toBe(0);
+    expect(getActiveVillain(res.state).statusCards.length).toBe(0);
     expect(res.result.damageTaken).toBe(4);
-    expect(res.state.villain.health).toBe(initialHp - 4);
+    expect(getActiveVillain(res.state).health).toBe(initialHp - 4);
   });
 
   it('Universal Host Shield: Applies to player identity attachments', () => {

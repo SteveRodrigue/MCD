@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { CardType, NormalizedCard } from '@engine/models';
+import { CardType, NormalizedCard, getActiveVillain } from '@engine/models';
 import { executeEffect } from '@engine/effects';
 import { canPayAbilityCost, executeAbilityCost } from '@engine/pipeline/cost-engine';
 
@@ -336,7 +336,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
     const inst = createCardInstance(energyChannel);
     inst.counters = { energy: 4 };
     player.tableau = [inst];
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
 
     // Discard Energy Channel -> deal 2 damage per energy counter (4 counters = 8 damage)
     const res = executeEffect(
@@ -366,7 +366,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
     );
 
     expect(res.success).toBe(true);
-    expect(res.state.villain.health).toBe(initialVillainHp - 8);
+    expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 8);
   });
 
   it('purges and decrements named counters matching trait and zone filters (REMOVE_COUNTERS_MATCHING_FILTER)', () => {

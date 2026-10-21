@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { GameState, CardInstance, CardType, StatusCard } from '../../src/engine/models';
+import {
+  GameState,
+  CardInstance,
+  CardType,
+  StatusCard,
+  getActiveMainScheme,
+  getActiveVillain,
+} from '../../src/engine/models';
 import { executeEffect } from '../../src/engine/effects';
 
 describe('Result Facts and Milestones Engine (ADR-0080, Issues #289, #290)', () => {
@@ -40,21 +47,25 @@ describe('Result Facts and Milestones Engine (ADR-0080, Issues #289, #290)', () 
           ],
         } as any,
       ],
-      villain: {
-        instanceId: 'v1',
-        name: 'Rhino',
-        health: 14,
-        maxHealth: 14,
-        statusCards: [],
-        attachments: [],
-        card: { code: '01094', name: 'Rhino', type: CardType.VILLAIN } as any,
-      } as any,
-      mainScheme: {
-        instanceId: 'ms1',
-        threat: 4,
-        targetThreat: 7,
-        card: { code: '01097', name: 'The Break-In!' } as any,
-      } as any,
+      villains: [
+        {
+          instanceId: 'v1',
+          name: 'Rhino',
+          health: 14,
+          maxHealth: 14,
+          statusCards: [],
+          attachments: [],
+          card: { code: '01094', name: 'Rhino', type: CardType.VILLAIN } as any,
+        } as any,
+      ],
+      mainSchemes: [
+        {
+          instanceId: 'ms1',
+          threat: 4,
+          targetThreat: 7,
+          card: { code: '01097', name: 'The Break-In!' } as any,
+        } as any,
+      ],
       sideSchemes: [],
       encounterDeck: [],
       encounterDiscard: [],
@@ -100,7 +111,7 @@ describe('Result Facts and Milestones Engine (ADR-0080, Issues #289, #290)', () 
     });
 
     it('produces amountZero fact when tough status prevents damage', () => {
-      state.villain.statusCards = [StatusCard.TOUGH];
+      getActiveVillain(state).statusCards = [StatusCard.TOUGH];
 
       const ability = {
         id: 'attack_tough',
@@ -119,8 +130,8 @@ describe('Result Facts and Milestones Engine (ADR-0080, Issues #289, #290)', () 
       expect(res.facts?.targetDefeated).toBe(false);
       expect(res.facts?.excessDamage).toBe(0);
       expect(res.facts?.amountZero).toBe(true); // 0 damage dealt
-      expect(state.villain.health).toBe(14);
-      expect(state.villain.statusCards).toEqual([]); // tough removed
+      expect(getActiveVillain(state).health).toBe(14);
+      expect(getActiveVillain(state).statusCards).toEqual([]); // tough removed
     });
   });
 
@@ -180,7 +191,7 @@ describe('Result Facts and Milestones Engine (ADR-0080, Issues #289, #290)', () 
 
       const res = executeEffect(state, ability as any, { playerId: 'p1' });
       expect(res.success).toBe(true);
-      expect(res.state.mainScheme.threat).toBe(0);
+      expect(getActiveMainScheme(res.state).threat).toBe(0);
       expect(res.facts?.schemeEmpty).toBe(true);
       expect(res.facts?.threatZero).toBe(true);
     });
@@ -200,7 +211,7 @@ describe('Result Facts and Milestones Engine (ADR-0080, Issues #289, #290)', () 
 
       const res = executeEffect(state, ability as any, { playerId: 'p1' });
       expect(res.success).toBe(true);
-      expect(res.state.mainScheme.threat).toBe(2);
+      expect(getActiveMainScheme(res.state).threat).toBe(2);
       expect(res.facts?.schemeEmpty).toBe(false);
       expect(res.facts?.threatZero).toBe(false);
     });
@@ -228,7 +239,7 @@ describe('Result Facts and Milestones Engine (ADR-0080, Issues #289, #290)', () 
     });
 
     it('produces statusApplied: false and alreadyHadStatus: true when status already present', () => {
-      state.villain.statusCards = [StatusCard.STUNNED];
+      getActiveVillain(state).statusCards = [StatusCard.STUNNED];
 
       const ability = {
         id: 'stun_again',
@@ -249,7 +260,7 @@ describe('Result Facts and Milestones Engine (ADR-0080, Issues #289, #290)', () 
     });
 
     it('produces statusRemoved: true when removing present status', () => {
-      state.villain.statusCards = [StatusCard.CONFUSED];
+      getActiveVillain(state).statusCards = [StatusCard.CONFUSED];
 
       const ability = {
         id: 'remove_confused',
@@ -266,7 +277,7 @@ describe('Result Facts and Milestones Engine (ADR-0080, Issues #289, #290)', () 
       const res = executeEffect(state, ability as any, { playerId: 'p1' });
       expect(res.success).toBe(true);
       expect(res.facts?.statusRemoved).toBe(true);
-      expect(state.villain.statusCards).toEqual([]);
+      expect(getActiveVillain(state).statusCards).toEqual([]);
     });
   });
 
@@ -311,7 +322,7 @@ describe('Result Facts and Milestones Engine (ADR-0080, Issues #289, #290)', () 
       const res = executeEffect(state, ability as any, { playerId: 'p1' });
       expect(res.success).toBe(true);
       expect(state.players[0].engagedMinions.length).toBe(0);
-      expect(state.villain.health).toBe(11); // 14 - 3 excess damage
+      expect(getActiveVillain(state).health).toBe(11); // 14 - 3 excess damage
     });
   });
 
@@ -366,7 +377,7 @@ describe('Result Facts and Milestones Engine (ADR-0080, Issues #289, #290)', () 
       // Step 2 was skipped: health is still 8
       expect(res.state.players[0].health).toBe(8);
       // Step 3 executed using context from lastExecutedResult (Step 1): 14 - 3 = 11
-      expect(res.state.villain.health).toBe(11);
+      expect(getActiveVillain(res.state).health).toBe(11);
     });
   });
 

@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  getActiveMainScheme,
+  getActiveVillain,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import {
   dispatchAction,
@@ -140,7 +146,7 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
         ],
       });
 
-      const initialThreat = state.mainScheme.threat;
+      const initialThreat = getActiveMainScheme(state).threat;
 
       // Player chooses to pass
       const res = dispatchAction(state, {
@@ -152,7 +158,7 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
       expect(res.result.success).toBe(true);
       expect(res.result.onomatopoeia).toBe('PASSED');
       expect(peekDecisionPrompt(res.state)).toBeUndefined();
-      expect(res.state.mainScheme.threat).toBe(initialThreat);
+      expect(getActiveMainScheme(res.state).threat).toBe(initialThreat);
     });
   });
 
@@ -279,7 +285,7 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
       const cpInst = createCardInstance(cpCard);
       state.players[0].hand.push(cpInst);
 
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
       const heroAtk = spiderManHero.attack; // Spider-Man base ATK = 2
 
       const ability = cpCard.enrichment!.abilities![0];
@@ -289,7 +295,7 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
       });
 
       expect(effectRes.success).toBe(true);
-      expect(effectRes.state.villain.health).toBe(initialVillainHp - heroAtk);
+      expect(getActiveVillain(effectRes.state).health).toBe(initialVillainHp - heroAtk);
     });
   });
 });

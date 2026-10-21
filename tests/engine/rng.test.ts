@@ -30,8 +30,6 @@ function createDummyState(seed?: number | string): GameState {
     firstPlayerIndex: 0,
     activePlayerIndex: 0,
     activeMainSchemeIndex: 0,
-    villain: {} as any,
-    mainScheme: {} as any,
   } as unknown as GameState;
 
   if (seed !== undefined) {

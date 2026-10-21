@@ -2,7 +2,14 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { recordDispatchedTriggers } from '../helpers/kernel-spy';
 import { overrideCard } from '../support/card-overrides';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  StatusCard,
+  getActiveMainScheme,
+  getActiveVillain,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import {
   initiateEnemyAttack,
@@ -68,21 +75,21 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
   describe('A. Villain Defeat & Stage Progression (Core Acceptance)', () => {
     it('1. Hero Retaliate defeats Villain Stage I', () => {
       const state = buildTestGame({ heroCodes: [['01040a', '01040b']] });
-      state.villain.health = 1;
+      getActiveVillain(state).health = 1;
       mockZeroBoostDeck(state);
 
       executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'HERO_IF_READY');
 
-      expect(state.villain.card.code).toBe('01095');
-      expect(state.villain.health).toBe(15);
+      expect(getActiveVillain(state).card.code).toBe('01095');
+      expect(getActiveVillain(state).health).toBe(15);
     });
 
     it('2. Hero Retaliate defeats final Villain stage (victory)', () => {
       const state = buildTestGame({ heroCodes: [['01040a', '01040b']] });
       const rhino2Card = cardCatalog.getCard('01095')!;
-      state.villain.card = rhino2Card as any;
-      state.villain.health = 1;
-      state.villain.maxHealth = 15;
+      getActiveVillain(state).card = rhino2Card as any;
+      getActiveVillain(state).health = 1;
+      getActiveVillain(state).maxHealth = 15;
       if (state.villains && state.villains[0]) {
         state.villains[0].card = rhino2Card as any;
         state.villains[0].health = 1;
@@ -97,7 +104,7 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
 
     it('3. Ally Retaliate defeats Villain', () => {
       const state = buildTestGame({ heroCodes: [['01001a', '01001b']] });
-      state.villain.health = 1;
+      getActiveVillain(state).health = 1;
       const allyCard = cardCatalog.getCard('01058')!;
       const ally = createCardInstance(allyCard);
       ally.card = { ...ally.card, health: 5 } as typeof ally.card;
@@ -127,8 +134,8 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
         ctx,
       );
 
-      expect(state.villain.card.code).toBe('01095');
-      expect(state.villain.health).toBe(15);
+      expect(getActiveVillain(state).card.code).toBe('01095');
+      expect(getActiveVillain(state).health).toBe(15);
     });
   });
 
@@ -225,7 +232,7 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
         },
       } as typeof minion.card;
       state.players[0].engagedMinions.push(minion);
-      const initialThreat = state.mainScheme.threat;
+      const initialThreat = getActiveMainScheme(state).threat;
 
       executeEnemyAttackSynchronously(
         state,
@@ -234,40 +241,40 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
         'HERO_IF_READY',
       );
 
-      expect(state.mainScheme.threat).toBe(initialThreat);
+      expect(getActiveMainScheme(state).threat).toBe(initialThreat);
     });
   });
 
   describe('C. Undefended Attacks (Option A)', () => {
     it('7. Hero Retaliate on surviving undefended attack', () => {
       const state = buildTestGame({ heroCodes: [['01040a', '01040b']] });
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
       const initialHeroHp = state.players[0].health;
       mockZeroBoostDeck(state);
 
       executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
       expect(state.players[0].health).toBe(initialHeroHp - 2);
-      expect(state.villain.health).toBe(initialVillainHp - 1);
+      expect(getActiveVillain(state).health).toBe(initialVillainHp - 1);
     });
 
     it('8. Defeated hero does NOT retaliate on undefended attack', () => {
       const state = buildTestGame({ heroCodes: [['01040a', '01040b']] });
       state.players[0].health = 1;
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
       mockZeroBoostDeck(state);
 
       executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
       expect(state.eliminatedPlayers?.[0]?.health).toBe(0);
-      expect(state.villain.health).toBe(initialVillainHp);
+      expect(getActiveVillain(state).health).toBe(initialVillainHp);
     });
   });
 
   describe('D. Overkill Interactions', () => {
     it('9. Overkill damage to hero does NOT trigger hero Retaliate', () => {
       const state = buildTestGame({ heroCodes: [['01040a', '01040b']] });
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
       const initialHeroHp = state.players[0].health;
 
       const allyCard = cardCatalog.getCard('01002')!;
@@ -275,8 +282,8 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
       ally.card = { ...ally.card, health: 2 } as typeof ally.card;
       state.players[0].allies.push(ally);
 
-      overrideCard(state, state.villain.card, { attack: 4 });
-      overrideCard(state, state.villain.card, { keywords: ['Overkill'] });
+      overrideCard(state, getActiveVillain(state).card, { attack: 4 });
+      overrideCard(state, getActiveVillain(state).card, { keywords: ['Overkill'] });
       mockZeroBoostDeck(state);
 
       initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1');
@@ -290,7 +297,7 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
 
       expect(state.players[0].allies.find((a) => a.instanceId === ally.instanceId)).toBeUndefined();
       expect(state.players[0].health).toBe(initialHeroHp - 2);
-      expect(state.villain.health).toBe(initialVillainHp);
+      expect(getActiveVillain(state).health).toBe(initialVillainHp);
     });
   });
 
@@ -303,7 +310,7 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
           ['01001a', '01001b'],
         ],
       });
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
       mockZeroBoostDeck(state);
 
       initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1');
@@ -312,7 +319,7 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
 
       expect(state.players[1].exhausted).toBe(true);
       expect(state.players[0].health).toBe(11);
-      expect(state.villain.health).toBe(initialVillainHp);
+      expect(getActiveVillain(state).health).toBe(initialVillainHp);
     });
 
     it('11. Player 2 Hero with Retaliate defends for Black Panther', () => {
@@ -342,14 +349,14 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
           },
         } as any,
       });
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
       mockZeroBoostDeck(state);
 
       initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1');
       const ctx = state.activeAttackContext!;
       resolveDefenderDeclaration(state, { type: 'HERO', playerId: 'p2' }, ctx);
 
-      expect(state.villain.health).toBe(initialVillainHp - 1);
+      expect(getActiveVillain(state).health).toBe(initialVillainHp - 1);
     });
 
     it('12. Player 2 Ally defends for Black Panther', () => {
@@ -363,7 +370,7 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
       const ally = createCardInstance(cardCatalog.getCard('01002')!);
       ally.card = { ...ally.card, health: 5 } as typeof ally.card;
       state.players[1].allies.push(ally);
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
       mockZeroBoostDeck(state);
 
       initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1');
@@ -374,7 +381,7 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
         ctx,
       );
 
-      expect(state.villain.health).toBe(initialVillainHp);
+      expect(getActiveVillain(state).health).toBe(initialVillainHp);
     });
 
     it('13. Black Panther defends for Player 2 (Hero)', () => {
@@ -385,7 +392,7 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
           ['01001a', '01001b'],
         ],
       });
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
       mockZeroBoostDeck(state);
 
       initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p2');
@@ -393,7 +400,7 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
       resolveDefenderDeclaration(state, { type: 'HERO', playerId: 'p1' }, ctx);
 
       expect(state.players[0].exhausted).toBe(true);
-      expect(state.villain.health).toBe(initialVillainHp - 1);
+      expect(getActiveVillain(state).health).toBe(initialVillainHp - 1);
     });
 
     it('14. Black Panther defends for Player 2 and defeats Villain Stage I', () => {
@@ -404,14 +411,14 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
           ['01001a', '01001b'],
         ],
       });
-      state.villain.health = 1;
+      getActiveVillain(state).health = 1;
       mockZeroBoostDeck(state);
 
       initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p2');
       const ctx = state.activeAttackContext!;
       resolveDefenderDeclaration(state, { type: 'HERO', playerId: 'p1' }, ctx);
 
-      expect(state.villain.card.code).toBe('01095');
+      expect(getActiveVillain(state).card.code).toBe('01095');
     });
 
     it("15. Black Panther's Ally defends for Player 2", () => {
@@ -425,7 +432,7 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
       const ally = createCardInstance(cardCatalog.getCard('01002')!);
       ally.card = { ...ally.card, health: 5 } as typeof ally.card;
       state.players[0].allies.push(ally);
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
       mockZeroBoostDeck(state);
 
       initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p2');
@@ -436,41 +443,41 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
         ctx,
       );
 
-      expect(state.villain.health).toBe(initialVillainHp);
+      expect(getActiveVillain(state).health).toBe(initialVillainHp);
     });
   });
 
   describe('F. Damage Mitigation on Enemy Attacker', () => {
     it('16. Retaliate against Tough enemy', () => {
       const state = buildTestGame({ heroCodes: [['01040a', '01040b']] });
-      state.villain.statusCards = [StatusCard.TOUGH];
-      const initialVillainHp = state.villain.health;
+      getActiveVillain(state).statusCards = [StatusCard.TOUGH];
+      const initialVillainHp = getActiveVillain(state).health;
       mockZeroBoostDeck(state);
 
       executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'HERO_IF_READY');
 
-      expect(state.villain.statusCards).not.toContain(StatusCard.TOUGH);
-      expect(state.villain.health).toBe(initialVillainHp);
+      expect(getActiveVillain(state).statusCards).not.toContain(StatusCard.TOUGH);
+      expect(getActiveVillain(state).health).toBe(initialVillainHp);
     });
 
     it('17. Retaliate against damage shield', () => {
       const state = buildTestGame({ heroCodes: [['01040a', '01040b']] });
       const suit = createCardInstance(cardCatalog.getCard('01098')!);
-      state.villain.attachments = [suit];
-      const initialVillainHp = state.villain.health;
+      getActiveVillain(state).attachments = [suit];
+      const initialVillainHp = getActiveVillain(state).health;
       mockZeroBoostDeck(state);
 
       executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'HERO_IF_READY');
 
-      expect(state.villain.health).toBe(initialVillainHp);
+      expect(getActiveVillain(state).health).toBe(initialVillainHp);
       expect(suit.tokens?.damage).toBe(1);
     });
 
     it('18. Retaliate against damage immunity', () => {
       const state = buildTestGame({ heroCodes: [['01040a', '01040b']] });
-      overrideCard(state, state.villain.card, {
+      overrideCard(state, getActiveVillain(state).card, {
         enrichment: {
-          ...state.villain.card.enrichment,
+          ...getActiveVillain(state).card.enrichment,
           abilities: [
             {
               id: 'invulnerable',
@@ -480,12 +487,12 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
           ],
         },
       });
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
       mockZeroBoostDeck(state);
 
       executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'HERO_IF_READY');
 
-      expect(state.villain.health).toBe(initialVillainHp);
+      expect(getActiveVillain(state).health).toBe(initialVillainHp);
       const immuneLog = state.log.find((l) => l.key === 'damage.prevented.immune');
       expect(immuneLog).toBeDefined();
       expect(immuneLog?.onomatopoeia).toBe('IMMUNE!');

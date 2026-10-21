@@ -4,7 +4,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { getLegalActionsForPlayer } from '../../src/engine/pipeline/legal-actions-generator';
 import { getEffectiveVillainStats } from '../../src/engine/pipeline/stat-calculator';
-import { CardInstance, GameState } from '../../src/engine/models';
+import { CardInstance, GameState, getActiveVillain } from '../../src/engine/models';
 
 describe('Attachment Discard Cost & Form Validation (Issue #108 / ADR-0055)', () => {
   let state: GameState;
@@ -46,7 +46,7 @@ describe('Attachment Discard Cost & Form Validation (Issue #108 / ADR-0055)', ()
 
     const hornCard = cardCatalog.getCard('01100')!;
     const hornInstance: CardInstance = createCardInstance(hornCard);
-    state.villain.attachments = [hornInstance];
+    getActiveVillain(state).attachments = [hornInstance];
 
     const res = dispatchAction(state, {
       type: 'USE_CARD_ABILITY',
@@ -57,8 +57,8 @@ describe('Attachment Discard Cost & Form Validation (Issue #108 / ADR-0055)', ()
 
     expect(res.result.success).toBe(false);
     expect(res.result.error).toMatch(/payment cards|insufficient resources/i);
-    expect(res.state.villain.attachments.length).toBe(1);
-    expect(res.state.villain.attachments[0].instanceId).toBe(hornInstance.instanceId);
+    expect(getActiveVillain(res.state).attachments.length).toBe(1);
+    expect(getActiveVillain(res.state).attachments[0].instanceId).toBe(hornInstance.instanceId);
   });
 
   it('2. Wrong resource type rejection: rejects when energy resources are provided instead of physical', () => {
@@ -72,7 +72,7 @@ describe('Attachment Discard Cost & Form Validation (Issue #108 / ADR-0055)', ()
 
     const hornCard = cardCatalog.getCard('01100')!;
     const hornInstance: CardInstance = createCardInstance(hornCard);
-    state.villain.attachments = [hornInstance];
+    getActiveVillain(state).attachments = [hornInstance];
 
     const res = dispatchAction(state, {
       type: 'USE_CARD_ABILITY',
@@ -84,7 +84,7 @@ describe('Attachment Discard Cost & Form Validation (Issue #108 / ADR-0055)', ()
 
     expect(res.result.success).toBe(false);
     expect(res.result.error).toMatch(/insufficient.*physical/i);
-    expect(res.state.villain.attachments.length).toBe(1);
+    expect(getActiveVillain(res.state).attachments.length).toBe(1);
   });
 
   it('3. Form restriction rejection: rejects Hero Action when in Alter-Ego form', () => {
@@ -100,7 +100,7 @@ describe('Attachment Discard Cost & Form Validation (Issue #108 / ADR-0055)', ()
 
     const hornCard = cardCatalog.getCard('01100')!;
     const hornInstance: CardInstance = createCardInstance(hornCard);
-    state.villain.attachments = [hornInstance];
+    getActiveVillain(state).attachments = [hornInstance];
 
     const res = dispatchAction(state, {
       type: 'USE_CARD_ABILITY',
@@ -112,7 +112,7 @@ describe('Attachment Discard Cost & Form Validation (Issue #108 / ADR-0055)', ()
 
     expect(res.result.success).toBe(false);
     expect(res.result.error).toMatch(/hero form/i);
-    expect(res.state.villain.attachments.length).toBe(1);
+    expect(getActiveVillain(res.state).attachments.length).toBe(1);
   });
 
   it('4. Successful discard via USE_CARD_ABILITY with selected physical resources: removes horn and reduces ATK', () => {
@@ -127,10 +127,10 @@ describe('Attachment Discard Cost & Form Validation (Issue #108 / ADR-0055)', ()
 
     const hornCard = cardCatalog.getCard('01100')!;
     const hornInstance: CardInstance = createCardInstance(hornCard);
-    state.villain.attachments = [hornInstance];
+    getActiveVillain(state).attachments = [hornInstance];
 
     // Base 2 + 1 horn = 3 ATK
-    expect(getEffectiveVillainStats(state, state.villain).attack).toBe(3);
+    expect(getEffectiveVillainStats(state, getActiveVillain(state)).attack).toBe(3);
 
     const res = dispatchAction(state, {
       type: 'USE_CARD_ABILITY',
@@ -141,13 +141,13 @@ describe('Attachment Discard Cost & Form Validation (Issue #108 / ADR-0055)', ()
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.villain.attachments.length).toBe(0);
+    expect(getActiveVillain(res.state).attachments.length).toBe(0);
     expect(res.state.encounterDiscard.some((c) => c.card.code === '01100')).toBe(true);
     // Paid cards should be in player's discard
     expect(res.state.players[0].hand.length).toBe(0);
     expect(res.state.players[0].discard.length).toBe(3);
     // Effective ATK should return to base 2
-    expect(getEffectiveVillainStats(res.state, res.state.villain).attack).toBe(2);
+    expect(getEffectiveVillainStats(res.state, getActiveVillain(res.state)).attack).toBe(2);
   });
 
   it('5. Wild resource satisfaction: wild resources cover physical requirement', () => {
@@ -170,7 +170,7 @@ describe('Attachment Discard Cost & Form Validation (Issue #108 / ADR-0055)', ()
 
     const hornCard = cardCatalog.getCard('01100')!;
     const hornInstance: CardInstance = createCardInstance(hornCard);
-    state.villain.attachments = [hornInstance];
+    getActiveVillain(state).attachments = [hornInstance];
 
     const res = dispatchAction(state, {
       type: 'USE_CARD_ABILITY',
@@ -181,7 +181,7 @@ describe('Attachment Discard Cost & Form Validation (Issue #108 / ADR-0055)', ()
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.villain.attachments.length).toBe(0);
+    expect(getActiveVillain(res.state).attachments.length).toBe(0);
     expect(res.state.players[0].hand.length).toBe(0);
     expect(res.state.players[0].discard.length).toBe(3);
   });
@@ -197,7 +197,7 @@ describe('Attachment Discard Cost & Form Validation (Issue #108 / ADR-0055)', ()
 
     const hornCard = cardCatalog.getCard('01100')!;
     const hornInstance: CardInstance = createCardInstance(hornCard);
-    state.villain.attachments = [hornInstance];
+    getActiveVillain(state).attachments = [hornInstance];
 
     const res = dispatchAction(state, {
       type: 'USE_CARD_ABILITY',
@@ -208,7 +208,7 @@ describe('Attachment Discard Cost & Form Validation (Issue #108 / ADR-0055)', ()
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.villain.attachments.length).toBe(0);
+    expect(getActiveVillain(res.state).attachments.length).toBe(0);
     expect(res.state.players[0].hand.length).toBe(0);
     expect(res.state.players[0].discard.length).toBe(2);
   });
@@ -220,7 +220,7 @@ describe('Attachment Discard Cost & Form Validation (Issue #108 / ADR-0055)', ()
 
     const hornCard = cardCatalog.getCard('01100')!;
     const hornInstance: CardInstance = createCardInstance(hornCard);
-    state.villain.attachments = [hornInstance];
+    getActiveVillain(state).attachments = [hornInstance];
 
     // Case A: Insufficient resources -> action should NOT be surfaced
     player.hand = [createCardInstance(cardCatalog.getCard('01003')!)]; // Only 1 physical resource

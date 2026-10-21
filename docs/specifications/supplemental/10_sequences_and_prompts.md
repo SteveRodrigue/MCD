@@ -10,6 +10,7 @@
 ### Parameter Separation (`gateParams` vs `effectParams`, ADR-0060)
 
 Under **ADR-0060**, parameters configuring conditional step gates and parameters configuring effect execution are decoupled on every `AbilityStep`:
+
 - `gateParams`: Key-value map configuring the conditional gate check (e.g. required kicker resource, card code check, status check).
 - `effectParams`: Key-value map configuring the effect primitive execution (e.g. damage amount, target selector, draw count).
 - Step-level `params` is obsolete and has been completely purged from `AbilityStepSchema`. All step parameters must reside in `effectParams` or `gateParams`. (Note: in interactive `PLAYER_CHOICE` prompts, individual option items in `options: []` use `params: { ... }` per `DecisionPromptOptionSchema`).
@@ -30,8 +31,8 @@ Steps execute conditionally by specifying `gate` from the 9 canonical `StepGate`
 - `"THEN"`: Executes Step $N$ only if the referenced step (or Step $N-1$) completed successfully (not skipped and not failed; RR v1.8 p. 44 "Then"). Use `gateParams: { "negate": true }` for fallbacks ("if Step failed").
   - `gateParams`: `{ step?: string, negate?: boolean }`.
 - `"IF_RESULT"`: Executes Step $N$ only if the referenced step produced the specified milestone fact.
-  - `gateParams`: `{ fact: ResultFact, step?: string, negate?: boolean }`.
-  - Supported facts: `"defeated"`, `"excessDamage"`, `"amountZero"`, `"threatZero"`, `"fullyHealed"`, `"statusAdded"`, `"statusRemoved"`, `"villainDefeated"`, `"DAMAGE_DEALT"` (an enemy attack step, `VILLAIN_ATTACKS` or `ENEMY_ATTACKS`, dealt damage; #295). The attack opens defender and prevention prompts, so the steps after it wait in a pending sequence and resume once the attack is over, with the attack's facts (`damageDealt`, `damagedCharacter`) joined to the previous result. A cancelled attack (stunned enemy) has no facts, so the gate fails.
+  - `gateParams`: `{ result: ResultFact, step?: string, negate?: boolean }` (strict; `IfResultGateParamsSchema` in `src/data/supplemental/gate-params.ts`).
+  - Supported `result` values (`ResultFactSchema`): `"TARGET_DEFEATED"`, `"EXCESS_DAMAGE_DEALT"`, `"FULLY_HEALED"`, `"SCHEME_EMPTY"`, `"STATUS_APPLIED"`, `"ALREADY_HAD_STATUS"`, `"STATUS_REMOVED"`, `"AMOUNT_ZERO"`, `"DAMAGE_DEALT"` (an enemy attack step, `VILLAIN_ATTACKS` or `ENEMY_ATTACKS`, dealt damage; #295). The attack opens defender and prevention prompts, so the steps after it wait in a pending sequence and resume once the attack is over, with the attack's facts (`damageDealt`, `damagedCharacter`) joined to the previous result. A cancelled attack (stunned enemy) has no facts, so the gate fails.
 - `"IF_FORM"`: Executes Step $N$ based on identity form (hero vs alter-ego).
   - `gateParams`: `{ form?: "HERO" | "ALTER_EGO", target?: "INITIATOR" | "TARGET", negate?: boolean }`.
 - `"IF_PLAYER_HAS_TRAIT"`: Executes Step $N$ if the player possesses the specified trait (e.g. `[[AERIAL]]`).
@@ -48,17 +49,17 @@ Steps execute conditionally by specifying `gate` from the 9 canonical `StepGate`
   - `gateParams`: `{ negate?: boolean }`.
 
 > **Shared evaluator (Issue #122, ADR-0080):** every gate is evaluated by `evaluateStepGate` in `src/engine/pipeline/step-gate-evaluator.ts`, used by both the effect pipeline (`shouldExecuteStep`) and the `CONSTANT` stat-calculator loop. State gates (`IF_FORM`, `IF_PLAYER_HAS_TRAIT`, `IF_ZONE_EMPTY`, `IF_CARD_IN_PLAY`) work on `CONSTANT` steps. Result-based gates (`THEN`, `IF_RESULT`) and context-based gates (`IF_RESOURCE_MATCH`, `IF_UNDEFENDED_ATTACK`, `IF_ACTIVATION_DEALT_DAMAGE`) require execution context or preceding steps, so they never apply to `CONSTANT` steps.
-> Gates on `CONSTANT` `ADD_TRAIT` steps are honored by the trait calculators too (e.g. *Cosmic Flight* `01017` uses `"gate": "IF_FORM", "gateParams": { "form": "HERO" }`); state gates (other than `IF_FORM`) need the optional `state` argument and are skipped without it (Issue #154).
+> Gates on `CONSTANT` `ADD_TRAIT` steps are honored by the trait calculators too (e.g. _Cosmic Flight_ `01017` uses `"gate": "IF_FORM", "gateParams": { "form": "HERO" }`); state gates (other than `IF_FORM`) need the optional `state` argument and are skipped without it (Issue #154).
 
 ### Gating Patterns: THEN, IF_RESULT, and IF_PLAYER_HAS_TRAIT
 
-| Pattern | Gate | Typical shape / Wording |
-| :-- | :-- | :-- |
-| **Sequential dependency** | `THEN` | "Then, do X" (Step 2 executes only if Step 1 succeeded). |
-| **Fallback on failure** | `THEN` (`negate: true`) | "If your nemesis minion does not enter play this way, this card gains surge." (`gateParams: { step: "step_1_id", negate: true }`). |
-| **Milestone outcome** | `IF_RESULT` | "If this removes the last threat from that scheme, draw 1 card." (`gateParams: { fact: "threatZero" }`). |
-| **Player trait bonus** | `IF_PLAYER_HAS_TRAIT` | "Then, if you have the Aerial trait, remove 2 threat..." (`gateParams: { trait: "Aerial" }`). |
-| **Exclusive trait branches** | `IF_PLAYER_HAS_TRAIT` | Step 1 has `negate: true` (non-Aerial); Step 2 has no negation (Aerial). |
+| Pattern                      | Gate                    | Typical shape / Wording                                                                                                            |
+| :--------------------------- | :---------------------- | :--------------------------------------------------------------------------------------------------------------------------------- |
+| **Sequential dependency**    | `THEN`                  | "Then, do X" (Step 2 executes only if Step 1 succeeded).                                                                           |
+| **Fallback on failure**      | `THEN` (`negate: true`) | "If your nemesis minion does not enter play this way, this card gains surge." (`gateParams: { step: "step_1_id", negate: true }`). |
+| **Milestone outcome**        | `IF_RESULT`             | "If this removes the last threat from that scheme, draw 1 card." (`gateParams: { result: "SCHEME_EMPTY" }`).                       |
+| **Player trait bonus**       | `IF_PLAYER_HAS_TRAIT`   | "Then, if you have the Aerial trait, remove 2 threat..." (`gateParams: { trait: "Aerial" }`).                                      |
+| **Exclusive trait branches** | `IF_PLAYER_HAS_TRAIT`   | Step 1 has `negate: true` (non-Aerial); Step 2 has no negation (Aerial).                                                           |
 
 **Additive example: Crisis Interdiction `01012`** ("Remove 2 threat from a scheme. Then, if you have the Aerial trait, remove 2 threat from a different scheme."):
 
@@ -87,6 +88,7 @@ Steps execute conditionally by specifying `gate` from the 9 canonical `StepGate`
 
 **Fallback example: Shadow of the Past `01190`:**
 Step 4 gains surge if Step 1 (spawning nemesis minion) did not succeed:
+
 ```json
 {
   "id": "step_4_fallback_surge",
@@ -105,16 +107,19 @@ Step 4 gains surge if Step 1 (spawning nemesis minion) did not succeed:
 
 Under **ADR-0080**, effect primitives automatically emit typed facts into `EffectResult.facts` without needing an explicit `condition` declaration on the producing step:
 
-| Result Fact | Emitting Effect Primitive | Milestone Event | Example Cards |
-| :--- | :--- | :--- | :--- |
-| `threatZero` | `REMOVE_THREAT` | Targeted scheme threat reached `0`. | _Clear the Area_ (`04049`), _Turn the Tide_ (`13015`) |
-| `defeated` | `DEAL_DAMAGE` | Targeted character reached 0 HP from damage. | _Relentless Assault_ (`01053`), _Chase Them Down_ (`01052`) |
-| `excessDamage` | `DEAL_DAMAGE` | Damage exceeded remaining HP (numeric amount stored in `facts.excessDamage`). | _Relentless Assault_ (`01053`), _Hand Cannon_ |
-| `fullyHealed` | `HEAL_DAMAGE` | Targeted character damage reduced to 0 (`health === maxHealth`). | _First Aid_ (`01086`), _Aunt May_ (`01006`) |
-| `statusAdded` | `ADD_STATUS` | Status was placed on target. | _Mockingbird_ (`01083`) |
-| `statusRemoved` | `REMOVE_STATUS` | Status was removed from target. | _Get over Here!_ |
-| `amountZero` | `executeSequence` | Effect result `value === 0`. | Zero damage/threat/heal fallbacks |
-| `villainDefeated` | `DEAL_DAMAGE` | Active villain was defeated by damage. | Stage transition abilities |
+| `result` value        | Producing effects (`FACT_PRODUCERS`) | True when                                                                                            | Example Cards                                               |
+| :-------------------- | :----------------------------------- | :--------------------------------------------------------------------------------------------------- | :---------------------------------------------------------- |
+| `TARGET_DEFEATED`     | `DEAL_DAMAGE`                        | Targeted character reached 0 HP from damage (also satisfied by the internal `villainDefeated` fact). | _Relentless Assault_ (`01053`), _Chase Them Down_ (`01052`) |
+| `EXCESS_DAMAGE_DEALT` | `DEAL_DAMAGE`                        | `facts.excessDamage` is above 0: damage exceeded remaining HP.                                       | _Relentless Assault_ (`01053`), _Hand Cannon_               |
+| `FULLY_HEALED`        | `HEAL_DAMAGE`                        | Targeted character damage reduced to 0 (`health === maxHealth`).                                     | _First Aid_ (`01086`), _Aunt May_ (`01006`)                 |
+| `SCHEME_EMPTY`        | `REMOVE_THREAT`                      | Targeted scheme has 0 threat left.                                                                   | _Clear the Area_ (`04049`), _Turn the Tide_ (`13015`)       |
+| `STATUS_APPLIED`      | `ADD_STATUS`                         | Status was placed on target.                                                                         | _Mockingbird_ (`01083`)                                     |
+| `ALREADY_HAD_STATUS`  | `ADD_STATUS`                         | Target already holds the maximum count of that status, so none was added.                            | n/a                                                         |
+| `STATUS_REMOVED`      | `REMOVE_STATUS`                      | Status was removed from target.                                                                      | _Get over Here!_                                            |
+| `AMOUNT_ZERO`         | every effect                         | The step changed nothing or its `value` is 0.                                                        | Zero damage/threat/heal fallbacks                           |
+| `DAMAGE_DEALT`        | `VILLAIN_ATTACKS`, `ENEMY_ATTACKS`   | `facts.damageDealt` is above 0 (see the attack note above).                                          | _Stampede_ (`01106`)                                        |
+
+Source: `ResultFactSchema` and `FACT_PRODUCERS` in `src/data/supplemental/gate-params.ts`; evaluation in `src/engine/pipeline/step-gate-evaluator.ts`.
 
 ### Example: Undefended Attack Boost (_Kree Manipulator_ `01178`)
 
@@ -175,7 +180,7 @@ Under **ADR-0080**, effect primitives automatically emit typed facts into `Effec
       "effect": "DRAW",
       "gate": "IF_RESULT",
       "gateParams": {
-        "fact": "threatZero",
+        "result": "SCHEME_EMPTY",
         "step": "remove_threat_step"
       },
       "effectParams": {
@@ -228,9 +233,17 @@ Under **ADR-0080**, effect primitives automatically emit typed facts into `Effec
   "forEachPlayer": true,
   "steps": [
     { "effect": "DISCARD", "effectParams": { "source": "DECK", "mode": "TOP", "count": 5 } },
-    { "effect": "DEAL_DAMAGE",
-      "effectParams": { "target": "SELF_IDENTITY",
-        "amount": { "from": "DISCARDED_CARDS", "discardAttribute": "RESOURCE_ICONS", "resourceType": "energy" } } }
+    {
+      "effect": "DEAL_DAMAGE",
+      "effectParams": {
+        "target": "SELF_IDENTITY",
+        "amount": {
+          "from": "DISCARDED_CARDS",
+          "discardAttribute": "RESOURCE_ICONS",
+          "resourceType": "energy"
+        }
+      }
+    }
   ]
 }
 ```
@@ -289,6 +302,7 @@ Under **ADR-0080**, effect primitives automatically emit typed facts into `Effec
 ### Multi-select card prompt (`SEARCH`, #260)
 
 A `SEARCH` that lets the player take several cards (`takeCount` > 1) or none (`minimumTake` 0) opens a prompt with `selection: { min, max, distinctBy? }`; one option per candidate (`params.cardName`, `params.cardCode`). The answer is `RESOLVE_DECISION_PROMPT` with `selectedOptionIds` (possibly empty) and `selectedOptionId: 'confirm_selection'`. The engine rejects a count outside `min..max`, an unknown or repeated id, and two cards with the same name when `distinctBy` is `NAME` (`validateSearchSelection`). A single mandatory pick (`minimumTake` 1, one card) keeps the one-click flow with no `selection`. The UI is `SelectCardsModal` (card tiles, counter, Confirm). A search with no candidate writes the log key `card.search.nothingFound`, opens no prompt and still shuffles a searched deck.
+
 ### `sourceCardInstanceId` Binding (ADR-0062)
 
 When `PLAYER_CHOICE` is executed from a `USE_CARD_ABILITY` action on an in-play ally, `executeEffect` attaches `context.sourceCardInstance` to the prompt via `sourceCardInstanceId`. When the prompt is resolved via `resolveDecisionPrompt`, `prompt-queue.ts` looks up the ally by instanceId in `player.allies` and `player.tableau` and forwards it as `sourceCardInstance` into the synthetic ability execution. This guarantees that `target: "SELF"` in a `MODIFY_STAT` option correctly pushes the modifier onto the triggering ally's `activeStatModifiers`.
@@ -308,9 +322,9 @@ When `PLAYER_CHOICE` is executed from a `USE_CARD_ABILITY` action on an in-play 
 Under RR v1.8 Simultaneous Resolution (p. 27), when two or more effects with the same bold timing trigger would resolve simultaneously, the **first player** determines the order in which the effects resolve.
 
 When `dispatchTrigger` detects multiple eligible optional ability prompts (`newlyAdded.length > 1`) for a single triggering condition:
+
 - If `context.acceptOptionalTriggers !== true`, an `ORDER_SIMULTANEOUS_ABILITIES` prompt is constructed and assigned to the First Player (`state.players[state.firstPlayerIndex]?.id || state.players[0]?.id`).
 - The candidate prompts are carried under `prompt.simultaneousPrompts`, and the ordering options list each candidate card.
 - The UI delegates to `SimultaneousAbilitiesModal`, allowing the first player to reorder abilities via Up/Down buttons or drag-and-drop.
 - When confirmed, `RESOLVE_DECISION_PROMPT` carries `sequenceOrder: string[]`, re-inserting the candidate prompts into `pendingDecisionQueue` matching the exact sequence chosen by the first player.
 - Subsequent downstream moot prompts are pruned dynamically by existing interrupt pruners (`removeMootCancelPrompts`, `pruneThreatInterruptPrompts`, `pruneDamageInterruptPrompts`) as earlier interrupts cancel or mitigate the event.
-

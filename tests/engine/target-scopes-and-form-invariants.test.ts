@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
-import { setupGame, createCardInstance } from '@engine/state/game-setup';
+import { createCardInstance } from '@engine/state/game-setup';
+import { newRhinoGame } from '../support/game-fixtures';
 import { executeEffect } from '@engine/effects';
 
 describe('Target Scopes & Form Invariants Contract Tests (ADR-0064 & RR v1.8)', () => {
@@ -27,22 +28,15 @@ describe('Target Scopes & Form Invariants Contract Tests (ADR-0064 & RR v1.8)', 
     const ability = shockerCard.enrichment!.abilities![0];
 
     // Case 1A: Player in Hero form takes 1 damage
-    const heroState = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const heroState = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
       ],
-      villain: cardCatalog.getCard('01094') as any,
-      mainScheme: cardCatalog.getCard('01097b') as any,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
     heroState.players[0].currentForm = 'hero';
     heroState.players[0].activeFormCard = spiderManHero;
@@ -57,22 +51,15 @@ describe('Target Scopes & Form Invariants Contract Tests (ADR-0064 & RR v1.8)', 
     expect(heroState.players[0].health).toBe(initialHeroHp - 1);
 
     // Case 1B: Player in Alter-Ego form takes 0 damage (RR v1.8 p. 11, 13)
-    const alterEgoState = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const alterEgoState = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Peter Parker',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
       ],
-      villain: cardCatalog.getCard('01094') as any,
-      mainScheme: cardCatalog.getCard('01097b') as any,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
     alterEgoState.players[0].currentForm = 'alter_ego';
     alterEgoState.players[0].activeFormCard = peterParkerAlterEgo;
@@ -88,29 +75,22 @@ describe('Target Scopes & Form Invariants Contract Tests (ADR-0064 & RR v1.8)', 
   });
 
   it('Test 2: Shocker in 2-player game (P1 in Hero, P2 in Alter-Ego) damages P1 only', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
         {
           id: 'p2',
           name: 'Tony Stark',
           hero: ironManHero,
           alterEgo: tonyStarkAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
       ],
-      villain: cardCatalog.getCard('01094') as any,
-      mainScheme: cardCatalog.getCard('01097b') as any,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     state.players[0].currentForm = 'hero';
@@ -138,36 +118,29 @@ describe('Target Scopes & Form Invariants Contract Tests (ADR-0064 & RR v1.8)', 
   });
 
   it('Test 3: Rhino Stage III (01096) stuns all heroes in multiplayer (P1 Hero, P2 Hero stunned; P3 Alter-Ego immune)', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
         {
           id: 'p2',
           name: 'Iron Man',
           hero: ironManHero,
           alterEgo: tonyStarkAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
         {
           id: 'p3',
           name: 'Jennifer Walters',
           hero: sheHulkHero,
           alterEgo: jenniferWaltersAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
       ],
-      villain: cardCatalog.getCard('01094') as any,
-      mainScheme: cardCatalog.getCard('01097b') as any,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     state.players[0].currentForm = 'hero';
@@ -197,29 +170,22 @@ describe('Target Scopes & Form Invariants Contract Tests (ADR-0064 & RR v1.8)', 
   });
 
   it('Test 4: Explosion (01111) targets ALL_HEROES_AND_ALLIES across multiple players', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
         {
           id: 'p2',
           name: 'Iron Man',
           hero: ironManHero,
           alterEgo: tonyStarkAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
       ],
-      villain: cardCatalog.getCard('01094') as any,
-      mainScheme: cardCatalog.getCard('01097b') as any,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     state.players[0].currentForm = 'hero';

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { setupGame, createCardInstance } from '@engine/state/game-setup';
+import { createCardInstance } from '@engine/state/game-setup';
+import { newRhinoGame } from '../support/game-fixtures';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { CardType, Keyword, NormalizedCard } from '@engine/models';
 import {
@@ -14,15 +15,11 @@ import { thaw } from '../support/thaw-state';
 describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, ADR-0018, ADR-0032)', () => {
   let spiderManHero: any;
   let peterParkerAlterEgo: any;
-  let rhinoVillain: any;
-  let mainScheme: any;
   let restrictedCard: NormalizedCard;
 
   beforeEach(() => {
     spiderManHero = cardCatalog.getCard('01001a')!;
     peterParkerAlterEgo = cardCatalog.getCard('01001b')!;
-    rhinoVillain = cardCatalog.getCard('01094')!;
-    mainScheme = cardCatalog.getCard('01097')!;
     restrictedCard = {
       ...cardCatalog.getCard('01005')!,
       code: 'plasma_gun_01',
@@ -37,22 +34,15 @@ describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, A
   it('allows playing up to base limit of 2 restricted cards directly into tableau', () => {
     const paymentCard = cardCatalog.getCard('01005')!;
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [restrictedCard, restrictedCard, paymentCard, paymentCard, paymentCard],
+          deck: [restrictedCard, restrictedCard, paymentCard, paymentCard, paymentCard],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     state.players[0].currentForm = 'hero';
@@ -95,22 +85,15 @@ describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, A
   it('enqueues an interactive DISCARD_RESTRICTED decision prompt when playing a 3rd restricted card at limit 2', () => {
     const paymentCard = cardCatalog.getCard('01005')!;
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [restrictedCard, paymentCard, paymentCard],
+          deck: [restrictedCard, paymentCard, paymentCard],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     state.players[0].currentForm = 'hero';
@@ -150,22 +133,15 @@ describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, A
   it('discards the selected restricted card and puts incoming card into play upon prompt resolution', () => {
     const paymentCard = cardCatalog.getCard('01005')!;
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [restrictedCard, paymentCard, paymentCard],
+          deck: [restrictedCard, paymentCard, paymentCard],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     state.players[0].currentForm = 'hero';
@@ -212,22 +188,15 @@ describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, A
   it('cancels the play action cleanly when player selects Cancel, returning cards to hand', () => {
     const paymentCard = cardCatalog.getCard('01005')!;
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [restrictedCard, paymentCard, paymentCard],
+          deck: [restrictedCard, paymentCard, paymentCard],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     state.players[0].currentForm = 'hero';
@@ -297,22 +266,15 @@ describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, A
 
     const paymentCard = cardCatalog.getCard('01005')!;
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [restrictedCard, paymentCard, paymentCard],
+          deck: [restrictedCard, paymentCard, paymentCard],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     state.players[0].currentForm = 'hero';

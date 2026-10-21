@@ -12,9 +12,6 @@ import {
   dispatchAction,
   enqueueDecisionPrompt,
   peekDecisionPrompt,
-  pushExecutionFrame,
-  peekExecutionFrame,
-  popExecutionFrame,
   resolveDefenderDeclaration,
 } from '@engine/pipeline';
 import { executeEffect } from '@engine/effects';
@@ -159,42 +156,6 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
       expect(res.result.onomatopoeia).toBe('PASSED');
       expect(peekDecisionPrompt(res.state)).toBeUndefined();
       expect(getActiveMainScheme(res.state).threat).toBe(initialThreat);
-    });
-  });
-
-  describe('Execution Frame Stack Management', () => {
-    it('pushes, peeks, and pops execution frames on the resolution stack', () => {
-      expect(state.executionStack).toEqual([]);
-
-      state = pushExecutionFrame(state, {
-        id: 'frame_action_1',
-        type: 'ACTION',
-        sourceCardCode: '01001a',
-        playerId: 'p1',
-        stepIndex: 0,
-        steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 3 } }],
-      });
-
-      expect(peekExecutionFrame(state)?.id).toBe('frame_action_1');
-      expect(state.executionStack?.length).toBe(1);
-
-      // Push nested interrupt frame
-      state = pushExecutionFrame(state, {
-        id: 'frame_interrupt_1',
-        type: 'INTERRUPT',
-        sourceCardCode: '01085',
-        playerId: 'p1',
-        stepIndex: 0,
-        steps: [{ effect: 'REMOVE_THREAT', effectParams: { amount: 1 } }],
-      });
-
-      expect(state.executionStack?.length).toBe(2);
-      expect(peekExecutionFrame(state)?.id).toBe('frame_interrupt_1');
-
-      // Pop child frame
-      const { state: s2, frame: poppedFrame } = popExecutionFrame(state);
-      expect(poppedFrame?.id).toBe('frame_interrupt_1');
-      expect(peekExecutionFrame(s2)?.id).toBe('frame_action_1');
     });
   });
 

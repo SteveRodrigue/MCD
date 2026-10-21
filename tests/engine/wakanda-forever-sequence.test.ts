@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { setupGame, createCardInstance } from '@engine/state/game-setup';
+import { createCardInstance } from '@engine/state/game-setup';
+import { newRhinoGame } from '../support/game-fixtures';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { executeEffect } from '@engine/effects';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
@@ -9,33 +10,22 @@ import { getActiveMainScheme, getActiveVillain } from '@engine/models';
 describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0038, RR v1.8 p. 28)', () => {
   let blackPantherHero: any;
   let tchallaAlterEgo: any;
-  let rhinoVillain: any;
-  let mainScheme: any;
 
   beforeEach(() => {
     blackPantherHero = cardCatalog.getCard('01040a')!;
     tchallaAlterEgo = cardCatalog.getCard('01040b')!;
-    rhinoVillain = cardCatalog.getCard('01094')!;
-    mainScheme = cardCatalog.getCard('01097')!;
   });
 
   it('1. Single Upgrade: Deals 4 damage finisher when only Panther Claws is in play', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Black Panther',
           hero: blackPantherHero,
           alterEgo: tchallaAlterEgo,
-          deckCards: [cardCatalog.getCard('01044')!],
+          deck: [cardCatalog.getCard('01044')!],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -66,22 +56,15 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
   });
 
   it('2. Multi-Upgrade Custom Order: Base effects for steps 1-3, Finisher for step 4', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Black Panther',
           hero: blackPantherHero,
           alterEgo: tchallaAlterEgo,
-          deckCards: [cardCatalog.getCard('01044')!],
+          deck: [cardCatalog.getCard('01044')!],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -163,22 +146,15 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
   });
 
   it('3. Permutation Finisher: Tactical Genius as 4th upgrade removes 2 threat (Finisher)', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Black Panther',
           hero: blackPantherHero,
           alterEgo: tchallaAlterEgo,
-          deckCards: [cardCatalog.getCard('01044')!],
+          deck: [cardCatalog.getCard('01044')!],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -219,22 +195,15 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
   });
 
   it('4. Play Legality: Cannot play Wakanda Forever with 0 Black Panther upgrades in play', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Black Panther',
           hero: blackPantherHero,
           alterEgo: tchallaAlterEgo,
-          deckCards: [cardCatalog.getCard('01044')!],
+          deck: [cardCatalog.getCard('01044')!],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -248,22 +217,15 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
   });
 
   it('5. Interactive Prompt Flow: Multi-upgrade enqueues WAKANDA_FOREVER_SEQUENCE_ORDER and resolves via Action Dispatcher', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Black Panther',
           hero: blackPantherHero,
           alterEgo: tchallaAlterEgo,
-          deckCards: [cardCatalog.getCard('01044')!],
+          deck: [cardCatalog.getCard('01044')!],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -325,22 +287,15 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
   });
 
   it('6. Permutation Finisher: Vibranium Suit as final upgrade transfers 2 damage (Finisher)', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Black Panther',
           hero: blackPantherHero,
           alterEgo: tchallaAlterEgo,
-          deckCards: [cardCatalog.getCard('01044')!],
+          deck: [cardCatalog.getCard('01044')!],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -382,22 +337,15 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
   });
 
   it('7. Robustness: DEAL_DAMAGE, REMOVE_THREAT, and TRANSFER_DAMAGE resolve amount and evaluate finisherBonus based on isFinalStep', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Black Panther',
           hero: blackPantherHero,
           alterEgo: tchallaAlterEgo,
-          deckCards: [cardCatalog.getCard('01044')!],
+          deck: [cardCatalog.getCard('01044')!],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { setupGame, createCardInstance } from '@engine/state/game-setup';
+import { createCardInstance } from '@engine/state/game-setup';
+import { newRhinoGame } from '../support/game-fixtures';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import {
   CardType,
@@ -16,14 +17,10 @@ import { executeVillainPhase } from '@engine/pipeline/villain-phase';
 describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 16, 18, 28, 30)', () => {
   let spiderManHero: any;
   let peterParkerAlterEgo: any;
-  let rhinoVillain: any;
-  let mainScheme: any;
 
   beforeEach(() => {
     spiderManHero = cardCatalog.getCard('01001a')!;
     peterParkerAlterEgo = cardCatalog.getCard('01001b')!;
-    rhinoVillain = cardCatalog.getCard('01094')!;
-    mainScheme = cardCatalog.getCard('01097')!;
   });
 
   describe('Subgoal 1: Stalwart (Immunity to Stun & Confuse - RR v1.8 p. 28)', () => {
@@ -36,22 +33,15 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
         keywords: [Keyword.STALWART],
       };
 
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [cardCatalog.getCard('01005')!],
+            deck: [cardCatalog.getCard('01005')!],
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
       });
 
       const player = state.players[0];
@@ -112,22 +102,15 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
         keywords: [Keyword.STEADY],
       };
 
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Spider-Man',
             hero: steadyHero as any,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [cardCatalog.getCard('01005')!],
+            deck: [cardCatalog.getCard('01005')!],
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
       });
 
       const player = state.players[0];
@@ -157,22 +140,15 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
         keywords: [Keyword.STEADY],
       };
 
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Spider-Man',
             hero: steadyHero as any,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [cardCatalog.getCard('01005')!],
+            deck: [cardCatalog.getCard('01005')!],
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
       });
 
       const player = state.players[0];
@@ -218,31 +194,27 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
         boostIcons: 2,
       };
 
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [cardCatalog.getCard('01005')!],
+            deck: [cardCatalog.getCard('01005')!],
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: [
-          boostCard,
-          boostCard,
-          boostCard,
-          boostCard,
-          boostCard,
-          boostCard,
-          boostCard,
-          boostCard,
-        ],
-        skipMulligan: true,
+        setup: {
+          encounterCards: [
+            boostCard,
+            boostCard,
+            boostCard,
+            boostCard,
+            boostCard,
+            boostCard,
+            boostCard,
+            boostCard,
+          ],
+        },
       });
 
       const player = state.players[0];
@@ -279,22 +251,15 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
         keywords: [Keyword.QUICKSTRIKE],
       };
 
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [cardCatalog.getCard('01005')!],
+            deck: [cardCatalog.getCard('01005')!],
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
       });
 
       const player = state.players[0];
@@ -327,22 +292,15 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
         } as any,
       };
 
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [cardCatalog.getCard('01005')!],
+            deck: [cardCatalog.getCard('01005')!],
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
       });
 
       const initialThreat = getActiveMainScheme(state).threat;

@@ -1,15 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import {
-  HeroCard,
-  AlterEgoCard,
-  VillainCard,
-  MainSchemeCard,
-  CardType,
-  Keyword,
-  NormalizedCard,
-} from '@engine/models';
-import { setupGame, createCardInstance } from '@engine/state/game-setup';
+import { HeroCard, AlterEgoCard, CardType, Keyword, NormalizedCard } from '@engine/models';
+import { createCardInstance } from '@engine/state/game-setup';
+import { newRhinoGame } from '../support/game-fixtures';
 import {
   canPlayCard,
   getPlayerRestrictedLimit,
@@ -23,8 +16,6 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
   const peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
   const captainMarvelHero = cardCatalog.getCard('01010a') as HeroCard;
   const carolDanversAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
-  const rhinoVillain = cardCatalog.getCard('01094') as VillainCard;
-  const mainScheme = cardCatalog.getCard('01097b') as MainSchemeCard;
 
   describe('Restricted Card Keyword Limit Engine (RR v1.8 p. 25 / ADR-0018)', () => {
     const restrictedCard1: NormalizedCard = {
@@ -80,16 +71,13 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
     });
 
     it('enforces maximum 2 restricted cards per player by default', () => {
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [
+            deck: [
               restrictedCard1,
               restrictedCard2,
               restrictedCard3,
@@ -100,10 +88,6 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
             ],
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
       });
 
       const player = state.players[0];
@@ -129,16 +113,13 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
     });
 
     it('allows playing heavy 2-slot restricted card when 1 restricted card is in play (player can discard to make room)', () => {
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [
+            deck: [
               restrictedCard1,
               heavyRestrictedCard,
               paymentCard,
@@ -148,10 +129,6 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
             ],
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
       });
 
       const player = state.players[0];
@@ -176,16 +153,13 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
     });
 
     it('dynamically expands restricted limit with limit modifiers (e.g. Side Holster +1)', () => {
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [
+            deck: [
               restrictedCard1,
               restrictedCard2,
               restrictedCard3,
@@ -196,10 +170,6 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
             ],
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
       });
 
       const player = state.players[0];
@@ -251,43 +221,22 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       const nickFuryCard = cardCatalog.getCard('01084')!; // Nick Fury (Unique Ally)
       const paymentCard = cardCatalog.getCard('01005')!;
 
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [
-              nickFuryCard,
-              paymentCard,
-              paymentCard,
-              paymentCard,
-              paymentCard,
-              paymentCard,
-            ],
+            deck: [nickFuryCard, paymentCard, paymentCard, paymentCard, paymentCard, paymentCard],
           },
           {
             id: 'p2',
             name: 'Captain Marvel',
             hero: captainMarvelHero,
             alterEgo: carolDanversAlterEgo,
-            deckCards: [
-              nickFuryCard,
-              paymentCard,
-              paymentCard,
-              paymentCard,
-              paymentCard,
-              paymentCard,
-            ],
+            deck: [nickFuryCard, paymentCard, paymentCard, paymentCard, paymentCard, paymentCard],
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
       });
 
       // Player 1 controls Nick Fury in play
@@ -332,16 +281,13 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       const paymentCard = cardCatalog.getCard('01005')!;
 
       // Game has Player 1 (Spider-Man) and Player 2 (Captain Marvel / Carol Danvers)
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [
+            deck: [
               captainMarvelAlly,
               paymentCard,
               paymentCard,
@@ -355,13 +301,9 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
             name: 'Captain Marvel',
             hero: captainMarvelHero,
             alterEgo: carolDanversAlterEgo,
-            deckCards: Array(10).fill(paymentCard),
+            deck: Array(10).fill(paymentCard),
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
       });
 
       // Player 1 attempts to play Captain Marvel ally
@@ -399,29 +341,15 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
 
       const paymentCard = cardCatalog.getCard('01005')!;
 
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [
-              nonUniqueCard,
-              paymentCard,
-              paymentCard,
-              paymentCard,
-              paymentCard,
-              paymentCard,
-            ],
+            deck: [nonUniqueCard, paymentCard, paymentCard, paymentCard, paymentCard, paymentCard],
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
       });
 
       // Player already has 1 Armored Vest in play
@@ -452,22 +380,15 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       const paymentCard = cardCatalog.getCard('01005')!;
 
       // Game has Player 1: Spider-Man (Peter Parker)
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Spider-Man',
             hero: spiderManHero, // Name: Spider-Man, Subname: Peter Parker
             alterEgo: peterParkerAlterEgo,
-            deckCards: [milesMoralesAlly, paymentCard, paymentCard, paymentCard, paymentCard],
+            deck: [milesMoralesAlly, paymentCard, paymentCard, paymentCard, paymentCard],
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
       });
 
       const milesInstance = createCardInstance(milesMoralesAlly);
@@ -504,22 +425,15 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
 
       const paymentCard = cardCatalog.getCard('01005')!;
 
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [peterParkerAlly, paymentCard, paymentCard, paymentCard, paymentCard],
+            deck: [peterParkerAlly, paymentCard, paymentCard, paymentCard, paymentCard],
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
       });
 
       const peterInstance = createCardInstance(peterParkerAlly);
@@ -564,28 +478,15 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       const energyChannelCard = cardCatalog.getCard('01018')!;
       const paymentCard = cardCatalog.getCard('01005')!;
 
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Captain Marvel',
             hero: captainMarvelHero,
             alterEgo: carolDanversAlterEgo,
-            deckCards: [
-              energyChannelCard,
-              energyChannelCard,
-              paymentCard,
-              paymentCard,
-              paymentCard,
-            ],
+            deck: [energyChannelCard, energyChannelCard, paymentCard, paymentCard, paymentCard],
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
       });
 
       const player = state.players[0];
@@ -609,22 +510,15 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       const armoredVestCard = cardCatalog.getCard('01081')!;
       const paymentCard = cardCatalog.getCard('01005')!;
 
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [armoredVestCard, paymentCard, paymentCard, paymentCard],
+            deck: [armoredVestCard, paymentCard, paymentCard, paymentCard],
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
       });
 
       const player = state.players[0];
@@ -648,29 +542,22 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       const armoredVestCard = cardCatalog.getCard('01081')!;
       const paymentCard = cardCatalog.getCard('01005')!;
 
-      const state = setupGame({
-        catalog: cardCatalog,
-        scenarioId: 'rhino',
+      const state = newRhinoGame({
         players: [
           {
-            id: 'p1',
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [armoredVestCard, paymentCard, paymentCard, paymentCard],
+            deck: [armoredVestCard, paymentCard, paymentCard, paymentCard],
           },
           {
             id: 'p2',
             name: 'Captain Marvel',
             hero: captainMarvelHero,
             alterEgo: carolDanversAlterEgo,
-            deckCards: [armoredVestCard, paymentCard, paymentCard, paymentCard],
+            deck: [armoredVestCard, paymentCard, paymentCard, paymentCard],
           },
         ],
-        villain: rhinoVillain,
-        mainScheme,
-        encounterCards: cardCatalog.getCardsBySet('rhino'),
-        skipMulligan: true,
       });
 
       // Player 1 has 1 Armored Vest in tableau

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { setupGame, createCardInstance } from '@engine/state/game-setup';
+import { createCardInstance } from '@engine/state/game-setup';
+import { newRhinoGame } from '../support/game-fixtures';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { CardType, NormalizedCard } from '@engine/models';
 import { executeEffect } from '@engine/effects';
@@ -8,14 +9,10 @@ import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking (RR v1.8 p. 19, 26, ADR-0030, ADR-0032)', () => {
   let spiderManHero: any;
   let peterParkerAlterEgo: any;
-  let rhinoVillain: any;
-  let mainScheme: any;
 
   beforeEach(() => {
     spiderManHero = cardCatalog.getCard('01001a')!;
     peterParkerAlterEgo = cardCatalog.getCard('01001b')!;
-    rhinoVillain = cardCatalog.getCard('01094')!;
-    mainScheme = cardCatalog.getCard('01097')!;
   });
 
   it('looks at top 3 cards with Trait: Tech filter (1 Tech, 2 non-Tech): prompts only for Tech card and discards all non-selected looked cards', () => {
@@ -45,22 +42,15 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
       name: 'Card Delta',
     };
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Iron Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [techCard, nonTech1, nonTech2, deckD],
+          deck: [techCard, nonTech1, nonTech2, deckD],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -157,22 +147,15 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
       name: 'Card Delta',
     };
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Iron Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [cardA, cardB, cardC, cardD],
+          deck: [cardA, cardB, cardC, cardD],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -247,22 +230,15 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
       name: 'Filler 2',
     };
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Captain America',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [filler1, shieldCard, filler2],
+          deck: [filler1, shieldCard, filler2],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -331,22 +307,15 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
       name: 'Filler 1',
     };
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: "T'Challa",
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [filler1, bpSuit],
+          deck: [filler1, bpSuit],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -413,22 +382,16 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
       type: CardType.TREACHERY,
     };
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Iron Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [cardCatalog.getCard('01005')!],
+          deck: [cardCatalog.getCard('01005')!],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: [minionTigerShark, encounterTreachery],
-      skipMulligan: true,
+      setup: { encounterCards: [minionTigerShark, encounterTreachery] },
     });
 
     const instMinion = createCardInstance(minionTigerShark);
@@ -497,22 +460,15 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
       name: 'Card Gamma',
     };
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [cardA, cardB, cardC],
+          deck: [cardA, cardB, cardC],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const player = state.players[0];
@@ -575,22 +531,15 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
       name: 'Search Filler',
     };
 
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Iron Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [targetCard, fillerCard],
+          deck: [targetCard, fillerCard],
         },
       ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
     });
 
     const targetInstance = createCardInstance(targetCard);

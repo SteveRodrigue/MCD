@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
+import { createCardInstance } from '../../src/engine/state/game-setup';
+import { newRhinoGame } from '../support/game-fixtures';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { thaw } from '../support/thaw-state';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
@@ -23,19 +24,15 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
   const peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
   it('1. Rejects Surveillance Team (01064) activation when no scheme has threat (RR v1.8 p. 15-16, 29)', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: smHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
       ],
-      skipMulligan: true,
     });
 
     const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
@@ -78,19 +75,15 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
   });
 
   it('2. Excludes Surveillance Team from legal actions when no schemes have threat', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: smHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
       ],
-      skipMulligan: true,
     });
 
     const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
@@ -113,19 +106,15 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
   });
 
   it('3. Rejects playing For Justice! (01060) from hand when no schemes have threat', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: smHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
       ],
-      skipMulligan: true,
     });
 
     const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
@@ -152,19 +141,15 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
   });
 
   it('4. Allows Surveillance Team activation and removes threat when main scheme has threat > 0', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: smHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
       ],
-      skipMulligan: true,
     });
 
     const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
@@ -195,19 +180,15 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
   });
 
   it('5. Rejects threat removal targeting main scheme when a Crisis side scheme is in play with 0 threat', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: smHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
       ],
-      skipMulligan: true,
     });
 
     const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
@@ -236,19 +217,15 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
   });
 
   it('6. Rejects threat removal targeting main scheme when player is engaged with a Patrol minion and no side schemes have threat', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: smHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
       ],
-      skipMulligan: true,
     });
 
     const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
@@ -276,19 +253,15 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
   });
 
   it('7. Allows threat removal targeting a side scheme with threat even when Crisis is in play', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: smHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
       ],
-      skipMulligan: true,
     });
 
     const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
@@ -316,19 +289,15 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
   });
 
   it('8. Rejects attack ability targeting villain when player is engaged with a Guard minion', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: smHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
       ],
-      skipMulligan: true,
     });
 
     const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
@@ -363,19 +332,15 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
   });
 
   it('9. First Aid (01086, Event) is unplayable when no character is damaged, and playable when damaged', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: smHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
       ],
-      skipMulligan: true,
     });
 
     const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
@@ -419,19 +384,15 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
   });
 
   it('10. Med Team (01080, Support) is playable from hand at full health, enters tableau with 3 counters, and its action is rejected when undamaged', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
+    const state = newRhinoGame({
       players: [
         {
-          id: 'p1',
           name: 'Spider-Man',
           hero: smHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          deck: Array(10).fill(cardCatalog.getCard('01005')!),
         },
       ],
-      skipMulligan: true,
     });
 
     const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);

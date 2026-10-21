@@ -79,14 +79,6 @@ export function resolveDistributionPrompt(
   const config = activePrompt.distributionConfig;
   const domain = config?.allocationDomain || 'DAMAGE';
 
-  // Route assignments to top execution stack frame if one exists
-  if (poppedState.executionStack && poppedState.executionStack.length > 0) {
-    const topFrame = poppedState.executionStack[poppedState.executionStack.length - 1];
-    if (topFrame) {
-      topFrame.context = { ...(topFrame.context || {}), assignments };
-    }
-  }
-
   // Damage goes through the damage pipeline, like any other damage (#296). The source card
   // is the defeat source; an encounter treachery is already in the encounter discard pile.
   if (domain === 'DAMAGE') {

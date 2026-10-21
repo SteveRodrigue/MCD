@@ -71,10 +71,7 @@ const isDesign = (doc: Doc) =>
   doc.lines.slice(0, 12).some((l) => /\*\*Status:\*\*\s*(Backlogged|Proposed)/.test(l));
 const isAdr = (f: string) => /^docs\/decisions\/\d{4}-/.test(f);
 const isHistory = (f: string) =>
-  f === 'CHANGELOG.md' ||
-  f.startsWith('docs/reports/') ||
-  f.startsWith('docs/backlog/') ||
-  f.startsWith('.agents/teamwork/');
+  f === 'CHANGELOG.md' || f.startsWith('docs/reports/') || f.startsWith('docs/backlog/');
 const isCurrent = (f: string) =>
   f.startsWith('docs/specifications/') ||
   f.startsWith('docs/guidelines/') ||

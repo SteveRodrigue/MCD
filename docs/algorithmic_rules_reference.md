@@ -207,7 +207,7 @@ If multiple `FORCED` triggers or multiple voluntary reactions are eligible at th
 - **Attack Action (`isAttack: true`):**
   - Target must be a legal enemy (checks `Guard` keyword on engaged minions: an engaged minion with `Guard` blocks only the player it is engaged with and their allies from attacking the villain; other players remain free to attack the villain or the Guard minion per RR v1.8 p. 15).
   - Triggers Defense reactions, _Retaliate_ keywords, and _Overkill_ calculations.
-  - Emits `ENEMY_ATTACKED` and `OVERKILL_OCCURRED(excessDamage)` events.
+  - Fires the `BASIC_ATTACK_PERFORMED` trigger after a basic attack (`src/engine/pipeline/actions/combat.ts`); excess damage is reported as the `EXCESS_DAMAGE_DEALT` result fact (`facts.excessDamage`, `gate-params.ts`).
 - **Direct Damage (`isAttack: false`):**
   - Ignores `Guard` and does not trigger _Retaliate_ or attack-specific interrupts (e.g. _Ground Stomp_, _Energy Channel_).
 
@@ -295,7 +295,6 @@ The engine pipeline dispatches discrete lifecycle triggers and performs atomic l
 | `FLIP_FORM`         | `SELF`                                              | Flips identity card form without consuming basic flip (_Split Personality_ `01025`).                                           |
 | `MODIFY_HAND_SIZE`  | `SELF_IDENTITY`                                     | Dynamic aura modifying hand size based on in-play tableau upgrades.                                                            |
 | `PLAYER_CHOICE`     | `SELF_IDENTITY`                                     | Renders Pop-Art decision prompt modal (_Nick Fury_ `01084` choose 1 of 3, _Hydra Bomber_).                                     |
-| `SPAWN_NEMESIS`     | `ACTIVE_PLAYER`                                     | Isolates player nemesis set from set-aside pool and puts minion/scheme into play (_Shadow of the Past_ `01190`).               |
 | `VILLAIN_SCHEMES`   | `ACTIVE_PLAYER`                                     | Immediate villain scheme activation against player (_Advance_ `01186`).                                                        |
 | `VILLAIN_ATTACKS`   | `ACTIVE_PLAYER`                                     | Immediate villain attack activation against player (_Assault_ `01187`).                                                        |
 | `MODIFY_ALLY_LIMIT` | `SELF_IDENTITY` \| `ALL_PLAYERS`                    | Increases maximum ally limit by $N$ (_The Triskelion_ `01073`).                                                                |

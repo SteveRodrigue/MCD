@@ -31,7 +31,7 @@ The optional `cost` object defines mandatory prerequisites that must be satisfie
 | `discardSelf`   | `boolean`                          | `true`                                                  | In-play card instance is discarded to owner's discard pile as an ability cost (e.g. upgrades/supports). Event cards discard intrinsically per RR v1.8 *Event* and cannot declare `cost.discardSelf`. |
 | `damageHero`    | `number`                           | `1`                                                     | Direct damage the hero identity must suffer as a cost (e.g. _War Machine_).                |
 | `damageSelf`    | `number`                           | `1`                                                     | Direct damage the card instance itself must suffer as a cost.                              |
-| `resourceCost`  | `{ physical?, energy?, mental?, wild? }` | `{"energy": 1}` | Typed resource map: each key is a positive integer count of that resource type. Strict (unknown keys are rejected). A wild resource can pay any typed key; `wild` as a key means a printed "Spend a [wild] resource". The old `resources` array and the untyped numeric `resourceCost` were removed (ADR-0083). Evaluated in `cost-engine.ts`. |
+| `resourceCost`  | `{ physical?, energy?, mental?, wild? }` | `{"energy": 1}` | Typed resource map: each key is a positive integer count of that resource type. Strict (unknown keys are rejected). A wild resource can pay any typed key; `wild` as a key means a printed "Spend a [wild] resource". Evaluated in `cost-engine.ts`. |
 | `requirePrinted`| `boolean`                          | `true`                                                  | When true, resources paid must match printed icons on cards (RR v1.8 p. 15).                |
 
 > **Typed-cost eligibility:** for a typed `resourceCost`, the payment modal disables hand cards and generators with no icon of that type. A Wild icon qualifies unless `requirePrinted` is `true`. See ADR-0072 addendum (Issues #180, #129).
@@ -122,7 +122,7 @@ Per RR v1.8 p. 14 ("Damage"), p. 23 ("Identity"), p. 24 ("Indirect Damage"), p. 
 
 #### Rules Evidence & Operational Invariants
 
-1. **Zero Duplicate Invariant:** `ALL_IDENTITIES` is completely excluded from the schema. `ALL_PLAYERS` is the sole canonical selector for targeting every player at the table.
+1. **Zero Duplicate Invariant:** `ALL_PLAYERS` is the sole canonical selector for targeting every player at the table.
 2. **Dual-Domain Execution for `ALL_PLAYERS` (RR v1.8 p. 11 & p. 20):**
    - For player-state effects (`DRAW`, `DISCARD`, `MODIFY_ALLY_LIMIT`, `MODIFY_HAND_SIZE`): Operates on player hands, decks, or board counters.
    - For physical character effects (`DEAL_DAMAGE`, `HEAL_DAMAGE`, `ADD_STATUS`): Operates directly on each player's identity (in whichever form they currently are).
@@ -133,8 +133,8 @@ Per RR v1.8 p. 14 ("Damage"), p. 23 ("Identity"), p. 24 ("Indirect Damage"), p. 
 5. **Cards are read literally (no interpretation):**
    - Printed "**your hero**" is the resolving player's hero identity and **never** the alter-ego; "take damage" / "your identity" apply to the identity in either form (`SELF_IDENTITY`).
    - `SELF_HERO` is "your hero": the resolving player's hero identity while it is in hero form, and **nothing** in alter-ego form (the step is skipped; there is no fallback to the alter-ego). Use `SELF_IDENTITY` for "you" / "take damage" / "your identity", which applies in either form.
-   - `ALL_HEROES` is "each hero" (every player in hero form). Using it, or the retired ad-hoc `HERO`, for "your hero" damages other players (#133).
-   - Selector names are `PREFIX_NOUN` families anchored to an entity (`SELF_`, `ALL_`, `CHOSEN_`, `TRIGGERING_`, `HOST_`). `SELF_` means the player resolving the ability (Rules Reference "YOU, YOUR"); `ACTIVE_PLAYER` is the **turn player** and is a different anchor, so there is no `ACTIVE_HERO`. The ad-hoc `ACTIVE_IDENTITY` alias was removed (use `SELF_IDENTITY`).
+   - `ALL_HEROES` is "each hero" (every player in hero form). Using it for "your hero" damages other players (#133).
+   - Selector names are `PREFIX_NOUN` families anchored to an entity (`SELF_`, `ALL_`, `CHOSEN_`, `TRIGGERING_`, `HOST_`). `SELF_` means the player resolving the ability (Rules Reference "YOU, YOUR"); `ACTIVE_PLAYER` is the **turn player** and is a different anchor.
    - Every `target` value in a pack must be a member of `TargetSelectorSchema`; `tests/data/supplemental-schema.test.ts` enforces it.
 
 ---
@@ -215,7 +215,7 @@ Target evaluation implements a systemic two-layer architecture separating struct
    - **0** valid targets: the step does nothing. **1**: used without a prompt. **2 or more**: a "Choose an Enemy" / "Choose a Scheme" prompt, one option per target (id = the target's instance id), which re-runs the same step with the chosen target.
    - This covers triggered abilities (Responses, Forced Responses), `PLAYER_CHOICE` options (Nick Fury `01084`) and special sequences (Wakanda Forever!). Triggered abilities never inherit the triggering event's target as their chosen target (see spec 02, trigger context).
    - **Optional abilities stay optional** (RR v1.8 "Initiating Abilities"): the "Do you want to use…? Yes / No" prompt always comes first; an optional ability whose effect needs a target and has no valid target is not offered; on "Yes" the check runs again **before** the cost is paid, and the ability aborts with no cost paid if no valid target remains. The target prompt has no cancel option.
-   - **No guessing:** the resolver returns nothing for a `CHOSEN_*`, `TRIGGERING_*` or `PREVIOUS_TARGET` selector without a chosen, event or previous target. The former fallbacks (first engaged minion, active villain) are removed.
+   - **No guessing:** the resolver returns nothing for a `CHOSEN_*`, `TRIGGERING_*` or `PREVIOUS_TARGET` selector without a chosen, event or previous target.
 
 ---
 

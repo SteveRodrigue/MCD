@@ -9,7 +9,7 @@
 
 Under **ADR-0049** and **ADR-0052**, the engine standardizes dynamic values across numeric parameters (`amount`, `count`, `lookCount`, `takeCount`) using strongly-typed `DynamicValueSource` resolver objects.
 
-Ad-hoc string tokens (`amountFormula`) are completely retired in favor of this single unified schema:
+Amounts that scale are declared with this single unified schema:
 
 ```json
 {

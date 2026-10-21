@@ -7,7 +7,7 @@ interface ModalLayerProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 // Every full-screen modal, drawer and banner renders through this portal, so no zone,
-// transform or hover context can trap it (docs/ui_z_axis_layering.md F2, F5, F6).
+// transform or hover context can trap it (ADR-0082 findings F2, F5, F6).
 export const ModalLayer: React.FC<ModalLayerProps> = ({
   layer = 'modal',
   className = '',

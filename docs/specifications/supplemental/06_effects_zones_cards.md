@@ -6,7 +6,7 @@
 
 ### `DRAW`
 
-- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts)
+- **References:** [`effects/handlers/cards.ts`](../../../src/engine/effects/handlers/cards.ts)
 - **Description:** Draws N cards from target player's draw deck into hand, with optional hand size boundary limits. Handles deck reshuffle and acceleration token penalties.
 
 ```json
@@ -91,7 +91,7 @@ Raises (or lowers) the maximum hit points of the character carrying the card, wh
 
 ### `DISCARD`
 
-- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts) / Issue [#66](https://github.com/SteveRodrigue/MCD/issues/66)
+- **References:** [`effects/handlers/cards.ts`](../../../src/engine/effects/handlers/cards.ts) / Issue [#66](https://github.com/SteveRodrigue/MCD/issues/66)
 - **Description:** Moves cards from a specified source zone (`HAND`, `DECK`, `ENCOUNTER_DECK`, `TABLEAU`, `HOST`, `SELF`, `CARDS_UNDER_HOST`) directly to the discard pile (or encounter discard pile for encounter cards) per RR v1.8 p. 16. Supports random hand selection, filtering, iterative milling, and fallback actions (e.g. Surge when no valid target in tableau).
 
 ```json
@@ -191,7 +191,7 @@ Supported `discardAttribute` inspection modes:
 
 ### `SEARCH`
 
-- **References:** [`effects/index.ts`](../../../src/engine/effects/index.ts) / ADR-0030, ADR-0058 / _Tony Stark_ `01029b` Futurist / _T'Challa_ `01040b` Foresight / _Shuri_ `01041`
+- **References:** [`effects/handlers/cards.ts`](../../../src/engine/effects/handlers/cards.ts) / ADR-0030, ADR-0058 / _Tony Stark_ `01029b` Futurist / _T'Challa_ `01040b` Foresight / _Shuri_ `01041`
 - **Description:** Universal declarative search and card discovery primitive. Inspects cards from a source zone (`PLAYER_DECK`, `PLAYER_DISCARD`, `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`, `PLAYER_HAND`), filters candidates matching criteria (`targetCardCode`, `trait`, `type`, etc.), and presents an interactive `PendingDecisionPrompt` allowing the player to select up to `takeCount` cards into `selectedDestination` (`HAND`, `TABLEAU`, `DECK_SHUFFLE`, etc.), routing unselected looked cards to `unselectedDestination` (`DISCARD`, `DECK_BOTTOM`, etc.) with optional post-search shuffle (`shuffleAfter`) and automatic resolution for unambiguous matches (`autoSelectIfUnambiguous`).
 
 #### Parameters

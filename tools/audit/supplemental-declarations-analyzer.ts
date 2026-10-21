@@ -21,14 +21,21 @@ const SUPPLEMENTAL_DIR = path.join(ROOT_DIR, 'src/data/supplemental/pack');
 const UPSTREAM_DIR = path.join(ROOT_DIR, 'data/upstream/pack');
 const AMBIGUITIES_DIR = path.join(ROOT_DIR, 'docs/ambiguities');
 
-// Output paths
-const REPORTS_BASE_DIR = path.join(ROOT_DIR, 'docs/reports/supplemental_data');
-const DETAILED_REPORTS_DIR = path.join(REPORTS_BASE_DIR, 'detailed_reports');
-const MAIN_REPORT_PATH = path.join(REPORTS_BASE_DIR, 'usage_report.md');
-const LEGACY_POINTER_PATH = path.join(
-  ROOT_DIR,
-  'docs/reports/supplemental_declarations_usage_report.md',
-);
+// Output paths, relative to the output root (the repo root unless a test passes a temp dir)
+function reportPaths(outRoot: string) {
+  const base = path.join(outRoot, 'docs/reports/supplemental_data');
+  return {
+    detailedDir: path.join(base, 'detailed_reports'),
+    mainPath: path.join(base, 'usage_report.md'),
+    legacyPath: path.join(outRoot, 'docs/reports/supplemental_declarations_usage_report.md'),
+  };
+}
+
+/** The one writer for every report: creates the folder and always writes LF, so output is byte-stable. */
+function writeReport(filePath: string, content: string): void {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, content.replace(/\r\n/g, '\n'), 'utf-8');
+}
 
 interface CardAudit {
   createdAt?: string;
@@ -265,7 +272,8 @@ function anchorId(name: string): string {
     .replace(/^-|-$/g, '');
 }
 
-export function runDeclarationsAudit() {
+export function runDeclarationsAudit(options: { outDir?: string } = {}) {
+  const { detailedDir, mainPath, legacyPath } = reportPaths(options.outDir ?? ROOT_DIR);
   const upstreamCards = loadAllUpstreamCards();
   const supplementalPacks = loadAllSupplementalPacks();
   const ambiguityReports = loadAllAmbiguityReports();
@@ -597,13 +605,6 @@ export function runDeclarationsAudit() {
     return lines.join('\n');
   }
 
-  // Ensure output directories exist
-  if (!fs.existsSync(DETAILED_REPORTS_DIR)) {
-    fs.mkdirSync(DETAILED_REPORTS_DIR, { recursive: true });
-  }
-
-  const timestamp = new Date().toISOString();
-
   // =========================================================================
   // DETAILED REPORT 1: Vanilla & Passive Cards
   // =========================================================================
@@ -612,9 +613,7 @@ export function runDeclarationsAudit() {
   vanillaReportLines.push(``);
   vanillaReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
   vanillaReportLines.push(``);
-  vanillaReportLines.push(
-    `> **Generated:** \`${timestamp}\` | **Total Verified Vanilla Cards:** **${noSupplementalCards.length}**`,
-  );
+  vanillaReportLines.push(`> **Total Verified Vanilla Cards:** **${noSupplementalCards.length}**`);
   vanillaReportLines.push(``);
   vanillaReportLines.push(
     `These cards require zero declarative engine hooks (e.g. vanilla resources, base stats only, or passive encounter cards without triggers).`,
@@ -632,10 +631,9 @@ export function runDeclarationsAudit() {
   }
   vanillaReportLines.push(``);
   vanillaReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
-  fs.writeFileSync(
-    path.join(DETAILED_REPORTS_DIR, 'vanilla_and_passive_cards.md'),
+  writeReport(
+    path.join(detailedDir, 'vanilla_and_passive_cards.md'),
     vanillaReportLines.join('\n'),
-    'utf-8',
   );
 
   // =========================================================================
@@ -645,8 +643,6 @@ export function runDeclarationsAudit() {
   multiReportLines.push(`# 📋 Multi-Ability & Multi-Step Pipelines Inventory`);
   multiReportLines.push(``);
   multiReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
-  multiReportLines.push(``);
-  multiReportLines.push(`> **Generated:** \`${timestamp}\``);
   multiReportLines.push(``);
   multiReportLines.push(
     `## 1. Cards with Multiple Abilities (2+ Declared Abilities — ${multiAbilityCards.length} Cards)`,
@@ -686,10 +682,9 @@ export function runDeclarationsAudit() {
   }
   multiReportLines.push(``);
   multiReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
-  fs.writeFileSync(
-    path.join(DETAILED_REPORTS_DIR, 'multi_ability_and_multistep_cards.md'),
+  writeReport(
+    path.join(detailedDir, 'multi_ability_and_multistep_cards.md'),
     multiReportLines.join('\n'),
-    'utf-8',
   );
 
   // =========================================================================
@@ -701,7 +696,7 @@ export function runDeclarationsAudit() {
   effectsReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
   effectsReportLines.push(``);
   effectsReportLines.push(
-    `> **Generated:** \`${timestamp}\` | **Active Effects In Use:** **${effectsUsage.size}/${EffectTypeSchema.options.length}**`,
+    `> **Active Effects In Use:** **${effectsUsage.size}/${EffectTypeSchema.options.length}**`,
   );
   effectsReportLines.push(``);
   effectsReportLines.push(
@@ -723,11 +718,7 @@ export function runDeclarationsAudit() {
     effectsReportLines.push(``);
   }
   effectsReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
-  fs.writeFileSync(
-    path.join(DETAILED_REPORTS_DIR, 'effects_usage.md'),
-    effectsReportLines.join('\n'),
-    'utf-8',
-  );
+  writeReport(path.join(detailedDir, 'effects_usage.md'), effectsReportLines.join('\n'));
 
   // =========================================================================
   // DETAILED REPORT 4: Target Selectors Usage
@@ -738,7 +729,7 @@ export function runDeclarationsAudit() {
   targetsReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
   targetsReportLines.push(``);
   targetsReportLines.push(
-    `> **Generated:** \`${timestamp}\` | **Active Target Selectors In Use:** **${targetsUsage.size}/${TargetSelectorSchema.options.length}**`,
+    `> **Active Target Selectors In Use:** **${targetsUsage.size}/${TargetSelectorSchema.options.length}**`,
   );
   targetsReportLines.push(``);
 
@@ -756,11 +747,7 @@ export function runDeclarationsAudit() {
     targetsReportLines.push(``);
   }
   targetsReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
-  fs.writeFileSync(
-    path.join(DETAILED_REPORTS_DIR, 'target_selectors_usage.md'),
-    targetsReportLines.join('\n'),
-    'utf-8',
-  );
+  writeReport(path.join(detailedDir, 'target_selectors_usage.md'), targetsReportLines.join('\n'));
 
   // =========================================================================
   // DETAILED REPORT 5: Timing & Triggers Usage
@@ -769,8 +756,6 @@ export function runDeclarationsAudit() {
   timingTriggersReportLines.push(`# ⚡ Timing & Triggers Usage Inventory`);
   timingTriggersReportLines.push(``);
   timingTriggersReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
-  timingTriggersReportLines.push(``);
-  timingTriggersReportLines.push(`> **Generated:** \`${timestamp}\``);
   timingTriggersReportLines.push(``);
   timingTriggersReportLines.push(
     `## 1. Ability Timings (\`TimingTypeSchema\` — ${timingsUsage.size}/${TimingTypeSchema.options.length} In Use)`,
@@ -807,10 +792,9 @@ export function runDeclarationsAudit() {
     timingTriggersReportLines.push(``);
   }
   timingTriggersReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
-  fs.writeFileSync(
-    path.join(DETAILED_REPORTS_DIR, 'timing_and_triggers_usage.md'),
+  writeReport(
+    path.join(detailedDir, 'timing_and_triggers_usage.md'),
     timingTriggersReportLines.join('\n'),
-    'utf-8',
   );
 
   // =========================================================================
@@ -820,8 +804,6 @@ export function runDeclarationsAudit() {
   conditionsReportLines.push(`# 🚦 Condition Gates & Step Conditions Usage Inventory`);
   conditionsReportLines.push(``);
   conditionsReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
-  conditionsReportLines.push(``);
-  conditionsReportLines.push(`> **Generated:** \`${timestamp}\``);
   conditionsReportLines.push(``);
   conditionsReportLines.push(
     `## 1. Condition Gates (\`StepGateSchema\` — ${gatesUsage.size}/${StepGateSchema.options.length} In Use)`,
@@ -856,11 +838,7 @@ export function runDeclarationsAudit() {
     conditionsReportLines.push(``);
   }
   conditionsReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
-  fs.writeFileSync(
-    path.join(DETAILED_REPORTS_DIR, 'condition_gates_usage.md'),
-    conditionsReportLines.join('\n'),
-    'utf-8',
-  );
+  writeReport(path.join(detailedDir, 'condition_gates_usage.md'), conditionsReportLines.join('\n'));
 
   // =========================================================================
   // DETAILED REPORT 7: Full Schema <-> Engine Code Path Audit
@@ -871,7 +849,7 @@ export function runDeclarationsAudit() {
   schemaAuditLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
   schemaAuditLines.push(``);
   schemaAuditLines.push(
-    `> **Generated:** \`${timestamp}\` | **Overall Coverage:** **${coverageAudit.overallCoverageRate.toFixed(1)}%**`,
+    `> **Overall Coverage:** **${coverageAudit.overallCoverageRate.toFixed(1)}%**`,
   );
   schemaAuditLines.push(``);
   schemaAuditLines.push(
@@ -1002,11 +980,7 @@ export function runDeclarationsAudit() {
   );
 
   schemaAuditLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
-  fs.writeFileSync(
-    path.join(DETAILED_REPORTS_DIR, 'schema_code_path_audit.md'),
-    schemaAuditLines.join('\n'),
-    'utf-8',
-  );
+  writeReport(path.join(detailedDir, 'schema_code_path_audit.md'), schemaAuditLines.join('\n'));
 
   // =========================================================================
   // MAIN DASHBOARD: docs/reports/supplemental_data/usage_report.md
@@ -1014,7 +988,6 @@ export function runDeclarationsAudit() {
   const mainReportLines: string[] = [];
   mainReportLines.push(`# Supplemental Card Declarations Usage & Impact Report`);
   mainReportLines.push(``);
-  mainReportLines.push(`> **Generated:** \`${timestamp}\`  `);
   mainReportLines.push(
     `> **Source Packs Scanned:** \`${Array.from(supplementalPacks.keys()).join(', ')}\``,
   );
@@ -1313,7 +1286,7 @@ export function runDeclarationsAudit() {
     `| **Timings** | ${TimingTypeSchema.options.length} | ${TimingTypeSchema.options.length - timingsUsage.size} | ${coverageAudit.unhandledTimings.length === 0 ? '🟢 0' : `🔴 ${coverageAudit.unhandledTimings.length}`} |`,
   );
 
-  fs.writeFileSync(MAIN_REPORT_PATH, mainReportLines.join('\n'), 'utf-8');
+  writeReport(mainPath, mainReportLines.join('\n'));
 
   // =========================================================================
   // LEGACY POINTER
@@ -1334,7 +1307,7 @@ export function runDeclarationsAudit() {
     `- [Schema Primitives Code Path Verification Matrix](supplemental_data/detailed_reports/schema_code_path_audit.md)`,
     ``,
   ].join('\n');
-  fs.writeFileSync(LEGACY_POINTER_PATH, legacyPointerContent, 'utf-8');
+  writeReport(legacyPath, legacyPointerContent);
 
   console.log(`\n========================================================`);
   console.log(`📊 SUPPLEMENTAL DECLARATIONS USAGE AUDIT COMPLETE`);
@@ -1350,8 +1323,8 @@ export function runDeclarationsAudit() {
   console.log(`Cards with Multi-Step:      ${totalCardsWithMultiStep}`);
   console.log(`Cards with 2+ Abilities:    ${multiAbilityCards.length}`);
   console.log(`Overall Code Path Coverage: ${coverageAudit.overallCoverageRate.toFixed(1)}%`);
-  console.log(`Main Report Written To:     ${MAIN_REPORT_PATH}`);
-  console.log(`Detailed Reports Dir:       ${DETAILED_REPORTS_DIR}`);
+  console.log(`Main Report Written To:     ${mainPath}`);
+  console.log(`Detailed Reports Dir:       ${detailedDir}`);
   console.log(`========================================================\n`);
 }
 

@@ -192,6 +192,7 @@ describe('Zero Card Text Parsing Contract (ADR-0019)', () => {
         phase: GamePhase.PLAYER_PHASE,
         activePlayerIndex: 0,
         players: [player as PlayerState],
+        villains: [],
         sideSchemes: [{ ...crisisScheme, threat: 3 } as any],
         mainSchemes: [{ ...mainSchemeInst, threat: 5 } as any],
       };

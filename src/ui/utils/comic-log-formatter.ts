@@ -478,9 +478,10 @@ function normalizeLogParams(
   const defaultHeroName =
     cleanCharacterName(matchedPlayer?.hero?.name || matchedPlayer?.name, matchedPlayer) || 'Hero';
   const defaultVillainName =
-    (gameState ? getActiveVillain(gameState) : undefined)?.card?.name || 'Villain';
+    (gameState?.villains.length ? getActiveVillain(gameState) : undefined)?.card?.name || 'Villain';
   const defaultMainSchemeName =
-    (gameState ? getActiveMainScheme(gameState) : undefined)?.card?.name || 'Main Scheme';
+    (gameState?.mainSchemes.length ? getActiveMainScheme(gameState) : undefined)?.card?.name ||
+    'Main Scheme';
 
   const isDefenseKey =
     entry.key === 'HERO_DEFENDED' ||

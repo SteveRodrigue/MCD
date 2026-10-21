@@ -59,3 +59,7 @@ Adopted **Option 1 (Modular Phase Pipelines)**:
   - Clean, modular, and maintainable pipeline architecture directly mirroring RR v1.8.
   - Every phase and round lifecycle transition is observable and hookable by card abilities and scenario rules.
   - Seamless backwards compatibility across all tests and UI components.
+
+## Addendum (2026-10-21): `passActivePlayer` removed (AUD-20261017-232534 F003)
+
+`passActivePlayer` no longer exists (`b0ab6c6d`). `src/engine/pipeline/player-phase.ts` exports `startPlayerPhase` and `endPlayerPhase`; the player phase now ends in one `endPlayerPhase` step that fires `PLAYER_PHASE_ENDED`. The decision above is kept as written.

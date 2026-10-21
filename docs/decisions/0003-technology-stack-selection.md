@@ -91,3 +91,7 @@ We need to select the primary programming language, core engine ecosystem, and U
 
 ## Current Status & Next Steps
 * Awaiting final review and confirmation from user before scaffolding the project foundation.
+
+## Addendum (2026-10-21): Framer Motion is not used (AUD-20261017-232534 F018)
+
+Framer Motion was removed from `package.json` in `db3ae26b` because nothing imported it. The shipped stack is TypeScript, React and Tailwind CSS without a JavaScript animation library. The decision above is kept as written; this note only records that the Framer Motion parts of it were not carried out.

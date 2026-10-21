@@ -139,7 +139,7 @@ If a check fails in Step 4, 5 or 7, go back to the step named on that check line
 ### Step 4: Write Acceptance & Contract Tests (BDD Red)
 
 - **Golden Rule:** NEVER implement a feature before writing comprehensive, contract-defining tests demonstrating all intended behaviors and edge cases.
-- Create or extend a test file in `tests/engine/`, `tests/ui/`, or `tests/scenarios/` (e.g. `tests/engine/feature-name.test.ts`).
+- Create or extend a test file in `tests/engine/`, `tests/ui/`, or `tests/cards/` (e.g. `tests/engine/feature-name.test.ts`).
 - The implementation plan must identify every required test file and case before implementation. This includes Card Editor tests whenever the UI or editor is affected: schema/form round-trips, control visibility and choices, validation diagnostics, persistence payloads, and reload behavior as applicable.
 - If the UI and Card Editor are unaffected, preserve the explicit plan statement `UI and Card Editor / No change required.` and add the focused evidence supporting that conclusion (for example, engine/data-only file scope and unchanged editor contract).
 - Write unit and integration tests covering:
@@ -195,7 +195,7 @@ rtk npx prettier --check <changed-files> && rtk npm run lint && rtk npm run type
 ### Step 8: Post-Task Hygiene & Delivery Recap
 
 1. **Execute Post-Task Protocol:**
-   Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to Tier 2/3: add a CHANGELOG fragment in `changes/unreleased/`, synchronize specs and docs, verify Card Editor alignment, and check off roadmap tasks in `docs/roadmap_and_milestones.md`.
+   Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to Tier 2/3: add a CHANGELOG fragment in `changes/unreleased/`, synchronize specs and docs (run `rtk npm run docs:check` and search `docs/` and `.agents/` for every changed name), verify Card Editor alignment, and check off roadmap tasks in `docs/roadmap_and_milestones.md`.
 2. **Present Verification & Solution Recap:**
    Present the completed feature, verification logs, and proposed diff to the user.
 3. **Delivery Authorization:**

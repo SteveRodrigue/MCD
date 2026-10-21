@@ -50,7 +50,7 @@ If a check fails in Step 3, 5 or 6, go back to the step named on that check line
   2. Open the card's definition in `src/data/supplemental/pack/<pack_code>.json`.
   3. Compare the printed card text against the supplemental JSON declaration:
      - Is the `timing` accurate (`ACTION`, `HERO_ACTION`, `FORCED_RESPONSE`, `INTERRUPT`)?
-     - Are all `costs` present (`EXHAUST_SELF`, `SPEND_RESOURCE`, `DAMAGE_SELF`)?
+     - Are all `costs` present (`exhaustSelf`, `resourceCost`, `damageSelf`)?
      - Are `steps: AbilityStep[]` using the right primitives, target selectors, and conditional gates (`THEN`, `ALWAYS`)?
   4. **Data-Only Resolution:** If the bug is caused by a missing/malformed JSON field or misconfigured primitive, the `implementation_plan.md` must be classified as **Tier 1 (Declarative Data Fix)** with ZERO engine code modifications.
 
@@ -160,7 +160,7 @@ rtk npx prettier --check <changed-files> && rtk npm run lint && rtk npm run type
 
 ### Step 7: Post-Task Hygiene Protocol
 
-Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to the fix's blast-radius tier (Tier 1: CHANGELOG fragment in `changes/unreleased/`, and declarations if card data modified; Tier 2/3: full relevant checklist).
+Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to the fix's blast-radius tier (Tier 1: CHANGELOG fragment in `changes/unreleased/`, declarations if card data modified, and `rtk npm run docs:check` if documentation or a documented name changed; Tier 2/3: full relevant checklist).
 
 ---
 

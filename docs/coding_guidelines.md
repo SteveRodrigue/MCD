@@ -224,7 +224,7 @@ Current state: only the comic game log is localized. There is no general `t()` h
 | **Enums / Const Objects** | PascalCase (name) / UPPER_SNAKE (members)           | `CardType`, `Keyword.GUARD`, `StatusCard.TOUGH` |
 | **Functions / Methods**   | camelCase                                          | `calculateDamage()`, `resolveTrigger()`     |
 | **React Components**      | PascalCase                                         | `HeroPlaymat.tsx`, `ComicOnomatopoeia.tsx`  |
-| **Constants**             | UPPER_SNAKE_CASE                                   | `MAX_HAND_SIZE`, `DEFAULT_THREAT`           |
+| **Constants**             | UPPER_SNAKE_CASE                                   | `EFFECT_HANDLERS`, `FACT_PRODUCERS`           |
 | **File Names**            | kebab-case or camelCase (matching module standard) | `game-state.ts`, `card-loader.ts`           |
 
 ---

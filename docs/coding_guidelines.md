@@ -252,7 +252,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/). Scopes: `en
    - Every modal, drawer or banner renders through `ModalLayer` (portal to `document.body`), never inline.
    - Fans are `isolate`d, raise themselves with `hover:z-zoom focus-within:z-zoom`, and compute card z with `getFanZIndex` (`src/ui/components/cards/fan-z.ts`). Never derive fan z from a fixed constant.
    - Do not put `overflow-x-hidden` / `overflow-*-auto` on an ancestor of the sticky TopBar; use `overflow-x-clip`.
-   - Full ladder and fan rules: [docs/ui_z_axis_layering.md](ui_z_axis_layering.md).
+   - Full ladder and fan rules: [ADR-0082, Appendix A](decisions/0082-ui-z-index-scale-and-fan-pattern.md#appendix-a-layer-map).
 
 ---
 

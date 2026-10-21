@@ -1,4 +1,4 @@
-// Global z-index scale (docs/ui_z_axis_layering.md §7). Values are spaced ×10 so new
+// Global z-index scale (ADR-0082, Appendix C). Values are spaced ×10 so new
 // layers can be inserted later. Never compare these with local fan values (fan-z.ts).
 export const Z = {
   table: 0,

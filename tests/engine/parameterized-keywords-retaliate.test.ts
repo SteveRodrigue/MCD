@@ -1,7 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { overrideCard } from '../support/card-overrides';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, MinionCard, Keyword } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  MinionCard,
+  Keyword,
+  getActiveVillain,
+} from '@engine/models';
 import { parseKeywordItem } from '@engine/models/keyword';
 import { hasKeyword, getKeywordValue } from '@engine/models/keyword-helpers';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
@@ -186,7 +193,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
     });
 
     it('aggregates Villain attachments granting Retaliate', () => {
-      expect(getEffectiveRetaliate(state.villain)).toBe(0);
+      expect(getEffectiveRetaliate(getActiveVillain(state))).toBe(0);
 
       const mockConcussionBlasters: any = {
         instanceId: 'att_blasters',
@@ -212,10 +219,10 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
           },
         },
       };
-      state.villain.attachments.push(mockConcussionBlasters);
+      getActiveVillain(state).attachments.push(mockConcussionBlasters);
 
-      expect(getEffectiveRetaliate(state.villain)).toBe(1);
-      expect(hasEntityKeyword(state.villain, 'Retaliate')).toBe(true);
+      expect(getEffectiveRetaliate(getActiveVillain(state))).toBe(1);
+      expect(hasEntityKeyword(getActiveVillain(state), 'Retaliate')).toBe(true);
     });
 
     it('correctly calculates Retaliate on Black Panther (01040a) from catalog', () => {
@@ -269,7 +276,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
       } as any);
 
       // Hero defends against Rhino
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
       const endState = executeEnemyAttackSynchronously(
         state,
         { type: 'VILLAIN' },
@@ -278,7 +285,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
       );
 
       // Villain took 2 Retaliate damage
-      expect(endState.villain.health).toBe(initialVillainHp - 2);
+      expect(getActiveVillain(endState).health).toBe(initialVillainHp - 2);
     });
 
     it('does NOT deal Retaliate damage if defending hero is defeated', () => {
@@ -297,7 +304,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
 
       // Hero defeated and eliminated (#246), villain takes 0 retaliate damage
       expect(hero.health).toBe(0);
-      expect(endState.villain.health).toBe(14); // Rhino I base HP unchanged
+      expect(getActiveVillain(endState).health).toBe(14); // Rhino I base HP unchanged
     });
 
     it('triggers Retaliate from defending Ally when ally survives attack', () => {
@@ -311,7 +318,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
       } as unknown as typeof allyInstance.card;
       state.players[0].allies.push(allyInstance);
 
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
 
       // Ally defends and survives
       const endState = executeEnemyAttackSynchronously(
@@ -321,7 +328,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
         'ALLY_CHUMP_BLOCK',
       );
 
-      expect(endState.villain.health).toBe(initialVillainHp - 1);
+      expect(getActiveVillain(endState).health).toBe(initialVillainHp - 1);
     });
   });
 
@@ -374,7 +381,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
 
     it('deals Retaliate damage back to Hero when Hero basic attacks Villain with Retaliate attachment', () => {
       // Attach Concussion Blasters to Villain
-      state.villain.attachments.push({
+      getActiveVillain(state).attachments.push({
         instanceId: 'att_cb',
         card: {
           code: '01153',
@@ -394,7 +401,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
       } as any);
 
       const initialHeroHp = state.players[0].health;
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
 
       const { state: nextState, result } = dispatchAction(state, {
         type: 'BASIC_ATTACK',
@@ -403,7 +410,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
       });
 
       expect(result.success).toBe(true);
-      expect(nextState.villain.health).toBe(initialVillainHp - 2);
+      expect(getActiveVillain(nextState).health).toBe(initialVillainHp - 2);
       // Hero took 1 retaliate damage from Villain
       expect(nextState.players[0].health).toBe(initialHeroHp - 1);
     });

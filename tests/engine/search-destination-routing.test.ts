@@ -4,6 +4,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { executeEffect } from '@engine/effects';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 
+import { getActiveVillain } from '@engine/models';
 describe('SEARCH selectedDestination Routing - All 8 Choices (RR v1.8 p. 19, 26)', () => {
   let spiderManHero: any;
   let peterParkerAlterEgo: any;
@@ -504,7 +505,7 @@ describe('SEARCH selectedDestination Routing - All 8 Choices (RR v1.8 p. 19, 26)
       const armorCard = cardCatalog.getCard('01110')!; // Armored Rhino Suit
       const armorInst = createCardInstance(armorCard);
       state.encounterDeck = [armorInst];
-      state.villain.attachments = [];
+      getActiveVillain(state).attachments = [];
 
       const result = executeEffect(
         state,
@@ -524,7 +525,9 @@ describe('SEARCH selectedDestination Routing - All 8 Choices (RR v1.8 p. 19, 26)
 
       expect(result.success).toBe(true);
       expect(
-        result.state.villain.attachments?.some((c) => c.instanceId === armorInst.instanceId),
+        getActiveVillain(result.state).attachments?.some(
+          (c) => c.instanceId === armorInst.instanceId,
+        ),
       ).toBe(true);
       expect(result.state.encounterDeck.length).toBe(0);
     });
@@ -535,7 +538,7 @@ describe('SEARCH selectedDestination Routing - All 8 Choices (RR v1.8 p. 19, 26)
       const armorInst = createCardInstance(armorCard);
       const dummyCard = createCardInstance(cardCatalog.getCard('01111')!);
       state.encounterDeck = [armorInst, dummyCard];
-      state.villain.attachments = [];
+      getActiveVillain(state).attachments = [];
 
       const result = executeEffect(
         state,
@@ -562,7 +565,9 @@ describe('SEARCH selectedDestination Routing - All 8 Choices (RR v1.8 p. 19, 26)
 
       expect(resolved.result.success).toBe(true);
       expect(
-        resolved.state.villain.attachments?.some((c) => c.instanceId === armorInst.instanceId),
+        getActiveVillain(resolved.state).attachments?.some(
+          (c) => c.instanceId === armorInst.instanceId,
+        ),
       ).toBe(true);
       expect(resolved.state.encounterDeck.some((c) => c.instanceId === armorInst.instanceId)).toBe(
         false,

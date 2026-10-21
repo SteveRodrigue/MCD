@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, MinionCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, MinionCard, getActiveVillain } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import {
   dispatchAction,
@@ -64,12 +64,12 @@ describe('Counter-Punch (01077): hand reaction after your hero defends', () => {
 
   it('costs nothing: playable with Counter-Punch as the only card in hand, damages the villain attacker', () => {
     const cp = give(0, COUNTER_PUNCH);
-    const villainHp = state.villain.health;
+    const villainHp = getActiveVillain(state).health;
 
     initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1', { acceptOptionalTriggers: true });
     resolveDefenderDeclaration(state, { type: 'HERO', playerId: 'p1' }, state.activeAttackContext!);
 
-    expect(state.villain.health).toBe(villainHp - HERO_ATK);
+    expect(getActiveVillain(state).health).toBe(villainHp - HERO_ATK);
     // Spider-Sense draws one card when the attack starts, so the hand is not empty.
     expect(state.players[0].hand.map((c) => c.instanceId)).not.toContain(cp.instanceId);
     expect(state.players[0].discard.map((c) => c.instanceId)).toContain(cp.instanceId);
@@ -79,7 +79,7 @@ describe('Counter-Punch (01077): hand reaction after your hero defends', () => {
     give(0, COUNTER_PUNCH);
     const minion = createCardInstance(cardCatalog.getCard('01101') as MinionCard);
     state.players[0].engagedMinions.push(minion);
-    const villainHp = state.villain.health;
+    const villainHp = getActiveVillain(state).health;
 
     initiateEnemyAttack(state, { type: 'MINION', card: minion }, 'p1', {
       acceptOptionalTriggers: true,
@@ -87,7 +87,7 @@ describe('Counter-Punch (01077): hand reaction after your hero defends', () => {
     resolveDefenderDeclaration(state, { type: 'HERO', playerId: 'p1' }, state.activeAttackContext!);
 
     expect(minion.tokens?.damage ?? 0).toBe(HERO_ATK);
-    expect(state.villain.health).toBe(villainHp);
+    expect(getActiveVillain(state).health).toBe(villainHp);
   });
 
   it('does not discard another card as payment', () => {
@@ -108,12 +108,12 @@ describe('Counter-Punch (01077): hand reaction after your hero defends', () => {
 
   it('offers an optional prompt with no payment, and accepting damages the attacker', () => {
     give(0, COUNTER_PUNCH);
-    const villainHp = state.villain.health;
+    const villainHp = getActiveVillain(state).health;
 
     dispatchTrigger(state, 'ATTACK_DEFENDED', {
       targetPlayerId: 'p1',
       defenderType: 'HERO',
-      targetInstanceId: state.villain.instanceId,
+      targetInstanceId: getActiveVillain(state).instanceId,
     });
 
     const prompt = peekDecisionPrompt(state)!;
@@ -127,7 +127,7 @@ describe('Counter-Punch (01077): hand reaction after your hero defends', () => {
       selectedOptionId: yes.id,
     });
     expect(res.result.success).toBe(true);
-    expect(res.state.villain.health).toBe(villainHp - HERO_ATK);
+    expect(getActiveVillain(res.state).health).toBe(villainHp - HERO_ATK);
     expect(res.state.players[0].hand).toHaveLength(0);
   });
 
@@ -137,7 +137,7 @@ describe('Counter-Punch (01077): hand reaction after your hero defends', () => {
     dispatchTrigger(state, 'ATTACK_DEFENDED', {
       targetPlayerId: 'p1',
       defenderType: 'ALLY',
-      targetInstanceId: state.villain.instanceId,
+      targetInstanceId: getActiveVillain(state).instanceId,
       acceptOptionalTriggers: true,
     });
 
@@ -151,7 +151,7 @@ describe('Counter-Punch (01077): hand reaction after your hero defends', () => {
     dispatchTrigger(state, 'ATTACK_DEFENDED', {
       targetPlayerId: 'p1',
       defenderType: 'HERO',
-      targetInstanceId: state.villain.instanceId,
+      targetInstanceId: getActiveVillain(state).instanceId,
       acceptOptionalTriggers: true,
     });
 

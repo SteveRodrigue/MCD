@@ -6,6 +6,7 @@ import {
   AlterEgoCard,
   CardType,
   CardResources,
+  getActiveMainScheme,
 } from '../../src/engine/models';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { dispatchAction } from '../../src/engine/pipeline';
@@ -52,13 +53,13 @@ describe('For Justice! (01060) Resource Bonus Acceptance Test Suite (Issue #186)
 
     state.players[0].currentForm = 'hero';
     state.players[0].activeFormCard = spiderManHero;
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
     state.sideSchemes = [];
   });
 
   it('Test 1: For Justice! played without mental resource removes 3 threat from scheme', () => {
     const p1 = state.players[0];
-    const initialThreat = state.mainScheme.threat;
+    const initialThreat = getActiveMainScheme(state).threat;
 
     const fjCard = cardCatalog.getCard('01060')!;
     const fjInstance = createCardInstance(fjCard);
@@ -78,12 +79,12 @@ describe('For Justice! (01060) Resource Bonus Acceptance Test Suite (Issue #186)
 
     expect(res.result.success).toBe(true);
     // Base amount is 3, no mental bonus
-    expect(res.state.mainScheme.threat).toBe(initialThreat - 3);
+    expect(getActiveMainScheme(res.state).threat).toBe(initialThreat - 3);
   });
 
   it('Test 2: For Justice! played with mental resource removes 4 threat from scheme', () => {
     const p1 = state.players[0];
-    const initialThreat = state.mainScheme.threat;
+    const initialThreat = getActiveMainScheme(state).threat;
 
     const fjCard = cardCatalog.getCard('01060')!;
     const fjInstance = createCardInstance(fjCard);
@@ -104,12 +105,12 @@ describe('For Justice! (01060) Resource Bonus Acceptance Test Suite (Issue #186)
 
     expect(res.result.success).toBe(true);
     // Base 3 + 1 mental bonus = 4 threat removed
-    expect(res.state.mainScheme.threat).toBe(initialThreat - 4);
+    expect(getActiveMainScheme(res.state).threat).toBe(initialThreat - 4);
   });
 
   it('Test 3: For Justice! played with wild resource removes 4 threat from scheme', () => {
     const p1 = state.players[0];
-    const initialThreat = state.mainScheme.threat;
+    const initialThreat = getActiveMainScheme(state).threat;
 
     const fjCard = cardCatalog.getCard('01060')!;
     const fjInstance = createCardInstance(fjCard);
@@ -130,12 +131,12 @@ describe('For Justice! (01060) Resource Bonus Acceptance Test Suite (Issue #186)
 
     expect(res.result.success).toBe(true);
     // Base 3 + 1 wild counts as mental bonus = 4 threat removed
-    expect(res.state.mainScheme.threat).toBe(initialThreat - 4);
+    expect(getActiveMainScheme(res.state).threat).toBe(initialThreat - 4);
   });
 
   it('Test 4: For Justice! played with mental resource when multiple schemes exist prompts for target and removes 4 threat from chosen scheme', () => {
     const p1 = state.players[0];
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
 
     // Add a side scheme with 5 threat
     const sideSchemeInstanceId = 'side_scheme_bomb_threat';
@@ -194,12 +195,12 @@ describe('For Justice! (01060) Resource Bonus Acceptance Test Suite (Issue #186)
     );
     expect(updatedSideScheme?.threat).toBe(1);
     // Main scheme remains untouched at 5 threat
-    expect(resolveRes.state.mainScheme.threat).toBe(5);
+    expect(getActiveMainScheme(resolveRes.state).threat).toBe(5);
   });
 
   it('Test 4b: Direct executeEffect with multiple schemes prompts for target and removes 4 threat when resolved', () => {
     const p1 = state.players[0];
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
 
     const sideSchemeInstanceId = 'side_scheme_direct';
     state.sideSchemes = [
@@ -233,10 +234,10 @@ describe('For Justice! (01060) Resource Bonus Acceptance Test Suite (Issue #186)
     const resolved = resolveDecisionPrompt(
       effectRes.state,
       p1.id,
-      effectRes.state.mainScheme.instanceId!,
+      getActiveMainScheme(effectRes.state).instanceId!,
     );
     expect(resolved.result.success).toBe(true);
     // Main scheme removes 4 threat (5 - 4 = 1)
-    expect(resolved.state.mainScheme.threat).toBe(1);
+    expect(getActiveMainScheme(resolved.state).threat).toBe(1);
   });
 });

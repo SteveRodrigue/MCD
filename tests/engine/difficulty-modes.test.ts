@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, StatusCard, getActiveVillain } from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
 import { ScenarioRegistry } from '@engine/scenarios';
 
@@ -40,15 +40,15 @@ describe('Scenario Plugin & Difficulty Modes (Rules Reference v1.8 p. 28)', () =
   it('Skirmish Mode: Setup starts on Stage I and defeating Stage I declares Hero Victory', () => {
     const state = createGame('SKIRMISH');
     expect(state.difficulty).toBe('SKIRMISH');
-    expect(state.villain.card.code).toBe('01094');
-    expect(state.villain.health).toBe(14); // 14 * 1 player
+    expect(getActiveVillain(state).card.code).toBe('01094');
+    expect(getActiveVillain(state).health).toBe(14); // 14 * 1 player
 
     // Deal lethal damage (14) to Rhino Stage I
     const plugin = ScenarioRegistry.get('rhino');
-    state.villain.health = 0;
+    getActiveVillain(state).health = 0;
     const { state: resState, victory } = plugin.onVillainDefeated(
       state,
-      state.villain.instanceId || '',
+      getActiveVillain(state).instanceId || '',
     );
 
     expect(victory).toBe(true);
@@ -58,22 +58,22 @@ describe('Scenario Plugin & Difficulty Modes (Rules Reference v1.8 p. 28)', () =
   it("Standard Mode: Defeating Stage I advances to Stage II, searches Breakin' & Takin', and defeating Stage II wins", () => {
     const state = createGame('STANDARD');
     expect(state.difficulty).toBe('STANDARD');
-    expect(state.villain.card.code).toBe('01094');
-    expect(state.villain.health).toBe(14);
+    expect(getActiveVillain(state).card.code).toBe('01094');
+    expect(getActiveVillain(state).health).toBe(14);
 
     const plugin = ScenarioRegistry.get('rhino');
 
     // Defeat Stage I
-    state.villain.health = 0;
+    getActiveVillain(state).health = 0;
     const { state: stage2State, advancedStage } = plugin.onVillainDefeated(
       state,
-      state.villain.instanceId || '',
+      getActiveVillain(state).instanceId || '',
     );
 
     expect(advancedStage).toBe(true);
     expect(stage2State.winner).toBeNull();
-    expect(stage2State.villain.card.code).toBe('01095'); // Rhino Stage II
-    expect(stage2State.villain.health).toBe(15); // 15 * 1 player
+    expect(getActiveVillain(stage2State).card.code).toBe('01095'); // Rhino Stage II
+    expect(getActiveVillain(stage2State).health).toBe(15); // 15 * 1 player
 
     // Breakin' & Takin' (01107) was searched and revealed
     const breakinScheme = stage2State.sideSchemes.find((s) => s.card.code === '01107');
@@ -82,10 +82,10 @@ describe('Scenario Plugin & Difficulty Modes (Rules Reference v1.8 p. 28)', () =
     expect(breakinScheme?.threat).toBe(3);
 
     // Defeat Stage II
-    stage2State.villain.health = 0;
+    getActiveVillain(stage2State).health = 0;
     const { state: winState, victory } = plugin.onVillainDefeated(
       stage2State,
-      stage2State.villain.instanceId || '',
+      getActiveVillain(stage2State).instanceId || '',
     );
 
     expect(victory).toBe(true);
@@ -96,34 +96,34 @@ describe('Scenario Plugin & Difficulty Modes (Rules Reference v1.8 p. 28)', () =
     const state = createGame('EXPERT');
     state.players[0].currentForm = 'hero';
     expect(state.difficulty).toBe('EXPERT');
-    expect(state.villain.card.code).toBe('01095'); // Starts on Stage II
-    expect(state.villain.health).toBe(15);
+    expect(getActiveVillain(state).card.code).toBe('01095'); // Starts on Stage II
+    expect(getActiveVillain(state).health).toBe(15);
 
     const plugin = ScenarioRegistry.get('rhino');
 
     // Defeat Stage II
-    state.villain.health = 0;
+    getActiveVillain(state).health = 0;
     const { state: stage3State, advancedStage } = plugin.onVillainDefeated(
       state,
-      state.villain.instanceId || '',
+      getActiveVillain(state).instanceId || '',
     );
 
     expect(advancedStage).toBe(true);
     expect(stage3State.winner).toBeNull();
-    expect(stage3State.villain.card.code).toBe('01096'); // Rhino Stage III
-    expect(stage3State.villain.health).toBe(16); // 16 * 1 player
+    expect(getActiveVillain(stage3State).card.code).toBe('01096'); // Rhino Stage III
+    expect(getActiveVillain(stage3State).health).toBe(16); // 16 * 1 player
 
     // Rhino gained Tough
-    expect(stage3State.villain.statusCards).toContain(StatusCard.TOUGH);
+    expect(getActiveVillain(stage3State).statusCards).toContain(StatusCard.TOUGH);
 
     // Hero gained Stunned
     expect(stage3State.players[0].statusCards).toContain(StatusCard.STUNNED);
 
     // Defeat Stage III
-    stage3State.villain.health = 0;
+    getActiveVillain(stage3State).health = 0;
     const { state: winState, victory } = plugin.onVillainDefeated(
       stage3State,
-      stage3State.villain.instanceId || '',
+      getActiveVillain(stage3State).instanceId || '',
     );
 
     expect(victory).toBe(true);

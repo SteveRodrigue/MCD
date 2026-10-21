@@ -3,7 +3,7 @@ import { overrideCard } from '../../support/card-overrides';
 import { setupGame, createCardInstance } from '../../../src/engine/state/game-setup';
 import { cardCatalog } from '../../../src/data/importer/card-loader';
 import { dispatchAction } from '../../../src/engine/pipeline/action-dispatcher';
-import { HeroCard, AlterEgoCard } from '../../../src/engine/models';
+import { HeroCard, AlterEgoCard, getActiveVillain } from '../../../src/engine/models';
 import { thaw } from '../../support/thaw-state';
 
 describe('Powered Gauntlets (01038) Ability Cost & Resolution Contract (RR v1.8 p. 9, Issue #139)', () => {
@@ -54,7 +54,7 @@ describe('Powered Gauntlets (01038) Ability Cost & Resolution Contract (RR v1.8 
     expect(heroPlayer.currentForm).toBe('hero');
     expect(heroPlayer.hand.length).toBe(0);
 
-    const initialVillainHp = heroState.villain.health;
+    const initialVillainHp = getActiveVillain(heroState).health;
 
     // 3. Activate Powered Gauntlets with 0 cards in hand and 0 resources
     const activationRes = dispatchAction(heroState, {
@@ -73,7 +73,7 @@ describe('Powered Gauntlets (01038) Ability Cost & Resolution Contract (RR v1.8 
     expect(updatedGauntlets.exhausted).toBe(true);
 
     // Verify dealt 1 damage to Villain (Rhino)
-    expect(activationRes.state.villain.health).toBe(initialVillainHp - 1);
+    expect(getActiveVillain(activationRes.state).health).toBe(initialVillainHp - 1);
 
     // 4. Cannot activate again while exhausted
     const exhaustedAttempt = dispatchAction(activationRes.state, {
@@ -103,7 +103,7 @@ describe('Powered Gauntlets (01038) Ability Cost & Resolution Contract (RR v1.8 
 
     expect(aerialActivationRes.result.success).toBe(true);
     // 2 damage dealt (initialVillainHp - 1 - 2 = initialVillainHp - 3)
-    expect(aerialActivationRes.state.villain.health).toBe(initialVillainHp - 3);
+    expect(getActiveVillain(aerialActivationRes.state).health).toBe(initialVillainHp - 3);
     expect(
       aerialActivationRes.state.players[0].tableau.find(
         (c) => c.instanceId === gauntletsInst.instanceId,

@@ -8,6 +8,7 @@ import {
   getActiveVillain,
   replaceActiveMainScheme,
   replaceVillain,
+  getActiveMainScheme,
 } from '@engine/models';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame } from '@engine/state/game-setup';
@@ -65,7 +66,7 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
   describe('Basic Thwart & Confused Status Replacement (RR v1.8 p. 28)', () => {
     it('hero basic thwart removes threat equal to THW stat and exhausts hero', () => {
       const player = state.players[0];
-      const initialThreat = state.mainScheme.threat;
+      const initialThreat = getActiveMainScheme(state).threat;
       const thwStat = (player.hero as any)?.thw ?? (player.hero as any)?.thwart ?? 1;
 
       const { state: nextState, result } = dispatchAction(state, {
@@ -77,13 +78,13 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
 
       expect(result.success).toBe(true);
       expect(state.players[0].exhausted).toBe(true);
-      expect(state.mainScheme.threat).toBe(initialThreat - thwStat);
+      expect(getActiveMainScheme(state).threat).toBe(initialThreat - thwStat);
     });
 
     it('confused status on hero replaces basic thwart, clearing confused without removing threat', () => {
       const player = state.players[0];
       player.statusCards.push(StatusCard.CONFUSED);
-      const initialThreat = state.mainScheme.threat;
+      const initialThreat = getActiveMainScheme(state).threat;
 
       const { state: nextState, result } = dispatchAction(state, {
         type: 'BASIC_THWART',
@@ -95,7 +96,7 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
       expect(result.success).toBe(true);
       expect(state.players[0].exhausted).toBe(true);
       expect(state.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
-      expect(state.mainScheme.threat).toBe(initialThreat);
+      expect(getActiveMainScheme(state).threat).toBe(initialThreat);
     });
 
     it('ally basic thwart removes threat and applies consequential damage', () => {
@@ -117,7 +118,7 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
       } as any;
       player.allies.push(ally);
 
-      const initialThreat = state.mainScheme.threat;
+      const initialThreat = getActiveMainScheme(state).threat;
       const { state: nextState, result } = dispatchAction(state, {
         type: 'ALLY_THWART',
         playerId: player.id,
@@ -130,7 +131,7 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
       const updatedAlly = state.players[0].allies.find((a) => a.instanceId === ally.instanceId)!;
       expect(updatedAlly.exhausted).toBe(true);
       expect(updatedAlly.tokens?.damage).toBe(1);
-      expect(state.mainScheme.threat).toBe(initialThreat - 2);
+      expect(getActiveMainScheme(state).threat).toBe(initialThreat - 2);
     });
 
     it('confused ally clears confusion, does not remove threat, but still takes consequential damage and exhausts', () => {
@@ -152,7 +153,7 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
       } as any;
       player.allies.push(ally);
 
-      const initialThreat = state.mainScheme.threat;
+      const initialThreat = getActiveMainScheme(state).threat;
       const { state: nextState, result } = dispatchAction(state, {
         type: 'ALLY_THWART',
         playerId: player.id,
@@ -166,7 +167,7 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
       expect(updatedAlly.exhausted).toBe(true);
       expect(updatedAlly.tokens?.damage).toBe(1);
       expect(updatedAlly.statusCards).not.toContain(StatusCard.CONFUSED);
-      expect(state.mainScheme.threat).toBe(initialThreat);
+      expect(getActiveMainScheme(state).threat).toBe(initialThreat);
     });
   });
 
@@ -185,7 +186,7 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
         } as any,
       });
 
-      const initialThreat = state.mainScheme.threat;
+      const initialThreat = getActiveMainScheme(state).threat;
       const { result } = applyThwart(state, {
         thwarterType: 'HERO',
         thwarterEntity: player,
@@ -196,7 +197,7 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
 
       expect(result.thwartAttempted).toBe(false);
       expect(result.threatRemoved).toBe(0);
-      expect(state.mainScheme.threat).toBe(initialThreat);
+      expect(getActiveMainScheme(state).threat).toBe(initialThreat);
     });
 
     it('side scheme is defeated and removed when threat reaches 0', () => {
@@ -229,15 +230,15 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
 
   describe('Villain Phase Threat & Main Scheme Progression', () => {
     it('step1_placeThreat delegates to applyThreatPlacement', () => {
-      state.mainScheme.threat = 2;
+      getActiveMainScheme(state).threat = 2;
       step1_placeThreat(state);
       // 1 player = +1 threat
-      expect(state.mainScheme.threat).toBe(3);
+      expect(getActiveMainScheme(state).threat).toBe(3);
     });
 
     it('threat placement triggers main scheme stage completion when targetThreat is reached', () => {
-      state.mainScheme.threat = 6;
-      state.mainScheme.targetThreat = 7;
+      getActiveMainScheme(state).threat = 6;
+      getActiveMainScheme(state).targetThreat = 7;
 
       const { result } = applyThreatPlacement(state, {
         targetType: 'main_scheme',
@@ -253,7 +254,7 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
   describe('Supplemental Cards Scenarios', () => {
     it('For Justice! (01060): removes 3 threat from scheme (or 4 if mental paid)', () => {
       const player = state.players[0];
-      state.mainScheme.threat = 5;
+      getActiveMainScheme(state).threat = 5;
 
       const ability = {
         effect: 'REMOVE_THREAT',
@@ -272,20 +273,20 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
         playerId: player.id,
         resourcesSpent: ['physical'],
       });
-      expect(state.mainScheme.threat).toBe(2);
+      expect(getActiveMainScheme(state).threat).toBe(2);
 
       // Case 2: With mental resource
-      state.mainScheme.threat = 5;
+      getActiveMainScheme(state).threat = 5;
       executeEffect(state, ability as any, {
         playerId: player.id,
         resourcesSpent: ['mental'],
       });
-      expect(state.mainScheme.threat).toBe(1);
+      expect(getActiveMainScheme(state).threat).toBe(1);
     });
 
     it('Emergency (01085): prevents 1 threat when threat would be placed on a scheme', () => {
       const player = state.players[0];
-      state.mainScheme.threat = 2;
+      getActiveMainScheme(state).threat = 2;
 
       // Register Emergency-like intercept trigger
       player.tableau.push({
@@ -322,12 +323,12 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
 
       expect(result.preventedAmount).toBe(1);
       expect(result.threatPlaced).toBe(2);
-      expect(state.mainScheme.threat).toBe(4);
+      expect(getActiveMainScheme(state).threat).toBe(4);
     });
 
     it('Spider-Tracer (01007): attached to minion; when defeated, removes 3 threat', () => {
       const player = state.players[0];
-      state.mainScheme.threat = 5;
+      getActiveMainScheme(state).threat = 5;
 
       // Minion with Spider-Tracer attached
       const minion = {
@@ -381,12 +382,12 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
       );
 
       // Spider-Tracer triggers on defeat to remove 3 threat
-      expect(state.mainScheme.threat).toBe(2);
+      expect(getActiveMainScheme(state).threat).toBe(2);
     });
 
     it('Advance (01186): Treachery causes villain to scheme and applies threat via threat pipeline', () => {
       const player = state.players[0];
-      state.mainScheme.threat = 2;
+      getActiveMainScheme(state).threat = 2;
       replaceVillain(state, getActiveVillain(state).instanceId!, {
         instanceId: 'rhino_villain',
         health: 14,
@@ -426,7 +427,7 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
       );
 
       // Rhino SCH (1) + Boost (1) = 2 threat added to Main Scheme
-      expect(state.mainScheme.threat).toBe(4);
+      expect(getActiveMainScheme(state).threat).toBe(4);
     });
   });
 });

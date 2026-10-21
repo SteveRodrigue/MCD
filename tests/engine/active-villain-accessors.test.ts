@@ -13,6 +13,7 @@ import {
   removeVillain,
   getActiveMainScheme,
   getMainSchemesInPlay,
+  getMainSchemeById,
 } from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
@@ -32,8 +33,7 @@ import {
 
 /**
  * #194: `villains[]` is canonical; the active villain is identified by `activeVillainId`
- * (the MC03 "active counter"). `state.villain` / `state.mainScheme` are legacy pointers that
- * silently diverge from the collections after the JSON clone in `dispatchAction`.
+ * (the MC03 "active counter"); the legacy `state.villain` / `state.mainScheme` pointers are gone (#215).
  * MC03 Wrecking Crew rules insert p.6: "the villain" means the active villain only; players may
  * attack any villain.
  */
@@ -81,7 +81,6 @@ const buildFourVillainState = (): GameState => {
     makeVillain('v_bulldozer', '01095', 15),
   ];
   state.villains = villains;
-  state.villain = villains[0];
   state.activeVillainId = 'v_wrecker';
   return state;
 };
@@ -115,13 +114,19 @@ describe('Active villain accessors (#194, MC03 multi-villain readiness)', () => 
       expect(getActiveVillain(state).instanceId).toBe('v_wrecker');
     });
 
-    it('falls back to the legacy pointer only when the collection is empty', () => {
+    it('a fresh state has no legacy villain / main scheme pointers (#215)', () => {
       const state = buildHeroState();
-      const legacy = state.villains[0];
-      state.villains = [];
-      delete state.activeVillainId;
-      expect(getActiveVillain(state)).toBe(legacy);
-      expect(getVillainsInPlay(state)).toEqual([]);
+      expect('villain' in state).toBe(false);
+      expect('mainScheme' in state).toBe(false);
+    });
+
+    it('getVillainById and getMainSchemeById find entries by code and instance id', () => {
+      const state = buildFourVillainState();
+      expect(getVillainById(state, '01095')?.instanceId).toBe('v_thunderball');
+      expect(getVillainById(state, 'v_bulldozer')?.instanceId).toBe('v_bulldozer');
+      const scheme = state.mainSchemes[0];
+      expect(getMainSchemeById(state, scheme.card.code)).toBe(scheme);
+      expect(getMainSchemeById(state, 'missing')).toBeUndefined();
     });
 
     it('main scheme collection helpers mirror the villain split', () => {
@@ -191,9 +196,18 @@ describe('Active villain accessors (#194, MC03 multi-villain readiness)', () => 
       removeVillain(state, 'v_wrecker');
       expect(state.activeVillainId).toBe('v_thunderball');
     });
+
+    it('removeVillain on the last villain leaves no villain and no active id', () => {
+      const state = buildHeroState();
+      const only = getActiveVillain(state);
+      removeVillain(state, only.instanceId!);
+      expect(state.villains).toEqual([]);
+      expect(state.activeVillainId).toBeUndefined();
+      expect(() => getActiveVillain(state)).toThrow('No villain in play.');
+    });
   });
 
-  describe('legacy pointer divergence after dispatch (JSON clone)', () => {
+  describe('accessors after dispatch (JSON clone)', () => {
     let state: GameState;
     beforeEach(() => {
       state = buildHeroState();

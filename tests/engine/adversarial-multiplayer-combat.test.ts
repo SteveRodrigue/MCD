@@ -6,6 +6,7 @@ import {
   StatusCard,
   CardInstance,
   GamePhase,
+  getActiveVillain,
 } from '../../src/engine/models';
 import { initiateEnemyAttack } from '../../src/engine/pipeline/combat-pipeline';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
@@ -148,26 +149,30 @@ function create3PlayerTestState(): GameState {
     accelerationTokens: 0,
     targetThreat: 10,
     mainSchemeDeck: [],
-    mainScheme: {
-      threat: 2,
-      targetThreat: 10,
-    },
+    mainSchemes: [
+      {
+        threat: 2,
+        targetThreat: 10,
+      },
+    ],
     sideSchemes: [],
-    villain: {
-      card: {
-        code: '01094',
-        name: 'Rhino',
-        type: 'villain',
-        attack: 3,
-        scheme: 1,
-        hit_points: 14,
-      } as any,
-      health: 14,
-      maxHealth: 14,
-      exhausted: false,
-      statusCards: [],
-      attachments: [],
-    },
+    villains: [
+      {
+        card: {
+          code: '01094',
+          name: 'Rhino',
+          type: 'villain',
+          attack: 3,
+          scheme: 1,
+          hit_points: 14,
+        } as any,
+        health: 14,
+        maxHealth: 14,
+        exhausted: false,
+        statusCards: [],
+        attachments: [],
+      },
+    ],
     encounterDeck: [],
     encounterDiscard: [],
     players: [player1 as PlayerState, player2 as PlayerState, player3 as PlayerState],
@@ -387,7 +392,7 @@ describe('Empirical Verification: Multiplayer Combat & Defense Scenarios', () =>
     const p3 = state.players[2];
 
     // Give villain an attachment that grants +1 additional boost card (2 boost cards total)
-    state.villain.attachments.push({
+    getActiveVillain(state).attachments.push({
       card: {
         code: 'att_extra_boost',
         name: 'Extra Boost Attachment',
@@ -444,7 +449,7 @@ describe('Empirical Verification: Multiplayer Combat & Defense Scenarios', () =>
     const p3 = state.players[2];
 
     // Villain has additionalBoostCards: 1
-    (state.villain.card as any).additionalBoostCards = 1;
+    (getActiveVillain(state).card as any).additionalBoostCards = 1;
 
     // Boost Card 1: 2 icons
     const boostCard1 = createMockCardInstance('boost_1', 'Heavy Blow', 'treachery', {
@@ -521,8 +526,8 @@ describe('Empirical Verification: Multiplayer Combat & Defense Scenarios', () =>
 
     state.encounterDeck = [];
     // Rhino attacks Player 1 with Overkill keyword (via attachment) and base ATK 5
-    state.villain.card.attack = 5;
-    state.villain.attachments.push({
+    getActiveVillain(state).card.attack = 5;
+    getActiveVillain(state).attachments.push({
       card: {
         code: 'att_overkill',
         name: 'Brute Force Overkill',
@@ -621,7 +626,7 @@ describe('Empirical Verification: Multiplayer Combat & Defense Scenarios', () =>
     state.encounterDeck = [boostCard];
 
     // Rhino attacks with Piercing granted via attachment
-    state.villain.attachments.push({
+    getActiveVillain(state).attachments.push({
       card: {
         code: 'att_piercing',
         name: 'Piercing Horns',
@@ -786,7 +791,7 @@ describe('Empirical Verification: Multiplayer Combat & Defense Scenarios', () =>
     const p3 = state.players[2];
 
     // 2 attachments granting +1 additional boost card each (total 3 boost cards)
-    state.villain.attachments.push(
+    getActiveVillain(state).attachments.push(
       {
         card: {
           code: 'att_extra_1',

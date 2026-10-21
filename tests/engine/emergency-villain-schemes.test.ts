@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, SideSchemeCard } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  SideSchemeCard,
+  getActiveMainScheme,
+} from '@engine/models';
 import { setupGame, createCardInstance, resetInstanceCounter } from '@engine/state/game-setup';
 import { applyThreatPlacement } from '@engine/pipeline/threat-pipeline';
 import {
@@ -90,11 +96,11 @@ describe('Emergency 01085 is scoped to the villain scheme (Issue #240)', () => {
     const inst = createCardInstance(card);
     state.sideSchemes.push({ instanceId: inst.instanceId, card, threat: 0 });
     const ability = card.enrichment!.abilities!.find((a) => a.trigger === 'WHEN_REVEALED')!;
-    const before = state.mainScheme.threat;
+    const before = getActiveMainScheme(state).threat;
     executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: inst });
     expect(emergencyPrompt(state)).toBeUndefined();
     expect(state.players[0].hand.some((c) => c.card.code === '01085')).toBe(true);
-    expect(state.mainScheme.threat).toBeGreaterThanOrEqual(before);
+    expect(getActiveMainScheme(state).threat).toBeGreaterThanOrEqual(before);
   });
 
   it('does not offer Emergency for a card effect or Incite placement', () => {

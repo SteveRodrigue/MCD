@@ -11,6 +11,7 @@ import {
   GamePhase,
   GameState,
   updateGameState,
+  getActiveVillain,
 } from '../../src/engine/models';
 import { TestSession } from '../support/render-with-session';
 
@@ -79,7 +80,7 @@ describe('hand tray structural sharing', () => {
     expect(rendersAfterMount).toBeGreaterThanOrEqual(5);
 
     const after = updateGameState(before, (draft) => {
-      draft.villain.health -= 1;
+      getActiveVillain(draft).health -= 1;
     });
     expect(after.players[0].hand).toBe(before.players[0].hand);
     rerender(tray(after));

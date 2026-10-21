@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, CardInstance } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, CardInstance, getActiveVillain } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
 import { getEffectiveVillainStats } from '@engine/pipeline/stat-calculator';
@@ -40,9 +40,9 @@ describe('Encounter Attachments Subsystem (Armored Rhino Suit, Charge, Enhanced 
   it('01098 Armored Rhino Suit: Accumulates damage counters across attacks and discards upon reaching at least 5 damage', () => {
     const suitCard = cardCatalog.getCard('01098')!;
     const suitInstance: CardInstance = createCardInstance(suitCard);
-    state.villain.attachments = [suitInstance];
+    getActiveVillain(state).attachments = [suitInstance];
 
-    const initialHp = state.villain.health;
+    const initialHp = getActiveVillain(state).health;
 
     // 1. Player basic attacks Rhino for 2 ATK
     const res1 = dispatchAction(state, {
@@ -53,10 +53,10 @@ describe('Encounter Attachments Subsystem (Armored Rhino Suit, Charge, Enhanced 
 
     expect(res1.result.success).toBe(true);
     // Villain HP should NOT decrease (absorbed by Armored Rhino Suit)
-    expect(res1.state.villain.health).toBe(initialHp);
+    expect(getActiveVillain(res1.state).health).toBe(initialHp);
     // Armored Rhino Suit should remain attached with 2 damage tokens
-    expect(res1.state.villain.attachments.length).toBe(1);
-    expect(res1.state.villain.attachments[0].tokens?.damage).toBe(2);
+    expect(getActiveVillain(res1.state).attachments.length).toBe(1);
+    expect(getActiveVillain(res1.state).attachments[0].tokens?.damage).toBe(2);
     expect(res1.state.encounterDiscard.some((c) => c.card.code === '01098')).toBe(false);
 
     // Ready hero for second attack
@@ -71,9 +71,9 @@ describe('Encounter Attachments Subsystem (Armored Rhino Suit, Charge, Enhanced 
     });
 
     expect(res2.result.success).toBe(true);
-    expect(res2.state.villain.health).toBe(initialHp);
-    expect(res2.state.villain.attachments.length).toBe(1);
-    expect(res2.state.villain.attachments[0].tokens?.damage).toBe(4);
+    expect(getActiveVillain(res2.state).health).toBe(initialHp);
+    expect(getActiveVillain(res2.state).attachments.length).toBe(1);
+    expect(getActiveVillain(res2.state).attachments[0].tokens?.damage).toBe(4);
     expect(res2.state.encounterDiscard.some((c) => c.card.code === '01098')).toBe(false);
 
     // Ready hero for third attack
@@ -88,9 +88,9 @@ describe('Encounter Attachments Subsystem (Armored Rhino Suit, Charge, Enhanced 
     });
 
     expect(res3.result.success).toBe(true);
-    expect(res3.state.villain.health).toBe(initialHp);
+    expect(getActiveVillain(res3.state).health).toBe(initialHp);
     // Armored Rhino Suit should now be discarded to encounter discard
-    expect(res3.state.villain.attachments.length).toBe(0);
+    expect(getActiveVillain(res3.state).attachments.length).toBe(0);
     expect(res3.state.encounterDiscard.some((c) => c.card.code === '01098')).toBe(true);
 
     // Ready hero for fourth attack
@@ -105,15 +105,15 @@ describe('Encounter Attachments Subsystem (Armored Rhino Suit, Charge, Enhanced 
     });
 
     expect(res4.result.success).toBe(true);
-    expect(res4.state.villain.health).toBe(initialHp - 2);
+    expect(getActiveVillain(res4.state).health).toBe(initialHp - 2);
   });
 
   it('01098 Armored Rhino Suit: Absorbs massive single attack (8 damage) and discards immediately', () => {
     const suitCard = cardCatalog.getCard('01098')!;
     const suitInstance: CardInstance = createCardInstance(suitCard);
-    state.villain.attachments = [suitInstance];
+    getActiveVillain(state).attachments = [suitInstance];
 
-    const initialHp = state.villain.health;
+    const initialHp = getActiveVillain(state).health;
 
     // Play Swinging Web Kick (8 damage, cost 3)
     const webKickCard = cardCatalog.getCard('01005')!;
@@ -132,17 +132,17 @@ describe('Encounter Attachments Subsystem (Armored Rhino Suit, Charge, Enhanced 
 
     expect(res.result.success).toBe(true);
     // Suit absorbs all 8 damage and discards; Rhino takes 0 damage
-    expect(res.state.villain.health).toBe(initialHp);
-    expect(res.state.villain.attachments.length).toBe(0);
+    expect(getActiveVillain(res.state).health).toBe(initialHp);
+    expect(getActiveVillain(res.state).attachments.length).toBe(0);
     expect(res.state.encounterDiscard.some((c) => c.card.code === '01098')).toBe(true);
   });
 
   it('01099 Charge: Dynamically grants +3 ATK and OVERKILL keyword', () => {
     const chargeCard = cardCatalog.getCard('01099')!;
     const chargeInstance: CardInstance = createCardInstance(chargeCard);
-    state.villain.attachments = [chargeInstance];
+    getActiveVillain(state).attachments = [chargeInstance];
 
-    const stats = getEffectiveVillainStats(state, state.villain);
+    const stats = getEffectiveVillainStats(state, getActiveVillain(state));
     // Base 2 ATK + 3 Charge = 5 ATK
     expect(stats.attack).toBe(5);
     expect(stats.keywords).toContain('OVERKILL');
@@ -151,9 +151,9 @@ describe('Encounter Attachments Subsystem (Armored Rhino Suit, Charge, Enhanced 
   it('01100 Enhanced Ivory Horn: Grants +1 ATK and can be discarded via player action', () => {
     const hornCard = cardCatalog.getCard('01100')!;
     const hornInstance: CardInstance = createCardInstance(hornCard);
-    state.villain.attachments = [hornInstance];
+    getActiveVillain(state).attachments = [hornInstance];
 
-    const stats = getEffectiveVillainStats(state, state.villain);
+    const stats = getEffectiveVillainStats(state, getActiveVillain(state));
     // Base 2 ATK + 1 Horn = 3 ATK
     expect(stats.attack).toBe(3);
 
@@ -173,12 +173,12 @@ describe('Encounter Attachments Subsystem (Armored Rhino Suit, Charge, Enhanced 
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.villain.attachments.length).toBe(0);
+    expect(getActiveVillain(res.state).attachments.length).toBe(0);
     expect(res.state.encounterDiscard.some((c) => c.card.code === '01100')).toBe(true);
     expect(res.state.players[0].hand.length).toBe(0);
     expect(res.state.players[0].discard.length).toBe(3);
 
-    const updatedStats = getEffectiveVillainStats(res.state, res.state.villain);
+    const updatedStats = getEffectiveVillainStats(res.state, getActiveVillain(res.state));
     expect(updatedStats.attack).toBe(2);
   });
 });

@@ -3,7 +3,7 @@ import { setupGame, createCardInstance } from '../../src/engine/state/game-setup
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { assertCardConservation, attachCardToHost } from '../../src/engine/state/state-validator';
-import { HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { HeroCard, AlterEgoCard, getActiveVillain } from '../../src/engine/models';
 import { thaw } from '../support/thaw-state';
 
 describe('Universal Card Conservation & Attachment Deduplication (RR v1.8 p. 5, Issue #44, ADR-0040)', () => {
@@ -62,12 +62,12 @@ describe('Universal Card Conservation & Attachment Deduplication (RR v1.8 p. 5, 
     attachCardToHost(state, charge, 'VILLAIN');
 
     // Villain must have exactly 2 attachments (zero duplication!)
-    expect(state.villain.attachments).toHaveLength(2);
-    expect(state.villain.attachments.map((a) => a.card.code)).toEqual(['01103', '01102']);
+    expect(getActiveVillain(state).attachments).toHaveLength(2);
+    expect(getActiveVillain(state).attachments.map((a) => a.card.code)).toEqual(['01103', '01102']);
 
     // Attempting to attach the same armor instance again must not duplicate
     attachCardToHost(state, armor, 'VILLAIN');
-    expect(state.villain.attachments).toHaveLength(2);
+    expect(getActiveVillain(state).attachments).toHaveLength(2);
 
     // Global card conservation invariant must pass
     expect(() => assertCardConservation(state)).not.toThrow();
@@ -152,13 +152,13 @@ describe('Universal Card Conservation & Attachment Deduplication (RR v1.8 p. 5, 
     // Attach to player first
     attachCardToHost(state, upgrade, 'HERO', 'p1');
     expect(state.players[0].attachments).toHaveLength(1);
-    expect(state.villain.attachments).toHaveLength(0);
+    expect(getActiveVillain(state).attachments).toHaveLength(0);
 
     // Re-attach to villain
     attachCardToHost(state, upgrade, 'VILLAIN');
     expect(state.players[0].attachments).toHaveLength(0); // Cleanly removed from player
-    expect(state.villain.attachments).toHaveLength(1); // Attached to villain
-    expect(state.villain.attachments[0].instanceId).toBe(upgrade.instanceId);
+    expect(getActiveVillain(state).attachments).toHaveLength(1); // Attached to villain
+    expect(getActiveVillain(state).attachments[0].instanceId).toBe(upgrade.instanceId);
 
     // Invariant check passes
     expect(() => assertCardConservation(state)).not.toThrow();

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
+import { HeroCard, AlterEgoCard, StatusCard, getActiveVillain } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
 import {
@@ -205,12 +205,12 @@ describe('Target Resolution Engine Contract Tests (Issue #68 & RR v1.8)', () => 
   });
 
   describe('Scenario 4: Enemy & Minion Scopes', () => {
-    it('resolves VILLAIN to state.villain', () => {
+    it('resolves VILLAIN to getActiveVillain(state)', () => {
       const state = createTwoPlayerState();
       const targets = resolveCharacterTargets(state, 'VILLAIN');
       expect(targets).toHaveLength(1);
       expect(targets[0].entityType).toBe('villain');
-      expect(targets[0].id).toBe(state.villain.instanceId || 'villain');
+      expect(targets[0].id).toBe(getActiveVillain(state).instanceId || 'villain');
     });
 
     it('resolves CHOSEN_ENEMY to villain or targeted minion', () => {
@@ -297,7 +297,7 @@ describe('Target Resolution Engine Contract Tests (Issue #68 & RR v1.8)', () => 
       expect(allChars).toHaveLength(5);
       expect(allChars.map((c) => c.id)).toEqual(
         expect.arrayContaining([
-          state.villain.instanceId || 'villain',
+          getActiveVillain(state).instanceId || 'villain',
           'p1',
           'p2',
           blackCat.instanceId,

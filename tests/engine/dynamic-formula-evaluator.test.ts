@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { evaluateDynamicAmount } from '../../src/engine/effects/dynamic-formula-evaluator';
 import type { GameState, PlayerState, CardInstance, SideSchemeCard } from '../../src/engine/models';
 
+import { getActiveVillain } from '@engine/models';
 describe('Dynamic Formula Evaluator (evaluateDynamicAmount) — RR v1.8 & ADR-0052', () => {
   const createMockPlayer = (overrides?: Partial<PlayerState>): PlayerState => ({
     id: 'player-1',
@@ -65,14 +66,15 @@ describe('Dynamic Formula Evaluator (evaluateDynamicAmount) — RR v1.8 & ADR-00
     } as any;
     return {
       scenario: { id: 'rhino', name: 'Rhino' } as any,
-      villain: mockVillain,
       villains: [mockVillain],
-      mainScheme: {
-        id: 'main-scheme',
-        card: { code: '01097', name: 'The Break-In!' } as any,
-        threat: 5,
-        targetThreat: 7,
-      } as any,
+      mainSchemes: [
+        {
+          id: 'main-scheme',
+          card: { code: '01097', name: 'The Break-In!' } as any,
+          threat: 5,
+          targetThreat: 7,
+        } as any,
+      ],
       sideSchemes: [],
       players: [player],
       activePlayerId: player.id,
@@ -190,8 +192,8 @@ describe('Dynamic Formula Evaluator (evaluateDynamicAmount) — RR v1.8 & ADR-00
 
     it('resolves DAMAGE on full-health villain to 0 when health === maxHealth', () => {
       const state = createMockState();
-      state.villain.health = 14;
-      state.villain.maxHealth = 14;
+      getActiveVillain(state).health = 14;
+      getActiveVillain(state).maxHealth = 14;
       if (state.villains?.[0]) {
         state.villains[0].health = 14;
         state.villains[0].maxHealth = 14;

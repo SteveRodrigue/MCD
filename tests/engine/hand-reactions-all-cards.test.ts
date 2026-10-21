@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, StatusCard, getActiveVillain } from '@engine/models';
 import { setupGame, createCardInstance, resetInstanceCounter } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
 import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
@@ -492,13 +492,13 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
         },
       ]);
 
-      const villainHp = state.villain.health;
+      const villainHp = getActiveVillain(state).health;
 
       // Dispatch ATTACK_DEFENDED (Spider-Man base ATK is 2)
       dispatchTrigger(state, 'ATTACK_DEFENDED', {
         targetPlayerId: 'p1',
         defenderType: 'HERO',
-        targetInstanceId: state.villain.instanceId,
+        targetInstanceId: getActiveVillain(state).instanceId,
       });
 
       // Both copies are queued
@@ -508,7 +508,7 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
       state = acceptPrompt(state);
 
       // Copy 1 dealt 2 damage
-      expect(state.villain.health).toBe(villainHp - 2);
+      expect(getActiveVillain(state).health).toBe(villainHp - 2);
 
       // Prompt 2 is STILL presented (Response window does not close on trigger)
       expect(peekDecisionPrompt(state)).toBeDefined();
@@ -518,7 +518,7 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
       state = acceptPrompt(state);
 
       // Copy 2 dealt 2 damage again
-      expect(state.villain.health).toBe(villainHp - 4);
+      expect(getActiveVillain(state).health).toBe(villainHp - 4);
       expect(peekDecisionPrompt(state)).toBeUndefined();
 
       // Both copies discarded
@@ -540,7 +540,7 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
         targetPlayerId: 'p2',
         defenderType: 'HERO',
         targetPlayerScope: 'ANY',
-        targetInstanceId: state.villain.instanceId,
+        targetInstanceId: getActiveVillain(state).instanceId,
       });
 
       expect(peekDecisionPrompt(state)?.kind).toBe('ORDER_SIMULTANEOUS_ABILITIES');

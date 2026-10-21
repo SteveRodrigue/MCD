@@ -7,6 +7,8 @@ import {
   SideSchemeCard,
   CardType,
   CardInstance,
+  getActiveMainScheme,
+  getActiveVillain,
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { canBasicThwart } from '@engine/pipeline/legality-checker';
@@ -70,7 +72,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
       },
     ];
 
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
 
     // Cannot thwart main scheme while Crisis is active
     const check = canBasicThwart(state, 'p1', 'main_scheme');
@@ -111,8 +113,8 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
       exhausted: false,
     };
 
-    state.villain.attachments = [crisisAttachment];
-    state.mainScheme.threat = 5;
+    getActiveVillain(state).attachments = [crisisAttachment];
+    getActiveMainScheme(state).threat = 5;
 
     expect(hasCrisisInPlay(state)).toBe(true);
 
@@ -137,7 +139,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
     };
 
     state.environments = [crisisEnv];
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
 
     expect(hasCrisisInPlay(state)).toBe(true);
 
@@ -162,7 +164,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
     };
 
     state.players[0].tableau = [crisisUpgrade];
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
 
     expect(hasCrisisInPlay(state)).toBe(true);
 
@@ -180,7 +182,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
         threat: 2,
       },
     ];
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
 
     // Execute REMOVE_THREAT with target: CHOSEN_SCHEME (like For Justice!)
     const result = executeSequence(
@@ -208,7 +210,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
     // Threat was removed from Crowd Control, defeating it!
     expect(result.state.sideSchemes.length).toBe(0);
     // Main Scheme threat was untouched
-    expect(result.state.mainScheme.threat).toBe(5);
+    expect(getActiveMainScheme(result.state).threat).toBe(5);
   });
 
   it('7) CHOSEN_SCHEME with Crisis icon and multiple side schemes: prompt contains ONLY side schemes, NEVER Main Scheme', () => {
@@ -227,7 +229,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
         threat: 3,
       },
     ];
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
 
     const result = executeSequence(
       state,
@@ -271,7 +273,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
         threat: 2,
       },
     ];
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
 
     const result = executeSequence(
       state,
@@ -294,7 +296,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
 
     expect(result.success).toBe(true);
     // Main Scheme threat remains untouched
-    expect(result.state.mainScheme.threat).toBe(5);
+    expect(getActiveMainScheme(result.state).threat).toBe(5);
     // Crisis block logged
     expect(result.state.log.some((l) => l.onomatopoeia === 'CRISIS BLOCKS!')).toBe(true);
   });
@@ -308,7 +310,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
         threat: 2,
       },
     ];
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
 
     const result = executeSequence(
       state,
@@ -331,7 +333,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
 
     expect(result.success).toBe(true);
     // Main Scheme threat was reduced (5 -> 3)
-    expect(result.state.mainScheme.threat).toBe(3);
+    expect(getActiveMainScheme(result.state).threat).toBe(3);
   });
 
   it('10) Issue #160: Crowd Control (01108) revealed in a 2-player game initializes with strictly 4 threat (2 * 2 players)', () => {

@@ -6,6 +6,7 @@ import {
   AlterEgoCard,
   CardInstance,
   GamePhase,
+  getActiveVillain,
 } from '../../src/engine/models';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { canInitiateAbility } from '../../src/engine/pipeline/legality-checker';
@@ -62,7 +63,7 @@ describe('Villain & Encounter Card Action Discovery & Legality (Issue #314 / RR 
     // Ivory Horn (01100) or Armored Suit attachment with Hero Action: Spend physical resources -> discard
     const hornCard = cardCatalog.getCard('01100')!;
     const hornInstance: CardInstance = createCardInstance(hornCard);
-    state.villain.attachments = [hornInstance];
+    getActiveVillain(state).attachments = [hornInstance];
 
     // Give player physical resource cards
     const phys1 = createCardInstance(cardCatalog.getCard('01003')!);
@@ -92,7 +93,7 @@ describe('Villain & Encounter Card Action Discovery & Legality (Issue #314 / RR 
 
     expect(res.result.success).toBe(true);
     expect(
-      res.state.villain.attachments.some((a) => a.instanceId === hornInstance.instanceId),
+      getActiveVillain(res.state).attachments.some((a) => a.instanceId === hornInstance.instanceId),
     ).toBe(false);
   });
 
@@ -282,7 +283,7 @@ describe('Villain & Encounter Card Action Discovery & Legality (Issue #314 / RR 
     // Villain attachment
     const hornCard = cardCatalog.getCard('01100')!;
     const hornInstance: CardInstance = createCardInstance(hornCard);
-    state.villain.attachments = [hornInstance];
+    getActiveVillain(state).attachments = [hornInstance];
     p1.hand = [
       createCardInstance(cardCatalog.getCard('01003')!),
       createCardInstance(cardCatalog.getCard('01003')!),

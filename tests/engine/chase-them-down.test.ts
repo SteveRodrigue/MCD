@@ -1,6 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, CardInstance, CardResources } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  CardInstance,
+  CardResources,
+  getActiveMainScheme,
+  getActiveVillain,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
 import { executeEffect } from '@engine/effects';
@@ -42,7 +50,7 @@ describe('Responses to a defeat by an attack (#247): Chase Them Down and Tigra',
       p.currentForm = 'hero';
       p.activeFormCard = p.hero;
     }
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
   });
 
   const chaseThemDown = (owner = 'p1'): CardInstance =>
@@ -58,7 +66,7 @@ describe('Responses to a defeat by an attack (#247): Chase Them Down and Tigra',
       type: 'BASIC_ATTACK',
       playerId,
       targetType,
-      targetInstanceId: id ?? state.villain.instanceId,
+      targetInstanceId: id ?? getActiveVillain(state).instanceId,
     });
     state = res.state;
     return res;
@@ -89,7 +97,7 @@ describe('Responses to a defeat by an attack (#247): Chase Them Down and Tigra',
 
       answer('p1', 'trigger_chase_them_down');
 
-      expect(state.mainScheme.threat).toBe(3);
+      expect(getActiveMainScheme(state).threat).toBe(3);
       expect(state.players[0].hand.map((c) => c.instanceId)).not.toContain(card.instanceId);
       expect(state.players[0].discard.map((c) => c.instanceId)).toContain(card.instanceId);
     });
@@ -103,7 +111,7 @@ describe('Responses to a defeat by an attack (#247): Chase Them Down and Tigra',
       basicAttack('p1', 'minion', m.instanceId);
       answer('p1', 'pass');
 
-      expect(state.mainScheme.threat).toBe(5);
+      expect(getActiveMainScheme(state).threat).toBe(5);
       expect(state.players[0].hand.map((c) => c.instanceId)).toContain(card.instanceId);
     });
 
@@ -145,14 +153,14 @@ describe('Responses to a defeat by an attack (#247): Chase Them Down and Tigra',
       expect(chasePrompts()).toHaveLength(1);
 
       answer('p1', 'trigger_chase_them_down');
-      expect(state.mainScheme.threat).toBe(3);
+      expect(getActiveMainScheme(state).threat).toBe(3);
     });
   });
 
   describe('11. Your hero attack defeats the villain', () => {
     it('offers Chase Them Down for the defeated villain (stage I, standard)', () => {
       state.players[0].hand = [chaseThemDown()];
-      state.villain.health = 1;
+      getActiveVillain(state).health = 1;
 
       basicAttack('p1', 'villain');
 
@@ -180,7 +188,7 @@ describe('Responses to a defeat by an attack (#247): Chase Them Down and Tigra',
 
       expect(state.players[0].engagedMinions).toHaveLength(0);
       expect(chasePrompts()).toHaveLength(0);
-      expect(state.mainScheme.threat).toBe(5);
+      expect(getActiveMainScheme(state).threat).toBe(5);
     });
   });
 

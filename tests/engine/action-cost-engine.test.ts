@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, CardAbility } from '../../src/engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  CardAbility,
+  getActiveMainScheme,
+  getActiveVillain,
+} from '../../src/engine/models';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { dispatchAction } from '../../src/engine/pipeline';
 import { canPayAbilityCost, executeAbilityCost } from '../../src/engine/pipeline/cost-engine';
@@ -131,7 +138,7 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
     it('Discards up to 5 cards from hand and removes 1 threat per discarded card', () => {
       const p2 = state.players[1];
       state.activePlayerIndex = 1;
-      state.mainScheme.threat = 5;
+      getActiveMainScheme(state).threat = 5;
 
       // Populate hand with 3 cards
       p2.hand = [
@@ -159,7 +166,7 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
       expect(res.result.success).toBe(true);
       expect(res.state.players[1].hand.length).toBe(1);
       expect(res.state.players[1].discard.length).toBe(2);
-      expect(res.state.mainScheme.threat).toBe(3); // 5 - 2 = 3
+      expect(getActiveMainScheme(res.state).threat).toBe(3); // 5 - 2 = 3
     });
   });
 
@@ -167,7 +174,7 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
     const useLegalPractice = (discardIds: string[], handSize: number) => {
       const p2 = state.players[1];
       state.activePlayerIndex = 1;
-      state.mainScheme.threat = 8;
+      getActiveMainScheme(state).threat = 8;
       p2.hand = Array.from({ length: handSize }, (_, i) => ({
         instanceId: `h${i + 1}`,
         card: { name: `Card ${i + 1}` } as any,
@@ -192,19 +199,19 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
       const res = useLegalPractice(['h1', 'h2', 'h3', 'h4', 'h5'], 6);
       expect(res.result.success).toBe(true);
       expect(res.state.players[1].hand.length).toBe(1);
-      expect(res.state.mainScheme.threat).toBe(3);
+      expect(getActiveMainScheme(res.state).threat).toBe(3);
     });
 
     it('rejects discarding more than 5 cards ("up to 5")', () => {
       const res = useLegalPractice(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], 6);
       expect(res.result.success).toBe(false);
       expect(res.state.players[1].hand.length).toBe(6);
-      expect(res.state.mainScheme.threat).toBe(8);
+      expect(getActiveMainScheme(res.state).threat).toBe(8);
     });
 
     it('removes no threat when no card is discarded ("up to 5")', () => {
       const res = useLegalPractice([], 0);
-      expect(res.state.mainScheme.threat).toBe(8);
+      expect(getActiveMainScheme(res.state).threat).toBe(8);
     });
 
     it('keeps the discarded count through the scheme choice prompt', () => {
@@ -216,7 +223,7 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
       const res = useLegalPractice(['h1', 'h2', 'h3'], 3);
       const prompt = peekDecisionPrompt(res.state);
       expect(prompt).toBeDefined();
-      expect(res.state.mainScheme.threat).toBe(8);
+      expect(getActiveMainScheme(res.state).threat).toBe(8);
 
       const chosen = prompt!.options.find((o) => o.id === 'ss_legal')!;
       const resolved = dispatchAction(res.state, {
@@ -226,7 +233,7 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
       });
       expect(resolved.result.success).toBe(true);
       expect(resolved.state.sideSchemes.find((x) => x.instanceId === 'ss_legal')?.threat).toBe(1);
-      expect(resolved.state.mainScheme.threat).toBe(8);
+      expect(getActiveMainScheme(resolved.state).threat).toBe(8);
     });
   });
 
@@ -254,7 +261,7 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
         exhausted: false,
       });
 
-      const initialVillainHealth = state.villain.health;
+      const initialVillainHealth = getActiveVillain(state).health;
 
       const res = dispatchAction(state, {
         type: 'USE_CARD_ABILITY',
@@ -265,7 +272,7 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
 
       expect(res.result.success).toBe(true);
       expect(res.state.players[0].tableau[0].exhausted).toBe(true);
-      expect(res.state.villain.health).toBe(initialVillainHealth - 1);
+      expect(getActiveVillain(res.state).health).toBe(initialVillainHealth - 1);
     });
   });
 
@@ -461,7 +468,7 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
         playerId: p1.id,
         cardInstanceId: 'ec_inst',
         abilityId: 'energy_channel_blast',
-        targetInstanceId: state.villain.instanceId,
+        targetInstanceId: getActiveVillain(state).instanceId,
       });
 
       expect(res.result.success).toBe(false);
@@ -485,20 +492,20 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
         },
       ];
 
-      const initialVillainHealth = state.villain.health;
+      const initialVillainHealth = getActiveVillain(state).health;
 
       const res = dispatchAction(state, {
         type: 'USE_CARD_ABILITY',
         playerId: p1.id,
         cardInstanceId: 'ec_inst',
         abilityId: 'energy_channel_blast',
-        targetInstanceId: state.villain.instanceId,
+        targetInstanceId: getActiveVillain(state).instanceId,
       });
 
       expect(res.result.success).toBe(true);
       expect(res.state.players[0].tableau.length).toBe(0);
       expect(res.state.players[0].discard.some((c) => c.instanceId === 'ec_inst')).toBe(true);
-      expect(res.state.villain.health).toBe(initialVillainHealth - 6);
+      expect(getActiveVillain(res.state).health).toBe(initialVillainHealth - 6);
     });
 
     it('Test 2C: Executes Blast with 6 counters, clamping damage to exactly 10', () => {
@@ -517,19 +524,19 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
         },
       ];
 
-      const initialVillainHealth = state.villain.health;
+      const initialVillainHealth = getActiveVillain(state).health;
 
       const res = dispatchAction(state, {
         type: 'USE_CARD_ABILITY',
         playerId: p1.id,
         cardInstanceId: 'ec_inst',
         abilityId: 'energy_channel_blast',
-        targetInstanceId: state.villain.instanceId,
+        targetInstanceId: getActiveVillain(state).instanceId,
       });
 
       expect(res.result.success).toBe(true);
       expect(res.state.players[0].tableau.length).toBe(0);
-      expect(res.state.villain.health).toBe(initialVillainHealth - 10);
+      expect(getActiveVillain(res.state).health).toBe(initialVillainHealth - 10);
     });
   });
 
@@ -827,20 +834,20 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
       expect(ec.tokens?.counters).toBe(7);
 
       // Trigger Blast ability subsequently with 7 tokens: deals exactly clamped 10 damage
-      const initialVillainHealth = addRes.state.villain.health;
+      const initialVillainHealth = getActiveVillain(addRes.state).health;
       const blastRes = dispatchAction(addRes.state, {
         type: 'USE_CARD_ABILITY',
         playerId: p1.id,
         cardInstanceId: 'ec_inst',
         abilityId: 'energy_channel_blast',
-        targetInstanceId: addRes.state.villain.instanceId,
+        targetInstanceId: getActiveVillain(addRes.state).instanceId,
       });
 
       expect(blastRes.result.success).toBe(true);
       expect(blastRes.state.players[0].tableau.length).toBe(0);
       expect(blastRes.state.players[0].discard.some((c) => c.instanceId === 'ec_inst')).toBe(true);
       // Clamped to 10 damage (5 tokens' worth of damage at 2 per counter, safely ignoring excess)
-      expect(blastRes.state.villain.health).toBe(initialVillainHealth - 10);
+      expect(getActiveVillain(blastRes.state).health).toBe(initialVillainHealth - 10);
     });
   });
   describe('Hand-event ability costs come from the printed event cost (RR v1.8 Costs)', () => {

@@ -4,6 +4,7 @@ import { getEffectiveHeroStats, hasPlayerTrait } from '../../src/engine/pipeline
 import { StatusCard } from '../../src/engine/models/enums';
 import type { GameState, PlayerState, CardInstance } from '../../src/engine/models';
 
+import { getActiveMainScheme, getActiveVillain } from '@engine/models';
 function createMockPlayer(overrides?: Partial<PlayerState>): PlayerState {
   return {
     id: 'player-1',
@@ -62,21 +63,25 @@ function createMockState(playerOverrides?: Partial<PlayerState>): GameState {
   return {
     scenarioId: 'rhino',
     scenario: { id: 'rhino', name: 'Rhino' } as any,
-    villain: {
-      id: 'rhino-1',
-      card: { code: '01094', name: 'Rhino', hitPoints: 14 } as any,
-      health: 14,
-      maxHealth: 14,
-      statusCards: [],
-      attachments: [],
-    } as any,
-    mainScheme: {
-      id: 'main-scheme',
-      instanceId: 'main-scheme',
-      card: { code: '01097', name: 'The Break-In!' } as any,
-      threat: 5,
-      targetThreat: 7,
-    } as any,
+    villains: [
+      {
+        id: 'rhino-1',
+        card: { code: '01094', name: 'Rhino', hitPoints: 14 } as any,
+        health: 14,
+        maxHealth: 14,
+        statusCards: [],
+        attachments: [],
+      } as any,
+    ],
+    mainSchemes: [
+      {
+        id: 'main-scheme',
+        instanceId: 'main-scheme',
+        card: { code: '01097', name: 'The Break-In!' } as any,
+        threat: 5,
+        targetThreat: 7,
+      } as any,
+    ],
     sideSchemes: [
       {
         instanceId: 'side-1',
@@ -207,7 +212,7 @@ describe('Condition-Based Modifiers & Ad-Hoc Param Elimination (Bug #67)', () =>
           traits: ['Avenger', 'Aerial'],
         } as any,
       });
-      state.villain.statusCards = [StatusCard.TOUGH];
+      getActiveVillain(state).statusCards = [StatusCard.TOUGH];
       const player = state.players[0];
 
       const steps = [
@@ -228,8 +233,8 @@ describe('Condition-Based Modifiers & Ad-Hoc Param Elimination (Bug #67)', () =>
       const result = executeSequence(state, steps, { playerId: player.id });
       expect(result.success).toBe(true);
       // Single hit consumed Tough; villain took 0 damage because Tough blocked the single 8-damage hit
-      expect(result.state.villain.statusCards).not.toContain(StatusCard.TOUGH);
-      expect(result.state.villain.health).toBe(14);
+      expect(getActiveVillain(result.state).statusCards).not.toContain(StatusCard.TOUGH);
+      expect(getActiveVillain(result.state).health).toBe(14);
     });
 
     it('T4: Captain Marvel without Aerial trait resolves Supersonic Punch event -> deals 4 damage', () => {
@@ -253,7 +258,7 @@ describe('Condition-Based Modifiers & Ad-Hoc Param Elimination (Bug #67)', () =>
 
       const result = executeSequence(state, steps, { playerId: player.id });
       expect(result.success).toBe(true);
-      expect(result.state.villain.health).toBe(10); // 14 - 4
+      expect(getActiveVillain(result.state).health).toBe(10); // 14 - 4
     });
 
     it('T5: Hero resolves Powered Gauntlets action in play -> grants +1 damage if Aerial is granted via in-play tableau upgrade', () => {
@@ -304,7 +309,7 @@ describe('Condition-Based Modifiers & Ad-Hoc Param Elimination (Bug #67)', () =>
 
       const result = executeSequence(state, steps, { playerId: player.id });
       expect(result.success).toBe(true);
-      expect(result.state.villain.health).toBe(12); // 14 - (1 + 1)
+      expect(getActiveVillain(result.state).health).toBe(12); // 14 - (1 + 1)
     });
   });
 
@@ -438,7 +443,7 @@ describe('Condition-Based Modifiers & Ad-Hoc Param Elimination (Bug #67)', () =>
 
       const result = executeSequence(state, steps, { playerId: player.id });
       expect(result.success).toBe(true);
-      expect(result.state.mainScheme.threat).toBe(3); // 5 - 2
+      expect(getActiveMainScheme(result.state).threat).toBe(3); // 5 - 2
       expect(result.state.sideSchemes[0].threat).toBe(1); // 3 - 2
     });
 
@@ -461,7 +466,7 @@ describe('Condition-Based Modifiers & Ad-Hoc Param Elimination (Bug #67)', () =>
 
       const result = executeSequence(state, steps, { playerId: player.id });
       expect(result.success).toBe(true);
-      expect(result.state.mainScheme.threat).toBe(3); // 5 - 2
+      expect(getActiveMainScheme(result.state).threat).toBe(3); // 5 - 2
       expect(result.state.sideSchemes[0].threat).toBe(3); // untouched
     });
   });

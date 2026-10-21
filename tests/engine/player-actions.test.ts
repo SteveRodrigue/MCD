@@ -20,6 +20,7 @@ import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 import { thaw } from '../support/thaw-state';
 
+import { getActiveMainScheme, getActiveVillain } from '@engine/models';
 describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
 
@@ -143,7 +144,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
     });
 
     it('deals basic attack damage to the Villain', () => {
-      const initialVillainHealth = gameState.villain.health; // 14
+      const initialVillainHealth = getActiveVillain(gameState).health; // 14
 
       const res = dispatchAction(gameState, {
         type: 'BASIC_ATTACK',
@@ -154,13 +155,13 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       expect(res.result.success).toBe(true);
       expect(res.result.onomatopoeia).toBe('POW!');
       // Spider-Man has ATK 2 -> 14 - 2 = 12
-      expect(res.state.villain.health).toBe(initialVillainHealth - 2);
+      expect(getActiveVillain(res.state).health).toBe(initialVillainHealth - 2);
       expect(res.state.players[0].exhausted).toBe(true);
     });
 
     it('discards Stunned status card instead of dealing damage', () => {
       gameState.players[0].statusCards.push(StatusCard.STUNNED);
-      const initialVillainHealth = gameState.villain.health;
+      const initialVillainHealth = getActiveVillain(gameState).health;
 
       const res = dispatchAction(gameState, {
         type: 'BASIC_ATTACK',
@@ -171,13 +172,13 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       expect(res.result.success).toBe(true);
       expect(res.result.onomatopoeia).toBe('STUN CLEARED!');
       // Damage was cancelled, status removed
-      expect(res.state.villain.health).toBe(initialVillainHealth);
+      expect(getActiveVillain(res.state).health).toBe(initialVillainHealth);
       expect(res.state.players[0].statusCards).not.toContain(StatusCard.STUNNED);
     });
 
     it('discards Tough status card from target without dealing HP damage', () => {
-      gameState.villain.statusCards.push(StatusCard.TOUGH);
-      const initialVillainHealth = gameState.villain.health;
+      getActiveVillain(gameState).statusCards.push(StatusCard.TOUGH);
+      const initialVillainHealth = getActiveVillain(gameState).health;
 
       const res = dispatchAction(gameState, {
         type: 'BASIC_ATTACK',
@@ -187,8 +188,8 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
 
       expect(res.result.success).toBe(true);
       expect(res.result.onomatopoeia).toContain('TOUGH');
-      expect(res.state.villain.health).toBe(initialVillainHealth);
-      expect(res.state.villain.statusCards).not.toContain(StatusCard.TOUGH);
+      expect(getActiveVillain(res.state).health).toBe(initialVillainHealth);
+      expect(getActiveVillain(res.state).statusCards).not.toContain(StatusCard.TOUGH);
     });
 
     it('blocks attacking Villain when an engaged minion has Guard (RR v1.8 p. 15)', () => {
@@ -282,7 +283,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
     beforeEach(() => {
       gameState.players[0].currentForm = 'hero';
       gameState.players[0].activeFormCard = gameState.players[0].hero;
-      gameState.mainScheme.threat = 3;
+      getActiveMainScheme(gameState).threat = 3;
     });
 
     it('removes threat from the Main Scheme', () => {
@@ -295,7 +296,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       expect(res.result.success).toBe(true);
       expect(res.result.onomatopoeia).toBe('FOILED!');
       // Spider-Man has THW 1 -> 3 - 1 = 2
-      expect(res.state.mainScheme.threat).toBe(2);
+      expect(getActiveMainScheme(res.state).threat).toBe(2);
       expect(res.state.players[0].exhausted).toBe(true);
     });
 
@@ -310,7 +311,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
 
       expect(res.result.success).toBe(true);
       expect(res.result.onomatopoeia).toBe('CONFUSION CLEARED!');
-      expect(res.state.mainScheme.threat).toBe(3); // Threat unchanged
+      expect(getActiveMainScheme(res.state).threat).toBe(3); // Threat unchanged
       expect(res.state.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
     });
 
@@ -400,7 +401,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
 
       player.hand = [kickInstance, energyInstance, backflipInstance];
 
-      const initialVillainHp = gameState.villain.health;
+      const initialVillainHp = getActiveVillain(gameState).health;
 
       const res = dispatchAction(gameState, {
         type: 'PLAY_CARD',
@@ -411,7 +412,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
 
       expect(res.result.success).toBe(true);
       expect(res.result.onomatopoeia).toBe('POW!');
-      expect(res.state.villain.health).toBe(initialVillainHp - 8);
+      expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 8);
       // Event goes to discard pile
       expect(res.state.players[0].discard.some((c) => c.card.code === '01005')).toBe(true);
       expect(res.state.players[0].hand.length).toBe(0);

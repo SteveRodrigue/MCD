@@ -9,6 +9,7 @@ import {
   GameState,
   CardInstance,
   GamePhase,
+  getActiveMainScheme,
 } from '../../src/engine/models';
 import { evaluateTableauCardLegality } from '../../src/ui/components/board/tableau-card-legality';
 import { HeroZone } from '../../src/ui/components/board/HeroZone';
@@ -62,19 +63,19 @@ describe('Tableau Card Actionability Graying (Issue #185)', () => {
     });
 
   it('Surveillance Team is unusable when no scheme has threat', () => {
-    state.mainScheme.threat = 0;
+    getActiveMainScheme(state).threat = 0;
     const result = legality();
     expect(result.isUsable).toBe(false);
     expect(result.reason).toMatch(/threat/i);
   });
 
   it('Surveillance Team is usable when the main scheme has threat', () => {
-    state.mainScheme.threat = 3;
+    getActiveMainScheme(state).threat = 3;
     expect(legality().isUsable).toBe(true);
   });
 
   it('Surveillance Team is usable when only a side scheme has threat', () => {
-    state.mainScheme.threat = 0;
+    getActiveMainScheme(state).threat = 0;
     state.sideSchemes = [
       { instanceId: 'side-1', card: cardCatalog.getCard('01108') as SideSchemeCard, threat: 2 },
     ];
@@ -82,7 +83,7 @@ describe('Tableau Card Actionability Graying (Issue #185)', () => {
   });
 
   it('Surveillance Team is usable on another player turn via Call for Action (RR v1.8 p. 5, Issue #314) but unusable in Villain Phase', () => {
-    state.mainScheme.threat = 3;
+    getActiveMainScheme(state).threat = 3;
     state.activePlayerIndex = 1;
     state.players.push({ ...state.players[0], id: 'p2', name: 'Other' });
     // Usable during other player's turn in player phase via Call for Action
@@ -94,18 +95,18 @@ describe('Tableau Card Actionability Graying (Issue #185)', () => {
   });
 
   it('Surveillance Team is unusable when exhausted', () => {
-    state.mainScheme.threat = 3;
+    getActiveMainScheme(state).threat = 3;
     survTeam.exhausted = true;
     expect(legality().isUsable).toBe(false);
   });
 
   it('Without game context the helper keeps form-only behavior', () => {
-    state.mainScheme.threat = 0;
+    getActiveMainScheme(state).threat = 0;
     expect(evaluateTableauCardLegality(survTeam, 'hero').isUsable).toBe(true);
   });
 
   it('HeroZone grays Surveillance Team and does not open the action modal with no threat', () => {
-    state.mainScheme.threat = 0;
+    getActiveMainScheme(state).threat = 0;
     const { container } = render(
       <TestSession state={state}>
         <HeroZone player={state.players[0]} seatNumber={1} isFocused={true} isMultiHero={false} />
@@ -122,7 +123,7 @@ describe('Tableau Card Actionability Graying (Issue #185)', () => {
   });
 
   it('HeroZone keeps Surveillance Team in color and opens the modal when threat exists', () => {
-    state.mainScheme.threat = 3;
+    getActiveMainScheme(state).threat = 3;
     render(
       <TestSession state={state}>
         <HeroZone player={state.players[0]} seatNumber={1} isFocused={true} isMultiHero={false} />

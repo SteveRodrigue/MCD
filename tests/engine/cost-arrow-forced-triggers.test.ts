@@ -3,7 +3,7 @@ import { setupGame, createCardInstance } from '../../src/engine/state/game-setup
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { assertCardConservation } from '../../src/engine/state/state-validator';
-import { HeroCard, AlterEgoCard, StatusCard } from '../../src/engine/models';
+import { HeroCard, AlterEgoCard, StatusCard, getActiveVillain } from '../../src/engine/models';
 import { thaw } from '../support/thaw-state';
 
 describe('Cost Arrow Mandatory Resolution & Trigger Pipeline (RR v1.8 p. 8, 15, Issues #8 & #11)', () => {
@@ -34,7 +34,7 @@ describe('Cost Arrow Mandatory Resolution & Trigger Pipeline (RR v1.8 p. 8, 15, 
     const superhumanStrength = createCardInstance(cardCatalog.getCard('01028')!);
     player.tableau.push(superhumanStrength);
 
-    const initialVillainHp = heroState.villain.health;
+    const initialVillainHp = getActiveVillain(heroState).health;
 
     // Perform BASIC_ATTACK against Rhino
     const res = dispatchAction(heroState, {
@@ -46,14 +46,14 @@ describe('Cost Arrow Mandatory Resolution & Trigger Pipeline (RR v1.8 p. 8, 15, 
     expect(res.result.success).toBe(true);
 
     // 1. She-Hulk base ATK (3) + Superhuman Strength (2) = 5 damage dealt to Rhino
-    expect(res.state.villain.health).toBe(initialVillainHp - 5);
+    expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 5);
 
     // 2. Superhuman Strength automatically discarded (cost paid!)
     expect(res.state.players[0].tableau.some((c) => c.card.code === '01028')).toBe(false);
     expect(res.state.players[0].discard.some((c) => c.card.code === '01028')).toBe(true);
 
     // 3. Rhino receives STUNNED status card
-    expect(res.state.villain.statusCards).toContain(StatusCard.STUNNED);
+    expect(getActiveVillain(res.state).statusCards).toContain(StatusCard.STUNNED);
 
     // 4. Card conservation passes
     expect(() => assertCardConservation(res.state)).not.toThrow();
@@ -86,7 +86,7 @@ describe('Cost Arrow Mandatory Resolution & Trigger Pipeline (RR v1.8 p. 8, 15, 
     const warMachine = createCardInstance(cardCatalog.getCard('01030')!);
     player.allies.push(warMachine);
 
-    const initialVillainHp = heroState.villain.health;
+    const initialVillainHp = getActiveVillain(heroState).health;
 
     // Trigger War Machine action: Exhaust and deal 2 damage to him -> deal 1 damage to each enemy
     const res = dispatchAction(heroState, {
@@ -106,7 +106,7 @@ describe('Cost Arrow Mandatory Resolution & Trigger Pipeline (RR v1.8 p. 8, 15, 
     expect(wmInstance.tokens?.damage).toBe(2);
 
     // 1 damage dealt to Rhino and 1 damage dealt to minion
-    expect(res.state.villain.health).toBe(initialVillainHp - 1);
+    expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 1);
     const minionInstance = res.state.players[0].engagedMinions.find(
       (m) => m.instanceId === minion.instanceId,
     )!;

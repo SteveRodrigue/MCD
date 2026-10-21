@@ -15,6 +15,7 @@ import {
   SideSchemeCard,
   MinionCard,
   Keyword,
+  getActiveMainScheme,
 } from '../../src/engine/models';
 
 describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29, 30; Issue #101)', () => {
@@ -41,7 +42,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
     const player = heroState.players[0];
 
     // Main scheme starts with 0 threat
-    heroState.mainScheme.threat = 0;
+    getActiveMainScheme(heroState).threat = 0;
     heroState.sideSchemes = [];
 
     // Add Surveillance Team to player tableau with 3 snoop counters
@@ -95,7 +96,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
     const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
-    heroState.mainScheme.threat = 0;
+    getActiveMainScheme(heroState).threat = 0;
     heroState.sideSchemes = [];
 
     const survTeam = createCardInstance(cardCatalog.getCard('01064')!);
@@ -130,7 +131,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
     const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
-    heroState.mainScheme.threat = 0;
+    getActiveMainScheme(heroState).threat = 0;
     heroState.sideSchemes = [];
 
     const forJustice = createCardInstance(cardCatalog.getCard('01060')!);
@@ -169,7 +170,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
     const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
-    heroState.mainScheme.threat = 3;
+    getActiveMainScheme(heroState).threat = 3;
     heroState.sideSchemes = [];
 
     const survTeam = createCardInstance(cardCatalog.getCard('01064')!);
@@ -184,7 +185,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.mainScheme.threat).toBe(2);
+    expect(getActiveMainScheme(res.state).threat).toBe(2);
 
     const inPlayCard = res.state.players[0].tableau.find(
       (c) => c.instanceId === survTeam.instanceId,
@@ -212,7 +213,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
     const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
-    heroState.mainScheme.threat = 3;
+    getActiveMainScheme(heroState).threat = 3;
 
     // Add Bomb Scare (01108) with Crisis icon, but with 0 threat
     const bombScareCard = cardCatalog.getCard('01108') as SideSchemeCard;
@@ -253,7 +254,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
     const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
-    heroState.mainScheme.threat = 3;
+    getActiveMainScheme(heroState).threat = 3;
     heroState.sideSchemes = [];
 
     // Engage minion with Patrol
@@ -293,7 +294,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
     const heroState = thaw(dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state);
     const player = heroState.players[0];
 
-    heroState.mainScheme.threat = 3;
+    getActiveMainScheme(heroState).threat = 3;
 
     // Bomb Scare (01108) with Crisis icon, with 2 threat
     const bombScareCard = cardCatalog.getCard('01108') as SideSchemeCard;

@@ -18,8 +18,6 @@ describe('Problem Report Service', () => {
     villains: [],
     mainSchemes: [],
     activeMainSchemeIndex: 0,
-    villain: {} as any,
-    mainScheme: {} as any,
     sideSchemes: [],
     environments: [],
     encounterDeck: [],

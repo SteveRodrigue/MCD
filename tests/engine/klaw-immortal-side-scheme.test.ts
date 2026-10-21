@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { HeroCard, AlterEgoCard, VillainCard, MainSchemeCard } from '@engine/models';
+import {
+  HeroCard,
+  AlterEgoCard,
+  VillainCard,
+  MainSchemeCard,
+  getActiveVillain,
+} from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
 import { ScenarioRegistry, KlawScenarioPlugin } from '@engine/scenarios';
 import { defeatSideScheme } from '@engine/effects';
@@ -40,51 +46,51 @@ describe('Plan R9: Klaw II setup reveal and The "Immortal" Klaw side scheme', ()
     const state = buildKlawGame('EXPERT');
 
     // Klaw II is the starting villain
-    expect(state.villain.card.code).toBe('01114');
+    expect(getActiveVillain(state).card.code).toBe('01114');
 
     // The "Immortal" Klaw (01127) is revealed as a side scheme, not in attachments
     const immortalScheme = state.sideSchemes.find((s) => s.card.code === '01127');
     expect(immortalScheme).toBeDefined();
-    expect(state.villain.attachments.some((a) => a.card.code === '01127')).toBe(false);
+    expect(getActiveVillain(state).attachments.some((a) => a.card.code === '01127')).toBe(false);
 
     // Klaw II base 18 + 10 bonus = 28 HP
-    expect(state.villain.maxHealth).toBe(28);
-    expect(state.villain.health).toBe(28);
+    expect(getActiveVillain(state).maxHealth).toBe(28);
+    expect(getActiveVillain(state).health).toBe(28);
   });
 
   it('2. Klaw Standard setup, Klaw I defeated: The "Immortal" Klaw is revealed as a side scheme on advance', () => {
     const state = buildKlawGame('STANDARD');
 
     // Klaw I is the starting villain (12 HP)
-    expect(state.villain.card.code).toBe('01113');
-    expect(state.villain.health).toBe(12);
+    expect(getActiveVillain(state).card.code).toBe('01113');
+    expect(getActiveVillain(state).health).toBe(12);
     expect(state.sideSchemes.some((s) => s.card.code === '01127')).toBe(false);
 
     // Defeating Klaw I advances to Klaw II
     const plugin = ScenarioRegistry.get('klaw') as KlawScenarioPlugin;
-    const result = plugin.onVillainDefeated(state, state.villain.instanceId!);
+    const result = plugin.onVillainDefeated(state, getActiveVillain(state).instanceId!);
     expect(result.advancedStage).toBe(true);
 
     // Klaw II is active
-    expect(state.villain.card.code).toBe('01114');
+    expect(getActiveVillain(state).card.code).toBe('01114');
 
     // The "Immortal" Klaw is revealed as a side scheme, not an attachment
     const immortalScheme = state.sideSchemes.find((s) => s.card.code === '01127');
     expect(immortalScheme).toBeDefined();
-    expect(state.villain.attachments.some((a) => a.card.code === '01127')).toBe(false);
+    expect(getActiveVillain(state).attachments.some((a) => a.card.code === '01127')).toBe(false);
 
     // Base 18 + 10 = 28 HP
-    expect(state.villain.maxHealth).toBe(28);
-    expect(state.villain.health).toBe(28);
+    expect(getActiveVillain(state).maxHealth).toBe(28);
+    expect(getActiveVillain(state).health).toBe(28);
   });
 
   it('3. The "Immortal" Klaw defeated: Klaw loses the bonus hit points', () => {
     const state = buildKlawGame('EXPERT');
-    expect(state.villain.health).toBe(28);
-    expect(state.villain.maxHealth).toBe(28);
+    expect(getActiveVillain(state).health).toBe(28);
+    expect(getActiveVillain(state).maxHealth).toBe(28);
 
     // Damage Klaw by 3 (remaining 25 HP)
-    state.villain.health = 25;
+    getActiveVillain(state).health = 25;
 
     // Defeat The "Immortal" Klaw
     const immortalScheme = state.sideSchemes.find((s) => s.card.code === '01127')!;
@@ -95,22 +101,22 @@ describe('Plan R9: Klaw II setup reveal and The "Immortal" Klaw side scheme', ()
     expect(state.sideSchemes.some((s) => s.card.code === '01127')).toBe(false);
 
     // Klaw loses 10 hit points (25 - 10 = 15 HP, maxHealth becomes 18)
-    expect(state.villain.maxHealth).toBe(18);
-    expect(state.villain.health).toBe(15);
+    expect(getActiveVillain(state).maxHealth).toBe(18);
+    expect(getActiveVillain(state).health).toBe(15);
   });
 
   it('3b. The "Immortal" Klaw defeated when Klaw has <= 10 HP: defeats Klaw II', () => {
     const state = buildKlawGame('EXPERT');
 
     // Klaw is damaged down to 5 HP
-    state.villain.health = 5;
+    getActiveVillain(state).health = 5;
 
     // Defeat The "Immortal" Klaw
     const immortalScheme = state.sideSchemes.find((s) => s.card.code === '01127')!;
     defeatSideScheme(state, immortalScheme.instanceId, 'p1');
 
     // Losing 10 HP drops Klaw to <= 0 HP, triggering defeat (advances to Klaw III in Expert)
-    expect(state.villain.card.code).toBe('01115');
+    expect(getActiveVillain(state).card.code).toBe('01115');
   });
 
   it('4. The bonus is a flat +10 regardless of player count', () => {
@@ -118,8 +124,8 @@ describe('Plan R9: Klaw II setup reveal and The "Immortal" Klaw side scheme', ()
 
     expect(state.sideSchemes.some((s) => s.card.code === '01127')).toBe(true);
     // Klaw II is 18 per player: 36 + a flat 10
-    expect(state.villain.maxHealth).toBe(46);
-    expect(state.villain.health).toBe(46);
+    expect(getActiveVillain(state).maxHealth).toBe(46);
+    expect(getActiveVillain(state).health).toBe(46);
   });
 
   it('5. The "Immortal" Klaw is found only once: not in the encounter deck or its discard afterwards', () => {

@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, MinionCard, StatusCard } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  MinionCard,
+  StatusCard,
+  getActiveVillain,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 
@@ -140,11 +147,11 @@ describe('One-Two Punch (01024): Response after you make a basic attack, ready S
     give(0, ONE_TWO_PUNCH);
     give(0, RESOURCE_CARD);
     state.players[0].statusCards = [StatusCard.STUNNED];
-    const villainHp = state.villain.health;
+    const villainHp = getActiveVillain(state).health;
 
     state = attackVillain().state;
 
-    expect(state.villain.health).toBe(villainHp);
+    expect(getActiveVillain(state).health).toBe(villainHp);
     expect(peekDecisionPrompt(state)).toBeUndefined();
   });
 });

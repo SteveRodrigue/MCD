@@ -6,6 +6,7 @@ import { createCardInstance } from '../../src/engine/state/card-instance';
 import { resolveChosenHostAttachment } from '../../src/engine/pipeline/actions/play';
 import { peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 
+import { getActiveVillain } from '@engine/models';
 /**
  * Chosen-host attachment flow (R6b, Task A): explicit target, zero / one /
  * many candidates, and `maxPerHost`, for minion, ally and enemy hosts.
@@ -178,8 +179,8 @@ describe('resolveChosenHostAttachment (R6b)', () => {
 
     it('attaches directly to the villain when it is the only enemy', () => {
       expect(run('CHOSEN_ENEMY')).toBeUndefined();
-      expect(state.villain.attachments).toHaveLength(1);
-      expect(attachLog(state)[0].params).toMatchObject({ host: state.villain.card.name });
+      expect(getActiveVillain(state).attachments).toHaveLength(1);
+      expect(attachLog(state)[0].params).toMatchObject({ host: getActiveVillain(state).card.name });
     });
 
     it('prompts with the villain and the minions when several enemies exist', () => {
@@ -195,7 +196,7 @@ describe('resolveChosenHostAttachment (R6b)', () => {
     });
 
     it('skips the villain and minions that already hold maxPerHost copies', () => {
-      state.villain.attachments = [{ ...played, instanceId: 'already_on_villain' }];
+      getActiveVillain(state).attachments = [{ ...played, instanceId: 'already_on_villain' }];
       const m = minion('m1');
       state.players[0].engagedMinions = [m];
 
@@ -206,7 +207,7 @@ describe('resolveChosenHostAttachment (R6b)', () => {
 
   it('attaches to the active villain for the generic fallback host', () => {
     expect(run('VILLAIN')).toBeUndefined();
-    expect(state.villain.attachments).toHaveLength(1);
-    expect(attachLog(state)[0].params).toMatchObject({ host: state.villain.card.name });
+    expect(getActiveVillain(state).attachments).toHaveLength(1);
+    expect(attachLog(state)[0].params).toMatchObject({ host: getActiveVillain(state).card.name });
   });
 });

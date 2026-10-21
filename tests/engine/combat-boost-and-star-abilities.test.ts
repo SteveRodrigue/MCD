@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  getActiveMainScheme,
+  getActiveVillain,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEnemyAttackSynchronously } from '@engine/pipeline';
 
@@ -78,8 +84,8 @@ describe('Sub-Milestone 2B-2: 0-to-Many Boost Queue, Star Abilities (★) & Boos
     it('deals multiple boost cards for villains with innate extra boost abilities (e.g. Klaw)', () => {
       // Set villain to Klaw (01113) with text "give him 1 additional boost card for this activation"
       const klawCard = cardCatalog.getCard('01113')!;
-      state.villain.card = klawCard as any;
-      state.villain.health = (klawCard as any).health || 12;
+      getActiveVillain(state).card = klawCard as any;
+      getActiveVillain(state).health = (klawCard as any).health || 12;
 
       const boost1 = cardCatalog.getCard('01103')!; // 2 boost icons
       const boost2 = cardCatalog.getCard('01103')!; // 2 boost icons
@@ -140,7 +146,7 @@ describe('Sub-Milestone 2B-2: 0-to-Many Boost Queue, Star Abilities (★) & Boos
     });
 
     it('executes Kree Manipulator (01178) boost ability to place 1 threat on main scheme', () => {
-      const initialThreat = state.mainScheme.threat;
+      const initialThreat = getActiveMainScheme(state).threat;
 
       const kreeManipulatorCard = cardCatalog.getCard('01178')!;
       state.encounterDeck = [createCardInstance(kreeManipulatorCard), ...state.encounterDeck];
@@ -148,7 +154,7 @@ describe('Sub-Milestone 2B-2: 0-to-Many Boost Queue, Star Abilities (★) & Boos
       executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
       // 1 threat added to main scheme from Star Boost
-      expect(state.mainScheme.threat).toBe(initialThreat + 1);
+      expect(getActiveMainScheme(state).threat).toBe(initialThreat + 1);
     });
   });
 });

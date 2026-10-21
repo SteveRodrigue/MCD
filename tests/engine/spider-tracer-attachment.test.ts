@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, SideSchemeState } from '../../src/engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  SideSchemeState,
+  getActiveMainScheme,
+} from '../../src/engine/models';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { dispatchAction, peekDecisionPrompt } from '../../src/engine/pipeline';
 import { thaw } from '../support/thaw-state';
@@ -247,7 +253,7 @@ describe('Spider-Tracer & Engaged Minion Attachment Engine Invariants (Issue #13
     state.players[0].engagedMinions = [minion];
 
     // Main scheme at 4 threat
-    state.mainScheme.threat = 4;
+    getActiveMainScheme(state).threat = 4;
 
     // Side scheme with Crisis icon: 01108 Crowd Control (3 threat, hasCrisis: true)
     const crisisSchemeCard = cardCatalog.getCard('01108')!;
@@ -272,7 +278,7 @@ describe('Spider-Tracer & Engaged Minion Attachment Engine Invariants (Issue #13
     expect(res.state.players[0].engagedMinions).toHaveLength(0);
 
     // Main Scheme threat was NOT touched due to Crisis
-    expect(res.state.mainScheme.threat).toBe(4);
+    expect(getActiveMainScheme(res.state).threat).toBe(4);
 
     // Crisis side scheme received the 3 threat removal and was defeated (3 - 3 = 0)
     expect(res.state.sideSchemes).toHaveLength(0);
@@ -287,7 +293,7 @@ describe('Spider-Tracer & Engaged Minion Attachment Engine Invariants (Issue #13
     minion.attachments = [tracer];
     state.players[0].engagedMinions = [minion];
 
-    state.mainScheme.threat = 4;
+    getActiveMainScheme(state).threat = 4;
 
     // Side scheme with NO Crisis icon: 01109 Bomb Scare (3 threat, hasCrisis: false)
     const nonCrisisSchemeCard = cardCatalog.getCard('01109')!;
@@ -311,7 +317,7 @@ describe('Spider-Tracer & Engaged Minion Attachment Engine Invariants (Issue #13
     const prompt = peekDecisionPrompt(res.state);
     expect(prompt).toBeDefined();
     expect(prompt?.title).toContain('Choose a Scheme');
-    const mainSchemeId = res.state.mainScheme.instanceId!;
+    const mainSchemeId = getActiveMainScheme(res.state).instanceId!;
     expect(prompt?.options.map((o) => o.id)).toEqual(
       expect.arrayContaining([mainSchemeId, nonCrisisScheme.instanceId]),
     );
@@ -325,7 +331,7 @@ describe('Spider-Tracer & Engaged Minion Attachment Engine Invariants (Issue #13
 
     expect(resolveRes.result.success).toBe(true);
     // Main scheme threat reduced: 4 - 3 = 1
-    expect(resolveRes.state.mainScheme.threat).toBe(1);
+    expect(getActiveMainScheme(resolveRes.state).threat).toBe(1);
     // Bomb Scare threat unchanged: 3
     expect(resolveRes.state.sideSchemes[0].threat).toBe(3);
   });

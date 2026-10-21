@@ -21,6 +21,7 @@ import {
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 
+import { getActiveMainScheme, getActiveVillain } from '@engine/models';
 describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
 
@@ -72,11 +73,11 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
 
   describe('Step 1: Place Threat on Main Scheme (RR v1.8 p. 31)', () => {
     it('places 1 threat per player on the Main Scheme', () => {
-      expect(gameState.mainScheme.threat).toBe(0);
+      expect(getActiveMainScheme(gameState).threat).toBe(0);
 
       step1_placeThreat(gameState);
       // 1 player * 1 escalation threat = +1 threat
-      expect(gameState.mainScheme.threat).toBe(1);
+      expect(getActiveMainScheme(gameState).threat).toBe(1);
     });
 
     it('adds extra threat for acceleration tokens and side scheme acceleration icons', () => {
@@ -90,7 +91,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
 
       step1_placeThreat(gameState);
       // 1 base + 1 token + 1 side scheme icon = +3 threat
-      expect(gameState.mainScheme.threat).toBe(3);
+      expect(getActiveMainScheme(gameState).threat).toBe(3);
     });
   });
 
@@ -103,12 +104,12 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       });
       gameState.encounterDeck.unshift(boostCard);
 
-      const initialThreat = gameState.mainScheme.threat;
+      const initialThreat = getActiveMainScheme(gameState).threat;
 
       step2_villainAndMinionActivations(gameState);
 
       // Rhino base scheme (1) + Boost (2) = +3 threat
-      expect(gameState.mainScheme.threat).toBe(initialThreat + 3);
+      expect(getActiveMainScheme(gameState).threat).toBe(initialThreat + 3);
       // Boost card should be discarded
       expect(gameState.encounterDiscard.some((c) => c.instanceId === boostCard.instanceId)).toBe(
         true,
@@ -137,7 +138,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
     it('cancels attack when Villain has Stunned status card', () => {
       gameState.players[0].currentForm = 'hero';
       gameState.players[0].activeFormCard = gameState.players[0].hero;
-      gameState.villain.statusCards.push(StatusCard.STUNNED);
+      getActiveVillain(gameState).statusCards.push(StatusCard.STUNNED);
 
       const initialHealth = gameState.players[0].health;
 
@@ -145,18 +146,18 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
 
       // Stun is discarded, 0 damage dealt
       expect(gameState.players[0].health).toBe(initialHealth);
-      expect(gameState.villain.statusCards).not.toContain(StatusCard.STUNNED);
+      expect(getActiveVillain(gameState).statusCards).not.toContain(StatusCard.STUNNED);
     });
 
     it('cancels scheme when Villain has Confused status card', () => {
-      gameState.villain.statusCards.push(StatusCard.CONFUSED);
-      const initialThreat = gameState.mainScheme.threat;
+      getActiveVillain(gameState).statusCards.push(StatusCard.CONFUSED);
+      const initialThreat = getActiveMainScheme(gameState).threat;
 
       step2_villainAndMinionActivations(gameState);
 
       // Confused is discarded, 0 threat added
-      expect(gameState.mainScheme.threat).toBe(initialThreat);
-      expect(gameState.villain.statusCards).not.toContain(StatusCard.CONFUSED);
+      expect(getActiveMainScheme(gameState).threat).toBe(initialThreat);
+      expect(getActiveVillain(gameState).statusCards).not.toContain(StatusCard.CONFUSED);
     });
 
     it('executes interleaved activations per player in player order (RR v1.8 p. 22)', () => {
@@ -364,13 +365,13 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       const imToughCard = catalog.getCard('01105')!;
       const imToughInstance = createCardInstance(imToughCard);
       gameState.players[0].dealtEncounterCards = [imToughInstance];
-      gameState.villain.statusCards = [];
+      getActiveVillain(gameState).statusCards = [];
       gameState.encounterDiscard = [];
 
       step4_revealEncounterCards(gameState);
 
       // Villain receives Tough status
-      expect(gameState.villain.statusCards?.includes(StatusCard.TOUGH)).toBe(true);
+      expect(getActiveVillain(gameState).statusCards?.includes(StatusCard.TOUGH)).toBe(true);
       // Card is discarded
       expect(gameState.encounterDiscard.length).toBe(1);
       expect(gameState.encounterDiscard[0].card.code).toBe('01105');
@@ -380,7 +381,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       const imToughCard = catalog.getCard('01105')!;
       const imToughInstance = createCardInstance(imToughCard);
       gameState.players[0].dealtEncounterCards = [imToughInstance];
-      gameState.villain.statusCards = [StatusCard.TOUGH];
+      getActiveVillain(gameState).statusCards = [StatusCard.TOUGH];
       gameState.encounterDiscard = [];
 
       // Put a minion on top of the encounter deck to be revealed by Surge
@@ -390,7 +391,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       step4_revealEncounterCards(gameState);
 
       // Villain still has Tough status
-      expect(gameState.villain.statusCards?.includes(StatusCard.TOUGH)).toBe(true);
+      expect(getActiveVillain(gameState).statusCards?.includes(StatusCard.TOUGH)).toBe(true);
       // Surge resolved: nextCard (01101) was revealed into play as an engaged minion
       expect(gameState.players[0].engagedMinions.some((m) => m.card.code === '01101')).toBe(true);
       // 'I'm Tough!' is in discard
@@ -419,7 +420,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
 
       expect(nextState.roundNumber).toBe(2);
       expect(nextState.phase).toBe(GamePhase.PLAYER_PHASE);
-      expect(nextState.mainScheme.threat).toBeGreaterThan(0); // Threat was placed
+      expect(getActiveMainScheme(nextState).threat).toBeGreaterThan(0); // Threat was placed
       expect(nextState.players[0].hand.length).toBe(6); // Hand refilled
       expect(nextState.players[0].exhausted).toBe(false); // Player readied
     });

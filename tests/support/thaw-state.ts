@@ -1,4 +1,4 @@
-import { getActiveMainScheme, getActiveVillain, type GameState } from '@engine/models';
+import type { GameState } from '@engine/models';
 
 function copyPlain(value: unknown): unknown {
   if (!value || typeof value !== 'object') return value;
@@ -13,12 +13,8 @@ function copyPlain(value: unknown): unknown {
 
 /**
  * A mutable copy of an engine state, for tests that arrange a state by writing to it. The engine
- * returns frozen states that share unchanged branches (ADR-0089), so writing to one throws; the
- * copy re-links the legacy `villain` / `mainScheme` pointers to the collections' active entries.
+ * returns frozen states that share unchanged branches (ADR-0089), so writing to one throws.
  */
 export function thaw(state: GameState): GameState {
-  const copy = copyPlain(state) as GameState;
-  if (copy.villains && copy.villains.length > 0) copy.villain = getActiveVillain(copy);
-  if (copy.mainSchemes && copy.mainSchemes.length > 0) copy.mainScheme = getActiveMainScheme(copy);
-  return copy;
+  return copyPlain(state) as GameState;
 }

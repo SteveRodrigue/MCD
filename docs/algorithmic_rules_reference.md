@@ -1,6 +1,6 @@
 # Marvel Champions Digital (MCD) — Algorithmic Rules Reference
 
-This document provides a **distilled, mathematically precise, and algorithmic specification** of the rules of *Marvel Champions: The Card Game*, strictly derived from **Rules Reference v1.8** and validated against the MCD codebase implementation.
+This document provides a **distilled, mathematically precise, and algorithmic specification** of the rules of _Marvel Champions: The Card Game_, strictly derived from **Rules Reference v1.8** and validated against the MCD codebase implementation.
 
 ---
 
@@ -32,7 +32,7 @@ This document provides a **distilled, mathematically precise, and algorithmic sp
 stateDiagram-v2
     [*] --> Setup
     Setup --> PlayerPhase: Round 1 Start
-    
+
     state PlayerPhase {
         [*] --> PlayerTurn
         PlayerTurn --> ChangeForm: basicChangeFormUsedThisRound = true (1/round)
@@ -47,9 +47,9 @@ stateDiagram-v2
         NextPlayer --> PlayerTurn: More players
         NextPlayer --> RoundEnd: All players passed
     }
-    
+
     PlayerPhase --> VillainPhase
-    
+
     state VillainPhase {
         [*] --> Step1_ThreatPlacement
         Step1_ThreatPlacement --> Step2_Step3_InterleavedActivations: For each player (First Player order)
@@ -57,7 +57,7 @@ stateDiagram-v2
         Step4_DealEncounterCards --> Step5_RevealEncounterCards
         Step5_RevealEncounterCards --> Step6_PassFirstPlayerAndUpkeep
     }
-    
+
     VillainPhase --> PlayerPhase: Next Round (roundNumber++)
     PlayerPhase --> Victory: Villain Defeated
     VillainPhase --> Defeat: Threat / HP Reaches Limit
@@ -74,7 +74,7 @@ stateDiagram-v2
     DeckAssembly --> DynamicScaling: Scale HP ($N \times 14$) & Threat ($N \times 7$)
     DynamicScaling --> OpeningHands: Each Seat Draws Hand in Alter-Ego
     OpeningHands --> MulliganPhase: Setup State = MULLIGAN_PHASE
-    
+
     state MulliganPhase {
         [*] --> SelectDiscards: Choose 0 to printed hand size cards
         SelectDiscards --> DiscardRejected: Move rejected cards to player.discard
@@ -82,17 +82,17 @@ stateDiagram-v2
         DrawReplacements --> MarkSeatComplete: mulliganCompleted[playerId] = true
         MarkSeatComplete --> NextSeat: If pending seats remain
     }
-    
+
     MulliganPhase --> PlayerPhase: All Seats Done (Game Ready)
 ```
 
 > [!IMPORTANT]
 > **Mulligan Rule Invariant (RR v1.8 p. 51):** On mulligan, rejected cards are placed directly into the player's **discard pile** and replacement cards are drawn from the top of the draw deck. The player deck is **NOT** shuffled during mulligan.
 
-* **Multi-Hero Scaling Formulae ($N = \text{playerCount}$):**
-  * $\text{Villain.MaxHealth} = \begin{cases} N \times \text{Card.Health} & \text{if } \text{healthPerHero} = \text{true} \\ \text{Card.Health} & \text{otherwise} \end{cases}$
-  * $\text{MainScheme.TargetThreat} = N \times \text{Card.TargetThreat}$
-  * $\text{MainScheme.StartingThreat} = \begin{cases} \text{Card.BaseThreat} & \text{if } \text{baseThreatFixed} = \text{true} \\ N \times \text{Card.BaseThreat} & \text{otherwise} \end{cases}$
+- **Multi-Hero Scaling Formulae ($N = \text{playerCount}$):**
+  - $\text{Villain.MaxHealth} = \begin{cases} N \times \text{Card.Health} & \text{if } \text{healthPerHero} = \text{true} \\ \text{Card.Health} & \text{otherwise} \end{cases}$
+  - $\text{MainScheme.TargetThreat} = N \times \text{Card.TargetThreat}$
+  - $\text{MainScheme.StartingThreat} = \begin{cases} \text{Card.BaseThreat} & \text{if } \text{baseThreatFixed} = \text{true} \\ N \times \text{Card.BaseThreat} & \text{otherwise} \end{cases}$
 
 ---
 
@@ -101,16 +101,16 @@ stateDiagram-v2
 > [!NOTE]
 > This represents the **standard base game layout**. Complex modular scenarios (e.g. Tower Defense, Kang, Mutagen Formula) may dynamically register additional custom zones, decks, and side displays via the `ScenarioPlugin` interface.
 >
-> In the diagram below, `state.villain` / `state.mainScheme` denote the **active** villain and main scheme. The canonical state is the `villains[]` / `mainSchemes[]` collections plus `activeVillainId`, read through `getActiveVillain` / `getVillainsInPlay` (ADR-0076; multi-villain scenarios such as MC03 Wrecking Crew keep several villains in play).
+> In the diagram below, `getActiveVillain(state)` / `getActiveMainScheme(state)` denote the **active** villain and main scheme. The canonical state is the `villains[]` / `mainSchemes[]` collections plus `activeVillainId`, read through `getActiveVillain` / `getVillainsInPlay` (ADR-0076; multi-villain scenarios such as MC03 Wrecking Crew keep several villains in play).
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
 │                                 SHARED IN-PLAY AREA                                    │
 ├────────────────────────────────────────┬───────────────────────────────────────────────┤
 │ 1. SCENARIO / VILLAIN ZONE             │ 2. ENCOUNTER DRAW & DISCARD ZONES             │
-│    • state.villain (Card, HP, Status)  │    • state.encounterDeck (Draw pile)          │
-│    • state.villain.attachments         │    • state.encounterDiscard (Discard pile)    │
-│    • state.mainScheme (Active Stage)   │    • state.activeBoostCard (Revealed boost)   │
+│    • active villain (Card, HP, Status) │    • state.encounterDeck (Draw pile)          │
+│    • active villain attachments        │    • state.encounterDiscard (Discard pile)    │
+│    • active main scheme (Stage)        │    • state.activeBoostCard (Revealed boost)   │
 │    • state.sideSchemes[] (Active)      │                                               │
 │    • state.environments[]              │                                               │
 └────────────────────────────────────────┴───────────────────────────────────────────────┘
@@ -136,9 +136,9 @@ stateDiagram-v2
 
 ### 3.1 Card Physical Orientation & Exhaustion Visuals
 
-* **Exhaustion State vs Visual Layout:**
-  * In the game engine state, `card.exhausted = true`.
-  * In the UI presentation layer, exhausted cards use a **subtle 15-degree tilt and/or a desaturated (greyed-out) overlay** with interactive disabled state, rather than an intrusive $90^\circ$ rotation that causes board horizontal sprawl.
+- **Exhaustion State vs Visual Layout:**
+  - In the game engine state, `card.exhausted = true`.
+  - In the UI presentation layer, exhausted cards use a **subtle 15-degree tilt and/or a desaturated (greyed-out) overlay** with interactive disabled state, rather than an intrusive $90^\circ$ rotation that causes board horizontal sprawl.
 
 ---
 
@@ -176,6 +176,7 @@ function ProcessEventPipeline(event: GameEvent, state: GameState): GameState {
 ```
 
 ### Simultaneous Trigger Ordering (RR v1.8 p. 5)
+
 If multiple `FORCED` triggers or multiple voluntary reactions are eligible at the same step, the active/first player chooses the sequence of resolution.
 
 ---
@@ -183,42 +184,48 @@ If multiple `FORCED` triggers or multiple voluntary reactions are eligible at th
 ## 5. Algorithmic Player Turn Actions (RR v1.8)
 
 ### Algorithm 5.0: RESOLVE_MULLIGAN (RR v1.8 p. 23–24)
+
 1. Player selects $k$ cards from opening hand to reject ($0 \le k \le \text{hand.length}$).
 2. Rejected cards move to `player.discard` (**NOT shuffled into deck**).
 3. Draw $k$ cards from the top of `player.deck`.
 4. Set `player.mulliganCompleted = true`.
 
 ### Algorithm 5.1: CHANGE_FORM (RR v1.8 p. 13–14)
-* A player may flip their identity form **once per round as a basic turn action**:
+
+- A player may flip their identity form **once per round as a basic turn action**:
   $$\text{if } \text{player.basicChangeFormUsedThisRound} = \text{false} \rightarrow \text{Flip Form}, \text{basicChangeFormUsedThisRound} = \text{true}.$$
-* Card effects that instruct the player to change form (e.g. *Split Personality*) do **NOT** count against or require `basicChangeFormUsedThisRound`.
+- Card effects that instruct the player to change form (e.g. _Split Personality_) do **NOT** count against or require `basicChangeFormUsedThisRound`.
 
 ### Algorithm 5.2: BASIC_RECOVER (RR v1.8 p. 23)
-* Alter-Ego exhausts to heal $\text{REC}$ points.
-* Health is strictly clamped to dynamic maximum health:
+
+- Alter-Ego exhausts to heal $\text{REC}$ points.
+- Health is strictly clamped to dynamic maximum health:
   $$\text{player.health} = \min(\text{player.maxHealth}, \text{player.health} + \text{player.activeFormCard.rec}).$$
 
 ### Algorithm 5.3: BASIC_ATTACK vs DIRECT_DAMAGE (RR v1.8 p. 5–6, 26)
-* **Attack Action (`isAttack: true`):**
-  * Target must be a legal enemy (checks `Guard` keyword on engaged minions: an engaged minion with `Guard` blocks only the player it is engaged with and their allies from attacking the villain; other players remain free to attack the villain or the Guard minion per RR v1.8 p. 15).
-  * Triggers Defense reactions, *Retaliate* keywords, and *Overkill* calculations.
-  * Emits `ENEMY_ATTACKED` and `OVERKILL_OCCURRED(excessDamage)` events.
-* **Direct Damage (`isAttack: false`):**
-  * Ignores `Guard` and does not trigger *Retaliate* or attack-specific interrupts (e.g. *Ground Stomp*, *Energy Channel*).
+
+- **Attack Action (`isAttack: true`):**
+  - Target must be a legal enemy (checks `Guard` keyword on engaged minions: an engaged minion with `Guard` blocks only the player it is engaged with and their allies from attacking the villain; other players remain free to attack the villain or the Guard minion per RR v1.8 p. 15).
+  - Triggers Defense reactions, _Retaliate_ keywords, and _Overkill_ calculations.
+  - Emits `ENEMY_ATTACKED` and `OVERKILL_OCCURRED(excessDamage)` events.
+- **Direct Damage (`isAttack: false`):**
+  - Ignores `Guard` and does not trigger _Retaliate_ or attack-specific interrupts (e.g. _Ground Stomp_, _Energy Channel_).
 
 ### Algorithm 5.4: BASIC_THWART & THREAT_REMOVAL (RR v1.8 p. 11, 20, 29, 30)
-* **Thwart Action & Threat Removal Requirements:**
-  * Requires at least one eligible scheme target in play with threat $> 0$.
-  * **Crisis Keyword (RR v1.8 p. 14):** While a side scheme with a Crisis icon is in play, players cannot remove threat from the main scheme.
-  * **Patrol Keyword (RR v1.8 p. 32):** While an engaged minion with Patrol is in play with the acting player, that player cannot thwart the main scheme.
-  * If all side schemes have $0$ threat and the main scheme is blocked by Crisis or Patrol (or has $0$ threat), no threat can be removed, and the thwart action cannot be initiated.
+
+- **Thwart Action & Threat Removal Requirements:**
+  - Requires at least one eligible scheme target in play with threat $> 0$.
+  - **Crisis Keyword (RR v1.8 p. 14):** While a side scheme with a Crisis icon is in play, players cannot remove threat from the main scheme.
+  - **Patrol Keyword (RR v1.8 p. 32):** While an engaged minion with Patrol is in play with the acting player, that player cannot thwart the main scheme.
+  - If all side schemes have $0$ threat and the main scheme is blocked by Crisis or Patrol (or has $0$ threat), no threat can be removed, and the thwart action cannot be initiated.
 
 ### Algorithm 5.5: ABILITY_INITIATION & TARGET_VALIDITY (RR v1.8 p. 15–16, 29)
-* **Pre-Execution Invariant (`canInitiateAbility`):**
-  * A card or ability cannot be initiated if its effect has no potential to change the game state.
-  * **Thwart & Threat Removal:** Requires $\text{eligibleThreat} > 0$ across unblocked schemes in play.
-  * **Attack & Damage:** Requires at least one targetable enemy in play (respecting Guard on engaged minions).
-  * In-play card abilities and hand event cards that lack valid targets cannot be initiated, preventing cost payment, counter deduction, or exhaustion.
+
+- **Pre-Execution Invariant (`canInitiateAbility`):**
+  - A card or ability cannot be initiated if its effect has no potential to change the game state.
+  - **Thwart & Threat Removal:** Requires $\text{eligibleThreat} > 0$ across unblocked schemes in play.
+  - **Attack & Damage:** Requires at least one targetable enemy in play (respecting Guard on engaged minions).
+  - In-play card abilities and hand event cards that lack valid targets cannot be initiated, preventing cost payment, counter deduction, or exhaustion.
 
 ---
 
@@ -233,6 +240,7 @@ flowchart TD
 ```
 
 ### Interleaved Step 2 & 3 Activation Algorithm:
+
 ```typescript
 for (const player of state.playersInTurnOrder) {
   // 1. Villain activates against player
@@ -254,37 +262,40 @@ for (const player of state.playersInTurnOrder) {
 ```
 
 ### Sequential Hazard Icon Distribution (Step 4):
+
 Encounter cards from Hazard icons are distributed sequentially in turn order starting from the First Player:
 $$\text{Extra Card } h \rightarrow \text{Player } ((\text{firstPlayerIndex} + h) \pmod{\text{playerCount}}).$$
 
 ### Phase & Round Lifecycle Triggers & Limit Resets (RR v1.8 p. 15):
+
 The engine pipeline dispatches discrete lifecycle triggers and performs atomic limit resets across phase and round boundaries:
-* `ROUND_BEGAN` / `ROUND_ENDED`: Round counter increments, First Player token passes, and `usedAbilitiesThisRound = {}` resets.
-* `PLAYER_PHASE_BEGAN` / `PLAYER_PHASE_ENDED`: Player turn loop starts/ends, `basicChangeFormUsedThisRound = false` resets, and `usedAbilitiesThisPhase = {}` resets.
-* `VILLAIN_PHASE_BEGAN` / `VILLAIN_PHASE_ENDED`: Step 1 threat starts / Step 5 reveals complete, and `usedAbilitiesThisPhase = {}` resets.
+
+- `ROUND_BEGAN` / `ROUND_ENDED`: Round counter increments, First Player token passes, and `usedAbilitiesThisRound = {}` resets.
+- `PLAYER_PHASE_BEGAN` / `PLAYER_PHASE_ENDED`: Player turn loop starts/ends, `basicChangeFormUsedThisRound = false` resets, and `usedAbilitiesThisPhase = {}` resets.
+- `VILLAIN_PHASE_BEGAN` / `VILLAIN_PHASE_ENDED`: Step 1 threat starts / Step 5 reveals complete, and `usedAbilitiesThisPhase = {}` resets.
 
 ---
 
 ## 7. Form Change Invariants (RR v1.8 p. 21 "Change Form")
 
-* **Basic Form Change (1/Round):**
+- **Basic Form Change (1/Round):**
   $$\text{Player.basicChangeFormUsedThisRound} = \begin{cases} \text{true} & \text{after basic flip action} \\ \text{false} & \text{upon } \text{ROUND\_BEGAN} \end{cases}$$
-* **Card-Driven Form Flips (*Split Personality* `01025`):**
+- **Card-Driven Form Flips (_Split Personality_ `01025`):**
   Card abilities flip `Player.currentForm` directly and are **completely independent of** the basic 1/round limit.
 
 ---
 
 ## 8. Reusable Effect Primitives Reference (`src/engine/effects/index.ts`)
 
-| Primitive Name | Target Selector | Description |
-| :--- | :--- | :--- |
-| `DEAL_DAMAGE` | `CHOSEN_ENEMY` \| `ALL_ENEMIES` \| `ALL_HEROES` | Damage resolution with Tough card discard, armor counters, and overkill. |
-| `REMOVE_THREAT` | `MAIN_SCHEME` \| `CHOSEN_SCHEME` | Threat removal enforcing Crisis keyword restrictions. |
-| `DRAW_CARDS` | `SELF_IDENTITY` \| `ACTIVE_PLAYER` \| `ALL_PLAYERS` | Draws cards from draw deck into hand, with optional `limit: "HAND_SIZE" \| "PRINTED_HAND_SIZE"` (*Split Personality* `01025`). |
-| `FLIP_FORM` | `SELF` | Flips identity card form without consuming basic flip (*Split Personality* `01025`). |
-| `MODIFY_HAND_SIZE` | `SELF_IDENTITY` | Dynamic aura modifying hand size based on in-play tableau upgrades. |
-| `PLAYER_CHOICE` | `SELF_IDENTITY` | Renders Pop-Art decision prompt modal (*Nick Fury* `01084` choose 1 of 3, *Hydra Bomber*). |
-| `SPAWN_NEMESIS` | `ACTIVE_PLAYER` | Isolates player nemesis set from set-aside pool and puts minion/scheme into play (*Shadow of the Past* `01190`). |
-| `VILLAIN_SCHEMES` | `ACTIVE_PLAYER` | Immediate villain scheme activation against player (*Advance* `01186`). |
-| `VILLAIN_ATTACKS` | `ACTIVE_PLAYER` | Immediate villain attack activation against player (*Assault* `01187`). |
-| `MODIFY_ALLY_LIMIT` | `SELF_IDENTITY` \| `ALL_PLAYERS` | Increases maximum ally limit by $N$ (*The Triskelion* `01073`). |
+| Primitive Name      | Target Selector                                     | Description                                                                                                                    |
+| :------------------ | :-------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- |
+| `DEAL_DAMAGE`       | `CHOSEN_ENEMY` \| `ALL_ENEMIES` \| `ALL_HEROES`     | Damage resolution with Tough card discard, armor counters, and overkill.                                                       |
+| `REMOVE_THREAT`     | `MAIN_SCHEME` \| `CHOSEN_SCHEME`                    | Threat removal enforcing Crisis keyword restrictions.                                                                          |
+| `DRAW_CARDS`        | `SELF_IDENTITY` \| `ACTIVE_PLAYER` \| `ALL_PLAYERS` | Draws cards from draw deck into hand, with optional `limit: "HAND_SIZE" \| "PRINTED_HAND_SIZE"` (_Split Personality_ `01025`). |
+| `FLIP_FORM`         | `SELF`                                              | Flips identity card form without consuming basic flip (_Split Personality_ `01025`).                                           |
+| `MODIFY_HAND_SIZE`  | `SELF_IDENTITY`                                     | Dynamic aura modifying hand size based on in-play tableau upgrades.                                                            |
+| `PLAYER_CHOICE`     | `SELF_IDENTITY`                                     | Renders Pop-Art decision prompt modal (_Nick Fury_ `01084` choose 1 of 3, _Hydra Bomber_).                                     |
+| `SPAWN_NEMESIS`     | `ACTIVE_PLAYER`                                     | Isolates player nemesis set from set-aside pool and puts minion/scheme into play (_Shadow of the Past_ `01190`).               |
+| `VILLAIN_SCHEMES`   | `ACTIVE_PLAYER`                                     | Immediate villain scheme activation against player (_Advance_ `01186`).                                                        |
+| `VILLAIN_ATTACKS`   | `ACTIVE_PLAYER`                                     | Immediate villain attack activation against player (_Assault_ `01187`).                                                        |
+| `MODIFY_ALLY_LIMIT` | `SELF_IDENTITY` \| `ALL_PLAYERS`                    | Increases maximum ally limit by $N$ (_The Triskelion_ `01073`).                                                                |

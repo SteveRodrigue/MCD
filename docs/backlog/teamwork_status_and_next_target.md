@@ -80,12 +80,12 @@ _None currently._
 
 The 21 findings were remediated on 2026-10-17/18 (`94ebc97..f6e470f`, pushed). What is left is one plan per row below (`plan_audit_rNN_*.md`, each with rules/spec analysis, Simplification & Refactor Check, file changes, tests, open decisions, UI impact). Every plan still needs the owner's approval before code (rule 1). Work the rows in this order; R16 runs last.
 
-| #   | Item                                                                                             | Gate / milestone | Tier | Estimate | Plan                                                                                             |
-| --- | ------------------------------------------------------------------------------------------------ | ---------------- | ---- | -------- | ------------------------------------------------------------------------------------------------ |
-| R13 | Remove `state.villain` / `mainScheme` (F016, #215) — **deferred by owner** to multi-villain work | Gate 4           | 3    | 1 day    | [plan_audit_r13_remove_legacy_state_pointers.md](plan_audit_r13_remove_legacy_state_pointers.md) |
-| R14 | Shared test fixtures; drop test-only execution frames (F013) — **deferred** (after R13)          | Tech Debt        | 1    | 1 day    | [plan_audit_r14_shared_test_fixtures.md](plan_audit_r14_shared_test_fixtures.md)                 |
-| R15 | Audit open questions: log growth, art fallback CORS, bundled packs                               | Tech Debt        | 1    | 2–4 h    | [plan_audit_r15_open_questions.md](plan_audit_r15_open_questions.md)                             |
-| R16 | Review all documentation (ADRs, specs, guides) against the code — **last, after R1–R15**         | Tech Debt        | 1    | 1–2 days | [plan_audit_r16_documentation_review.md](plan_audit_r16_documentation_review.md)                 |
+| #   | Item                                                                                     | Gate / milestone | Tier | Estimate | Plan                                                                             |
+| --- | ---------------------------------------------------------------------------------------- | ---------------- | ---- | -------- | -------------------------------------------------------------------------------- |
+| R13 | Remove `state.villain` / `mainScheme` (F016, #215) — **done 2026-10-20** (plan deleted)  | Gate 4           | 3    | 1 day    | —                                                                                |
+| R14 | Shared test fixtures; drop test-only execution frames (F013) — **deferred** (after R13)  | Tech Debt        | 1    | 1 day    | [plan_audit_r14_shared_test_fixtures.md](plan_audit_r14_shared_test_fixtures.md) |
+| R15 | Audit open questions: log growth, art fallback CORS, bundled packs                       | Tech Debt        | 1    | 2–4 h    | [plan_audit_r15_open_questions.md](plan_audit_r15_open_questions.md)             |
+| R16 | Review all documentation (ADRs, specs, guides) against the code — **last, after R1–R15** | Tech Debt        | 1    | 1–2 days | [plan_audit_r16_documentation_review.md](plan_audit_r16_documentation_review.md) |
 
 Follow-up from R11 (delivered): [#339](https://github.com/SteveRodrigue/MCD/issues/339) extends the import-cycle audit to the `@data`, `@ui` and `@assets` aliases (Tech Debt, P3, about 20 minutes).
 

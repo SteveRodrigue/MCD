@@ -7,6 +7,7 @@ import {
   CardInstance,
   CardType,
   CardResources,
+  getActiveVillain,
 } from '../../src/engine/models';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { dispatchAction } from '../../src/engine/pipeline';
@@ -58,20 +59,24 @@ describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060
             currentForm: 'hero',
           } as any,
         ],
-        villain: {
-          instanceId: 'v1',
-          health: 15,
-          maxHealth: 15,
-          statusCards: [],
-          attachments: [],
-          card: { code: '01094', name: 'Rhino', type: CardType.VILLAIN } as any,
-        } as any,
-        mainScheme: {
-          instanceId: 'ms1',
-          threat: 0,
-          targetThreat: 7,
-          card: { code: '01097', name: 'The Break-In!' } as any,
-        } as any,
+        villains: [
+          {
+            instanceId: 'v1',
+            health: 15,
+            maxHealth: 15,
+            statusCards: [],
+            attachments: [],
+            card: { code: '01094', name: 'Rhino', type: CardType.VILLAIN } as any,
+          } as any,
+        ],
+        mainSchemes: [
+          {
+            instanceId: 'ms1',
+            threat: 0,
+            targetThreat: 7,
+            card: { code: '01097', name: 'The Break-In!' } as any,
+          } as any,
+        ],
         sideSchemes: [],
         log: [],
       } as any;
@@ -117,7 +122,7 @@ describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060
       );
 
       expect(result.success).toBe(true);
-      expect(state.villain.health).toBe(10); // 15 - 5
+      expect(getActiveVillain(state).health).toBe(10); // 15 - 5
       expect(player.hand.length).toBe(1); // Drew 1 card
       expect(player.deck.length).toBe(initialDeckCount - 1);
     });
@@ -139,7 +144,7 @@ describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060
       );
 
       expect(result.success).toBe(true);
-      expect(state.villain.health).toBe(10); // 15 - 5
+      expect(getActiveVillain(state).health).toBe(10); // 15 - 5
       expect(player.hand.length).toBe(0); // Drew 0 cards
       expect(player.deck.length).toBe(initialDeckCount);
     });
@@ -160,7 +165,7 @@ describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060
       );
 
       expect(result.success).toBe(true);
-      expect(state.villain.health).toBe(10);
+      expect(getActiveVillain(state).health).toBe(10);
       expect(player.hand.length).toBe(1);
     });
 
@@ -324,7 +329,7 @@ describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060
     it('Pays 3 Physical resources: deals 5 damage and draws 0 cards', () => {
       const p1 = state.players[0];
       const initialDeckCount = p1.deck.length;
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
 
       // Photonic Blast (cost 3)
       const photonicBlastCard = cardCatalog.getCard('01013')!;
@@ -341,12 +346,12 @@ describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060
         type: 'PLAY_CARD',
         playerId: p1.id,
         cardInstanceId: pbInstance.instanceId,
-        targetInstanceId: state.villain.instanceId,
+        targetInstanceId: getActiveVillain(state).instanceId,
         paymentCardInstanceIds: [pay1.instanceId, pay2.instanceId, pay3.instanceId],
       });
 
       expect(res.result.success).toBe(true);
-      expect(res.state.villain.health).toBe(initialVillainHp - 5);
+      expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 5);
       // Hand should be empty (played pb + discarded 3 payment cards, drew 0 cards)
       expect(res.state.players[0].hand.length).toBe(0);
       expect(res.state.players[0].deck.length).toBe(initialDeckCount);
@@ -355,7 +360,7 @@ describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060
     it('Pays 2 Physical + 1 Energy resource: deals 5 damage and draws 1 card', () => {
       const p1 = state.players[0];
       const initialDeckCount = p1.deck.length;
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
 
       const photonicBlastCard = cardCatalog.getCard('01013')!;
       const pbInstance = createCardInstance(photonicBlastCard);
@@ -372,12 +377,12 @@ describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060
         type: 'PLAY_CARD',
         playerId: p1.id,
         cardInstanceId: pbInstance.instanceId,
-        targetInstanceId: state.villain.instanceId,
+        targetInstanceId: getActiveVillain(state).instanceId,
         paymentCardInstanceIds: [pay1.instanceId, pay2.instanceId, pay3.instanceId],
       });
 
       expect(res.result.success).toBe(true);
-      expect(res.state.villain.health).toBe(initialVillainHp - 5);
+      expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 5);
       // Hand should contain the 1 drawn card!
       expect(res.state.players[0].hand.length).toBe(1);
       expect(res.state.players[0].deck.length).toBe(initialDeckCount - 1);
@@ -386,7 +391,7 @@ describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060
     it('Pays with Wild resource: substitutes for Energy, deals 5 damage and draws 1 card', () => {
       const p1 = state.players[0];
       const initialDeckCount = p1.deck.length;
-      const initialVillainHp = state.villain.health;
+      const initialVillainHp = getActiveVillain(state).health;
 
       const photonicBlastCard = cardCatalog.getCard('01013')!;
       const pbInstance = createCardInstance(photonicBlastCard);
@@ -402,12 +407,12 @@ describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060
         type: 'PLAY_CARD',
         playerId: p1.id,
         cardInstanceId: pbInstance.instanceId,
-        targetInstanceId: state.villain.instanceId,
+        targetInstanceId: getActiveVillain(state).instanceId,
         paymentCardInstanceIds: [pay1.instanceId, pay2.instanceId, pay3.instanceId],
       });
 
       expect(res.result.success).toBe(true);
-      expect(res.state.villain.health).toBe(initialVillainHp - 5);
+      expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 5);
       expect(res.state.players[0].hand.length).toBe(1);
       expect(res.state.players[0].deck.length).toBe(initialDeckCount - 1);
     });

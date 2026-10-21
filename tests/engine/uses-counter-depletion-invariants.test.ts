@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GamePhase, GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
+import {
+  GamePhase,
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  getActiveVillain,
+} from '../../src/engine/models';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { createCardInstance } from '../../src/engine/state/card-instance';
 import { dispatchAction } from '../../src/engine/pipeline';
@@ -151,7 +157,7 @@ describe('Universal Uses (X) Counter Depletion & Discard Lifecycle Invariants (A
         playerId: p1.id,
         cardInstanceId: tacTeam.instanceId,
         abilityId: 'tac_team_action',
-        targetInstanceId: state.villain.instanceId,
+        targetInstanceId: getActiveVillain(state).instanceId,
       });
 
       expect(res.result.success).toBe(true);
@@ -178,7 +184,7 @@ describe('Universal Uses (X) Counter Depletion & Discard Lifecycle Invariants (A
         playerId: p1.id,
         cardInstanceId: tacTeam.instanceId,
         abilityId: 'tac_team_action',
-        targetInstanceId: state.villain.instanceId,
+        targetInstanceId: getActiveVillain(state).instanceId,
       });
 
       expect(res.result.success).toBe(true);
@@ -389,7 +395,7 @@ describe('Universal Uses (X) Counter Depletion & Discard Lifecycle Invariants (A
         playerId: p1.id,
         cardInstanceId: hostCard.instanceId,
         abilityId: 'tac_team_action',
-        targetInstanceId: state.villain.instanceId,
+        targetInstanceId: getActiveVillain(state).instanceId,
       });
 
       expect(res.result.success).toBe(true);

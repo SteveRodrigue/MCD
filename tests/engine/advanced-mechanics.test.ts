@@ -20,6 +20,7 @@ import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 import { thaw } from '../support/thaw-state';
 
+import { getActiveMainScheme, getActiveVillain } from '@engine/models';
 describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
 
@@ -75,7 +76,7 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       const blackCatInst = createCardInstance(blackCatCard);
       gameState.players[0].allies.push(blackCatInst);
 
-      const initialVillainHealth = gameState.villain.health; // 14
+      const initialVillainHealth = getActiveVillain(gameState).health; // 14
 
       const res = dispatchAction(gameState, {
         type: 'ALLY_ATTACK',
@@ -86,7 +87,7 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
 
       expect(res.result.success).toBe(true);
       // Deals 1 damage to villain
-      expect(res.state.villain.health).toBe(initialVillainHealth - 1);
+      expect(getActiveVillain(res.state).health).toBe(initialVillainHealth - 1);
       // Black Cat took 0 consequential damage
       const inPlayAlly = res.state.players[0].allies.find(
         (a) => a.instanceId === blackCatInst.instanceId,
@@ -109,7 +110,7 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
         threat: 2,
       });
 
-      gameState.mainScheme.threat = 5;
+      getActiveMainScheme(gameState).threat = 5;
 
       const res = dispatchAction(gameState, {
         type: 'ALLY_THWART',
@@ -120,7 +121,7 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
 
       expect(res.result.success).toBe(true);
       // Base THW 1 + 1 (side scheme) = 2 threat removed -> 5 - 2 = 3
-      expect(res.state.mainScheme.threat).toBe(3);
+      expect(getActiveMainScheme(res.state).threat).toBe(3);
       // Jessica took 1 consequential damage
       const inPlayJessica = res.state.players[0].allies.find(
         (a) => a.instanceId === jessicaInst.instanceId,
@@ -164,7 +165,7 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
 
       expect(resolveRes.result.success).toBe(true);
       // Villain was stunned by Mockingbird
-      expect(resolveRes.state.villain.statusCards).toContain(StatusCard.STUNNED);
+      expect(getActiveVillain(resolveRes.state).statusCards).toContain(StatusCard.STUNNED);
     });
 
     it('Surveillance Team exhausts and removes snoop counters to remove threat', () => {
@@ -177,7 +178,7 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       const payInst2 = createCardInstance(payCard2);
 
       gameState.players[0].hand = [survInst, payInst1, payInst2];
-      gameState.mainScheme.threat = 4;
+      getActiveMainScheme(gameState).threat = 4;
 
       // Play Surveillance Team
       const playRes = dispatchAction(gameState, {
@@ -200,7 +201,7 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       });
 
       expect(useRes.result.success).toBe(true);
-      expect(useRes.state.mainScheme.threat).toBe(3); // 4 - 1 = 3 threat
+      expect(getActiveMainScheme(useRes.state).threat).toBe(3); // 4 - 1 = 3 threat
       const updatedSurv = useRes.state.players[0].tableau.find((c) => c.card.code === '01064')!;
       expect(updatedSurv.tokens?.counters).toBe(2);
       expect(updatedSurv.exhausted).toBe(true);
@@ -279,7 +280,7 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
     });
 
     it('Hard to Keep Down (01104) heals Rhino or surges if already at max health', () => {
-      gameState.villain.health = 10; // Damaged from 14 max
+      getActiveVillain(gameState).health = 10; // Damaged from 14 max
       const hardCard = catalog.getCard('01104')!;
       const encInst = createCardInstance(hardCard);
       gameState.players[0].dealtEncounterCards.push(encInst);
@@ -287,13 +288,13 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       const nextState = step4_revealEncounterCards(gameState);
 
       // Healed 4 HP: 10 + 4 = 14
-      expect(nextState.villain.health).toBe(14);
+      expect(getActiveVillain(nextState).health).toBe(14);
     });
 
     it('canBasicThwart rejects action when target main scheme or side scheme has 0 threat (RR v1.8 p. 29)', () => {
       gameState.players[0].currentForm = 'hero';
       gameState.players[0].exhausted = false;
-      gameState.mainScheme.threat = 0;
+      getActiveMainScheme(gameState).threat = 0;
 
       const check = canBasicThwart(gameState, 'p1', 'main_scheme');
       expect(check.allowed).toBe(false);

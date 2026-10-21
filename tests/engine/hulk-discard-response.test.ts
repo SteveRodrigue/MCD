@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, getActiveVillain } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
 
@@ -80,7 +80,7 @@ describe('Hulk (01050) Forced Response Contract Tests — RR v1.8 & Issue #113',
     const physCard = createResourceCard('physical');
     state.players[0].deck = [physCard, createResourceCard('mental')];
 
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
 
     // Hulk attacks villain: 3 base attack + forced response 2 damage = 5 total damage
     const { state: nextState, result } = dispatchAction(state, {
@@ -88,12 +88,12 @@ describe('Hulk (01050) Forced Response Contract Tests — RR v1.8 & Issue #113',
       playerId: 'p1',
       allyInstanceId: hulkInst.instanceId,
       targetType: 'villain',
-      targetInstanceId: state.villain.instanceId,
+      targetInstanceId: getActiveVillain(state).instanceId,
     });
 
     expect(result.success).toBe(true);
     // 3 from attack + 2 from physical response = 5 damage
-    expect(nextState.villain.health).toBe(initialVillainHp - 5);
+    expect(getActiveVillain(nextState).health).toBe(initialVillainHp - 5);
     // Hulk takes 1 consequential damage and remains in play
     const hulkInNext = nextState.players[0].allies.find(
       (a) => a.instanceId === hulkInst.instanceId,
@@ -121,18 +121,18 @@ describe('Hulk (01050) Forced Response Contract Tests — RR v1.8 & Issue #113',
     state.players[0].deck = [energyCard, createResourceCard('mental')];
 
     const initialHeroHp = state.players[0].health;
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
 
     const { state: nextState } = dispatchAction(state, {
       type: 'ALLY_ATTACK',
       playerId: 'p1',
       allyInstanceId: hulkInst.instanceId,
       targetType: 'villain',
-      targetInstanceId: state.villain.instanceId,
+      targetInstanceId: getActiveVillain(state).instanceId,
     });
 
     // Villain took 3 (attack) + 1 (energy character damage) = 4
-    expect(nextState.villain.health).toBe(initialVillainHp - 4);
+    expect(getActiveVillain(nextState).health).toBe(initialVillainHp - 4);
     // Hero took 1 damage
     expect(nextState.players[0].health).toBe(initialHeroHp - 1);
     // Hulk took 1 consequential + 1 energy damage = 2
@@ -165,7 +165,7 @@ describe('Hulk (01050) Forced Response Contract Tests — RR v1.8 & Issue #113',
       playerId: 'p1',
       allyInstanceId: hulkInst.instanceId,
       targetType: 'villain',
-      targetInstanceId: state.villain.instanceId,
+      targetInstanceId: getActiveVillain(state).instanceId,
     });
 
     // Hulk was discarded
@@ -189,18 +189,18 @@ describe('Hulk (01050) Forced Response Contract Tests — RR v1.8 & Issue #113',
     state.players[0].deck = [wildCard, createResourceCard('mental')];
 
     const initialHeroHp = state.players[0].health;
-    const initialVillainHp = state.villain.health;
+    const initialVillainHp = getActiveVillain(state).health;
 
     const { state: nextState } = dispatchAction(state, {
       type: 'ALLY_ATTACK',
       playerId: 'p1',
       allyInstanceId: hulkInst.instanceId,
       targetType: 'villain',
-      targetInstanceId: state.villain.instanceId,
+      targetInstanceId: getActiveVillain(state).instanceId,
     });
 
     // Villain took: 3 (base attack) + 2 (physical) + 1 (energy) = 6 damage
-    expect(nextState.villain.health).toBe(initialVillainHp - 6);
+    expect(getActiveVillain(nextState).health).toBe(initialVillainHp - 6);
     // Hero took 1 damage (energy)
     expect(nextState.players[0].health).toBe(initialHeroHp - 1);
     // Hulk was discarded (mental)
@@ -227,7 +227,7 @@ describe('Hulk (01050) Forced Response Contract Tests — RR v1.8 & Issue #113',
       playerId: 'p1',
       allyInstanceId: hulkInst.instanceId,
       targetType: 'villain',
-      targetInstanceId: state.villain.instanceId,
+      targetInstanceId: getActiveVillain(state).instanceId,
     });
 
     expect(result.success).toBe(true);

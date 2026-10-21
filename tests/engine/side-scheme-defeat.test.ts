@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { CardType, Keyword, GameState, SideSchemeCard } from '@engine/models';
+import { CardType, Keyword, GameState, SideSchemeCard, getActiveMainScheme } from '@engine/models';
 import { executeEffect, defeatSideScheme } from '@engine/effects';
 import { getSpecialHandler } from '@engine/specials/special-registry';
 import '@engine/specials/wakanda-forever';
@@ -192,7 +192,7 @@ describe('Canonical Side Scheme Defeat & Zero-Threat Scheme Pipeline (Issue #149
   describe('c) Main scheme reaching 0 threat dispatches SCHEME_THREAT_REDUCED_TO_ZERO and satisfies SCHEME_EMPTY, but remains in play', () => {
     it('dispatches SCHEME_THREAT_REDUCED_TO_ZERO, sets conditionMet, and keeps main scheme in play', () => {
       const player = state.players[0];
-      state.mainScheme.threat = 2;
+      getActiveMainScheme(state).threat = 2;
 
       player.activeFormCard.enrichment = {
         abilities: [
@@ -231,10 +231,10 @@ describe('Canonical Side Scheme Defeat & Zero-Threat Scheme Pipeline (Issue #149
 
       expect(result.success).toBe(true);
       expect(result.facts?.threatZero).toBe(true);
-      expect(state.mainScheme.threat).toBe(0);
+      expect(getActiveMainScheme(state).threat).toBe(0);
 
       // Main scheme must remain in play (NOT defeated)
-      expect(state.mainScheme).toBeDefined();
+      expect(getActiveMainScheme(state)).toBeDefined();
       expect(state.encounterDiscard.some((c) => c.card.type === CardType.MAIN_SCHEME)).toBe(false);
 
       // SCHEME_THREAT_REDUCED_TO_ZERO must have dispatched (+1 card drawn)
@@ -334,7 +334,7 @@ describe('Canonical Side Scheme Defeat & Zero-Threat Scheme Pipeline (Issue #149
   describe('e) Separation of SCHEME_THREAT_REDUCED_TO_ZERO from SCHEME_DEFEATED (Issue #323)', () => {
     it('thwarting main scheme to 0 threat dispatches SCHEME_THREAT_REDUCED_TO_ZERO but does NOT fire SCHEME_DEFEATED listener', () => {
       const player = state.players[0];
-      state.mainScheme.threat = 3;
+      getActiveMainScheme(state).threat = 3;
 
       player.activeFormCard.enrichment = {
         abilities: [
@@ -381,7 +381,7 @@ describe('Canonical Side Scheme Defeat & Zero-Threat Scheme Pipeline (Issue #149
 
       const result = executeEffect(state, removeThreatAbility as any, { playerId: player.id });
       expect(result.success).toBe(true);
-      expect(state.mainScheme.threat).toBe(0);
+      expect(getActiveMainScheme(state).threat).toBe(0);
 
       // Only SCHEME_THREAT_REDUCED_TO_ZERO fired (+1 card drawn), NOT SCHEME_DEFEATED
       expect(player.hand.length).toBe(initialHand + 1);

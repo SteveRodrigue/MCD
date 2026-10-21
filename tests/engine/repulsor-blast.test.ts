@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, StatusCard, getActiveVillain } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
 
@@ -77,7 +77,7 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
       nonEnergyCard,
     ];
 
-    const initialHealth = state.villain.health;
+    const initialHealth = getActiveVillain(state).health;
     const result = executeEffect(state, ability, {
       playerId: 'p1',
       sourceCardInstance: createCardInstance(repulsorCard),
@@ -86,7 +86,7 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
 
     expect(result.success).toBe(true);
     // 1 base + 0 bonus = 1 damage
-    expect(state.villain.health).toBe(initialHealth - 1);
+    expect(getActiveVillain(state).health).toBe(initialHealth - 1);
     expect(state.players[0].discard.length).toBe(5);
     expect(state.players[0].deck.length).toBe(1);
   });
@@ -190,7 +190,7 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
       nonEnergyCard,
     ];
 
-    const initialHealth = state.villain.health;
+    const initialHealth = getActiveVillain(state).health;
     const result = executeEffect(state, ability, {
       playerId: 'p1',
       sourceCardInstance: createCardInstance(repulsorCard),
@@ -198,7 +198,7 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
     });
 
     expect(result.success).toBe(true);
-    expect(state.villain.health).toBe(initialHealth - 9);
+    expect(getActiveVillain(state).health).toBe(initialHealth - 9);
     expect(state.players[0].discard.length).toBe(5);
   });
 
@@ -236,7 +236,7 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
 
     state.players[0].deck = [wildCard, wildCard, wildCard, wildCard, wildCard, wildCard];
 
-    const initialHealth = state.villain.health;
+    const initialHealth = getActiveVillain(state).health;
     const result = executeEffect(state, ability, {
       playerId: 'p1',
       sourceCardInstance: createCardInstance(repulsorCard),
@@ -245,7 +245,7 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
 
     expect(result.success).toBe(true);
     // Wild is not printed [energy] -> 1 base + 0 bonus = 1 damage
-    expect(state.villain.health).toBe(initialHealth - 1);
+    expect(getActiveVillain(state).health).toBe(initialHealth - 1);
   });
 
   it('deals damage as a single simultaneous instance (Tough absorbs entire damage including energy bonus per Official FAQ)', () => {
@@ -319,8 +319,8 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
     ];
 
     // Give villain Tough status
-    state.villain.statusCards = [StatusCard.TOUGH];
-    const initialHealth = state.villain.health;
+    getActiveVillain(state).statusCards = [StatusCard.TOUGH];
+    const initialHealth = getActiveVillain(state).health;
 
     const result = executeEffect(state, ability, {
       playerId: 'p1',
@@ -331,8 +331,8 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
     expect(result.success).toBe(true);
     // Official FAQ: 5 damage dealt all at once. Tough absorbs the entire instance.
     // Villain health must NOT be reduced by the remaining 4 damage.
-    expect(state.villain.health).toBe(initialHealth);
-    expect(state.villain.statusCards).not.toContain(StatusCard.TOUGH);
+    expect(getActiveVillain(state).health).toBe(initialHealth);
+    expect(getActiveVillain(state).statusCards).not.toContain(StatusCard.TOUGH);
     expect(state.players[0].discard.length).toBe(5);
   });
 });

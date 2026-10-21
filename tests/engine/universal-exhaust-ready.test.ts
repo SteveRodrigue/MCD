@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, VillainCard, MainSchemeCard } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  VillainCard,
+  MainSchemeCard,
+  getActiveVillain,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
 
@@ -37,7 +44,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
     state.players[0].currentForm = 'hero';
     state.players[0].activeFormCard = spiderManHero;
     state.players[0].exhausted = false;
-    state.villain.exhausted = false;
+    getActiveVillain(state).exhausted = false;
   });
 
   describe('EXHAUST Primitive', () => {
@@ -92,7 +99,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
     });
 
     it('exhausts the villain when targeting VILLAIN', () => {
-      expect(state.villain.exhausted).toBe(false);
+      expect(getActiveVillain(state).exhausted).toBe(false);
 
       const result = executeEffect(
         state,
@@ -101,7 +108,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(state.villain.exhausted).toBe(true);
+      expect(getActiveVillain(state).exhausted).toBe(true);
     });
 
     it('exhausts all minions across play areas when targeting ALL_MINIONS', () => {

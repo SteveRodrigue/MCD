@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, StatusCard, Keyword } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  StatusCard,
+  Keyword,
+  getActiveVillain,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
 import { executeEffect } from '@engine/effects';
@@ -139,7 +146,7 @@ describe('Toughness: a character enters play with a tough status card', () => {
   it('"I\'m Tough" (01105) gives the status without granting the Toughness keyword', () => {
     const imTough = cardCatalog.getCard(IM_TOUGH)!;
     expect(imTough.keywords ?? []).not.toContain(Keyword.TOUGHNESS);
-    state.villain.statusCards = [];
+    getActiveVillain(state).statusCards = [];
     const res = executeEffect(
       state,
       {
@@ -149,7 +156,7 @@ describe('Toughness: a character enters play with a tough status card', () => {
       },
       { playerId: 'p1' },
     );
-    expect(res.state.villain.statusCards).toEqual([StatusCard.TOUGH]);
-    expect(res.state.villain.card.keywords ?? []).not.toContain(Keyword.TOUGHNESS);
+    expect(getActiveVillain(res.state).statusCards).toEqual([StatusCard.TOUGH]);
+    expect(getActiveVillain(res.state).card.keywords ?? []).not.toContain(Keyword.TOUGHNESS);
   });
 });

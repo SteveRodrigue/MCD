@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { HeroCard, AlterEgoCard, VillainCard, MainSchemeCard } from '@engine/models';
+import {
+  HeroCard,
+  AlterEgoCard,
+  VillainCard,
+  MainSchemeCard,
+  getActiveMainScheme,
+  getActiveVillain,
+} from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
 import { ScenarioRegistry, KlawScenarioPlugin, UltronScenarioPlugin } from '@engine/scenarios';
 
@@ -33,8 +40,8 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
       });
 
       // Klaw Stage I initialized (12 HP)
-      expect(state.villain.card.code).toBe('01113');
-      expect(state.villain.health).toBe(12);
+      expect(getActiveVillain(state).card.code).toBe('01113');
+      expect(getActiveVillain(state).health).toBe(12);
 
       // Defense Network (01124) side scheme put into play with 2 threat
       expect(state.sideSchemes.some((s) => s.card.code === '01124')).toBe(true);
@@ -75,14 +82,14 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
       });
 
       // Defeating Stage I advances to Stage II
-      const result = klawPlugin.onVillainDefeated(state, state.villain.instanceId!);
+      const result = klawPlugin.onVillainDefeated(state, getActiveVillain(state).instanceId!);
       expect(result.advancedStage).toBe(true);
-      expect(state.villain.card.code).toBe('01114'); // Klaw II
+      expect(getActiveVillain(state).card.code).toBe('01114'); // Klaw II
       // Base HP 18 + 10 from Immortal Klaw = 28 HP
-      expect(state.villain.health).toBe(28);
+      expect(getActiveVillain(state).health).toBe(28);
       // Immortal Klaw (01127) is revealed as a side scheme, not attached
       expect(state.sideSchemes.some((s) => s.card.code === '01127')).toBe(true);
-      expect(state.villain.attachments.some((a) => a.card.code === '01127')).toBe(false);
+      expect(getActiveVillain(state).attachments.some((a) => a.card.code === '01127')).toBe(false);
     });
   });
 
@@ -111,8 +118,8 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
       });
 
       // Ultron Stage I initialized (17 HP)
-      expect(state.villain.card.code).toBe('01134');
-      expect(state.villain.health).toBe(17);
+      expect(getActiveVillain(state).card.code).toBe('01134');
+      expect(getActiveVillain(state).health).toBe(17);
 
       // Ultron Drones (01140) environment is in play
       expect(state.environments.some((e) => e.card.code === '01140')).toBe(true);
@@ -154,19 +161,28 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
       });
 
       // Stage 1B completed -> Advances to Stage 2B (Assault on NORAD 01138b)
-      const res1 = ultronPlugin.onMainSchemeCompleted(state, state.mainScheme.instanceId!);
+      const res1 = ultronPlugin.onMainSchemeCompleted(
+        state,
+        getActiveMainScheme(state).instanceId!,
+      );
       expect(res1.advancedStage).toBe(true);
-      expect(state.mainScheme.stage).toBe('2B');
-      expect(state.mainScheme.targetThreat).toBe(10);
+      expect(getActiveMainScheme(state).stage).toBe('2B');
+      expect(getActiveMainScheme(state).targetThreat).toBe(10);
 
       // Stage 2B completed -> Advances to Stage 3B (Countdown to Oblivion 01139b)
-      const res2 = ultronPlugin.onMainSchemeCompleted(state, state.mainScheme.instanceId!);
+      const res2 = ultronPlugin.onMainSchemeCompleted(
+        state,
+        getActiveMainScheme(state).instanceId!,
+      );
       expect(res2.advancedStage).toBe(true);
-      expect(state.mainScheme.stage).toBe('3B');
-      expect(state.mainScheme.targetThreat).toBe(5);
+      expect(getActiveMainScheme(state).stage).toBe('3B');
+      expect(getActiveMainScheme(state).targetThreat).toBe(5);
 
       // Stage 3B completed -> Defeat
-      const res3 = ultronPlugin.onMainSchemeCompleted(state, state.mainScheme.instanceId!);
+      const res3 = ultronPlugin.onMainSchemeCompleted(
+        state,
+        getActiveMainScheme(state).instanceId!,
+      );
       expect(res3.defeat).toBe(true);
       expect(state.winner).toBe('VILLAIN');
     });

@@ -6,6 +6,7 @@ import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import type { AlterEgoCard, GameState, HeroCard, SideSchemeState } from '@engine/models';
 
+import { getActiveMainScheme } from '@engine/models';
 /**
  * The scheme prompt Spider-Tracer raises (Issue #249): the engine builds it, the modal renders it,
  * the clicked option id goes back to the engine. Each hop must keep the scheme the player picked.
@@ -33,7 +34,7 @@ describe('Spider-Tracer scheme prompt, engine to modal to engine (Issue #249)', 
     } as any);
     state.players[0].currentForm = 'hero';
     state.players[0].activeFormCard = spiderMan;
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
 
     const minion = createCardInstance(cardCatalog.getCard('01101')!);
     const tracer = createCardInstance(cardCatalog.getCard('01007')!);
@@ -96,7 +97,7 @@ describe('Spider-Tracer scheme prompt, engine to modal to engine (Issue #249)', 
     const expected: Record<string, { main: number; bomb: number; breakin: number }> = {
       side_bomb_scare: { main: 5, bomb: 1, breakin: 3 },
       side_breakin: { main: 5, bomb: 4, breakin: 0 },
-      [afterAttack.mainScheme.instanceId!]: { main: 2, bomb: 4, breakin: 3 },
+      [getActiveMainScheme(afterAttack).instanceId!]: { main: 2, bomb: 4, breakin: 3 },
     };
 
     for (const [index, option] of prompt.options.entries()) {
@@ -111,7 +112,7 @@ describe('Spider-Tracer scheme prompt, engine to modal to engine (Issue #249)', 
         selectedOptionId: chosen!,
       }).state;
       const want = expected[option.id];
-      expect(resolved.mainScheme.threat).toBe(want.main);
+      expect(getActiveMainScheme(resolved).threat).toBe(want.main);
       expect(resolved.sideSchemes.find((s) => s.instanceId === 'side_bomb_scare')?.threat).toBe(
         want.bomb,
       );

@@ -11,6 +11,8 @@ import {
   StatusCard,
   VillainCard,
   VillainState,
+  getActiveMainScheme,
+  getActiveVillain,
 } from '@engine/models';
 import { setupGame, createCardInstance, resetInstanceCounter } from '@engine/state/game-setup';
 import { defeatMinionsBeyondHitPoints } from '@engine/pipeline/damage-pipeline';
@@ -62,7 +64,7 @@ describe('Boost resolution: one shared helper for every activation (#263)', () =
       skipMulligan: true,
     });
     state.encounterDiscard = [];
-    state.mainScheme.threat = 1;
+    getActiveMainScheme(state).threat = 1;
   };
 
   /** A boost card with no ability and no star: only its icons count. */
@@ -103,7 +105,7 @@ describe('Boost resolution: one shared helper for every activation (#263)', () =
       return {
         kind,
         base: 2,
-        entity: state.villain,
+        entity: getActiveVillain(state),
         run: () => {
           const hp = p.health;
           executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
@@ -116,11 +118,11 @@ describe('Boost resolution: one shared helper for every activation (#263)', () =
       return {
         kind,
         base: 1,
-        entity: state.villain,
+        entity: getActiveVillain(state),
         run: () => {
-          const threat = state.mainScheme.threat;
+          const threat = getActiveMainScheme(state).threat;
           executeVillainSchemeAgainstPlayer(state, p);
-          return state.mainScheme.threat - threat;
+          return getActiveMainScheme(state).threat - threat;
         },
       };
     }
@@ -147,9 +149,9 @@ describe('Boost resolution: one shared helper for every activation (#263)', () =
       base: 1,
       entity: minion,
       run: () => {
-        const threat = state.mainScheme.threat;
+        const threat = getActiveMainScheme(state).threat;
         executeMinionSchemeAgainstPlayer(state, minion, p);
-        return state.mainScheme.threat - threat;
+        return getActiveMainScheme(state).threat - threat;
       },
     };
   };
@@ -162,7 +164,7 @@ describe('Boost resolution: one shared helper for every activation (#263)', () =
         additionalBoostCards: n,
       } as never;
     } else {
-      state.villain.card = { ...state.villain.card, additionalBoostCards: n };
+      getActiveVillain(state).card = { ...getActiveVillain(state).card, additionalBoostCards: n };
     }
   };
 
@@ -244,7 +246,7 @@ describe('Boost resolution: one shared helper for every activation (#263)', () =
       it(`${kind}: villain additionalBoostCards 1 plus an attachment with 1 deal 2 extra cards`, () => {
         const path = makePath(kind);
         setAdditional(path, 1);
-        state.villain.attachments = [
+        getActiveVillain(state).attachments = [
           createCardInstance({
             code: 't-att',
             name: 'Boost Attachment',
@@ -445,11 +447,11 @@ describe('Boost resolution: one shared helper for every activation (#263)', () =
           timing: 'FORCED_INTERRUPT',
           steps: [{ effect: 'GIVE_ADDITIONAL_BOOST_CARD' }],
         } as never;
-        state.villain.card = {
-          ...state.villain.card,
+        getActiveVillain(state).card = {
+          ...getActiveVillain(state).card,
           enrichment: { abilities: [ability] },
         } as VillainCard;
-        state.villain.attachments = [
+        getActiveVillain(state).attachments = [
           createCardInstance({
             code: 't-att2',
             name: 'Scan Attachment',

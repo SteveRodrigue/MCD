@@ -8,6 +8,8 @@ import {
   SideSchemeState,
   CardType,
   CardAbility,
+  getActiveMainScheme,
+  getActiveVillain,
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
@@ -63,8 +65,8 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     expect(stats.attack).toBe(3);
 
     // Perform Ally Attack
-    state.mainScheme.threat = 5;
-    const initialVillainHp = state.villain.health;
+    getActiveMainScheme(state).threat = 5;
+    const initialVillainHp = getActiveVillain(state).health;
 
     const res = dispatchAction(state, {
       type: 'ALLY_ATTACK',
@@ -75,14 +77,14 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
 
     expect(res.result.success).toBe(true);
     // Daredevil attacks for 3
-    expect(res.state.villain.health).toBe(initialVillainHp - 3);
+    expect(getActiveVillain(res.state).health).toBe(initialVillainHp - 3);
   });
 
   it('01009 Webbed Up: Cancels villain attack, discards itself, and stuns the villain', () => {
     const webbedUpCard = cardCatalog.getCard('01009')!;
     const webbedUpInstance = createCardInstance(webbedUpCard);
-    state.villain.attachments = [webbedUpInstance];
-    state.villains[0].attachments = state.villain.attachments;
+    getActiveVillain(state).attachments = [webbedUpInstance];
+    state.villains[0].attachments = getActiveVillain(state).attachments;
 
     const initialHeroHp = state.players[0].health;
 
@@ -92,10 +94,12 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     // Attack must be cancelled
     expect(nextState.players[0].health).toBe(initialHeroHp);
     // Webbed Up must be discarded to player discard
-    expect(nextState.villain.attachments.some((c) => c.card.code === '01009')).toBe(false);
+    expect(getActiveVillain(nextState).attachments.some((c) => c.card.code === '01009')).toBe(
+      false,
+    );
     expect(nextState.players[0].discard.some((c) => c.card.code === '01009')).toBe(true);
     // Villain must now have STUNNED status
-    expect(nextState.villain.statusCards).toContain(StatusCard.STUNNED);
+    expect(getActiveVillain(nextState).statusCards).toContain(StatusCard.STUNNED);
   });
 
   it('01007 Spider-Tracer: Removes 3 threat from scheme when attached minion is defeated (Single Scheme Auto-Targeting)', () => {
@@ -106,7 +110,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
 
     minionInstance.attachments = [tracerInstance];
     state.players[0].engagedMinions = [minionInstance];
-    state.mainScheme.threat = 6;
+    getActiveMainScheme(state).threat = 6;
 
     // Player attacks minion with 3 damage (basic attack 2 ATK against minion with 2 damage)
     minionInstance.tokens = { damage: 2 };
@@ -122,7 +126,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     // Minion is defeated
     expect(res.state.players[0].engagedMinions.length).toBe(0);
     // Spider-Tracer triggers and removes 3 threat from main scheme (6 - 3 = 3)
-    expect(res.state.mainScheme.threat).toBe(3);
+    expect(getActiveMainScheme(res.state).threat).toBe(3);
     // Spider-Tracer placed in player discard
     expect(res.state.players[0].discard.some((c) => c.card.code === '01007')).toBe(true);
   });
@@ -143,7 +147,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     state.sideSchemes = [sideSchemeInstance];
     minionInstance.attachments = [tracerInstance];
     state.players[0].engagedMinions = [minionInstance];
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
 
     minionInstance.tokens = { damage: 2 };
 
@@ -184,7 +188,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
       ),
     ).toBe(true);
     // Main scheme threat untouched
-    expect(resolveRes.state.mainScheme.threat).toBe(5);
+    expect(getActiveMainScheme(resolveRes.state).threat).toBe(5);
     // Spider-Tracer placed in player discard
     expect(resolveRes.state.players[0].discard.some((c) => c.card.code === '01007')).toBe(true);
   });
@@ -206,7 +210,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
       discard: [],
     });
     minionInstance.tokens = { damage: 2 };
-    state.mainScheme.threat = 4;
+    getActiveMainScheme(state).threat = 4;
 
     const res = dispatchAction(state, {
       type: 'BASIC_ATTACK',
@@ -231,7 +235,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
 
     minionInstance.attachments = [tracerInstance];
     state.players[0].engagedMinions = [minionInstance];
-    state.mainScheme.threat = 6;
+    getActiveMainScheme(state).threat = 6;
 
     // Execute DEAL_DAMAGE effect dealing 3 damage to the minion (e.g. Haymaker)
     const attackAbility: CardAbility = {
@@ -255,7 +259,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     // Minion defeated and removed
     expect(res.state.players[0].engagedMinions.length).toBe(0);
     // Spider-Tracer triggered and removed 3 threat (6 - 3 = 3)
-    expect(res.state.mainScheme.threat).toBe(3);
+    expect(getActiveMainScheme(res.state).threat).toBe(3);
     // Spider-Tracer discarded to player's discard
     expect(res.state.players[0].discard.some((c) => c.card.code === '01007')).toBe(true);
   });

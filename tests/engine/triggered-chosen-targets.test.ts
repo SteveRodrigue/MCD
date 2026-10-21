@@ -8,6 +8,7 @@ import {
   CardInstance,
   StatusCard,
   getActiveVillain,
+  getActiveMainScheme,
 } from '@engine/models';
 import { setupGame, createCardInstance, resetInstanceCounter } from '@engine/state/game-setup';
 import { dispatchAction, peekDecisionPrompt } from '@engine/index';
@@ -87,7 +88,7 @@ describe('Triggered abilities with a CHOSEN_* target let the player choose (#234
   const daredevilThwarts = () => {
     const dd = card('01058');
     p1().allies = [dd];
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
     const res = dispatchAction(state, {
       type: 'ALLY_THWART',
       playerId: 'p1',
@@ -192,7 +193,7 @@ describe('Triggered abilities with a CHOSEN_* target let the player choose (#234
       sideScheme = createCardInstance(cardCatalog.getCard('01107')!) as any;
       sideScheme.threat = 3;
       state.sideSchemes.push(sideScheme);
-      state.mainScheme.threat = 4;
+      getActiveMainScheme(state).threat = 4;
     });
 
     it('after Yes, the scheme prompt opens and the chosen side scheme loses 1 threat', () => {
@@ -200,7 +201,7 @@ describe('Triggered abilities with a CHOSEN_* target let the player choose (#234
       answerYes();
       resolve(targetOptionFor(sideScheme.instanceId)!.id);
       expect(state.sideSchemes[0].threat).toBe(2);
-      expect(state.mainScheme.threat).toBe(4);
+      expect(getActiveMainScheme(state).threat).toBe(4);
     });
 
     it('a target that disappears before Yes aborts the ability and the cost is not paid', () => {
@@ -208,7 +209,7 @@ describe('Triggered abilities with a CHOSEN_* target let the player choose (#234
       state.sideSchemes = [];
       defeatMinion();
       state = thaw(state);
-      state.mainScheme.threat = 0; // no scheme with removable threat remains
+      getActiveMainScheme(state).threat = 0; // no scheme with removable threat remains
       answerYes();
       expect(peekDecisionPrompt(state)).toBeUndefined();
       expect(p1().tableau.find((c) => c.instanceId === room.instanceId)!.exhausted).toBeFalsy();

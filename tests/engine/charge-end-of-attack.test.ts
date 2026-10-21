@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, StatusCard, getActiveVillain } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEnemyAttackSynchronously } from '@engine/pipeline';
 
@@ -54,19 +54,19 @@ describe('#294 HOST_ATTACK_ENDED: Charge (01099) discards at the end of the atta
 
   it('applies +3 ATK and Overkill during the attack, then discards Charge', () => {
     state.players[0].allies.push(createCardInstance(cardCatalog.getCard('01002')!));
-    state.villain.attachments.push(createCardInstance(cardCatalog.getCard('01099')!));
+    getActiveVillain(state).attachments.push(createCardInstance(cardCatalog.getCard('01099')!));
     const initialHp = state.players[0].health;
 
     executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'ALLY_CHUMP_BLOCK');
 
     expect(state.players[0].allies.length).toBe(0);
     expect(state.players[0].health).toBe(initialHp - 3);
-    expect(state.villain.attachments.some((a) => a.card.code === '01099')).toBe(false);
+    expect(getActiveVillain(state).attachments.some((a) => a.card.code === '01099')).toBe(false);
     expect(state.encounterDiscard.some((a) => a.card.code === '01099')).toBe(true);
   });
 
   it('the second Rhino attack has base ATK and no Overkill', () => {
-    state.villain.attachments.push(createCardInstance(cardCatalog.getCard('01099')!));
+    getActiveVillain(state).attachments.push(createCardInstance(cardCatalog.getCard('01099')!));
     executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
     state.players[0].allies.push(createCardInstance(cardCatalog.getCard('01002')!));
@@ -78,22 +78,22 @@ describe('#294 HOST_ATTACK_ENDED: Charge (01099) discards at the end of the atta
   });
 
   it('a stunned Rhino does not attack and Charge stays attached', () => {
-    state.villain.attachments.push(createCardInstance(cardCatalog.getCard('01099')!));
-    state.villain.statusCards = [StatusCard.STUNNED];
+    getActiveVillain(state).attachments.push(createCardInstance(cardCatalog.getCard('01099')!));
+    getActiveVillain(state).statusCards = [StatusCard.STUNNED];
 
     executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
-    expect(state.villain.attachments.some((a) => a.card.code === '01099')).toBe(true);
+    expect(getActiveVillain(state).attachments.some((a) => a.card.code === '01099')).toBe(true);
     expect(state.encounterDiscard.some((a) => a.card.code === '01099')).toBe(false);
   });
 
   it('discards a non-01099 attachment with a HOST_ATTACK_ENDED ability on the villain', () => {
     const att = syntheticEndOfAttackAttachment('test_end_villain');
-    state.villain.attachments.push(att);
+    getActiveVillain(state).attachments.push(att);
 
     executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
-    expect(state.villain.attachments.length).toBe(0);
+    expect(getActiveVillain(state).attachments.length).toBe(0);
     expect(state.encounterDiscard.some((a) => a.card.code === 'TEST_ATTACK_END')).toBe(true);
   });
 

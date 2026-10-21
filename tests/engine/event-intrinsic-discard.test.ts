@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, CardInstance } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  CardInstance,
+  getActiveMainScheme,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
 import { dispatchTrigger } from '@engine/triggers/trigger-dispatcher';
@@ -31,7 +37,7 @@ describe('Event Intrinsic Discard Lifecycle (Issue #271 / RR v1.8 Event)', () =>
       p.currentForm = 'hero';
       p.activeFormCard = p.hero;
     }
-    state.mainScheme.threat = 5;
+    getActiveMainScheme(state).threat = 5;
   });
 
   const card = (code: string, owner = 'p1'): CardInstance =>
@@ -147,7 +153,7 @@ describe('Event Intrinsic Discard Lifecycle (Issue #271 / RR v1.8 Event)', () =>
 
     answer('p1', 'trigger_chase_them_down');
 
-    expect(state.mainScheme.threat).toBe(3);
+    expect(getActiveMainScheme(state).threat).toBe(3);
     expect(state.players[0].hand.map((c) => c.instanceId)).not.toContain(chase.instanceId);
     expect(state.players[0].discard.map((c) => c.instanceId)).toContain(chase.instanceId);
   });
@@ -203,7 +209,7 @@ describe('Event Intrinsic Discard Lifecycle (Issue #271 / RR v1.8 Event)', () =>
     const greatResp = card('01061');
     state.players[0].hand = [greatResp];
     state.players[0].health = 10;
-    const initialThreat = state.mainScheme.threat;
+    const initialThreat = getActiveMainScheme(state).threat;
 
     const res = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
       targetPlayerId: 'p1',
@@ -216,7 +222,7 @@ describe('Event Intrinsic Discard Lifecycle (Issue #271 / RR v1.8 Event)', () =>
 
     answer('p1', 'trigger_great_responsibility_interrupt');
 
-    expect(state.mainScheme.threat).toBe(initialThreat);
+    expect(getActiveMainScheme(state).threat).toBe(initialThreat);
     expect(state.players[0].health).toBe(8);
     expect(state.players[0].hand.map((c) => c.instanceId)).not.toContain(greatResp.instanceId);
     expect(state.players[0].discard.map((c) => c.instanceId)).toContain(greatResp.instanceId);
@@ -319,7 +325,7 @@ describe('Event Intrinsic Discard Lifecycle (Issue #271 / RR v1.8 Event)', () =>
     // Confused was consumed
     expect(state.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
     // Main scheme threat was NOT reduced
-    expect(state.mainScheme.threat).toBe(5);
+    expect(getActiveMainScheme(state).threat).toBe(5);
     // Even though effect was canceled, event card was played and is in discard!
     expect(state.players[0].hand.map((c) => c.instanceId)).not.toContain(chase.instanceId);
     expect(state.players[0].discard.map((c) => c.instanceId)).toContain(chase.instanceId);

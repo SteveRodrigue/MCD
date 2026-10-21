@@ -7,6 +7,8 @@ import {
   MinionCard,
   SideSchemeCard,
   GamePhase,
+  getActiveMainScheme,
+  getActiveVillain,
 } from '../../src/engine/models';
 import { executeEffect } from '../../src/engine/effects';
 
@@ -72,21 +74,25 @@ describe('Result Fact Milestone Evaluation & IF_RESULT Sequential Gating (ADR-00
           setAsideCards: [],
         },
       ],
-      villain: {
-        instanceId: 'v1',
-        health: 14,
-        maxHealth: 14,
-        stage: 1,
-        statusCards: [],
-        card: { code: '01094', name: 'Rhino', type: CardType.VILLAIN, health: 14 },
-        attachments: [],
-      } as any,
-      mainScheme: {
-        instanceId: 'ms1',
-        threat: 2,
-        targetThreat: 7,
-        card: { code: '01097b', name: 'The Break-In!', type: CardType.MAIN_SCHEME },
-      } as any,
+      villains: [
+        {
+          instanceId: 'v1',
+          health: 14,
+          maxHealth: 14,
+          stage: 1,
+          statusCards: [],
+          card: { code: '01094', name: 'Rhino', type: CardType.VILLAIN, health: 14 },
+          attachments: [],
+        } as any,
+      ],
+      mainSchemes: [
+        {
+          instanceId: 'ms1',
+          threat: 2,
+          targetThreat: 7,
+          card: { code: '01097b', name: 'The Break-In!', type: CardType.MAIN_SCHEME },
+        } as any,
+      ],
       sideSchemes: [],
       encounterDeck: [],
       encounterDiscard: [],
@@ -124,24 +130,24 @@ describe('Result Fact Milestone Evaluation & IF_RESULT Sequential Gating (ADR-00
     };
 
     it('Executes DRAW when REMOVE_THREAT removes the last threat on the scheme (threatZero is true)', () => {
-      state.mainScheme.threat = 2;
+      getActiveMainScheme(state).threat = 2;
       expect(state.players[0].hand.length).toBe(0);
 
       const res = executeEffect(state, clearTheAreaAbility as any, { playerId: 'p1' });
 
       expect(res.success).toBe(true);
-      expect(state.mainScheme.threat).toBe(0);
+      expect(getActiveMainScheme(state).threat).toBe(0);
       expect(state.players[0].hand.length).toBe(1); // Drew 1 card because scheme threat reached 0!
     });
 
     it('Skips DRAW when REMOVE_THREAT leaves threat on the scheme (threatZero is false)', () => {
-      state.mainScheme.threat = 4;
+      getActiveMainScheme(state).threat = 4;
       expect(state.players[0].hand.length).toBe(0);
 
       const res = executeEffect(state, clearTheAreaAbility as any, { playerId: 'p1' });
 
       expect(res.success).toBe(true);
-      expect(state.mainScheme.threat).toBe(2);
+      expect(getActiveMainScheme(state).threat).toBe(2);
       expect(state.players[0].hand.length).toBe(0); // Did not draw because scheme still had 2 threat!
     });
 
@@ -332,7 +338,7 @@ describe('Result Fact Milestone Evaluation & IF_RESULT Sequential Gating (ADR-00
 
       expect(res.success).toBe(true);
       expect(state.players[0].engagedMinions.length).toBe(0);
-      expect(state.mainScheme.threat).toBe(1);
+      expect(getActiveMainScheme(state).threat).toBe(1);
     });
 
     it('Evaluates facts.fullyHealed as true when health reaches maxHealth and false otherwise', () => {
@@ -367,7 +373,7 @@ describe('Result Fact Milestone Evaluation & IF_RESULT Sequential Gating (ADR-00
 
   describe('statusAdded Fact', () => {
     it('statusAdded is true when status placed; false when already possessed', () => {
-      state.villain.statusCards = [];
+      getActiveVillain(state).statusCards = [];
 
       const statusAbility = {
         id: 'stun_enemy',
@@ -390,7 +396,7 @@ describe('Result Fact Milestone Evaluation & IF_RESULT Sequential Gating (ADR-00
 
       const res1 = executeEffect(state, statusAbility as any, { playerId: 'p1' });
       expect(res1.success).toBe(true);
-      expect(state.villain.statusCards).toEqual([StatusCard.STUNNED]);
+      expect(getActiveVillain(state).statusCards).toEqual([StatusCard.STUNNED]);
       expect(state.players[0].hand.length).toBe(1);
 
       const res2 = executeEffect(state, statusAbility as any, { playerId: 'p1' });

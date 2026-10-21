@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { GameState, HeroCard, AlterEgoCard, getActiveVillain } from '../../src/engine/models';
 import { setupGame } from '../../src/engine/state/game-setup';
 import {
   getEffectiveAllyLimit,
@@ -123,7 +123,7 @@ describe('UI Dynamic Board Stats Display Contract (Issue #103)', () => {
 
   describe('VillainZone: Dynamic Villain ATK & SCH with Attachments', () => {
     it('calculates effective ATK when villain has Enhanced Ivory Horn (01100)', () => {
-      const villain = state.villain;
+      const villain = getActiveVillain(state);
       const baseAtk = villain.card.attack || 2;
       const baseSch = villain.card.scheme || 1;
 

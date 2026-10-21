@@ -113,20 +113,24 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
           ],
         } as any,
       ],
-      villain: {
-        instanceId: 'v1',
-        health: 14,
-        maxHealth: 14,
-        statusCards: [],
-        attachments: [],
-        card: { code: '01094', name: 'Rhino', type: CardType.VILLAIN } as any,
-      } as any,
-      mainScheme: {
-        instanceId: 'ms1',
-        threat: 2,
-        targetThreat: 7,
-        card: { code: '01097', name: 'The Break-In!' } as any,
-      } as any,
+      villains: [
+        {
+          instanceId: 'v1',
+          health: 14,
+          maxHealth: 14,
+          statusCards: [],
+          attachments: [],
+          card: { code: '01094', name: 'Rhino', type: CardType.VILLAIN } as any,
+        } as any,
+      ],
+      mainSchemes: [
+        {
+          instanceId: 'ms1',
+          threat: 2,
+          targetThreat: 7,
+          card: { code: '01097', name: 'The Break-In!' } as any,
+        } as any,
+      ],
       sideSchemes: [],
       encounterDeck: [
         { instanceId: 'enc1', card: { code: '01103', name: 'Shocker' } } as CardInstance,

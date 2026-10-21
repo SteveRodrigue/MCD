@@ -8,6 +8,7 @@ import {
   StatusCard,
   VillainCard,
   CardInstance,
+  getActiveVillain,
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import {
@@ -87,7 +88,7 @@ const give = (code: string): CardInstance => createCardInstance(cardCatalog.getC
 
 /** Defeats the active villain through the real damage pipeline (health is the hit points left). */
 function defeatWithDamage(state: GameState, amount: number): GameState {
-  const villain = state.villain;
+  const villain = getActiveVillain(state);
   return applyDamageToTarget(state, {
     target: {
       type: 'villain',
@@ -104,7 +105,7 @@ function defeatWithDamage(state: GameState, amount: number): GameState {
 describe('Villain stage change (#303)', () => {
   it('1. same title: attachments, status cards, counters and underneath cards carry over', () => {
     const state = build();
-    const villain = state.villain;
+    const villain = getActiveVillain(state);
     const instanceId = villain.instanceId;
     const suit = give(ARMORED_RHINO_SUIT);
     const charge = give(CHARGE);
@@ -120,20 +121,22 @@ describe('Villain stage change (#303)', () => {
 
     const after = defeatWithDamage(state, 14);
 
-    expect(after.villain.card.code).toBe(RHINO_II);
-    expect(after.villain.instanceId).toBe(instanceId);
-    expect(after.villain.attachments.map((a) => a.instanceId)).toEqual([
+    expect(getActiveVillain(after).card.code).toBe(RHINO_II);
+    expect(getActiveVillain(after).instanceId).toBe(instanceId);
+    expect(getActiveVillain(after).attachments.map((a) => a.instanceId)).toEqual([
       suit.instanceId,
       charge.instanceId,
       horn.instanceId,
     ]);
-    expect(after.villain.attachments[2].tokens?.counters).toBe(2);
-    expect(after.villain.statusCards).toEqual([StatusCard.STUNNED]);
-    expect(after.villain.cardsUnderneath?.map((c) => c.instanceId)).toEqual([tucked.instanceId]);
-    expect(after.villain.facedownBoostCards?.map((c) => c.instanceId)).toEqual([
+    expect(getActiveVillain(after).attachments[2].tokens?.counters).toBe(2);
+    expect(getActiveVillain(after).statusCards).toEqual([StatusCard.STUNNED]);
+    expect(getActiveVillain(after).cardsUnderneath?.map((c) => c.instanceId)).toEqual([
+      tucked.instanceId,
+    ]);
+    expect(getActiveVillain(after).facedownBoostCards?.map((c) => c.instanceId)).toEqual([
       facedown.instanceId,
     ]);
-    expect(after.villain.exhausted).toBe(true);
+    expect(getActiveVillain(after).exhausted).toBe(true);
     expect(after.encounterDiscard.map((c) => c.instanceId)).not.toContain(suit.instanceId);
     expect(after.villains).toHaveLength(1);
     expect(after.activeVillainId).toBe(instanceId);
@@ -142,26 +145,26 @@ describe('Villain stage change (#303)', () => {
   it('2. excess damage does not carry over: the new stage starts at full hit points', () => {
     const state = build();
     const after = defeatWithDamage(state, 40);
-    expect(after.villain.card.code).toBe(RHINO_II);
-    expect(after.villain.health).toBe(15);
-    expect(after.villain.maxHealth).toBe(15);
+    expect(getActiveVillain(after).card.code).toBe(RHINO_II);
+    expect(getActiveVillain(after).health).toBe(15);
+    expect(getActiveVillain(after).maxHealth).toBe(15);
   });
 
   it.each([1, 2, 3])('3. hit points are the printed health x %i player(s)', (n) => {
     const state = build(n);
-    expect(state.villain.health).toBe(14 * n);
+    expect(getActiveVillain(state).health).toBe(14 * n);
     const after = defeatWithDamage(state, 14 * n);
-    expect(after.villain.card.code).toBe(RHINO_II);
-    expect(after.villain.health).toBe(15 * n);
-    expect(after.villain.maxHealth).toBe(15 * n);
+    expect(getActiveVillain(after).card.code).toBe(RHINO_II);
+    expect(getActiveVillain(after).health).toBe(15 * n);
+    expect(getActiveVillain(after).maxHealth).toBe(15 * n);
   });
 
   it('3b. after an elimination the starting player count still sets the hit points (#246)', () => {
     const state = build(2);
     state.eliminatedPlayers = state.players.splice(1, 1);
     const after = defeatWithDamage(state, 28);
-    expect(after.villain.card.code).toBe(RHINO_II);
-    expect(after.villain.health).toBe(30);
+    expect(getActiveVillain(after).card.code).toBe(RHINO_II);
+    expect(getActiveVillain(after).health).toBe(30);
   });
 
   it('4a. defeated in the middle of an attack: the attack resumes with the new stage (ATK 3)', () => {
@@ -172,8 +175,8 @@ describe('Villain stage change (#303)', () => {
     const healthBefore = state.players[0].health;
 
     const after = defeatWithDamage(state, 14);
-    expect(after.villain.card.code).toBe(RHINO_II);
-    expect(after.activeAttackContext?.attackerVillainId).toBe(after.villain.instanceId);
+    expect(getActiveVillain(after).card.code).toBe(RHINO_II);
+    expect(after.activeAttackContext?.attackerVillainId).toBe(getActiveVillain(after).instanceId);
 
     resolveDefenderDeclaration(after, { type: 'UNDEFENDED', playerId: 'p1' });
     expect(after.players[0].health).toBe(healthBefore - 3);
@@ -183,18 +186,18 @@ describe('Villain stage change (#303)', () => {
   it('4b. defeated by Counter-Punch while Rhino activates: the villain phase goes on', () => {
     const state = build();
     state.players[0].hand = [give(COUNTER_PUNCH)];
-    state.villain.health = 1;
-    const instanceId = state.villain.instanceId;
+    getActiveVillain(state).health = 1;
+    const instanceId = getActiveVillain(state).instanceId;
     const horn = give(ENHANCED_IVORY_HORN);
-    state.villain.attachments = [horn];
+    getActiveVillain(state).attachments = [horn];
 
     let next = advanceVillainPhaseStep(state, { synchronousPolicy: 'HERO_IF_READY' });
     next = advanceVillainPhaseStep(next, { synchronousPolicy: 'HERO_IF_READY' });
 
-    expect(next.villain.card.code).toBe(RHINO_II);
-    expect(next.villain.instanceId).toBe(instanceId);
-    expect(next.villain.health).toBe(15);
-    expect(next.villain.attachments.map((a) => a.instanceId)).toEqual([horn.instanceId]);
+    expect(getActiveVillain(next).card.code).toBe(RHINO_II);
+    expect(getActiveVillain(next).instanceId).toBe(instanceId);
+    expect(getActiveVillain(next).health).toBe(15);
+    expect(getActiveVillain(next).attachments.map((a) => a.instanceId)).toEqual([horn.instanceId]);
     expect(next.activeAttackContext).toBeUndefined();
     expect(peekDecisionPrompt(next)).toBeUndefined();
     expect(next.villainPhaseStep).toBe('DEAL_ENCOUNTER_CARDS');
@@ -202,12 +205,12 @@ describe('Villain stage change (#303)', () => {
 
   it('5. different title: nothing carries over and the activation in progress ends', () => {
     const state = build();
-    const oldId = state.villain.instanceId;
+    const oldId = getActiveVillain(state).instanceId;
     const suit = give(ARMORED_RHINO_SUIT);
     const facedown = give(FILLER);
-    state.villain.attachments = [suit];
-    state.villain.statusCards = [StatusCard.CONFUSED];
-    state.villain.facedownBoostCards = [facedown];
+    getActiveVillain(state).attachments = [suit];
+    getActiveVillain(state).statusCards = [StatusCard.CONFUSED];
+    getActiveVillain(state).facedownBoostCards = [facedown];
     initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1', {});
     expect(state.activeAttackContext?.attackerVillainId).toBe(oldId);
     expect(peekDecisionPrompt(state)).toBeDefined();
@@ -215,13 +218,13 @@ describe('Villain stage change (#303)', () => {
 
     advanceVillainStage(state, oldId!, KLAW_I);
 
-    expect(state.villain.card.code).toBe(KLAW_I);
-    expect(state.villain.instanceId).not.toBe(oldId);
-    expect(state.activeVillainId).toBe(state.villain.instanceId);
-    expect(state.villain.attachments).toEqual([]);
-    expect(state.villain.statusCards).toEqual([]);
-    expect(state.villain.facedownBoostCards ?? []).toEqual([]);
-    expect(state.villain.health).toBe(12);
+    expect(getActiveVillain(state).card.code).toBe(KLAW_I);
+    expect(getActiveVillain(state).instanceId).not.toBe(oldId);
+    expect(state.activeVillainId).toBe(getActiveVillain(state).instanceId);
+    expect(getActiveVillain(state).attachments).toEqual([]);
+    expect(getActiveVillain(state).statusCards).toEqual([]);
+    expect(getActiveVillain(state).facedownBoostCards ?? []).toEqual([]);
+    expect(getActiveVillain(state).health).toBe(12);
     const discarded = state.encounterDiscard.map((c) => c.instanceId);
     expect(discarded).toContain(suit.instanceId);
     expect(discarded).toContain(facedown.instanceId);
@@ -237,7 +240,7 @@ describe('Villain stage change (#303)', () => {
 
     const after = defeatWithDamage(state, 14);
 
-    expect(after.villain.card.code).toBe(RHINO_II);
+    expect(getActiveVillain(after).card.code).toBe(RHINO_II);
     const revealed = after.sideSchemes.find((s) => s.card.code === BREAKIN_AND_TAKIN);
     expect(revealed).toBeDefined();
     expect(revealed!.instanceId).toBe(scheme.instanceId);
@@ -248,16 +251,18 @@ describe('Villain stage change (#303)', () => {
 
   it('6b. Stage III enters play tough and stuns each hero, without a second tough card', () => {
     const state = build(2, 'EXPERT');
-    expect(state.villain.card.code).toBe(RHINO_II);
-    state.villain.statusCards = [StatusCard.TOUGH];
-    state.villain.health = 0;
+    expect(getActiveVillain(state).card.code).toBe(RHINO_II);
+    getActiveVillain(state).statusCards = [StatusCard.TOUGH];
+    getActiveVillain(state).health = 0;
 
-    rhinoPlugin.onVillainDefeated(state, state.villain.instanceId!);
+    rhinoPlugin.onVillainDefeated(state, getActiveVillain(state).instanceId!);
     const after = state;
 
-    expect(after.villain.card.code).toBe(RHINO_III);
-    expect(after.villain.health).toBe(32);
-    expect(after.villain.statusCards.filter((s) => s === StatusCard.TOUGH)).toHaveLength(1);
+    expect(getActiveVillain(after).card.code).toBe(RHINO_III);
+    expect(getActiveVillain(after).health).toBe(32);
+    expect(getActiveVillain(after).statusCards.filter((s) => s === StatusCard.TOUGH)).toHaveLength(
+      1,
+    );
     for (const p of after.players) {
       expect(p.statusCards).toContain(StatusCard.STUNNED);
     }
@@ -271,7 +276,7 @@ describe('Villain stage change (#303)', () => {
   it('7a. Klaw: the stage change goes through the same helper and keeps the attachments', () => {
     const plugin = ScenarioRegistry.get('klaw') as KlawScenarioPlugin;
     const state = build(1, 'STANDARD', 'klaw');
-    const klaw = state.villain;
+    const klaw = getActiveVillain(state);
     expect(klaw.card.code).toBe(KLAW_I);
     const instanceId = klaw.instanceId;
     const charge = give(CHARGE);
@@ -282,41 +287,47 @@ describe('Villain stage change (#303)', () => {
     const result = plugin.onVillainDefeated(state, instanceId!);
 
     expect(result.advancedStage).toBe(true);
-    expect(state.villain.card.code).toBe('01114');
-    expect(state.villain.instanceId).toBe(instanceId);
-    expect(state.villain.statusCards).toEqual([StatusCard.CONFUSED]);
-    expect(state.villain.attachments.map((a) => a.instanceId)).toContain(charge.instanceId);
-    expect(state.villain.attachments.map((a) => a.card.code)).not.toContain('01127');
+    expect(getActiveVillain(state).card.code).toBe('01114');
+    expect(getActiveVillain(state).instanceId).toBe(instanceId);
+    expect(getActiveVillain(state).statusCards).toEqual([StatusCard.CONFUSED]);
+    expect(getActiveVillain(state).attachments.map((a) => a.instanceId)).toContain(
+      charge.instanceId,
+    );
+    expect(getActiveVillain(state).attachments.map((a) => a.card.code)).not.toContain('01127');
     expect(state.sideSchemes.some((s) => s.card.code === '01127')).toBe(true);
     // Printed 18 + 10 from The "Immortal" Klaw side scheme
-    expect(state.villain.health).toBe(28);
-    expect(state.villain.maxHealth).toBe(28);
+    expect(getActiveVillain(state).health).toBe(28);
+    expect(getActiveVillain(state).maxHealth).toBe(28);
   });
 
   it('7c. Klaw III enters with a tough status card from its printed Toughness, never two', () => {
     const plugin = ScenarioRegistry.get('klaw') as KlawScenarioPlugin;
     const state = build(1, 'EXPERT', 'klaw');
-    expect(state.villain.card.code).toBe('01114');
-    expect(state.villain.statusCards).not.toContain(StatusCard.TOUGH);
+    expect(getActiveVillain(state).card.code).toBe('01114');
+    expect(getActiveVillain(state).statusCards).not.toContain(StatusCard.TOUGH);
 
-    plugin.onVillainDefeated(state, state.villain.instanceId!);
+    plugin.onVillainDefeated(state, getActiveVillain(state).instanceId!);
 
-    expect(state.villain.card.code).toBe('01115');
-    expect(state.villain.statusCards.filter((s) => s === StatusCard.TOUGH)).toHaveLength(1);
+    expect(getActiveVillain(state).card.code).toBe('01115');
+    expect(getActiveVillain(state).statusCards.filter((s) => s === StatusCard.TOUGH)).toHaveLength(
+      1,
+    );
 
     const carried = build(1, 'EXPERT', 'klaw');
-    carried.villain.statusCards = [StatusCard.TOUGH];
+    getActiveVillain(carried).statusCards = [StatusCard.TOUGH];
 
-    plugin.onVillainDefeated(carried, carried.villain.instanceId!);
+    plugin.onVillainDefeated(carried, getActiveVillain(carried).instanceId!);
 
-    expect(carried.villain.card.code).toBe('01115');
-    expect(carried.villain.statusCards.filter((s) => s === StatusCard.TOUGH)).toHaveLength(1);
+    expect(getActiveVillain(carried).card.code).toBe('01115');
+    expect(
+      getActiveVillain(carried).statusCards.filter((s) => s === StatusCard.TOUGH),
+    ).toHaveLength(1);
   });
 
   it('7b. Ultron: the stage change goes through the same helper and keeps the attachments', () => {
     const plugin = ScenarioRegistry.get('ultron') as UltronScenarioPlugin;
     const state = build(1, 'STANDARD', 'ultron');
-    const ultron = state.villain;
+    const ultron = getActiveVillain(state);
     expect(ultron.card.code).toBe('01134');
     const instanceId = ultron.instanceId;
     const charge = give(CHARGE);
@@ -326,10 +337,12 @@ describe('Villain stage change (#303)', () => {
     const result = plugin.onVillainDefeated(state, instanceId!);
 
     expect(result.advancedStage).toBe(true);
-    expect(state.villain.card.code).toBe('01135');
-    expect(state.villain.instanceId).toBe(instanceId);
-    expect(state.villain.statusCards).toEqual([StatusCard.CONFUSED]);
-    expect(state.villain.attachments.map((a) => a.instanceId)).toEqual([charge.instanceId]);
-    expect(state.villain.health).toBe(22);
+    expect(getActiveVillain(state).card.code).toBe('01135');
+    expect(getActiveVillain(state).instanceId).toBe(instanceId);
+    expect(getActiveVillain(state).statusCards).toEqual([StatusCard.CONFUSED]);
+    expect(getActiveVillain(state).attachments.map((a) => a.instanceId)).toEqual([
+      charge.instanceId,
+    ]);
+    expect(getActiveVillain(state).health).toBe(22);
   });
 });

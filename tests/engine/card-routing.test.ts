@@ -5,6 +5,7 @@ import { setupGame } from '../../src/engine/state/game-setup';
 import { createCardInstance } from '../../src/engine/state/card-instance';
 import { routeCardInstances } from '../../src/engine/effects/card-routing';
 
+import { getActiveVillain } from '@engine/models';
 /** Where `routeCardInstances` puts cards for each destination, per source zone (R6b, Task B). */
 
 const card = (id: string, code = '01088'): CardInstance => ({
@@ -166,7 +167,7 @@ describe('routeCardInstances', () => {
 
     it('ATTACH_TO_TARGET attaches to the villain by default', () => {
       routeCardInstances(state, state.players[0], [a], 'ATTACH_TO_TARGET', 'PLAYER_DECK');
-      expect(ids(state.villain.attachments ?? [])).toEqual(['a']);
+      expect(ids(getActiveVillain(state).attachments ?? [])).toEqual(['a']);
     });
   });
 });

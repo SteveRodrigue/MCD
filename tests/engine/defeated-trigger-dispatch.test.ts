@@ -4,6 +4,7 @@ import { setupGame } from '@engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { dispatchTrigger } from '../../src/engine/triggers/trigger-dispatcher';
 
+import { getActiveMainScheme } from '@engine/models';
 function createState() {
   return setupGame({
     catalog: cardCatalog,
@@ -81,7 +82,7 @@ describe('Canonical defeat trigger dispatch (ADR-0058)', () => {
 
     dispatchTrigger(state, 'SCHEME_DEFEATED', {
       targetPlayerId: 'p1',
-      sourceInstanceId: state.mainScheme.instanceId,
+      sourceInstanceId: getActiveMainScheme(state).instanceId,
       entityType: 'SCHEME',
     });
 

@@ -22,5 +22,20 @@
   ],
   "chat.tools.terminal.autoApprove": {
     "gh": true
-  }
+  },
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/coverage/**": true,
+    "**/cache/**": true,
+    "**/logs/**": true,
+    "**/src-tauri/target/**": true,
+    "**/scratch/**": true,
+    "**/temp/**": true,
+    "**/tmp/**": true
+  },
+  "git.autorefresh": true,
+  "git.untrackedChanges": "separate"
 }

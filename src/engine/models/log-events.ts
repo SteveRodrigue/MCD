@@ -120,7 +120,7 @@ export interface LogEvents {
     remaining?: number;
   };
   'card.effect.readyCharacter': { actor: string; target: string };
-  /** One entry per scheme, whatever removed the threat; `amount` is what was really removed (0 included). */
+  /** One entry per scheme, whatever removed the threat; `amount` is what was really removed (always above 0). */
   'card.effect.removeThreat': {
     actor: string;
     source: string;

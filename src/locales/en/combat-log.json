@@ -46,7 +46,6 @@
     "REMOVE_THREAT": "{{actor}} removed {{amount}} threat from {{scheme}}.",
     "card.effect.threatBlockedByCrisis": "CRISIS! {{source}} cannot remove threat from {{scheme}} while a Crisis icon is in play.",
     "card.effect.threatBlockedByPatrol": "PATROL! {{source}} cannot remove threat from {{scheme}} while an engaged minion has Patrol.",
-    "side_scheme.defeated": "{{scheme}} has been completely thwarted and removed from play!",
     "STATUS_STUNNED": "{{actor}} stunned {{target}}!",
     "STATUS_CONFUSED": "{{actor}} confused {{target}}!",
     "STATUS_TOUGH": "{{actor}} gave Tough to {{target}}!",

@@ -205,17 +205,6 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
         </TestSession>,
       );
 
-    it('lists a removal of 0 only in Dev Mode: the board did not change', () => {
-      const logs = [removal('log-r0', 0)];
-
-      const player = renderLogs(logs, false);
-      expect(screen.queryByText(/removed 0 threat/)).toBeNull();
-      player.unmount();
-
-      renderLogs(logs, true);
-      expect(screen.getByText(/removed 0 threat/)).toBeDefined();
-    });
-
     it('words a Crisis or Patrol block and a side scheme defeat as sentences, not raw keys', () => {
       const blocked = (id: string, key: GameLogEntry['key']): GameLogEntry => ({
         ...removal(id, 0),

@@ -417,6 +417,7 @@ function mapToCanonicalTemplateKey(key?: string, entry?: GameLogEntry): string |
     case 'CHARACTER_DEFEATED':
       return 'CHARACTER_DEFEATED';
 
+    case 'side_scheme.defeated':
     case 'SIDE_SCHEME_DEFEATED':
       return 'SIDE_SCHEME_DEFEATED';
 

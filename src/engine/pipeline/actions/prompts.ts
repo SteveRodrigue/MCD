@@ -94,6 +94,7 @@ export function resolveDistributionPrompt(
     if (domain === 'THREAT_REMOVAL') {
       removeThreatFromScheme(poppedState, {
         playerId: player.id,
+        targetType: targetId === 'main_scheme' ? 'main_scheme' : 'side_scheme',
         targetInstanceId: targetId,
         amount,
         sourceName: activePrompt.sourceCardName,

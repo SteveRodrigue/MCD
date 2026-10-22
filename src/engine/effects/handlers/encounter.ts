@@ -106,7 +106,7 @@ function handleRemoveThreat(
     chosenTargetInstanceId: targetInstanceId,
   };
   let removed = 0;
-  let remainingThreat = getActiveMainScheme(state)?.threat || 0;
+  let remainingThreat: number | undefined;
   let attempted = false;
   let blockOnomatopoeia: string | undefined;
 
@@ -147,9 +147,11 @@ function handleRemoveThreat(
     });
 
     removed += thwartRes.result.threatRemoved;
-    remainingThreat = thwartRes.result.remainingThreat;
-    if (thwartRes.result.thwartAttempted) attempted = true;
-    else blockOnomatopoeia = thwartRes.result.onomatopoeia;
+    if (thwartRes.result.thwartAttempted) {
+      attempted = true;
+      // A Confused thwart removes nothing: its 0 says nothing about the scheme.
+      if (!thwartRes.result.confusedCleared) remainingThreat = thwartRes.result.remainingThreat;
+    } else blockOnomatopoeia = thwartRes.result.onomatopoeia;
 
     if (context.labelledThwart && thwartRes.result.thwartAttempted && !context.thwartedScheme) {
       context.thwartedScheme = {

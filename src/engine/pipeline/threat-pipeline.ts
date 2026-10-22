@@ -348,8 +348,8 @@ export function finishPendingThreatPlacements(state: GameState): GameState {
 
 export interface SchemeThreatRemoval {
   playerId: string;
-  /** Resolved from `targetInstanceId` when omitted: the main scheme's id aliases, else a side scheme. */
-  targetType?: ThreatTargetType;
+  targetType: ThreatTargetType;
+  /** Side scheme to remove threat from; ignored for the main scheme. */
   targetInstanceId?: string;
   amount: number;
   /** Card or character responsible, shown in the combat log. */
@@ -357,6 +357,8 @@ export interface SchemeThreatRemoval {
 }
 
 export interface SchemeThreatRemovalResult {
+  /** False when the target scheme is not in play: nothing was removed or logged. */
+  found: boolean;
   removed: number;
   targetSchemeName: string;
   remainingThreat: number;
@@ -366,43 +368,35 @@ export interface SchemeThreatRemovalResult {
 
 /**
  * The one place threat leaves a scheme (RR v1.8 "Threat"): removes up to `amount`, writes the
- * `card.effect.removeThreat` entry (actor, source, target, amount actually removed, threat left,
- * also for 0), defeats a side scheme that reaches 0 and announces the "reduced to zero" trigger.
- * Callers decide whether the removal is allowed (Crisis, Patrol, Confused) before calling it.
+ * `card.effect.removeThreat` entry (actor, source, target, amount actually removed, threat left),
+ * defeats a side scheme left at 0 and announces the "reduced to zero" trigger. A removal of 0
+ * changes nothing and logs nothing. Callers decide whether the removal is allowed (Crisis, Patrol,
+ * Confused) before calling it.
  */
 export function removeThreatFromScheme(
   state: GameState,
   request: SchemeThreatRemoval,
 ): SchemeThreatRemovalResult {
-  const { playerId, targetInstanceId, sourceName } = request;
+  const { playerId, targetType, targetInstanceId, sourceName } = request;
   const player = state.players.find((p) => p.id === playerId) || state.players[0];
   const amount = Math.max(0, request.amount);
-  const mainScheme = getActiveMainScheme(state);
-  const targetType: ThreatTargetType =
-    request.targetType ??
-    (targetInstanceId === 'main_scheme' ||
-    targetInstanceId === mainScheme?.instanceId ||
-    targetInstanceId === mainScheme?.card?.code
-      ? 'main_scheme'
-      : 'side_scheme');
+  const isMain = targetType === 'main_scheme';
 
   const scheme: { threat: number; card?: { name?: string }; instanceId?: string } | undefined =
-    targetType === 'main_scheme'
-      ? mainScheme
-      : state.sideSchemes.find(
-          (s) => s.instanceId === targetInstanceId || s.card.code === targetInstanceId,
-        );
+    isMain
+      ? getActiveMainScheme(state)
+      : state.sideSchemes.find((s) => s.instanceId === targetInstanceId);
   if (!scheme) {
     return {
+      found: false,
       removed: 0,
-      targetSchemeName: 'Side Scheme',
+      targetSchemeName: '',
       remainingThreat: 0,
       schemeDefeated: false,
       onomatopoeia: 'THWARTED!',
     };
   }
 
-  const isMain = targetType === 'main_scheme';
   const targetSchemeName = scheme.card?.name || (isMain ? 'Main Scheme' : 'Side Scheme');
   const currentThreat = scheme.threat || 0;
   const removed = Math.min(currentThreat, amount);
@@ -411,25 +405,29 @@ export function removeThreatFromScheme(
   const schemeDefeated = !isMain && remainingThreat <= 0;
   const onomatopoeia = isMain ? 'FOILED!' : schemeDefeated ? 'SCHEME DEFEATED!' : 'THWARTED!';
 
-  appendLog(state, {
-    key: 'card.effect.removeThreat',
-    params: {
-      actor: player.name,
-      source: sourceName,
-      target: targetSchemeName,
-      amount: removed,
-      remainingThreat,
-    },
-    onomatopoeia,
-  });
+  if (removed > 0) {
+    appendLog(state, {
+      key: 'card.effect.removeThreat',
+      params: {
+        actor: player.name,
+        source: sourceName,
+        target: targetSchemeName,
+        amount: removed,
+        remainingThreat,
+      },
+      onomatopoeia,
+    });
+  }
 
   if (schemeDefeated) {
     defeatSideScheme(state, scheme.instanceId!, player.id);
-    appendLog(state, {
-      key: 'side_scheme.defeated',
-      params: { actor: player.name, target: targetSchemeName, amount: removed, remainingThreat },
-      onomatopoeia,
-    });
+    if (removed > 0) {
+      appendLog(state, {
+        key: 'side_scheme.defeated',
+        params: { actor: player.name, target: targetSchemeName, amount: removed, remainingThreat },
+        onomatopoeia,
+      });
+    }
   }
 
   if (remainingThreat === 0 && removed > 0) {
@@ -441,7 +439,7 @@ export function removeThreatFromScheme(
     });
   }
 
-  return { removed, targetSchemeName, remainingThreat, schemeDefeated, onomatopoeia };
+  return { found: true, removed, targetSchemeName, remainingThreat, schemeDefeated, onomatopoeia };
 }
 
 /**
@@ -550,14 +548,28 @@ export function applyThwart(
   // ---------------------------------------------------------------------------
   // STEP 3: Threat Removal, side scheme defeat at 0 and the "reduced to zero" trigger
   // ---------------------------------------------------------------------------
-  const { removed, targetSchemeName, remainingThreat, schemeDefeated, onomatopoeia } =
-    removeThreatFromScheme(state, {
-      playerId,
-      targetType,
-      targetInstanceId,
-      amount: thwartValue,
-      sourceName: request.sourceName ?? thwarterName,
-    });
+  const removal = removeThreatFromScheme(state, {
+    playerId,
+    targetType,
+    targetInstanceId,
+    amount: thwartValue,
+    sourceName: request.sourceName ?? thwarterName,
+  });
+  if (!removal.found) {
+    return {
+      state,
+      result: {
+        thwartAttempted: false,
+        confusedCleared: false,
+        threatRemoved: 0,
+        targetSchemeName: removal.targetSchemeName,
+        remainingThreat: 0,
+        schemeDefeated: false,
+        onomatopoeia: removal.onomatopoeia,
+      },
+    };
+  }
+  const { removed, targetSchemeName, remainingThreat, schemeDefeated, onomatopoeia } = removal;
 
   // ---------------------------------------------------------------------------
   // STEP 4: Post-Thwart Triggers

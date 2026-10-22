@@ -4,6 +4,7 @@ import { createCardInstance } from '@engine/state/game-setup';
 import { checkAbilityTargets } from '@engine/effects/target-choice';
 import { canInitiateAbility } from '@engine/pipeline/legality-checker';
 import { getActiveMainScheme, StatusCard, type CardAbility, type GameState } from '@engine/models';
+import type { EffectType } from '../../src/data/supplemental/runtime';
 import { abilityOf, newRhinoGame } from '../support/game-fixtures';
 
 /**
@@ -98,5 +99,41 @@ describe('Aunt May (01006): needs a change in the board state to be used (#340)'
     const { state, instance, ability } = aunt();
     state.players[0].health -= 2;
     expect(canInitiateAbility(state, 'p1', ability, instance).allowed).toBe(true);
+  });
+});
+
+/**
+ * #368: a scheme an ability names ("the main scheme", "each side scheme") is not a target the
+ * player chooses. The gate judges it only for REMOVE_THREAT, where Crisis and Patrol limit it
+ * (#331); every other effect on a named scheme resolves, and a forced ability is not skipped.
+ */
+describe('checkAbilityTargets: named schemes are judged only for threat removal (#368)', () => {
+  const namedSchemeAbility = (effect: EffectType, target: string): CardAbility => ({
+    id: `named_${effect}_${target}`,
+    timing: 'FORCED_RESPONSE',
+    trigger: 'WHEN_REVEALED',
+    steps: [{ effect, effectParams: { target } }],
+  });
+  const gate = (effect: EffectType, target: string, setup?: (state: GameState) => void) => {
+    const state = newRhinoGame();
+    state.sideSchemes = [];
+    setup?.(state);
+    return checkAbilityTargets(state, state.players[0], namedSchemeAbility(effect, target));
+  };
+
+  it.each<[EffectType, string]>([
+    ['ADD_STATUS', 'MAIN_SCHEME'],
+    ['ADD_THREAT', 'MAIN_SCHEME'],
+    ['ADD_THREAT', 'SIDE_SCHEME'],
+    ['ADD_THREAT', 'ALL_SCHEMES'],
+  ])('%s on %s with no side scheme is initiated', (effect, target) => {
+    expect(gate(effect, target).allowed).toBe(true);
+  });
+
+  it('REMOVE_THREAT on the main scheme still needs threat to remove', () => {
+    const result = gate('REMOVE_THREAT', 'MAIN_SCHEME', (state) => {
+      getActiveMainScheme(state)!.threat = 0;
+    });
+    expect(result).toEqual({ allowed: false, reason: 'No scheme has threat to remove.' });
   });
 });

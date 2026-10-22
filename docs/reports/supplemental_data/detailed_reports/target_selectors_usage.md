@@ -99,13 +99,12 @@
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 
-### <a id="main-scheme"></a>`MAIN_SCHEME` (3 Cards, 4 Declarations)
+### <a id="main-scheme"></a>`MAIN_SCHEME` (2 Cards, 3 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
 | `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
-| `01194` | **Unknown Card #01194** | `core_encounter` | `masterplan_when_revealed` |
 
 ### <a id="all-enemies"></a>`ALL_ENEMIES` (2 Cards, 2 Declarations)
 

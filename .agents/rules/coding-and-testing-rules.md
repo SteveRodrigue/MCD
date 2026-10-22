@@ -32,6 +32,8 @@ Enforceable summary. Explanations, examples, naming tables and architecture live
 - **Extend the existing check:** Before adding a legality, target or eligibility check anywhere, find the existing gate (`legality-checker.ts`, `checkAbilityTargets`) and extend it; a second check beside it is a defect.
 - **Parameterize or merge first:** Before writing a new function, helper, or effect handler, check existing ones. Prefer adding a parameter to an existing function or merging two similar functions over adding new code.
 - **Clean debt in path:** We are early in development. When a task exposes redundant, overcomplicated, or spaghetti code in its path, refactor it in scope and update all callers/card data immediately.
+- **No deferral options:** Never offer "leave it", "defer", "report separately", "close as invalid" or a new tracked-gap/allow-list entry for debt in the path. Plan the cleanup; ask only about real design decisions. Full rules: [No Tech Debt Mandate](shared-quality-gates.md#no-tech-debt-mandate).
+- **Dead data goes:** A supplemental entry with no upstream card, an unused export, or a stale allow-list entry found while working is deleted in the same change, with a guard test when the class of defect can recur.
 
 ## Tests
 

@@ -35,7 +35,7 @@ Before writing any implementation code or tests for a new feature, verify the fo
    - Headless & decoupled engine (`src/engine/` contains no UI/DOM/CSS dependencies).
    - Declarative data-first (generic primitives in `src/engine/effects/`, card-specific parameters in `src/data/supplemental/`).
     - Rhino release scope boundary (Core set player cards & Rhino encounters for Gate 1).
-   - **Refactor-First & Zero Tech Debt:** Follow `coding-and-testing-rules.md`; the plan must list what is merged, parameterized, or deleted.
+   - **Refactor-First & Zero Tech Debt:** Follow `coding-and-testing-rules.md` and the [No Tech Debt Mandate](../../rules/shared-quality-gates.md#no-tech-debt-mandate). The plan must list what is merged, parameterized, or deleted (**Debt Removed**), and may not offer "defer" or "separately" for debt in the path.
 
 
 ---

@@ -12,6 +12,7 @@ description: 'Executes an approved implementation plan step by step, then runs t
 ## 🛑 Hard rules (read first)
 
 - **Plan fidelity:** User approval is not permission to interpret an ambiguous plan. Stop and request validation using the **Why This Is Blocking** / **What I Need From You** format before any edit that depends on an unstated decision.
+- **No tech debt:** Implement the plan's **Debt Removed** items in full; do not drop one to finish faster. Debt you find while implementing, in the path of the change, is fixed in the same change (see the [No Tech Debt Mandate](../../rules/shared-quality-gates.md#no-tech-debt-mandate)); a plan that omits it is revised, not worked around.
 - **Never commit or push** unless the user's request authorized delivery.
 - **Circuit breaker:** If compile errors or broken test contracts cannot be resolved in 2 iterations, stop, inspect the failure, and give the user an actionable diagnosis.
 - **Drift:** If files named in the plan have drifted significantly, halt and inform the user before attempting any unguided structural refactor.

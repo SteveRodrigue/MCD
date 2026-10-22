@@ -22,8 +22,21 @@ This file is the canonical source for policies shared by MCD agent workflows. Sk
 - Align implementation work with the currently active roadmap and milestone gates unless the user
   explicitly changes scope. Read-only audits may inspect any user-selected scope.
 - Do not introduce permanent shims, aliases, deprecated names, duplicate paths, or temporary shortcuts without explicit approval.
+- **No Tech Debt Mandate:** Fix debt in the path of the change in the same change. See [No Tech Debt Mandate](#no-tech-debt-mandate); it overrides any skill step that reads as permission to defer, skip or report separately.
 - **Refactor-First & Single-Path Mandate:** Never propose "supporting both" or duplicating functions for minor variations. Always prefer merging similar functions, adding a parameter to an existing function, or refactoring complex/spaghetti code in the path of the change and updating all callers in scope.
 - Tests must pass or fail; never add or retain skipped or todo tests to hide unfinished work.
+
+## No Tech Debt Mandate
+
+This project is early; every bit of debt left behind is paid for many times. Every task, in every skill, follows these rules. A skill step that seems to allow otherwise (a triage outcome, a "separately" suggestion, a tracked gap) does not.
+
+1. **Fix debt in the path of the change, in the same change.** The path is: the file, function, data entry and mechanic you touch; every caller and data entry of anything you edit; and anything your investigation proved wrong (orphan or dead data, duplicate or parallel logic, stale allow-list entries, a tracked gap for the effect you touch, tangled code). Delete, merge or parameterize it and update all callers and card data.
+2. **Never offer "do less" as an option.** For debt in the path, do not offer or choose: leave it, defer it, "report it separately", "file a follow-up", "close as invalid", "keep both", "add a shim or alias", "add an allow-list entry", or "document it as a tracked gap". The plan contains the cleanup, and the recommended option is always the cleanest complete one. Ask the user only for a real design or rules decision, never "should I clean this up?".
+3. **A wrong premise does not end the work.** When an issue, report or plan turns out to be wrong in part (wrong card code, no live repro), correct the issue with the facts and fix the real defect or debt the investigation found. Do not close it and walk away.
+4. **Debt your change creates is never deferrable.** No new tracked-gap, allow-list, `any`, skipped test or TODO to make a change land.
+5. **Two narrow exceptions, both stated in the plan with evidence.** (a) The cleanup is a Tier 3 structural migration or needs a rules decision below 95% confidence: plan it as a named step and ask for approval of that step; do not drop it. (b) The debt is unrelated to the path of the change: open a GitHub issue for it (labels verified to exist) and say so in the recap. This is the only case where "separately" is correct.
+6. **Plan and recap name the debt.** Every plan has a **Debt Removed** list (what is deleted, merged, parameterized, or "none found, and where I looked"). The recap reports what was actually removed.
+7. **Self-check before sending a plan or options.** Search your own text for: defer, separately, follow-up, later, leave, keep for now, out of scope, tracked gap, close as invalid. If a hit describes in-path debt, rewrite it as work in the plan.
 
 ## Supplemental card comments policy
 
@@ -43,7 +56,7 @@ Supplemental card entries carry `audit.createdAt`, `audit.updatedAt`, `audit.rev
 
 Before modifying source, tests, supplemental data, dependencies, or configuration:
 
-1. Create or update a reviewable implementation plan with rules/spec analysis, a **Simplification & Refactor Check** (explicitly identifying existing functions/types to reuse, parameterize, merge, or delete instead of adding parallel code), file changes, tests, and open decisions.
+1. Create or update a reviewable implementation plan with rules/spec analysis, a **Simplification & Refactor Check** (explicitly identifying existing functions/types to reuse, parameterize, merge, or delete instead of adding parallel code), a **Debt Removed** list ([No Tech Debt Mandate](#no-tech-debt-mandate)), file changes, tests, and open decisions.
 2. State the UI/Card Editor impact explicitly when the task could affect those surfaces.
 3. Stop for user review and approval before implementation.
 

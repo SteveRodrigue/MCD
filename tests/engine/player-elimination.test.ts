@@ -174,6 +174,42 @@ describe('Player elimination (#246)', () => {
     );
   });
 
+  // Nemesis cards are encounter cards that carry the hero's id as ownerId; they are never player-owned (#357).
+  describe('nemesis cards of the eliminated player', () => {
+    it('an in-play nemesis attachment on the eliminated identity goes to the encounter discard', () => {
+      const nemesis = createCardInstance(cardCatalog.getCard('01098')!, 'p1');
+      state.players[0].attachments = [nemesis];
+      eliminatePlayer(state, 'p1');
+      expect(state.encounterDiscard.map((c) => c.instanceId)).toContain(nemesis.instanceId);
+      expect(state.eliminatedPlayers![0].discard.map((c) => c.instanceId)).not.toContain(
+        nemesis.instanceId,
+      );
+    });
+
+    it('a nemesis attachment on another hero ally stays in play', () => {
+      const ally = createCardInstance(cardCatalog.getCard('01002')!, 'p2');
+      const nemesis = createCardInstance(cardCatalog.getCard('01098')!, 'p1');
+      ally.attachments = [nemesis];
+      state.players[1].allies.push(ally);
+      eliminatePlayer(state, 'p1');
+      const kept = state.players[0].allies.find((a) => a.instanceId === ally.instanceId)!;
+      expect(kept.attachments?.map((c) => c.instanceId)).toEqual([nemesis.instanceId]);
+      expect(state.eliminatedPlayers![0].discard.map((c) => c.instanceId)).not.toContain(
+        nemesis.instanceId,
+      );
+    });
+
+    it('the set-aside nemesis cards leave the game with the eliminated player', () => {
+      const setAside = state.players[0].setAsideCards.map((c) => c.instanceId);
+      expect(setAside.length).toBeGreaterThan(0);
+      eliminatePlayer(state, 'p1');
+      expect(state.eliminatedPlayers![0].setAsideCards.map((c) => c.instanceId)).toEqual(setAside);
+      expect(state.encounterDiscard.map((c) => c.instanceId)).not.toEqual(
+        expect.arrayContaining(setAside),
+      );
+    });
+  });
+
   it('the eliminated player cards are not left in play or in the encounter discard', () => {
     expect(state.players[0].hand.length).toBeGreaterThan(0);
     eliminatePlayer(state, 'p1');

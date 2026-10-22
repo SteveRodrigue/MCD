@@ -10,6 +10,7 @@
 ## Context and Problem Statement
 
 In Marvel Champions Digital, clicking in-play cards on the player tableau occasionally executed actions silently without presenting an action picker or prompting for targets:
+
 1. Clicking an **Ally** card silently thwarted `main_scheme` if threat $> 0$, or immediately attacked the Villain if threat $= 0$ and no minions were in play.
 2. Clicking a **Tableau Support/Upgrade** card (e.g. Energy Channel) immediately executed the `firstUsable` ability found, ignoring other available activated abilities on the card.
 3. Attacking or thwarting with single eligible targets bypassed player confirmation entirely.
@@ -44,13 +45,14 @@ This violated player agency (Issue #98), created confusing table dynamics, and r
 
 ### Rationale ("The Why")
 
-Option 2 preserves intuitive physical card interactions: players naturally click on cards on the table to interact with them. By introducing dedicated action pickers (`AllyActionModal`, `TableauActionModal`, `IdentityActionModal`) followed by deterministic parameter selectors (`AttackTargetModal`, `ThwartTargetModal`), player agency is fully guaranteed while retaining quick-action board shortcuts. Furthermore, `canAllyThwart` legality checks and side scheme thwarting are properly implemented in the engine.
+Option 2 preserves intuitive physical card interactions: players naturally click on cards on the table to interact with them. By introducing dedicated action pickers (`AllyActionModal`, `TableauActionModal`, `IdentityActionModal`) followed by deterministic parameter selectors (`AttackTargetModal`, `ThwartTargetModal`), player agency is fully guaranteed while retaining quick-action board shortcuts. Furthermore, `canThwart` (ally actor) legality checks and side scheme thwarting are properly implemented in the engine.
 
 ---
 
 ## Evaluation of Options
 
 ### Option 1: Direct Action Mini-Buttons Only
+
 - **Pros:**
   - Simple to implement.
 - **Cons:**
@@ -58,6 +60,7 @@ Option 2 preserves intuitive physical card interactions: players naturally click
   - Clutters cards with multiple micro-buttons for complex cards with multiple abilities.
 
 ### Option 2: Unified Two-Stage In-Play Card Interaction Architecture
+
 - **Pros:**
   - Complete player agency with zero silent defaults.
   - Consistent across Hero, Allies, Supports, Upgrades, and Attachments.
@@ -74,7 +77,7 @@ Option 2 preserves intuitive physical card interactions: players naturally click
 
 - Issue #98 is completely resolved.
 - Allies can thwart side schemes legally, reducing threat and defeating schemes when threat reaches 0.
-- `canAllyThwart` legality checker enforces Crisis and Patrol rules.
+- `canThwart` (ally actor) legality checker enforces Crisis and Patrol rules.
 - Players are never trapped into accidental attacks or thwarts.
 
 ### Negative Consequences / Risks & Mitigations

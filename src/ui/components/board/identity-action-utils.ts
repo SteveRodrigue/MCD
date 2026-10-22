@@ -1,5 +1,5 @@
 import { PlayerState, GameState } from '../../../engine/models';
-import { canBasicAttack } from '../../../engine/pipeline/legality-checker';
+import { canAttack, HERO_ACTOR } from '../../../engine/pipeline/legality-checker';
 import { EnemyTarget, getValidAttackTargets } from './attack-target-utils';
 
 export interface IdentityAttackState {
@@ -23,11 +23,11 @@ export function getIdentityAttackState(
 
   const validAttackTargets = gameState ? getValidAttackTargets(gameState, player.id, 'hero') : [];
   const canAttackVillain = gameState
-    ? canBasicAttack(gameState, player.id, 'villain').allowed
+    ? canAttack(gameState, player.id, HERO_ACTOR, 'villain').allowed
     : isHero && !player.exhausted;
   const eligibleMinion = validAttackTargets.find((t) => t.type === 'minion');
 
-  const canAttack =
+  const heroCanAttack =
     isHero &&
     isPlayerTurn &&
     !player.exhausted &&
@@ -40,7 +40,7 @@ export function getIdentityAttackState(
     subtext = 'Cannot attack while in Alter-Ego form';
   } else if (!isPlayerTurn) {
     subtext = 'Not your turn';
-  } else if (!canAttack) {
+  } else if (!heroCanAttack) {
     subtext = 'No valid attack targets';
   } else if (canAttackVillain) {
     subtext =
@@ -54,7 +54,7 @@ export function getIdentityAttackState(
   }
 
   return {
-    canAttack,
+    canAttack: heroCanAttack,
     canAttackVillain,
     validAttackTargets,
     eligibleMinion,

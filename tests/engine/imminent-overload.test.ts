@@ -12,7 +12,7 @@ import {
   step4_revealEncounterCards,
   getActiveMainScheme,
 } from '@engine/index';
-import { canBasicThwart } from '@engine/pipeline/legality-checker';
+import { canThwart, HERO_ACTOR } from '@engine/pipeline/legality-checker';
 import { hasCrisisInPlay, getCrisisIconCount } from '@engine/pipeline/crisis';
 
 /**
@@ -84,7 +84,7 @@ describe('Imminent Overload (01171) (Issue #132)', () => {
     getActiveMainScheme(state).threat = 5;
     const { next } = reveal(state);
     expect(hasCrisisInPlay(next)).toBe(false);
-    expect(canBasicThwart(next, 'p1', 'main_scheme').allowed).toBe(true);
+    expect(canThwart(next, 'p1', HERO_ACTOR, 'main_scheme').allowed).toBe(true);
   });
 
   it('acceleration: villain phase step 1 places 1 extra threat on the main scheme while it is in play', () => {

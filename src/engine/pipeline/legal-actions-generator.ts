@@ -12,12 +12,11 @@ import {
   getPlayer,
   canChangeForm,
   canBasicRecover,
-  canBasicAttack,
-  canAllyAttack,
-  canAllyThwart,
-  canBasicThwart,
+  canAttack,
+  canThwart,
   evaluateCardPlayability,
   canInitiateAbility,
+  HERO_ACTOR,
 } from './legality-checker';
 import {
   getEffectiveHeroStats,
@@ -469,7 +468,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
 
     // 1C. Basic Attack (Hero only)
     if (isHero) {
-      const atkCheck = canBasicAttack(state, playerId, 'villain');
+      const atkCheck = canAttack(state, playerId, HERO_ACTOR, 'villain');
       if (atkCheck.allowed) {
         identityActions.push({
           id: `action_basic_attack_villain_${player.id}`,
@@ -486,7 +485,13 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
       // Attack engaged minions (tablewide per RR v1.8 p. 5, 10)
       for (const p of state.players) {
         for (const minion of p.engagedMinions || []) {
-          const minionAtkCheck = canBasicAttack(state, playerId, 'minion', minion.instanceId);
+          const minionAtkCheck = canAttack(
+            state,
+            playerId,
+            HERO_ACTOR,
+            'minion',
+            minion.instanceId,
+          );
           if (minionAtkCheck.allowed) {
             const headline =
               p.id === player.id
@@ -513,7 +518,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
 
       // 1D. Basic Thwart (Hero only)
       if ((getActiveMainScheme(state)?.threat || 0) > 0) {
-        const thwCheck = canBasicThwart(state, playerId, 'main_scheme');
+        const thwCheck = canThwart(state, playerId, HERO_ACTOR, 'main_scheme');
         if (thwCheck.allowed) {
           identityActions.push({
             id: `action_basic_thwart_main_${player.id}`,
@@ -530,9 +535,10 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
 
       for (const sideScheme of state.sideSchemes || []) {
         if (sideScheme.threat > 0) {
-          const sideThwCheck = canBasicThwart(
+          const sideThwCheck = canThwart(
             state,
             playerId,
+            HERO_ACTOR,
             'side_scheme',
             sideScheme.instanceId,
           );
@@ -601,7 +607,12 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
         const allyStats = getEffectiveAllyStats(state, ally);
 
         // Ally Attack on Villain
-        const villainAtkCheck = canAllyAttack(state, player.id, ally.instanceId, 'villain');
+        const villainAtkCheck = canAttack(
+          state,
+          player.id,
+          { kind: 'ally', instanceId: ally.instanceId },
+          'villain',
+        );
         if (villainAtkCheck.allowed) {
           boardActions.push({
             id: `action_ally_attack_villain_${ally.instanceId}`,
@@ -624,10 +635,10 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
         // Ally Attack on engaged minions (tablewide per RR v1.8 p. 5, 10)
         for (const p of state.players) {
           for (const minion of p.engagedMinions || []) {
-            const minionAtkCheck = canAllyAttack(
+            const minionAtkCheck = canAttack(
               state,
               player.id,
-              ally.instanceId,
+              { kind: 'ally', instanceId: ally.instanceId },
               'minion',
               minion.instanceId,
             );
@@ -660,7 +671,8 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
         // Ally Thwart (Main Scheme)
         if (
           (getActiveMainScheme(state)?.threat || 0) > 0 &&
-          canAllyThwart(state, player.id, ally.instanceId, 'main_scheme').allowed
+          canThwart(state, player.id, { kind: 'ally', instanceId: ally.instanceId }, 'main_scheme')
+            .allowed
         ) {
           boardActions.push({
             id: `action_ally_thwart_${ally.instanceId}`,
@@ -684,8 +696,13 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
         for (const sideScheme of state.sideSchemes || []) {
           if (
             sideScheme.threat > 0 &&
-            canAllyThwart(state, player.id, ally.instanceId, 'side_scheme', sideScheme.instanceId)
-              .allowed
+            canThwart(
+              state,
+              player.id,
+              { kind: 'ally', instanceId: ally.instanceId },
+              'side_scheme',
+              sideScheme.instanceId,
+            ).allowed
           ) {
             boardActions.push({
               id: `action_ally_thwart_side_${ally.instanceId}_${sideScheme.instanceId}`,

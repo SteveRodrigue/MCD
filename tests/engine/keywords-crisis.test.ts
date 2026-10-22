@@ -11,7 +11,7 @@ import {
   getActiveVillain,
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { canBasicThwart } from '@engine/pipeline/legality-checker';
+import { canThwart, HERO_ACTOR } from '@engine/pipeline/legality-checker';
 import {
   hasCrisisInPlay,
   getCrisisIconCount,
@@ -75,7 +75,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
     getActiveMainScheme(state).threat = 5;
 
     // Cannot thwart main scheme while Crisis is active
-    const check = canBasicThwart(state, 'p1', 'main_scheme');
+    const check = canThwart(state, 'p1', HERO_ACTOR, 'main_scheme');
     expect(check.allowed).toBe(false);
     expect(check.reason).toContain('Crisis');
 
@@ -88,12 +88,18 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
     expect(res.result.success).toBe(false);
 
     // Can thwart the side scheme directly
-    const sideCheck = canBasicThwart(state, 'p1', 'side_scheme', sideSchemeInstance.instanceId);
+    const sideCheck = canThwart(
+      state,
+      'p1',
+      HERO_ACTOR,
+      'side_scheme',
+      sideSchemeInstance.instanceId,
+    );
     expect(sideCheck.allowed).toBe(true);
 
     // Defeating Crisis side scheme unlocks thwarting main scheme
     state.sideSchemes = [];
-    const unlockedCheck = canBasicThwart(state, 'p1', 'main_scheme');
+    const unlockedCheck = canThwart(state, 'p1', HERO_ACTOR, 'main_scheme');
     expect(unlockedCheck.allowed).toBe(true);
   });
 
@@ -118,7 +124,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
 
     expect(hasCrisisInPlay(state)).toBe(true);
 
-    const check = canBasicThwart(state, 'p1', 'main_scheme');
+    const check = canThwart(state, 'p1', HERO_ACTOR, 'main_scheme');
     expect(check.allowed).toBe(false);
     expect(check.reason).toContain('Crisis');
   });
@@ -143,7 +149,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
 
     expect(hasCrisisInPlay(state)).toBe(true);
 
-    const check = canBasicThwart(state, 'p1', 'main_scheme');
+    const check = canThwart(state, 'p1', HERO_ACTOR, 'main_scheme');
     expect(check.allowed).toBe(false);
     expect(check.reason).toContain('Crisis');
   });
@@ -168,7 +174,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
 
     expect(hasCrisisInPlay(state)).toBe(true);
 
-    const check = canBasicThwart(state, 'p1', 'main_scheme');
+    const check = canThwart(state, 'p1', HERO_ACTOR, 'main_scheme');
     expect(check.allowed).toBe(false);
     expect(check.reason).toContain('Crisis');
   });

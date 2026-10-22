@@ -6,7 +6,7 @@ import {
   hasKeyword,
   getActiveVillain,
 } from '../../../engine/models';
-import { canAllyAttack, canBasicAttack } from '../../../engine/pipeline/legality-checker';
+import { canAttack, HERO_ACTOR } from '../../../engine/pipeline/legality-checker';
 import { getEffectiveMinionHitPoints } from '../../../engine/pipeline/stat-calculator';
 
 export interface EnemyTarget {
@@ -35,9 +35,10 @@ export function getValidAttackTargets(
 
   const canAtkVillain =
     attackerType === 'hero'
-      ? canBasicAttack(state, playerId, 'villain').allowed
+      ? canAttack(state, playerId, HERO_ACTOR, 'villain').allowed
       : allyInstanceId
-        ? canAllyAttack(state, playerId, allyInstanceId, 'villain').allowed
+        ? canAttack(state, playerId, { kind: 'ally', instanceId: allyInstanceId }, 'villain')
+            .allowed
         : false;
 
   if (canAtkVillain) {
@@ -63,9 +64,15 @@ export function getValidAttackTargets(
     for (const minion of playerState.engagedMinions || []) {
       const canAtkMinion =
         attackerType === 'hero'
-          ? canBasicAttack(state, playerId, 'minion', minion.instanceId).allowed
+          ? canAttack(state, playerId, HERO_ACTOR, 'minion', minion.instanceId).allowed
           : allyInstanceId
-            ? canAllyAttack(state, playerId, allyInstanceId, 'minion', minion.instanceId).allowed
+            ? canAttack(
+                state,
+                playerId,
+                { kind: 'ally', instanceId: allyInstanceId },
+                'minion',
+                minion.instanceId,
+              ).allowed
             : false;
 
       if (canAtkMinion) {

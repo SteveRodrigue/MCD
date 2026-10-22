@@ -6,7 +6,7 @@ import {
   hasKeyword,
   getActiveMainScheme,
 } from '../../../engine/models';
-import { canAllyThwart, canBasicThwart } from '../../../engine/pipeline/legality-checker';
+import { canThwart, HERO_ACTOR } from '../../../engine/pipeline/legality-checker';
 import { getCrisisIconCount } from '../../../engine/pipeline/crisis';
 
 export interface SchemeTarget {
@@ -39,9 +39,9 @@ export function getValidThwartTargets(
   if (mainScheme) {
     const check =
       thwarterType === 'hero'
-        ? canBasicThwart(state, playerId, 'main_scheme')
+        ? canThwart(state, playerId, HERO_ACTOR, 'main_scheme')
         : allyInstanceId
-          ? canAllyThwart(state, playerId, allyInstanceId, 'main_scheme')
+          ? canThwart(state, playerId, { kind: 'ally', instanceId: allyInstanceId }, 'main_scheme')
           : { allowed: false, reason: 'Ally not specified' };
 
     targets.push({
@@ -62,9 +62,15 @@ export function getValidThwartTargets(
   for (const sideScheme of state.sideSchemes || []) {
     const check =
       thwarterType === 'hero'
-        ? canBasicThwart(state, playerId, 'side_scheme', sideScheme.instanceId)
+        ? canThwart(state, playerId, HERO_ACTOR, 'side_scheme', sideScheme.instanceId)
         : allyInstanceId
-          ? canAllyThwart(state, playerId, allyInstanceId, 'side_scheme', sideScheme.instanceId)
+          ? canThwart(
+              state,
+              playerId,
+              { kind: 'ally', instanceId: allyInstanceId },
+              'side_scheme',
+              sideScheme.instanceId,
+            )
           : { allowed: false, reason: 'Ally not specified' };
 
     const sideCard = sideScheme.card as SideSchemeCard;

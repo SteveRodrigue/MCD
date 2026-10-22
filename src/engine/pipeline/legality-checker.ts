@@ -35,7 +35,12 @@ import {
 } from './stat-calculator';
 import { getStepEffectParams } from '../../data/supplemental/runtime';
 import { findInPlayCardInstance } from '../state/state-validator';
-import { hasCrisisInPlay } from './crisis';
+import {
+  GUARD_BLOCK_REASON,
+  MAIN_SCHEME_BLOCK_REASON,
+  getMainSchemeThreatBlock,
+  isVillainAttackBlockedByGuard,
+} from './target-restrictions';
 
 export function getPlayer(state: GameState, playerId: string): PlayerState | undefined {
   return state.players.find((p) => p.id === playerId);
@@ -53,15 +58,8 @@ export function canChangeForm(
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
 
-  if (state.phase === GamePhase.VILLAIN_PHASE) {
-    return { allowed: false, reason: 'Actions can only be taken during the Player Phase.' };
-  }
-  if (state.phase === GamePhase.PLAYER_PHASE) {
-    const activePlayer = state.players[state.activePlayerIndex];
-    if (activePlayer && activePlayer.id !== playerId) {
-      return { allowed: false, reason: `Not your turn (Currently ${activePlayer.name}'s turn).` };
-    }
-  }
+  const window = checkActionWindow(state, playerId);
+  if (!window.allowed) return window;
 
   if (player.basicChangeFormUsedThisRound || player.formChangedThisRound) {
     return {
@@ -101,15 +99,8 @@ export function canBasicRecover(
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
 
-  if (state.phase === GamePhase.VILLAIN_PHASE) {
-    return { allowed: false, reason: 'Actions can only be taken during the Player Phase.' };
-  }
-  if (state.phase === GamePhase.PLAYER_PHASE) {
-    const activePlayer = state.players[state.activePlayerIndex];
-    if (activePlayer && activePlayer.id !== playerId) {
-      return { allowed: false, reason: `Not your turn (Currently ${activePlayer.name}'s turn).` };
-    }
-  }
+  const window = checkActionWindow(state, playerId);
+  if (!window.allowed) return window;
 
   if (player.currentForm !== 'alter_ego') {
     return { allowed: false, reason: 'Can only recover while in Alter-Ego form.' };
@@ -127,18 +118,19 @@ export function canBasicRecover(
 }
 
 /**
- * Checks if player can perform basic Attack (RR v1.8 p. 5-6, 15 "Guard").
- * Must be in Hero form, not exhausted, and respect Guard keyword.
+ * Who performs a basic attack or thwart: the player's hero, or one of their allies.
  */
-export function canBasicAttack(
-  state: GameState,
-  playerId: string,
-  targetType: 'villain' | 'minion',
-  targetInstanceId?: string,
-): { allowed: boolean; reason?: string } {
-  const player = getPlayer(state, playerId);
-  if (!player) return { allowed: false, reason: 'Player not found' };
+export type ActionActor = { kind: 'hero' } | { kind: 'ally'; instanceId: string };
 
+export const HERO_ACTOR: ActionActor = Object.freeze({ kind: 'hero' });
+
+type Check = { allowed: boolean; reason?: string };
+
+/**
+ * Basic actions happen in the Player Phase, on the acting player's turn (RR v1.8 p. 19 "Player
+ * Turn", "Ask for an Action"). One window check for every basic action and ability.
+ */
+function checkActionWindow(state: GameState, playerId: string): Check {
   if (state.phase === GamePhase.VILLAIN_PHASE) {
     return { allowed: false, reason: 'Actions can only be taken during the Player Phase.' };
   }
@@ -148,257 +140,112 @@ export function canBasicAttack(
       return { allowed: false, reason: `Not your turn (Currently ${activePlayer.name}'s turn).` };
     }
   }
-
-  if (player.currentForm !== 'hero') {
-    return { allowed: false, reason: 'Can only attack while in Hero form.' };
-  }
-
-  if (player.exhausted) {
-    return { allowed: false, reason: 'Character is exhausted.' };
-  }
-
-  if (hasDashPower(player.hero, 'attack')) {
-    return { allowed: false, reason: dashPowerReason(player.hero.name, 'attack') };
-  }
-
-  if (targetType === 'minion') {
-    if (!targetInstanceId) {
-      return { allowed: false, reason: 'Minion target instance ID must be specified.' };
-    }
-    // Find minion across all engaged minions
-    const allMinions = state.players.flatMap((p) => p.engagedMinions);
-    const minion = allMinions.find((m) => m.instanceId === targetInstanceId);
-    if (!minion) {
-      return { allowed: false, reason: 'Target minion is not in play.' };
-    }
-  }
-
-  if (targetType === 'villain') {
-    // Guard keyword check: While an engaged minion with Guard is in play with this player, villain cannot be attacked.
-    const hasGuardMinion = player.engagedMinions.some((m) => hasKeyword(m.card, Keyword.GUARD));
-
-    if (hasGuardMinion) {
-      return {
-        allowed: false,
-        reason: 'Cannot attack the villain while an engaged minion with Guard is in play.',
-      };
-    }
-  }
-
   return { allowed: true };
 }
 
 /**
- * Checks if an ally can perform an Attack (RR v1.8 p. 6, 15 "Guard").
- * Ally must not be exhausted and respect Guard keyword.
+ * Whether the actor can attack or thwart at all, before any target is considered: the action
+ * window, then a hero in Hero form (RR v1.8 p. 5-6, 29) or a ready ally in play, ready, with the
+ * stat printed (a dash means it cannot use that power).
  */
-export function canAllyAttack(
+function checkActorCanAct(
   state: GameState,
-  playerId: string,
-  allyInstanceId: string,
-  targetType: 'villain' | 'minion',
-  targetInstanceId?: string,
-): { allowed: boolean; reason?: string } {
-  const player = getPlayer(state, playerId);
-  if (!player) return { allowed: false, reason: 'Player not found' };
+  player: PlayerState,
+  actor: ActionActor,
+  power: 'attack' | 'thwart',
+): Check {
+  const window = checkActionWindow(state, player.id);
+  if (!window.allowed) return window;
 
-  if (state.phase === GamePhase.VILLAIN_PHASE) {
-    return { allowed: false, reason: 'Actions can only be taken during the Player Phase.' };
-  }
-  if (state.phase === GamePhase.PLAYER_PHASE) {
-    const activePlayer = state.players[state.activePlayerIndex];
-    if (activePlayer && activePlayer.id !== playerId) {
-      return { allowed: false, reason: `Not your turn (Currently ${activePlayer.name}'s turn).` };
+  if (actor.kind === 'hero') {
+    if (player.currentForm !== 'hero') {
+      return { allowed: false, reason: `Can only ${power} while in Hero form.` };
     }
+    if (player.exhausted) return { allowed: false, reason: 'Character is exhausted.' };
+    if (hasDashPower(player.hero, power)) {
+      return { allowed: false, reason: dashPowerReason(player.hero.name, power) };
+    }
+    return { allowed: true };
   }
 
-  const ally = player.allies.find((a) => a.instanceId === allyInstanceId);
+  const ally = player.allies.find((a) => a.instanceId === actor.instanceId);
   if (!ally) return { allowed: false, reason: 'Ally not found in play.' };
-
-  if (ally.exhausted) {
-    return { allowed: false, reason: 'Ally is exhausted.' };
+  if (ally.exhausted) return { allowed: false, reason: 'Ally is exhausted.' };
+  if (hasDashPower(ally.card, power)) {
+    return { allowed: false, reason: dashPowerReason(ally.card.name, power) };
   }
+  return { allowed: true };
+}
 
-  if (hasDashPower(ally.card, 'attack')) {
-    return { allowed: false, reason: dashPowerReason(ally.card.name, 'attack') };
-  }
+/**
+ * Checks if the hero or an ally can attack the villain or a minion (RR v1.8 p. 5-6, 15 "Guard").
+ */
+export function canAttack(
+  state: GameState,
+  playerId: string,
+  actor: ActionActor,
+  targetType: 'villain' | 'minion',
+  targetInstanceId?: string,
+): Check {
+  const player = getPlayer(state, playerId);
+  if (!player) return { allowed: false, reason: 'Player not found' };
+
+  const actorCheck = checkActorCanAct(state, player, actor, 'attack');
+  if (!actorCheck.allowed) return actorCheck;
 
   if (targetType === 'minion') {
     if (!targetInstanceId) {
       return { allowed: false, reason: 'Minion target instance ID must be specified.' };
     }
-    const allMinions = state.players.flatMap((p) => p.engagedMinions);
-    const minion = allMinions.find((m) => m.instanceId === targetInstanceId);
-    if (!minion) {
-      return { allowed: false, reason: 'Target minion is not in play.' };
-    }
+    const minion = state.players
+      .flatMap((p) => p.engagedMinions)
+      .find((m) => m.instanceId === targetInstanceId);
+    if (!minion) return { allowed: false, reason: 'Target minion is not in play.' };
   }
 
-  if (targetType === 'villain') {
-    // Guard keyword check: While an engaged minion with Guard is engaged with this player, villain cannot be attacked.
-    const hasGuardMinion = player.engagedMinions.some((m) => hasKeyword(m.card, Keyword.GUARD));
-
-    if (hasGuardMinion) {
-      return {
-        allowed: false,
-        reason: 'Cannot attack the villain while an engaged minion with Guard is in play.',
-      };
-    }
+  if (targetType === 'villain' && isVillainAttackBlockedByGuard(player)) {
+    return { allowed: false, reason: GUARD_BLOCK_REASON };
   }
 
   return { allowed: true };
 }
 
 /**
- * Checks if player can perform basic Thwart (RR v1.8 p. 29, 11 "Crisis", 20 "Patrol").
- * Must be in Hero form, not exhausted, and respect Crisis icons and Patrol minions.
+ * Checks if the hero or an ally can thwart a scheme (RR v1.8 p. 3 "Ally", 11 "Crisis", 20
+ * "Patrol", 29 "Thwart").
  */
-export function canBasicThwart(
+export function canThwart(
   state: GameState,
   playerId: string,
+  actor: ActionActor,
   targetType: 'main_scheme' | 'side_scheme',
   targetInstanceId?: string,
-): { allowed: boolean; reason?: string } {
+): Check {
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
 
-  if (state.phase === GamePhase.VILLAIN_PHASE) {
-    return { allowed: false, reason: 'Actions can only be taken during the Player Phase.' };
-  }
-  if (state.phase === GamePhase.PLAYER_PHASE) {
-    const activePlayer = state.players[state.activePlayerIndex];
-    if (activePlayer && activePlayer.id !== playerId) {
-      return { allowed: false, reason: `Not your turn (Currently ${activePlayer.name}'s turn).` };
-    }
-  }
-
-  if (player.currentForm !== 'hero') {
-    return { allowed: false, reason: 'Can only thwart while in Hero form.' };
-  }
-
-  if (player.exhausted) {
-    return { allowed: false, reason: 'Character is exhausted.' };
-  }
-
-  if (hasDashPower(player.hero, 'thwart')) {
-    return { allowed: false, reason: dashPowerReason(player.hero.name, 'thwart') };
-  }
+  const actorCheck = checkActorCanAct(state, player, actor, 'thwart');
+  if (!actorCheck.allowed) return actorCheck;
 
   if (targetType === 'side_scheme') {
     if (!targetInstanceId) {
       return { allowed: false, reason: 'Side scheme target instance ID must be specified.' };
     }
     const sideScheme = state.sideSchemes.find((s) => s.instanceId === targetInstanceId);
-    if (!sideScheme) {
-      return { allowed: false, reason: 'Target side scheme is not in play.' };
-    }
+    if (!sideScheme) return { allowed: false, reason: 'Target side scheme is not in play.' };
     if (sideScheme.threat <= 0) {
       return { allowed: false, reason: 'Cannot thwart a scheme with no threat.' };
     }
+    return { allowed: true };
   }
 
-  if (targetType === 'main_scheme') {
-    // 0. Threat Check: Cannot thwart a scheme with no threat (RR v1.8 p. 29)
-    if (!getActiveMainScheme(state) || getActiveMainScheme(state).threat <= 0) {
-      return {
-        allowed: false,
-        reason: 'Cannot thwart a scheme with no threat.',
-      };
-    }
-
-    // 1. Patrol Keyword Check: A minion with Patrol engaged with this player prevents thwarting main scheme
-    const hasPatrolMinion = player.engagedMinions.some((m) => hasKeyword(m.card, Keyword.PATROL));
-
-    if (hasPatrolMinion) {
-      return {
-        allowed: false,
-        reason: 'Cannot thwart the main scheme while an engaged minion with Patrol is in play.',
-      };
-    }
-
-    // 2. Crisis Icon Check: Any card with Crisis in play prevents removing threat from main scheme (RR v1.8 p. 11)
-    if (hasCrisisInPlay(state)) {
-      return {
-        allowed: false,
-        reason: 'Cannot thwart the main scheme while a Crisis icon is in play.',
-      };
-    }
+  // Cannot thwart a scheme with no threat (RR v1.8 p. 29)
+  const mainScheme = getActiveMainScheme(state);
+  if (!mainScheme || mainScheme.threat <= 0) {
+    return { allowed: false, reason: 'Cannot thwart a scheme with no threat.' };
   }
-
-  return { allowed: true };
-}
-
-/**
- * Checks if an ally can thwart a scheme (RR v1.8 p. 3 "Ally", 11 "Crisis", 20 "Patrol", 29 "Thwart").
- */
-export function canAllyThwart(
-  state: GameState,
-  playerId: string,
-  allyInstanceId: string,
-  targetType: 'main_scheme' | 'side_scheme',
-  targetInstanceId?: string,
-): { allowed: boolean; reason?: string } {
-  const player = getPlayer(state, playerId);
-  if (!player) return { allowed: false, reason: 'Player not found' };
-
-  if (state.phase === GamePhase.VILLAIN_PHASE) {
-    return { allowed: false, reason: 'Actions can only be taken during the Player Phase.' };
-  }
-  if (state.phase === GamePhase.PLAYER_PHASE) {
-    const activePlayer = state.players[state.activePlayerIndex];
-    if (activePlayer && activePlayer.id !== playerId) {
-      return { allowed: false, reason: `Not your turn (Currently ${activePlayer.name}'s turn).` };
-    }
-  }
-
-  const ally = player.allies.find((a) => a.instanceId === allyInstanceId);
-  if (!ally) return { allowed: false, reason: 'Ally not found in play.' };
-
-  if (ally.exhausted) {
-    return { allowed: false, reason: 'Ally is exhausted.' };
-  }
-
-  if (hasDashPower(ally.card, 'thwart')) {
-    return { allowed: false, reason: dashPowerReason(ally.card.name, 'thwart') };
-  }
-
-  if (targetType === 'side_scheme') {
-    if (!targetInstanceId) {
-      return { allowed: false, reason: 'Side scheme target instance ID must be specified.' };
-    }
-    const sideScheme = state.sideSchemes.find((s) => s.instanceId === targetInstanceId);
-    if (!sideScheme) {
-      return { allowed: false, reason: 'Target side scheme is not in play.' };
-    }
-    if (sideScheme.threat <= 0) {
-      return { allowed: false, reason: 'Cannot thwart a scheme with no threat.' };
-    }
-  }
-
-  if (targetType === 'main_scheme') {
-    if (!getActiveMainScheme(state) || getActiveMainScheme(state).threat <= 0) {
-      return {
-        allowed: false,
-        reason: 'Cannot thwart a scheme with no threat.',
-      };
-    }
-
-    const hasPatrolMinion = player.engagedMinions.some((m) => hasKeyword(m.card, Keyword.PATROL));
-    if (hasPatrolMinion) {
-      return {
-        allowed: false,
-        reason: 'Cannot thwart the main scheme while an engaged minion with Patrol is in play.',
-      };
-    }
-
-    // 2. Crisis Icon Check: Any card with Crisis in play prevents removing threat from main scheme (RR v1.8 p. 11)
-    if (hasCrisisInPlay(state)) {
-      return {
-        allowed: false,
-        reason: 'Cannot thwart the main scheme while a Crisis icon is in play.',
-      };
-    }
-  }
+  const block = getMainSchemeThreatBlock(state, player);
+  if (block) return { allowed: false, reason: MAIN_SCHEME_BLOCK_REASON[block] };
 
   return { allowed: true };
 }
@@ -958,109 +805,6 @@ function evaluateEventTargetRequirement(
 }
 
 /**
- * Checks whether any valid scheme with threat can currently have threat removed (RR v1.8 p. 11, 20, 29, 30).
- * Accounts for:
- * - Scheme threat > 0
- * - Crisis icon: Prevents removing threat from main scheme while a Crisis side scheme is in play
- * - Patrol Keyword: Prevents a player from removing threat from main scheme while engaged with a Patrol minion
- */
-function hasEligibleThreatRemovalTarget(
-  state: GameState,
-  playerId: string,
-  targetType: string = 'CHOSEN_SCHEME',
-  targetInstanceId?: string,
-): boolean {
-  const player = getPlayer(state, playerId);
-
-  const crisisInPlay = hasCrisisInPlay(state);
-
-  const hasPatrolMinion = (player?.engagedMinions || []).some((m) =>
-    hasKeyword(m.card, Keyword.PATROL),
-  );
-
-  const isMainSchemeEligible =
-    Boolean(getActiveMainScheme(state)) &&
-    (getActiveMainScheme(state).threat || 0) > 0 &&
-    !crisisInPlay &&
-    !hasPatrolMinion;
-
-  if (targetType === 'MAIN_SCHEME') {
-    return isMainSchemeEligible;
-  }
-
-  if (targetType === 'SIDE_SCHEME') {
-    if (targetInstanceId) {
-      const side = (state.sideSchemes || []).find((s) => s.instanceId === targetInstanceId);
-      return Boolean(side && side.threat > 0);
-    }
-    return (state.sideSchemes || []).some((s) => s.threat > 0);
-  }
-
-  // CHOSEN_SCHEME or default
-  if (targetInstanceId) {
-    if (
-      targetInstanceId === 'main_scheme' ||
-      targetInstanceId === getActiveMainScheme(state)?.instanceId
-    ) {
-      return isMainSchemeEligible;
-    }
-    const side = (state.sideSchemes || []).find((s) => s.instanceId === targetInstanceId);
-    return Boolean(side && side.threat > 0);
-  }
-
-  return isMainSchemeEligible || (state.sideSchemes || []).some((s) => s.threat > 0);
-}
-
-/**
- * Evaluates whether a card requires scheme targets with threat to be played (RR v1.8 p. 15, 29, 30; Issue #101).
- * An Event whose primary effect is removing threat cannot be played if no scheme has eligible threat.
- */
-function evaluateSchemeTargetRequirement(
-  state: GameState,
-  player: PlayerState,
-  card: NormalizedCard,
-): { allowed: boolean; reason?: string } {
-  // Only events execute their abilities immediately upon being played (RR v1.8 p. 12)
-  if (card.type !== CardType.EVENT) {
-    return { allowed: true };
-  }
-
-  const abilities = card.enrichment?.abilities || [];
-  for (const ab of abilities) {
-    // Only check action / play abilities, not reactive interrupt/response
-    const isAction =
-      ab.timing === 'ACTION' ||
-      ab.timing === 'HERO_ACTION' ||
-      ab.timing === 'ALTER_EGO_ACTION' ||
-      !ab.timing;
-    if (!isAction) continue;
-
-    const steps = ab.steps || [];
-    const threatStep = steps.find((s) => s.effect === 'REMOVE_THREAT');
-    if (threatStep) {
-      // Confused identity attempting a thwart ability bypasses target requirement (RR v1.8 p. 28)
-      if (
-        ab.labels?.includes('THWART') &&
-        isEntityIncapacitatedByStatus(player, StatusCard.CONFUSED)
-      ) {
-        continue;
-      }
-      const stepParams = getStepEffectParams(threatStep);
-      const targetParam = (stepParams.target as string) || 'CHOSEN_SCHEME';
-      const targetInstId = stepParams.targetInstanceId as string | undefined;
-      if (!hasEligibleThreatRemovalTarget(state, player.id, targetParam, targetInstId)) {
-        return {
-          allowed: false,
-          reason: 'Cannot play this card: No scheme has threat to remove.',
-        };
-      }
-    }
-  }
-
-  return { allowed: true };
-}
-
-/**
  * Evaluates the legality of initiating a SEARCH ability step (RR v1.8 p. 2, 28).
  * Ensures at least one eligible target exists to change the game state.
  */
@@ -1231,25 +975,7 @@ export function canInitiateAbility(
   // 5. Target & Potential to Change Game State (RR v1.8 p. 15-16, 29, 30)
   for (const step of ability.steps || []) {
     const stepParams = getStepEffectParams(step);
-    // 5A. Threat Removal / Thwart
-    if (step.effect === 'REMOVE_THREAT') {
-      if (
-        ability.labels?.includes('THWART') &&
-        isEntityIncapacitatedByStatus(player, StatusCard.CONFUSED)
-      ) {
-        continue;
-      }
-      const targetParam = (stepParams.target as string) || 'CHOSEN_SCHEME';
-      const targetInstId = (stepParams.targetInstanceId as string) || options?.targetInstanceId;
-      if (!hasEligibleThreatRemovalTarget(state, playerId, targetParam, targetInstId)) {
-        return {
-          allowed: false,
-          reason: 'Cannot trigger ability: No scheme has threat to remove.',
-        };
-      }
-    }
-
-    // 5B. Attack / Enemy Target Damage
+    // 5A. Attack / Enemy Target Damage
     if (step.effect === 'DEAL_DAMAGE' && stepParams.target) {
       if (
         ability.labels?.includes('ATTACK') &&
@@ -1259,7 +985,7 @@ export function canInitiateAbility(
       }
       const target = (stepParams.target as string) || 'CHOSEN_ENEMY';
       const allMinions = state.players.flatMap((p) => p.engagedMinions || []);
-      const hasGuard = player.engagedMinions.some((m) => hasKeyword(m.card, Keyword.GUARD));
+      const hasGuard = isVillainAttackBlockedByGuard(player);
 
       if (target === 'CHOSEN_MINION' || target === 'MINION') {
         if (allMinions.length === 0) {
@@ -1282,7 +1008,7 @@ export function canInitiateAbility(
       }
     }
 
-    // 5C. Search / Deck / Discard Target (RR v1.8 p. 2, 28)
+    // 5B. Search / Deck / Discard Target (RR v1.8 p. 2, 28)
     if (isStep(step, 'SEARCH')) {
       const searchCheck = evaluateSearchLegality(state, player, step);
       if (!searchCheck.allowed) {
@@ -1459,7 +1185,6 @@ function collectPlayRestrictions(
   check(evaluateAllyTargetRequirement(state, card));
   check(evaluateEnemyTargetRequirement(state, player, card, choices.targetInstanceId));
   check(evaluateEventTargetRequirement(state, player, cardInstance, choices));
-  check(evaluateSchemeTargetRequirement(state, player, card));
   check(evaluatePlayFromZoneRequirement(state, player, cardInstance));
 
   // Player Turn Validation (RR v1.8 p. 19 "Player Turn" & "Ask for an Action")

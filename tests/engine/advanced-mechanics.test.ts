@@ -11,9 +11,10 @@ import {
   MainSchemeCard,
   createCardInstance,
   SideSchemeCard,
-  canBasicThwart,
+  canThwart,
   step6_passFirstPlayerAndRoundUpkeep,
   peekDecisionPrompt,
+  HERO_ACTOR,
 } from '@engine/index';
 
 import corePack from '../../data/upstream/pack/core.json';
@@ -291,12 +292,12 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       expect(getActiveVillain(nextState).health).toBe(14);
     });
 
-    it('canBasicThwart rejects action when target main scheme or side scheme has 0 threat (RR v1.8 p. 29)', () => {
+    it('canThwart rejects action when target main scheme or side scheme has 0 threat (RR v1.8 p. 29)', () => {
       gameState.players[0].currentForm = 'hero';
       gameState.players[0].exhausted = false;
       getActiveMainScheme(gameState).threat = 0;
 
-      const check = canBasicThwart(gameState, 'p1', 'main_scheme');
+      const check = canThwart(gameState, 'p1', HERO_ACTOR, 'main_scheme');
       expect(check.allowed).toBe(false);
       expect(check.reason).toContain('threat');
     });

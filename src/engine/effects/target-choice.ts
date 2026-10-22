@@ -16,6 +16,8 @@ import {
   isEntityIncapacitatedByStatus,
 } from '../pipeline/stat-calculator';
 import { isImmuneToDamage } from '../pipeline/damage-immunity';
+import { isStepGateClosedByState } from '../pipeline/step-gate-evaluator';
+import { getMainSchemeThreatBlock } from '../pipeline/target-restrictions';
 import { nextEngineId } from '../state/rng';
 import { getEligibleTargets, resolveTargets, type ResolvedTarget } from './target-resolver';
 import type { EffectExecutionContext } from './index';
@@ -63,7 +65,8 @@ type AffectRule = (
   state: GameState,
   step: AbilityStep,
   target: ResolvedTarget,
-  sourceCard?: CardInstance,
+  sourceCard: CardInstance | undefined,
+  actor: PlayerState,
 ) => boolean;
 
 const isExhausted = (target: ResolvedTarget): boolean =>
@@ -97,8 +100,18 @@ const AFFECT_RULES: Partial<Record<EffectType, AffectRule>> = {
     const held = ((entity.statusCards ?? []) as StatusCard[]).filter((s) => s === statusCard);
     return held.length < limit;
   },
-  REMOVE_THREAT: (_state, _step, target) =>
-    target.kind === 'scheme' && (target.entity.threat ?? 0) > 0,
+  // A scheme with threat, and not a main scheme that Crisis or Patrol shields from the actor's
+  // player cards (RR v1.8 "Crisis Icon", "Patrol"; #331). An encounter source is not limited.
+  REMOVE_THREAT: (state, step, target, sourceCard, actor) =>
+    target.kind === 'scheme' &&
+    (target.entity.threat ?? 0) > 0 &&
+    !(
+      target.entityType === 'main_scheme' &&
+      getMainSchemeThreatBlock(state, actor, {
+        isPlayerSource: sourceCard?.card?.faction !== 'encounter',
+        ignoresCrisis: Boolean(step.effectParams?.ignoresCrisis),
+      })
+    ),
   HEAL_DAMAGE: (state, _step, target) => {
     if (target.kind !== 'character') return false;
     if (target.entityType === 'hero' || target.entityType === 'alter_ego') {
@@ -180,8 +193,8 @@ export const EFFECTS_WITHOUT_AFFECT_RULE: Readonly<Record<string, readonly Effec
 };
 
 /** Whether this step's effect can affect the target (RR v1.8 "Target": valid targets only). */
-export const canAffect: AffectRule = (state, step, target, sourceCard) =>
-  AFFECT_RULES[step.effect as EffectType]?.(state, step, target, sourceCard) ?? true;
+export const canAffect: AffectRule = (state, step, target, sourceCard, actor) =>
+  AFFECT_RULES[step.effect as EffectType]?.(state, step, target, sourceCard, actor) ?? true;
 
 /** Effects that have a target-state rule; with `EFFECTS_WITHOUT_AFFECT_RULE` they cover every effect. */
 export const EFFECTS_WITH_AFFECT_RULE: readonly string[] = Object.keys(AFFECT_RULES);
@@ -189,11 +202,23 @@ export const EFFECTS_WITH_AFFECT_RULE: readonly string[] = Object.keys(AFFECT_RU
 /** Self selectors name the acting player's own hero or identity: a target like any other. */
 const SELF_SELECTORS: ReadonlySet<string> = new Set(['SELF_HERO', 'SELF_IDENTITY']);
 
+/**
+ * Scheme selectors the ability names rather than the player chooses: the gate judges them like a
+ * chosen scheme, but no prompt is opened for them (#331).
+ */
+const NAMED_SCHEME_SELECTORS: ReadonlySet<string> = new Set([
+  'MAIN_SCHEME',
+  'SIDE_SCHEME',
+  'ALL_SCHEMES',
+]);
+
 /** The selector whose targets the legality gate enumerates for this step (chosen or self). */
 const judgedSelector = (step: AbilityStep): string | undefined => {
   const target = step.effectParams?.target;
   return typeof target === 'string' &&
-    (PLAYER_CHOSEN_SELECTORS.has(target) || SELF_SELECTORS.has(target))
+    (PLAYER_CHOSEN_SELECTORS.has(target) ||
+      SELF_SELECTORS.has(target) ||
+      NAMED_SCHEME_SELECTORS.has(target))
     ? target
     : undefined;
 };
@@ -207,20 +232,17 @@ export function getValidStepTargets(
   state: GameState,
   player: PlayerState,
   step: AbilityStep,
-  context: Pick<EffectExecutionContext, 'sourceCardInstance' | 'distinctFromId' | 'ignoresCrisis'>,
+  context: Pick<EffectExecutionContext, 'sourceCardInstance' | 'distinctFromId'>,
   selectorOverride?: string,
 ): ResolvedTarget[] {
   const selector = selectorOverride ?? judgedSelector(step);
   if (!selector) return [];
-  const candidates = getEligibleTargets(state, player, selector, {
-    isPlayerSource: context.sourceCardInstance?.card?.faction !== 'encounter',
-    ignoresCrisis: Boolean(step.effectParams?.ignoresCrisis || context.ignoresCrisis),
-  });
+  const candidates = getEligibleTargets(state, player, selector);
   const excluded = context.distinctFromId;
   return candidates.filter(
     (t) =>
       !(excluded && isSameScheme(t, excluded)) &&
-      canAffect(state, step, t, context.sourceCardInstance),
+      canAffect(state, step, t, context.sourceCardInstance, player),
   );
 }
 
@@ -321,10 +343,8 @@ const stepEventSelector = (step: AbilityStep): string | undefined => {
   return typeof target === 'string' && EVENT_TARGET_SELECTORS.has(target) ? target : undefined;
 };
 
-const stepsNeedingChoice = (ability: CardAbility): AbilityStep[] =>
-  (ability.steps ?? []).filter(
-    (s) => judgedSelector(s) !== undefined || stepEventSelector(s) !== undefined,
-  );
+const stepsNeedingChoice = (steps: AbilityStep[]): AbilityStep[] =>
+  steps.filter((s) => judgedSelector(s) !== undefined || stepEventSelector(s) !== undefined);
 
 /** The target a triggering event named, for abilities whose steps target "that enemy". */
 export interface EventTarget {
@@ -375,9 +395,14 @@ export function checkAbilityTargets(
   sourceCardInstance?: CardInstance,
   eventTarget?: EventTarget,
 ): TargetCheck {
-  const choiceSteps = stepsNeedingChoice(ability);
+  // A step whose state gate is closed cannot run, so it neither needs a target nor excuses a
+  // missing one (Mark V Helmet: one step per Aerial branch).
+  const openSteps = (ability.steps ?? []).filter(
+    (s) => !isStepGateClosedByState(s, state, { playerId: player.id }),
+  );
+  const choiceSteps = stepsNeedingChoice(openSteps);
   if (isCancelledByOwnStatus(player, ability)) return { allowed: true };
-  if (choiceSteps.length === 0 || choiceSteps.length < (ability.steps ?? []).length) {
+  if (choiceSteps.length === 0 || choiceSteps.length < openSteps.length) {
     return { allowed: true };
   }
   const hasTarget = (step: AbilityStep): boolean => {
@@ -390,7 +415,7 @@ export function checkAbilityTargets(
           ? getEligibleTargets(state, player, selector).find((t) => t.id === chosenId)
           : undefined;
       // A named target the effect cannot affect is not a valid target, whatever else is in play.
-      if (named) return canAffect(state, step, named, sourceCardInstance);
+      if (named) return canAffect(state, step, named, sourceCardInstance, player);
       return getValidStepTargets(state, player, step, { sourceCardInstance }).length > 0;
     }
     // Callers without a triggering event (a prompt answered later) cannot judge "that enemy".
@@ -400,7 +425,7 @@ export function checkAbilityTargets(
       sourceCardInstance,
       eventTargetType: eventTarget?.targetType,
       eventTargetInstanceId: eventTarget?.targetInstanceId,
-    }).some((t) => canAffect(state, step, t, sourceCardInstance));
+    }).some((t) => canAffect(state, step, t, sourceCardInstance, player));
   };
   if (choiceSteps.some(hasTarget)) return { allowed: true };
   return {

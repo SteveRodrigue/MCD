@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { canBasicAttack } from '@engine/pipeline/legality-checker';
+import { canAttack, HERO_ACTOR } from '@engine/pipeline/legality-checker';
 import { dispatchAction } from '@engine/pipeline';
 
 describe('Keyword: Guard (Rules Reference v1.8 p. 16)', () => {
@@ -43,7 +43,7 @@ describe('Keyword: Guard (Rules Reference v1.8 p. 16)', () => {
     state.players[0].engagedMinions = [minionInstance];
 
     // Cannot basic attack villain
-    const check = canBasicAttack(state, 'p1', 'villain');
+    const check = canAttack(state, 'p1', HERO_ACTOR, 'villain');
     expect(check.allowed).toBe(false);
     expect(check.reason).toContain('Guard');
 
@@ -56,12 +56,12 @@ describe('Keyword: Guard (Rules Reference v1.8 p. 16)', () => {
     expect(res.result.success).toBe(false);
 
     // Can attack the Guard minion directly
-    const minionCheck = canBasicAttack(state, 'p1', 'minion', minionInstance.instanceId);
+    const minionCheck = canAttack(state, 'p1', HERO_ACTOR, 'minion', minionInstance.instanceId);
     expect(minionCheck.allowed).toBe(true);
 
     // Defeating minion unlocks attack on villain
     state.players[0].engagedMinions = [];
-    const unlockedCheck = canBasicAttack(state, 'p1', 'villain');
+    const unlockedCheck = canAttack(state, 'p1', HERO_ACTOR, 'villain');
     expect(unlockedCheck.allowed).toBe(true);
   });
 
@@ -106,11 +106,17 @@ describe('Keyword: Guard (Rules Reference v1.8 p. 16)', () => {
 
     // Player 1 turn: Player 1 is blocked from attacking the villain
     multiplayerState.activePlayerIndex = 0;
-    const p1VillainCheck = canBasicAttack(multiplayerState, 'p1', 'villain');
+    const p1VillainCheck = canAttack(multiplayerState, 'p1', HERO_ACTOR, 'villain');
     expect(p1VillainCheck.allowed).toBe(false);
     expect(p1VillainCheck.reason).toContain('Guard');
 
-    const p1MinionCheck = canBasicAttack(multiplayerState, 'p1', 'minion', guardMinion.instanceId);
+    const p1MinionCheck = canAttack(
+      multiplayerState,
+      'p1',
+      HERO_ACTOR,
+      'minion',
+      guardMinion.instanceId,
+    );
     expect(p1MinionCheck.allowed).toBe(true);
 
     const p1AttackVillainRes = dispatchAction(multiplayerState, {
@@ -122,11 +128,17 @@ describe('Keyword: Guard (Rules Reference v1.8 p. 16)', () => {
 
     // Player 2 turn: Player 2 is NOT engaged with Guard minion -> CAN attack villain!
     multiplayerState.activePlayerIndex = 1;
-    const p2VillainCheck = canBasicAttack(multiplayerState, 'p2', 'villain');
+    const p2VillainCheck = canAttack(multiplayerState, 'p2', HERO_ACTOR, 'villain');
     expect(p2VillainCheck.allowed).toBe(true);
 
     // Player 2 can also choose to attack Player 1's engaged minion
-    const p2MinionCheck = canBasicAttack(multiplayerState, 'p2', 'minion', guardMinion.instanceId);
+    const p2MinionCheck = canAttack(
+      multiplayerState,
+      'p2',
+      HERO_ACTOR,
+      'minion',
+      guardMinion.instanceId,
+    );
     expect(p2MinionCheck.allowed).toBe(true);
 
     // Dispatching attack on villain as Player 2 succeeds

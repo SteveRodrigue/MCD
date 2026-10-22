@@ -382,6 +382,7 @@ function handleDistributeAmount(
       if (allocationDomain === 'THREAT_REMOVAL') {
         removeThreatFromScheme(state, {
           playerId: player.id,
+          targetType: targetId === 'main_scheme' ? 'main_scheme' : 'side_scheme',
           targetInstanceId: targetId,
           amount,
           sourceName: context.sourceCardInstance?.card.name || 'Game Effect',

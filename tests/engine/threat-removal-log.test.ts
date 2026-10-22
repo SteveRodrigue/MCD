@@ -3,12 +3,13 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { executeEffect } from '@engine/effects';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { getActiveMainScheme } from '@engine/models';
+import { Keyword, StatusCard, getActiveMainScheme } from '@engine/models';
 import type {
   AlterEgoCard,
   CardAbility,
   GameState,
   HeroCard,
+  MinionCard,
   SideSchemeState,
 } from '@engine/models';
 
@@ -111,7 +112,7 @@ describe('Threat removal is always logged with its source (#343)', () => {
     ]);
   });
 
-  it('a card effect removing 0 threat still writes an entry with amount 0', () => {
+  it('a card effect removing 0 threat writes no entry', () => {
     getActiveMainScheme(state).threat = 0;
     const source = createCardInstance(cardCatalog.getCard('01037')!);
     const ability: CardAbility = {
@@ -123,15 +124,48 @@ describe('Threat removal is always logged with its source (#343)', () => {
     const res = executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: source });
 
     expect(res.success).toBe(true);
-    expect(removals(res.state).map((l) => l.params)).toEqual([
-      {
-        actor: 'Peter',
-        source: 'Mark V Helmet',
-        target: mainName(),
-        amount: 0,
-        remainingThreat: 0,
-      },
-    ]);
+    expect(removals(res.state)).toEqual([]);
+  });
+
+  it('a main scheme blocked by Patrol does not change the facts of the schemes that were thwarted', () => {
+    state.sideSchemes = [sideScheme('side_a', 1)];
+    const baseMinion = cardCatalog.getCard('01101') as MinionCard;
+    state.players[0].engagedMinions = [
+      createCardInstance({ ...baseMinion, keywords: [Keyword.PATROL] } as MinionCard),
+    ];
+    const ability: CardAbility = {
+      id: 'test_remove_all_schemes',
+      timing: 'ACTION' as const,
+      steps: [{ effect: 'REMOVE_THREAT', effectParams: { amount: 1, target: 'ALL_SCHEMES' } }],
+    };
+
+    const res = executeEffect(state, ability, {
+      playerId: 'p1',
+      sourceCardInstance: createCardInstance(cardCatalog.getCard('01037')!),
+    });
+
+    expect(getActiveMainScheme(res.state).threat).toBe(5);
+    expect(res.facts?.schemeEmpty).toBe(true);
+    expect(res.facts?.threatZero).toBe(true);
+  });
+
+  it('a Confused thwarter removes nothing and does not report the scheme as empty', () => {
+    const source = createCardInstance(cardCatalog.getCard('01037')!);
+    source.statusCards = [StatusCard.CONFUSED];
+    const ability: CardAbility = {
+      id: 'test_confused_remove',
+      timing: 'ACTION' as const,
+      steps: [{ effect: 'REMOVE_THREAT', effectParams: { amount: 2, target: 'MAIN_SCHEME' } }],
+    };
+
+    const res = executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: source });
+
+    expect(res.success).toBe(true);
+    expect(source.statusCards).toEqual([]);
+    expect(getActiveMainScheme(res.state).threat).toBe(5);
+    expect(removals(res.state)).toEqual([]);
+    expect(res.facts?.schemeEmpty).toBe(false);
+    expect(res.facts?.threatZero).toBe(false);
   });
 
   describe('distributed removal', () => {
@@ -191,6 +225,20 @@ describe('Threat removal is always logged with its source (#343)', () => {
         .filter((k) => k === 'card.effect.removeThreat' || k === 'side_scheme.defeated');
       expect(keys).toEqual(['card.effect.removeThreat', 'side_scheme.defeated']);
       expect(resolved.state.sideSchemes.map((s) => s.instanceId)).toEqual(['side_b']);
+    });
+
+    it('an assignment to a scheme that is not in play writes nothing', () => {
+      state.sideSchemes = [sideScheme('side_a', 3)];
+
+      const res = executeEffect(state, distribute(2), {
+        playerId: 'p1',
+        sourceCardInstance: helmet(),
+        assignments: { side_gone: 2 },
+      });
+
+      expect(res.success).toBe(true);
+      expect(removals(res.state)).toEqual([]);
+      expect(res.state.sideSchemes[0].threat).toBe(3);
     });
 
     it('assignments passed straight to the step are logged the same way', () => {

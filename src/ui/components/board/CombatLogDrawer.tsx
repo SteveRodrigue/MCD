@@ -12,19 +12,11 @@ interface CombatLogDrawerProps {
   onClose: () => void;
   logs: GameLogEntry[];
   currentLocale?: 'en' | 'fr';
-  /** Dev-only entries (engine step errors, threat removals of 0) are listed in Dev Mode only. */
+  /** Engine step errors (`engine.stepError`) are listed in Dev Mode only (#225). */
   devMode?: boolean;
 }
 
 type FilterCategory = 'all' | 'heroes' | 'villains' | 'narrator';
-
-/**
- * Entries only a developer needs: engine step errors (#225) and threat removals of 0, which change
- * nothing on the board (#343). The engine always logs them; the drawer lists them in Dev Mode only.
- */
-const isDevOnlyLogEntry = (entry: GameLogEntry): boolean =>
-  entry.key === 'engine.stepError' ||
-  (entry.key === 'card.effect.removeThreat' && entry.params?.amount === 0);
 
 export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
   isOpen,
@@ -62,7 +54,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
   // Format all log entries into comic dialogue
   const formattedLogs = useMemo(() => {
     return logs
-      .filter((entry) => devMode || !isDevOnlyLogEntry(entry))
+      .filter((entry) => devMode || entry.key !== 'engine.stepError')
       .map((entry) => formatComicLogEntry(entry, locale, gameState));
   }, [logs, locale, gameState, devMode]);
 

@@ -10,11 +10,11 @@ import {
   Keyword,
   hasKeyword,
   getActiveVillain,
-  getActiveMainScheme,
   getFirstPlayer,
 } from '@engine/models';
 import { getStepEffectParams } from '../../../data/supplemental/runtime';
 import { enqueueDistributionPrompt } from '../../pipeline/prompt-queue';
+import { removeThreatFromScheme } from '../../pipeline/threat-pipeline';
 import { isImmuneToDamage } from '../../pipeline/damage-immunity';
 import { getEffectiveMaxHealth, getEffectiveMinionHitPoints } from '../../pipeline/stat-calculator';
 import { nextEngineId } from '../../state/rng';
@@ -31,7 +31,6 @@ import {
   compileDistributionTargets,
   dealDamageToEnemies,
   dealDamageToIdentity,
-  defeatSideScheme,
   isEncounterCard,
   minionTargetRef,
   playerTargetRef,
@@ -381,43 +380,12 @@ function handleDistributeAmount(
       if (amount <= 0) continue;
 
       if (allocationDomain === 'THREAT_REMOVAL') {
-        const activeMain = getActiveMainScheme(state);
-        if (
-          targetId === 'main_scheme' ||
-          targetId === activeMain?.instanceId ||
-          targetId === activeMain?.card?.code
-        ) {
-          const prevThreat = activeMain.threat;
-          activeMain.threat = Math.max(0, activeMain.threat - amount);
-          if (prevThreat > 0 && activeMain.threat === 0) {
-            kernel.dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
-              targetPlayerId: player.id,
-              sourceInstanceId: activeMain.instanceId || 'main_scheme',
-              entityType: 'SCHEME',
-              threatAmount: prevThreat,
-            });
-          }
-        } else {
-          const sideIdx = (state.sideSchemes || []).findIndex(
-            (s) => s.instanceId === targetId || s.card.code === targetId,
-          );
-          if (sideIdx !== -1) {
-            const side = state.sideSchemes![sideIdx];
-            const prevThreat = side.threat || 0;
-            side.threat = Math.max(0, (side.threat || 0) - amount);
-            if (side.threat <= 0) {
-              defeatSideScheme(state, side.instanceId, player.id);
-              if (prevThreat > 0) {
-                kernel.dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
-                  targetPlayerId: player.id,
-                  sourceInstanceId: side.instanceId,
-                  entityType: 'SCHEME',
-                  threatAmount: prevThreat,
-                });
-              }
-            }
-          }
-        }
+        removeThreatFromScheme(state, {
+          playerId: player.id,
+          targetInstanceId: targetId,
+          amount,
+          sourceName: context.sourceCardInstance?.card.name || 'Game Effect',
+        });
       } else if (allocationDomain === 'HEAL') {
         let ally: CardInstance | undefined;
         for (const p of state.players) {

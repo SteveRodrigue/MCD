@@ -5,7 +5,9 @@ import {
   StatusCard,
   CardInstance,
   SideSchemeState,
+  Keyword,
   getActiveMainScheme,
+  hasKeyword,
 } from '@engine/models';
 import { consumeEntityStatusCards } from './stat-calculator';
 import { hasCrisisInPlay } from './crisis';
@@ -58,6 +60,8 @@ export interface ThwartRequest {
   ignoresCrisis?: boolean;
   ignoresPatrol?: boolean;
   suppressTrigger?: boolean;
+  /** Card or character shown as the source in the combat log; defaults to the thwarter's name. */
+  sourceName?: string;
 }
 
 export interface ThwartResult {
@@ -342,6 +346,130 @@ export function finishPendingThreatPlacements(state: GameState): GameState {
   return current;
 }
 
+export interface SchemeThreatRemoval {
+  playerId: string;
+  /** Resolved from `targetInstanceId` when omitted: the main scheme's id aliases, else a side scheme. */
+  targetType?: ThreatTargetType;
+  targetInstanceId?: string;
+  amount: number;
+  /** Card or character responsible, shown in the combat log. */
+  sourceName: string;
+}
+
+export interface SchemeThreatRemovalResult {
+  removed: number;
+  targetSchemeName: string;
+  remainingThreat: number;
+  schemeDefeated: boolean;
+  onomatopoeia: string;
+}
+
+/**
+ * The one place threat leaves a scheme (RR v1.8 "Threat"): removes up to `amount`, writes the
+ * `card.effect.removeThreat` entry (actor, source, target, amount actually removed, threat left,
+ * also for 0), defeats a side scheme that reaches 0 and announces the "reduced to zero" trigger.
+ * Callers decide whether the removal is allowed (Crisis, Patrol, Confused) before calling it.
+ */
+export function removeThreatFromScheme(
+  state: GameState,
+  request: SchemeThreatRemoval,
+): SchemeThreatRemovalResult {
+  const { playerId, targetInstanceId, sourceName } = request;
+  const player = state.players.find((p) => p.id === playerId) || state.players[0];
+  const amount = Math.max(0, request.amount);
+  const mainScheme = getActiveMainScheme(state);
+  const targetType: ThreatTargetType =
+    request.targetType ??
+    (targetInstanceId === 'main_scheme' ||
+    targetInstanceId === mainScheme?.instanceId ||
+    targetInstanceId === mainScheme?.card?.code
+      ? 'main_scheme'
+      : 'side_scheme');
+
+  const scheme: { threat: number; card?: { name?: string }; instanceId?: string } | undefined =
+    targetType === 'main_scheme'
+      ? mainScheme
+      : state.sideSchemes.find(
+          (s) => s.instanceId === targetInstanceId || s.card.code === targetInstanceId,
+        );
+  if (!scheme) {
+    return {
+      removed: 0,
+      targetSchemeName: 'Side Scheme',
+      remainingThreat: 0,
+      schemeDefeated: false,
+      onomatopoeia: 'THWARTED!',
+    };
+  }
+
+  const isMain = targetType === 'main_scheme';
+  const targetSchemeName = scheme.card?.name || (isMain ? 'Main Scheme' : 'Side Scheme');
+  const currentThreat = scheme.threat || 0;
+  const removed = Math.min(currentThreat, amount);
+  scheme.threat = currentThreat - removed;
+  const remainingThreat = scheme.threat;
+  const schemeDefeated = !isMain && remainingThreat <= 0;
+  const onomatopoeia = isMain ? 'FOILED!' : schemeDefeated ? 'SCHEME DEFEATED!' : 'THWARTED!';
+
+  appendLog(state, {
+    key: 'card.effect.removeThreat',
+    params: {
+      actor: player.name,
+      source: sourceName,
+      target: targetSchemeName,
+      amount: removed,
+      remainingThreat,
+    },
+    onomatopoeia,
+  });
+
+  if (schemeDefeated) {
+    defeatSideScheme(state, scheme.instanceId!, player.id);
+    appendLog(state, {
+      key: 'side_scheme.defeated',
+      params: { actor: player.name, target: targetSchemeName, amount: removed, remainingThreat },
+      onomatopoeia,
+    });
+  }
+
+  if (remainingThreat === 0 && removed > 0) {
+    kernel.dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
+      targetPlayerId: player.id,
+      sourceInstanceId: scheme.instanceId || 'main_scheme',
+      entityType: 'SCHEME',
+      threatAmount: removed,
+    });
+  }
+
+  return { removed, targetSchemeName, remainingThreat, schemeDefeated, onomatopoeia };
+}
+
+/**
+ * Why cards cannot remove threat from the main scheme right now: a Crisis icon in play, or an
+ * engaged minion with Patrol (RR v1.8 "Crisis Icon", "Patrol").
+ */
+function getMainSchemeBlock(
+  state: GameState,
+  player: PlayerState,
+  request: ThwartRequest,
+):
+  | {
+      key: 'card.effect.threatBlockedByCrisis' | 'card.effect.threatBlockedByPatrol';
+      onomatopoeia: string;
+    }
+  | undefined {
+  if (!request.ignoresCrisis && hasCrisisInPlay(state)) {
+    return { key: 'card.effect.threatBlockedByCrisis', onomatopoeia: 'CRISIS BLOCKS!' };
+  }
+  if (
+    !request.ignoresPatrol &&
+    player.engagedMinions.some((m) => hasKeyword(m.card, Keyword.PATROL))
+  ) {
+    return { key: 'card.effect.threatBlockedByPatrol', onomatopoeia: 'PATROL BLOCKS!' };
+  }
+  return undefined;
+}
+
 /**
  * Universal RR v1.8 Thwart & Threat Removal Pipeline.
  * Single source of truth for all thwarting and threat reduction across MCD.
@@ -350,28 +478,22 @@ export function applyThwart(
   state: GameState,
   request: ThwartRequest,
 ): { state: GameState; result: ThwartResult } {
-  const {
-    thwarterType,
-    thwarterEntity,
-    playerId,
-    targetType,
-    targetInstanceId,
-    thwartValue,
-    ignoresCrisis,
-  } = request;
+  const { thwarterType, thwarterEntity, playerId, targetType, targetInstanceId, thwartValue } =
+    request;
 
   const player = state.players.find((p) => p.id === playerId) || state.players[0];
+  const thwarterName =
+    thwarterType === 'HERO'
+      ? (thwarterEntity as PlayerState | undefined)?.activeFormCard?.name ||
+        (thwarterEntity as PlayerState | undefined)?.name ||
+        player.name
+      : (thwarterEntity as CardInstance | undefined)?.card?.name ||
+        (thwarterType === 'CARD_EFFECT' ? 'Game Effect' : 'Character');
 
   // ---------------------------------------------------------------------------
   // STEP 1: Confused Status Replacement Check (RR v1.8 p. 28)
   // ---------------------------------------------------------------------------
   if (thwarterEntity && consumeEntityStatusCards(thwarterEntity, StatusCard.CONFUSED)) {
-    const thwarterName =
-      thwarterType === 'HERO'
-        ? (thwarterEntity as PlayerState).activeFormCard?.name ||
-          (thwarterEntity as PlayerState).name
-        : (thwarterEntity as CardInstance).card?.name || 'Character';
-
     const onomatopoeia = 'CONFUSION CLEARED!';
     appendLog(state, {
       key: 'status.confused.cleared',
@@ -394,15 +516,18 @@ export function applyThwart(
   }
 
   // ---------------------------------------------------------------------------
-  // STEP 2: Crisis Icon Check (RR v1.8 p. 11)
+  // STEP 2: Crisis Icon and Patrol Check (RR v1.8 p. 11, 20)
   // ---------------------------------------------------------------------------
-  if (targetType === 'main_scheme' && !ignoresCrisis && hasCrisisInPlay(state)) {
-    const onomatopoeia = 'CRISIS BLOCKS!';
+  const mainSchemeBlock =
+    targetType === 'main_scheme' && getMainSchemeBlock(state, player, request);
+  if (mainSchemeBlock) {
+    const { onomatopoeia } = mainSchemeBlock;
     appendLog(state, {
       category: 'ability',
-      key: 'card.effect.threatBlockedByCrisis',
+      key: mainSchemeBlock.key,
       params: {
         actor: player.name,
+        source: request.sourceName ?? thwarterName,
         target: getActiveMainScheme(state)?.card?.name || 'Main Scheme',
       },
       onomatopoeia,
@@ -422,82 +547,21 @@ export function applyThwart(
     };
   }
 
-  let removed = 0;
-  let targetSchemeName = 'Main Scheme';
-  let remainingThreat = 0;
-  let schemeDefeated = false;
-  let onomatopoeia = 'FOILED!';
-
   // ---------------------------------------------------------------------------
-  // STEP 3: Threat Removal Application
+  // STEP 3: Threat Removal, side scheme defeat at 0 and the "reduced to zero" trigger
   // ---------------------------------------------------------------------------
-  if (targetType === 'main_scheme') {
-    const mainScheme = getActiveMainScheme(state);
-    targetSchemeName = mainScheme?.card?.name || 'Main Scheme';
-    removed = Math.min(mainScheme.threat, Math.max(0, thwartValue));
-    mainScheme.threat -= removed;
-    remainingThreat = mainScheme.threat;
-
-    onomatopoeia = 'FOILED!';
-    appendLog(state, {
-      key: 'player.action.thwartMainScheme',
-      params: {
-        actor: player.name,
-        amount: removed,
-        remainingThreat,
-      },
-      onomatopoeia,
+  const { removed, targetSchemeName, remainingThreat, schemeDefeated, onomatopoeia } =
+    removeThreatFromScheme(state, {
+      playerId,
+      targetType,
+      targetInstanceId,
+      amount: thwartValue,
+      sourceName: request.sourceName ?? thwarterName,
     });
-  } else if (targetType === 'side_scheme' && targetInstanceId) {
-    const schemeIndex = state.sideSchemes.findIndex(
-      (s) => s.instanceId === targetInstanceId || s.card.code === targetInstanceId,
-    );
-
-    if (schemeIndex !== -1) {
-      const sideScheme = state.sideSchemes[schemeIndex];
-      targetSchemeName = sideScheme.card?.name || 'Side Scheme';
-      removed = Math.min(sideScheme.threat, Math.max(0, thwartValue));
-      sideScheme.threat -= removed;
-      remainingThreat = sideScheme.threat;
-
-      // ---------------------------------------------------------------------------
-      // STEP 4: Side Scheme Defeat when threat reaches 0
-      // ---------------------------------------------------------------------------
-      if (sideScheme.threat <= 0) {
-        schemeDefeated = true;
-        defeatSideScheme(state, sideScheme.instanceId, player.id);
-        onomatopoeia = 'SCHEME DEFEATED!';
-      } else {
-        onomatopoeia = 'THWARTED!';
-      }
-
-      appendLog(state, {
-        key: schemeDefeated ? 'side_scheme.defeated' : 'player.action.thwartSideScheme',
-        params: {
-          actor: player.name,
-          target: targetSchemeName,
-          amount: removed,
-          remainingThreat,
-        },
-        onomatopoeia,
-      });
-    }
-  }
 
   // ---------------------------------------------------------------------------
-  // STEP 5: Post-Thwart Triggers
+  // STEP 4: Post-Thwart Triggers
   // ---------------------------------------------------------------------------
-  if (remainingThreat === 0 && removed > 0) {
-    kernel.dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
-      targetPlayerId: player.id,
-      sourceInstanceId:
-        targetType === 'main_scheme'
-          ? getActiveMainScheme(state)?.instanceId || 'main_scheme'
-          : targetInstanceId,
-      entityType: 'SCHEME',
-      threatAmount: removed,
-    });
-  }
 
   const sourceInstId =
     thwarterType === 'ALLY'

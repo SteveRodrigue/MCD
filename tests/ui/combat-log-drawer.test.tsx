@@ -181,6 +181,82 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
     ).toBeDefined();
   });
 
+  describe('threat removal entries (Issue #343)', () => {
+    const removal = (id: string, amount: number): GameLogEntry => ({
+      id,
+      timestamp: 1000,
+      round: 1,
+      phase: GamePhase.PLAYER_PHASE,
+      key: 'card.effect.removeThreat',
+      actor: { name: 'Iron-Man', type: 'hero' },
+      params: {
+        actor: 'Iron-Man',
+        source: 'Mark V Helmet',
+        target: 'The Break-In!',
+        amount,
+        remainingThreat: 4,
+      },
+    });
+
+    const renderLogs = (logs: GameLogEntry[], devMode: boolean) =>
+      render(
+        <TestSession state={mockGameState as GameState}>
+          <CombatLogDrawer isOpen={true} onClose={vi.fn()} logs={logs} devMode={devMode} />
+        </TestSession>,
+      );
+
+    it('lists a removal of 0 only in Dev Mode: the board did not change', () => {
+      const logs = [removal('log-r0', 0)];
+
+      const player = renderLogs(logs, false);
+      expect(screen.queryByText(/removed 0 threat/)).toBeNull();
+      player.unmount();
+
+      renderLogs(logs, true);
+      expect(screen.getByText(/removed 0 threat/)).toBeDefined();
+    });
+
+    it('words a Crisis or Patrol block and a side scheme defeat as sentences, not raw keys', () => {
+      const blocked = (id: string, key: GameLogEntry['key']): GameLogEntry => ({
+        ...removal(id, 0),
+        key,
+        params: { actor: 'Iron-Man', source: 'Mark V Helmet', target: 'The Break-In!' },
+      });
+      renderLogs(
+        [
+          blocked('log-crisis', 'card.effect.threatBlockedByCrisis'),
+          blocked('log-patrol', 'card.effect.threatBlockedByPatrol'),
+          blocked('log-defeated', 'side_scheme.defeated'),
+        ],
+        false,
+      );
+
+      expect(
+        screen.getByText(
+          /Mark V Helmet cannot remove threat from The Break-In! while a Crisis icon/,
+        ),
+      ).toBeDefined();
+      expect(
+        screen.getByText(
+          /Mark V Helmet cannot remove threat from The Break-In! while an engaged minion has Patrol/,
+        ),
+      ).toBeDefined();
+      expect(screen.getByText(/The Break-In! has been completely thwarted/)).toBeDefined();
+    });
+
+    it('lists a real removal in both modes, with the source card badge', () => {
+      const logs = [removal('log-r1', 2)];
+
+      const player = renderLogs(logs, false);
+      expect(screen.getByText(/Iron-Man removed 2 threat from The Break-In!/)).toBeDefined();
+      expect(screen.getByText(/Mark V Helmet/)).toBeDefined();
+      player.unmount();
+
+      renderLogs(logs, true);
+      expect(screen.getByText(/Iron-Man removed 2 threat from The Break-In!/)).toBeDefined();
+    });
+  });
+
   it('GameBoard initializes with Combat Log drawer open by default (Issue #204)', () => {
     const state = setupGame({
       catalog: cardCatalog,

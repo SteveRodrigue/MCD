@@ -280,21 +280,29 @@ export function popDecisionPrompt(state: GameState): {
   return { state, prompt: popped };
 }
 
-/** The threat placement a queued interrupt prompt belongs to, if any (#266). */
-function threatPlacementIdOf(prompt: PendingDecisionPrompt): string | undefined {
+type PlacementKey = 'threatPlacementId' | 'damagePlacementId';
+
+/** The threat or damage placement a queued interrupt prompt belongs to, if any (#266, #267). */
+function placementIdOf(prompt: PendingDecisionPrompt, key: PlacementKey): string | undefined {
   for (const option of prompt.options) {
-    const id = (option.params?.context as { threatPlacementId?: string } | undefined)
-      ?.threatPlacementId;
+    const id = (option.params?.context as Partial<Record<PlacementKey, string>> | undefined)?.[key];
     if (id) return id;
   }
   return undefined;
 }
 
 /**
- * True while a queued threat interrupt can still be used: the card is where it was offered, its
- * cost is payable and its limit is unused (RR v1.8 Initiating Abilities).
+ * True while a queued optional ability can still be initiated (RR v1.8 Initiating Abilities): its
+ * card is where it was offered, its limit is unused, its cost is payable and it still has a valid
+ * target (ADR-0090). A hand card must still be in hand; a card in play is only required to still
+ * be there for the threat and damage interrupt windows (`inWindow`), because other prompts may
+ * come from encounter cards this lookup does not search.
  */
-function isThreatInterruptStillUsable(state: GameState, prompt: PendingDecisionPrompt): boolean {
+function isQueuedAbilityStillUsable(
+  state: GameState,
+  prompt: PendingDecisionPrompt,
+  inWindow: boolean,
+): boolean {
   const option = prompt.options.find((o) => o.effect === 'EXECUTE_OPTIONAL_TRIGGER');
   const ability = option?.params?.ability as CardAbility | undefined;
   const player = state.players.find((p) => p.id === prompt.playerId);
@@ -312,114 +320,72 @@ function isThreatInterruptStillUsable(state: GameState, prompt: PendingDecisionP
     if (prompt.sourceCardCode && player.activeFormCard?.code !== prompt.sourceCardCode) {
       return false;
     }
-    return canPayAbilityCost(state, player, ability).allowed;
+    return (
+      canPayAbilityCost(state, player, ability).allowed &&
+      kernel.checkAbilityTargets(state, player, ability).allowed
+    );
   }
 
   const source =
     ability.zone === 'HAND'
       ? player.hand.find((c) => c.instanceId === sourceId)
-      : [...player.tableau, ...player.allies, ...(player.attachments ?? [])].find(
-          (c) => c.instanceId === sourceId,
-        );
-  return source ? canPayAbilityCost(state, player, ability, source).allowed : false;
+      : [
+          ...(player.obligations ?? []),
+          ...player.tableau,
+          ...player.allies,
+          ...(player.attachments ?? []),
+        ].find((c) => c.instanceId === sourceId);
+  if (!source) return !inWindow && ability.zone !== 'HAND';
+  return (
+    canPayAbilityCost(state, player, ability, source).allowed &&
+    kernel.checkAbilityTargets(state, player, ability, source).allowed
+  );
 }
 
 /**
- * Closes the interrupt window of threat placements (#266): prompts of a placement with nothing
- * left to place are dropped without paying anything, and a queued prompt whose card is no longer
- * usable is dropped when it comes up.
+ * Re-validates the queue when a prompt has been answered (ADR-0032, ADR-0090). Prompts of a threat
+ * or damage placement with nothing left to place or take are dropped without paying anything
+ * (#266, #267), and a queued optional ability that can no longer be initiated (the hero is ready
+ * after the first copy of One-Two Punch, #340) is dropped, with a log line, when it comes up.
  */
-function pruneThreatInterruptPrompts(state: GameState): void {
+function pruneStaleOptionalPrompts(state: GameState): void {
   const queue = state.pendingDecisionQueue;
   if (!queue || queue.length === 0) return;
-  const placements = state.pendingThreatPlacements ?? [];
-  const isOpen = (id: string) => placements.some((p) => p.id === id && p.amount > 0);
+  const isOpen = (placements: { id: string; amount: number }[] | undefined, id: string) =>
+    (placements ?? []).some((p) => p.id === id && p.amount > 0);
+  const windowOf = (prompt: PendingDecisionPrompt) => {
+    const threatId = placementIdOf(prompt, 'threatPlacementId');
+    const damageId = placementIdOf(prompt, 'damagePlacementId');
+    return {
+      inWindow: Boolean(threatId || damageId),
+      isOpen:
+        (!threatId || isOpen(state.pendingThreatPlacements, threatId)) &&
+        (!damageId || isOpen(state.pendingDamagePlacements, damageId)),
+    };
+  };
 
-  const kept = queue.filter((prompt) => {
-    const id = threatPlacementIdOf(prompt);
-    return !id || isOpen(id);
-  });
+  const kept = queue.filter((prompt) => windowOf(prompt).isOpen);
+  const skipped: PendingDecisionPrompt[] = [];
   while (kept.length > 0) {
     const head = kept[0];
-    if (!threatPlacementIdOf(head)) break;
+    const optionalAbility = head.options.some((o) => o.effect === 'EXECUTE_OPTIONAL_TRIGGER');
+    if (!optionalAbility) break;
     refreshPromptOptionAvailability(state, head);
-    if (isThreatInterruptStillUsable(state, head)) break;
-    kept.shift();
+    if (isQueuedAbilityStillUsable(state, head, windowOf(head).inWindow)) break;
+    skipped.push(kept.shift()!);
   }
 
   if (kept.length === queue.length) return;
-  queue.splice(0, queue.length, ...kept);
-  const total = queue.length;
-  for (let i = 0; i < queue.length; i++) {
-    queue[i].queuePosition = i + 1;
-    queue[i].totalQueued = total;
+  for (const prompt of skipped) {
+    if (windowOf(prompt).inWindow) continue;
+    const owner = state.players.find((p) => p.id === prompt.playerId);
+    appendLog(state, {
+      category: 'ability',
+      key: 'ability.skipped.noValidTarget',
+      params: { actor: owner?.name ?? prompt.playerId, source: prompt.sourceCardName },
+      onomatopoeia: 'NO LONGER LEGAL!',
+    });
   }
-  if (queue.length > 0) refreshPromptOptionAvailability(state, queue[0]);
-}
-
-/** The damage placement a queued interrupt prompt belongs to, if any (#267). */
-function damagePlacementIdOf(prompt: PendingDecisionPrompt): string | undefined {
-  for (const option of prompt.options) {
-    const id = (option.params?.context as { damagePlacementId?: string } | undefined)
-      ?.damagePlacementId;
-    if (id) return id;
-  }
-  return undefined;
-}
-
-/**
- * True while a queued damage interrupt can still be used: the card is where it was offered, its
- * cost is payable and its limit is unused (RR v1.8 Initiating Abilities).
- */
-function isDamageInterruptStillUsable(state: GameState, prompt: PendingDecisionPrompt): boolean {
-  const option = prompt.options.find((o) => o.effect === 'EXECUTE_OPTIONAL_TRIGGER');
-  const ability = option?.params?.ability as CardAbility | undefined;
-  const player = state.players.find((p) => p.id === prompt.playerId);
-  if (!option || !ability || !player) return true;
-
-  if (ability.limit === 'ONCE_PER_ROUND' && player.usedAbilitiesThisRound?.[ability.id]) {
-    return false;
-  }
-  if (ability.limit === 'ONCE_PER_PHASE' && player.usedAbilitiesThisPhase?.[ability.id]) {
-    return false;
-  }
-
-  const sourceId = option.params?.sourceCardInstanceId as string | undefined;
-  if (!sourceId) return canPayAbilityCost(state, player, ability).allowed;
-
-  const source =
-    ability.zone === 'HAND'
-      ? player.hand.find((c) => c.instanceId === sourceId)
-      : [...player.tableau, ...player.allies, ...(player.attachments ?? [])].find(
-          (c) => c.instanceId === sourceId,
-        );
-  return source ? canPayAbilityCost(state, player, ability, source).allowed : false;
-}
-
-/**
- * Closes the interrupt window of damage placements (#267): prompts of a placement with nothing
- * left to take are dropped without paying anything, and a queued prompt whose card is no longer
- * usable is dropped when it comes up.
- */
-function pruneDamageInterruptPrompts(state: GameState): void {
-  const queue = state.pendingDecisionQueue;
-  if (!queue || queue.length === 0) return;
-  const placements = state.pendingDamagePlacements ?? [];
-  const isOpen = (id: string) => placements.some((p) => p.id === id && p.amount > 0);
-
-  const kept = queue.filter((prompt) => {
-    const id = damagePlacementIdOf(prompt);
-    return !id || isOpen(id);
-  });
-  while (kept.length > 0) {
-    const head = kept[0];
-    if (!damagePlacementIdOf(head)) break;
-    refreshPromptOptionAvailability(state, head);
-    if (isDamageInterruptStillUsable(state, head)) break;
-    kept.shift();
-  }
-
-  if (kept.length === queue.length) return;
   queue.splice(0, queue.length, ...kept);
   const total = queue.length;
   for (let i = 0; i < queue.length; i++) {
@@ -430,12 +396,12 @@ function pruneDamageInterruptPrompts(state: GameState): void {
 }
 
 /**
- * After a prompt is answered: close the threat and damage interrupt windows, and once the queue
+ * After a prompt is answered: re-validate the queued optional abilities and close the threat and
+ * damage interrupt windows, and once the queue
  * is empty finish the paused threat and damage placements, then resume paused sequences (#248, #266, #267).
  */
 function resumeAfterPromptResolved(state: GameState): GameState {
-  pruneThreatInterruptPrompts(state);
-  pruneDamageInterruptPrompts(state);
+  pruneStaleOptionalPrompts(state);
   if (peekDecisionPrompt(state)) return state;
 
   let current = state;
@@ -555,6 +521,8 @@ export function resolveSimultaneousAbilitiesOrderPrompt(
     poppedState.pendingDecisionQueue[i].totalQueued = total;
   }
 
+  // The chosen order may put a copy behind one that makes it illegal (two One-Two Punch, #340).
+  pruneStaleOptionalPrompts(poppedState);
   if (poppedState.pendingDecisionQueue.length > 0) {
     refreshPromptOptionAvailability(poppedState, poppedState.pendingDecisionQueue[0]);
   }
@@ -704,7 +672,7 @@ export function resolveDecisionPrompt(
     // RR v1.8 "Initiating Abilities" steps 2-5: the board may have changed since the ability was
     // offered. Without a valid target it cannot be initiated: abort before paying any cost.
     const canInitiate =
-      !player || kernel.abilityHasValidTarget(nextState, player, optAbility, sourceCardInst);
+      !player || kernel.checkAbilityTargets(nextState, player, optAbility, sourceCardInst).allowed;
     if (!canInitiate) {
       appendLog(nextState, {
         category: 'ability',

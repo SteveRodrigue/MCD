@@ -13,7 +13,7 @@ import type {
   resumePendingSequence,
   discardHostAttachmentsAndTuckedCards,
 } from './effects';
-import type { abilityHasValidTarget } from './effects/target-choice';
+import type { checkAbilityTargets } from './effects/target-choice';
 import type { runStepHandler } from './effects/handlers';
 import type { dispatchTrigger, matchesTriggerFilter } from './triggers/trigger-dispatcher';
 import type {
@@ -40,7 +40,7 @@ export interface Kernel {
   hasPendingSequence: typeof hasPendingSequence;
   resumePendingSequence: typeof resumePendingSequence;
   discardHostAttachmentsAndTuckedCards: typeof discardHostAttachmentsAndTuckedCards;
-  abilityHasValidTarget: typeof abilityHasValidTarget;
+  checkAbilityTargets: typeof checkAbilityTargets;
   runStepHandler: typeof runStepHandler;
   dispatchTrigger: typeof dispatchTrigger;
   matchesTriggerFilter: typeof matchesTriggerFilter;
@@ -69,7 +69,7 @@ export const KERNEL_ENTRIES: readonly KernelEntry[] = [
   'hasPendingSequence',
   'resumePendingSequence',
   'discardHostAttachmentsAndTuckedCards',
-  'abilityHasValidTarget',
+  'checkAbilityTargets',
   'runStepHandler',
   'dispatchTrigger',
   'matchesTriggerFilter',

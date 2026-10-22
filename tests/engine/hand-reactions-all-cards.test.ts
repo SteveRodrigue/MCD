@@ -7,7 +7,6 @@ import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { initiateEnemyAttack } from '@engine/pipeline/combat-pipeline';
 import { step4_revealEncounterCards } from '@engine/pipeline/villain-phase';
 import { dispatchTrigger } from '@engine/triggers/trigger-dispatcher';
-import { thaw } from '../support/thaw-state';
 
 const SPIDER_MAN_HERO = '01001a';
 const SPIDER_MAN_AE = '01001b';
@@ -555,7 +554,7 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
   });
 
   describe('4. BASIC_ATTACK_PERFORMED', () => {
-    it('queues two copies of One-Two Punch and offers them in sequence', () => {
+    it('queues two copies of One-Two Punch and skips the second once the hero is ready (#340)', () => {
       let state = createTestGame([
         {
           heroCode: SHE_HULK_HERO,
@@ -578,24 +577,11 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
 
       const pay1 = state.players[0].hand.find((c) => c.card.code === RESOURCE_CARD)!;
 
-      // Accept copy 1 (readies hero)
+      // Accept copy 1 (readies hero): copy 2 can no longer be initiated, so it is skipped
       state = acceptPrompt(state, [pay1.instanceId]);
       expect(state.players[0].exhausted).toBe(false);
-
-      // Prompt 2 is now presented
-      expect(peekDecisionPrompt(state)).toBeDefined();
-      expect(state.pendingDecisionQueue?.length).toBe(1);
-
-      // Hero gets exhausted again
-      state = thaw(state);
-      state.players[0].exhausted = true;
-
-      const pay2 = state.players[0].hand.find((c) => c.card.code === RESOURCE_CARD)!;
-
-      // Accept copy 2 (readies hero again)
-      state = acceptPrompt(state, [pay2.instanceId]);
-      expect(state.players[0].exhausted).toBe(false);
       expect(peekDecisionPrompt(state)).toBeUndefined();
+      expect(state.players[0].hand.filter((c) => c.card.code === ONE_TWO_PUNCH)).toHaveLength(1);
     });
   });
 });

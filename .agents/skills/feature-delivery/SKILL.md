@@ -156,7 +156,7 @@ If a check fails in Step 4, 5 or 7, go back to the step named on that check line
 - Implement the capability cleanly in the appropriate subsystem:
   - **Phase Pipelines:** `src/engine/pipeline/` (`player-phase.ts`, `villain-phase.ts`, `round-upkeep.ts`, `combat-pipeline.ts`).
   - **Effect Primitives:** `src/engine/effects/index.ts` (parameterized, composable functions).
-  - **Cost & Legality:** `src/engine/pipeline/cost-engine.ts` and `legality-checker.ts`.
+  - **Cost & Legality:** `src/engine/pipeline/cost-engine.ts` and `legality-checker.ts`; target validity is the gate `checkAbilityTargets` (ADR-0090). Extend these; do not add checks elsewhere.
   - **Scenario Plugins:** `src/engine/scenarios/` (`ScenarioPlugin` implementations).
   - **UI Components:** `src/ui/components/` (React presentation, Tailwind styling, Pop-Art aesthetic).
 - Keep the Card Supplemental Editor usable for the new canonical shape. Update the relevant editor registry, form builder, validation, persistence, and round-trip tests whenever the feature changes what a card can express or how it is reviewed.

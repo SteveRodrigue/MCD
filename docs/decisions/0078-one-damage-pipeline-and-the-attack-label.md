@@ -76,7 +76,7 @@ Damage was applied by two parallel mechanisms. `applyDamageToTarget` (`damage-pi
 
 `ATTACK_RESOLVED` carries `context.attackSource` (`kind` `HERO` / `ALLY` / `ENEMY`, `playerId`, `instanceId`), set by every dispatch site (hero basic attack, ally attack, `(attack)`-labelled ability, enemy attack). `triggerFilter.attackedBy: 'YOUR_HERO' | 'THIS_CARD'` reads it, the attack counterpart of `defeatedByAttackOf`. Superhuman Strength `01028` uses `YOUR_HERO`; before, it fired on an ally's or an enemy's attack.
 
-The forced branch of `dispatchTrigger` also checks `abilityHasValidTarget` before paying a cost (RR v1.8 Forced: a forced ability with no valid target does not initiate and pays nothing). For steps targeting `TRIGGERING_ENEMY` / `TRIGGERING_MINION` the target is the event's `targetInstanceId` / `targetType`, valid when in play and affectable (`canAffect`: not defeated, not already Stunned, not Stalwart). Callers with no event target (a prompt answered later) skip that check.
+The forced branch of `dispatchTrigger` also checks `checkAbilityTargets` before paying a cost (RR v1.8 Forced: a forced ability with no valid target does not initiate and pays nothing). For steps targeting `TRIGGERING_ENEMY` / `TRIGGERING_MINION` the target is the event's `targetInstanceId` / `targetType`, valid when in play and affectable (`canAffect`: not defeated, not already Stunned, not Stalwart). Callers with no event target (a prompt answered later) skip that check.
 
 ## Addendum (#297): damage immunity by source
 

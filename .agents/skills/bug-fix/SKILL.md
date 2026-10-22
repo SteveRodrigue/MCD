@@ -111,6 +111,7 @@ Use the command and body in [`issue-template.md`](issue-template.md) (strict: ke
 ### Step 4: Root-Cause Diagnosis & Implementation Plan Review 🛑
 
 - Diagnose the exact line of code, mutation logic, or missing condition responsible for the failure.
+- **Legality check:** If the defect is an offer, play or use that was (il)legal, the fix belongs in the legality gate (`legality-checker.ts`, `checkAbilityTargets`, ADR-0090) for all callers, not in the caller.
 - **Refactor-First Check:** Inspect surrounding functions and callers; if the bug comes from duplicated or tangled logic, plan the merge/parameterize fix per `coding-and-testing-rules.md`.
 - **MANDATORY REVIEW GATE:** Create an `implementation_plan.md` artifact detailing:
   1. **Root-Cause Analysis:** Why the defect occurs with reference to game state snapshots in `logs/gamestates/` and RR v1.8 rules.

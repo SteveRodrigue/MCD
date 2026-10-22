@@ -1,15 +1,15 @@
 import {
+  AbilityStep,
   AlterEgoCard,
   CardInstance,
   CardType,
   DecisionPromptOption,
   PendingDecisionPrompt,
   PlayerState,
-  StatusCard,
   VillainState,
 } from '../../models';
 import { getPlayer, canChangeForm, canBasicRecover, canInitiateAbility } from '../legality-checker';
-import { getEffectiveMaxHealth, isEntityIncapacitatedByStatus } from '../stat-calculator';
+import { getEffectiveMaxHealth } from '../stat-calculator';
 import { executeAbilityCost, checkAndDiscardZeroCounterCard } from '../cost-engine';
 import { executeEffect } from '../../effects';
 import { findInPlayCardInstance } from '../../state/state-validator';
@@ -17,7 +17,7 @@ import { recordBasicAction } from '../stats';
 import { appendLog } from '../../state/game-log';
 import { dispatchTrigger } from '../../triggers/trigger-dispatcher';
 import { nextEngineId } from '../../state/rng';
-import { getEligibleTargets, TargetFilterOptions } from '../../effects/target-resolver';
+import { getValidStepTargets, isCancelledByOwnStatus } from '../../effects/target-choice';
 import { getStepEffectParams } from '../../../data/supplemental/runtime';
 import { isStepGateClosedByState } from '../step-gate-evaluator';
 import { enqueueDecisionPrompt } from '../prompt-queue';
@@ -233,38 +233,26 @@ export const handleUseCardAbility: ActionHandler<'USE_CARD_ABILITY'> = (
 
   let abilityTargetId = action.targetInstanceId;
   let requiredAbilityScope: string | undefined;
-  let abilityFilterOpts: TargetFilterOptions | undefined;
+  let choiceStep: AbilityStep | undefined;
   for (const step of ability.steps || []) {
     if (isStepGateClosedByState(step, nextState, { playerId: action.playerId })) continue;
-    const stepParams = getStepEffectParams(step);
-    const tgt = stepParams.target as string | undefined;
+    const tgt = getStepEffectParams(step).target as string | undefined;
     if (tgt && tgt.startsWith('CHOSEN_') && tgt !== 'CHOSEN_PLAYER') {
       requiredAbilityScope = tgt;
-      if (step.effect === 'HEAL_DAMAGE') {
-        abilityFilterOpts = { damaged: true };
-      } else if (step.effect === 'READY') {
-        abilityFilterOpts = { exhausted: true };
-      } else if (step.effect === 'REMOVE_THREAT') {
-        abilityFilterOpts = {
-          ignoresCrisis: Boolean(stepParams.ignoresCrisis),
-        };
-      }
+      choiceStep = step;
       break;
     }
   }
 
-  const willBeCanceledByStatus =
-    (ability.labels?.includes('ATTACK') &&
-      isEntityIncapacitatedByStatus(player, StatusCard.STUNNED)) ||
-    (ability.labels?.includes('THWART') &&
-      isEntityIncapacitatedByStatus(player, StatusCard.CONFUSED));
+  const willBeCanceledByStatus = isCancelledByOwnStatus(player, ability);
 
-  if (requiredAbilityScope && !abilityTargetId && !willBeCanceledByStatus) {
-    const eligibleTargets = getEligibleTargets(
+  if (choiceStep && requiredAbilityScope && !abilityTargetId && !willBeCanceledByStatus) {
+    const eligibleTargets = getValidStepTargets(
       nextState,
       player,
+      choiceStep!,
+      { sourceCardInstance: targetCardInst },
       requiredAbilityScope,
-      abilityFilterOpts,
     );
     if (eligibleTargets.length === 1) {
       abilityTargetId = eligibleTargets[0].id;

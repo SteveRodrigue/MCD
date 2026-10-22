@@ -355,3 +355,15 @@ Each rule below comes from a defect found in code review or a fix commit. Check 
 9. **Match the existing check.** If the schema tests a flag by truthiness, a helper that re-checks it must too (`Boolean(x)`, not `x === true`). Otherwise a bad value passes one layer and fails another.
 
 10. **Delete what you orphan.** Run `rtk npm run deadcode` after refactors. Remove unused exports in the same change.
+
+11. **Legality has one gate.** Every "can this be played, used or offered now?" question goes through `legality-checker.ts` and the target-validity gate `checkAbilityTargets` (`src/engine/effects/target-choice.ts`, ADR-0090): trigger scans, queued prompts, prompt answers, action buttons, event play and the UI (through the engine) all ask it. Fix a legality defect in the gate, for every caller. A new effect adds a rule to `AFFECT_RULES` (or a reasoned entry in `EFFECTS_WITHOUT_AFFECT_RULE`); never add an effect-name or selector check in a caller. `tests/engine/legality-gate-guards.test.ts` fails on a new one.
+
+    ```typescript
+    // ❌ BAD: a caller decides what "ready" needs, so READY on SELF_HERO slips through
+    if (step.effect === 'READY') filter = { exhausted: true };
+    const targets = getEligibleTargets(state, player, scope, filter);
+
+    // ✅ GOOD: ask the gate; the rule lives in AFFECT_RULES once
+    const targets = getValidStepTargets(state, player, step, { sourceCardInstance });
+    const { allowed, reason } = kernel.checkAbilityTargets(state, player, ability, source);
+    ```

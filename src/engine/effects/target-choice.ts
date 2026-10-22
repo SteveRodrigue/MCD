@@ -1,3 +1,4 @@
+import type { EffectType } from '../../data/supplemental/runtime';
 import { bindKernel, kernel } from '../kernel';
 import type {
   AbilityStep,
@@ -9,7 +10,11 @@ import type {
   VillainState,
 } from '../models';
 import { StatusCard } from '../models';
-import { getEffectiveMaxHealth, hasEntityKeyword } from '../pipeline/stat-calculator';
+import {
+  getEffectiveMaxHealth,
+  hasEntityKeyword,
+  isEntityIncapacitatedByStatus,
+} from '../pipeline/stat-calculator';
 import { isImmuneToDamage } from '../pipeline/damage-immunity';
 import { nextEngineId } from '../state/rng';
 import { getEligibleTargets, resolveTargets, type ResolvedTarget } from './target-resolver';
@@ -54,70 +59,158 @@ const isSameScheme = (target: ResolvedTarget, id: string): boolean => {
   return id === 'main_scheme' || id === main.card?.code;
 };
 
-/** Whether this step's effect can affect the target (RR v1.8 "Target": valid targets only). */
-const canAffect = (
+type AffectRule = (
   state: GameState,
   step: AbilityStep,
   target: ResolvedTarget,
   sourceCard?: CardInstance,
-): boolean => {
-  switch (step.effect) {
-    case 'DEAL_DAMAGE':
-    case 'TRANSFER_DAMAGE':
-      // RR v1.8 "Targets": a character that cannot take damage (from this source) is not a valid
-      // target of an ability whose only effect is damage (#297).
-      return !(target.kind === 'character' && isImmuneToDamage(state, target.entity, sourceCard));
-    case 'ADD_STATUS': {
-      if (target.kind !== 'character') return false;
-      const entity = target.entity;
-      const status = String(step.effectParams?.status ?? 'STUNNED').toUpperCase();
-      const statusCard =
-        status === 'TOUGH'
-          ? StatusCard.TOUGH
-          : status === 'CONFUSED'
-            ? StatusCard.CONFUSED
-            : StatusCard.STUNNED;
-      const isStunOrConfuse = statusCard !== StatusCard.TOUGH;
-      if (isStunOrConfuse && hasEntityKeyword(entity, 'Stalwart')) return false;
-      const limit = isStunOrConfuse && hasEntityKeyword(entity, 'Steady') ? 2 : 1;
-      const held = ((entity.statusCards ?? []) as StatusCard[]).filter((s) => s === statusCard);
-      return held.length < limit;
+) => boolean;
+
+const isExhausted = (target: ResolvedTarget): boolean =>
+  'exhausted' in target.entity ? Boolean(target.entity.exhausted) : false;
+
+/**
+ * The one table of what an effect needs from its target (RR v1.8 "Target": a target is valid when
+ * any part of the ability can affect it; ADR-0090). Add a rule here for a new effect; no caller
+ * decides this by effect name.
+ */
+const AFFECT_RULES: Partial<Record<EffectType, AffectRule>> = {
+  // A character that cannot take damage (from this source) is not a valid target of an ability
+  // whose only effect is damage (#297).
+  DEAL_DAMAGE: (state, _step, target, sourceCard) =>
+    !(target.kind === 'character' && isImmuneToDamage(state, target.entity, sourceCard)),
+  TRANSFER_DAMAGE: (state, _step, target, sourceCard) =>
+    !(target.kind === 'character' && isImmuneToDamage(state, target.entity, sourceCard)),
+  ADD_STATUS: (_state, step, target) => {
+    if (target.kind !== 'character') return false;
+    const entity = target.entity;
+    const status = String(step.effectParams?.status ?? 'STUNNED').toUpperCase();
+    const statusCard =
+      status === 'TOUGH'
+        ? StatusCard.TOUGH
+        : status === 'CONFUSED'
+          ? StatusCard.CONFUSED
+          : StatusCard.STUNNED;
+    const isStunOrConfuse = statusCard !== StatusCard.TOUGH;
+    if (isStunOrConfuse && hasEntityKeyword(entity, 'Stalwart')) return false;
+    const limit = isStunOrConfuse && hasEntityKeyword(entity, 'Steady') ? 2 : 1;
+    const held = ((entity.statusCards ?? []) as StatusCard[]).filter((s) => s === statusCard);
+    return held.length < limit;
+  },
+  REMOVE_THREAT: (_state, _step, target) =>
+    target.kind === 'scheme' && (target.entity.threat ?? 0) > 0,
+  HEAL_DAMAGE: (state, _step, target) => {
+    if (target.kind !== 'character') return false;
+    if (target.entityType === 'hero' || target.entityType === 'alter_ego') {
+      const p = target.entity as PlayerState;
+      return p.health < getEffectiveMaxHealth(p, state);
     }
-    case 'REMOVE_THREAT':
-      return target.kind === 'scheme' && (target.entity.threat ?? 0) > 0;
-    case 'HEAL_DAMAGE': {
-      if (target.kind !== 'character') return false;
-      if (target.entityType === 'hero' || target.entityType === 'alter_ego') {
-        const p = target.entity as PlayerState;
-        return p.health < getEffectiveMaxHealth(p, state);
-      }
-      if (target.entityType === 'villain') {
-        const v = target.entity as VillainState;
-        return v.health < v.maxHealth;
-      }
-      return ((target.entity as CardInstance).tokens?.damage ?? 0) > 0;
+    if (target.entityType === 'villain') {
+      const v = target.entity as VillainState;
+      return v.health < v.maxHealth;
     }
-    case 'EXHAUST': {
-      const exhausted = 'exhausted' in target.entity ? Boolean(target.entity.exhausted) : false;
-      return !exhausted;
-    }
-    case 'READY': {
-      const exhausted = 'exhausted' in target.entity ? Boolean(target.entity.exhausted) : false;
-      return exhausted;
-    }
-    default:
-      return true;
-  }
+    return ((target.entity as CardInstance).tokens?.damage ?? 0) > 0;
+  },
+  EXHAUST: (_state, _step, target) => !isExhausted(target),
+  READY: (_state, _step, target) => isExhausted(target),
 };
 
-/** Valid targets for a step with a CHOSEN_* selector, computed from the current board. */
+/**
+ * Effects with no target-state rule, by reason. Every effect is in `AFFECT_RULES` or here
+ * (guard: `tests/engine/legality-gate-guards.test.ts`), so a new effect cannot silently default to
+ * "always valid".
+ */
+export const EFFECTS_WITHOUT_AFFECT_RULE: Readonly<Record<string, readonly EffectType[]>> = {
+  'acts on the game, a player or the source card; no target state limits it': [
+    'DRAW',
+    'ADD_ACCELERATION',
+    'ATTACHMENT_DAMAGE_SHIELD',
+    'ATTACH_FACEDOWN_CARDS_FROM_HAND',
+    'ATTACH_TO_HOST',
+    'CANCEL_ATTACK',
+    'CANCEL_WHEN_REVEALED',
+    'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER',
+    'CANNOT_TAKE_DAMAGE',
+    'CHANGE_FORM',
+    'DECLARE_DEFENDER',
+    'DISTRIBUTE_AMOUNT',
+    'DOUBLE_RESOURCE_FOR_ASPECT',
+    'EXECUTE_SPECIAL',
+    'FLIP_FORM',
+    'GENERATE_RESOURCE',
+    'GIVE_ADDITIONAL_BOOST_CARD',
+    'GRANT_KEYWORD',
+    'GRANT_ATTACK_KEYWORD',
+    'MODIFY_ALLY_LIMIT',
+    'MODIFY_HAND_SIZE',
+    'MODIFY_MAX_HEALTH',
+    'MODIFY_RESTRICTED_LIMIT',
+    'MODIFY_STAT',
+    'PLAYER_CHOICE',
+    'PLAY_FROM_ZONE',
+    'PREVENT_DAMAGE',
+    'PREVENT_THREAT',
+    'REDUCE_NEXT_CARD_COST',
+    'REVEAL_ENCOUNTER_CARD',
+    'SEARCH',
+    'SHUFFLE_INTO_DECK',
+    'SPEND_COUNTERS',
+    'SURGE',
+    'ENEMY_ATTACKS',
+    'VILLAIN_AND_ENGAGED_MINIONS_ATTACK',
+    'VILLAIN_ATTACKS',
+    'VILLAIN_SCHEMES',
+  ],
+  // #365. RETURN_TO_HAND: Hellcat 01020 + Make the Call 01071 show "your hand" is the resolving
+  // player's, and the handler only finds a source in that player's play area
+  // (tests/engine/hellcat-make-the-call.test.ts).
+  'acts on a target but its state rule is not written yet (tracked gap, ADR-0090)': [
+    'ADD_COUNTERS',
+    'ADD_THREAT',
+    'ADD_TRAIT',
+    'DISCARD',
+    'PLACE_CARD_UNDER_HOST',
+    'PUT_INTO_PLAY',
+    'REMOVE_COUNTERS',
+    'REMOVE_COUNTERS_MATCHING_FILTER',
+    'REMOVE_FROM_GAME',
+    'REMOVE_STATUS',
+    'RETURN_TO_HAND',
+  ],
+};
+
+/** Whether this step's effect can affect the target (RR v1.8 "Target": valid targets only). */
+export const canAffect: AffectRule = (state, step, target, sourceCard) =>
+  AFFECT_RULES[step.effect as EffectType]?.(state, step, target, sourceCard) ?? true;
+
+/** Effects that have a target-state rule; with `EFFECTS_WITHOUT_AFFECT_RULE` they cover every effect. */
+export const EFFECTS_WITH_AFFECT_RULE: readonly string[] = Object.keys(AFFECT_RULES);
+
+/** Self selectors name the acting player's own hero or identity: a target like any other. */
+const SELF_SELECTORS: ReadonlySet<string> = new Set(['SELF_HERO', 'SELF_IDENTITY']);
+
+/** The selector whose targets the legality gate enumerates for this step (chosen or self). */
+const judgedSelector = (step: AbilityStep): string | undefined => {
+  const target = step.effectParams?.target;
+  return typeof target === 'string' &&
+    (PLAYER_CHOSEN_SELECTORS.has(target) || SELF_SELECTORS.has(target))
+    ? target
+    : undefined;
+};
+
+/**
+ * Valid targets for a step, computed from the current board: the targets its selector names that
+ * its effect can affect (ADR-0090). `selectorOverride` serves callers that ask for a selector the
+ * player chooses at play time (events and abilities) rather than at step execution.
+ */
 export function getValidStepTargets(
   state: GameState,
   player: PlayerState,
   step: AbilityStep,
   context: Pick<EffectExecutionContext, 'sourceCardInstance' | 'distinctFromId' | 'ignoresCrisis'>,
+  selectorOverride?: string,
 ): ResolvedTarget[] {
-  const selector = stepTargetSelector(step);
+  const selector = selectorOverride ?? judgedSelector(step);
   if (!selector) return [];
   const candidates = getEligibleTargets(state, player, selector, {
     isPlayerSource: context.sourceCardInstance?.card?.faction !== 'encounter',
@@ -230,34 +323,74 @@ const stepEventSelector = (step: AbilityStep): string | undefined => {
 
 const stepsNeedingChoice = (ability: CardAbility): AbilityStep[] =>
   (ability.steps ?? []).filter(
-    (s) => stepTargetSelector(s) !== undefined || stepEventSelector(s) !== undefined,
+    (s) => judgedSelector(s) !== undefined || stepEventSelector(s) !== undefined,
   );
 
 /** The target a triggering event named, for abilities whose steps target "that enemy". */
 export interface EventTarget {
   targetType?: string;
   targetInstanceId?: string;
+  /** A target the player already named (an action's `targetInstanceId`); it must be affectable. */
+  chosenTargetId?: string;
 }
+
+/** What is missing when no target is valid, by effect; callers prefix their own "Cannot ...". */
+const NO_VALID_TARGET_REASON: Partial<Record<EffectType, string>> = {
+  HEAL_DAMAGE: 'No character has sustained damage to heal.',
+  READY: 'Nothing is exhausted to ready.',
+  EXHAUST: 'Nothing is ready to exhaust.',
+  REMOVE_THREAT: 'No scheme has threat to remove.',
+  ADD_STATUS: 'No character can receive that status card.',
+};
+
+/**
+ * An attack by a Stunned hero or a thwart by a Confused one discards the status card instead (RR v1.8
+ * Stunned, Confused). That is a change to the board: the status card is the target, so the ability
+ * is valid even when its own target is missing.
+ */
+export const isCancelledByOwnStatus = (player: PlayerState, ability: CardAbility): boolean =>
+  Boolean(
+    (ability.labels?.includes('ATTACK') &&
+      isEntityIncapacitatedByStatus(player, StatusCard.STUNNED)) ||
+    (ability.labels?.includes('THWART') &&
+      isEntityIncapacitatedByStatus(player, StatusCard.CONFUSED)),
+  );
+
+export type TargetCheck = { allowed: true } | { allowed: false; reason: string };
 
 /**
  * RR v1.8 "Target" / "Initiating Abilities" step 2: an ability that requires a target can only be
- * initiated if it has at least one valid target. An ability with any step that needs no chosen
+ * initiated if it has at least one valid target. An ability with any step that needs no judged
  * target can always be initiated. A step on the enemy the triggering event named ("that enemy",
  * `TRIGGERING_ENEMY`) needs that enemy to be in play and affectable (defeated, already stunned or
  * Stalwart: no valid target); callers that pass no event target skip that check.
+ *
+ * The one legality gate for target validity (ADR-0090): trigger scans, queued prompts, prompt
+ * answers, action buttons and event play all ask it, so none repeats the rule.
  */
-export function abilityHasValidTarget(
+export function checkAbilityTargets(
   state: GameState,
   player: PlayerState,
   ability: CardAbility,
   sourceCardInstance?: CardInstance,
   eventTarget?: EventTarget,
-): boolean {
+): TargetCheck {
   const choiceSteps = stepsNeedingChoice(ability);
-  if (choiceSteps.length === 0 || choiceSteps.length < (ability.steps ?? []).length) return true;
-  return choiceSteps.some((step) => {
+  if (isCancelledByOwnStatus(player, ability)) return { allowed: true };
+  if (choiceSteps.length === 0 || choiceSteps.length < (ability.steps ?? []).length) {
+    return { allowed: true };
+  }
+  const hasTarget = (step: AbilityStep): boolean => {
     const eventSelector = stepEventSelector(step);
     if (!eventSelector) {
+      const selector = judgedSelector(step);
+      const chosenId = eventTarget?.chosenTargetId;
+      const named =
+        chosenId && selector
+          ? getEligibleTargets(state, player, selector).find((t) => t.id === chosenId)
+          : undefined;
+      // A named target the effect cannot affect is not a valid target, whatever else is in play.
+      if (named) return canAffect(state, step, named, sourceCardInstance);
       return getValidStepTargets(state, player, step, { sourceCardInstance }).length > 0;
     }
     // Callers without a triggering event (a prompt answered later) cannot judge "that enemy".
@@ -268,7 +401,12 @@ export function abilityHasValidTarget(
       eventTargetType: eventTarget?.targetType,
       eventTargetInstanceId: eventTarget?.targetInstanceId,
     }).some((t) => canAffect(state, step, t, sourceCardInstance));
-  });
+  };
+  if (choiceSteps.some(hasTarget)) return { allowed: true };
+  return {
+    allowed: false,
+    reason: NO_VALID_TARGET_REASON[choiceSteps[0].effect as EffectType] ?? 'No valid target.',
+  };
 }
 
-bindKernel({ abilityHasValidTarget });
+bindKernel({ checkAbilityTargets });

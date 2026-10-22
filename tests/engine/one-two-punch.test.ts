@@ -10,6 +10,7 @@ import {
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
+import { dispatchTrigger } from '@engine/triggers/trigger-dispatcher';
 
 const ONE_TWO_PUNCH = '01024';
 const RESOURCE_CARD = '01005';
@@ -96,6 +97,59 @@ describe('One-Two Punch (01024): Response after you make a basic attack, ready S
     expect(state.players[0].exhausted).toBe(false);
     expect(state.players[0].hand.map((c) => c.instanceId)).not.toContain(punch.instanceId);
     expect(state.players[0].discard.map((c) => c.instanceId)).toContain(punch.instanceId);
+  });
+
+  it('skips the second copy once the first has readied She-Hulk (#340)', () => {
+    // The resources come before the second copy so the cost is paid with them, not with the copy.
+    const first = give(0, ONE_TWO_PUNCH);
+    give(0, RESOURCE_CARD);
+    give(0, RESOURCE_CARD);
+    const second = give(0, ONE_TWO_PUNCH);
+
+    state = attackVillain().state;
+    expect(peekDecisionPrompt(state)?.sourceCardInstanceId).toBe(first.instanceId);
+
+    state = answer('trigger_one_two_punch_response').state;
+    // Pay the 1 resource of the first copy; never answer the second copy's prompt.
+    while (peekDecisionPrompt(state)?.sourceCardInstanceId !== second.instanceId) {
+      const next = peekDecisionPrompt(state);
+      if (!next) break;
+      state = answer(next.options[0].id).state;
+    }
+
+    expect(state.players[0].exhausted).toBe(false);
+    expect(peekDecisionPrompt(state)).toBeUndefined();
+    expect(state.players[0].hand.map((c) => c.instanceId)).toContain(second.instanceId);
+    expect(state.players[0].discard.map((c) => c.instanceId)).toContain(first.instanceId);
+    expect(state.players[0].hand.filter((c) => c.card.code === RESOURCE_CARD)).toHaveLength(1);
+    expect(state.log.filter((l) => l.key === 'ability.skipped.noValidTarget')).toHaveLength(1);
+  });
+
+  it('is not offered while She-Hulk is ready (#340)', () => {
+    give(0, ONE_TWO_PUNCH);
+    give(0, RESOURCE_CARD);
+    state.players[0].exhausted = false;
+
+    state = dispatchTrigger(state, 'BASIC_ATTACK_PERFORMED', { targetPlayerId: 'p1' }).state;
+
+    expect(peekDecisionPrompt(state)).toBeUndefined();
+  });
+
+  it('aborts without paying when She-Hulk is readied before the answer (#340)', () => {
+    const punch = give(0, ONE_TWO_PUNCH);
+    give(0, RESOURCE_CARD);
+
+    state = attackVillain().state;
+    expect(peekDecisionPrompt(state)?.sourceCardInstanceId).toBe(punch.instanceId);
+    state = {
+      ...state,
+      players: state.players.map((p, i) => (i === 0 ? { ...p, exhausted: false } : p)),
+    };
+    state = answer('trigger_one_two_punch_response').state;
+
+    expect(peekDecisionPrompt(state)).toBeUndefined();
+    expect(state.players[0].hand.map((c) => c.instanceId)).toContain(punch.instanceId);
+    expect(state.players[0].hand.filter((c) => c.card.code === RESOURCE_CARD)).toHaveLength(1);
   });
 
   it('leaves She-Hulk exhausted and the card in hand when declined', () => {

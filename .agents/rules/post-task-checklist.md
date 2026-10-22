@@ -36,6 +36,7 @@ After implementation and verification, execute this checklist before concluding.
 
 - Check if development practices, coding conventions, architectural standards, or design guidelines were added or modified.
 - Update `docs/coding_guidelines.md` or general guidelines to keep team and agent standards synchronized.
+- Review: no new target or legality check outside the gate (`legality-checker.ts`, `checkAbilityTargets`, ADR-0090); `tests/engine/legality-gate-guards.test.ts` must stay green without a new allow-list entry.
 
 ### 5. Architecture Decision Records (ADRs)
 

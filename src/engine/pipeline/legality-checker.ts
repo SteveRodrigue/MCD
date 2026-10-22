@@ -16,6 +16,7 @@ import {
   StatusCard,
   VillainState,
 } from '@engine/models';
+import { kernel } from '../kernel';
 import { isStep, type TypedStep } from '../effects/handlers/types';
 import {
   canPayAbilityCost,
@@ -34,7 +35,6 @@ import {
 } from './stat-calculator';
 import { getStepEffectParams } from '../../data/supplemental/runtime';
 import { findInPlayCardInstance } from '../state/state-validator';
-import { getEligibleTargets } from '../effects/target-resolver';
 import { hasCrisisInPlay } from './crisis';
 
 export function getPlayer(state: GameState, playerId: string): PlayerState | undefined {
@@ -776,13 +776,11 @@ export function evaluateMinionTargetRequirement(
  */
 function evaluateAllyTargetRequirement(
   state: GameState,
-  player: PlayerState,
   card: NormalizedCard,
 ): { allowed: boolean; reason?: string } {
   const abilities = card.enrichment?.abilities || [];
 
   let requiresAlly = false;
-  let requiresExhaustedAlly = false;
   let maxPerHost: number | undefined;
 
   for (const ab of abilities) {
@@ -797,24 +795,7 @@ function evaluateAllyTargetRequirement(
         if (stepParams.maxPerHost !== undefined) {
           maxPerHost = Number(stepParams.maxPerHost);
         }
-      } else if (
-        card.type === CardType.EVENT &&
-        step.effect === 'READY' &&
-        (target === 'CHOSEN_ALLY' || target === 'CHOSEN_CONTROLLED_ALLY' || target === 'ALLY')
-      ) {
-        requiresExhaustedAlly = true;
       }
-    }
-  }
-
-  if (requiresExhaustedAlly) {
-    const allAllies = getEligibleTargets(state, player, 'CHOSEN_ALLY');
-    if (allAllies.length === 0) {
-      return { allowed: false, reason: 'Cannot play this card: requires an ally in play.' };
-    }
-    const exhaustedAllies = getEligibleTargets(state, player, 'CHOSEN_ALLY', { exhausted: true });
-    if (exhaustedAllies.length === 0) {
-      return { allowed: false, reason: 'Cannot play this card: No ally is exhausted to ready.' };
     }
   }
 
@@ -952,45 +933,27 @@ function evaluateEnemyTargetRequirement(
 }
 
 /**
- * Evaluates whether a card requires character targets (RR v1.8 p. 3, 11)
- * such as healing, and whether eligible damaged targets exist in play.
+ * An event executes its abilities when it is played (RR v1.8 p. 12, 15), so each of them needs a
+ * valid target to be played (RR v1.8 "Target"). The generic target gate decides (ADR-0090).
  */
-function evaluateCharacterTargetRequirement(
+function evaluateEventTargetRequirement(
   state: GameState,
   player: PlayerState,
-  card: NormalizedCard,
+  cardInstance: CardInstance,
+  choices: PlayChoices,
 ): { allowed: boolean; reason?: string } {
-  // Only events execute their abilities immediately upon being played (RR v1.8 p. 12, 15)
-  if (card.type !== CardType.EVENT) {
-    return { allowed: true };
-  }
+  if (cardInstance.card.type !== CardType.EVENT) return { allowed: true };
 
-  const abilities = card.enrichment?.abilities || [];
-
-  for (const ab of abilities) {
-    // Only check action / play abilities, not reactive interrupt/response
-    const isAction =
-      ab.timing === 'ACTION' ||
-      ab.timing === 'HERO_ACTION' ||
-      ab.timing === 'ALTER_EGO_ACTION' ||
-      !ab.timing;
+  for (const ability of cardInstance.card.enrichment?.abilities ?? []) {
+    const isAction = isActionTiming(ability) || !ability.timing;
     if (!isAction) continue;
-
-    for (const step of ab.steps || []) {
-      const stepParams = getStepEffectParams(step);
-      if (step.effect === 'HEAL_DAMAGE') {
-        const targetScope = (stepParams.target as string) || 'CHOSEN_CHARACTER';
-        const eligibleTargets = getEligibleTargets(state, player, targetScope, { damaged: true });
-        if (eligibleTargets.length === 0) {
-          return {
-            allowed: false,
-            reason: 'Cannot play this card: No character has sustained damage to heal.',
-          };
-        }
-      }
+    const check = kernel.checkAbilityTargets(state, player, ability, cardInstance, {
+      chosenTargetId: choices.targetInstanceId,
+    });
+    if (!check.allowed) {
+      return { allowed: false, reason: `Cannot play this card: ${check.reason}` };
     }
   }
-
   return { allowed: true };
 }
 
@@ -1326,51 +1289,15 @@ export function canInitiateAbility(
         return searchCheck;
       }
     }
+  }
 
-    // 5D. Heal / Character Target (RR v1.8 p. 3, 11)
-    if (step.effect === 'HEAL_DAMAGE') {
-      const targetParam = (stepParams.target as string) || 'CHOSEN_CHARACTER';
-      const eligibleTargets = getEligibleTargets(state, player, targetParam, { damaged: true });
-      if (options?.targetInstanceId) {
-        const hasSpecificTarget = eligibleTargets.some((t) => t.id === options.targetInstanceId);
-        if (!hasSpecificTarget) {
-          return {
-            allowed: false,
-            reason: 'Cannot trigger ability: Target character has no damage to heal.',
-          };
-        }
-      } else if (eligibleTargets.length === 0) {
-        return {
-          allowed: false,
-          reason: 'Cannot trigger ability: No character has sustained damage to heal.',
-        };
-      }
-    }
-
-    // 5E. Ready / Ally Target (RR v1.8 p. 3, 16)
-    if (
-      step.effect === 'READY' &&
-      (stepParams.target === 'CHOSEN_ALLY' ||
-        stepParams.target === 'CHOSEN_CONTROLLED_ALLY' ||
-        stepParams.target === 'ALLY')
-    ) {
-      const targetParam = (stepParams.target as string) || 'CHOSEN_ALLY';
-      const eligibleTargets = getEligibleTargets(state, player, targetParam, { exhausted: true });
-      if (options?.targetInstanceId) {
-        const hasSpecificTarget = eligibleTargets.some((t) => t.id === options.targetInstanceId);
-        if (!hasSpecificTarget) {
-          return {
-            allowed: false,
-            reason: 'Cannot trigger ability: Target ally is not exhausted.',
-          };
-        }
-      } else if (eligibleTargets.length === 0) {
-        return {
-          allowed: false,
-          reason: 'Cannot trigger ability: No ally is exhausted to ready.',
-        };
-      }
-    }
+  // 6. Valid target for every judged step (RR v1.8 "Target"; ADR-0090): the one generic gate, never
+  // an effect- or selector-specific check here.
+  const targetCheck = kernel.checkAbilityTargets(state, player, ability, sourceCardInst, {
+    chosenTargetId: options?.targetInstanceId,
+  });
+  if (!targetCheck.allowed) {
+    return { allowed: false, reason: `Cannot trigger ability: ${targetCheck.reason}` };
   }
 
   return { allowed: true };
@@ -1529,9 +1456,9 @@ function collectPlayRestrictions(
   check(evaluatePlayRequirements(state, player, card));
   // Target requirements (RR v1.8 p. 3, 5, 6, 11, 15-17, 19, 28-30; Issues #101, #173)
   check(evaluateMinionTargetRequirement(state, player, card));
-  check(evaluateAllyTargetRequirement(state, player, card));
+  check(evaluateAllyTargetRequirement(state, card));
   check(evaluateEnemyTargetRequirement(state, player, card, choices.targetInstanceId));
-  check(evaluateCharacterTargetRequirement(state, player, card));
+  check(evaluateEventTargetRequirement(state, player, cardInstance, choices));
   check(evaluateSchemeTargetRequirement(state, player, card));
   check(evaluatePlayFromZoneRequirement(state, player, cardInstance));
 

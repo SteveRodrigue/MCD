@@ -89,11 +89,14 @@ describe('Legal Actions Generator (The Daily Bugle Action Bulletins)', () => {
     const basicThw = report.identityActions.find((a) => a.action.type === 'BASIC_THWART');
     expect(basicThw).toBeDefined();
 
-    // Arc Reactor Activate in Board Actions
-    const arcActivate = report.boardActions.find(
-      (a) => (a.action as any).cardInstanceId === 'arc_inst',
-    );
-    expect(arcActivate).toBeDefined();
+    // Arc Reactor readies Iron Man: with Iron Man ready it has no valid target (#340)
+    const arcActivate = (r: typeof report) =>
+      r.boardActions.find((a) => (a.action as any).cardInstanceId === 'arc_inst');
+    expect(arcActivate(report)).toBeUndefined();
+
+    // Arc Reactor Activate in Board Actions once Iron Man is exhausted
+    p1.exhausted = true;
+    expect(arcActivate(getLegalActionsForPlayer(state, p1.id))).toBeDefined();
   });
 
   it('reports activeActionCount === 0 when exhausted, hand empty, and form already changed', () => {
@@ -181,8 +184,9 @@ describe('Legal Actions Generator (The Daily Bugle Action Bulletins)', () => {
     );
     expect(playBlast?.cardCode).toBe('01036');
 
-    // Board action has cardCode
-    const boardArc = report.boardActions.find(
+    // Board action has cardCode (Arc Reactor readies Iron Man, so he must be exhausted, #340)
+    p1.exhausted = true;
+    const boardArc = getLegalActionsForPlayer(state, p1.id).boardActions.find(
       (a) => (a.action as any).cardInstanceId === 'arc_inst',
     );
     expect(boardArc?.cardCode).toBe('01035');

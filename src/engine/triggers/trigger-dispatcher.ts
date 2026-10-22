@@ -520,7 +520,7 @@ function scanHandReactions(
         if (a.timing.startsWith('HERO_') && p.currentForm !== 'hero') return false;
         if (a.timing.startsWith('ALTER_EGO_') && p.currentForm !== 'alter_ego') return false;
         if (!canPayAbilityCost(state, p, a, card).allowed) return false;
-        if (!kernel.abilityHasValidTarget(state, p, a, card)) return false;
+        if (!kernel.checkAbilityTargets(state, p, a, card).allowed) return false;
         return matchesTriggerFilter(a.triggerFilter, context, p, card, trigger);
       });
       if (!ability) continue;
@@ -743,7 +743,7 @@ function scanIdentityTriggerAbilities(
           const costCheck = canPayAbilityCost(state, identityPlayer, ability);
           if (!costCheck.allowed) continue;
           // RR v1.8 "Target": an ability that requires a target needs at least one valid target.
-          if (!kernel.abilityHasValidTarget(state, identityPlayer, ability)) continue;
+          if (!kernel.checkAbilityTargets(state, identityPlayer, ability).allowed) continue;
 
           if (
             ability.limit === 'ONCE_PER_ROUND' &&
@@ -894,10 +894,10 @@ function scanInPlayTriggerAbilities(
 
             // RR v1.8 Forced: a forced ability that requires a target and has no valid one does not initiate
             if (
-              !kernel.abilityHasValidTarget(state, controller, ability, cardInst, {
+              !kernel.checkAbilityTargets(state, controller, ability, cardInst, {
                 targetType: context.targetType,
                 targetInstanceId: context.targetInstanceId,
-              })
+              }).allowed
             ) {
               continue;
             }
@@ -937,10 +937,10 @@ function scanInPlayTriggerAbilities(
             if (!costCheck.allowed) continue;
             // RR v1.8 "Target": an ability that requires a target needs at least one valid target.
             if (
-              !kernel.abilityHasValidTarget(state, controller, ability, cardInst, {
+              !kernel.checkAbilityTargets(state, controller, ability, cardInst, {
                 targetType: context.targetType,
                 targetInstanceId: context.targetInstanceId,
-              })
+              }).allowed
             ) {
               continue;
             }

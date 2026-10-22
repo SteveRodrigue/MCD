@@ -5,6 +5,7 @@
 - **Authors:** MCD Core Team
 - **Deciders:** User & Antigravity
 - **Related Issues:** #146 ("First Aid: Didn't offer to heal both heroes while both are injured")
+- **Refined by:** [ADR-0090](0090-one-generic-legality-gate.md) (one generic legality gate for target validity)
 
 ---
 

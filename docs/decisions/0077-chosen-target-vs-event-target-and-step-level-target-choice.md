@@ -6,6 +6,7 @@
 - **Deciders:** Owner & Claude
 - **Related Issues:** #234 (Daredevil, Interrogation Room, Mockingbird never let the player choose; duplicates #235, #236, #239), #247 (Chase Them Down, out of scope)
 - **Refines:** [ADR-0070](0070-systemic-chosen-entity-targeting-and-decision-fallback-architecture.md) (its Layer 2 prompt/auto-bind rule, until now only in `action-dispatcher.ts`)
+- **Refined by:** [ADR-0090](0090-one-generic-legality-gate.md) (self selectors are targets for validity; one gate for every caller)
 
 ---
 

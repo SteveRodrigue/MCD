@@ -76,6 +76,15 @@ graph TD
     ADR55 --> ADR72["ADR-0072: Unified Payment Subsystem Across Actions, Prompts, and Attachments"]
 ```
 
+### 7. Target Validity & Legality Evolution
+
+```mermaid
+graph TD
+    ADR70["ADR-0070: Chosen Entity Targeting & Two-Layer Legality"] --> ADR77["ADR-0077: Chosen Target vs Event Target"]
+    ADR77 --> ADR90["ADR-0090: One Generic Legality Gate"]
+    ADR74["ADR-0074: Engine-Backed Tableau Actionability"] --> ADR90
+```
+
 ---
 
 ## Decision Log Table
@@ -171,6 +180,7 @@ graph TD
 | [ADR-0087](0087-card-repository-port-injected-into-the-engine.md)                                 | 2026-10-20 | Card Repository Port Injected into the Engine                                        | **Accepted**                                                                                                                                                                                                           | `setupGame` takes `catalog: CardRepository`, kept by reference in `state.options.catalog`; the engine reads it with `getCatalog(state)` and no longer imports `cardCatalog` (AUD-20261017-232534 F014-B).                                                                                                                                                                                 |
 | [ADR-0088](0088-engine-kernel-late-binding.md)                                                    | 2026-10-20 | Engine Kernel: Late-Bound Entry Points for the Rules' Recursion                      | **Accepted**                                                                                                                                                                                                           | `src/engine/kernel.ts` holds the recursion points (`executeEffect`, `dispatchTrigger`, ...), bound at boot; the 31-module import cycle and three small ones are gone, guarded by `audit:import-cycles` (AUD-20261017-232534 F014-C).                                                                                                                                                      |
 | [ADR-0089](0089-structural-sharing-for-state-updates.md)                                          | 2026-10-20 | Structural Sharing for State Updates (Immer)                                         | **Accepted**                                                                                                                                                                                                           | `updateGameState` (Immer `produce`) replaces `cloneGameState`; unchanged branches keep their identity and engine states are frozen (AUD-20261017-232534 R12).                                                                                                                                                                                                                             |
+| [ADR-0090](0090-one-generic-legality-gate.md)                                                     | 2026-10-22 | One Generic Legality Gate for Target Validity                                        | **Accepted**                                                                                                                                                                                                           | One `checkAbilityTargets` gate and one `AFFECT_RULES` table decide target validity for scans, queued prompts, prompt answers, action buttons and event play; queued optional abilities are re-validated when they come up; guard tests keep callers from re-implementing it (Fixes #340). |
 
 ---
 

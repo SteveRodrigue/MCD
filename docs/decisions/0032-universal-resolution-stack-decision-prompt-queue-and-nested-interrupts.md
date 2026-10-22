@@ -128,3 +128,9 @@ Every optional response or interrupt prompt generated for a player includes a st
 ## Addendum (2026-10-07, #260): multi-select prompt
 
 `PendingDecisionPrompt.selection { min, max, distinctBy }` and `RESOLVE_DECISION_PROMPT.selectedOptionIds` model "choose up to N different cards". `SEARCH` declares the bounds with `takeCount` (max), `minimumTake` (default 1) and `distinctBy: 'NAME'`; the hidden "Action timings are voluntary" default and `SEARCH.isVoluntary` are removed, and the `SEARCH_AND_SELECT_PASS` option is replaced by confirming an empty choice when `minimumTake` is 0. Auto-resolution applies only when nothing is left to choose. Forced timing (`FORCED_INTERRUPT`, `FORCED_RESPONSE`) is read through one explicit `isForcedTiming` in the trigger dispatcher instead of a `FORCED_` prefix test.
+
+---
+
+## Addendum (2026-10-22, #340): queued optional abilities are re-validated when they come up
+
+Answering a prompt, or choosing the order of simultaneous abilities, runs `pruneStaleOptionalPrompts` (`prompt-queue.ts`) on the queue. An optional ability whose card left its zone, whose limit is used, whose cost can no longer be paid or that no longer has a valid target (ADR-0090) is dropped without paying anything and logged (`ability.skipped.noValidTarget`). This replaces the threat- and damage-interrupt-only pruning of #266 and #267, which it keeps (a prompt of a closed placement is still dropped). Example: two copies of One-Two Punch are queued after a basic attack; once the first readies the hero, the second is skipped.

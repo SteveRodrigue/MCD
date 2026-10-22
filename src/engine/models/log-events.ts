@@ -245,6 +245,7 @@ export interface LogEvents {
 
   // Decisions, Prompts & Costs
   'ability.aborted.noValidTarget': { actor: string; source?: string };
+  'ability.skipped.noValidTarget': { actor: string; source: string };
   'decision.distribution.cancelled': { actor: string; source?: string };
   'decision.distribution.noLegalTarget': {
     actor: string;
@@ -545,6 +546,7 @@ export const ALL_LOG_EVENT_KEYS = [
   'attachment.damageShield.absorbed',
   'attachment.damageShield.broken',
   'ability.aborted.noValidTarget',
+  'ability.skipped.noValidTarget',
   'decision.distribution.cancelled',
   'decision.distribution.noLegalTarget',
   'decision.distribution.resolved',

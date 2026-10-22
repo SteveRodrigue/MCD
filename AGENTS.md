@@ -28,6 +28,7 @@ and the post-task procedure is in
   explicitly changes scope. Read-only audits may inspect any user-selected scope.
 - Preserve the project's comic pop-art visual direction in user-facing UI work.
 - Do not introduce unapproved legacy shims, aliases, deprecated names, duplicate paths, or temporary shortcuts.
+- **One Legality Gate:** Whether a card or ability can be played, used or offered is decided in `src/engine/pipeline/legality-checker.ts` and the target-validity gate `checkAbilityTargets` (ADR-0090). Extend them; never add a parallel check in a caller (trigger scan, prompt queue, action handler, UI). Rule: `.agents/rules/coding-and-testing-rules.md`, `docs/coding_guidelines.md` §15.11.
 - **Refactor-First & Zero-Bloat Policy:** We are early in development: refactor now. Never propose "we'll support both", parallel functions, or copy-pasted logic with minor variations. Before adding a new function, primitive, or branch, search for similar existing code and prefer **merging similar functions**, **adding a parameter to an existing function**, or **simplifying tangled/spaghetti code in the path of the change** and updating all callers/data in scope.
 - **Lean Testing Policy (No Redundant Runs):** Run only targeted tests (`rtk npx vitest run <target>` or `rtk npx vitest related <files> --run`) during implementation. Never re-run a test, `typecheck`, or `lint` command if zero files changed since it last passed. Leave the full test suite (`npm test`) to the `git push` hook (`.githooks/pre-push`).
 - Never add skipped or todo tests to hide unfinished work.

@@ -194,7 +194,7 @@ describe('Systemic CHOSEN_* Entity Targeting Pipeline (Fixes #146)', () => {
 
       const check = canPlayCard(state, 'p1', 'gr_1', ['res_1']);
       expect(check.allowed).toBe(false);
-      expect(check.reason).toContain('No ally is exhausted to ready');
+      expect(check.reason).toContain('Nothing is exhausted to ready');
     });
 
     it('Get Ready can be played when an ally is exhausted', () => {

@@ -7,9 +7,13 @@ function playAreaHosts(player: PlayerState): CardInstance[][] {
   return [player.tableau, player.allies, player.attachments ?? [], player.obligations];
 }
 
-/** True when the card belongs to the player: a player card with no recorded owner is the controller's. */
+/**
+ * True when the card belongs to the player: a player card with no recorded owner is the controller's.
+ * An encounter card is never player-owned, even one that carries the player's id, like a card of the
+ * hero's nemesis set (#357).
+ */
 function isOwnedBy(card: CardInstance, playerId: string): boolean {
-  return card.ownerId === playerId || (!card.ownerId && !isEncounterCard(card.card));
+  return !isEncounterCard(card.card) && (!card.ownerId || card.ownerId === playerId);
 }
 
 /**
@@ -23,13 +27,13 @@ function discardToOwner(state: GameState, card: CardInstance): void {
   (owner ? owner.discard : state.encounterDiscard).push(card);
 }
 
-/** Removes from `cards` every card owned by `ownerId`, returning them. */
+/** Removes from another player's `cards` every card with a recorded owner of `ownerId`, returning them. */
 function takeOwnedBy(cards: CardInstance[] | undefined, ownerId: string): CardInstance[] {
   if (!cards) return [];
-  const taken = cards.filter((c) => c.ownerId === ownerId);
+  const isTaken = (c: CardInstance) => c.ownerId === ownerId && isOwnedBy(c, ownerId);
+  const taken = cards.filter(isTaken);
   if (taken.length > 0) {
-    const kept = cards.filter((c) => c.ownerId !== ownerId);
-    cards.splice(0, cards.length, ...kept);
+    cards.splice(0, cards.length, ...cards.filter((c) => !isTaken(c)));
   }
   return taken;
 }

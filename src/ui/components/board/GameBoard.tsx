@@ -417,7 +417,10 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
 
             {/* Scenario Main Villain & Out of Play Console */}
             <div className="w-full flex flex-wrap items-start justify-center gap-4">
-              <RemovedFromGameBox cards={gameState.removedFromGame || []} />
+              <RemovedFromGameBox
+                cards={gameState.removedFromGame || []}
+                eliminatedPlayers={gameState.eliminatedPlayers}
+              />
               <VillainZone
                 villain={getActiveVillain(gameState)}
                 mainScheme={getActiveMainScheme(gameState)}

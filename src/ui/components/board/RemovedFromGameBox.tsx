@@ -173,14 +173,13 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
                     <div
                       data-testid={`defeated-hero-deck-peek-${player.id}`}
                       className="absolute -top-1 -left-1 w-full h-full pointer-events-none"
-                      style={{ zIndex: 0 }}
                     >
                       <CardView card={topDeckCard.card} size="sm" isFacedown showTokens={false} />
                     </div>
                   )}
 
-                  {/* Hero Card on Top */}
-                  <div data-testid={`defeated-hero-card-${player.id}`} className="relative z-10">
+                  {/* Hero Card on Top (a later positioned sibling paints over the peek) */}
+                  <div data-testid={`defeated-hero-card-${player.id}`} className="relative">
                     <CardView card={heroCard} size="sm" showTokens={false} enableHoverZoom={true} />
 
                     {/* DEFEATED Ribbon Badge */}

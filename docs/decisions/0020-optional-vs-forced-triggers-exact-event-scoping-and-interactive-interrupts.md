@@ -120,3 +120,14 @@ Prior to #267, non-threat in-hand triggers (`DAMAGE_WOULD_BE_TAKEN`, `ENCOUNTER_
 4. **Pending Damage Placements (`pendingDamagePlacements`):** Symmetrical to threat placements (#266, Option B), when `step6_calculateAndApplyAttackDamage` enqueues damage interrupt prompts, it creates a `PendingDamagePlacement` in `state.pendingDamagePlacements` (`{ id, targetPlayerId, targetType, sourceType, amount, initialAmount, attackId }`) and tags prompt options with `damagePlacementId`.
 5. **Live Damage Reduction & Prompt Pruning:** Resolving a damage prevention interrupt updates both `pendingDamagePlacement.amount` and `activeAttackContext.pendingDamage`. If damage reaches 0 or a card is no longer payable/usable, moot queued prompts are pruned (`pruneDamageInterruptPrompts`). Once the prompt queue empties, `finishPendingDamagePlacements` applies the final remaining damage and post-combat resolution.
 
+
+---
+
+## Addendum: defeat triggers, one occurrence (#342)
+
+RR v1.8 (Triggering Condition): one game occurrence that creates several triggering conditions has a single interrupt window and a single response window. One attack with Overkill can defeat a minion and a villain stage.
+
+- The defeat of a minion or ally is announced (`dispatchDefeat`) after the damage pipeline has applied every state change of the occurrence, Overkill included, so a Forced Response sees the final board. Interrupts to the defeat (`processHostDefeated`) still run first.
+- `DEFEATED` and `CHARACTER_DEFEATED` scan the in-play cards and the hand of every player in turn order, and the trigger filter decides. "After you defeat" (`defeatedByAttackOf: YOUR_HERO`) belongs to the player whose hero attacked (RR v1.8 glossary Y), not to the player the minion was engaged with.
+- When the last villain stage is defeated, `declareVictory` sets the winner and clears the pending decisions, and `dispatchTrigger` returns at once for a finished game: nothing fires after the victory.
+- Not changed: the villain's and a player's own defeat still announce before their state change (stage advance, elimination), and the enemy-attack Overkill path in `combat-pipeline.ts` still bypasses the damage pipeline. Tracked as #359 and #360.

@@ -2341,7 +2341,7 @@
           "trigger": "CHARACTER_DEFEATED",
           "triggerFilter": {
             "targetType": "MINION",
-            "targetPlayerScope": "SELF"
+            "defeatedByAttackOf": "YOUR_HERO"
           },
           "cost": {
             "exhaustSelf": true

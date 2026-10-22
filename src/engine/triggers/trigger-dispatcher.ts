@@ -30,6 +30,10 @@ import { appendLog } from '../state/game-log';
 
 export const MAX_TRIGGER_DEPTH = 15;
 
+function isDefeatTrigger(trigger: TriggerType): boolean {
+  return trigger === 'DEFEATED' || trigger === 'CHARACTER_DEFEATED';
+}
+
 /** A Forced Interrupt / Forced Response resolves at once; every other timing is the player's choice. */
 function isForcedTiming(timing: string): boolean {
   return timing === 'FORCED_INTERRUPT' || timing === 'FORCED_RESPONSE';
@@ -815,7 +819,13 @@ function scanInPlayTriggerAbilities(
 ): void {
   const playerAbilitiesSuspended = arePlayerAbilitiesSuspended(state);
   for (const controller of playersToScan) {
-    if (scanState.hasPendingPrompt && trigger !== 'THREAT_WOULD_BE_PLACED') break;
+    if (
+      scanState.hasPendingPrompt &&
+      trigger !== 'THREAT_WOULD_BE_PLACED' &&
+      !isDefeatTrigger(trigger)
+    ) {
+      break;
+    }
     const inPlayCards: CardInstance[] = [
       ...(playerAbilitiesSuspended ? [] : controller.tableau || []),
       ...(playerAbilitiesSuspended ? [] : controller.allies || []),
@@ -1326,6 +1336,9 @@ export function dispatchTrigger(
   context: TriggerContext,
   triggerChainOverride?: TriggerCallNode[],
 ): TriggerDispatchResult {
+  // The game is over (the players won): nothing triggers any more.
+  if (state.winner) return { state };
+
   const currentChain = triggerChainOverride || context.triggerChain || [];
 
   // Immediate depth ceiling check (ADR-0053, Issue #48)
@@ -1380,7 +1393,9 @@ export function dispatchTrigger(
     trigger === 'MINION_ENTERS_PLAY' ||
     trigger === 'ENCOUNTER_CARD_REVEALED';
 
-  const playersToScan: PlayerState[] = isGlobalTrigger ? priorityOrder : [player];
+  // "After you defeat ..." belongs to the player who defeated, not to the one the enemy engaged.
+  const playersToScan: PlayerState[] =
+    isGlobalTrigger || isDefeatTrigger(trigger) ? priorityOrder : [player];
 
   // 1. Scan in-play identity card abilities (e.g. Spider-Sense on Spider-Man 01001a)
   scanIdentityTriggerAbilities(state, trigger, context, currentChain, playersToScan, scanState);

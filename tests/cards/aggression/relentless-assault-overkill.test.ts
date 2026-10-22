@@ -13,6 +13,7 @@ import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
 import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { thaw } from '../../support/thaw-state';
+import { dispatchOk } from '../../support/game-fixtures';
 
 function makeResources(type: 'physical' | 'energy' | 'mental' | 'wild', count: number) {
   return {
@@ -248,7 +249,7 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
     });
   }
 
-  function playAssault(paying: ReturnType<typeof payment>[], minionInstanceId: string) {
+  function playAssault(paying: ReturnType<typeof payment>[], minionInstanceId?: string) {
     const armed = thaw(state);
     const assault = createCardInstance(cardCatalog.getCard('01053')!);
     armed.players[0].hand = [assault, ...paying];
@@ -321,5 +322,196 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
     expect(steps[0].gateParams).toEqual({ resource: 'physical', count: 1 });
     expect(steps[0].effectParams).toEqual({ keyword: 'Overkill' });
     expect(steps[1].effectParams).toEqual({ amount: 5, target: 'CHOSEN_MINION' });
+  });
+
+  function minionOf(hitPoints: number) {
+    const card = cardCatalog.getCard('01110')!;
+    return createCardInstance({ ...card, health: hitPoints } as typeof card);
+  }
+
+  function logKeys(s: GameState) {
+    return s.log.map((l) => l.key);
+  }
+
+  /** Plays Relentless Assault with no pre-chosen target and answers the target prompt. */
+  function playAssaultAndChoose(
+    paying: ReturnType<typeof payment>[],
+    chosenInstanceId: string,
+    from: GameState = state,
+  ) {
+    const armed = thaw(from);
+    const assault = createCardInstance(cardCatalog.getCard('01053')!);
+    armed.players[0].hand = [assault, ...paying];
+    const played = dispatchOk(armed, {
+      type: 'PLAY_CARD',
+      playerId: armed.players[0].id,
+      cardInstanceId: assault.instanceId,
+      paymentCardInstanceIds: paying.map((c) => c.instanceId),
+    });
+    const prompt = peekDecisionPrompt(played);
+    expect(prompt?.options.map((o) => o.id)).toContain(chosenInstanceId);
+    return dispatchOk(played, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: armed.players[0].id,
+      selectedOptionId: chosenInstanceId,
+    });
+  }
+
+  describe('A. target chosen from a prompt (#342)', () => {
+    it('A1: the Overkill granted by a physical payment survives the target prompt', () => {
+      const initialVillainHp = getActiveVillain(state).health;
+      const chosen = minionOf(3);
+      const other = minionOf(2);
+      state.players[0].engagedMinions.push(chosen, other);
+
+      const after = playAssaultAndChoose([payment('physical', 2)], chosen.instanceId);
+
+      const remaining = after.players[0].engagedMinions.map((m) => m.instanceId);
+      expect(remaining).toEqual([other.instanceId]);
+      expect(getActiveVillain(after).health).toBe(initialVillainHp - 2);
+    });
+
+    it('A2: paid with energy only, the prompt path grants no Overkill', () => {
+      const initialVillainHp = getActiveVillain(state).health;
+      const chosen = minionOf(3);
+      state.players[0].engagedMinions.push(chosen, minionOf(2));
+
+      const after = playAssaultAndChoose([payment('energy', 2)], chosen.instanceId);
+
+      expect(after.players[0].engagedMinions.some((m) => m.instanceId === chosen.instanceId)).toBe(
+        false,
+      );
+      expect(getActiveVillain(after).health).toBe(initialVillainHp);
+      expect(logKeys(after)).not.toContain('overkill.villain.hit');
+    });
+
+    it('A3: the keyword granted on the prompt path ends with the attack', () => {
+      const initialVillainHp = getActiveVillain(state).health;
+      const chosen = minionOf(3);
+      const next = minionOf(2);
+      state.players[0].engagedMinions.push(chosen, next);
+      state.players[0].activeFormCard = { ...spiderManHero, attack: 4 } as HeroCard;
+
+      const first = playAssaultAndChoose([payment('physical', 2)], chosen.instanceId);
+      expect(getActiveVillain(first).health).toBe(initialVillainHp - 2);
+
+      const base = dispatchOk(first, {
+        type: 'BASIC_ATTACK',
+        playerId: 'p1',
+        targetType: 'minion',
+        targetInstanceId: next.instanceId,
+      });
+      expect(base.players[0].engagedMinions.length).toBe(0);
+      expect(getActiveVillain(base).health).toBe(initialVillainHp - 2);
+    });
+
+    it('A4: an exact kill on the prompt path deals no Overkill', () => {
+      const initialVillainHp = getActiveVillain(state).health;
+      const chosen = minionOf(5);
+      state.players[0].engagedMinions.push(chosen, minionOf(2));
+
+      const after = playAssaultAndChoose([payment('physical', 2)], chosen.instanceId);
+
+      expect(after.players[0].engagedMinions.some((m) => m.instanceId === chosen.instanceId)).toBe(
+        false,
+      );
+      expect(getActiveVillain(after).health).toBe(initialVillainHp);
+      expect(logKeys(after)).not.toContain('overkill.villain.hit');
+    });
+  });
+
+  describe('B. Tough on the minion (RR v1.8 Tough: all damage is prevented)', () => {
+    function expectToughPopped(after: GameState, minionId: string, initialVillainHp: number) {
+      const minion = after.players[0].engagedMinions.find((m) => m.instanceId === minionId);
+      expect(minion, 'the minion stays in play').toBeDefined();
+      expect(minion!.tokens?.damage ?? 0).toBe(0);
+      expect(minion!.statusCards ?? []).not.toContain(StatusCard.TOUGH);
+      expect(getActiveVillain(after).health).toBe(initialVillainHp);
+      expect(logKeys(after)).toContain('damage.prevented.tough');
+      expect(logKeys(after)).not.toContain('overkill.villain.hit');
+    }
+
+    it('B1: Tough absorbs the whole attack: no damage, no defeat, no Overkill', () => {
+      const initialVillainHp = getActiveVillain(state).health;
+      const minion = minionOf(2);
+      minion.statusCards = [StatusCard.TOUGH];
+      state.players[0].engagedMinions.push(minion);
+
+      const res = playAssault([payment('physical', 2)], minion.instanceId);
+
+      expect(res.result.success).toBe(true);
+      expectToughPopped(res.state, minion.instanceId, initialVillainHp);
+    });
+
+    it('B2: the same on the target prompt path', () => {
+      const initialVillainHp = getActiveVillain(state).health;
+      const minion = minionOf(2);
+      minion.statusCards = [StatusCard.TOUGH];
+      state.players[0].engagedMinions.push(minion, minionOf(2));
+
+      const after = playAssaultAndChoose([payment('physical', 2)], minion.instanceId);
+
+      expectToughPopped(after, minion.instanceId, initialVillainHp);
+    });
+
+    it('B3: once the Tough is gone, the next attack damages, defeats and reaches Rhino', () => {
+      const initialVillainHp = getActiveVillain(state).health;
+      const minion = minionOf(2);
+      minion.statusCards = [StatusCard.TOUGH];
+      state.players[0].engagedMinions.push(minion);
+
+      const first = playAssault([payment('physical', 2)], minion.instanceId);
+      expect(first.result.success).toBe(true);
+      state = first.state;
+
+      const second = playAssault([payment('physical', 2)], minion.instanceId);
+      expect(second.result.success).toBe(true);
+      expect(second.state.players[0].engagedMinions.length).toBe(0);
+      expect(getActiveVillain(second.state).health).toBe(initialVillainHp - 3);
+    });
+  });
+
+  describe('C. Tough on Rhino (RR v1.8 Overkill: prevented excess is not dealt)', () => {
+    it('C1: the Overkill pops the Tough and Rhino keeps every hit point', () => {
+      getActiveVillain(state).statusCards = [StatusCard.TOUGH];
+      const initialVillainHp = getActiveVillain(state).health;
+      const minion = minionOf(2);
+      state.players[0].engagedMinions.push(minion);
+
+      const res = playAssault([payment('physical', 2)], minion.instanceId);
+
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[0].engagedMinions.length).toBe(0);
+      expect(getActiveVillain(res.state).statusCards).not.toContain(StatusCard.TOUGH);
+      expect(getActiveVillain(res.state).health).toBe(initialVillainHp);
+      expect(logKeys(res.state)).toContain('damage.prevented.tough');
+      expect(logKeys(res.state)).not.toContain('overkill.villain.hit');
+    });
+
+    it('C1b: the same on the target prompt path', () => {
+      getActiveVillain(state).statusCards = [StatusCard.TOUGH];
+      const initialVillainHp = getActiveVillain(state).health;
+      const minion = minionOf(2);
+      state.players[0].engagedMinions.push(minion, minionOf(2));
+
+      const after = playAssaultAndChoose([payment('physical', 2)], minion.instanceId);
+
+      expect(getActiveVillain(after).statusCards).not.toContain(StatusCard.TOUGH);
+      expect(getActiveVillain(after).health).toBe(initialVillainHp);
+    });
+
+    it('C2: an exact kill deals nothing to Rhino, so his Tough stays', () => {
+      getActiveVillain(state).statusCards = [StatusCard.TOUGH];
+      const initialVillainHp = getActiveVillain(state).health;
+      const minion = minionOf(5);
+      state.players[0].engagedMinions.push(minion);
+
+      const res = playAssault([payment('physical', 2)], minion.instanceId);
+
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[0].engagedMinions.length).toBe(0);
+      expect(getActiveVillain(res.state).statusCards).toContain(StatusCard.TOUGH);
+      expect(getActiveVillain(res.state).health).toBe(initialVillainHp);
+    });
   });
 });

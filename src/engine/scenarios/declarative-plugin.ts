@@ -16,6 +16,7 @@ import {
 } from '@engine/models';
 import { createCardInstance } from '../state/card-instance';
 import { appendLog } from '../state/game-log';
+import { declareVictory } from '../state/victory';
 import { nextEngineId, shuffleArray } from '../state/rng';
 import { advanceVillainStage, revealVillainStage } from './advance-villain-stage';
 import { villainStageHitPoints } from '../pipeline/stat-calculator';
@@ -175,7 +176,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
       return advanceVillainStage(state, villain.instanceId!, nextStageCode);
     }
 
-    state.winner = 'HEROES';
+    declareVictory(state);
     appendLog(state, {
       category: 'combat',
       key: 'scenario.victory',

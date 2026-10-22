@@ -55,7 +55,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | :--- | :---: | :---: | :---: | :--- |
 | **Ability Timings** | **15** | 19 | 100.0% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md) |
 | **Trigger Windows** | **20** | 31 | 100.0% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md#2-trigger-windows-triggertypeschema) |
-| **Trigger Filters** | **11** | - | - | `attackerKind` (1), `targetPlayerScope` (3), `damageSource` (1), `cardFilter` (2), `targetScope` (1), `attackedBy` (1), `sourceCardCode` (1), `targetType` (3), `defeatedByAttackOf` (2), `defenderType` (1), `threatSource` (1) |
+| **Trigger Filters** | **11** | - | - | `attackerKind` (1), `targetPlayerScope` (2), `damageSource` (1), `cardFilter` (2), `targetScope` (1), `attackedBy` (1), `sourceCardCode` (1), `targetType` (3), `defeatedByAttackOf` (3), `defenderType` (1), `threatSource` (1) |
 | **Cost Primitives** | **8** | - | - | `exhaustSelf` (20), `spendCounters` (5), `resourceCost` (8), `heal` (1), `discardCard` (2), `discardSelf` (5), `damageHero` (1), `damageSelf` (1) |
 | **Multi-Ability Cards (2+)** | **17** | - | - | [View 17 Cards](detailed_reports/multi_ability_and_multistep_cards.md) |
 

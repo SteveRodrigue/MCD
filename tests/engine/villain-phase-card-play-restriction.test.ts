@@ -6,12 +6,11 @@ import {
   evaluateCardPlayability,
   canPlayCard,
   canInitiateAbility,
-  canBasicAttack,
-  canBasicThwart,
+  canAttack,
+  canThwart,
   canBasicRecover,
   canChangeForm,
-  canAllyAttack,
-  canAllyThwart,
+  HERO_ACTOR,
 } from '../../src/engine/pipeline/legality-checker';
 import { dispatchAction, peekDecisionPrompt } from '../../src/engine/pipeline';
 import {
@@ -133,11 +132,11 @@ describe('Villain Phase Card Play and Action Restrictions (Issue #182)', () => {
 
       const expectedReason = 'Actions can only be taken during the Player Phase.';
 
-      expect(canBasicAttack(state, 'p1', 'villain')).toEqual({
+      expect(canAttack(state, 'p1', HERO_ACTOR, 'villain')).toEqual({
         allowed: false,
         reason: expectedReason,
       });
-      expect(canBasicThwart(state, 'p1', 'main_scheme')).toEqual({
+      expect(canThwart(state, 'p1', HERO_ACTOR, 'main_scheme')).toEqual({
         allowed: false,
         reason: expectedReason,
       });
@@ -149,11 +148,15 @@ describe('Villain Phase Card Play and Action Restrictions (Issue #182)', () => {
         allowed: false,
         reason: expectedReason,
       });
-      expect(canAllyAttack(state, 'p1', allyInst.instanceId, 'villain')).toEqual({
+      expect(
+        canAttack(state, 'p1', { kind: 'ally', instanceId: allyInst.instanceId }, 'villain'),
+      ).toEqual({
         allowed: false,
         reason: expectedReason,
       });
-      expect(canAllyThwart(state, 'p1', allyInst.instanceId, 'main_scheme')).toEqual({
+      expect(
+        canThwart(state, 'p1', { kind: 'ally', instanceId: allyInst.instanceId }, 'main_scheme'),
+      ).toEqual({
         allowed: false,
         reason: expectedReason,
       });

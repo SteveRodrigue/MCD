@@ -2,11 +2,10 @@ import { GameState, GameAction, CardType, getActiveMainScheme } from '@engine/mo
 import {
   canChangeForm,
   canBasicRecover,
-  canBasicAttack,
-  canBasicThwart,
-  canAllyAttack,
-  canAllyThwart,
+  canAttack,
+  canThwart,
   canPlayCard,
+  HERO_ACTOR,
 } from '../pipeline';
 
 export interface BotDecisionContext {
@@ -158,7 +157,8 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
       // If threat is elevated, prioritize Ally Thwart
       if (
         (isThreatHigh || getActiveMainScheme(state).threat >= 2) &&
-        canAllyThwart(state, playerId, ally.instanceId, 'main_scheme').allowed
+        canThwart(state, playerId, { kind: 'ally', instanceId: ally.instanceId }, 'main_scheme')
+          .allowed
       ) {
         return {
           type: 'ALLY_THWART',
@@ -169,7 +169,13 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
       } else if (player.engagedMinions.length > 0) {
         const targetMinion = player.engagedMinions[0];
         if (
-          canAllyAttack(state, playerId, ally.instanceId, 'minion', targetMinion.instanceId).allowed
+          canAttack(
+            state,
+            playerId,
+            { kind: 'ally', instanceId: ally.instanceId },
+            'minion',
+            targetMinion.instanceId,
+          ).allowed
         ) {
           return {
             type: 'ALLY_ATTACK',
@@ -179,7 +185,9 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
             targetInstanceId: targetMinion.instanceId,
           };
         }
-      } else if (canAllyAttack(state, playerId, ally.instanceId, 'villain').allowed) {
+      } else if (
+        canAttack(state, playerId, { kind: 'ally', instanceId: ally.instanceId }, 'villain').allowed
+      ) {
         return {
           type: 'ALLY_ATTACK',
           playerId,
@@ -195,7 +203,7 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
     // 5A. Privilege Thwarting: Side Scheme first
     if (state.sideSchemes.length > 0) {
       const sideScheme = state.sideSchemes[0];
-      if (canBasicThwart(state, playerId, 'side_scheme', sideScheme.instanceId).allowed) {
+      if (canThwart(state, playerId, HERO_ACTOR, 'side_scheme', sideScheme.instanceId).allowed) {
         return {
           type: 'BASIC_THWART',
           playerId,
@@ -208,7 +216,7 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
     // 5B. Privilege Thwarting: Main Scheme if threat > 0
     if (
       getActiveMainScheme(state).threat > 0 &&
-      canBasicThwart(state, playerId, 'main_scheme').allowed
+      canThwart(state, playerId, HERO_ACTOR, 'main_scheme').allowed
     ) {
       return {
         type: 'BASIC_THWART',
@@ -220,7 +228,7 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
     // 5C. Attack Minion if engaged with any
     if (player.engagedMinions.length > 0) {
       const targetMinion = player.engagedMinions[0];
-      if (canBasicAttack(state, playerId, 'minion', targetMinion.instanceId).allowed) {
+      if (canAttack(state, playerId, HERO_ACTOR, 'minion', targetMinion.instanceId).allowed) {
         return {
           type: 'BASIC_ATTACK',
           playerId,
@@ -231,7 +239,7 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
     }
 
     // 5D. Attack Villain if allowed (no Guard)
-    if (canBasicAttack(state, playerId, 'villain').allowed) {
+    if (canAttack(state, playerId, HERO_ACTOR, 'villain').allowed) {
       return {
         type: 'BASIC_ATTACK',
         playerId,

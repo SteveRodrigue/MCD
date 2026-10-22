@@ -11,7 +11,7 @@ import {
   getActiveMainScheme,
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { canAllyThwart, canAllyAttack } from '@engine/pipeline/legality-checker';
+import { canThwart, canAttack } from '@engine/pipeline/legality-checker';
 import { dispatchAction } from '@engine/pipeline';
 
 describe('Ally Thwart Legality & Dispatch Invariants (RR v1.8 p. 3, 11, 20)', () => {
@@ -55,22 +55,37 @@ describe('Ally Thwart Legality & Dispatch Invariants (RR v1.8 p. 3, 11, 20)', ()
     getActiveMainScheme(state).threat = 4;
   });
 
-  describe('canAllyThwart Legality', () => {
+  describe('canThwart (ally) Legality', () => {
     it('permits ally thwart on main scheme when ready and threat > 0', () => {
-      const check = canAllyThwart(state, 'p1', allyInstanceId, 'main_scheme');
+      const check = canThwart(
+        state,
+        'p1',
+        { kind: 'ally', instanceId: allyInstanceId },
+        'main_scheme',
+      );
       expect(check.allowed).toBe(true);
     });
 
     it('rejects ally thwart when ally is exhausted', () => {
       state.players[0].allies[0].exhausted = true;
-      const check = canAllyThwart(state, 'p1', allyInstanceId, 'main_scheme');
+      const check = canThwart(
+        state,
+        'p1',
+        { kind: 'ally', instanceId: allyInstanceId },
+        'main_scheme',
+      );
       expect(check.allowed).toBe(false);
       expect(check.reason).toContain('exhausted');
     });
 
     it('rejects ally thwart on main scheme when main scheme threat is 0', () => {
       getActiveMainScheme(state).threat = 0;
-      const check = canAllyThwart(state, 'p1', allyInstanceId, 'main_scheme');
+      const check = canThwart(
+        state,
+        'p1',
+        { kind: 'ally', instanceId: allyInstanceId },
+        'main_scheme',
+      );
       expect(check.allowed).toBe(false);
       expect(check.reason).toContain('no threat');
     });
@@ -85,7 +100,12 @@ describe('Ally Thwart Legality & Dispatch Invariants (RR v1.8 p. 3, 11, 20)', ()
         },
       ];
 
-      const check = canAllyThwart(state, 'p1', allyInstanceId, 'main_scheme');
+      const check = canThwart(
+        state,
+        'p1',
+        { kind: 'ally', instanceId: allyInstanceId },
+        'main_scheme',
+      );
       expect(check.allowed).toBe(false);
       expect(check.reason).toContain('Crisis');
     });
@@ -98,7 +118,12 @@ describe('Ally Thwart Legality & Dispatch Invariants (RR v1.8 p. 3, 11, 20)', ()
       const minionInst = createCardInstance(minionCard);
       state.players[0].engagedMinions.push(minionInst);
 
-      const check = canAllyThwart(state, 'p1', allyInstanceId, 'main_scheme');
+      const check = canThwart(
+        state,
+        'p1',
+        { kind: 'ally', instanceId: allyInstanceId },
+        'main_scheme',
+      );
       expect(check.allowed).toBe(false);
       expect(check.reason).toContain('Patrol');
     });
@@ -113,7 +138,13 @@ describe('Ally Thwart Legality & Dispatch Invariants (RR v1.8 p. 3, 11, 20)', ()
         },
       ];
 
-      const check = canAllyThwart(state, 'p1', allyInstanceId, 'side_scheme', 'side_1');
+      const check = canThwart(
+        state,
+        'p1',
+        { kind: 'ally', instanceId: allyInstanceId },
+        'side_scheme',
+        'side_1',
+      );
       expect(check.allowed).toBe(true);
     });
   });
@@ -208,7 +239,7 @@ describe('Ally Thwart Legality & Dispatch Invariants (RR v1.8 p. 3, 11, 20)', ()
     });
 
     it('rejects Hulk thwart and mentions THW', () => {
-      const check = canAllyThwart(state, 'p1', hulkId, 'main_scheme');
+      const check = canThwart(state, 'p1', { kind: 'ally', instanceId: hulkId }, 'main_scheme');
       expect(check.allowed).toBe(false);
       expect(check.reason).toContain('THW');
     });
@@ -226,7 +257,9 @@ describe('Ally Thwart Legality & Dispatch Invariants (RR v1.8 p. 3, 11, 20)', ()
     });
 
     it('still permits Hulk to attack', () => {
-      expect(canAllyAttack(state, 'p1', hulkId, 'villain').allowed).toBe(true);
+      expect(canAttack(state, 'p1', { kind: 'ally', instanceId: hulkId }, 'villain').allowed).toBe(
+        true,
+      );
     });
   });
 });

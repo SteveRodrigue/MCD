@@ -1,11 +1,5 @@
 import { AllyCard, StatusCard } from '../../models';
-import {
-  getPlayer,
-  canBasicAttack,
-  canAllyAttack,
-  canBasicThwart,
-  canAllyThwart,
-} from '../legality-checker';
+import { getPlayer, canAttack, canThwart, HERO_ACTOR } from '../legality-checker';
 import {
   getEffectiveHeroStats,
   getEffectiveAllyStats,
@@ -22,9 +16,10 @@ import { resolveAttackedVillain } from './shared';
 import type { ActionHandler } from './types';
 
 export const handleBasicAttack: ActionHandler<'BASIC_ATTACK'> = (nextState, state, action) => {
-  const check = canBasicAttack(
+  const check = canAttack(
     nextState,
     action.playerId,
+    HERO_ACTOR,
     action.targetType,
     action.targetInstanceId,
   );
@@ -139,10 +134,10 @@ export const handleBasicAttack: ActionHandler<'BASIC_ATTACK'> = (nextState, stat
 };
 
 export const handleAllyAttack: ActionHandler<'ALLY_ATTACK'> = (nextState, state, action) => {
-  const check = canAllyAttack(
+  const check = canAttack(
     nextState,
     action.playerId,
-    action.allyInstanceId,
+    { kind: 'ally', instanceId: action.allyInstanceId },
     action.targetType,
     action.targetInstanceId,
   );
@@ -260,10 +255,10 @@ export const handleAllyAttack: ActionHandler<'ALLY_ATTACK'> = (nextState, state,
 };
 
 export const handleAllyThwart: ActionHandler<'ALLY_THWART'> = (nextState, state, action) => {
-  const check = canAllyThwart(
+  const check = canThwart(
     nextState,
     action.playerId,
-    action.allyInstanceId,
+    { kind: 'ally', instanceId: action.allyInstanceId },
     action.targetType,
     action.targetInstanceId,
   );
@@ -322,9 +317,10 @@ export const handleAllyThwart: ActionHandler<'ALLY_THWART'> = (nextState, state,
 };
 
 export const handleBasicThwart: ActionHandler<'BASIC_THWART'> = (nextState, state, action) => {
-  const check = canBasicThwart(
+  const check = canThwart(
     nextState,
     action.playerId,
+    HERO_ACTOR,
     action.targetType,
     action.targetInstanceId,
   );

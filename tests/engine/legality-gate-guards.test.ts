@@ -56,7 +56,7 @@ describe('legality gate: no target-validity check outside the gate', () => {
    */
   const ALLOWED_EFFECT_NAME_CHECKS: Record<string, string> = {
     'src/engine/pipeline/legality-checker.ts':
-      'debt (#366): threat-removal and attack-damage legality (REMOVE_THREAT crisis/Patrol, DEAL_DAMAGE Guard) still check by effect name',
+      'debt (#366): attack-damage legality (DEAL_DAMAGE against the villain: Guard) still checks by effect name',
     'src/engine/pipeline/actions/play.ts':
       'display: picks the play onomatopoeia by effect, no legality',
     'src/engine/triggers/trigger-dispatcher.ts':
@@ -98,5 +98,38 @@ describe('legality gate: no target-validity check outside the gate', () => {
       (f) => !GATE_FILES.includes(f) && STATE_FILTERED_TARGETS.test(read(f)),
     );
     expect(offenders).toEqual([]);
+  });
+
+  /**
+   * Crisis, Patrol and Guard are read in one place (`target-restrictions.ts`, with the Crisis icon
+   * count in `crisis.ts`). A caller asks `getMainSchemeThreatBlock` / `isVillainAttackBlockedByGuard`
+   * and never repeats the rule (#331).
+   */
+  const RESTRICTION_READ = /Keyword\.(GUARD|PATROL)|hasCrisisInPlay\(|countCrisisIconsInPlay\(/;
+  const RESTRICTION_FILES = [
+    'src/engine/pipeline/target-restrictions.ts',
+    'src/engine/pipeline/crisis.ts',
+  ];
+  const ALLOWED_RESTRICTION_READS: Record<string, string> = {
+    'src/ui/components/board/attack-target-utils.ts':
+      'display: marks the Guard minion on the board',
+    'src/ui/components/board/HeroZone.tsx': 'display: the Guard badge on an engaged minion',
+  };
+
+  it('reads Crisis, Patrol and Guard only in the restriction module', () => {
+    const offenders = files.filter(
+      (f) =>
+        !RESTRICTION_FILES.includes(f) &&
+        !(f in ALLOWED_RESTRICTION_READS) &&
+        RESTRICTION_READ.test(read(f)),
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  it('keeps the restriction allow-list honest: every entry still reads a restriction', () => {
+    const stale = Object.keys(ALLOWED_RESTRICTION_READS).filter(
+      (f) => !RESTRICTION_READ.test(read(f)),
+    );
+    expect(stale).toEqual([]);
   });
 });

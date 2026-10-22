@@ -6,8 +6,6 @@ import {
   MainSchemeState,
   SideSchemeState,
   StatusCard,
-  Keyword,
-  hasKeyword,
   getActiveVillain,
   getActiveMainScheme,
   getVillainsInPlay,
@@ -16,7 +14,6 @@ import {
 import type { TargetSelector } from '../../data/supplemental/schema';
 import type { EffectExecutionContext } from './index';
 import { getEffectiveMaxHealth, getEffectivePlayerTraits } from '../pipeline/stat-calculator';
-import { hasCrisisInPlay } from '../pipeline/crisis';
 
 export type EffectContext = Partial<EffectExecutionContext>;
 
@@ -1133,20 +1130,6 @@ function resolveSchemeAndContinuityTarget(
     }
 
     case 'CHOSEN_SCHEME': {
-      const stepParams = context?.step?.effectParams as Record<string, unknown> | undefined;
-      const ignoresCrisis = Boolean(context?.ignoresCrisis || stepParams?.['ignoresCrisis']);
-      const isPlayerSource = context?.sourceCardInstance?.card?.faction !== 'encounter';
-      const player = context?.playerId
-        ? state.players.find((p) => p.id === context.playerId)
-        : context?.sourceCardInstance
-          ? state.players.find((p) => p.id === context.sourceCardInstance?.ownerId)
-          : undefined;
-      const hasPatrol = player
-        ? (player.engagedMinions || []).some((m) => hasKeyword(m.card, Keyword.PATROL))
-        : false;
-      const isMainBlocked =
-        !ignoresCrisis && isPlayerSource && (hasCrisisInPlay(state) || hasPatrol);
-
       if (context?.chosenTargetInstanceId) {
         const chosenMainScheme = getActiveMainScheme(state);
         if (
@@ -1155,9 +1138,6 @@ function resolveSchemeAndContinuityTarget(
             context.chosenTargetInstanceId === 'main_scheme' ||
             context.chosenTargetInstanceId === chosenMainScheme.card?.code)
         ) {
-          if (isMainBlocked) {
-            return [];
-          }
           return [
             {
               kind: 'scheme',
@@ -1182,12 +1162,9 @@ function resolveSchemeAndContinuityTarget(
             },
           ];
         }
-        if (isMainBlocked) {
-          return [];
-        }
       }
       const activeMainScheme = getActiveMainScheme(state);
-      if (activeMainScheme && !isMainBlocked) {
+      if (activeMainScheme) {
         return [
           {
             kind: 'scheme',
@@ -1486,8 +1463,6 @@ export interface TargetFilterOptions {
   traits?: string[];
   status?: StatusCard | 'STUNNED' | 'CONFUSED' | 'TOUGH';
   maxPerHost?: number;
-  ignoresCrisis?: boolean;
-  isPlayerSource?: boolean;
 }
 
 /**
@@ -1750,16 +1725,11 @@ export function getEligibleTargets(
       break;
     }
 
-    case 'CHOSEN_SCHEME': {
-      const isPlayerSource = filterOptions?.isPlayerSource ?? true;
-      const hasPatrol = (resolvingPlayer?.engagedMinions || []).some((m) =>
-        hasKeyword(m.card, Keyword.PATROL),
-      );
-      const isMainBlocked =
-        isPlayerSource && (hasCrisisInPlay(state) || hasPatrol) && !filterOptions?.ignoresCrisis;
-
+    case 'MAIN_SCHEME':
+    case 'CHOSEN_SCHEME':
+    case 'ALL_SCHEMES': {
       const activeMainScheme = getActiveMainScheme(state);
-      if (activeMainScheme && !isMainBlocked) {
+      if (activeMainScheme) {
         candidates.push({
           kind: 'scheme',
           entityType: 'main_scheme',
@@ -1767,6 +1737,7 @@ export function getEligibleTargets(
           id: activeMainScheme.instanceId || activeMainScheme.card.code,
         });
       }
+      if (targetScope === 'MAIN_SCHEME') break;
       for (const s of state.sideSchemes || []) {
         candidates.push({
           kind: 'scheme',
@@ -1778,6 +1749,7 @@ export function getEligibleTargets(
       break;
     }
 
+    case 'SIDE_SCHEME':
     case 'CHOSEN_SIDE_SCHEME': {
       for (const s of state.sideSchemes || []) {
         candidates.push({

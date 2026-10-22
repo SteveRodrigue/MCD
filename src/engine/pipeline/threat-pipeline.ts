@@ -5,12 +5,10 @@ import {
   StatusCard,
   CardInstance,
   SideSchemeState,
-  Keyword,
   getActiveMainScheme,
-  hasKeyword,
 } from '@engine/models';
 import { consumeEntityStatusCards } from './stat-calculator';
-import { hasCrisisInPlay } from './crisis';
+import { getMainSchemeThreatBlock, type MainSchemeThreatBlock } from './target-restrictions';
 import { handleMainSchemeCompletion } from './scenario-helpers';
 import { defeatSideScheme } from '../effects';
 import { nextEngineId } from '../state/rng';
@@ -57,8 +55,10 @@ export interface ThwartRequest {
   targetType: ThreatTargetType;
   targetInstanceId?: string;
   thwartValue: number;
+  /** False for an encounter card's ability: Crisis and Patrol limit player cards only. */
+  isPlayerSource?: boolean;
+  /** The step may remove threat while Crisis is in play; Patrol still applies. */
   ignoresCrisis?: boolean;
-  ignoresPatrol?: boolean;
   suppressTrigger?: boolean;
   /** Card or character shown as the source in the combat log; defaults to the thwarter's name. */
   sourceName?: string;
@@ -442,31 +442,17 @@ export function removeThreatFromScheme(
   return { found: true, removed, targetSchemeName, remainingThreat, schemeDefeated, onomatopoeia };
 }
 
-/**
- * Why cards cannot remove threat from the main scheme right now: a Crisis icon in play, or an
- * engaged minion with Patrol (RR v1.8 "Crisis Icon", "Patrol").
- */
-function getMainSchemeBlock(
-  state: GameState,
-  player: PlayerState,
-  request: ThwartRequest,
-):
-  | {
-      key: 'card.effect.threatBlockedByCrisis' | 'card.effect.threatBlockedByPatrol';
-      onomatopoeia: string;
-    }
-  | undefined {
-  if (!request.ignoresCrisis && hasCrisisInPlay(state)) {
-    return { key: 'card.effect.threatBlockedByCrisis', onomatopoeia: 'CRISIS BLOCKS!' };
+/** How a blocked main scheme thwart is announced in the game log. */
+const MAIN_SCHEME_BLOCK_LOG: Record<
+  MainSchemeThreatBlock,
+  {
+    key: 'card.effect.threatBlockedByCrisis' | 'card.effect.threatBlockedByPatrol';
+    onomatopoeia: string;
   }
-  if (
-    !request.ignoresPatrol &&
-    player.engagedMinions.some((m) => hasKeyword(m.card, Keyword.PATROL))
-  ) {
-    return { key: 'card.effect.threatBlockedByPatrol', onomatopoeia: 'PATROL BLOCKS!' };
-  }
-  return undefined;
-}
+> = {
+  CRISIS: { key: 'card.effect.threatBlockedByCrisis', onomatopoeia: 'CRISIS BLOCKS!' },
+  PATROL: { key: 'card.effect.threatBlockedByPatrol', onomatopoeia: 'PATROL BLOCKS!' },
+};
 
 /**
  * Universal RR v1.8 Thwart & Threat Removal Pipeline.
@@ -517,12 +503,17 @@ export function applyThwart(
   // STEP 2: Crisis Icon and Patrol Check (RR v1.8 p. 11, 20)
   // ---------------------------------------------------------------------------
   const mainSchemeBlock =
-    targetType === 'main_scheme' && getMainSchemeBlock(state, player, request);
+    targetType === 'main_scheme'
+      ? getMainSchemeThreatBlock(state, player, {
+          isPlayerSource: request.isPlayerSource,
+          ignoresCrisis: request.ignoresCrisis,
+        })
+      : undefined;
   if (mainSchemeBlock) {
-    const { onomatopoeia } = mainSchemeBlock;
+    const { key, onomatopoeia } = MAIN_SCHEME_BLOCK_LOG[mainSchemeBlock];
     appendLog(state, {
       category: 'ability',
-      key: mainSchemeBlock.key,
+      key,
       params: {
         actor: player.name,
         source: request.sourceName ?? thwarterName,

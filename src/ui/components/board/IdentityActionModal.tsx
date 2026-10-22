@@ -14,8 +14,9 @@ import {
 import {
   canChangeForm,
   canBasicRecover,
-  canBasicThwart,
+  canThwart,
   canInitiateAbility,
+  HERO_ACTOR,
 } from '../../../engine/pipeline/legality-checker';
 import { getIdentityAttackState } from './identity-action-utils';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
@@ -64,11 +65,11 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
   const { canAttack, canAttackVillain, eligibleMinion } = attackState;
 
   // 4. Thwart Check
-  const canThwartMain = canBasicThwart(gameState, player.id, 'main_scheme').allowed;
+  const canThwartMain = canThwart(gameState, player.id, HERO_ACTOR, 'main_scheme').allowed;
   const eligibleSideScheme = gameState.sideSchemes.find(
-    (s) => canBasicThwart(gameState, player.id, 'side_scheme', s.instanceId).allowed,
+    (s) => canThwart(gameState, player.id, HERO_ACTOR, 'side_scheme', s.instanceId).allowed,
   );
-  const canThwart = isHero && isPlayerTurn && (canThwartMain || !!eligibleSideScheme);
+  const canThwartScheme = isHero && isPlayerTurn && (canThwartMain || !!eligibleSideScheme);
 
   // 5. Identity Abilities
   const idAbilities = player.activeFormCard.enrichment?.abilities || [];
@@ -382,7 +383,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
 
               {/* Hero Thwart */}
               <button
-                disabled={!canThwart}
+                disabled={!canThwartScheme}
                 onClick={() => {
                   onClose();
                   if (onInitiateHeroThwart) {
@@ -403,7 +404,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                   }
                 }}
                 className={`w-full text-left p-2.5 rounded-lg border-2 border-comic-black transition-all flex items-center justify-between gap-2 shadow-comic-sm ${
-                  canThwart
+                  canThwartScheme
                     ? 'bg-sky-100 hover:bg-sky-200 cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
                     : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
                 }`}
@@ -411,7 +412,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                 <div className="flex items-center gap-2">
                   <div
                     className={`p-1.5 rounded-full border border-comic-black ${
-                      canThwart ? 'bg-sky-500 text-white' : 'bg-slate-300 text-slate-500'
+                      canThwartScheme ? 'bg-sky-500 text-white' : 'bg-slate-300 text-slate-500'
                     }`}
                   >
                     <Target className="w-4 h-4" />
@@ -423,7 +424,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                     <span className="text-[10px] text-slate-600 block">
                       {player.exhausted
                         ? 'Hero is exhausted'
-                        : !canThwart
+                        : !canThwartScheme
                           ? 'No threat on schemes (Target not valid)'
                           : canThwartMain
                             ? `Exhaust to remove ${effectiveStats.thwart} threat from main scheme`
@@ -433,7 +434,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                 </div>
                 <span
                   className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border border-comic-black ${
-                    canThwart ? 'bg-comic-black text-sky-300' : 'bg-slate-300 text-slate-500'
+                    canThwartScheme ? 'bg-comic-black text-sky-300' : 'bg-slate-300 text-slate-500'
                   } shrink-0`}
                 >
                   {effectiveStats.thwart} THW

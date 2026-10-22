@@ -113,7 +113,6 @@ function handleRemoveThreat(
   // Crisis and Patrol limit player cards only; encounter card abilities are not affected (RR v1.8
   // "Crisis Icon"). applyThwart blocks and announces them for the main scheme.
   const isPlayerSource = context.sourceCardInstance?.card?.faction !== 'encounter';
-  const ignoresCrisis = Boolean(params.ignoresCrisis || context.ignoresCrisis) || !isPlayerSource;
 
   const resolved = resolveSchemeTargets(state, targetParam, targetContext);
   const targetSchemes: SchemeTarget[] =
@@ -140,8 +139,8 @@ function handleRemoveThreat(
       targetType: isSide ? 'side_scheme' : 'main_scheme',
       targetInstanceId: isSide ? st.id : undefined,
       thwartValue: amount,
-      ignoresCrisis,
-      ignoresPatrol: !isPlayerSource,
+      isPlayerSource,
+      ignoresCrisis: Boolean(params.ignoresCrisis),
       suppressTrigger: Boolean(context.labelledThwart),
       sourceName: context.sourceCardInstance?.card?.name,
     });

@@ -218,14 +218,14 @@ Current state: only the comic game log is localized. There is no general `t()` h
 
 ## 9. Code Style & Naming Conventions
 
-| Category                  | Convention                                         | Example                                     |
-| :------------------------ | :------------------------------------------------- | :------------------------------------------ |
-| **Interfaces / Types**    | PascalCase                                         | `GameState`, `CardDefinition`, `GameAction` |
-| **Enums / Const Objects** | PascalCase (name) / UPPER_SNAKE (members)           | `CardType`, `Keyword.GUARD`, `StatusCard.TOUGH` |
-| **Functions / Methods**   | camelCase                                          | `calculateDamage()`, `resolveTrigger()`     |
-| **React Components**      | PascalCase                                         | `HeroPlaymat.tsx`, `ComicOnomatopoeia.tsx`  |
-| **Constants**             | UPPER_SNAKE_CASE                                   | `EFFECT_HANDLERS`, `FACT_PRODUCERS`           |
-| **File Names**            | kebab-case or camelCase (matching module standard) | `game-state.ts`, `card-loader.ts`           |
+| Category                  | Convention                                         | Example                                         |
+| :------------------------ | :------------------------------------------------- | :---------------------------------------------- |
+| **Interfaces / Types**    | PascalCase                                         | `GameState`, `CardDefinition`, `GameAction`     |
+| **Enums / Const Objects** | PascalCase (name) / UPPER_SNAKE (members)          | `CardType`, `Keyword.GUARD`, `StatusCard.TOUGH` |
+| **Functions / Methods**   | camelCase                                          | `calculateDamage()`, `resolveTrigger()`         |
+| **React Components**      | PascalCase                                         | `HeroPlaymat.tsx`, `ComicOnomatopoeia.tsx`      |
+| **Constants**             | UPPER_SNAKE_CASE                                   | `EFFECT_HANDLERS`, `FACT_PRODUCERS`             |
+| **File Names**            | kebab-case or camelCase (matching module standard) | `game-state.ts`, `card-loader.ts`               |
 
 ---
 
@@ -305,10 +305,15 @@ Each rule below comes from a defect found in code review or a fix commit. Check 
 
    ```typescript
    // ❌ BAD: lookup fails, check is skipped, validation still "passes"
-   try { type = extractCard(code)?.type_code; } catch { /* ignore */ }
+   try {
+     type = extractCard(code)?.type_code;
+   } catch {
+     /* ignore */
+   }
 
    // ✅ GOOD: say the check could not run
-   if (!type) errors.push({ path: 'type', message: 'Card type unresolved; pass it as the 2nd argument.' });
+   if (!type)
+     errors.push({ path: 'type', message: 'Card type unresolved; pass it as the 2nd argument.' });
    ```
 
 2. **Identify by code, never by text.** Match cards by `cardCode` or an enum. Do not use name substrings or a regex over free-form input.
@@ -356,7 +361,7 @@ Each rule below comes from a defect found in code review or a fix commit. Check 
 
 10. **Delete what you orphan.** Run `rtk npm run deadcode` after refactors. Remove unused exports in the same change.
 
-11. **Legality has one gate.** Every "can this be played, used or offered now?" question goes through `legality-checker.ts` and the target-validity gate `checkAbilityTargets` (`src/engine/effects/target-choice.ts`, ADR-0090): trigger scans, queued prompts, prompt answers, action buttons, event play and the UI (through the engine) all ask it. Fix a legality defect in the gate, for every caller. A new effect adds a rule to `AFFECT_RULES` (or a reasoned entry in `EFFECTS_WITHOUT_AFFECT_RULE`); never add an effect-name or selector check in a caller. `tests/engine/legality-gate-guards.test.ts` fails on a new one.
+11. **Legality has one gate.** Every "can this be played, used or offered now?" question goes through `legality-checker.ts` and the target-validity gate `checkAbilityTargets` (`src/engine/effects/target-choice.ts`, ADR-0090): trigger scans, queued prompts, prompt answers, action buttons, event play and the UI (through the engine) all ask it. Fix a legality defect in the gate, for every caller. Crisis, Patrol and Guard are read only in `src/engine/pipeline/target-restrictions.ts` (`getMainSchemeThreatBlock`, `isVillainAttackBlockedByGuard`); basic attack and thwart go through `canAttack` / `canThwart`. A new effect adds a rule to `AFFECT_RULES` (or a reasoned entry in `EFFECTS_WITHOUT_AFFECT_RULE`); never add an effect-name or selector check in a caller. `tests/engine/legality-gate-guards.test.ts` fails on a new one.
 
     ```typescript
     // ❌ BAD: a caller decides what "ready" needs, so READY on SELF_HERO slips through

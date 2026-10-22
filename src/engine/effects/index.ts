@@ -146,7 +146,6 @@ export interface EffectExecutionContext {
   /** Host ability context for timing, trigger, and cost evaluation */
   ability?: CardAbility;
   distinctFromId?: string;
-  ignoresCrisis?: boolean;
   /** Attack being resolved (boost cards): who attacks and who defended, for UNDEFENDED_ATTACK. */
   attackerType?: 'VILLAIN' | 'MINION';
   defenderType?: 'HERO' | 'ALLY' | 'UNDEFENDED';

@@ -12,11 +12,12 @@ import {
   getKeywordValue,
 } from '@engine/models';
 import {
-  canBasicAttack,
-  canBasicThwart,
+  canAttack,
+  canThwart,
   canPlayCard,
   isCardRestricted,
   getCardRestrictedWeight,
+  HERO_ACTOR,
 } from '@engine/pipeline/legality-checker';
 import { CardCatalog } from '@data/importer/card-loader';
 import { getStarterDeck } from '@engine/decks/starter-decks';
@@ -125,13 +126,14 @@ describe('Zero Card Text Parsing Contract (ADR-0019)', () => {
         players: [player as PlayerState],
       };
 
-      const villainAttackCheck = canBasicAttack(state as GameState, 'p1', 'villain');
+      const villainAttackCheck = canAttack(state as GameState, 'p1', HERO_ACTOR, 'villain');
       expect(villainAttackCheck.allowed).toBe(false);
       expect(villainAttackCheck.reason).toContain('Guard');
 
-      const minionAttackCheck = canBasicAttack(
+      const minionAttackCheck = canAttack(
         state as GameState,
         'p1',
+        HERO_ACTOR,
         'minion',
         guardMinion.instanceId,
       );
@@ -161,10 +163,11 @@ describe('Zero Card Text Parsing Contract (ADR-0019)', () => {
         activePlayerIndex: 0,
         players: [player as PlayerState],
         sideSchemes: [],
+        villains: [],
         mainSchemes: [{ ...mainSchemeInst, threat: 5 } as any],
       };
 
-      const mainSchemeThwartCheck = canBasicThwart(state as GameState, 'p1', 'main_scheme');
+      const mainSchemeThwartCheck = canThwart(state as GameState, 'p1', HERO_ACTOR, 'main_scheme');
       expect(mainSchemeThwartCheck.allowed).toBe(false);
       expect(mainSchemeThwartCheck.reason).toContain('Patrol');
     });
@@ -197,7 +200,7 @@ describe('Zero Card Text Parsing Contract (ADR-0019)', () => {
         mainSchemes: [{ ...mainSchemeInst, threat: 5 } as any],
       };
 
-      const mainSchemeThwartCheck = canBasicThwart(state as GameState, 'p1', 'main_scheme');
+      const mainSchemeThwartCheck = canThwart(state as GameState, 'p1', HERO_ACTOR, 'main_scheme');
       expect(mainSchemeThwartCheck.allowed).toBe(false);
       expect(mainSchemeThwartCheck.reason).toContain('Crisis');
     });

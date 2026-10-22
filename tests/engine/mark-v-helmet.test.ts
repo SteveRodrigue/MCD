@@ -152,4 +152,90 @@ describe('Mark V Helmet (01037): remove 1 threat from a scheme, from each scheme
     expect(mainThreat()).toBe(0);
     expect(helmet.exhausted).toBeFalsy();
   });
+
+  describe('combat log: every scheme gets its own entry with the source (#343)', () => {
+    const logsOf = (key: string) => state.log.filter((l) => l.key === key);
+    const mainName = () => getActiveMainScheme(state).card.name;
+    const sideName = () => cardCatalog.getCard(PLAIN_SIDE_SCHEME)!.name;
+
+    it('Aerial: one removeThreat entry per scheme, each with actor, source, target, amount and remaining threat', () => {
+      grantAerial();
+
+      state = useHelmet().state;
+
+      expect(logsOf('card.effect.removeThreat').map((l) => l.params)).toEqual([
+        {
+          actor: 'Iron Man',
+          source: 'Mark V Helmet',
+          target: mainName(),
+          amount: 1,
+          remainingThreat: 3,
+        },
+        {
+          actor: 'Iron Man',
+          source: 'Mark V Helmet',
+          target: sideName(),
+          amount: 1,
+          remainingThreat: 2,
+        },
+        {
+          actor: 'Iron Man',
+          source: 'Mark V Helmet',
+          target: sideName(),
+          amount: 1,
+          remainingThreat: 1,
+        },
+      ]);
+    });
+
+    it('Aerial with a Crisis side scheme: the blocked main scheme is announced, the side schemes each log a removal', () => {
+      grantAerial();
+      state.sideSchemes.push(sideScheme('side_crisis', CRISIS_SIDE_SCHEME, 2));
+
+      state = useHelmet().state;
+
+      expect(logsOf('card.effect.threatBlockedByCrisis').map((l) => l.params)).toEqual([
+        { actor: 'Iron Man', source: 'Mark V Helmet', target: mainName() },
+      ]);
+      expect(logsOf('card.effect.removeThreat')).toHaveLength(3);
+      expect(logsOf('card.effect.removeThreat').map((l) => l.params?.target)).not.toContain(
+        mainName(),
+      );
+    });
+
+    it('Aerial with a Patrol minion engaged: the blocked main scheme is announced, the side schemes each log a removal', () => {
+      grantAerial();
+      const baseMinion = cardCatalog.getCard('01101') as MinionCard;
+      state.players[0].engagedMinions = [
+        createCardInstance({ ...baseMinion, keywords: [Keyword.PATROL] } as MinionCard),
+      ];
+
+      state = useHelmet().state;
+
+      expect(logsOf('card.effect.threatBlockedByPatrol').map((l) => l.params)).toEqual([
+        { actor: 'Iron Man', source: 'Mark V Helmet', target: mainName() },
+      ]);
+      expect(logsOf('card.effect.removeThreat')).toHaveLength(2);
+    });
+
+    it('without Aerial, the one chosen scheme writes exactly one removeThreat entry', () => {
+      state = useHelmet().state;
+      const pick = peekDecisionPrompt(state)!.options.find((o) => o.id === 'side_a')!;
+      state = dispatchAction(state, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: pick.id,
+      }).state;
+
+      expect(logsOf('card.effect.removeThreat').map((l) => l.params)).toEqual([
+        {
+          actor: 'Iron Man',
+          source: 'Mark V Helmet',
+          target: sideName(),
+          amount: 1,
+          remainingThreat: 2,
+        },
+      ]);
+    });
+  });
 });

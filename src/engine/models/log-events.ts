@@ -38,13 +38,6 @@ export interface LogEvents {
   'dev.card.tutor': { card: string; actor: string };
   'player.action.changeForm': { actor: string; form: string };
   'player.action.recover': { actor: string; amount: number; health?: number };
-  'player.action.thwartMainScheme': { actor: string; amount: number; remainingThreat?: number };
-  'player.action.thwartSideScheme': {
-    actor: string;
-    target: string;
-    amount: number;
-    remainingThreat?: number;
-  };
   'player.action.allyAttack': { actor: string; card: string; amount: number; target: string };
   'player.action.attackVillain': { amount: number; actor?: string; target?: string };
   'player.deck.exhausted': { actor: string };
@@ -127,14 +120,16 @@ export interface LogEvents {
     remaining?: number;
   };
   'card.effect.readyCharacter': { actor: string; target: string };
+  /** One entry per scheme, whatever removed the threat; `amount` is what was really removed (0 included). */
   'card.effect.removeThreat': {
     actor: string;
+    source: string;
     target: string;
     amount: number;
-    remainingThreat?: number;
+    remainingThreat: number;
   };
-  'card.effect.threatBlockedByCrisis': { actor: string; target: string };
-  'card.effect.threatBlockedByPatrol': { actor: string; target: string };
+  'card.effect.threatBlockedByCrisis': { actor: string; source: string; target: string };
+  'card.effect.threatBlockedByPatrol': { actor: string; source: string; target: string };
   'card.play.cancelled': { actor: string; card: string };
   'card.playFromZone': { actor: string; card: string; source?: string };
   'card.playFromZone.passed': { actor: string; source?: string };
@@ -478,8 +473,6 @@ export const ALL_LOG_EVENT_KEYS = [
   'dev.card.tutor',
   'player.action.changeForm',
   'player.action.recover',
-  'player.action.thwartMainScheme',
-  'player.action.thwartSideScheme',
   'player.action.allyAttack',
   'player.action.attackVillain',
   'player.deck.exhausted',

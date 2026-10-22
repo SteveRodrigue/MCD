@@ -203,8 +203,8 @@ export const EFFECTS_WITH_AFFECT_RULE: readonly string[] = Object.keys(AFFECT_RU
 const SELF_SELECTORS: ReadonlySet<string> = new Set(['SELF_HERO', 'SELF_IDENTITY']);
 
 /**
- * Scheme selectors the ability names rather than the player chooses: the gate judges them like a
- * chosen scheme, but no prompt is opened for them (#331).
+ * Scheme selectors the ability names rather than the player chooses. No prompt is opened for them,
+ * and the gate judges them only for the effects in `NAMED_SCHEME_JUDGED_EFFECTS` (#331, #368).
  */
 const NAMED_SCHEME_SELECTORS: ReadonlySet<string> = new Set([
   'MAIN_SCHEME',
@@ -212,13 +212,18 @@ const NAMED_SCHEME_SELECTORS: ReadonlySet<string> = new Set([
   'ALL_SCHEMES',
 ]);
 
+/**
+ * Effects a named scheme is judged for: Crisis and Patrol limit them (#331). Any other effect on a
+ * named scheme needs no valid target, so a forced ability naming one is never skipped (#368).
+ */
+const NAMED_SCHEME_JUDGED_EFFECTS: ReadonlySet<string> = new Set(['REMOVE_THREAT']);
+
 /** The selector whose targets the legality gate enumerates for this step (chosen or self). */
 const judgedSelector = (step: AbilityStep): string | undefined => {
   const target = step.effectParams?.target;
-  return typeof target === 'string' &&
-    (PLAYER_CHOSEN_SELECTORS.has(target) ||
-      SELF_SELECTORS.has(target) ||
-      NAMED_SCHEME_SELECTORS.has(target))
+  if (typeof target !== 'string') return undefined;
+  if (PLAYER_CHOSEN_SELECTORS.has(target) || SELF_SELECTORS.has(target)) return target;
+  return NAMED_SCHEME_SELECTORS.has(target) && NAMED_SCHEME_JUDGED_EFFECTS.has(step.effect)
     ? target
     : undefined;
 };

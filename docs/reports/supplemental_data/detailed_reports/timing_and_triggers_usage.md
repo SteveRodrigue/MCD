@@ -122,7 +122,7 @@
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 
-### <a id="forced-response"></a>`FORCED_RESPONSE` (16 Cards)
+### <a id="forced-response"></a>`FORCED_RESPONSE` (14 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -139,8 +139,6 @@
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 | `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
-| `01194` | **Unknown Card #01194** | `core_encounter` | `masterplan_when_revealed` |
-| `01195` | **Unknown Card #01195** | `core_encounter` | `under_fire_when_revealed` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
 ### <a id="response"></a>`RESPONSE` (13 Cards)
@@ -244,7 +242,7 @@
 
 ## 2. Trigger Windows (`TriggerTypeSchema` — 20/31 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (36 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (34 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -280,8 +278,6 @@
 | `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
-| `01194` | **Unknown Card #01194** | `core_encounter` | `masterplan_when_revealed` |
-| `01195` | **Unknown Card #01195** | `core_encounter` | `under_fire_when_revealed` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 

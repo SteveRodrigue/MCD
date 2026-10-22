@@ -69,14 +69,16 @@ Assess two independent dimensions. Roadmap alignment affects priority, not eligi
    migration, conceal regressions, create a security or accessibility risk, or become materially
    more expensive to fix later.
 
-Apply these rules:
+Apply these rules (they set priority only: **debt in the path of the fix is never deferred**, see the
+[No Tech Debt Mandate](../../rules/shared-quality-gates.md#no-tech-debt-mandate)):
 
 - Never reject or automatically defer a bug solely because its card, scenario, component, or
   subsystem is outside the active roadmap or milestone.
 - Prioritize active-gate blockers when severity and long-term risk are otherwise comparable.
 - Permit an off-milestone fix when severity, cross-cutting blast radius, compounding risk,
   prevention value, or explicit user direction justifies addressing it now.
-- When deferring a valid bug, record the evidence-based reason, prerequisites, expected future
+- Deferral applies only to a separate, unrelated bug, never to cleanup in the path of the one being
+  fixed, and never as a way to shrink the fix. When deferring a valid bug, record the evidence-based reason, prerequisites, expected future
   impact, and the milestone or review condition that should reactivate it. Use only repository
   labels that have been verified to exist; do not invent release-specific labels.
 - Record the triage outcome in the issue and implementation plan as one of:
@@ -113,9 +115,11 @@ Use the command and body in [`issue-template.md`](issue-template.md) (strict: ke
 - Diagnose the exact line of code, mutation logic, or missing condition responsible for the failure.
 - **Legality check:** If the defect is an offer, play or use that was (il)legal, the fix belongs in the legality gate (`legality-checker.ts`, `checkAbilityTargets`, ADR-0090) for all callers, not in the caller.
 - **Refactor-First Check:** Inspect surrounding functions and callers; if the bug comes from duplicated or tangled logic, plan the merge/parameterize fix per `coding-and-testing-rules.md`.
+- **Debt sweep (mandatory):** List every piece of debt the investigation touched or exposed: orphan or dead data, duplicate paths, stale allow-list entries, tracked gaps for the touched effect, tangled code. All of it goes into the plan as work (**Debt Removed**), with a guard test when the class can recur. Do not offer "leave it", "close as invalid" or "report separately" as options.
+- **Wrong issue premise:** If the issue is wrong in part (wrong card code, no live repro), comment the corrected facts on the issue and fix the real defect and debt found. Do not close it and stop. Reproduce with the closest real or synthetic case.
 - **MANDATORY REVIEW GATE:** Create an `implementation_plan.md` artifact detailing:
   1. **Root-Cause Analysis:** Why the defect occurs with reference to game state snapshots in `logs/gamestates/` and RR v1.8 rules.
-  2. **Simplification & Refactor Check:** What existing functions/helpers are being merged, parameterized, or cleaned up so minimal net-new code is added.
+  2. **Simplification & Refactor Check and Debt Removed:** What existing functions/helpers are being merged, parameterized, or cleaned up so minimal net-new code is added, and the full list of debt deleted in this change ("none found" must say where you looked).
   3. **Blast-Radius Classification:** Tier 1, 2, or 3.
   4. **Proposed Code Fix:** Exact lines and files to modify.
   5. **Regression Verification Strategy:** Specific targeted test files to run (prefer extending an existing test file over creating duplicate test setup).

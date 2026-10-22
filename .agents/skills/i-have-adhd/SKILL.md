@@ -63,7 +63,7 @@ Good: "Next: run `npm test` and paste the first failing line."
 
 ### 4. Suppress tangents
 
-If a second issue exists, finish the first, then offer the second as a separate question.
+If a second, unrelated issue exists, finish the first, then offer the second as a separate question. Debt in the path of the change is not a tangent: fix it in the same change (project rule: No Tech Debt Mandate).
 
 Bad: "Here's the fix. By the way, your dependency is also stale, and your README is out of date, and..."
 Good: "Here's the fix. Separately: there is also a stale dependency. Want me to handle that next?"

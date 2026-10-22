@@ -44,6 +44,13 @@ const REMOVED_CARD_FIELDS = [
   'victoryPoints',
 ];
 
+describe('Supplemental pack guards: every entry belongs to a card', () => {
+  it('no supplemental entry names a code the upstream card data does not have', () => {
+    const orphans = entries.filter(({ code }) => !(code in upstream)).map(({ file, code }) => `${file}:${code}`);
+    expect(orphans).toEqual([]);
+  });
+});
+
 describe('Supplemental pack guards: removed fields stay removed (data-level regression guard)', () => {
   it('scans every supplemental pack', () => {
     expect(packs.length).toBeGreaterThanOrEqual(5);

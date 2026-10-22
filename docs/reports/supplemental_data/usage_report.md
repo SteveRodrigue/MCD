@@ -8,8 +8,8 @@
 
 | Metric | Count | Health / Coverage | Description |
 | :--- | :---: | :---: | :--- |
-| **Total Cards Registered** | **162** | 100% | Total cards present in `src/data/supplemental/` |
-| **Active Declared Cards** | **147** | - | Cards with executable `abilities: [...]` |
+| **Total Cards Registered** | **160** | 100% | Total cards present in `src/data/supplemental/` |
+| **Active Declared Cards** | **145** | - | Cards with executable `abilities: [...]` |
 | **No Supplemental Needed** | [14](detailed_reports/vanilla_and_passive_cards.md) | Verified | Vanilla / passive cards explicitly requiring no supplemental hooks |
 | **Open Ambiguity Reports** | **2** | Blocked | Cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🟢 0 | Cards marked `noSupplementalNeeded` that have printed rules text |
@@ -20,7 +20,7 @@
 | **Step Conditions Code Path Coverage** | **100.0%** | **0/0** | [0 In Use](detailed_reports/condition_gates_usage.md) |
 | **Trigger Types Code Path Coverage** | **100.0%** | **31/31** | [20 In Use](detailed_reports/timing_and_triggers_usage.md) |
 | **Timing Types Code Path Coverage** | **100.0%** | **19/19** | [15 In Use](detailed_reports/timing_and_triggers_usage.md) |
-| **Total Abilities Declared** | **166** | - | Total individual ability definitions declared |
+| **Total Abilities Declared** | **164** | - | Total individual ability definitions declared |
 | **Multi-Step Pipelines (2+ Steps)** | [32](detailed_reports/multi_ability_and_multistep_cards.md) | - | Abilities decomposed into sequenced execution pipelines |
 | **Cards with Multiple Abilities (2+)** | [17](detailed_reports/multi_ability_and_multistep_cards.md) | - | Cards declaring more than 1 distinct ability header |
 
@@ -72,7 +72,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | `VILLAIN` | **5** | 5 | [Inspect Cards](detailed_reports/target_selectors_usage.md#villain) |
 | `SELF_HERO` | **5** | 5 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self-hero) |
 | `CHOSEN_PLAYER` | **4** | 4 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-player) |
-| `MAIN_SCHEME` | **4** | 3 | [Inspect Cards](detailed_reports/target_selectors_usage.md#main-scheme) |
+| `MAIN_SCHEME` | **3** | 2 | [Inspect Cards](detailed_reports/target_selectors_usage.md#main-scheme) |
 | `CHOSEN_MINION` | **2** | 2 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-minion) |
 | `ALL_ENEMIES` | **2** | 2 | [Inspect Cards](detailed_reports/target_selectors_usage.md#all-enemies) |
 
@@ -97,8 +97,8 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | Effect Primitive | Declaring Cards | Occurrences | Detailed Card List |
 | :--- | :---: | :---: | :--- |
 | `DEAL_DAMAGE` | **23 cards** | 24 steps | [View Cards](detailed_reports/effects_usage.md#deal-damage) |
-| `DISCARD` | **15 cards** | 16 steps | [View Cards](detailed_reports/effects_usage.md#discard) |
-| `ADD_STATUS` | **12 cards** | 14 steps | [View Cards](detailed_reports/effects_usage.md#add-status) |
+| `DISCARD` | **14 cards** | 15 steps | [View Cards](detailed_reports/effects_usage.md#discard) |
+| `ADD_STATUS` | **11 cards** | 13 steps | [View Cards](detailed_reports/effects_usage.md#add-status) |
 | `DRAW` | **11 cards** | 11 steps | [View Cards](detailed_reports/effects_usage.md#draw) |
 | `MODIFY_STAT` | **11 cards** | 13 steps | [View Cards](detailed_reports/effects_usage.md#modify-stat) |
 | `SURGE` | **11 cards** | 11 steps | [View Cards](detailed_reports/effects_usage.md#surge) |

@@ -243,7 +243,10 @@ function applyDamageAndCheckDefeat(
   targetDefeated: boolean;
   excessDamage: number;
   onomatopoeia: string | undefined;
+  /** A minion's or ally's defeat, announced by the caller once the whole occurrence has resolved. */
+  pendingDefeat?: DefeatDispatch;
 } {
+  let pendingDefeat: DefeatDispatch | undefined;
   let targetDefeated = false;
   let excessDamage = 0;
   let resultOnomatopoeia = onomatopoeia;
@@ -320,12 +323,12 @@ function applyDamageAndCheckDefeat(
             if (idx !== -1) {
               const [defeatedMinion] = targetPlayer.engagedMinions.splice(idx, 1);
               processHostDefeated(state, defeatedMinion);
-              dispatchDefeat(state, {
+              pendingDefeat = {
                 targetPlayerId: targetPlayer.id,
                 targetInstanceId: defeatedMinion.instanceId,
                 targetType: 'MINION',
                 defeatSource,
-              });
+              };
               moveDefeatedCardToPile(state, defeatedMinion, state.encounterDiscard);
             }
           }
@@ -396,12 +399,12 @@ function applyDamageAndCheckDefeat(
             if (idx !== -1) {
               const [defeatedAlly] = ownerPlayer.allies.splice(idx, 1);
               processHostDefeated(state, defeatedAlly);
-              dispatchDefeat(state, {
+              pendingDefeat = {
                 targetPlayerId: ownerPlayer.id,
                 targetInstanceId: defeatedAlly.instanceId,
                 targetType: 'ALLY',
                 defeatSource,
-              });
+              };
               const discardOwner =
                 (defeatedAlly.ownerId
                   ? state.players.find((p) => p.id === defeatedAlly.ownerId)
@@ -420,6 +423,7 @@ function applyDamageAndCheckDefeat(
     targetDefeated,
     excessDamage,
     onomatopoeia: resultOnomatopoeia,
+    pendingDefeat,
   };
 }
 
@@ -678,6 +682,10 @@ export function applyDamageToTarget(
       });
     }
   }
+
+  // One occurrence, one window (RR v1.8 Triggering Condition): the defeat of a minion or ally is
+  // announced once its state changes, Overkill included, have all been applied.
+  if (defeatRes.pendingDefeat) dispatchDefeat(state, defeatRes.pendingDefeat);
 
   // ---------------------------------------------------------------------------
   // STEP 9: Retaliate X & Post-Resolution Triggers (RR v1.8 Step 9)

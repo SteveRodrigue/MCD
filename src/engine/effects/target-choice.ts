@@ -17,7 +17,11 @@ import {
 } from '../pipeline/stat-calculator';
 import { isImmuneToDamage } from '../pipeline/damage-immunity';
 import { isStepGateClosedByState } from '../pipeline/step-gate-evaluator';
-import { getMainSchemeThreatBlock } from '../pipeline/target-restrictions';
+import {
+  GUARD_BLOCK_REASON,
+  getMainSchemeThreatBlock,
+  isVillainAttackBlockedByGuard,
+} from '../pipeline/target-restrictions';
 import { nextEngineId } from '../state/rng';
 import { getEligibleTargets, resolveTargets, type ResolvedTarget } from './target-resolver';
 import type { EffectExecutionContext } from './index';
@@ -67,6 +71,7 @@ type AffectRule = (
   target: ResolvedTarget,
   sourceCard: CardInstance | undefined,
   actor: PlayerState,
+  ability?: CardAbility,
 ) => boolean;
 
 const isExhausted = (target: ResolvedTarget): boolean =>
@@ -80,8 +85,16 @@ const isExhausted = (target: ResolvedTarget): boolean =>
 const AFFECT_RULES: Partial<Record<EffectType, AffectRule>> = {
   // A character that cannot take damage (from this source) is not a valid target of an ability
   // whose only effect is damage (#297).
-  DEAL_DAMAGE: (state, _step, target, sourceCard) =>
-    !(target.kind === 'character' && isImmuneToDamage(state, target.entity, sourceCard)),
+  // The villain is also not a valid target of an attack while a Guard minion is engaged with the
+  // actor (RR v1.8 "Guard"; #331). Damage that is not an attack is not limited.
+  DEAL_DAMAGE: (state, _step, target, sourceCard, actor, ability) =>
+    !(target.kind === 'character' && isImmuneToDamage(state, target.entity, sourceCard)) &&
+    !(
+      target.kind === 'character' &&
+      target.entityType === 'villain' &&
+      ability?.labels?.includes('ATTACK') &&
+      isVillainAttackBlockedByGuard(actor)
+    ),
   TRANSFER_DAMAGE: (state, _step, target, sourceCard) =>
     !(target.kind === 'character' && isImmuneToDamage(state, target.entity, sourceCard)),
   ADD_STATUS: (_state, step, target) => {
@@ -193,8 +206,9 @@ export const EFFECTS_WITHOUT_AFFECT_RULE: Readonly<Record<string, readonly Effec
 };
 
 /** Whether this step's effect can affect the target (RR v1.8 "Target": valid targets only). */
-export const canAffect: AffectRule = (state, step, target, sourceCard, actor) =>
-  AFFECT_RULES[step.effect as EffectType]?.(state, step, target, sourceCard, actor) ?? true;
+export const canAffect: AffectRule = (state, step, target, sourceCard, actor, ability) =>
+  AFFECT_RULES[step.effect as EffectType]?.(state, step, target, sourceCard, actor, ability) ??
+  true;
 
 /** Effects that have a target-state rule; with `EFFECTS_WITHOUT_AFFECT_RULE` they cover every effect. */
 export const EFFECTS_WITH_AFFECT_RULE: readonly string[] = Object.keys(AFFECT_RULES);
@@ -203,29 +217,24 @@ export const EFFECTS_WITH_AFFECT_RULE: readonly string[] = Object.keys(AFFECT_RU
 const SELF_SELECTORS: ReadonlySet<string> = new Set(['SELF_HERO', 'SELF_IDENTITY']);
 
 /**
- * Scheme selectors the ability names rather than the player chooses. No prompt is opened for them,
- * and the gate judges them only for the effects in `NAMED_SCHEME_JUDGED_EFFECTS` (#331, #368).
+ * Selectors the ability names rather than the player chooses, with the effects the gate judges them
+ * for. No prompt is opened for them. Crisis and Patrol limit threat removal from a named scheme
+ * (#331); Guard limits an attack on the named villain. Any other effect on a named selector needs
+ * no valid target, so a forced ability naming one is never skipped (#368).
  */
-const NAMED_SCHEME_SELECTORS: ReadonlySet<string> = new Set([
-  'MAIN_SCHEME',
-  'SIDE_SCHEME',
-  'ALL_SCHEMES',
-]);
-
-/**
- * Effects a named scheme is judged for: Crisis and Patrol limit them (#331). Any other effect on a
- * named scheme needs no valid target, so a forced ability naming one is never skipped (#368).
- */
-const NAMED_SCHEME_JUDGED_EFFECTS: ReadonlySet<string> = new Set(['REMOVE_THREAT']);
+const NAMED_SELECTOR_JUDGED_EFFECTS: Readonly<Record<string, ReadonlySet<string>>> = {
+  MAIN_SCHEME: new Set(['REMOVE_THREAT']),
+  SIDE_SCHEME: new Set(['REMOVE_THREAT']),
+  ALL_SCHEMES: new Set(['REMOVE_THREAT']),
+  VILLAIN: new Set(['DEAL_DAMAGE']),
+};
 
 /** The selector whose targets the legality gate enumerates for this step (chosen or self). */
 const judgedSelector = (step: AbilityStep): string | undefined => {
   const target = step.effectParams?.target;
   if (typeof target !== 'string') return undefined;
   if (PLAYER_CHOSEN_SELECTORS.has(target) || SELF_SELECTORS.has(target)) return target;
-  return NAMED_SCHEME_SELECTORS.has(target) && NAMED_SCHEME_JUDGED_EFFECTS.has(step.effect)
-    ? target
-    : undefined;
+  return NAMED_SELECTOR_JUDGED_EFFECTS[target]?.has(step.effect) ? target : undefined;
 };
 
 /**
@@ -237,7 +246,7 @@ export function getValidStepTargets(
   state: GameState,
   player: PlayerState,
   step: AbilityStep,
-  context: Pick<EffectExecutionContext, 'sourceCardInstance' | 'distinctFromId'>,
+  context: Pick<EffectExecutionContext, 'sourceCardInstance' | 'distinctFromId' | 'ability'>,
   selectorOverride?: string,
 ): ResolvedTarget[] {
   const selector = selectorOverride ?? judgedSelector(step);
@@ -247,7 +256,7 @@ export function getValidStepTargets(
   return candidates.filter(
     (t) =>
       !(excluded && isSameScheme(t, excluded)) &&
-      canAffect(state, step, t, context.sourceCardInstance, player),
+      canAffect(state, step, t, context.sourceCardInstance, player, context.ability),
   );
 }
 
@@ -366,6 +375,7 @@ const NO_VALID_TARGET_REASON: Partial<Record<EffectType, string>> = {
   EXHAUST: 'Nothing is ready to exhaust.',
   REMOVE_THREAT: 'No scheme has threat to remove.',
   ADD_STATUS: 'No character can receive that status card.',
+  DEAL_DAMAGE: 'No character can take that damage.',
 };
 
 /**
@@ -420,8 +430,8 @@ export function checkAbilityTargets(
           ? getEligibleTargets(state, player, selector).find((t) => t.id === chosenId)
           : undefined;
       // A named target the effect cannot affect is not a valid target, whatever else is in play.
-      if (named) return canAffect(state, step, named, sourceCardInstance, player);
-      return getValidStepTargets(state, player, step, { sourceCardInstance }).length > 0;
+      if (named) return canAffect(state, step, named, sourceCardInstance, player, ability);
+      return getValidStepTargets(state, player, step, { sourceCardInstance, ability }).length > 0;
     }
     // Callers without a triggering event (a prompt answered later) cannot judge "that enemy".
     if (!eventTarget?.targetInstanceId && !eventTarget?.targetType) return true;
@@ -430,12 +440,18 @@ export function checkAbilityTargets(
       sourceCardInstance,
       eventTargetType: eventTarget?.targetType,
       eventTargetInstanceId: eventTarget?.targetInstanceId,
-    }).some((t) => canAffect(state, step, t, sourceCardInstance, player));
+    }).some((t) => canAffect(state, step, t, sourceCardInstance, player, ability));
   };
   if (choiceSteps.some(hasTarget)) return { allowed: true };
+  const isGuarded =
+    choiceSteps[0].effect === 'DEAL_DAMAGE' &&
+    ability.labels?.includes('ATTACK') &&
+    isVillainAttackBlockedByGuard(player);
   return {
     allowed: false,
-    reason: NO_VALID_TARGET_REASON[choiceSteps[0].effect as EffectType] ?? 'No valid target.',
+    reason: isGuarded
+      ? GUARD_BLOCK_REASON
+      : (NO_VALID_TARGET_REASON[choiceSteps[0].effect as EffectType] ?? 'No valid target.'),
   };
 }
 

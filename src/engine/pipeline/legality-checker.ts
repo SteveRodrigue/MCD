@@ -13,7 +13,6 @@ import {
   hasDashPower,
   CharacterPower,
   getVillainsInPlay,
-  StatusCard,
   VillainState,
 } from '@engine/models';
 import { kernel } from '../kernel';
@@ -28,11 +27,7 @@ import {
   getHandCardResourceValue,
 } from './cost-engine';
 import { matchesCardFilter } from '../filters/card-filter';
-import {
-  getEffectiveAllyLimit,
-  hasPlayerTrait,
-  isEntityIncapacitatedByStatus,
-} from './stat-calculator';
+import { getEffectiveAllyLimit, hasPlayerTrait } from './stat-calculator';
 import { getStepEffectParams } from '../../data/supplemental/runtime';
 import { findInPlayCardInstance } from '../state/state-validator';
 import {
@@ -974,41 +969,7 @@ export function canInitiateAbility(
 
   // 5. Target & Potential to Change Game State (RR v1.8 p. 15-16, 29, 30)
   for (const step of ability.steps || []) {
-    const stepParams = getStepEffectParams(step);
-    // 5A. Attack / Enemy Target Damage
-    if (step.effect === 'DEAL_DAMAGE' && stepParams.target) {
-      if (
-        ability.labels?.includes('ATTACK') &&
-        isEntityIncapacitatedByStatus(player, StatusCard.STUNNED)
-      ) {
-        continue;
-      }
-      const target = (stepParams.target as string) || 'CHOSEN_ENEMY';
-      const allMinions = state.players.flatMap((p) => p.engagedMinions || []);
-      const hasGuard = isVillainAttackBlockedByGuard(player);
-
-      if (target === 'CHOSEN_MINION' || target === 'MINION') {
-        if (allMinions.length === 0) {
-          return { allowed: false, reason: 'Cannot trigger ability: No minion in play to target.' };
-        }
-      } else if (target === 'VILLAIN') {
-        if (hasGuard) {
-          return {
-            allowed: false,
-            reason: 'Cannot attack villain while an engaged minion with Guard is in play.',
-          };
-        }
-      } else if (target === 'CHOSEN_ENEMY' || target === 'ENEMY') {
-        if (allMinions.length === 0 && hasGuard) {
-          return {
-            allowed: false,
-            reason: 'Cannot attack: Villain is protected by an engaged minion with Guard.',
-          };
-        }
-      }
-    }
-
-    // 5B. Search / Deck / Discard Target (RR v1.8 p. 2, 28)
+    // Search / Deck / Discard Target (RR v1.8 p. 2, 28)
     if (isStep(step, 'SEARCH')) {
       const searchCheck = evaluateSearchLegality(state, player, step);
       if (!searchCheck.allowed) {

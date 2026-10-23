@@ -251,7 +251,7 @@ export const handleUseCardAbility: ActionHandler<'USE_CARD_ABILITY'> = (
       nextState,
       player,
       choiceStep!,
-      { sourceCardInstance: targetCardInst },
+      { sourceCardInstance: targetCardInst, ability },
       requiredAbilityScope,
     );
     if (eligibleTargets.length === 1) {

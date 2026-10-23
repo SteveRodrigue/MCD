@@ -1691,6 +1691,7 @@ export function getEligibleTargets(
       break;
     }
 
+    case 'VILLAIN':
     case 'CHOSEN_ENEMY': {
       for (const villain of getVillainsInPlay(state)) {
         candidates.push({
@@ -1700,6 +1701,7 @@ export function getEligibleTargets(
           id: villain.instanceId || villain.card.code,
         });
       }
+      if (targetScope === 'VILLAIN') break;
       for (const p of state.players) {
         for (const m of p.engagedMinions || []) {
           candidates.push({

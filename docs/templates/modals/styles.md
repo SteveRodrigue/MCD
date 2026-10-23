@@ -1,7 +1,7 @@
 # Modal style tokens
 
 A style is one `ModalStyle` object in
-[`modal-styles.ts`](../../../src/ui/components/templates/modal-styles.ts), registered in `MODAL_STYLES`.
+[`modal-styles.ts`](../../../src/ui/theme/modal-styles.ts), registered in `MODAL_STYLES`.
 No component changes are needed to add one; the gallery, lab navigation and the whole test matrix pick it up.
 
 ## Token groups

@@ -1,5 +1,5 @@
 import React from 'react';
-import { CardArtThumbnail } from '../cards/CardArtThumbnail';
+import { CardArtThumbnail } from '../components/cards/CardArtThumbnail';
 import { accentGradient } from './card-accents';
 import { useCardAccent, useModalStyle } from './useModalStyle';
 

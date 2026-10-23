@@ -65,10 +65,17 @@ A card thumbnail (`CardArtThumbnail` `xs`/`sm`/`lg`) or the full `CardView` **MU
 
 ## Files
 
-`src/ui/components/templates/`: `modal-styles.ts` (tokens), `ModalScaffold.tsx` (the one shell),
-`ModalStyleContext.tsx` + `useModalStyle.ts` (active style), `CardRef.tsx`, `ComicSpeech.tsx`,
-`ActionBurst.tsx` + `useActionBurst.ts`, the three templates, `template-data.ts` (sample cards),
+Shared theme code (used by the game and the lab), `src/ui/theme/`:
+`modal-styles.ts` (tokens), `ModalScaffold.tsx` (the one shell; supports `onClose`, `closeOnBackdrop`, `layer`),
+`ModalStyleContext.tsx` + `useModalStyle.ts` (active style), `ThemeProvider.tsx` + `useGameTheme.ts`
+(player setting, per-game Random roll), `resolve-theme.ts`, `theme-settings.ts`, `card-accents.ts`, `CardRef.tsx`,
+`AccentStripe.tsx`, `ComicSpeech.tsx`, `ActionBurst.tsx` + `useActionBurst.ts`, `comic-shapes.ts`.
+
+Lab and reference (kept for future design), `src/ui/components/templates/`:
+the three templates (`DecisionTemplate`, `SequenceTemplate`, `SelectTemplate`), `template-data.ts`,
 `template-routes.ts`, `StyleGallery.tsx`, `ModalTemplatesScreen.tsx`.
+
+The game never imports from the lab folder; an architecture test enforces it.
 
 ## Plans
 

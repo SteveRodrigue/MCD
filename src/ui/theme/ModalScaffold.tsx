@@ -1,5 +1,6 @@
-import React, { useId } from 'react';
-import { ModalLayer } from '../layout/ModalLayer';
+import React, { useEffect, useId, useRef } from 'react';
+import { X } from 'lucide-react';
+import { ModalLayer } from '../components/layout/ModalLayer';
 import { CardRef, type CardReference } from './CardRef';
 import { ActionBurst } from './ActionBurst';
 import { useModalStyle } from './useModalStyle';
@@ -16,8 +17,14 @@ export interface ModalScaffoldProps {
   verb?: VerbColor;
   /** The card that caused this modal. Always shown with its thumbnail; `null` only when no card is involved. */
   trigger: CardReference | null;
-  /** Counter, badge or close button on the right of the header. */
+  /** Counter or badge on the right of the header. */
   headerRight?: React.ReactNode;
+  /** Makes the modal dismissible: adds a close button and the Escape key. Omit for forced prompts. */
+  onClose?: () => void;
+  /** Also close when the backdrop is clicked (needs `onClose`). */
+  closeOnBackdrop?: boolean;
+  /** Stacking layer; forced prompts that must outrank other modals use 'critical'. */
+  layer?: 'modal' | 'critical';
   maxWidthClass?: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
@@ -201,6 +208,9 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
   verb = 'yellow',
   trigger,
   headerRight,
+  onClose,
+  closeOnBackdrop = false,
+  layer = 'modal',
   maxWidthClass = 'max-w-2xl',
   children,
   footer,
@@ -209,18 +219,59 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
 }) => {
   const { style, overlayInset, overlayTop } = useModalStyle();
   const titleId = useId();
+  const frameRef = useRef<HTMLDivElement>(null);
+
+  // Focus moves into the dialog on open (unless something inside already has it) and returns on close.
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    const frame = frameRef.current;
+    if (frame && !frame.contains(document.activeElement)) frame.focus({ preventScroll: true });
+    return () => previous?.focus?.({ preventScroll: true });
+  }, []);
+
+  useEffect(() => {
+    if (!onClose) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
+  const headerControls =
+    headerRight || onClose ? (
+      <>
+        {headerRight}
+        {onClose && (
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className={`p-1.5 cursor-pointer ${style.btnMove}`}
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </>
+    ) : undefined;
 
   return (
     <ModalLayer
+      layer={layer}
       data-testid={testId}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
       className={`inset-0 flex items-center justify-center ${overlayInset} ${style.overlay}`}
       style={overlayTop === undefined ? undefined : { paddingTop: overlayTop }}
+      onClick={(event) => {
+        if (closeOnBackdrop && onClose && event.target === event.currentTarget) onClose();
+      }}
     >
       <div
-        className={`relative w-full ${maxWidthClass} max-h-full overflow-hidden flex flex-col ${style.frame} ${style.text}`}
+        ref={frameRef}
+        tabIndex={-1}
+        className={`relative w-full outline-none ${maxWidthClass} max-h-full overflow-hidden flex flex-col ${style.frame} ${style.text}`}
       >
         <div
           aria-hidden="true"
@@ -250,7 +301,7 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
           kicker={kicker}
           icon={icon}
           trigger={trigger}
-          right={headerRight}
+          right={headerControls}
         />
 
         <ActionBurst burst={burst} />

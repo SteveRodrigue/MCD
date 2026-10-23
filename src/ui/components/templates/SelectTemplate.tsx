@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Check, Layers } from 'lucide-react';
-import { CardRef } from './CardRef';
-import { AccentStripe } from './AccentStripe';
-import { ModalScaffold } from './ModalScaffold';
-import { SpeechBubble } from './ComicSpeech';
-import { useActionBurst } from './useActionBurst';
-import { useModalStyle } from './useModalStyle';
-import type { VerbColor } from './modal-styles';
+import { CardRef } from '../../theme/CardRef';
+import { AccentStripe } from '../../theme/AccentStripe';
+import { ModalScaffold } from '../../theme/ModalScaffold';
+import { SpeechBubble } from '../../theme/ComicSpeech';
+import { useActionBurst } from '../../theme/useActionBurst';
+import { useModalStyle } from '../../theme/useModalStyle';
+import type { VerbColor } from '../../theme/modal-styles';
 import { SEARCH_SOURCE, SELECT_POOL } from './template-data';
 
 const MIN = 1;

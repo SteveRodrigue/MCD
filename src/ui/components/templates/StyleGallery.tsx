@@ -7,7 +7,7 @@ import {
   VERB_SWATCH,
   type ModalStyle,
   type ModalStyleId,
-} from './modal-styles';
+} from '../../theme/modal-styles';
 import { ARCHETYPES, type ArchetypeId } from './template-routes';
 
 /** Static mini modal drawn from the style tokens, so the gallery can never drift from the real thing. */

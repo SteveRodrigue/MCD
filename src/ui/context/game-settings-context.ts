@@ -1,11 +1,12 @@
 import { createContext } from 'react';
 import { DifficultyMode } from '../../engine/models';
+import { DEFAULT_THEME_SETTINGS, type ThemeSettings } from '../theme/theme-settings';
 
 export type EdgeScrollSpeed = 'slow' | 'normal' | 'fast';
 export type CardZoomLevel = 'small' | 'normal' | 'larger';
 export type VillainPhasePacing = 'auto_normal' | 'auto_fast' | 'manual' | 'instant';
 
-export interface GameSettings {
+export interface GameSettings extends ThemeSettings {
   devMode: boolean;
   autoResolveUnambiguous: boolean;
   soundEnabled: boolean;
@@ -48,6 +49,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   villainPhasePacing: 'auto_normal',
   defaultDifficulty: 'STANDARD',
   defaultHeroicLevel: 0,
+  ...DEFAULT_THEME_SETTINGS,
 };
 
 export const STORAGE_KEY = 'mcd_game_settings';

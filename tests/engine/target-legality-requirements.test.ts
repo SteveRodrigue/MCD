@@ -315,6 +315,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
     const villainAttackAbility = {
       id: 'villain_attack_test',
       timing: 'HERO_ACTION' as const,
+      labels: ['ATTACK' as const],
       steps: [
         {
           effect: 'DEAL_DAMAGE',

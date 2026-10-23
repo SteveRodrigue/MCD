@@ -392,6 +392,7 @@ export function playEvent(
   // Check if event has a CHOSEN_* target scope
   let requiredTargetScope: string | undefined;
   let choiceStep: AbilityStep | undefined;
+  let choiceAbility: CardAbility | undefined;
 
   for (const ab of abilities) {
     for (const step of ab.steps || []) {
@@ -400,6 +401,7 @@ export function playEvent(
       if (tgt && tgt.startsWith('CHOSEN_')) {
         requiredTargetScope = tgt;
         choiceStep = step;
+        choiceAbility = ab;
         break;
       }
     }
@@ -413,7 +415,7 @@ export function playEvent(
       nextState,
       player,
       choiceStep!,
-      { sourceCardInstance: playedCardInstance },
+      { sourceCardInstance: playedCardInstance, ability: choiceAbility },
       requiredTargetScope,
     );
     if (eligibleTargets.length === 1) {

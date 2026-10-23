@@ -7,8 +7,11 @@ import {
   AllyCard,
   MinionCard,
   Keyword,
+  StatusCard,
   getActiveMainScheme,
+  getActiveVillain,
 } from '@engine/models';
+import { getValidStepTargets } from '@engine/effects/target-choice';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
 import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
@@ -188,5 +191,100 @@ describe('Guard blocks the villain attack for hero and ally alike', () => {
     state.players[1].activeFormCard = state.players[1].hero;
     state.activePlayerIndex = 1;
     expect(canAttack(state, 'p2', HERO_ACTOR, 'villain').allowed).toBe(true);
+  });
+});
+
+// #331 / #366: Guard is a rule of the legality gate, so an attack event or ability is never offered
+// the villain while the acting player has a Guard minion engaged (RR v1.8 "Guard").
+describe('Guard in the legality gate: an attack event is not offered the villain', () => {
+  const guardMinion = () => createCardInstance(cardCatalog.getCard('01101') as MinionCard); // Hydra Mercenary
+  const bomber = () => createCardInstance(cardCatalog.getCard('01110') as MinionCard); // no Guard
+
+  /** The targets a prompt offers, without its Cancel option. */
+  const targetIds = (prompt: ReturnType<typeof peekDecisionPrompt>) =>
+    (prompt?.options ?? []).map((o) => o.id).filter((id) => id !== 'cancel_target');
+
+  /** Play Haymaker (01087, "Hero Action (attack): Deal 3 damage to an enemy") from the hand. */
+  const playHaymaker = (state: GameState) => {
+    state.players[0].hand = [
+      { instanceId: 'hm', card: cardCatalog.getCard('01087')!, exhausted: false },
+      { instanceId: 'h1', card: cardCatalog.getCard('01044')!, exhausted: false },
+      { instanceId: 'h2', card: cardCatalog.getCard('01044')!, exhausted: false },
+    ];
+    return dispatchAction(state, {
+      type: 'PLAY_CARD',
+      playerId: 'p1',
+      cardInstanceId: 'hm',
+      paymentCardInstanceIds: ['h1', 'h2'],
+    } as never);
+  };
+
+  it('offers only the minions when a Guard minion and another minion are engaged', () => {
+    const state = board((s) => {
+      s.players[0].engagedMinions.push(guardMinion(), bomber());
+    }, 'hero');
+    const minionIds = state.players[0].engagedMinions.map((m) => m.instanceId).sort();
+
+    const res = playHaymaker(state);
+
+    const prompt = peekDecisionPrompt(res.state);
+    expect(res.result.success).toBe(true);
+    expect(targetIds(prompt).sort()).toEqual(minionIds);
+  });
+
+  it('offers the Guard minion, not the villain, when it is the only enemy engaged', () => {
+    const state = board((s) => {
+      s.players[0].engagedMinions.push(guardMinion());
+    }, 'hero');
+    const villainHealth = getActiveVillain(state).health;
+
+    const res = playHaymaker(state);
+
+    expect(res.result.success).toBe(true);
+    expect(targetIds(peekDecisionPrompt(res.state))).not.toContain(
+      getActiveVillain(res.state).instanceId,
+    );
+    expect(getActiveVillain(res.state).health).toBe(villainHealth);
+  });
+
+  it('offers the villain when the Guard minion is engaged with the other player', () => {
+    const state = board((s) => {
+      s.players[1].engagedMinions.push(guardMinion());
+    }, 'hero');
+
+    const res = playHaymaker(state);
+
+    expect(targetIds(peekDecisionPrompt(res.state))).toContain(
+      getActiveVillain(res.state).instanceId,
+    );
+  });
+
+  it('still lets a Stunned hero start the attack (the status card is discarded instead)', () => {
+    const state = board((s) => {
+      s.players[0].engagedMinions.push(guardMinion());
+      s.players[0].statusCards = [StatusCard.STUNNED];
+    }, 'hero');
+
+    expect(playHaymaker(state).result.success).toBe(true);
+  });
+
+  it('does not apply to damage that is not an attack: Hulk (01050) may damage the villain', () => {
+    const state = board((s) => {
+      s.players[0].engagedMinions.push(guardMinion());
+    }, 'hero');
+    const p1 = state.players[0];
+    const hulk = createCardInstance(cardCatalog.getCard('01050') as AllyCard);
+    const ability = hulk.card.enrichment?.abilities?.find((a) =>
+      a.steps?.some((s) => s.effect === 'DEAL_DAMAGE' && s.effectParams?.target === 'CHOSEN_ENEMY'),
+    );
+    const step = ability!.steps!.find((s) => s.effect === 'DEAL_DAMAGE')!;
+
+    const ids = getValidStepTargets(state, p1, step, {
+      sourceCardInstance: hulk,
+      ability,
+    }).map((t) => t.id);
+
+    expect(ability?.labels).toBeUndefined();
+    expect(ids).toContain(getActiveVillain(state).instanceId);
   });
 });

@@ -55,8 +55,6 @@ describe('legality gate: no target-validity check outside the gate', () => {
    * fails the test, and a new file needs the owner's approval in review (ADR-0090).
    */
   const ALLOWED_EFFECT_NAME_CHECKS: Record<string, string> = {
-    'src/engine/pipeline/legality-checker.ts':
-      'debt (#366): attack-damage legality (DEAL_DAMAGE against the villain: Guard) still checks by effect name',
     'src/engine/pipeline/actions/play.ts':
       'display: picks the play onomatopoeia by effect, no legality',
     'src/engine/triggers/trigger-dispatcher.ts':

@@ -21,7 +21,10 @@ export const ActionBurst: React.FC<{ burst: BurstState | null }> = ({ burst }) =
   const isStar = style.fx.shape === 'star';
 
   return (
-    <div aria-hidden="true" className="absolute inset-0 z-30 pointer-events-none overflow-hidden">
+    <div
+      aria-hidden="true"
+      className="absolute inset-0 z-raised pointer-events-none overflow-hidden"
+    >
       <style>{KEYFRAMES}</style>
       {isStar ? (
         <div

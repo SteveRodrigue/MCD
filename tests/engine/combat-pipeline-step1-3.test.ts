@@ -216,5 +216,106 @@ describe('Sub-Milestone 2B-1: Core Combat Lifecycle & Defender Declaration Engin
       expect(finalState.players[0].exhausted).toBe(false);
       expect(finalState.players[0].discard.some((c) => c.card.code === '01082')).toBe(true);
     });
+
+    it('offers Indomitable (01082) with no resource payment when your hero defends', () => {
+      state.players[0].tableau.push(createCardInstance(cardCatalog.getCard('01082')!));
+      state.encounterDeck = [
+        createCardInstance(cardCatalog.getCard('01097b')!),
+        ...state.encounterDeck,
+      ];
+
+      initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1');
+      resolveDefenderDeclaration(
+        state,
+        { type: 'HERO', playerId: 'p1' },
+        state.activeAttackContext!,
+      );
+
+      // Spider-Sense (01001a) queues its own prompt first; look for Indomitable's.
+      const prompt = (state.pendingDecisionQueue ?? []).find((p) => p.sourceCardCode === '01082')!;
+      expect(prompt).toBeDefined();
+      const yes = prompt.options.find((o) => o.id === 'trigger_indomitable_ready')!;
+      expect(yes.label).toBe('Yes');
+      expect(yes.params?.resourceCost).toBeUndefined();
+      expect(prompt.title).not.toContain('Cost:');
+    });
+
+    it('does not trigger Indomitable (01082) when an ally defends instead of your hero', () => {
+      const indomitable = createCardInstance(cardCatalog.getCard('01082')!);
+      const ally = createCardInstance(cardCatalog.getCard('01002')!);
+      state.players[0].tableau.push(indomitable);
+      state.players[0].allies.push(ally);
+      state.players[0].exhausted = true;
+      state.encounterDeck = [
+        createCardInstance(cardCatalog.getCard('01097b')!),
+        ...state.encounterDeck,
+      ];
+
+      initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1', { acceptOptionalTriggers: true });
+      resolveDefenderDeclaration(
+        state,
+        { type: 'ALLY', playerId: 'p1', allyInstanceId: ally.instanceId },
+        state.activeAttackContext!,
+      );
+
+      expect(state.players[0].exhausted).toBe(true);
+      expect(state.players[0].tableau.map((c) => c.instanceId)).toContain(indomitable.instanceId);
+      expect(state.players[0].discard.some((c) => c.card.code === '01082')).toBe(false);
+      expect(peekDecisionPrompt(state)).toBeUndefined();
+    });
+  });
+
+  describe('Step 7: Post-Defense Triggers with two heroes', () => {
+    it("does not trigger Indomitable (01082) when another player's hero defends", () => {
+      const captainMarvel = cardCatalog.getCard('01010a') as HeroCard;
+      const carol = cardCatalog.getCard('01010b') as AlterEgoCard;
+      state = setupGame({
+        catalog: cardCatalog,
+        scenarioId: 'rhino',
+        players: [
+          {
+            id: 'p1',
+            name: 'Spider-Man',
+            hero: spiderManHero,
+            alterEgo: peterParkerAlterEgo,
+            deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          },
+          {
+            id: 'p2',
+            name: 'Captain Marvel',
+            hero: captainMarvel,
+            alterEgo: carol,
+            deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+          },
+        ],
+        villain: cardCatalog.getCard('01094') as any,
+        mainScheme: cardCatalog.getCard('01097b') as any,
+        encounterCards: cardCatalog.getCardsBySet('rhino'),
+        skipMulligan: true,
+      });
+      for (const [i, hero] of [spiderManHero, captainMarvel].entries()) {
+        state.players[i].currentForm = 'hero';
+        state.players[i].activeFormCard = hero;
+      }
+      const indomitable = createCardInstance(cardCatalog.getCard('01082')!);
+      state.players[0].tableau.push(indomitable);
+      state.players[0].exhausted = true;
+      state.encounterDeck = [
+        createCardInstance(cardCatalog.getCard('01097b')!),
+        ...state.encounterDeck,
+      ];
+
+      initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1', { acceptOptionalTriggers: true });
+      resolveDefenderDeclaration(
+        state,
+        { type: 'HERO', playerId: 'p2' },
+        state.activeAttackContext!,
+      );
+
+      expect(state.players[1].exhausted).toBe(true);
+      expect(state.players[0].exhausted).toBe(true);
+      expect(state.players[0].tableau.map((c) => c.instanceId)).toContain(indomitable.instanceId);
+      expect(state.players[0].discard.some((c) => c.card.code === '01082')).toBe(false);
+    });
   });
 });

@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { ModalStyleId } from './modal-styles';
+import { DEFAULT_MODAL_STYLE, type ModalStyleId } from './modal-styles';
 
 export interface GameThemeContextValue {
   /** The theme in effect right now (fixed choice, or this game's Random roll). */
@@ -10,10 +10,13 @@ export interface GameThemeContextValue {
   rollGameTheme: () => ModalStyleId;
 }
 
-export const GameThemeContext = createContext<GameThemeContextValue | undefined>(undefined);
-
-export const useGameTheme = (): GameThemeContextValue => {
-  const value = useContext(GameThemeContext);
-  if (!value) throw new Error('useGameTheme must be used inside ThemeProvider');
-  return value;
+/** Without a ThemeProvider (isolated component renders) the default theme applies and rolls are no-ops. */
+const NO_PROVIDER: GameThemeContextValue = {
+  activeThemeId: DEFAULT_MODAL_STYLE.id,
+  gameThemeId: null,
+  rollGameTheme: () => DEFAULT_MODAL_STYLE.id,
 };
+
+export const GameThemeContext = createContext<GameThemeContextValue>(NO_PROVIDER);
+
+export const useGameTheme = (): GameThemeContextValue => useContext(GameThemeContext);

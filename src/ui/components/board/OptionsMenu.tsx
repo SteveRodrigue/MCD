@@ -16,12 +16,15 @@ import {
   Sparkles,
   Clock,
   Trash2,
+  Palette,
 } from 'lucide-react';
 import { useGameSettings } from '../../context/useGameSettings';
 import { logGameStateSnapshot } from '../../services/gamestate-logger-service';
 import { ResetCardStatsConfirmModal } from '../cards/ResetCardStatsConfirmModal';
 import { resetAllStats } from '../../services/stats-storage-service';
 import { useGameSession } from '../../context/GameStateContext';
+import { ThemePicker } from '../../theme/ThemePicker';
+import { useGameTheme } from '../../theme/useGameTheme';
 
 interface OptionsMenuProps {
   isOpen: boolean;
@@ -34,6 +37,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
   const [snapshotSuccess, setSnapshotSuccess] = useState<string | null>(null);
   const [showResetAllConfirm, setShowResetAllConfirm] = useState(false);
   const [resetSuccess, setResetSuccess] = useState<string | null>(null);
+  const { activeThemeId, rollGameTheme } = useGameTheme();
   const {
     devMode,
     toggleDevMode,
@@ -81,6 +85,15 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
 
         {/* Settings Body */}
         <div className="p-6 space-y-4 overflow-y-auto flex-1 font-comic">
+          {/* Theme: a chosen theme, or a random one for every game */}
+          <div className="bg-amber-50 p-4 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-3">
+            <div className="flex items-center gap-2">
+              <Palette className="w-5 h-5 text-comic-red" />
+              <span className="font-comic text-base text-comic-black">Theme</span>
+            </div>
+            <ThemePicker game={{ activeThemeId, onReroll: () => rollGameTheme() }} />
+          </div>
+
           {/* Card Zooming Scale Setting */}
           <div className="bg-amber-50 p-4 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2">
             <div className="flex items-center justify-between gap-2 flex-wrap">

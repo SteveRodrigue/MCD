@@ -69,7 +69,9 @@ Shared theme code (used by the game and the lab), `src/ui/theme/`:
 `modal-styles.ts` (tokens), `ModalScaffold.tsx` (the one shell; supports `onClose`, `closeOnBackdrop`, `layer`),
 `ModalStyleContext.tsx` + `useModalStyle.ts` (active style), `ThemeProvider.tsx` + `useGameTheme.ts`
 (player setting, per-game Random roll), `resolve-theme.ts`, `theme-settings.ts`, `card-accents.ts`, `CardRef.tsx`,
-`AccentStripe.tsx`, `ComicSpeech.tsx`, `ActionBurst.tsx` + `useActionBurst.ts`, `comic-shapes.ts`.
+`AccentStripe.tsx`, `ComicSpeech.tsx`, `ActionBurst.tsx` + `useActionBurst.ts`, `comic-shapes.ts`,
+`ThemePicker.tsx` (the player's choice, in Options and on the setup screen) and `ThemePreview.tsx` (token-drawn mini modal
+shared by the picker and the lab gallery).
 
 Migrated game modals (render through `ModalScaffold`): `WakandaForeverModal`, `DecisionPromptModal` (with
 `PromptCardPanel`), `SelectCardsModal`, in `src/ui/components/board/`.

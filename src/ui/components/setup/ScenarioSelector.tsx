@@ -13,12 +13,15 @@ import {
   BookOpen,
   Sparkles,
   Shield,
+  Palette,
 } from 'lucide-react';
 import { ScenarioRegistry, listModularEncounterSets } from '../../../engine/scenarios';
 import { listStarterDecks } from '../../../engine/decks';
 import { cardCatalog as catalog } from '../../../data/importer/card-loader';
 import { DifficultyMode, CardType, MainSchemeCard } from '../../../engine/models';
 import { useGameSettings } from '../../context/useGameSettings';
+import { getModalStyle } from '../../theme/modal-styles';
+import { ThemePicker } from '../../theme/ThemePicker';
 import { CardView } from '../cards/CardView';
 
 export interface SetupSelection {
@@ -35,7 +38,7 @@ interface ScenarioSelectorProps {
 }
 
 export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup }) => {
-  const { defaultDifficulty, defaultHeroicLevel } = useGameSettings();
+  const { settings, defaultDifficulty, defaultHeroicLevel } = useGameSettings();
   const scenarios = useMemo(() => ScenarioRegistry.getAll().map((p) => p.definition), []);
   const starterDecks = useMemo(() => listStarterDecks(), []);
   const modularSets = useMemo(() => listModularEncounterSets(catalog), []);
@@ -665,6 +668,22 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
               })}
             </div>
           </div>
+
+          {/* Theme: a chosen theme, or a random one for every game */}
+          <details className="comic-panel p-4 bg-white">
+            <summary className="flex items-center gap-2 cursor-pointer font-comic text-lg font-bold text-comic-black">
+              <Palette className="w-5 h-5 text-comic-red" />
+              <span>
+                Theme:{' '}
+                {settings.themeMode === 'random'
+                  ? 'Random each game'
+                  : getModalStyle(settings.themeId)?.label}
+              </span>
+            </summary>
+            <div className="pt-3">
+              <ThemePicker />
+            </div>
+          </details>
 
           {/* Action Launch Bar */}
           <div className="comic-panel p-4 bg-comic-yellow border-comic border-comic-black flex items-center justify-between gap-4 shadow-comic">

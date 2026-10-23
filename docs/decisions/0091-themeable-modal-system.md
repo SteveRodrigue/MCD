@@ -102,5 +102,6 @@ switch themes freely without losing any rules information.
 - **A theme can hurt readability:** Pop-Art is the default; the player can switch at any time; contrast is checked per
   theme when a theme is added.
 - **New modals can bypass the scaffold:** guidelines point to it, and the matrix test lists every migrated modal.
-- **Board chrome (top bar, zones, hand tray) is not themed yet:** it is a follow-up; Random on modals only can look
-  mixed with the board until then.
+- **Most of the board is not themed yet:** the top bar and the dev banner follow the theme; the table background, the
+  hero and villain zones and the hand tray panels keep the pop-art look. They are a follow-up that needs a per-surface
+  review (text sits directly on the table), so Random can look mixed with the board until then.

@@ -15,6 +15,7 @@ import { useGameSettings } from '../../context/useGameSettings';
 import { OptionsMenu } from './OptionsMenu';
 import { ReportProblemModal } from './ReportProblemModal';
 import { useGameSession } from '../../context/GameStateContext';
+import { useModalStyle } from '../../theme/useModalStyle';
 
 interface TopBarProps {
   activeSeatIndex: number;
@@ -36,6 +37,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   onOpenNewspaper,
 }) => {
   const { state: gameState } = useGameSession();
+  const { style } = useModalStyle();
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   let devMode = false;
@@ -50,21 +52,25 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <>
-      <header className="bg-amber-50 border-b-3 border-comic-black shadow-comic px-4 py-2 flex flex-wrap items-center justify-between gap-3 z-sticky sticky top-0 w-full transition-all duration-300">
+      <header
+        className={`px-4 py-2 flex flex-wrap items-center justify-between gap-3 z-sticky sticky top-0 w-full transition-all duration-300 shadow-comic !rounded-none !border-x-0 !border-t-0 !border-b-[3px] ${style.inset}`}
+      >
         {/* Left: Round & Phase Badges */}
         <div className="flex items-center gap-3">
           {/* Round Badge */}
-          <div className="bg-comic-red text-white border-3 border-comic-black font-comic text-xl px-4 py-1 rounded shadow-comic flex items-center gap-2">
+          <div
+            className={`border-[3px] font-comic text-xl px-4 py-1 rounded shadow-comic flex items-center gap-2 ${style.verbs.red.banner} ${style.verbs.red.rule}`}
+          >
             <Sparkles className="w-5 h-5 text-comic-yellow fill-comic-yellow animate-pulse" />
             <span className="tracking-wide">ROUND {gameState.roundNumber}</span>
           </div>
 
           {/* Phase Badge */}
           <div
-            className={`font-comic text-base tracking-wider px-4 py-1.5 rounded border-3 border-comic-black shadow-comic uppercase font-black ${
+            className={`font-comic text-base tracking-wider px-4 py-1.5 rounded border-[3px] shadow-comic uppercase font-black ${
               gameState.phase === GamePhase.PLAYER_PHASE
-                ? 'bg-comic-yellow text-comic-black'
-                : 'bg-rose-600 text-white'
+                ? `${style.verbs.yellow.banner} ${style.verbs.yellow.rule}`
+                : `${style.verbs.red.banner} ${style.verbs.red.rule}`
             }`}
           >
             {gameState.phase === GamePhase.PLAYER_PHASE ? (
@@ -80,8 +86,10 @@ export const TopBar: React.FC<TopBarProps> = ({
 
         {/* Center: Multi-Hero Seat Selector (if > 1 Hero) */}
         {gameState.players.length > 1 && (
-          <div className="flex items-center gap-1.5 bg-white p-1 rounded-lg border-2 border-comic-black shadow-comic-sm">
-            <span className="text-[11px] font-bold text-slate-500 uppercase px-2 flex items-center gap-1">
+          <div className={`flex items-center gap-1.5 p-1 ${style.panel}`}>
+            <span
+              className={`text-[11px] font-bold uppercase px-2 flex items-center gap-1 ${style.muted}`}
+            >
               <Compass className="w-3.5 h-3.5 text-comic-blue shrink-0" />
               <span className="hidden md:inline">Jump to Hero:</span>
             </span>
@@ -92,12 +100,12 @@ export const TopBar: React.FC<TopBarProps> = ({
                 <button
                   key={p.id}
                   onClick={() => onSelectSeat(idx)}
-                  className={`px-3 py-1 font-comic text-xs rounded border transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3 py-1 font-comic text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
                     isActiveTurn
-                      ? 'bg-comic-red text-white border-comic-black shadow-comic-sm font-bold scale-105 ring-2 ring-comic-yellow'
+                      ? `${style.btnGo} font-bold scale-105 ring-2 ring-comic-yellow`
                       : activeSeatIndex === idx
-                        ? 'bg-comic-blue text-white border-comic-black shadow-comic-sm font-bold'
-                        : 'bg-slate-100 text-slate-700 border-transparent hover:border-slate-300'
+                        ? `${style.tileSelected} font-bold !scale-100`
+                        : style.tile
                   }`}
                   title={
                     isActiveTurn
@@ -165,10 +173,8 @@ export const TopBar: React.FC<TopBarProps> = ({
           {/* Combat Log Drawer Button */}
           <button
             onClick={onToggleLog}
-            className={`px-3 py-1.5 font-comic text-xs rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 transition-all cursor-pointer ${
-              isLogOpen
-                ? 'bg-comic-yellow text-comic-black font-bold'
-                : 'bg-white text-slate-800 hover:bg-amber-100'
+            className={`px-3 py-1.5 font-comic text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+              isLogOpen ? `${style.btnGo} font-bold` : style.btnMove
             }`}
           >
             <BookOpen className="w-4 h-4" />
@@ -178,7 +184,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {/* Report a Problem Button */}
           <button
             onClick={() => setIsReportOpen(true)}
-            className="px-2.5 py-1.5 font-comic text-xs bg-white hover:bg-rose-50 text-comic-red rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1 cursor-pointer"
+            className={`px-2.5 py-1.5 font-comic text-xs flex items-center gap-1 cursor-pointer ${style.btnMove}`}
             title="Report a bug, improvement, or missing feature"
           >
             <Bug className="w-4 h-4 text-comic-red" />
@@ -188,7 +194,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {/* Options Menu Button */}
           <button
             onClick={() => setIsOptionsOpen(true)}
-            className="px-2.5 py-1.5 font-comic text-xs bg-white hover:bg-amber-100 text-slate-800 rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1 cursor-pointer"
+            className={`px-2.5 py-1.5 font-comic text-xs flex items-center gap-1 cursor-pointer ${style.btnMove}`}
             title="Open Game Options & Settings"
           >
             <Settings className="w-4 h-4 text-comic-blue" />
@@ -198,7 +204,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {/* New Game Reset Button */}
           <button
             onClick={onReset}
-            className="px-3 py-1.5 font-comic text-xs bg-white hover:bg-rose-50 text-comic-red rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 cursor-pointer"
+            className={`px-3 py-1.5 font-comic text-xs flex items-center gap-1.5 cursor-pointer ${style.btnMove}`}
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">NEW GAME</span>

@@ -29,6 +29,8 @@ export interface ModalScaffoldProps {
   maxWidthClass?: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  /** Accessible name when the visible title is not the right one ("Victory!" is announced as "Victory"). */
+  label?: string;
   /** Sound-effect burst to show right now (from `useActionBurst`). */
   burst?: BurstState | null;
   testId?: string;
@@ -216,6 +218,7 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
   children,
   footer,
   burst: burstProp,
+  label,
   testId,
 }) => {
   const { style, overlayInset, overlayTop, verbOverride } = useModalStyle();
@@ -264,10 +267,15 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
       data-testid={testId}
       role="dialog"
       aria-modal="true"
-      aria-labelledby={titleId}
+      aria-labelledby={label ? undefined : titleId}
+      aria-label={label}
       className={`inset-0 flex items-center justify-center ${overlayInset} ${style.overlay}`}
       style={overlayTop === undefined ? undefined : { paddingTop: overlayTop }}
+      // A click or press inside a modal must not reach handlers of the game tree it is mounted from
+      // (React bubbles events through portals).
+      onPointerDown={(event) => event.stopPropagation()}
       onClick={(event) => {
+        event.stopPropagation();
         if (closeOnBackdrop && onClose && event.target === event.currentTarget) onClose();
       }}
     >

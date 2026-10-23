@@ -32,14 +32,24 @@ describe('Pile inspector #N tag position', () => {
     expect(tag.className).not.toContain('-left-2');
   });
 
+  // One shared tile draws every #N tag (PileCardTile); the viewers must not draw their own.
+  it('draws the #N tag once, on the top-right corner, in the shared pile tile', () => {
+    const source = readFileSync(
+      join(__dirname, '..', '..', 'src/ui/components/board/PileViewerModal.tsx'),
+      'utf8',
+    );
+    expect(source.match(/absolute -top-2 -right-2/g)?.length ?? 0).toBe(1);
+    expect(source).not.toContain('absolute -top-2 -left-2');
+  });
+
   it.each([
-    ['src/ui/components/board/VillainZone.tsx', 3],
-    ['src/ui/components/board/PlayerHandTray.tsx', 3],
-    ['src/ui/components/board/RemovedFromGameBox.tsx', 1],
-    ['src/ui/components/cards/FacedownEncounterCard.tsx', 1],
-  ])('places every #N tag in %s on the top-right corner', (file, count) => {
+    'src/ui/components/board/VillainZone.tsx',
+    'src/ui/components/board/PlayerHandTray.tsx',
+    'src/ui/components/board/RemovedFromGameBox.tsx',
+    'src/ui/components/cards/FacedownEncounterCard.tsx',
+  ])('%s uses the shared tile instead of its own #N tag', (file) => {
     const source = readFileSync(join(__dirname, '..', '..', file), 'utf8');
-    expect(source.match(/absolute -top-2 -right-2 bg-slate-900/g)?.length ?? 0).toBe(count);
-    expect(source).not.toContain('absolute -top-2 -left-2 bg-slate-900');
+    expect(source).not.toMatch(/absolute -top-2 -(left|right)-2 bg-slate-900/);
+    expect(source).toContain('PileCardTile');
   });
 });

@@ -194,12 +194,12 @@ describe('ReportProblemModal (Issue #164)', () => {
     const reopenedTextarea = screen.getByRole('textbox') as HTMLTextAreaElement;
     expect(reopenedTextarea.value).toBe('Initial issue text');
 
-    // Verify bug button has active class and P2-medium has active class
+    // Verify the bug type and the P2-medium priority are selected again
     const bugBtn = screen.getByRole('button', { name: /🐞 Bug/i });
-    expect(bugBtn.classList.contains('bg-comic-yellow')).toBe(true);
+    expect(bugBtn.getAttribute('aria-pressed')).toBe('true');
 
     const p2Btn = screen.getByRole('button', { name: /P2 — Medium/i });
-    expect(p2Btn.classList.contains('bg-comic-red')).toBe(true);
+    expect(p2Btn.getAttribute('aria-pressed')).toBe('true');
   });
 
   it('Test 4: Verifies manual close clears any active auto-close timer before expiry', async () => {

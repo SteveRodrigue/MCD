@@ -1,6 +1,8 @@
 import React from 'react';
-import { ModalLayer } from '../layout/ModalLayer';
+import { Skull, Trophy } from 'lucide-react';
 import { useGameSession } from '../../context/GameStateContext';
+import { ModalScaffold } from '../../theme/ModalScaffold';
+import { useModalStyle } from '../../theme/useModalStyle';
 
 interface GameOverScreenProps {
   onReset: () => void;
@@ -13,50 +15,48 @@ interface GameOverScreenProps {
  */
 export const GameOverScreen: React.FC<GameOverScreenProps> = ({ onReset }) => {
   const { state: gameState } = useGameSession();
+  const { style } = useModalStyle();
   if (!gameState.winner) return null;
   const victory = gameState.winner === 'HEROES';
   const fallen = gameState.eliminatedPlayers ?? [];
 
   return (
-    <ModalLayer
+    <ModalScaffold
       layer="critical"
-      role="dialog"
-      aria-modal="true"
-      aria-label={victory ? 'Victory' : 'Defeat'}
-      className="inset-0 flex items-center justify-center bg-comic-black/70 p-4"
-    >
-      <div
-        className={`max-w-lg w-full border-4 border-comic-black shadow-comic-lg p-6 text-center ${
-          victory ? 'bg-yellow-300' : 'bg-comic-red text-white'
-        }`}
-      >
-        <h2 className="font-comic text-5xl uppercase tracking-wide mb-2">
-          {victory ? 'Victory!' : 'Defeat!'}
-        </h2>
-        <p className="font-bold mb-4">
-          {victory
-            ? 'The heroes have won the day.'
-            : 'The heroes have fallen, or the villain has completed the scheme.'}
-        </p>
-        <ul className="mb-6 space-y-1 font-bold" aria-label="Heroes">
-          {gameState.players.map((p) => (
-            <li key={p.id}>{p.name}</li>
-          ))}
-          {fallen.map((p) => (
-            <li key={p.id} className="line-through opacity-80">
-              {p.name} <span className="no-underline">(defeated)</span>
-            </li>
-          ))}
-        </ul>
+      title={victory ? 'Victory!' : 'Defeat!'}
+      label={victory ? 'Victory' : 'Defeat'}
+      kicker="End of game"
+      verb={victory ? 'green' : 'red'}
+      trigger={null}
+      icon={victory ? <Trophy className="w-6 h-6" /> : <Skull className="w-6 h-6" />}
+      maxWidthClass="max-w-lg"
+      testId="game-over-screen"
+      footer={
         <button
           type="button"
           onClick={onReset}
-          className="border-4 border-comic-black bg-white text-comic-black font-comic uppercase px-6 py-2 shadow-comic hover:translate-y-0.5"
+          className={`mx-auto px-6 py-2 font-comic font-black uppercase cursor-pointer ${style.btnGo}`}
         >
           New game
         </button>
-      </div>
-    </ModalLayer>
+      }
+    >
+      <p className="font-bold text-center">
+        {victory
+          ? 'The heroes have won the day.'
+          : 'The heroes have fallen, or the villain has completed the scheme.'}
+      </p>
+      <ul className="space-y-1 font-bold text-center" aria-label="Heroes">
+        {gameState.players.map((p) => (
+          <li key={p.id}>{p.name}</li>
+        ))}
+        {fallen.map((p) => (
+          <li key={p.id} className="line-through opacity-80">
+            {p.name} <span className="no-underline">(defeated)</span>
+          </li>
+        ))}
+      </ul>
+    </ModalScaffold>
   );
 };
 

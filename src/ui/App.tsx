@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ModalLayer } from './components/layout/ModalLayer';
 import { cardCatalog } from '../data/importer/card-loader';
 import { setupGame, dispatchAction, getStarterDeck, GameState, InfiniteLoopError } from '../engine';
 import type { SetupSelection } from './components/setup/ScenarioSelector';
@@ -8,6 +7,7 @@ import { resetSessionSyncTracking } from './services/stats-storage-service';
 
 import { GameSettingsProvider } from './context/GameSettingsProvider';
 import { useGameSettings } from './context/useGameSettings';
+import { InfiniteLoopModal } from './components/board/InfiniteLoopModal';
 import { ThemeProvider } from './theme/ThemeProvider';
 import { useGameTheme } from './theme/useGameTheme';
 import { GameSessionProvider } from './context/GameStateContext';
@@ -274,37 +274,11 @@ const AppContent: React.FC = () => {
 
         {/* Infinite Loop Detected Modal (ADR-0053, Issue #48) */}
         {loopError && (
-          <ModalLayer
-            layer="critical"
-            className="inset-0 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs"
-          >
-            <div className="relative max-w-lg w-full bg-yellow-300 border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-black">
-              <div className="bg-red-600 text-white font-black text-2xl px-4 py-2 uppercase border-2 border-black tracking-wider text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-4 rotate-[-1deg]">
-                💥 Infinite Loop Detected!
-              </div>
-              <p className="font-bold text-sm mb-3">
-                The game engine halted an infinite trigger recursion loop between forced abilities
-                to protect the table state:
-              </p>
-              <div className="bg-white border-2 border-black p-3 font-mono text-xs rounded mb-4 overflow-x-auto shadow-inner whitespace-pre-wrap">
-                {loopError.formattedCycle || loopError.message}
-              </div>
-              <div className="flex gap-3 justify-end">
-                <button
-                  onClick={() => setLoopError(null)}
-                  className="px-4 py-2 bg-white border-2 border-black font-black uppercase text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-100 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
-                >
-                  Dismiss &amp; Continue
-                </button>
-                <button
-                  onClick={handleReset}
-                  className="px-4 py-2 bg-red-500 text-white border-2 border-black font-black uppercase text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:bg-red-600 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
-                >
-                  Reset Game
-                </button>
-              </div>
-            </div>
-          </ModalLayer>
+          <InfiniteLoopModal
+            cycle={loopError.formattedCycle || loopError.message}
+            onDismiss={() => setLoopError(null)}
+            onReset={handleReset}
+          />
         )}
       </div>
     </div>

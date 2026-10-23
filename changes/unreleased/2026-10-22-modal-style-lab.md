@@ -22,3 +22,7 @@ type: Added
 - **Feature (UI): Gameplay prompt modals follow the active theme**
   - Attack and Thwart target pickers (one shared `TargetSelectionModal`), Ally, Tableau and Identity action menus (shared `CardActionModal` and `ActionRow`), Combat resolution, Distribute points, Simultaneous abilities order and the card payment modal render through the shared scaffold, with card accents and thumbnails on every card they name.
   - The attack, thwart and combat summaries now carry the card codes they show (attacker, thwarter, defender, target hero) so each can be drawn with its thumbnail.
+- **Feature (UI): Utility dialogs and pile viewers follow the active theme**
+  - Options menu, Report a problem, card stats and its reset confirmation, game over, the infinite-loop notice and every pile viewer (deck inspectors, discard piles, removed from game, set aside, dealt-cards peek) render through the shared scaffold; The Daily Bugle broadsheets keep their own look.
+  - Dismissible dialogs now close with Escape, and clicks inside a modal no longer reach the board underneath.
+  - [ADR-0091](https://github.com/SteveRodrigue/MCD/blob/main/docs/decisions/0091-themeable-modal-system.md) records the theme engine.

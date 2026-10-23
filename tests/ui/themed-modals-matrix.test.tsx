@@ -13,6 +13,8 @@ import { AllyActionModal } from '../../src/ui/components/board/AllyActionModal';
 import { CardPaymentModal } from '../../src/ui/components/board/CardPaymentModal';
 import { CombatBoostModal } from '../../src/ui/components/board/CombatBoostModal';
 import { DistributeAmountModal } from '../../src/ui/components/board/DistributeAmountModal';
+import { DevStepErrorBanner } from '../../src/ui/components/board/DevStepErrorBanner';
+import { TopBar } from '../../src/ui/components/board/TopBar';
 import { InfiniteLoopModal } from '../../src/ui/components/board/InfiniteLoopModal';
 import {
   PileCardTile,
@@ -55,10 +57,39 @@ interface Case {
   cards: { code: string; name: string }[];
   /** False for dialogs that name no card (settings, bug report, game over). */
   showsCard?: boolean;
+  /** ARIA role of the surface (a dialog unless stated). */
+  role?: 'dialog' | 'alert' | 'banner';
   render: (state: GameState) => React.ReactElement;
 }
 
 const CASES: Case[] = [
+  {
+    label: 'TopBar',
+    cards: [],
+    showsCard: false,
+    role: 'banner',
+    render: () => (
+      <TopBar
+        activeSeatIndex={0}
+        onSelectSeat={vi.fn()}
+        onToggleLog={vi.fn()}
+        isLogOpen={false}
+        onReset={vi.fn()}
+      />
+    ),
+  },
+  {
+    label: 'DevStepErrorBanner',
+    cards: [],
+    showsCard: false,
+    role: 'alert',
+    render: () => (
+      <DevStepErrorBanner
+        devMode
+        logs={[{ id: 'l1', key: 'engine.stepError', text: 'Step failed' } as never]}
+      />
+    ),
+  },
   {
     label: 'InfiniteLoopModal',
     cards: [],
@@ -281,7 +312,7 @@ const mount = (style: ModalStyle, c: Case) => {
 describe.each(CASES.map((c) => [c.label, c] as const))('%s under every theme', (_l, c) => {
   it.each(MODAL_STYLES.map((s) => [s.label, s] as const))('renders in %s', (_label, style) => {
     mount(style, c);
-    expect(screen.getByRole('dialog')).toBeTruthy();
+    expect(screen.getByRole(c.role ?? 'dialog')).toBeTruthy();
     if (c.showsCard !== false) {
       expect(document.querySelector('[data-card-ref],[data-card-anchor]')).toBeTruthy();
     }

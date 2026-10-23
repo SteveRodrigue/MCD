@@ -26,3 +26,5 @@ type: Added
   - Options menu, Report a problem, card stats and its reset confirmation, game over, the infinite-loop notice and every pile viewer (deck inspectors, discard piles, removed from game, set aside, dealt-cards peek) render through the shared scaffold; The Daily Bugle broadsheets keep their own look.
   - Dismissible dialogs now close with Escape, and clicks inside a modal no longer reach the board underneath.
   - [ADR-0091](https://github.com/SteveRodrigue/MCD/blob/main/docs/decisions/0091-themeable-modal-system.md) records the theme engine.
+- **Feature (UI): Top bar and dev error banner follow the active theme**
+  - Round and phase badges use the theme's verb colours, seat buttons and the Combat log, Report, Options and New game buttons use its tokens; the Daily Bugle button and the combat log drawer keep their newspaper look.

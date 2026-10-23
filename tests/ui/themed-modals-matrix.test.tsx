@@ -8,10 +8,22 @@ import type {
   GameState,
   PendingDecisionPrompt,
 } from '../../src/engine/models';
+import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
 import { AllyActionModal } from '../../src/ui/components/board/AllyActionModal';
 import { CardPaymentModal } from '../../src/ui/components/board/CardPaymentModal';
 import { CombatBoostModal } from '../../src/ui/components/board/CombatBoostModal';
 import { DistributeAmountModal } from '../../src/ui/components/board/DistributeAmountModal';
+import { InfiniteLoopModal } from '../../src/ui/components/board/InfiniteLoopModal';
+import {
+  PileCardTile,
+  PileGrid,
+  PileViewerModal,
+} from '../../src/ui/components/board/PileViewerModal';
+import { GameOverScreen } from '../../src/ui/components/board/GameOverScreen';
+import { OptionsMenu } from '../../src/ui/components/board/OptionsMenu';
+import { ReportProblemModal } from '../../src/ui/components/board/ReportProblemModal';
+import { CardStatsModal } from '../../src/ui/components/cards/CardStatsModal';
+import { ResetCardStatsConfirmModal } from '../../src/ui/components/cards/ResetCardStatsConfirmModal';
 import { IdentityActionModal } from '../../src/ui/components/board/IdentityActionModal';
 import { SimultaneousAbilitiesModal } from '../../src/ui/components/board/SimultaneousAbilitiesModal';
 import { TableauActionModal } from '../../src/ui/components/board/TableauActionModal';
@@ -41,10 +53,69 @@ const named = (...codes: string[]) =>
 interface Case {
   label: string;
   cards: { code: string; name: string }[];
+  /** False for dialogs that name no card (settings, bug report, game over). */
+  showsCard?: boolean;
   render: (state: GameState) => React.ReactElement;
 }
 
 const CASES: Case[] = [
+  {
+    label: 'InfiniteLoopModal',
+    cards: [],
+    showsCard: false,
+    render: () => <InfiniteLoopModal cycle="A -> B -> A" onDismiss={vi.fn()} onReset={vi.fn()} />,
+  },
+  {
+    label: 'PileViewerModal',
+    cards: named('01050'),
+    render: () => (
+      <PileViewerModal title="Discard Pile" icon={null} closeLabel="Close" onClose={vi.fn()}>
+        <PileGrid>
+          <PileCardTile instance={instance('01050')} rank={1} label="Hulk" />
+        </PileGrid>
+      </PileViewerModal>
+    ),
+  },
+  {
+    label: 'OptionsMenu',
+    cards: [],
+    showsCard: false,
+    render: () => <OptionsMenu isOpen onClose={vi.fn()} />,
+  },
+  {
+    label: 'ReportProblemModal',
+    cards: [],
+    showsCard: false,
+    render: () => <ReportProblemModal isOpen onClose={vi.fn()} />,
+  },
+  {
+    label: 'CardStatsModal',
+    cards: named('01050'),
+    render: () => (
+      <CardStatsModal isOpen onClose={vi.fn()} card={cardCatalog.getCard('01050')!} devMode />
+    ),
+  },
+  {
+    label: 'ResetCardStatsConfirmModal',
+    cards: named('01050'),
+    render: () => (
+      <ResetCardStatsConfirmModal
+        isOpen
+        onClose={vi.fn()}
+        card={cardCatalog.getCard('01050')!}
+        onConfirm={vi.fn()}
+      />
+    ),
+  },
+  {
+    label: 'GameOverScreen',
+    cards: [],
+    showsCard: false,
+    render: (state) => {
+      state.winner = 'HEROES';
+      return <GameOverScreen onReset={vi.fn()} />;
+    },
+  },
   {
     label: 'AllyActionModal',
     cards: named('01050'),
@@ -200,7 +271,9 @@ const mount = (style: ModalStyle, c: Case) => {
   const state = buildState();
   return render(
     <ModalStyleProvider style={style} cardAccents>
-      <TestSession state={state}>{c.render(state)}</TestSession>
+      <GameSettingsProvider>
+        <TestSession state={state}>{c.render(state)}</TestSession>
+      </GameSettingsProvider>
     </ModalStyleProvider>,
   );
 };
@@ -209,7 +282,9 @@ describe.each(CASES.map((c) => [c.label, c] as const))('%s under every theme', (
   it.each(MODAL_STYLES.map((s) => [s.label, s] as const))('renders in %s', (_label, style) => {
     mount(style, c);
     expect(screen.getByRole('dialog')).toBeTruthy();
-    expect(document.querySelector('[data-card-ref],[data-card-anchor]')).toBeTruthy();
+    if (c.showsCard !== false) {
+      expect(document.querySelector('[data-card-ref],[data-card-anchor]')).toBeTruthy();
+    }
   });
 
   it('names every card with its thumbnail', () => {

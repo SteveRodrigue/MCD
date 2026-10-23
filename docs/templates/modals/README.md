@@ -77,6 +77,12 @@ Migrated game modals (render through `ModalScaffold`), in `src/ui/components/boa
 `DecisionPromptModal` (with `PromptCardPanel`), `SelectCardsModal`, `AttackTargetModal` and `ThwartTargetModal`
 (both on `TargetSelectionModal`), `AllyActionModal`, `TableauActionModal` and `IdentityActionModal` (on
 `CardActionModal`), `CombatBoostModal`, `DistributeAmountModal`, `SimultaneousAbilitiesModal`, `CardPaymentModal`.
+Utility dialogs on the scaffold: `OptionsMenu`, `ReportProblemModal`, `CardStatsModal`,
+`ResetCardStatsConfirmModal`, `GameOverScreen`, `InfiniteLoopModal` (in `App.tsx`), and the pile viewers (deck inspectors,
+discard piles, removed from game, set aside, dealt-cards peek) in `VillainZone`, `PlayerHandTray`,
+`RemovedFromGameBox` and `FacedownEncounterCard`, all on `PileViewerModal` (`PileCardTile`, `PileGroup`, `PileToolbar`).
+Exempt (ADR-0056 tier 2): `DailyBugleActionNewspaper`, `EndTurnConfirmationModal`. Not modals: `CombatLogDrawer`,
+`DevStepErrorBanner`.
 Shared pieces: `ActionRow` (one choice in an action list), `CardActionModal` + `InfoStrip` (the card action menu
 shell), `TargetSelectionModal` (pick-a-card-to-act-on).
 

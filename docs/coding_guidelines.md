@@ -372,3 +372,5 @@ Each rule below comes from a defect found in code review or a fix commit. Check 
     const targets = getValidStepTargets(state, player, step, { sourceCardInstance });
     const { allowed, reason } = kernel.checkAbilityTargets(state, player, ability, source);
     ```
+
+12. **Modals go through the scaffold.** A new modal renders through `ModalScaffold` (`src/ui/theme/`, ADR-0091) and takes its colours from the active theme's tokens (`useModalStyle()`: `style.panel`, `style.option`, `style.btnGo`...); never write a frame, header or button palette by hand, and never build a Tailwind class by interpolation (`text-${hue}-300`: the scanner cannot see it). Use `border-[3px]`, not `border-3` (no such utility). Every time a card is named, its text shown, its ability used or it triggered the modal, show its thumbnail: write names with `CardRef`, mark a container that shows the card with `data-card-anchor`, and let `tests/ui/themed-modals-matrix.test.tsx` run the modal under every theme. Details: `docs/templates/modals/README.md`.

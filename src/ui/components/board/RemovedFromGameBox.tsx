@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { ModalLayer } from '../layout/ModalLayer';
-import { Archive, Skull, X } from 'lucide-react';
+import { Archive, Skull } from 'lucide-react';
 import { CardInstance, NormalizedCard, PlayerState } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
+import { useModalStyle } from '../../theme/useModalStyle';
+import { PileCardTile, PileChoice, PileGrid, PileGroup, PileViewerModal } from './PileViewerModal';
+
 import { getEncounterSetName } from './villain-zone-utils';
 
 export interface RemovedFromGameBoxProps {
@@ -53,44 +55,31 @@ function getDefeatedZones(player: PlayerState): DefeatedZone[] {
 
 /** A card with its pile position (`#1` = top of the pile) and its set or type label. */
 const CardTile: React.FC<{ cardInst: CardInstance; rank: number }> = ({ cardInst, rank }) => (
-  <div
-    data-testid="card-tile"
-    data-card-code={cardInst.card.code}
-    className="flex flex-col items-center gap-1"
-  >
-    <div className="relative">
-      <CardView card={cardInst.card} instance={cardInst} size="sm" enableHoverZoom={true} />
-      <span className="absolute -top-2 -right-2 bg-slate-900 text-white font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black">
-        #{rank}
-      </span>
-    </div>
-    <span className="bg-white/95 text-slate-900 border border-comic-black font-sans text-xs font-semibold px-2 py-0.5 rounded shadow-comic-sm truncate max-w-[120px] text-center">
-      {getCardSetOrTypeLabel(cardInst.card)}
-    </span>
-  </div>
+  <PileCardTile
+    testId="card-tile"
+    instance={cardInst}
+    rank={rank}
+    label={getCardSetOrTypeLabel(cardInst.card)}
+  />
 );
 
 /** A titled grid of cards listed top first. */
 const PileSection: React.FC<{ zone: DefeatedZone }> = ({ zone }) => (
-  <div
-    data-testid={`defeated-zone-${zone.key}`}
-    className="border-t border-slate-200 pt-3 first:border-t-0 first:pt-0"
+  <PileGroup
+    testId={`defeated-zone-${zone.key}`}
+    title={`${zone.title} (${zone.cards.length} Cards)`}
   >
-    <h4 className="font-comic text-sm uppercase text-slate-800 mb-2">
-      {zone.title} ({zone.cards.length} Cards)
-    </h4>
-    <div className="flex flex-wrap items-center justify-start gap-3">
-      {zone.cards.map((cardInst, idx) => (
-        <CardTile key={cardInst.instanceId} cardInst={cardInst} rank={idx + 1} />
-      ))}
-    </div>
-  </div>
+    {zone.cards.map((cardInst, idx) => (
+      <CardTile key={cardInst.instanceId} cardInst={cardInst} rank={idx + 1} />
+    ))}
+  </PileGroup>
 );
 
 export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
   cards = [],
   eliminatedPlayers = [],
 }) => {
+  const { style } = useModalStyle();
   const [showModal, setShowModal] = useState<boolean>(false);
   // The eliminated player being inspected; null shows the general removed pile.
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
@@ -204,132 +193,94 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
 
       {/* Removed from Game / Defeated Heroes Modal */}
       {showModal && (
-        <ModalLayer
-          data-testid="removed-from-game-modal"
-          className="inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4"
-        >
-          <div className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-5xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b-2 border-comic-black pb-3">
-              <div className="flex items-center gap-2">
-                <Archive className="w-6 h-6 text-comic-red" />
-                <div>
-                  <h3 className="font-comic text-xl text-comic-black uppercase">
-                    {selectedEliminatedPlayer
-                      ? `${selectedEliminatedPlayer.name} — Defeated Hero`
-                      : `Removed from Game (${cards.length} Cards)`}
-                  </h3>
-                  <p className="text-xs text-slate-600">
-                    {selectedEliminatedPlayer
-                      ? 'The play area of the eliminated player. All of it left the game (RR v1.8 Player Elimination). #1 is the top of each pile.'
-                      : 'Cards removed from the game are out of play and cannot reenter the game. #1 is the most recently removed.'}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-1.5 rounded-lg border-2 border-comic-black bg-rose-100 hover:bg-rose-200 text-comic-red transition-all cursor-pointer"
-                title="Close"
-                aria-label="Close"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Navigation Tabs (when eliminated heroes are present) */}
-            {eliminatedPlayers.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
-                <button
-                  type="button"
-                  data-testid="removed-tab"
+        <PileViewerModal
+          title={
+            selectedEliminatedPlayer
+              ? `${selectedEliminatedPlayer.name} — Defeated Hero`
+              : `Removed from Game (${cards.length} Cards)`
+          }
+          description={
+            selectedEliminatedPlayer
+              ? 'The play area of the eliminated player. All of it left the game (RR v1.8 Player Elimination). #1 is the top of each pile.'
+              : 'Cards removed from the game are out of play and cannot reenter the game. #1 is the most recently removed.'
+          }
+          icon={<Archive className="w-5 h-5" />}
+          verb="red"
+          closeLabel="Close"
+          onClose={() => setShowModal(false)}
+          testId="removed-from-game-modal"
+          controls={
+            /* Navigation Tabs (when eliminated heroes are present) */
+            eliminatedPlayers.length > 0 ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <PileChoice
+                  active={!selectedEliminatedPlayer}
                   onClick={() => setSelectedPlayerId(null)}
-                  className={`px-3 py-1 font-comic text-xs rounded border border-comic-black shadow-comic-xs transition-all cursor-pointer ${
-                    !selectedEliminatedPlayer
-                      ? 'bg-slate-900 text-white font-bold'
-                      : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
-                  }`}
                 >
-                  Removed Cards ({cards.length})
-                </button>
+                  <span data-testid="removed-tab">Removed Cards ({cards.length})</span>
+                </PileChoice>
                 {eliminatedPlayers.map((p) => (
-                  <button
+                  <PileChoice
                     key={p.id}
-                    type="button"
-                    data-testid={`defeated-tab-${p.id}`}
+                    active={selectedEliminatedPlayer?.id === p.id}
                     onClick={() => setSelectedPlayerId(p.id)}
-                    className={`px-3 py-1 font-comic text-xs rounded border border-comic-black shadow-comic-xs transition-all cursor-pointer flex items-center gap-1 ${
-                      selectedEliminatedPlayer?.id === p.id
-                        ? 'bg-comic-red text-white font-bold'
-                        : 'bg-rose-50 hover:bg-rose-100 text-comic-red font-semibold'
-                    }`}
                   >
-                    <Skull className="w-3 h-3" />
-                    <span>{p.name} (Defeated)</span>
-                  </button>
+                    <span data-testid={`defeated-tab-${p.id}`} className="flex items-center gap-1">
+                      <Skull className="w-3 h-3" />
+                      <span>{p.name} (Defeated)</span>
+                    </span>
+                  </PileChoice>
                 ))}
               </div>
-            )}
-
-            {/* Modal Body Content */}
-            {selectedEliminatedPlayer ? (
-              /* Defeated Hero: the whole play area that left the game */
-              <div className="space-y-4 py-2">
-                <div className="flex flex-wrap items-center gap-4">
-                  <CardView
-                    card={selectedEliminatedPlayer.activeFormCard || selectedEliminatedPlayer.hero}
-                    size="sm"
-                    showTokens={false}
-                    enableHoverZoom={true}
-                  />
-                  <div className="space-y-2">
-                    <p className="font-comic text-sm uppercase text-slate-800">
-                      HP {selectedEliminatedPlayer.health} / {selectedEliminatedPlayer.maxHealth}
-                    </p>
-                    <ul
-                      data-testid="defeated-zone-counts"
-                      className="flex flex-wrap gap-2 text-xs font-semibold text-slate-700"
-                    >
-                      {selectedZones.map((zone) => (
-                        <li
-                          key={zone.key}
-                          className="bg-slate-100 border border-comic-black rounded px-2 py-0.5"
-                        >
-                          {zone.title}: {zone.cards.length}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+            ) : undefined
+          }
+        >
+          {/* Modal Body Content */}
+          {selectedEliminatedPlayer ? (
+            /* Defeated Hero: the whole play area that left the game */
+            <div className="space-y-4 py-2">
+              <div className="flex flex-wrap items-center gap-4">
+                <CardView
+                  card={selectedEliminatedPlayer.activeFormCard || selectedEliminatedPlayer.hero}
+                  size="sm"
+                  showTokens={false}
+                  enableHoverZoom={true}
+                />
+                <div className="space-y-2">
+                  <p className="font-comic text-sm uppercase">
+                    HP {selectedEliminatedPlayer.health} / {selectedEliminatedPlayer.maxHealth}
+                  </p>
+                  <ul
+                    data-testid="defeated-zone-counts"
+                    className="flex flex-wrap gap-2 text-xs font-semibold"
+                  >
+                    {selectedZones.map((zone) => (
+                      <li key={zone.key} className={`px-2 py-0.5 ${style.inset}`}>
+                        {zone.title}: {zone.cards.length}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                {selectedZones
-                  .filter((zone) => zone.cards.length > 0)
-                  .map((zone) => (
-                    <PileSection key={zone.key} zone={zone} />
-                  ))}
               </div>
-            ) : cards.length === 0 ? (
-              <div className="py-8 text-center text-slate-500 font-comic">
-                No cards have been removed from the game.
-              </div>
-            ) : (
-              /* Generic Removed Cards Grid, newest first */
-              <div className="flex flex-wrap items-center justify-center gap-4 py-4">
-                {topFirst(cards).map((cardInst, idx) => (
-                  <CardTile key={cardInst.instanceId} cardInst={cardInst} rank={idx + 1} />
+              {selectedZones
+                .filter((zone) => zone.cards.length > 0)
+                .map((zone) => (
+                  <PileSection key={zone.key} zone={zone} />
                 ))}
-              </div>
-            )}
-
-            {/* Close Button Footer */}
-            <div className="text-center pt-2 border-t border-slate-200">
-              <button
-                onClick={() => setShowModal(false)}
-                className="comic-button-primary px-6 py-2 text-sm font-comic cursor-pointer"
-              >
-                Close
-              </button>
             </div>
-          </div>
-        </ModalLayer>
+          ) : cards.length === 0 ? (
+            <div className={`py-8 text-center font-comic ${style.muted}`}>
+              No cards have been removed from the game.
+            </div>
+          ) : (
+            /* Generic Removed Cards Grid, newest first */
+            <PileGrid>
+              {topFirst(cards).map((cardInst, idx) => (
+                <CardTile key={cardInst.instanceId} cardInst={cardInst} rank={idx + 1} />
+              ))}
+            </PileGrid>
+          )}
+        </PileViewerModal>
       )}
     </>
   );

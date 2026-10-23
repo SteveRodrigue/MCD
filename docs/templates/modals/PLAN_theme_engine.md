@@ -1,6 +1,6 @@
 # Final plan: Theme Engine for the game
 
-Status: **approved. Phases 0 to 4 are done; Phases 5 and 6 follow.** Each phase is developed, tested and committed in turn.
+Status: **approved. Phases 0 to 5 are done; Phase 6 (board chrome) is the open follow-up.** Each phase is developed, tested and committed in turn.
 
 ## 0. Decisions already made
 
@@ -102,7 +102,7 @@ borders silently never render): 10 uses across 7 files today. Fixed in the same 
 | 2 (done) | Migrate Batch A (Wakanda, Decision, Select) | these three follow the theme (default Pop-Art) | their existing tests (`wakanda-forever-modal`, `DecisionPromptModal`, `SelectCardsModal`) + theme matrix | 1 session |
 | 3 (done) | `ThemePicker` in Options and on the setup screen; Random mode, pool, Re-roll, card-accent switch; per-game roll in `App.tsx` | player picks a theme or Random; Random changes per game | picker/provider/App-flow tests, browser run of a full game start | 1 session |
 | 4 (done) | Migrate Batch B | all gameplay prompts themed | each modal's existing tests + matrix; browser pass per modal | 2 to 3 sessions |
-| 5 | Migrate Batch C | utility dialogs themed | same | 1 session |
+| 5 (done) | Migrate Batch C | utility dialogs themed | same | 1 session |
 | 6 (optional) | Board chrome (top bar, zones, hand tray, drawers) so a theme is a full skin | whole UI themed | visual pass | 2 sessions |
 
 Phases 2 and 3 are ordered so the picker never ships before at least the key modals respond to it.

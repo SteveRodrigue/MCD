@@ -129,7 +129,7 @@ describe('Facedown Encounter Card Display in Hero Zone (Issue #138)', () => {
       expect(screen.getByText(cardA.card.name)).toBeDefined();
 
       // Close peek modal
-      const closeBtn = screen.getByLabelText('Close peek modal');
+      const closeBtn = screen.getByLabelText('Close');
       fireEvent.click(closeBtn);
 
       expect(screen.queryByTestId('facedown-peek-modal')).toBeNull();

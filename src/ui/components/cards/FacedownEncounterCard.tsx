@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { ModalLayer } from '../layout/ModalLayer';
-import { Skull, AlertTriangle, Eye, X } from 'lucide-react';
+import { Skull, AlertTriangle, Eye } from 'lucide-react';
 import { CardInstance } from '../../../engine/models';
 import { useOptionalGameSettings } from '../../context/useGameSettings';
-import { CardView } from './CardView';
+import { PileCardTile, PileGrid, PileViewerModal } from '../board/PileViewerModal';
 import { getCardBackUrl, getCardBackFallbackColor } from '../../services/card-cache-service';
 
 export interface FacedownEncounterCardProps {
@@ -133,74 +132,33 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
 
       {/* Dev Mode Inspector / Peek Modal */}
       {isDevMode && isPeekOpen && (
-        <ModalLayer
-          className="inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setIsPeekOpen(false)}
-          data-testid="facedown-peek-modal"
+        <PileViewerModal
+          title={`[DEV] Dealt Encounter Cards Peek (${cards.length})`}
+          description={`${heroName ? `Cards dealt to ${heroName}. ` : ''}Will be revealed and resolved during Step 5 of the Villain Phase.`}
+          icon={<Eye className="w-5 h-5" />}
+          verb="yellow"
+          devBadge
+          closeLabel="Close Peek"
+          onClose={() => setIsPeekOpen(false)}
+          closeOnBackdrop
+          maxWidthClass="max-w-2xl"
+          testId="facedown-peek-modal"
         >
-          <div
-            className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-2xl w-full p-5 space-y-4 max-h-[85vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between border-b-2 border-comic-black pb-2">
-              <div className="flex items-center gap-2">
-                <Eye className="w-5 h-5 text-amber-500" />
-                <div>
-                  <h3 className="font-comic text-lg text-comic-black uppercase">
-                    [DEV] Dealt Encounter Cards Peek ({cards.length})
-                  </h3>
-                  <p className="text-xs text-slate-600">
-                    {heroName ? `Cards dealt to ${heroName}. ` : ''}
-                    Will be revealed and resolved during Step 5 of the Villain Phase.
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsPeekOpen(false)}
-                className="p-1 rounded-lg border-2 border-comic-black bg-rose-100 hover:bg-rose-200 text-comic-red transition-all cursor-pointer"
-                aria-label="Close peek modal"
+          <PileGrid>
+            {cards.map((cardInst, idx) => (
+              <PileCardTile
+                key={cardInst.instanceId || idx}
+                instance={cardInst}
+                rank={idx + 1}
+                label={cardInst.card.name}
               >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Card list */}
-            <div className="flex flex-wrap items-center justify-center gap-4 py-2">
-              {cards.map((cardInst, idx) => (
-                <div key={cardInst.instanceId || idx} className="flex flex-col items-center gap-1">
-                  <div className="relative">
-                    <CardView
-                      card={cardInst.card}
-                      instance={cardInst}
-                      size="sm"
-                      enableHoverZoom={true}
-                    />
-                    <span className="absolute -top-2 -right-2 bg-slate-900 text-white font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black">
-                      #{idx + 1}
-                    </span>
-                  </div>
-                  <span className="font-bold text-xs text-slate-800 max-w-[120px] truncate text-center">
-                    {cardInst.card.name}
-                  </span>
-                  <span className="text-[10px] text-slate-500 uppercase font-semibold">
-                    {cardInst.card.type}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Close button */}
-            <div className="text-center pt-2 border-t border-slate-200">
-              <button
-                onClick={() => setIsPeekOpen(false)}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-comic px-5 py-1.5 rounded-lg border-2 border-comic-black shadow-comic-sm text-sm cursor-pointer"
-              >
-                Close Peek
-              </button>
-            </div>
-          </div>
-        </ModalLayer>
+                <span className="text-[10px] uppercase font-semibold opacity-70">
+                  {cardInst.card.type}
+                </span>
+              </PileCardTile>
+            ))}
+          </PileGrid>
+        </PileViewerModal>
       )}
     </>
   );

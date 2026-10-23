@@ -3,24 +3,40 @@ import { RotateCw, Shuffle } from 'lucide-react';
 import { useGameSettings } from '../context/useGameSettings';
 import { MODAL_STYLES, getModalStyle, type ModalStyleId } from './modal-styles';
 import { ThemePreview } from './ThemePreview';
+import { useModalStyle } from './useModalStyle';
 
 export interface ThemePickerProps {
+  /** Draw the picker with the active theme's tokens (inside a themed dialog) instead of the neutral comic look. */
+  themed?: boolean;
   /** Present while a game is running: shows its theme and, in Random mode, offers a Re-roll. */
   game?: { activeThemeId: ModalStyleId; onReroll: () => void };
 }
-
-const cardClass = (selected: boolean) =>
-  `relative p-2 text-left rounded-xl border-[3px] shadow-comic-sm transition-all cursor-pointer ${
-    selected ? 'border-comic-red bg-comic-yellow' : 'border-comic-black bg-white hover:bg-amber-50'
-  }`;
 
 /**
  * Player-facing theme choice: one fixed theme, or Random (a new theme for every game, drawn from a
  * pool the player controls), plus the card accent switch. Each theme is shown by its own preview.
  */
-export const ThemePicker: React.FC<ThemePickerProps> = ({ game }) => {
+export const ThemePicker: React.FC<ThemePickerProps> = ({ themed = false, game }) => {
+  const { style: active } = useModalStyle();
   const { settings, updateSettings } = useGameSettings();
   const { themeMode, themeId, randomThemePool, cardAccents } = settings;
+
+  const cardClass = (selected: boolean) =>
+    `relative p-2 text-left transition-all cursor-pointer ${
+      themed
+        ? selected
+          ? active.tileSelected
+          : active.tile
+        : `rounded-xl border-[3px] shadow-comic-sm ${
+            selected
+              ? 'border-comic-red bg-comic-yellow'
+              : 'border-comic-black bg-white hover:bg-amber-50'
+          }`
+    }`;
+  const boxClass = themed
+    ? `p-3 ${active.inset}`
+    : 'p-3 rounded-xl border-2 border-comic-black bg-amber-50 shadow-comic-sm';
+  const mutedClass = themed ? active.muted : 'text-slate-600';
 
   const togglePool = (id: ModalStyleId) => {
     const next = randomThemePool.includes(id)
@@ -62,16 +78,16 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({ game }) => {
           <div className="text-xs font-black uppercase leading-tight text-center">
             Random each game
           </div>
-          <div className="text-[10px] font-bold text-slate-600 text-center">
+          <div className={`text-[10px] font-bold text-center ${mutedClass}`}>
             A new theme every time you start a game
           </div>
         </button>
       </div>
 
       {themeMode === 'random' && (
-        <div className="p-3 rounded-xl border-2 border-comic-black bg-amber-50 shadow-comic-sm space-y-2">
+        <div className={`${boxClass} space-y-2`}>
           <fieldset className="space-y-1.5">
-            <legend className="text-[11px] font-black uppercase tracking-wider text-slate-700">
+            <legend className={`text-[11px] font-black uppercase tracking-wider ${mutedClass}`}>
               Include in random
             </legend>
             <div className="flex flex-wrap gap-x-4 gap-y-1">
@@ -93,14 +109,18 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({ game }) => {
           </fieldset>
 
           {game && (
-            <div className="flex items-center justify-between gap-2 pt-1 border-t border-comic-black/20">
+            <div className="flex items-center justify-between gap-2 pt-1 border-t border-current/20">
               <span className="text-xs font-bold" data-testid="theme-this-game">
                 This game: {getModalStyle(game.activeThemeId)?.label}
               </span>
               <button
                 type="button"
                 onClick={game.onReroll}
-                className="px-2.5 py-1 flex items-center gap-1.5 text-xs font-black uppercase rounded-lg border-2 border-comic-black bg-comic-yellow hover:bg-amber-300 shadow-comic-sm cursor-pointer"
+                className={`px-2.5 py-1 flex items-center gap-1.5 text-xs font-black uppercase cursor-pointer ${
+                  themed
+                    ? active.btnMove
+                    : 'rounded-lg border-2 border-comic-black bg-comic-yellow hover:bg-amber-300 shadow-comic-sm'
+                }`}
               >
                 <RotateCw className="w-3.5 h-3.5" />
                 <span>Re-roll</span>
@@ -110,10 +130,10 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({ game }) => {
         </div>
       )}
 
-      <label className="flex items-center justify-between gap-3 p-3 rounded-xl border-2 border-comic-black bg-amber-50 shadow-comic-sm cursor-pointer">
+      <label className={`flex items-center justify-between gap-3 cursor-pointer ${boxClass}`}>
         <span>
           <span className="block text-sm font-black">Card accents</span>
-          <span className="block text-xs text-slate-600">
+          <span className={`block text-xs ${mutedClass}`}>
             Mark cards with their hero, aspect or villain colours in prompts.
           </span>
         </span>

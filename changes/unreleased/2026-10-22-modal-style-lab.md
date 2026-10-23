@@ -15,3 +15,7 @@ type: Added
   - `DecisionPromptModal` and `SelectCardsModal` render through the shared scaffold and theme tokens; card accents and thumbnails on every card they name.
   - The Wakanda Forever! prompt now carries its source card code so the header and card face can be shown.
   - The lab templates now render these real modals with sample prompts.
+- **Feature (UI): Player theme picker with Random each game**
+  - A Theme section in the Options menu and on the setup screen: pick one of the 7 themes or Random (a new theme at every game start, from a pool the player controls, never the same twice in a row), with a card accents switch.
+  - In Random mode the Options menu shows the game's theme and a Re-roll button.
+  - The theme choice is saved with the other game settings; the Random roll survives a page reload mid-game.

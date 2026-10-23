@@ -44,7 +44,7 @@ const KNOWN_CARDS = [
 
 /**
  * Card Anchoring Rule: every text node that names a known card must sit inside a card reference
- * (thumbnail + name) or a real card face. A dialog title may name its own trigger card because the
+ * (thumbnail + name), a real card face, or a container that shows the card's thumbnail (`data-card-anchor`). A dialog title may name its own trigger card because the
  * header shows that card's thumbnail.
  */
 const cardNamesWithoutThumbnail = (): string[] => {
@@ -56,7 +56,7 @@ const cardNamesWithoutThumbnail = (): string[] => {
     if (!parent) continue;
     for (const card of KNOWN_CARDS) {
       if (!text.includes(card.name)) continue;
-      if (parent.closest('[data-card-ref],[data-card-view]')) continue;
+      if (parent.closest('[data-card-ref],[data-card-view],[data-card-anchor]')) continue;
       const dialog = parent.closest('[role="dialog"]');
       const isTitle = parent.closest('h2') !== null;
       if (isTitle && dialog?.querySelector(`[data-card-ref="${card.code}"]`)) continue;
@@ -98,21 +98,25 @@ describe('card accents', () => {
   it.each(MODAL_STYLES.map((s) => [s.label, s] as const))(
     'draws an accent on every card-bearing element in %s',
     (_label, style) => {
+      const stripesOf = () => document.querySelectorAll('span[aria-hidden][data-accent]');
+      const anchored = () =>
+        [...document.querySelectorAll('[data-card-anchor]')].filter((el) =>
+          el.getAttribute('data-card-anchor'),
+        );
+
       const select = withStyle(style, <SelectTemplate />, true);
-      expect(document.querySelectorAll('span[aria-hidden][data-accent]')).toHaveLength(
-        SELECT_POOL.length,
-      );
+      expect(stripesOf().length).toBeGreaterThanOrEqual(SELECT_POOL.length);
       select.unmount();
 
-      const decision = withStyle(style, <DecisionTemplate />, true);
-      // attacker panel + 4 options
-      expect(document.querySelectorAll('span[aria-hidden][data-accent]')).toHaveLength(5);
-      decision.unmount();
-
-      withStyle(style, <SequenceTemplate />, true);
-      // trigger panel + 4 slots
-      expect(document.querySelectorAll('span[aria-hidden][data-accent]')).toHaveLength(5);
-      expect(document.querySelector('[data-card-ref] [data-accent]')).toBeTruthy();
+      for (const ui of [<DecisionTemplate key="d" />, <SequenceTemplate key="s" />]) {
+        const rendered = withStyle(style, ui, true);
+        expect(anchored().length).toBeGreaterThan(0);
+        for (const el of anchored()) {
+          expect(el.querySelector(':scope > span[aria-hidden][data-accent]')).toBeTruthy();
+        }
+        expect(document.querySelector('[data-card-ref] [data-accent]')).toBeTruthy();
+        rendered.unmount();
+      }
     },
   );
 });
@@ -208,7 +212,7 @@ describe.each(MODAL_STYLES.map((s) => [s.label, s] as const))('style: %s', (_lab
     it('marks the last step as the finisher', () => {
       withStyle(style, <SequenceTemplate />);
       expect(screen.getAllByText('💥 2 MOVE').length).toBeGreaterThan(0);
-      expect(screen.getByText('STEP 4')).toBeTruthy();
+      expect(screen.getByText('💥 FINAL (FINISHER)')).toBeTruthy();
     });
 
     it('pops a sound-effect burst on execute, with a finisher tag on the last slot', () => {
@@ -228,21 +232,21 @@ describe.each(MODAL_STYLES.map((s) => [s.label, s] as const))('style: %s', (_lab
   describe('Decision', () => {
     it('switches title when forced', () => {
       const { rerender } = withStyle(style, <DecisionTemplate />);
-      expect(screen.getByRole('dialog', { name: 'Choose defense action' })).toBeTruthy();
+      expect(screen.getByRole('dialog', { name: 'CHOOSE AN ACTION' })).toBeTruthy();
 
       rerender(
         <ModalStyleProvider style={style}>
           <DecisionTemplate forced />
         </ModalStyleProvider>,
       );
-      expect(screen.getByRole('dialog', { name: 'Forced interrupt: enemy attack' })).toBeTruthy();
+      expect(screen.getByRole('dialog', { name: 'FORCED RESPONSE / INTERRUPT' })).toBeTruthy();
     });
 
     it('reports the chosen option', () => {
       const onAction = vi.fn();
       withStyle(style, <DecisionTemplate onAction={onAction} />);
-      fireEvent.click(screen.getByRole('button', { name: /Exhaust to defend/i }));
-      expect(onAction).toHaveBeenCalledWith('Chose: defend-spider-man');
+      fireEvent.click(screen.getByRole('button', { name: /Defend with Spider-Man/i }));
+      expect(onAction).toHaveBeenCalledWith('Chose: defend');
     });
 
     it('names every card with its thumbnail', () => {
@@ -252,32 +256,37 @@ describe.each(MODAL_STYLES.map((s) => [s.label, s] as const))('style: %s', (_lab
   });
 
   describe('Select', () => {
+    const counter = () => screen.getByTestId('select-cards-counter').textContent;
+
     it('counts selections, caps at the maximum and gates confirm', () => {
       const onAction = vi.fn();
       withStyle(style, <SelectTemplate onAction={onAction} />);
+      const confirm = () => screen.getByTestId('select-cards-confirm') as HTMLButtonElement;
 
-      expect(screen.getByText('1 / 2 SELECTED')).toBeTruthy();
+      expect(counter()).toBe('0 / 2');
+      expect(confirm().disabled).toBe(true);
+      fireEvent.click(screen.getByRole('button', { name: 'Jessica Jones' }));
       fireEvent.click(screen.getByRole('button', { name: 'Hawkeye' }));
-      expect(screen.getByText('2 / 2 SELECTED')).toBeTruthy();
+      expect(counter()).toBe('2 / 2');
       expect((screen.getByRole('button', { name: 'Hulk' }) as HTMLButtonElement).disabled).toBe(
         true,
       );
 
-      fireEvent.click(screen.getByText('CONFIRM SELECTION'));
+      fireEvent.click(confirm());
       expect(onAction).toHaveBeenCalledWith('Confirmed: Jessica Jones, Hawkeye');
 
       fireEvent.click(screen.getByRole('button', { name: 'Hawkeye' }));
       fireEvent.click(screen.getByRole('button', { name: 'Jessica Jones' }));
-      expect(screen.getByText('0 / 2 SELECTED')).toBeTruthy();
-      expect(
-        (screen.getByText('CONFIRM SELECTION').closest('button') as HTMLButtonElement).disabled,
-      ).toBe(true);
+      expect(counter()).toBe('0 / 2');
+      expect(confirm().disabled).toBe(true);
     });
 
-    it('pops a burst when a card is picked and shows the speech bubble', () => {
+    it('shows the speech bubble and pops a burst on confirm', () => {
       withStyle(style, <SelectTemplate />);
       expect(screen.getByText('Who should I call in as backup?')).toBeTruthy();
       fireEvent.click(screen.getByRole('button', { name: 'Hawkeye' }));
+      expect(document.querySelector('.mcd-pop')).toBeNull();
+      fireEvent.click(screen.getByTestId('select-cards-confirm'));
       expect(document.querySelector('.mcd-pop')).toBeTruthy();
     });
 
@@ -322,7 +331,7 @@ describe('ModalTemplatesScreen navigation', () => {
     fireEvent.click(within(dossier).getByRole('button', { name: 'Decision' }));
 
     expect(window.location.pathname).toBe('/templates/dossier/decision');
-    expect(screen.getByRole('dialog', { name: 'Choose defense action' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'CHOOSE AN ACTION' })).toBeTruthy();
   });
 
   it('reaches every style from the style bar and keeps the modal type', () => {
@@ -334,7 +343,7 @@ describe('ModalTemplatesScreen navigation', () => {
         styleBar().getByRole('button', { name: style.label }).getAttribute('aria-current'),
       ).toBe('page');
       expect(screen.getByRole('dialog')).toBeTruthy();
-      expect(screen.getByText('1 / 2 SELECTED')).toBeTruthy();
+      expect(screen.getByTestId('select-cards-counter').textContent).toBe('0 / 2');
     }
   });
 
@@ -349,13 +358,13 @@ describe('ModalTemplatesScreen navigation', () => {
     expect(
       (screen.getByLabelText('Move Energy Daggers earlier') as HTMLButtonElement).disabled,
     ).toBe(false);
-    fireEvent.click(screen.getByRole('button', { name: /Reset/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Reset' }));
     expect(
       (screen.getByLabelText('Move Energy Daggers earlier') as HTMLButtonElement).disabled,
     ).toBe(true);
 
     fireEvent.click(typeBar().getByRole('button', { name: 'Select' }));
-    expect(screen.getByText('1 / 2 SELECTED')).toBeTruthy();
+    expect(screen.getByTestId('select-cards-counter').textContent).toBe('0 / 2');
   });
 
   it('toggles card accents from the lab bar', () => {
@@ -371,13 +380,13 @@ describe('ModalTemplatesScreen navigation', () => {
   it('shows the last action in the lab bar', () => {
     openAt('/templates/splash/decision');
     fireEvent.click(screen.getByRole('button', { name: /Take undefended damage/i }));
-    expect(screen.getByRole('status').textContent).toBe('Chose: take-damage');
+    expect(screen.getByRole('status').textContent).toBe('Chose: undefended');
   });
 
   it('toggles forced mode on the decision modal', () => {
     openAt('/templates/pop-art/decision');
     fireEvent.click(screen.getByRole('button', { name: /Forced: off/i }));
-    expect(screen.getByRole('dialog', { name: 'Forced interrupt: enemy attack' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'FORCED RESPONSE / INTERRUPT' })).toBeTruthy();
   });
 
   it('overrides the header verb colour and goes back to default', () => {

@@ -71,9 +71,15 @@ Shared theme code (used by the game and the lab), `src/ui/theme/`:
 (player setting, per-game Random roll), `resolve-theme.ts`, `theme-settings.ts`, `card-accents.ts`, `CardRef.tsx`,
 `AccentStripe.tsx`, `ComicSpeech.tsx`, `ActionBurst.tsx` + `useActionBurst.ts`, `comic-shapes.ts`.
 
-Lab and reference (kept for future design), `src/ui/components/templates/`:
-the three templates (`DecisionTemplate`, `SequenceTemplate`, `SelectTemplate`), `template-data.ts`,
-`template-routes.ts`, `StyleGallery.tsx`, `ModalTemplatesScreen.tsx`.
+Migrated game modals (render through `ModalScaffold`): `WakandaForeverModal`, `DecisionPromptModal` (with
+`PromptCardPanel`), `SelectCardsModal`, in `src/ui/components/board/`.
+
+Lab and reference (kept for future design), `src/ui/components/templates/`: the three templates
+(`DecisionTemplate`, `SequenceTemplate`, `SelectTemplate`) are **harnesses**: each renders the real game modal with a
+sample prompt (`template-data.ts`) and lays the comic flavour over it through `ModalFlavorContext`
+(`useModalFlavor.ts`: narration or speech bubble above the body, sound-effect burst). What you see at `/templates/` is
+what the game renders. Also `template-routes.ts`, `StyleGallery.tsx`, `ModalTemplatesScreen.tsx`. The lab sets a
+`verbOverride` on the style context for its verb switch; the game never does.
 
 The game never imports from the lab folder; an architecture test enforces it.
 

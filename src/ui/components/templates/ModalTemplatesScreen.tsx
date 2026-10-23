@@ -282,6 +282,7 @@ export const ModalTemplatesScreen: React.FC<ModalTemplatesScreenProps> = ({ onEx
           overlayInset="px-4 pb-4"
           overlayTop={barHeight + 16}
           cardAccents={cardAccents}
+          verbOverride={verb ?? undefined}
         >
           <main
             key={`${style.id}-${route.archetype}-${resetKey}`}
@@ -289,14 +290,10 @@ export const ModalTemplatesScreen: React.FC<ModalTemplatesScreenProps> = ({ onEx
           >
             <span aria-hidden="true">Game board, behind the modal</span>
             {route.archetype === 'decision' && (
-              <DecisionTemplate forced={forced} verb={verb ?? undefined} onAction={setLastEvent} />
+              <DecisionTemplate forced={forced} onAction={setLastEvent} />
             )}
-            {route.archetype === 'sequence' && (
-              <SequenceTemplate verb={verb ?? undefined} onAction={setLastEvent} />
-            )}
-            {route.archetype === 'select' && (
-              <SelectTemplate verb={verb ?? undefined} onAction={setLastEvent} />
-            )}
+            {route.archetype === 'sequence' && <SequenceTemplate onAction={setLastEvent} />}
+            {route.archetype === 'select' && <SelectTemplate onAction={setLastEvent} />}
           </main>
         </ModalStyleProvider>
       ) : (

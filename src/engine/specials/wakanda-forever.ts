@@ -113,6 +113,7 @@ const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
       description:
         'Select the resolution order for your Black Panther upgrades. The last upgrade gets its boosted Finisher bonus!',
       sourceCardName: 'Wakanda Forever!',
+      sourceCardCode: context.sourceCardInstance?.card.code,
       options: availableUpgrades.map((u) => {
         // The first Special step carries the amount and its finisher bonus, read from the card data.
         const step = getSpecialAbility(state, u)?.steps?.[0];

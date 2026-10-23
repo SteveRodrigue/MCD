@@ -1,8 +1,9 @@
 import React, { useEffect, useId, useRef } from 'react';
 import { X } from 'lucide-react';
 import { ModalLayer } from '../components/layout/ModalLayer';
-import { CardRef, type CardReference } from './CardRef';
+import { CardRef, type TriggerCard } from './CardRef';
 import { ActionBurst } from './ActionBurst';
+import { useModalFlavor } from './useModalFlavor';
 import { useModalStyle } from './useModalStyle';
 import type { BurstState } from './useActionBurst';
 import type { ModalStyle, VerbColor, VerbTokens } from './modal-styles';
@@ -16,7 +17,7 @@ export interface ModalScaffoldProps {
   /** Gameplay meaning of the header colour. */
   verb?: VerbColor;
   /** The card that caused this modal. Always shown with its thumbnail; `null` only when no card is involved. */
-  trigger: CardReference | null;
+  trigger: TriggerCard | null;
   /** Counter or badge on the right of the header. */
   headerRight?: React.ReactNode;
   /** Makes the modal dismissible: adds a close button and the Escape key. Omit for forced prompts. */
@@ -41,7 +42,7 @@ interface HeaderProps {
   titleId: string;
   kicker?: string;
   icon?: React.ReactNode;
-  trigger: CardReference | null;
+  trigger: TriggerCard | null;
   right?: React.ReactNode;
 }
 
@@ -214,10 +215,12 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
   maxWidthClass = 'max-w-2xl',
   children,
   footer,
-  burst = null,
+  burst: burstProp,
   testId,
 }) => {
-  const { style, overlayInset, overlayTop } = useModalStyle();
+  const { style, overlayInset, overlayTop, verbOverride } = useModalStyle();
+  const flavor = useModalFlavor();
+  const burst = burstProp ?? flavor.burst ?? null;
   const titleId = useId();
   const frameRef = useRef<HTMLDivElement>(null);
 
@@ -295,7 +298,7 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
         <ModalHeader
           layout={style.headerLayout}
           style={style}
-          verb={style.verbs[verb]}
+          verb={style.verbs[verbOverride ?? verb]}
           title={title}
           titleId={titleId}
           kicker={kicker}
@@ -306,7 +309,10 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
 
         <ActionBurst burst={burst} />
 
-        <div className={`relative min-h-0 flex-1 overflow-y-auto ${style.body}`}>{children}</div>
+        <div className={`relative min-h-0 flex-1 overflow-y-auto ${style.body}`}>
+          {flavor.intro}
+          {children}
+        </div>
 
         {footer && (
           <div

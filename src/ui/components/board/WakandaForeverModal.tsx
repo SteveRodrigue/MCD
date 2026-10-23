@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
-import { ModalLayer } from '../layout/ModalLayer';
+import { ArrowLeft, ArrowRight, Check, RotateCcw } from 'lucide-react';
 import { DecisionPromptOption, PendingDecisionPrompt } from '../../../engine/models';
+import { cardCatalog } from '../../../data/importer/card-loader';
+import { AccentStripe } from '../../theme/AccentStripe';
+import { STAR_CLIP } from '../../theme/comic-shapes';
+import { CardRef, type CardRefProps } from '../../theme/CardRef';
+import { ModalScaffold } from '../../theme/ModalScaffold';
+import { useModalStyle } from '../../theme/useModalStyle';
+import { CardView } from '../cards/CardView';
 import { FormattedCardText } from '../cards/FormattedCardText';
 
 interface WakandaForeverModalProps {
@@ -11,15 +18,14 @@ interface WakandaForeverModalProps {
 interface EffectStyle {
   icon: string;
   unit: string;
-  colorClass: string;
 }
 
 interface UpgradeMeta {
   id: string;
+  code?: string;
   name: string;
   text: string;
   icon: string;
-  colorClass: string;
   baseBadge: string;
   finisherBadge: string;
 }
@@ -27,28 +33,12 @@ interface UpgradeMeta {
 // Keyed by the Special's effect type (generic), never by card code: the card text and amounts
 // come from the card data through the prompt option.
 const EFFECT_STYLES: Record<string, EffectStyle> = {
-  DEAL_DAMAGE: {
-    icon: '🗡️',
-    unit: 'DMG',
-    colorClass: 'border-rose-500 bg-rose-950/80 text-rose-100',
-  },
-  REMOVE_THREAT: {
-    icon: '🧠',
-    unit: 'THW',
-    colorClass: 'border-sky-500 bg-sky-950/80 text-sky-100',
-  },
-  TRANSFER_DAMAGE: {
-    icon: '🛡️',
-    unit: 'MOVE',
-    colorClass: 'border-purple-500 bg-purple-950/80 text-purple-100',
-  },
+  DEAL_DAMAGE: { icon: '🗡️', unit: 'DMG' },
+  REMOVE_THREAT: { icon: '🧠', unit: 'THW' },
+  TRANSFER_DAMAGE: { icon: '🛡️', unit: 'MOVE' },
 };
 
-const FALLBACK_STYLE: EffectStyle = {
-  icon: '⚡',
-  unit: '',
-  colorClass: 'border-amber-500 bg-slate-900 text-amber-100',
-};
+const FALLBACK_STYLE: EffectStyle = { icon: '⚡', unit: '' };
 
 function buildUpgrades(options: DecisionPromptOption[]): UpgradeMeta[] {
   return options.map((opt) => {
@@ -58,260 +48,278 @@ function buildUpgrades(options: DecisionPromptOption[]): UpgradeMeta[] {
     const hasAmounts = typeof amount === 'number' && typeof finisherAmount === 'number';
     return {
       id: opt.id,
+      code: opt.cardCode,
       name: opt.label,
       text: opt.description || 'Special effect',
       icon: style.icon,
-      colorClass: style.colorClass,
       baseBadge: hasAmounts ? `${amount} ${style.unit}`.trim() : 'BASE',
       finisherBadge: hasAmounts ? `💥 ${finisherAmount} ${style.unit}`.trim() : '💥 FINISHER',
     };
   });
 }
 
+/** The real card face when the catalog knows the card, else its thumbnail with the name. */
+const CardFace: React.FC<{ card: CardRefProps; size: 'sm' | 'md' }> = ({ card, size }) => {
+  const normalized = card.code ? cardCatalog.getCard(card.code) : undefined;
+  return (
+    <div data-card-view={card.code ?? ''} className="flex justify-center">
+      {normalized ? (
+        <CardView card={normalized} size={size} />
+      ) : (
+        <CardRef {...card} size="lg" stacked />
+      )}
+    </div>
+  );
+};
+
+/**
+ * Wakanda Forever! sequence resolution (ADR-0038, Issue #358): the player orders the Black Panther
+ * upgrade Specials with real card faces; the last one resolves as the finisher.
+ */
 export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
   prompt,
   onExecuteSequence,
 }) => {
+  const { style } = useModalStyle();
   const [orderedUpgrades, setOrderedUpgrades] = useState<UpgradeMeta[]>(() =>
     buildUpgrades(prompt.options),
   );
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-  const moveCard = (index: number, direction: number) => {
-    const targetIndex = index + direction;
-    if (targetIndex >= 0 && targetIndex < orderedUpgrades.length) {
-      const updated = [...orderedUpgrades];
-      const [item] = updated.splice(index, 1);
-      updated.splice(targetIndex, 0, item);
-      setOrderedUpgrades(updated);
-    }
-  };
+  const trigger = { code: prompt.sourceCardCode, name: prompt.sourceCardName };
+  const triggerCard = trigger.code ? cardCatalog.getCard(trigger.code) : undefined;
 
-  const handleDragStart = (index: number) => {
-    setDraggedIndex(index);
+  const reorder = (from: number, to: number) => {
+    if (to < 0 || to >= orderedUpgrades.length || from === to) return;
+    const updated = [...orderedUpgrades];
+    const [item] = updated.splice(from, 1);
+    updated.splice(to, 0, item);
+    setOrderedUpgrades(updated);
   };
 
   const handleDrop = (targetIndex: number) => {
-    if (draggedIndex !== null && draggedIndex !== targetIndex) {
-      const updated = [...orderedUpgrades];
-      const [item] = updated.splice(draggedIndex, 1);
-      updated.splice(targetIndex, 0, item);
-      setOrderedUpgrades(updated);
-    }
+    if (draggedIndex !== null) reorder(draggedIndex, targetIndex);
     setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
-  const resetDefaultOrder = () => {
-    setOrderedUpgrades(buildUpgrades(prompt.options));
-  };
-
-  const handleExecute = () => {
-    const sequenceOrder = orderedUpgrades.map((u) => u.id);
-    onExecuteSequence(sequenceOrder);
-  };
+  const last = orderedUpgrades[orderedUpgrades.length - 1];
 
   return (
-    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
-      <div className="relative w-full max-w-5xl bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl overflow-hidden flex flex-col font-comic">
-        {/* Comic Header Banner */}
-        <div className="bg-purple-900 text-amber-300 p-4 border-b-4 border-comic-black flex items-center justify-between select-none shadow-md">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">🐾</span>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wider leading-none text-amber-300 drop-shadow-xs">
-                WAKANDA FOREVER! — SEQUENCE RESOLUTION
-              </h1>
-              <p className="text-[11px] font-bold text-amber-100 uppercase tracking-wide mt-0.5">
-                Drag & drop or use arrows to set the execution order (Left to Right)
-              </p>
+    <ModalScaffold
+      title="Wakanda Forever! sequence resolution"
+      kicker="Hero special pipeline"
+      verb="purple"
+      trigger={trigger}
+      maxWidthClass="max-w-6xl"
+      headerRight={
+        <span className={`text-xs font-black px-3 py-1 ${style.chip}`}>
+          {orderedUpgrades.length} UPGRADES IN PLAY
+        </span>
+      }
+      footer={
+        <>
+          {last ? (
+            <div className="text-xs font-bold">
+              <span className={`font-black uppercase ${style.emphasis}`}>Tactical finisher:</span>{' '}
+              <CardRef code={last.code} name={last.name} size="xs" /> triggers last with the{' '}
+              <span className={`font-black ${style.emphasis}`}>💥 finisher bonus</span>.
             </div>
+          ) : (
+            <span />
+          )}
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => setOrderedUpgrades(buildUpgrades(prompt.options))}
+              className={`px-3 py-2 font-black text-xs uppercase flex items-center gap-1.5 cursor-pointer ${style.btnMove}`}
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset Order</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onExecuteSequence(orderedUpgrades.map((u) => u.id))}
+              className={`px-6 py-2.5 font-black text-sm cursor-pointer flex items-center gap-2 ${style.btnGo}`}
+            >
+              <Check className="w-4 h-4 stroke-[3]" />
+              <span>EXECUTE SEQUENCE!</span>
+            </button>
           </div>
-          <div className="bg-comic-black text-comic-yellow text-xs font-black px-3 py-1 rounded-lg border-2 border-comic-black shadow-comic-sm">
-            {orderedUpgrades.length} UPGRADES IN PLAY
+        </>
+      }
+      testId="wakanda-forever-modal"
+    >
+      <p className={`text-xs font-bold uppercase ${style.muted}`}>
+        Drag & drop or use the arrows to set the execution order (left to right)
+      </p>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <div
+          className={`relative lg:col-span-4 p-4 pl-5 flex flex-col items-center ${style.panel}`}
+        >
+          {trigger.code && <AccentStripe code={trigger.code} />}
+          <div className={`w-full flex items-center justify-between pb-2 mb-3 ${style.panelHead}`}>
+            <span className="text-xs font-black uppercase tracking-wider">Triggering event</span>
+            {triggerCard?.cost !== undefined && (
+              <span className={`text-[10px] font-black px-2 py-0.5 ${style.chip}`}>
+                COST {triggerCard.cost}
+              </span>
+            )}
+          </div>
+          {triggerCard && (
+            <div className="w-48">
+              <CardFace card={trigger} size="md" />
+            </div>
+          )}
+          <div className={`mt-3 w-full p-2.5 text-xs ${style.inset}`}>
+            <div className="font-black mb-1">💡 Tactical finisher rule (RR v1.8 p. 28)</div>
+            <p className={`text-[11px] leading-normal ${style.muted}`}>
+              The <strong>final upgrade</strong> executed in your sequence receives its enhanced{' '}
+              <strong className={style.emphasis}>Finisher Bonus</strong> (marked with 💥)!
+            </p>
           </div>
         </div>
 
-        {/* Modal Grid Body */}
-        <div className="p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start max-h-[75vh] overflow-y-auto">
-          {/* Left Reference Card */}
-          <div className="lg:col-span-4 flex flex-col items-center bg-white p-4 rounded-xl border-2 border-comic-black shadow-comic-sm">
-            <div className="w-full flex items-center justify-between mb-2">
-              <span className="text-xs font-black text-purple-700 uppercase tracking-wider">
-                Triggering Event
-              </span>
-              <span className="bg-purple-900 text-purple-100 text-[10px] font-bold px-2 py-0.5 rounded border border-comic-black">
-                COST: 1
-              </span>
-            </div>
-
-            {/* Wakanda Forever Card Preview */}
-            <div className="w-48 bg-purple-900 rounded-xl p-3 flex flex-col items-center text-center relative border-2 border-comic-black shadow-comic-sm">
-              <div className="bg-comic-black text-amber-300 text-sm font-black px-2 py-0.5 rounded w-full border border-comic-black mb-2">
-                Wakanda Forever!
-              </div>
-              <div className="w-full h-24 bg-purple-950 rounded border border-comic-black flex items-center justify-center text-3xl mb-2">
-                ⚡🐾⚡
-              </div>
-              <div className="text-[10px] font-bold text-purple-100 leading-tight bg-purple-950/80 p-2 rounded border border-purple-400/40 text-left">
-                <span className="font-black text-amber-300 uppercase">Hero Action:</span> Trigger
-                the "Special" ability of each{' '}
-                <span className="text-amber-300 font-bold">Black Panther</span> upgrade you control,
-                one at a time, in the order of your choice.
-              </div>
-            </div>
-
-            {/* Finisher Rule Tooltip */}
-            <div className="mt-4 bg-amber-100 border-2 border-comic-black rounded-lg p-3 text-left shadow-comic-sm">
-              <div className="flex items-center gap-1.5 text-comic-black text-xs font-black mb-1">
-                <span>💡</span>
-                <span>TACTICAL FINISHER RULE (RR v1.8 p. 28)</span>
-              </div>
-              <p className="text-[11px] text-slate-800 leading-normal">
-                The <strong className="text-purple-800 font-bold">final upgrade</strong> executed in
-                your sequence receives its enhanced{' '}
-                <strong className="text-comic-red font-black">Finisher Bonus</strong> (marked with
-                💥)!
-              </p>
-            </div>
+        <div className="lg:col-span-8 flex flex-col gap-4">
+          <div
+            className={`flex items-center justify-between text-xs font-black uppercase pb-2 ${style.panelHead}`}
+          >
+            <span>Execution pipeline (step 1 ➔ step {orderedUpgrades.length})</span>
+            <span className={style.emphasis}>Final step = finisher boosted!</span>
           </div>
 
-          {/* Right Drag & Drop Sequence */}
-          <div className="lg:col-span-8 flex flex-col space-y-4">
-            <div className="flex items-center justify-between text-xs font-bold text-slate-700 border-b-2 border-comic-black pb-2">
-              <span className="uppercase tracking-wider font-black">
-                Execution Pipeline (Step 1 ➔ Step {orderedUpgrades.length})
-              </span>
-              <span className="text-comic-red font-black">FINAL STEP = FINISHER BOOSTED!</span>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+            {orderedUpgrades.map((card, index) => {
+              const isFinal = index === orderedUpgrades.length - 1;
+              const isOver = dragOverIndex === index && draggedIndex !== index;
 
-            {/* Slots Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-              {orderedUpgrades.map((card, index) => {
-                const isFinal = index === orderedUpgrades.length - 1;
-                const stepNum = index + 1;
+              return (
+                <div
+                  key={card.id}
+                  data-card-anchor={card.code ?? ''}
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('text/plain', String(index));
+                    e.dataTransfer.effectAllowed = 'move';
+                    setDraggedIndex(index);
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    setDragOverIndex(index);
+                  }}
+                  onDragLeave={() => setDragOverIndex(null)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    handleDrop(index);
+                  }}
+                  onDragEnd={() => {
+                    setDraggedIndex(null);
+                    setDragOverIndex(null);
+                  }}
+                  className={`relative flex flex-col p-2 pl-3 cursor-grab active:cursor-grabbing transition-all select-none ${
+                    isFinal ? style.slotFinal : style.slot
+                  } ${draggedIndex === index ? 'opacity-40 scale-95' : ''} ${
+                    isOver ? style.slotOver : ''
+                  }`}
+                >
+                  {card.code && <AccentStripe code={card.code} />}
+                  {isFinal && (
+                    <span
+                      aria-hidden="true"
+                      className={`absolute -top-3 -right-3 z-10 flex items-center justify-center text-center font-black text-[10px] leading-none pointer-events-none ${
+                        style.finisher.star ? 'w-16 h-16 rotate-12' : 'px-2 py-1 rotate-6'
+                      } ${style.finisher.className}`}
+                      style={style.finisher.star ? { clipPath: STAR_CLIP } : undefined}
+                    >
+                      {style.finisher.label}
+                    </span>
+                  )}
 
-                return (
-                  <div
-                    key={card.id}
-                    draggable
-                    onDragStart={() => handleDragStart(index)}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={() => handleDrop(index)}
-                    className={`relative flex flex-col justify-between p-3 rounded-xl border-2 border-comic-black shadow-comic-sm cursor-grab select-none transition-all ${card.colorClass} ${
-                      isFinal ? 'ring-4 ring-amber-400 shadow-comic' : ''
-                    } ${draggedIndex === index ? 'opacity-40 scale-95' : ''}`}
-                  >
-                    {/* Step Header */}
-                    <div className="flex items-center justify-between mb-2">
-                      <span
-                        className={`text-[10px] font-black px-2 py-0.5 rounded border border-comic-black ${
-                          isFinal
-                            ? 'bg-amber-400 text-slate-950 animate-pulse'
-                            : 'bg-comic-black text-white'
-                        }`}
-                      >
-                        {isFinal ? '💥 FINAL (FINISHER)' : `STEP ${stepNum}`}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        {index > 0 && (
-                          <button
-                            onClick={() => moveCard(index, -1)}
-                            className="text-[10px] bg-comic-black hover:bg-slate-800 text-white px-1.5 py-0.5 rounded border border-comic-black"
-                            title="Move earlier"
-                          >
-                            ◀
-                          </button>
-                        )}
-                        {index < orderedUpgrades.length - 1 && (
-                          <button
-                            onClick={() => moveCard(index, 1)}
-                            className="text-[10px] bg-comic-black hover:bg-slate-800 text-white px-1.5 py-0.5 rounded border border-comic-black"
-                            title="Move later"
-                          >
-                            ▶
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Card Title & Icon */}
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className="text-2xl">{card.icon}</span>
-                      <div className="truncate">
-                        <h4 className="font-black text-xs text-white truncate">{card.name}</h4>
-                        <span className="text-[9px] text-amber-200 font-mono uppercase">
-                          Upgrade Special
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Effect Text */}
-                    <div
-                      className={`mt-2 p-2 rounded border border-comic-black text-[10px] leading-tight ${
-                        isFinal
-                          ? 'bg-amber-400 text-comic-black font-black'
-                          : 'bg-comic-black/60 text-slate-200'
+                  <div className="flex items-center justify-between mb-2 pointer-events-none">
+                    <span
+                      className={`text-[10px] font-black px-2 py-0.5 ${
+                        isFinal ? style.stepFinal : style.step
                       }`}
                     >
-                      <FormattedCardText text={card.text} />
-                    </div>
+                      {isFinal ? '💥 FINAL (FINISHER)' : `STEP ${index + 1}`}
+                    </span>
+                    <span
+                      className={`flex items-center gap-1 text-[10px] font-black uppercase ${
+                        isFinal ? style.emphasis : ''
+                      }`}
+                    >
+                      <span aria-hidden="true">{card.icon}</span>
+                      <span>{isFinal ? card.finisherBadge : card.baseBadge}</span>
+                    </span>
+                  </div>
 
-                    {/* Stat Badge */}
-                    <div className="mt-3 flex justify-end">
-                      <span
-                        className={`text-[10px] font-black px-2 py-0.5 rounded border border-comic-black ${
-                          isFinal ? 'bg-amber-400 text-comic-black' : 'bg-comic-black text-white'
-                        }`}
-                      >
-                        {isFinal ? card.finisherBadge : card.baseBadge}
-                      </span>
+                  <div className="pointer-events-none">
+                    <div className="w-36 mx-auto">
+                      <CardFace card={{ code: card.code, name: card.name }} size="sm" />
                     </div>
                   </div>
+
+                  <div className="flex items-center justify-between gap-1.5 mt-2">
+                    <button
+                      type="button"
+                      disabled={index === 0}
+                      aria-label={`Move ${card.name} earlier`}
+                      title="Move earlier"
+                      onClick={() => reorder(index, index - 1)}
+                      className={`flex-1 py-1 px-2 flex items-center justify-center gap-1 font-black text-xs cursor-pointer active:scale-95 transition-all disabled:cursor-not-allowed ${style.btnMove}`}
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      <span>Left</span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isFinal}
+                      aria-label={`Move ${card.name} later`}
+                      title="Move later"
+                      onClick={() => reorder(index, index + 1)}
+                      className={`flex-1 py-1 px-2 flex items-center justify-center gap-1 font-black text-xs cursor-pointer active:scale-95 transition-all disabled:cursor-not-allowed ${style.btnMove}`}
+                    >
+                      <span>Right</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <div
+                    className={`mt-2 p-1.5 text-[10px] leading-tight ${style.inset} ${style.muted}`}
+                  >
+                    <FormattedCardText text={card.text} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className={`p-3 ${style.panel}`}>
+            <h3 className={`text-[10px] font-black uppercase tracking-wider mb-1.5 ${style.muted}`}>
+              Planned resolution sequence
+            </h3>
+            <ol className="space-y-1.5 text-xs font-bold">
+              {orderedUpgrades.map((u, i) => {
+                const isLast = i === orderedUpgrades.length - 1;
+                return (
+                  <li key={u.id} className="flex items-center justify-between gap-2">
+                    <span className="flex items-center gap-2 min-w-0">
+                      <span className="font-mono text-[11px] w-4">{i + 1}.</span>
+                      <CardRef code={u.code} name={u.name} size="xs" />
+                    </span>
+                    <span className={isLast ? `font-black ${style.emphasis}` : style.muted}>
+                      ➔ {isLast ? u.finisherBadge : u.baseBadge}
+                    </span>
+                  </li>
                 );
               })}
-            </div>
-
-            {/* Summary Checklist */}
-            <div className="bg-white p-3.5 rounded-xl border-2 border-comic-black shadow-comic-sm">
-              <h3 className="text-xs font-black text-comic-black uppercase tracking-wider mb-2">
-                Planned Resolution Sequence:
-              </h3>
-              <div className="text-xs space-y-1 text-slate-800 font-mono font-bold">
-                {orderedUpgrades.map((u, i) => {
-                  const isFinal = i === orderedUpgrades.length - 1;
-                  return (
-                    <div key={u.id} className="flex items-center justify-between">
-                      <span>
-                        {i + 1}. {u.name}
-                      </span>
-                      <span className={isFinal ? 'text-purple-800 font-black' : 'text-slate-600'}>
-                        ➔ {isFinal ? u.finisherBadge : u.baseBadge}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Buttons */}
-            <div className="flex items-center justify-end gap-3 pt-3 border-t-2 border-comic-black">
-              <button
-                onClick={resetDefaultOrder}
-                className="px-3 py-2 bg-white hover:bg-comic-paper text-comic-black font-black text-xs uppercase rounded-lg border-2 border-comic-black shadow-comic-sm transition-all cursor-pointer"
-              >
-                Reset Order ↺
-              </button>
-              <button
-                onClick={handleExecute}
-                className="px-6 py-2.5 bg-comic-yellow hover:bg-yellow-400 active:translate-y-0.5 text-comic-black font-black text-sm uppercase rounded-lg border-2 border-comic-black shadow-comic transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <span>EXECUTE SEQUENCE!</span>
-                <span>➔</span>
-              </button>
-            </div>
+            </ol>
           </div>
         </div>
       </div>
-    </ModalLayer>
+    </ModalScaffold>
   );
 };

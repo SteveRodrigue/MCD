@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ModalLayer } from '../layout/ModalLayer';
 import {
   HelpCircle,
   CheckCircle2,
@@ -20,6 +19,9 @@ import { DistributeAmountModal } from './DistributeAmountModal';
 import { SelectCardsModal } from './SelectCardsModal';
 import { SimultaneousAbilitiesModal } from './SimultaneousAbilitiesModal';
 import { optionRequiresPayment } from '../../utils/option-requires-payment';
+import { AccentStripe } from '../../theme/AccentStripe';
+import { ModalScaffold } from '../../theme/ModalScaffold';
+import { useModalStyle } from '../../theme/useModalStyle';
 
 interface DecisionPromptModalProps {
   prompt?: PendingDecisionPrompt;
@@ -30,6 +32,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
   prompt,
   onSelectOption,
 }) => {
+  const { style } = useModalStyle();
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
   const [hoveredOptionCardId, setHoveredOptionCardId] = useState<string | null>(null);
 
@@ -126,407 +129,403 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
       return match ? parseInt(match[1], 10) : undefined;
     })();
 
-  return (
-    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
-      <div className="relative w-full max-w-xl bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl overflow-hidden flex flex-col font-comic">
-        {/* Comic background dots */}
-        <div
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(#000 2px, transparent 2px)',
-            backgroundSize: '12px 12px',
-          }}
-        />
+  const headerTrigger = triggerCard
+    ? { code: triggerCard.code, name: triggerCard.name }
+    : prompt.sourceCardName
+      ? { code: prompt.sourceCardCode, name: prompt.sourceCardName }
+      : null;
 
-        {/* 1. Pop-Art Header */}
-        <div className="relative px-5 py-3.5 bg-comic-yellow border-b-4 border-comic-black flex items-center justify-between text-comic-black select-none">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-comic-black text-comic-yellow rounded-lg shadow-comic-sm">
-              {isForced ? (
-                <ShieldAlert className="w-5 h-5 text-comic-red animate-pulse" />
-              ) : (
-                <Zap className="w-5 h-5 text-comic-yellow" />
-              )}
-            </div>
-            <div>
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-slate-800">
-                <span>{isForced ? 'FORCED RESOLUTION' : 'DECISION POINT'}</span>
-                {prompt.totalQueued && prompt.totalQueued > 1 && (
-                  <span className="bg-comic-black text-comic-yellow px-1.5 py-0.2 rounded text-[9px]">
-                    QUEUE: {prompt.queuePosition ?? 1} OF {prompt.totalQueued}
+  return (
+    <ModalScaffold
+      title={isForced ? 'FORCED RESPONSE / INTERRUPT' : 'CHOOSE AN ACTION'}
+      kicker={isForced ? 'FORCED RESOLUTION' : 'DECISION POINT'}
+      verb={isForced ? 'red' : 'yellow'}
+      trigger={headerTrigger}
+      icon={
+        isForced ? <ShieldAlert className="w-5 h-5 animate-pulse" /> : <Zap className="w-5 h-5" />
+      }
+      headerRight={
+        <>
+          {prompt.totalQueued && prompt.totalQueued > 1 && (
+            <span className={`text-[10px] font-black px-1.5 py-0.5 ${style.chip}`}>
+              QUEUE: {prompt.queuePosition ?? 1} OF {prompt.totalQueued}
+            </span>
+          )}
+          <span className={`text-xs font-black uppercase px-2.5 py-1 ${style.chip}`}>
+            {isForced ? 'FORCED' : 'OPTIONAL'}
+          </span>
+        </>
+      }
+      maxWidthClass="max-w-xl"
+      testId="decision-prompt-modal"
+    >
+      {/* 2. Modal Body */}
+      <div className="space-y-4">
+        {/* Question Title & Description */}
+        <div className="space-y-1">
+          <h3 className="text-lg sm:text-xl font-black uppercase tracking-tight flex items-center gap-2 leading-snug">
+            <HelpCircle className="w-5 h-5 shrink-0" />
+            <span>{prompt.title}</span>
+          </h3>
+          {(incomingDamage !== undefined ||
+            prompt.promptId.startsWith('prompt_defend') ||
+            prompt.attackerName) && (
+            <div
+              className={`p-3 space-y-2.5 ${style.panel}`}
+              style={{ borderLeftColor: '#ED1D24', borderLeftWidth: 6 }}
+            >
+              <div
+                className={`flex items-center justify-between pb-1.5 flex-wrap gap-2 ${style.panelHead}`}
+              >
+                <div className="flex items-center gap-2 text-comic-red">
+                  <ShieldAlert className="w-4 h-4 shrink-0 animate-pulse" />
+                  <span className="font-comic font-black uppercase text-xs tracking-wider">
+                    {incomingDamage !== undefined
+                      ? 'Incoming Attack Damage:'
+                      : 'Enemy Attack Declaration:'}
+                  </span>
+                </div>
+                {prompt.preventAmount !== undefined && (
+                  <span className="font-mono font-black text-xs bg-emerald-600 text-white px-2 py-0.5 rounded border border-comic-black shadow-comic-xs">
+                    Prevents:{' '}
+                    {prompt.preventAmount === 'ALL' ? 'ALL DMG' : `${prompt.preventAmount} DMG`}
                   </span>
                 )}
               </div>
-              <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight leading-none text-comic-black drop-shadow-xs">
-                {isForced ? 'FORCED RESPONSE / INTERRUPT' : 'CHOOSE AN ACTION'}
-              </h2>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-1.5">
-            <span
-              className={`text-xs font-black uppercase px-2.5 py-1 rounded border-2 border-comic-black shadow-comic-sm ${
-                isForced ? 'bg-comic-red text-white' : 'bg-comic-blue text-white'
-              }`}
-            >
-              {isForced ? 'FORCED' : 'OPTIONAL'}
-            </span>
-          </div>
-        </div>
-
-        {/* 2. Modal Body */}
-        <div className="relative p-5 sm:p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-          {/* Question Title & Description */}
-          <div className="space-y-1">
-            <h3 className="text-lg sm:text-xl font-black text-comic-black uppercase tracking-tight flex items-center gap-2 leading-snug">
-              <HelpCircle className="w-5 h-5 text-comic-black shrink-0" />
-              <span>{prompt.title}</span>
-            </h3>
-            {(incomingDamage !== undefined ||
-              prompt.promptId.startsWith('prompt_defend') ||
-              prompt.attackerName) && (
-              <div className="bg-red-50 border-2 border-comic-red rounded-lg p-3 shadow-comic-xs space-y-2.5">
-                <div className="flex items-center justify-between border-b border-comic-red/30 pb-1.5 flex-wrap gap-2">
-                  <div className="flex items-center gap-2 text-comic-red">
-                    <ShieldAlert className="w-4 h-4 shrink-0 text-comic-red animate-pulse" />
-                    <span className="font-comic font-black uppercase text-xs tracking-wider">
-                      {incomingDamage !== undefined
-                        ? 'Incoming Attack Damage:'
-                        : 'Enemy Attack Declaration:'}
-                    </span>
-                  </div>
-                  {prompt.preventAmount !== undefined && (
-                    <span className="font-mono font-black text-xs bg-emerald-600 text-white px-2 py-0.5 rounded border border-comic-black shadow-comic-xs">
-                      Prevents:{' '}
-                      {prompt.preventAmount === 'ALL' ? 'ALL DMG' : `${prompt.preventAmount} DMG`}
-                    </span>
-                  )}
-                </div>
-
-                {/* Combat Matchup Panel */}
-                <div className="flex items-center justify-between gap-2 pt-0.5">
-                  {/* Attacker box */}
-                  <div className="flex items-center gap-2 min-w-0 flex-1 bg-white/80 border border-comic-black/30 rounded p-1.5">
-                    <CardArtThumbnail
-                      cardCode={prompt.attackerCardCode}
-                      cardName={prompt.attackerName}
-                      size="sm"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider">
-                        ATTACKER
-                      </div>
-                      <div className="font-comic font-black text-xs text-comic-black truncate">
-                        {prompt.attackerName || 'Enemy'}
-                      </div>
-                      <div className="flex items-center gap-1 flex-wrap mt-0.5">
-                        {prompt.hasOverkill && (
-                          <span className="bg-comic-red text-white text-[9px] font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
-                            OVERKILL
-                          </span>
-                        )}
-                        {prompt.hasPiercing && (
-                          <span className="bg-purple-600 text-white text-[9px] font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
-                            PIERCING
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Middle: Direction arrow + incoming damage */}
-                  <div className="flex flex-col items-center justify-center shrink-0 px-1">
-                    {incomingDamage !== undefined && (
-                      <div className="text-[10px] font-mono font-black text-comic-red">
-                        {incomingDamage} DMG
-                      </div>
-                    )}
-                    <ArrowRight className="w-4 h-4 text-comic-red" />
-                  </div>
-
-                  {/* Target / Defender box */}
-                  <div className="flex items-center gap-2 min-w-0 flex-1 bg-white/80 border border-comic-black/30 rounded p-1.5">
-                    <CardArtThumbnail
-                      cardCode={prompt.defenderCardCode || prompt.targetCardCode}
-                      cardName={prompt.defenderName || prompt.targetName}
-                      size="sm"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider">
-                        {prompt.defenderType === 'ALLY'
-                          ? 'DEFENDER (ALLY)'
-                          : prompt.defenderType === 'HERO'
-                            ? 'DEFENDER (HERO)'
-                            : 'TARGET'}
-                      </div>
-                      <div className="font-comic font-black text-xs text-comic-black truncate">
-                        {prompt.defenderName ||
-                          prompt.targetName ||
-                          prompt.targetHeroName ||
-                          'Hero'}
-                      </div>
-                      <div className="flex items-center gap-1 flex-wrap mt-0.5">
-                        {prompt.targetHasTough && (
-                          <span className="bg-amber-400 text-slate-950 text-[9px] font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
-                            TOUGH
-                          </span>
-                        )}
-                        {prompt.targetRetaliate !== undefined && prompt.targetRetaliate > 0 && (
-                          <span className="bg-orange-500 text-white text-[9px] font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
-                            RETALIATE {prompt.targetRetaliate}
-                          </span>
-                        )}
-                        {prompt.targetCurrentHp !== undefined && (
-                          <span className="text-[10px] font-mono font-bold text-slate-700">
-                            {prompt.targetMaxHp !== undefined
-                              ? `${prompt.targetCurrentHp} / ${prompt.targetMaxHp} HP`
-                              : `${prompt.targetCurrentHp} HP`}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Projected HP */}
-                {incomingDamage !== undefined && prompt.targetCurrentHp !== undefined && (
-                  <div className="flex items-center justify-between text-[11px] font-bold bg-white/60 rounded px-2 py-1 border border-comic-black/20 text-slate-800">
-                    <span>Projected HP After Attack:</span>
-                    <span className="font-mono font-black text-comic-black">
-                      {(() => {
-                        const prevented =
-                          prompt.preventAmount === 'ALL'
-                            ? incomingDamage
-                            : typeof prompt.preventAmount === 'number'
-                              ? prompt.preventAmount
-                              : 0;
-                        const unmitigated = Math.max(0, incomingDamage - prevented);
-                        const hpWithoutCard = Math.max(0, prompt.targetCurrentHp - incomingDamage);
-                        const hpWithCard = Math.max(0, prompt.targetCurrentHp - unmitigated);
-                        return prompt.preventAmount !== undefined
-                          ? `${hpWithCard} HP (vs ${hpWithoutCard} HP without prevention)`
-                          : `${hpWithoutCard} HP`;
-                      })()}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-            {prompt.description && (
-              <div className="text-xs sm:text-sm font-bold text-slate-800 bg-amber-50 border-2 border-comic-black/30 p-2.5 rounded-lg shadow-xs">
-                <FormattedCardText text={prompt.description} />
-              </div>
-            )}
-          </div>
-
-          {/* Triggering card, then the card that hosts the ability */}
-          {showTriggerCardShowcase && triggerCard && (
-            <PromptCardPanel label={headerBadgeLabel} card={triggerCard} />
-          )}
-          {abilityCard && <PromptCardPanel label="ABILITY CARD" card={abilityCard} />}
-
-          {/* Visual Scryed/Revealed Cards Gallery */}
-          {prompt.revealedCards && prompt.revealedCards.length > 0 && (
-            <div className="bg-amber-100/70 border-2 border-comic-black rounded-xl p-3 shadow-comic-sm overflow-visible">
-              <div className="flex justify-between items-center mb-2 px-1">
-                <span className="text-[11px] font-comic font-black uppercase text-slate-900 tracking-wider">
-                  Revealed Cards ({prompt.revealedCards.length})
-                </span>
-                <span className="text-[10px] font-bold text-slate-700 italic">
-                  (Click matching card or select option below)
-                </span>
-              </div>
-
-              <div className="flex flex-wrap justify-center items-center gap-3 pt-1 overflow-visible">
-                {prompt.revealedCards.map((rc) => {
-                  const isHovered = hoveredCardId === rc.instanceId;
-                  return (
-                    <div
-                      key={rc.instanceId}
-                      onMouseEnter={() => setHoveredCardId(rc.instanceId)}
-                      onMouseLeave={() => setHoveredCardId(null)}
-                      onClick={() => {
-                        if (rc.isSelectable && rc.selectableOptionId) {
-                          onSelectOption(rc.selectableOptionId);
-                        }
-                      }}
-                      className={`flex flex-col items-center gap-1.5 transition-all relative ${
-                        isHovered ? 'z-zoom' : 'z-content'
-                      } ${
-                        rc.isSelectable
-                          ? 'cursor-pointer hover:scale-105 filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] ring-2 ring-emerald-500 rounded-xl p-0.5'
-                          : 'filter grayscale brightness-90 contrast-95 ring-2 ring-slate-400/80 rounded-xl p-0.5 cursor-default'
-                      }`}
-                    >
-                      <CardView
-                        card={rc.card}
-                        size="sm"
-                        enableHoverZoom={true}
-                        zoomOrigin="center"
-                      />
-                      <span
-                        className={`font-comic text-[9px] px-2 py-0.5 rounded border border-comic-black font-black uppercase shadow-xs ${
-                          rc.isSelectable
-                            ? 'bg-emerald-400 text-slate-950 animate-pulse'
-                            : 'bg-slate-300 text-slate-700'
-                        }`}
-                      >
-                        {rc.isSelectable ? '✨ SELECTABLE TECH' : rc.dimmedReason || 'NON-MATCHING'}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Option Selection List */}
-          <div className="flex flex-col gap-2.5 pt-1">
-            {prompt.options.map((option, index) => {
-              const isDeclineOption =
-                option.id.includes('none') || option.id.includes('decline') || option.id === 'pass';
-              const isDisabled = Boolean(option.disabled);
-
-              const optParams = option.params as Record<string, any> | undefined;
-              const requiresPayment = optionRequiresPayment(option);
-
-              const costAmount =
-                optParams?.resourceCost?.amount ??
-                (option as any).resourceCost?.amount ??
-                (typeof optParams?.ability?.cost?.resourceCost === 'number'
-                  ? optParams.ability.cost.resourceCost
-                  : typeof optParams?.ability?.cost?.resourceCost === 'object' &&
-                      optParams?.ability?.cost?.resourceCost !== null
-                    ? Object.values(optParams.ability.cost.resourceCost)[0]
-                    : 1);
-
-              const optionCardCode = option.cardCode || (optParams?.cardCode as string | undefined);
-              const optionCard = optionCardCode ? cardCatalog.getCard(optionCardCode) : undefined;
-
-              return (
-                <button
-                  key={option.id}
-                  disabled={isDisabled}
-                  onClick={() => {
-                    if (!isDisabled) {
-                      onSelectOption(option.id);
-                    }
-                  }}
-                  className={`group relative flex flex-col items-start text-left p-3 sm:p-3.5 border-2 border-comic-black rounded-lg transition-all ${
-                    isDisabled
-                      ? 'opacity-50 cursor-not-allowed bg-slate-100 text-slate-500 pointer-events-none ring-1 ring-slate-300'
-                      : isDeclineOption
-                        ? 'shadow-comic-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] cursor-pointer bg-slate-100 hover:bg-comic-red text-comic-black hover:text-white'
-                        : 'shadow-comic-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] cursor-pointer bg-white hover:bg-comic-yellow text-comic-black'
-                  }`}
+              {/* Combat Matchup Panel */}
+              <div className="flex items-center justify-between gap-2 pt-0.5">
+                {/* Attacker box */}
+                <div
+                  data-card-anchor={prompt.attackerCardCode ?? ''}
+                  className={`relative flex items-center gap-2 min-w-0 flex-1 p-1.5 pl-3 ${style.inset}`}
                 >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="font-comic font-black text-sm sm:text-base uppercase tracking-wide flex items-center gap-2 flex-wrap">
-                      <span
-                        className={`w-6 h-6 rounded-full border-2 border-comic-black flex items-center justify-center text-xs font-black ${
-                          isDisabled
-                            ? 'bg-slate-300 text-slate-600'
-                            : isDeclineOption
-                              ? 'bg-rose-300 text-slate-950'
-                              : 'bg-comic-yellow text-comic-black'
-                        }`}
-                      >
-                        {index + 1}
-                      </span>
-                      {optionCardCode ? (
-                        <div
-                          data-testid={`option-card-thumbnail-${option.id}`}
-                          className="relative shrink-0 group/thumb"
-                          onMouseEnter={() => setHoveredOptionCardId(option.id)}
-                          onMouseLeave={() => setHoveredOptionCardId(null)}
-                        >
-                          <CardArtThumbnail
-                            cardCode={optionCardCode}
-                            cardName={option.label}
-                            size="sm"
-                          />
-                          {optionCard && hoveredOptionCardId === option.id && (
-                            <div
-                              data-testid={`card-hover-preview-${optionCard.code}`}
-                              className="absolute left-12 top-1/2 -translate-y-1/2 z-raised drop-shadow-2xl animate-in fade-in duration-150 pointer-events-none"
-                            >
-                              <CardView card={optionCard} size="sm" enableHoverZoom={true} />
-                            </div>
-                          )}
-                        </div>
-                      ) : option.icon === 'punch' || option.id === 'undefended' ? (
-                        <div className="p-1 bg-comic-red text-white rounded border border-comic-black shadow-comic-xs flex items-center justify-center">
-                          <Swords className="w-4 h-4 text-white" />
-                        </div>
-                      ) : null}
-                      <span>{option.label}</span>
-                      {option.statusBadges?.isTough && (
-                        <span className="bg-amber-400 text-slate-950 text-[9px] font-black uppercase px-1.5 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                  <AccentStripe code={prompt.attackerCardCode ?? ''} />
+                  <CardArtThumbnail
+                    cardCode={prompt.attackerCardCode}
+                    cardName={prompt.attackerName}
+                    size="sm"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div
+                      className={`text-[10px] font-black uppercase tracking-wider ${style.muted}`}
+                    >
+                      ATTACKER
+                    </div>
+                    <div className="font-comic font-black text-xs truncate">
+                      {prompt.attackerName || 'Enemy'}
+                    </div>
+                    <div className="flex items-center gap-1 flex-wrap mt-0.5">
+                      {prompt.hasOverkill && (
+                        <span className="bg-comic-red text-white text-[9px] font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                          OVERKILL
+                        </span>
+                      )}
+                      {prompt.hasPiercing && (
+                        <span className="bg-purple-600 text-white text-[9px] font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                          PIERCING
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Middle: Direction arrow + incoming damage */}
+                <div className="flex flex-col items-center justify-center shrink-0 px-1">
+                  {incomingDamage !== undefined && (
+                    <div className="text-[10px] font-mono font-black text-comic-red">
+                      {incomingDamage} DMG
+                    </div>
+                  )}
+                  <ArrowRight className="w-4 h-4 text-comic-red" />
+                </div>
+
+                {/* Target / Defender box */}
+                <div
+                  data-card-anchor={prompt.defenderCardCode || prompt.targetCardCode || ''}
+                  className={`relative flex items-center gap-2 min-w-0 flex-1 p-1.5 pl-3 ${style.inset}`}
+                >
+                  <AccentStripe code={prompt.defenderCardCode || prompt.targetCardCode || ''} />
+                  <CardArtThumbnail
+                    cardCode={prompt.defenderCardCode || prompt.targetCardCode}
+                    cardName={prompt.defenderName || prompt.targetName}
+                    size="sm"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div
+                      className={`text-[10px] font-black uppercase tracking-wider ${style.muted}`}
+                    >
+                      {prompt.defenderType === 'ALLY'
+                        ? 'DEFENDER (ALLY)'
+                        : prompt.defenderType === 'HERO'
+                          ? 'DEFENDER (HERO)'
+                          : 'TARGET'}
+                    </div>
+                    <div className="font-comic font-black text-xs truncate">
+                      {prompt.defenderName || prompt.targetName || prompt.targetHeroName || 'Hero'}
+                    </div>
+                    <div className="flex items-center gap-1 flex-wrap mt-0.5">
+                      {prompt.targetHasTough && (
+                        <span className="bg-amber-400 text-slate-950 text-[9px] font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
                           TOUGH
                         </span>
                       )}
-                      {option.statusBadges?.retaliate !== undefined &&
-                        option.statusBadges.retaliate > 0 && (
-                          <span className="bg-orange-500 text-white text-[9px] font-black uppercase px-1.5 py-0.2 rounded border border-comic-black shadow-comic-xs">
-                            RETALIATE {option.statusBadges.retaliate}
-                          </span>
-                        )}
-                      {requiresPayment && costAmount !== undefined && costAmount > 0 && (
-                        <span className="inline-flex items-center gap-1 font-comic text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-300 border border-comic-black text-slate-950 shadow-xs">
-                          ⚡ COST: {costAmount} {costAmount === 1 ? 'RESOURCE' : 'RESOURCES'}
+                      {prompt.targetRetaliate !== undefined && prompt.targetRetaliate > 0 && (
+                        <span className="bg-orange-500 text-white text-[9px] font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                          RETALIATE {prompt.targetRetaliate}
                         </span>
                       )}
-                      {!requiresPayment &&
-                        !option.label.toLowerCase().includes('cost') &&
-                        optionCard?.cost !== undefined && (
-                          <span className="inline-flex items-center gap-1 font-comic text-[10px] font-black uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-200 border border-comic-black text-slate-950 shadow-xs">
-                            Cost: {optionCard.cost}
-                          </span>
-                        )}
-                    </span>
-                    {isDisabled ? (
-                      <XCircle className="w-5 h-5 text-slate-400" />
-                    ) : isDeclineOption ? (
-                      <XCircle className="w-5 h-5 text-comic-red group-hover:text-white transition-colors" />
-                    ) : (
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600 group-hover:text-comic-black transition-colors" />
-                    )}
+                      {prompt.targetCurrentHp !== undefined && (
+                        <span className={`text-[10px] font-mono font-bold ${style.muted}`}>
+                          {prompt.targetMaxHp !== undefined
+                            ? `${prompt.targetCurrentHp} / ${prompt.targetMaxHp} HP`
+                            : `${prompt.targetCurrentHp} HP`}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  {option.disabledReason && (
-                    <div className="mt-1 pl-8">
-                      <span className="inline-flex items-center gap-1 font-comic text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-200 border border-comic-black text-amber-950">
-                        ⚠️ {option.disabledReason}
-                      </span>
-                    </div>
-                  )}
-                  {option.description && (
-                    <div className="mt-0.5 text-xs font-bold text-slate-600 group-hover:text-comic-black pl-8">
-                      <FormattedCardText text={option.description} />
-                    </div>
-                  )}
-                </button>
-              );
-            })}
+                </div>
+              </div>
 
-            {prompt.isVoluntary &&
-              !prompt.options.some((o) => o.id === 'pass' || o.id.includes('decline')) && (
-                <button
-                  onClick={() => onSelectOption('pass')}
-                  className="group relative flex items-center justify-between p-3 border-2 border-comic-black rounded-lg bg-slate-200 hover:bg-comic-red text-slate-800 hover:text-white shadow-comic-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer font-comic font-black text-sm uppercase tracking-wide"
+              {/* Projected HP */}
+              {incomingDamage !== undefined && prompt.targetCurrentHp !== undefined && (
+                <div
+                  className={`flex items-center justify-between text-[11px] font-bold px-2 py-1 ${style.inset}`}
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full border-2 border-comic-black flex items-center justify-center text-xs font-black bg-slate-300 text-slate-900">
-                      ✕
-                    </span>
-                    <span>Pass / Do Nothing</span>
-                  </div>
-                  <XCircle className="w-5 h-5 text-slate-500 group-hover:text-white transition-colors" />
-                </button>
+                  <span>Projected HP After Attack:</span>
+                  <span className="font-mono font-black">
+                    {(() => {
+                      const prevented =
+                        prompt.preventAmount === 'ALL'
+                          ? incomingDamage
+                          : typeof prompt.preventAmount === 'number'
+                            ? prompt.preventAmount
+                            : 0;
+                      const unmitigated = Math.max(0, incomingDamage - prevented);
+                      const hpWithoutCard = Math.max(0, prompt.targetCurrentHp - incomingDamage);
+                      const hpWithCard = Math.max(0, prompt.targetCurrentHp - unmitigated);
+                      return prompt.preventAmount !== undefined
+                        ? `${hpWithCard} HP (vs ${hpWithoutCard} HP without prevention)`
+                        : `${hpWithoutCard} HP`;
+                    })()}
+                  </span>
+                </div>
               )}
+            </div>
+          )}
+          {prompt.description && (
+            <div className={`text-xs sm:text-sm font-bold p-2.5 ${style.inset}`}>
+              <FormattedCardText text={prompt.description} />
+            </div>
+          )}
+        </div>
+
+        {/* Triggering card, then the card that hosts the ability */}
+        {showTriggerCardShowcase && triggerCard && (
+          <PromptCardPanel label={headerBadgeLabel} card={triggerCard} />
+        )}
+        {abilityCard && <PromptCardPanel label="ABILITY CARD" card={abilityCard} />}
+
+        {/* Visual Scryed/Revealed Cards Gallery */}
+        {prompt.revealedCards && prompt.revealedCards.length > 0 && (
+          <div className={`p-3 overflow-visible ${style.panel}`}>
+            <div className="flex justify-between items-center mb-2 px-1">
+              <span className="text-[11px] font-comic font-black uppercase tracking-wider">
+                Revealed Cards ({prompt.revealedCards.length})
+              </span>
+              <span className={`text-[10px] font-bold italic ${style.muted}`}>
+                (Click matching card or select option below)
+              </span>
+            </div>
+
+            <div className="flex flex-wrap justify-center items-center gap-3 pt-1 overflow-visible">
+              {prompt.revealedCards.map((rc) => {
+                const isHovered = hoveredCardId === rc.instanceId;
+                return (
+                  <div
+                    key={rc.instanceId}
+                    onMouseEnter={() => setHoveredCardId(rc.instanceId)}
+                    onMouseLeave={() => setHoveredCardId(null)}
+                    onClick={() => {
+                      if (rc.isSelectable && rc.selectableOptionId) {
+                        onSelectOption(rc.selectableOptionId);
+                      }
+                    }}
+                    className={`flex flex-col items-center gap-1.5 transition-all relative ${
+                      isHovered ? 'z-zoom' : 'z-content'
+                    } ${
+                      rc.isSelectable
+                        ? 'cursor-pointer hover:scale-105 filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] ring-2 ring-emerald-500 rounded-xl p-0.5'
+                        : 'filter grayscale brightness-90 contrast-95 ring-2 ring-slate-400/80 rounded-xl p-0.5 cursor-default'
+                    }`}
+                  >
+                    <CardView card={rc.card} size="sm" enableHoverZoom={true} zoomOrigin="center" />
+                    <span
+                      className={`font-comic text-[9px] px-2 py-0.5 rounded border border-comic-black font-black uppercase shadow-xs ${
+                        rc.isSelectable
+                          ? 'bg-emerald-400 text-slate-950 animate-pulse'
+                          : 'bg-slate-300 text-slate-700'
+                      }`}
+                    >
+                      {rc.isSelectable ? '✨ SELECTABLE TECH' : rc.dimmedReason || 'NON-MATCHING'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
+        )}
+
+        {/* Option Selection List */}
+        <div className="flex flex-col gap-2.5 pt-1">
+          {prompt.options.map((option, index) => {
+            const isDeclineOption =
+              option.id.includes('none') || option.id.includes('decline') || option.id === 'pass';
+            const isDisabled = Boolean(option.disabled);
+
+            const optParams = option.params as Record<string, any> | undefined;
+            const requiresPayment = optionRequiresPayment(option);
+
+            const costAmount =
+              optParams?.resourceCost?.amount ??
+              (option as any).resourceCost?.amount ??
+              (typeof optParams?.ability?.cost?.resourceCost === 'number'
+                ? optParams.ability.cost.resourceCost
+                : typeof optParams?.ability?.cost?.resourceCost === 'object' &&
+                    optParams?.ability?.cost?.resourceCost !== null
+                  ? Object.values(optParams.ability.cost.resourceCost)[0]
+                  : 1);
+
+            const optionCardCode = option.cardCode || (optParams?.cardCode as string | undefined);
+            const optionCard = optionCardCode ? cardCatalog.getCard(optionCardCode) : undefined;
+
+            return (
+              <button
+                key={option.id}
+                disabled={isDisabled}
+                data-card-anchor={optionCardCode ?? ''}
+                onClick={() => {
+                  if (!isDisabled) {
+                    onSelectOption(option.id);
+                  }
+                }}
+                className={`group relative flex flex-col items-start text-left p-3 sm:p-3.5 pl-4 transition-all ${style.option} ${
+                  isDisabled
+                    ? 'opacity-50 cursor-not-allowed pointer-events-none'
+                    : isDeclineOption
+                      ? 'cursor-pointer border-dashed'
+                      : 'cursor-pointer'
+                }`}
+              >
+                <AccentStripe code={optionCardCode ?? ''} />
+                <div className="flex items-center justify-between w-full">
+                  <span
+                    className={`font-comic font-black text-sm sm:text-base uppercase tracking-wide flex items-center gap-2 flex-wrap transition-colors ${style.optionTitleHover}`}
+                  >
+                    <span
+                      className={`w-6 h-6 rounded-full border-2 border-comic-black flex items-center justify-center text-xs font-black ${
+                        isDisabled
+                          ? 'bg-slate-300 text-slate-600'
+                          : isDeclineOption
+                            ? 'bg-rose-300 text-slate-950'
+                            : 'bg-comic-yellow text-comic-black'
+                      }`}
+                    >
+                      {index + 1}
+                    </span>
+                    {optionCardCode ? (
+                      <div
+                        data-testid={`option-card-thumbnail-${option.id}`}
+                        className="relative shrink-0 group/thumb"
+                        onMouseEnter={() => setHoveredOptionCardId(option.id)}
+                        onMouseLeave={() => setHoveredOptionCardId(null)}
+                      >
+                        <CardArtThumbnail
+                          cardCode={optionCardCode}
+                          cardName={option.label}
+                          size="sm"
+                        />
+                        {optionCard && hoveredOptionCardId === option.id && (
+                          <div
+                            data-testid={`card-hover-preview-${optionCard.code}`}
+                            className="absolute left-12 top-1/2 -translate-y-1/2 z-raised drop-shadow-2xl animate-in fade-in duration-150 pointer-events-none"
+                          >
+                            <CardView card={optionCard} size="sm" enableHoverZoom={true} />
+                          </div>
+                        )}
+                      </div>
+                    ) : option.icon === 'punch' || option.id === 'undefended' ? (
+                      <div className="p-1 bg-comic-red text-white rounded border border-comic-black shadow-comic-xs flex items-center justify-center">
+                        <Swords className="w-4 h-4 text-white" />
+                      </div>
+                    ) : null}
+                    <span>{option.label}</span>
+                    {option.statusBadges?.isTough && (
+                      <span className="bg-amber-400 text-slate-950 text-[9px] font-black uppercase px-1.5 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                        TOUGH
+                      </span>
+                    )}
+                    {option.statusBadges?.retaliate !== undefined &&
+                      option.statusBadges.retaliate > 0 && (
+                        <span className="bg-orange-500 text-white text-[9px] font-black uppercase px-1.5 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                          RETALIATE {option.statusBadges.retaliate}
+                        </span>
+                      )}
+                    {requiresPayment && costAmount !== undefined && costAmount > 0 && (
+                      <span className="inline-flex items-center gap-1 font-comic text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-300 border border-comic-black text-slate-950 shadow-xs">
+                        ⚡ COST: {costAmount} {costAmount === 1 ? 'RESOURCE' : 'RESOURCES'}
+                      </span>
+                    )}
+                    {!requiresPayment &&
+                      !option.label.toLowerCase().includes('cost') &&
+                      optionCard?.cost !== undefined && (
+                        <span className="inline-flex items-center gap-1 font-comic text-[10px] font-black uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-200 border border-comic-black text-slate-950 shadow-xs">
+                          Cost: {optionCard.cost}
+                        </span>
+                      )}
+                  </span>
+                  {isDisabled ? (
+                    <XCircle className="w-5 h-5 text-slate-400" />
+                  ) : isDeclineOption ? (
+                    <XCircle className="w-5 h-5 text-comic-red transition-colors" />
+                  ) : (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 transition-colors" />
+                  )}
+                </div>
+                {option.disabledReason && (
+                  <div className="mt-1 pl-8">
+                    <span className="inline-flex items-center gap-1 font-comic text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-200 border border-comic-black text-amber-950">
+                      ⚠️ {option.disabledReason}
+                    </span>
+                  </div>
+                )}
+                {option.description && (
+                  <div className={`mt-0.5 text-xs font-bold pl-8 ${style.muted}`}>
+                    <FormattedCardText text={option.description} />
+                  </div>
+                )}
+              </button>
+            );
+          })}
+
+          {prompt.isVoluntary &&
+            !prompt.options.some((o) => o.id === 'pass' || o.id.includes('decline')) && (
+              <button
+                onClick={() => onSelectOption('pass')}
+                className={`group relative flex items-center justify-between p-3 border-dashed transition-all cursor-pointer font-comic font-black text-sm uppercase tracking-wide ${style.option}`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full border-2 border-comic-black flex items-center justify-center text-xs font-black bg-slate-300 text-slate-900">
+                    ✕
+                  </span>
+                  <span>Pass / Do Nothing</span>
+                </div>
+                <XCircle className="w-5 h-5 text-comic-red transition-colors" />
+              </button>
+            )}
         </div>
       </div>
-    </ModalLayer>
+    </ModalScaffold>
   );
 };
 

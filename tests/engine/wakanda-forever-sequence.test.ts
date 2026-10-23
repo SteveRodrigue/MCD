@@ -254,6 +254,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     expect(execRes.state.pendingDecisionQueue?.length).toBe(1);
     const prompt = peekDecisionPrompt(execRes.state);
     expect(prompt?.sourceCardName).toBe('Wakanda Forever!');
+    expect(prompt?.sourceCardCode).toBe(wakandaForever.card.code);
     expect(prompt?.options).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

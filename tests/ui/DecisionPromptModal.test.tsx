@@ -72,7 +72,9 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
     expect(screen.getByText('Black Widow', { selector: 'h4' })).toBeDefined();
     expect(screen.getByText(`${blackWidow.traits!.join('. ')}.`)).toBeDefined();
     // The printed text is shown whole: no height cap on the text box
-    const textBox = screen.getByText(/reveal another card/i).closest('div.bg-white\\/90');
+    const textBox = screen
+      .getByText(/reveal another card/i)
+      .closest('[data-testid="prompt-card-text"]');
     expect(textBox).not.toBeNull();
     expect(textBox!.className).not.toContain('max-h');
     expect(blackWidow.text).toContain('reveal another card');

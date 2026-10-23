@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo } from 'react';
 import { getCardAccent, type CardAccent } from './card-accents';
-import { DEFAULT_MODAL_STYLE, type ModalStyle } from './modal-styles';
+import { DEFAULT_MODAL_STYLE, type ModalStyle, type VerbColor } from './modal-styles';
 
 export interface ModalStyleContextValue {
   style: ModalStyle;
@@ -10,6 +10,8 @@ export interface ModalStyleContextValue {
   overlayTop?: number;
   /** Draw the faction / hero / villain accent on card-bearing elements. */
   cardAccents: boolean;
+  /** Forces every header colour (the lab's verb switch). The game never sets it. */
+  verbOverride?: VerbColor;
 }
 
 export const ModalStyleContext = createContext<ModalStyleContextValue>({

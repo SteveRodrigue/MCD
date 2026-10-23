@@ -8,7 +8,13 @@ export interface CardReference {
   name: string;
 }
 
-export interface CardRefProps extends CardReference {
+/** A card as engine data names it: the code can be missing, and the thumbnail then falls back to a placeholder. */
+export interface TriggerCard {
+  code?: string;
+  name: string;
+}
+
+export interface CardRefProps extends TriggerCard {
   size?: 'xs' | 'sm' | 'lg';
   /** Name under the thumbnail instead of beside it (tiles). */
   stacked?: boolean;
@@ -27,7 +33,7 @@ export const CardRef: React.FC<CardRefProps> = ({
   stacked = false,
   className = '',
 }) => {
-  const accent = useCardAccent(code);
+  const accent = useCardAccent(code ?? '');
   const { style } = useModalStyle();
   const mode = style.accent.name;
 
@@ -49,7 +55,7 @@ export const CardRef: React.FC<CardRefProps> = ({
 
   return (
     <span
-      data-card-ref={code}
+      data-card-ref={code ?? ''}
       className={`inline-flex items-center gap-1.5 align-middle max-w-full ${
         stacked ? 'flex-col' : ''
       } ${className}`}

@@ -64,7 +64,6 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 | Issue                                                   | Problem (from the Dev Mode report)                                                   | Notes                                                                              |
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| [#333](https://github.com/SteveRodrigue/MCD/issues/333) | Manual villain-phase steps skip the beginning (+2 threat and following steps).       | Villain phase stepper (ADR-0068).                                                  |
 | [#327](https://github.com/SteveRodrigue/MCD/issues/327) | "Current state for the Daily Bugle fix": report text not captured in the issue body. | Needs the original report and snapshot before it can be sized.                     |
 
 ### 3.2 Rules gaps that affect core cards

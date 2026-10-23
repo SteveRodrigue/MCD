@@ -129,6 +129,76 @@ describe('Villain Phase Stepping & Pacing Engine (ADR-0068 / Issue #140)', () =>
     expect(nextState.villainPhaseStepEvent?.type).toBe('PASS_FIRST_PLAYER');
   });
 
+  describe('villain phase started by the clean-up prompt (Issue #333)', () => {
+    function endTurnAndFinishCleanup() {
+      gameState.options = { ...gameState.options, villainPhaseStepping: true };
+      gameState.players[0].hand = [createCardInstance(catalog.getCard('01107')!)];
+      const ended = dispatchAction(gameState, { type: 'END_PLAYER_TURN', playerId: 'p1' });
+      expect(peekDecisionPrompt(ended.state)?.options.some((o) => o.id === 'done_cleanup')).toBe(
+        true,
+      );
+      const finished = dispatchAction(ended.state, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: 'done_cleanup',
+      });
+      expect(finished.result.success).toBe(true);
+      return finished.state;
+    }
+
+    it('stops after the threat step instead of resolving the first activation', () => {
+      const state = endTurnAndFinishCleanup();
+
+      expect(state.phase).toBe(GamePhase.VILLAIN_PHASE);
+      expect(state.villainPhaseStepEvent?.type).toBe('THREAT_PLACED');
+      expect(state.villainPhaseStep).toBe(VillainPhaseStep.VILLAIN_ACTIVATIONS);
+      expect(state.lastCombatOutcome).toBeUndefined();
+      expect(peekDecisionPrompt(state)).toBeUndefined();
+    });
+
+    it('resolves the first villain activation on the next step', () => {
+      const state = endTurnAndFinishCleanup();
+      const next = dispatchAction(state, { type: 'ADVANCE_VILLAIN_PHASE' });
+
+      expect(next.result.success).toBe(true);
+      expect(next.state.villainPhaseStepEvent?.type).toBe('VILLAIN_ATTACK');
+    });
+  });
+
+  it('answering a reveal interrupt reveals no further card until the next step (Issue #333)', () => {
+    const player = gameState.players[0];
+    player.allies.push(createCardInstance(catalog.getCard('01075')!)); // Black Widow
+    player.hand = [
+      createCardInstance({
+        code: 'test_mental',
+        name: 'Mental Card',
+        type: 'event',
+        cost: 1,
+        resources: { mental: 1, total: 1 },
+      } as any),
+    ];
+    player.dealtEncounterCards = [
+      createCardInstance(catalog.getCard('01101')!), // Hydra Mercenary
+      createCardInstance(catalog.getCard('01112')!), // False Alarm
+    ];
+    gameState.options = { ...gameState.options, villainPhaseStepping: true };
+    gameState.phase = GamePhase.VILLAIN_PHASE;
+    gameState.villainPhaseStep = VillainPhaseStep.REVEAL_ENCOUNTER_CARDS;
+
+    const paused = dispatchAction(gameState, { type: 'ADVANCE_VILLAIN_PHASE' }).state;
+    expect(peekDecisionPrompt(paused)?.sourceCardName).toBe('Black Widow');
+
+    const declined = dispatchAction(paused, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: 'pass',
+    }).state;
+
+    expect(declined.players[0].engagedMinions.map((m) => m.card.code)).toEqual(['01101']);
+    expect(declined.players[0].dealtEncounterCards.map((c) => c.card.code)).toEqual(['01112']);
+    expect(peekDecisionPrompt(declined)).toBeUndefined();
+  });
+
   it('dispatches ADVANCE_VILLAIN_PHASE via action dispatcher', () => {
     // Put game in VILLAIN_PHASE
     gameState.phase = GamePhase.VILLAIN_PHASE;

@@ -20,8 +20,8 @@ import {
 import { popDecisionPrompt } from './prompt-queue';
 import { dealBoostCards, resolveBoostCards, type BoostLogContext } from './boost-resolution';
 import { nextEngineId } from '../state/rng';
-import { TriggerDispatchResult } from '../triggers/trigger-dispatcher';
-import { dispatchDefeat, type DefeatSource } from './damage-pipeline';
+import { TriggerDispatchResult, type DefeatSource } from '../triggers/trigger-dispatcher';
+import { dispatchDefeat, type DefeatDispatch } from '../triggers/defeat-dispatch';
 import { eliminatePlayer } from './player-elimination';
 import { processHostDefeated, resetCardState } from '../effects';
 import { recordBasicAction } from './stats';
@@ -803,6 +803,7 @@ export function applyCalculatedAttackDamage(
   attackContext: AttackExecutionContext,
   rawDamage: number,
 ): void {
+  const defeats: DefeatDispatch[] = [];
   if (attackContext.defender?.type === 'ALLY' && attackContext.defender.allyInstanceId) {
     // Ally Takes Attack Damage
     const allyIdx = player.allies.findIndex(
@@ -872,7 +873,7 @@ export function applyCalculatedAttackDamage(
             onomatopoeia: 'DEFEATED!',
           });
 
-          dispatchDefeat(state, {
+          defeats.push({
             targetPlayerId: player.id,
             targetInstanceId: ally.instanceId,
             targetType: 'ALLY',
@@ -889,13 +890,13 @@ export function applyCalculatedAttackDamage(
               onomatopoeia: 'OVERKILL SPILLOVER!',
             });
             if (player.health <= 0) {
-              dispatchDefeat(state, {
+              eliminatePlayer(state, player.id);
+              defeats.push({
                 targetPlayerId: player.id,
                 targetInstanceId: player.id,
                 targetType: 'HERO',
                 defeatSource: ENEMY_ATTACK_DEFEAT,
               });
-              eliminatePlayer(state, player.id);
             }
           }
         }
@@ -952,16 +953,19 @@ export function applyCalculatedAttackDamage(
       });
 
       if (player.health <= 0) {
-        dispatchDefeat(state, {
+        eliminatePlayer(state, player.id);
+        defeats.push({
           targetPlayerId: player.id,
           targetInstanceId: player.id,
           targetType: 'HERO',
           defeatSource: ENEMY_ATTACK_DEFEAT,
         });
-        eliminatePlayer(state, player.id);
       }
     }
   }
+
+  // One attack, one window (RR v1.8 Triggering Condition): announce once every state change is done.
+  for (const defeat of defeats) dispatchDefeat(state, defeat);
 
   attackContext.finalDamage = rawDamage;
 

@@ -14,11 +14,10 @@ import { getEffectiveMinionHitPoints, getEffectiveRetaliate } from './stat-calcu
 import { isImmuneToDamage } from './damage-immunity';
 import { eliminatePlayer } from './player-elimination';
 import { type DefeatSource } from '../triggers/trigger-dispatcher';
+import { dispatchDefeat, type DefeatDispatch } from '../triggers/defeat-dispatch';
 import type { TriggerCallNode } from '../errors/infinite-loop-error';
 import { moveDefeatedCardToPile, isEncounterCard, processHostDefeated } from '../effects';
 import { appendLog } from '../state/game-log';
-
-export type { DefeatSource };
 
 export type DamageTargetType = 'villain' | 'minion' | 'player' | 'ally';
 
@@ -62,13 +61,13 @@ export function defeatMinionsBeyondHitPoints(state: GameState): void {
       if (idx === -1) continue;
       player.engagedMinions.splice(idx, 1);
       processHostDefeated(state, minion);
+      moveDefeatedCardToPile(state, minion, state.encounterDiscard);
       dispatchDefeat(state, {
         targetPlayerId: player.id,
         targetInstanceId: minion.instanceId,
         targetType: 'MINION',
         defeatSource: { kind: 'EFFECT', byAttack: false },
       });
-      moveDefeatedCardToPile(state, minion, state.encounterDiscard);
     }
   }
 }
@@ -92,36 +91,6 @@ export interface DamageResult {
   excessDamage: number;
   retaliateDamageDealt?: number;
   onomatopoeia?: string;
-}
-
-export interface DefeatDispatch {
-  targetPlayerId: string;
-  targetInstanceId: string;
-  entityType?: 'CHARACTER' | 'SCHEME';
-  targetType?: 'VILLAIN' | 'MINION' | 'ALLY' | 'PLAYER' | 'HERO' | 'SCHEME';
-  defeatSource?: DefeatSource;
-}
-
-/**
- * The one place a defeat is announced (#247): DEFEATED, then CHARACTER_DEFEATED (or
- * SCHEME_DEFEATED for a scheme), both carrying the defeat source when the caller knows it.
- */
-export function dispatchDefeat(state: GameState, defeat: DefeatDispatch): void {
-  const entityType = defeat.entityType ?? 'CHARACTER';
-  const context = {
-    targetPlayerId: defeat.targetPlayerId,
-    sourceInstanceId: defeat.targetInstanceId,
-    targetInstanceId: defeat.targetInstanceId,
-    entityType,
-    targetType: defeat.targetType,
-    ...(defeat.defeatSource ? { defeatSource: defeat.defeatSource } : {}),
-  };
-  kernel.dispatchTrigger(state, 'DEFEATED', context);
-  kernel.dispatchTrigger(
-    state,
-    entityType === 'CHARACTER' ? 'CHARACTER_DEFEATED' : 'SCHEME_DEFEATED',
-    context,
-  );
 }
 
 function defeatSourceOf(request: DamageRequest): DefeatSource {
@@ -243,7 +212,10 @@ function applyDamageAndCheckDefeat(
   targetDefeated: boolean;
   excessDamage: number;
   onomatopoeia: string | undefined;
-  /** A minion's or ally's defeat, announced by the caller once the whole occurrence has resolved. */
+  /**
+   * The defeat of the target, announced by the caller once the whole occurrence has resolved
+   * (RR v1.8 Triggering Condition) and the state change (stage advance, elimination, discard) is done.
+   */
   pendingDefeat?: DefeatDispatch;
 } {
   let pendingDefeat: DefeatDispatch | undefined;
@@ -276,13 +248,13 @@ function applyDamageAndCheckDefeat(
           const instId = villain.instanceId || 'villain';
           const activePlayerId =
             state.players[state.activePlayerIndex]?.id || state.players[0]?.id || '';
-          dispatchDefeat(state, {
+          state = kernel.handleVillainDefeat(state, instId);
+          pendingDefeat = {
             targetPlayerId: sourcePlayerId || activePlayerId,
             targetInstanceId: instId,
             targetType: 'VILLAIN',
             defeatSource,
-          });
-          state = kernel.handleVillainDefeat(state, instId);
+          };
         }
         break;
       }
@@ -355,13 +327,13 @@ function applyDamageAndCheckDefeat(
         if (player.health <= 0) {
           targetDefeated = true;
           excessDamage = Math.max(0, damageTaken - healthBefore);
-          dispatchDefeat(state, {
+          eliminatePlayer(state, player.id);
+          pendingDefeat = {
             targetPlayerId: player.id,
             targetInstanceId: player.id,
-            targetType: 'PLAYER',
+            targetType: 'HERO',
             defeatSource,
-          });
-          eliminatePlayer(state, player.id);
+          };
         }
         break;
       }
@@ -683,8 +655,8 @@ export function applyDamageToTarget(
     }
   }
 
-  // One occurrence, one window (RR v1.8 Triggering Condition): the defeat of a minion or ally is
-  // announced once its state changes, Overkill included, have all been applied.
+  // One occurrence, one window (RR v1.8 Triggering Condition): every defeat is announced once its
+  // state changes (stage advance, elimination, discard), Overkill included, have all been applied.
   if (defeatRes.pendingDefeat) dispatchDefeat(state, defeatRes.pendingDefeat);
 
   // ---------------------------------------------------------------------------

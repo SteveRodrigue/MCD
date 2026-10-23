@@ -111,15 +111,15 @@ Setup: opening hands are drawn after the scenario setup (Appendix II step 14), a
 
 ## Addendum (2026-10-12, #267): Hand reactions offer all eligible cards in first-player turn order and damage placements wait for interrupt prompts
 
-Prior to #267, non-threat in-hand triggers (`DAMAGE_WOULD_BE_TAKEN`, `ENCOUNTER_CARD_REVEALED`, `TREACHERY_REVEALED`, `ATTACK_DEFENDED`, and `BASIC_ATTACK_PERFORMED`) broke early after finding the first eligible card for each player, preventing multiple copies (e.g. two *Backflips* or two *Enhanced Spider-Sense*) from being offered. In addition, multiplayer scoping either scanned players out of turn order or unconditionally restricted `DAMAGE_WOULD_BE_TAKEN` to the attacked player even when a reaction had broad scope.
+Prior to #267, non-threat in-hand triggers (`DAMAGE_WOULD_BE_TAKEN`, `ENCOUNTER_CARD_REVEALED`, `TREACHERY_REVEALED`, `ATTACK_DEFENDED`, and `BASIC_ATTACK_PERFORMED`) broke early after finding the first eligible card for each player, preventing multiple copies (e.g. two _Backflips_ or two _Enhanced Spider-Sense_) from being offered. In addition, multiplayer scoping either scanned players out of turn order or unconditionally restricted `DAMAGE_WOULD_BE_TAKEN` to the attacked player even when a reaction had broad scope.
 
 **Decision:**
+
 1. **Full Hand Scanning (`allEligibleCards: true`):** All in-hand triggers offer every eligible card in a player's hand (including duplicate copies) across the response/interrupt window.
 2. **Turn-Order Evaluation (`playersInTurnOrder`):** In multiplayer, reactive windows scan players starting from the first player (`playersInTurnOrder(state)`) per RR v1.8 First Player.
 3. **Target Scope Resolution:** `DAMAGE_WOULD_BE_TAKEN` defaults to the targeted player for cards without explicit scope filters, while allowing cards with `targetPlayerScope: 'ANY'` to react to damage dealt to any player.
 4. **Pending Damage Placements (`pendingDamagePlacements`):** Symmetrical to threat placements (#266, Option B), when `step6_calculateAndApplyAttackDamage` enqueues damage interrupt prompts, it creates a `PendingDamagePlacement` in `state.pendingDamagePlacements` (`{ id, targetPlayerId, targetType, sourceType, amount, initialAmount, attackId }`) and tags prompt options with `damagePlacementId`.
 5. **Live Damage Reduction & Prompt Pruning:** Resolving a damage prevention interrupt updates both `pendingDamagePlacement.amount` and `activeAttackContext.pendingDamage`. If damage reaches 0 or a card is no longer payable/usable, moot queued prompts are pruned (`pruneDamageInterruptPrompts`). Once the prompt queue empties, `finishPendingDamagePlacements` applies the final remaining damage and post-combat resolution.
-
 
 ---
 
@@ -127,7 +127,7 @@ Prior to #267, non-threat in-hand triggers (`DAMAGE_WOULD_BE_TAKEN`, `ENCOUNTER_
 
 RR v1.8 (Triggering Condition): one game occurrence that creates several triggering conditions has a single interrupt window and a single response window. One attack with Overkill can defeat a minion and a villain stage.
 
-- The defeat of a minion or ally is announced (`dispatchDefeat`) after the damage pipeline has applied every state change of the occurrence, Overkill included, so a Forced Response sees the final board. Interrupts to the defeat (`processHostDefeated`) still run first.
+- A defeat is announced (`dispatchDefeat`, `triggers/defeat-dispatch.ts`) after the damage pipeline has applied every state change of the occurrence, Overkill included, so a Forced Response sees the final board. This holds for all four target kinds (#359): a minion or ally is already in its discard pile, a villain stage already replaced by the next one (or the game already won), a hero already eliminated. Interrupts to the defeat (`processHostDefeated`) still run first.
 - `DEFEATED` and `CHARACTER_DEFEATED` scan the in-play cards and the hand of every player in turn order, and the trigger filter decides. "After you defeat" (`defeatedByAttackOf: YOUR_HERO`) belongs to the player whose hero attacked (RR v1.8 glossary Y), not to the player the minion was engaged with.
 - When the last villain stage is defeated, `declareVictory` sets the winner and clears the pending decisions, and `dispatchTrigger` returns at once for a finished game: nothing fires after the victory.
-- Not changed: the villain's and a player's own defeat still announce before their state change (stage advance, elimination), and the enemy-attack Overkill path in `combat-pipeline.ts` still bypasses the damage pipeline. Tracked as #359 and #360.
+- The enemy attack path (`applyCalculatedAttackDamage` in `combat-pipeline.ts`) collects the defeats of one attack (the ally, then the hero by Overkill) and announces them after the last state change. That path still bypasses the damage pipeline (Overkill ignores Tough), tracked as #360. A side scheme defeat uses the same `dispatchDefeat` (#359).

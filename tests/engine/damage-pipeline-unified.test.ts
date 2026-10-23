@@ -12,7 +12,8 @@ import {
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
-import { applyDamageToTarget, dispatchDefeat } from '@engine/pipeline/damage-pipeline';
+import { applyDamageToTarget } from '@engine/pipeline/damage-pipeline';
+import { dispatchDefeat } from '@engine/triggers/defeat-dispatch';
 import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 
 const dispatched = recordDispatchedTriggers();
@@ -581,7 +582,7 @@ describe('One damage pipeline for ability damage (#247 part 1)', () => {
       run({ amount: 99, target: 'SELF_IDENTITY' });
       expect(state.winner).toBeNull();
       expect(state.players.map((p) => p.id)).toEqual(['p2']);
-      expect(defeats('DEFEATED').some((d) => d.context.targetType === 'PLAYER')).toBe(true);
+      expect(defeats('DEFEATED').some((d) => d.context.targetType === 'HERO')).toBe(true);
     });
 
     for (const target of ['ALL_HEROES', 'ALL_CHARACTERS']) {
@@ -589,7 +590,7 @@ describe('One damage pipeline for ability damage (#247 part 1)', () => {
         run({ amount: 99, target });
         expect(state.winner).toBe('VILLAIN');
         expect(state.players).toHaveLength(0);
-        expect(defeats('DEFEATED').some((d) => d.context.targetType === 'PLAYER')).toBe(true);
+        expect(defeats('DEFEATED').some((d) => d.context.targetType === 'HERO')).toBe(true);
       });
     }
 

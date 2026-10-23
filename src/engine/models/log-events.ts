@@ -329,6 +329,7 @@ export interface LogEvents {
     basePerPlayer: number;
     heroicLevel?: number;
     hazardCount?: number;
+    hazardSources?: string;
   };
   'villain.scheme.threat': {
     actor: string;

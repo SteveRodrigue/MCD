@@ -18,6 +18,7 @@ import {
   getActiveMainScheme,
   getFirstPlayer,
   getPerPlayerCount,
+  VillainPhaseStepEvent,
 } from '@engine/models';
 
 import { applyThreatPlacement } from './threat-pipeline';
@@ -28,6 +29,7 @@ export type { CombatOptions };
 import { drawEncounterCard } from './deck-exhaustion';
 import { dealBoostCards, resolveBoostCards, type BoostLogContext } from './boost-resolution';
 import { dealSurgeCard } from './surge';
+import { collectIconsInPlay, countHazardIconsInPlay, getHazardIconCount } from './icons';
 import { getResolvingRevealAbilities } from './encounter-cancel';
 import { resolveRevealedObligation } from './obligations';
 export { drawEncounterCard };
@@ -342,12 +344,8 @@ export function step3_dealEncounterCards(state: GameState): GameState {
     }
   }
 
-  // Count active Hazard icons from all in-play side schemes
-  let hazardCount = 0;
-  for (const sideScheme of state.sideSchemes) {
-    const card = sideScheme.card as SideSchemeCard;
-    if (card.hasHazard) hazardCount += 1;
-  }
+  // Count the Hazard icons on every card in play (RR v1.8 p. 11)
+  const hazardCount = countHazardIconsInPlay(state);
 
   // Pass 2: Deal additional cards for hazard icons sequentially in player order starting from firstPlayerIndex (RR v1.8 p. 11)
   for (let h = 0; h < hazardCount; h++) {
@@ -364,11 +362,42 @@ export function step3_dealEncounterCards(state: GameState): GameState {
       basePerPlayer: baseCardsPerPlayer,
       heroicLevel,
       hazardCount,
+      hazardSources: hazardSourceNames(state),
     },
     onomatopoeia: 'ENCOUNTER DEALT!',
   });
 
   return state;
+}
+
+/** The names of the cards in play that print a Hazard icon, one entry per icon. */
+function hazardSourceNames(state: GameState): string {
+  return collectIconsInPlay(state, getHazardIconCount)
+    .flatMap(({ card, count }) => Array<string>(count).fill(card.name))
+    .join(', ');
+}
+
+/**
+ * The villain phase step event of step 3, after `step3_dealEncounterCards`. It explains the total
+ * when it differs from one card per player (#345): extra cards come from Heroic Mode or from Hazard
+ * icons, and the icons' cards are named.
+ */
+function buildDealStepEvent(state: GameState): VillainPhaseStepEvent {
+  const totalDealt = state.players.reduce((sum, p) => sum + p.dealtEncounterCards.length, 0);
+  const base = state.players.length * (1 + Math.max(0, state.heroicLevel || 0));
+  const hazardCount = countHazardIconsInPlay(state);
+  const parts = [`${base} base`];
+  if (hazardCount > 0) {
+    parts.push(`${hazardCount} for Hazard (${hazardSourceNames(state)})`);
+  }
+  const breakdown = totalDealt === base ? '' : ` (${parts.join(' + ')})`;
+  return {
+    type: 'DEAL_ENCOUNTER_CARD',
+    step: VillainPhaseStep.DEAL_ENCOUNTER_CARDS,
+    amount: totalDealt,
+    description: `${totalDealt} encounter card(s) dealt to player threat zone(s)${breakdown}.`,
+    onomatopoeia: 'ENCOUNTER DEALT!',
+  };
 }
 
 export interface RevealEncounterOptions {
@@ -864,16 +893,8 @@ function advanceStepOnDraft(nextState: GameState, options?: CombatOptions): Game
     delete nextState.pendingActivations;
     delete nextState.lastCombatOutcome;
     step3_dealEncounterCards(nextState);
-    const totalDealt = nextState.players.reduce((sum, p) => sum + p.dealtEncounterCards.length, 0);
-    nextState.villainPhaseStepEvent = {
-      type: 'DEAL_ENCOUNTER_CARD',
-      step: VillainPhaseStep.DEAL_ENCOUNTER_CARDS,
-      amount: totalDealt,
-      description: `${totalDealt} encounter card(s) dealt to player threat zone(s).`,
-      onomatopoeia: 'ENCOUNTER DEALT!',
-    };
+    nextState.villainPhaseStepEvent = buildDealStepEvent(nextState);
     nextState.villainPhaseStep = VillainPhaseStep.REVEAL_ENCOUNTER_CARDS;
-    if (nextState.winner) return nextState;
     return nextState;
   }
 
@@ -881,16 +902,8 @@ function advanceStepOnDraft(nextState: GameState, options?: CombatOptions): Game
   if (nextState.villainPhaseStep === VillainPhaseStep.DEAL_ENCOUNTER_CARDS) {
     delete nextState.lastCombatOutcome;
     step3_dealEncounterCards(nextState);
-    const totalDealt = nextState.players.reduce((sum, p) => sum + p.dealtEncounterCards.length, 0);
-    nextState.villainPhaseStepEvent = {
-      type: 'DEAL_ENCOUNTER_CARD',
-      step: VillainPhaseStep.DEAL_ENCOUNTER_CARDS,
-      amount: totalDealt,
-      description: `${totalDealt} encounter card(s) dealt to player threat zone(s).`,
-      onomatopoeia: 'ENCOUNTER DEALT!',
-    };
+    nextState.villainPhaseStepEvent = buildDealStepEvent(nextState);
     nextState.villainPhaseStep = VillainPhaseStep.REVEAL_ENCOUNTER_CARDS;
-    if (nextState.winner) return nextState;
     return nextState;
   }
 

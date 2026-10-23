@@ -100,13 +100,13 @@ describe('legality gate: no target-validity check outside the gate', () => {
 
   /**
    * Crisis, Patrol and Guard are read in one place (`target-restrictions.ts`, with the Crisis icon
-   * count in `crisis.ts`). A caller asks `getMainSchemeThreatBlock` / `isVillainAttackBlockedByGuard`
+   * count in `icons.ts`). A caller asks `getMainSchemeThreatBlock` / `isVillainAttackBlockedByGuard`
    * and never repeats the rule (#331).
    */
   const RESTRICTION_READ = /Keyword\.(GUARD|PATROL)|hasCrisisInPlay\(|countCrisisIconsInPlay\(/;
   const RESTRICTION_FILES = [
     'src/engine/pipeline/target-restrictions.ts',
-    'src/engine/pipeline/crisis.ts',
+    'src/engine/pipeline/icons.ts',
   ];
   const ALLOWED_RESTRICTION_READS: Record<string, string> = {
     'src/ui/components/board/attack-target-utils.ts':

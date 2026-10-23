@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+﻿import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog, normalizeRawCard } from '../../src/data/importer/card-loader';
 import {
   GameState,
@@ -16,7 +16,7 @@ import {
   hasCrisisInPlay,
   getCrisisIconCount,
   countCrisisIconsInPlay,
-} from '@engine/pipeline/crisis';
+} from '@engine/pipeline/icons';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { executeSequence } from '@engine/effects';
 import { resolveActiveEncounterCardAfterInterrupt } from '@engine/pipeline/villain-phase';

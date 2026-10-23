@@ -247,7 +247,6 @@ describe('matchesCardFilter (ADR-0046 Universal Card Filtering Engine)', () => {
     it.each([
       'Guard',
       'Patrol',
-      'Hazard',
       'Amplify',
       'Acceleration',
       'Toughness',

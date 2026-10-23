@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+﻿import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import {
   GameState,
@@ -18,7 +18,7 @@ import {
 import { setupGame } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
 import { executeEnemyAttackSynchronously } from '@engine/pipeline/combat-pipeline';
-import { hasCrisisInPlay } from '@engine/pipeline/crisis';
+import { hasCrisisInPlay } from '@engine/pipeline/icons';
 import {
   attachCardToHost,
   getAllCardInstances,

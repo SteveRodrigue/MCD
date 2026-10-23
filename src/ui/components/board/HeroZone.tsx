@@ -155,6 +155,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const [attackModalState, setAttackModalState] = useState<{
     isOpen: boolean;
     attackerName: string;
+    attackerCode?: string;
     attackerType: 'hero' | 'ally';
     allyInstanceId?: string;
     attackDamage: number;
@@ -171,6 +172,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const [thwartModalState, setThwartModalState] = useState<{
     isOpen: boolean;
     thwarterName: string;
+    thwarterCode?: string;
     thwarterType: 'hero' | 'ally';
     allyInstanceId?: string;
     thwartValue: number;
@@ -191,6 +193,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
       setAttackModalState({
         isOpen: true,
         attackerName: player.activeFormCard.name,
+        attackerCode: player.activeFormCard.code,
         attackerType: 'hero',
         attackDamage: effectiveStats.attack,
         targets,
@@ -204,6 +207,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
       setAttackModalState({
         isOpen: true,
         attackerName: ally.card.name,
+        attackerCode: ally.card.code,
         attackerType: 'ally',
         allyInstanceId,
         attackDamage: allyStats.attack,
@@ -219,6 +223,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
       setThwartModalState({
         isOpen: true,
         thwarterName: player.activeFormCard.name,
+        thwarterCode: player.activeFormCard.code,
         thwarterType: 'hero',
         thwartValue: effectiveStats.thwart,
         targets,
@@ -234,6 +239,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
       setThwartModalState({
         isOpen: true,
         thwarterName: ally.card.name,
+        thwarterCode: ally.card.code,
         thwarterType: 'ally',
         allyInstanceId,
         thwartValue: allyStats.thwart,
@@ -1185,6 +1191,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
       <AttackTargetModal
         isOpen={attackModalState.isOpen}
         attackerName={attackModalState.attackerName}
+        attackerCode={attackModalState.attackerCode}
         attackerType={attackModalState.attackerType}
         attackDamage={attackModalState.attackDamage}
         targets={attackModalState.targets}
@@ -1214,6 +1221,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
       <ThwartTargetModal
         isOpen={thwartModalState.isOpen}
         thwarterName={thwartModalState.thwarterName}
+        thwarterCode={thwartModalState.thwarterCode}
         thwarterType={thwartModalState.thwarterType}
         thwartValue={thwartModalState.thwartValue}
         consequentialDamage={thwartModalState.consequentialDamage}

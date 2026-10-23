@@ -19,3 +19,6 @@ type: Added
   - A Theme section in the Options menu and on the setup screen: pick one of the 7 themes or Random (a new theme at every game start, from a pool the player controls, never the same twice in a row), with a card accents switch.
   - In Random mode the Options menu shows the game's theme and a Re-roll button.
   - The theme choice is saved with the other game settings; the Random roll survives a page reload mid-game.
+- **Feature (UI): Gameplay prompt modals follow the active theme**
+  - Attack and Thwart target pickers (one shared `TargetSelectionModal`), Ally, Tableau and Identity action menus (shared `CardActionModal` and `ActionRow`), Combat resolution, Distribute points, Simultaneous abilities order and the card payment modal render through the shared scaffold, with card accents and thumbnails on every card they name.
+  - The attack, thwart and combat summaries now carry the card codes they show (attacker, thwarter, defender, target hero) so each can be drawn with its thumbnail.

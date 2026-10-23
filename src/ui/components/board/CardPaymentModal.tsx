@@ -1,16 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ModalLayer } from '../layout/ModalLayer';
-import {
-  X,
-  Sparkles,
-  Shield,
-  Swords,
-  Zap,
-  AlertTriangle,
-  Heart,
-  Users,
-  Target,
-} from 'lucide-react';
+import { Sparkles, Shield, Swords, Zap, AlertTriangle, Heart, Users, Target } from 'lucide-react';
 import {
   CardInstance,
   PlayerState,
@@ -38,6 +27,10 @@ import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 import { locateCard, readCardResources } from '../../../engine/queries/card-inspector';
 import { isHandCardIneligibleForCost, isGeneratorIneligibleForCost } from './payment-eligibility';
 import { useGameSession } from '../../context/GameStateContext';
+import { AccentStripe } from '../../theme/AccentStripe';
+import { CardRef } from '../../theme/CardRef';
+import { ModalScaffold } from '../../theme/ModalScaffold';
+import { useModalStyle } from '../../theme/useModalStyle';
 
 interface CardPaymentModalProps {
   isOpen: boolean;
@@ -65,6 +58,135 @@ interface CardPaymentModalProps {
   ) => void;
 }
 
+type ChoiceTone = 'danger' | 'warn' | 'info';
+
+const CHOICE_RINGS: Record<ChoiceTone, string> = {
+  danger: 'ring-2 ring-comic-red',
+  warn: 'ring-2 ring-comic-yellow',
+  info: 'ring-2 ring-comic-blue',
+};
+
+interface ChoiceCardProps {
+  code?: string;
+  name: string;
+  subline: string;
+  selected: boolean;
+  disabled?: boolean;
+  tone: ChoiceTone;
+  badge: React.ReactNode;
+  onClick: () => void;
+}
+
+/** A hand card, discard candidate or resource generator the player can toggle. */
+const ChoiceCard: React.FC<ChoiceCardProps> = ({
+  code,
+  name,
+  subline,
+  selected,
+  disabled = false,
+  tone,
+  badge,
+  onClick,
+}) => {
+  const { style } = useModalStyle();
+
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      data-card-anchor={code ?? ''}
+      onClick={onClick}
+      className={`relative flex items-center justify-between p-2.5 sm:p-3 pl-4 text-left transition-all ${
+        disabled
+          ? `${style.tile} opacity-40 cursor-not-allowed`
+          : selected
+            ? `${style.tileSelected} ${CHOICE_RINGS[tone]} font-bold`
+            : `${style.tile} cursor-pointer`
+      }`}
+    >
+      <AccentStripe code={code ?? ''} />
+      <div className="flex items-center gap-2.5 pr-2 min-w-0">
+        <CardArtThumbnail cardCode={code} cardName={name} size="sm" />
+        <div className="space-y-0.5 min-w-0">
+          <div className="text-xs font-black truncate">{name}</div>
+          <div className={`text-[10px] font-bold uppercase truncate ${style.muted}`}>{subline}</div>
+        </div>
+      </div>
+      <div className="shrink-0">{badge}</div>
+    </button>
+  );
+};
+
+type TargetTone = 'danger' | 'info' | 'success' | 'purple';
+
+const TARGET_SELECTED: Record<TargetTone, string> = {
+  danger: 'bg-comic-red',
+  info: 'bg-comic-blue',
+  success: 'bg-emerald-600',
+  purple: 'bg-purple-600',
+};
+
+interface TargetChoice {
+  id: string;
+  code?: string;
+  name: string;
+  trailing?: (selected: boolean) => React.ReactNode;
+}
+
+interface TargetChoicesProps {
+  title: string;
+  icon: React.ReactNode;
+  tone: TargetTone;
+  targets: TargetChoice[];
+  selectedId?: string;
+  onSelect: (id: string) => void;
+}
+
+/** One "Select X Target" list: a titled grid of buttons, the chosen one coloured by `tone`. */
+const TargetChoices: React.FC<TargetChoicesProps> = ({
+  title,
+  icon,
+  tone,
+  targets,
+  selectedId,
+  onSelect,
+}) => {
+  const { style } = useModalStyle();
+
+  return (
+    <div className={`space-y-2 pt-2 border-t-2 ${style.panelHead} !border-b-0`}>
+      <label className="text-xs font-black uppercase flex items-center space-x-1">
+        {icon}
+        <span>{title}</span>
+      </label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {targets.map((t) => {
+          const selected = selectedId === t.id;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              data-card-anchor={t.code ?? ''}
+              onClick={() => onSelect(t.id)}
+              className={`relative flex items-center justify-between gap-2 p-2.5 pl-4 text-xs font-bold cursor-pointer ${
+                selected
+                  ? `${TARGET_SELECTED[tone]} text-white border-2 border-comic-black rounded shadow-comic-sm`
+                  : style.tile
+              }`}
+            >
+              <AccentStripe code={t.code ?? ''} />
+              <span className="min-w-0">
+                <CardRef code={t.code} name={t.name} size="xs" />
+              </span>
+              {t.trailing?.(selected)}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   isOpen,
   onClose,
@@ -74,6 +196,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   onConfirmPlay,
 }) => {
   const { state: gameState } = useGameSession();
+  const { style } = useModalStyle();
   const [selectedHandCardIds, setSelectedHandCardIds] = useState<string[]>([]);
   const [selectedGeneratorIds, setSelectedGeneratorIds] = useState<string[]>([]);
   const [selectedDiscardCardIds, setSelectedDiscardCardIds] = useState<string[]>([]);
@@ -522,6 +645,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   const minionAttachmentTargets = useMemo(() => {
     const targets: {
       id: string;
+      code: string;
       name: string;
       hp: number;
     }[] = [];
@@ -531,6 +655,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       (p.engagedMinions || []).forEach((m) => {
         targets.push({
           id: m.instanceId,
+          code: m.card.code,
           name:
             p.id === player.id ? `${m.card.name} (Minion)` : `${m.card.name} (${p.name}'s Minion)`,
           hp: Math.max(0, getEffectiveMinionHitPoints(gameState, m) - (m.tokens?.damage || 0)),
@@ -582,6 +707,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   const enemyTargets = useMemo(() => {
     const targets: {
       id: string;
+      code: string;
       name: string;
       type: 'villain' | 'minion';
       hp: number;
@@ -591,6 +717,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       for (const villain of getVillainsInPlay(gameState)) {
         targets.push({
           id: villain.instanceId || villain.card.code,
+          code: villain.card.code,
           name: `${villain.card.name} (Villain)`,
           type: 'villain',
           hp: villain.health,
@@ -603,6 +730,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       (p.engagedMinions || []).forEach((m) => {
         targets.push({
           id: m.instanceId,
+          code: m.card.code,
           name:
             p.id === player.id ? `${m.card.name} (Minion)` : `${m.card.name} (${p.name}'s Minion)`,
           type: 'minion',
@@ -616,12 +744,14 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   const schemeTargets = useMemo(() => {
     const targets: {
       id: string;
+      code: string;
       name: string;
       type: 'main_scheme' | 'side_scheme';
       threat: number;
     }[] = [
       {
         id: getActiveMainScheme(gameState).card.code,
+        code: getActiveMainScheme(gameState).card.code,
         name: `${getActiveMainScheme(gameState).card.name} (Main Scheme)`,
         type: 'main_scheme',
         threat: getActiveMainScheme(gameState).threat,
@@ -630,6 +760,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     gameState.sideSchemes.forEach((s) => {
       targets.push({
         id: s.instanceId,
+        code: s.card.code,
         name: `${s.card.name} (Side Scheme)`,
         type: 'side_scheme',
         threat: s.threat,
@@ -641,6 +772,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   const healTargets = useMemo(() => {
     const targets: {
       id: string;
+      code: string;
       name: string;
       type: 'hero' | 'alter_ego' | 'ally';
       hp: number;
@@ -652,6 +784,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       const maxHp = getEffectiveMaxHealth(p, gameState);
       targets.push({
         id: p.id,
+        code: p.currentForm === 'hero' ? p.hero.code : p.alterEgo.code,
         name: `${p.name} (${p.currentForm === 'hero' ? p.hero.name : p.alterEgo.name})`,
         type: p.currentForm === 'hero' ? 'hero' : 'alter_ego',
         hp: p.health,
@@ -667,6 +800,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
         const damage = a.tokens?.damage || 0;
         targets.push({
           id: a.instanceId,
+          code: a.card.code,
           name: p.id === player.id ? `${a.card.name} (Ally)` : `${a.card.name} (${p.name}'s Ally)`,
           type: 'ally',
           hp: Math.max(0, maxHp - damage),
@@ -682,6 +816,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   const allyTargets = useMemo(() => {
     const targets: {
       id: string;
+      code: string;
       name: string;
       exhausted: boolean;
     }[] = [];
@@ -690,6 +825,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       (p.allies || []).forEach((a) => {
         targets.push({
           id: a.instanceId,
+          code: a.card.code,
           name: p.id === player.id ? `${a.card.name} (Ally)` : `${a.card.name} (${p.name}'s Ally)`,
           exhausted: Boolean(a.exhausted),
         });
@@ -702,6 +838,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   const playerTargets = useMemo(() => {
     return gameState.players.map((p) => ({
       id: p.id,
+      code: p.currentForm === 'hero' ? p.hero.code : p.alterEgo.code,
       name: `${p.name} (${p.currentForm === 'hero' ? p.hero.name : p.alterEgo.name})`,
     }));
   }, [gameState.players]);
@@ -749,584 +886,21 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   };
 
   return (
-    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-comic-black/75 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-2xl bg-comic-paper border-4 border-comic-black rounded-lg shadow-comic-xl flex flex-col max-h-[90vh] overflow-hidden">
-        {/* 1. Pop-Art Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-comic-yellow border-b-4 border-comic-black">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-comic-black text-comic-yellow rounded shadow-comic">
-              <Zap className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-xs font-black uppercase tracking-wider text-comic-black/70">
-                Resource Payment & Action
-              </span>
-              <h2 className="text-xl font-black uppercase text-comic-black tracking-tight leading-none">
-                {abilityCost?.title || `Play ${card.name}`}
-              </h2>
-            </div>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="p-1.5 bg-comic-paper hover:bg-comic-red hover:text-white border-2 border-comic-black rounded transition-colors shadow-comic-sm"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* 2. Modal Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Card Overview & Cost Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-white border-2 border-comic-black rounded-lg shadow-comic-sm">
-            <div className="flex items-start gap-3">
-              <CardArtThumbnail cardCode={card.code} cardName={card.name} size="md" />
-              <div className="space-y-1">
-                <div className="flex items-center space-x-2">
-                  <span className="text-xs font-black uppercase px-2 py-0.5 bg-comic-blue text-white rounded border border-comic-black">
-                    {card.type}
-                  </span>
-                  <span className="text-xs font-black uppercase px-2 py-0.5 bg-comic-paper text-comic-black rounded border border-comic-black">
-                    {card.faction}
-                  </span>
-                </div>
-                <div className="text-xs text-comic-black/90 font-medium">
-                  <FormattedCardText text={card.text} />
-                </div>
-              </div>
-            </div>
-
-            {/* Cost Badge */}
-            <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto shrink-0 pl-2">
-              <span className="text-xs font-black uppercase text-comic-black/60">
-                {isScalingPerResource ? 'Placement Value' : 'Required Cost'}
-              </span>
-              <div className="flex items-center space-x-1">
-                {cost > 0 ? (
-                  <>
-                    {reductions.length > 0 && baseCost > 0 && (
-                      <span className="line-through text-comic-black/40 text-lg mr-1.5 font-bold">
-                        {baseCost}
-                      </span>
-                    )}
-                    <span
-                      className={`text-3xl font-black ${
-                        isCostCovered ? 'text-comic-green' : 'text-comic-red'
-                      }`}
-                    >
-                      {isScalingPerResource ? `+${committedMatching}` : cost}
-                    </span>
-                    <span className="text-xs font-bold uppercase text-comic-black">
-                      {isScalingPerResource
-                        ? 'Tokens'
-                        : abilityCost?.resourceType
-                          ? abilityCost.resourceType
-                          : 'Res'}
-                    </span>
-                  </>
-                ) : discardCost ? (
-                  <span className="text-sm font-black uppercase px-2.5 py-1 bg-comic-red text-white rounded border border-comic-black shadow-comic-xs">
-                    Discard {discardCost.min < discardCost.max ? 'up to ' : ''}
-                    {discardCost.max}
-                  </span>
-                ) : (
-                  <span className="text-3xl font-black text-comic-green">0</span>
-                )}
-              </div>
-              {isRequirePrinted && (
-                <span className="mt-1 text-[9px] font-black uppercase px-1.5 py-0.5 bg-comic-red text-white rounded border border-comic-black shadow-comic-xs">
-                  Printed Only (No Wild)
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Active Cost Reduction Banner */}
-          {reductions.length > 0 && baseCost > 0 && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-comic-yellow/20 border-2 border-comic-yellow rounded-md text-xs font-bold text-comic-black shadow-comic-sm">
-              <Sparkles className="w-4 h-4 text-comic-yellow shrink-0" />
-              <span>
-                Cost reduced by {totalReduction} from{' '}
-                {reductions.map((r) => r.sourceCardName).join(', ')}
-              </span>
-            </div>
-          )}
-
-          {/* 0-Cost Card Consumption Caution Banner */}
-          {reductions.length > 0 && baseCost === 0 && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-comic-red/10 border-2 border-comic-red rounded-md text-xs font-black text-comic-red shadow-comic-sm">
-              <AlertTriangle className="w-4 h-4 text-comic-red shrink-0" />
-              <span>
-                Caution: Playing this 0-cost card will consume your active cost reduction (
-                {reductions.map((r) => r.sourceCardName).join(', ')}: -{totalReduction})!
-              </span>
-            </div>
-          )}
-
-          {/* Discard Hand Cards as Cost Section */}
-          {discardCost && (
-            <div className="space-y-3 p-4 bg-comic-red/5 border-2 border-comic-red/30 rounded-lg">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-black uppercase text-comic-black tracking-wider flex items-center space-x-1.5">
-                  <AlertTriangle className="w-4 h-4 text-comic-red" />
-                  <span>
-                    Choose {discardCost.min < discardCost.max ? 'up to ' : ''}
-                    {discardCost.max} Card{discardCost.max > 1 ? 's' : ''} to Discard as Cost:
-                  </span>
-                </h3>
-                <span
-                  className={`text-xs font-black px-2 py-0.5 rounded border border-comic-black ${
-                    isDiscardCostCovered
-                      ? 'bg-comic-green text-white'
-                      : 'bg-comic-paper text-comic-black'
-                  }`}
-                >
-                  Selected: {selectedDiscardCardIds.length} / {discardCost.max}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {availableDiscardCards.map((hCard) => {
-                  const isSelected = selectedDiscardCardIds.includes(hCard.instanceId);
-                  const isUsedForPayment = selectedHandCardIds.includes(hCard.instanceId);
-
-                  return (
-                    <button
-                      key={hCard.instanceId}
-                      type="button"
-                      disabled={isUsedForPayment}
-                      onClick={() => toggleDiscardCard(hCard.instanceId)}
-                      className={`flex items-center justify-between p-2.5 sm:p-3 rounded-lg border-2 text-left transition-all ${
-                        isUsedForPayment
-                          ? 'opacity-40 cursor-not-allowed bg-gray-100 border-gray-300'
-                          : isSelected
-                            ? 'bg-comic-red/20 border-comic-black shadow-comic-sm font-bold scale-[1.01]'
-                            : 'bg-white border-comic-black/40 hover:border-comic-black hover:bg-comic-paper'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5 pr-2 min-w-0">
-                        <CardArtThumbnail
-                          cardCode={hCard.card.code}
-                          cardName={hCard.card.name}
-                          size="sm"
-                        />
-                        <div className="space-y-0.5 min-w-0">
-                          <div className="text-xs font-black text-comic-black truncate">
-                            {hCard.card.name}
-                          </div>
-                          <div className="text-[10px] font-bold text-comic-black/60 uppercase truncate">
-                            {hCard.card.type} • {hCard.card.faction}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="shrink-0">
-                        <span
-                          className={`text-xs font-black px-2 py-0.5 rounded border border-comic-black ${
-                            isSelected
-                              ? 'bg-comic-red text-white'
-                              : 'bg-comic-paper text-comic-black'
-                          }`}
-                        >
-                          {isSelected ? 'DISCARD' : 'SELECT'}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Payment Progress Bar */}
-          {cost > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase text-comic-black tracking-wide">
-                  {isScalingPerResource
-                    ? `Tokens to Place (+${committedMatching}):`
-                    : 'Resources Committed:'}
-                </span>
-                <span
-                  className={`text-sm font-black uppercase ${
-                    isCostCovered ? 'text-comic-green' : 'text-comic-red'
-                  }`}
-                >
-                  {isScalingPerResource
-                    ? `${committedMatching} ${abilityCost?.resourceType || 'matching'} (Min ${cost} needed)`
-                    : `${abilityCost?.resourceType ? committedMatching : totalGenerated} / ${cost} ${
-                        isCostCovered
-                          ? '✓ (Ready)'
-                          : `(Need ${cost - (abilityCost?.resourceType ? committedMatching : totalGenerated)} more)`
-                      }`}
-                </span>
-              </div>
-
-              {/* Visual Meter Bar */}
-              <div className="w-full h-4 bg-comic-paper border-2 border-comic-black rounded-full overflow-hidden flex">
-                <div
-                  className={`h-full transition-all duration-300 ${
-                    isCostCovered ? 'bg-comic-green' : 'bg-comic-yellow'
-                  }`}
-                  style={{
-                    width: `${Math.min(
-                      100,
-                      cost === 0
-                        ? 100
-                        : ((abilityCost?.resourceType ? committedMatching : totalGenerated) /
-                            cost) *
-                            100,
-                    )}%`,
-                  }}
-                />
-              </div>
-
-              {/* Resource Affinity Pills */}
-              <div className="flex flex-wrap gap-2 pt-1 text-xs font-bold text-comic-black">
-                {resourceBreakdown.energyCount > 0 && (
-                  <span className="px-2 py-0.5 bg-amber-100 border border-amber-400 rounded-full flex items-center space-x-1">
-                    <span>⚡</span> <span>{resourceBreakdown.energyCount} Energy</span>
-                  </span>
-                )}
-                {resourceBreakdown.mentalCount > 0 && (
-                  <span className="px-2 py-0.5 bg-blue-100 border border-blue-400 rounded-full flex items-center space-x-1">
-                    <span>🧠</span> <span>{resourceBreakdown.mentalCount} Mental</span>
-                  </span>
-                )}
-                {resourceBreakdown.physicalCount > 0 && (
-                  <span className="px-2 py-0.5 bg-red-100 border border-red-400 rounded-full flex items-center space-x-1">
-                    <span>👊</span> <span>{resourceBreakdown.physicalCount} Physical</span>
-                  </span>
-                )}
-                {resourceBreakdown.wildCount > 0 && (
-                  <span className="px-2 py-0.5 bg-purple-100 border border-purple-400 rounded-full flex items-center space-x-1">
-                    <span>⭐</span> <span>{resourceBreakdown.wildCount} Wild</span>
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Hand Cards Selection */}
-          {availableHandCards.length > 0 && cost > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-black uppercase text-comic-black tracking-wider flex items-center space-x-1.5">
-                  <span>Discard Hand Cards for Resources:</span>
-                </h3>
-                <span className="text-[10px] text-comic-black/60 font-bold uppercase">
-                  (Click cards to toggle)
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {availableHandCards.map((hCard) => {
-                  const isSelected = selectedHandCardIds.includes(hCard.instanceId);
-                  const isUsedForDiscardCost = selectedDiscardCardIds.includes(hCard.instanceId);
-                  const res = hCard.card.resources;
-                  const aspectDoubleStep = hCard.card.enrichment?.abilities
-                    ?.flatMap((a) => a.steps || [])
-                    .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
-                  const isDoubled =
-                    aspectDoubleStep && aspectDoubleStep.effectParams?.aspect === card.faction;
-                  const printedIcons = readCardResources(hCard);
-                  const matchingPrintedCount =
-                    isRequirePrinted && abilityCost?.resourceType
-                      ? printedIcons.filter((r) => r === abilityCost.resourceType).length
-                      : undefined;
-                  const isHandCardDisabled =
-                    isUsedForDiscardCost ||
-                    isHandCardIneligibleForCost(hCard, abilityCost?.resourceType, isRequirePrinted);
-
-                  return (
-                    <button
-                      key={hCard.instanceId}
-                      type="button"
-                      disabled={isHandCardDisabled}
-                      onClick={() => toggleHandCard(hCard.instanceId)}
-                      className={`flex items-center justify-between p-2.5 sm:p-3 rounded-lg border-2 text-left transition-all ${
-                        isHandCardDisabled
-                          ? 'opacity-40 cursor-not-allowed bg-gray-100 border-gray-300'
-                          : isSelected
-                            ? 'bg-comic-yellow/30 border-comic-black shadow-comic-sm font-bold scale-[1.01]'
-                            : 'bg-white border-comic-black/40 hover:border-comic-black hover:bg-comic-paper'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5 pr-2 min-w-0">
-                        <CardArtThumbnail
-                          cardCode={hCard.card.code}
-                          cardName={hCard.card.name}
-                          size="sm"
-                        />
-                        <div className="space-y-0.5 min-w-0">
-                          <div className="text-xs font-black text-comic-black truncate">
-                            {hCard.card.name}
-                          </div>
-                          <div className="text-[10px] font-bold text-comic-black/60 uppercase truncate">
-                            {hCard.card.type} • {hCard.card.faction}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Resource Yield Badge */}
-                      <div className="flex items-center space-x-1 shrink-0">
-                        {matchingPrintedCount !== undefined ? (
-                          <span className="text-xs font-black px-2 py-0.5 bg-comic-paper text-comic-black rounded border border-comic-black flex items-center space-x-1">
-                            <span>
-                              {matchingPrintedCount} {abilityCost?.resourceType?.toUpperCase()}
-                            </span>
-                          </span>
-                        ) : isDoubled ? (
-                          <span className="text-xs font-black px-2.5 py-0.5 bg-emerald-600 text-white rounded-md border-2 border-comic-black shadow-comic-sm flex items-center space-x-1">
-                            <span>2 Res (2× Aspect)</span>
-                          </span>
-                        ) : (
-                          <span className="text-xs font-black px-2 py-0.5 bg-comic-paper text-comic-black rounded border border-comic-black flex items-center space-x-1">
-                            <span>{res.total || 1} Res</span>
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Generators & Cost Reducers */}
-          {availableGenerators.length > 0 && cost > 0 && (
-            <div className="space-y-3 pt-2">
-              <h3 className="text-xs font-black uppercase text-comic-black tracking-wider">
-                Identity & Table Resource Generators:
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {availableGenerators.map((gen) => {
-                  const isSelected = selectedGeneratorIds.includes(gen.id);
-                  const isGenDisabled =
-                    gen.amount === 0 ||
-                    isGeneratorIneligibleForCost(gen, abilityCost?.resourceType, isRequirePrinted);
-                  return (
-                    <button
-                      key={gen.id}
-                      type="button"
-                      disabled={isGenDisabled}
-                      onClick={() => !isGenDisabled && toggleGenerator(gen.id)}
-                      className={`flex items-center justify-between p-2.5 sm:p-3 rounded-lg border-2 text-left transition-all ${
-                        isGenDisabled
-                          ? 'opacity-40 cursor-not-allowed bg-gray-100 border-gray-300'
-                          : isSelected
-                            ? 'bg-comic-blue/20 border-comic-black shadow-comic-sm font-bold scale-[1.01]'
-                            : 'bg-white border-comic-black/40 hover:border-comic-black hover:bg-comic-paper'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5 pr-2 min-w-0">
-                        <CardArtThumbnail
-                          cardCode={gen.id.split('_')[0]}
-                          cardName={gen.name}
-                          size="sm"
-                        />
-                        <div className="min-w-0">
-                          <div className="text-xs font-black text-comic-black truncate">
-                            {gen.name}
-                          </div>
-                          <div className="text-[10px] text-comic-black/60 font-bold uppercase truncate">
-                            {gen.sublabel}
-                          </div>
-                        </div>
-                      </div>
-                      <span className="text-xs font-black px-2 py-0.5 bg-comic-paper border border-comic-black rounded shrink-0">
-                        +{gen.amount} {gen.resourceType ? gen.resourceType.toUpperCase() : 'RES'}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Target Selector (if Minion Attachment, Attack or Thwart) */}
-          {isMinionAttachment && (
-            <div className="space-y-2 pt-2 border-t-2 border-comic-black/20">
-              <label className="text-xs font-black uppercase text-comic-black flex items-center space-x-1">
-                <Target className="w-4 h-4 text-comic-red" />
-                <span>Select Minion to Attach To:</span>
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {minionAttachmentTargets.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setSelectedTargetId(t.id)}
-                    className={`flex items-center justify-between p-2.5 rounded border-2 text-xs font-bold ${
-                      selectedTargetId === t.id
-                        ? 'bg-comic-red text-white border-comic-black shadow-comic-sm'
-                        : 'bg-white text-comic-black border-comic-black/40 hover:border-comic-black'
-                    }`}
-                  >
-                    <span>{t.name}</span>
-                    <span>{t.hp} HP</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {isAttack && (
-            <div className="space-y-2 pt-2 border-t-2 border-comic-black/20">
-              <label className="text-xs font-black uppercase text-comic-black flex items-center space-x-1">
-                <Swords className="w-4 h-4 text-comic-red" />
-                <span>Select Attack Target:</span>
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {enemyTargets.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setSelectedTargetId(t.id)}
-                    className={`flex items-center justify-between p-2.5 rounded border-2 text-xs font-bold ${
-                      selectedTargetId === t.id
-                        ? 'bg-comic-red text-white border-comic-black shadow-comic-sm'
-                        : 'bg-white text-comic-black border-comic-black/40 hover:border-comic-black'
-                    }`}
-                  >
-                    <span>{t.name}</span>
-                    <span>{t.hp} HP</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {isThwart && (
-            <div className="space-y-2 pt-2 border-t-2 border-comic-black/20">
-              <label className="text-xs font-black uppercase text-comic-black flex items-center space-x-1">
-                <Shield className="w-4 h-4 text-comic-blue" />
-                <span>Select Scheme Target:</span>
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {schemeTargets.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setSelectedTargetId(t.id)}
-                    className={`flex items-center justify-between p-2.5 rounded border-2 text-xs font-bold ${
-                      selectedTargetId === t.id
-                        ? 'bg-comic-blue text-white border-comic-black shadow-comic-sm'
-                        : 'bg-white text-comic-black border-comic-black/40 hover:border-comic-black'
-                    }`}
-                  >
-                    <span>{t.name}</span>
-                    <span>{t.threat} Threat</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {isHeal && (
-            <div className="space-y-2 pt-2 border-t-2 border-comic-black/20">
-              <label className="text-xs font-black uppercase text-comic-black flex items-center space-x-1">
-                <Heart className="w-4 h-4 text-emerald-600" />
-                <span>Select Character to Heal:</span>
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {healTargets.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setSelectedTargetId(t.id)}
-                    className={`flex items-center justify-between p-2.5 rounded border-2 text-xs font-bold ${
-                      selectedTargetId === t.id
-                        ? 'bg-emerald-600 text-white border-comic-black shadow-comic-sm'
-                        : 'bg-white text-comic-black border-comic-black/40 hover:border-comic-black'
-                    }`}
-                  >
-                    <span className="truncate pr-2">{t.name}</span>
-                    <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 font-black ${
-                        selectedTargetId === t.id
-                          ? 'bg-black/20 text-white'
-                          : t.damageTaken > 0
-                            ? 'bg-rose-100 text-rose-800'
-                            : 'bg-gray-100 text-gray-700'
-                      }`}
-                    >
-                      {t.hp}/{t.maxHp} HP {t.damageTaken > 0 ? `(-${t.damageTaken})` : '(Full)'}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {isAllyTarget && (
-            <div className="space-y-2 pt-2 border-t-2 border-comic-black/20">
-              <label className="text-xs font-black uppercase text-comic-black flex items-center space-x-1">
-                <Users className="w-4 h-4 text-comic-blue" />
-                <span>Select Ally Target:</span>
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {allyTargets.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setSelectedTargetId(t.id)}
-                    className={`flex items-center justify-between p-2.5 rounded border-2 text-xs font-bold ${
-                      selectedTargetId === t.id
-                        ? 'bg-comic-blue text-white border-comic-black shadow-comic-sm'
-                        : 'bg-white text-comic-black border-comic-black/40 hover:border-comic-black'
-                    }`}
-                  >
-                    <span className="truncate pr-2">{t.name}</span>
-                    <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 font-black ${
-                        selectedTargetId === t.id
-                          ? 'bg-black/20 text-white'
-                          : t.exhausted
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-gray-100 text-gray-700'
-                      }`}
-                    >
-                      {t.exhausted ? 'Exhausted' : 'Ready'}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {isPlayerTarget && (
-            <div className="space-y-2 pt-2 border-t-2 border-comic-black/20">
-              <label className="text-xs font-black uppercase text-comic-black flex items-center space-x-1">
-                <Users className="w-4 h-4 text-purple-600" />
-                <span>Select Player Target:</span>
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {playerTargets.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setSelectedTargetId(t.id)}
-                    className={`flex items-center justify-between p-2.5 rounded border-2 text-xs font-bold ${
-                      selectedTargetId === t.id
-                        ? 'bg-purple-600 text-white border-comic-black shadow-comic-sm'
-                        : 'bg-white text-comic-black border-comic-black/40 hover:border-comic-black'
-                    }`}
-                  >
-                    <span>{t.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* 3. Modal Footer */}
-        <div className="flex items-center justify-end space-x-3 px-6 py-4 bg-comic-paper border-t-4 border-comic-black">
+    <ModalScaffold
+      title={abilityCost?.title || `Play ${card.name}`}
+      kicker="Resource Payment & Action"
+      verb="yellow"
+      trigger={{ name: card.name, code: card.code }}
+      icon={<Zap className="w-5 h-5" />}
+      onClose={onClose}
+      maxWidthClass="max-w-2xl"
+      testId="card-payment-modal"
+      footer={
+        <>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 font-black uppercase text-xs text-comic-black bg-white hover:bg-comic-paper border-2 border-comic-black rounded shadow-comic-sm transition-all"
+            className={`ml-auto px-4 py-2 font-black uppercase text-xs cursor-pointer ${style.btnMove}`}
           >
             Cancel
           </button>
@@ -1335,11 +909,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
             type="button"
             disabled={!isCostCovered}
             onClick={handleConfirm}
-            className={`px-6 py-2.5 font-black uppercase text-sm border-2 border-comic-black rounded shadow-comic transition-all flex items-center space-x-2 ${
-              isCostCovered
-                ? 'bg-comic-yellow hover:bg-yellow-400 text-comic-black hover:scale-105 active:scale-95'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
-            }`}
+            className={`px-6 py-2.5 font-black uppercase text-sm flex items-center space-x-2 cursor-pointer disabled:cursor-not-allowed ${style.btnGo}`}
           >
             <Sparkles className="w-4 h-4" />
             <span>
@@ -1348,8 +918,435 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                 : 'Confirm & Play!'}
             </span>
           </button>
+        </>
+      }
+    >
+      <div className="space-y-6">
+        {/* Card Overview & Cost Header */}
+        <div
+          className={`relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 pl-5 ${style.panel}`}
+        >
+          <AccentStripe code={card.code} />
+          <div className="flex items-start gap-3">
+            <CardArtThumbnail cardCode={card.code} cardName={card.name} size="md" />
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-black uppercase px-2 py-0.5 bg-comic-blue text-white rounded border border-comic-black">
+                  {card.type}
+                </span>
+                <span className={`text-xs font-black uppercase px-2 py-0.5 ${style.chip}`}>
+                  {card.faction}
+                </span>
+              </div>
+              <div className="text-xs font-medium">
+                <FormattedCardText text={card.text} />
+              </div>
+            </div>
+          </div>
+
+          {/* Cost Badge */}
+          <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto shrink-0 pl-2">
+            <span className={`text-xs font-black uppercase ${style.muted}`}>
+              {isScalingPerResource ? 'Placement Value' : 'Required Cost'}
+            </span>
+            <div className="flex items-center space-x-1">
+              {cost > 0 ? (
+                <>
+                  {reductions.length > 0 && baseCost > 0 && (
+                    <span className={`line-through text-lg mr-1.5 font-bold ${style.muted}`}>
+                      {baseCost}
+                    </span>
+                  )}
+                  <span
+                    className={`text-3xl font-black ${
+                      isCostCovered ? 'text-comic-green' : 'text-comic-red'
+                    }`}
+                  >
+                    {isScalingPerResource ? `+${committedMatching}` : cost}
+                  </span>
+                  <span className="text-xs font-bold uppercase">
+                    {isScalingPerResource
+                      ? 'Tokens'
+                      : abilityCost?.resourceType
+                        ? abilityCost.resourceType
+                        : 'Res'}
+                  </span>
+                </>
+              ) : discardCost ? (
+                <span className="text-sm font-black uppercase px-2.5 py-1 bg-comic-red text-white rounded border border-comic-black shadow-comic-xs">
+                  Discard {discardCost.min < discardCost.max ? 'up to ' : ''}
+                  {discardCost.max}
+                </span>
+              ) : (
+                <span className="text-3xl font-black text-comic-green">0</span>
+              )}
+            </div>
+            {isRequirePrinted && (
+              <span className="mt-1 text-[9px] font-black uppercase px-1.5 py-0.5 bg-comic-red text-white rounded border border-comic-black shadow-comic-xs">
+                Printed Only (No Wild)
+              </span>
+            )}
+          </div>
         </div>
+
+        {/* Active Cost Reduction Banner */}
+        {reductions.length > 0 && baseCost > 0 && (
+          <div className={`flex items-center gap-2 px-3 py-2 text-xs font-bold ${style.inset}`}>
+            <Sparkles className="w-4 h-4 text-comic-yellow shrink-0" />
+            <span>
+              Cost reduced by {totalReduction} from{' '}
+              {reductions.map((r) => r.sourceCardName).join(', ')}
+            </span>
+          </div>
+        )}
+
+        {/* 0-Cost Card Consumption Caution Banner */}
+        {reductions.length > 0 && baseCost === 0 && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-comic-red/10 border-2 border-comic-red rounded-md text-xs font-black text-comic-red shadow-comic-sm">
+            <AlertTriangle className="w-4 h-4 text-comic-red shrink-0" />
+            <span>
+              Caution: Playing this 0-cost card will consume your active cost reduction (
+              {reductions.map((r) => r.sourceCardName).join(', ')}: -{totalReduction})!
+            </span>
+          </div>
+        )}
+
+        {/* Discard Hand Cards as Cost Section */}
+        {discardCost && (
+          <div className="space-y-3 p-4 bg-comic-red/5 border-2 border-comic-red/30 rounded-lg">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-xs font-black uppercase tracking-wider flex items-center space-x-1.5">
+                <AlertTriangle className="w-4 h-4 text-comic-red" />
+                <span>
+                  Choose {discardCost.min < discardCost.max ? 'up to ' : ''}
+                  {discardCost.max} Card{discardCost.max > 1 ? 's' : ''} to Discard as Cost:
+                </span>
+              </h3>
+              <span
+                className={`text-xs font-black px-2 py-0.5 shrink-0 ${
+                  isDiscardCostCovered
+                    ? 'bg-comic-green text-white rounded border border-comic-black'
+                    : style.chip
+                }`}
+              >
+                Selected: {selectedDiscardCardIds.length} / {discardCost.max}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {availableDiscardCards.map((hCard) => {
+                const isSelected = selectedDiscardCardIds.includes(hCard.instanceId);
+                const isUsedForPayment = selectedHandCardIds.includes(hCard.instanceId);
+
+                return (
+                  <ChoiceCard
+                    key={hCard.instanceId}
+                    code={hCard.card.code}
+                    name={hCard.card.name}
+                    subline={`${hCard.card.type} • ${hCard.card.faction}`}
+                    selected={isSelected}
+                    disabled={isUsedForPayment}
+                    tone="danger"
+                    onClick={() => toggleDiscardCard(hCard.instanceId)}
+                    badge={
+                      <span
+                        className={`text-xs font-black px-2 py-0.5 ${
+                          isSelected
+                            ? 'bg-comic-red text-white rounded border border-comic-black'
+                            : style.chip
+                        }`}
+                      >
+                        {isSelected ? 'DISCARD' : 'SELECT'}
+                      </span>
+                    }
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Payment Progress Bar */}
+        {cost > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-black uppercase tracking-wide">
+                {isScalingPerResource
+                  ? `Tokens to Place (+${committedMatching}):`
+                  : 'Resources Committed:'}
+              </span>
+              <span
+                className={`text-sm font-black uppercase ${
+                  isCostCovered ? 'text-comic-green' : 'text-comic-red'
+                }`}
+              >
+                {isScalingPerResource
+                  ? `${committedMatching} ${abilityCost?.resourceType || 'matching'} (Min ${cost} needed)`
+                  : `${abilityCost?.resourceType ? committedMatching : totalGenerated} / ${cost} ${
+                      isCostCovered
+                        ? '✓ (Ready)'
+                        : `(Need ${cost - (abilityCost?.resourceType ? committedMatching : totalGenerated)} more)`
+                    }`}
+              </span>
+            </div>
+
+            {/* Visual Meter Bar */}
+            <div className={`w-full h-4 overflow-hidden flex !rounded-full ${style.inset}`}>
+              <div
+                className={`h-full transition-all duration-300 ${
+                  isCostCovered ? 'bg-comic-green' : 'bg-comic-yellow'
+                }`}
+                style={{
+                  width: `${Math.min(
+                    100,
+                    cost === 0
+                      ? 100
+                      : ((abilityCost?.resourceType ? committedMatching : totalGenerated) / cost) *
+                          100,
+                  )}%`,
+                }}
+              />
+            </div>
+
+            {/* Resource Affinity Pills */}
+            <div className="flex flex-wrap gap-2 pt-1 text-xs font-bold text-slate-900">
+              {resourceBreakdown.energyCount > 0 && (
+                <span className="px-2 py-0.5 bg-amber-100 border border-amber-400 rounded-full flex items-center space-x-1">
+                  <span>⚡</span> <span>{resourceBreakdown.energyCount} Energy</span>
+                </span>
+              )}
+              {resourceBreakdown.mentalCount > 0 && (
+                <span className="px-2 py-0.5 bg-blue-100 border border-blue-400 rounded-full flex items-center space-x-1">
+                  <span>🧠</span> <span>{resourceBreakdown.mentalCount} Mental</span>
+                </span>
+              )}
+              {resourceBreakdown.physicalCount > 0 && (
+                <span className="px-2 py-0.5 bg-red-100 border border-red-400 rounded-full flex items-center space-x-1">
+                  <span>👊</span> <span>{resourceBreakdown.physicalCount} Physical</span>
+                </span>
+              )}
+              {resourceBreakdown.wildCount > 0 && (
+                <span className="px-2 py-0.5 bg-purple-100 border border-purple-400 rounded-full flex items-center space-x-1">
+                  <span>⭐</span> <span>{resourceBreakdown.wildCount} Wild</span>
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Hand Cards Selection */}
+        {availableHandCards.length > 0 && cost > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-black uppercase tracking-wider flex items-center space-x-1.5">
+                <span>Discard Hand Cards for Resources:</span>
+              </h3>
+              <span className={`text-[10px] font-bold uppercase ${style.muted}`}>
+                (Click cards to toggle)
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {availableHandCards.map((hCard) => {
+                const isSelected = selectedHandCardIds.includes(hCard.instanceId);
+                const isUsedForDiscardCost = selectedDiscardCardIds.includes(hCard.instanceId);
+                const res = hCard.card.resources;
+                const aspectDoubleStep = hCard.card.enrichment?.abilities
+                  ?.flatMap((a) => a.steps || [])
+                  .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
+                const isDoubled =
+                  aspectDoubleStep && aspectDoubleStep.effectParams?.aspect === card.faction;
+                const printedIcons = readCardResources(hCard);
+                const matchingPrintedCount =
+                  isRequirePrinted && abilityCost?.resourceType
+                    ? printedIcons.filter((r) => r === abilityCost.resourceType).length
+                    : undefined;
+                const isHandCardDisabled =
+                  isUsedForDiscardCost ||
+                  isHandCardIneligibleForCost(hCard, abilityCost?.resourceType, isRequirePrinted);
+
+                return (
+                  <ChoiceCard
+                    key={hCard.instanceId}
+                    code={hCard.card.code}
+                    name={hCard.card.name}
+                    subline={`${hCard.card.type} • ${hCard.card.faction}`}
+                    selected={isSelected}
+                    disabled={isHandCardDisabled}
+                    tone="warn"
+                    onClick={() => toggleHandCard(hCard.instanceId)}
+                    badge={
+                      matchingPrintedCount !== undefined ? (
+                        <span className={`text-xs font-black px-2 py-0.5 ${style.chip}`}>
+                          {matchingPrintedCount} {abilityCost?.resourceType?.toUpperCase()}
+                        </span>
+                      ) : isDoubled ? (
+                        <span className="text-xs font-black px-2.5 py-0.5 bg-emerald-600 text-white rounded-md border-2 border-comic-black shadow-comic-sm">
+                          2 Res (2× Aspect)
+                        </span>
+                      ) : (
+                        <span className={`text-xs font-black px-2 py-0.5 ${style.chip}`}>
+                          {res.total || 1} Res
+                        </span>
+                      )
+                    }
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Generators & Cost Reducers */}
+        {availableGenerators.length > 0 && cost > 0 && (
+          <div className="space-y-3 pt-2">
+            <h3 className="text-xs font-black uppercase tracking-wider">
+              Identity & Table Resource Generators:
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {availableGenerators.map((gen) => {
+                const isSelected = selectedGeneratorIds.includes(gen.id);
+                const isGenDisabled =
+                  gen.amount === 0 ||
+                  isGeneratorIneligibleForCost(gen, abilityCost?.resourceType, isRequirePrinted);
+                return (
+                  <ChoiceCard
+                    key={gen.id}
+                    code={gen.id.split('_')[0]}
+                    name={gen.name}
+                    subline={gen.sublabel}
+                    selected={isSelected}
+                    disabled={isGenDisabled}
+                    tone="info"
+                    onClick={() => !isGenDisabled && toggleGenerator(gen.id)}
+                    badge={
+                      <span className={`text-xs font-black px-2 py-0.5 shrink-0 ${style.chip}`}>
+                        +{gen.amount} {gen.resourceType ? gen.resourceType.toUpperCase() : 'RES'}
+                      </span>
+                    }
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Target Selector (if Minion Attachment, Attack or Thwart) */}
+        {isMinionAttachment && (
+          <TargetChoices
+            title="Select Minion to Attach To:"
+            icon={<Target className="w-4 h-4 text-comic-red" />}
+            tone="danger"
+            selectedId={selectedTargetId}
+            onSelect={setSelectedTargetId}
+            targets={minionAttachmentTargets.map((t) => ({
+              id: t.id,
+              code: t.code,
+              name: t.name,
+              trailing: () => <span>{t.hp} HP</span>,
+            }))}
+          />
+        )}
+
+        {isAttack && (
+          <TargetChoices
+            title="Select Attack Target:"
+            icon={<Swords className="w-4 h-4 text-comic-red" />}
+            tone="danger"
+            selectedId={selectedTargetId}
+            onSelect={setSelectedTargetId}
+            targets={enemyTargets.map((t) => ({
+              id: t.id,
+              code: t.code,
+              name: t.name,
+              trailing: () => <span>{t.hp} HP</span>,
+            }))}
+          />
+        )}
+
+        {isThwart && (
+          <TargetChoices
+            title="Select Scheme Target:"
+            icon={<Shield className="w-4 h-4 text-comic-blue" />}
+            tone="info"
+            selectedId={selectedTargetId}
+            onSelect={setSelectedTargetId}
+            targets={schemeTargets.map((t) => ({
+              id: t.id,
+              code: t.code,
+              name: t.name,
+              trailing: () => <span>{t.threat} Threat</span>,
+            }))}
+          />
+        )}
+
+        {isHeal && (
+          <TargetChoices
+            title="Select Character to Heal:"
+            icon={<Heart className="w-4 h-4 text-emerald-600" />}
+            tone="success"
+            selectedId={selectedTargetId}
+            onSelect={setSelectedTargetId}
+            targets={healTargets.map((t) => ({
+              id: t.id,
+              code: t.code,
+              name: t.name,
+              trailing: (selected) => (
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 font-black ${
+                    selected
+                      ? 'bg-black/20 text-white'
+                      : t.damageTaken > 0
+                        ? 'bg-rose-100 text-rose-800'
+                        : 'bg-gray-100 text-gray-700'
+                  }`}
+                >
+                  {t.hp}/{t.maxHp} HP {t.damageTaken > 0 ? `(-${t.damageTaken})` : '(Full)'}
+                </span>
+              ),
+            }))}
+          />
+        )}
+
+        {isAllyTarget && (
+          <TargetChoices
+            title="Select Ally Target:"
+            icon={<Users className="w-4 h-4 text-comic-blue" />}
+            tone="info"
+            selectedId={selectedTargetId}
+            onSelect={setSelectedTargetId}
+            targets={allyTargets.map((t) => ({
+              id: t.id,
+              code: t.code,
+              name: t.name,
+              trailing: (selected) => (
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 font-black ${
+                    selected
+                      ? 'bg-black/20 text-white'
+                      : t.exhausted
+                        ? 'bg-amber-100 text-amber-800'
+                        : 'bg-gray-100 text-gray-700'
+                  }`}
+                >
+                  {t.exhausted ? 'Exhausted' : 'Ready'}
+                </span>
+              ),
+            }))}
+          />
+        )}
+
+        {isPlayerTarget && (
+          <TargetChoices
+            title="Select Player Target:"
+            icon={<Users className="w-4 h-4 text-purple-600" />}
+            tone="purple"
+            selectedId={selectedTargetId}
+            onSelect={setSelectedTargetId}
+            targets={playerTargets.map((t) => ({ id: t.id, code: t.code, name: t.name }))}
+          />
+        )}
       </div>
-    </ModalLayer>
+    </ModalScaffold>
   );
 };

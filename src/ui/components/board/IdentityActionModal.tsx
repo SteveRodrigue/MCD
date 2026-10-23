@@ -1,6 +1,5 @@
 import React from 'react';
-import { ModalLayer } from '../layout/ModalLayer';
-import { RefreshCw, Heart, Zap, Swords, Target, X, Sparkles } from 'lucide-react';
+import { RefreshCw, Heart, Zap, Swords, Target, Sparkles } from 'lucide-react';
 import { PlayerState, HeroCard, AlterEgoCard, CardInstance } from '../../../engine/models';
 import {
   LegalActionItem,
@@ -19,8 +18,10 @@ import {
   HERO_ACTOR,
 } from '../../../engine/pipeline/legality-checker';
 import { getIdentityAttackState } from './identity-action-utils';
-import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 import { useGameSession } from '../../context/GameStateContext';
+import { useModalStyle } from '../../theme/useModalStyle';
+import { ActionRow } from './ActionRow';
+import { CardActionModal, InfoStrip } from './CardActionModal';
 
 interface IdentityActionModalProps {
   isOpen: boolean;
@@ -40,6 +41,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
   onInitiateHeroThwart,
 }) => {
   const { state: gameState, dispatch: onDispatchAction } = useGameSession();
+  const { style } = useModalStyle();
   if (!isOpen) return null;
 
   const isHero = player.currentForm === 'hero';
@@ -80,425 +82,252 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
       (!isHero && ab.timing === 'ALTER_EGO_ACTION'),
   );
 
+  const detail = (text: string) => (
+    <span className={`text-[10px] block ${style.muted}`}>{text}</span>
+  );
+  const rowTitle = (text: string) => (
+    <span className="font-comic font-black text-xs block">{text}</span>
+  );
+
   return (
-    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-150">
-      <div className="relative w-full max-w-md bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl overflow-hidden flex flex-col font-comic">
-        {/* Comic dots pattern */}
-        <div
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(#000 2px, transparent 2px)',
-            backgroundSize: '12px 12px',
-          }}
-        />
-
-        {/* 1. Header Banner */}
-        <div
-          className={`relative px-5 py-3.5 border-b-4 border-comic-black flex items-center justify-between select-none ${
-            isHero ? 'bg-comic-red text-white' : 'bg-comic-yellow text-comic-black'
-          }`}
-        >
-          <div className="flex items-center gap-2.5">
-            <CardArtThumbnail
-              cardCode={player.activeFormCard.code}
-              cardName={player.activeFormCard.name}
-              size="sm"
-            />
-            <div>
-              <div
-                className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-wider ${
-                  isHero ? 'text-comic-yellow' : 'text-slate-800'
-                }`}
-              >
-                <span>{isHero ? 'HERO IDENTITY' : 'ALTER-EGO IDENTITY'}</span>
-                {player.exhausted && (
-                  <span className="bg-comic-black text-white px-1.5 py-0.2 rounded text-[9px]">
-                    EXHAUSTED
-                  </span>
-                )}
-              </div>
-              <h2 className="text-xl font-black uppercase tracking-tight leading-none drop-shadow-xs">
-                {player.activeFormCard.name}
-              </h2>
-            </div>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="p-1.5 bg-comic-black hover:bg-slate-800 text-white rounded-lg border-2 border-white/40 shadow-comic-sm transition-transform active:scale-95 cursor-pointer"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* 2. Character Overview Banner */}
-        <div className="relative px-5 py-2 bg-amber-100 border-b-2 border-comic-black flex items-center justify-between text-slate-900 text-xs font-bold">
-          <div className="flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-comic-red" />
-            <span>
-              Health: {player.health} / {effectiveMaxHealth} HP
-            </span>
-          </div>
-          <span className="font-mono text-[10px] px-2 py-0.5 bg-comic-black text-comic-yellow rounded">
-            HAND SIZE:{' '}
-            {(player.activeFormCard as unknown as HeroCard | AlterEgoCard).handSize ??
-              (isHero ? 5 : 6)}
-          </span>
-        </div>
-
-        {/* Active Traits Strip */}
-        <div
-          data-testid="identity-active-traits-strip"
-          className="relative px-5 py-2 bg-amber-50 border-b-2 border-comic-black flex flex-wrap items-center gap-1.5 text-xs font-bold"
-        >
-          <span className="text-[10px] uppercase font-black text-slate-500 tracking-wider">
-            Traits:
-          </span>
-          {traitsDetails.printedTraits.map((trait, idx) => (
-            <span
-              key={`printed-${idx}`}
-              className="bg-white text-slate-800 font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black shadow-comic-xs font-bold"
-            >
-              {trait}
-            </span>
-          ))}
-          {traitsDetails.dynamicTraits.map((trait, idx) => (
-            <span
-              key={`dynamic-${idx}`}
-              data-testid={`identity-dynamic-trait-${trait.toLowerCase()}`}
-              className="bg-cyan-300 text-slate-950 font-comic text-[10px] px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-xs font-black uppercase tracking-wider flex items-center gap-0.5"
-            >
-              <span>✨</span>
-              <span>{trait}</span>
-            </span>
-          ))}
-        </div>
-
-        {/* 3. Action Options List */}
-        <div className="p-4 space-y-2.5 max-h-[60vh] overflow-y-auto">
-          {/* Alter-Ego Recover Action */}
-          {!isHero && (
-            <button
-              disabled={!canRecover}
-              onClick={() => {
-                onDispatchAction({ type: 'BASIC_RECOVER', playerId: player.id });
-                onClose();
-              }}
-              className={`w-full text-left p-2.5 rounded-lg border-2 border-comic-black transition-all flex items-center justify-between gap-2 shadow-comic-sm ${
-                canRecover
-                  ? 'bg-amber-100 hover:bg-amber-200 cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
-                  : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <div
-                  className={`p-1.5 rounded-full border border-comic-black ${
-                    canRecover ? 'bg-comic-yellow text-slate-950' : 'bg-slate-300 text-slate-500'
-                  }`}
-                >
-                  <Heart className="w-4 h-4 fill-current" />
-                </div>
-                <div>
-                  <span className="font-comic font-black text-xs block text-slate-950">
-                    Recover (+{effectiveStats.recovery} HP)
-                  </span>
-                  <span className="text-[10px] text-slate-600 block">
-                    {player.health >= effectiveMaxHealth
-                      ? `Already at maximum health (${player.health} / ${effectiveMaxHealth} HP)`
-                      : player.exhausted
-                        ? 'Identity is exhausted'
-                        : `Exhaust ${player.activeFormCard.name} to heal from ${player.health} to ${Math.min(effectiveMaxHealth, player.health + effectiveStats.recovery)} HP`}
-                  </span>
-                </div>
-              </div>
-              <span
-                className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border border-comic-black ${
-                  canRecover ? 'bg-comic-black text-amber-300' : 'bg-slate-300 text-slate-500'
-                } shrink-0`}
-              >
-                REC: {effectiveStats.recovery}
+    <CardActionModal
+      card={{ name: player.activeFormCard.name, code: player.activeFormCard.code }}
+      kicker={isHero ? 'HERO IDENTITY' : 'ALTER-EGO IDENTITY'}
+      verb={isHero ? 'red' : 'yellow'}
+      icon={<Zap className="w-5 h-5" />}
+      exhausted={player.exhausted}
+      onClose={onClose}
+      testId="identity-action-modal"
+      strips={
+        <>
+          <InfoStrip className="flex items-center justify-between font-bold">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-comic-red" />
+              <span>
+                Health: {player.health} / {effectiveMaxHealth} HP
               </span>
-            </button>
+            </div>
+            <span className={`font-mono text-[10px] px-2 py-0.5 ${style.chip}`}>
+              HAND SIZE:{' '}
+              {(player.activeFormCard as unknown as HeroCard | AlterEgoCard).handSize ??
+                (isHero ? 5 : 6)}
+            </span>
+          </InfoStrip>
+
+          <InfoStrip
+            testId="identity-active-traits-strip"
+            className="flex flex-wrap items-center gap-1.5 font-bold"
+          >
+            <span className={`text-[10px] uppercase font-black tracking-wider ${style.muted}`}>
+              Traits:
+            </span>
+            {traitsDetails.printedTraits.map((trait, idx) => (
+              <span
+                key={`printed-${idx}`}
+                className={`font-comic text-[10px] px-2 py-0.5 font-bold ${style.chip}`}
+              >
+                {trait}
+              </span>
+            ))}
+            {traitsDetails.dynamicTraits.map((trait, idx) => (
+              <span
+                key={`dynamic-${idx}`}
+                data-testid={`identity-dynamic-trait-${trait.toLowerCase()}`}
+                className="bg-cyan-300 text-slate-950 font-comic text-[10px] px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-xs font-black uppercase tracking-wider flex items-center gap-0.5"
+              >
+                <span>✨</span>
+                <span>{trait}</span>
+              </span>
+            ))}
+          </InfoStrip>
+        </>
+      }
+    >
+      {/* Alter-Ego Recover Action */}
+      {!isHero && (
+        <ActionRow
+          icon={<Heart className="w-4 h-4 fill-current" />}
+          tone="warn"
+          disabled={!canRecover}
+          actionLabel={`REC: ${effectiveStats.recovery}`}
+          onClick={() => {
+            onDispatchAction({ type: 'BASIC_RECOVER', playerId: player.id });
+            onClose();
+          }}
+        >
+          {rowTitle(`Recover (+${effectiveStats.recovery} HP)`)}
+          {detail(
+            player.health >= effectiveMaxHealth
+              ? `Already at maximum health (${player.health} / ${effectiveMaxHealth} HP)`
+              : player.exhausted
+                ? 'Identity is exhausted'
+                : `Exhaust ${player.activeFormCard.name} to heal from ${player.health} to ${Math.min(effectiveMaxHealth, player.health + effectiveStats.recovery)} HP`,
           )}
+        </ActionRow>
+      )}
 
-          {/* Identity Special Abilities */}
-          {actionableAbilities.map((ab) => {
-            const abilityKey = ab.id;
-            const alreadyUsed = (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1;
-            const costCheck = canInitiateAbility(gameState, player.id, ab, undefined, {});
-            const canTrigger = isPlayerPhase && !alreadyUsed && costCheck.allowed;
-            const actionLabel = !isPlayerTurn
-              ? `Ask ${player.name}: ${ab.id.replace(/_/g, ' ').toUpperCase()}`
-              : ab.id.replace(/_/g, ' ').toUpperCase();
+      {/* Identity Special Abilities */}
+      {actionableAbilities.map((ab) => {
+        const abilityKey = ab.id;
+        const alreadyUsed = (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1;
+        const costCheck = canInitiateAbility(gameState, player.id, ab, undefined, {});
+        const canTrigger = isPlayerPhase && !alreadyUsed && costCheck.allowed;
+        const actionLabel = !isPlayerTurn
+          ? `Ask ${player.name}: ${ab.id.replace(/_/g, ' ').toUpperCase()}`
+          : ab.id.replace(/_/g, ' ').toUpperCase();
 
-            return (
-              <button
-                key={ab.id}
-                disabled={!canTrigger}
-                onClick={() => {
-                  const hasPaymentCost =
-                    ab.cost?.resourceCost ||
-                    (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND');
-
-                  if (hasPaymentCost && onInitiateAction) {
-                    onInitiateAction({
-                      id: isPlayerTurn
-                        ? `action_id_ability_${ab.id}`
-                        : `action_call_id_${player.id}_${ab.id}`,
-                      category: isPlayerTurn ? 'identity' : 'call_for_action',
-                      headline: isPlayerTurn
-                        ? `Action: ${ab.id.replace(/_/g, ' ').toUpperCase()}`
-                        : `Ask ${player.name}: ${player.activeFormCard.name} (${formatTimingBadge(ab.timing)})`,
-                      subtext: `Trigger ${player.activeFormCard.name}'s special ability`,
-                      action: {
-                        type: 'USE_CARD_ABILITY',
-                        playerId: player.id,
-                        cardInstanceId: player.activeFormCard.code,
-                        abilityId: ab.id,
-                      },
-                      requiresModal: 'payment',
-                      targetCardInstance: {
-                        instanceId: player.activeFormCard.code,
-                        card: player.activeFormCard,
-                        exhausted: player.exhausted,
-                      } as CardInstance,
-                      cardCode: player.activeFormCard.code,
-                      ownerName: isPlayerTurn ? undefined : player.name,
-                    });
-                  } else {
-                    onDispatchAction({
-                      type: 'USE_CARD_ABILITY',
-                      playerId: player.id,
-                      cardInstanceId: player.activeFormCard.code,
-                      abilityId: ab.id,
-                    });
-                  }
-                  onClose();
-                }}
-                className={`w-full text-left p-2.5 rounded-lg border-2 border-comic-black transition-all flex items-center justify-between gap-2 shadow-comic-sm ${
-                  canTrigger
-                    ? !isPlayerTurn
-                      ? 'bg-indigo-50 hover:bg-indigo-100 cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
-                      : 'bg-amber-100 hover:bg-comic-yellow cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
-                    : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`p-1.5 rounded-full border border-comic-black ${
-                      canTrigger
-                        ? !isPlayerTurn
-                          ? 'bg-indigo-200 text-indigo-950'
-                          : 'bg-comic-yellow text-comic-black'
-                        : 'bg-slate-300 text-slate-500'
-                    }`}
-                  >
-                    <Zap className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="font-comic font-black text-xs block text-slate-950">
-                      {actionLabel}
-                    </span>
-                    <span className="text-[10px] text-slate-600 block">
-                      {alreadyUsed
-                        ? 'Already used this round (Limit: once per round)'
-                        : ab.steps?.[0]?.effectParams?.description
-                          ? String(ab.steps[0].effectParams.description)
-                          : ab.id === 'futurist'
-                            ? 'Look at top 3 cards of deck, add 1 Tech card to hand, discard rest.'
-                            : `Trigger ${player.activeFormCard.name}'s special ability`}
-                    </span>
-                  </div>
-                </div>
-                <span
-                  className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border border-comic-black ${
-                    canTrigger
-                      ? !isPlayerTurn
-                        ? 'bg-indigo-900 text-indigo-100'
-                        : 'bg-comic-black text-amber-300'
-                      : 'bg-slate-300 text-slate-500'
-                  } shrink-0`}
-                >
-                  {!isPlayerTurn ? 'CALL FOR ACTION' : 'ACTION'}
-                </span>
-              </button>
-            );
-          })}
-
-          {/* Hero Basic Attack & Thwart */}
-          {isHero && (
-            <>
-              {/* Hero Strike */}
-              <button
-                disabled={!canAttack}
-                onClick={() => {
-                  onClose();
-                  if (onInitiateHeroAttack) {
-                    onInitiateHeroAttack();
-                  } else if (canAttackVillain) {
-                    onDispatchAction({
-                      type: 'BASIC_ATTACK',
-                      playerId: player.id,
-                      targetType: 'villain',
-                    });
-                  } else if (eligibleMinion?.instanceId) {
-                    onDispatchAction({
-                      type: 'BASIC_ATTACK',
-                      playerId: player.id,
-                      targetType: 'minion',
-                      targetInstanceId: eligibleMinion.instanceId,
-                    });
-                  }
-                }}
-                className={`w-full text-left p-2.5 rounded-lg border-2 border-comic-black transition-all flex items-center justify-between gap-2 shadow-comic-sm ${
-                  canAttack
-                    ? 'bg-rose-100 hover:bg-rose-200 cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
-                    : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`p-1.5 rounded-full border border-comic-black ${
-                      canAttack ? 'bg-comic-red text-white' : 'bg-slate-300 text-slate-500'
-                    }`}
-                  >
-                    <Swords className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="font-comic font-black text-xs block text-slate-950">
-                      Attack ({effectiveStats.attack} DMG)
-                    </span>
-                    <span className="text-[10px] text-slate-600 block">{attackState.subtext}</span>
-                  </div>
-                </div>
-                <span
-                  className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border border-comic-black ${
-                    canAttack ? 'bg-comic-black text-rose-300' : 'bg-slate-300 text-slate-500'
-                  } shrink-0`}
-                >
-                  {effectiveStats.attack} ATK
-                </span>
-              </button>
-
-              {/* Hero Thwart */}
-              <button
-                disabled={!canThwartScheme}
-                onClick={() => {
-                  onClose();
-                  if (onInitiateHeroThwart) {
-                    onInitiateHeroThwart();
-                  } else if (canThwartMain) {
-                    onDispatchAction({
-                      type: 'BASIC_THWART',
-                      playerId: player.id,
-                      targetType: 'main_scheme',
-                    });
-                  } else if (eligibleSideScheme) {
-                    onDispatchAction({
-                      type: 'BASIC_THWART',
-                      playerId: player.id,
-                      targetType: 'side_scheme',
-                      targetInstanceId: eligibleSideScheme.instanceId,
-                    });
-                  }
-                }}
-                className={`w-full text-left p-2.5 rounded-lg border-2 border-comic-black transition-all flex items-center justify-between gap-2 shadow-comic-sm ${
-                  canThwartScheme
-                    ? 'bg-sky-100 hover:bg-sky-200 cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
-                    : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`p-1.5 rounded-full border border-comic-black ${
-                      canThwartScheme ? 'bg-sky-500 text-white' : 'bg-slate-300 text-slate-500'
-                    }`}
-                  >
-                    <Target className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="font-comic font-black text-xs block text-slate-950">
-                      Thwart ({effectiveStats.thwart} THW)
-                    </span>
-                    <span className="text-[10px] text-slate-600 block">
-                      {player.exhausted
-                        ? 'Hero is exhausted'
-                        : !canThwartScheme
-                          ? 'No threat on schemes (Target not valid)'
-                          : canThwartMain
-                            ? `Exhaust to remove ${effectiveStats.thwart} threat from main scheme`
-                            : `Exhaust to remove ${effectiveStats.thwart} threat from ${eligibleSideScheme?.card.name}`}
-                    </span>
-                  </div>
-                </div>
-                <span
-                  className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border border-comic-black ${
-                    canThwartScheme ? 'bg-comic-black text-sky-300' : 'bg-slate-300 text-slate-500'
-                  } shrink-0`}
-                >
-                  {effectiveStats.thwart} THW
-                </span>
-              </button>
-            </>
-          )}
-
-          {/* Change Form / Flip */}
-          <button
-            disabled={!canFlip}
+        return (
+          <ActionRow
+            key={ab.id}
+            icon={<Zap className="w-4 h-4" />}
+            tone={isPlayerTurn ? 'warn' : 'info'}
+            disabled={!canTrigger}
+            actionLabel={!isPlayerTurn ? 'CALL FOR ACTION' : 'ACTION'}
             onClick={() => {
-              onDispatchAction({ type: 'CHANGE_FORM', playerId: player.id });
+              const hasPaymentCost =
+                ab.cost?.resourceCost ||
+                (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND');
+
+              if (hasPaymentCost && onInitiateAction) {
+                onInitiateAction({
+                  id: isPlayerTurn
+                    ? `action_id_ability_${ab.id}`
+                    : `action_call_id_${player.id}_${ab.id}`,
+                  category: isPlayerTurn ? 'identity' : 'call_for_action',
+                  headline: isPlayerTurn
+                    ? `Action: ${ab.id.replace(/_/g, ' ').toUpperCase()}`
+                    : `Ask ${player.name}: ${player.activeFormCard.name} (${formatTimingBadge(ab.timing)})`,
+                  subtext: `Trigger ${player.activeFormCard.name}'s special ability`,
+                  action: {
+                    type: 'USE_CARD_ABILITY',
+                    playerId: player.id,
+                    cardInstanceId: player.activeFormCard.code,
+                    abilityId: ab.id,
+                  },
+                  requiresModal: 'payment',
+                  targetCardInstance: {
+                    instanceId: player.activeFormCard.code,
+                    card: player.activeFormCard,
+                    exhausted: player.exhausted,
+                  } as CardInstance,
+                  cardCode: player.activeFormCard.code,
+                  ownerName: isPlayerTurn ? undefined : player.name,
+                });
+              } else {
+                onDispatchAction({
+                  type: 'USE_CARD_ABILITY',
+                  playerId: player.id,
+                  cardInstanceId: player.activeFormCard.code,
+                  abilityId: ab.id,
+                });
+              }
               onClose();
             }}
-            className={`w-full text-left p-2.5 rounded-lg border-2 border-comic-black transition-all flex items-center justify-between gap-2 shadow-comic-sm ${
-              canFlip
-                ? isHero
-                  ? 'bg-amber-100 hover:bg-comic-yellow cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
-                  : 'bg-comic-red/20 hover:bg-comic-red/30 cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
-                : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
-            }`}
           >
-            <div className="flex items-center gap-2">
-              <div
-                className={`p-1.5 rounded-full border border-comic-black ${
-                  canFlip ? 'bg-comic-black text-white' : 'bg-slate-300 text-slate-500'
-                }`}
-              >
-                <RefreshCw className="w-4 h-4" />
-              </div>
-              <div>
-                <span className="font-comic font-black text-xs block text-slate-950">
-                  {isHero ? 'Flip to Alter-Ego' : 'Suit Up (Hero Form)'}
-                </span>
-                <span className="text-[10px] text-slate-600 block">
-                  {!flipCheck.allowed
-                    ? 'Already changed form this round (Limit: once per round)'
-                    : 'Change identity form'}
-                </span>
-              </div>
-            </div>
-            <span
-              className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border border-comic-black ${
-                canFlip ? 'bg-comic-black text-amber-300' : 'bg-slate-300 text-slate-500'
-              } shrink-0`}
-            >
-              1 / ROUND
-            </span>
-          </button>
-        </div>
+            {rowTitle(actionLabel)}
+            {detail(
+              alreadyUsed
+                ? 'Already used this round (Limit: once per round)'
+                : ab.steps?.[0]?.effectParams?.description
+                  ? String(ab.steps[0].effectParams.description)
+                  : ab.id === 'futurist'
+                    ? 'Look at top 3 cards of deck, add 1 Tech card to hand, discard rest.'
+                    : `Trigger ${player.activeFormCard.name}'s special ability`,
+            )}
+          </ActionRow>
+        );
+      })}
 
-        {/* 4. Footer */}
-        <div className="p-3 bg-comic-paper border-t-2 border-comic-black flex justify-end">
-          <button
-            onClick={onClose}
-            className="bg-comic-black hover:bg-slate-800 text-white font-comic text-xs px-4 py-2 rounded-lg border-2 border-comic-black shadow-comic-sm active:translate-y-0.5 font-bold cursor-pointer uppercase flex items-center gap-1.5"
+      {/* Hero Basic Attack & Thwart */}
+      {isHero && (
+        <>
+          <ActionRow
+            icon={<Swords className="w-4 h-4" />}
+            tone="danger"
+            disabled={!canAttack}
+            actionLabel={`${effectiveStats.attack} ATK`}
+            onClick={() => {
+              onClose();
+              if (onInitiateHeroAttack) {
+                onInitiateHeroAttack();
+              } else if (canAttackVillain) {
+                onDispatchAction({
+                  type: 'BASIC_ATTACK',
+                  playerId: player.id,
+                  targetType: 'villain',
+                });
+              } else if (eligibleMinion?.instanceId) {
+                onDispatchAction({
+                  type: 'BASIC_ATTACK',
+                  playerId: player.id,
+                  targetType: 'minion',
+                  targetInstanceId: eligibleMinion.instanceId,
+                });
+              }
+            }}
           >
-            <X className="w-3.5 h-3.5" />
-            <span>Cancel</span>
-          </button>
-        </div>
-      </div>
-    </ModalLayer>
+            {rowTitle(`Attack (${effectiveStats.attack} DMG)`)}
+            {detail(attackState.subtext)}
+          </ActionRow>
+
+          <ActionRow
+            icon={<Target className="w-4 h-4" />}
+            tone="info"
+            disabled={!canThwartScheme}
+            actionLabel={`${effectiveStats.thwart} THW`}
+            onClick={() => {
+              onClose();
+              if (onInitiateHeroThwart) {
+                onInitiateHeroThwart();
+              } else if (canThwartMain) {
+                onDispatchAction({
+                  type: 'BASIC_THWART',
+                  playerId: player.id,
+                  targetType: 'main_scheme',
+                });
+              } else if (eligibleSideScheme) {
+                onDispatchAction({
+                  type: 'BASIC_THWART',
+                  playerId: player.id,
+                  targetType: 'side_scheme',
+                  targetInstanceId: eligibleSideScheme.instanceId,
+                });
+              }
+            }}
+          >
+            {rowTitle(`Thwart (${effectiveStats.thwart} THW)`)}
+            {detail(
+              player.exhausted
+                ? 'Hero is exhausted'
+                : !canThwartScheme
+                  ? 'No threat on schemes (Target not valid)'
+                  : canThwartMain
+                    ? `Exhaust to remove ${effectiveStats.thwart} threat from main scheme`
+                    : `Exhaust to remove ${effectiveStats.thwart} threat from ${eligibleSideScheme?.card.name}`,
+            )}
+          </ActionRow>
+        </>
+      )}
+
+      {/* Change Form / Flip */}
+      <ActionRow
+        icon={<RefreshCw className="w-4 h-4" />}
+        tone={isHero ? 'warn' : 'danger'}
+        disabled={!canFlip}
+        actionLabel="1 / ROUND"
+        onClick={() => {
+          onDispatchAction({ type: 'CHANGE_FORM', playerId: player.id });
+          onClose();
+        }}
+      >
+        {rowTitle(isHero ? 'Flip to Alter-Ego' : 'Suit Up (Hero Form)')}
+        {detail(
+          !flipCheck.allowed
+            ? 'Already changed form this round (Limit: once per round)'
+            : 'Change identity form',
+        )}
+      </ActionRow>
+    </CardActionModal>
   );
 };
 

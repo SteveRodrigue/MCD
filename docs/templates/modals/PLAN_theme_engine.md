@@ -1,6 +1,6 @@
 # Final plan: Theme Engine for the game
 
-Status: **approved. Phases 0 to 3 are done; Phases 4 to 6 follow.** Each phase is developed, tested and committed in turn.
+Status: **approved. Phases 0 to 4 are done; Phases 5 and 6 follow.** Each phase is developed, tested and committed in turn.
 
 ## 0. Decisions already made
 
@@ -101,7 +101,7 @@ borders silently never render): 10 uses across 7 files today. Fixed in the same 
 | 1 (done) | Move shared files to `src/ui/theme/`; `resolve-theme.ts`; settings keys + validation; `ThemeProvider` at the App root; scaffold additions (section 4); architecture test | nothing changes in the game; lab identical | lab tests, new unit tests, tsc, eslint | 1 session |
 | 2 (done) | Migrate Batch A (Wakanda, Decision, Select) | these three follow the theme (default Pop-Art) | their existing tests (`wakanda-forever-modal`, `DecisionPromptModal`, `SelectCardsModal`) + theme matrix | 1 session |
 | 3 (done) | `ThemePicker` in Options and on the setup screen; Random mode, pool, Re-roll, card-accent switch; per-game roll in `App.tsx` | player picks a theme or Random; Random changes per game | picker/provider/App-flow tests, browser run of a full game start | 1 session |
-| 4 | Migrate Batch B | all gameplay prompts themed | each modal's existing tests + matrix; browser pass per modal | 2 to 3 sessions |
+| 4 (done) | Migrate Batch B | all gameplay prompts themed | each modal's existing tests + matrix; browser pass per modal | 2 to 3 sessions |
 | 5 | Migrate Batch C | utility dialogs themed | same | 1 session |
 | 6 (optional) | Board chrome (top bar, zones, hand tray, drawers) so a theme is a full skin | whole UI themed | visual pass | 2 sessions |
 

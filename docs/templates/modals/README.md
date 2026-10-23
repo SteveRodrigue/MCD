@@ -73,8 +73,12 @@ Shared theme code (used by the game and the lab), `src/ui/theme/`:
 `ThemePicker.tsx` (the player's choice, in Options and on the setup screen) and `ThemePreview.tsx` (token-drawn mini modal
 shared by the picker and the lab gallery).
 
-Migrated game modals (render through `ModalScaffold`): `WakandaForeverModal`, `DecisionPromptModal` (with
-`PromptCardPanel`), `SelectCardsModal`, in `src/ui/components/board/`.
+Migrated game modals (render through `ModalScaffold`), in `src/ui/components/board/`: `WakandaForeverModal`,
+`DecisionPromptModal` (with `PromptCardPanel`), `SelectCardsModal`, `AttackTargetModal` and `ThwartTargetModal`
+(both on `TargetSelectionModal`), `AllyActionModal`, `TableauActionModal` and `IdentityActionModal` (on
+`CardActionModal`), `CombatBoostModal`, `DistributeAmountModal`, `SimultaneousAbilitiesModal`, `CardPaymentModal`.
+Shared pieces: `ActionRow` (one choice in an action list), `CardActionModal` + `InfoStrip` (the card action menu
+shell), `TargetSelectionModal` (pick-a-card-to-act-on).
 
 Lab and reference (kept for future design), `src/ui/components/templates/`: the three templates
 (`DecisionTemplate`, `SequenceTemplate`, `SelectTemplate`) are **harnesses**: each renders the real game modal with a

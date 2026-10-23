@@ -1,7 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { ModalLayer } from '../layout/ModalLayer';
-import { ShieldAlert, Zap, AlertTriangle, RotateCcw, ArrowRight, X } from 'lucide-react';
+import { ShieldAlert, Zap, AlertTriangle, RotateCcw, ArrowRight } from 'lucide-react';
 import { PendingDecisionPrompt, TargetAllocationItem } from '../../../engine/models';
+import { AccentStripe } from '../../theme/AccentStripe';
+import { CardRef } from '../../theme/CardRef';
+import { ModalScaffold } from '../../theme/ModalScaffold';
+import { useModalStyle } from '../../theme/useModalStyle';
 
 interface DistributeAmountModalProps {
   prompt: PendingDecisionPrompt;
@@ -14,6 +17,7 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
   onConfirm,
   onCancel,
 }) => {
+  const { style } = useModalStyle();
   const config = prompt.distributionConfig;
   const targets = useMemo(() => config?.targets || [], [config?.targets]);
   const totalBudget = config?.totalBudget ?? 0;
@@ -154,202 +158,37 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
   };
 
   return (
-    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200 font-comic">
-      <div className="relative w-full max-w-2xl max-h-[90vh] bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl overflow-hidden flex flex-col">
-        {/* Comic background dots */}
-        <div
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(#000 2px, transparent 2px)',
-            backgroundSize: '12px 12px',
-          }}
-        />
-
-        {/* 1. Header Banner */}
-        <div className="relative px-5 py-3.5 bg-comic-yellow border-b-4 border-comic-black flex items-center justify-between text-comic-black select-none">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-comic-black text-comic-yellow rounded-lg shadow-comic-sm">
-              {isForced ? (
-                <ShieldAlert className="w-5 h-5 text-comic-red animate-pulse" />
-              ) : (
-                <Zap className="w-5 h-5 text-comic-yellow" />
-              )}
-            </div>
-            <div>
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-slate-800">
-                <span>{isForced ? 'FORCED RESOLUTION' : 'DECISION POINT'}</span>
-                <span className="bg-comic-black text-comic-yellow px-1.5 py-0.2 rounded text-[9px]">
-                  {config?.allocationDomain || 'DISTRIBUTE'}
-                </span>
-              </div>
-              <h2 className="text-xl font-black uppercase tracking-wide leading-tight">
-                {prompt.title || 'Distribute Points'}
-              </h2>
-            </div>
-          </div>
-          {config?.canCancel && onCancel && (
-            <button
-              onClick={onCancel}
-              className="p-1 hover:bg-comic-black hover:text-white rounded border border-comic-black transition-colors"
-              aria-label="Cancel"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-
-        {/* 2. Budget Tracker Banner */}
-        <div className="relative px-5 py-3 bg-slate-900 text-white border-b-3 border-comic-black flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="text-sm font-black uppercase tracking-wider text-amber-300">
-              POINTS TO ASSIGN:
-            </div>
-            <div className="text-2xl font-black tracking-widest text-comic-yellow">
-              {assignedTotal} / {effectiveBudget}
-            </div>
-            <div className="text-xs font-bold text-slate-400 uppercase">
-              ({remainingBudget} REMAINING)
-            </div>
-          </div>
-          <button
-            onClick={handleResetAll}
-            disabled={assignedTotal === 0}
-            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 text-amber-300 font-black text-xs uppercase rounded border-2 border-amber-400 shadow-comic-xs flex items-center gap-1.5 transition-all cursor-pointer disabled:cursor-not-allowed"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>RESET ALL</span>
-          </button>
-        </div>
-
-        {/* Shortfall Alert Notice (if board capacity < nominal budget) */}
-        {config?.shortfallNotice && (
-          <div className="px-5 py-2 bg-amber-100 border-b-2 border-amber-300 flex items-center gap-2 text-amber-900 text-xs font-bold">
-            <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
-            <span>{config.shortfallNotice}</span>
-          </div>
-        )}
-
-        {/* 3. Target Tiles grouped by Swimlanes */}
-        <div className="relative p-4 overflow-y-auto flex-1 space-y-4 max-h-[55vh]">
-          {swimlanes.map((lane, laneIdx) => (
-            <div key={laneIdx} className="space-y-2">
-              <div className="text-xs font-black uppercase tracking-wider text-slate-700 border-b-2 border-comic-black pb-1 flex items-center gap-1.5">
-                <span>⚡</span>
-                <span>{lane.title}</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {lane.targets.map((target) => {
-                  const assigned = assignments[target.instanceId] || 0;
-                  const isEligible = target.isEligible !== false;
-                  const cap = target.allocationCap ?? Infinity;
-                  const canIncrement = isEligible && remainingBudget > 0 && assigned < cap;
-                  const canDecrement = isEligible && assigned > 0;
-
-                  return (
-                    <div
-                      key={target.instanceId}
-                      className={`relative p-3 rounded-lg border-2 border-comic-black shadow-comic-sm transition-all flex flex-col justify-between ${
-                        isEligible
-                          ? assigned > 0
-                            ? 'bg-amber-50 border-amber-500'
-                            : 'bg-white'
-                          : 'bg-slate-100 opacity-60 border-slate-400'
-                      }`}
-                    >
-                      {/* Target Header */}
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl shrink-0">{getTypeIcon(target.cardType)}</span>
-                          <div>
-                            <div className="font-black text-sm text-comic-black leading-tight">
-                              {target.name}
-                            </div>
-                            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase">
-                              <span>{target.cardType.replace('_', ' ')}</span>
-                              {target.currentValue !== undefined && (
-                                <span>
-                                  •{' '}
-                                  {target.maxValue !== undefined
-                                    ? `${target.currentValue}/${target.maxValue} HP`
-                                    : `${target.currentValue} THW`}
-                                </span>
-                              )}
-                              {target.hasTough && (
-                                <span className="bg-amber-400 text-comic-black font-black px-1 rounded text-[9px]">
-                                  TOUGH
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Ineligible Badge */}
-                        {!isEligible && target.ineligibilityReason && (
-                          <span className="bg-rose-100 text-rose-800 border border-rose-400 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider text-right">
-                            {target.ineligibilityReason}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Stepper Controls (Only if eligible) */}
-                      {isEligible ? (
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-200 mt-auto">
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => handleDecrement(target)}
-                              disabled={!canDecrement}
-                              aria-label="Decrease"
-                              className="w-8 h-8 rounded bg-white hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-white text-comic-black font-black text-base border-2 border-comic-black shadow-comic-xs flex items-center justify-center transition-all cursor-pointer disabled:cursor-not-allowed"
-                            >
-                              -
-                            </button>
-                            <span className="min-w-[70px] text-center font-black text-sm bg-comic-black text-comic-yellow px-2 py-1 rounded shadow-comic-xs">
-                              {assigned} {unit}
-                            </span>
-                            <button
-                              onClick={() => handleIncrement(target)}
-                              disabled={!canIncrement}
-                              aria-label="Increase"
-                              className="w-8 h-8 rounded bg-comic-yellow hover:bg-yellow-400 disabled:opacity-30 disabled:hover:bg-comic-yellow text-comic-black font-black text-base border-2 border-comic-black shadow-comic-xs flex items-center justify-center transition-all cursor-pointer disabled:cursor-not-allowed"
-                            >
-                              +
-                            </button>
-                          </div>
-
-                          <button
-                            onClick={() => handleMax(target)}
-                            disabled={!canIncrement}
-                            aria-label="Max"
-                            className="px-2.5 py-1 text-xs font-black bg-slate-100 hover:bg-slate-200 disabled:opacity-30 disabled:hover:bg-slate-100 text-comic-black rounded border-2 border-comic-black shadow-comic-xs transition-all cursor-pointer disabled:cursor-not-allowed"
-                          >
-                            MAX
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="text-[11px] font-bold text-slate-400 italic pt-1 text-center">
-                          Ineligible for allocation
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* 4. Action Bar (Footer) */}
-        <div className="relative px-5 py-3.5 bg-comic-paper border-t-4 border-comic-black flex items-center justify-between">
+    <ModalScaffold
+      title={prompt.title || 'Distribute Points'}
+      kicker={isForced ? 'FORCED RESOLUTION' : 'DECISION POINT'}
+      verb={isForced ? 'red' : 'yellow'}
+      trigger={
+        prompt.sourceCardName ? { name: prompt.sourceCardName, code: prompt.sourceCardCode } : null
+      }
+      icon={
+        isForced ? <ShieldAlert className="w-5 h-5 animate-pulse" /> : <Zap className="w-5 h-5" />
+      }
+      headerRight={
+        <span className={`text-[9px] font-black px-1.5 py-0.5 ${style.chip}`}>
+          {config?.allocationDomain || 'DISTRIBUTE'}
+        </span>
+      }
+      onClose={config?.canCancel && onCancel ? onCancel : undefined}
+      maxWidthClass="max-w-2xl"
+      testId="distribute-amount-modal"
+      footer={
+        <>
           <div>
             {config?.canCancel && onCancel ? (
               <button
+                type="button"
                 onClick={onCancel}
-                className="px-4 py-2 bg-white hover:bg-slate-100 text-comic-black font-black text-xs uppercase rounded-lg border-2 border-comic-black shadow-comic-sm transition-all cursor-pointer"
+                className={`px-4 py-2 font-black text-xs uppercase cursor-pointer ${style.btnMove}`}
               >
                 CANCEL
               </button>
             ) : (
-              <div className="text-xs font-bold text-slate-600">
+              <div className={`text-xs font-bold ${style.muted}`}>
                 {isComplete
                   ? 'All points assigned! Click confirm to proceed.'
                   : `Assign ${remainingBudget} more ${unit} to complete.`}
@@ -358,15 +197,172 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
           </div>
 
           <button
+            type="button"
             onClick={handleConfirm}
             disabled={!isComplete}
-            className="px-6 py-2.5 bg-comic-yellow hover:bg-yellow-400 disabled:opacity-40 disabled:hover:bg-comic-yellow active:translate-y-0.5 text-comic-black font-black text-sm uppercase rounded-lg border-3 border-comic-black shadow-comic-md disabled:shadow-none transition-all flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+            className={`px-6 py-2.5 font-black text-sm uppercase flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed ${style.btnGo}`}
           >
             <span>CONFIRM ASSIGNMENT</span>
             <ArrowRight className="w-4 h-4" />
           </button>
+        </>
+      }
+    >
+      {/* Budget Tracker */}
+      <div
+        className={`-mx-5 sm:-mx-6 -mt-5 sm:-mt-6 px-5 py-3 flex items-center justify-between !rounded-none !border-x-0 ${style.inset}`}
+      >
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="text-sm font-black uppercase tracking-wider">POINTS TO ASSIGN:</div>
+          <div className={`text-2xl font-black tracking-widest ${style.emphasis}`}>
+            {assignedTotal} / {effectiveBudget}
+          </div>
+          <div className={`text-xs font-bold uppercase ${style.muted}`}>
+            ({remainingBudget} REMAINING)
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={handleResetAll}
+          disabled={assignedTotal === 0}
+          className={`px-3 py-1.5 font-black text-xs uppercase flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed ${style.btnMove}`}
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          <span>RESET ALL</span>
+        </button>
       </div>
-    </ModalLayer>
+
+      {/* Shortfall Alert Notice (if board capacity < nominal budget) */}
+      {config?.shortfallNotice && (
+        <div className="px-3 py-2 bg-amber-100 border-2 border-amber-300 rounded flex items-center gap-2 text-amber-900 text-xs font-bold">
+          <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
+          <span>{config.shortfallNotice}</span>
+        </div>
+      )}
+
+      {/* Target Tiles grouped by Swimlanes */}
+      <div className="space-y-4">
+        {swimlanes.map((lane, laneIdx) => (
+          <div key={laneIdx} className="space-y-2">
+            <div
+              className={`text-xs font-black uppercase tracking-wider pb-1 flex items-center gap-1.5 ${style.panelHead}`}
+            >
+              <span>⚡</span>
+              <span>{lane.title}</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {lane.targets.map((target) => {
+                const assigned = assignments[target.instanceId] || 0;
+                const isEligible = target.isEligible !== false;
+                const cap = target.allocationCap ?? Infinity;
+                const canIncrement = isEligible && remainingBudget > 0 && assigned < cap;
+                const canDecrement = isEligible && assigned > 0;
+
+                return (
+                  <div
+                    key={target.instanceId}
+                    data-card-anchor={target.cardCode ?? ''}
+                    className={`relative p-3 pl-4 transition-all flex flex-col justify-between ${
+                      isEligible
+                        ? assigned > 0
+                          ? style.slotFinal
+                          : style.slot
+                        : `${style.slot} opacity-60 border-dashed`
+                    }`}
+                  >
+                    <AccentStripe code={target.cardCode ?? ''} />
+                    {/* Target Header */}
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2">
+                        {!target.cardCode && (
+                          <span className="text-xl shrink-0">{getTypeIcon(target.cardType)}</span>
+                        )}
+                        <div>
+                          <div className="font-black text-sm leading-tight">
+                            <CardRef code={target.cardCode} name={target.name} size="sm" />
+                          </div>
+                          <div
+                            className={`flex items-center gap-2 text-[10px] font-bold uppercase ${style.muted}`}
+                          >
+                            <span>{target.cardType.replace('_', ' ')}</span>
+                            {target.currentValue !== undefined && (
+                              <span>
+                                •{' '}
+                                {target.maxValue !== undefined
+                                  ? `${target.currentValue}/${target.maxValue} HP`
+                                  : `${target.currentValue} THW`}
+                              </span>
+                            )}
+                            {target.hasTough && (
+                              <span className="bg-amber-400 text-comic-black font-black px-1 rounded text-[9px]">
+                                TOUGH
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Ineligible Badge */}
+                      {!isEligible && target.ineligibilityReason && (
+                        <span className="bg-rose-100 text-rose-800 border border-rose-400 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider text-right">
+                          {target.ineligibilityReason}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Stepper Controls (Only if eligible) */}
+                    {isEligible ? (
+                      <div className="flex items-center justify-between pt-2 mt-auto">
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleDecrement(target)}
+                            disabled={!canDecrement}
+                            aria-label="Decrease"
+                            className={`w-8 h-8 font-black text-base flex items-center justify-center cursor-pointer disabled:cursor-not-allowed ${style.btnMove}`}
+                          >
+                            -
+                          </button>
+                          <span
+                            className={`min-w-[70px] text-center font-black text-sm px-2 py-1 ${style.chip}`}
+                          >
+                            {assigned} {unit}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleIncrement(target)}
+                            disabled={!canIncrement}
+                            aria-label="Increase"
+                            className={`w-8 h-8 font-black text-base flex items-center justify-center cursor-pointer disabled:cursor-not-allowed ${style.btnMove}`}
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleMax(target)}
+                          disabled={!canIncrement}
+                          aria-label="Max"
+                          className={`px-2.5 py-1 text-xs font-black cursor-pointer disabled:cursor-not-allowed ${style.btnMove}`}
+                        >
+                          MAX
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        className={`text-[11px] font-bold italic pt-1 text-center ${style.muted}`}
+                      >
+                        Ineligible for allocation
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </ModalScaffold>
   );
 };

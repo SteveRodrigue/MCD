@@ -16,20 +16,13 @@ import { runActionHandler } from './actions';
 
 /**
  * A decision answered during the villain phase lets the phase continue once nothing waits.
- * A stepped phase stops instead to show a combat outcome or a placed threat (#266).
+ * A stepped phase never continues by itself: the stepper drives it, one step at a time, so a
+ * combat outcome, a placed threat or the next revealed card is shown first (#266, #333).
  */
-export function resumeVillainPhaseAfterDecision(
-  state: GameState,
-  hadPausedThreatPlacement: boolean,
-): GameState {
+export function resumeVillainPhaseAfterDecision(state: GameState): GameState {
   if (state.phase !== GamePhase.VILLAIN_PHASE || state.winner) return state;
   if (kernel.peekDecisionPrompt(state) || kernel.hasPendingSequence(state)) return state;
-  if (
-    state.options?.villainPhaseStepping &&
-    (state.lastCombatOutcome || hadPausedThreatPlacement)
-  ) {
-    return state;
-  }
+  if (state.options?.villainPhaseStepping) return state;
   return continueVillainPhase(state);
 }
 
@@ -49,7 +42,6 @@ export function dispatchAction(
     if (nested.result.success) adoptGameState(state, nested.state);
     return { state, result: nested.result };
   }
-  const hadPausedThreatPlacement = (state.pendingThreatPlacements?.length ?? 0) > 0;
   let result: ActionResult | undefined;
   try {
     const next = updateGameState(state, (draft) => {
@@ -64,7 +56,7 @@ export function dispatchAction(
         next = kernel.resumePendingSequence(next);
       }
       if (action.type === 'RESOLVE_DECISION_PROMPT' || action.type === 'DECLARE_DEFENDER') {
-        next = resumeVillainPhaseAfterDecision(next, hadPausedThreatPlacement);
+        next = resumeVillainPhaseAfterDecision(next);
       }
       // Player Setup abilities (step 16) continue once the decision they waited for is answered.
       if (next.setupState?.stage === 'PLAYER_SETUP') {

@@ -987,10 +987,6 @@ function advanceStepOnDraft(nextState: GameState, options?: CombatOptions): Game
 export function continueVillainPhase(state: GameState, options?: CombatOptions): GameState {
   if (state.winner) return state;
 
-  if (options?.stepping || state.options?.villainPhaseStepping) {
-    return advanceVillainPhaseStep(state, options);
-  }
-
   // Step 2: Activations
   if (state.villainPhaseStep === VillainPhaseStep.VILLAIN_ACTIVATIONS) {
     state = step2_villainAndMinionActivations(state, options);

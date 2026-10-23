@@ -24,19 +24,29 @@ const SupplementalEditorScreen = React.lazy(() =>
     default: m.SupplementalEditorScreen,
   })),
 );
+const ModalTemplatesScreen = React.lazy(() =>
+  import('./components/templates/ModalTemplatesScreen').then((m) => ({
+    default: m.ModalTemplatesScreen,
+  })),
+);
 
 const AppContent: React.FC = () => {
   const { settings } = useGameSettings();
-  const [stage, setStage] = useState<'SETUP' | 'MULLIGAN' | 'IN_GAME' | 'EDITOR'>(() => {
-    if (typeof window !== 'undefined') {
-      const pathname = window.location.pathname;
-      const search = window.location.search;
-      if (pathname.startsWith('/editor') || search.includes('view=editor')) {
-        return 'EDITOR';
+  const [stage, setStage] = useState<'SETUP' | 'MULLIGAN' | 'IN_GAME' | 'EDITOR' | 'TEMPLATES'>(
+    () => {
+      if (typeof window !== 'undefined') {
+        const pathname = window.location.pathname;
+        const search = window.location.search;
+        if (pathname.startsWith('/templates') || search.includes('view=templates')) {
+          return 'TEMPLATES';
+        }
+        if (pathname.startsWith('/editor') || search.includes('view=editor')) {
+          return 'EDITOR';
+        }
       }
-    }
-    return 'SETUP';
-  });
+      return 'SETUP';
+    },
+  );
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [loopError, setLoopError] = useState<InfiniteLoopError | null>(null);
 
@@ -72,9 +82,11 @@ const AppContent: React.FC = () => {
     const handlePopState = () => {
       const pathname = window.location.pathname;
       const search = window.location.search;
-      if (pathname.startsWith('/editor') || search.includes('view=editor')) {
+      if (pathname.startsWith('/templates') || search.includes('view=templates')) {
+        setStage('TEMPLATES');
+      } else if (pathname.startsWith('/editor') || search.includes('view=editor')) {
         setStage('EDITOR');
-      } else if (stage === 'EDITOR') {
+      } else if (stage === 'EDITOR' || stage === 'TEMPLATES') {
         setStage(gameState ? 'IN_GAME' : 'SETUP');
       }
     };
@@ -230,6 +242,25 @@ const AppContent: React.FC = () => {
                 if (window.location.pathname.startsWith('/editor')) {
                   window.history.pushState({}, '', '/');
                 }
+                setStage(gameState ? 'IN_GAME' : 'SETUP');
+              }}
+            />
+          </React.Suspense>
+        )}
+
+        {stage === 'TEMPLATES' && (
+          <React.Suspense
+            fallback={
+              <div className="flex items-center justify-center h-screen bg-comic-paper">
+                <div className="font-bangers text-2xl text-black animate-pulse">
+                  Loading Modal Templates...
+                </div>
+              </div>
+            }
+          >
+            <ModalTemplatesScreen
+              onExit={() => {
+                window.history.pushState({}, '', '/');
                 setStage(gameState ? 'IN_GAME' : 'SETUP');
               }}
             />

@@ -7,7 +7,7 @@ export interface CardArtThumbnailProps {
   cardCode?: string;
   cardName?: string;
   fallbackIcon?: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   className?: string;
 }
 
@@ -25,6 +25,7 @@ const CardArtThumbnailImpl: React.FC<CardArtThumbnailProps> = ({
     !imgFailed && artUrl ? artUrl : cardCode && !imgFailed ? getRemoteMarvelCdbUrl(cardCode) : null;
 
   const sizeClasses = {
+    xs: 'w-6 h-6',
     sm: 'w-10 h-10',
     md: 'w-14 h-14 sm:w-16 sm:h-16',
     lg: 'w-20 h-20 sm:w-24 sm:h-24',

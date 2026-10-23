@@ -5,7 +5,8 @@ import {
   getEffectiveAllyStats,
   consumeEntityStatusCards,
 } from '../stat-calculator';
-import { applyDamageToTarget, dispatchDefeat } from '../damage-pipeline';
+import { applyDamageToTarget } from '../damage-pipeline';
+import { dispatchDefeat } from '../../triggers/defeat-dispatch';
 import { applyThwart } from '../threat-pipeline';
 import { recordBasicAction } from '../stats';
 import { appendLog } from '../../state/game-log';
@@ -229,15 +230,15 @@ export const handleAllyAttack: ActionHandler<'ALLY_ATTACK'> = (nextState, state,
   if ((ally.tokens?.damage || 0) >= allyHp) {
     player.allies.splice(allyIdx, 1);
     processHostDefeated(nextState, ally, { player });
+    const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
+    resetCardState(ally);
+    owner.discard.push(ally);
     dispatchDefeat(nextState, {
       targetPlayerId: player.id,
       targetInstanceId: ally.instanceId,
       targetType: 'ALLY',
       defeatSource: { kind: 'EFFECT', playerId: player.id, byAttack: false },
     });
-    const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
-    resetCardState(ally);
-    owner.discard.push(ally);
   }
 
   dispatchTrigger(nextState, 'ATTACK_RESOLVED', {
@@ -301,15 +302,15 @@ export const handleAllyThwart: ActionHandler<'ALLY_THWART'> = (nextState, state,
   if ((ally.tokens?.damage || 0) >= allyHp) {
     player.allies.splice(allyIdx, 1);
     processHostDefeated(nextState, ally, { player });
+    const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
+    resetCardState(ally);
+    owner.discard.push(ally);
     dispatchDefeat(nextState, {
       targetPlayerId: player.id,
       targetInstanceId: ally.instanceId,
       targetType: 'ALLY',
       defeatSource: { kind: 'EFFECT', playerId: player.id, byAttack: false },
     });
-    const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
-    resetCardState(ally);
-    owner.discard.push(ally);
   }
 
   const onomatopoeia = thwartRes.result.onomatopoeia || 'ALLY THWART!';

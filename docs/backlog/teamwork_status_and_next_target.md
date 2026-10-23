@@ -68,13 +68,12 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 ### 3.2 Rules gaps that affect core cards
 
-| Issue                                                   | Problem (from the Dev Mode report)                                                                    | Notes                                                                           |
-| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| [#359](https://github.com/SteveRodrigue/MCD/issues/359) | Villain and hero defeats are announced before their state change (follow-up of #342).                 | Rules (RR v1.8 Triggering Condition); one announcement path, ADR-0020 addendum. |
-| [#360](https://github.com/SteveRodrigue/MCD/issues/360) | Enemy Overkill on a defeated ally bypasses the damage pipeline and ignores Tough (follow-up of #342). | Rules (Overkill, Tough); Charge `01099`.                                        |
-| [#361](https://github.com/SteveRodrigue/MCD/issues/361) | Defeat window resolves a later player's Forced ability before an earlier player's optional Response.  | P1. Two-pass dispatch (forced first, then optional); multiplayer only.          |
-| [#362](https://github.com/SteveRodrigue/MCD/issues/362) | Ending the game leaves pending placements, attack and encounter state behind.                         | One `endGame` helper; decide whether post-victory combat steps run.             |
-| [#363](https://github.com/SteveRodrigue/MCD/issues/363) | Defeat triggers scan every player; filter-less abilities can fire for the wrong player.               | Owner analysis first (default scope of a defeat ability).                       |
+| Issue                                                   | Problem (from the Dev Mode report)                                                                    | Notes                                                                  |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [#360](https://github.com/SteveRodrigue/MCD/issues/360) | Enemy Overkill on a defeated ally bypasses the damage pipeline and ignores Tough (follow-up of #342). | Rules (Overkill, Tough); Charge `01099`.                               |
+| [#361](https://github.com/SteveRodrigue/MCD/issues/361) | Defeat window resolves a later player's Forced ability before an earlier player's optional Response.  | P1. Two-pass dispatch (forced first, then optional); multiplayer only. |
+| [#362](https://github.com/SteveRodrigue/MCD/issues/362) | Ending the game leaves pending placements, attack and encounter state behind.                         | One `endGame` helper; decide whether post-victory combat steps run.    |
+| [#363](https://github.com/SteveRodrigue/MCD/issues/363) | Defeat triggers scan every player; filter-less abilities can fire for the wrong player.               | Owner analysis first (default scope of a defeat ability).              |
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 

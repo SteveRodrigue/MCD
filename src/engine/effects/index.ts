@@ -53,6 +53,7 @@ import {
   syncVillainMaxHealth,
 } from '../pipeline/stat-calculator';
 import { type AttackSource } from '../triggers/trigger-dispatcher';
+import { dispatchDefeat } from '../triggers/defeat-dispatch';
 import { TriggerCallNode } from '../errors/infinite-loop-error';
 import { removeCardFromAllZones } from '../state/state-validator';
 import { nextEngineId, randomInt } from '../state/rng';
@@ -496,13 +497,12 @@ export function defeatSideScheme(
   const targetPlayerId = player?.id || state.players[0]?.id || 'p1';
 
   // 1. Dispatch canonical defeat triggers
-  const defeatContext = {
+  dispatchDefeat(state, {
     targetPlayerId,
-    sourceInstanceId: defeatedInstance.instanceId,
-    entityType: 'SCHEME' as const,
-  };
-  kernel.dispatchTrigger(state, 'DEFEATED', defeatContext);
-  kernel.dispatchTrigger(state, 'SCHEME_DEFEATED', defeatContext);
+    targetInstanceId: defeatedInstance.instanceId,
+    entityType: 'SCHEME',
+    targetType: 'SCHEME',
+  });
 
   // 2. Resolve 'When Defeated' abilities declared on the scheme itself, before its attachments and
   // facedown cards are cleaned up, so "return each card here" still sees them (#238)

@@ -2955,6 +2955,10 @@
           "id": "indomitable_ready",
           "timing": "RESPONSE",
           "trigger": "ATTACK_DEFENDED",
+          "triggerFilter": {
+            "targetPlayerScope": "SELF",
+            "defenderType": "HERO"
+          },
           "cost": {
             "discardSelf": true
           },

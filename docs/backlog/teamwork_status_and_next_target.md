@@ -64,8 +64,6 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 | Issue                                                   | Problem (from the Dev Mode report)                                                   | Notes                                                                              |
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| [#329](https://github.com/SteveRodrigue/MCD/issues/329) | Indomitable `01082`: triggered when an ally defended instead of the hero.            | Same card as #334; read both reports before planning, one plan may close both.     |
-| [#334](https://github.com/SteveRodrigue/MCD/issues/334) | Indomitable `01082`: report text not captured in the issue body.                     | Probably a duplicate of #329; confirm from the report and the game-state snapshot. |
 | [#345](https://github.com/SteveRodrigue/MCD/issues/345) | Four encounter cards dealt in a 3-player villain phase.                              | Check against the dealing rules (RR v1.8, villain phase step 3).                   |
 | [#333](https://github.com/SteveRodrigue/MCD/issues/333) | Manual villain-phase steps skip the beginning (+2 threat and following steps).       | Villain phase stepper (ADR-0068).                                                  |
 | [#327](https://github.com/SteveRodrigue/MCD/issues/327) | "Current state for the Daily Bugle fix": report text not captured in the issue body. | Needs the original report and snapshot before it can be sized.                     |

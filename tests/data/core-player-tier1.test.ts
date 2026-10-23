@@ -16,9 +16,25 @@ describe('core player cards Tier 1 data (#258)', () => {
     const a = card.enrichment!.abilities![0];
     expect(a.timing).toBe('RESPONSE');
     expect(a.trigger).toBe('ATTACK_DEFENDED');
+    expect(a.triggerFilter).toEqual({ targetPlayerScope: 'SELF', defenderType: 'HERO' });
     expect(a.cost?.discardSelf).toBe(true);
     expect(a.steps[0].effectParams?.target).toBe('SELF_HERO');
     expect(card.enrichment!.audit?.confidence).toBe(95);
+  });
+
+  it('every ATTACK_DEFENDED ability says whose defender it reacts to', () => {
+    const defended = cardCatalog
+      .getAllCards()
+      .flatMap((c) =>
+        (c.enrichment?.abilities ?? [])
+          .filter((a) => a.trigger === 'ATTACK_DEFENDED')
+          .map((a) => ({ id: `${c.code} ${a.id}`, filter: a.triggerFilter })),
+      );
+    expect(defended.length).toBeGreaterThan(0);
+    for (const { id, filter } of defended) {
+      expect(filter?.defenderType, `${id} defenderType`).toBeDefined();
+      expect(filter?.targetPlayerScope, `${id} targetPlayerScope`).toBeDefined();
+    }
   });
 
   it('Jennifer Walters 01019b ability id is i_object', () => {

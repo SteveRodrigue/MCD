@@ -1,4 +1,4 @@
-import type { CardReference } from './CardRef';
+import type { CardReference } from '../../theme/CardRef';
 
 /** Sample content shared by the lab templates. Codes are real core-set cards. */
 

@@ -1,5 +1,5 @@
-import { cardCatalog } from '../../../data/importer/card-loader';
-import { isValidHexColor } from '../../utils/hero-theme';
+import { cardCatalog } from '../../data/importer/card-loader';
+import { isValidHexColor } from '../utils/hero-theme';
 
 /**
  * Card accent layer of the theme engine: a coloured edge that tells the player whose card a

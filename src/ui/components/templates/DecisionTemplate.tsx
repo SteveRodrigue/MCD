@@ -1,13 +1,13 @@
 import React from 'react';
 import { ArrowRight, HelpCircle, ShieldAlert, Zap } from 'lucide-react';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
-import { CardRef, type CardReference } from './CardRef';
-import { AccentStripe } from './AccentStripe';
-import { ModalScaffold } from './ModalScaffold';
-import { Narration, SpeechBubble } from './ComicSpeech';
-import { useActionBurst } from './useActionBurst';
-import { useModalStyle } from './useModalStyle';
-import type { VerbColor } from './modal-styles';
+import { CardRef, type CardReference } from '../../theme/CardRef';
+import { AccentStripe } from '../../theme/AccentStripe';
+import { ModalScaffold } from '../../theme/ModalScaffold';
+import { Narration, SpeechBubble } from '../../theme/ComicSpeech';
+import { useActionBurst } from '../../theme/useActionBurst';
+import { useModalStyle } from '../../theme/useModalStyle';
+import type { VerbColor } from '../../theme/modal-styles';
 import { ATTACKER, BLACK_WIDOW, HULK, SANDMAN, SPIDER_MAN } from './template-data';
 
 interface DecisionOption {

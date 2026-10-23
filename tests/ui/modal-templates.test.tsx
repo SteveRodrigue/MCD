@@ -1,18 +1,14 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { ModalScaffold } from '../../src/ui/components/templates/ModalScaffold';
-import { ModalStyleProvider } from '../../src/ui/components/templates/ModalStyleContext';
+import { ModalScaffold } from '../../src/ui/theme/ModalScaffold';
+import { ModalStyleProvider } from '../../src/ui/theme/ModalStyleContext';
 import { ModalTemplatesScreen } from '../../src/ui/components/templates/ModalTemplatesScreen';
 import { DecisionTemplate } from '../../src/ui/components/templates/DecisionTemplate';
 import { SequenceTemplate } from '../../src/ui/components/templates/SequenceTemplate';
 import { SelectTemplate } from '../../src/ui/components/templates/SelectTemplate';
-import {
-  MODAL_STYLES,
-  VERB_COLORS,
-  type ModalStyle,
-} from '../../src/ui/components/templates/modal-styles';
-import { getCardAccent } from '../../src/ui/components/templates/card-accents';
+import { MODAL_STYLES, VERB_COLORS, type ModalStyle } from '../../src/ui/theme/modal-styles';
+import { getCardAccent } from '../../src/ui/theme/card-accents';
 import {
   buildTemplatesPath,
   parseTemplatesPath,

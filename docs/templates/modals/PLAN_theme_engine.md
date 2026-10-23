@@ -1,7 +1,6 @@
 # Final plan: Theme Engine for the game
 
-Status: **final plan, awaiting your approval. Nothing is started and nothing is committed.**
-It supersedes the earlier draft of this file. It changes core game code, so it begins only on your go.
+Status: **approved. Phase 0 (lab) and Phase 1 are done; Phases 2 to 6 follow.** Each phase is developed, tested and committed in turn.
 
 ## 0. Decisions already made
 
@@ -99,7 +98,7 @@ borders silently never render): 10 uses across 7 files today. Fixed in the same 
 
 | # | Scope | You can see | Verification | Est. |
 |---|---|---|---|---|
-| 1 | Move shared files to the new `theme` folder under `src/ui`; `resolve-theme.ts`; settings keys + validation; `ThemeProvider` at the App root; scaffold additions (section 4); architecture test | nothing changes in the game; lab identical | lab tests, new unit tests, tsc, eslint | 1 session |
+| 1 (done) | Move shared files to `src/ui/theme/`; `resolve-theme.ts`; settings keys + validation; `ThemeProvider` at the App root; scaffold additions (section 4); architecture test | nothing changes in the game; lab identical | lab tests, new unit tests, tsc, eslint | 1 session |
 | 2 | Migrate Batch A (Wakanda, Decision, Select) | these three follow the theme (default Pop-Art) | their existing tests (`wakanda-forever-modal`, `DecisionPromptModal`, `SelectCardsModal`) + theme matrix | 1 session |
 | 3 | `ThemePicker` in Options and on the setup screen; Random mode, pool, Re-roll, card-accent switch; per-game roll in `App.tsx` | player picks a theme or Random; Random changes per game | picker/provider/App-flow tests, browser run of a full game start | 1 session |
 | 4 | Migrate Batch B | all gameplay prompts themed | each modal's existing tests + matrix; browser pass per modal | 2 to 3 sessions |

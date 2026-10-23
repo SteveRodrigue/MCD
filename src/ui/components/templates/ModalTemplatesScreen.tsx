@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Home, LayoutGrid, Layout, RotateCcw } from 'lucide-react';
 import { ModalLayer } from '../layout/ModalLayer';
-import { ModalStyleProvider } from './ModalStyleContext';
-import { ACCENT_KINDS, ACCENT_PALETTE } from './card-accents';
+import { ModalStyleProvider } from '../../theme/ModalStyleContext';
+import { ACCENT_KINDS, ACCENT_PALETTE } from '../../theme/card-accents';
 import { DecisionTemplate } from './DecisionTemplate';
 import { SequenceTemplate } from './SequenceTemplate';
 import { SelectTemplate } from './SelectTemplate';
@@ -15,7 +15,7 @@ import {
   getModalStyle,
   type ModalStyleId,
   type VerbColor,
-} from './modal-styles';
+} from '../../theme/modal-styles';
 import {
   ARCHETYPES,
   buildTemplatesPath,

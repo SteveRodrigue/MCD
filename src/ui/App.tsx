@@ -8,6 +8,8 @@ import { resetSessionSyncTracking } from './services/stats-storage-service';
 
 import { GameSettingsProvider } from './context/GameSettingsProvider';
 import { useGameSettings } from './context/useGameSettings';
+import { ThemeProvider } from './theme/ThemeProvider';
+import { useGameTheme } from './theme/useGameTheme';
 import { GameSessionProvider } from './context/GameStateContext';
 
 const ScenarioSelector = React.lazy(() =>
@@ -32,6 +34,7 @@ const ModalTemplatesScreen = React.lazy(() =>
 
 const AppContent: React.FC = () => {
   const { settings } = useGameSettings();
+  const { rollGameTheme } = useGameTheme();
   const [stage, setStage] = useState<'SETUP' | 'MULLIGAN' | 'IN_GAME' | 'EDITOR' | 'TEMPLATES'>(
     () => {
       if (typeof window !== 'undefined') {
@@ -126,6 +129,8 @@ const AppContent: React.FC = () => {
       modularSetCodes: selection.selectedModularSetCodes,
     });
 
+    // The game's theme is decided once, here, and stays for the whole game
+    rollGameTheme();
     resetSessionSyncTracking();
     setGameState(withUiOptions(newGameState));
     setStage('MULLIGAN');
@@ -309,7 +314,9 @@ const AppContent: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <GameSettingsProvider>
-      <AppContent />
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
     </GameSettingsProvider>
   );
 };

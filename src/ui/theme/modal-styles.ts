@@ -837,5 +837,10 @@ export const MODAL_STYLES: readonly ModalStyle[] = [
 
 export const DEFAULT_MODAL_STYLE: ModalStyle = popArt;
 
+export const ALL_THEME_IDS: readonly ModalStyleId[] = MODAL_STYLES.map((s) => s.id);
+
+export const isThemeId = (value: unknown): value is ModalStyleId =>
+  typeof value === 'string' && MODAL_STYLES.some((s) => s.id === value);
+
 export const getModalStyle = (id: string | null | undefined): ModalStyle | null =>
   MODAL_STYLES.find((s) => s.id === id) ?? null;

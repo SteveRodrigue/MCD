@@ -3,14 +3,14 @@ import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { CardView } from '../cards/CardView';
 import { FormattedCardText } from '../cards/FormattedCardText';
 import { cardCatalog } from '../../../data/importer/card-loader';
-import { CardRef, type CardReference } from './CardRef';
-import { AccentStripe } from './AccentStripe';
-import { ModalScaffold } from './ModalScaffold';
-import { Narration } from './ComicSpeech';
-import { STAR_CLIP } from './comic-shapes';
-import { useActionBurst } from './useActionBurst';
-import { useModalStyle } from './useModalStyle';
-import type { VerbColor } from './modal-styles';
+import { CardRef, type CardReference } from '../../theme/CardRef';
+import { AccentStripe } from '../../theme/AccentStripe';
+import { ModalScaffold } from '../../theme/ModalScaffold';
+import { Narration } from '../../theme/ComicSpeech';
+import { STAR_CLIP } from '../../theme/comic-shapes';
+import { useActionBurst } from '../../theme/useActionBurst';
+import { useModalStyle } from '../../theme/useModalStyle';
+import type { VerbColor } from '../../theme/modal-styles';
 import { WAKANDA_FOREVER, WAKANDA_UPGRADES, type UpgradeItem } from './template-data';
 
 /** The real card face when the catalog knows the card, else its thumbnail. */

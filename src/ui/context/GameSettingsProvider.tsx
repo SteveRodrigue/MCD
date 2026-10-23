@@ -5,13 +5,14 @@ import {
   GameSettingsContext,
   STORAGE_KEY,
 } from './game-settings-context';
+import { sanitizeThemeSettings } from '../theme/theme-settings';
 
 export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<GameSettings>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+        return sanitizeThemeSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) });
       }
     } catch (error) {
       console.warn('Failed to read game settings from localStorage:', error);

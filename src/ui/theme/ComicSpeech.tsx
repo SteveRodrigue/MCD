@@ -1,5 +1,5 @@
 import React from 'react';
-import { CardArtThumbnail } from '../cards/CardArtThumbnail';
+import { CardArtThumbnail } from '../components/cards/CardArtThumbnail';
 import type { CardReference } from './CardRef';
 import { useModalStyle } from './useModalStyle';
 

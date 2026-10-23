@@ -1,4 +1,4 @@
-import { getModalStyle, type ModalStyleId } from './modal-styles';
+import { getModalStyle, type ModalStyleId } from '../../theme/modal-styles';
 
 export type ArchetypeId = 'decision' | 'sequence' | 'select';
 

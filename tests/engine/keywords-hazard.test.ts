@@ -1,10 +1,12 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+﻿import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { HeroCard, AlterEgoCard, SideSchemeCard } from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
 import { step3_dealEncounterCards } from '@engine/pipeline/villain-phase';
+import { advanceVillainPhaseStep, GamePhase, VillainPhaseStep } from '@engine/index';
+import { countHazardIconsInPlay, getHazardIconCount } from '@engine/pipeline/icons';
 
-describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic Mode (RR v1.8 p. 11, p. 22)', () => {
+describe('Step 3 Deal Encounter Cards: Sequential Hazard Distribution & Heroic Mode (RR v1.8 p. 11, p. 22)', () => {
   let spiderManHero: HeroCard;
   let peterParkerAlterEgo: AlterEgoCard;
   let captainMarvelHero: HeroCard;
@@ -55,10 +57,10 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
     });
 
     // Add 2 Hazard side schemes (total 2 Hazard icons)
-    const hazardCard = cardCatalog.getCard('01110') as SideSchemeCard; // Crowd Control with hazard
+    const hazardCard = cardCatalog.getCard('01107') as SideSchemeCard; // Breakin' & Takin' (1 Hazard icon)
     state.sideSchemes = [
-      { instanceId: 'hazard_1', card: { ...hazardCard, hasHazard: true }, threat: 2 },
-      { instanceId: 'hazard_2', card: { ...hazardCard, hasHazard: true }, threat: 2 },
+      { instanceId: 'hazard_1', card: hazardCard, threat: 2 },
+      { instanceId: 'hazard_2', card: hazardCard, threat: 2 },
     ];
 
     state.firstPlayerIndex = 0; // P1 starts
@@ -99,11 +101,11 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
     });
 
     // Add 3 Hazard side schemes (total 3 Hazard icons)
-    const hazardCard = cardCatalog.getCard('01110') as SideSchemeCard;
+    const hazardCard = cardCatalog.getCard('01107') as SideSchemeCard;
     state.sideSchemes = [
-      { instanceId: 'hazard_1', card: { ...hazardCard, hasHazard: true }, threat: 2 },
-      { instanceId: 'hazard_2', card: { ...hazardCard, hasHazard: true }, threat: 2 },
-      { instanceId: 'hazard_3', card: { ...hazardCard, hasHazard: true }, threat: 2 },
+      { instanceId: 'hazard_1', card: hazardCard, threat: 2 },
+      { instanceId: 'hazard_2', card: hazardCard, threat: 2 },
+      { instanceId: 'hazard_3', card: hazardCard, threat: 2 },
     ];
 
     state.firstPlayerIndex = 1; // P2 (Captain Marvel) starts!
@@ -183,10 +185,8 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
     });
 
     // 1 Hazard icon
-    const hazardCard = cardCatalog.getCard('01110') as SideSchemeCard;
-    state.sideSchemes = [
-      { instanceId: 'hazard_1', card: { ...hazardCard, hasHazard: true }, threat: 2 },
-    ];
+    const hazardCard = cardCatalog.getCard('01107') as SideSchemeCard;
+    state.sideSchemes = [{ instanceId: 'hazard_1', card: hazardCard, threat: 2 }];
 
     state.firstPlayerIndex = 0; // P1 starts
     step3_dealEncounterCards(state);
@@ -196,5 +196,92 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
     // Final: P1 = 4 cards, P2 = 3 cards
     expect(state.players[0].dealtEncounterCards.length).toBe(4);
     expect(state.players[1].dealtEncounterCards.length).toBe(3);
+  });
+
+  describe('Hazard icons are counted from the icon field (#345)', () => {
+    const threePlayers = () =>
+      setupGame({
+        catalog: cardCatalog,
+        scenarioId: 'rhino',
+        players: [
+          {
+            id: 'p1',
+            name: 'Spider-Man',
+            hero: spiderManHero,
+            alterEgo: peterParkerAlterEgo,
+            deckCards: [],
+          },
+          {
+            id: 'p2',
+            name: 'Captain Marvel',
+            hero: captainMarvelHero,
+            alterEgo: carolDanversAlterEgo,
+            deckCards: [],
+          },
+          {
+            id: 'p3',
+            name: 'Iron Man',
+            hero: ironManHero,
+            alterEgo: tonyStarkAlterEgo,
+            deckCards: [],
+          },
+        ],
+        villain: cardCatalog.getCard('01094') as any,
+        mainScheme: cardCatalog.getCard('01097b') as any,
+        encounterCards: Array(30).fill(cardCatalog.getCard('01108')!),
+        skipMulligan: true,
+      });
+
+    it('reads the printed icon and keeps Hazard out of the keywords', () => {
+      const breakin = cardCatalog.getCard('01107')!;
+      expect(getHazardIconCount(breakin)).toBe(1);
+      expect(breakin.keywords.map(String)).not.toContain('Hazard');
+      expect(getHazardIconCount(cardCatalog.getCard('01110')!)).toBe(0);
+    });
+
+    it('deals 4 cards to 3 players for one Hazard icon and says why', () => {
+      const state = threePlayers();
+      state.sideSchemes = [
+        { instanceId: 'hazard_1', card: cardCatalog.getCard('01107') as SideSchemeCard, threat: 2 },
+      ];
+      state.phase = GamePhase.VILLAIN_PHASE;
+      state.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
+
+      const next = advanceVillainPhaseStep(state);
+
+      expect(next.players.map((p) => p.dealtEncounterCards.length)).toEqual([2, 1, 1]);
+      expect(next.villainPhaseStepEvent?.amount).toBe(4);
+      expect(next.villainPhaseStepEvent?.description).toContain(
+        "3 base + 1 for Hazard (Breakin' & Takin')",
+      );
+    });
+
+    it('does not explain a deal that has no extra card', () => {
+      const state = threePlayers();
+      state.phase = GamePhase.VILLAIN_PHASE;
+      state.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
+
+      const next = advanceVillainPhaseStep(state);
+
+      expect(next.villainPhaseStepEvent?.description).toBe(
+        '3 encounter card(s) dealt to player threat zone(s).',
+      );
+    });
+
+    it('counts a Hazard icon on any card in play, and each icon of a card', () => {
+      const state = threePlayers();
+      state.sideSchemes = [];
+      state.environments = [
+        {
+          instanceId: 'env_hazard',
+          card: { ...cardCatalog.getCard('01108')!, scheme_hazard: 2 },
+        } as any,
+      ];
+      expect(countHazardIconsInPlay(state)).toBe(2);
+
+      step3_dealEncounterCards(state);
+
+      expect(state.players.map((p) => p.dealtEncounterCards.length)).toEqual([2, 2, 1]);
+    });
   });
 });

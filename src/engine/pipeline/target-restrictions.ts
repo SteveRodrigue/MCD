@@ -1,6 +1,6 @@
-import { Keyword, hasKeyword } from '@engine/models';
+﻿import { Keyword, hasKeyword } from '@engine/models';
 import type { GameState, PlayerState } from '@engine/models';
-import { hasCrisisInPlay } from './crisis';
+import { hasCrisisInPlay } from './icons';
 
 /**
  * The restrictions that make a scheme or villain an illegal target for one acting player's cards:

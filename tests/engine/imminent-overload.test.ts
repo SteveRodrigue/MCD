@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { cardCatalog } from '@data/importer/card-loader';
 import {
   GameState,
@@ -13,7 +13,7 @@ import {
   getActiveMainScheme,
 } from '@engine/index';
 import { canThwart, HERO_ACTOR } from '@engine/pipeline/legality-checker';
-import { hasCrisisInPlay, getCrisisIconCount } from '@engine/pipeline/crisis';
+import { hasCrisisInPlay, getCrisisIconCount } from '@engine/pipeline/icons';
 
 /**
  * Imminent Overload (01171), Iron Man nemesis side scheme. Printed: Base threat 3 (fixed, not

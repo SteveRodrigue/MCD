@@ -1,4 +1,4 @@
-import {
+﻿import {
   CardInstance,
   GameState,
   Keyword,
@@ -7,7 +7,7 @@ import {
   getActiveMainScheme,
 } from '../../../engine/models';
 import { canThwart, HERO_ACTOR } from '../../../engine/pipeline/legality-checker';
-import { getCrisisIconCount } from '../../../engine/pipeline/crisis';
+import { getCrisisIconCount, getHazardIconCount } from '../../../engine/pipeline/icons';
 
 export interface SchemeTarget {
   id: string;
@@ -50,8 +50,8 @@ export function getValidThwartTargets(
       type: 'main_scheme',
       threat: mainScheme.threat,
       targetThreat: mainScheme.targetThreat,
-      hasCrisis: false,
-      hasHazard: false,
+      hasCrisis: getCrisisIconCount(mainScheme.card) > 0,
+      hasHazard: getHazardIconCount(mainScheme.card) > 0,
       hasAcceleration: (state.accelerationTokens || 0) > 0,
       allowed: check.allowed,
       disabledReason: check.allowed ? undefined : check.reason,
@@ -75,7 +75,7 @@ export function getValidThwartTargets(
 
     const sideCard = sideScheme.card as SideSchemeCard;
     const hasCrisis = getCrisisIconCount(sideScheme.card) > 0;
-    const hasHazard = !!(sideCard?.hasHazard || hasKeyword(sideScheme.card, Keyword.HAZARD));
+    const hasHazard = getHazardIconCount(sideScheme.card) > 0;
     const hasAcceleration = !!(
       sideCard?.hasAcceleration || hasKeyword(sideScheme.card, Keyword.ACCELERATION)
     );

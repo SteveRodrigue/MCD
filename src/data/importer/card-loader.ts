@@ -138,7 +138,8 @@ export function getPrintedKeywordValue(text: string | undefined, keyword: string
 
 /**
  * Parses printed and supplemental keywords for a card. A keyword counts only when the card prints it
- * (#243). The Crisis icon is not a keyword: it is counted from `scheme_crisis` (`getCrisisIconCount`).
+ * (#243). Crisis and Hazard are icons, not keywords: they are counted from `scheme_crisis` and
+ * `scheme_hazard` (`getCrisisIconCount`, `getHazardIconCount`).
  */
 function parseKeywords(raw: RawUpstreamCard): Keyword[] {
   const keywords = new Set<Keyword>();
@@ -148,7 +149,6 @@ function parseKeywords(raw: RawUpstreamCard): Keyword[] {
   if (printed('permanent') || raw.permanent) keywords.add(Keyword.PERMANENT);
   if (printed('guard')) keywords.add(Keyword.GUARD);
   if (printed('patrol')) keywords.add(Keyword.PATROL);
-  if (printed('hazard') || raw.scheme_hazard) keywords.add(Keyword.HAZARD);
   if (printed('overkill')) keywords.add(Keyword.OVERKILL);
   if (printed('piercing')) keywords.add(Keyword.PIERCING);
   if (printed('quickstrike')) keywords.add(Keyword.QUICKSTRIKE);
@@ -302,6 +302,7 @@ export function normalizeRawCard(
     printedTraits: raw.traits,
     keywords: parseKeywords(raw),
     scheme_crisis: raw.scheme_crisis ?? undefined,
+    scheme_hazard: raw.scheme_hazard ?? undefined,
     resources: parseResources(raw),
     setCode: raw.set_code,
     setPosition: raw.set_position,
@@ -384,7 +385,6 @@ export function normalizeRawCard(
         type: CardType.SIDE_SCHEME,
         baseThreat: raw.base_threat ?? 0,
         baseThreatFixed: !!raw.base_threat_fixed,
-        hasHazard: (raw.scheme_hazard || 0) > 0,
         hasAcceleration: (raw.scheme_acceleration || 0) > 0,
         hasAmplify: (raw.scheme_amplify || 0) > 0,
       } as SideSchemeCard;

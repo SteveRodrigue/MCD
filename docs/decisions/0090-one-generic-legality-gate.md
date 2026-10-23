@@ -1,4 +1,4 @@
-# [ADR-0090] One Generic Legality Gate for Target Validity
+﻿# [ADR-0090] One Generic Legality Gate for Target Validity
 
 - **Status:** Accepted
 - **Date:** 2026-10-22
@@ -40,7 +40,7 @@ The engine decided this in five places, each hardcoded by effect name and select
 
 ### Rationale ("The Why")
 
-The rule is about the ability and its targets, not about who asks. Centralising it removes the class of defect, not one instance: the next effect with a state requirement is one table entry, and every caller gets it. The guard test and the guideline (`docs/coding_guidelines.md` §15, rule 11) keep the structure from sprawling again.
+The rule is about the ability and its targets, not about who asks. Centralising it removes the class of defect, not one instance: the next effect with a state requirement is one table entry, and every caller gets it. The guard test and the guideline (`docs/coding_guidelines.md` Â§15, rule 11) keep the structure from sprawling again.
 
 ## Consequences
 
@@ -59,7 +59,7 @@ The rule is about the ability and its targets, not about who asks. Centralising 
 
 Legal Practice (`01023`) was offered the main scheme although a preventing icon was in play. The rule "this player's cards cannot remove threat from the main scheme" was written eight times (the thwart executor, two target enumerations, `canBasicThwart`, `canAllyThwart`, `hasEligibleThreatRemovalTarget`, event play and ability use), and two copies already disagreed on what `ignoresCrisis` ignores.
 
-1. **One module.** `src/engine/pipeline/target-restrictions.ts` holds `getMainSchemeThreatBlock` (Crisis, Patrol) and `isVillainAttackBlockedByGuard` with their reason strings. Patrol is checked before Crisis. An encounter source ignores both; `ignoresCrisis` skips Crisis only. Only that module and `crisis.ts` read `Keyword.GUARD`, `Keyword.PATROL` or the Crisis icon count (guard test; two UI display reads are allow-listed).
+1. **One module.** `src/engine/pipeline/target-restrictions.ts` holds `getMainSchemeThreatBlock` (Crisis, Patrol) and `isVillainAttackBlockedByGuard` with their reason strings. Patrol is checked before Crisis. An encounter source ignores both; `ignoresCrisis` skips Crisis only. Only that module and `icons.ts` read `Keyword.GUARD`, `Keyword.PATROL` or the Crisis icon count (guard test; two UI display reads are allow-listed).
 2. **In the gate, not in the enumeration.** The restriction is part of the `REMOVE_THREAT` rule in `AFFECT_RULES` (`canAffect` now receives the acting player). The target enumerations no longer hide the main scheme, so an effect that is not a removal (for example `ADD_THREAT`) is not affected by Crisis.
 3. **More selectors judged.** `MAIN_SCHEME`, `SIDE_SCHEME` and `ALL_SCHEMES` are judged like a chosen scheme (no prompt is opened for them). Steps whose state gate is closed (Mark V Helmet's Aerial branches) neither need a target nor excuse a missing one.
 4. **Deleted.** Step 5A of `canInitiateAbility`, `hasEligibleThreatRemovalTarget` and `evaluateSchemeTargetRequirement`. `canBasicAttack` / `canAllyAttack` and `canBasicThwart` / `canAllyThwart` are merged into `canAttack` and `canThwart` (actor: `HERO_ACTOR` or an ally), sharing one `checkActionWindow` with recover and change form.

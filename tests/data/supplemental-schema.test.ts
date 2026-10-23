@@ -312,6 +312,21 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       }
     });
 
+    it('Every supplemental entry records audit.confidence', () => {
+      for (const file of packFiles) {
+        const filePath = path.join(packDir, file);
+        const json = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        const cards = json.cards || json;
+
+        for (const [code, card] of Object.entries(cards) as [string, any][]) {
+          expect(
+            card.audit?.confidence !== undefined,
+            `Card ${code} in ${file} is missing audit.confidence`,
+          ).toBe(true);
+        }
+      }
+    });
+
     it('Rejects speculative or unhandled effect names in AbilityStepSchema', () => {
       const invalidStep = {
         effect: 'UNIMPLEMENTED_SPECULATIVE_EFFECT',

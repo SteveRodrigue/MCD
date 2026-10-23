@@ -784,10 +784,11 @@
     "01156": {
       "noSupplementalNeeded": true,
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-22T00:00:00Z",
+        "reviewedAt": "2026-10-22T00:00:00Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
+        "confidence": 100,
         "originalText": ""
       }
     },
@@ -1254,10 +1255,11 @@
     "01167": {
       "noSupplementalNeeded": true,
       "audit": {
-        "updatedAt": "2026-09-01T13:31:00Z",
-        "reviewedAt": "2026-09-01T13:31:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-22T00:00:00Z",
+        "reviewedAt": "2026-10-22T00:00:00Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
+        "confidence": 100,
         "originalText": "Quickstrike. <i>(After this minion engages your hero, it attacks.)</i>"
       }
     },

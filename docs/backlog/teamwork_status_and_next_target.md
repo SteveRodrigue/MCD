@@ -62,20 +62,19 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 ### 3.1 Bugs seen in real Rhino games (do first)
 
-| Issue                                                   | Problem (from the Dev Mode report)                                                   | Notes                                                                              |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| [#327](https://github.com/SteveRodrigue/MCD/issues/327) | "Current state for the Daily Bugle fix": report text not captured in the issue body. | Needs the original report and snapshot before it can be sized.                     |
+| Issue                                                   | Problem (from the Dev Mode report)                                                   | Notes                                                                                                                               |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| [#327](https://github.com/SteveRodrigue/MCD/issues/327) | "Current state for the Daily Bugle fix": report text not captured in the issue body. | **Blocked (2026-10-22):** report text is only a title and `gamestate_1792150734287_bug.json` is not in `logs/`. Needs the snapshot. |
 
 ### 3.2 Rules gaps that affect core cards
 
-| Issue                                                   | Problem (from the Dev Mode report)                                                                    | Notes                                                                                        |
-| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| [#348](https://github.com/SteveRodrigue/MCD/issues/348) | `01156` and `01167` have no `audit.confidence`; `01156` prints no upstream rules text.                | Data hygiene in the Black Panther nemesis set; needs the owner approval for any data change. |
-| [#359](https://github.com/SteveRodrigue/MCD/issues/359) | Villain and hero defeats are announced before their state change (follow-up of #342).                 | Rules (RR v1.8 Triggering Condition); one announcement path, ADR-0020 addendum.              |
-| [#360](https://github.com/SteveRodrigue/MCD/issues/360) | Enemy Overkill on a defeated ally bypasses the damage pipeline and ignores Tough (follow-up of #342). | Rules (Overkill, Tough); Charge `01099`.                                                     |
-| [#361](https://github.com/SteveRodrigue/MCD/issues/361) | Defeat window resolves a later player's Forced ability before an earlier player's optional Response.  | P1. Two-pass dispatch (forced first, then optional); multiplayer only.                       |
-| [#362](https://github.com/SteveRodrigue/MCD/issues/362) | Ending the game leaves pending placements, attack and encounter state behind.                         | One `endGame` helper; decide whether post-victory combat steps run.                          |
-| [#363](https://github.com/SteveRodrigue/MCD/issues/363) | Defeat triggers scan every player; filter-less abilities can fire for the wrong player.               | Owner analysis first (default scope of a defeat ability).                                    |
+| Issue                                                   | Problem (from the Dev Mode report)                                                                    | Notes                                                                           |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| [#359](https://github.com/SteveRodrigue/MCD/issues/359) | Villain and hero defeats are announced before their state change (follow-up of #342).                 | Rules (RR v1.8 Triggering Condition); one announcement path, ADR-0020 addendum. |
+| [#360](https://github.com/SteveRodrigue/MCD/issues/360) | Enemy Overkill on a defeated ally bypasses the damage pipeline and ignores Tough (follow-up of #342). | Rules (Overkill, Tough); Charge `01099`.                                        |
+| [#361](https://github.com/SteveRodrigue/MCD/issues/361) | Defeat window resolves a later player's Forced ability before an earlier player's optional Response.  | P1. Two-pass dispatch (forced first, then optional); multiplayer only.          |
+| [#362](https://github.com/SteveRodrigue/MCD/issues/362) | Ending the game leaves pending placements, attack and encounter state behind.                         | One `endGame` helper; decide whether post-victory combat steps run.             |
+| [#363](https://github.com/SteveRodrigue/MCD/issues/363) | Defeat triggers scan every player; filter-less abilities can fire for the wrong player.               | Owner analysis first (default scope of a defeat ability).                       |
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 

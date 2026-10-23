@@ -294,11 +294,11 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
           <>
             <span
               aria-hidden="true"
-              className="absolute -top-1 left-3 w-14 h-5 bg-white/45 rotate-[-18deg] z-10"
+              className="absolute -top-1 left-3 w-14 h-5 bg-white/45 rotate-[-18deg] z-content"
             />
             <span
               aria-hidden="true"
-              className="absolute -top-1 right-3 w-14 h-5 bg-white/45 rotate-[18deg] z-10"
+              className="absolute -top-1 right-3 w-14 h-5 bg-white/45 rotate-[18deg] z-content"
             />
           </>
         )}

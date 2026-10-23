@@ -229,7 +229,7 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
                   {isFinal && (
                     <span
                       aria-hidden="true"
-                      className={`absolute -top-3 -right-3 z-10 flex items-center justify-center text-center font-black text-[10px] leading-none pointer-events-none ${
+                      className={`absolute -top-3 -right-3 z-content flex items-center justify-center text-center font-black text-[10px] leading-none pointer-events-none ${
                         style.finisher.star ? 'w-16 h-16 rotate-12' : 'px-2 py-1 rotate-6'
                       } ${style.finisher.className}`}
                       style={style.finisher.star ? { clipPath: STAR_CLIP } : undefined}

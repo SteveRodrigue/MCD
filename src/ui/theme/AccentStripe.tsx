@@ -57,7 +57,7 @@ export const AccentStripe: React.FC<{ code: string }> = ({ code }) => {
       return (
         <span
           {...common}
-          className={`${BASE} -top-2 -left-2 z-10 w-5 h-5 rounded-full border-2 border-comic-black -rotate-12`}
+          className={`${BASE} -top-2 -left-2 z-content w-5 h-5 rounded-full border-2 border-comic-black -rotate-12`}
           style={{ backgroundImage: accentGradient(accent.colors, '135deg') }}
         />
       );
@@ -65,7 +65,7 @@ export const AccentStripe: React.FC<{ code: string }> = ({ code }) => {
       return (
         <span
           {...common}
-          className={`${BASE} -top-2.5 left-4 z-10 w-10 h-3 rounded-t-sm border border-b-0 border-black/50 overflow-hidden`}
+          className={`${BASE} -top-2.5 left-4 z-content w-10 h-3 rounded-t-sm border border-b-0 border-black/50 overflow-hidden`}
           style={{ backgroundImage: accentGradient(accent.colors, 'to right') }}
         />
       );

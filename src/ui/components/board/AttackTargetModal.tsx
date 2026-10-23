@@ -1,11 +1,13 @@
 ﻿import React from 'react';
-import { Swords, ShieldAlert, Sparkles, X, Crosshair, Skull } from 'lucide-react';
-import { ModalLayer } from '../layout/ModalLayer';
+import { Crosshair, ShieldAlert, Skull } from 'lucide-react';
 import { EnemyTarget } from './attack-target-utils';
+import { TargetSelectionModal, type TargetRow } from './TargetSelectionModal';
 
 interface AttackTargetModalProps {
   isOpen: boolean;
   attackerName: string;
+  /** Card code of the attacking hero form or ally, for its thumbnail. */
+  attackerCode?: string;
   attackerType: 'hero' | 'ally';
   attackDamage: number;
   targets: EnemyTarget[];
@@ -13,9 +15,37 @@ interface AttackTargetModalProps {
   onClose: () => void;
 }
 
+const toRow = (target: EnemyTarget): TargetRow => {
+  const isVillain = target.type === 'villain';
+  return {
+    id: target.id,
+    name: target.name,
+    code: target.cardInstance?.card.code,
+    icon: isVillain ? <Skull className="w-5 h-5" /> : <ShieldAlert className="w-5 h-5" />,
+    strong: isVillain,
+    kindLabel: isVillain ? 'VILLAIN' : 'MINION',
+    badges: [
+      ...(target.hasGuard ? [{ label: 'GUARD', tone: 'danger' as const, pulse: true }] : []),
+      ...(target.hasTough ? [{ label: 'TOUGH', tone: 'info' as const }] : []),
+    ],
+    details: (
+      <>
+        <span>
+          HP: <strong className="font-black">{target.health}</strong> / {target.maxHealth}
+        </span>
+        {target.damage > 0 && (
+          <span className="text-comic-red font-bold">({target.damage} dmg)</span>
+        )}
+      </>
+    ),
+    actionLabel: 'STRIKE ➔',
+  };
+};
+
 export const AttackTargetModal: React.FC<AttackTargetModalProps> = ({
   isOpen,
   attackerName,
+  attackerCode,
   attackerType,
   attackDamage,
   targets,
@@ -25,152 +55,26 @@ export const AttackTargetModal: React.FC<AttackTargetModalProps> = ({
   if (!isOpen || targets.length === 0) return null;
 
   return (
-    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
-      <div className="relative w-full max-w-lg bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl overflow-hidden flex flex-col font-comic">
-        {/* Comic dots overlay */}
-        <div
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(#000 2px, transparent 2px)',
-            backgroundSize: '12px 12px',
-          }}
-        />
-
-        {/* 1. Pop-Art Header */}
-        <div className="relative px-6 py-4 bg-comic-red border-b-4 border-comic-black flex items-center justify-between text-white select-none">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-comic-black rounded-lg shadow-comic-sm">
-              <Crosshair className="w-6 h-6 text-comic-yellow animate-pulse" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-comic-yellow">
-                <Swords className="w-3.5 h-3.5" />
-                <span>
-                  {attackerType === 'hero' ? 'Hero Strike' : 'Ally Strike'} • {attackDamage} DMG
-                </span>
-              </div>
-              <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight leading-none text-white drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">
-                TARGET SELECTION
-              </h2>
-            </div>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="p-1.5 bg-comic-black hover:bg-slate-800 text-white rounded-lg border-2 border-white/40 shadow-comic-sm transition-transform active:scale-95 cursor-pointer"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* 2. Attacker Banner */}
-        <div className="relative px-6 py-2.5 bg-amber-200 border-b-2 border-comic-black flex items-center justify-between text-slate-900">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-comic-red" />
-            <span className="text-xs sm:text-sm font-bold">
-              <strong className="font-black uppercase">{attackerName}</strong> is ready to strike!
-            </span>
-          </div>
-          <span className="font-mono text-xs font-black px-2 py-0.5 bg-comic-black text-comic-red rounded border border-comic-black">
-            {attackDamage} ATK
-          </span>
-        </div>
-
-        {/* 3. Targets List */}
-        <div className="relative p-5 space-y-3 max-h-[60vh] overflow-y-auto">
-          <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Choose an enemy target to attack:
-          </p>
-
-          <div className="grid grid-cols-1 gap-2.5">
-            {targets.map((target) => {
-              const isVillain = target.type === 'villain';
-
-              return (
-                <button
-                  key={target.id}
-                  onClick={() => {
-                    onSelectTarget(target);
-                    onClose();
-                  }}
-                  className={`w-full p-3 rounded-lg border-3 border-comic-black transition-all flex items-center justify-between gap-3 shadow-comic-sm hover:shadow-comic hover:-translate-y-0.5 active:translate-y-0.5 cursor-pointer text-left ${
-                    isVillain
-                      ? 'bg-rose-50 hover:bg-rose-100 ring-1 ring-rose-300'
-                      : 'bg-amber-50 hover:bg-amber-100 ring-1 ring-amber-300'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className={`p-2 rounded-lg border-2 border-comic-black shrink-0 ${
-                        isVillain ? 'bg-comic-red text-white' : 'bg-amber-400 text-slate-950'
-                      }`}
-                    >
-                      {isVillain ? (
-                        <Skull className="w-5 h-5" />
-                      ) : (
-                        <ShieldAlert className="w-5 h-5" />
-                      )}
-                    </div>
-
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-black text-sm sm:text-base text-slate-950 truncate">
-                          {target.name}
-                        </span>
-                        <span
-                          className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded border border-comic-black ${
-                            isVillain ? 'bg-comic-red text-white' : 'bg-comic-yellow text-slate-950'
-                          }`}
-                        >
-                          {isVillain ? 'VILLAIN' : 'MINION'}
-                        </span>
-                        {target.hasGuard && (
-                          <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-comic-red text-white border border-comic-black animate-pulse">
-                            GUARD
-                          </span>
-                        )}
-                        {target.hasTough && (
-                          <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-comic-blue text-white border border-comic-black">
-                            TOUGH
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-600">
-                        <span>
-                          HP: <strong className="text-slate-900 font-black">{target.health}</strong>{' '}
-                          / {target.maxHealth}
-                        </span>
-                        {target.damage > 0 && (
-                          <span className="text-comic-red font-bold">({target.damage} dmg)</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="shrink-0 flex items-center gap-2">
-                    <span className="font-comic text-xs font-black uppercase px-3 py-1.5 bg-comic-black text-comic-yellow rounded-lg border-2 border-comic-black shadow-comic-xs">
-                      STRIKE ➔
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* 4. Footer */}
-        <div className="relative px-6 py-3 bg-slate-100 border-t-2 border-comic-black flex justify-end">
-          <button
-            onClick={onClose}
-            className="font-comic text-xs font-black py-2 px-4 rounded-lg border-2 border-comic-black bg-slate-200 hover:bg-slate-300 text-slate-800 shadow-comic-sm active:translate-y-0.5 cursor-pointer uppercase"
-          >
-            Cancel Strike
-          </button>
-        </div>
-      </div>
-    </ModalLayer>
+    <TargetSelectionModal
+      title="TARGET SELECTION"
+      verb="red"
+      headerIcon={<Crosshair className="w-6 h-6 animate-pulse" />}
+      kicker={`${attackerType === 'hero' ? 'Hero Strike' : 'Ally Strike'} • ${attackDamage} DMG`}
+      actor={{ name: attackerName, code: attackerCode }}
+      actorLine="is ready to strike!"
+      actorChip={`${attackDamage} ATK`}
+      prompt="Choose an enemy target to attack:"
+      rows={targets.map(toRow)}
+      cancelLabel="Cancel Strike"
+      onPick={(id) => {
+        const target = targets.find((t) => t.id === id);
+        if (!target) return;
+        onSelectTarget(target);
+        onClose();
+      }}
+      onClose={onClose}
+      testId="attack-target-modal"
+    />
   );
 };
 

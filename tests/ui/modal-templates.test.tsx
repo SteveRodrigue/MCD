@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cardNamesWithoutThumbnail as anchoringOffenders } from '../support/card-anchoring';
 import { ModalScaffold } from '../../src/ui/theme/ModalScaffold';
 import { ModalStyleProvider } from '../../src/ui/theme/ModalStyleContext';
 import { ModalTemplatesScreen } from '../../src/ui/components/templates/ModalTemplatesScreen';
@@ -42,29 +43,7 @@ const KNOWN_CARDS = [
   ...SELECT_POOL,
 ];
 
-/**
- * Card Anchoring Rule: every text node that names a known card must sit inside a card reference
- * (thumbnail + name), a real card face, or a container that shows the card's thumbnail (`data-card-anchor`). A dialog title may name its own trigger card because the
- * header shows that card's thumbnail.
- */
-const cardNamesWithoutThumbnail = (): string[] => {
-  const offenders: string[] = [];
-  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-    const text = node.textContent ?? '';
-    const parent = node.parentElement;
-    if (!parent) continue;
-    for (const card of KNOWN_CARDS) {
-      if (!text.includes(card.name)) continue;
-      if (parent.closest('[data-card-ref],[data-card-view],[data-card-anchor]')) continue;
-      const dialog = parent.closest('[role="dialog"]');
-      const isTitle = parent.closest('h2') !== null;
-      if (isTitle && dialog?.querySelector(`[data-card-ref="${card.code}"]`)) continue;
-      offenders.push(`${card.name}: "${text.trim()}"`);
-    }
-  }
-  return offenders;
-};
+const cardNamesWithoutThumbnail = () => anchoringOffenders(KNOWN_CARDS);
 
 describe('Card Anchoring Rule checker', () => {
   it('flags a card name written as plain text', () => {

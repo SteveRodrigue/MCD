@@ -325,8 +325,10 @@ export interface CombatResolutionSummary {
   attackerType: 'VILLAIN' | 'MINION';
   targetPlayerId: string;
   targetHeroName?: string;
+  targetHeroCode?: string;
   defenderType?: 'HERO' | 'ALLY' | 'UNDEFENDED';
   defenderName?: string;
+  defenderCode?: string;
   baseAttack: number;
   boostCards: CardInstance[];
   totalBoostIcons: number;

@@ -1,6 +1,5 @@
 import React from 'react';
-import { ModalLayer } from '../layout/ModalLayer';
-import { Swords, Target, Zap, X, Shield, Skull } from 'lucide-react';
+import { Swords, Target, Zap, Shield, Skull } from 'lucide-react';
 import { CardInstance, PlayerState, AllyCard, hasDashPower } from '../../../engine/models';
 import {
   getEffectiveAllyStats,
@@ -10,6 +9,9 @@ import { getValidAttackTargets } from './attack-target-utils';
 import { getValidThwartTargets } from './thwart-target-utils';
 import { canPayAbilityCost } from '../../../engine/pipeline/cost-engine';
 import { useGameSession } from '../../context/GameStateContext';
+import { useModalStyle } from '../../theme/useModalStyle';
+import { ActionRow } from './ActionRow';
+import { CardActionModal, InfoStrip } from './CardActionModal';
 
 interface AllyActionModalProps {
   isOpen: boolean;
@@ -29,6 +31,7 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
   onInitiateAllyThwart,
 }) => {
   const { state: gameState, dispatch: onDispatchAction } = useGameSession();
+  const { style } = useModalStyle();
   if (!isOpen || !ally) return null;
 
   const allyCard = ally.card as AllyCard;
@@ -69,297 +72,173 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
     (ab) => ab.timing === 'ACTION' || ab.timing === 'HERO_ACTION',
   );
 
-  return (
-    <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-150">
-      <div className="relative w-full max-w-md bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl overflow-hidden flex flex-col font-comic">
-        {/* Comic dots pattern */}
-        <div
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(#000 2px, transparent 2px)',
-            backgroundSize: '12px 12px',
-          }}
-        />
+  const consequence = (amount: number) => (
+    <span className="text-[10px] text-comic-red font-bold flex items-center gap-0.5">
+      <Skull className="w-3 h-3" /> -{amount} HP
+    </span>
+  );
 
-        {/* 1. Header */}
-        <div className="relative px-5 py-3.5 bg-amber-400 border-b-4 border-comic-black flex items-center justify-between text-slate-950 select-none">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 bg-comic-black text-amber-300 rounded-lg shadow-comic-sm">
-              <Shield className="w-5 h-5" />
+  return (
+    <CardActionModal
+      card={{ name: ally.card.name, code: ally.card.code }}
+      kicker="ALLY ACTIONS"
+      icon={<Shield className="w-5 h-5" />}
+      exhausted={ally.exhausted}
+      prompt="Choose an action for this ally:"
+      onClose={onClose}
+      testId="ally-action-modal"
+      strips={
+        <>
+          <InfoStrip className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="font-bold">
+                HP: <strong className="font-black">{currentHealth}</strong> / {maxHealth}
+              </span>
+              {currentDamage > 0 && (
+                <span className="text-comic-red font-bold text-[11px]">({currentDamage} dmg)</span>
+              )}
             </div>
-            <div>
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-slate-800">
-                <span>ALLY ACTIONS</span>
-                {ally.exhausted && (
-                  <span className="bg-slate-800 text-white px-1.5 py-0.2 rounded text-[9px]">
-                    EXHAUSTED
+            <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold">
+              <span
+                className={`text-white px-1.5 py-0.5 rounded border border-comic-black flex items-center gap-0.5 ${
+                  atkBonus > 0 ? 'bg-comic-red ring-2 ring-rose-400 font-black' : 'bg-comic-red'
+                }`}
+              >
+                <span>{atkDisplay} ATK</span>
+                {atkBonus > 0 && (
+                  <span className="text-yellow-300 ml-0.5 text-[9px] font-black">
+                    (+{atkBonus})
                   </span>
                 )}
-              </div>
-              <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight leading-none text-slate-950">
-                {ally.card.name}
-              </h2>
+              </span>
+              <span
+                className={`text-white px-1.5 py-0.5 rounded border border-comic-black flex items-center gap-0.5 ${
+                  thwBonus > 0 ? 'bg-sky-500 ring-2 ring-sky-300 font-black' : 'bg-sky-500'
+                }`}
+              >
+                <span>{thwDisplay} THW</span>
+                {thwBonus > 0 && (
+                  <span className="text-yellow-300 ml-0.5 text-[9px] font-black">
+                    (+{thwBonus})
+                  </span>
+                )}
+              </span>
             </div>
-          </div>
+          </InfoStrip>
 
-          <button
-            onClick={onClose}
-            className="p-1 bg-comic-black hover:bg-slate-800 text-white rounded-lg border-2 border-white/40 shadow-comic-sm transition-transform active:scale-95 cursor-pointer"
-            aria-label="Close"
+          <InfoStrip
+            testId="ally-active-traits-strip"
+            className="flex flex-wrap items-center gap-1.5 font-bold"
           >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* 2. Ally Stats Strip */}
-        <div className="relative px-5 py-2 bg-amber-100 border-b-2 border-comic-black flex items-center justify-between text-xs">
-          <div className="flex items-center gap-3">
-            <span className="font-bold text-slate-800">
-              HP: <strong className="font-black text-slate-950">{currentHealth}</strong> /{' '}
-              {maxHealth}
+            <span className={`text-[10px] uppercase font-black tracking-wider ${style.muted}`}>
+              Traits:
             </span>
-            {currentDamage > 0 && (
-              <span className="text-comic-red font-bold text-[11px]">({currentDamage} dmg)</span>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold">
-            <span
-              className={`text-white px-1.5 py-0.5 rounded border border-comic-black flex items-center gap-0.5 ${
-                atkBonus > 0 ? 'bg-comic-red ring-2 ring-rose-400 font-black' : 'bg-comic-red'
-              }`}
-            >
-              <span>{atkDisplay} ATK</span>
-              {atkBonus > 0 && (
-                <span className="text-yellow-300 ml-0.5 text-[9px] font-black">(+{atkBonus})</span>
-              )}
-            </span>
-            <span
-              className={`text-white px-1.5 py-0.5 rounded border border-comic-black flex items-center gap-0.5 ${
-                thwBonus > 0 ? 'bg-sky-500 ring-2 ring-sky-300 font-black' : 'bg-sky-500'
-              }`}
-            >
-              <span>{thwDisplay} THW</span>
-              {thwBonus > 0 && (
-                <span className="text-yellow-300 ml-0.5 text-[9px] font-black">(+{thwBonus})</span>
-              )}
-            </span>
-          </div>
-        </div>
+            {allyTraitsDetails.printedTraits.map((trait, idx) => (
+              <span
+                key={`printed-${idx}`}
+                className={`font-comic text-[10px] px-2 py-0.5 font-bold ${style.chip}`}
+              >
+                {trait}
+              </span>
+            ))}
+            {allyTraitsDetails.dynamicTraits.map((trait, idx) => (
+              <span
+                key={`dynamic-${idx}`}
+                data-testid={`ally-dynamic-trait-${trait.toLowerCase()}`}
+                className="bg-cyan-300 text-slate-950 font-comic text-[10px] px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-xs font-black uppercase tracking-wider flex items-center gap-0.5"
+              >
+                <span>✨</span>
+                <span>{trait}</span>
+              </span>
+            ))}
+          </InfoStrip>
+        </>
+      }
+    >
+      <ActionRow
+        icon={<Swords className="w-5 h-5" />}
+        tone="danger"
+        disabled={!canAttack}
+        actionLabel="STRIKE ➔"
+        accessory={consequence(consequentialAtk)}
+        onClick={() => {
+          onClose();
+          onInitiateAllyAttack(ally.instanceId);
+        }}
+      >
+        <span className="font-black text-sm">Attack ({atkDisplay} DMG)</span>
+        <span className={`text-xs block mt-0.5 ${style.muted}`}>
+          {ally.exhausted
+            ? 'Ally is exhausted'
+            : !isPlayerTurn
+              ? 'Not your turn'
+              : attackTargets.length === 0
+                ? 'No valid attack targets'
+                : `Exhaust to attack an enemy (takes ${consequentialAtk} consequential damage)`}
+        </span>
+      </ActionRow>
 
-        {/* Active Traits Strip */}
-        <div
-          data-testid="ally-active-traits-strip"
-          className="relative px-5 py-2 bg-amber-50 border-b-2 border-comic-black flex flex-wrap items-center gap-1.5 text-xs font-bold"
-        >
-          <span className="text-[10px] uppercase font-black text-slate-500 tracking-wider">
-            Traits:
-          </span>
-          {allyTraitsDetails.printedTraits.map((trait, idx) => (
-            <span
-              key={`printed-${idx}`}
-              className="bg-white text-slate-800 font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black shadow-comic-xs font-bold"
-            >
-              {trait}
-            </span>
-          ))}
-          {allyTraitsDetails.dynamicTraits.map((trait, idx) => (
-            <span
-              key={`dynamic-${idx}`}
-              data-testid={`ally-dynamic-trait-${trait.toLowerCase()}`}
-              className="bg-cyan-300 text-slate-950 font-comic text-[10px] px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-xs font-black uppercase tracking-wider flex items-center gap-0.5"
-            >
-              <span>✨</span>
-              <span>{trait}</span>
-            </span>
-          ))}
-        </div>
+      <ActionRow
+        icon={<Target className="w-5 h-5" />}
+        tone="info"
+        disabled={!canThwart}
+        actionLabel="FOIL ➔"
+        accessory={consequence(consequentialThw)}
+        onClick={() => {
+          onClose();
+          onInitiateAllyThwart(ally.instanceId);
+        }}
+      >
+        <span className="font-black text-sm">Thwart ({thwDisplay} THW)</span>
+        <span className={`text-xs block mt-0.5 ${style.muted}`}>
+          {ally.exhausted
+            ? 'Ally is exhausted'
+            : thwDash
+              ? 'THW is – and cannot be used'
+              : !isPlayerTurn
+                ? 'Not your turn'
+                : !thwartTargets.some((t) => t.allowed)
+                  ? 'No schemes can be thwarted'
+                  : `Exhaust to remove threat from a scheme (takes ${consequentialThw} consequential damage)`}
+        </span>
+      </ActionRow>
 
-        {/* 3. Action Choices */}
-        <div className="relative p-5 space-y-3 max-h-[60vh] overflow-y-auto">
-          <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Choose an action for this ally:
-          </p>
+      {actionableAbilities.map((ab) => {
+        const alreadyUsed = (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
+        const costCheck = canPayAbilityCost(gameState, player, ab, ally, {});
+        const canTrigger = isPlayerTurn && !alreadyUsed && costCheck.allowed;
 
-          <div className="grid grid-cols-1 gap-2.5">
-            {/* Action 1: Attack */}
-            <button
-              disabled={!canAttack}
-              onClick={() => {
-                onClose();
-                onInitiateAllyAttack(ally.instanceId);
-              }}
-              className={`w-full p-3 rounded-lg border-3 border-comic-black transition-all flex items-center justify-between gap-3 text-left ${
-                canAttack
-                  ? 'bg-rose-50 hover:bg-rose-100 ring-1 ring-rose-300 shadow-comic-sm hover:shadow-comic hover:-translate-y-0.5 active:translate-y-0.5 cursor-pointer'
-                  : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
-              }`}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className={`p-2 rounded-lg border-2 border-comic-black shrink-0 ${
-                    canAttack ? 'bg-comic-red text-white' : 'bg-slate-300 text-slate-500'
-                  }`}
-                >
-                  <Swords className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-black text-sm text-slate-950">
-                      Attack ({atkDisplay} DMG)
-                    </span>
-                  </div>
-                  <span className="text-xs text-slate-600 block mt-0.5">
-                    {ally.exhausted
-                      ? 'Ally is exhausted'
-                      : !isPlayerTurn
-                        ? 'Not your turn'
-                        : attackTargets.length === 0
-                          ? 'No valid attack targets'
-                          : `Exhaust to attack an enemy (takes ${consequentialAtk} consequential damage)`}
-                  </span>
-                </div>
-              </div>
-
-              <div className="shrink-0 flex items-center gap-1.5">
-                <span className="text-[10px] text-comic-red font-bold flex items-center gap-0.5">
-                  <Skull className="w-3 h-3" /> -{consequentialAtk} HP
-                </span>
-                <span
-                  className={`font-comic text-xs font-black uppercase px-2.5 py-1 rounded border-2 border-comic-black shadow-comic-xs ${
-                    canAttack ? 'bg-comic-black text-comic-yellow' : 'bg-slate-300 text-slate-500'
-                  }`}
-                >
-                  STRIKE ➔
-                </span>
-              </div>
-            </button>
-
-            {/* Action 2: Thwart */}
-            <button
-              disabled={!canThwart}
-              onClick={() => {
-                onClose();
-                onInitiateAllyThwart(ally.instanceId);
-              }}
-              className={`w-full p-3 rounded-lg border-3 border-comic-black transition-all flex items-center justify-between gap-3 text-left ${
-                canThwart
-                  ? 'bg-sky-50 hover:bg-sky-100 ring-1 ring-sky-300 shadow-comic-sm hover:shadow-comic hover:-translate-y-0.5 active:translate-y-0.5 cursor-pointer'
-                  : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
-              }`}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className={`p-2 rounded-lg border-2 border-comic-black shrink-0 ${
-                    canThwart ? 'bg-comic-blue text-white' : 'bg-slate-300 text-slate-500'
-                  }`}
-                >
-                  <Target className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-black text-sm text-slate-950">
-                      Thwart ({thwDisplay} THW)
-                    </span>
-                  </div>
-                  <span className="text-xs text-slate-600 block mt-0.5">
-                    {ally.exhausted
-                      ? 'Ally is exhausted'
-                      : thwDash
-                        ? 'THW is – and cannot be used'
-                        : !isPlayerTurn
-                          ? 'Not your turn'
-                          : !thwartTargets.some((t) => t.allowed)
-                            ? 'No schemes can be thwarted'
-                            : `Exhaust to remove threat from a scheme (takes ${consequentialThw} consequential damage)`}
-                  </span>
-                </div>
-              </div>
-
-              <div className="shrink-0 flex items-center gap-1.5">
-                <span className="text-[10px] text-comic-red font-bold flex items-center gap-0.5">
-                  <Skull className="w-3 h-3" /> -{consequentialThw} HP
-                </span>
-                <span
-                  className={`font-comic text-xs font-black uppercase px-2.5 py-1 rounded border-2 border-comic-black shadow-comic-xs ${
-                    canThwart ? 'bg-comic-black text-sky-300' : 'bg-slate-300 text-slate-500'
-                  }`}
-                >
-                  FOIL ➔
-                </span>
-              </div>
-            </button>
-
-            {/* Action 3: Ally Activated Abilities (if declared) */}
-            {actionableAbilities.map((ab) => {
-              const alreadyUsed = (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
-              const costCheck = canPayAbilityCost(gameState, player, ab, ally, {});
-              const canTrigger = isPlayerTurn && !alreadyUsed && costCheck.allowed;
-
-              return (
-                <button
-                  key={ab.id}
-                  disabled={!canTrigger}
-                  onClick={() => {
-                    onDispatchAction?.({
-                      type: 'USE_CARD_ABILITY',
-                      playerId: player.id,
-                      cardInstanceId: ally.instanceId,
-                      abilityId: ab.id,
-                    });
-                    onClose();
-                  }}
-                  className={`w-full p-3 rounded-lg border-3 border-comic-black transition-all flex items-center justify-between gap-3 text-left ${
-                    canTrigger
-                      ? 'bg-amber-50 hover:bg-amber-100 ring-1 ring-amber-300 shadow-comic-sm hover:shadow-comic cursor-pointer'
-                      : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className={`p-2 rounded-lg border-2 border-comic-black shrink-0 ${
-                        canTrigger ? 'bg-amber-400 text-slate-950' : 'bg-slate-300 text-slate-500'
-                      }`}
-                    >
-                      <Zap className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <span className="font-black text-sm text-slate-950 block">
-                        {ab.id.replace(/_/g, ' ').toUpperCase()}
-                      </span>
-                      <span className="text-xs text-slate-600 block mt-0.5">
-                        {alreadyUsed
-                          ? 'Already used this round'
-                          : ab.steps?.[0]?.effectParams?.description
-                            ? String(ab.steps[0].effectParams.description)
-                            : `Trigger ${ally.card.name}'s special ability`}
-                      </span>
-                    </div>
-                  </div>
-
-                  <span
-                    className={`font-comic text-xs font-black uppercase px-2.5 py-1 rounded border-2 border-comic-black shadow-comic-xs shrink-0 ${
-                      canTrigger ? 'bg-comic-black text-amber-300' : 'bg-slate-300 text-slate-500'
-                    }`}
-                  >
-                    TRIGGER ➔
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* 4. Footer */}
-        <div className="relative px-5 py-3 bg-slate-100 border-t-2 border-comic-black flex justify-end">
-          <button
-            onClick={onClose}
-            className="font-comic text-xs font-black py-2 px-4 rounded-lg border-2 border-comic-black bg-slate-200 hover:bg-slate-300 text-slate-800 shadow-comic-sm active:translate-y-0.5 cursor-pointer uppercase"
+        return (
+          <ActionRow
+            key={ab.id}
+            icon={<Zap className="w-5 h-5" />}
+            tone="warn"
+            disabled={!canTrigger}
+            actionLabel="TRIGGER ➔"
+            onClick={() => {
+              onDispatchAction?.({
+                type: 'USE_CARD_ABILITY',
+                playerId: player.id,
+                cardInstanceId: ally.instanceId,
+                abilityId: ab.id,
+              });
+              onClose();
+            }}
           >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </ModalLayer>
+            <span className="font-black text-sm block">
+              {ab.id.replace(/_/g, ' ').toUpperCase()}
+            </span>
+            <span className={`text-xs block mt-0.5 ${style.muted}`}>
+              {alreadyUsed
+                ? 'Already used this round'
+                : ab.steps?.[0]?.effectParams?.description
+                  ? String(ab.steps[0].effectParams.description)
+                  : `Trigger ${ally.card.name}'s special ability`}
+            </span>
+          </ActionRow>
+        );
+      })}
+    </CardActionModal>
   );
 };
 

@@ -985,6 +985,7 @@ export function applyCalculatedAttackDamage(
     attackerType: attackContext.attackerType,
     targetPlayerId: player.id,
     targetHeroName: player.hero?.name || player.name,
+    targetHeroCode: player.hero?.code,
     defenderType: attackContext.defender?.type,
     defenderName:
       attackContext.defender?.type === 'HERO'
@@ -992,6 +993,13 @@ export function applyCalculatedAttackDamage(
         : attackContext.defender?.type === 'ALLY'
           ? player.allies.find((a) => a.instanceId === attackContext.defender?.allyInstanceId)?.card
               .name || 'Ally'
+          : undefined,
+    defenderCode:
+      attackContext.defender?.type === 'HERO'
+        ? player.hero?.code
+        : attackContext.defender?.type === 'ALLY'
+          ? player.allies.find((a) => a.instanceId === attackContext.defender?.allyInstanceId)?.card
+              .code
           : undefined,
     baseAttack: attackContext.baseAttack,
     boostCards: attackContext.revealedBoostCards ? [...attackContext.revealedBoostCards] : [],

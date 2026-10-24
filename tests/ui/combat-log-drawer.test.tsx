@@ -91,6 +91,21 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
     expect(screen.getByText('Iron-Man dealt 2 damage to Rhino.')).toBeDefined();
   });
 
+  it('has no font selector: the log follows the theme (Body for the dialogue, Headlines for the banners)', () => {
+    render(
+      <TestSession state={mockGameState as GameState}>
+        <CombatLogDrawer isOpen={true} onClose={vi.fn()} logs={mockLogs} />
+      </TestSession>,
+    );
+    expect(screen.queryByRole('button', { name: /font/i })).toBeNull();
+    expect(screen.queryByText(/^Font:/)).toBeNull();
+    const drawer = document.body.querySelector('.z-drawer') as HTMLElement;
+    expect(drawer.className).toContain('font-body');
+    expect(drawer.style.getPropertyValue('--font-comic')).not.toBe('');
+    const dialogue = screen.getByText('Iron-Man dealt 2 damage to Rhino.');
+    expect(dialogue.className).toContain('font-body');
+  });
+
   it('applies docked desktop classes to drawer container', () => {
     const onClose = vi.fn();
     render(

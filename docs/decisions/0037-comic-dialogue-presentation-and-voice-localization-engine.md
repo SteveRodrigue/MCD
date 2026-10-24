@@ -44,7 +44,7 @@ We establish the **Comic Dialogue & Character Voice Presentation Architecture**:
 * Full-height slide-over drawer styled as a vintage Daily Bugle action dispatch.
 * Speaker category filters (`ALL`, `HEROES`, `VILLAINS`, `NARRATOR`).
 * One-click language switcher (`EN` / `FR`).
-* Interactive **Font Cycler** with `localStorage` persistence, enabling real-time preview between `Komika Text`, `Comic Relief`, `Comic Neue`, `Clean (Inter)`, and `Bangers`.
+* ~~Interactive **Font Cycler** with `localStorage` persistence, enabling real-time preview between `Komika Text`, `Comic Relief`, `Comic Neue`, `Clean (Inter)`, and `Bangers`.~~ **Removed (2026-10):** the cycler was a workaround for readability; with the validated theme fonts and sizes the log follows the active theme (Body for the dialogue, Headlines for the banners) and has no font setting. See `docs/templates/modals/PLAN_fonts.md` (N5).
 * Collapsible technical debug inspector for rules auditing.
 
 ### 4. Local-First Font Bundling & Base UI Scaling

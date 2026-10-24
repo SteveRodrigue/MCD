@@ -2,6 +2,7 @@ import React from 'react';
 import { ModalLayer } from '../layout/ModalLayer';
 import { Newspaper, Eye } from 'lucide-react';
 import { LegalActionItem } from '../../../engine/pipeline/legal-actions-generator';
+import { useNewspaperProps } from '../../theme/useNewspaperProps';
 
 interface EndTurnConfirmationModalProps {
   isOpen: boolean;
@@ -18,12 +19,16 @@ export const EndTurnConfirmationModal: React.FC<EndTurnConfirmationModalProps> =
   onConfirmEndTurn,
   onDismiss,
 }) => {
+  const newspaperProps = useNewspaperProps();
   if (!isOpen || !turnAction) return null;
 
   return (
     <ModalLayer className="inset-0 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
       {/* Vintage 1960s Tabloid Press Flash */}
-      <div className="relative w-full max-w-md bg-[#fbf7ee] text-slate-900 border-4 border-slate-950 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-sm overflow-hidden flex flex-col font-serif">
+      <div
+        {...newspaperProps}
+        className="relative w-full max-w-md bg-[#fbf7ee] text-slate-900 border-4 border-slate-950 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-sm overflow-hidden flex flex-col font-news-body"
+      >
         {/* Masthead Flash */}
         <div className="bg-amber-300 border-b-2 border-slate-950 p-3 text-center select-none">
           <div className="flex justify-between items-center text-nano uppercase tracking-widest text-slate-800 font-bold border-b border-slate-900 pb-0.5 mb-1">
@@ -32,7 +37,7 @@ export const EndTurnConfirmationModal: React.FC<EndTurnConfirmationModalProps> =
             <span>PRESS FLASH</span>
           </div>
 
-          <h2 className="text-2xl font-black uppercase tracking-tight font-serif text-slate-950 leading-none">
+          <h2 className="text-2xl font-black uppercase tracking-tight font-news-headline text-slate-950 leading-none">
             PRESS RUN COMPLETE!
           </h2>
           <p className="text-mini font-comic font-bold text-slate-800 uppercase mt-1">
@@ -43,7 +48,7 @@ export const EndTurnConfirmationModal: React.FC<EndTurnConfirmationModalProps> =
         {/* Modal Body */}
         <div className="p-5 text-center space-y-3">
           <div className="p-3 bg-white/90 border border-slate-700 rounded shadow-xs">
-            <p className="text-xs text-slate-800 font-serif leading-relaxed">
+            <p className="text-xs text-slate-800 font-news-body leading-relaxed">
               You have exhausted your character and played all available cards from hand. No further
               legal moves remain.
             </p>

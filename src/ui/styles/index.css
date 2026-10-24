@@ -172,39 +172,6 @@
   --font-numbers: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
-/* Local Comic Dialogue Fonts */
-@font-face {
-  font-family: 'Komika Text';
-  src: url('/fonts/TypoPRO-KomikaText-Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Komika Text';
-  src: url('/fonts/TypoPRO-KomikaText-Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Komika Text';
-  src: url('/fonts/TypoPRO-KomikaText-Italic.ttf') format('truetype');
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Komika Text';
-  src: url('/fonts/TypoPRO-KomikaText-BoldItalic.ttf') format('truetype');
-  font-weight: 700;
-  font-style: italic;
-  font-display: swap;
-}
-
 @layer base {
   html {
     font-size: 110%;
@@ -249,19 +216,6 @@
     background-color: #FFFFFF;
   }
 
-  /* Combat Log Font Presets */
-  .font-komika {
-    font-family: 'Komika Text', 'Comic Relief', 'Comic Sans MS', cursive, sans-serif;
-  }
-  .font-comic-relief {
-    font-family: 'Comic Relief', 'Comic Sans MS', cursive, sans-serif;
-  }
-  .font-comic-neue {
-    font-family: 'Comic Neue', 'Comic Relief', cursive, sans-serif;
-  }
-  .font-clean {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  }
   .font-bangers {
     font-family: 'Body Digits', 'Bangers', Impact, 'Arial Black', sans-serif;
   }

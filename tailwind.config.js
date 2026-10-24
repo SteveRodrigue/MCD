@@ -29,7 +29,6 @@ export default {
       fontFamily: {
         // Roles, not fixed fonts: a theme can swap them (see `fonts` in modal-styles.ts). Defaults are in index.css.
         comic: ['var(--font-comic)'],
-        dialogue: ['"Komika Text"', '"Comic Relief"', '"Comic Sans MS"', 'cursive', 'sans-serif'],
         body: ['var(--font-body)'],
         // `font-mono` is the font for numbers and codes: a theme sets it with `fonts.numbers`.
         mono: ['var(--font-numbers)'],

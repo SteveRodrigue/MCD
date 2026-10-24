@@ -83,6 +83,9 @@ describe('font guard: themes name only the font roles', () => {
       'src/ui/components/board/GameOverScreen.tsx',
       'src/ui/components/board/RemovedFromGameBox.tsx',
       'src/ui/components/cards/CardStatsModal.tsx',
+      'src/ui/components/board/DailyBugleActionNewspaper.tsx',
+      'src/ui/components/board/TopBar.tsx',
+      'src/ui/components/board/GameBoard.tsx',
     ];
     for (const file of themedFiles) {
       const tiny = [...stripComments(read(file)).matchAll(/text-\[(\d+(?:\.\d+)?)px\]/g)]
@@ -106,6 +109,36 @@ describe('font guard: themes name only the font roles', () => {
       const usesNews = fontUtilities(read(file)).some((n) => n.startsWith('news-'));
       if (usesNews) expect(allowed.has(file), `${file} uses a newspaper font role`).toBe(true);
     }
+  });
+});
+
+describe('font guard: no direct serif font', () => {
+  it('names no font-serif anywhere in the UI: a newspaper uses the Newspaper roles', () => {
+    for (const file of listFiles('src/ui', ['.ts', '.tsx', '.css'])) {
+      expect(stripComments(read(file)).match(/(?<![-\w])font-serif(?![-\w])/), file).toBeNull();
+    }
+  });
+});
+
+describe('font guard: the combat log follows the theme, with no font setting of its own', () => {
+  const LOG_FONTS =
+    /(?<![-\w])font-(komika|comic-relief|comic-neue|clean|dialogue)(?![-\w])|Komika/g;
+
+  it('names no combat log font family, preset or storage key anywhere in the UI', () => {
+    for (const file of listFiles('src/ui', ['.ts', '.tsx', '.css'])) {
+      const code = stripComments(read(file));
+      expect(code.match(LOG_FONTS), `${file} names a combat log font`).toBeNull();
+      expect(code, `${file} reads the old log font setting`).not.toContain('mcd_combat_log_font');
+      expect(code, `${file} reads the old log presets`).not.toContain('combat-log-presets');
+    }
+    expect(fs.existsSync(path.join(REPO, 'src/ui/components/board/combat-log-presets.ts'))).toBe(
+      false,
+    );
+  });
+
+  it('has no Komika font file or face left, and no dialogue family in Tailwind', () => {
+    expect(fs.existsSync(path.join(REPO, 'public/fonts'))).toBe(false);
+    expect(Object.keys(tailwindConfig.theme.extend.fontFamily)).not.toContain('dialogue');
   });
 });
 

@@ -178,7 +178,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
               >
                 <div className="flex items-center gap-2 text-comic-red">
                   <ShieldAlert className="w-4 h-4 shrink-0 animate-pulse" />
-                  <span className="font-comic font-black uppercase text-xs tracking-wider">
+                  <span className="font-black uppercase text-xs tracking-wider">
                     {incomingDamage !== undefined
                       ? 'Incoming Attack Damage:'
                       : 'Enemy Attack Declaration:'}
@@ -211,7 +211,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                     >
                       ATTACKER
                     </div>
-                    <div className="font-comic font-black text-xs truncate">
+                    <div className="font-black text-xs truncate">
                       {prompt.attackerName || 'Enemy'}
                     </div>
                     <div className="flex items-center gap-1 flex-wrap mt-0.5">
@@ -260,7 +260,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                           ? 'DEFENDER (HERO)'
                           : 'TARGET'}
                     </div>
-                    <div className="font-comic font-black text-xs truncate">
+                    <div className="font-black text-xs truncate">
                       {prompt.defenderName || prompt.targetName || prompt.targetHeroName || 'Hero'}
                     </div>
                     <div className="flex items-center gap-1 flex-wrap mt-0.5">
@@ -329,7 +329,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
         {prompt.revealedCards && prompt.revealedCards.length > 0 && (
           <div className={`p-3 overflow-visible ${style.panel}`}>
             <div className="flex justify-between items-center mb-2 px-1">
-              <span className="text-mini font-comic font-black uppercase tracking-wider">
+              <span className="text-mini font-black uppercase tracking-wider">
                 Revealed Cards ({prompt.revealedCards.length})
               </span>
               <span className={`text-micro font-bold italic ${style.muted}`}>
@@ -360,7 +360,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                   >
                     <CardView card={rc.card} size="sm" enableHoverZoom={true} zoomOrigin="center" />
                     <span
-                      className={`font-comic text-nano px-2 py-0.5 rounded border border-comic-black font-black uppercase shadow-xs ${
+                      className={`text-nano px-2 py-0.5 rounded border border-comic-black font-black uppercase shadow-xs ${
                         rc.isSelectable
                           ? 'bg-emerald-400 text-slate-950 animate-pulse'
                           : 'bg-slate-300 text-slate-700'
@@ -471,14 +471,14 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                         </span>
                       )}
                     {requiresPayment && costAmount !== undefined && costAmount > 0 && (
-                      <span className="inline-flex items-center gap-1 font-comic text-micro font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-300 border border-comic-black text-slate-950 shadow-xs">
+                      <span className="inline-flex items-center gap-1 text-micro font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-300 border border-comic-black text-slate-950 shadow-xs">
                         ⚡ COST: {costAmount} {costAmount === 1 ? 'RESOURCE' : 'RESOURCES'}
                       </span>
                     )}
                     {!requiresPayment &&
                       !option.label.toLowerCase().includes('cost') &&
                       optionCard?.cost !== undefined && (
-                        <span className="inline-flex items-center gap-1 font-comic text-micro font-black uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-200 border border-comic-black text-slate-950 shadow-xs">
+                        <span className="inline-flex items-center gap-1 text-micro font-black uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-200 border border-comic-black text-slate-950 shadow-xs">
                           Cost: {optionCard.cost}
                         </span>
                       )}
@@ -493,7 +493,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                 </div>
                 {option.disabledReason && (
                   <div className="mt-1 pl-8">
-                    <span className="inline-flex items-center gap-1 font-comic text-micro font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-200 border border-comic-black text-amber-950">
+                    <span className="inline-flex items-center gap-1 text-micro font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-200 border border-comic-black text-amber-950">
                       ⚠️ {option.disabledReason}
                     </span>
                   </div>
@@ -511,7 +511,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
             !prompt.options.some((o) => o.id === 'pass' || o.id.includes('decline')) && (
               <button
                 onClick={() => onSelectOption('pass')}
-                className={`group relative flex items-center justify-between p-3 border-dashed transition-all cursor-pointer font-comic font-black text-sm uppercase tracking-wide ${style.option}`}
+                className={`group relative flex items-center justify-between p-3 border-dashed transition-all cursor-pointer font-black text-sm uppercase tracking-wide ${style.option}`}
               >
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full border-2 border-comic-black flex items-center justify-center text-xs font-black bg-slate-300 text-slate-900">

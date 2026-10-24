@@ -85,9 +85,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
   const detail = (text: string) => (
     <span className={`text-micro block ${style.muted}`}>{text}</span>
   );
-  const rowTitle = (text: string) => (
-    <span className="font-comic font-black text-xs block">{text}</span>
-  );
+  const rowTitle = (text: string) => <span className="font-black text-xs block">{text}</span>;
 
   return (
     <CardActionModal
@@ -123,7 +121,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
             {traitsDetails.printedTraits.map((trait, idx) => (
               <span
                 key={`printed-${idx}`}
-                className={`font-comic text-micro px-2 py-0.5 font-bold ${style.chip}`}
+                className={`text-micro px-2 py-0.5 font-bold ${style.chip}`}
               >
                 {trait}
               </span>
@@ -132,7 +130,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
               <span
                 key={`dynamic-${idx}`}
                 data-testid={`identity-dynamic-trait-${trait.toLowerCase()}`}
-                className="bg-cyan-300 text-slate-950 font-comic text-micro px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-xs font-black uppercase tracking-wider flex items-center gap-0.5"
+                className="bg-cyan-300 text-slate-950 text-micro px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-xs font-black uppercase tracking-wider flex items-center gap-0.5"
               >
                 <span>✨</span>
                 <span>{trait}</span>

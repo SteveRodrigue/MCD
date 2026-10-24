@@ -170,7 +170,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
   const renderIdentitySection = () => (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
+        <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-news-headline">
           <span>📰 FRONT PAGE: IDENTITY DIRECTIVES</span>
         </h2>
         <span className="text-micro text-slate-600 font-bold uppercase">Form & Basic Moves</span>
@@ -196,7 +196,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
               <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
                 <div>
                   <div className="flex items-start justify-between gap-1 mb-0.5">
-                    <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-comic-blue flex items-center gap-1 line-clamp-1">
+                    <span className="font-bold font-news-headline text-xs text-slate-950 group-hover:text-comic-blue flex items-center gap-1 line-clamp-1">
                       {renderIcon(item.iconType)}
                       <span>{item.headline}</span>
                     </span>
@@ -226,7 +226,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
   const renderHandSection = (hasPrevSection: boolean) => (
     <div className={hasPrevSection ? 'pt-3 border-t border-slate-300' : ''}>
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
+        <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-news-headline">
           <span>🃏 LATEST DISPATCHES: PLAYABLE HAND CARDS</span>
         </h2>
         <span className="text-micro text-slate-600 font-bold uppercase">Ready from Hand</span>
@@ -252,7 +252,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
               <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
                 <div>
                   <div className="flex items-start justify-between gap-1 mb-0.5">
-                    <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-comic-red flex items-center gap-1 line-clamp-1">
+                    <span className="font-bold font-news-headline text-xs text-slate-950 group-hover:text-comic-red flex items-center gap-1 line-clamp-1">
                       {renderIcon(item.iconType)}
                       <span>{item.headline}</span>
                     </span>
@@ -282,7 +282,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
   const renderBoardSection = () => (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
+        <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-news-headline">
           <span>⚡ THE CLASSIFIEDS: IN-PLAY ASSETS & ALLIES</span>
         </h2>
         <span className="text-micro text-slate-600 font-bold uppercase">Tableau & Allies</span>
@@ -308,7 +308,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
               <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
                 <div>
                   <div className="flex items-start justify-between gap-1 mb-0.5">
-                    <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-emerald-700 flex items-center gap-1 line-clamp-1">
+                    <span className="font-bold font-news-headline text-xs text-slate-950 group-hover:text-emerald-700 flex items-center gap-1 line-clamp-1">
                       {renderIcon(item.iconType)}
                       <span>{item.headline}</span>
                     </span>
@@ -338,7 +338,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
   const renderVillainSection = (hasPrevSection: boolean) => (
     <div className={hasPrevSection ? 'pt-3 border-t border-slate-300' : ''}>
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
+        <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-news-headline">
           <Skull className="w-3.5 h-3.5 text-rose-700" />
           <span>🚨 VILLAIN DISPATCHES: ENCOUNTER & SCHEME ACTIONS</span>
         </h2>
@@ -365,7 +365,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
               <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
                 <div>
                   <div className="flex items-start justify-between gap-1 mb-0.5">
-                    <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-rose-700 flex items-center gap-1 line-clamp-1">
+                    <span className="font-bold font-news-headline text-xs text-slate-950 group-hover:text-rose-700 flex items-center gap-1 line-clamp-1">
                       {renderIcon(item.iconType)}
                       <span>{item.headline}</span>
                     </span>
@@ -414,7 +414,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
           {/* Newspaper Sub-Header Line (Padded right to never overlap close button) */}
           <div className="flex justify-between items-center text-micro uppercase tracking-widest text-slate-700 font-bold border-b border-slate-800 pb-1 mb-1 pr-8">
             <span>VOL. LXVIII NO. 142</span>
-            <span className="font-comic tracking-normal text-comic-red font-black">
+            <span className="font-news-headline tracking-normal text-comic-red font-black">
               ★ THE VOICE OF MARVELS ★
             </span>
             <span>PRICE: 10¢ IN COIN</span>
@@ -432,7 +432,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
 
           {/* Hero Banner Strip */}
           <div className="flex justify-between items-center bg-slate-900 text-amber-100 px-3 py-1 text-xs font-bold uppercase tracking-wider mt-1">
-            <span className="flex items-center gap-1.5 font-comic">
+            <span className="flex items-center gap-1.5 font-news-headline">
               <Newspaper className="w-4 h-4 text-amber-300" />
               SPECIAL ACTION EDITION: {playerName.toUpperCase()}
             </span>
@@ -446,7 +446,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
         <div className="flex-1 overflow-y-auto p-4 text-slate-900">
           {activeActionCount === 0 && callForActionItems.length === 0 ? (
             <div className="p-8 bg-amber-100/80 border-2 border-dashed border-slate-400 rounded text-center space-y-1 my-4">
-              <h3 className="font-comic text-base font-bold text-slate-900 uppercase">
+              <h3 className="font-news-headline text-base font-bold text-slate-900 uppercase">
                 ★ PRESS RUN COMPLETE: NO ACTIONS REMAIN ★
               </h3>
               <p className="text-xs text-slate-600 font-news-body">
@@ -478,7 +478,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-indigo-700 pb-0.5 flex items-center gap-1 font-comic">
+                      <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-indigo-700 pb-0.5 flex items-center gap-1 font-news-headline">
                         <Users className="w-3.5 h-3.5 text-indigo-700" />
                         <span>🤝 CALL FOR ACTION: TEAM TABLEAU ASSETS</span>
                       </h2>
@@ -493,7 +493,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
                           key={ownerKey}
                           className="border border-slate-900 rounded overflow-hidden shadow-sm"
                         >
-                          <div className="bg-slate-900 text-amber-300 px-2.5 py-1 font-comic font-black text-xs uppercase tracking-wide border border-slate-900 rounded-t flex items-center justify-between">
+                          <div className="bg-slate-900 text-amber-300 px-2.5 py-1 font-news-headline font-black text-xs uppercase tracking-wide border border-slate-900 rounded-t flex items-center justify-between">
                             <span>{formatTeammateHeader(ownerKey)}</span>
                             <span className="text-micro font-mono text-amber-200">
                               {items.length} ACTION{items.length === 1 ? '' : 'S'}
@@ -520,7 +520,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
                                   <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
                                     <div>
                                       <div className="flex items-start justify-between gap-1 mb-0.5">
-                                        <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-indigo-700 flex items-center gap-1 line-clamp-1">
+                                        <span className="font-bold font-news-headline text-xs text-slate-950 group-hover:text-indigo-700 flex items-center gap-1 line-clamp-1">
                                           {renderIcon(item.iconType)}
                                           <span>{item.headline}</span>
                                         </span>
@@ -559,7 +559,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
         {turnAction && (
           <div className="p-3 bg-[#f4ebd9] border-t-2 border-slate-900 flex items-center justify-between gap-3">
             <div className="text-left">
-              <span className="text-micro font-bold text-slate-600 uppercase block font-comic">
+              <span className="text-micro font-bold text-slate-600 uppercase block font-news-headline">
                 TURN FLOW MANAGEMENT
               </span>
               <span className="text-xs text-slate-900 font-news-body italic">
@@ -572,7 +572,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
                 onSelectAction(turnAction);
                 onClose();
               }}
-              className="bg-comic-red hover:bg-red-700 text-white font-comic text-xs px-4 py-2 rounded border-2 border-slate-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 font-bold cursor-pointer uppercase shrink-0 flex items-center gap-1.5"
+              className="bg-comic-red hover:bg-red-700 text-white font-news-headline text-xs px-4 py-2 rounded border-2 border-slate-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 font-bold cursor-pointer uppercase shrink-0 flex items-center gap-1.5"
             >
               <Newspaper className="w-4 h-4" />
               <span>{turnAction.headline}</span>

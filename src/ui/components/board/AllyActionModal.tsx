@@ -131,7 +131,7 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
             {allyTraitsDetails.printedTraits.map((trait, idx) => (
               <span
                 key={`printed-${idx}`}
-                className={`font-comic text-micro px-2 py-0.5 font-bold ${style.chip}`}
+                className={`text-micro px-2 py-0.5 font-bold ${style.chip}`}
               >
                 {trait}
               </span>
@@ -140,7 +140,7 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
               <span
                 key={`dynamic-${idx}`}
                 data-testid={`ally-dynamic-trait-${trait.toLowerCase()}`}
-                className="bg-cyan-300 text-slate-950 font-comic text-micro px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-xs font-black uppercase tracking-wider flex items-center gap-0.5"
+                className="bg-cyan-300 text-slate-950 text-micro px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-xs font-black uppercase tracking-wider flex items-center gap-0.5"
               >
                 <span>✨</span>
                 <span>{trait}</span>

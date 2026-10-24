@@ -116,7 +116,7 @@ export const CardStatsModal: React.FC<CardStatsModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowConfirmReset(true)}
-                  className={`px-3 py-1.5 text-xs font-bold font-comic cursor-pointer flex items-center gap-1.5 ${style.btnMove}`}
+                  className={`px-3 py-1.5 text-xs font-bold cursor-pointer flex items-center gap-1.5 ${style.btnMove}`}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>Reset Card Stats</span>
@@ -126,7 +126,7 @@ export const CardStatsModal: React.FC<CardStatsModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className={`px-5 py-2 text-xs font-bold font-comic uppercase cursor-pointer ${style.btnGo}`}
+              className={`px-5 py-2 text-xs font-bold uppercase cursor-pointer ${style.btnGo}`}
             >
               Close
             </button>

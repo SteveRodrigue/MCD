@@ -1,6 +1,6 @@
 # Plan: bring the validated fonts and sizes into the game (N1 to N9)
 
-Status: **approved. N6, N1, N8 and N9 are done and committed. N5 (changed to: the log follows the theme), the ModalLayer fix and N3 are done (not committed). D9 is decided: Pop-Art keeps Lilita One for small text. Next: N2.** Each step is a separate, reviewable change; none is committed unless you ask.
+Status: **approved. N6, N1, N8, N9, N5, the ModalLayer fix and N3 are done and committed. N2 batch 1 is done (not committed, waiting for your review). D9 is decided: Pop-Art keeps Lilita One for small text. Next: N2 batch 2.** Each step is a separate, reviewable change; none is committed unless you ask.
 
 Related: [Font plan](./PLAN_fonts.md) (phases 1 to 6 are done), [Font record](./FONT_RECORD.md), [Theme engine plan](./PLAN_theme_engine.md), [Unthemed UI audit](./AUDIT_unthemed_ui.md).
 
@@ -111,7 +111,9 @@ N6 guard ──> N1 ──┬──> N8 ──┐
 
 - **Why:** today 97% of modal text and most board text uses the Headlines font, so the Body font is invisible. The size rule (decision D4) says: text under 17px is Body, 17px and up is Headlines.
 - **Change:** the 144 small uses (and the 87 where the size is on a parent, found by reading each file) move from `font-comic` to `font-body` or are removed where the base text already is Body (after N1, plain text already follows `font-body`). A guard test fails when one className has both `font-comic` and a small size token.
-- **Batches (each reviewed in the lab or the game):** 1) the 20 themed modals, 2) the theme layer and kits, 3) setup (ScenarioSelector, Mulligan), 4) hero and villain zones, 5) hand tray, top bar, stepper, 6) cards and context menu, 7) the rest.
+- **Rule (script `n2_batch.py`, then the guard):** on one element, a small size token (`text-xs`, `text-sm`, `text-nano`, `text-micro`, `text-mini`) with no headline size (`text-base` and up, also with a responsive prefix) means the element loses `font-comic` and inherits the Body (the modal layer and the game root set it). Headline-size text and text with no size token (the inherited 17.6px base) keep `font-comic`. In the two newspaper surfaces every `font-comic` becomes `font-news-headline`, as in the lab's Newspaper kit.
+- **Batches (each shown to you before the next):** 1) the themed modals and the two newspapers (**done**), 2) the theme layer and kits, 3) setup (ScenarioSelector, Mulligan), 4) hero and villain zones, 5) hand tray, top bar, stepper, 6) cards and context menu, 7) the rest. The guard (`tests/ui/font-guards.test.ts`, "small text is Body") lists the files of the finished batches; the last batch widens it to the whole UI except the editor.
+- **Batch 1 result:** 45 uses moved to Body in 14 modal files (41 by the script, 4 template strings by hand), 4 kept on headline-size or sizeless text (`DecisionPromptModal` option title, `OptionsMenu` section title, `GameOverScreen` button, `RemovedFromGameBox` empty state), 21 in the two newspapers moved to the Newspaper headline role (66 `font-comic` removed in all). **Checked with a before and after snapshot of the lab: 133 screens (7 themes by 19 modals), 4,040 text pieces, 0 differences in font or size.**
 - **Visible change:** **none in any theme**: after D9 every theme's Body is the same font as its Headlines, so moving small text from `font-comic` to Body changes no glyph. The step only makes the Body role true, so a future theme with two fonts works.
 - **Decision D9 (done):** you compared Pop-Art small text in Inter in the lab (wider, truncated card names, less pop-art character) and kept Lilita One. Pop-Art's Body is Lilita One.
 - **Risk:** high by volume, low by effect. Hence batches and the guard.

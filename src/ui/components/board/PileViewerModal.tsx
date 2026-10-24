@@ -58,7 +58,7 @@ export const PileViewerModal: React.FC<PileViewerModalProps> = ({
         <button
           type="button"
           onClick={onClose}
-          className={`mx-auto px-6 py-2 text-sm font-comic cursor-pointer ${style.btnGo}`}
+          className={`mx-auto px-6 py-2 text-sm cursor-pointer ${style.btnGo}`}
         >
           {closeLabel}
         </button>
@@ -75,9 +75,7 @@ export const PileViewerModal: React.FC<PileViewerModalProps> = ({
 export const PileToolbar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { style } = useModalStyle();
   return (
-    <div
-      className={`flex flex-wrap items-center justify-between gap-3 p-3 text-xs font-comic ${style.inset}`}
-    >
+    <div className={`flex flex-wrap items-center justify-between gap-3 p-3 text-xs ${style.inset}`}>
       {children}
     </div>
   );
@@ -95,7 +93,7 @@ export const PileChoice: React.FC<{
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`px-2.5 py-1 font-comic text-xs cursor-pointer ${
+      className={`px-2.5 py-1 text-xs cursor-pointer ${
         active ? `${style.btnMove} font-bold !opacity-100` : style.tile
       }`}
     >
@@ -114,7 +112,7 @@ export const PileGroup: React.FC<{
   return (
     <div data-testid={testId} className={`p-3 space-y-2 ${style.panel}`}>
       <div className={`pb-1 ${style.panelHead}`}>
-        <span className="font-comic text-sm uppercase font-bold tracking-wider">{title}</span>
+        <span className="text-sm uppercase font-bold tracking-wider">{title}</span>
       </div>
       <div className="flex flex-wrap items-center justify-start gap-4 pt-1">{children}</div>
     </div>
@@ -159,9 +157,7 @@ export const PileCardTile: React.FC<PileCardTileProps> = ({
       <div className="relative">
         <CardView card={instance.card} instance={instance} size={size} enableHoverZoom={true} />
         {rank !== undefined && (
-          <span
-            className={`absolute -top-2 -right-2 font-comic text-micro px-1.5 py-0.5 ${style.chip}`}
-          >
+          <span className={`absolute -top-2 -right-2 text-micro px-1.5 py-0.5 ${style.chip}`}>
             #{rank}
           </span>
         )}

@@ -171,9 +171,7 @@ export const SimultaneousAbilitiesModal: React.FC<SimultaneousAbilitiesModalProp
               {/* Details */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <span className="font-comic font-black text-sm uppercase truncate">
-                    {candidate.title}
-                  </span>
+                  <span className="font-black text-sm uppercase truncate">{candidate.title}</span>
                   {candidate.ownerName && (
                     <span className={`text-micro font-bold px-1.5 py-0.5 ${style.inset}`}>
                       {candidate.ownerName}

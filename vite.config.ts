@@ -5,6 +5,11 @@ import fs from 'fs';
 import https from 'https';
 import { cardSupplementalEditorPlugin } from './src/tools/editor/api-middleware';
 import {
+  FONT_CHOICES_ENDPOINT,
+  FONT_CHOICES_FILE,
+  mergeFontChoices,
+} from './src/ui/components/templates/font-save';
+import {
   AllTimeStats,
   applyStatsReset,
   createInitialAllTimeStats,
@@ -324,6 +329,38 @@ function cardStatsPlugin(): Plugin {
   };
 }
 
+/** The lab's "Save font choices" button writes the font test values of a theme to a git-ignored file. */
+function labFontChoicesPlugin(): Plugin {
+  const filePath = path.resolve(__dirname, FONT_CHOICES_FILE);
+
+  const readExisting = (): unknown => {
+    try {
+      return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    } catch {
+      return null;
+    }
+  };
+
+  const fontChoicesMiddleware = (req: any, res: any, next: any) => {
+    if (req.url === FONT_CHOICES_ENDPOINT && req.method === 'POST') {
+      return handleJsonPost(req, res, (entry) => {
+        const merged = mergeFontChoices(readExisting(), entry);
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+        fs.writeFileSync(filePath, JSON.stringify(merged, null, 2), 'utf8');
+        return { success: true, file: FONT_CHOICES_FILE };
+      });
+    }
+    next();
+  };
+
+  return {
+    name: 'mcd-lab-font-choices-plugin',
+    configureServer(server) {
+      server.middlewares.use(fontChoicesMiddleware);
+    },
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -332,6 +369,7 @@ export default defineConfig({
     cardStatsPlugin(),
     gameStateSnapshotPlugin(),
     problemReportPlugin(),
+    labFontChoicesPlugin(),
     cardSupplementalEditorPlugin(),
   ],
   resolve: {

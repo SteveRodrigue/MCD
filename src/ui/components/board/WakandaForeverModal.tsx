@@ -111,7 +111,7 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
       title="Wakanda Forever! sequence resolution"
       kicker="Hero special pipeline"
       verb="purple"
-      trigger={trigger}
+      trigger={triggerCard ? null : trigger}
       maxWidthClass="max-w-6xl"
       headerRight={
         <span className={`text-xs font-black px-3 py-1 ${style.chip}`}>
@@ -151,19 +151,16 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
       }
       testId="wakanda-forever-modal"
     >
-      <p className={`text-xs font-bold uppercase ${style.muted}`}>
-        Drag & drop or use the arrows to set the execution order (left to right)
-      </p>
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         <div
+          data-card-ref={trigger.code ?? ''}
           className={`relative lg:col-span-4 p-4 pl-5 flex flex-col items-center ${style.panel}`}
         >
           {trigger.code && <AccentStripe code={trigger.code} />}
           <div className={`w-full flex items-center justify-between pb-2 mb-3 ${style.panelHead}`}>
             <span className="text-xs font-black uppercase tracking-wider">Triggering event</span>
             {triggerCard?.cost !== undefined && (
-              <span className={`text-[10px] font-black px-2 py-0.5 ${style.chip}`}>
+              <span className={`text-micro font-black px-2 py-0.5 ${style.chip}`}>
                 COST {triggerCard.cost}
               </span>
             )}
@@ -175,7 +172,7 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
           )}
           <div className={`mt-3 w-full p-2.5 text-xs ${style.inset}`}>
             <div className="font-black mb-1">💡 Tactical finisher rule (RR v1.8 p. 28)</div>
-            <p className={`text-[11px] leading-normal ${style.muted}`}>
+            <p className={`text-mini leading-normal ${style.muted}`}>
               The <strong>final upgrade</strong> executed in your sequence receives its enhanced{' '}
               <strong className={style.emphasis}>Finisher Bonus</strong> (marked with 💥)!
             </p>
@@ -186,8 +183,7 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
           <div
             className={`flex items-center justify-between text-xs font-black uppercase pb-2 ${style.panelHead}`}
           >
-            <span>Execution pipeline (step 1 ➔ step {orderedUpgrades.length})</span>
-            <span className={style.emphasis}>Final step = finisher boosted!</span>
+            <span>Execution order: drag or use the arrows</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
@@ -229,7 +225,7 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
                   {isFinal && (
                     <span
                       aria-hidden="true"
-                      className={`absolute -top-3 -right-3 z-content flex items-center justify-center text-center font-black text-[10px] leading-none pointer-events-none ${
+                      className={`absolute -top-3 -right-3 z-content flex items-center justify-center text-center font-black text-micro leading-none pointer-events-none ${
                         style.finisher.star ? 'w-16 h-16 rotate-12' : 'px-2 py-1 rotate-6'
                       } ${style.finisher.className}`}
                       style={style.finisher.star ? { clipPath: STAR_CLIP } : undefined}
@@ -240,14 +236,14 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
 
                   <div className="flex items-center justify-between mb-2 pointer-events-none">
                     <span
-                      className={`text-[10px] font-black px-2 py-0.5 ${
+                      className={`text-micro font-black px-2 py-0.5 ${
                         isFinal ? style.stepFinal : style.step
                       }`}
                     >
-                      {isFinal ? '💥 FINAL (FINISHER)' : `STEP ${index + 1}`}
+                      {isFinal ? `💥 STEP ${index + 1}` : `STEP ${index + 1}`}
                     </span>
                     <span
-                      className={`flex items-center gap-1 text-[10px] font-black uppercase ${
+                      className={`flex items-center gap-1 text-micro font-black uppercase ${
                         isFinal ? style.emphasis : ''
                       }`}
                     >
@@ -288,35 +284,13 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
                   </div>
 
                   <div
-                    className={`mt-2 p-1.5 text-[10px] leading-tight ${style.inset} ${style.muted}`}
+                    className={`mt-2 p-1.5 text-micro leading-tight ${style.inset} ${style.muted}`}
                   >
                     <FormattedCardText text={card.text} />
                   </div>
                 </div>
               );
             })}
-          </div>
-
-          <div className={`p-3 ${style.panel}`}>
-            <h3 className={`text-[10px] font-black uppercase tracking-wider mb-1.5 ${style.muted}`}>
-              Planned resolution sequence
-            </h3>
-            <ol className="space-y-1.5 text-xs font-bold">
-              {orderedUpgrades.map((u, i) => {
-                const isLast = i === orderedUpgrades.length - 1;
-                return (
-                  <li key={u.id} className="flex items-center justify-between gap-2">
-                    <span className="flex items-center gap-2 min-w-0">
-                      <span className="font-mono text-[11px] w-4">{i + 1}.</span>
-                      <CardRef code={u.code} name={u.name} size="xs" />
-                    </span>
-                    <span className={isLast ? `font-black ${style.emphasis}` : style.muted}>
-                      ➔ {isLast ? u.finisherBadge : u.baseBadge}
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
           </div>
         </div>
       </div>

@@ -119,7 +119,7 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
               title={`Inspect Removed from Game Pile (${cards.length} Cards)`}
             >
               <CardView card={topCard.card} size="sm" showTokens={false} enableHoverZoom={true} />
-              <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-comic-red text-white font-comic text-[9px] px-1 py-0.5 rounded border border-comic-black shadow-comic-xs uppercase font-bold pointer-events-none">
+              <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-comic-red text-white font-comic text-nano px-1 py-0.5 rounded border border-comic-black shadow-comic-xs uppercase font-bold pointer-events-none">
                 REMOVED
               </span>
               <span className="absolute -bottom-2 -right-2 bg-slate-900 text-white font-comic text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
@@ -134,7 +134,7 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
               title="Removed from Game (Empty)"
             >
               <span className="font-comic text-xs text-slate-400">REMOVED</span>
-              <span className="text-[10px] text-slate-400 font-bold">EMPTY</span>
+              <span className="text-micro text-slate-400 font-bold">EMPTY</span>
             </div>
           )}
 
@@ -172,7 +172,7 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
                     <CardView card={heroCard} size="sm" showTokens={false} enableHoverZoom={true} />
 
                     {/* DEFEATED Ribbon Badge */}
-                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-comic-red text-white font-comic text-[9px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs uppercase font-bold pointer-events-none whitespace-nowrap">
+                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-comic-red text-white font-comic text-nano px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs uppercase font-bold pointer-events-none whitespace-nowrap">
                       DEFEATED
                     </span>
 
@@ -202,7 +202,7 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
           description={
             selectedEliminatedPlayer
               ? 'The play area of the eliminated player. All of it left the game (RR v1.8 Player Elimination). #1 is the top of each pile.'
-              : 'Cards removed from the game are out of play and cannot reenter the game. #1 is the most recently removed.'
+              : 'Out of play for good. #1 is the most recently removed.'
           }
           icon={<Archive className="w-5 h-5" />}
           verb="red"

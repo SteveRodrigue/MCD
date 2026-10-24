@@ -46,7 +46,7 @@ export const PileViewerModal: React.FC<PileViewerModalProps> = ({
   return (
     <ModalScaffold
       title={title}
-      kicker={devBadge ? 'DEV MODE' : 'Open information'}
+      kicker={devBadge ? 'DEV MODE' : undefined}
       verb={verb}
       trigger={null}
       icon={icon}
@@ -160,7 +160,7 @@ export const PileCardTile: React.FC<PileCardTileProps> = ({
         <CardView card={instance.card} instance={instance} size={size} enableHoverZoom={true} />
         {rank !== undefined && (
           <span
-            className={`absolute -top-2 -right-2 font-comic text-[10px] px-1.5 py-0.5 ${style.chip}`}
+            className={`absolute -top-2 -right-2 font-comic text-micro px-1.5 py-0.5 ${style.chip}`}
           >
             #{rank}
           </span>

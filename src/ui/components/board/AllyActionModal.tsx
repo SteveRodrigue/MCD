@@ -1,5 +1,5 @@
 import React from 'react';
-import { Swords, Target, Zap, Shield, Skull } from 'lucide-react';
+import { Swords, Target, Zap, Skull } from 'lucide-react';
 import { CardInstance, PlayerState, AllyCard, hasDashPower } from '../../../engine/models';
 import {
   getEffectiveAllyStats,
@@ -73,7 +73,7 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
   );
 
   const consequence = (amount: number) => (
-    <span className="text-[10px] text-comic-red font-bold flex items-center gap-0.5">
+    <span className="text-micro text-comic-red font-bold flex items-center gap-0.5">
       <Skull className="w-3 h-3" /> -{amount} HP
     </span>
   );
@@ -82,7 +82,6 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
     <CardActionModal
       card={{ name: ally.card.name, code: ally.card.code }}
       kicker="ALLY ACTIONS"
-      icon={<Shield className="w-5 h-5" />}
       exhausted={ally.exhausted}
       prompt="Choose an action for this ally:"
       onClose={onClose}
@@ -95,10 +94,10 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
                 HP: <strong className="font-black">{currentHealth}</strong> / {maxHealth}
               </span>
               {currentDamage > 0 && (
-                <span className="text-comic-red font-bold text-[11px]">({currentDamage} dmg)</span>
+                <span className="text-comic-red font-bold text-mini">({currentDamage} dmg)</span>
               )}
             </div>
-            <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold">
+            <div className="flex items-center gap-1.5 font-mono text-mini font-bold">
               <span
                 className={`text-white px-1.5 py-0.5 rounded border border-comic-black flex items-center gap-0.5 ${
                   atkBonus > 0 ? 'bg-comic-red ring-2 ring-rose-400 font-black' : 'bg-comic-red'
@@ -106,9 +105,7 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
               >
                 <span>{atkDisplay} ATK</span>
                 {atkBonus > 0 && (
-                  <span className="text-yellow-300 ml-0.5 text-[9px] font-black">
-                    (+{atkBonus})
-                  </span>
+                  <span className="text-yellow-300 ml-0.5 text-nano font-black">(+{atkBonus})</span>
                 )}
               </span>
               <span
@@ -118,9 +115,7 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
               >
                 <span>{thwDisplay} THW</span>
                 {thwBonus > 0 && (
-                  <span className="text-yellow-300 ml-0.5 text-[9px] font-black">
-                    (+{thwBonus})
-                  </span>
+                  <span className="text-yellow-300 ml-0.5 text-nano font-black">(+{thwBonus})</span>
                 )}
               </span>
             </div>
@@ -130,13 +125,13 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
             testId="ally-active-traits-strip"
             className="flex flex-wrap items-center gap-1.5 font-bold"
           >
-            <span className={`text-[10px] uppercase font-black tracking-wider ${style.muted}`}>
+            <span className={`text-micro uppercase font-black tracking-wider ${style.muted}`}>
               Traits:
             </span>
             {allyTraitsDetails.printedTraits.map((trait, idx) => (
               <span
                 key={`printed-${idx}`}
-                className={`font-comic text-[10px] px-2 py-0.5 font-bold ${style.chip}`}
+                className={`font-comic text-micro px-2 py-0.5 font-bold ${style.chip}`}
               >
                 {trait}
               </span>
@@ -145,7 +140,7 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
               <span
                 key={`dynamic-${idx}`}
                 data-testid={`ally-dynamic-trait-${trait.toLowerCase()}`}
-                className="bg-cyan-300 text-slate-950 font-comic text-[10px] px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-xs font-black uppercase tracking-wider flex items-center gap-0.5"
+                className="bg-cyan-300 text-slate-950 font-comic text-micro px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-xs font-black uppercase tracking-wider flex items-center gap-0.5"
               >
                 <span>✨</span>
                 <span>{trait}</span>
@@ -159,14 +154,13 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
         icon={<Swords className="w-5 h-5" />}
         tone="danger"
         disabled={!canAttack}
-        actionLabel="STRIKE ➔"
         accessory={consequence(consequentialAtk)}
         onClick={() => {
           onClose();
           onInitiateAllyAttack(ally.instanceId);
         }}
       >
-        <span className="font-black text-sm">Attack ({atkDisplay} DMG)</span>
+        <span className="font-black text-sm">Attack</span>
         <span className={`text-xs block mt-0.5 ${style.muted}`}>
           {ally.exhausted
             ? 'Ally is exhausted'
@@ -174,7 +168,7 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
               ? 'Not your turn'
               : attackTargets.length === 0
                 ? 'No valid attack targets'
-                : `Exhaust to attack an enemy (takes ${consequentialAtk} consequential damage)`}
+                : 'Exhaust to attack an enemy'}
         </span>
       </ActionRow>
 
@@ -182,14 +176,13 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
         icon={<Target className="w-5 h-5" />}
         tone="info"
         disabled={!canThwart}
-        actionLabel="FOIL ➔"
         accessory={consequence(consequentialThw)}
         onClick={() => {
           onClose();
           onInitiateAllyThwart(ally.instanceId);
         }}
       >
-        <span className="font-black text-sm">Thwart ({thwDisplay} THW)</span>
+        <span className="font-black text-sm">Thwart</span>
         <span className={`text-xs block mt-0.5 ${style.muted}`}>
           {ally.exhausted
             ? 'Ally is exhausted'
@@ -199,7 +192,7 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
                 ? 'Not your turn'
                 : !thwartTargets.some((t) => t.allowed)
                   ? 'No schemes can be thwarted'
-                  : `Exhaust to remove threat from a scheme (takes ${consequentialThw} consequential damage)`}
+                  : 'Exhaust to remove threat from a scheme'}
         </span>
       </ActionRow>
 
@@ -214,7 +207,6 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
             icon={<Zap className="w-5 h-5" />}
             tone="warn"
             disabled={!canTrigger}
-            actionLabel="TRIGGER ➔"
             onClick={() => {
               onDispatchAction?.({
                 type: 'USE_CARD_ABILITY',

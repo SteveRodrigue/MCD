@@ -98,7 +98,7 @@ describe('SimultaneousAbilitiesModal UI Component Tests (Issue #287)', () => {
 
     expect(screen.getByTestId('simultaneous-abilities-modal')).toBeDefined();
     expect(screen.getByText('Choose Resolution Order')).toBeDefined();
-    expect(screen.getByText('FIRST PLAYER CHOICE')).toBeDefined();
+    expect(screen.queryByText('FIRST PLAYER CHOICE')).toBeNull();
 
     expect(screen.getByText('Black Widow')).toBeDefined();
     expect(screen.getByText('Enhanced Spider-Sense')).toBeDefined();

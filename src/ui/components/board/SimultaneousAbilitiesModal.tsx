@@ -102,11 +102,8 @@ export const SimultaneousAbilitiesModal: React.FC<SimultaneousAbilitiesModalProp
       title="Choose Resolution Order"
       kicker="Simultaneous Resolution"
       verb="yellow"
-      trigger={triggerCard ? { name: triggerCard.name, code: triggerCard.code } : null}
+      trigger={null}
       icon={<Zap className="w-5 h-5" />}
-      headerRight={
-        <span className={`text-xs font-black px-2.5 py-1 ${style.chip}`}>FIRST PLAYER CHOICE</span>
-      }
       maxWidthClass="max-w-2xl"
       testId="simultaneous-abilities-modal"
       footer={
@@ -136,9 +133,7 @@ export const SimultaneousAbilitiesModal: React.FC<SimultaneousAbilitiesModalProp
 
       {/* Candidates list */}
       <div className="space-y-2.5">
-        <div className="text-xs font-black uppercase tracking-wider">
-          Resolution Pipeline (First ➔ Last):
-        </div>
+        <div className="text-xs font-black uppercase tracking-wider">First ➔ Last</div>
         {orderedCandidates.map((candidate, index) => {
           const isFirst = index === 0;
           const isLast = index === orderedCandidates.length - 1;
@@ -161,9 +156,6 @@ export const SimultaneousAbilitiesModal: React.FC<SimultaneousAbilitiesModalProp
                 data-testid={`candidate-order-step-${index + 1}`}
                 className={`flex flex-col items-center justify-center w-12 shrink-0 py-1 px-2 text-center ${style.chip}`}
               >
-                <span className="text-[9px] font-black uppercase tracking-wider opacity-80">
-                  STEP
-                </span>
                 <span className="text-base font-black leading-none">{index + 1}</span>
               </div>
 
@@ -183,12 +175,12 @@ export const SimultaneousAbilitiesModal: React.FC<SimultaneousAbilitiesModalProp
                     {candidate.title}
                   </span>
                   {candidate.ownerName && (
-                    <span className={`text-[10px] font-bold px-1.5 py-0.5 ${style.inset}`}>
+                    <span className={`text-micro font-bold px-1.5 py-0.5 ${style.inset}`}>
                       {candidate.ownerName}
                     </span>
                   )}
                   {candidate.triggerType && (
-                    <span className="text-[10px] font-black uppercase px-1.5 py-0.5 rounded bg-amber-300 text-comic-black border border-comic-black/40">
+                    <span className="text-micro font-black uppercase px-1.5 py-0.5 rounded bg-amber-300 text-comic-black border border-comic-black/40">
                       {candidate.triggerType}
                     </span>
                   )}

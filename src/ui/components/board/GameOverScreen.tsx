@@ -25,7 +25,6 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ onReset }) => {
       layer="critical"
       title={victory ? 'Victory!' : 'Defeat!'}
       label={victory ? 'Victory' : 'Defeat'}
-      kicker="End of game"
       verb={victory ? 'green' : 'red'}
       trigger={null}
       icon={victory ? <Trophy className="w-6 h-6" /> : <Skull className="w-6 h-6" />}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { VERB_COLORS, VERB_MEANING, type ModalStyle } from './modal-styles';
+import { VERB_COLORS, VERB_MEANING, themeFontVars, type ModalStyle } from './modal-styles';
 
 /** Static mini modal drawn from the style tokens, so the gallery and the player's picker never drift from the real thing. */
 export const ThemePreview: React.FC<{ style: ModalStyle; heightClass?: string }> = ({
@@ -8,6 +8,7 @@ export const ThemePreview: React.FC<{ style: ModalStyle; heightClass?: string }>
 }) => (
   <div
     className={`relative ${heightClass} rounded-lg overflow-hidden flex items-center justify-center p-4 ${style.previewPage}`}
+    style={themeFontVars(style)}
   >
     <div className={`relative w-full overflow-hidden ${style.frame} ${style.text}`}>
       <div
@@ -38,7 +39,7 @@ export const ThemePreview: React.FC<{ style: ModalStyle; heightClass?: string }>
           ))}
         </div>
         <div
-          className={`h-6 w-1/2 ml-auto flex items-center justify-center text-[9px] font-black ${style.btnGo}`}
+          className={`h-6 w-1/2 ml-auto flex items-center justify-center text-nano font-black ${style.btnGo}`}
         >
           CONFIRM
         </div>

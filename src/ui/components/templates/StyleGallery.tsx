@@ -1,27 +1,22 @@
 import React from 'react';
 import { Check } from 'lucide-react';
-import {
-  MODAL_STYLES,
-  VERB_COLORS,
-  VERB_MEANING,
-  VERB_SWATCH,
-  type ModalStyleId,
-} from '../../theme/modal-styles';
+import { MODAL_STYLES, VERB_COLORS, VERB_MEANING, VERB_SWATCH } from '../../theme/modal-styles';
 import { ThemePreview } from '../../theme/ThemePreview';
-import { ARCHETYPES, type ArchetypeId } from './template-routes';
 
-export interface StyleGalleryProps {
-  onOpen: (style: ModalStyleId, archetype: ArchetypeId) => void;
-}
-
-export const StyleGallery: React.FC<StyleGalleryProps> = ({ onOpen }) => (
-  <div className="max-w-7xl mx-auto px-4 md:px-8 pb-12 pt-6">
+/**
+ * The overview of every style: a preview, the name, the tagline, the traits. It has no buttons: the
+ * Style list in the lab controls (or the T key) opens a style. The text under each preview uses the
+ * readable body font, not the comic headline font.
+ */
+export const StyleGallery: React.FC = () => (
+  <div className="max-w-7xl mx-auto px-4 md:px-8 pb-12 pt-6 font-body">
     <div className="mb-6 grid gap-4 md:grid-cols-2">
       <div>
-        <h2 className="text-2xl font-black uppercase text-comic-yellow">Pick a style</h2>
+        <h2 className="text-2xl font-black uppercase text-comic-yellow">All styles</h2>
         <p className="text-sm text-slate-300 mt-1">
-          Every style shows the same three modals and the same verb colours. Open one, click through
-          the other styles from the top bar, and tell me which one you want to keep or tweak.
+          Every style shows the same modals and the same verb colours. Open one with the Style list
+          on the left, or press <kbd className="px-1 border border-slate-500 rounded">T</kbd> to
+          cycle through them.
         </p>
       </div>
       <div className="bg-slate-800 border-2 border-slate-600 rounded-lg p-3 text-xs space-y-2">
@@ -58,7 +53,7 @@ export const StyleGallery: React.FC<StyleGalleryProps> = ({ onOpen }) => (
           key={style.id}
           aria-label={style.label}
           data-testid={`gallery-style-${style.id}`}
-          className="bg-slate-800 border-2 border-slate-600 rounded-xl p-3 flex flex-col gap-3 hover:border-comic-yellow transition-colors"
+          className="bg-slate-800 border-2 border-slate-600 rounded-xl p-3 flex flex-col gap-3"
         >
           <ThemePreview style={style} />
           <div>
@@ -77,19 +72,6 @@ export const StyleGallery: React.FC<StyleGalleryProps> = ({ onOpen }) => (
           </ul>
           <div className="text-xs text-slate-400">
             Best for: <span className="text-slate-200 font-bold">{style.bestFor}</span>
-          </div>
-          <div className="flex gap-2 mt-auto">
-            {ARCHETYPES.map((arch) => (
-              <button
-                key={arch.id}
-                type="button"
-                title={arch.description}
-                onClick={() => onOpen(style.id, arch.id)}
-                className="flex-1 px-2 py-1.5 rounded-lg bg-comic-yellow hover:bg-amber-400 text-comic-black border-2 border-comic-black font-black text-xs uppercase cursor-pointer shadow-comic-sm"
-              >
-                {arch.label}
-              </button>
-            ))}
           </div>
         </section>
       ))}

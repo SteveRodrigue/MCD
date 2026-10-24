@@ -1,12 +1,13 @@
 import React, { useEffect, useId, useRef } from 'react';
 import { X } from 'lucide-react';
 import { ModalLayer } from '../components/layout/ModalLayer';
+import { CardArtThumbnail } from '../components/cards/CardArtThumbnail';
 import { CardRef, type TriggerCard } from './CardRef';
 import { ActionBurst } from './ActionBurst';
 import { useModalFlavor } from './useModalFlavor';
 import { useModalStyle } from './useModalStyle';
 import type { BurstState } from './useActionBurst';
-import type { ModalStyle, VerbColor, VerbTokens } from './modal-styles';
+import { themeFontVars, type ModalStyle, type VerbColor, type VerbTokens } from './modal-styles';
 
 export interface ModalScaffoldProps {
   title: React.ReactNode;
@@ -18,6 +19,8 @@ export interface ModalScaffoldProps {
   verb?: VerbColor;
   /** The card that caused this modal. Always shown with its thumbnail; `null` only when no card is involved. */
   trigger: TriggerCard | null;
+  /** The card the modal is about, shown as a large thumbnail in place of the icon box (card menus). */
+  headerCard?: TriggerCard;
   /** Counter or badge on the right of the header. */
   headerRight?: React.ReactNode;
   /** Makes the modal dismissible: adds a close button and the Escape key. Omit for forced prompts. */
@@ -45,6 +48,7 @@ interface HeaderProps {
   kicker?: string;
   icon?: React.ReactNode;
   trigger: TriggerCard | null;
+  headerCard?: TriggerCard;
   right?: React.ReactNode;
 }
 
@@ -63,13 +67,20 @@ const ModalHeader: React.FC<HeaderProps> = ({
   kicker,
   icon,
   trigger,
+  headerCard,
   right,
 }) => {
-  const iconBox = icon ? <div className={`shrink-0 ${verb.iconBox}`}>{icon}</div> : null;
+  const iconBox = headerCard ? (
+    <div data-card-ref={headerCard.code ?? ''} className="shrink-0">
+      <CardArtThumbnail cardCode={headerCard.code} cardName={headerCard.name} size="lg" />
+    </div>
+  ) : icon ? (
+    <div className={`shrink-0 ${verb.iconBox}`}>{icon}</div>
+  ) : null;
 
   const kickerRow = (
     <div
-      className={`flex items-center gap-2 min-w-0 text-[10px] font-black uppercase tracking-wider ${verb.kicker}`}
+      className={`flex items-center gap-2 min-w-0 text-micro font-black uppercase tracking-wider ${verb.kicker}`}
     >
       {kicker && (
         <span className="truncate">{layout === 'caption' ? `★ ${kicker} ★` : kicker}</span>
@@ -98,7 +109,7 @@ const ModalHeader: React.FC<HeaderProps> = ({
         <div
           className={`inline-flex items-center gap-2.5 px-4 py-2 border-[3px] border-comic-black rounded-md shadow-comic-sm -rotate-1 min-w-0 ${verb.banner}`}
         >
-          {icon && <span className={`shrink-0 ${verb.iconBox}`}>{icon}</span>}
+          {iconBox}
           <div className="min-w-0">
             {kickerRow}
             {titleEl('text-lg sm:text-xl truncate')}
@@ -139,7 +150,7 @@ const ModalHeader: React.FC<HeaderProps> = ({
     return (
       <div className={`relative px-5 pt-3 pb-2 ${verb.banner} ${style.header}`}>
         <div
-          className={`flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-y-2 py-1 text-[10px] font-black uppercase tracking-[0.2em] ${verb.rule} ${verb.kicker}`}
+          className={`flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-y-2 py-1 text-micro font-black uppercase tracking-[0.2em] ${verb.rule} ${verb.kicker}`}
         >
           <span className="truncate">{kicker}</span>
           {trigger && <CardRef {...trigger} size="xs" />}
@@ -159,11 +170,15 @@ const ModalHeader: React.FC<HeaderProps> = ({
     return (
       <div className="relative pt-3">
         <div className="flex items-end justify-between gap-3 px-5">
-          <div
-            className={`px-4 py-1.5 rounded-t-md border-2 border-b-0 ${verb.rule} ${verb.banner} min-w-0`}
-          >
-            {kickerRow}
-          </div>
+          {kicker || trigger ? (
+            <div
+              className={`px-4 py-1.5 rounded-t-md border-2 border-b-0 ${verb.rule} ${verb.banner} min-w-0`}
+            >
+              {kickerRow}
+            </div>
+          ) : (
+            <span aria-hidden="true" />
+          )}
           <span
             aria-hidden="true"
             className="-rotate-6 mb-1 border-4 border-double border-red-700 px-3 py-0.5 text-sm font-black uppercase tracking-[0.2em] text-red-700 opacity-85 shrink-0"
@@ -210,6 +225,7 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
   icon,
   verb = 'yellow',
   trigger,
+  headerCard,
   headerRight,
   onClose,
   closeOnBackdrop = false,
@@ -221,7 +237,7 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
   label,
   testId,
 }) => {
-  const { style, overlayInset, overlayTop, verbOverride } = useModalStyle();
+  const { style, overlayInset, overlayOffset, verbOverride } = useModalStyle();
   const flavor = useModalFlavor();
   const burst = burstProp ?? flavor.burst ?? null;
   const titleId = useId();
@@ -270,7 +286,7 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
       aria-labelledby={label ? undefined : titleId}
       aria-label={label}
       className={`inset-0 flex items-center justify-center ${overlayInset} ${style.overlay}`}
-      style={overlayTop === undefined ? undefined : { paddingTop: overlayTop }}
+      style={{ ...themeFontVars(style), ...overlayOffset }}
       // A click or press inside a modal must not reach handlers of the game tree it is mounted from
       // (React bubbles events through portals).
       onPointerDown={(event) => event.stopPropagation()}
@@ -312,6 +328,7 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
           kicker={kicker}
           icon={icon}
           trigger={trigger}
+          headerCard={headerCard}
           right={headerControls}
         />
 

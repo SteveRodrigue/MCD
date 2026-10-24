@@ -5,6 +5,7 @@ import { AccentStripe } from '../../theme/AccentStripe';
 import { CardRef } from '../../theme/CardRef';
 import { ModalScaffold } from '../../theme/ModalScaffold';
 import { useModalStyle } from '../../theme/useModalStyle';
+import { BoostIconsPill } from '../cards/BoostIconsPill';
 import { CardView } from '../cards/CardView';
 
 export interface CombatBoostModalProps {
@@ -45,10 +46,6 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
       : outcome.defenderType === 'ALLY'
         ? 'Ally Defender'
         : 'Undefended');
-  const defenderText =
-    outcome.defenderType === 'ALLY' && outcome.targetHeroName
-      ? `${defenderLabel} protecting ${outcome.targetHeroName}`
-      : defenderLabel;
 
   return (
     <ModalScaffold
@@ -67,13 +64,13 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
           )}
         </span>
       }
-      maxWidthClass="max-w-xl"
+      maxWidthClass={outcome.boostCards.length > 2 ? 'max-w-3xl' : 'max-w-xl'}
       testId="combat-boost-modal"
       footer={
         <>
           <span className={`text-xs font-bold hidden sm:inline ${style.muted}`}>
             Press{' '}
-            <kbd className="px-1.5 py-0.5 bg-white text-comic-black border border-comic-black rounded shadow-comic-xs font-mono text-[10px]">
+            <kbd className="px-1.5 py-0.5 bg-white text-comic-black border border-comic-black rounded shadow-comic-xs font-mono text-micro">
               Spacebar
             </kbd>{' '}
             or click Continue
@@ -91,18 +88,15 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
     >
       {/* 1. Boost Cards Revealed Section */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs font-black uppercase">
+        <div className="text-xs font-black uppercase">
           <span className="flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-comic-red" />
             Revealed Boost Cards ({outcome.boostCards.length})
           </span>
-          <span className={`px-2 py-0.5 font-black ${style.chip}`}>
-            Total Boost: +{outcome.totalBoostIcons} 💥
-          </span>
         </div>
 
         {outcome.boostCards.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex flex-wrap justify-center gap-3">
             {outcome.boostCards.map((boost, idx) => {
               const icons = boost.card.boostIcons || 0;
               const hasStar = Boolean(boost.card.boostStar);
@@ -112,30 +106,24 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
                 <div
                   key={boost.instanceId || idx}
                   data-card-anchor={boost.card.code}
-                  className={`relative p-3 pl-4 flex flex-col justify-between gap-2 ${style.panel}`}
+                  className={`relative p-3 pl-4 flex flex-col justify-between gap-2 w-fit max-w-full ${style.panel}`}
                 >
                   <AccentStripe code={boost.card.code} />
-                  <div className="flex items-start gap-2.5">
-                    <div className="shrink-0 w-16">
-                      <CardView card={boost.card} instance={boost} size="sm" showTokens={false} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-black text-xs truncate">{boost.card.name}</h4>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <span className="bg-comic-red text-white text-[11px] font-black px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs">
-                          💥 x{icons}
-                        </span>
-                        {hasStar && (
-                          <span className="bg-amber-400 text-comic-black text-[10px] font-black px-1.5 py-0.5 rounded border border-comic-black">
-                            ★ STAR
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                  <div className="group/boost relative inline-block self-center">
+                    <CardView
+                      card={boost.card}
+                      instance={boost}
+                      size="md"
+                      showTokens={false}
+                      enableHoverZoom={false}
+                      enableHoverLift={false}
+                      enableContextMenu={false}
+                    />
+                    <BoostIconsPill icons={icons} star={hasStar} />
                   </div>
 
                   {hasStar && boostStarText && (
-                    <p className={`text-[10px] p-1.5 font-bold leading-tight ${style.inset}`}>
+                    <p className={`text-micro p-1.5 font-bold leading-tight ${style.inset}`}>
                       ★ {boostStarText}
                     </p>
                   )}
@@ -154,58 +142,48 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
 
       {/* 2. Authoritative Combat Calculation Formula */}
       <div className={`p-4 space-y-3 ${style.panel}`}>
-        <div className={`text-[10px] font-black uppercase tracking-wider ${style.muted}`}>
+        <div className={`text-micro font-black uppercase tracking-wider ${style.muted}`}>
           AUTHORITATIVE FORMULA (RR v1.8 p. 24)
         </div>
 
         <div className="flex items-center justify-around text-center flex-wrap gap-2">
           <div className="flex flex-col items-center">
-            <span className={`text-[10px] uppercase font-bold ${style.muted}`}>Base ATK</span>
+            <span className={`text-micro uppercase font-bold ${style.muted}`}>Base ATK</span>
             <span className="text-xl md:text-2xl font-black">{outcome.baseAttack}</span>
-            <span className={`text-[9px] ${style.muted}`}>
-              <CardRef code={outcome.attackerCode} name={outcome.attackerName} />
-            </span>
           </div>
 
           <span className={`text-xl font-black ${style.muted}`}>+</span>
 
           <div className="flex flex-col items-center">
-            <span className={`text-[10px] uppercase font-bold ${style.muted}`}>Boost Icons</span>
+            <span className={`text-micro uppercase font-bold ${style.muted}`}>Boost Icons</span>
             <span className="text-xl md:text-2xl font-black text-comic-red">
               +{outcome.totalBoostIcons}
             </span>
-            <span className={`text-[9px] ${style.muted}`}>Revealed</span>
           </div>
 
           <span className={`text-xl font-black ${style.muted}`}>=</span>
 
           <div className={`flex flex-col items-center px-2.5 py-1 ${style.inset}`}>
-            <span className="text-[10px] uppercase font-black text-comic-red">Total ATK</span>
+            <span className="text-micro uppercase font-black text-comic-red">Total ATK</span>
             <span className="text-xl md:text-2xl font-black text-comic-red">{totalAttack}</span>
           </div>
 
           <span className={`text-xl font-black ${style.muted}`}>vs</span>
 
           <div className="flex flex-col items-center">
-            <span className={`text-[10px] uppercase font-bold ${style.muted}`}>Defense</span>
+            <span className={`text-micro uppercase font-bold ${style.muted}`}>Defense</span>
             <span className="text-xl md:text-2xl font-black text-blue-600">
               {outcome.defenseValue}
             </span>
-            <span
-              className={`text-[9px] truncate max-w-[180px] ${style.muted}`}
-              title={defenderText}
-            >
-              {outcome.defenderCode ? (
-                <>
+            {outcome.defenderType === 'ALLY' && (
+              <span className={`text-nano truncate max-w-[180px] ${style.muted}`}>
+                {outcome.defenderCode ? (
                   <CardRef code={outcome.defenderCode} name={defenderLabel} />
-                  {outcome.defenderType === 'ALLY' && outcome.targetHeroName
-                    ? ` protecting ${outcome.targetHeroName}`
-                    : ''}
-                </>
-              ) : (
-                defenderText
-              )}
-            </span>
+                ) : (
+                  defenderLabel
+                )}
+              </span>
+            )}
           </div>
         </div>
 
@@ -217,12 +195,12 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
           </div>
           <div className="flex items-center gap-2">
             {outcome.hasOverkill && (
-              <span className="bg-rose-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded border border-white">
+              <span className="bg-rose-600 text-white text-micro font-black px-1.5 py-0.5 rounded border border-white">
                 OVERKILL
               </span>
             )}
             {outcome.hasPiercing && (
-              <span className="bg-amber-400 text-comic-black text-[10px] font-black px-1.5 py-0.5 rounded border border-comic-black">
+              <span className="bg-amber-400 text-comic-black text-micro font-black px-1.5 py-0.5 rounded border border-comic-black">
                 PIERCING
               </span>
             )}

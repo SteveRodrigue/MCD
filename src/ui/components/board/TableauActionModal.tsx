@@ -56,7 +56,6 @@ export const TableauActionModal: React.FC<TableauActionModalProps> = ({
     <CardActionModal
       card={{ name: cardInstance.card.name, code: cardInstance.card.code }}
       kicker={`${cardType} CARD ACTIONS`}
-      icon={<Zap className="w-5 h-5" />}
       exhausted={cardInstance.exhausted}
       prompt="Select an ability to activate:"
       onClose={onClose}
@@ -65,7 +64,7 @@ export const TableauActionModal: React.FC<TableauActionModalProps> = ({
         <InfoStrip className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4" />
-            <span className="font-bold uppercase text-[11px]">
+            <span className="font-bold uppercase text-mini">
               {cardInstance.card.traits?.join(' • ') || cardType}
             </span>
           </div>
@@ -74,13 +73,13 @@ export const TableauActionModal: React.FC<TableauActionModalProps> = ({
             {tokenEntries.map(([type, count]) => (
               <span
                 key={type}
-                className="bg-amber-400 text-slate-950 px-2 py-0.5 rounded border border-comic-black font-black text-[10px] uppercase shadow-comic-xs"
+                className="bg-amber-400 text-slate-950 px-2 py-0.5 rounded border border-comic-black font-black text-micro uppercase shadow-comic-xs"
               >
                 {type}: {count}
               </span>
             ))}
             {tokenEntries.length === 0 && (
-              <span className={`text-[11px] italic ${style.muted}`}>No counters</span>
+              <span className={`text-mini italic ${style.muted}`}>No counters</span>
             )}
           </div>
         </InfoStrip>
@@ -100,7 +99,6 @@ export const TableauActionModal: React.FC<TableauActionModalProps> = ({
             icon={<Zap className="w-5 h-5" />}
             tone="warn"
             disabled={!canTrigger}
-            actionLabel="USE ➔"
             onClick={() => {
               onClose();
               onSelectAbility(ab, cardInstance);
@@ -108,7 +106,7 @@ export const TableauActionModal: React.FC<TableauActionModalProps> = ({
           >
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-black text-sm">{ab.id.replace(/_/g, ' ').toUpperCase()}</span>
-              <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 ${style.chip}`}>
+              <span className={`text-nano font-black uppercase px-1.5 py-0.5 ${style.chip}`}>
                 {ab.timing.replace(/_/g, ' ')}
               </span>
             </div>
@@ -131,7 +129,7 @@ export const TableauActionModal: React.FC<TableauActionModalProps> = ({
               : `⚠️ ${legality.reason || 'Cannot be triggered in this form'}`}
           </div>
           {!legality.isUsable && (
-            <div className={`text-[10px] ${style.muted}`}>
+            <div className={`text-micro ${style.muted}`}>
               Flip your identity card to {isHero ? 'Alter-Ego' : 'Hero'} form to use this card.
             </div>
           )}

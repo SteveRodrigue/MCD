@@ -222,7 +222,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
           control={
             <Segmented options={ZOOM_OPTIONS} value={cardZoomLevel} onChange={setCardZoomLevel} />
           }
-          description="Sets the constant hover zoom preview magnification (90%, 100%, 110%) across all cards on the board and in hand."
+          description="How large a card grows when you hover it, on the board and in hand."
         />
 
         <SettingPanel
@@ -236,7 +236,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
               onChange={setEdgeScrollSpeed}
             />
           }
-          description="Adjusts the camera panning speed when hovering your mouse near the left/right screen edges on multi-hero panoramic tabletops."
+          description="Camera speed when the mouse nears the left or right screen edge on multi-hero tables."
         />
 
         <SettingPanel
@@ -250,7 +250,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
               onChange={setDefaultDifficulty}
             />
           }
-          description="Sets default villain stages and encounter sets. Skirmish = Stage I only; Standard = Stage I $\rightarrow$ II; Expert = Stage II $\rightarrow$ III + Expert cards."
+          description="Skirmish: Stage I only. Standard: Stage I → II. Expert: Stage II → III with Expert cards."
         />
 
         <SettingPanel
@@ -265,7 +265,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
               activeTone="red"
             />
           }
-          description="Official FFG difficulty variant: Deals $+L$ additional encounter cards to each player during Step 4. Available across all modes (Official on Expert, Custom variant on Standard/Skirmish)."
+          description="Deals extra encounter cards to each player in step 4 (the heroic level). Official on Expert, a custom variant on the other modes."
         />
 
         <SettingPanel
@@ -278,7 +278,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
             <div className="pt-2 border-t border-current/20 flex items-center justify-between gap-2">
               <div>
                 <span className="font-bold text-xs">Card Play Statistics</span>
-                <p className={`text-[11px] ${style.muted}`}>
+                <p className={`text-mini ${style.muted}`}>
                   Reset all historical card play and usage statistics.
                 </p>
               </div>
@@ -315,7 +315,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
               onChange={setVillainPhasePacing}
             />
           }
-          description="Controls villain phase speed: Auto Normal (~900ms pause) or Fast (~450ms) with comic pacing; Manual Step (click Next Step or Spacebar); Instant (no pauses, auto-resolves immediately)."
+          description="How fast the villain phase plays. Manual waits for Next Step or Spacebar."
         />
 
         <SettingPanel
@@ -337,7 +337,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
           description={
             <>
               Exports full table state to{' '}
-              <code className="bg-white text-slate-900 px-1 py-0.5 rounded border font-mono text-[10px]">
+              <code className="bg-white text-slate-900 px-1 py-0.5 rounded border font-mono text-micro">
                 logs/gamestates/latest_gamestate.json
               </code>{' '}
               for instant debugging and test generation.

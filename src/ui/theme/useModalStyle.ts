@@ -6,8 +6,8 @@ export interface ModalStyleContextValue {
   style: ModalStyle;
   /** Padding classes of the full-screen overlay. The lab uses it to clear its own navigation bar. */
   overlayInset: string;
-  /** Pixels of top clearance below fixed lab chrome (overrides the top padding of `overlayInset`). */
-  overlayTop?: number;
+  /** Pixels the overlay starts below and to the right of fixed lab chrome, so the chrome is never dimmed or covered. */
+  overlayOffset?: { top?: number; left?: number };
   /** Draw the faction / hero / villain accent on card-bearing elements. */
   cardAccents: boolean;
   /** Forces every header colour (the lab's verb switch). The game never sets it. */

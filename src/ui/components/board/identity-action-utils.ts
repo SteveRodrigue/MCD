@@ -13,7 +13,6 @@ export interface IdentityAttackState {
 export function getIdentityAttackState(
   player: PlayerState,
   gameState?: GameState,
-  effectiveAttackDamage: number = 0,
 ): IdentityAttackState {
   const isHero = player.currentForm === 'hero';
   const isPlayerTurn = gameState
@@ -44,13 +43,11 @@ export function getIdentityAttackState(
     subtext = 'No valid attack targets';
   } else if (canAttackVillain) {
     subtext =
-      validAttackTargets.length > 1
-        ? `Exhaust to attack enemy for ${effectiveAttackDamage} damage`
-        : `Exhaust to attack villain for ${effectiveAttackDamage} damage`;
+      validAttackTargets.length > 1 ? 'Exhaust to attack enemy' : 'Exhaust to attack villain';
   } else if (eligibleMinion) {
-    subtext = `Exhaust to attack minion (${effectiveAttackDamage} DMG) — Villain guarded`;
+    subtext = 'Exhaust to attack minion — Villain guarded';
   } else {
-    subtext = `Exhaust to attack for ${effectiveAttackDamage} damage`;
+    subtext = 'Exhaust to attack';
   }
 
   return {

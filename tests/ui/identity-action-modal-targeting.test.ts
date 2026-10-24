@@ -67,7 +67,7 @@ describe('Identity Action Modal Attack Target Resolution & Guard Invariants (Iss
 
   it('allows basic attack on villain when unhindered', () => {
     gameState.activePlayerIndex = 0;
-    const attackState = getIdentityAttackState(gameState.players[0], gameState, 2);
+    const attackState = getIdentityAttackState(gameState.players[0], gameState);
 
     expect(attackState.canAttack).toBe(true);
     expect(attackState.canAttackVillain).toBe(true);
@@ -83,7 +83,7 @@ describe('Identity Action Modal Attack Target Resolution & Guard Invariants (Iss
     gameState.players[0].engagedMinions.push(guardMinion);
 
     gameState.activePlayerIndex = 0;
-    const attackState = getIdentityAttackState(gameState.players[0], gameState, 2);
+    const attackState = getIdentityAttackState(gameState.players[0], gameState);
 
     // CRITICAL: Hero attack MUST be enabled even with Guard minion engaged!
     expect(attackState.canAttack).toBe(true);
@@ -102,7 +102,7 @@ describe('Identity Action Modal Attack Target Resolution & Guard Invariants (Iss
     gameState.activePlayerIndex = 0;
     gameState.players[0].exhausted = true;
 
-    const attackState = getIdentityAttackState(gameState.players[0], gameState, 2);
+    const attackState = getIdentityAttackState(gameState.players[0], gameState);
     expect(attackState.canAttack).toBe(false);
     expect(attackState.subtext).toBe('Hero is exhausted');
   });
@@ -112,7 +112,7 @@ describe('Identity Action Modal Attack Target Resolution & Guard Invariants (Iss
     gameState.players[0].currentForm = 'alter_ego';
     gameState.players[0].activeFormCard = gameState.players[0].alterEgo;
 
-    const attackState = getIdentityAttackState(gameState.players[0], gameState, 2);
+    const attackState = getIdentityAttackState(gameState.players[0], gameState);
     expect(attackState.canAttack).toBe(false);
     expect(attackState.subtext).toBe('Cannot attack while in Alter-Ego form');
   });
@@ -120,7 +120,7 @@ describe('Identity Action Modal Attack Target Resolution & Guard Invariants (Iss
   it('disables attack when it is not the active player turn', () => {
     gameState.activePlayerIndex = 1; // Player 2 turn
 
-    const attackState = getIdentityAttackState(gameState.players[0], gameState, 2);
+    const attackState = getIdentityAttackState(gameState.players[0], gameState);
     expect(attackState.canAttack).toBe(false);
     expect(attackState.subtext).toBe('Not your turn');
   });
@@ -134,7 +134,7 @@ describe('Identity Action Modal Attack Target Resolution & Guard Invariants (Iss
 
     // 1. Evaluate Player 1 (Active)
     gameState.activePlayerIndex = 0;
-    const p1AttackState = getIdentityAttackState(gameState.players[0], gameState, 2);
+    const p1AttackState = getIdentityAttackState(gameState.players[0], gameState);
     expect(p1AttackState.canAttack).toBe(true);
     expect(p1AttackState.canAttackVillain).toBe(false);
     expect(p1AttackState.validAttackTargets).toHaveLength(1);
@@ -142,7 +142,7 @@ describe('Identity Action Modal Attack Target Resolution & Guard Invariants (Iss
 
     // 2. Evaluate Player 2 (Active)
     gameState.activePlayerIndex = 1;
-    const p2AttackState = getIdentityAttackState(gameState.players[1], gameState, 2);
+    const p2AttackState = getIdentityAttackState(gameState.players[1], gameState);
     // Player 2 is NOT engaged with Guard minion -> CAN attack villain!
     expect(p2AttackState.canAttack).toBe(true);
     expect(p2AttackState.canAttackVillain).toBe(true);

@@ -103,7 +103,7 @@ describe('CardContextMenu Stats Recap & Modals (#315)', () => {
     fireEvent.click(resetBtn);
 
     // Confirm modal opens
-    expect(screen.getByText(/RESET STATS: Spider-Man/i)).toBeDefined();
+    expect(screen.getByRole('dialog', { name: 'Reset card stats' })).toBeDefined();
     expect(screen.getByText(/This action cannot be undone/i)).toBeDefined();
   });
 
@@ -134,7 +134,7 @@ describe('CardContextMenu Stats Recap & Modals (#315)', () => {
     const viewStatsBtn = screen.getByRole('button', { name: /View Detailed Stats/i });
     fireEvent.click(viewStatsBtn);
 
-    expect(screen.getByText(/Spider-Man — STATS/i)).toBeDefined();
+    expect(screen.getByRole('dialog', { name: 'Card stats' })).toBeDefined();
     expect(screen.getByText(/Card Plays & Reveals/i)).toBeDefined();
     expect(screen.getByText(/Basic Actions/i)).toBeDefined();
   });

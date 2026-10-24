@@ -26,7 +26,7 @@ export const EndTurnConfirmationModal: React.FC<EndTurnConfirmationModalProps> =
       <div className="relative w-full max-w-md bg-[#fbf7ee] text-slate-900 border-4 border-slate-950 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-sm overflow-hidden flex flex-col font-serif">
         {/* Masthead Flash */}
         <div className="bg-amber-300 border-b-2 border-slate-950 p-3 text-center select-none">
-          <div className="flex justify-between items-center text-[9px] uppercase tracking-widest text-slate-800 font-bold border-b border-slate-900 pb-0.5 mb-1">
+          <div className="flex justify-between items-center text-nano uppercase tracking-widest text-slate-800 font-bold border-b border-slate-900 pb-0.5 mb-1">
             <span>EXTRA! EXTRA!</span>
             <span className="font-comic text-comic-red font-black">★ THE DAILY BUGLE ★</span>
             <span>PRESS FLASH</span>
@@ -35,7 +35,7 @@ export const EndTurnConfirmationModal: React.FC<EndTurnConfirmationModalProps> =
           <h2 className="text-2xl font-black uppercase tracking-tight font-serif text-slate-950 leading-none">
             PRESS RUN COMPLETE!
           </h2>
-          <p className="text-[11px] font-comic font-bold text-slate-800 uppercase mt-1">
+          <p className="text-mini font-comic font-bold text-slate-800 uppercase mt-1">
             All Actions Resolved for {playerName}
           </p>
         </div>
@@ -47,7 +47,7 @@ export const EndTurnConfirmationModal: React.FC<EndTurnConfirmationModalProps> =
               You have exhausted your character and played all available cards from hand. No further
               legal moves remain.
             </p>
-            <p className="text-[11px] font-comic font-bold text-comic-blue mt-1">
+            <p className="text-mini font-comic font-bold text-comic-blue mt-1">
               Ready to conclude your turn?
             </p>
           </div>

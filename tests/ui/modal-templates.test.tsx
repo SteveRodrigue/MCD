@@ -102,15 +102,15 @@ describe('card accents', () => {
 
 describe('template routes', () => {
   it('parses the gallery, style and archetype from the URL', () => {
-    expect(parseTemplatesPath('/templates/')).toEqual({ style: null, archetype: 'sequence' });
-    expect(parseTemplatesPath('/templates')).toEqual({ style: null, archetype: 'sequence' });
+    expect(parseTemplatesPath('/templates/')).toEqual({ style: null, item: 'sequence' });
+    expect(parseTemplatesPath('/templates')).toEqual({ style: null, item: 'sequence' });
     expect(parseTemplatesPath('/templates/night/select')).toEqual({
       style: 'night',
-      archetype: 'select',
+      item: 'select',
     });
     expect(parseTemplatesPath('/templates/splash')).toEqual({
       style: 'splash',
-      archetype: 'sequence',
+      item: 'sequence',
     });
   });
 
@@ -122,11 +122,11 @@ describe('template routes', () => {
   it('builds paths that parse back to the same route', () => {
     for (const style of MODAL_STYLES) {
       for (const archetype of ['decision', 'sequence', 'select'] as const) {
-        const route = { style: style.id, archetype };
+        const route = { style: style.id, item: archetype };
         expect(parseTemplatesPath(buildTemplatesPath(route))).toEqual(route);
       }
     }
-    expect(buildTemplatesPath({ style: null, archetype: 'select' })).toBe('/templates/');
+    expect(buildTemplatesPath({ style: null, item: 'select' })).toBe('/templates/');
   });
 });
 
@@ -191,7 +191,7 @@ describe.each(MODAL_STYLES.map((s) => [s.label, s] as const))('style: %s', (_lab
     it('marks the last step as the finisher', () => {
       withStyle(style, <SequenceTemplate />);
       expect(screen.getAllByText('💥 2 MOVE').length).toBeGreaterThan(0);
-      expect(screen.getByText('💥 FINAL (FINISHER)')).toBeTruthy();
+      expect(screen.getByText('💥 STEP 4')).toBeTruthy();
     });
 
     it('pops a sound-effect burst on execute, with a finisher tag on the last slot', () => {
@@ -211,14 +211,14 @@ describe.each(MODAL_STYLES.map((s) => [s.label, s] as const))('style: %s', (_lab
   describe('Decision', () => {
     it('switches title when forced', () => {
       const { rerender } = withStyle(style, <DecisionTemplate />);
-      expect(screen.getByRole('dialog', { name: 'CHOOSE AN ACTION' })).toBeTruthy();
+      expect(screen.getByRole('dialog', { name: 'Choose your defense' })).toBeTruthy();
 
       rerender(
         <ModalStyleProvider style={style}>
           <DecisionTemplate forced />
         </ModalStyleProvider>,
       );
-      expect(screen.getByRole('dialog', { name: 'FORCED RESPONSE / INTERRUPT' })).toBeTruthy();
+      expect(screen.getByRole('dialog', { name: 'Choose your defense' })).toBeTruthy();
     });
 
     it('reports the chosen option', () => {
@@ -281,19 +281,29 @@ describe('ModalTemplatesScreen navigation', () => {
     window.history.replaceState({}, '', path);
     return render(<ModalTemplatesScreen onExit={onExit} />);
   };
-  const styleBar = () => within(screen.getByRole('navigation', { name: 'Styles' }));
-  const typeBar = () => within(screen.getByRole('navigation', { name: 'Modal types' }));
+  const choose = (name: string, label: string) => {
+    const list = screen.getByRole('combobox', { name }) as HTMLSelectElement;
+    const option = within(list).getByRole('option', { name: label }) as HTMLOptionElement;
+    fireEvent.change(list, { target: { value: option.value } });
+  };
 
   beforeEach(() => {
     window.history.replaceState({}, '', '/templates/');
   });
 
-  it('renders the lab bar on a portal above the modal layer so it stays clickable', () => {
+  it('renders the lab controls on a portal above the modal layer so they stay clickable', () => {
     const { container } = openAt('/templates/night/sequence');
-    const bar = screen.getByRole('banner');
+    const bar = screen.getByRole('complementary', { name: 'Lab controls' });
     expect(container.contains(bar)).toBe(false);
     expect(bar.parentElement?.className).toContain('z-critical');
     expect(screen.getByRole('dialog').className).toContain('z-modal');
+  });
+
+  it('starts the modals to the right of the controls, so the controls are never covered', () => {
+    openAt('/templates/night/sequence');
+    const overlay = screen.getByRole('dialog');
+    expect(overlay.style.left).not.toBe('');
+    expect(overlay.style.top).toBe('');
   });
 
   it('shows a gallery of every style at /templates/', () => {
@@ -304,32 +314,71 @@ describe('ModalTemplatesScreen navigation', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('opens a style and modal type from the gallery and updates the URL', () => {
+  it('is an overview only: no buttons in any style card, readable text under the previews', () => {
     openAt('/templates/');
-    const dossier = screen.getByTestId('gallery-style-dossier');
-    fireEvent.click(within(dossier).getByRole('button', { name: 'Decision' }));
-
-    expect(window.location.pathname).toBe('/templates/dossier/decision');
-    expect(screen.getByRole('dialog', { name: 'CHOOSE AN ACTION' })).toBeTruthy();
+    for (const style of MODAL_STYLES) {
+      const card = screen.getByTestId(`gallery-style-${style.id}`);
+      expect(within(card).queryAllByRole('button')).toHaveLength(0);
+      expect(within(card).getByRole('heading', { name: style.label })).toBeTruthy();
+      expect(within(card).getByText(style.tagline)).toBeTruthy();
+    }
+    const gallery = screen.getByTestId('gallery-style-pop-art').parentElement!.parentElement!;
+    expect(gallery.className).toContain('font-body');
+    expect(gallery.className).not.toContain('font-comic');
   });
 
-  it('reaches every style from the style bar and keeps the modal type', () => {
+  it('opens a style from the Style list while on the gallery, and updates the URL', () => {
+    openAt('/templates/');
+    choose('Style', 'S.H.I.E.L.D. Dossier');
+    expect(window.location.pathname).toMatch(/^\/templates\/dossier\//);
+    expect(screen.getAllByRole('dialog').length).toBeGreaterThan(0);
+  });
+
+  it('reaches every style from the style list and keeps the modal', () => {
     openAt('/templates/pop-art/select');
     for (const style of MODAL_STYLES) {
-      fireEvent.click(styleBar().getByRole('button', { name: style.label }));
+      choose('Style', style.label);
       expect(window.location.pathname).toBe(`/templates/${style.id}/select`);
-      expect(
-        styleBar().getByRole('button', { name: style.label }).getAttribute('aria-current'),
-      ).toBe('page');
+      expect((screen.getByRole('combobox', { name: 'Style' }) as HTMLSelectElement).value).toBe(
+        style.id,
+      );
       expect(screen.getByRole('dialog')).toBeTruthy();
       expect(screen.getByTestId('select-cards-counter').textContent).toBe('0 / 2');
     }
   });
 
+  it('cycles the style with the buttons and with T, wrapping through the gallery', () => {
+    openAt('/templates/pop-art/select');
+    fireEvent.click(screen.getByRole('button', { name: 'Next style' }));
+    expect(window.location.pathname).toBe('/templates/storyboard/select');
+    fireEvent.keyDown(window, { key: 't' });
+    expect(window.location.pathname).toBe('/templates/newsprint/select');
+    fireEvent.keyDown(window, { key: 'T', shiftKey: true });
+    fireEvent.keyDown(window, { key: 'T', shiftKey: true });
+    fireEvent.keyDown(window, { key: 'T', shiftKey: true });
+    expect(window.location.pathname).toBe('/templates/');
+    expect(screen.queryByRole('dialog')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Previous style' }));
+    expect(window.location.pathname).toBe('/templates/hud/select');
+  });
+
+  it('cycles the kit with K and the modal with P, and ignores keys typed in a field', () => {
+    openAt('/templates/night/decision');
+    fireEvent.keyDown(window, { key: 'p' });
+    expect(window.location.pathname).toBe('/templates/night/sequence');
+    fireEvent.keyDown(window, { key: 'P', shiftKey: true });
+    expect(window.location.pathname).toBe('/templates/night/decision');
+    fireEvent.keyDown(window, { key: 'k' });
+    expect(window.location.pathname).toBe('/templates/night/elements');
+    expect((screen.getByRole('combobox', { name: 'Prompt' }) as HTMLSelectElement).value).toBe('');
+    fireEvent.keyDown(screen.getByRole('combobox', { name: 'Kit' }), { key: 'k' });
+    expect(window.location.pathname).toBe('/templates/night/elements');
+  });
+
   it('switches modal type and resets demo state', () => {
     openAt('/templates/night/decision');
 
-    fireEvent.click(typeBar().getByRole('button', { name: 'Sequence' }));
+    choose('Prompt', 'Sequence');
     expect(window.location.pathname).toBe('/templates/night/sequence');
     expect(screen.getByText('EXECUTE SEQUENCE!')).toBeTruthy();
 
@@ -342,11 +391,12 @@ describe('ModalTemplatesScreen navigation', () => {
       (screen.getByLabelText('Move Energy Daggers earlier') as HTMLButtonElement).disabled,
     ).toBe(true);
 
-    fireEvent.click(typeBar().getByRole('button', { name: 'Select' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next prompt' }));
+    expect(window.location.pathname).toBe('/templates/night/select');
     expect(screen.getByTestId('select-cards-counter').textContent).toBe('0 / 2');
   });
 
-  it('toggles card accents from the lab bar', () => {
+  it('toggles card accents from the lab controls', () => {
     openAt('/templates/pop-art/select');
     expect(document.querySelector('span[aria-hidden][data-accent]')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /Card accent: on/i }));
@@ -356,7 +406,7 @@ describe('ModalTemplatesScreen navigation', () => {
     ).toBe('false');
   });
 
-  it('shows the last action in the lab bar', () => {
+  it('shows the last action in the lab controls', () => {
     openAt('/templates/splash/decision');
     fireEvent.click(screen.getByRole('button', { name: /Take undefended damage/i }));
     expect(screen.getByRole('status').textContent).toBe('Chose: undefended');
@@ -365,7 +415,7 @@ describe('ModalTemplatesScreen navigation', () => {
   it('toggles forced mode on the decision modal', () => {
     openAt('/templates/pop-art/decision');
     fireEvent.click(screen.getByRole('button', { name: /Forced: off/i }));
-    expect(screen.getByRole('dialog', { name: 'FORCED RESPONSE / INTERRUPT' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Choose your defense' })).toBeTruthy();
   });
 
   it('overrides the header verb colour and goes back to default', () => {
@@ -379,9 +429,9 @@ describe('ModalTemplatesScreen navigation', () => {
     );
   });
 
-  it('returns to the gallery with All styles', () => {
+  it('returns to the gallery from the first stop of the style list', () => {
     openAt('/templates/dossier/sequence');
-    fireEvent.click(screen.getByRole('button', { name: /All styles/i }));
+    choose('Style', 'All styles (gallery)');
     expect(window.location.pathname).toBe('/templates/');
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.getByTestId('gallery-style-newsprint')).toBeTruthy();
@@ -389,9 +439,7 @@ describe('ModalTemplatesScreen navigation', () => {
 
   it('follows the browser back button', async () => {
     openAt('/templates/');
-    fireEvent.click(
-      within(screen.getByTestId('gallery-style-night')).getByRole('button', { name: 'Select' }),
-    );
+    choose('Style', 'Night Edition');
     expect(screen.getByRole('dialog')).toBeTruthy();
 
     act(() => {

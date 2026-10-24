@@ -255,7 +255,7 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
 
       render(<CombatBoostModal isOpen={true} outcome={outcome} onContinue={vi.fn()} />);
 
-      expect(screen.getByText('Black Cat protecting Spider-Man')).toBeDefined();
+      expect(screen.getByText('Black Cat')).toBeDefined();
       expect(screen.getByText('Target: Spider-Man')).toBeDefined();
     });
 

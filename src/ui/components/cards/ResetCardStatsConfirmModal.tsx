@@ -52,7 +52,7 @@ export const ResetCardStatsConfirmModal: React.FC<ResetCardStatsConfirmModalProp
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className={`ml-auto px-4 py-2 text-xs font-bold font-comic cursor-pointer ${style.btnMove}`}
+            className={`ml-auto px-4 py-2 text-xs font-bold cursor-pointer ${style.btnMove}`}
           >
             Cancel
           </button>
@@ -60,7 +60,7 @@ export const ResetCardStatsConfirmModal: React.FC<ResetCardStatsConfirmModalProp
             type="button"
             onClick={handleConfirm}
             disabled={isSubmitting}
-            className="px-4 py-2 text-xs font-bold font-comic uppercase rounded-lg border-2 border-comic-black bg-comic-red hover:bg-rose-600 text-white shadow-comic-sm cursor-pointer transition-transform active:scale-95 flex items-center gap-1.5"
+            className="px-4 py-2 text-xs font-bold uppercase rounded-lg border-2 border-comic-black bg-comic-red hover:bg-rose-600 text-white shadow-comic-sm cursor-pointer transition-transform active:scale-95 flex items-center gap-1.5"
           >
             <Trash2 className="w-4 h-4" />
             <span>{isSubmitting ? 'Resetting...' : 'Reset'}</span>

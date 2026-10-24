@@ -101,7 +101,7 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
         className="comic-panel p-4 bg-white/95 relative hover:z-raised focus-within:z-raised shadow-comic shrink-0"
       >
         {/* Zone Title Ribbon */}
-        <div className="absolute -top-3 left-4 bg-slate-900 text-white border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1">
+        <div className="absolute -top-3 left-4 bg-slate-900 text-white border border-comic-black text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1">
           <Archive className="w-3.5 h-3.5" />
           <span>OUT OF PLAY</span>
         </div>
@@ -119,10 +119,10 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
               title={`Inspect Removed from Game Pile (${cards.length} Cards)`}
             >
               <CardView card={topCard.card} size="sm" showTokens={false} enableHoverZoom={true} />
-              <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-comic-red text-white font-comic text-nano px-1 py-0.5 rounded border border-comic-black shadow-comic-xs uppercase font-bold pointer-events-none">
+              <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-comic-red text-white text-nano px-1 py-0.5 rounded border border-comic-black shadow-comic-xs uppercase font-bold pointer-events-none">
                 REMOVED
               </span>
-              <span className="absolute -bottom-2 -right-2 bg-slate-900 text-white font-comic text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
+              <span className="absolute -bottom-2 -right-2 bg-slate-900 text-white text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
                 {cards.length}
               </span>
             </div>
@@ -133,7 +133,7 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
               className="w-28 h-40 bg-slate-100 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-center p-1 cursor-pointer hover:border-slate-400"
               title="Removed from Game (Empty)"
             >
-              <span className="font-comic text-xs text-slate-400">REMOVED</span>
+              <span className="text-xs text-slate-400">REMOVED</span>
               <span className="text-micro text-slate-400 font-bold">EMPTY</span>
             </div>
           )}
@@ -172,13 +172,13 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
                     <CardView card={heroCard} size="sm" showTokens={false} enableHoverZoom={true} />
 
                     {/* DEFEATED Ribbon Badge */}
-                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-comic-red text-white font-comic text-nano px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs uppercase font-bold pointer-events-none whitespace-nowrap">
+                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-comic-red text-white text-nano px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs uppercase font-bold pointer-events-none whitespace-nowrap">
                       DEFEATED
                     </span>
 
                     {/* Deck Count Badge */}
                     <span
-                      className="absolute -bottom-2 -right-2 bg-slate-900 text-white font-comic text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm"
+                      className="absolute -bottom-2 -right-2 bg-slate-900 text-white text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm"
                       title={`${player.deck.length} cards in deck`}
                     >
                       {player.deck.length}
@@ -247,7 +247,7 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
                   enableHoverZoom={true}
                 />
                 <div className="space-y-2">
-                  <p className="font-comic text-sm uppercase">
+                  <p className="text-sm uppercase">
                     HP {selectedEliminatedPlayer.health} / {selectedEliminatedPlayer.maxHealth}
                   </p>
                   <ul

@@ -70,7 +70,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
       <div className="shrink-0 flex items-center gap-1.5">
         {accessory}
         <span
-          className={`font-comic text-xs font-black uppercase px-2.5 py-1 ${style.chip} ${
+          className={`text-xs font-black uppercase px-2.5 py-1 ${style.chip} ${
             disabled ? 'opacity-60' : ''
           }`}
         >

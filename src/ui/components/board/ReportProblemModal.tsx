@@ -118,7 +118,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
   };
 
   const choice = (selected: boolean) =>
-    `px-2 py-1.5 font-comic text-xs cursor-pointer transition-all ${
+    `px-2 py-1.5 text-xs cursor-pointer transition-all ${
       selected ? `${style.btnMove} font-bold scale-105` : style.tile
     }`;
 
@@ -135,7 +135,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
       testId="report-problem-modal"
     >
       <div className="space-y-1.5">
-        <span className="font-comic text-sm uppercase">Report Type</span>
+        <span className="text-sm uppercase">Report Type</span>
         <div className="grid grid-cols-3 gap-1.5">
           {REPORT_TYPES.map((opt) => (
             <button
@@ -153,7 +153,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
 
       {/* Priority Selector */}
       <div className="space-y-1.5">
-        <span className="font-comic text-sm uppercase">Priority</span>
+        <span className="text-sm uppercase">Priority</span>
         <div className="grid grid-cols-4 gap-1.5">
           {PRIORITIES.map((opt) => (
             <button
@@ -171,7 +171,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
 
       {/* Description */}
       <div className="space-y-1.5">
-        <span className="font-comic text-sm uppercase">Description</span>
+        <span className="text-sm uppercase">Description</span>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}

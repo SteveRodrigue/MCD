@@ -112,6 +112,54 @@ describe('font guard: themes name only the font roles', () => {
   });
 });
 
+describe('font guard: small text is Body, not Headlines (fonts plan N2)', () => {
+  /** The themed modals and newspapers (batch 1). Each batch adds its files here; the last one covers the whole UI. */
+  const BATCH_FILES = [
+    ...listFiles('src/ui/components/board', ['Modal.tsx', 'Screen.tsx']),
+    'src/ui/components/board/ActionRow.tsx',
+    'src/ui/components/board/OptionsMenu.tsx',
+    'src/ui/components/board/PromptCardPanel.tsx',
+    'src/ui/components/board/RemovedFromGameBox.tsx',
+    'src/ui/components/board/DailyBugleActionNewspaper.tsx',
+    'src/ui/components/cards/CardStatsModal.tsx',
+    'src/ui/components/cards/ResetCardStatsConfirmModal.tsx',
+  ];
+
+  const SMALL = /(?<![\w:-])text-(xs|sm|nano|micro|mini)(?![\w-])/;
+  const BIG = /(?<![\w-])(?:[a-z]+:)?text-(base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)(?![\w-])/;
+
+  /** The run of classes around each font-comic: the text between the quotes, backticks and template holes. */
+  const runsAroundFontComic = (source: string): string[] =>
+    stripComments(source)
+      .split('\n')
+      .flatMap((line) =>
+        line.split(/["'`]|\$\{|\}/).filter((part) => /(?<![-\w])font-comic(?![-\w])/.test(part)),
+      );
+
+  it('scans the themed modals and the newspapers', () => {
+    expect(BATCH_FILES.length).toBeGreaterThan(20);
+    expect(BATCH_FILES).toContain('src/ui/components/board/DecisionPromptModal.tsx');
+  });
+
+  it.each(BATCH_FILES)('%s keeps Headlines (font-comic) for headline-size text only', (file) => {
+    const offenders = runsAroundFontComic(read(file)).filter(
+      (run) => SMALL.test(run) && !BIG.test(run),
+    );
+    expect(offenders, `${file} uses the Headlines font on small text; use the Body font`).toEqual(
+      [],
+    );
+  });
+
+  it('uses the Newspaper roles, not the theme Headlines, inside the two newspaper surfaces', () => {
+    for (const file of [
+      'src/ui/components/board/DailyBugleActionNewspaper.tsx',
+      'src/ui/components/board/EndTurnConfirmationModal.tsx',
+    ]) {
+      expect(stripComments(read(file)), file).not.toMatch(/(?<![-\w])font-comic(?![-\w])/);
+    }
+  });
+});
+
 describe('font guard: no direct serif font', () => {
   it('names no font-serif anywhere in the UI: a newspaper uses the Newspaper roles', () => {
     for (const file of listFiles('src/ui', ['.ts', '.tsx', '.css'])) {

@@ -90,7 +90,7 @@ function Segmented<T extends string | number>({
           type="button"
           aria-pressed={value === opt.value}
           onClick={() => onChange(opt.value)}
-          className={`px-2.5 py-1 font-comic text-xs uppercase rounded transition-all cursor-pointer font-bold ${
+          className={`px-2.5 py-1 text-xs uppercase rounded transition-all cursor-pointer font-bold ${
             value === opt.value
               ? activeTone === 'red'
                 ? 'bg-comic-red text-white border border-comic-black shadow-comic-sm'
@@ -203,7 +203,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
           <button
             type="button"
             onClick={onClose}
-            className={`ml-auto px-6 py-2 text-sm font-comic font-black uppercase cursor-pointer flex items-center gap-2 ${style.btnGo}`}
+            className={`ml-auto px-6 py-2 text-sm font-black uppercase cursor-pointer flex items-center gap-2 ${style.btnGo}`}
           >
             <Check className="w-4 h-4" />
             <span>Save & Close</span>
@@ -285,7 +285,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
               <button
                 type="button"
                 onClick={() => setShowResetAllConfirm(true)}
-                className={`px-3 py-1 font-comic text-xs font-bold cursor-pointer flex items-center gap-1.5 shrink-0 ${style.btnMove}`}
+                className={`px-3 py-1 text-xs font-bold cursor-pointer flex items-center gap-1.5 shrink-0 ${style.btnMove}`}
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Reset All Stats</span>
@@ -329,7 +329,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
                 setSnapshotSuccess('Snapshot saved to logs/gamestates/latest_gamestate.json');
                 later(() => setSnapshotSuccess(null), 3000);
               }}
-              className={`px-3 py-1 font-comic text-xs font-bold cursor-pointer ${style.btnMove}`}
+              className={`px-3 py-1 text-xs font-bold cursor-pointer ${style.btnMove}`}
             >
               📸 Save Snapshot
             </button>
@@ -356,7 +356,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
               onClick={() => {
                 window.open('/editor', '_blank');
               }}
-              className="px-3 py-1 font-comic text-xs rounded border-2 border-comic-black bg-comic-accent text-white font-bold shadow-comic-sm cursor-pointer flex items-center gap-1.5 shrink-0"
+              className="px-3 py-1 text-xs rounded border-2 border-comic-black bg-comic-accent text-white font-bold shadow-comic-sm cursor-pointer flex items-center gap-1.5 shrink-0"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               <span>Open Editor</span>

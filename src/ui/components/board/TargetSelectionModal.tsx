@@ -102,7 +102,7 @@ export const TargetSelectionModal: React.FC<TargetSelectionModalProps> = ({
         <button
           type="button"
           onClick={onClose}
-          className={`ml-auto font-comic text-xs font-black py-2 px-4 uppercase cursor-pointer ${style.btnMove}`}
+          className={`ml-auto text-xs font-black py-2 px-4 uppercase cursor-pointer ${style.btnMove}`}
         >
           {cancelLabel}
         </button>

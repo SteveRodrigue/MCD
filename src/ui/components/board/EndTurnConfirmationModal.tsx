@@ -33,14 +33,16 @@ export const EndTurnConfirmationModal: React.FC<EndTurnConfirmationModalProps> =
         <div className="bg-amber-300 border-b-2 border-slate-950 p-3 text-center select-none">
           <div className="flex justify-between items-center text-nano uppercase tracking-widest text-slate-800 font-bold border-b border-slate-900 pb-0.5 mb-1">
             <span>EXTRA! EXTRA!</span>
-            <span className="font-comic text-comic-red font-black">★ THE DAILY BUGLE ★</span>
+            <span className="font-news-headline text-comic-red font-black">
+              ★ THE DAILY BUGLE ★
+            </span>
             <span>PRESS FLASH</span>
           </div>
 
           <h2 className="text-2xl font-black uppercase tracking-tight font-news-headline text-slate-950 leading-none">
             PRESS RUN COMPLETE!
           </h2>
-          <p className="text-mini font-comic font-bold text-slate-800 uppercase mt-1">
+          <p className="text-mini font-news-headline font-bold text-slate-800 uppercase mt-1">
             All Actions Resolved for {playerName}
           </p>
         </div>
@@ -52,7 +54,7 @@ export const EndTurnConfirmationModal: React.FC<EndTurnConfirmationModalProps> =
               You have exhausted your character and played all available cards from hand. No further
               legal moves remain.
             </p>
-            <p className="text-mini font-comic font-bold text-comic-blue mt-1">
+            <p className="text-mini font-news-headline font-bold text-comic-blue mt-1">
               Ready to conclude your turn?
             </p>
           </div>
@@ -61,7 +63,7 @@ export const EndTurnConfirmationModal: React.FC<EndTurnConfirmationModalProps> =
           <div className="flex flex-col sm:flex-row gap-2 pt-1">
             <button
               onClick={onDismiss}
-              className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-comic text-xs py-2 px-3 rounded border-2 border-slate-900 shadow-sm active:translate-y-0.5 font-bold cursor-pointer flex items-center justify-center gap-1"
+              className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-news-headline text-xs py-2 px-3 rounded border-2 border-slate-900 shadow-sm active:translate-y-0.5 font-bold cursor-pointer flex items-center justify-center gap-1"
             >
               <Eye className="w-3.5 h-3.5" />
               <span>Review Board</span>
@@ -69,7 +71,7 @@ export const EndTurnConfirmationModal: React.FC<EndTurnConfirmationModalProps> =
 
             <button
               onClick={onConfirmEndTurn}
-              className="flex-1 bg-comic-red hover:bg-red-700 text-white font-comic text-xs py-2 px-3 rounded border-2 border-slate-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 font-bold cursor-pointer flex items-center justify-center gap-1 uppercase"
+              className="flex-1 bg-comic-red hover:bg-red-700 text-white font-news-headline text-xs py-2 px-3 rounded border-2 border-slate-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 font-bold cursor-pointer flex items-center justify-center gap-1 uppercase"
             >
               <Newspaper className="w-3.5 h-3.5" />
               <span>{turnAction.headline}</span>

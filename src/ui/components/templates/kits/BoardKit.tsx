@@ -64,7 +64,7 @@ export const BoardKit: React.FC = () => {
                     size="sm"
                     enableContextMenu={false}
                   />
-                  <span className={`font-comic text-sm font-black`}>Sandman, engaged</span>
+                  <span className={`text-sm font-black`}>Sandman, engaged</span>
                 </div>
               </div>
             </div>

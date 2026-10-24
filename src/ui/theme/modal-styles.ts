@@ -235,7 +235,7 @@ const popArt: ModalStyle = {
   bestFor: 'Everything: the safe baseline',
   headerLayout: 'bar',
   overlay: 'bg-comic-black/80 backdrop-blur-xs',
-  frame: 'bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl font-comic',
+  frame: 'bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl font-body',
   texture: DOTS(12),
   textureClass: 'opacity-10',
   header: 'border-b-4',
@@ -333,7 +333,7 @@ const storyboard: ModalStyle = {
   headerLayout: 'caption',
   overlay: 'bg-comic-black/85 backdrop-blur-sm',
   frame:
-    'bg-comic-paper border-4 border-comic-black rounded-lg shadow-[8px_8px_0_0_rgba(0,0,0,1)] font-comic',
+    'bg-comic-paper border-4 border-comic-black rounded-lg shadow-[8px_8px_0_0_rgba(0,0,0,1)] font-body',
   texture: DOTS(14),
   textureClass: 'opacity-15',
   header: '',
@@ -544,7 +544,7 @@ const night: ModalStyle = {
   headerLayout: 'bar',
   overlay: 'bg-black/85 backdrop-blur-sm',
   frame:
-    'bg-slate-900 border-4 border-yellow-300 rounded-xl shadow-[0_0_0_4px_#000,0_0_44px_rgba(255,222,0,0.28)] font-comic',
+    'bg-slate-900 border-4 border-yellow-300 rounded-xl shadow-[0_0_0_4px_#000,0_0_44px_rgba(255,222,0,0.28)] font-body',
   texture: DOTS(14, '#fff'),
   textureClass: 'opacity-[0.04]',
   header: 'border-b-4',
@@ -649,7 +649,7 @@ const splash: ModalStyle = {
   headerLayout: 'burst',
   overlay: 'bg-comic-black/85 backdrop-blur-sm',
   frame:
-    'bg-yellow-50 border-[6px] border-comic-black rounded-3xl shadow-[10px_10px_0_0_#ED1D24,14px_14px_0_0_#111111] font-comic',
+    'bg-yellow-50 border-[6px] border-comic-black rounded-3xl shadow-[10px_10px_0_0_#ED1D24,14px_14px_0_0_#111111] font-body',
   texture: {
     backgroundImage:
       'repeating-conic-gradient(from 0deg at 50% 38%, rgba(237,29,36,0.9) 0deg 4deg, transparent 4deg 12deg)',
@@ -732,7 +732,7 @@ const splash: ModalStyle = {
   caption:
     'bg-comic-black text-comic-yellow px-4 py-1.5 text-sm font-black uppercase tracking-wide -rotate-1 shadow-[4px_4px_0_0_#ED1D24]',
   bubble:
-    "relative bg-white text-comic-black border-[4px] border-comic-black rounded-3xl px-4 py-2.5 text-base font-black before:content-[''] before:absolute before:-left-[16px] before:top-5 before:border-[12px] before:border-transparent before:border-r-comic-black",
+    "font-comic relative bg-white text-comic-black border-[4px] border-comic-black rounded-3xl px-4 py-2.5 text-base font-black before:content-[''] before:absolute before:-left-[16px] before:top-5 before:border-[12px] before:border-transparent before:border-r-comic-black",
   finisher: {
     label: 'FINISHER!',
     star: true,

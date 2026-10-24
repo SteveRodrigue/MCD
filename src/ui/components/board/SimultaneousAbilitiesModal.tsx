@@ -156,7 +156,7 @@ export const SimultaneousAbilitiesModal: React.FC<SimultaneousAbilitiesModalProp
                 data-testid={`candidate-order-step-${index + 1}`}
                 className={`flex flex-col items-center justify-center w-12 shrink-0 py-1 px-2 text-center ${style.chip}`}
               >
-                <span className="text-base font-black leading-none">{index + 1}</span>
+                <span className="font-comic text-base font-black leading-none">{index + 1}</span>
               </div>
 
               {/* Thumbnail */}

@@ -419,7 +419,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                 <AccentStripe code={optionCardCode ?? ''} />
                 <div className="flex items-center justify-between w-full">
                   <span
-                    className={`font-comic font-black text-sm sm:text-base uppercase tracking-wide flex items-center gap-2 flex-wrap transition-colors ${style.optionTitleHover}`}
+                    className={`font-black text-sm sm:text-base uppercase tracking-wide flex items-center gap-2 flex-wrap transition-colors ${style.optionTitleHover}`}
                   >
                     <span
                       className={`w-6 h-6 rounded-full border-2 border-comic-black flex items-center justify-center text-xs font-black ${
@@ -458,7 +458,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                         <Swords className="w-4 h-4 text-white" />
                       </div>
                     ) : null}
-                    <span>{option.label}</span>
+                    <span className="font-comic">{option.label}</span>
                     {option.statusBadges?.isTough && (
                       <span className="bg-amber-400 text-slate-950 text-nano font-black uppercase px-1.5 py-0.2 rounded border border-comic-black shadow-comic-xs">
                         TOUGH

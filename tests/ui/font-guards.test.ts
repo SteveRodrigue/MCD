@@ -123,6 +123,8 @@ describe('font guard: small text is Body, not Headlines (fonts plan N2)', () => 
     'src/ui/components/board/DailyBugleActionNewspaper.tsx',
     'src/ui/components/cards/CardStatsModal.tsx',
     'src/ui/components/cards/ResetCardStatsConfirmModal.tsx',
+    ...listFiles('src/ui/theme', ['.ts', '.tsx']),
+    ...listFiles('src/ui/components/templates/kits', ['.tsx']),
   ];
 
   const SMALL = /(?<![\w:-])text-(xs|sm|nano|micro|mini)(?![\w-])/;
@@ -135,6 +137,15 @@ describe('font guard: small text is Body, not Headlines (fonts plan N2)', () => 
       .flatMap((line) =>
         line.split(/["'`]|\$\{|\}/).filter((part) => /(?<![-\w])font-comic(?![-\w])/.test(part)),
       );
+
+  const BIG_PLAIN = /(?<![\w:-])text-(base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)(?![\w-])/;
+  const FAMILY = /(?<![-\w])font-(comic|body|mono|news-headline|news-body|bangers|sans)(?![-\w])/;
+
+  /** Classes of a className, split at quotes, backticks and template holes, one run per piece. */
+  const runs = (source: string): string[] =>
+    stripComments(source)
+      .split('\n')
+      .flatMap((line) => (line.includes('titleEl(') ? [] : line.split(/["'`]|\$\{|\}/)));
 
   it('scans the themed modals and the newspapers', () => {
     expect(BATCH_FILES.length).toBeGreaterThan(20);
@@ -149,6 +160,17 @@ describe('font guard: small text is Body, not Headlines (fonts plan N2)', () => 
       [],
     );
   });
+
+  it.each(BATCH_FILES)(
+    '%s names the Headlines font on its headline-size text (text-base and up)',
+    (file) => {
+      const offenders = runs(read(file)).filter((run) => BIG_PLAIN.test(run) && !FAMILY.test(run));
+      expect(
+        offenders.map((run) => run.trim().slice(0, 80)),
+        `${file} has headline-size text with no font role; add font-comic (or font-body for prose)`,
+      ).toEqual([]);
+    },
+  );
 
   it('uses the Newspaper roles, not the theme Headlines, inside the two newspaper surfaces', () => {
     for (const file of [

@@ -33,7 +33,7 @@ export const ActionBurst: React.FC<{ burst: BurstState | null }> = ({ burst }) =
           style={{ animation: 'mcd-pop 1s ease-out forwards', clipPath: STAR_CLIP }}
         >
           <div
-            className={`absolute inset-[8px] flex items-center justify-center text-center font-black text-3xl px-12 ${style.fx.className}`}
+            className={`font-comic absolute inset-[8px] flex items-center justify-center text-center font-black text-3xl px-12 ${style.fx.className}`}
             style={{ clipPath: STAR_CLIP }}
           >
             {burst.word}
@@ -42,7 +42,7 @@ export const ActionBurst: React.FC<{ burst: BurstState | null }> = ({ burst }) =
       ) : (
         <div
           key={burst.n}
-          className={`mcd-pop absolute left-1/2 top-[42%] px-6 py-3 text-2xl font-black text-center ${style.fx.className}`}
+          className={`font-comic mcd-pop absolute left-1/2 top-[42%] px-6 py-3 text-2xl font-black text-center ${style.fx.className}`}
           style={{ animation: 'mcd-pop 1s ease-out forwards' }}
         >
           {burst.word}

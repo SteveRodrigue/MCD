@@ -97,7 +97,7 @@ const ModalHeader: React.FC<HeaderProps> = ({
   const titleEl = (extra: string) => (
     <h2
       id={titleId}
-      className={`font-black uppercase tracking-tight leading-none ${verb.title} ${extra}`}
+      className={`font-comic font-black uppercase tracking-tight leading-none ${verb.title} ${extra}`}
     >
       {title}
     </h2>

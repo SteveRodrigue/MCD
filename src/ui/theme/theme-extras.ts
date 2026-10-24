@@ -110,7 +110,7 @@ const storyboard: ThemeExtras = {
   danger:
     'bg-comic-red hover:bg-red-700 text-white border-[3px] border-comic-black rounded shadow-comic-sm',
   field:
-    'bg-white text-slate-900 border-2 border-comic-black rounded px-2.5 py-1.5 text-sm font-comic focus:outline-none focus:ring-2 focus:ring-comic-blue',
+    'bg-white text-slate-900 border-2 border-comic-black rounded px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-comic-blue',
   newspaper: {
     era: 'Comic-strip newspaper page',
     title: 'THE DAILY BUGLE',
@@ -247,7 +247,7 @@ const splash: ThemeExtras = {
   danger:
     'bg-comic-red hover:bg-red-700 text-white border-[4px] border-comic-black rounded-2xl shadow-comic uppercase tracking-wide',
   field:
-    'bg-white text-black border-[3px] border-comic-black rounded-xl px-2.5 py-1.5 text-sm font-comic focus:outline-none focus:ring-4 focus:ring-comic-yellow',
+    'bg-white text-black border-[3px] border-comic-black rounded-xl px-2.5 py-1.5 text-sm focus:outline-none focus:ring-4 focus:ring-comic-yellow',
   newspaper: {
     era: 'Screaming tabloid',
     title: 'THE DAILY BUGLE',

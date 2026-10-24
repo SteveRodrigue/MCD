@@ -121,7 +121,9 @@ export const ThemedSplash: React.FC<SplashProps> = ({ amount, kind }) => {
       } ${tone}`}
       style={style.fx.shape === 'star' ? { clipPath: STAR_CLIP } : undefined}
     >
-      <span className="text-3xl leading-none">{kind === 'heal' ? `+${amount}` : `-${amount}`}</span>
+      <span className="font-comic text-3xl leading-none">
+        {kind === 'heal' ? `+${amount}` : `-${amount}`}
+      </span>
       <span className="text-micro uppercase">{SPLASH_WORD[kind]}</span>
     </div>
   );

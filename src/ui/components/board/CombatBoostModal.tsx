@@ -53,7 +53,7 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
       kicker="COMBAT RESOLUTION"
       verb="red"
       trigger={{ name: outcome.attackerName, code: outcome.attackerCode }}
-      icon={<span className="text-xl leading-none">💥</span>}
+      icon={<span className="font-comic text-xl leading-none">💥</span>}
       headerRight={
         <span className={`px-2 py-0.5 font-black text-xs uppercase ${style.chip}`}>
           Target:{' '}
@@ -149,30 +149,32 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
         <div className="flex items-center justify-around text-center flex-wrap gap-2">
           <div className="flex flex-col items-center">
             <span className={`text-micro uppercase font-bold ${style.muted}`}>Base ATK</span>
-            <span className="text-xl md:text-2xl font-black">{outcome.baseAttack}</span>
+            <span className="font-comic text-xl md:text-2xl font-black">{outcome.baseAttack}</span>
           </div>
 
-          <span className={`text-xl font-black ${style.muted}`}>+</span>
+          <span className={`font-comic text-xl font-black ${style.muted}`}>+</span>
 
           <div className="flex flex-col items-center">
             <span className={`text-micro uppercase font-bold ${style.muted}`}>Boost Icons</span>
-            <span className="text-xl md:text-2xl font-black text-comic-red">
+            <span className="font-comic text-xl md:text-2xl font-black text-comic-red">
               +{outcome.totalBoostIcons}
             </span>
           </div>
 
-          <span className={`text-xl font-black ${style.muted}`}>=</span>
+          <span className={`font-comic text-xl font-black ${style.muted}`}>=</span>
 
           <div className={`flex flex-col items-center px-2.5 py-1 ${style.inset}`}>
             <span className="text-micro uppercase font-black text-comic-red">Total ATK</span>
-            <span className="text-xl md:text-2xl font-black text-comic-red">{totalAttack}</span>
+            <span className="font-comic text-xl md:text-2xl font-black text-comic-red">
+              {totalAttack}
+            </span>
           </div>
 
-          <span className={`text-xl font-black ${style.muted}`}>vs</span>
+          <span className={`font-comic text-xl font-black ${style.muted}`}>vs</span>
 
           <div className="flex flex-col items-center">
             <span className={`text-micro uppercase font-bold ${style.muted}`}>Defense</span>
-            <span className="text-xl md:text-2xl font-black text-blue-600">
+            <span className="font-comic text-xl md:text-2xl font-black text-blue-600">
               {outcome.defenseValue}
             </span>
             {outcome.defenderType === 'ALLY' && (
@@ -204,7 +206,9 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
                 PIERCING
               </span>
             )}
-            <span className="text-2xl font-black text-comic-yellow">{outcome.finalDamage} HP</span>
+            <span className="font-comic text-2xl font-black text-comic-yellow">
+              {outcome.finalDamage} HP
+            </span>
           </div>
         </div>
       </div>

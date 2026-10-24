@@ -961,12 +961,14 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
               {cost > 0 ? (
                 <>
                   {reductions.length > 0 && baseCost > 0 && (
-                    <span className={`line-through text-lg mr-1.5 font-bold ${style.muted}`}>
+                    <span
+                      className={`font-comic line-through text-lg mr-1.5 font-bold ${style.muted}`}
+                    >
                       {baseCost}
                     </span>
                   )}
                   <span
-                    className={`text-3xl font-black ${
+                    className={`font-comic text-3xl font-black ${
                       isCostCovered ? 'text-comic-green' : 'text-comic-red'
                     }`}
                   >
@@ -986,7 +988,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                   {discardCost.max}
                 </span>
               ) : (
-                <span className="text-3xl font-black text-comic-green">0</span>
+                <span className="font-comic text-3xl font-black text-comic-green">0</span>
               )}
             </div>
             {isRequirePrinted && (

@@ -214,7 +214,7 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
       >
         <div className="flex items-center gap-3 flex-wrap">
           <div className="text-sm font-black uppercase tracking-wider">POINTS TO ASSIGN:</div>
-          <div className={`text-2xl font-black tracking-widest ${style.emphasis}`}>
+          <div className={`font-comic text-2xl font-black tracking-widest ${style.emphasis}`}>
             {assignedTotal} / {effectiveBudget}
           </div>
           <div className={`text-xs font-bold uppercase ${style.muted}`}>
@@ -275,7 +275,9 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2">
                         {!target.cardCode && (
-                          <span className="text-xl shrink-0">{getTypeIcon(target.cardType)}</span>
+                          <span className="font-comic text-xl shrink-0">
+                            {getTypeIcon(target.cardType)}
+                          </span>
                         )}
                         <div>
                           <div className="font-black text-sm leading-tight">
@@ -319,7 +321,7 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
                             onClick={() => handleDecrement(target)}
                             disabled={!canDecrement}
                             aria-label="Decrease"
-                            className={`w-8 h-8 font-black text-base flex items-center justify-center cursor-pointer disabled:cursor-not-allowed ${style.btnMove}`}
+                            className={`font-comic w-8 h-8 font-black text-base flex items-center justify-center cursor-pointer disabled:cursor-not-allowed ${style.btnMove}`}
                           >
                             -
                           </button>
@@ -333,7 +335,7 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
                             onClick={() => handleIncrement(target)}
                             disabled={!canIncrement}
                             aria-label="Increase"
-                            className={`w-8 h-8 font-black text-base flex items-center justify-center cursor-pointer disabled:cursor-not-allowed ${style.btnMove}`}
+                            className={`font-comic w-8 h-8 font-black text-base flex items-center justify-center cursor-pointer disabled:cursor-not-allowed ${style.btnMove}`}
                           >
                             +
                           </button>

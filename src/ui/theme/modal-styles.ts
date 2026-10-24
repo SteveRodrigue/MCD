@@ -212,9 +212,6 @@ export const newspaperFontVars = (style: ModalStyle): CSSProperties => {
   return vars as CSSProperties;
 };
 
-/** Inter, the game's body font, written down for the Pop-Art theme. */
-const INTER = 'Inter, system-ui, sans-serif';
-
 /** System serif, the look of the 1960s Daily Bugle broadsheet in the Pop-Art theme. */
 const SYSTEM_SERIF = "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif";
 
@@ -227,7 +224,7 @@ const popArt: ModalStyle = {
   id: 'pop-art',
   fonts: {
     headline: LILITA_ONE,
-    body: INTER,
+    body: LILITA_ONE,
     newspaper: { headline: SYSTEM_SERIF, body: SYSTEM_SERIF },
     numbers: NUNITO,
     sizes: { body: 1, numbers: 1 },

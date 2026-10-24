@@ -90,7 +90,8 @@ describe('GameBoard Call for Action Top-Left Hover Button', () => {
     expect(container?.className).toContain('z-content');
 
     // Verify button styling
-    expect(extraBtn.className).toContain('font-serif');
+    expect(extraBtn.className).toContain('font-news-headline');
+    expect(extraBtn.hasAttribute('data-newspaper')).toBe(true);
     expect(extraBtn.className).toContain('animate-pulse');
     expect(screen.getByTestId('extra-call-count')).toBeDefined();
     expect(screen.getByTestId('extra-call-count').textContent).toContain('TEAM');

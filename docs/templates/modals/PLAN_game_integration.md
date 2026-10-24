@@ -1,6 +1,6 @@
 # Plan: bring the validated fonts and sizes into the game (N1 to N9)
 
-Status: **approved. N6, N1 and N8 are done and committed. N9 is done (not committed, waiting for your review). D9 is decided: Pop-Art keeps Lilita One for small text. Next: N5, N3, N2.** Each step is a separate, reviewable change; none is committed unless you ask.
+Status: **approved. N6, N1, N8 and N9 are done and committed. N5 (changed to: the log follows the theme), the ModalLayer fix and N3 are done (not committed). D9 is decided: Pop-Art keeps Lilita One for small text. Next: N2.** Each step is a separate, reviewable change; none is committed unless you ask.
 
 Related: [Font plan](./PLAN_fonts.md) (phases 1 to 6 are done), [Font record](./FONT_RECORD.md), [Theme engine plan](./PLAN_theme_engine.md), [Unthemed UI audit](./AUDIT_unthemed_ui.md).
 
@@ -23,7 +23,7 @@ UI impact: every visible change is listed per step. Card Editor impact: none, an
 - `font-comic` (Headlines) has **266 uses in 48 files**. On the same line as a small size token (`text-xs`, `text-sm`, `text-nano`, `text-micro`, `text-mini`): **144**. With a headline size: 35. With no size on the line (the size is on a parent): **87**.
 - `font-serif` (Daily Bugle): 16 uses in 4 files (`DailyBugleActionNewspaper` 10, `EndTurnConfirmationModal` 3, `GameBoard` 2, `TopBar` 1).
 - `font-bangers`: 26 uses in 13 files (the editor has 17 of them).
-- The combat log has its own player setting (Bangers, Komika, Comic Relief, Comic Neue, Clean) in `combat-log-presets.ts`.
+- The combat log had its own font selector (Bangers, Komika, Comic Relief, Comic Neue, Clean) and the Komika font files; removed in N5 (see below).
 - The first-screen theme picker exists (`ScenarioSelector.tsx`, a collapsed "Theme:" panel).
 - The card editor (`/editor`) uses `font-sans`, `font-bangers` and `font-mono` (for code and JSON).
 
@@ -36,17 +36,17 @@ N6 guard ──> N1 ──┬──> N8 ──┐
                   └──> N3 ──┘
 ```
 
-| Order | Step                                                             | Size (agent work, then your review)  | Depends on | Risk                                                     |
-| ----- | ---------------------------------------------------------------- | ------------------------------------ | ---------- | -------------------------------------------------------- |
-| 1     | **N6** Keep the editor out of the themes                         | S: about 15 min                      | none       | low                                                      |
-| 2     | **N1** Make Body real, set the theme variables at the game root  | S to M: about 45 min                 | N6         | medium: a visible change everywhere text has no font     |
-| 3     | **N8** Pin the intro banner to Bangers                           | S: about 20 min                      | N1         | low                                                      |
-| 4     | **N9** Theme selector visible on the first screen                | M: about 1 h                         | N1         | low to medium                                            |
-| 5     | **N5** Combat log fonts: decision, no code                       | XS: about 10 min                     | N1         | low                                                      |
-| 6     | **N3** Daily Bugle surfaces read the Newspaper pair (font slice) | M: about 1.5 h                       | N1         | medium                                                   |
-| 7     | **N2** Small `font-comic` text becomes Body, with a guard        | L: about 3 to 4 h, in 6 to 8 batches | N1, N8, N3 | medium: large and mechanical, but no visible change (D9) |
-| 8     | **N4** Board, zones, hand tray and setup join the themes         | XL: days, **its own plan**           | N1, N2, N3 | high                                                     |
-| 9     | **N7** Player font choice (D8)                                   | later                                | N4         | n/a                                                      |
+| Order | Step                                                                | Size (agent work, then your review)  | Depends on | Risk                                                     |
+| ----- | ------------------------------------------------------------------- | ------------------------------------ | ---------- | -------------------------------------------------------- |
+| 1     | **N6** Keep the editor out of the themes                            | S: about 15 min                      | none       | low                                                      |
+| 2     | **N1** Make Body real, set the theme variables at the game root     | S to M: about 45 min                 | N6         | medium: a visible change everywhere text has no font     |
+| 3     | **N8** Pin the intro banner to Bangers                              | S: about 20 min                      | N1         | low                                                      |
+| 4     | **N9** Theme selector visible on the first screen                   | M: about 1 h                         | N1         | low to medium                                            |
+| 5     | **N5** Combat log joins the theme; font selector and Komika removed | S to M: about 1 h                    | N1         | low                                                      |
+| 6     | **N3** Daily Bugle surfaces read the Newspaper pair (font slice)    | M: about 1.5 h                       | N1         | medium                                                   |
+| 7     | **N2** Small `font-comic` text becomes Body, with a guard           | L: about 3 to 4 h, in 6 to 8 batches | N1, N8, N3 | medium: large and mechanical, but no visible change (D9) |
+| 8     | **N4** Board, zones, hand tray and setup join the themes            | XL: days, **its own plan**           | N1, N2, N3 | high                                                     |
+| 9     | **N7** Player font choice (D8)                                      | later                                | N4         | n/a                                                      |
 
 ## 4. The steps
 
@@ -86,21 +86,26 @@ N6 guard ──> N1 ──┬──> N8 ──┐
 - **Files:** `src/ui/components/setup/ScenarioSelector.tsx`, `tests/ui/theme-picker.test.tsx`.
 - **Tests:** the picker and Random are not inside a closed panel; all 7 themes and Random can be chosen; a theme chosen on the first screen is saved and kept when the mission starts.
 
-### N5. Combat log fonts (decision, no code)
+### N5. Combat log fonts (done, waiting for your review)
 
-- **Recommendation:** leave the log's own font setting alone (Bangers, Komika, Comic Relief, Comic Neue, Clean). It is a player choice about the log entries only (audit decision D10), so it is not a theme slot. The log drawer, its filters and its masthead become part of the Newspaper work (N3) and N4.
-- **Change:** record the decision in the font record; a test keeps `combat-log-presets.ts` as the only place those families are named.
-- **Alternative:** a sixth preset, "Theme", which follows the theme's Body. Small, but it is a new setting; only if you want it.
+- **Decision (yours, replacing my D12 recommendation):** the combat log is part of the theme. The user font selector was a workaround for readability issues that the validated fonts and sizes now solve, so it is removed.
+- **Done:** the "Font:" cycle button, its `localStorage` state and `combat-log-presets.ts` are removed from the drawer; the speech balloon no longer takes a font class. The dialogue and narration text use `font-body` (the theme's Body), the banners and onomatopoeia keep `font-comic` (Headlines), and the fixed 10 and 11px sizes became the size tokens, so the theme's text size change applies. The Komika font (4 files in `public/fonts/`, its `@font-face`, `.font-komika`, `.font-comic-relief`, `.font-comic-neue`, `.font-clean` and the Tailwind `dialogue` family) is deleted: nothing uses it any more. `@fontsource/comic-relief` stays: it is the fallback of three theme font stacks.
+- **Not done here:** the drawer's colours and panels (slate masthead, filters) still look the same in every theme; they move with N4 (the audit puts the log in the Newspaper work).
+- **Tests:** `tests/ui/combat-log-drawer.test.tsx` (no font selector, Body dialogue, theme variables on the drawer); a guard fails when any combat log font class, `Komika`, the old storage key or the presets file comes back, or when `public/fonts` or a Tailwind `dialogue` family reappears.
+- **Stale data:** a browser that used the old selector keeps an unused `mcd_combat_log_font` value in its local storage; it is never read.
 
-### N3. Daily Bugle surfaces read the Newspaper pair (the font slice only)
+### N1 follow-up: portalled layers (found while doing N5)
 
-- **Change:** `DailyBugleActionNewspaper`, `EndTurnConfirmationModal`, the top bar's Bugle button and the floating EXTRA! button are wrapped like `NewspaperSheet` is in the lab (it sets `newspaperFontVars`), and their `font-serif` (16 uses) becomes `font-news-body` or `font-news-headline`. A `font-mono` on them follows Numbers & codes.
-- **Visible change:** in Pop-Art nothing (the Newspaper pair is the system serif, as now). In the other six themes the Daily Bugle is drawn in the theme's font, with the Splash body +4 and Dossier headlines -1.
-- **Not included:** the full Newspaper kit (eras per theme, layout) from the audit (decision D6). That is a separate, larger plan; this step only makes the fonts and sizes right and keeps the three-column rule.
-- **Files:** 4 components (`DailyBugleActionNewspaper.tsx` 583 lines, `EndTurnConfirmationModal.tsx`, `TopBar.tsx`, `GameBoard.tsx`), the guard test (`font-serif` is forbidden in the game).
-- **Risk:** medium. `DailyBugleActionNewspaper` has existing tests and the three-column layout; sizes change with the theme's newspaper size change (the layout must not overflow at Splash +4).
-- **Simplification & refactor check:** the lab's `NewspaperSheet` wrapper is reused, not copied.
-- **Tests:** no `font-serif` left in `src/ui`; the wrapper sets the newspaper variables per theme; the existing Daily Bugle tests still pass.
+- **Problem:** every modal, drawer and banner renders through `ModalLayer`, a portal into `document.body`, so it sits outside the game root and did not inherit the theme variables. Themed modals worked because `ModalScaffold` set the variables itself. The Daily Bugle sheet, the end-turn flash and the combat log did not: their `font-comic`, `font-mono` and text size tokens fell back to the defaults. My N3 note ("font-comic accents stay on the theme's Headlines") was therefore not true yet.
+- **Fix (done):** `ModalLayer` sets `themeFontVars` and the `font-body` base itself (`themed={false}` for the lab's own chrome, which never follows a theme). `ModalScaffold` no longer sets them (one source). `tests/ui/modal-layer-theme.test.tsx` covers it.
+
+### N3. Daily Bugle surfaces read the Newspaper pair (the font slice only; done, waiting for your review)
+
+- **Done:** `useNewspaperProps` (`src/ui/theme/useNewspaperProps.ts`) gives a newspaper root the `data-newspaper` mark and the theme's newspaper variables; the lab's `NewspaperSheet` uses it too (one source). It is spread on the Daily Bugle action sheet, the end-turn flash, the top bar's Bugle button and the floating EXTRA! button. Their 16 `font-serif` became `font-news-headline` (the masthead, titles and button labels) or `font-news-body` (the base text and the stories). `font-comic` accents (section labels, story titles) stay on the theme's Headlines, `font-mono` counters follow Numbers & codes. The fixed 9, 10 and 11px sizes became `text-nano`, `text-micro` and `text-mini`, so the newspaper text size changes apply (Splash +4, Dossier headlines -1).
+- **Visible change:** Pop-Art keeps its serif broadsheet masthead and stories. In the other six themes the paper's masthead and stories are drawn in the theme's font. Splash newspaper text is 1px bigger than its Body (+4 against +3) inside the paper.
+- **Not included:** the full Newspaper kit (eras per theme, layout) from the audit (decision D6): a separate, larger plan. The three-column rule is untouched.
+- **Tests:** `tests/ui/newspaper-fonts.test.tsx` (the sheet carries the mark and the variables of each of the 7 themes; the end-turn flash; Splash +4, Dossier -1); a guard fails when `font-serif` appears anywhere in `src/ui`, and fixed pixel sizes are forbidden in these files; the Daily Bugle and EXTRA! button tests are updated and pass.
+- **Not checked in the real game:** the sheet and the EXTRA! button were not opened in the browser (reaching them needs a game in a multi-hero turn). The first screen and the mulligan screen were checked under Splash.
 
 ### N2. Small `font-comic` text becomes Body (the large, mechanical step)
 
@@ -137,12 +142,12 @@ N6 guard ──> N1 ──┬──> N8 ──┐
 
 ## 7. Decisions I need from you
 
-| #   | Question                                                                                                 | My recommendation                                                                     |
-| --- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| D9  | Pop-Art small text: Inter (the validated Body) or Lilita One?                                            | **Decided by you: Lilita One** (the Inter preview was wider and truncated card names) |
-| D10 | Before N4, the first-screen theme choice takes effect when the game starts, not live on that screen: OK? | **Yes**                                                                               |
-| D11 | N3 scope: fonts and sizes only, or the full Newspaper kit (eras)?                                        | **Fonts and sizes only**; the kit is a separate plan                                  |
-| D12 | N5: leave the combat log font setting alone, or add a "Theme" preset?                                    | **Leave it alone**                                                                    |
-| D13 | Order: start with N6 then N1 as proposed?                                                                | **Yes**                                                                               |
+| #   | Question                                                                                                 | My recommendation                                                                                    |
+| --- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| D9  | Pop-Art small text: Inter (the validated Body) or Lilita One?                                            | **Decided by you: Lilita One** (the Inter preview was wider and truncated card names)                |
+| D10 | Before N4, the first-screen theme choice takes effect when the game starts, not live on that screen: OK? | **Yes**                                                                                              |
+| D11 | N3 scope: fonts and sizes only, or the full Newspaper kit (eras)?                                        | **Fonts and sizes only**; the kit is a separate plan                                                 |
+| D12 | N5: the combat log font setting?                                                                         | **Decided by you: remove it; the log follows the theme** (my recommendation to keep it is withdrawn) |
+| D13 | Order: start with N6 then N1 as proposed?                                                                | **Yes**                                                                                              |
 
 Back to the [font plan](./PLAN_fonts.md).

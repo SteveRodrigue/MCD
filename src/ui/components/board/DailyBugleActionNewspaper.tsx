@@ -20,6 +20,7 @@ import {
 import { useCardArt } from '../../hooks/useCardArt';
 import { getRemoteMarvelCdbUrl } from '../../services/card-cache-service';
 import { FormattedCardText } from '../cards/FormattedCardText';
+import { useNewspaperProps } from '../../theme/useNewspaperProps';
 
 interface DailyBugleCardThumbnailProps {
   cardCode?: string;
@@ -81,6 +82,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
   onClose,
   onSelectAction,
 }) => {
+  const newspaperProps = useNewspaperProps();
   if (!isOpen) return null;
 
   const {
@@ -171,7 +173,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
         <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
           <span>📰 FRONT PAGE: IDENTITY DIRECTIVES</span>
         </h2>
-        <span className="text-[10px] text-slate-600 font-bold uppercase">Form & Basic Moves</span>
+        <span className="text-micro text-slate-600 font-bold uppercase">Form & Basic Moves</span>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -199,17 +201,17 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
                       <span>{item.headline}</span>
                     </span>
                     {item.badge && (
-                      <span className="bg-slate-900 text-amber-300 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
+                      <span className="bg-slate-900 text-amber-300 text-nano font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
                         {item.badge}
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
+                  <p className="text-mini text-slate-700 leading-tight font-news-body line-clamp-2">
                     {item.subtext}
                   </p>
                 </div>
                 <div className="mt-1 text-right">
-                  <span className="text-[10px] font-bold text-comic-blue uppercase group-hover:underline">
+                  <span className="text-micro font-bold text-comic-blue uppercase group-hover:underline">
                     Execute ➔
                   </span>
                 </div>
@@ -227,7 +229,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
         <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
           <span>🃏 LATEST DISPATCHES: PLAYABLE HAND CARDS</span>
         </h2>
-        <span className="text-[10px] text-slate-600 font-bold uppercase">Ready from Hand</span>
+        <span className="text-micro text-slate-600 font-bold uppercase">Ready from Hand</span>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -255,17 +257,17 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
                       <span>{item.headline}</span>
                     </span>
                     {item.badge && (
-                      <span className="bg-amber-300 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
+                      <span className="bg-amber-300 text-slate-950 text-nano font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
                         {item.badge}
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
+                  <p className="text-mini text-slate-700 leading-tight font-news-body line-clamp-2">
                     {item.subtext}
                   </p>
                 </div>
                 <div className="mt-1 text-right">
-                  <span className="text-[10px] font-bold text-comic-red uppercase group-hover:underline">
+                  <span className="text-micro font-bold text-comic-red uppercase group-hover:underline">
                     Play Card ➔
                   </span>
                 </div>
@@ -283,7 +285,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
         <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
           <span>⚡ THE CLASSIFIEDS: IN-PLAY ASSETS & ALLIES</span>
         </h2>
-        <span className="text-[10px] text-slate-600 font-bold uppercase">Tableau & Allies</span>
+        <span className="text-micro text-slate-600 font-bold uppercase">Tableau & Allies</span>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -311,17 +313,17 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
                       <span>{item.headline}</span>
                     </span>
                     {item.badge && (
-                      <span className="bg-emerald-200 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
+                      <span className="bg-emerald-200 text-slate-950 text-nano font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
                         {item.badge}
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
+                  <p className="text-mini text-slate-700 leading-tight font-news-body line-clamp-2">
                     {item.subtext}
                   </p>
                 </div>
                 <div className="mt-1 text-right">
-                  <span className="text-[10px] font-bold text-emerald-700 uppercase group-hover:underline">
+                  <span className="text-micro font-bold text-emerald-700 uppercase group-hover:underline">
                     Activate ➔
                   </span>
                 </div>
@@ -340,7 +342,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
           <Skull className="w-3.5 h-3.5 text-rose-700" />
           <span>🚨 VILLAIN DISPATCHES: ENCOUNTER & SCHEME ACTIONS</span>
         </h2>
-        <span className="text-[10px] text-slate-600 font-bold uppercase">Encounter & Schemes</span>
+        <span className="text-micro text-slate-600 font-bold uppercase">Encounter & Schemes</span>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -368,17 +370,17 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
                       <span>{item.headline}</span>
                     </span>
                     {item.badge && (
-                      <span className="bg-rose-200 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
+                      <span className="bg-rose-200 text-slate-950 text-nano font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
                         {item.badge}
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
+                  <p className="text-mini text-slate-700 leading-tight font-news-body line-clamp-2">
                     {item.subtext}
                   </p>
                 </div>
                 <div className="mt-1 text-right">
-                  <span className="text-[10px] font-bold text-rose-700 uppercase group-hover:underline">
+                  <span className="text-micro font-bold text-rose-700 uppercase group-hover:underline">
                     Discard / Pay ➔
                   </span>
                 </div>
@@ -395,7 +397,8 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
       {/* 1960s Newsprint Broadsheet Container */}
       <div
         data-testid="daily-bugle-container"
-        className={`relative w-full ${containerWidthClass} max-h-[85vh] bg-[#fbf7ee] text-slate-900 border-4 border-slate-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-sm overflow-hidden flex flex-col font-serif transition-all duration-300`}
+        {...newspaperProps}
+        className={`relative w-full ${containerWidthClass} max-h-[85vh] bg-[#fbf7ee] text-slate-900 border-4 border-slate-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-sm overflow-hidden flex flex-col font-news-body transition-all duration-300`}
       >
         {/* Top Woodblock Masthead */}
         <div className="bg-[#f4ebd9] border-b-2 border-slate-900 p-3 relative select-none">
@@ -409,7 +412,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
           </button>
 
           {/* Newspaper Sub-Header Line (Padded right to never overlap close button) */}
-          <div className="flex justify-between items-center text-[10px] uppercase tracking-widest text-slate-700 font-bold border-b border-slate-800 pb-1 mb-1 pr-8">
+          <div className="flex justify-between items-center text-micro uppercase tracking-widest text-slate-700 font-bold border-b border-slate-800 pb-1 mb-1 pr-8">
             <span>VOL. LXVIII NO. 142</span>
             <span className="font-comic tracking-normal text-comic-red font-black">
               ★ THE VOICE OF MARVELS ★
@@ -419,10 +422,10 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
 
           {/* Authentic Daily Bugle Title Banner */}
           <div className="text-center py-1">
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight uppercase font-serif text-slate-950 leading-none">
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight uppercase font-news-headline text-slate-950 leading-none">
               THE DAILY BUGLE
             </h1>
-            <p className="text-[11px] italic text-slate-700 font-serif mt-0.5">
+            <p className="text-mini italic text-slate-700 font-news-body mt-0.5">
               "All the heroic dispatches & battle directives fit to print!"
             </p>
           </div>
@@ -433,7 +436,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
               <Newspaper className="w-4 h-4 text-amber-300" />
               SPECIAL ACTION EDITION: {playerName.toUpperCase()}
             </span>
-            <span className="font-mono text-[11px] text-amber-300">
+            <span className="font-mono text-mini text-amber-300">
               {activeActionCount} LEGAL PLAY{activeActionCount === 1 ? '' : 'S'} AVAILABLE
             </span>
           </div>
@@ -446,7 +449,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
               <h3 className="font-comic text-base font-bold text-slate-900 uppercase">
                 ★ PRESS RUN COMPLETE: NO ACTIONS REMAIN ★
               </h3>
-              <p className="text-xs text-slate-600 font-serif">
+              <p className="text-xs text-slate-600 font-news-body">
                 You have exhausted your character and played all available cards. You may now
                 conclude your turn below.
               </p>
@@ -479,7 +482,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
                         <Users className="w-3.5 h-3.5 text-indigo-700" />
                         <span>🤝 CALL FOR ACTION: TEAM TABLEAU ASSETS</span>
                       </h2>
-                      <span className="text-[10px] text-indigo-700 font-bold uppercase">
+                      <span className="text-micro text-indigo-700 font-bold uppercase">
                         Teammate Tableau
                       </span>
                     </div>
@@ -492,7 +495,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
                         >
                           <div className="bg-slate-900 text-amber-300 px-2.5 py-1 font-comic font-black text-xs uppercase tracking-wide border border-slate-900 rounded-t flex items-center justify-between">
                             <span>{formatTeammateHeader(ownerKey)}</span>
-                            <span className="text-[10px] font-mono text-amber-200">
+                            <span className="text-micro font-mono text-amber-200">
                               {items.length} ACTION{items.length === 1 ? '' : 'S'}
                             </span>
                           </div>
@@ -522,18 +525,18 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
                                           <span>{item.headline}</span>
                                         </span>
                                         {item.badge && (
-                                          <span className="bg-amber-300 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
+                                          <span className="bg-amber-300 text-slate-950 text-nano font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
                                             {item.badge}
                                           </span>
                                         )}
                                       </div>
                                       <FormattedCardText
                                         text={cardText}
-                                        className="text-[11px] text-slate-800 leading-snug font-serif"
+                                        className="text-mini text-slate-800 leading-snug font-news-body"
                                       />
                                     </div>
                                     <div className="mt-1 text-right">
-                                      <span className="text-[10px] font-bold text-indigo-700 uppercase group-hover:underline">
+                                      <span className="text-micro font-bold text-indigo-700 uppercase group-hover:underline">
                                         Ask Teammate ➔
                                       </span>
                                     </div>
@@ -556,10 +559,12 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
         {turnAction && (
           <div className="p-3 bg-[#f4ebd9] border-t-2 border-slate-900 flex items-center justify-between gap-3">
             <div className="text-left">
-              <span className="text-[10px] font-bold text-slate-600 uppercase block font-comic">
+              <span className="text-micro font-bold text-slate-600 uppercase block font-comic">
                 TURN FLOW MANAGEMENT
               </span>
-              <span className="text-xs text-slate-900 font-serif italic">{turnAction.subtext}</span>
+              <span className="text-xs text-slate-900 font-news-body italic">
+                {turnAction.subtext}
+              </span>
             </div>
 
             <button

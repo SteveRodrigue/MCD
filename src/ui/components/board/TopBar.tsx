@@ -16,6 +16,7 @@ import { OptionsMenu } from './OptionsMenu';
 import { ReportProblemModal } from './ReportProblemModal';
 import { useGameSession } from '../../context/GameStateContext';
 import { useModalStyle } from '../../theme/useModalStyle';
+import { useNewspaperProps } from '../../theme/useNewspaperProps';
 
 interface TopBarProps {
   activeSeatIndex: number;
@@ -38,6 +39,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 }) => {
   const { state: gameState } = useGameSession();
   const { style } = useModalStyle();
+  const newspaperProps = useNewspaperProps();
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   let devMode = false;
@@ -88,7 +90,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         {gameState.players.length > 1 && (
           <div className={`flex items-center gap-1.5 p-1 ${style.panel}`}>
             <span
-              className={`text-[11px] font-bold uppercase px-2 flex items-center gap-1 ${style.muted}`}
+              className={`text-mini font-bold uppercase px-2 flex items-center gap-1 ${style.muted}`}
             >
               <Compass className="w-3.5 h-3.5 text-comic-blue shrink-0" />
               <span className="hidden md:inline">Jump to Hero:</span>
@@ -123,7 +125,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                     <span className="hidden sm:inline">: {p.activeFormCard.name}</span>
                   </span>
                   {isActiveTurn && (
-                    <span className="text-[9px] bg-comic-yellow text-comic-black px-1 rounded font-black">
+                    <span className="text-nano bg-comic-yellow text-comic-black px-1 rounded font-black">
                       TURN
                     </span>
                   )}
@@ -139,15 +141,16 @@ export const TopBar: React.FC<TopBarProps> = ({
           {onOpenNewspaper && (
             <button
               onClick={onOpenNewspaper}
-              className="px-2.5 py-1.5 font-comic text-xs bg-[#fbf7ee] hover:bg-amber-200 text-slate-900 rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 cursor-pointer font-bold transition-all hover:scale-105 active:translate-y-0.5"
+              {...newspaperProps}
+              className="px-2.5 py-1.5 font-news-headline text-xs bg-[#fbf7ee] hover:bg-amber-200 text-slate-900 rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 cursor-pointer font-bold transition-all hover:scale-105 active:translate-y-0.5"
               title="THE DAILY BUGLE: Inspect all legal moves and battle dispatches (Click to open)"
             >
               <Newspaper className="w-4 h-4 text-slate-900" />
-              <span className="hidden md:inline font-serif font-black uppercase tracking-tight">
+              <span className="hidden md:inline font-news-headline font-black uppercase tracking-tight">
                 DAILY BUGLE
               </span>
               <span
-                className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-bold border border-slate-900 ${
+                className={`text-micro px-1.5 py-0.2 rounded font-mono font-bold border border-slate-900 ${
                   legalActionCount > 0 ? 'bg-comic-red text-white' : 'bg-slate-300 text-slate-700'
                 }`}
               >

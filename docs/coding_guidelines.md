@@ -259,9 +259,9 @@ We use [Conventional Commits](https://www.conventionalcommits.org/). Scopes: `en
 ## 12. Comic Typography & UI Scaling Standards (ADR-0004, ADR-0037)
 
 1. **Local-First Font Assets:**
-   - Never rely on runtime external CDNs for typography. All comic fonts (`Komika Text`, `Comic Relief`, `Bangers`) must be bundled locally in `public/fonts/` or `@fontsource` packages for complete offline play.
+   - Never rely on runtime external CDNs for typography. All fonts (the theme fonts, `Nunito`, `Comic Relief`, `Bangers`) must be bundled through `@fontsource` packages for complete offline play.
 2. **Typographic Roles:**
-   - **Dialogue & Narrative Prose:** Use `font-dialogue` (`Komika Text` / `Comic Relief`) with bold weight for high legibility in multi-line speech bubbles.
+   - **Dialogue & Narrative Prose:** Use `font-body` (the active theme's Body font) with bold weight in the combat log's speech balloons. The log follows the theme and has no font setting of its own.
    - **Sound Effects & Banners:** Use `font-comic` (`Bangers`) for explosive onomatopoeias (`POW!`, `HEROES ASSEMBLE!`) and mastheads.
    - **Numbers:** `font-comic` and `.font-bangers` start with the `Body Digits` face (`src/ui/styles/index.css`), which covers only `0–9` (`unicode-range: U+0030-0039`) and maps to the body font (Inter Bold). Digits stay readable (Bangers' 1 and 7 look alike) with no per-element class; keep `Body Digits` first in both stacks. Themes that set their own headline font (see `docs/templates/modals/FONT_RECORD.md`) do not use it.
 3. **Base UI Scale:**

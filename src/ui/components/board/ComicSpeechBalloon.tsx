@@ -4,7 +4,6 @@ import { FormattedComicDialogue } from '../../utils/comic-log-formatter';
 interface ComicSpeechBalloonProps {
   dialogue: FormattedComicDialogue;
   index: number;
-  fontClass?: string;
 }
 
 /**
@@ -12,11 +11,7 @@ interface ComicSpeechBalloonProps {
  * Renders state-driven comic actions with character color banners,
  * narrative headlines, dialogue quotes, and comic stat pills.
  */
-export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({
-  dialogue,
-  index,
-  fontClass = 'font-dialogue',
-}) => {
+export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({ dialogue, index }) => {
   const {
     type,
     speakerName,
@@ -71,7 +66,7 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({
           <span className="truncate font-bold">{speakerName || defaultTitle}</span>
           {speakerRole && (
             <span
-              className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider border shrink-0 opacity-90"
+              className="px-1.5 py-0.2 rounded text-nano font-black uppercase tracking-wider border shrink-0 opacity-90"
               style={{
                 borderColor: bannerText,
                 color: bannerText,
@@ -81,12 +76,12 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({
             </span>
           )}
           {sourceCard && (
-            <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider border shrink-0 bg-white/20 text-white border-white/40">
+            <span className="px-1.5 py-0.2 rounded text-nano font-black uppercase tracking-wider border shrink-0 bg-white/20 text-white border-white/40">
               🃏 {sourceCard}
             </span>
           )}
           {round !== undefined && type === 'narrator_caption' && (
-            <span className="bg-white text-slate-900 px-1.5 py-0.2 rounded border border-comic-black text-[9px] font-black shrink-0 shadow-comic-sm">
+            <span className="bg-white text-slate-900 px-1.5 py-0.2 rounded border border-comic-black text-nano font-black shrink-0 shadow-comic-sm">
               R{round}
             </span>
           )}
@@ -94,11 +89,11 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({
 
         <div className="flex items-center gap-1.5 shrink-0 ml-2">
           {onomatopoeia && (
-            <span className="bg-comic-yellow text-comic-black font-comic text-[10px] font-black px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm transform -rotate-1">
+            <span className="bg-comic-yellow text-comic-black font-comic text-micro font-black px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm transform -rotate-1">
               {onomatopoeia}
             </span>
           )}
-          <span className="font-mono text-[10px] opacity-75 font-bold">#{index + 1}</span>
+          <span className="font-mono text-micro opacity-75 font-bold">#{index + 1}</span>
         </div>
       </div>
 
@@ -107,7 +102,7 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({
         {/* In-character dialogue quote box */}
         {dialogueQuote && (
           <div
-            className={`p-2 rounded border-l-4 my-1 text-xs sm:text-sm ${fontClass} italic font-bold tracking-wide`}
+            className="p-2 rounded border-l-4 my-1 text-xs sm:text-sm font-body italic font-bold tracking-wide"
             style={{
               backgroundColor: '#f4ede2',
               borderLeftColor: bannerBg,
@@ -119,7 +114,7 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({
         )}
 
         {/* Prominent Bold Narrative Headline */}
-        <p className={`${fontClass} text-xs sm:text-sm font-bold text-slate-900 leading-snug mt-1`}>
+        <p className="font-body text-xs sm:text-sm font-bold text-slate-900 leading-snug mt-1">
           {narrativeAction}
         </p>
 
@@ -131,22 +126,22 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({
             stats.cost !== undefined) && (
             <div className="flex flex-wrap items-center gap-1.5 mt-2.5 pt-2 border-t border-slate-200">
               {stats.damage !== undefined && (
-                <span className="bg-comic-red text-white text-[11px] font-comic font-black px-2 py-0.5 rounded border border-comic-black shadow-comic-sm">
+                <span className="bg-comic-red text-white text-mini font-comic font-black px-2 py-0.5 rounded border border-comic-black shadow-comic-sm">
                   💥 {stats.damage} DMG
                 </span>
               )}
               {stats.threat !== undefined && (
-                <span className="bg-purple-800 text-purple-100 text-[11px] font-comic font-black px-2 py-0.5 rounded border border-purple-950 shadow-comic-sm">
+                <span className="bg-purple-800 text-purple-100 text-mini font-comic font-black px-2 py-0.5 rounded border border-purple-950 shadow-comic-sm">
                   ⚠️ {stats.threat > 0 ? `+${stats.threat}` : stats.threat} THREAT
                 </span>
               )}
               {stats.recovery !== undefined && (
-                <span className="bg-emerald-600 text-white text-[11px] font-comic font-black px-2 py-0.5 rounded border border-emerald-950 shadow-comic-sm">
+                <span className="bg-emerald-600 text-white text-mini font-comic font-black px-2 py-0.5 rounded border border-emerald-950 shadow-comic-sm">
                   ✨ +{stats.recovery} RECOVER
                 </span>
               )}
               {stats.cost !== undefined && (
-                <span className="bg-amber-400 text-slate-950 text-[11px] font-comic font-black px-2 py-0.5 rounded border border-comic-black shadow-comic-sm">
+                <span className="bg-amber-400 text-slate-950 text-mini font-comic font-black px-2 py-0.5 rounded border border-comic-black shadow-comic-sm">
                   ⚡ {stats.cost} COST
                 </span>
               )}

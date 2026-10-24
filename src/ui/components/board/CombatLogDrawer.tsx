@@ -1,10 +1,9 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { ModalLayer } from '../layout/ModalLayer';
-import { X, BookOpen, ChevronDown, ChevronRight, Globe, Type } from 'lucide-react';
+import { X, BookOpen, ChevronDown, ChevronRight, Globe } from 'lucide-react';
 import { GameLogEntry } from '../../../engine/models';
 import { formatComicLogEntry } from '../../utils/comic-log-formatter';
 import { ComicSpeechBalloon } from './ComicSpeechBalloon';
-import { FONT_PRESETS } from './combat-log-presets';
 import { useGameSession } from '../../context/GameStateContext';
 
 interface CombatLogDrawerProps {
@@ -29,22 +28,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<FilterCategory>('all');
   const [locale, setLocale] = useState<'en' | 'fr'>(currentLocale);
   const [showRawDebug, setShowRawDebug] = useState<boolean>(false);
-  const [fontIndex, setFontIndex] = useState<number>(() => {
-    const saved = localStorage.getItem('mcd_combat_log_font');
-    const parsed = saved ? parseInt(saved, 10) : 0;
-    return isNaN(parsed) || parsed < 0 || parsed >= FONT_PRESETS.length ? 0 : parsed;
-  });
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  const handleCycleFont = () => {
-    setFontIndex((prev) => {
-      const next = (prev + 1) % FONT_PRESETS.length;
-      localStorage.setItem('mcd_combat_log_font', next.toString());
-      return next;
-    });
-  };
-
-  const currentFont = FONT_PRESETS[fontIndex] || FONT_PRESETS[0];
 
   // Sync locale prop if changed
   useEffect(() => {
@@ -98,7 +82,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
               <h2 className="font-comic text-xl text-comic-yellow leading-tight tracking-wide">
                 DAILY BUGLE
               </h2>
-              <div className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
+              <div className="text-micro font-bold text-slate-400 tracking-wider uppercase">
                 FLASH NEWS & ACTION CHRONICLE • ISSUE LOG
               </div>
             </div>
@@ -131,7 +115,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
           <button
             type="button"
             onClick={() => setSelectedCategory('all')}
-            className={`py-1 text-center font-comic text-[11px] font-bold uppercase rounded border transition-all cursor-pointer ${
+            className={`py-1 text-center font-comic text-mini font-bold uppercase rounded border transition-all cursor-pointer ${
               selectedCategory === 'all'
                 ? 'bg-white text-slate-950 border-white shadow-comic-sm scale-105'
                 : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
@@ -142,7 +126,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
           <button
             type="button"
             onClick={() => setSelectedCategory('heroes')}
-            className={`py-1 text-center font-comic text-[11px] font-bold uppercase rounded border transition-all cursor-pointer ${
+            className={`py-1 text-center font-comic text-mini font-bold uppercase rounded border transition-all cursor-pointer ${
               selectedCategory === 'heroes'
                 ? 'bg-sky-500 text-slate-950 border-sky-400 shadow-comic-sm scale-105'
                 : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
@@ -153,7 +137,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
           <button
             type="button"
             onClick={() => setSelectedCategory('villains')}
-            className={`py-1 text-center font-comic text-[11px] font-bold uppercase rounded border transition-all cursor-pointer ${
+            className={`py-1 text-center font-comic text-mini font-bold uppercase rounded border transition-all cursor-pointer ${
               selectedCategory === 'villains'
                 ? 'bg-rose-600 text-white border-rose-500 shadow-comic-sm scale-105'
                 : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
@@ -164,7 +148,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
           <button
             type="button"
             onClick={() => setSelectedCategory('narrator')}
-            className={`py-1 text-center font-comic text-[11px] font-bold uppercase rounded border transition-all cursor-pointer ${
+            className={`py-1 text-center font-comic text-mini font-bold uppercase rounded border transition-all cursor-pointer ${
               selectedCategory === 'narrator'
                 ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-comic-sm scale-105'
                 : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
@@ -189,18 +173,14 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
         ) : (
           filteredLogs.map((dialogue, idx) => (
             <div key={dialogue.id || idx}>
-              <ComicSpeechBalloon
-                dialogue={dialogue}
-                index={idx}
-                fontClass={currentFont.className}
-              />
+              <ComicSpeechBalloon dialogue={dialogue} index={idx} />
 
               {/* Collapsed Raw Debug Inspector */}
               {showRawDebug && dialogue.rawEntry && (
-                <div className="mx-4 my-1 p-2 rounded bg-slate-950/80 border border-slate-700 text-[10px] font-mono text-slate-400 space-y-1">
+                <div className="mx-4 my-1 p-2 rounded bg-slate-950/80 border border-slate-700 text-micro font-mono text-slate-400 space-y-1">
                   <div className="text-emerald-400 font-bold">KEY: {dialogue.rawEntry.key}</div>
                   {dialogue.rawEntry.params && (
-                    <pre className="overflow-x-auto text-[9px] text-slate-300">
+                    <pre className="overflow-x-auto text-nano text-slate-300">
                       {JSON.stringify(dialogue.rawEntry.params, null, 2)}
                     </pre>
                   )}
@@ -218,24 +198,11 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
         </span>
 
         <div className="flex items-center gap-2">
-          {/* Cycle Font Button */}
-          <button
-            type="button"
-            onClick={handleCycleFont}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-slate-700 bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-200 cursor-pointer font-bold transition-all hover:scale-105 active:translate-y-0.5"
-            title={`Current Font: ${currentFont.label}. Click to cycle fonts.`}
-          >
-            <Type className="w-3.5 h-3.5 text-amber-400" />
-            <span>
-              Font: <span className="text-amber-300 font-normal">{currentFont.label}</span>
-            </span>
-          </button>
-
           {/* Collapsible Debug Inspector Button */}
           <button
             type="button"
             onClick={() => setShowRawDebug((prev) => !prev)}
-            className="flex items-center gap-1 px-2 py-1 rounded border border-slate-700 bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-200 cursor-pointer"
+            className="flex items-center gap-1 px-2 py-1 rounded border border-slate-700 bg-slate-800 hover:bg-slate-700 text-mini text-slate-200 cursor-pointer"
           >
             {showRawDebug ? (
               <ChevronDown className="w-3.5 h-3.5" />

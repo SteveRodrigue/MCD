@@ -7,7 +7,7 @@ import { ActionBurst } from './ActionBurst';
 import { useModalFlavor } from './useModalFlavor';
 import { useModalStyle } from './useModalStyle';
 import type { BurstState } from './useActionBurst';
-import { themeFontVars, type ModalStyle, type VerbColor, type VerbTokens } from './modal-styles';
+import type { ModalStyle, VerbColor, VerbTokens } from './modal-styles';
 
 export interface ModalScaffoldProps {
   title: React.ReactNode;
@@ -286,7 +286,7 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
       aria-labelledby={label ? undefined : titleId}
       aria-label={label}
       className={`inset-0 flex items-center justify-center ${overlayInset} ${style.overlay}`}
-      style={{ ...themeFontVars(style), ...overlayOffset }}
+      style={overlayOffset}
       // A click or press inside a modal must not reach handlers of the game tree it is mounted from
       // (React bubbles events through portals).
       onPointerDown={(event) => event.stopPropagation()}

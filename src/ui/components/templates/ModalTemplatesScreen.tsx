@@ -112,7 +112,7 @@ export const ModalTemplatesScreen: React.FC<ModalTemplatesScreenProps> = ({ onEx
   return (
     <div className="min-h-screen bg-slate-900 text-comic-paper font-comic select-none">
       {/* Portalled above the modal layer: a z-index inside the app shell cannot outrank a portal. */}
-      <ModalLayer layer="critical" className="top-0 left-0 bottom-0">
+      <ModalLayer layer="critical" themed={false} className="top-0 left-0 bottom-0">
         <LabSidebar
           ref={sidebarRef}
           route={route}

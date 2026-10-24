@@ -1,8 +1,7 @@
 import React from 'react';
 import { CardArtThumbnail } from '../../components/cards/CardArtThumbnail';
 import { CardRef, type CardReference } from '../CardRef';
-import { newspaperFontVars } from '../modal-styles';
-import { useModalStyle } from '../useModalStyle';
+import { useNewspaperProps } from '../useNewspaperProps';
 import { useThemeExtras } from '../useThemeExtras';
 
 /**
@@ -38,12 +37,11 @@ export const NewspaperSheet: React.FC<NewspaperSheetProps> = ({
   className = '',
 }) => {
   const { newspaper: np } = useThemeExtras();
-  const { style } = useModalStyle();
+  const newspaperProps = useNewspaperProps();
   return (
     <article
       aria-label={np.title}
-      data-newspaper
-      style={newspaperFontVars(style)}
+      {...newspaperProps}
       className={`relative isolate overflow-hidden ${np.sheet} ${className}`}
     >
       <div

@@ -37,6 +37,7 @@ import { getDiscardCostBounds } from '../../../engine/pipeline/cost-engine';
 import type { ResourceCost } from '../../../data/supplemental/schema';
 import { peekDecisionPrompt } from '../../../engine/pipeline';
 import { optionRequiresPayment } from '../../utils/option-requires-payment';
+import { useNewspaperProps } from '../../theme/useNewspaperProps';
 
 interface GameBoardProps {
   onReset: () => void;
@@ -74,6 +75,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
   const activeSeatIndex = Math.min(selectedSeatIndex, gameState.players.length - 1);
   const [isLogOpen, setIsLogOpen] = useState<boolean>(true);
   const [isNewspaperOpen, setIsNewspaperOpen] = useState<boolean>(false);
+  const newspaperProps = useNewspaperProps();
   const [isEndTurnPromptOpen, setIsEndTurnPromptOpen] = useState<boolean>(false);
   const [paymentModalCard, setPaymentModalCard] = useState<CardInstance | null>(null);
   const [pendingPaymentAction, setPendingPaymentAction] = useState<LegalActionItem | null>(null);
@@ -369,12 +371,13 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
               <div className="fixed top-14 left-4 z-content">
                 <button
                   onClick={() => setIsNewspaperOpen(true)}
-                  className="bg-[#fbf7ee] hover:bg-amber-100 text-slate-900 border-2 border-comic-black shadow-comic-md font-serif font-black flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-all hover:scale-105 active:translate-y-0.5 animate-pulse"
+                  {...newspaperProps}
+                  className="bg-[#fbf7ee] hover:bg-amber-100 text-slate-900 border-2 border-comic-black shadow-comic-md font-news-headline font-black flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-all hover:scale-105 active:translate-y-0.5 animate-pulse"
                   title={`EXTRA! Daily Bugle Action Bulletin (${isMultiHero && legalReport.callForActionCount > 0 ? `${legalReport.callForActionCount} Call for Action` : ''}${isMultiHero && legalReport.callForActionCount > 0 && legalReport.villainActionCount > 0 ? ', ' : ''}${legalReport.villainActionCount > 0 ? `${legalReport.villainActionCount} Villain Actions` : ''})`}
                 >
                   <div className="flex items-center gap-1.5">
                     <Newspaper className="w-4 h-4 text-comic-red" />
-                    <span className="font-serif font-black tracking-tight text-xs uppercase text-slate-950">
+                    <span className="font-news-headline font-black tracking-tight text-xs uppercase text-slate-950">
                       EXTRA!
                     </span>
                   </div>
@@ -382,7 +385,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                     {isMultiHero && legalReport.callForActionCount > 0 && (
                       <span
                         data-testid="extra-call-count"
-                        className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-comic-yellow text-comic-black border border-comic-black"
+                        className="text-micro px-1.5 py-0.2 rounded font-mono font-bold bg-comic-yellow text-comic-black border border-comic-black"
                         title={`${legalReport.callForActionCount} Teammate Action${legalReport.callForActionCount > 1 ? 's' : ''}`}
                       >
                         {legalReport.callForActionCount} TEAM
@@ -391,7 +394,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                     {legalReport.villainActionCount > 0 && (
                       <span
                         data-testid="extra-villain-count"
-                        className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-comic-red text-white border border-comic-black"
+                        className="text-micro px-1.5 py-0.2 rounded font-mono font-bold bg-comic-red text-white border border-comic-black"
                         title={`${legalReport.villainActionCount} Villain/Scheme Action${legalReport.villainActionCount > 1 ? 's' : ''}`}
                       >
                         {legalReport.villainActionCount} VILLAIN

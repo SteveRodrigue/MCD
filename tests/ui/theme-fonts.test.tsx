@@ -29,14 +29,14 @@ describe('theme fonts: the default pair (headlines + body)', () => {
     for (const style of MODAL_STYLES) expect(style.fonts.headline, style.label).toBeTruthy();
   });
 
-  it('every theme sets a body font: the same as its headlines, except Pop-Art, which writes Inter down', () => {
+  it('every theme sets a body font, and it is the same as its headlines (Pop-Art keeps Lilita One for small text)', () => {
     for (const style of MODAL_STYLES) expect(style.fonts.body, style.label).toBeTruthy();
-    for (const style of MODAL_STYLES.filter((s) => s.id !== 'pop-art')) {
+    for (const style of MODAL_STYLES) {
       expect(style.fonts.body, style.label).toBe(style.fonts.headline);
     }
-    expect(popArt.fonts.body).toMatch(/^Inter/);
+    expect(popArt.fonts.body).toMatch(/^'Lilita One'/);
     expect(themeFontVars(popArt)['--font-body' as keyof ReturnType<typeof themeFontVars>]).toMatch(
-      /^Inter/,
+      /^'Lilita One'/,
     );
   });
 
@@ -105,7 +105,9 @@ describe('theme fonts: the default pair (headlines + body)', () => {
     const popArtFont = screen.getByRole('dialog').style.getPropertyValue('--font-comic');
     expect(popArtFont).toMatch(/Lilita One/);
     expect(popArtFont).not.toMatch(/Kalam/);
-    expect(screen.getByRole('dialog').style.getPropertyValue('--font-body')).toMatch(/^Inter/);
+    expect(screen.getByRole('dialog').style.getPropertyValue('--font-body')).toMatch(
+      /^'Lilita One'/,
+    );
   });
 });
 
@@ -146,7 +148,7 @@ describe('theme fonts: the Newspaper exception', () => {
     });
   });
 
-  it('keeps the 1960s serif broadsheet in Pop-Art, whose theme fonts are Lilita One and Inter', () => {
+  it('keeps the 1960s serif broadsheet in Pop-Art, whose theme font is Lilita One', () => {
     expect(popArt.fonts.newspaper?.headline).toMatch(/Georgia/);
     expect(popArt.fonts.newspaper?.body).toMatch(/Georgia/);
     const vars = newspaperFontVars(popArt) as Record<string, string>;

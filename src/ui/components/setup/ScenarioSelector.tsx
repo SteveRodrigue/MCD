@@ -129,13 +129,13 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
     <div className="relative max-w-6xl w-full mx-auto my-4 p-3 md:p-6 pb-28">
       {/* Top Banner */}
       <div className="text-center mb-6 relative">
-        <div className="inline-block bg-comic-yellow border-comic border-comic-black px-6 py-1.5 font-comic text-xl md:text-2xl tracking-wider text-comic-red shadow-comic transform -rotate-1 mb-2">
+        <div className="inline-block bg-comic-yellow border-comic border-comic-black px-6 py-1.5 font-bangers text-xl md:text-2xl tracking-wider text-comic-red shadow-comic transform -rotate-1 mb-2">
           MISSION CONTROL • SCENARIO SELECTION
         </div>
-        <h1 className="font-comic text-4xl md:text-6xl text-comic-red tracking-wide drop-shadow-md">
+        <h1 className="font-bangers text-4xl md:text-6xl text-comic-red tracking-wide drop-shadow-md">
           MARVEL CHAMPIONS
         </h1>
-        <p className="font-comic text-lg md:text-xl text-comic-blue tracking-widest uppercase">
+        <p className="font-bangers text-lg md:text-xl text-comic-blue tracking-widest uppercase">
           Solo & Multi-Hero Comic Tabletop Setup
         </p>
       </div>

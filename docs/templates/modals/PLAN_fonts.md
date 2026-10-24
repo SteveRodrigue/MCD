@@ -125,24 +125,24 @@ in the record are the current choices, not final ones.
 
 **Matrix: final status.** Every cell was reviewed theme by theme in the lab. The sizes are written in the theme tokens (`fonts.sizes` in `modal-styles.ts`), the fonts in `fonts`.
 
-| Theme                | Headlines                     | Body                          | Newspaper headlines                       | Newspaper body                         | Numbers & codes          | Small text (9 to 13px) | Digits                           |
-| -------------------- | ----------------------------- | ----------------------------- | ----------------------------------------- | -------------------------------------- | ------------------------ | ---------------------- | -------------------------------- |
-| Pop-Art Action-Coded | Lilita One: **Validated**     | Inter: **Validated**          | System serif: **Validated**               | System serif: **Validated**            | Nunito +1: **Validated** | Body +1: **Validated** | Lilita One digits: **Validated** |
-| Storyboard Panels    | Kalam: **Validated**          | Kalam: **Validated**          | Kalam, follows: **Validated**             | Kalam, follows: **Validated**          | Nunito +1: **Validated** | Body +2: **Validated** | **Validated**                    |
-| Golden Age Newsprint | Merriweather: **Validated**   | Merriweather: **Validated**   | Merriweather, follows: **Validated**      | Merriweather, follows: **Validated**   | Nunito +1: **Validated** | Body +1: **Validated** | **Validated**                    |
-| Night Edition        | JetBrains Mono: **Validated** | JetBrains Mono: **Validated** | JetBrains Mono, follows: **Validated**    | JetBrains Mono, follows: **Validated** | Nunito +1: **Validated** | Body +1: **Validated** | **Validated**                    |
-| Splash Page          | Boogaloo: **Validated**       | Boogaloo: **Validated**       | Boogaloo, follows: **Validated**          | Boogaloo, follows, +4: **Validated**   | Nunito +1: **Validated** | Body +3: **Validated** | **Validated**                    |
-| S.H.I.E.L.D. Dossier | Special Elite: **Validated**  | Special Elite: **Validated**  | Special Elite, follows, -1: **Validated** | Special Elite, follows: **Validated**  | Nunito +1: **Validated** | Body +2: **Validated** | **Validated**                    |
-| Hero HUD             | Lexend: **Validated**         | Lexend: **Validated**         | Lexend, follows: **Validated**            | Lexend, follows: **Validated**         | Nunito +1: **Validated** | Body +1: **Validated** | **Validated**                    |
+| Theme                | Headlines                     | Body                                                                          | Newspaper headlines                       | Newspaper body                         | Numbers & codes          | Small text (9 to 13px) | Digits                           |
+| -------------------- | ----------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------- | -------------------------------------- | ------------------------ | ---------------------- | -------------------------------- |
+| Pop-Art Action-Coded | Lilita One: **Validated**     | Lilita One: **Validated** (D9: you kept Lilita One for small text over Inter) | System serif: **Validated**               | System serif: **Validated**            | Nunito +1: **Validated** | Body +1: **Validated** | Lilita One digits: **Validated** |
+| Storyboard Panels    | Kalam: **Validated**          | Kalam: **Validated**                                                          | Kalam, follows: **Validated**             | Kalam, follows: **Validated**          | Nunito +1: **Validated** | Body +2: **Validated** | **Validated**                    |
+| Golden Age Newsprint | Merriweather: **Validated**   | Merriweather: **Validated**                                                   | Merriweather, follows: **Validated**      | Merriweather, follows: **Validated**   | Nunito +1: **Validated** | Body +1: **Validated** | **Validated**                    |
+| Night Edition        | JetBrains Mono: **Validated** | JetBrains Mono: **Validated**                                                 | JetBrains Mono, follows: **Validated**    | JetBrains Mono, follows: **Validated** | Nunito +1: **Validated** | Body +1: **Validated** | **Validated**                    |
+| Splash Page          | Boogaloo: **Validated**       | Boogaloo: **Validated**                                                       | Boogaloo, follows: **Validated**          | Boogaloo, follows, +4: **Validated**   | Nunito +1: **Validated** | Body +3: **Validated** | **Validated**                    |
+| S.H.I.E.L.D. Dossier | Special Elite: **Validated**  | Special Elite: **Validated**                                                  | Special Elite, follows, -1: **Validated** | Special Elite, follows: **Validated**  | Nunito +1: **Validated** | Body +2: **Validated** | **Validated**                    |
+| Hero HUD             | Lexend: **Validated**         | Lexend: **Validated**                                                         | Lexend, follows: **Validated**            | Lexend, follows: **Validated**         | Nunito +1: **Validated** | Body +1: **Validated** | **Validated**                    |
 
 **Also surfaced in the review, and how each was settled**
 
-- The **Body** font of each theme: Validated per theme; the six single-font themes keep one font for both slots, Pop-Art keeps Inter.
+- The **Body** font of each theme: Validated per theme; every theme uses one font for both slots. Pop-Art's Body is Lilita One (D9: you compared Inter in the lab and kept Lilita One for small text).
 - A **different Newspaper pair** per theme: only Pop-Art has one (system serif); every other theme's newspaper follows its theme font. Validated.
 - **Numbers & codes**: Nunito +1 in every theme (you chose it; it replaces the system monospace and the fonts Night, Dossier and Hero HUD had).
 - The **combat log fonts** (Komika and the presets): still open, step N5.
 - The **minimum text size** (D7): decided, see below.
-- **Pop-Art body** stays Inter. Bangers keeps a place on the intro/main screen banner only (N8); everything else follows the selected theme.
+- **Pop-Art body** is Lilita One, not Inter (D9). Bangers keeps a place on the intro/main screen banner only (N8); everything else follows the selected theme.
 - **Pop-Art digits**: Lilita One's own digits are Validated; no digit face is needed.
 
 **Measured before the theme-by-theme review** (computed styles on 8 lab screens in all 7 themes: Decision, an action menu, Payment, Distribute, Sequence, Newspaper, Setup, Elements)

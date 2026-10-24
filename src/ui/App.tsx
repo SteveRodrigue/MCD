@@ -8,6 +8,8 @@ import { resetSessionSyncTracking } from './services/stats-storage-service';
 import { GameSettingsProvider } from './context/GameSettingsProvider';
 import { useGameSettings } from './context/useGameSettings';
 import { InfiniteLoopModal } from './components/board/InfiniteLoopModal';
+import { GameThemeRoot } from './theme/GameThemeRoot';
+import { isGameStage } from './theme/game-stage';
 import { ThemeProvider } from './theme/ThemeProvider';
 import { useGameTheme } from './theme/useGameTheme';
 import { GameSessionProvider } from './context/GameStateContext';
@@ -208,7 +210,10 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-comic-paper flex flex-col items-center justify-start overflow-x-clip font-sans">
+    <GameThemeRoot
+      active={isGameStage(stage)}
+      className="relative min-h-screen w-full bg-comic-paper flex flex-col items-center justify-start overflow-x-clip"
+    >
       {/* Halftone Dot Overlay */}
       <div className="fixed inset-0 bg-bendy-dots pointer-events-none z-table" />
 
@@ -289,7 +294,7 @@ const AppContent: React.FC = () => {
           />
         )}
       </div>
-    </div>
+    </GameThemeRoot>
   );
 };
 

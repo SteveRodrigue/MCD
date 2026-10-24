@@ -109,6 +109,28 @@ describe('font guard: themes name only the font roles', () => {
   });
 });
 
+describe('font guard: the card editor stays out of the themes', () => {
+  const editorFiles = listFiles('src/ui/components/editor', ['.ts', '.tsx']);
+
+  it('scans the editor', () => {
+    expect(editorFiles.length).toBeGreaterThan(10);
+  });
+
+  it('names no theme-only font role or text size, which exist only inside a themed screen', () => {
+    for (const file of editorFiles) {
+      const code = stripComments(read(file));
+      const themeOnly = [
+        ...code.matchAll(/(?<![-\w])(font-body|font-news-[a-z]+|text-(?:nano|micro|mini))\b/g),
+      ].map((m) => m[1]);
+      expect(themeOnly, `${file} uses a theme-only role`).toEqual([]);
+    }
+  });
+
+  it('is not inside the themed root: App passes the stage, and only game stages are themed', () => {
+    expect(read('src/ui/App.tsx')).toContain('active={isGameStage(stage)}');
+  });
+});
+
 describe('font guard: the lab font list, stylesheet and files stay in step', () => {
   const css = read('src/ui/components/templates/lab-fonts.css');
   const faces = [...css.matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => {

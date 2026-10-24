@@ -263,7 +263,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/). Scopes: `en
 2. **Typographic Roles:**
    - **Dialogue & Narrative Prose:** Use `font-dialogue` (`Komika Text` / `Comic Relief`) with bold weight for high legibility in multi-line speech bubbles.
    - **Sound Effects & Banners:** Use `font-comic` (`Bangers`) for explosive onomatopoeias (`POW!`, `HEROES ASSEMBLE!`) and mastheads.
-   - **Numbers:** `font-comic` and `.font-bangers` start with the `Comic Digits` face (`src/ui/styles/index.css`), which covers only `0–9` (`unicode-range: U+0030-0039`) and maps to Comic Relief Bold. Digits stay readable (Bangers' 1 and 7 look alike) with no per-element class; keep `Comic Digits` first in both stacks.
+   - **Numbers:** `font-comic` and `.font-bangers` start with the `Body Digits` face (`src/ui/styles/index.css`), which covers only `0–9` (`unicode-range: U+0030-0039`) and maps to the body font (Inter Bold). Digits stay readable (Bangers' 1 and 7 look alike) with no per-element class; keep `Body Digits` first in both stacks. Themes that set their own headline font (see `docs/templates/modals/FONT_RECORD.md`) do not use it.
 3. **Base UI Scale:**
    - The application uses `html { font-size: 110%; }` to deliver an immersive tabletop scale at standard 100% browser zoom. All component dimensions and spacings should utilize Tailwind `rem`-based classes (`p-4`, `w-44`, `text-sm`, etc.) to benefit from uniform scaling.
 

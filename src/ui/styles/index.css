@@ -2,15 +2,174 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Digits only (U+0030-0039): Bangers' 1 and 7 are hard to tell apart at small sizes,
-   so digits in Bangers text render in Comic Relief Bold (bundled via @fontsource). */
+/* Digits only (U+0030-0039): Bangers' 1 and 7 are hard to tell apart at small sizes, so digits in
+   Bangers text render in the body font (Inter Bold, bundled via @fontsource). */
 @font-face {
-  font-family: 'Comic Digits';
-  src: url('@fontsource/comic-relief/files/comic-relief-latin-700-normal.woff2') format('woff2');
+  font-family: 'Body Digits';
+  src: url('@fontsource/inter/files/inter-latin-700-normal.woff2') format('woff2');
   font-weight: 100 900;
   font-style: normal;
   unicode-range: U+0030-0039;
   font-display: swap;
+}
+
+/* Kalam: the Storyboard theme's font (bundled via @fontsource). */
+@font-face {
+  font-family: 'Kalam';
+  src: url('@fontsource/kalam/files/kalam-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Kalam';
+  src: url('@fontsource/kalam/files/kalam-latin-700-normal.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Merriweather: the Golden Age Newsprint theme's font (bundled via @fontsource). */
+@font-face {
+  font-family: 'Merriweather';
+  src: url('@fontsource/merriweather/files/merriweather-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Merriweather';
+  src: url('@fontsource/merriweather/files/merriweather-latin-400-italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Merriweather';
+  src: url('@fontsource/merriweather/files/merriweather-latin-700-normal.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Merriweather';
+  src: url('@fontsource/merriweather/files/merriweather-latin-700-italic.woff2') format('woff2');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* JetBrains Mono: the Night Edition theme's font (bundled via @fontsource). */
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('@fontsource/jetbrains-mono/files/jetbrains-mono-latin-700-normal.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('@fontsource/jetbrains-mono/files/jetbrains-mono-latin-700-italic.woff2') format('woff2');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Lexend: the Hero HUD theme's font (bundled via @fontsource). */
+@font-face {
+  font-family: 'Lexend';
+  src: url('@fontsource/lexend/files/lexend-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lexend';
+  src: url('@fontsource/lexend/files/lexend-latin-700-normal.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Special Elite: the S.H.I.E.L.D. Dossier theme's typewriter font (bundled via @fontsource). */
+@font-face {
+  font-family: 'Special Elite';
+  src: url('@fontsource/special-elite/files/special-elite-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Boogaloo: the Splash Page theme's font (bundled via @fontsource). */
+@font-face {
+  font-family: 'Boogaloo';
+  src: url('@fontsource/boogaloo/files/boogaloo-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Lilita One: the Pop-Art theme's headline font (bundled via @fontsource). */
+@font-face {
+  font-family: 'Lilita One';
+  src: url('@fontsource/lilita-one/files/lilita-one-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Nunito: the font of numbers and codes in every theme (bundled via @fontsource). */
+@font-face {
+  font-family: 'Nunito';
+  src: url('@fontsource/nunito/files/nunito-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nunito';
+  src: url('@fontsource/nunito/files/nunito-latin-700-normal.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nunito';
+  src: url('@fontsource/nunito/files/nunito-latin-800-normal.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Font roles used by `font-comic` (headlines), `font-body` and `font-mono` (numbers and codes). A theme overrides them on its own surfaces. */
+:root {
+  --font-comic: 'Body Digits', 'Bangers', Impact, system-ui, sans-serif;
+  --font-body: Inter, system-ui, sans-serif;
+  --font-numbers: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
 /* Local Comic Dialogue Fonts */
@@ -52,6 +211,21 @@
   }
 }
 
+/*
+ * Text size changes of a theme (`sizes` in modal-styles.ts). A themed surface sets the changes in px on
+ * itself: --text-adjust is added to body-sized text (text-xs, text-sm, text-nano, text-micro, text-mini; see
+ * tailwind.config.js), --text-headline-adjust to text-base and up. Numbers and codes (font-mono) use
+ * --text-numbers-adjust when the theme sets one, else the body change. Cards keep their own sizes.
+ */
+.font-mono {
+  --text-adjust: var(--text-numbers-adjust, var(--text-body-adjust, 0px));
+}
+
+[data-card-view] {
+  --text-adjust: 0px;
+  --text-headline-adjust: 0px;
+}
+
 @layer utilities {
   /* Ben-Day Halftone Dot Pattern */
   .bg-bendy-dots {
@@ -89,6 +263,6 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
   .font-bangers {
-    font-family: 'Comic Digits', 'Bangers', Impact, 'Arial Black', sans-serif;
+    font-family: 'Body Digits', 'Bangers', Impact, 'Arial Black', sans-serif;
   }
 }

@@ -4,12 +4,11 @@ import type { VerbColor } from '../../theme/modal-styles';
 import { useModalStyle } from '../../theme/useModalStyle';
 
 export interface CardActionModalProps {
-  /** The card whose actions are listed: its name is the title and its thumbnail the trigger. */
+  /** The card whose actions are listed: its name is the title and its thumbnail the header image. */
   card: { name: string; code?: string };
   /** Header kicker, e.g. "ALLY ACTIONS". */
   kicker: string;
   verb?: VerbColor;
-  icon: React.ReactNode;
   exhausted?: boolean;
   /** Strips under the header (stats, traits, tokens). */
   strips?: React.ReactNode;
@@ -28,7 +27,6 @@ export const CardActionModal: React.FC<CardActionModalProps> = ({
   card,
   kicker,
   verb = 'yellow',
-  icon,
   exhausted,
   strips,
   prompt,
@@ -43,11 +41,11 @@ export const CardActionModal: React.FC<CardActionModalProps> = ({
       title={card.name}
       kicker={kicker}
       verb={verb}
-      trigger={card}
-      icon={icon}
+      trigger={null}
+      headerCard={card}
       headerRight={
         exhausted ? (
-          <span className={`text-[9px] font-black px-1.5 py-0.5 ${style.chip}`}>EXHAUSTED</span>
+          <span className={`text-nano font-black px-1.5 py-0.5 ${style.chip}`}>EXHAUSTED</span>
         ) : undefined
       }
       onClose={onClose}

@@ -94,9 +94,7 @@ describe('Visible Removed from Game Pile (Issue #282)', () => {
     fireEvent.click(pile);
 
     expect(screen.getByText(/Removed from Game \(1 Cards\)/i)).toBeDefined();
-    expect(
-      screen.getByText(/Cards removed from the game are out of play and cannot reenter the game/i),
-    ).toBeDefined();
+    expect(screen.getByText(/Out of play for good/i)).toBeDefined();
     expect(screen.getAllByAltText(obligationCard.name).length).toBeGreaterThanOrEqual(1);
   });
 

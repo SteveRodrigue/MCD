@@ -106,14 +106,16 @@ describe('AttackTargetModal', () => {
 
   it('lists every target with its kind and status badges', () => {
     renderAttack();
-    expect(screen.getByRole('dialog', { name: 'TARGET SELECTION' })).toBeTruthy();
-    expect(screen.getByText('Hero Strike • 3 DMG')).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Choose an enemy to attack' })).toBeTruthy();
+    expect(screen.getByText('Hero strike')).toBeTruthy();
     expect(screen.getByText('VILLAIN')).toBeTruthy();
     expect(screen.getByText('MINION')).toBeTruthy();
     expect(screen.getByText('GUARD')).toBeTruthy();
     expect(screen.getByText('TOUGH')).toBeTruthy();
-    expect(screen.getByText('(2 dmg)')).toBeTruthy();
-    expect(screen.getByText('3 ATK')).toBeTruthy();
+    expect(screen.queryByText('(2 dmg)')).toBeNull();
+    expect(screen.queryByText(/STRIKE/)).toBeNull();
+    expect(screen.getAllByText('3 ATK')).toHaveLength(1);
+    expect(screen.queryByText(/is ready to/)).toBeNull();
   });
 
   it('strikes the chosen target and closes', () => {
@@ -134,15 +136,15 @@ describe('AttackTargetModal', () => {
 
   it('shows an ally strike in the header', () => {
     renderAttack({ attackerType: 'ally', attackerName: 'Black Widow', attackerCode: '01075' });
-    expect(screen.getByText('Ally Strike • 3 DMG')).toBeTruthy();
+    expect(screen.getByText('Ally strike')).toBeTruthy();
   });
 });
 
 describe('ThwartTargetModal', () => {
   it('lists schemes with their threat, badges and the consequential damage', () => {
     renderThwart();
-    expect(screen.getByRole('dialog', { name: 'THWART TARGET SELECTION' })).toBeTruthy();
-    expect(screen.getByText('Hero Thwart • 2 THW')).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Choose a scheme to thwart' })).toBeTruthy();
+    expect(screen.getByText('Hero thwart')).toBeTruthy();
     expect(screen.getByText('Takes 1 DMG')).toBeTruthy();
     expect(screen.getByText('MAIN SCHEME')).toBeTruthy();
     expect(screen.getByText('CRISIS')).toBeTruthy();

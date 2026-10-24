@@ -33,6 +33,8 @@ export interface CardViewProps {
   onClick?: () => void;
   showTokens?: boolean;
   enableHoverZoom?: boolean;
+  /** Without zoom, lift the card slightly on hover. Turn off where the card must stay still. */
+  enableHoverLift?: boolean;
   enableContextMenu?: boolean;
   zoomOrigin?:
     | 'bottom'
@@ -67,6 +69,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
   onClick,
   showTokens = true,
   enableHoverZoom = true,
+  enableHoverLift = true,
   enableContextMenu = true,
   zoomOrigin = 'center',
   className = '',
@@ -225,6 +228,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
   return (
     <div
       ref={cardRef}
+      data-card-view={card.code}
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
       onContextMenu={handleContextMenu}
@@ -244,7 +248,9 @@ const CardViewImpl: React.FC<CardViewProps> = ({
         className={`relative rounded-xl overflow-hidden border-3 border-comic-black shadow-comic transition-all duration-200 ease-out transform ${originClass} ${
           enableHoverZoom
             ? 'group-hover:scale-[var(--card-zoom-scale)] group-hover:-translate-y-4 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.85)] group-hover:border-4'
-            : 'group-hover:-translate-y-1'
+            : enableHoverLift
+              ? 'group-hover:-translate-y-1'
+              : ''
         } ${sizeClasses} ${
           isPlayable === false || isUsable === false
             ? 'filter grayscale contrast-75 brightness-90 group-hover:grayscale-0 group-hover:contrast-100 group-hover:brightness-100'

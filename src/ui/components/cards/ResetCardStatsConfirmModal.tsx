@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Trash2 } from 'lucide-react';
 import { NormalizedCard } from '../../../engine/models';
-import { CardRef } from '../../theme/CardRef';
 import { ModalScaffold } from '../../theme/ModalScaffold';
 import { useModalStyle } from '../../theme/useModalStyle';
 
@@ -35,7 +34,7 @@ export const ResetCardStatsConfirmModal: React.FC<ResetCardStatsConfirmModalProp
     }
   };
 
-  const title = isAll ? 'RESET ALL STATS' : `RESET STATS: ${card?.name || 'CARD'}`;
+  const title = isAll ? 'Reset all stats' : 'Reset card stats';
 
   return (
     <ModalScaffold
@@ -64,9 +63,7 @@ export const ResetCardStatsConfirmModal: React.FC<ResetCardStatsConfirmModalProp
             className="px-4 py-2 text-xs font-bold font-comic uppercase rounded-lg border-2 border-comic-black bg-comic-red hover:bg-rose-600 text-white shadow-comic-sm cursor-pointer transition-transform active:scale-95 flex items-center gap-1.5"
           >
             <Trash2 className="w-4 h-4" />
-            <span>
-              {isSubmitting ? 'Resetting...' : isAll ? 'Reset All Stats' : 'Reset Card Stats'}
-            </span>
+            <span>{isSubmitting ? 'Resetting...' : 'Reset'}</span>
           </button>
         </>
       }
@@ -84,12 +81,7 @@ export const ResetCardStatsConfirmModal: React.FC<ResetCardStatsConfirmModalProp
           </p>
         ) : (
           <p>
-            Are you sure you want to reset all play stats for{' '}
-            <span className="font-bold">
-              {card && <CardRef code={card.code} name={card.name} />} ({card?.code})
-            </span>
-            ? This will clear all recorded plays, ability triggers, and basic action usages for this
-            card.
+            This clears all recorded plays, ability triggers and basic action usages of this card.
             <br />
             <span className="font-black text-rose-600 uppercase">
               This action cannot be undone.

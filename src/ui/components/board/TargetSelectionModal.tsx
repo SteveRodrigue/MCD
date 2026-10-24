@@ -1,5 +1,4 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
 import { CardRef } from '../../theme/CardRef';
 import { ModalScaffold } from '../../theme/ModalScaffold';
 import type { VerbColor } from '../../theme/modal-styles';
@@ -36,23 +35,23 @@ export interface TargetRow {
   /** Detail line under the name (hit points, threat, reason it is blocked). */
   details: React.ReactNode;
   disabled?: boolean;
-  actionLabel: string;
+  /** Chip text for a state such as BLOCKED; omit when the row is simply clickable. */
+  actionLabel?: string;
 }
 
 export interface TargetSelectionModalProps {
+  /** The question, e.g. "Choose an enemy to attack". */
   title: string;
   verb: VerbColor;
   headerIcon: React.ReactNode;
-  /** Small line above the title, e.g. "Hero Strike • 3 DMG". */
+  /** Small line above the title, e.g. "Hero strike". */
   kicker: string;
+  /** Extra header content next to the value chip (consequential damage and the like). */
   headerRight?: React.ReactNode;
-  /** The acting card; shown with its thumbnail in the header and the banner. */
+  /** The acting card; shown once, with its thumbnail, in the header. */
   actor: { name: string; code?: string };
-  /** Text after the actor's name in the banner, e.g. "is ready to strike!". */
-  actorLine: string;
-  /** Value chip in the banner, e.g. "3 ATK". */
+  /** Value chip in the header, e.g. "3 ATK". */
   actorChip: string;
-  prompt: string;
   rows: TargetRow[];
   cancelLabel: string;
   onPick: (id: string) => void;
@@ -62,7 +61,8 @@ export interface TargetSelectionModalProps {
 
 /**
  * One modal for "pick a card to act on" prompts (attack targets, thwart targets): header with the
- * acting card, a banner, one row per target with its thumbnail and accent, and a cancel button.
+ * question, the acting card and its value, one row per target with its thumbnail and accent, and a
+ * cancel button. Each fact is written once.
  */
 export const TargetSelectionModal: React.FC<TargetSelectionModalProps> = ({
   title,
@@ -71,9 +71,7 @@ export const TargetSelectionModal: React.FC<TargetSelectionModalProps> = ({
   kicker,
   headerRight,
   actor,
-  actorLine,
   actorChip,
-  prompt,
   rows,
   cancelLabel,
   onPick,
@@ -89,7 +87,14 @@ export const TargetSelectionModal: React.FC<TargetSelectionModalProps> = ({
       verb={verb}
       trigger={actor}
       icon={headerIcon}
-      headerRight={headerRight}
+      headerRight={
+        <>
+          {headerRight}
+          <span className={`font-mono text-xs font-black px-2 py-0.5 ${style.chip}`}>
+            {actorChip}
+          </span>
+        </>
+      }
       onClose={onClose}
       maxWidthClass="max-w-lg"
       testId={testId}
@@ -103,20 +108,6 @@ export const TargetSelectionModal: React.FC<TargetSelectionModalProps> = ({
         </button>
       }
     >
-      <div className={`flex items-center justify-between gap-2 px-3 py-2 ${style.inset}`}>
-        <div className="flex items-center gap-2 min-w-0 text-xs sm:text-sm font-bold">
-          <Sparkles className={`w-4 h-4 shrink-0 ${style.emphasis}`} />
-          <span className="min-w-0">
-            <CardRef code={actor.code} name={actor.name} size="xs" /> {actorLine}
-          </span>
-        </div>
-        <span className={`font-mono text-xs font-black px-2 py-0.5 shrink-0 ${style.chip}`}>
-          {actorChip}
-        </span>
-      </div>
-
-      <p className={`text-xs font-bold uppercase tracking-wider ${style.muted}`}>{prompt}</p>
-
       <div className="grid grid-cols-1 gap-2.5">
         {rows.map((row) => (
           <ActionRow
@@ -136,7 +127,7 @@ export const TargetSelectionModal: React.FC<TargetSelectionModalProps> = ({
                 className={`text-sm sm:text-base ${style.optionTitleHover}`}
               />
               <span
-                className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded border border-comic-black ${
+                className={`text-nano font-black uppercase px-1.5 py-0.5 rounded border border-comic-black ${
                   row.strong ? 'bg-comic-red text-white' : 'bg-comic-yellow text-slate-950'
                 }`}
               >
@@ -145,7 +136,7 @@ export const TargetSelectionModal: React.FC<TargetSelectionModalProps> = ({
               {row.badges.map((badge) => (
                 <span
                   key={badge.label}
-                  className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded border border-comic-black flex items-center gap-1 ${
+                  className={`text-nano font-black uppercase px-1.5 py-0.5 rounded border border-comic-black flex items-center gap-1 ${
                     BADGE_TONES[badge.tone]
                   } ${badge.pulse ? 'animate-pulse' : ''}`}
                 >

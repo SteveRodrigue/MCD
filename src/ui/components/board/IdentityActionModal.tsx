@@ -63,7 +63,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
     !isHero && isPlayerTurn && recoverCheck.allowed && player.health < effectiveMaxHealth;
 
   // 3. Attack Check
-  const attackState = getIdentityAttackState(player, gameState, effectiveStats.attack);
+  const attackState = getIdentityAttackState(player, gameState);
   const { canAttack, canAttackVillain, eligibleMinion } = attackState;
 
   // 4. Thwart Check
@@ -83,7 +83,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
   );
 
   const detail = (text: string) => (
-    <span className={`text-[10px] block ${style.muted}`}>{text}</span>
+    <span className={`text-micro block ${style.muted}`}>{text}</span>
   );
   const rowTitle = (text: string) => (
     <span className="font-comic font-black text-xs block">{text}</span>
@@ -94,7 +94,6 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
       card={{ name: player.activeFormCard.name, code: player.activeFormCard.code }}
       kicker={isHero ? 'HERO IDENTITY' : 'ALTER-EGO IDENTITY'}
       verb={isHero ? 'red' : 'yellow'}
-      icon={<Zap className="w-5 h-5" />}
       exhausted={player.exhausted}
       onClose={onClose}
       testId="identity-action-modal"
@@ -107,7 +106,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                 Health: {player.health} / {effectiveMaxHealth} HP
               </span>
             </div>
-            <span className={`font-mono text-[10px] px-2 py-0.5 ${style.chip}`}>
+            <span className={`font-mono text-micro px-2 py-0.5 ${style.chip}`}>
               HAND SIZE:{' '}
               {(player.activeFormCard as unknown as HeroCard | AlterEgoCard).handSize ??
                 (isHero ? 5 : 6)}
@@ -118,13 +117,13 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
             testId="identity-active-traits-strip"
             className="flex flex-wrap items-center gap-1.5 font-bold"
           >
-            <span className={`text-[10px] uppercase font-black tracking-wider ${style.muted}`}>
+            <span className={`text-micro uppercase font-black tracking-wider ${style.muted}`}>
               Traits:
             </span>
             {traitsDetails.printedTraits.map((trait, idx) => (
               <span
                 key={`printed-${idx}`}
-                className={`font-comic text-[10px] px-2 py-0.5 font-bold ${style.chip}`}
+                className={`font-comic text-micro px-2 py-0.5 font-bold ${style.chip}`}
               >
                 {trait}
               </span>
@@ -133,7 +132,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
               <span
                 key={`dynamic-${idx}`}
                 data-testid={`identity-dynamic-trait-${trait.toLowerCase()}`}
-                className="bg-cyan-300 text-slate-950 font-comic text-[10px] px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-xs font-black uppercase tracking-wider flex items-center gap-0.5"
+                className="bg-cyan-300 text-slate-950 font-comic text-micro px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-xs font-black uppercase tracking-wider flex items-center gap-0.5"
               >
                 <span>✨</span>
                 <span>{trait}</span>
@@ -149,19 +148,19 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
           icon={<Heart className="w-4 h-4 fill-current" />}
           tone="warn"
           disabled={!canRecover}
-          actionLabel={`REC: ${effectiveStats.recovery}`}
+          actionLabel={`+${effectiveStats.recovery} HP`}
           onClick={() => {
             onDispatchAction({ type: 'BASIC_RECOVER', playerId: player.id });
             onClose();
           }}
         >
-          {rowTitle(`Recover (+${effectiveStats.recovery} HP)`)}
+          {rowTitle('Recover')}
           {detail(
             player.health >= effectiveMaxHealth
               ? `Already at maximum health (${player.health} / ${effectiveMaxHealth} HP)`
               : player.exhausted
                 ? 'Identity is exhausted'
-                : `Exhaust ${player.activeFormCard.name} to heal from ${player.health} to ${Math.min(effectiveMaxHealth, player.health + effectiveStats.recovery)} HP`,
+                : `Exhaust to heal: ${player.health} → ${Math.min(effectiveMaxHealth, player.health + effectiveStats.recovery)} HP`,
           )}
         </ActionRow>
       )}
@@ -266,7 +265,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
               }
             }}
           >
-            {rowTitle(`Attack (${effectiveStats.attack} DMG)`)}
+            {rowTitle('Attack')}
             {detail(attackState.subtext)}
           </ActionRow>
 
@@ -295,15 +294,15 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
               }
             }}
           >
-            {rowTitle(`Thwart (${effectiveStats.thwart} THW)`)}
+            {rowTitle('Thwart')}
             {detail(
               player.exhausted
                 ? 'Hero is exhausted'
                 : !canThwartScheme
                   ? 'No threat on schemes (Target not valid)'
                   : canThwartMain
-                    ? `Exhaust to remove ${effectiveStats.thwart} threat from main scheme`
-                    : `Exhaust to remove ${effectiveStats.thwart} threat from ${eligibleSideScheme?.card.name}`,
+                    ? 'Exhaust to remove threat from the main scheme'
+                    : `Exhaust to remove threat from ${eligibleSideScheme?.card.name}`,
             )}
           </ActionRow>
         </>
@@ -321,11 +320,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
         }}
       >
         {rowTitle(isHero ? 'Flip to Alter-Ego' : 'Suit Up (Hero Form)')}
-        {detail(
-          !flipCheck.allowed
-            ? 'Already changed form this round (Limit: once per round)'
-            : 'Change identity form',
-        )}
+        {detail(!flipCheck.allowed ? 'Already changed form this round' : 'Change identity form')}
       </ActionRow>
     </CardActionModal>
   );

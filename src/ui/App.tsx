@@ -26,11 +26,18 @@ const SupplementalEditorScreen = React.lazy(() =>
     default: m.SupplementalEditorScreen,
   })),
 );
-const ModalTemplatesScreen = React.lazy(() =>
-  import('./components/templates/ModalTemplatesScreen').then((m) => ({
-    default: m.ModalTemplatesScreen,
-  })),
-);
+// The design lab (`/templates`) is a dev tool: it and its fonts are built only for the dev server.
+const ModalTemplatesScreen = import.meta.env.DEV
+  ? React.lazy(() =>
+      import('./components/templates/ModalTemplatesScreen').then((m) => ({
+        default: m.ModalTemplatesScreen,
+      })),
+    )
+  : null;
+
+const isTemplatesUrl = (pathname: string, search: string): boolean =>
+  ModalTemplatesScreen !== null &&
+  (pathname.startsWith('/templates') || search.includes('view=templates'));
 
 const AppContent: React.FC = () => {
   const { settings } = useGameSettings();
@@ -40,7 +47,7 @@ const AppContent: React.FC = () => {
       if (typeof window !== 'undefined') {
         const pathname = window.location.pathname;
         const search = window.location.search;
-        if (pathname.startsWith('/templates') || search.includes('view=templates')) {
+        if (isTemplatesUrl(pathname, search)) {
           return 'TEMPLATES';
         }
         if (pathname.startsWith('/editor') || search.includes('view=editor')) {
@@ -85,7 +92,7 @@ const AppContent: React.FC = () => {
     const handlePopState = () => {
       const pathname = window.location.pathname;
       const search = window.location.search;
-      if (pathname.startsWith('/templates') || search.includes('view=templates')) {
+      if (isTemplatesUrl(pathname, search)) {
         setStage('TEMPLATES');
       } else if (pathname.startsWith('/editor') || search.includes('view=editor')) {
         setStage('EDITOR');
@@ -253,7 +260,7 @@ const AppContent: React.FC = () => {
           </React.Suspense>
         )}
 
-        {stage === 'TEMPLATES' && (
+        {stage === 'TEMPLATES' && ModalTemplatesScreen && (
           <React.Suspense
             fallback={
               <div className="flex items-center justify-center h-screen bg-comic-paper">
@@ -275,7 +282,8 @@ const AppContent: React.FC = () => {
         {/* Infinite Loop Detected Modal (ADR-0053, Issue #48) */}
         {loopError && (
           <InfiniteLoopModal
-            cycle={loopError.formattedCycle || loopError.message}
+            message={loopError.message}
+            cycle={loopError.cycle}
             onDismiss={() => setLoopError(null)}
             onReset={handleReset}
           />

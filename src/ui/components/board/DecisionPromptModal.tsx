@@ -1,13 +1,5 @@
 import React, { useState } from 'react';
-import {
-  HelpCircle,
-  CheckCircle2,
-  XCircle,
-  ArrowRight,
-  Zap,
-  ShieldAlert,
-  Swords,
-} from 'lucide-react';
+import { CheckCircle2, XCircle, ArrowRight, Zap, ShieldAlert, Swords } from 'lucide-react';
 import { PendingDecisionPrompt } from '../../../engine/models';
 import { cardCatalog } from '../../../data/importer/card-loader';
 import { CardView } from '../cards/CardView';
@@ -91,8 +83,21 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
     (prompt.triggerSourceCode ? cardCatalog.getCard(prompt.triggerSourceCode) : undefined) ||
     prompt.revealedCards?.[0]?.card;
 
+  // Cards the attack matchup already shows; no other panel repeats them.
+  const showMatchup =
+    prompt.incomingDamage !== undefined ||
+    /Incoming Damage:\s*\d+/i.test(`${prompt.description ?? ''} ${prompt.title ?? ''}`) ||
+    prompt.promptId.startsWith('prompt_defend') ||
+    Boolean(prompt.attackerName);
+  const matchupCodes = new Set(
+    showMatchup
+      ? [prompt.attackerCardCode, prompt.defenderCardCode, prompt.targetCardCode].filter(Boolean)
+      : [],
+  );
+
   const showTriggerCardShowcase =
     Boolean(triggerCard) &&
+    !matchupCodes.has(triggerCard!.code) &&
     (triggerCard!.code !== prompt.sourceCardCode || Boolean(prompt.triggerSourceCode)) &&
     (!prompt.revealedCards ||
       prompt.revealedCards.length <= 1 ||
@@ -114,7 +119,9 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
       ? cardCatalog.getCard(prompt.sourceCardCode)
       : undefined;
   const abilityCard =
-    hostCard && !(showTriggerCardShowcase && triggerCard?.code === hostCard.code)
+    hostCard &&
+    !matchupCodes.has(hostCard.code) &&
+    !(showTriggerCardShowcase && triggerCard?.code === hostCard.code)
       ? hostCard
       : undefined;
 
@@ -134,27 +141,25 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
     : prompt.sourceCardName
       ? { code: prompt.sourceCardCode, name: prompt.sourceCardName }
       : null;
+  // The header shows the trigger card only when the body does not already show it.
+  const bodyShowsTrigger =
+    showTriggerCardShowcase || Boolean(headerTrigger?.code && matchupCodes.has(headerTrigger.code));
 
   return (
     <ModalScaffold
-      title={isForced ? 'FORCED RESPONSE / INTERRUPT' : 'CHOOSE AN ACTION'}
-      kicker={isForced ? 'FORCED RESOLUTION' : 'DECISION POINT'}
+      title={prompt.title}
+      kicker={isForced ? 'FORCED RESOLUTION' : 'OPTIONAL DECISION'}
       verb={isForced ? 'red' : 'yellow'}
-      trigger={headerTrigger}
+      trigger={bodyShowsTrigger ? null : headerTrigger}
       icon={
         isForced ? <ShieldAlert className="w-5 h-5 animate-pulse" /> : <Zap className="w-5 h-5" />
       }
       headerRight={
-        <>
-          {prompt.totalQueued && prompt.totalQueued > 1 && (
-            <span className={`text-[10px] font-black px-1.5 py-0.5 ${style.chip}`}>
-              QUEUE: {prompt.queuePosition ?? 1} OF {prompt.totalQueued}
-            </span>
-          )}
-          <span className={`text-xs font-black uppercase px-2.5 py-1 ${style.chip}`}>
-            {isForced ? 'FORCED' : 'OPTIONAL'}
+        prompt.totalQueued && prompt.totalQueued > 1 ? (
+          <span className={`text-micro font-black px-1.5 py-0.5 ${style.chip}`}>
+            QUEUE: {prompt.queuePosition ?? 1} OF {prompt.totalQueued}
           </span>
-        </>
+        ) : undefined
       }
       maxWidthClass="max-w-xl"
       testId="decision-prompt-modal"
@@ -163,13 +168,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
       <div className="space-y-4">
         {/* Question Title & Description */}
         <div className="space-y-1">
-          <h3 className="text-lg sm:text-xl font-black uppercase tracking-tight flex items-center gap-2 leading-snug">
-            <HelpCircle className="w-5 h-5 shrink-0" />
-            <span>{prompt.title}</span>
-          </h3>
-          {(incomingDamage !== undefined ||
-            prompt.promptId.startsWith('prompt_defend') ||
-            prompt.attackerName) && (
+          {showMatchup && (
             <div
               className={`p-3 space-y-2.5 ${style.panel}`}
               style={{ borderLeftColor: '#ED1D24', borderLeftWidth: 6 }}
@@ -208,7 +207,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                   />
                   <div className="min-w-0 flex-1">
                     <div
-                      className={`text-[10px] font-black uppercase tracking-wider ${style.muted}`}
+                      className={`text-micro font-black uppercase tracking-wider ${style.muted}`}
                     >
                       ATTACKER
                     </div>
@@ -217,12 +216,12 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                     </div>
                     <div className="flex items-center gap-1 flex-wrap mt-0.5">
                       {prompt.hasOverkill && (
-                        <span className="bg-comic-red text-white text-[9px] font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                        <span className="bg-comic-red text-white text-nano font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
                           OVERKILL
                         </span>
                       )}
                       {prompt.hasPiercing && (
-                        <span className="bg-purple-600 text-white text-[9px] font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                        <span className="bg-purple-600 text-white text-nano font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
                           PIERCING
                         </span>
                       )}
@@ -233,7 +232,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                 {/* Middle: Direction arrow + incoming damage */}
                 <div className="flex flex-col items-center justify-center shrink-0 px-1">
                   {incomingDamage !== undefined && (
-                    <div className="text-[10px] font-mono font-black text-comic-red">
+                    <div className="text-micro font-mono font-black text-comic-red">
                       {incomingDamage} DMG
                     </div>
                   )}
@@ -253,7 +252,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                   />
                   <div className="min-w-0 flex-1">
                     <div
-                      className={`text-[10px] font-black uppercase tracking-wider ${style.muted}`}
+                      className={`text-micro font-black uppercase tracking-wider ${style.muted}`}
                     >
                       {prompt.defenderType === 'ALLY'
                         ? 'DEFENDER (ALLY)'
@@ -266,17 +265,17 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                     </div>
                     <div className="flex items-center gap-1 flex-wrap mt-0.5">
                       {prompt.targetHasTough && (
-                        <span className="bg-amber-400 text-slate-950 text-[9px] font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                        <span className="bg-amber-400 text-slate-950 text-nano font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
                           TOUGH
                         </span>
                       )}
                       {prompt.targetRetaliate !== undefined && prompt.targetRetaliate > 0 && (
-                        <span className="bg-orange-500 text-white text-[9px] font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                        <span className="bg-orange-500 text-white text-nano font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
                           RETALIATE {prompt.targetRetaliate}
                         </span>
                       )}
                       {prompt.targetCurrentHp !== undefined && (
-                        <span className={`text-[10px] font-mono font-bold ${style.muted}`}>
+                        <span className={`text-micro font-mono font-bold ${style.muted}`}>
                           {prompt.targetMaxHp !== undefined
                             ? `${prompt.targetCurrentHp} / ${prompt.targetMaxHp} HP`
                             : `${prompt.targetCurrentHp} HP`}
@@ -290,7 +289,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
               {/* Projected HP */}
               {incomingDamage !== undefined && prompt.targetCurrentHp !== undefined && (
                 <div
-                  className={`flex items-center justify-between text-[11px] font-bold px-2 py-1 ${style.inset}`}
+                  className={`flex items-center justify-between text-mini font-bold px-2 py-1 ${style.inset}`}
                 >
                   <span>Projected HP After Attack:</span>
                   <span className="font-mono font-black">
@@ -330,10 +329,10 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
         {prompt.revealedCards && prompt.revealedCards.length > 0 && (
           <div className={`p-3 overflow-visible ${style.panel}`}>
             <div className="flex justify-between items-center mb-2 px-1">
-              <span className="text-[11px] font-comic font-black uppercase tracking-wider">
+              <span className="text-mini font-comic font-black uppercase tracking-wider">
                 Revealed Cards ({prompt.revealedCards.length})
               </span>
-              <span className={`text-[10px] font-bold italic ${style.muted}`}>
+              <span className={`text-micro font-bold italic ${style.muted}`}>
                 (Click matching card or select option below)
               </span>
             </div>
@@ -361,7 +360,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                   >
                     <CardView card={rc.card} size="sm" enableHoverZoom={true} zoomOrigin="center" />
                     <span
-                      className={`font-comic text-[9px] px-2 py-0.5 rounded border border-comic-black font-black uppercase shadow-xs ${
+                      className={`font-comic text-nano px-2 py-0.5 rounded border border-comic-black font-black uppercase shadow-xs ${
                         rc.isSelectable
                           ? 'bg-emerald-400 text-slate-950 animate-pulse'
                           : 'bg-slate-300 text-slate-700'
@@ -461,25 +460,25 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                     ) : null}
                     <span>{option.label}</span>
                     {option.statusBadges?.isTough && (
-                      <span className="bg-amber-400 text-slate-950 text-[9px] font-black uppercase px-1.5 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                      <span className="bg-amber-400 text-slate-950 text-nano font-black uppercase px-1.5 py-0.2 rounded border border-comic-black shadow-comic-xs">
                         TOUGH
                       </span>
                     )}
                     {option.statusBadges?.retaliate !== undefined &&
                       option.statusBadges.retaliate > 0 && (
-                        <span className="bg-orange-500 text-white text-[9px] font-black uppercase px-1.5 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                        <span className="bg-orange-500 text-white text-nano font-black uppercase px-1.5 py-0.2 rounded border border-comic-black shadow-comic-xs">
                           RETALIATE {option.statusBadges.retaliate}
                         </span>
                       )}
                     {requiresPayment && costAmount !== undefined && costAmount > 0 && (
-                      <span className="inline-flex items-center gap-1 font-comic text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-300 border border-comic-black text-slate-950 shadow-xs">
+                      <span className="inline-flex items-center gap-1 font-comic text-micro font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-300 border border-comic-black text-slate-950 shadow-xs">
                         ⚡ COST: {costAmount} {costAmount === 1 ? 'RESOURCE' : 'RESOURCES'}
                       </span>
                     )}
                     {!requiresPayment &&
                       !option.label.toLowerCase().includes('cost') &&
                       optionCard?.cost !== undefined && (
-                        <span className="inline-flex items-center gap-1 font-comic text-[10px] font-black uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-200 border border-comic-black text-slate-950 shadow-xs">
+                        <span className="inline-flex items-center gap-1 font-comic text-micro font-black uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-200 border border-comic-black text-slate-950 shadow-xs">
                           Cost: {optionCard.cost}
                         </span>
                       )}
@@ -494,7 +493,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                 </div>
                 {option.disabledReason && (
                   <div className="mt-1 pl-8">
-                    <span className="inline-flex items-center gap-1 font-comic text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-200 border border-comic-black text-amber-950">
+                    <span className="inline-flex items-center gap-1 font-comic text-micro font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-200 border border-comic-black text-amber-950">
                       ⚠️ {option.disabledReason}
                     </span>
                   </div>

@@ -48,7 +48,7 @@ const toRow = (target: SchemeTarget): TargetRow => {
       </>
     ),
     disabled: !target.allowed,
-    actionLabel: target.allowed ? 'FOIL ➔' : 'BLOCKED',
+    actionLabel: target.allowed ? undefined : 'BLOCKED',
   };
 };
 
@@ -68,21 +68,19 @@ export const ThwartTargetModal: React.FC<ThwartTargetModalProps> = ({
 
   return (
     <TargetSelectionModal
-      title="THWART TARGET SELECTION"
+      title="Choose a scheme to thwart"
       verb="blue"
       headerIcon={<Target className="w-6 h-6 animate-pulse" />}
-      kicker={`${thwarterType === 'hero' ? 'Hero Thwart' : 'Ally Thwart'} • ${thwartValue} THW`}
+      kicker={thwarterType === 'hero' ? 'Hero thwart' : 'Ally thwart'}
       headerRight={
         consequentialDamage !== undefined && consequentialDamage > 0 ? (
-          <span className={`text-[10px] font-black px-1.5 py-0.5 ${style.chip}`}>
+          <span className={`text-micro font-black px-1.5 py-0.5 ${style.chip}`}>
             Takes {consequentialDamage} DMG
           </span>
         ) : undefined
       }
       actor={{ name: thwarterName, code: thwarterCode }}
-      actorLine="is ready to remove threat!"
       actorChip={`${thwartValue} THW`}
-      prompt="Choose a scheme to remove threat from:"
       rows={targets.map(toRow)}
       cancelLabel="Cancel Thwart"
       onPick={(id) => {

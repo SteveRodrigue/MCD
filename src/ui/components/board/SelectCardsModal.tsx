@@ -104,11 +104,16 @@ export const SelectCardsModal: React.FC<SelectCardsModalProps> = ({ prompt, onCo
                 className="text-xs uppercase"
               />
               {option.description && (
-                <div className={`text-[10px] text-center line-clamp-3 ${style.muted}`}>
+                <div className={`text-micro text-center line-clamp-3 ${style.muted}`}>
                   <FormattedCardText text={option.description} />
                 </div>
               )}
-              {isChosen && <CheckCircle2 className={`w-4 h-4 ${style.emphasis}`} />}
+              {isChosen && (
+                <CheckCircle2
+                  aria-hidden="true"
+                  className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none ${style.emphasis}`}
+                />
+              )}
             </button>
           );
         })}

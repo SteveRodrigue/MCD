@@ -44,8 +44,9 @@ describe('WakandaForeverModal', () => {
 
   it('lists every upgrade Special and marks the last one as the finisher', () => {
     render(<WakandaForeverModal prompt={prompt} onExecuteSequence={vi.fn()} />);
-    expect(screen.getAllByText('Energy Daggers').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Panther Claws').length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('Move Energy Daggers later')).toBeTruthy();
+    expect(screen.getByLabelText('Move Panther Claws later')).toBeTruthy();
+    expect(screen.queryByText('Planned resolution sequence')).toBeNull();
     expect(screen.getAllByText('1 DMG').length).toBeGreaterThan(0);
     expect(screen.getAllByText('💥 2 THW').length).toBeGreaterThan(0);
   });

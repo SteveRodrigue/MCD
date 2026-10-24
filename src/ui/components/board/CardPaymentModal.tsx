@@ -109,7 +109,7 @@ const ChoiceCard: React.FC<ChoiceCardProps> = ({
         <CardArtThumbnail cardCode={code} cardName={name} size="sm" />
         <div className="space-y-0.5 min-w-0">
           <div className="text-xs font-black truncate">{name}</div>
-          <div className={`text-[10px] font-bold uppercase truncate ${style.muted}`}>{subline}</div>
+          <div className={`text-micro font-bold uppercase truncate ${style.muted}`}>{subline}</div>
         </div>
       </div>
       <div className="shrink-0">{badge}</div>
@@ -373,6 +373,8 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   const availableGenerators = useMemo(() => {
     const list: {
       id: string;
+      /** Catalog code of the generating card, for its thumbnail. */
+      code: string;
       name: string;
       sublabel: string;
       resourceType?: string;
@@ -403,6 +405,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
         const amount = Number(genStep?.effectParams?.amount) || 1;
         list.push({
           id: 'identity_ability',
+          code: player.activeFormCard.code,
           name: `${player.activeFormCard.name} (${ab.id.replace(/_/g, ' ').toUpperCase()})`,
           sublabel: `Identity Ability • +${amount} ${resType.toUpperCase()}`,
           resourceType: resType,
@@ -460,6 +463,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
           const typesDesc = resList.length > 0 ? resList.join(', ') : 'wild';
           list.push({
             id: c.instanceId,
+            code: c.card.code,
             name: c.card.name,
             sublabel: `Top Discard: ${cardObj.name} (+${totalAmt} ${typesDesc})`,
             resourceType: resList.length === 1 ? resList[0] : 'wild',
@@ -469,6 +473,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
         } else {
           list.push({
             id: c.instanceId,
+            code: c.card.code,
             name: c.card.name,
             sublabel: 'Discard pile empty',
             resourceType: 'wild',
@@ -483,6 +488,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
         if ((c.tokens?.counters || 0) > 0) {
           list.push({
             id: c.instanceId,
+            code: c.card.code,
             name: c.card.name,
             sublabel: `${c.tokens?.counters || 0} ${uses.counterType || 'Counters'} Remaining`,
             resourceType: 'wild',
@@ -492,6 +498,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       } else {
         list.push({
           id: c.instanceId,
+          code: c.card.code,
           name: c.card.name,
           sublabel: 'Table Resource Generator / Reducer',
           resourceType: 'wild',
@@ -890,7 +897,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       title={abilityCost?.title || `Play ${card.name}`}
       kicker="Resource Payment & Action"
       verb="yellow"
-      trigger={{ name: card.name, code: card.code }}
+      trigger={null}
       icon={<Zap className="w-5 h-5" />}
       onClose={onClose}
       maxWidthClass="max-w-2xl"
@@ -924,6 +931,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       <div className="space-y-6">
         {/* Card Overview & Cost Header */}
         <div
+          data-card-ref={card.code}
           className={`relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 pl-5 ${style.panel}`}
         >
           <AccentStripe code={card.code} />
@@ -982,7 +990,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
               )}
             </div>
             {isRequirePrinted && (
-              <span className="mt-1 text-[9px] font-black uppercase px-1.5 py-0.5 bg-comic-red text-white rounded border border-comic-black shadow-comic-xs">
+              <span className="mt-1 text-nano font-black uppercase px-1.5 py-0.5 bg-comic-red text-white rounded border border-comic-black shadow-comic-xs">
                 Printed Only (No Wild)
               </span>
             )}
@@ -1141,7 +1149,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
               <h3 className="text-xs font-black uppercase tracking-wider flex items-center space-x-1.5">
                 <span>Discard Hand Cards for Resources:</span>
               </h3>
-              <span className={`text-[10px] font-bold uppercase ${style.muted}`}>
+              <span className={`text-micro font-bold uppercase ${style.muted}`}>
                 (Click cards to toggle)
               </span>
             </div>
@@ -1212,7 +1220,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                 return (
                   <ChoiceCard
                     key={gen.id}
-                    code={gen.id.split('_')[0]}
+                    code={gen.code}
                     name={gen.name}
                     subline={gen.sublabel}
                     selected={isSelected}
@@ -1293,7 +1301,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
               name: t.name,
               trailing: (selected) => (
                 <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 font-black ${
+                  className={`text-micro px-1.5 py-0.5 rounded shrink-0 font-black ${
                     selected
                       ? 'bg-black/20 text-white'
                       : t.damageTaken > 0
@@ -1321,7 +1329,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
               name: t.name,
               trailing: (selected) => (
                 <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 font-black ${
+                  className={`text-micro px-1.5 py-0.5 rounded shrink-0 font-black ${
                     selected
                       ? 'bg-black/20 text-white'
                       : t.exhausted

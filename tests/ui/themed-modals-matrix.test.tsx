@@ -92,9 +92,30 @@ const CASES: Case[] = [
   },
   {
     label: 'InfiniteLoopModal',
-    cards: [],
-    showsCard: false,
-    render: () => <InfiniteLoopModal cycle="A -> B -> A" onDismiss={vi.fn()} onReset={vi.fn()} />,
+    cards: named('01102', '01094'),
+    render: () => (
+      <InfiniteLoopModal
+        message="loop"
+        cycle={[
+          {
+            trigger: 'CHARACTER_DEFEATED',
+            abilityId: 'a',
+            sourceInstanceId: 'i1',
+            cardCode: '01102',
+            cardName: 'Sandman',
+          },
+          {
+            trigger: 'ENEMY_INITIATES_ATTACK',
+            abilityId: 'b',
+            sourceInstanceId: 'i2',
+            cardCode: '01094',
+            cardName: 'Rhino',
+          },
+        ]}
+        onDismiss={vi.fn()}
+        onReset={vi.fn()}
+      />
+    ),
   },
   {
     label: 'PileViewerModal',
@@ -314,7 +335,9 @@ describe.each(CASES.map((c) => [c.label, c] as const))('%s under every theme', (
     mount(style, c);
     expect(screen.getByRole(c.role ?? 'dialog')).toBeTruthy();
     if (c.showsCard !== false) {
-      expect(document.querySelector('[data-card-ref],[data-card-anchor]')).toBeTruthy();
+      expect(
+        document.querySelector('[data-card-ref],[data-card-anchor],[data-card-view]'),
+      ).toBeTruthy();
     }
   });
 

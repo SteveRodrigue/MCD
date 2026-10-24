@@ -16,6 +16,26 @@ interface CardStatsModalProps {
   onStatsReset?: () => void | Promise<void>;
 }
 
+/** Counts are written as "this game / all-time"; the legend above them says so once. */
+const Counts: React.FC<{ game: number; allTime: number; className?: string }> = ({
+  game,
+  allTime,
+  className = '',
+}) => (
+  <span className={`font-black tabular-nums ${className}`}>
+    <b className="text-comic-red">{game}</b> / <b>{allTime}</b>
+  </span>
+);
+
+const Legend: React.FC = () => {
+  const { style } = useModalStyle();
+  return (
+    <p className={`mb-2 text-micro font-bold uppercase tracking-wide ${style.muted}`}>
+      <b className="text-comic-red">This game</b> / all-time
+    </p>
+  );
+};
+
 export const CardStatsModal: React.FC<CardStatsModalProps> = ({
   isOpen,
   onClose,
@@ -81,8 +101,8 @@ export const CardStatsModal: React.FC<CardStatsModalProps> = ({
   return (
     <>
       <ModalScaffold
-        title={`${card.name} — STATS`}
-        kicker={card.code}
+        title="Card stats"
+        kicker="Usage"
         verb="blue"
         trigger={{ name: card.name, code: card.code }}
         icon={<BarChart3 className="w-5 h-5" />}
@@ -119,13 +139,13 @@ export const CardStatsModal: React.FC<CardStatsModalProps> = ({
             <h4 className={heading}>Card Plays & Reveals</h4>
             <div className="grid grid-cols-2 gap-4">
               <div className={`p-3 text-center ${style.inset}`}>
-                <div className={`text-[11px] font-bold uppercase tracking-wide ${style.muted}`}>
+                <div className={`text-mini font-bold uppercase tracking-wide ${style.muted}`}>
                   This Game
                 </div>
                 <div className="font-bangers text-3xl text-comic-red mt-0.5">{gamePlays}</div>
               </div>
               <div className={`p-3 text-center ${style.inset}`}>
-                <div className={`text-[11px] font-bold uppercase tracking-wide ${style.muted}`}>
+                <div className={`text-mini font-bold uppercase tracking-wide ${style.muted}`}>
                   All-Time
                 </div>
                 <div className="font-bangers text-3xl mt-0.5">{allTimePlays}</div>
@@ -137,6 +157,7 @@ export const CardStatsModal: React.FC<CardStatsModalProps> = ({
           {hasAnyBasicActions && (
             <div className={`p-4 ${style.panel}`}>
               <h4 className={heading}>Basic Actions</h4>
+              <Legend />
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                 {basicActionsKeys.map(({ key, label }) => {
                   const gCount = gameCardStats?.basicActions?.[key] || 0;
@@ -144,14 +165,7 @@ export const CardStatsModal: React.FC<CardStatsModalProps> = ({
                   return (
                     <div key={key} className={`p-2.5 flex flex-col justify-between ${style.inset}`}>
                       <span className="font-bold">{label}</span>
-                      <div className="flex items-center justify-between mt-1 text-[11px]">
-                        <span className={style.muted}>
-                          Game: <b className="text-comic-red">{gCount}</b>
-                        </span>
-                        <span className={style.muted}>
-                          All: <b>{atCount}</b>
-                        </span>
-                      </div>
+                      <Counts game={gCount} allTime={atCount} className="mt-1 text-mini" />
                     </div>
                   );
                 })}
@@ -162,6 +176,7 @@ export const CardStatsModal: React.FC<CardStatsModalProps> = ({
           {/* Ability Usage Panel */}
           <div className={`p-4 ${style.panel}`}>
             <h4 className={heading}>Ability Executions</h4>
+            {sortedAbilityIds.length > 0 && <Legend />}
             {sortedAbilityIds.length === 0 ? (
               <p className={`text-xs italic ${style.muted}`}>
                 No declarative abilities registered or used on this card.
@@ -180,18 +195,15 @@ export const CardStatsModal: React.FC<CardStatsModalProps> = ({
                     >
                       <div className="min-w-0 pr-3">
                         <div className="font-bold truncate font-mono">{abId}</div>
-                        <div className={`text-[10px] uppercase tracking-wide ${style.muted}`}>
+                        <div className={`text-micro uppercase tracking-wide ${style.muted}`}>
                           {label}
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 shrink-0 font-mono text-xs">
-                        <span title="Uses in current game">
-                          Game: <b className="text-comic-red">{gCount}</b>
-                        </span>
-                        <span title="Total all-time uses">
-                          All: <b>{atCount}</b>
-                        </span>
-                      </div>
+                      <Counts
+                        game={gCount}
+                        allTime={atCount}
+                        className="shrink-0 font-mono text-xs"
+                      />
                     </div>
                   );
                 })}

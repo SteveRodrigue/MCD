@@ -33,12 +33,8 @@ const toRow = (target: EnemyTarget): TargetRow => {
         <span>
           HP: <strong className="font-black">{target.health}</strong> / {target.maxHealth}
         </span>
-        {target.damage > 0 && (
-          <span className="text-comic-red font-bold">({target.damage} dmg)</span>
-        )}
       </>
     ),
-    actionLabel: 'STRIKE ➔',
   };
 };
 
@@ -56,14 +52,12 @@ export const AttackTargetModal: React.FC<AttackTargetModalProps> = ({
 
   return (
     <TargetSelectionModal
-      title="TARGET SELECTION"
+      title="Choose an enemy to attack"
       verb="red"
       headerIcon={<Crosshair className="w-6 h-6 animate-pulse" />}
-      kicker={`${attackerType === 'hero' ? 'Hero Strike' : 'Ally Strike'} • ${attackDamage} DMG`}
+      kicker={attackerType === 'hero' ? 'Hero strike' : 'Ally strike'}
       actor={{ name: attackerName, code: attackerCode }}
-      actorLine="is ready to strike!"
       actorChip={`${attackDamage} ATK`}
-      prompt="Choose an enemy target to attack:"
       rows={targets.map(toRow)}
       cancelLabel="Cancel Strike"
       onPick={(id) => {

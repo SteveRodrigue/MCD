@@ -169,7 +169,7 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
         isForced ? <ShieldAlert className="w-5 h-5 animate-pulse" /> : <Zap className="w-5 h-5" />
       }
       headerRight={
-        <span className={`text-[9px] font-black px-1.5 py-0.5 ${style.chip}`}>
+        <span className={`text-nano font-black px-1.5 py-0.5 ${style.chip}`}>
           {config?.allocationDomain || 'DISTRIBUTE'}
         </span>
       }
@@ -282,7 +282,7 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
                             <CardRef code={target.cardCode} name={target.name} size="sm" />
                           </div>
                           <div
-                            className={`flex items-center gap-2 text-[10px] font-bold uppercase ${style.muted}`}
+                            className={`mt-1 flex items-center gap-2 text-micro font-bold uppercase ${style.muted}`}
                           >
                             <span>{target.cardType.replace('_', ' ')}</span>
                             {target.currentValue !== undefined && (
@@ -294,7 +294,7 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
                               </span>
                             )}
                             {target.hasTough && (
-                              <span className="bg-amber-400 text-comic-black font-black px-1 rounded text-[9px]">
+                              <span className="bg-amber-400 text-comic-black font-black px-1 rounded text-nano">
                                 TOUGH
                               </span>
                             )}
@@ -304,7 +304,7 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
 
                       {/* Ineligible Badge */}
                       {!isEligible && target.ineligibilityReason && (
-                        <span className="bg-rose-100 text-rose-800 border border-rose-400 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider text-right">
+                        <span className="bg-rose-100 text-rose-800 border border-rose-400 text-micro font-black px-2 py-0.5 rounded uppercase tracking-wider text-right">
                           {target.ineligibilityReason}
                         </span>
                       )}
@@ -350,9 +350,7 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
                         </button>
                       </div>
                     ) : (
-                      <div
-                        className={`text-[11px] font-bold italic pt-1 text-center ${style.muted}`}
-                      >
+                      <div className={`text-mini font-bold italic pt-1 text-center ${style.muted}`}>
                         Ineligible for allocation
                       </div>
                     )}

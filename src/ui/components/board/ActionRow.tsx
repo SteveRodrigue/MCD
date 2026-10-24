@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowRight } from 'lucide-react';
 import { AccentStripe } from '../../theme/AccentStripe';
 import { useModalStyle } from '../../theme/useModalStyle';
 
@@ -16,8 +17,8 @@ export interface ActionRowProps {
   disabled?: boolean;
   /** Card the row is about: its accent stripe is drawn and the row counts as showing its thumbnail. */
   anchorCode?: string;
-  /** Right-hand chip, e.g. "STRIKE ➔". */
-  actionLabel: string;
+  /** Right-hand chip with a value or state ("3 ATK", "BLOCKED"). Omit when the row title already says the verb: an arrow is drawn. */
+  actionLabel?: string;
   /** Extra content before the chip (consequential damage and the like). */
   accessory?: React.ReactNode;
   onClick: () => void;
@@ -73,7 +74,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
             disabled ? 'opacity-60' : ''
           }`}
         >
-          {actionLabel}
+          {actionLabel ?? <ArrowRight aria-hidden="true" className="w-4 h-4" />}
         </span>
       </div>
     </button>

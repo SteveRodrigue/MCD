@@ -1,0 +1,68 @@
+/*
+ * Lab-only font test. The lab tags every piece of text with data-font-role ("headline": headings and
+ * text of 17px or more, i.e. text-base and up; "body": everything smaller) and, when a test font is
+ * chosen for a slot, sets an attribute on the html element with the font in a variable:
+ *   data-lab-headline / --lab-headline-font          every surface
+ *   data-lab-body / --lab-body-font                  every surface
+ *   data-lab-news-headline / --lab-news-headline-font  newspaper surfaces only (they carry data-newspaper)
+ *   data-lab-news-body / --lab-news-body-font          newspaper surfaces only
+ *   data-lab-numbers / --lab-numbers-font              numbers and codes: every element that names font-mono
+ * The newspaper rules are more specific, so inside a newspaper they win over the general ones, the same
+ * way a theme's newspaper fonts win over its default pair. The lab bar is skipped. The theme fonts are
+ * untouched: remove the attributes and nothing changes.
+ */
+html[data-lab-headline] [data-font-role='headline']:not([data-lab-chrome] *) {
+  font-family: var(--lab-headline-font), system-ui, sans-serif !important;
+}
+
+html[data-lab-body] [data-font-role='body']:not([data-lab-chrome] *) {
+  font-family: var(--lab-body-font), system-ui, sans-serif !important;
+}
+
+html[data-lab-news-headline] [data-newspaper] [data-font-role='headline']:not([data-lab-chrome] *),
+html[data-lab-news-headline] [data-newspaper][data-font-role='headline']:not([data-lab-chrome] *) {
+  font-family: var(--lab-news-headline-font), system-ui, sans-serif !important;
+}
+
+html[data-lab-news-body] [data-newspaper] [data-font-role='body']:not([data-lab-chrome] *),
+html[data-lab-news-body] [data-newspaper][data-font-role='body']:not([data-lab-chrome] *) {
+  font-family: var(--lab-news-body-font), system-ui, sans-serif !important;
+}
+
+/* Numbers and codes: counters, badges, key caps, card codes. Class based, because it is a role of the game, not a size. */
+html[data-lab-numbers] .font-mono:not([data-lab-chrome] *) {
+  font-family: var(--lab-numbers-font), ui-monospace, monospace !important;
+}
+
+/*
+ * Size change: each font list has a smaller/larger button. The lab records the size the game gave a
+ * piece of text in --lab-base (see useFontTest) and adds the slot's change in px to it. A slot's
+ * change is on the html element (--lab-headline-size and so on, set only when it is not 0), and
+ * data-lab-size is on the html element while any change is set. The same precedence as the fonts:
+ * numbers and codes (.font-mono) first, then the newspaper's own change inside a newspaper, then the default pair.
+ */
+html[data-lab-size] .font-mono {
+  --lab-mono-size: var(--lab-numbers-size);
+}
+
+html[data-lab-size] [data-font-role='headline'] {
+  --lab-offset: var(--lab-mono-size, var(--lab-headline-size, 0px));
+}
+
+html[data-lab-size] [data-font-role='body'] {
+  --lab-offset: var(--lab-mono-size, var(--lab-body-size, 0px));
+}
+
+html[data-lab-size] [data-newspaper] [data-font-role='headline'],
+html[data-lab-size] [data-newspaper][data-font-role='headline'] {
+  --lab-offset: var(--lab-mono-size, var(--lab-news-headline-size, var(--lab-headline-size, 0px)));
+}
+
+html[data-lab-size] [data-newspaper] [data-font-role='body'],
+html[data-lab-size] [data-newspaper][data-font-role='body'] {
+  --lab-offset: var(--lab-mono-size, var(--lab-news-body-size, var(--lab-body-size, 0px)));
+}
+
+html[data-lab-size] [data-font-role]:not([data-lab-chrome] *) {
+  font-size: calc(var(--lab-base) + var(--lab-offset, 0px)) !important;
+}

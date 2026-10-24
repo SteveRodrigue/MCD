@@ -118,7 +118,105 @@ export interface ModalStyle {
   accent: { edge: AccentEdge; name: AccentName };
   /** Tag pinned on the finisher slot of a sequence. */
   finisher: { label: string; star: boolean; className: string };
+  /** The fonts of this theme. See `ThemeFonts`. */
+  fonts: ThemeFonts;
 }
+
+/**
+ * The fonts of a theme, as CSS font-family values.
+ *
+ * `headline` and `body` are the theme's default pair and are both required: they apply to every
+ * surface of the theme. `newspaper` is an exception for the Daily Bugle surfaces: when its `headline`
+ * or `body` is set it overrides the theme's for the newspaper only; when unset the newspaper follows
+ * the theme. `numbers` is the font for numbers and codes (counters, badges, key caps, card codes, the
+ * elements that name `font-mono`); unset keeps the system monospace. The record of what can be set
+ * where is `docs/templates/modals/FONT_RECORD.md`.
+ *
+ * `sizes` are the theme's text size changes in px, added to the size the game gives the text: `body` to
+ * body-sized text (text-xs and text-sm, text-nano, text-micro, text-mini), `headline` to text-base and up,
+ * `numbers` to numbers and codes (unset: they follow `body`). Inside a newspaper, `newspaper.body` and
+ * `newspaper.headline` replace the two (unset: they follow the theme's). Unset is 0.
+ */
+export interface ThemeFonts {
+  headline: string;
+  body: string;
+  newspaper?: { headline?: string; body?: string };
+  numbers?: string;
+  sizes?: {
+    headline?: number;
+    body?: number;
+    numbers?: number;
+    newspaper?: { headline?: number; body?: number };
+  };
+}
+
+/** Nunito, a soft rounded face that keeps digits and codes readable at small sizes: the numbers font of every theme. */
+const NUNITO = "'Nunito', system-ui, sans-serif";
+
+/** Kalam, a handwritten comic face, for the Storyboard theme. */
+const KALAM = "'Kalam', 'Comic Relief', 'Comic Sans MS', cursive, sans-serif";
+
+/** Merriweather, a sturdy screen serif, for the Golden Age Newsprint theme. */
+const MERRIWEATHER = "'Merriweather', Georgia, 'Times New Roman', serif";
+
+/** JetBrains Mono, a clear monospace, for the Night Edition theme. */
+const JETBRAINS_MONO = "'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace";
+
+/** Lexend, a typeface tuned for reading speed, for the Hero HUD theme. */
+const LEXEND = "'Lexend', system-ui, sans-serif";
+
+/** Special Elite, an ink-ribbon typewriter face, for the S.H.I.E.L.D. Dossier theme. */
+const SPECIAL_ELITE = "'Special Elite', 'Courier New', monospace";
+
+/** Boogaloo, a friendly comic face that reads well in lowercase, for the Splash Page theme. */
+const BOOGALOO = "'Boogaloo', 'Comic Relief', 'Comic Sans MS', cursive, sans-serif";
+
+/** Lilita One, a bold rounded comic face with clearer letters than Bangers, for the Pop-Art theme. */
+const LILITA_ONE = "'Lilita One', 'Comic Relief', Impact, system-ui, sans-serif";
+
+const px = (size: number | undefined): string => `${size ?? 0}px`;
+
+/**
+ * CSS variables that make `font-comic` (headlines), `font-body` and `font-mono` (numbers and codes)
+ * follow the theme on the element they are set on, and that carry the theme's text size changes
+ * (see `ThemeFonts.sizes`, tailwind.config.js and the .font-mono rule in index.css).
+ */
+export const themeFontVars = (style: ModalStyle): CSSProperties => {
+  const { headline, body, numbers, sizes } = style.fonts;
+  const vars: Record<string, string> = {
+    '--font-comic': headline,
+    '--font-body': body,
+    '--text-adjust': px(sizes?.body),
+    '--text-body-adjust': px(sizes?.body),
+    '--text-headline-adjust': px(sizes?.headline),
+  };
+  if (numbers) vars['--font-numbers'] = numbers;
+  if (sizes?.numbers !== undefined) vars['--text-numbers-adjust'] = px(sizes.numbers);
+  return vars as CSSProperties;
+};
+
+/**
+ * CSS variables for a newspaper surface (`font-news-headline`, `font-news-body`): the newspaper's own
+ * font and text size changes when the theme sets them, otherwise the theme's headline and body.
+ */
+export const newspaperFontVars = (style: ModalStyle): CSSProperties => {
+  const { fonts } = style;
+  const body = fonts.sizes?.newspaper?.body ?? fonts.sizes?.body;
+  const headline = fonts.sizes?.newspaper?.headline ?? fonts.sizes?.headline;
+  const vars: Record<string, string> = {};
+  vars['--font-news-headline'] = fonts.newspaper?.headline ?? fonts.headline;
+  vars['--font-news-body'] = fonts.newspaper?.body ?? fonts.body;
+  vars['--text-adjust'] = px(body);
+  vars['--text-body-adjust'] = px(body);
+  vars['--text-headline-adjust'] = px(headline);
+  return vars as CSSProperties;
+};
+
+/** Inter, the game's body font, written down for the Pop-Art theme. */
+const INTER = 'Inter, system-ui, sans-serif';
+
+/** System serif, the look of the 1960s Daily Bugle broadsheet in the Pop-Art theme. */
+const SYSTEM_SERIF = "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif";
 
 const DOTS = (size: number, color = '#000'): CSSProperties => ({
   backgroundImage: `radial-gradient(${color} 2px, transparent 2px)`,
@@ -127,6 +225,13 @@ const DOTS = (size: number, color = '#000'): CSSProperties => ({
 
 const popArt: ModalStyle = {
   id: 'pop-art',
+  fonts: {
+    headline: LILITA_ONE,
+    body: INTER,
+    newspaper: { headline: SYSTEM_SERIF, body: SYSTEM_SERIF },
+    numbers: NUNITO,
+    sizes: { body: 1, numbers: 1 },
+  },
   label: 'Pop-Art Action-Coded',
   tagline: 'Lichtenstein dots, bold colour bars, 4px black ink.',
   traits: ['Ben-Day halftone', 'Colour-coded header bar', 'Hard black shadows'],
@@ -223,6 +328,7 @@ const popArt: ModalStyle = {
 
 const storyboard: ModalStyle = {
   id: 'storyboard',
+  fonts: { headline: KALAM, body: KALAM, numbers: NUNITO, sizes: { body: 2, numbers: 1 } },
   label: 'Storyboard Panels',
   tagline: 'A comic page: tilted caption box, framed panels, gutters.',
   traits: ['Tilted caption sticker', 'White framed panels', 'Tight square-ish corners'],
@@ -319,6 +425,12 @@ const storyboard: ModalStyle = {
 
 const newsprint: ModalStyle = {
   id: 'newsprint',
+  fonts: {
+    headline: MERRIWEATHER,
+    body: MERRIWEATHER,
+    numbers: NUNITO,
+    sizes: { body: 1, numbers: 1 },
+  },
   label: 'Golden Age Newsprint',
   tagline: 'Aged paper, ink-black print, a masthead for every moment.',
   traits: ['Aged paper + ink brown', 'Hard ink shadow', 'Serif masthead header'],
@@ -327,7 +439,7 @@ const newsprint: ModalStyle = {
   flavor: 'Vol. 1 · No. 1 · 10¢',
   overlay: 'bg-[#2b2118]/85 backdrop-blur-xs',
   frame:
-    'bg-[#f3e7c4] border-[3px] border-[#2b2118] rounded-none shadow-[8px_8px_0_0_#2b2118] font-serif',
+    'bg-[#f3e7c4] border-[3px] border-[#2b2118] rounded-none shadow-[8px_8px_0_0_#2b2118] font-body',
   texture: {
     backgroundImage:
       'repeating-linear-gradient(0deg, rgba(43,33,24,0.5) 0 1px, transparent 1px 3px)',
@@ -422,6 +534,12 @@ const newsprint: ModalStyle = {
 
 const night: ModalStyle = {
   id: 'night',
+  fonts: {
+    headline: JETBRAINS_MONO,
+    body: JETBRAINS_MONO,
+    numbers: NUNITO,
+    sizes: { body: 1, numbers: 1 },
+  },
   label: 'Night Edition',
   tagline: 'Dark ink, neon rule: the cards glow against the black.',
   traits: ['Dark slate frame', 'Neon verb-colour rule + glow', 'Easy on the eyes'],
@@ -521,6 +639,12 @@ const night: ModalStyle = {
 
 const splash: ModalStyle = {
   id: 'splash',
+  fonts: {
+    headline: BOOGALOO,
+    body: BOOGALOO,
+    numbers: NUNITO,
+    sizes: { body: 3, numbers: 1, newspaper: { body: 4 } },
+  },
   label: 'Splash Page',
   tagline: 'Full-page action: torn-edge banner, speed lines, sound-effect stickers.',
   traits: ['Jagged explosion header', 'Speed-line texture', 'POW / THWIP stickers'],
@@ -622,6 +746,12 @@ const splash: ModalStyle = {
 
 const dossier: ModalStyle = {
   id: 'dossier',
+  fonts: {
+    headline: SPECIAL_ELITE,
+    body: SPECIAL_ELITE,
+    numbers: NUNITO,
+    sizes: { body: 2, numbers: 1, newspaper: { headline: -1 } },
+  },
   label: 'S.H.I.E.L.D. Dossier',
   tagline: 'A manila case file: typewriter text, rubber stamp, tape corners.',
   traits: ['Manila folder + tab', 'Typewriter type', 'Verb-coloured rubber stamp'],
@@ -629,7 +759,7 @@ const dossier: ModalStyle = {
   headerLayout: 'tab',
   overlay: 'bg-slate-950/85 backdrop-blur-sm',
   frame:
-    'bg-[#e9d29a] border-2 border-[#8a6d3b] rounded-md shadow-[6px_8px_0_0_rgba(0,0,0,0.55)] font-mono',
+    'bg-[#e9d29a] border-2 border-[#8a6d3b] rounded-md shadow-[6px_8px_0_0_rgba(0,0,0,0.55)] font-body',
   texture: {
     backgroundImage:
       'repeating-linear-gradient(0deg, rgba(138,109,59,0.8) 0 1px, transparent 1px 22px)',
@@ -734,6 +864,12 @@ const hudVerb = (hue: string, glow: string, word: string, text: string): VerbTok
 
 const hud: ModalStyle = {
   id: 'hud',
+  fonts: {
+    headline: LEXEND,
+    body: LEXEND,
+    numbers: NUNITO,
+    sizes: { body: 1, numbers: 1 },
+  },
   label: 'Hero HUD',
   tagline: 'A holographic heads-up display: scanlines, cyan glow, targeting readouts.',
   traits: ['Scanline hologram', 'Cyan glow + monospace readouts', 'Sharp, square, techy'],
@@ -741,7 +877,7 @@ const hud: ModalStyle = {
   headerLayout: 'bar',
   overlay: 'bg-[#020a14]/90 backdrop-blur-sm',
   frame:
-    'bg-[#061726] border-2 border-cyan-400 rounded-sm shadow-[0_0_0_1px_#000,0_0_36px_rgba(34,211,238,0.35),inset_0_0_40px_rgba(34,211,238,0.08)] font-mono',
+    'bg-[#061726] border-2 border-cyan-400 rounded-sm shadow-[0_0_0_1px_#000,0_0_36px_rgba(34,211,238,0.35),inset_0_0_40px_rgba(34,211,238,0.08)] font-body',
   texture: {
     backgroundImage:
       'repeating-linear-gradient(0deg, rgba(34,211,238,0.9) 0 1px, transparent 1px 4px)',

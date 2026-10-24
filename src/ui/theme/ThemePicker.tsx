@@ -78,7 +78,7 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({ themed = false, game }
           <div className="text-xs font-black uppercase leading-tight text-center">
             Random each game
           </div>
-          <div className={`text-[10px] font-bold text-center ${mutedClass}`}>
+          <div className={`text-micro font-bold text-center ${mutedClass}`}>
             A new theme every time you start a game
           </div>
         </button>
@@ -87,7 +87,7 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({ themed = false, game }
       {themeMode === 'random' && (
         <div className={`${boxClass} space-y-2`}>
           <fieldset className="space-y-1.5">
-            <legend className={`text-[11px] font-black uppercase tracking-wider ${mutedClass}`}>
+            <legend className={`text-mini font-black uppercase tracking-wider ${mutedClass}`}>
               Include in random
             </legend>
             <div className="flex flex-wrap gap-x-4 gap-y-1">

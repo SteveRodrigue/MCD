@@ -126,10 +126,32 @@ describe('Options menu theme section', () => {
 });
 
 describe('Setup screen theme section', () => {
-  it('summarises the chosen theme and opens the picker', () => {
+  it('summarises the chosen theme and shows the picker with it selected', () => {
     renderWithSettings(<ScenarioSelector onStartSetup={vi.fn()} />, { themeId: 'dossier' });
     expect(screen.getByText(/Theme:/).textContent).toContain('S.H.I.E.L.D. Dossier');
     expect(screen.getByTestId('theme-card-dossier').getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('is open on the first screen: every theme and Random can be chosen without opening anything', () => {
+    renderWithSettings(<ScenarioSelector onStartSetup={vi.fn()} />);
+    const section = screen.getByRole('region', { name: /Theme:/ });
+    for (const style of MODAL_STYLES) {
+      const tile = within(section).getByTestId(`theme-card-${style.id}`);
+      expect(tile.closest('details'), `${style.id} is hidden in a closed panel`).toBeNull();
+    }
+    expect(within(section).getByTestId('theme-random').closest('details')).toBeNull();
+    expect(within(section).getAllByRole('radio')).toHaveLength(MODAL_STYLES.length + 1);
+  });
+
+  it('saves the theme chosen on the first screen, and starting the mission keeps it', () => {
+    const onStartSetup = vi.fn();
+    renderWithSettings(<ScenarioSelector onStartSetup={onStartSetup} />);
+    fireEvent.click(screen.getByTestId('theme-card-night'));
+    expect(saved().themeId).toBe('night');
+    expect(saved().themeMode).toBe('fixed');
+    fireEvent.click(screen.getByText('START MISSION'));
+    expect(onStartSetup).toHaveBeenCalledTimes(1);
+    expect(saved().themeId).toBe('night');
   });
 
   it('shows Random in the summary after choosing it', () => {

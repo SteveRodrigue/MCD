@@ -1,8 +1,10 @@
 # Plan: bring the validated fonts and sizes into the game (N1 to N9)
 
-Status: **approved. N6, N1 and N8 are done (not committed). D9 is decided: Pop-Art keeps Lilita One for small text. Next: N9.** Each step is a separate, reviewable change; none is committed unless you ask.
+Status: **approved. N6, N1 and N8 are done and committed. N9 is done (not committed, waiting for your review). D9 is decided: Pop-Art keeps Lilita One for small text. Next: N5, N3, N2.** Each step is a separate, reviewable change; none is committed unless you ask.
 
 Related: [Font plan](./PLAN_fonts.md) (phases 1 to 6 are done), [Font record](./FONT_RECORD.md), [Theme engine plan](./PLAN_theme_engine.md), [Unthemed UI audit](./AUDIT_unthemed_ui.md).
+
+**End state (confirmed by you):** the whole player-facing UI follows the selected theme: fonts, sizes, colours, panels, board, setup, newspapers. The only thing kept is the "MARVEL CHAMPIONS" Bangers banner on the first screen (N8). The card editor (`/editor`) stays a developer tool outside the themes (N6) unless you say otherwise. This plan gets the fonts there (N1 to N3, N5, N8, N9); N4 is the step that makes everything else follow, so it is required, not optional.
 
 ## 1. What this plan covers, and what it does not
 
@@ -76,13 +78,13 @@ N6 guard ──> N1 ──┬──> N8 ──┐
 - **Tests (`tests/ui/intro-banner.test.tsx`):** under each of the 7 themes the three banner elements carry `font-bangers` and no theme role, and the classes are identical in all themes. Checked to fail when the title goes back to `font-comic`.
 - **Risk:** low. The banner sizes are headline-sized (`text-xl` and up), so a theme's Body size change cannot move them.
 
-### N9. The theme selector on the first screen
+### N9. The theme selector on the first screen (done, waiting for your review)
 
-- **Change:** the "Theme:" panel in `ScenarioSelector.tsx` is no longer collapsed in a `<details>`; the 7 themes and "Random each game" are visible on the first screen, with the current choice marked. The choice is saved with the settings (`themeMode`, `themeId`, as today) and is used when the game starts (`rollGameTheme`, as today).
-- **Visible change:** a new, always-open block on the first screen, below the scenario spread and above the launch bar. The banner stays as it is (N8).
-- **Files:** `src/ui/components/setup/ScenarioSelector.tsx`, maybe `ThemePicker.tsx` (a `compact` look if the panel is too tall), tests.
-- **Tests:** the picker is reachable before a game starts; clicking a theme saves it; "Random each game" saves; the launch bar still starts the game with that theme.
-- **Risk:** the first-screen layout gets taller (the picker has 8 tiles). **Decision D10:** until N4, a chosen theme takes effect when the game starts, not on the first screen itself. After N4 the first screen follows the selection live.
+- **Done:** the "Theme:" panel in `ScenarioSelector.tsx` is a section that is always open (it was a collapsed `<details>`). The 7 themes and "Random each game" are visible without opening anything, with the current choice marked, followed by the Card accents switch. The choice is saved with the game settings (`themeMode`, `themeId`, as before) and used when the game starts (`rollGameTheme`, as before). It sits in the right column of the first screen, below the hero seats and above the launch bar.
+- **Visible change:** the panel is open and about 450px taller. The banner is unchanged (N8). The picker keeps its 3-column tiles: a 4-column layout was tried and rejected because theme names overflowed in that column.
+- **Live effect (D10, better than planned):** because the game root (N1) reads the active theme, choosing a theme on the first screen changes the first screen's fonts at once (checked: Night gives JetBrains Mono, Nunito numbers). The panels, colours and table stay as they are until N4.
+- **Files:** `src/ui/components/setup/ScenarioSelector.tsx`, `tests/ui/theme-picker.test.tsx`.
+- **Tests:** the picker and Random are not inside a closed panel; all 7 themes and Random can be chosen; a theme chosen on the first screen is saved and kept when the mission starts.
 
 ### N5. Combat log fonts (decision, no code)
 

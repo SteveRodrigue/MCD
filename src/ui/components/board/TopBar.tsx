@@ -102,7 +102,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 <button
                   key={p.id}
                   onClick={() => onSelectSeat(idx)}
-                  className={`px-3 py-1 font-comic text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3 py-1 text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
                     isActiveTurn
                       ? `${style.btnGo} font-bold scale-105 ring-2 ring-comic-yellow`
                       : activeSeatIndex === idx
@@ -162,7 +162,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {/* Visual Dev Mode Indicator Badge (In Menu Bar) */}
           <button
             onClick={toggleDevMode}
-            className={`px-2.5 py-1 font-comic text-xs rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`px-2.5 py-1 text-xs rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 transition-all cursor-pointer ${
               devMode
                 ? 'bg-emerald-400 text-slate-950 font-bold hover:bg-emerald-300'
                 : 'bg-slate-200 text-slate-600 hover:bg-slate-300 line-through opacity-80'
@@ -176,7 +176,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {/* Combat Log Drawer Button */}
           <button
             onClick={onToggleLog}
-            className={`px-3 py-1.5 font-comic text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
               isLogOpen ? `${style.btnGo} font-bold` : style.btnMove
             }`}
           >
@@ -187,7 +187,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {/* Report a Problem Button */}
           <button
             onClick={() => setIsReportOpen(true)}
-            className={`px-2.5 py-1.5 font-comic text-xs flex items-center gap-1 cursor-pointer ${style.btnMove}`}
+            className={`px-2.5 py-1.5 text-xs flex items-center gap-1 cursor-pointer ${style.btnMove}`}
             title="Report a bug, improvement, or missing feature"
           >
             <Bug className="w-4 h-4 text-comic-red" />
@@ -197,7 +197,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {/* Options Menu Button */}
           <button
             onClick={() => setIsOptionsOpen(true)}
-            className={`px-2.5 py-1.5 font-comic text-xs flex items-center gap-1 cursor-pointer ${style.btnMove}`}
+            className={`px-2.5 py-1.5 text-xs flex items-center gap-1 cursor-pointer ${style.btnMove}`}
             title="Open Game Options & Settings"
           >
             <Settings className="w-4 h-4 text-comic-blue" />
@@ -207,7 +207,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {/* New Game Reset Button */}
           <button
             onClick={onReset}
-            className={`px-3 py-1.5 font-comic text-xs flex items-center gap-1.5 cursor-pointer ${style.btnMove}`}
+            className={`px-3 py-1.5 text-xs flex items-center gap-1.5 cursor-pointer ${style.btnMove}`}
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">NEW GAME</span>

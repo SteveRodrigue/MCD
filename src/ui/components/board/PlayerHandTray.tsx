@@ -121,7 +121,7 @@ const DevAddToHand: React.FC<{ instance: CardInstance; onAdd: (instanceId: strin
   <button
     type="button"
     onClick={() => onAdd(instance.instanceId)}
-    className="w-full bg-comic-yellow hover:bg-amber-300 text-comic-black font-comic text-[10px] font-bold py-1 px-1.5 rounded border border-comic-black shadow-comic-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+    className="w-full bg-comic-yellow hover:bg-amber-300 text-comic-black text-micro font-bold py-1 px-1.5 rounded border border-comic-black shadow-comic-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
     title={`Dev Mode: Add ${instance.card.name} to hand`}
   >
     <Plus className="w-3 h-3" />
@@ -314,7 +314,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
         <div className="absolute -top-3 left-4 right-4 flex items-center justify-between z-content">
           <div className="flex items-center gap-2">
             <div
-              className={`border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1 ${
+              className={`border border-comic-black text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1 ${
                 isActivePlayerTurn
                   ? 'bg-comic-red font-bold text-white'
                   : isFocused
@@ -349,7 +349,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             {!isFocused && onFocus && (
               <button
                 onClick={onFocus}
-                className="bg-amber-300 hover:bg-amber-400 text-slate-950 font-comic text-[11px] px-2.5 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-bold"
+                className="bg-amber-300 hover:bg-amber-400 text-slate-950 text-mini px-2.5 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-bold"
               >
                 Focus Hand ➔
               </button>
@@ -359,7 +359,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
           {gameState.phase === 'PLAYER_PHASE' && isActivePlayerTurn && (
             <button
               onClick={handleEndTurn}
-              className={`bg-comic-yellow hover:bg-yellow-400 text-comic-black font-comic text-xs px-3 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-black flex items-center gap-1 transition-all hover:scale-105 ${
+              className={`bg-comic-yellow hover:bg-yellow-400 text-comic-black text-xs px-3 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-black flex items-center gap-1 transition-all hover:scale-105 ${
                 shouldPulseEndTurn ? 'animate-pulse ring-2 ring-comic-yellow' : ''
               }`}
               title={
@@ -376,7 +376,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
         <div className="flex flex-col md:flex-row items-center md:items-stretch gap-3 overflow-visible pt-1">
           {/* Turn Warning Toast (Mobile View) */}
           {turnWarning && (
-            <div className="p-2 bg-rose-500 text-white font-comic text-xs rounded-lg border-2 border-comic-black shadow-comic-sm flex items-center justify-between animate-pulse md:hidden">
+            <div className="p-2 bg-rose-500 text-white text-xs rounded-lg border-2 border-comic-black shadow-comic-sm flex items-center justify-between animate-pulse md:hidden">
               <span>⚠️ {turnWarning}</span>
               <button
                 onClick={() => setTurnWarning(null)}
@@ -421,7 +421,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                     style={{ backgroundColor: getCardBackFallbackColor('player') }}
                   />
                 )}
-                <span className="absolute bottom-1 right-1 z-content bg-slate-950/80 text-white font-comic text-xs font-bold px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs backdrop-blur-xs leading-none">
+                <span className="absolute bottom-1 right-1 z-content bg-slate-950/80 text-white text-xs font-bold px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs backdrop-blur-xs leading-none">
                   {deck.length}
                 </span>
               </div>
@@ -432,7 +432,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                     e.stopPropagation();
                     setShowDeckModal(true);
                   }}
-                  className="w-full px-2 py-0.5 rounded bg-comic-yellow text-comic-black hover:bg-amber-300 border border-comic-black shadow-comic-sm font-comic text-[9px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-transform hover:scale-[1.02]"
+                  className="w-full px-2 py-0.5 rounded bg-comic-yellow text-comic-black hover:bg-amber-300 border border-comic-black shadow-comic-sm text-nano font-bold flex items-center justify-center gap-1 cursor-pointer transition-transform hover:scale-[1.02]"
                   title="Dev Mode: Select card from deck and add to hand"
                 >
                   <Plus className="w-3 h-3" />
@@ -451,7 +451,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               }`}
               title="Inspect Discard Pile"
             >
-              <span className="font-comic text-[11px] font-bold whitespace-nowrap">
+              <span className="text-mini font-bold whitespace-nowrap">
                 DISCARD: {discard.length}
               </span>
             </div>
@@ -467,7 +467,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               title="Inspect Nemesis Set (Out of Play)"
             >
               <Skull className="w-3.5 h-3.5 text-rose-700 shrink-0" />
-              <span className="font-comic text-[11px] font-bold whitespace-nowrap">
+              <span className="text-mini font-bold whitespace-nowrap">
                 NEMESIS: {setAsideCards.length}
               </span>
             </div>
@@ -476,7 +476,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
           {/* Column 2: Cards in Hand (Fan-Out Stack • Leftmost Card on Top) */}
           <div className="flex-1 min-w-0 flex flex-col justify-center overflow-visible">
             {turnWarning && (
-              <div className="hidden md:flex mb-1.5 p-1.5 bg-rose-500 text-white font-comic text-xs rounded-lg border-2 border-comic-black shadow-comic-sm items-center justify-between animate-pulse">
+              <div className="hidden md:flex mb-1.5 p-1.5 bg-rose-500 text-white text-xs rounded-lg border-2 border-comic-black shadow-comic-sm items-center justify-between animate-pulse">
                 <span>⚠️ {turnWarning}</span>
                 <button
                   onClick={() => setTurnWarning(null)}
@@ -525,7 +525,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
 
               {hand.length === 0 && (
                 <div className="w-full py-6 text-center border-2 border-dashed border-slate-300 rounded-xl bg-white/60">
-                  <span className="font-comic text-xs text-slate-400">
+                  <span className="text-xs text-slate-400">
                     Hand is empty. (Cards will be drawn during Upkeep).
                   </span>
                 </div>
@@ -606,7 +606,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                 )}
 
                 {(sortMode === 'card_type' || sortMode === 'affinity') && (
-                  <span className="font-sans italic text-[11px] opacity-70">
+                  <span className="font-sans italic text-mini opacity-70">
                     Grouped categorically
                   </span>
                 )}

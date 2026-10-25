@@ -21,3 +21,4 @@ type: Changed
   - The modal frames use the Body font and headline-size text (titles, counters, burst words) names the Headlines font, so Headlines and Body are separate roles in the themed modals. No visible change today. A test fails when headline-size text in the theme layer, the kits and the modals names no font role.
   - The setup and mulligan screens use the Body font for small text and the size tokens for their tiny labels: the tiny text on the first screen is 1 to 3px bigger depending on the theme, following the theme's text size change. The Bangers banner is unchanged.
   - The hero and villain zones use the Body font for small text and the size tokens for their tiny labels (the smallest 8px labels become 9px), so the zones follow the theme's text size change.
+  - The hand tray, top bar, villain phase stepper, combat log drawer and damage splash use the Body font for small text and the size tokens for their tiny labels.

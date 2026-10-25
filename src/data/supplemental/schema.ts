@@ -6,8 +6,8 @@ import {
   type ResultFact,
   canEffectProduceFact,
   IdentityFormSchema,
-} from './gate-params';
-import { EFFECT_PARAM_SCHEMAS } from './effect-params';
+} from './gate-params.ts';
+import { EFFECT_PARAM_SCHEMAS } from './effect-params.ts';
 import {
   EffectTypeSchema,
   type EffectType,
@@ -19,9 +19,9 @@ import {
   AbilityCostSchema,
   UniversalCardFilterSchema,
   CardAuditRecordSchema,
-} from './schema-primitives';
+} from './schema-primitives.ts';
 
-export * from './schema-primitives';
+export * from './schema-primitives.ts';
 
 /**
  * Ability Execution Step Interface (Operational Primitive)

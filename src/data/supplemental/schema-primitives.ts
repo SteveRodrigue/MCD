@@ -5,13 +5,13 @@ import cycle. Import from './schema', which re-exports everything here; only sch
  * effect-params.ts import this file directly.
  */
 import { z } from 'zod';
-import { EFFECT_TYPES } from './runtime';
+import { EFFECT_TYPES } from './runtime.ts';
 import {
   CardType as CardTypeEnum,
   Keyword as KeywordEnum,
   ResourceType as ResourceTypeEnum,
-} from '../../engine/models/enums';
-import { IdentityFormSchema } from './gate-params';
+} from '../../engine/models/enums.ts';
+import { IdentityFormSchema } from './gate-params.ts';
 
 /**
  * ISO-8601 Timestamp regex matching YYYY-MM-DDTHH:MM(:SS)?
@@ -194,7 +194,7 @@ export {
   IfResourceMatchGateParamsSchema,
   IfUndefendedAttackGateParamsSchema,
   IfActivationDealtDamageGateParamsSchema,
-} from './gate-params';
+} from './gate-params.ts';
 
 /**
  * Ability Effect Primitives (Codebase-Grounded to active handlers in src/engine/)

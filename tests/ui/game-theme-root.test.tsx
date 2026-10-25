@@ -4,6 +4,7 @@ import { GameThemeRoot } from '../../src/ui/theme/GameThemeRoot';
 import { isGameStage } from '../../src/ui/theme/game-stage';
 import { ModalStyleProvider } from '../../src/ui/theme/ModalStyleContext';
 import { MODAL_STYLES, themeFontVars } from '../../src/ui/theme/modal-styles';
+import { THEME_EXTRAS } from '../../src/ui/theme/theme-extras';
 
 const renderRoot = (active: boolean, styleId: string) => {
   const style = MODAL_STYLES.find((s) => s.id === styleId)!;
@@ -37,9 +38,26 @@ describe('game theme root: the screens that follow the theme', () => {
     },
   );
 
-  it('sets nothing when inactive: no Body base, no variables, so the default font roles apply', () => {
-    const root = renderRoot(false, 'splash');
-    expect(root.className).toBe('outer');
+  it.each(MODAL_STYLES.map((s) => s.id))(
+    'is the table of %s: its background, text and texture',
+    (id) => {
+      const table = THEME_EXTRAS[id].table;
+      const root = renderRoot(true, id);
+      for (const cls of `${table.bg} ${table.text}`.split(' '))
+        expect(root.className).toContain(cls);
+      const texture = root.querySelector('[data-testid="table-texture"]') as HTMLElement;
+      expect(texture.className).toContain(table.textureClass);
+      expect(texture.style.backgroundImage).toBe(table.texture.backgroundImage);
+    },
+  );
+
+  it('keeps the comic paper and sets no Body base or variables when inactive (the card editor)', () => {
+    const root = renderRoot(false, 'night');
+    expect(root.className).toContain('outer');
+    expect(root.className).toContain('bg-comic-paper');
+    expect(root.className).not.toContain('font-body');
     expect(root.getAttribute('style')).toBeNull();
+    const texture = root.querySelector('[data-testid="table-texture"]') as HTMLElement;
+    expect(texture.className).toContain('bg-bendy-dots');
   });
 });

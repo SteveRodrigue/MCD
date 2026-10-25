@@ -58,7 +58,7 @@ describe('VillainZone Side Scheme Zoom & Stacking Context (Issue #148)', () => {
 
   it('renders root section with hover:z-raised focus-within:z-raised stacking classes', () => {
     const { container } = renderVillainZone();
-    const rootSection = container.querySelector('section.comic-panel');
+    const rootSection = container.querySelector('[data-testid="villain-zone"]');
     expect(rootSection).not.toBeNull();
     expect(rootSection?.className).toContain('hover:z-raised');
     expect(rootSection?.className).toContain('focus-within:z-raised');

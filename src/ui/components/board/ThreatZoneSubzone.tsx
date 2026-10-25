@@ -1,4 +1,5 @@
 import React from 'react';
+import { useModalStyle } from '../../theme/useModalStyle';
 
 interface ThreatZoneSubzoneProps {
   /** Stable test id, e.g. `threat-zone-obligations` */
@@ -21,14 +22,17 @@ export const ThreatZoneSubzone: React.FC<ThreatZoneSubzoneProps> = ({
   count,
   grow,
   children,
-}) => (
-  <section data-testid={testId} className={`flex flex-col gap-1 ${grow ? 'flex-1' : ''}`}>
-    <span className="self-start bg-slate-900 text-comic-yellow border border-comic-black text-nano px-1.5 py-0.5 rounded font-bold uppercase shadow-comic-xs">
-      {label}
-      {count !== undefined ? ` (${count})` : ''}
-    </span>
-    <div className="flex flex-wrap items-center gap-4">{children}</div>
-  </section>
-);
+}) => {
+  const { style } = useModalStyle();
+  return (
+    <section data-testid={testId} className={`flex flex-col gap-1 ${grow ? 'flex-1' : ''}`}>
+      <span className={`self-start text-nano px-1.5 py-0.5 font-bold uppercase ${style.chip}`}>
+        {label}
+        {count !== undefined ? ` (${count})` : ''}
+      </span>
+      <div className="flex flex-wrap items-center gap-4">{children}</div>
+    </section>
+  );
+};
 
 export default ThreatZoneSubzone;

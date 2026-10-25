@@ -133,6 +133,8 @@ N6 guard ──> N1 ──┬──> N8 ──┐
 
 ### N4. Board, zones, hand tray and setup join the themes (own plan)
 
+**The plan and its phases are in [PLAN_board_theming.md](./PLAN_board_theming.md)** (approved by you with the whole plan).
+
 - Fonts follow the slots the same way (N1 to N3 prepare it). The rest (panels, ribbons, counters, buttons, table background, setup chrome) is the theme engine's open follow-up (`PLAN_theme_engine.md`, phase 6) and the audit's decisions D3, D4 and D7. It gets its own plan and approval; only the font contract is fixed here.
 - **Includes your N8 rule:** the intro banner is excluded, everything else on that screen follows the theme.
 

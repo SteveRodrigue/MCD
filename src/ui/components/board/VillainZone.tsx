@@ -23,6 +23,8 @@ import {
 import { getEncounterSetName } from './villain-zone-utils';
 import { getEffectiveVillainStats } from '../../../engine/pipeline/stat-calculator';
 import { getCardBackUrl, getCardBackFallbackColor } from '../../services/card-cache-service';
+import { useModalStyle } from '../../theme/useModalStyle';
+import { ZonePanel } from '../../theme/kit/surfaces';
 
 interface VillainZoneProps {
   villain: VillainState;
@@ -59,6 +61,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
   onSelectAttachment,
 }) => {
   const { devMode } = useGameSettings();
+  const { style } = useModalStyle();
   const [showDeckModal, setShowDeckModal] = useState(false);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const [deckImageError, setDeckImageError] = useState(false);
@@ -130,14 +133,14 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
 
   return (
     <>
-      <section className="comic-panel p-4 bg-white/95 relative hover:z-raised focus-within:z-raised shadow-comic">
-        {/* Zone Title Ribbon */}
-        <div className="absolute -top-3 left-4 bg-comic-red text-white border border-comic-black text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1">
-          <Skull className="w-3.5 h-3.5" />
-          <span>VILLAIN & SCENARIO ZONE</span>
-        </div>
-
-        <div className="flex flex-wrap items-stretch gap-4 pt-2">
+      <ZonePanel
+        data-testid="villain-zone"
+        title="VILLAIN & SCENARIO ZONE"
+        icon={<Skull className="w-3.5 h-3.5 text-comic-red" />}
+        className="hover:z-raised focus-within:z-raised"
+        bodyClassName="p-4"
+      >
+        <div className="flex flex-wrap items-stretch gap-4">
           {/* 1. Encounter Discard & Draw Piles (Left of Villain, Left-to-Right: Discard -> Deck) */}
           <div className="flex items-center justify-center gap-3 shrink-0 self-start">
             {/* Encounter Discard Pile (Open Information • Click to Inspect) */}
@@ -154,14 +157,18 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                     showTokens={false}
                     enableHoverZoom={true}
                   />
-                  <span className="absolute -bottom-2 -right-2 bg-slate-900 text-white text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
+                  <span
+                    className={`absolute -bottom-2 -right-2 text-xs px-1.5 py-0.5 ${style.chip}`}
+                  >
                     {encounterDiscard.length}
                   </span>
                 </div>
               ) : (
-                <div className="w-28 h-40 bg-slate-100 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-center p-1">
-                  <span className="text-xs text-slate-400">DISCARD</span>
-                  <span className="text-micro text-slate-400 font-bold">EMPTY</span>
+                <div
+                  className={`w-28 h-40 border-dashed flex flex-col items-center justify-center text-center p-1 ${style.inset} ${style.muted}`}
+                >
+                  <span className="text-xs">DISCARD</span>
+                  <span className="text-micro font-bold">EMPTY</span>
                 </div>
               )}
             </div>
@@ -178,7 +185,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               }
             >
               <div
-                className={`w-28 h-40 border-2 border-comic-black rounded-lg shadow-comic-sm flex flex-col items-center justify-center p-2 text-center relative overflow-hidden transition-all ${
+                className={`w-28 h-40 border-2 border-black rounded-lg flex flex-col items-center justify-center p-2 text-center relative overflow-hidden transition-all ${
                   devMode ? 'group-hover:border-comic-yellow' : ''
                 }`}
                 style={{
@@ -200,7 +207,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                     style={{ backgroundColor: getCardBackFallbackColor('encounter') }}
                   />
                 )}
-                <span className="absolute bottom-1 right-1 z-content bg-slate-950/80 text-white text-xs font-bold px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs backdrop-blur-xs leading-none">
+                <span className="absolute bottom-1 right-1 z-content bg-slate-950/80 text-white text-xs font-bold px-1.5 py-0.5 rounded border border-white/30 backdrop-blur-xs leading-none">
                   {encounterDeck.length}
                 </span>
               </div>
@@ -210,7 +217,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
           {/* 2. Villain Panel & Attachments */}
           <div
             data-testid="villain-main-panel"
-            className="w-fit flex flex-col gap-2 bg-rose-50/80 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0 transition-all"
+            className={`w-fit flex flex-col gap-2 p-3 shrink-0 transition-all ${style.inset}`}
             style={villainBottomPx > 0 ? { paddingBottom: `${villainBottomPx + 12}px` } : undefined}
           >
             {/* Header: Villain Icon, Name, Stage Badge & Status Badges */}
@@ -218,14 +225,11 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               <div className="flex items-center justify-between gap-2 w-full">
                 <div className="flex items-center gap-1 min-w-0">
                   <Skull className="w-4 h-4 text-comic-red shrink-0" />
-                  <span
-                    className="text-sm text-comic-black truncate max-w-[130px]"
-                    title={villain.card.name}
-                  >
+                  <span className="text-sm truncate max-w-[130px]" title={villain.card.name}>
                     {villain.card.name}
                   </span>
                 </div>
-                <span className="bg-slate-950 text-white text-micro px-1.5 py-0.5 rounded border border-comic-black shrink-0">
+                <span className={`text-micro px-1.5 py-0.5 shrink-0 ${style.chip}`}>
                   {villain.card.stage ? `STAGE ${villain.card.stage}` : 'VILLAIN'}
                 </span>
               </div>
@@ -235,7 +239,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                   {villain.statusCards.map((st, i) => (
                     <span
                       key={i}
-                      className={`text-nano px-1 py-0.2 rounded border border-comic-black uppercase shadow-comic-xs font-bold ${
+                      className={`text-nano px-1 py-0.2 uppercase font-bold ${style.badge} ${
                         st === StatusCard.TOUGH
                           ? 'bg-sky-400 text-slate-950'
                           : st === StatusCard.STUNNED
@@ -259,7 +263,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               >
                 {/* SCH */}
                 <div
-                  className="flex flex-col items-center justify-center w-full px-1 py-0.5 bg-sky-50 border border-comic-black rounded shadow-comic-xs text-center"
+                  className={`flex flex-col items-center justify-center w-full px-1 py-0.5 bg-sky-50 text-center ${style.badge}`}
                   title={`Scheme: ${effectiveStats.scheme}${schBonus > 0 ? ` (+${schBonus})` : ''}`}
                 >
                   <span className="text-nano font-bold text-sky-800 uppercase leading-none">
@@ -274,7 +278,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                 </div>
                 {/* ATK */}
                 <div
-                  className="flex flex-col items-center justify-center w-full px-1 py-0.5 bg-rose-50 border border-comic-black rounded shadow-comic-xs text-center"
+                  className={`flex flex-col items-center justify-center w-full px-1 py-0.5 bg-rose-50 text-center ${style.badge}`}
                   title={`Attack: ${effectiveStats.attack}${atkBonus > 0 ? ` (+${atkBonus})` : ''}`}
                 >
                   <span className="text-nano font-bold text-rose-800 uppercase leading-none">
@@ -322,7 +326,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                   aria-valuemin={0}
                   aria-valuemax={villain.maxHealth}
                   aria-label="Villain Health"
-                  className="h-36 w-3.5 bg-neutral-800 rounded-full border border-black overflow-hidden relative flex flex-col justify-end shadow-comic-xs"
+                  className="h-36 w-3.5 bg-neutral-800 rounded-full border border-black overflow-hidden relative flex flex-col justify-end"
                 >
                   <div
                     className="w-full transition-all duration-300 rounded-b-full"
@@ -333,7 +337,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                     }}
                   />
                 </div>
-                <span className="text-micro font-black text-slate-900 leading-none">
+                <span className="text-micro font-black leading-none">
                   {villain.health}/{villain.maxHealth}
                 </span>
               </div>
@@ -341,14 +345,16 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
           </div>
 
           {/* 3. Main Scheme Panel (Landscape Card + Vertical Threat Meter on the Right) */}
-          <div className="w-fit flex flex-col gap-2 bg-amber-50/80 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
+          <div className={`w-fit flex flex-col gap-2 p-3 shrink-0 ${style.inset}`}>
             {/* Header: Title on Left, Text Version Threat Limit on Top Right */}
             <div className="flex items-center justify-between gap-3 w-full">
               <div className="flex items-center gap-1.5 min-w-0">
                 <AlertTriangle className="w-4 h-4 text-comic-red shrink-0" />
-                <span className="text-sm text-comic-black truncate">{mainScheme.card.name}</span>
+                <span className="text-sm truncate">{mainScheme.card.name}</span>
                 {accelerationTokens > 0 && (
-                  <span className="bg-comic-yellow text-comic-black border border-comic-black text-micro px-1.5 py-0.5 rounded-full shadow-comic-sm animate-pulse shrink-0">
+                  <span
+                    className={`bg-comic-yellow text-comic-black text-micro px-1.5 py-0.5 animate-pulse shrink-0 ${style.badge}`}
+                  >
                     ⚡ +{accelerationTokens}
                   </span>
                 )}
@@ -357,7 +363,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               {/* Text version of threat on the top right */}
               <div className="shrink-0">
                 <span
-                  className={`text-xs px-2 py-0.5 rounded-md border border-comic-black shadow-comic-sm tracking-wide ${
+                  className={`text-xs px-2 py-0.5 tracking-wide ${style.badge} ${
                     threatPercent > 75
                       ? 'bg-comic-red text-white'
                       : threatPercent > 40
@@ -382,7 +388,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               {/* Vertical Threat Meter Gauge on the Right */}
               <div className="flex flex-col items-center justify-between h-[176px] py-0.5 shrink-0">
                 <div
-                  className="relative w-5 h-full bg-slate-200 rounded-full border-2 border-comic-black shadow-comic-sm overflow-hidden flex flex-col justify-end"
+                  className="relative w-5 h-full bg-slate-200 rounded-full border-2 border-black overflow-hidden flex flex-col justify-end"
                   title={`Threat: ${mainScheme.threat} / {mainScheme.targetThreat} (${Math.round(threatPercent)}%)`}
                 >
                   {/* Dynamic Vertical Fill Bar (Bottom to Top) with color transition from Blue -> Yellow -> Red */}
@@ -402,8 +408,12 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
           </div>
 
           {/* 4. Active Side Schemes & Player Schemes (Takes remaining width) */}
-          <div className="flex-1 min-w-[200px] flex flex-col gap-2 bg-slate-50/90 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm min-h-[220px] relative z-content hover:z-zoom focus-within:z-zoom">
-            <div className="flex items-center gap-1.5 text-xs font-bold uppercase text-slate-600 border-b border-slate-200 pb-1.5">
+          <div
+            className={`flex-1 min-w-[200px] flex flex-col gap-2 p-3 min-h-[220px] relative z-content hover:z-zoom focus-within:z-zoom ${style.inset}`}
+          >
+            <div
+              className={`flex items-center gap-1.5 text-xs font-bold uppercase border-b border-current/20 pb-1.5 ${style.muted}`}
+            >
               <Flame className="w-4 h-4 text-comic-red" />
               <span>Active Side Schemes ({sideSchemes.length})</span>
             </div>
@@ -427,7 +437,9 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                       >
                         <CardView card={scheme.card} size="sm" enableHoverZoom={true} />
                       </CardAttachmentFan>
-                      <span className="bg-comic-yellow text-comic-black border border-comic-black text-micro px-1.5 py-0.5 rounded-full shadow-comic-sm relative z-raised">
+                      <span
+                        className={`bg-comic-yellow text-comic-black text-micro px-1.5 py-0.5 relative z-raised ${style.badge}`}
+                      >
                         ⚠️ {scheme.threat} THREAT
                       </span>
                     </div>
@@ -435,13 +447,15 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                 })}
               </div>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center p-3 text-center text-xs text-slate-400 font-semibold border-2 border-dashed border-slate-300 rounded-lg">
+              <div
+                className={`flex-1 flex flex-col items-center justify-center p-3 text-center text-xs font-semibold border-2 border-dashed border-current/30 rounded-lg ${style.muted}`}
+              >
                 <span>No side schemes active</span>
               </div>
             )}
           </div>
         </div>
-      </section>
+      </ZonePanel>
 
       {/* Encounter Deck Inspector Modal (Dev Mode with Sorting & Set Labels) */}
       {showDeckModal && (

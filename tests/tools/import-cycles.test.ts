@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import {
   buildRuntimeImportGraph,
   findStronglyConnectedComponents,
@@ -37,9 +37,17 @@ describe('findStronglyConnectedComponents', () => {
 /** Sizes of the allowed cycles. Only ever shrinks; the target is []. */
 const CYCLE_RATCHET: number[] = [];
 
+/** The first build pays the cold TypeScript compiler; under CI coverage it passes the 5 s default. */
+const GRAPH_BUILD_TIMEOUT_MS = 30_000;
+
+let engineGraph: ImportGraph;
+beforeAll(() => {
+  engineGraph = buildRuntimeImportGraph();
+}, GRAPH_BUILD_TIMEOUT_MS);
+
 describe('src/engine runtime import graph', () => {
   it('has no more import cycles than the ratchet (target 0, ADR-0088)', () => {
-    const cycles = findStronglyConnectedComponents(buildRuntimeImportGraph());
+    const cycles = findStronglyConnectedComponents(engineGraph);
     expect(cycles.map((c) => c.length)).toEqual(CYCLE_RATCHET);
   });
 });
@@ -53,9 +61,8 @@ describe('engine boot reachability (ADR-0088)', () => {
         path.posix.normalize(`src/engine/${m[1]}`),
       ),
     );
-    const graph = buildRuntimeImportGraph();
     const missing: string[] = [];
-    for (const file of graph.keys()) {
+    for (const file of engineGraph.keys()) {
       if (file === 'src/engine/kernel.ts' || file.endsWith('special-registry.ts')) continue;
       const source = fs.readFileSync(path.join(root, file), 'utf8');
       if (!/\b(bindKernel|registerSpecialHandler)\(/.test(source)) continue;

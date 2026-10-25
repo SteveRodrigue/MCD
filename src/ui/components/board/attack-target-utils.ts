@@ -1,5 +1,4 @@
 import {
-  CardInstance,
   GameState,
   Keyword,
   StatusCard,
@@ -20,7 +19,8 @@ export interface EnemyTarget {
   traits: string[];
   hasGuard: boolean;
   hasTough: boolean;
-  cardInstance?: CardInstance;
+  /** Card code of the target, for its thumbnail. */
+  code?: string;
 }
 
 export function getValidAttackTargets(
@@ -45,11 +45,12 @@ export function getValidAttackTargets(
     // Offers the active villain only; a villain selection for multi-villain scenarios is #212.
     const villain = getActiveVillain(state);
     const vHealth = villain.health;
-    const vMaxHealth = villain.card.health || 14;
+    const vMaxHealth = villain.maxHealth;
     const hasTough = (villain.statusCards || []).includes(StatusCard.TOUGH);
     targets.push({
       id: 'villain',
       name: villain.card.name,
+      code: villain.card.code,
       type: 'villain',
       health: vHealth,
       maxHealth: vMaxHealth,
@@ -85,6 +86,7 @@ export function getValidAttackTargets(
         targets.push({
           id: minion.instanceId,
           name: minion.card.name,
+          code: minion.card.code,
           type: 'minion',
           instanceId: minion.instanceId,
           health: mHealth,
@@ -93,7 +95,6 @@ export function getValidAttackTargets(
           traits: minion.card.traits || [],
           hasGuard: !!hasGuard,
           hasTough,
-          cardInstance: minion,
         });
       }
     }

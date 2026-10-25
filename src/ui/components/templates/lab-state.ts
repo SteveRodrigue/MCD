@@ -72,7 +72,7 @@ export const labEnemyTargets = (): EnemyTarget[] => [
     traits: ['Brute', 'Criminal'],
     hasGuard: false,
     hasTough: false,
-    cardInstance: instance('01094'),
+    code: '01094',
   },
   {
     id: 'minion',
@@ -85,7 +85,7 @@ export const labEnemyTargets = (): EnemyTarget[] => [
     traits: ['Elite'],
     hasGuard: true,
     hasTough: true,
-    cardInstance: instance('01102'),
+    code: '01102',
   },
 ];
 
@@ -100,7 +100,7 @@ export const labSchemeTargets = (mainSchemeCode: string | undefined): SchemeTarg
     hasHazard: true,
     hasAcceleration: true,
     allowed: true,
-    cardInstance: mainSchemeCode ? instance(mainSchemeCode) : undefined,
+    code: mainSchemeCode,
   },
   {
     id: 'side',

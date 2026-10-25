@@ -1,5 +1,4 @@
 ﻿import {
-  CardInstance,
   GameState,
   Keyword,
   SideSchemeCard,
@@ -21,7 +20,8 @@ export interface SchemeTarget {
   hasAcceleration: boolean;
   allowed: boolean;
   disabledReason?: string;
-  cardInstance?: CardInstance;
+  /** Card code of the target, for its thumbnail. */
+  code?: string;
 }
 
 export function getValidThwartTargets(
@@ -47,6 +47,7 @@ export function getValidThwartTargets(
     targets.push({
       id: 'main_scheme',
       name: mainScheme.card?.name || 'Main Scheme',
+      code: mainScheme.card?.code,
       type: 'main_scheme',
       threat: mainScheme.threat,
       targetThreat: mainScheme.targetThreat,
@@ -83,6 +84,7 @@ export function getValidThwartTargets(
     targets.push({
       id: sideScheme.instanceId,
       name: sideScheme.card.name,
+      code: sideScheme.card.code,
       type: 'side_scheme',
       instanceId: sideScheme.instanceId,
       threat: sideScheme.threat,
@@ -91,10 +93,6 @@ export function getValidThwartTargets(
       hasAcceleration,
       allowed: check.allowed,
       disabledReason: check.allowed ? undefined : check.reason,
-      cardInstance: {
-        instanceId: sideScheme.instanceId,
-        card: sideScheme.card,
-      },
     });
   }
 

@@ -59,6 +59,21 @@ describe('Thwart Target Selection & Legality Utils (RR v1.8 p. 3, 11, 20, 29)', 
     expect(targets[0].threat).toBe(3);
   });
 
+  it('names the main scheme and side schemes by card code', () => {
+    const sideSchemeCard = catalog.getCard('01108') as any;
+    gameState.sideSchemes.push({
+      instanceId: createCardInstance(sideSchemeCard).instanceId,
+      card: sideSchemeCard,
+      threat: 4,
+    });
+
+    const targets = getValidThwartTargets(gameState, 'p1', 'hero');
+    expect(targets.find((t) => t.type === 'main_scheme')?.code).toBe(
+      getActiveMainScheme(gameState).card.code,
+    );
+    expect(targets.find((t) => t.type === 'side_scheme')?.code).toBe('01108');
+  });
+
   it('returns both Main Scheme and Side Schemes when side schemes are in play', () => {
     const sideSchemeCard = catalog.getCard('01108') as any; // Crowd Control (Crisis)
     const sideSchemeInstance = createCardInstance(sideSchemeCard);

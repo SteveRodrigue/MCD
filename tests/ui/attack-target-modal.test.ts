@@ -2,6 +2,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setupGame, resetInstanceCounter, createCardInstance } from '@engine/index';
 import { CardCatalog } from '@data/importer/card-loader';
+import { getActiveVillain } from '@engine/models';
 import { getValidAttackTargets } from '../../src/ui/components/board/attack-target-utils';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
@@ -62,6 +63,25 @@ describe('Attack Target Selection & Guard Invariants (RR v1.8 p. 5-6, 15)', () =
     expect(targets[0].type).toBe('villain');
     expect(targets[0].name).toBe('Rhino');
     expect(targets[0].health).toBe(14);
+  });
+
+  it('names the villain by card code and reports its in-play maximum hit points', () => {
+    const villain = getActiveVillain(gameState);
+    villain.maxHealth = 28; // two heroes: 14 per hero
+    villain.health = 18;
+    const [villainTarget] = getValidAttackTargets(gameState, 'p1', 'hero');
+    expect(villainTarget.code).toBe('01094');
+    expect(villainTarget.health).toBe(18);
+    expect(villainTarget.maxHealth).toBe(28);
+  });
+
+  it('names a minion by card code', () => {
+    const hydraBomber = createCardInstance(catalog.getCard('01110')!);
+    gameState.players[0].engagedMinions.push(hydraBomber);
+    const minionTarget = getValidAttackTargets(gameState, 'p1', 'hero').find(
+      (t) => t.type === 'minion',
+    );
+    expect(minionTarget?.code).toBe('01110');
   });
 
   it('returns Villain AND Minions when minions are engaged without Guard', () => {

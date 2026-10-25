@@ -235,7 +235,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
   ]);
 
   // Horizontal Panoramic Track Edge-Scroll Hook (ADR-0017)
-  const { containerRef, canScrollLeft, canScrollRight, scrollToChild, scrollByAmount } =
+  const { containerRef, canScrollLeft, canScrollRight, scrollToChild, scrollToEdge } =
     useEdgeScroll<HTMLDivElement>({
       edgeThreshold: 95,
       maxSpeed: SPEED_MAP[edgeScrollSpeed] || 45,
@@ -364,6 +364,29 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
             />
           )}
 
+          {/* Jump buttons of the hero track: sticky at the middle of the screen, not of the tall track */}
+          {isMultiHero && (
+            <div data-testid="track-jump-buttons" className="sticky top-1/2 h-0 w-full z-zoom">
+              {(['left', 'right'] as const).map((side) => {
+                const canScroll = side === 'left' ? canScrollLeft : canScrollRight;
+                const Arrow = side === 'left' ? ChevronLeft : ChevronRight;
+                return (
+                  canScroll && (
+                    <button
+                      key={side}
+                      data-no-edge-scroll=""
+                      onClick={() => scrollToEdge(side)}
+                      className={`absolute ${side === 'left' ? 'left-2' : 'right-2'} -translate-y-1/2 p-2 transition-all cursor-pointer ${style.btnGo} !rounded-full`}
+                      title={side === 'left' ? 'Scroll Left' : 'Scroll Right'}
+                    >
+                      <Arrow className="w-6 h-6" />
+                    </button>
+                  )
+                );
+              })}
+            </div>
+          )}
+
           {/* 1. Panoramic Tabletop Main Stage */}
           <main className="flex-1 flex flex-col items-center justify-start p-2 md:p-4 gap-4 max-w-full">
             {/* Villain Phase Stepper Ribbon (Issue #140) */}
@@ -406,26 +429,6 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
             {/* Multi-Hero Panoramic Track (or Solo Play Area) */}
             {isMultiHero ? (
               <div className="relative w-full overflow-hidden px-2 py-1">
-                {/* Edge Navigation Buttons */}
-                {canScrollLeft && (
-                  <button
-                    onClick={() => scrollByAmount(-400)}
-                    className={`absolute left-2 top-1/2 -translate-y-1/2 z-raised p-2 transition-all cursor-pointer ${style.btnGo} !rounded-full`}
-                    title="Scroll Left"
-                  >
-                    <ChevronLeft className="w-6 h-6" />
-                  </button>
-                )}
-                {canScrollRight && (
-                  <button
-                    onClick={() => scrollByAmount(400)}
-                    className={`absolute right-2 top-1/2 -translate-y-1/2 z-raised p-2 transition-all cursor-pointer ${style.btnGo} !rounded-full`}
-                    title="Scroll Right"
-                  >
-                    <ChevronRight className="w-6 h-6" />
-                  </button>
-                )}
-
                 {/* Scrollable Panoramic Track */}
                 <div
                   ref={containerRef}

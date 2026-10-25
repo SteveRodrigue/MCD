@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 export interface UseEdgeScrollOptions {
-  edgeThreshold?: number; // Distance in pixels from viewport edge to trigger scroll
+  edgeThreshold?: number; // Distance in pixels from the container's left or right edge to trigger scroll
   maxSpeed?: number; // Max scroll speed in pixels per frame
   enabled?: boolean;
 }
@@ -79,26 +79,35 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
       const el = containerRef.current;
       if (!el) return;
 
+      // A control that opts out (the jump buttons) must not fight its own smooth scroll.
+      if ((e.target as Element | null)?.closest?.('[data-no-edge-scroll]')) {
+        stopScrolling();
+        return;
+      }
+
       // Only edge-scroll if container has horizontal overflow to scroll
       if (el.scrollWidth <= el.clientWidth) {
         stopScrolling();
         return;
       }
 
+      // The edges are the container's own, not the window's: the side dock sits beside the board.
+      const { left, right } = el.getBoundingClientRect();
       const clientX = e.clientX;
-      const windowWidth = window.innerWidth;
       const threshold = edgeThresholdRef.current;
       const currentMaxSpeed = maxSpeedRef.current;
       const minSpeed = Math.max(6, Math.round(currentMaxSpeed * 0.25));
 
-      if (clientX < threshold) {
+      if (clientX < left || clientX > right) {
+        stopScrolling();
+      } else if (clientX < left + threshold) {
         // Near Left Edge: Scroll Left (proportional velocity with baseline kick)
-        const intensity = Math.max(0, 1 - clientX / threshold);
+        const intensity = Math.max(0, 1 - (clientX - left) / threshold);
         const velocity = Math.ceil(minSpeed + (currentMaxSpeed - minSpeed) * intensity);
         startScrolling(-velocity);
-      } else if (clientX > windowWidth - threshold) {
+      } else if (clientX > right - threshold) {
         // Near Right Edge: Scroll Right (proportional velocity with baseline kick)
-        const intensity = Math.max(0, 1 - (windowWidth - clientX) / threshold);
+        const intensity = Math.max(0, 1 - (right - clientX) / threshold);
         const velocity = Math.ceil(minSpeed + (currentMaxSpeed - minSpeed) * intensity);
         startScrolling(velocity);
       } else {
@@ -158,10 +167,14 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
     });
   }, []);
 
-  const scrollByAmount = useCallback((amount: number) => {
+  // Jump completely to the left or right end of the track.
+  const scrollToEdge = useCallback((direction: 'left' | 'right') => {
     const el = containerRef.current;
     if (!el) return;
-    el.scrollBy({ left: amount, behavior: 'smooth' });
+    el.scrollTo({
+      left: direction === 'left' ? 0 : el.scrollWidth - el.clientWidth,
+      behavior: 'smooth',
+    });
   }, []);
 
   return {
@@ -169,7 +182,6 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
     canScrollLeft,
     canScrollRight,
     scrollToChild,
-    scrollByAmount,
-    updateScrollBounds,
+    scrollToEdge,
   };
 }

@@ -45,6 +45,7 @@ We adopt **Proposition 4: Panoramic Horizontal Tabletop with Edge & Drag Scrolli
 
 4. **Drag-to-Scroll Support:**
    - While dragging a card or interaction pointer near the screen edge, auto-panning engages dynamically, allowing seamless cross-table card deployment (e.g. dragging an upgrade from Seat 1 across to Seat 4).
+   - The edge zones are the track's own left and right edges (not the window's, so the side dock never scrolls the board). The Scroll Left / Scroll Right buttons jump to the end of the track, stay at the middle of the screen, and opt out with `data-no-edge-scroll` (Issue #380).
 
 5. **Fixed Top Banner & Scenario Zone:**
    - The quick-menu rail (Round & Phase, Daily Bugle, Options, `⋯`) stays docked above the combat log on the right; the seat headers switch seats (Issue #378).

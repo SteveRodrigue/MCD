@@ -1,13 +1,14 @@
 # MCD Modal Templates & Style Lab
 
-Reference for every game prompt, decision dialog and utility modal in *Marvel Champions Digital*.
-Once a style is settled, these templates are what the real modals get retrofitted to (see
-[ADR-0056](../../decisions/0056-unified-comic-pop-art-modal-and-dialog-design-system.md)).
+Reference for the themes of *Marvel Champions Digital* and for every game prompt, decision dialog and utility modal.
+The whole player-facing game follows the selected theme (see [ADR-0091](../../decisions/0091-themeable-modal-system.md));
+the only look that never changes is the Bangers "MARVEL CHAMPIONS" banner on the first screen. The card editor
+(`/editor`) is a developer tool outside the themes.
 
 **Browse it:** run the dev server (`localhost:3000`) and open `/templates/`. The lab exists only on the dev server: production builds do not contain it or its fonts. The controls are a column on the left: **Style**, **Kit** and **Prompts** are each a cycling choice (previous, a list, next), like the fonts, with keys **T**, **K** and **P** (Shift goes back; the style cycle passes through the gallery). The first stop of the Style list is the overview of all styles (no buttons, readable text under each preview). Below them: the demo switches (verb colour, forced, card accent, reset) and the font test. **Back to game** is pinned at the very bottom so it is not clicked by mistake, and the column can be hidden with the arrow at its top. Modals open to its right, so the column is never covered.
 Direct links look like `/templates/<style>/<modal>`, e.g. `/templates/splash/sequence`.
 
-**Scope for now:** the lab only. No engine, data or real-modal changes until a style is chosen.
+**Scope:** the lab is the design reference. It previews the real game modals and screens; the game never imports from it.
 
 ## Three axes
 
@@ -82,8 +83,11 @@ Shared theme code (used by the game and the lab), `src/ui/theme/`:
 `ModalStyleContext.tsx` + `useModalStyle.ts` (active style), `ThemeProvider.tsx` + `useGameTheme.ts`
 (player setting, per-game Random roll), `resolve-theme.ts`, `theme-settings.ts`, `card-accents.ts`, `CardRef.tsx`,
 `AccentStripe.tsx`, `ComicSpeech.tsx`, `ActionBurst.tsx` + `useActionBurst.ts`, `comic-shapes.ts`,
-`ThemePicker.tsx` (the player's choice, in Options and on the setup screen) and `ThemePreview.tsx` (token-drawn mini modal
-shared by the picker and the lab gallery).
+`ThemePicker.tsx` (the player's choice, in Options and on the setup screen), `ThemePreview.tsx` (token-drawn mini modal
+shared by the picker and the lab gallery), `GameThemeRoot.tsx` + `game-stage.ts` (the table and font roles of the setup,
+mulligan and game screens), `theme-extras.ts` + `useThemeExtras.ts` (table, danger button, form field and newspaper tokens),
+`useNewspaperProps.ts` and the kit components in `kit/`. The modal layer (`src/ui/components/layout/ModalLayer.tsx`) sets the
+theme's font roles for everything rendered in its portal.
 
 Migrated game modals (render through `ModalScaffold`), in `src/ui/components/board/`: `WakandaForeverModal`,
 `DecisionPromptModal` (with `PromptCardPanel`), `SelectCardsModal`, `AttackTargetModal` and `ThwartTargetModal`
@@ -93,9 +97,11 @@ Utility dialogs on the scaffold: `OptionsMenu`, `ReportProblemModal`, `CardStats
 `ResetCardStatsConfirmModal`, `GameOverScreen`, `InfiniteLoopModal` (in `App.tsx`), and the pile viewers (deck inspectors,
 discard piles, removed from game, set aside, dealt-cards peek) in `VillainZone`, `PlayerHandTray`,
 `RemovedFromGameBox` and `FacedownEncounterCard`, all on `PileViewerModal` (`PileCardTile`, `PileGroup`, `PileToolbar`).
-Board chrome on the scaffold's tokens: `TopBar` and `DevStepErrorBanner`. Exempt (ADR-0056 tier 2): `DailyBugleActionNewspaper`,
-`EndTurnConfirmationModal` and the `CombatLogDrawer` (the in-universe Daily Bugle chronicle). Still pop-art in every theme
-(follow-up): the table background, the hero and villain zones and the hand tray panels.
+Board chrome and screens on the theme's tokens and the kit (`src/ui/theme/kit/`): `TopBar`, `DevStepErrorBanner`, the villain
+and hero zones, the hand tray, the out-of-play box, the villain phase stepper, the damage splash, the card context menu,
+`ScenarioSelector` and `MulliganScreen` (except the Bangers banner), and the table behind them (`GameThemeRoot`).
+`DailyBugleActionNewspaper`, `EndTurnConfirmationModal` and the `CombatLogDrawer` are Newspaper kit pages (`NewspaperSheet`):
+each theme draws its own era of newspaper. The theme guards (`tests/ui/theme-guards.test.ts`) keep literal comic looks out of these files.
 Shared pieces: `ActionRow` (one choice in an action list), `CardActionModal` + `InfoStrip` (the card action menu
 shell), `TargetSelectionModal` (pick-a-card-to-act-on).
 
@@ -108,9 +114,9 @@ what the game renders. Also `template-routes.ts`, `StyleGallery.tsx`, `ModalTemp
 
 The game never imports from the lab folder; an architecture test enforces it.
 
-## Kits (lab-first mock-ups, not in the game yet)
+## Kits
 
-Beyond modals, the lab previews the rest of the look so a theme can be judged as a whole. Open the **Kit** bar at `/templates/<style>/<item>`:
+Beyond modals, the lab previews the rest of the look, built from the same primitives the game uses, so a theme can be judged as a whole. Open the **Kit** bar at `/templates/<style>/<item>`:
 
 - **Elements** (`elements`): button family (primary, secondary, danger, ghost, icon), badges, ribbons, stat counters, gauges, switch, text field, select, menu, toast, damage splash, type roles.
 - **Board** (`board`): top bar, villain zone, main scheme, hero zone with the hero colour as an accent, hand tray, context menu, toast, splash, on the theme's table background.
@@ -118,23 +124,25 @@ Beyond modals, the lab previews the rest of the look so a theme can be judged as
 - **Setup** (`setup`): scenario spread and mulligan.
 
 Kit code: tokens in `src/ui/theme/theme-extras.ts` (table, type roles, danger button, form field, `newspaper` group) read with `useThemeExtras`; primitives in `src/ui/theme/kit/` (`controls.tsx`, `meters.tsx`, `surfaces.tsx`, `newspaper.tsx`); pages in `src/ui/components/templates/kits/`.
-Card display follows one rule: thumbnails (`CardRef`) in modals, the Daily Bugle and the combat log; full `CardView` cards on the board, in hands and in setup (the Board and Setup kits). The kit pages are mock-ups with sample data. The game does not use the kit primitives until the integration plan is approved.
+Card display follows one rule: thumbnails (`CardRef`) in modals, the Daily Bugle and the combat log; full `CardView` cards on the board, in hands and in setup (the Board and Setup kits). The kit pages show the primitives with sample data; the game screens are built from the same primitives and tokens.
 
 ## Theme fonts
 
-A theme sets its fonts in the `fonts` token (`modal-styles.ts`, `ThemeFonts`): a required **Headlines + Body** pair, an optional **Newspaper** pair that overrides it for the Daily Bugle, and an optional **Numbers & codes** font. `font-comic` (headlines), `font-body` and `font-mono` (numbers and codes) read the CSS variables `--font-comic`, `--font-body` and `--font-numbers` (defaults in `src/ui/styles/index.css`); `themeFontVars` sets them on the modal overlay, the theme preview and the lab's table. **Pop-Art uses Lilita One** for headlines and Inter for body, **Storyboard Panels uses Kalam**, **Splash Page uses Boogaloo**, **Golden Age Newsprint uses Merriweather**, **Night Edition uses JetBrains Mono**, **Hero HUD uses Lexend** and **S.H.I.E.L.D. Dossier uses Special Elite**, all bundled with `@fontsource`. There is no separate Serif slot: the serif typeface only served the Daily Bugle, so it is the Newspaper pair.
+A theme sets its fonts in the `fonts` token (`modal-styles.ts`, `ThemeFonts`): a required **Headlines + Body** pair, an optional **Newspaper** pair that overrides it for the Daily Bugle, and an optional **Numbers & codes** font. `font-comic` (headlines), `font-body` and `font-mono` (numbers and codes) read the CSS variables `--font-comic`, `--font-body` and `--font-numbers` (defaults in `src/ui/styles/index.css`); `themeFontVars` sets them on the game root (`GameThemeRoot`), the modal layer (`ModalLayer`), the card context menu, the modal overlay, the theme preview and the lab's table. **Pop-Art uses Lilita One** for headlines and body, **Storyboard Panels uses Kalam**, **Splash Page uses Boogaloo**, **Golden Age Newsprint uses Merriweather**, **Night Edition uses JetBrains Mono**, **Hero HUD uses Lexend** and **S.H.I.E.L.D. Dossier uses Special Elite**, all bundled with `@fontsource`. There is no separate Serif slot: the serif typeface only served the Daily Bugle, so it is the Newspaper pair.
 
 The full record of which fonts each theme uses, which can be set (and which cannot yet) is [FONT_RECORD.md](./FONT_RECORD.md). A theme has a default **Headlines + Body** pair and the Newspaper can override either of them.
 
 ## Font test (lab only)
 
-The lab bar has a **Font test** row to check how text reads on screen, with **two separate lists**: one font for **headlines** and one for **body** text. Each list starts with "Theme font (default)", so you can change one and keep the other. Press **F** to move both to the next font, **H** for the headlines alone, **B** for the body alone, and add **Shift** to go back (the cycle passes through the theme font). A second row, **Newspaper**, has its own Headlines and Body lists ("Follow default" when unset); inside a newspaper they win over the default pair, and **N** cycles both. The *Theme fonts* button resets all four. 34 fonts are bundled (Bangers, the original headline font, is the first so you can compare it with the new theme fonts): sans (Atkinson Hyperlegible, Lexend, Inter, Open Sans, Roboto, Source Sans 3, IBM Plex Sans, Fira Sans, Work Sans, Lato, Poppins), rounded (Nunito, Fredoka, Baloo 2), comic and handwriting (Comic Neue, Patrick Hand, Kalam), serif (Merriweather, Literata), mono (JetBrains Mono), comic display for headlines (Bangers, Lilita One, Luckiest Guy, Boogaloo, Passion One, Titan One, Sigmar One, Bowlby One, Bungee: readable stand-ins for Bangers) and typewriter (Special Elite, Courier Prime, Cutive Mono, Xanh Mono, Anonymous Pro: for the S.H.I.E.L.D. Dossier). A *headline* is a heading or text of 17px or more (`text-base` and up); *body* is anything smaller. The lab tags each piece of text with `data-font-role` while a font is on, so the roles follow what the text is, not which font utility it uses.
+The lab bar has a **Font test** row to check how text reads on screen, with **two separate lists**: one font for **headlines** and one for **body** text. Each list starts with "Theme font (default)", so you can change one and keep the other. Press **F** to move both to the next font, **H** for the headlines alone, **B** for the body alone, and add **Shift** to go back (the cycle passes through the theme font). A second row, **Newspaper**, has its own Headlines and Body lists ("Follow default" when unset); inside a newspaper they win over the default pair, and **N** cycles both. The *Theme fonts* button resets all four. The lab bundles its test fonts (Bangers, the original headline font, is the first so you can compare it with the new theme fonts): sans (Atkinson Hyperlegible, Lexend, Inter, Open Sans, Roboto, Source Sans 3, IBM Plex Sans, Fira Sans, Work Sans, Lato, Poppins), rounded (Nunito, Fredoka, Baloo 2), comic and handwriting (Comic Neue, Patrick Hand, Kalam), serif (Merriweather, Literata), mono (JetBrains Mono), comic display for headlines (Bangers, Lilita One, Luckiest Guy, Boogaloo, Passion One, Titan One, Sigmar One, Bowlby One, Bungee: readable stand-ins for Bangers) and typewriter (Special Elite, Courier Prime, Cutive Mono, Xanh Mono, Anonymous Pro: for the S.H.I.E.L.D. Dossier). A *headline* is a heading or text of 17px or more (`text-base` and up); *body* is anything smaller. The lab tags each piece of text with `data-font-role` while a font is on, so the roles follow what the text is, not which font utility it uses.
 
-The themes keep their own fonts ("Theme fonts (default)" is each theme's own, Kalam for Storyboard, Merriweather for Golden Age Newsprint, JetBrains Mono for Night Edition, Lexend for Hero HUD, Special Elite for the Dossier, Boogaloo for Splash Page, Lilita One for Pop-Art headlines): the choice is an override written on `<html>` while the lab is open (`font-test.css`), it applies to modals too, it skips the lab bar, and it is removed when the lab closes. It is remembered between visits. Files: `font-test.ts`, `useFontTest.ts`, `FontSwitcher.tsx`, `lab-font-list.ts`, `lab-fonts.css` and `fonts/*.woff2` (Google Fonts, latin subset, SIL Open Font License or Apache 2.0; about 1 MB).
+The themes keep their own fonts ("Theme fonts (default)" is each theme's own, Kalam for Storyboard, Merriweather for Golden Age Newsprint, JetBrains Mono for Night Edition, Lexend for Hero HUD, Special Elite for the Dossier, Boogaloo for Splash Page, Lilita One for Pop-Art headlines): the choice is an override written on `<html>` while the lab is open (`font-test.css`), it applies to modals too, it skips the lab bar, and it is removed when the lab closes. It is remembered between visits. Files: `font-test.ts`, `useFontTest.ts`, `FontSwitcher.tsx`, `lab-font-list.ts`, `lab-fonts.css` and `fonts/*.woff2` (Google Fonts, latin subset, SIL Open Font License or Apache 2.0).
 
 ## Plans
 
 - [Style lab plan](./PLAN_style_lab.md): how the lab and its seven styles were built.
 - [Theme engine plan](./PLAN_theme_engine.md): the phased rollout of player-selectable and random themes in the game.
-- [Fonts plan](./PLAN_fonts.md): the plan to align and fix the remaining font issues (slots, Serif and Mono roles, lab picker, record, then game integration). Proposed, waiting for decisions.
-- [Audit of the unthemed UI](./AUDIT_unthemed_ui.md): the board, combat log, setup and card elements the theme engine does not cover yet, the missing theme tokens and the lab previews still to build.
+- [Fonts plan](./PLAN_fonts.md): slots, roles, record and guards for the theme fonts, with the readability review.
+- [Game integration plan](./PLAN_game_integration.md): bringing the fonts and sizes into the game (N1 to N9); the player font choice (N7) is open.
+- [Board theming plan](./PLAN_board_theming.md): the board, setup, table, combat log and Daily Bugle follow the theme (N4).
+- [Audit of the unthemed UI](./AUDIT_unthemed_ui.md): what the theme engine did not cover before the board work, with the decisions that were applied.

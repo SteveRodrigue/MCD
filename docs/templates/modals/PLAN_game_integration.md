@@ -1,6 +1,6 @@
 # Plan: bring the validated fonts and sizes into the game (N1 to N9)
 
-Status: **approved. N6, N1, N8, N9, N5, the ModalLayer fix and N3 are done and committed. N2 batches 1 and 2 are done and committed; batches 3 to 6 are committed; batch 7 is done. D9 is decided: Pop-Art keeps Lilita One for small text. N2 is done. N4 is done (all 8 phases of [the board plan](./PLAN_board_theming.md): the board, setup, table, combat log drawer and Daily Bugle follow the theme). Next: N7 (player font choice, later).** Each step is a separate, reviewable change; none is committed unless you ask.
+Status: **approved. N1 to N6, N8 and N9 are done, and N4 (the board, setup, table, combat log drawer and Daily Bugle follow the theme) is done in eight phases ([the board plan](./PLAN_board_theming.md)). Only N7 (player font choice, issue #374) is open, by choice.** Each step was a separate, reviewable change.
 
 Related: [Font plan](./PLAN_fonts.md) (phases 1 to 6 are done), [Font record](./FONT_RECORD.md), [Theme engine plan](./PLAN_theme_engine.md), [Unthemed UI audit](./AUDIT_unthemed_ui.md).
 
@@ -8,15 +8,15 @@ Related: [Font plan](./PLAN_fonts.md) (phases 1 to 6 are done), [Font record](./
 
 ## 1. What this plan covers, and what it does not
 
-| In this plan                                                                                                   | Not in this plan                                                                                                                      |
-| -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Making the game screens read the theme's fonts and text sizes (N1, N2, N3, N5)                                 | Restyling the board, zones and hand tray beyond fonts: the theme engine plan and the audit own that (N4 only fixes the font contract) |
-| Your two additions: only the intro banner keeps its look (N8), and the theme selector on the first screen (N9) | Gameplay rules: this is presentation only, the engine (`src/engine/`) is not touched, so the Rules Reference does not apply           |
-| Keeping the card editor out of the themes (N6)                                                                 | A font choice for players (N7, later)                                                                                                 |
+| In this plan                                                                                                   | Not in this plan                                                                                                                     |
+| -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Making the game screens read the theme's fonts and text sizes (N1, N2, N3, N5)                                 | Restyling the board, zones and hand tray beyond fonts (N4, which has its own plan: [PLAN_board_theming.md](./PLAN_board_theming.md)) |
+| Your two additions: only the intro banner keeps its look (N8), and the theme selector on the first screen (N9) | Gameplay rules: this is presentation only, the engine (`src/engine/`) is not touched, so the Rules Reference does not apply          |
+| Keeping the card editor out of the themes (N6)                                                                 | A font choice for players (N7, later)                                                                                                |
 
 UI impact: every visible change is listed per step. Card Editor impact: none, and that is enforced by a guard (N6).
 
-## 2. What the code looks like today (measured)
+## 2. Starting point (measured before N1)
 
 - The theme is already app-wide: `ThemeProvider` (`src/ui/theme/ThemeProvider.tsx`) gives every component the active style, but only modals, previews and the lab set the font variables (`themeFontVars`). The game root does not.
 - The page base is `font-sans` (the system sans) on the `App.tsx` root. `font-body` has 13 uses. The `:root` default of Body is Inter.
@@ -24,7 +24,7 @@ UI impact: every visible change is listed per step. Card Editor impact: none, an
 - `font-serif` (Daily Bugle): 16 uses in 4 files (`DailyBugleActionNewspaper` 10, `EndTurnConfirmationModal` 3, `GameBoard` 2, `TopBar` 1).
 - `font-bangers`: 26 uses in 13 files (the editor has 17 of them).
 - The combat log had its own font selector (Bangers, Komika, Comic Relief, Comic Neue, Clean) and the Komika font files; removed in N5 (see below).
-- The first-screen theme picker exists (`ScenarioSelector.tsx`, a collapsed "Theme:" panel).
+- The first-screen theme picker existed (`ScenarioSelector.tsx`, a collapsed "Theme:" panel).
 - The card editor (`/editor`) uses `font-sans`, `font-bangers` and `font-mono` (for code and JSON).
 
 ## 3. Order, by dependency
@@ -36,17 +36,17 @@ N6 guard ──> N1 ──┬──> N8 ──┐
                   └──> N3 ──┘
 ```
 
-| Order | Step                                                                | Size (agent work, then your review)  | Depends on | Risk                                                     |
-| ----- | ------------------------------------------------------------------- | ------------------------------------ | ---------- | -------------------------------------------------------- |
-| 1     | **N6** Keep the editor out of the themes                            | S: about 15 min                      | none       | low                                                      |
-| 2     | **N1** Make Body real, set the theme variables at the game root     | S to M: about 45 min                 | N6         | medium: a visible change everywhere text has no font     |
-| 3     | **N8** Pin the intro banner to Bangers                              | S: about 20 min                      | N1         | low                                                      |
-| 4     | **N9** Theme selector visible on the first screen                   | M: about 1 h                         | N1         | low to medium                                            |
-| 5     | **N5** Combat log joins the theme; font selector and Komika removed | S to M: about 1 h                    | N1         | low                                                      |
-| 6     | **N3** Daily Bugle surfaces read the Newspaper pair (font slice)    | M: about 1.5 h                       | N1         | medium                                                   |
-| 7     | **N2** Small `font-comic` text becomes Body, with a guard           | L: about 3 to 4 h, in 6 to 8 batches | N1, N8, N3 | medium: large and mechanical, but no visible change (D9) |
-| 8     | **N4** Board, zones, hand tray and setup join the themes            | XL: days, **its own plan**           | N1, N2, N3 | high                                                     |
-| 9     | **N7** Player font choice (D8)                                      | later                                | N4         | n/a                                                      |
+| Order | Step                                                                       | Size (agent work, then your review)  | Depends on | Risk                                                     |
+| ----- | -------------------------------------------------------------------------- | ------------------------------------ | ---------- | -------------------------------------------------------- |
+| 1     | **N6** Keep the editor out of the themes (done)                            | S: about 15 min                      | none       | low                                                      |
+| 2     | **N1** Make Body real, set the theme variables at the game root (done)     | S to M: about 45 min                 | N6         | medium: a visible change everywhere text has no font     |
+| 3     | **N8** Pin the intro banner to Bangers (done)                              | S: about 20 min                      | N1         | low                                                      |
+| 4     | **N9** Theme selector visible on the first screen (done)                   | M: about 1 h                         | N1         | low to medium                                            |
+| 5     | **N5** Combat log joins the theme; font selector and Komika removed (done) | S to M: about 1 h                    | N1         | low                                                      |
+| 6     | **N3** Daily Bugle surfaces read the Newspaper pair (font slice) (done)    | M: about 1.5 h                       | N1         | medium                                                   |
+| 7     | **N2** Small `font-comic` text becomes Body, with a guard (done)           | L: about 3 to 4 h, in 6 to 8 batches | N1, N8, N3 | medium: large and mechanical, but no visible change (D9) |
+| 8     | **N4** Board, zones, hand tray and setup join the themes (done)            | XL: days, **its own plan**           | N1, N2, N3 | high                                                     |
+| 9     | **N7** Player font choice (D8)                                             | later                                | N4         | n/a                                                      |
 
 ## 4. The steps
 
@@ -140,7 +140,7 @@ N6 guard ──> N1 ──┬──> N8 ──┐
 
 ### N7. Player font choice (decision D8)
 
-- Later, after N4. Not planned here.
+- Open, by choice: tracked as issue #374. It needs its own short plan (which roles can be overridden, how it interacts with Random per game, where it is stored).
 
 ## 5. Quality gates for every step
 

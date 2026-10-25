@@ -2,7 +2,7 @@
 
 Date: 2026-10-23. Scope: everything under `src/ui/` (83 `.tsx` files), the global style layer
 (`src/ui/styles/index.css`, `tailwind.config.js`) and the theme model itself.
-Status: **audit only. Nothing here has been changed.** Decisions are in section 8; the plan comes after you decide.
+Status: **audit of the state on 2026-10-23, before the board work.** The decisions of section 10 were accepted and applied by [PLAN_board_theming.md](./PLAN_board_theming.md) and [PLAN_game_integration.md](./PLAN_game_integration.md), except D8 (rename `ModalStyle` to `ThemeStyle`, issue #375). The measurements below describe the code as it was then.
 
 ## 1. Method
 

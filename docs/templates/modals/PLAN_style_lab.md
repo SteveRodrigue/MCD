@@ -1,6 +1,6 @@
 # Plan: Modal Style Lab (`localhost:3000/templates/`)
 
-Status: **built (lab only), uncommitted.** Six styles were planned; a seventh (Hero HUD) and built-in comic flavour (sound-effect bursts, narrator captions, speech bubbles, finisher tags) were added on request. Reference docs: [README](./README.md), [styles.md](./styles.md).
+Status: **built and committed; the lab is now the dev-only design reference for the themes the game uses.** Six styles were planned; a seventh (Hero HUD) and built-in comic flavour (sound-effect bursts, narrator captions, speech bubbles, finisher tags) were added on request. Reference docs: [README](./README.md), [styles.md](./styles.md).
 
 ## 0. Scope boundary (agreed)
 

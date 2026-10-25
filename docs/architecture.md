@@ -270,7 +270,7 @@ sequenceDiagram
     CP->>D: step3_openDefenderDeclarationPrompt<br/>(choose defender or take undefended)
     CP->>CP: step4_and_5_dealAndResolveBoostCards<br/>(reveal boost, resolve BOOST)
     CP->>TD: DAMAGE_WOULD_BE_TAKEN window<br/>(Backflip-style prevention)
-    CP->>CP: step6_calculateAndApplyAttackDamage<br/>(ATK vs DEF, Piercing/Overkill math)
+    CP->>CP: step6_calculateAndApplyAttackDamage<br/>(ATK vs DEF, then the damage pipeline: Tough, Piercing, shields, Overkill)
     CP->>TD: DAMAGE_TAKEN / CHARACTER_DEFEATED (if applicable)
     CP->>CP: step7_resolvePostAttackAndRetaliate<br/>(Retaliate damage back to attacker)
 ```

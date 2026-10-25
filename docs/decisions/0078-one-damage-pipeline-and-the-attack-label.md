@@ -37,7 +37,7 @@ Damage was applied by two parallel mechanisms. `applyDamageToTarget` (`damage-pi
    - **Hero defeat:** a player reduced to 0 is eliminated in the pipeline, once (`eliminatePlayer`, ADR-0079; the group loses when no player is left).
    - **DAMAGE_TAKEN window:** the pipeline opens it for a player target when the request asks (`dispatchDamageTaken`), after Tough and shields, so an interrupt can lower the damage. Only ability damage to heroes (identity selectors, `ALL_HEROES`) asks, as before; the pipeline had no equivalent dispatch, so there is exactly one.
 3. **One defeat dispatch, `dispatchDefeat`**, replaces the three copies. It dispatches `DEFEATED` then `CHARACTER_DEFEATED` (or `SCHEME_DEFEATED`) and adds `defeatSource: { kind: 'HERO' | 'ALLY' | 'ENEMY' | 'EFFECT', playerId?, instanceId?, byAttack }` to the context. The pipeline derives it from the request: `sourceType` `HERO` gives `HERO`, `ALLY` gives `ALLY`, `VILLAIN` and `MINION` give `ENEMY`, `CARD_EFFECT`, `RETALIATE` and `OVERKILL` give `EFFECT`; `byAttack` is `isAttack`. Since #359 it lives in `triggers/defeat-dispatch.ts`, side scheme defeats use it too, and every caller announces after the defeat's state change (ADR-0020 addendum).
-4. **Out of scope:** enemy attack damage to heroes and allies (`applyCalculatedAttackDamage` in `combat-pipeline.ts`, with its own Overkill spillover) stays as is and is issue #269. It only switches to `dispatchDefeat`, with `defeatSource` `{ kind: 'ENEMY', byAttack: true }`.
+4. **Out of scope (superseded by the #269 / #360 addendum below):** enemy attack damage to heroes and allies (`applyCalculatedAttackDamage` in `combat-pipeline.ts`, with its own Overkill spillover) stayed outside the pipeline and only switched to `dispatchDefeat`.
 
 ## Decision (part 2): the "(attack)" label
 
@@ -66,6 +66,16 @@ Damage was applied by two parallel mechanisms. `applyDamageToTarget` (`damage-pi
 - Damage shields and "would be taken" interrupts now apply uniformly to every `DEAL_DAMAGE` target.
 - Chase Them Down is offered after your hero defeats an enemy by a basic attack or a labelled attack, and not after an ally, an unlabelled effect, or another player's hero. Tigra no longer heals when someone else defeats a minion.
 - With the label, Uppercut and the other labelled attacks provoke Retaliate again, and "after your hero attacks" Responses also follow attack events, not only basic attacks.
+
+## Addendum (#269, #360): enemy attack damage on the pipeline
+
+`applyCalculatedAttackDamage` no longer writes damage. It builds one request for the defending ally or the identity (`sourceType` `VILLAIN` / `MINION`, `isAttack`, `hasPiercing`, `hasOverkill`, `skipRetaliate`: Retaliate stays in `step7_resolvePostAttackAndRetaliate`) and calls `applyDamageToTarget`. Tough, Piercing, damage shields (now also on a defending ally), defeat, elimination and the Victory-display rule are the pipeline's.
+
+- **Overkill has two destinations in the pipeline:** a defeated minion sends the excess to the active villain, a defeated ally sends it to the identity of its controller, both through a nested request (`sourceType: 'OVERKILL'`, no Retaliate), so the target's Tough and shields apply (RR v1.8 glossary O: prevented excess is not dealt). One log key, `overkill.hit`.
+- **One announcement order:** `applyDamageToTarget` is a wrapper over `resolveDamage`, which returns the occurrence's `defeats` (the target's first, the Overkill target's after). The wrapper announces them once every state change is done, then runs Retaliate.
+- **Defeat source:** `DamageRequest.sourceInstanceId` names an attacker that is not a card instance (a villain), so an enemy attack's defeats carry `{ kind: 'ENEMY', instanceId, byAttack: true }`. A character defeated by the Overkill excess carries `kind: 'EFFECT'` as every `OVERKILL` request does (part 1, item 3).
+- **Log:** the pipeline writes `damage.applied.*`, `damage.prevented.tough`, `damage.tough.pierced` and `ally.defeated`. An enemy attack keeps its own hit entry for an identity (`villain.attack.hit`, `minion.attack.hit`, with the attack figures) through `DamageRequest.logPlayerHit`. Removed keys: `ally.attack.hit`, `ally.tough.absorbed`, `hero.tough.absorbed`, `ally.piercing.tough.discarded`, `hero.piercing.tough.discarded`, `overkill.villain.hit`.
+- **Not covered:** the "would be taken" interrupt window for the Overkill excess on the identity (#389).
 
 ## Addendum (#223): enemy attacks by card code, and X attacks
 

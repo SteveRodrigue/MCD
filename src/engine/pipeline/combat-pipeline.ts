@@ -20,10 +20,8 @@ import {
 import { popDecisionPrompt } from './prompt-queue';
 import { dealBoostCards, resolveBoostCards, type BoostLogContext } from './boost-resolution';
 import { nextEngineId } from '../state/rng';
-import { TriggerDispatchResult, type DefeatSource } from '../triggers/trigger-dispatcher';
-import { dispatchDefeat, type DefeatDispatch } from '../triggers/defeat-dispatch';
-import { eliminatePlayer } from './player-elimination';
-import { processHostDefeated, resetCardState } from '../effects';
+import { TriggerDispatchResult } from '../triggers/trigger-dispatcher';
+import { applyDamageToTarget, type TargetEntityRef } from './damage-pipeline';
 import { recordBasicAction } from './stats';
 import {
   getEffectiveHeroStats,
@@ -36,9 +34,6 @@ import { appendLog } from '../state/game-log';
 
 export type DefensePolicy =
   'TAKE_UNDEFENDED' | 'HERO_IF_READY' | 'ALLY_CHUMP_BLOCK' | 'AUTO_OPTIMAL';
-
-/** An enemy attack defeated the character. The enemy side of damage is issue #269. */
-const ENEMY_ATTACK_DEFEAT: DefeatSource = { kind: 'ENEMY', byAttack: true };
 
 export interface CombatOptions {
   synchronousPolicy?: DefensePolicy;
@@ -803,180 +798,80 @@ export function applyCalculatedAttackDamage(
   attackContext: AttackExecutionContext,
   rawDamage: number,
 ): void {
-  const defeats: DefeatDispatch[] = [];
-  if (attackContext.defender?.type === 'ALLY' && attackContext.defender.allyInstanceId) {
+  const enemy =
+    attackContext.attackerType === 'VILLAIN' ? attackingVillain(state, attackContext) : undefined;
+  const attackerName = enemy ? enemy.card.name : attackContext.attackerCard?.card.name || 'Minion';
+  const defendingAlly =
+    attackContext.defender?.type === 'ALLY' && attackContext.defender.allyInstanceId
+      ? player.allies.find((a) => a.instanceId === attackContext.defender!.allyInstanceId)
+      : undefined;
+
+  // One damage procedure for every source (ADR-0078): Tough, Piercing, damage shields, defeat and
+  // Overkill are the pipeline's. Retaliate is step 7 of the attack.
+  const damageTo = (target: TargetEntityRef) =>
+    applyDamageToTarget(state, {
+      target,
+      amount: rawDamage,
+      sourceType: enemy ? 'VILLAIN' : 'MINION',
+      sourceCardInstance: attackContext.attackerCard,
+      sourceInstanceId: enemy?.instanceId,
+      isAttack: true,
+      hasPiercing: attackContext.hasPiercing,
+      hasOverkill: attackContext.hasOverkill,
+      skipRetaliate: true,
+      logPlayerHit: ({ amount, remainingHealth }) =>
+        appendLog(state, {
+          category: 'combat',
+          key: enemy ? 'villain.attack.hit' : 'minion.attack.hit',
+          params: {
+            actor: attackerName,
+            who_attacks: attackerName,
+            target: player.name,
+            who_is_taking_damage: player.name,
+            player: player.name,
+            amount,
+            damage: amount,
+            remainingHp: remainingHealth,
+            defended: attackContext.heroDefended ? 'true' : 'false',
+          },
+          onomatopoeia: 'WHAM!',
+        }),
+    }).result;
+
+  if (attackContext.defender?.type === 'ALLY') {
     // Ally Takes Attack Damage
-    const allyIdx = player.allies.findIndex(
-      (a) => a.instanceId === attackContext.defender!.allyInstanceId,
-    );
-    if (allyIdx !== -1) {
-      const ally = player.allies[allyIdx];
+    if (defendingAlly) {
       attackContext.damagedCharacter = {
         type: 'ALLY',
         playerId: player.id,
-        allyInstanceId: ally.instanceId,
+        allyInstanceId: defendingAlly.instanceId,
       };
-      const allyCard = ally.card as AllyCard;
-      const allyMaxHp = allyCard.health || 2;
-      const currentDamage = ally.tokens?.damage || 0;
-      const remainingHp = Math.max(0, allyMaxHp - currentDamage);
-
-      const toughIdx = (ally.statusCards || []).indexOf(StatusCard.TOUGH);
-      if (toughIdx !== -1 && rawDamage > 0) {
-        if (attackContext.hasPiercing) {
-          ally.statusCards!.splice(toughIdx, 1);
-          appendLog(state, {
-            category: 'combat',
-            key: 'ally.piercing.tough.discarded',
-            params: { target: ally.card.name },
-            onomatopoeia: 'PIERCING SHRED! (ALLY TOUGH LOST)',
-          });
-        } else {
-          ally.statusCards!.splice(toughIdx, 1);
-          appendLog(state, {
-            category: 'combat',
-            key: 'ally.tough.absorbed',
-            params: { target: ally.card.name },
-            onomatopoeia: 'CLANG! (ALLY TOUGH)',
-          });
-          rawDamage = 0;
-        }
-      }
-
-      if (rawDamage > 0) {
-        const damageToAlly = Math.min(rawDamage, remainingHp);
-        const excessDamage = rawDamage - damageToAlly;
-
-        if (!ally.tokens) ally.tokens = {};
-        ally.tokens.damage = currentDamage + damageToAlly;
-
-        appendLog(state, {
-          category: 'combat',
-          key: 'ally.attack.hit',
-          params: { target: ally.card.name, amount: damageToAlly },
-          onomatopoeia: 'OOF! (ALLY HIT)',
-        });
-
-        // If ally defeated
-        if (ally.tokens.damage >= allyMaxHp) {
-          player.allies.splice(allyIdx, 1);
-          processHostDefeated(state, ally, { player });
-          const owner =
-            (ally.ownerId ? state.players.find((p) => p.id === ally.ownerId) : undefined) || player;
-          resetCardState(ally);
-          owner.discard.push(ally);
-
-          appendLog(state, {
-            category: 'combat',
-            key: 'ally.defeated',
-            params: { target: ally.card.name },
-            onomatopoeia: 'DEFEATED!',
-          });
-
-          defeats.push({
-            targetPlayerId: player.id,
-            targetInstanceId: ally.instanceId,
-            targetType: 'ALLY',
-            defeatSource: ENEMY_ATTACK_DEFEAT,
-          });
-
-          // Overkill Check
-          if (attackContext.hasOverkill && excessDamage > 0) {
-            player.health = Math.max(0, player.health - excessDamage);
-            appendLog(state, {
-              category: 'combat',
-              key: 'overkill.hit',
-              params: { amount: excessDamage, target: player.name },
-              onomatopoeia: 'OVERKILL SPILLOVER!',
-            });
-            if (player.health <= 0) {
-              eliminatePlayer(state, player.id);
-              defeats.push({
-                targetPlayerId: player.id,
-                targetInstanceId: player.id,
-                targetType: 'HERO',
-                defeatSource: ENEMY_ATTACK_DEFEAT,
-              });
-            }
-          }
-        }
-      }
+      rawDamage = damageTo({
+        type: 'ally',
+        entity: defendingAlly,
+        instanceId: defendingAlly.instanceId,
+        name: defendingAlly.card.name,
+        targetPlayerId: player.id,
+        attachments: defendingAlly.attachments,
+        statusCards: defendingAlly.statusCards,
+      }).damageTaken;
     }
   } else {
     // Hero or Undefended Identity Takes Attack Damage
     attackContext.damagedCharacter = { type: 'HERO', playerId: player.id };
-    const toughIndex = player.statusCards.indexOf(StatusCard.TOUGH);
-    if (toughIndex !== -1 && rawDamage > 0) {
-      if (attackContext.hasPiercing) {
-        player.statusCards.splice(toughIndex, 1);
-        appendLog(state, {
-          category: 'combat',
-          key: 'hero.piercing.tough.discarded',
-          params: { target: player.name },
-          onomatopoeia: 'PIERCING SHRED! (TOUGH LOST)',
-        });
-      } else {
-        player.statusCards.splice(toughIndex, 1);
-        appendLog(state, {
-          category: 'combat',
-          key: 'hero.tough.absorbed',
-          params: { target: player.name },
-          onomatopoeia: 'CLANG! (TOUGH)',
-        });
-        rawDamage = 0;
-      }
-    }
-
-    if (rawDamage > 0) {
-      player.health = Math.max(0, player.health - rawDamage);
-      appendLog(state, {
-        category: 'combat',
-        key: attackContext.attackerType === 'VILLAIN' ? 'villain.attack.hit' : 'minion.attack.hit',
-        params: {
-          actor:
-            attackContext.attackerType === 'VILLAIN'
-              ? attackingVillain(state, attackContext).card.name
-              : attackContext.attackerCard?.card.name || 'Minion',
-          who_attacks:
-            attackContext.attackerType === 'VILLAIN'
-              ? attackingVillain(state, attackContext).card.name
-              : attackContext.attackerCard?.card.name || 'Minion',
-          target: player.name,
-          who_is_taking_damage: player.name,
-          player: player.name,
-          amount: rawDamage,
-          damage: rawDamage,
-          remainingHp: player.health,
-          defended: attackContext.heroDefended ? 'true' : 'false',
-        },
-        onomatopoeia: 'WHAM!',
-      });
-
-      if (player.health <= 0) {
-        eliminatePlayer(state, player.id);
-        defeats.push({
-          targetPlayerId: player.id,
-          targetInstanceId: player.id,
-          targetType: 'HERO',
-          defeatSource: ENEMY_ATTACK_DEFEAT,
-        });
-      }
-    }
+    rawDamage = damageTo({
+      type: 'player',
+      entity: player,
+      name: player.name,
+      targetPlayerId: player.id,
+      attachments: player.attachments,
+      statusCards: player.statusCards,
+    }).damageTaken;
   }
-
-  // One attack, one window (RR v1.8 Triggering Condition): announce once every state change is done.
-  for (const defeat of defeats) dispatchDefeat(state, defeat);
 
   attackContext.finalDamage = rawDamage;
 
-  const attackerName =
-    attackContext.attackerType === 'VILLAIN'
-      ? attackingVillain(state, attackContext).card.name
-      : attackContext.attackerCard?.card.name || 'Minion';
-  const attackerCode =
-    attackContext.attackerType === 'VILLAIN'
-      ? attackingVillain(state, attackContext).card.code
-      : attackContext.attackerCard?.card.code;
+  const attackerCode = enemy ? enemy.card.code : attackContext.attackerCard?.card.code;
 
   state.lastCombatOutcome = {
     id: attackContext.attackId,

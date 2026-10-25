@@ -382,7 +382,7 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
         false,
       );
       expect(getActiveVillain(after).health).toBe(initialVillainHp);
-      expect(logKeys(after)).not.toContain('overkill.villain.hit');
+      expect(logKeys(after)).not.toContain('overkill.hit');
     });
 
     it('A3: the keyword granted on the prompt path ends with the attack', () => {
@@ -416,7 +416,7 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
         false,
       );
       expect(getActiveVillain(after).health).toBe(initialVillainHp);
-      expect(logKeys(after)).not.toContain('overkill.villain.hit');
+      expect(logKeys(after)).not.toContain('overkill.hit');
     });
   });
 
@@ -428,7 +428,7 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
       expect(minion!.statusCards ?? []).not.toContain(StatusCard.TOUGH);
       expect(getActiveVillain(after).health).toBe(initialVillainHp);
       expect(logKeys(after)).toContain('damage.prevented.tough');
-      expect(logKeys(after)).not.toContain('overkill.villain.hit');
+      expect(logKeys(after)).not.toContain('overkill.hit');
     }
 
     it('B1: Tough absorbs the whole attack: no damage, no defeat, no Overkill', () => {
@@ -485,7 +485,7 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
       expect(getActiveVillain(res.state).statusCards).not.toContain(StatusCard.TOUGH);
       expect(getActiveVillain(res.state).health).toBe(initialVillainHp);
       expect(logKeys(res.state)).toContain('damage.prevented.tough');
-      expect(logKeys(res.state)).not.toContain('overkill.villain.hit');
+      expect(logKeys(res.state)).not.toContain('overkill.hit');
     });
 
     it('C1b: the same on the target prompt path', () => {

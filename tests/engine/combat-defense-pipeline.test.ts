@@ -9,12 +9,12 @@ import {
 import {
   initiateEnemyAttack,
   resolveDefenderDeclaration,
-  finishAttackDamageAndPostResolution,
 } from '../../src/engine/pipeline/combat-pipeline';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { createCardInstance } from '../../src/engine/state/card-instance';
+import { recordDispatchedTriggers } from '../helpers/kernel-spy';
 
 function createMockCardInstance(
   code: string,
@@ -142,41 +142,49 @@ function createInitialTestState(): GameState {
 }
 
 describe('Combat & Defense Pipeline (RR v1.8)', () => {
+  const dispatched = recordDispatchedTriggers();
   let state: GameState;
 
   beforeEach(() => {
     state = createInitialTestState();
   });
 
-  it('Test 1: Defense card (Backflip) played on undefended attack marks hero as defender and triggers ATTACK_DEFENDED', () => {
+  it('Test 1: Defense card (Backflip) played on undefended attack marks hero as defender', () => {
     const p1 = state.players[0];
+    p1.hand = [createCardInstance(cardCatalog.getCard('01003')!)];
 
     // Empty boost deck so 0 boost icons
     state.encounterDeck = [];
 
-    // Initiate attack against Player 1
+    // Initiate attack against Player 1 and declare it undefended: Backflip is offered for the 3 damage
     initiateEnemyAttack(state, { type: 'VILLAIN' }, p1.id);
-    const ctx = state.activeAttackContext!;
-    expect(ctx).toBeDefined();
+    expect(state.activeAttackContext).toBeDefined();
+    const undefended = dispatchAction(state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: p1.id,
+      selectedOptionId: 'undefended',
+    });
+    expect(undefended.result.success).toBe(true);
 
-    // Declare undefended
-    resolveDefenderDeclaration(state, { type: 'UNDEFENDED', playerId: p1.id }, ctx);
+    const prompt = peekDecisionPrompt(undefended.state)!;
+    expect(prompt.sourceCardName).toBe('Backflip');
+    expect(prompt.incomingDamage).toBe(3);
+    expect(undefended.state.lastCombatOutcome).toBeUndefined();
+    expect(undefended.state.players[0].health).toBe(10);
 
-    // Initial resolution with 3 damage dealt
-    expect(state.lastCombatOutcome?.finalDamage).toBe(3);
-    expect(p1.health).toBe(7);
+    const yes = prompt.options.find((o) => o.effect === 'EXECUTE_OPTIONAL_TRIGGER')!;
+    const res = dispatchAction(undefended.state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: p1.id,
+      selectedOptionId: yes.id,
+    });
 
-    // Now simulate Backflip prevention via finishAttackDamageAndPostResolution (reversing the 3 damage)
-    p1.health = 10;
-    ctx.pendingDamage = 3;
-    state.activeAttackContext = ctx;
-    finishAttackDamageAndPostResolution(state, ctx, 3);
-
-    // Verify hero is marked as defended
-    expect(ctx.heroDefended).toBe(true);
-    expect(ctx.defender?.type).toBe('HERO');
-    expect(state.lastCombatOutcome?.finalDamage).toBe(0);
-    expect(p1.health).toBe(10); // 0 damage taken
+    expect(res.result.success).toBe(true);
+    expect(res.state.players[0].health).toBe(10); // 0 damage taken
+    // The prevented hit counts as the hero's defense: the ATTACK_DEFENDED window opens for the hero
+    expect(
+      dispatched.some((d) => d.trigger === 'ATTACK_DEFENDED' && d.context.defenderType === 'HERO'),
+    ).toBe(true);
   });
 
   it('Test 2: Defending ally defeated by boost ability causes attack to revert to undefended against hero', () => {

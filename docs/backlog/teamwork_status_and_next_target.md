@@ -68,13 +68,12 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 ### 3.2 Rules gaps that affect core cards
 
-| Issue                                                   | Problem (from the Dev Mode report)                                                                                | Notes                                                                                   |
-| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| [#389](https://github.com/SteveRodrigue/MCD/issues/389) | No "would be taken" interrupt window for the Overkill excess on a defeated ally's controller (follow-up of #360). | P2. Second pausable damage placement (`pendingDamagePlacements`); failing test first.   |
-| [#361](https://github.com/SteveRodrigue/MCD/issues/361) | Defeat window resolves a later player's Forced ability before an earlier player's optional Response.              | P1. Two-pass dispatch (forced first, then optional); multiplayer only.                  |
-| [#362](https://github.com/SteveRodrigue/MCD/issues/362) | Ending the game leaves pending placements, attack and encounter state behind.                                     | One `endGame` helper; decide whether post-victory combat steps run.                     |
-| [#363](https://github.com/SteveRodrigue/MCD/issues/363) | Defeat triggers scan every player; filter-less abilities can fire for the wrong player.                           | Owner analysis first (default scope of a defeat ability).                               |
-| [#369](https://github.com/SteveRodrigue/MCD/issues/369) | Threat removal mixed with a no-target step skips the legality check (review of #331).                             | P2. `checkAbilityTargets` in `src/engine/effects/target-choice.ts`; failing test first. |
+| Issue                                                   | Problem (from the Dev Mode report)                                                                   | Notes                                                                                   |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| [#361](https://github.com/SteveRodrigue/MCD/issues/361) | Defeat window resolves a later player's Forced ability before an earlier player's optional Response. | P1. Two-pass dispatch (forced first, then optional); multiplayer only.                  |
+| [#362](https://github.com/SteveRodrigue/MCD/issues/362) | Ending the game leaves pending placements, attack and encounter state behind.                        | One `endGame` helper; decide whether post-victory combat steps run.                     |
+| [#363](https://github.com/SteveRodrigue/MCD/issues/363) | Defeat triggers scan every player; filter-less abilities can fire for the wrong player.              | Owner analysis first (default scope of a defeat ability).                               |
+| [#369](https://github.com/SteveRodrigue/MCD/issues/369) | Threat removal mixed with a no-target step skips the legality check (review of #331).                | P2. `checkAbilityTargets` in `src/engine/effects/target-choice.ts`; failing test first. |
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 

@@ -269,8 +269,8 @@ sequenceDiagram
     CP->>TD: step2_dispatchInitiationTriggers<br/>(ENEMY_INITIATES_ATTACK — Spider-Sense window)
     CP->>D: step3_openDefenderDeclarationPrompt<br/>(choose defender or take undefended)
     CP->>CP: step4_and_5_dealAndResolveBoostCards<br/>(reveal boost, resolve BOOST)
-    CP->>TD: DAMAGE_WOULD_BE_TAKEN window<br/>(Backflip-style prevention)
     CP->>CP: step6_calculateAndApplyAttackDamage<br/>(ATK vs DEF, then the damage pipeline: Tough, Piercing, shields, Overkill)
+    CP->>TD: DAMAGE_WOULD_BE_TAKEN window<br/>(pipeline step 3, after Tough: Backflip-style prevention; the Overkill excess has its own)
     CP->>TD: DAMAGE_TAKEN / CHARACTER_DEFEATED (if applicable)
     CP->>CP: step7_resolvePostAttackAndRetaliate<br/>(Retaliate damage back to attacker)
 ```
@@ -281,8 +281,7 @@ sequenceDiagram
 | 2    | `step2_dispatchInitiationTriggers`     | `ENEMY_INITIATES_ATTACK`                                                                                                                                                                       |
 | 3    | `step3_openDefenderDeclarationPrompt`  | _(defender is declared; no trigger fires yet)_                                                                                                                                                 |
 | 4–5  | `step4_and_5_dealAndResolveBoostCards` | `BOOST`                                                                                                                                                                                        |
-| —    | _(intercept window between 5 and 6)_   | `DAMAGE_WOULD_BE_TAKEN`                                                                                                                                                                        |
-| 6    | `step6_calculateAndApplyAttackDamage`  | `DAMAGE_TAKEN`, `CHARACTER_DEFEATED`, `DEFEATED`                                                                                                                                               |
+| 6    | `step6_calculateAndApplyAttackDamage`  | `DAMAGE_WOULD_BE_TAKEN` (inside the damage pipeline, after Tough), `DAMAGE_TAKEN`, `CHARACTER_DEFEATED`, `DEFEATED`                                                                            |
 | 7    | `step7_resolvePostAttackAndRetaliate`  | `ATTACK_DEFENDED` (hero or ally defended; e.g. Counter-Punch, Indomitable), `ATTACK_RESOLVED`, `HOST_ATTACK_ENDED` (attachments on the attacker, after Retaliate; e.g. Charge discards itself) |
 
 ---

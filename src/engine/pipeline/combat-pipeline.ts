@@ -20,8 +20,13 @@ import {
 import { popDecisionPrompt } from './prompt-queue';
 import { dealBoostCards, resolveBoostCards, type BoostLogContext } from './boost-resolution';
 import { nextEngineId } from '../state/rng';
-import { TriggerDispatchResult } from '../triggers/trigger-dispatcher';
-import { applyDamageToTarget, type TargetEntityRef } from './damage-pipeline';
+import { TriggerDispatchResult, type TriggerContext } from '../triggers/trigger-dispatcher';
+import {
+  applyDamageToTarget,
+  resumeDamage,
+  type DamageRequest,
+  type TargetEntityRef,
+} from './damage-pipeline';
 import { recordBasicAction } from './stats';
 import {
   getEffectiveHeroStats,
@@ -571,14 +576,7 @@ export function resolveDefenderDeclaration(
   // Step 7: Post-Attack Reactions, Retaliate & Cleanup
   state = step7_resolvePostAttackAndRetaliate(state, attackContext);
 
-  if (state.lastCombatOutcome && state.villainPhaseStepEvent) {
-    const rawDamage = state.lastCombatOutcome.finalDamage;
-    const attackerName = state.lastCombatOutcome.attackerName;
-    state.villainPhaseStepEvent.amount = rawDamage;
-    state.villainPhaseStepEvent.description = `${attackerName} attacked ${player.name} (${attackContext.defender?.type === 'HERO' ? 'Hero Defended' : attackContext.defender?.type === 'ALLY' ? 'Ally Defended' : 'Undefended'}) for ${rawDamage} damage.`;
-    state.villainPhaseStepEvent.onomatopoeia = rawDamage > 0 ? 'BANG!' : 'BLOCKED!';
-    state.villainPhaseStepEvent.combatOutcome = state.lastCombatOutcome;
-  }
+  recordOutcomeOnStepEvent(state, player, attackContext);
 
   state.activeAttackContext = undefined;
 
@@ -706,91 +704,94 @@ export function step6_calculateAndApplyAttackDamage(
     attackContext.defenseValue = 0;
   }
 
-  const attackerCardCode =
-    attackContext.attackerCard?.card?.code || attackingVillain(state, attackContext)?.card?.code;
-  const attackerName =
-    attackContext.attackerCard?.card?.name ||
-    attackingVillain(state, attackContext)?.card?.name ||
-    'Enemy';
-  const defenderType =
-    attackContext.defender?.type || (attackContext.heroDefended ? 'HERO' : 'UNDEFENDED');
-  const defenderCardCode =
-    defenderAlly?.card?.code ||
-    (attackContext.heroDefended ? player.activeFormCard?.code : undefined);
-  const defenderName =
-    defenderAlly?.card?.name ||
-    (attackContext.heroDefended ? player.activeFormCard?.name || player.name : undefined);
-  const targetCardCode = player.activeFormCard?.code || player.hero?.code;
-  const targetName = player.activeFormCard?.name || player.hero?.name || player.name;
-  const targetCurrentHp = player.health;
-  const targetMaxHp = player.maxHealth;
-
-  if (attackContext.defender?.type !== 'ALLY' && rawDamage > 0) {
-    const promptsBefore = new Set(
-      (state.pendingDecisionQueue ?? []).map((prompt) => prompt.promptId),
-    );
-    const defenseResult = kernel.dispatchTrigger(state, 'DAMAGE_WOULD_BE_TAKEN', {
-      targetPlayerId: player.id,
-      damageAmount: rawDamage,
-      damageSource: 'ATTACK',
-      attackerCardCode,
-      attackerName,
-      defenderType,
-      defenderCardCode,
-      defenderName,
-      targetCardCode,
-      targetName,
-      targetCurrentHp,
-      targetMaxHp,
-      acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
-    });
-    const modifiedDamage = defenseResult.damageAmount ?? rawDamage;
-    if (modifiedDamage < rawDamage) {
-      attackContext.heroDefended = true;
-      if (attackContext.defender?.type !== 'HERO') {
-        attackContext.defender = { type: 'HERO', playerId: player.id };
-      }
-    }
-    rawDamage = modifiedDamage;
-    if (defenseResult.hasPendingPrompt) {
-      const newPrompts = (state.pendingDecisionQueue ?? []).filter(
-        (prompt) => !promptsBefore.has(prompt.promptId),
-      );
-      if (newPrompts.length > 0) {
-        const id = nextEngineId(state, 'damage_placement');
-        for (const prompt of newPrompts) {
-          for (const option of prompt.options) {
-            if (option.effect === 'EXECUTE_OPTIONAL_TRIGGER' && option.params) {
-              option.params = {
-                ...option.params,
-                context: { ...(option.params.context as object), damagePlacementId: id },
-              };
-            }
-          }
-        }
-        state.pendingDamagePlacements = [
-          ...(state.pendingDamagePlacements ?? []),
-          {
-            id,
-            targetPlayerId: player.id,
-            targetType: 'HERO',
-            sourceType: 'ATTACK',
-            amount: rawDamage,
-            initialAmount: rawDamage,
-            attackId: attackContext.attackId,
-          },
-        ];
-      }
-      attackContext.pendingDamage = rawDamage;
-      return;
-    }
-  }
-
   applyCalculatedAttackDamage(state, player, attackContext, rawDamage);
 }
 
 /**
- * Applies calculated attack damage to hero or ally (Step 6 continuation).
+ * What the offered cards show for the damage of this attack (RR v1.8 Damage, step 3): the
+ * attacker, the defender and the target, read before any damage is placed.
+ */
+function wouldTakeContext(
+  state: GameState,
+  player: PlayerState,
+  attackContext: AttackExecutionContext,
+): Partial<TriggerContext> {
+  const defenderAlly =
+    attackContext.defender?.type === 'ALLY'
+      ? player.allies.find((a) => a.instanceId === attackContext.defender?.allyInstanceId)
+      : undefined;
+  return {
+    attackerCardCode:
+      attackContext.attackerCard?.card?.code || attackingVillain(state, attackContext)?.card?.code,
+    attackerName:
+      attackContext.attackerCard?.card?.name ||
+      attackingVillain(state, attackContext)?.card?.name ||
+      'Enemy',
+    defenderType:
+      attackContext.defender?.type || (attackContext.heroDefended ? 'HERO' : 'UNDEFENDED'),
+    defenderCardCode:
+      defenderAlly?.card?.code ||
+      (attackContext.heroDefended ? player.activeFormCard?.code : undefined),
+    defenderName:
+      defenderAlly?.card?.name ||
+      (attackContext.heroDefended ? player.activeFormCard?.name || player.name : undefined),
+    targetCardCode: player.activeFormCard?.code || player.hero?.code,
+    targetName: player.activeFormCard?.name || player.hero?.name || player.name,
+    targetCurrentHp: player.health,
+    targetMaxHp: player.maxHealth,
+    acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
+  };
+}
+
+/**
+ * The parts of the damage request of an attack that are code, not data. They are rebuilt when the
+ * "would take" prompts are answered and the paused damage resumes (`resumeDamage`).
+ */
+function attackDamageHooks(
+  state: GameState,
+  player: PlayerState,
+  attackContext: AttackExecutionContext,
+): Required<Pick<DamageRequest, 'logPlayerHit' | 'wouldTakeWindow'>> {
+  const enemy =
+    attackContext.attackerType === 'VILLAIN' ? attackingVillain(state, attackContext) : undefined;
+  const attackerName = enemy ? enemy.card.name : attackContext.attackerCard?.card.name || 'Minion';
+  return {
+    logPlayerHit: ({ amount, remainingHealth }) =>
+      appendLog(state, {
+        category: 'combat',
+        key: enemy ? 'villain.attack.hit' : 'minion.attack.hit',
+        params: {
+          actor: attackerName,
+          who_attacks: attackerName,
+          target: player.name,
+          who_is_taking_damage: player.name,
+          player: player.name,
+          amount,
+          damage: amount,
+          remainingHp: remainingHealth,
+          defended: attackContext.heroDefended ? 'true' : 'false',
+        },
+        onomatopoeia: 'WHAM!',
+      }),
+    wouldTakeWindow: {
+      attackId: attackContext.attackId,
+      context: wouldTakeContext(state, player, attackContext),
+      // A prevented hit counts as the hero's defense, unless an ally defended the attack.
+      onPrevented: () => {
+        if (attackContext.defender?.type === 'ALLY') return;
+        attackContext.heroDefended = true;
+        if (attackContext.defender?.type !== 'HERO') {
+          attackContext.defender = { type: 'HERO', playerId: player.id };
+        }
+      },
+    },
+  };
+}
+
+/**
+ * Applies calculated attack damage to hero or ally (Step 6 continuation). When the damage stops at
+ * the "would take" window the attack waits (`pendingDamage`) and
+ * `finishAttackDamageAndPostResolution` completes it once the prompts are answered.
  */
 export function applyCalculatedAttackDamage(
   state: GameState,
@@ -800,14 +801,13 @@ export function applyCalculatedAttackDamage(
 ): void {
   const enemy =
     attackContext.attackerType === 'VILLAIN' ? attackingVillain(state, attackContext) : undefined;
-  const attackerName = enemy ? enemy.card.name : attackContext.attackerCard?.card.name || 'Minion';
   const defendingAlly =
     attackContext.defender?.type === 'ALLY' && attackContext.defender.allyInstanceId
       ? player.allies.find((a) => a.instanceId === attackContext.defender!.allyInstanceId)
       : undefined;
 
-  // One damage procedure for every source (ADR-0078): Tough, Piercing, damage shields, defeat and
-  // Overkill are the pipeline's. Retaliate is step 7 of the attack.
+  // One damage procedure for every source (ADR-0078): Tough, Piercing, damage shields, the
+  // "would take" window, defeat and Overkill are the pipeline's. Retaliate is step 7 of the attack.
   const damageTo = (target: TargetEntityRef) =>
     applyDamageToTarget(state, {
       target,
@@ -819,25 +819,10 @@ export function applyCalculatedAttackDamage(
       hasPiercing: attackContext.hasPiercing,
       hasOverkill: attackContext.hasOverkill,
       skipRetaliate: true,
-      logPlayerHit: ({ amount, remainingHealth }) =>
-        appendLog(state, {
-          category: 'combat',
-          key: enemy ? 'villain.attack.hit' : 'minion.attack.hit',
-          params: {
-            actor: attackerName,
-            who_attacks: attackerName,
-            target: player.name,
-            who_is_taking_damage: player.name,
-            player: player.name,
-            amount,
-            damage: amount,
-            remainingHp: remainingHealth,
-            defended: attackContext.heroDefended ? 'true' : 'false',
-          },
-          onomatopoeia: 'WHAM!',
-        }),
-    }).result;
+      ...attackDamageHooks(state, player, attackContext),
+    });
 
+  let damage: ReturnType<typeof damageTo> | undefined;
   if (attackContext.defender?.type === 'ALLY') {
     // Ally Takes Attack Damage
     if (defendingAlly) {
@@ -846,7 +831,7 @@ export function applyCalculatedAttackDamage(
         playerId: player.id,
         allyInstanceId: defendingAlly.instanceId,
       };
-      rawDamage = damageTo({
+      damage = damageTo({
         type: 'ally',
         entity: defendingAlly,
         instanceId: defendingAlly.instanceId,
@@ -854,22 +839,43 @@ export function applyCalculatedAttackDamage(
         targetPlayerId: player.id,
         attachments: defendingAlly.attachments,
         statusCards: defendingAlly.statusCards,
-      }).damageTaken;
+      });
     }
   } else {
     // Hero or Undefended Identity Takes Attack Damage
     attackContext.damagedCharacter = { type: 'HERO', playerId: player.id };
-    rawDamage = damageTo({
+    damage = damageTo({
       type: 'player',
       entity: player,
       name: player.name,
       targetPlayerId: player.id,
       attachments: player.attachments,
       statusCards: player.statusCards,
-    }).damageTaken;
+    });
   }
 
-  attackContext.finalDamage = rawDamage;
+  if (damage?.paused) {
+    attackContext.pendingDamage = state.pendingDamagePlacements?.at(-1)?.amount ?? 0;
+    return;
+  }
+  completeAttackDamage(state, player, attackContext, damage?.result.damageTaken ?? rawDamage);
+}
+
+/**
+ * Records the outcome of the attack's damage and resolves the boost abilities that waited for it.
+ * Runs once per attack: straight after the damage, or once the "would take" prompts are answered.
+ * `damageTaken` is what the defending character took (the ally, not the Overkill excess).
+ */
+function completeAttackDamage(
+  state: GameState,
+  player: PlayerState,
+  attackContext: AttackExecutionContext,
+  damageTaken: number,
+): void {
+  const enemy =
+    attackContext.attackerType === 'VILLAIN' ? attackingVillain(state, attackContext) : undefined;
+  const attackerName = enemy ? enemy.card.name : attackContext.attackerCard?.card.name || 'Minion';
+  attackContext.finalDamage = damageTaken;
 
   const attackerCode = enemy ? enemy.card.code : attackContext.attackerCard?.card.code;
 
@@ -900,7 +906,7 @@ export function applyCalculatedAttackDamage(
     boostCards: attackContext.revealedBoostCards ? [...attackContext.revealedBoostCards] : [],
     totalBoostIcons: attackContext.totalBoostIcons,
     defenseValue: attackContext.defenseValue || 0,
-    finalDamage: rawDamage,
+    finalDamage: damageTaken,
     damagedCharacter: attackContext.damagedCharacter,
     hasOverkill: attackContext.hasOverkill,
     hasPiercing: attackContext.hasPiercing,
@@ -946,67 +952,60 @@ function resolveDeferredBoostAbilities(
   }
 }
 
+/** Copies the outcome of the attack onto the villain phase step event the players are shown. */
+function recordOutcomeOnStepEvent(
+  state: GameState,
+  player: PlayerState,
+  attackContext: AttackExecutionContext,
+): void {
+  if (!state.lastCombatOutcome || !state.villainPhaseStepEvent) return;
+  const { attackerName, finalDamage } = state.lastCombatOutcome;
+  state.villainPhaseStepEvent.amount = finalDamage;
+  state.villainPhaseStepEvent.description = `${attackerName} attacked ${player.name} (${attackContext.defender?.type === 'HERO' ? 'Hero Defended' : attackContext.defender?.type === 'ALLY' ? 'Ally Defended' : 'Undefended'}) for ${finalDamage} damage.`;
+  state.villainPhaseStepEvent.onomatopoeia = finalDamage > 0 ? 'BANG!' : 'BLOCKED!';
+  state.villainPhaseStepEvent.combatOutcome = state.lastCombatOutcome;
+}
+
 /**
- * Resumes and finishes attack damage application and post-attack resolution after damage prevention prompt.
+ * Resumes the attack once the "would take" prompts of its damage are answered: places the live
+ * amount through the damage pipeline (an Overkill excess included), records the outcome and runs
+ * step 7 (#389).
  */
 export function finishAttackDamageAndPostResolution(
   state: GameState,
   attackContext: AttackExecutionContext,
-  preventedDamageAmount?: number,
+  placement: PendingDamagePlacement,
 ): GameState {
   const player = state.players.find((p) => p.id === attackContext.targetPlayerId);
   if (!player) return state;
-
-  let rawDamage = attackContext.pendingDamage ?? 0;
-  if (preventedDamageAmount !== undefined) {
-    rawDamage = Math.max(0, rawDamage - preventedDamageAmount);
-    if (preventedDamageAmount > 0 && attackContext.defender?.type !== 'ALLY') {
-      attackContext.heroDefended = true;
-      if (attackContext.defender?.type !== 'HERO') {
-        attackContext.defender = { type: 'HERO', playerId: player.id };
-      }
-    }
-  }
   delete attackContext.pendingDamage;
 
-  applyCalculatedAttackDamage(state, player, attackContext, rawDamage);
-  state = step7_resolvePostAttackAndRetaliate(state, attackContext);
-
-  if (state.lastCombatOutcome && state.villainPhaseStepEvent) {
-    const attackerName = state.lastCombatOutcome.attackerName;
-    state.villainPhaseStepEvent.amount = rawDamage;
-    state.villainPhaseStepEvent.description = `${attackerName} attacked ${player.name} (${attackContext.defender?.type === 'HERO' ? 'Hero Defended' : attackContext.defender?.type === 'ALLY' ? 'Ally Defended' : 'Undefended'}) for ${rawDamage} damage.`;
-    state.villainPhaseStepEvent.onomatopoeia = rawDamage > 0 ? 'BANG!' : 'BLOCKED!';
-    state.villainPhaseStepEvent.combatOutcome = state.lastCombatOutcome;
-  }
+  const hooks = attackDamageHooks(state, player, attackContext);
+  const resumed = resumeDamage(state, placement, {
+    logPlayerHit: hooks.logPlayerHit,
+    onPrevented: hooks.wouldTakeWindow.onPrevented,
+  });
+  completeAttackDamage(resumed.state, player, attackContext, resumed.result.damageTaken);
+  state = step7_resolvePostAttackAndRetaliate(resumed.state, attackContext);
+  recordOutcomeOnStepEvent(state, player, attackContext);
 
   state.activeAttackContext = undefined;
   return state;
 }
 
 /**
- * Applies remaining damage for finished damage placements (#267). Called once all the interrupt
- * prompts of the window are answered.
+ * Finishes the attack damage that waited for its "would take" prompts (#267, #389). Called once
+ * all the interrupt prompts of the window are answered.
  */
 export function finishPendingDamagePlacements(state: GameState): GameState {
   const pending: PendingDamagePlacement[] = state.pendingDamagePlacements ?? [];
   delete state.pendingDamagePlacements;
   let current = state;
   for (const placement of pending) {
-    if (placement.sourceType === 'ATTACK' && current.activeAttackContext) {
-      const preventedDamage = Math.max(0, placement.initialAmount - placement.amount);
-      current.activeAttackContext.pendingDamage = placement.initialAmount;
-      current = finishAttackDamageAndPostResolution(
-        current,
-        current.activeAttackContext,
-        preventedDamage,
-      );
-    } else {
-      const player = current.players.find((p) => p.id === placement.targetPlayerId);
-      if (player && placement.amount > 0) {
-        player.health = Math.max(0, player.health - placement.amount);
-      }
+    if (!current.activeAttackContext) {
+      throw new Error(`Paused damage ${placement.id} has no attack to finish`);
     }
+    current = finishAttackDamageAndPostResolution(current, current.activeAttackContext, placement);
   }
   return current;
 }

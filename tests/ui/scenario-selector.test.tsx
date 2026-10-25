@@ -27,6 +27,20 @@ describe('ScenarioSelector', () => {
     expect(screen.getByRole('button', { name: '#3 Ultron' })).toBeTruthy();
   });
 
+  it('flips through the scenarios with the page buttons and wraps around', () => {
+    renderSelector();
+    const next = screen.getByTitle('Next Scenario');
+    const previous = screen.getByTitle('Previous Scenario');
+
+    fireEvent.click(next);
+    expect(screen.getByText('2 OF 3')).toBeTruthy();
+    fireEvent.click(next);
+    fireEvent.click(next);
+    expect(screen.getByText('1 OF 3')).toBeTruthy();
+    fireEvent.click(previous);
+    expect(screen.getByText('3 OF 3')).toBeTruthy();
+  });
+
   it('shows modular set card counts from the catalog', () => {
     renderSelector();
     expect(screen.getByRole('option', { name: /Under Attack \(5 cards\)/ })).toBeTruthy();

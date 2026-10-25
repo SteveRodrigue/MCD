@@ -94,6 +94,7 @@ describe('font guard: themes name only the font roles', () => {
       'src/ui/components/board/CombatLogDrawer.tsx',
       'src/ui/components/board/ComicSpeechBalloon.tsx',
       'src/ui/components/board/ComicDamageSplash.tsx',
+      ...listFiles('src/ui/components/cards', ['.ts', '.tsx']),
     ];
     for (const file of themedFiles) {
       const tiny = [...stripComments(read(file)).matchAll(/text-\[(\d+(?:\.\d+)?)px\]/g)]
@@ -143,6 +144,7 @@ describe('font guard: small text is Body, not Headlines (fonts plan N2)', () => 
     'src/ui/components/board/CombatLogDrawer.tsx',
     'src/ui/components/board/ComicSpeechBalloon.tsx',
     'src/ui/components/board/ComicDamageSplash.tsx',
+    ...listFiles('src/ui/components/cards', ['.ts', '.tsx']),
   ];
 
   const SMALL = /(?<![\w:-])text-(xs|sm|nano|micro|mini)(?![\w-])/;

@@ -37,10 +37,21 @@ export interface DamageRequest {
   sourceType?: 'HERO' | 'ALLY' | 'VILLAIN' | 'MINION' | 'CARD_EFFECT' | 'RETALIATE' | 'OVERKILL';
   sourceCardInstance?: CardInstance;
   sourcePlayerId?: string;
+  /**
+   * The attacker's instance id when it is not a card instance (a villain), so a defeat names the
+   * enemy that caused it. Wins over `sourceCardInstance`.
+   */
+  sourceInstanceId?: string;
   isAttack?: boolean;
   hasPiercing?: boolean;
   hasOverkill?: boolean;
   skipRetaliate?: boolean;
+  /**
+   * Writes the log entry for the hit on a player in place of `damage.applied.player` (an enemy
+   * attack writes `villain.attack.hit` / `minion.attack.hit`, which carry the attack figures).
+   * Called once the damage is placed, before the defeat is announced.
+   */
+  logPlayerHit?: (hit: { amount: number; remainingHealth: number }) => void;
   /**
    * Opens the DAMAGE_TAKEN window on a player target, after Tough and the damage shields, so an
    * interrupt can lower the damage. Used by ability damage to a hero (identity, all heroes).
@@ -102,10 +113,11 @@ function defeatSourceOf(request: DamageRequest): DefeatSource {
         : request.sourceType === 'VILLAIN' || request.sourceType === 'MINION'
           ? 'ENEMY'
           : 'EFFECT';
+  const instanceId = request.sourceInstanceId ?? request.sourceCardInstance?.instanceId;
   return {
     kind,
     ...(request.sourcePlayerId ? { playerId: request.sourcePlayerId } : {}),
-    ...(request.sourceCardInstance ? { instanceId: request.sourceCardInstance.instanceId } : {}),
+    ...(instanceId ? { instanceId } : {}),
     byAttack: Boolean(request.isAttack),
   };
 }
@@ -207,6 +219,7 @@ function applyDamageAndCheckDefeat(
   sourcePlayerId: string | undefined,
   defeatSource: DefeatSource,
   onomatopoeia: string | undefined,
+  logPlayerHit: DamageRequest['logPlayerHit'],
 ): {
   state: GameState;
   targetDefeated: boolean;
@@ -312,16 +325,20 @@ function applyDamageAndCheckDefeat(
         const player = target.entity as PlayerState;
         const healthBefore = player.health;
         player.health = Math.max(0, player.health - damageTaken);
-        appendLog(state, {
-          category: 'combat',
-          key: 'damage.applied.player',
-          params: {
-            target: player.name,
-            amount: damageTaken,
-            remainingHealth: player.health,
-          },
-          onomatopoeia: resultOnomatopoeia,
-        });
+        if (logPlayerHit) {
+          logPlayerHit({ amount: damageTaken, remainingHealth: player.health });
+        } else {
+          appendLog(state, {
+            category: 'combat',
+            key: 'damage.applied.player',
+            params: {
+              target: player.name,
+              amount: damageTaken,
+              remainingHealth: player.health,
+            },
+            onomatopoeia: resultOnomatopoeia,
+          });
+        }
 
         // STEPS 6-8: Player Defeat
         if (player.health <= 0) {
@@ -362,6 +379,12 @@ function applyDamageAndCheckDefeat(
         if (newDmg >= allyMaxHp) {
           targetDefeated = true;
           excessDamage = newDmg - allyMaxHp;
+          appendLog(state, {
+            category: 'combat',
+            key: 'ally.defeated',
+            params: { target: ally.card?.name || 'Ally' },
+            onomatopoeia: 'DEFEATED!',
+          });
           const ownerPlayer =
             state.players.find((p) => p.allies.some((a) => a.instanceId === ally.instanceId)) ||
             state.players.find((p) => p.id === target.targetPlayerId);
@@ -485,6 +508,46 @@ function applyRetaliateDamage(
   return retaliateDamageDealt;
 }
 
+interface ResolvedDamage {
+  state: GameState;
+  /** Steps 0 to 8; `retaliateDamageDealt` (step 9) is added once the defeats are announced. */
+  result: DamageResult;
+  /** The defeats of this occurrence, in the order they are announced (the target's first). */
+  defeats: DefeatDispatch[];
+}
+
+/**
+ * Where the damage beyond a defeated minion or ally goes (RR v1.8 glossary O): the villain for a
+ * minion, the identity of the ally's controller for an ally.
+ */
+function overkillTargetOf(
+  state: GameState,
+  target: TargetEntityRef,
+  defeat: DefeatDispatch | undefined,
+): TargetEntityRef | undefined {
+  if (target.type === 'minion') {
+    const villain = getActiveVillain(state);
+    return {
+      type: 'villain',
+      entity: villain,
+      name: villain.card?.name || 'Villain',
+      attachments: villain.attachments,
+      statusCards: villain.statusCards,
+    };
+  }
+  const controller =
+    target.type === 'ally' ? state.players.find((p) => p.id === defeat?.targetPlayerId) : undefined;
+  if (!controller) return undefined;
+  return {
+    type: 'player',
+    entity: controller,
+    name: controller.name,
+    targetPlayerId: controller.id,
+    attachments: controller.attachments,
+    statusCards: controller.statusCards,
+  };
+}
+
 /**
  * Universal RR v1.8 9-Step Damage Pipeline.
  * Single source of truth for all damage application across MCD.
@@ -493,6 +556,26 @@ export function applyDamageToTarget(
   state: GameState,
   request: DamageRequest,
 ): { state: GameState; result: DamageResult } {
+  const resolved = resolveDamage(state, request);
+  state = resolved.state;
+
+  // One occurrence, one window (RR v1.8 Triggering Condition): every defeat is announced once its
+  // state changes (stage advance, elimination, discard), Overkill included, have all been applied.
+  for (const defeat of resolved.defeats) dispatchDefeat(state, defeat);
+
+  // STEP 9: Retaliate X & Post-Resolution Triggers (RR v1.8 Step 9)
+  const retaliateDamageDealt = applyRetaliateDamage(
+    state,
+    request,
+    request.target,
+    resolved.result.targetDefeated,
+    resolved.result.damageDealt,
+  );
+
+  return { state, result: { ...resolved.result, retaliateDamageDealt } };
+}
+
+function resolveDamage(state: GameState, request: DamageRequest): ResolvedDamage {
   const { target, amount, isAttack, hasPiercing, sourcePlayerId } = request;
   const defeatSource = defeatSourceOf(request);
 
@@ -526,6 +609,7 @@ export function applyDamageToTarget(
         excessDamage: 0,
         onomatopoeia: 'IMMUNE!',
       },
+      defeats: [],
     };
   }
 
@@ -562,7 +646,14 @@ export function applyDamageToTarget(
     if (toughIndex !== -1) {
       statusCards.splice(toughIndex, 1);
       toughRemoved = true;
-      if (!hasPiercing) {
+      if (hasPiercing) {
+        appendLog(state, {
+          category: 'combat',
+          key: 'damage.tough.pierced',
+          params: { target: target.name },
+          onomatopoeia: 'PIERCING SHRED! (TOUGH LOST)',
+        });
+      } else {
         currentDamage = 0;
         onomatopoeia = 'CLANG! (TOUGH)';
         appendLog(state, {
@@ -617,58 +708,49 @@ export function applyDamageToTarget(
     sourcePlayerId,
     defeatSource,
     onomatopoeia,
+    request.logPlayerHit,
   );
   state = defeatRes.state;
   const targetDefeated = defeatRes.targetDefeated;
   const excessDamage = defeatRes.excessDamage;
   onomatopoeia = defeatRes.onomatopoeia;
+  const defeats: DefeatDispatch[] = defeatRes.pendingDefeat ? [defeatRes.pendingDefeat] : [];
 
   // ---------------------------------------------------------------------------
-  // Overkill: excess damage over a defeated minion goes to the villain (RR v1.8 glossary O)
+  // Overkill: the excess over a defeated minion or ally goes to the villain or to the ally's
+  // controller, as damage of the same attack (RR v1.8 glossary O), so Tough and shields apply.
   // ---------------------------------------------------------------------------
-  if (request.hasOverkill && target.type === 'minion' && targetDefeated && excessDamage > 0) {
-    const villain = getActiveVillain(state);
-    const overkillRes = applyDamageToTarget(state, {
-      target: {
-        type: 'villain',
-        entity: villain,
-        name: villain.card?.name || 'Villain',
-        attachments: villain.attachments,
-        statusCards: villain.statusCards,
-      },
+  const overkillTarget =
+    request.hasOverkill && targetDefeated && excessDamage > 0
+      ? overkillTargetOf(state, target, defeatRes.pendingDefeat)
+      : undefined;
+  if (overkillTarget) {
+    const overkillRes = resolveDamage(state, {
+      target: overkillTarget,
       amount: excessDamage,
       sourceType: 'OVERKILL',
       sourceCardInstance: request.sourceCardInstance,
+      sourceInstanceId: request.sourceInstanceId,
       sourcePlayerId,
       isAttack,
       hasPiercing,
       skipRetaliate: true,
     });
     state = overkillRes.state;
-    if (overkillRes.result.damageTaken > 0) {
+    defeats.push(...overkillRes.defeats);
+    const dealt = overkillRes.result.damageTaken;
+    if (dealt > 0) {
       appendLog(state, {
         category: 'combat',
-        key: 'overkill.villain.hit',
-        params: { amount: overkillRes.result.damageTaken, target: villain.card?.name || 'Villain' },
-        onomatopoeia: `OVERKILL! ${overkillRes.result.damageTaken} DAMAGE TO VILLAIN!`,
+        key: 'overkill.hit',
+        params: { amount: dealt, target: overkillTarget.name },
+        onomatopoeia:
+          overkillTarget.type === 'villain'
+            ? `OVERKILL! ${dealt} DAMAGE TO VILLAIN!`
+            : 'OVERKILL SPILLOVER!',
       });
     }
   }
-
-  // One occurrence, one window (RR v1.8 Triggering Condition): every defeat is announced once its
-  // state changes (stage advance, elimination, discard), Overkill included, have all been applied.
-  if (defeatRes.pendingDefeat) dispatchDefeat(state, defeatRes.pendingDefeat);
-
-  // ---------------------------------------------------------------------------
-  // STEP 9: Retaliate X & Post-Resolution Triggers (RR v1.8 Step 9)
-  // ---------------------------------------------------------------------------
-  const retaliateDamageDealt = applyRetaliateDamage(
-    state,
-    request,
-    target,
-    targetDefeated,
-    damageDealt,
-  );
 
   return {
     state,
@@ -680,9 +762,9 @@ export function applyDamageToTarget(
       absorbedByShield,
       targetDefeated,
       excessDamage,
-      retaliateDamageDealt,
       onomatopoeia,
     },
+    defeats,
   };
 }
 

@@ -262,9 +262,7 @@ describe('E. double defeat: the minion and the villain stage in one attack', () 
     expect(getActiveVillain(res.state).health).toBe(expectedHp);
     const keys = logKeys(res.state);
     expect(keys.indexOf('damage.applied.minion')).toBeGreaterThanOrEqual(0);
-    expect(keys.indexOf('overkill.villain.hit')).toBeGreaterThan(
-      keys.indexOf('damage.applied.minion'),
-    );
+    expect(keys.indexOf('overkill.hit')).toBeGreaterThan(keys.indexOf('damage.applied.minion'));
     expect(keys.indexOf('villain.stageAdvance')).toBeGreaterThan(
       keys.indexOf('damage.applied.villain'),
     );
@@ -364,7 +362,7 @@ describe('E. double defeat: the minion and the villain stage in one attack', () 
     const res = playAssault(state, 0, minion.instanceId);
 
     const keys = logKeys(res.state);
-    const overkill = keys.indexOf('overkill.villain.hit');
+    const overkill = keys.indexOf('overkill.hit');
     expect(overkill).toBeGreaterThanOrEqual(0);
     expect(probeLogIndex(res.state)).toBeGreaterThan(overkill);
   });

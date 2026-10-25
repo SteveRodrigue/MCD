@@ -185,15 +185,9 @@ export interface LogEvents {
   };
   'villain.attack.cancelled': { actor: string; source?: string };
   'minion.attack.cancelled': { actor: string; source?: string };
-  'ally.attack.hit': { target: string; amount: number };
   'ally.defeated.boost.undefended': { actor: string; target: string };
   'ally.defeated': { target: string };
-  'ally.piercing.tough.discarded': { target: string };
-  'ally.tough.absorbed': { target: string };
-  'hero.piercing.tough.discarded': { target: string };
-  'hero.tough.absorbed': { target: string };
   'overkill.hit': { amount: number; target: string };
-  'overkill.villain.hit': { amount: number; target: string };
   RETALIATE_DAMAGE: {
     actor: string;
     target: string;
@@ -228,6 +222,7 @@ export interface LogEvents {
   };
   'damage.prevented.immune': { target: string };
   'damage.prevented.tough': { target: string };
+  'damage.tough.pierced': { target: string };
   'attachment.damageShield.absorbed': {
     target: string;
     card: string;
@@ -527,15 +522,9 @@ export const ALL_LOG_EVENT_KEYS = [
   'minion.attack.hit',
   'villain.attack.cancelled',
   'minion.attack.cancelled',
-  'ally.attack.hit',
   'ally.defeated.boost.undefended',
   'ally.defeated',
-  'ally.piercing.tough.discarded',
-  'ally.tough.absorbed',
-  'hero.piercing.tough.discarded',
-  'hero.tough.absorbed',
   'overkill.hit',
-  'overkill.villain.hit',
   'RETALIATE_DAMAGE',
   'retaliate.hit',
   'damage.applied.ally',
@@ -544,6 +533,7 @@ export const ALL_LOG_EVENT_KEYS = [
   'damage.applied.villain',
   'damage.prevented.immune',
   'damage.prevented.tough',
+  'damage.tough.pierced',
   'attachment.damageShield.absorbed',
   'attachment.damageShield.broken',
   'ability.aborted.noValidTarget',

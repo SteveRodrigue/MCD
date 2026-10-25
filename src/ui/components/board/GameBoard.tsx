@@ -367,15 +367,19 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                 const Arrow = side === 'left' ? ChevronLeft : ChevronRight;
                 return (
                   canScroll && (
-                    <button
+                    <div
                       key={side}
-                      data-no-edge-scroll=""
-                      onClick={() => scrollToEdge(side)}
-                      className={`absolute ${side === 'left' ? 'left-2' : 'right-2'} -translate-y-1/2 p-2 transition-all cursor-pointer ${style.btnGo} !rounded-full`}
-                      title={side === 'left' ? 'Scroll Left' : 'Scroll Right'}
+                      className={`absolute ${side === 'left' ? 'left-2' : 'right-2'} -translate-y-1/2 pointer-events-none`}
                     >
-                      <Arrow className="w-6 h-6" />
-                    </button>
+                      <button
+                        data-no-edge-scroll=""
+                        onClick={() => scrollToEdge(side)}
+                        className={`block p-2 pointer-events-auto transition-all cursor-pointer ${style.btnGo} !rounded-full`}
+                        title={side === 'left' ? 'Scroll Left' : 'Scroll Right'}
+                      >
+                        <Arrow className="w-6 h-6" />
+                      </button>
+                    </div>
                   )
                 );
               })}

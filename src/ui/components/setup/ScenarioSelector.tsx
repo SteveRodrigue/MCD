@@ -190,23 +190,26 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
           <div className="absolute inset-0 opacity-5 pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:16px_16px]" />
 
           {/* Left / Right Page-Flip Buttons */}
-          <button
-            type="button"
-            onClick={handlePrevScenario}
-            className={`absolute left-2 top-1/2 -translate-y-1/2 z-zoom p-2 md:p-3 hover:scale-110 active:scale-95 transition-all cursor-pointer ${style.btnGo} !rounded-full`}
-            title="Previous Scenario"
-          >
-            <ChevronLeft className="w-6 h-6 md:w-8 md:h-8 stroke-[3]" />
-          </button>
-
-          <button
-            type="button"
-            onClick={handleNextScenario}
-            className={`absolute right-2 top-1/2 -translate-y-1/2 z-zoom p-2 md:p-3 hover:scale-110 active:scale-95 transition-all cursor-pointer ${style.btnGo} !rounded-full`}
-            title="Next Scenario"
-          >
-            <ChevronRight className="w-6 h-6 md:w-8 md:h-8 stroke-[3]" />
-          </button>
+          {/* The wrapper centres the button, so the button's own press transform stays free. It sits at a
+              fixed offset beside the cards: centred on the panel it moved with each scenario's text height (#390). */}
+          {(['prev', 'next'] as const).map((direction) => {
+            const Arrow = direction === 'prev' ? ChevronLeft : ChevronRight;
+            return (
+              <div
+                key={direction}
+                className={`absolute ${direction === 'prev' ? 'left-2' : 'right-2'} top-72 -translate-y-1/2 z-zoom pointer-events-none`}
+              >
+                <button
+                  type="button"
+                  onClick={direction === 'prev' ? handlePrevScenario : handleNextScenario}
+                  className={`block p-2 md:p-3 pointer-events-auto transition-all cursor-pointer ${style.btnGo} !rounded-full`}
+                  title={direction === 'prev' ? 'Previous Scenario' : 'Next Scenario'}
+                >
+                  <Arrow className="w-6 h-6 md:w-8 md:h-8 stroke-[3]" />
+                </button>
+              </div>
+            );
+          })}
 
           {/* Two-Page Spread Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-content px-4 md:px-8">

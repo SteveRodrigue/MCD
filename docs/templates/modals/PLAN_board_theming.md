@@ -1,6 +1,6 @@
 # Plan: the board, the setup and the shell follow the theme (N4)
 
-Status: **approved by you (whole plan, "the full UI follows the theme, only the Bangers banner is kept"). Phases 1 to 4 are done (kit, tokens, guard, villain zone, hero zone, hand tray, removed box); phase 5 (shell) is next.** Each phase is a separate change, committed on its own, and verified in the running game.
+Status: **approved by you (whole plan, "the full UI follows the theme, only the Bangers banner is kept"). Phases 1 to 5 are done (kit, tokens, guard, zones, tray, shell); phase 6 (setup) is next.** Each phase is a separate change, committed on its own, and verified in the running game.
 
 Related: [Game integration plan](./PLAN_game_integration.md) (N4 is its last big step), [Font plan](./PLAN_fonts.md), [Unthemed UI audit](./AUDIT_unthemed_ui.md) (the measurements and the decisions D1 to D10 this plan applies), [Theme engine plan](./PLAN_theme_engine.md).
 
@@ -38,6 +38,8 @@ The table goes last on purpose: a dark table (Night, Hero HUD) is only readable 
 - `ToneButton` (red, amber, blue, sky): the action buttons (Attack, Thwart, Flip, Suit Up, Recover, the ally mini-console, the tableau use button); coloured by what the action does, drawn in the theme's button shape, grey when disabled.
 - `ZonePanel` (icon, accent, body class), used by the villain zone.
 - The hero zone panel keeps its state signals as meanings: a red ring when under attack, a ring for the active hero, a dimmed panel for a waiting hero; its fill and border come from the theme.
+
+Phase 5 notes: the card context menu now sets the theme's font variables itself (it renders in its own portal, outside the modal layer) and its dev "Inspect card" window is a `ModalScaffold`; the damage splash draws the theme's sound-effect look (`fx`: star burst or panel) with the engine's word; the top bar banners and buttons use `buttonShape`; the Daily Bugle buttons use the Newspaper kit's `pill` token. The last `font-bangers` outside the editor and the Bangers banner (the card stats headings) became `font-comic`; the loading screens in `App.tsx` still say `font-bangers` and move with phase 7.
 
 ## 3. Method for every phase
 

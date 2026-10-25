@@ -17,6 +17,7 @@ import { ReportProblemModal } from './ReportProblemModal';
 import { useGameSession } from '../../context/GameStateContext';
 import { useModalStyle } from '../../theme/useModalStyle';
 import { useNewspaperProps } from '../../theme/useNewspaperProps';
+import { useThemeExtras } from '../../theme/useThemeExtras';
 
 interface TopBarProps {
   activeSeatIndex: number;
@@ -40,6 +41,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   const { state: gameState } = useGameSession();
   const { style } = useModalStyle();
   const newspaperProps = useNewspaperProps();
+  const { newspaper } = useThemeExtras();
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   let devMode = false;
@@ -55,13 +57,13 @@ export const TopBar: React.FC<TopBarProps> = ({
   return (
     <>
       <header
-        className={`px-4 py-2 flex flex-wrap items-center justify-between gap-3 z-sticky sticky top-0 w-full transition-all duration-300 shadow-comic !rounded-none !border-x-0 !border-t-0 !border-b-[3px] ${style.inset}`}
+        className={`px-4 py-2 flex flex-wrap items-center justify-between gap-3 z-sticky sticky top-0 w-full transition-all duration-300 !rounded-none !border-x-0 !border-t-0 !border-b-[3px] ${style.inset}`}
       >
         {/* Left: Round & Phase Badges */}
         <div className="flex items-center gap-3">
           {/* Round Badge */}
           <div
-            className={`border-[3px] font-comic text-xl px-4 py-1 rounded shadow-comic flex items-center gap-2 ${style.verbs.red.banner} ${style.verbs.red.rule}`}
+            className={`font-comic text-xl px-4 py-1 flex items-center gap-2 ${style.buttonShape} ${style.verbs.red.banner}`}
           >
             <Sparkles className="w-5 h-5 text-comic-yellow fill-comic-yellow animate-pulse" />
             <span className="tracking-wide">ROUND {gameState.roundNumber}</span>
@@ -69,10 +71,10 @@ export const TopBar: React.FC<TopBarProps> = ({
 
           {/* Phase Badge */}
           <div
-            className={`font-comic text-base tracking-wider px-4 py-1.5 rounded border-[3px] shadow-comic uppercase font-black ${
+            className={`font-comic text-base tracking-wider px-4 py-1.5 uppercase font-black ${style.buttonShape} ${
               gameState.phase === GamePhase.PLAYER_PHASE
-                ? `${style.verbs.yellow.banner} ${style.verbs.yellow.rule}`
-                : `${style.verbs.red.banner} ${style.verbs.red.rule}`
+                ? style.verbs.yellow.banner
+                : style.verbs.red.banner
             }`}
           >
             {gameState.phase === GamePhase.PLAYER_PHASE ? (
@@ -142,15 +144,15 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               onClick={onOpenNewspaper}
               {...newspaperProps}
-              className="px-2.5 py-1.5 font-news-headline text-xs bg-[#fbf7ee] hover:bg-amber-200 text-slate-900 rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 cursor-pointer font-bold transition-all hover:scale-105 active:translate-y-0.5"
+              className={`px-2.5 py-1.5 font-news-headline text-xs flex items-center gap-1.5 cursor-pointer font-bold transition-all hover:scale-105 active:translate-y-0.5 ${newspaper.pill}`}
               title="THE DAILY BUGLE: Inspect all legal moves and battle dispatches (Click to open)"
             >
-              <Newspaper className="w-4 h-4 text-slate-900" />
+              <Newspaper className="w-4 h-4" />
               <span className="hidden md:inline font-news-headline font-black uppercase tracking-tight">
                 DAILY BUGLE
               </span>
               <span
-                className={`text-micro px-1.5 py-0.2 rounded font-mono font-bold border border-slate-900 ${
+                className={`text-micro px-1.5 py-0.2 font-mono font-bold ${style.badge} ${
                   legalActionCount > 0 ? 'bg-comic-red text-white' : 'bg-slate-300 text-slate-700'
                 }`}
               >
@@ -162,14 +164,14 @@ export const TopBar: React.FC<TopBarProps> = ({
           {/* Visual Dev Mode Indicator Badge (In Menu Bar) */}
           <button
             onClick={toggleDevMode}
-            className={`px-2.5 py-1 text-xs rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`px-2.5 py-1 text-xs flex items-center gap-1.5 transition-all cursor-pointer ${style.buttonShape} ${
               devMode
                 ? 'bg-emerald-400 text-slate-950 font-bold hover:bg-emerald-300'
                 : 'bg-slate-200 text-slate-600 hover:bg-slate-300 line-through opacity-80'
             }`}
             title="Click to toggle Developer Mode"
           >
-            <Wrench className={`w-3.5 h-3.5 ${devMode ? 'text-slate-950' : 'text-slate-500'}`} />
+            <Wrench className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">DEV MODE: {devMode ? 'ON' : 'OFF'}</span>
           </button>
 

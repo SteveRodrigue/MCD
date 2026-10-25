@@ -14,7 +14,9 @@ import { CardPaymentModal } from '../../src/ui/components/board/CardPaymentModal
 import { CombatBoostModal } from '../../src/ui/components/board/CombatBoostModal';
 import { DistributeAmountModal } from '../../src/ui/components/board/DistributeAmountModal';
 import { DevStepErrorBanner } from '../../src/ui/components/board/DevStepErrorBanner';
-import { TopBar } from '../../src/ui/components/board/TopBar';
+import { QuickMenu } from '../../src/ui/components/board/QuickMenu';
+import { SideDock } from '../../src/ui/components/board/SideDock';
+import { ExtraActionsPill } from '../../src/ui/components/board/ExtraActionsPill';
 import { InfiniteLoopModal } from '../../src/ui/components/board/InfiniteLoopModal';
 import {
   PileCardTile,
@@ -58,23 +60,51 @@ interface Case {
   /** False for dialogs that name no card (settings, bug report, game over). */
   showsCard?: boolean;
   /** ARIA role of the surface (a dialog unless stated). */
-  role?: 'dialog' | 'alert' | 'banner';
+  role?: 'dialog' | 'alert' | 'toolbar' | 'button';
   render: (state: GameState) => React.ReactElement;
 }
 
 const CASES: Case[] = [
   {
-    label: 'TopBar',
+    label: 'QuickMenu',
     cards: [],
     showsCard: false,
-    role: 'banner',
+    role: 'toolbar',
     render: () => (
-      <TopBar
-        activeSeatIndex={0}
-        onSelectSeat={vi.fn()}
-        onToggleLog={vi.fn()}
-        isLogOpen={false}
+      <QuickMenu
+        legalActionCount={3}
+        extraActionCount={1}
+        onOpenNewspaper={vi.fn()}
         onReset={vi.fn()}
+      />
+    ),
+  },
+  {
+    label: 'SideDock',
+    cards: [],
+    showsCard: false,
+    role: 'toolbar',
+    render: () => (
+      <SideDock
+        legalActionCount={3}
+        extraActionCount={1}
+        isNewspaperOpen={false}
+        onOpenNewspaper={vi.fn()}
+        onReset={vi.fn()}
+      />
+    ),
+  },
+  {
+    label: 'ExtraActionsPill',
+    cards: [],
+    showsCard: false,
+    role: 'button',
+    render: () => (
+      <ExtraActionsPill
+        teamActionCount={1}
+        villainActionCount={1}
+        isNewspaperOpen={false}
+        onOpen={vi.fn()}
       />
     ),
   },

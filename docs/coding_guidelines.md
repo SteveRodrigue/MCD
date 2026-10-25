@@ -248,10 +248,10 @@ We use [Conventional Commits](https://www.conventionalcommits.org/). Scopes: `en
    - Interactive card containers (such as `PlayerHandTray` and tabletop zones) must maintain `overflow-visible` so elevated/hovered elements can project into the 3D Z-axis without triggering clipping boundaries or scrollbar spawning.
    - Never place `overflow-x: auto` or `overflow: hidden` on a container whose child elements perform scale transforms on hover (`hover:scale-[1.85]`).
 2. **Layering (Z-Index) Hierarchy (ADR-0082):**
-   - Use only the named scale from `src/ui/styles/z-layers.ts` (`z-table` 0, `z-content` 100, `z-raised` 200, `z-zoom` 400, `z-sticky` 500, `z-drawer` 600, `z-modal` 700, `z-banner` 800, `z-menu` 900, `z-critical` 1000). Numeric or arbitrary z classes and numeric `zIndex` literals fail `tests/ui/z-literal-guard.test.ts`.
+   - Use only the named scale from `src/ui/styles/z-layers.ts` (`z-table` 0, `z-content` 100, `z-raised` 200, `z-zoom` 400, `z-drawer` 600, `z-modal` 700, `z-banner` 800, `z-menu` 900, `z-critical` 1000). Numeric or arbitrary z classes and numeric `zIndex` literals fail `tests/ui/z-literal-guard.test.ts`.
    - Every modal, drawer or banner renders through `ModalLayer` (portal to `document.body`), never inline.
    - Fans are `isolate`d, raise themselves with `hover:z-zoom focus-within:z-zoom`, and compute card z with `getFanZIndex` (`src/ui/components/cards/fan-z.ts`). Never derive fan z from a fixed constant.
-   - Do not put `overflow-x-hidden` / `overflow-*-auto` on an ancestor of the sticky TopBar; use `overflow-x-clip`.
+   - Do not put `overflow-x-hidden` / `overflow-*-auto` on the App or GameBoard roots (they would become scroll containers); use `overflow-x-clip`.
    - Full ladder and fan rules: [ADR-0082, Appendix A](decisions/0082-ui-z-index-scale-and-fan-pattern.md#appendix-a-layer-map).
 
 ---
@@ -264,7 +264,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/). Scopes: `en
    - **Headlines:** `font-comic` is the theme's Headlines font. Use it for titles and for text with an explicit headline size (`text-base` and up), including sound effects and banners (`POW!`, `HEROES ASSEMBLE!`). Small text never names it.
    - **Body:** `font-body` is the theme's Body font and the base of every themed screen, so unlabelled text is Body. All small text (`text-xs`, `text-sm`, `text-nano`, `text-micro`, `text-mini`) and prose use it.
    - **Numbers & codes:** `font-mono` (Nunito in every theme) for counters, badges, key caps and card codes.
-   - **Newspapers:** the Daily Bugle sheet, the end-turn flash and the combat log drawer are `NewspaperSheet` pages and use `font-news-headline` and `font-news-body`. The log has no font setting of its own.
+   - **Newspapers:** the Daily Bugle sheet, the end-turn flash and the combat log panel are `NewspaperSheet` pages and use `font-news-headline` and `font-news-body`. The log has no font setting of its own.
    - **Sizes:** size text with the tokens above; never write an arbitrary pixel size under 17px (`text-[11px]`), because the theme's size change would not reach it. Card faces (`[data-card-view]`) ignore the change.
    - **Bangers:** only the first-screen "MARVEL CHAMPIONS" banner and the card editor name `font-bangers`.
    - `tests/ui/font-guards.test.ts` enforces these rules over the whole themed UI. Per-theme fonts and sizes: `docs/templates/modals/FONT_RECORD.md`.

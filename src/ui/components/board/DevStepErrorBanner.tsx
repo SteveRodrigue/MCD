@@ -26,7 +26,7 @@ export const DevStepErrorBanner: React.FC<DevStepErrorBannerProps> = ({ logs, de
     <ModalLayer
       layer="banner"
       role="alert"
-      className={`top-16 left-1/2 -translate-x-1/2 max-w-xl flex items-start gap-3 px-4 py-3 font-bold ${style.frame} ${style.text}`}
+      className={`top-4 left-1/2 -translate-x-1/2 max-w-xl flex items-start gap-3 px-4 py-3 font-bold ${style.frame} ${style.text}`}
     >
       <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
       <div className="text-sm">

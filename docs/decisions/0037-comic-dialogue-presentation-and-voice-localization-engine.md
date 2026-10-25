@@ -40,7 +40,7 @@ We establish the **Comic Dialogue & Character Voice Presentation Architecture**:
 ### 2. Localization Dictionaries (`src/locales/{lang}/combat-log.json`)
 * Contains parameterized narrative templates, character flavor quotes by context (`attack`, `thwart`, `recover`, `scheme`, `boost`), and localized sound effects (`POW!` vs. `VLAM !`, `THWIP!` vs. `TCHWIP !`).
 
-### 3. Comic Action Chronicle Drawer (`CombatLogDrawer.tsx`)
+### 3. Comic Action Chronicle Panel (`CombatLogPanel.tsx`)
 * Full-height slide-over drawer styled as a vintage Daily Bugle action dispatch.
 * Speaker category filters (`ALL`, `HEROES`, `VILLAINS`, `NARRATOR`).
 * One-click language switcher (`EN` / `FR`).

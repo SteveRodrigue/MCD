@@ -1,14 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { CombatLogDrawer } from '../../src/ui/components/board/CombatLogDrawer';
-import { GameBoard } from '../../src/ui/components/board/GameBoard';
-import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
+import { CombatLogPanel } from '../../src/ui/components/board/CombatLogPanel';
 import { GameLogEntry, GamePhase, GameState } from '../../src/engine/models';
-import { setupGame } from '../../src/engine/state/game-setup';
-import { cardCatalog } from '../../src/data/importer/card-loader';
 import { TestSession } from '../support/render-with-session';
 
-describe('CombatLogDrawer Component (Issue #142)', () => {
+describe('CombatLogPanel Component (Issue #142)', () => {
   const mockLogs: GameLogEntry[] = [
     {
       id: 'log-1',
@@ -79,10 +75,9 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
   };
 
   it('renders Daily Bugle masthead and action chronicle headline', () => {
-    const onClose = vi.fn();
     render(
       <TestSession state={mockGameState as GameState}>
-        <CombatLogDrawer isOpen={true} onClose={onClose} logs={mockLogs} />
+        <CombatLogPanel logs={mockLogs} />
       </TestSession>,
     );
 
@@ -94,40 +89,20 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
   it('has no font selector: the log is a newspaper page that follows the theme (Newspaper fonts)', () => {
     render(
       <TestSession state={mockGameState as GameState}>
-        <CombatLogDrawer isOpen={true} onClose={vi.fn()} logs={mockLogs} />
+        <CombatLogPanel logs={mockLogs} />
       </TestSession>,
     );
     expect(screen.queryByRole('button', { name: /font/i })).toBeNull();
     expect(screen.queryByText(/^Font:/)).toBeNull();
-    const drawer = document.body.querySelector('.z-drawer') as HTMLElement;
-    expect(drawer.className).toContain('font-body');
-    expect(drawer.style.getPropertyValue('--font-comic')).not.toBe('');
     const dialogue = screen.getByText('Iron-Man dealt 2 damage to Rhino.');
     expect(dialogue.className).toContain('font-news-body');
     expect(document.body.querySelector('[data-newspaper]')).not.toBeNull();
   });
 
-  it('applies docked desktop classes to drawer container', () => {
-    const onClose = vi.fn();
-    render(
-      <TestSession state={mockGameState as GameState}>
-        <CombatLogDrawer isOpen={true} onClose={onClose} logs={mockLogs} />
-      </TestSession>,
-    );
-
-    // The drawer renders through ModalLayer (portal under document.body).
-    const drawer = document.body.querySelector('.z-drawer') as HTMLElement;
-    expect(drawer).not.toBeNull();
-    expect(drawer.className).toContain('fixed');
-    expect(drawer.className).toContain('z-drawer');
-    expect(drawer.className).toContain('lg:w-[420px]');
-  });
-
   it('filters log items when category buttons are clicked', () => {
-    const onClose = vi.fn();
     render(
       <TestSession state={mockGameState as GameState}>
-        <CombatLogDrawer isOpen={true} onClose={onClose} logs={mockLogs} />
+        <CombatLogPanel logs={mockLogs} />
       </TestSession>,
     );
 
@@ -151,10 +126,9 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
   });
 
   it('switches between English and French locales via language toggle', () => {
-    const onClose = vi.fn();
     render(
       <TestSession state={mockGameState as GameState}>
-        <CombatLogDrawer isOpen={true} onClose={onClose} logs={mockLogs} currentLocale="en" />
+        <CombatLogPanel logs={mockLogs} currentLocale="en" />
       </TestSession>,
     );
 
@@ -187,7 +161,7 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
 
     render(
       <TestSession state={mockGameState as GameState}>
-        <CombatLogDrawer isOpen={true} onClose={vi.fn()} logs={logWithSource} />
+        <CombatLogPanel logs={logWithSource} />
       </TestSession>,
     );
 
@@ -217,7 +191,7 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
     const renderLogs = (logs: GameLogEntry[], devMode: boolean) =>
       render(
         <TestSession state={mockGameState as GameState}>
-          <CombatLogDrawer isOpen={true} onClose={vi.fn()} logs={logs} devMode={devMode} />
+          <CombatLogPanel logs={logs} devMode={devMode} />
         </TestSession>,
       );
 
@@ -260,35 +234,5 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
       renderLogs(logs, true);
       expect(screen.getByText(/Iron-Man removed 2 threat from The Break-In!/)).toBeDefined();
     });
-  });
-
-  it('GameBoard initializes with Combat Log drawer open by default (Issue #204)', () => {
-    const state = setupGame({
-      catalog: cardCatalog,
-      scenarioId: 'rhino',
-      players: [
-        {
-          id: 'p1',
-          name: 'Carol Danvers',
-          hero: cardCatalog.getCard('01010b') as any,
-          alterEgo: cardCatalog.getCard('01010a') as any,
-          deckCards: Array(15).fill(cardCatalog.getCard('01005')!),
-        },
-      ],
-      villain: cardCatalog.getCard('01094') as any,
-      mainScheme: cardCatalog.getCard('01097b') as any,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
-    });
-
-    render(
-      <GameSettingsProvider>
-        <TestSession state={state} dispatch={vi.fn()}>
-          <GameBoard onReset={vi.fn()} />
-        </TestSession>
-      </GameSettingsProvider>,
-    );
-
-    expect(screen.getByText(/Flash news & action chronicle/)).toBeDefined();
   });
 });

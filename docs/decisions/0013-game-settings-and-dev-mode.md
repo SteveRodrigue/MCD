@@ -40,10 +40,10 @@ We need a clean, persistent UI settings system that supports developer tooling (
 1. **`GameSettingsContext` State Store:**
    * React context providing `devMode` (boolean, default: `true` for development) and persistence in `localStorage`.
 2. **Options Menu Modal (`OptionsMenu.tsx`):**
-   * Accessible via a dedicated `⚙️ OPTIONS` button in the top navigation bar.
+   * Accessible via the gear button of the quick-menu rail above the combat log (`QuickMenu.tsx`; ADR-0082 addendum, Issue #378).
    * Provides controls for Dev Mode and future UI parameters (sound, animation, accessibility).
-3. **Top Bar Visual Indicator (`TopBar.tsx`):**
-   * Prominently displays `🛠️ DEV MODE: ON` with dynamic styling, allowing 1-click quick toggling directly from the menu bar.
+3. **Quick-menu Visual Indicator (`QuickMenu.tsx`):**
+   * The `⋯` menu holds the `Dev mode: ON/OFF` toggle, and a green dot on the `⋯` button shows the mode while the menu is closed.
 4. **Conditional Deck Inspection:**
    * `VillainZone.tsx` and `PlayerHandTray.tsx` consume `useGameSettings()`. Deck inspection modals are gated by `devMode`. Discard piles and set-aside nemesis cards remain accessible as open information.
 

@@ -67,6 +67,32 @@ export const Badge: React.FC<BadgeProps> = ({ children, tone = 'chip', className
   );
 };
 
+export interface BeaconProps {
+  /** The ring shows only while true. */
+  active: boolean;
+  children: React.ReactNode;
+  className?: string;
+}
+
+/**
+ * Draws the eye to a control that needs a decision (Call for Action, Villain actions) with a soft ring
+ * that expands and fades around it. The control itself stays fully opaque and readable. The ring uses
+ * the game's red (forced / attack), which reads on every theme table. With reduced motion the ring
+ * stays still.
+ */
+export const Beacon: React.FC<BeaconProps> = ({ active, children, className = '' }) => (
+  <div className={`relative ${className}`}>
+    {active && (
+      <span
+        aria-hidden="true"
+        data-testid="attention-beacon"
+        className="pointer-events-none absolute inset-0 rounded-md border-2 border-comic-red opacity-60 animate-beacon motion-reduce:animate-none"
+      />
+    )}
+    {children}
+  </div>
+);
+
 export interface SwitchProps {
   checked: boolean;
   onChange: (checked: boolean) => void;

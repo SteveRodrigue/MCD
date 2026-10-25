@@ -47,7 +47,7 @@ We adopt **Proposition 4: Panoramic Horizontal Tabletop with Edge & Drag Scrolli
    - While dragging a card or interaction pointer near the screen edge, auto-panning engages dynamically, allowing seamless cross-table card deployment (e.g. dragging an upgrade from Seat 1 across to Seat 4).
 
 5. **Fixed Top Banner & Scenario Zone:**
-   - The Top Bar (Round & Phase badges, Seat Jump Buttons, Dev Mode, Combat Log) remains sticky at the top.
+   - The quick-menu rail (Round & Phase, Daily Bugle, Options, `⋯`) stays docked above the combat log on the right; the seat headers switch seats (Issue #378).
    - The Scenario & Villain Zone remains centered and accessible above the panoramic hero stations.
 
 ## Evaluation of Options

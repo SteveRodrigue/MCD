@@ -70,9 +70,15 @@ export default {
           from: { opacity: '0', transform: 'translateY(-4px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
         },
+        // A ring that grows and fades: the attention cue of the Beacon (theme/kit/controls.tsx).
+        beacon: {
+          '0%': { transform: 'scale(1)', opacity: '0.8' },
+          '70%, 100%': { transform: 'scale(1.2, 1.5)', opacity: '0' },
+        },
       },
       animation: {
         'section-open': 'section-open 200ms ease-in-out',
+        beacon: 'beacon 1.8s ease-out infinite',
       },
       zIndex: Object.fromEntries(Object.entries(Z).map(([key, value]) => [key, String(value)])),
     },

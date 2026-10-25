@@ -1,6 +1,6 @@
 # Plan: bring the validated fonts and sizes into the game (N1 to N9)
 
-Status: **approved. N6, N1, N8, N9, N5, the ModalLayer fix and N3 are done and committed. N2 batches 1 and 2 are done and committed; batches 3 to 6 are committed; batch 7 is done. D9 is decided: Pop-Art keeps Lilita One for small text. N2 is done. Next: N4 (the rest of the board, setup and newspapers follow the theme: colours, panels, buttons, table).** Each step is a separate, reviewable change; none is committed unless you ask.
+Status: **approved. N6, N1, N8, N9, N5, the ModalLayer fix and N3 are done and committed. N2 batches 1 and 2 are done and committed; batches 3 to 6 are committed; batch 7 is done. D9 is decided: Pop-Art keeps Lilita One for small text. N2 is done. N4 is done (all 8 phases of [the board plan](./PLAN_board_theming.md): the board, setup, table, combat log drawer and Daily Bugle follow the theme). Next: N7 (player font choice, later).** Each step is a separate, reviewable change; none is committed unless you ask.
 
 Related: [Font plan](./PLAN_fonts.md) (phases 1 to 6 are done), [Font record](./FONT_RECORD.md), [Theme engine plan](./PLAN_theme_engine.md), [Unthemed UI audit](./AUDIT_unthemed_ui.md).
 

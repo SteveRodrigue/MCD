@@ -3,7 +3,7 @@ import fs from 'fs';
 import {
   CardEnrichmentSchema,
   findEventDiscardSelfViolations,
-} from '../../data/supplemental/schema';
+} from '../../data/supplemental/schema.ts';
 
 export interface CardSummary {
   code: string;

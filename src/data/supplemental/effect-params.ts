@@ -17,8 +17,8 @@ import {
   TargetSelectorSchema,
   UniversalCardFilterSchema,
   type EffectType,
-} from './schema-primitives';
-import type { FieldMeta } from './schema-introspector';
+} from './schema-primitives.ts';
+import type { FieldMeta } from './schema-introspector.ts';
 
 /**
  * Allowed `effectParams` per effect primitive (Issue #230, Card Editor re-architecture Phase 2).

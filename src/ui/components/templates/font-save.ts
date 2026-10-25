@@ -1,4 +1,4 @@
-import { fontAt, type FontPair, type FontSizes, type FontSlot } from './font-test';
+import { fontAt, type FontPair, type FontSizes, type FontSlot } from './font-test.ts';
 
 /** The dev server route that writes the file, and the file it writes (in the repository, git-ignored). */
 export const FONT_CHOICES_ENDPOINT = '/api/lab/font-choices';

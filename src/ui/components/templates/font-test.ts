@@ -1,4 +1,4 @@
-import { FONT_CHOICES, type FontChoice } from './lab-font-list';
+import { FONT_CHOICES, type FontChoice } from './lab-font-list.ts';
 
 /** The two kinds of text the lab tests separately. */
 export type TextRole = 'headline' | 'body';

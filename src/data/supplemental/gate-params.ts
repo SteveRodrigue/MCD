@@ -1,8 +1,8 @@
-import { GATE_KINDS, STEP_GATES, type GateKind } from './runtime';
+import { GATE_KINDS, STEP_GATES, type GateKind } from './runtime.ts';
 
 export type { GateKind };
 import { z } from 'zod';
-import { hasRequiredFields, introspectObjectSchema } from './schema-introspector';
+import { hasRequiredFields, introspectObjectSchema } from './schema-introspector.ts';
 
 export const IdentityFormSchema = z.enum(['HERO', 'ALTER_EGO']);
 export type IdentityForm = z.infer<typeof IdentityFormSchema>;

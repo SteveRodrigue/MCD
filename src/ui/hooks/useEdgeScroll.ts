@@ -158,8 +158,13 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
 
     const currentScroll = el.scrollLeft;
     const targetOffset = targetRect.left - containerRect.left;
+    const padding = parseFloat(getComputedStyle(el).paddingLeft) || 0;
+    // A target wider than the view would overflow both sides when centered and lose its left edge:
+    // align it to the left, inside the padding. A narrower one is centered.
     const desiredScroll =
-      currentScroll + targetOffset - (containerRect.width - targetRect.width) / 2;
+      targetRect.width > containerRect.width - 2 * padding
+        ? currentScroll + targetOffset - padding
+        : currentScroll + targetOffset - (containerRect.width - targetRect.width) / 2;
 
     el.scrollTo({
       left: Math.max(0, desiredScroll),

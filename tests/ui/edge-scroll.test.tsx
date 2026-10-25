@@ -73,6 +73,41 @@ describe('useEdgeScroll', () => {
     });
   });
 
+  describe('scrollToChild (Issue #382)', () => {
+    /** A seat laid out inside the track: `offset` px from the track's left border edge. */
+    const seatAt = (offset: number, width: number) => {
+      const seat = document.createElement('div');
+      seat.getBoundingClientRect = () =>
+        ({
+          left: TRACK.left + offset,
+          right: TRACK.left + offset + width,
+          width,
+          top: 0,
+          bottom: 600,
+          height: 600,
+          x: 0,
+          y: 0,
+        }) as DOMRect;
+      return seat;
+    };
+
+    it('aligns a seat wider than the track to its left edge, so its first pixels stay visible', () => {
+      const { hook, track } = mountTrack();
+      track.style.paddingLeft = '16px';
+      hook.result.current.scrollToChild(seatAt(16, 1200));
+      // The seat starts at the track padding, so it is already aligned: scrollLeft stays at 500.
+      expect(track.scrollTo).toHaveBeenCalledWith({ left: 500, behavior: 'smooth' });
+    });
+
+    it('still centers a seat narrower than the track', () => {
+      const { hook, track } = mountTrack();
+      track.style.paddingLeft = '16px';
+      hook.result.current.scrollToChild(seatAt(300, 600));
+      // 500 + 300 - (1112 - 600) / 2
+      expect(track.scrollTo).toHaveBeenCalledWith({ left: 544, behavior: 'smooth' });
+    });
+  });
+
   describe('edge zones', () => {
     it('scrolls right while the pointer is in the right edge zone of the track', () => {
       const { scrollLeft } = mountTrack();

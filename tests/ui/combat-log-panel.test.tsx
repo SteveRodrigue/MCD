@@ -125,6 +125,20 @@ describe('CombatLogPanel Component (Issue #142)', () => {
     expect(screen.queryByText(/Rhino attacks Spider-Man/i)).toBeNull();
   });
 
+  it('keeps the language toggle in the footer beside Show Debug, not above the masthead (Issue #381)', () => {
+    render(
+      <TestSession state={mockGameState as GameState}>
+        <CombatLogPanel logs={mockLogs} />
+      </TestSession>,
+    );
+    const toggle = screen.getByTitle(/Toggle Language/i);
+    const footer = screen.getByText(/Showing \d+ of \d+ Events/).closest('footer');
+    expect(footer).not.toBeNull();
+    expect(footer?.contains(toggle)).toBe(true);
+    expect(footer?.contains(screen.getByText('Show Debug'))).toBe(true);
+    expect(toggle.closest('header')).toBeNull();
+  });
+
   it('switches between English and French locales via language toggle', () => {
     render(
       <TestSession state={mockGameState as GameState}>

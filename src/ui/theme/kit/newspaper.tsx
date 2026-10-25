@@ -28,8 +28,6 @@ export interface NewspaperSheetProps {
   className?: string;
   /** Adds a close button above the masthead. */
   onClose?: () => void;
-  /** Buttons shown before the close button (a language toggle). */
-  actions?: React.ReactNode;
   /** Stays under the masthead while the stories scroll (a filter bar). */
   toolbar?: React.ReactNode;
   /** The page keeps its masthead and footer in view and scrolls its stories; the caller bounds its height. */
@@ -48,7 +46,6 @@ export const NewspaperSheet: React.FC<NewspaperSheetProps> = ({
   footer,
   className = '',
   onClose,
-  actions,
   toolbar,
   scrollable = false,
   scrollRef,
@@ -70,20 +67,17 @@ export const NewspaperSheet: React.FC<NewspaperSheetProps> = ({
       />
       <div className="relative flex flex-col min-h-0 flex-1">
         <div className="p-4 sm:p-5 pb-0 space-y-4 shrink-0">
-          {(actions || onClose) && (
+          {onClose && (
             <div className="flex items-center justify-end gap-2">
-              {actions}
-              {onClose && (
-                <button
-                  type="button"
-                  onClick={onClose}
-                  title="Close Newspaper"
-                  aria-label="Close Newspaper"
-                  className={`cursor-pointer inline-flex items-center ${np.pill}`}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={onClose}
+                title="Close Newspaper"
+                aria-label="Close Newspaper"
+                className={`cursor-pointer inline-flex items-center ${np.pill}`}
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
           )}
           <header className={np.mastheadWrap}>

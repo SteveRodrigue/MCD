@@ -17,6 +17,7 @@ import { DevStepErrorBanner } from '../../src/ui/components/board/DevStepErrorBa
 import { QuickMenu } from '../../src/ui/components/board/QuickMenu';
 import { SideDock } from '../../src/ui/components/board/SideDock';
 import { ExtraActionsPill } from '../../src/ui/components/board/ExtraActionsPill';
+import { EmptyZoneBadge } from '../../src/ui/components/board/EmptyZoneBadge';
 import { InfiniteLoopModal } from '../../src/ui/components/board/InfiniteLoopModal';
 import {
   PileCardTile,
@@ -60,7 +61,7 @@ interface Case {
   /** False for dialogs that name no card (settings, bug report, game over). */
   showsCard?: boolean;
   /** ARIA role of the surface (a dialog unless stated). */
-  role?: 'dialog' | 'alert' | 'toolbar' | 'button';
+  role?: 'dialog' | 'alert' | 'toolbar' | 'button' | 'note';
   render: (state: GameState) => React.ReactElement;
 }
 
@@ -92,6 +93,15 @@ const CASES: Case[] = [
         onOpenNewspaper={vi.fn()}
         onReset={vi.fn()}
       />
+    ),
+  },
+  {
+    label: 'EmptyZoneBadge',
+    cards: [],
+    showsCard: false,
+    role: 'note',
+    render: () => (
+      <EmptyZoneBadge zone="minions" icon={null} label="Minions" title="No minions engaged" />
     ),
   },
   {

@@ -29,6 +29,7 @@ import { CardAttachmentFan } from '../cards/CardAttachmentFan';
 import { getStaircaseExpansion } from '../cards/attachment-fan-utils';
 import { FacedownEncounterCard } from '../cards/FacedownEncounterCard';
 import { ThreatZoneSubzone } from './ThreatZoneSubzone';
+import { EmptyZoneBadge } from './EmptyZoneBadge';
 import { useOptionalGameSettings } from '../../context/useGameSettings';
 import { IdentityActionModal } from './IdentityActionModal';
 import { ComicDamageSplash } from './ComicDamageSplash';
@@ -100,6 +101,9 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const hasDealtCards = dealtCards.length > 0;
   const obligations = player.obligations || [];
   const hasObligations = obligations.length > 0;
+  // An empty Threat Zone or Tableau is not drawn; its count is a badge in the ribbon (Issue #379).
+  const isThreatZoneEmpty = engagedMinions.length === 0 && !hasDealtCards && !hasObligations;
+  const isTableauEmpty = player.tableau.length === 0;
 
   const effectiveStats = getEffectiveHeroStats(gameState, player);
   const effectiveHandSize = getEffectiveHandSize(player, gameState);
@@ -362,132 +366,151 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
             Switch Active Hand ➔
           </ToneButton>
         )}
+
+        {isThreatZoneEmpty && (
+          <EmptyZoneBadge
+            zone="minions"
+            icon={<AlertOctagon className="w-3 h-3 text-comic-red" />}
+            label="Minions"
+            title={`No minions engaged with ${player.name} (Perimeter secure)`}
+          />
+        )}
+        {isTableauEmpty && (
+          <EmptyZoneBadge
+            zone="tableau"
+            icon={<Zap className="w-3 h-3 text-comic-yellow" />}
+            label="Tableau"
+            title="No upgrades or supports in play"
+          />
+        )}
       </div>
 
-      {/* 1. Engaged Minions & Dealt Encounter Cards Row (Always Visible for this Hero Seat!) */}
-      <div data-testid="threat-zone" className={`p-3 ${style.inset}`}>
-        <div className="flex items-center justify-between border-b border-current/20 pb-1 mb-2">
-          <div className="flex items-center gap-1.5">
-            <AlertOctagon className="w-4 h-4 text-comic-red" />
-            <span className={`text-xs uppercase font-bold ${style.emphasis}`}>
-              {hasDealtCards || hasObligations
-                ? `Threat Zone: ${player.name} (${engagedMinions.length} Minions • ${dealtCards.length} Dealt Cards${
-                    hasObligations ? ` • ${obligations.length} Obligations` : ''
-                  })`
-                : `Minions Engaged with ${player.name} (${engagedMinions.length})`}
+      {/* 1. Engaged Minions & Dealt Encounter Cards Row (Drawn while it holds a minion, a dealt card or an obligation) */}
+      {!isThreatZoneEmpty && (
+        <div data-testid="threat-zone" className={`p-3 ${style.inset}`}>
+          <div className="flex items-center justify-between border-b border-current/20 pb-1 mb-2">
+            <div className="flex items-center gap-1.5">
+              <AlertOctagon className="w-4 h-4 text-comic-red" />
+              <span className={`text-xs uppercase font-bold ${style.emphasis}`}>
+                {hasDealtCards || hasObligations
+                  ? `Threat Zone: ${player.name} (${engagedMinions.length} Minions • ${dealtCards.length} Dealt Cards${
+                      hasObligations ? ` • ${obligations.length} Obligations` : ''
+                    })`
+                  : `Minions Engaged with ${player.name} (${engagedMinions.length})`}
+              </span>
+            </div>
+            <span className={`text-micro font-bold uppercase ${style.muted}`}>
+              Encounter Threat Zone
             </span>
           </div>
-          <span className={`text-micro font-bold uppercase ${style.muted}`}>
-            Encounter Threat Zone
-          </span>
-        </div>
 
-        <div className="flex flex-wrap items-start gap-4 pt-1">
-          {hasDealtCards && (
-            <ThreatZoneSubzone testId="threat-zone-facedown" label="Encounter Facedown">
-              <FacedownEncounterCard
-                cards={dealtCards}
-                heroName={player.name}
-                devMode={isDevMode}
-              />
-            </ThreatZoneSubzone>
-          )}
-
-          {hasObligations && (
-            <ThreatZoneSubzone
-              testId="threat-zone-obligations"
-              label="Obligations"
-              count={obligations.length}
-            >
-              {obligations.map((obligation) => (
-                <CardView
-                  key={obligation.instanceId}
-                  card={obligation.card}
-                  instance={obligation}
-                  size="sm"
-                  enableHoverZoom={true}
+          <div className="flex flex-wrap items-start gap-4 pt-1">
+            {hasDealtCards && (
+              <ThreatZoneSubzone testId="threat-zone-facedown" label="Encounter Facedown">
+                <FacedownEncounterCard
+                  cards={dealtCards}
+                  heroName={player.name}
+                  devMode={isDevMode}
                 />
-              ))}
-            </ThreatZoneSubzone>
-          )}
-
-          <ThreatZoneSubzone
-            testId="threat-zone-minions"
-            label="Minions Engaged"
-            count={engagedMinions.length}
-            grow={engagedMinions.length === 0}
-          >
-            {engagedMinions.length > 0 ? (
-              <div className="flex flex-wrap gap-4 items-center">
-                {engagedMinions.map((minion) => {
-                  const isGuard = hasKeyword(minion.card, Keyword.GUARD);
-                  const isTough = minion.statusCards?.includes(StatusCard.TOUGH) ?? false;
-                  const { extraBottomPx: verticalExtraPx, extraLeftClass: horizontalExtraClass } =
-                    getStaircaseExpansion(minion.attachments, minion.cardsUnderneath);
-
-                  return (
-                    <div
-                      key={minion.instanceId}
-                      className={`flex flex-col items-center gap-1 transition-all ${horizontalExtraClass}`}
-                      style={
-                        verticalExtraPx > 0 ? { marginBottom: `${verticalExtraPx}px` } : undefined
-                      }
-                    >
-                      <CardAttachmentFan
-                        attachments={minion.attachments}
-                        cardsUnderneath={minion.cardsUnderneath}
-                      >
-                        <CardView
-                          card={minion.card}
-                          instance={minion}
-                          size="sm"
-                          enableHoverZoom={true}
-                        />
-                      </CardAttachmentFan>
-                      <div className="flex items-center gap-1 flex-wrap justify-center z-raised">
-                        <span
-                          className={`bg-sky-50 text-comic-blue text-nano px-1 py-0.2 font-bold ${style.badge}`}
-                          title={`Scheme: ${(minion.card as any).scheme ?? 0}`}
-                        >
-                          SCH {(minion.card as any).scheme ?? 0}
-                        </span>
-                        <span
-                          className={`bg-rose-50 text-comic-red text-nano px-1 py-0.2 font-bold ${style.badge}`}
-                          title={`Attack: ${(minion.card as any).attack ?? 0}`}
-                        >
-                          ATK {(minion.card as any).attack ?? 0}
-                        </span>
-                        {isGuard && (
-                          <span
-                            className={`bg-slate-900 text-comic-yellow text-micro px-1.5 py-0.5 font-bold ${style.badge}`}
-                          >
-                            GUARD
-                          </span>
-                        )}
-                        {isTough && (
-                          <span
-                            className={`bg-sky-400 text-slate-950 text-micro px-1.5 py-0.5 font-bold ${style.badge}`}
-                          >
-                            TOUGH
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div
-                className={`py-2 px-3 border-2 border-dashed border-current/30 rounded-lg text-center text-xs font-semibold flex items-center justify-center gap-2 ${style.muted} ${
-                  hasDealtCards ? 'flex-1 self-stretch' : 'w-full'
-                }`}
-              >
-                <span>🛡️ No minions engaged with {player.name} (Perimeter secure).</span>
-              </div>
+              </ThreatZoneSubzone>
             )}
-          </ThreatZoneSubzone>
+
+            {hasObligations && (
+              <ThreatZoneSubzone
+                testId="threat-zone-obligations"
+                label="Obligations"
+                count={obligations.length}
+              >
+                {obligations.map((obligation) => (
+                  <CardView
+                    key={obligation.instanceId}
+                    card={obligation.card}
+                    instance={obligation}
+                    size="sm"
+                    enableHoverZoom={true}
+                  />
+                ))}
+              </ThreatZoneSubzone>
+            )}
+
+            <ThreatZoneSubzone
+              testId="threat-zone-minions"
+              label="Minions Engaged"
+              count={engagedMinions.length}
+              grow={engagedMinions.length === 0}
+            >
+              {engagedMinions.length > 0 ? (
+                <div className="flex flex-wrap gap-4 items-center">
+                  {engagedMinions.map((minion) => {
+                    const isGuard = hasKeyword(minion.card, Keyword.GUARD);
+                    const isTough = minion.statusCards?.includes(StatusCard.TOUGH) ?? false;
+                    const { extraBottomPx: verticalExtraPx, extraLeftClass: horizontalExtraClass } =
+                      getStaircaseExpansion(minion.attachments, minion.cardsUnderneath);
+
+                    return (
+                      <div
+                        key={minion.instanceId}
+                        className={`flex flex-col items-center gap-1 transition-all ${horizontalExtraClass}`}
+                        style={
+                          verticalExtraPx > 0 ? { marginBottom: `${verticalExtraPx}px` } : undefined
+                        }
+                      >
+                        <CardAttachmentFan
+                          attachments={minion.attachments}
+                          cardsUnderneath={minion.cardsUnderneath}
+                        >
+                          <CardView
+                            card={minion.card}
+                            instance={minion}
+                            size="sm"
+                            enableHoverZoom={true}
+                          />
+                        </CardAttachmentFan>
+                        <div className="flex items-center gap-1 flex-wrap justify-center z-raised">
+                          <span
+                            className={`bg-sky-50 text-comic-blue text-nano px-1 py-0.2 font-bold ${style.badge}`}
+                            title={`Scheme: ${(minion.card as any).scheme ?? 0}`}
+                          >
+                            SCH {(minion.card as any).scheme ?? 0}
+                          </span>
+                          <span
+                            className={`bg-rose-50 text-comic-red text-nano px-1 py-0.2 font-bold ${style.badge}`}
+                            title={`Attack: ${(minion.card as any).attack ?? 0}`}
+                          >
+                            ATK {(minion.card as any).attack ?? 0}
+                          </span>
+                          {isGuard && (
+                            <span
+                              className={`bg-slate-900 text-comic-yellow text-micro px-1.5 py-0.5 font-bold ${style.badge}`}
+                            >
+                              GUARD
+                            </span>
+                          )}
+                          {isTough && (
+                            <span
+                              className={`bg-sky-400 text-slate-950 text-micro px-1.5 py-0.5 font-bold ${style.badge}`}
+                            >
+                              TOUGH
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div
+                  className={`py-2 px-3 border-2 border-dashed border-current/30 rounded-lg text-center text-xs font-semibold flex items-center justify-center gap-2 ${style.muted} ${
+                    hasDealtCards ? 'flex-1 self-stretch' : 'w-full'
+                  }`}
+                >
+                  <span>🛡️ No minions engaged with {player.name} (Perimeter secure).</span>
+                </div>
+              )}
+            </ThreatZoneSubzone>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 2. Main Hero Play Area: Two-Tier Layout (Row 1: Hero & Allies Roster, Row 2: Tableau Upgrades & Supports) */}
       <div className="flex flex-col gap-3 pt-1 w-full">
@@ -913,18 +936,18 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           </div>
         </div>
 
-        {/* ROW 2: Tableau Upgrades & Supports */}
-        <div data-testid="tableau-section" className={`w-full p-3 space-y-2 ${style.inset}`}>
-          <div
-            className={`flex items-center justify-between text-xs font-bold uppercase border-b border-current/20 pb-1.5 ${style.muted}`}
-          >
-            <span className="flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-comic-yellow" />
-              Tableau: Upgrades & Supports ({player.tableau.length})
-            </span>
-          </div>
+        {/* ROW 2: Tableau Upgrades & Supports (not drawn while empty) */}
+        {!isTableauEmpty && (
+          <div data-testid="tableau-section" className={`w-full p-3 space-y-2 ${style.inset}`}>
+            <div
+              className={`flex items-center justify-between text-xs font-bold uppercase border-b border-current/20 pb-1.5 ${style.muted}`}
+            >
+              <span className="flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-comic-yellow" />
+                Tableau: Upgrades & Supports ({player.tableau.length})
+              </span>
+            </div>
 
-          {player.tableau.length > 0 ? (
             <div className="flex flex-wrap gap-3 items-center pt-1">
               {player.tableau.map((cardInst) => {
                 const abilities = cardInst.card.enrichment?.abilities || [];
@@ -1025,14 +1048,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                 );
               })}
             </div>
-          ) : (
-            <div
-              className={`h-36 border-2 border-dashed border-current/30 rounded-lg flex items-center justify-center text-center text-xs font-semibold ${style.muted}`}
-            >
-              No supports or upgrades
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Identity Action Selector Modal */}

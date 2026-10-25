@@ -1,5 +1,15 @@
 import React, { useState, useMemo } from 'react';
-import { Skull, AlertTriangle, Layers, Flame, Eye, ArrowDownUp, Filter, Heart } from 'lucide-react';
+import {
+  Skull,
+  AlertTriangle,
+  Layers,
+  Flame,
+  Eye,
+  ArrowDownUp,
+  Filter,
+  Heart,
+  Archive,
+} from 'lucide-react';
 import {
   VillainState,
   MainSchemeState,
@@ -26,11 +36,14 @@ import { getCardBackUrl, getCardBackFallbackColor } from '../../services/card-ca
 import { useModalStyle } from '../../theme/useModalStyle';
 import { ZonePanel } from '../../theme/kit/surfaces';
 import { StatBox } from '../../theme/kit/meters';
+import { EmptyZoneBadge } from './EmptyZoneBadge';
 
 interface VillainZoneProps {
   villain: VillainState;
   mainScheme: MainSchemeState;
   sideSchemes: SideSchemeState[];
+  /** Nothing is out of play, so the board draws no Out of Play box: the header badges it. */
+  outOfPlayEmpty: boolean;
   encounterDeck: CardInstance[];
   encounterDiscard: CardInstance[];
   accelerationTokens: number;
@@ -56,6 +69,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
   villain,
   mainScheme,
   sideSchemes,
+  outOfPlayEmpty,
   encounterDeck,
   encounterDiscard,
   accelerationTokens,
@@ -138,8 +152,30 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
         data-testid="villain-zone"
         title="VILLAIN & SCENARIO ZONE"
         icon={<Skull className="w-3.5 h-3.5 text-comic-red" />}
-        className="hover:z-raised focus-within:z-raised"
+        className="min-w-0 hover:z-raised focus-within:z-raised"
         bodyClassName="p-4"
+        right={
+          (sideSchemes.length === 0 || outOfPlayEmpty) && (
+            <div className="flex items-center gap-2">
+              {sideSchemes.length === 0 && (
+                <EmptyZoneBadge
+                  zone="side-schemes"
+                  icon={<Flame className="w-3 h-3 text-comic-red" />}
+                  label="Side schemes"
+                  title="No side schemes active"
+                />
+              )}
+              {outOfPlayEmpty && (
+                <EmptyZoneBadge
+                  zone="out-of-play"
+                  icon={<Archive className="w-3 h-3" />}
+                  label="Out of play"
+                  title="Nothing is out of play"
+                />
+              )}
+            </div>
+          )
+        }
       >
         <div className="flex flex-wrap items-stretch gap-4">
           {/* 1. Encounter Discard & Draw Piles (Left of Villain, Left-to-Right: Discard -> Deck) */}
@@ -394,18 +430,19 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
             </div>
           </div>
 
-          {/* 4. Active Side Schemes & Player Schemes (Takes remaining width) */}
-          <div
-            className={`flex-1 min-w-[200px] flex flex-col gap-2 p-3 min-h-[220px] relative z-content hover:z-zoom focus-within:z-zoom ${style.inset}`}
-          >
+          {/* 4. Active Side Schemes: right of the main scheme, taking the remaining width. Not drawn while empty (badge in the header) */}
+          {sideSchemes.length > 0 && (
             <div
-              className={`flex items-center gap-1.5 text-xs font-bold uppercase border-b border-current/20 pb-1.5 ${style.muted}`}
+              data-testid="side-schemes-panel"
+              className={`flex-1 min-w-[200px] flex flex-col gap-2 p-3 relative z-content hover:z-zoom focus-within:z-zoom ${style.inset}`}
             >
-              <Flame className="w-4 h-4 text-comic-red" />
-              <span>Active Side Schemes ({sideSchemes.length})</span>
-            </div>
+              <div
+                className={`flex items-center gap-1.5 text-xs font-bold uppercase border-b border-current/20 pb-1.5 ${style.muted}`}
+              >
+                <Flame className="w-4 h-4 text-comic-red" />
+                <span>Active Side Schemes ({sideSchemes.length})</span>
+              </div>
 
-            {sideSchemes.length > 0 ? (
               <div className="flex flex-wrap gap-3 items-center pt-1 overflow-visible">
                 {sideSchemes.map((scheme) => {
                   const { extraBottomPx, extraLeftClass } = getStaircaseExpansion(
@@ -433,14 +470,8 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                   );
                 })}
               </div>
-            ) : (
-              <div
-                className={`flex-1 flex flex-col items-center justify-center p-3 text-center text-xs font-semibold border-2 border-dashed border-current/30 rounded-lg ${style.muted}`}
-              >
-                <span>No side schemes active</span>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </ZonePanel>
 

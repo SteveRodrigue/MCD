@@ -151,7 +151,9 @@ describe('Facedown Encounter Card Display in Hero Zone (Issue #138)', () => {
       );
 
       expect(screen.queryByTestId('facedown-encounter-card')).toBeNull();
-      expect(screen.getByText(`Minions Engaged with ${player.name} (0)`)).toBeDefined();
+      // With no dealt card, no minion and no obligation the Threat Zone is not drawn (Issue #379).
+      expect(screen.queryByTestId('threat-zone')).toBeNull();
+      expect(screen.getByTestId('empty-zone-badge-minions')).toBeDefined();
     });
 
     it('renders FacedownEncounterCard to the left of minions and updates threat zone header when dealtEncounterCards has cards', () => {

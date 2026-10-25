@@ -69,7 +69,7 @@ describe('GameBoard Call for Action Top-Left Hover Button', () => {
     return state;
   }
 
-  it('renders "EXTRA!" hover button at top-left during multiplayer PLAYER_PHASE when teammate actions are available', () => {
+  it('renders the "EXTRA!" pill left of the Villain Zone during multiplayer PLAYER_PHASE when teammate actions are available', () => {
     const state = createMultiplayerState();
 
     render(
@@ -82,11 +82,17 @@ describe('GameBoard Call for Action Top-Left Hover Button', () => {
 
     const extraBtn = screen.getByRole('button', { name: /^EXTRA!/ });
     expect(extraBtn).toBeDefined();
-    // The pill floats at the top-left; there is no bar above it any more.
-    const container = extraBtn.closest('.fixed');
-    expect(container?.className).toContain('top-4');
-    expect(container?.className).toContain('left-4');
-    expect(container?.className).toContain('z-content');
+    // The pill sits in the villain row, left of the Villain Zone: nothing floats over the board and
+    // no space is reserved above it (Issue #379).
+    const row = screen.getByTestId('villain-row');
+    const villainZone = screen.getByTestId('villain-zone');
+    expect(row.contains(extraBtn)).toBe(true);
+    expect(extraBtn.closest('.fixed')).toBeNull();
+    expect(
+      extraBtn.compareDocumentPosition(villainZone) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(row.className).toContain('flex-nowrap');
+    expect(document.querySelector('main')?.className).not.toContain('pt-16');
 
     // Verify button styling: a beacon ring, not a fading pulse (the label stays readable).
     expect(extraBtn.className).toContain('font-news-headline');

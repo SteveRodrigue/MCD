@@ -45,6 +45,7 @@ describe('VillainZone Side Scheme Zoom & Stacking Context (Issue #148)', () => {
     return render(
       <GameSettingsProvider>
         <VillainZone
+          outOfPlayEmpty={false}
           villain={mockVillain}
           mainScheme={mockMainScheme}
           sideSchemes={sideSchemes}

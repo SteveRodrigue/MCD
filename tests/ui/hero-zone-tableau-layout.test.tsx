@@ -65,6 +65,8 @@ describe('HeroZone Nested Allies & 2-Tier Tableau Architecture (Issue #156)', ()
   it('2. Renders Tableau (Upgrades & Supports) in a separate second-tier container (tableau-section)', () => {
     const gameState = createTestGame();
     const player = gameState.players[0];
+    // An empty Tableau is not drawn (Issue #379): give it a card.
+    player.tableau = [createCardInstance(cardCatalog.getCard('01008')!)];
 
     render(
       <TestSession state={gameState}>

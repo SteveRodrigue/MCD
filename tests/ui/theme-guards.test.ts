@@ -22,6 +22,7 @@ const MIGRATED = [
   'src/ui/components/board/QuickMenu.tsx',
   'src/ui/components/board/SideDock.tsx',
   'src/ui/components/board/ExtraActionsPill.tsx',
+  'src/ui/components/board/EmptyZoneBadge.tsx',
   'src/ui/components/board/VillainPhaseStepper.tsx',
   'src/ui/components/board/ComicDamageSplash.tsx',
   'src/ui/components/board/GameBoard.tsx',

@@ -44,6 +44,7 @@ describe('Facedown cards underneath a side scheme (#238)', () => {
     const { container } = render(
       <GameSettingsProvider>
         <VillainZone
+          outOfPlayEmpty={false}
           villain={{
             card: cardCatalog.getCard('01094') as VillainCard,
             health: 14,

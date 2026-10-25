@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { NormalizedCard, CardInstance, StatusCard, CardType } from '../../../engine/models';
 import { getEffectiveCardTraitsDetails } from '../../../engine/pipeline/stat-calculator';
 import { useCardArt } from '../../hooks/useCardArt';
+import { useOnChange } from '../../hooks/useOnChange';
 import {
   getRemoteMarvelCdbUrl,
   getCardBackUrl,
@@ -86,10 +87,10 @@ const CardViewImpl: React.FC<CardViewProps> = ({
   const [imageSrc, setImageSrc] = useState<string | null>(artUrl);
   const [imageFailed, setImageFailed] = useState(false);
 
-  useEffect(() => {
-    setImageSrc(artUrl);
+  useOnChange(artUrl, (url) => {
+    setImageSrc(url);
     setImageFailed(false);
-  }, [artUrl]);
+  });
 
   const handleImageError = () => {
     if (imageSrc && !imageSrc.startsWith('http')) {

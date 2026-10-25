@@ -4,6 +4,7 @@ import { GameLogEntry } from '../../../engine/models';
 import { formatComicLogEntry } from '../../utils/comic-log-formatter';
 import { ComicSpeechBalloon } from './ComicSpeechBalloon';
 import { useGameSession } from '../../context/GameStateContext';
+import { useOnChange } from '../../hooks/useOnChange';
 import { NewsPill, NewspaperSheet } from '../../theme/kit/newspaper';
 import { useThemeExtras } from '../../theme/useThemeExtras';
 
@@ -29,10 +30,8 @@ export const CombatLogPanel: React.FC<CombatLogPanelProps> = ({
   const [showRawDebug, setShowRawDebug] = useState<boolean>(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Sync locale prop if changed
-  useEffect(() => {
-    setLocale(currentLocale);
-  }, [currentLocale]);
+  // Follow the locale prop when it changes
+  useOnChange(currentLocale, setLocale);
 
   // Format all log entries into comic dialogue
   const formattedLogs = useMemo(() => {

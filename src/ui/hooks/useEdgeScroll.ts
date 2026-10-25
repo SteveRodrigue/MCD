@@ -37,17 +37,20 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
 
   // Animation frame loop for smooth, direct pixel scrolling without CSS smoothing lag
   const animateScroll = useCallback(() => {
-    const el = containerRef.current;
-    if (el && scrollVelocity.current !== 0) {
-      el.scrollLeft += scrollVelocity.current;
-      updateScrollBounds();
-      animationFrameId.current = requestAnimationFrame(animateScroll);
-    } else {
-      if (animationFrameId.current) {
-        cancelAnimationFrame(animationFrameId.current);
-        animationFrameId.current = null;
+    const step = () => {
+      const el = containerRef.current;
+      if (el && scrollVelocity.current !== 0) {
+        el.scrollLeft += scrollVelocity.current;
+        updateScrollBounds();
+        animationFrameId.current = requestAnimationFrame(step);
+      } else {
+        if (animationFrameId.current) {
+          cancelAnimationFrame(animationFrameId.current);
+          animationFrameId.current = null;
+        }
       }
-    }
+    };
+    step();
   }, [updateScrollBounds]);
 
   const startScrolling = useCallback(

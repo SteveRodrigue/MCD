@@ -59,10 +59,10 @@ const AppContent: React.FC = () => {
       return 'SETUP';
     },
   );
-  const [gameState, setGameState] = useState<GameState | null>(null);
+  const [rawGameState, setGameState] = useState<GameState | null>(null);
   const [loopError, setLoopError] = useState<InfiniteLoopError | null>(null);
 
-  // The engine reads two UI settings from state.options; every new state gets them here
+  // The engine reads two UI settings from state.options; the state it is handed always carries them
   const withUiOptions = React.useCallback(
     (state: GameState): GameState => {
       const villainPhaseStepping = settings.villainPhasePacing !== 'instant';
@@ -85,9 +85,10 @@ const AppContent: React.FC = () => {
   );
 
   // A settings change applies to the game in progress
-  React.useEffect(() => {
-    setGameState((prev) => (prev ? withUiOptions(prev) : prev));
-  }, [withUiOptions]);
+  const gameState = React.useMemo(
+    () => (rawGameState ? withUiOptions(rawGameState) : null),
+    [rawGameState, withUiOptions],
+  );
 
   // Handle browser popstate
   React.useEffect(() => {
@@ -141,7 +142,7 @@ const AppContent: React.FC = () => {
     // The game's theme is decided once, here, and stays for the whole game
     rollGameTheme();
     resetSessionSyncTracking();
-    setGameState(withUiOptions(newGameState));
+    setGameState(newGameState);
     setStage('MULLIGAN');
   };
 
@@ -153,7 +154,7 @@ const AppContent: React.FC = () => {
       playerId,
       discardCardInstanceIds: discardIds,
     });
-    setGameState(withUiOptions(nextState));
+    setGameState(nextState);
   };
 
   const handleResolveSetupPrompt = (playerId: string, selectedOptionId: string) => {
@@ -163,7 +164,7 @@ const AppContent: React.FC = () => {
       playerId,
       selectedOptionId,
     });
-    setGameState(withUiOptions(nextState));
+    setGameState(nextState);
   };
 
   const handleStartScenario = () => {
@@ -181,7 +182,6 @@ const AppContent: React.FC = () => {
         currentState = nextState;
       }
     }
-    currentState = withUiOptions(currentState);
     setGameState(currentState);
     // A player Setup ability may still wait for a decision: the mulligan screen shows it first.
     if (currentState.setupState?.stage !== 'PLAYER_SETUP') {
@@ -193,7 +193,7 @@ const AppContent: React.FC = () => {
     if (!gameState) return;
     try {
       const { state: nextState } = dispatchAction(gameState, action);
-      setGameState(withUiOptions(nextState));
+      setGameState(nextState);
     } catch (err) {
       if (err instanceof InfiniteLoopError) {
         setLoopError(err);

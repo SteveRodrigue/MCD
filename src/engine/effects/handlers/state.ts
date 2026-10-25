@@ -512,7 +512,7 @@ function handleExhaust(
 ): EffectResult {
   const params = getStepEffectParams(step);
   const targetParam = (params.target as string) || 'SELF_IDENTITY';
-  let exhaustTargetName = player.name;
+  let exhaustTargetName: string;
 
   const exhaustFilter = params.filter;
   const targets = filterResolvedTargets(

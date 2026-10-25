@@ -1,6 +1,7 @@
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { ChevronDown } from 'lucide-react';
+import { useOnChange } from '../../hooks/useOnChange';
 
 export interface CollapsibleSectionProps {
   title: string;
@@ -28,23 +29,14 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   children,
 }) => {
   const [isExpanded, setIsExpanded] = React.useState(defaultOpen || hasErrors);
-  const prevDefaultOpenRef = React.useRef(defaultOpen);
   const baseId = React.useId();
   const headerId = `${testId || 'section'}-${baseId}-header`;
   const contentId = `${testId || 'section'}-${baseId}-content`;
 
-  React.useEffect(() => {
-    if (hasErrors) {
-      setIsExpanded(true);
-    }
-  }, [hasErrors]);
-
-  React.useEffect(() => {
-    if (prevDefaultOpenRef.current !== defaultOpen) {
-      prevDefaultOpenRef.current = defaultOpen;
-      setIsExpanded(defaultOpen);
-    }
-  }, [defaultOpen]);
+  useOnChange(hasErrors, (errors) => {
+    if (errors) setIsExpanded(true);
+  });
+  useOnChange(defaultOpen, setIsExpanded);
 
   // Complete DOM removal when visible === false unless forceOpen === true
   const isVisible = visible !== false || forceOpen === true;

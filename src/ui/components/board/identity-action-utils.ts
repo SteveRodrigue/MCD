@@ -32,7 +32,7 @@ export function getIdentityAttackState(
     !player.exhausted &&
     (gameState ? validAttackTargets.length > 0 : true);
 
-  let subtext = '';
+  let subtext: string;
   if (player.exhausted) {
     subtext = 'Hero is exhausted';
   } else if (!isHero) {

@@ -1118,7 +1118,7 @@ export function checkAndDiscardZeroCounterCard(
   if (!hasUsesKeyword) return false;
 
   // Calculate remaining counters
-  let remainingCounters = 0;
+  let remainingCounters: number;
   if (counterType && cardInstance.counters && cardInstance.counters[counterType] !== undefined) {
     remainingCounters = cardInstance.counters[counterType];
   } else if (cardInstance.counters && Object.keys(cardInstance.counters).length > 0) {

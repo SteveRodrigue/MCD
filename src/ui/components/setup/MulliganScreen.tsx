@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { CheckCircle2, Play, Users, Check, Crown } from 'lucide-react';
 import { GameState, CardInstance, peekDecisionPrompt } from '../../../engine';
 import { CardView } from '../cards/CardView';
+import { ToneButton } from '../../theme/kit/controls';
+import { useModalStyle } from '../../theme/useModalStyle';
 import { DecisionPromptModal } from '../board/DecisionPromptModal';
 
 interface MulliganScreenProps {
@@ -18,6 +20,7 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
   onStartScenario,
   onResolvePrompt,
 }) => {
+  const { style } = useModalStyle();
   const [activeSeatIndex, setActiveSeatIndex] = useState<number>(0);
   const [discardsByPlayer, setDiscardsByPlayer] = useState<Record<string, string[]>>({});
 
@@ -62,13 +65,17 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
     <div className="relative max-w-6xl w-full mx-auto my-6 p-4 md:p-6">
       {/* Top Banner */}
       <div className="text-center mb-6 relative">
-        <div className="inline-block bg-comic-yellow border-comic border-comic-black px-6 py-2 font-comic text-2xl tracking-wider text-comic-red shadow-comic transform -rotate-1 mb-2">
+        <div
+          className={`inline-block px-6 py-2 font-comic text-2xl tracking-wider -rotate-1 mb-2 ${style.buttonShape} ${style.verbs.yellow.banner}`}
+        >
           SETUP STEP 8 • MULTI-HERO MULLIGAN PHASE
         </div>
-        <h1 className="font-comic text-4xl md:text-5xl text-comic-red tracking-wide drop-shadow-md">
+        <h1
+          className={`font-comic text-4xl md:text-5xl tracking-wide drop-shadow-md ${style.emphasis}`}
+        >
           REVIEW & PREVIEW ALL HERO HANDS
         </h1>
-        <p className="font-comic text-lg text-comic-blue tracking-wider uppercase">
+        <p className={`font-comic text-lg tracking-wider uppercase ${style.muted}`}>
           Switch tabs freely between heroes to strategize before confirming discards
         </p>
       </div>
@@ -85,12 +92,12 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
               <button
                 key={p.id}
                 onClick={() => setActiveSeatIndex(idx)}
-                className={`px-4 py-2.5 rounded-lg text-sm border-2 transition-all flex items-center gap-2 cursor-pointer ${
+                className={`px-4 py-2.5 text-sm transition-all flex items-center gap-2 cursor-pointer ${
                   isSelected
-                    ? 'bg-comic-blue text-white border-comic-black shadow-comic font-bold transform -translate-y-0.5'
+                    ? `${style.tileSelected} font-bold -translate-y-0.5`
                     : isDone
-                      ? 'bg-emerald-100 text-emerald-950 border-emerald-600 hover:bg-emerald-200'
-                      : 'bg-white text-slate-800 border-slate-400 hover:border-comic-black hover:bg-amber-50'
+                      ? `${style.buttonShape} bg-emerald-100 text-emerald-950 hover:bg-emerald-200`
+                      : style.tile
                 }`}
               >
                 {isDone ? (
@@ -105,12 +112,16 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
                 </span>
                 <span className="text-micro opacity-75 uppercase">({p.hero.name})</span>
                 {isStartingPlayer && (
-                  <span className="text-micro bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded font-bold flex items-center gap-0.5">
+                  <span
+                    className={`text-micro bg-amber-400 text-slate-950 px-1.5 py-0.2 font-bold flex items-center gap-0.5 ${style.badge}`}
+                  >
                     👑 STARTING
                   </span>
                 )}
                 {isDone && (
-                  <span className="text-micro bg-emerald-600 text-white px-1.5 py-0.2 rounded font-bold">
+                  <span
+                    className={`text-micro bg-emerald-600 text-white px-1.5 py-0.2 font-bold ${style.badge}`}
+                  >
                     READY
                   </span>
                 )}
@@ -121,27 +132,31 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
       )}
 
       {/* Active Hero Status Card Panel */}
-      <div className="comic-panel p-6 bg-white mb-6 relative">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b-2 border-comic-black pb-4 mb-4">
+      <div className={`p-6 mb-6 relative ${style.panel} ${style.text}`}>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b-2 border-current/30 pb-4 mb-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="w-7 h-7 rounded-full bg-comic-red text-white text-sm flex items-center justify-center font-bold border border-comic-black">
+              <span
+                className={`w-7 h-7 bg-comic-red text-white text-sm flex items-center justify-center font-bold ${style.badge} !rounded-full`}
+              >
                 {activeSeatIndex + 1}
               </span>
-              <h2 className="font-comic text-3xl text-comic-black tracking-wide">
+              <h2 className="font-comic text-3xl tracking-wide">
                 {activePlayer.alterEgo.name}{' '}
                 <span className="font-comic text-xl text-comic-blue font-normal">
                   ({activePlayer.hero.name})
                 </span>
               </h2>
               {activeSeatIndex === 0 && (
-                <span className="bg-comic-yellow text-comic-black text-xs px-2.5 py-0.5 rounded-full border border-comic-black font-bold uppercase flex items-center gap-1 shadow-comic-sm">
+                <span
+                  className={`bg-comic-yellow text-comic-black text-xs px-2.5 py-0.5 font-bold uppercase flex items-center gap-1 ${style.badge}`}
+                >
                   <Crown className="w-3.5 h-3.5 text-comic-red" />
                   <span>STARTING PLAYER (ROUND 1)</span>
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-600 mt-0.5">
+            <p className={`text-xs mt-0.5 ${style.muted}`}>
               Alter-Ego Form • Starting Hand Size: {activePlayer.alterEgo.handSize} Cards • Hit
               Points: {activePlayer.health} HP
             </p>
@@ -149,12 +164,16 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
 
           {/* Individual Seat Status Badge */}
           {isCurrentHeroCompleted ? (
-            <div className="bg-emerald-500 text-white text-sm px-4 py-1.5 rounded-full border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 font-bold animate-fade-in">
-              <CheckCircle2 className="w-4 h-4 text-white" />
+            <div
+              className={`bg-emerald-500 text-white text-sm px-4 py-1.5 flex items-center gap-1.5 font-bold animate-fade-in ${style.buttonShape}`}
+            >
+              <CheckCircle2 className="w-4 h-4" />
               <span>MULLIGAN CONFIRMED (HAND READY)</span>
             </div>
           ) : (
-            <div className="bg-amber-100 text-amber-900 text-xs px-3 py-1 rounded border border-comic-black font-bold uppercase">
+            <div
+              className={`bg-amber-100 text-amber-900 text-xs px-3 py-1 font-bold uppercase ${style.badge}`}
+            >
               SELECT CARDS TO DISCARD & REDRAW
             </div>
           )}
@@ -162,10 +181,10 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
 
         {/* Informational Guidance */}
         {!isCurrentHeroCompleted && (
-          <div className="comic-bubble p-3 mb-5 bg-amber-50 text-center max-w-2xl mx-auto text-xs text-slate-800">
+          <div className={`p-3 mb-5 text-center max-w-2xl mx-auto text-xs ${style.inset}`}>
             <p>
               Click any cards below to{' '}
-              <span className="font-bold text-comic-red uppercase">discard and redraw</span>.
+              <span className={`font-bold uppercase ${style.emphasis}`}>discard and redraw</span>.
               Discarded cards will be shuffled back into your deck after drawing replacements.
             </p>
           </div>
@@ -187,7 +206,9 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
                   onClick={() => toggleDiscard(cardInst.instanceId)}
                 />
                 {!isCurrentHeroCompleted && isDiscarded && (
-                  <div className="absolute top-2 right-2 bg-rose-600 text-white text-micro px-2 py-0.5 rounded border border-comic-black shadow-comic-sm pointer-events-none uppercase font-bold z-content">
+                  <div
+                    className={`absolute top-2 right-2 bg-rose-600 text-white text-micro px-2 py-0.5 pointer-events-none uppercase font-bold z-content ${style.badge}`}
+                  >
                     DISCARD
                   </div>
                 )}
@@ -198,41 +219,46 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
 
         {/* Individual Hero Confirm Button (if not completed) */}
         {!isCurrentHeroCompleted && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-200 bg-amber-50/60 p-4 rounded-lg">
-            <div className="text-xs text-slate-700">
-              <span className="font-bold text-sm text-comic-black">
+          <div
+            className={`flex flex-col sm:flex-row items-center justify-between gap-3 p-4 ${style.inset}`}
+          >
+            <div className="text-xs">
+              <span className="font-bold text-sm">
                 {currentSelectedDiscards.length === 0
                   ? 'Keep All 6 Cards'
                   : `Discarding ${currentSelectedDiscards.length} card(s)`}
               </span>
-              <p className="text-mini text-slate-500">
+              <p className={`text-mini ${style.muted}`}>
                 {currentSelectedDiscards.length === 0
                   ? 'Confirming will keep your current opening hand.'
                   : 'Replacements will be drawn and discards shuffled back into your deck.'}
               </p>
             </div>
 
-            <button
+            <ToneButton
+              tone="blue"
               onClick={handleConfirmCurrentHero}
-              className="py-2.5 px-6 bg-comic-blue text-white border-2 border-comic-black font-comic text-base tracking-wider shadow-comic-sm hover:bg-sky-600 active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer rounded"
+              className="py-2.5 px-6 font-comic text-base tracking-wider gap-2"
             >
-              <Check className="w-5 h-5 text-white" />
+              <Check className="w-5 h-5" />
               <span>CONFIRM MULLIGAN FOR {activePlayer.alterEgo.name.toUpperCase()}</span>
-            </button>
+            </ToneButton>
           </div>
         )}
       </div>
 
       {/* Global Scenario Launch Action Bar */}
-      <div className="comic-panel p-6 bg-amber-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div
+        className={`p-6 flex flex-col sm:flex-row items-center justify-between gap-4 ${style.panel} ${style.text}`}
+      >
         <div>
-          <div className="font-comic text-xl text-comic-black flex items-center gap-2">
+          <div className="font-comic text-xl flex items-center gap-2">
             <Users className="w-5 h-5 text-comic-blue" />
             <span>
               Mulligan Readiness: {completedCount} of {totalSeats} Heroes Ready
             </span>
           </div>
-          <p className="text-xs text-slate-600">
+          <p className={`text-xs ${style.muted}`}>
             {allCompleted
               ? 'All hero opening hands are finalized and ready for action!'
               : 'You can confirm each hero individually or launch directly to keep current hands.'}
@@ -240,26 +266,21 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
         </div>
 
         {/* Main "Start Scenario" Action Button */}
-        <button
+        <ToneButton
+          tone={allCompleted ? 'yellow' : 'emerald'}
           onClick={onStartScenario}
           disabled={isResolvingSetup}
-          className={`py-4 px-8 border-comic border-comic-black font-comic text-2xl tracking-wider shadow-comic transition-all flex items-center justify-center gap-3 group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
-            allCompleted
-              ? 'bg-comic-yellow text-comic-red hover:bg-amber-300 animate-pulse active:translate-x-1 active:translate-y-1'
-              : 'bg-emerald-500 text-white hover:bg-emerald-400 active:translate-x-1 active:translate-y-1'
+          className={`py-4 px-8 font-comic text-2xl tracking-wider gap-3 group ${
+            allCompleted ? 'animate-pulse' : ''
           }`}
         >
-          <Play
-            className={`w-7 h-7 ${
-              allCompleted ? 'text-comic-red fill-comic-red' : 'text-white fill-white'
-            } group-hover:scale-110 transition-transform`}
-          />
+          <Play className="w-7 h-7 fill-current group-hover:scale-110 transition-transform" />
           <span>
             {allCompleted
               ? 'START THE SCENARIO & BEGIN ROUND 1! ➔'
               : 'CONFIRM ALL & START SCENARIO ➔'}
           </span>
-        </button>
+        </ToneButton>
       </div>
 
       {/* Player Setup abilities that need a decision (e.g. Foresight of T'Challa) */}

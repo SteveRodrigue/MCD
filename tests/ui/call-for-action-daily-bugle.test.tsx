@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GamePhase, GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
 import { setupGame } from '../../src/engine/state/game-setup';
-import { TopBar } from '../../src/ui/components/board/TopBar';
+import { QuickMenu } from '../../src/ui/components/board/QuickMenu';
 import { DailyBugleActionNewspaper } from '../../src/ui/components/board/DailyBugleActionNewspaper';
 import { LegalActionReport } from '../../src/engine/pipeline/legal-actions-generator';
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
@@ -17,7 +17,7 @@ vi.mock('../../src/ui/hooks/useCardArt', () => ({
   }),
 }));
 
-describe('Daily Bugle & TopBar Call for Action & Villain Actions UI (Issue #314)', () => {
+describe('Daily Bugle & QuickMenu Call for Action & Villain Actions UI (Issue #314)', () => {
   let state: GameState;
   let spiderManHero: HeroCard;
   let peterParkerAlterEgo: AlterEgoCard;
@@ -59,21 +59,13 @@ describe('Daily Bugle & TopBar Call for Action & Villain Actions UI (Issue #314)
     state.activePlayerIndex = 0;
   });
 
-  it('1. TopBar does not render "CALL FOR ACTION!" button (moved to GameBoard hover pill)', () => {
+  it('1. QuickMenu does not render "CALL FOR ACTION!" button (moved to GameBoard hover pill)', () => {
     const onOpenNewspaper = vi.fn();
 
     render(
       <GameSettingsProvider>
         <TestSession state={state}>
-          <TopBar
-            activeSeatIndex={0}
-            legalActionCount={3}
-            onSelectSeat={vi.fn()}
-            onToggleLog={vi.fn()}
-            isLogOpen={false}
-            onReset={vi.fn()}
-            onOpenNewspaper={onOpenNewspaper}
-          />
+          <QuickMenu legalActionCount={3} onReset={vi.fn()} onOpenNewspaper={onOpenNewspaper} />
         </TestSession>
       </GameSettingsProvider>,
     );
@@ -82,21 +74,13 @@ describe('Daily Bugle & TopBar Call for Action & Villain Actions UI (Issue #314)
     expect(callBtn).toBeNull();
   });
 
-  it('2. TopBar keeps clean without separate villain action button (bundled into EXTRA! hover button)', () => {
+  it('2. QuickMenu keeps clean without separate villain action button (bundled into EXTRA! hover button)', () => {
     const onOpenNewspaper = vi.fn();
 
     render(
       <GameSettingsProvider>
         <TestSession state={state}>
-          <TopBar
-            activeSeatIndex={0}
-            legalActionCount={3}
-            onSelectSeat={vi.fn()}
-            onToggleLog={vi.fn()}
-            isLogOpen={false}
-            onReset={vi.fn()}
-            onOpenNewspaper={onOpenNewspaper}
-          />
+          <QuickMenu legalActionCount={3} onReset={vi.fn()} onOpenNewspaper={onOpenNewspaper} />
         </TestSession>
       </GameSettingsProvider>,
     );

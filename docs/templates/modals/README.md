@@ -1,6 +1,6 @@
 # MCD Modal Templates & Style Lab
 
-Reference for the themes of *Marvel Champions Digital* and for every game prompt, decision dialog and utility modal.
+Reference for the themes of _Marvel Champions Digital_ and for every game prompt, decision dialog and utility modal.
 The whole player-facing game follows the selected theme (see [ADR-0091](../../decisions/0091-themeable-modal-system.md));
 the only look that never changes is the Bangers "MARVEL CHAMPIONS" banner on the first screen. The card editor
 (`/editor`) is a developer tool outside the themes.
@@ -12,32 +12,33 @@ Direct links look like `/templates/<style>/<modal>`, e.g. `/templates/splash/seq
 
 ## Three axes
 
-| Axis | What it is | Where |
-|---|---|---|
-| **Style** | How the modal is drawn (frame, header, texture, buttons, comic flavour) | `modal-styles.ts` |
-| **Modal type** | What the modal does: Decision, Sequence (Wakanda Forever), Select | `DecisionTemplate`, `SequenceTemplate`, `SelectTemplate` |
-| **Verb colour** | Gameplay meaning of the header colour, identical in every style | `VERB_MEANING` in `modal-styles.ts` |
+| Axis            | What it is                                                              | Where                                                    |
+| --------------- | ----------------------------------------------------------------------- | -------------------------------------------------------- |
+| **Style**       | How the modal is drawn (frame, header, texture, buttons, comic flavour) | `modal-styles.ts`                                        |
+| **Modal type**  | What the modal does: Decision, Sequence (Wakanda Forever), Select       | `DecisionTemplate`, `SequenceTemplate`, `SelectTemplate` |
+| **Verb colour** | Gameplay meaning of the header colour, identical in every style         | `VERB_MEANING` in `modal-styles.ts`                      |
 
 Verb colours: yellow = decide, red = attack / forced, blue = thwart / info, purple = hero special,
 green = defend / heal.
 
 ## Styles
 
-| Style | One-liner |
-|---|---|
-| `pop-art` Pop-Art Action-Coded | Lichtenstein dots, bold colour bars, 4px black ink |
-| `storyboard` Storyboard Panels | Tilted caption box, framed panels |
-| `newsprint` Golden Age Newsprint | Aged paper, ink-black print, masthead header |
-| `night` Night Edition | Dark ink, neon rule and glow |
-| `splash` Splash Page | Torn-edge banner, speed lines, big stickers |
-| `dossier` S.H.I.E.L.D. Dossier | Manila folder, typewriter text, rubber stamp, tape |
-| `hud` Hero HUD | Holographic scanlines, cyan glow, readouts |
+| Style                            | One-liner                                          |
+| -------------------------------- | -------------------------------------------------- |
+| `pop-art` Pop-Art Action-Coded   | Lichtenstein dots, bold colour bars, 4px black ink |
+| `storyboard` Storyboard Panels   | Tilted caption box, framed panels                  |
+| `newsprint` Golden Age Newsprint | Aged paper, ink-black print, masthead header       |
+| `night` Night Edition            | Dark ink, neon rule and glow                       |
+| `splash` Splash Page             | Torn-edge banner, speed lines, big stickers        |
+| `dossier` S.H.I.E.L.D. Dossier   | Manila folder, typewriter text, rubber stamp, tape |
+| `hud` Hero HUD                   | Holographic scanlines, cyan glow, readouts         |
 
 Token reference and how to add a style: [styles.md](./styles.md).
 
 ## Comic and super-hero flavour (built in)
 
 Every style carries its own version of these, driven by tokens, so the feel stays consistent:
+
 - **Sound-effect bursts** when the player acts (POW!, KA-POW!, APPROVED, TARGET LOCKED...). Respects reduced motion.
 - **Narrator captions** ("Meanwhile, at the docks...") above the body.
 - **Speech bubbles** spoken by a card (the villain taunts, a hero asks for backup), thumbnail beside the bubble.
@@ -47,12 +48,14 @@ Every style carries its own version of these, driven by tokens, so the feel stay
 ## Mandatory rule: Card Anchoring
 
 A card thumbnail (`CardArtThumbnail` `xs`/`sm`/`lg`) or the full `CardView` **MUST** be shown whenever a card is:
+
 1. **Named** (header, prompt description, option buttons, recap checklists, footer);
 2. **Its text is shown** (rules or ability text sits next to the source card's thumbnail);
 3. **Its ability is used** (option, step, payment, target using an ability);
 4. **The trigger** that opened the modal.
 
 **Never display a card reference solely as plain text.** Enforced by construction and by test:
+
 - Write card names only with `CardRef` (thumbnail + name). No bare card-name strings in modal JSX.
 - `ModalScaffold` requires a `trigger` card (`null` only when no card is involved) and shows it in the header.
 - `tests/ui/modal-templates.test.tsx` scans the rendered DOM of every style x modal type and fails on any
@@ -74,7 +77,7 @@ The **Modals** kit also previews every other real game modal, in three groups (`
 - **Targets and menus**: Attack target, Thwart target, Identity menu, Ally menu, Tableau menu.
 - **Dialogs**: Pile viewer, Options (its settings live in the lab only), Report, Card stats, Reset stats, Game over, Infinite loop.
 
-Callbacks only report to the lab's status chip; no preview changes a game. 
+Callbacks only report to the lab's status chip; no preview changes a game.
 
 ## Files
 
@@ -97,10 +100,10 @@ Utility dialogs on the scaffold: `OptionsMenu`, `ReportProblemModal`, `CardStats
 `ResetCardStatsConfirmModal`, `GameOverScreen`, `InfiniteLoopModal` (in `App.tsx`), and the pile viewers (deck inspectors,
 discard piles, removed from game, set aside, dealt-cards peek) in `VillainZone`, `PlayerHandTray`,
 `RemovedFromGameBox` and `FacedownEncounterCard`, all on `PileViewerModal` (`PileCardTile`, `PileGroup`, `PileToolbar`).
-Board chrome and screens on the theme's tokens and the kit (`src/ui/theme/kit/`): `TopBar`, `DevStepErrorBanner`, the villain
+Board chrome and screens on the theme's tokens and the kit (`src/ui/theme/kit/`): `QuickMenu` and `SideDock` (the rail above the combat log), `ExtraActionsPill`, `DevStepErrorBanner`, the villain
 and hero zones, the hand tray, the out-of-play box, the villain phase stepper, the damage splash, the card context menu,
 `ScenarioSelector` and `MulliganScreen` (except the Bangers banner), and the table behind them (`GameThemeRoot`).
-`DailyBugleActionNewspaper`, `EndTurnConfirmationModal` and the `CombatLogDrawer` are Newspaper kit pages (`NewspaperSheet`):
+`DailyBugleActionNewspaper`, `EndTurnConfirmationModal` and the `CombatLogPanel` are Newspaper kit pages (`NewspaperSheet`):
 each theme draws its own era of newspaper. The theme guards (`tests/ui/theme-guards.test.ts`) keep literal comic looks out of these files.
 Shared pieces: `ActionRow` (one choice in an action list), `CardActionModal` + `InfoStrip` (the card action menu
 shell), `TargetSelectionModal` (pick-a-card-to-act-on).
@@ -119,7 +122,7 @@ The game never imports from the lab folder; an architecture test enforces it.
 Beyond modals, the lab previews the rest of the look, built from the same primitives the game uses, so a theme can be judged as a whole. Open the **Kit** bar at `/templates/<style>/<item>`:
 
 - **Elements** (`elements`): button family (primary, secondary, danger, ghost, icon), badges, ribbons, stat counters, gauges, switch, text field, select, menu, toast, damage splash, type roles.
-- **Board** (`board`): top bar, villain zone, main scheme, hero zone with the hero colour as an accent, hand tray, context menu, toast, splash, on the theme's table background.
+- **Board** (`board`): side dock (quick-menu rail above the combat log, with the attention beacon on the Daily Bugle button), villain zone, main scheme, hero zone with the hero colour as an accent, hand tray, context menu, toast, splash, on the theme's table background.
 - **Newspaper** (`newspaper`): the Daily Bugle in this theme's era (action sheet, end-turn broadsheet, combat log wire with filter, EXTRA! shortcut). The era changes per theme, from a 1960s broadsheet to a holographic feed; the newspaper identity (masthead, edition line, stories, flash, ticker) never does. **The action sheet always keeps the game's three columns, in every theme**: column 1 the front page (identity directives, playable hand cards), column 2 the classifieds (in-play assets and allies, villain dispatches), column 3 the Call for Action! column (teammate tableau assets, grouped by teammate), with the turn-flow bar at the bottom. The grid collapses to two or one columns only when a column is empty, as in the game, and stacks on a narrow screen. `NewspaperColumns` draws it.
 - **Setup** (`setup`): scenario spread and mulligan.
 
@@ -134,7 +137,7 @@ The full record of which fonts each theme uses, which can be set (and which cann
 
 ## Font test (lab only)
 
-The lab bar has a **Font test** row to check how text reads on screen, with **two separate lists**: one font for **headlines** and one for **body** text. Each list starts with "Theme font (default)", so you can change one and keep the other. Press **F** to move both to the next font, **H** for the headlines alone, **B** for the body alone, and add **Shift** to go back (the cycle passes through the theme font). A second row, **Newspaper**, has its own Headlines and Body lists ("Follow default" when unset); inside a newspaper they win over the default pair, and **N** cycles both. The *Theme fonts* button resets all four. The lab bundles its test fonts (Bangers, the original headline font, is the first so you can compare it with the new theme fonts): sans (Atkinson Hyperlegible, Lexend, Inter, Open Sans, Roboto, Source Sans 3, IBM Plex Sans, Fira Sans, Work Sans, Lato, Poppins), rounded (Nunito, Fredoka, Baloo 2), comic and handwriting (Comic Neue, Patrick Hand, Kalam), serif (Merriweather, Literata), mono (JetBrains Mono), comic display for headlines (Bangers, Lilita One, Luckiest Guy, Boogaloo, Passion One, Titan One, Sigmar One, Bowlby One, Bungee: readable stand-ins for Bangers) and typewriter (Special Elite, Courier Prime, Cutive Mono, Xanh Mono, Anonymous Pro: for the S.H.I.E.L.D. Dossier). A *headline* is a heading or text of 17px or more (`text-base` and up); *body* is anything smaller. The lab tags each piece of text with `data-font-role` while a font is on, so the roles follow what the text is, not which font utility it uses.
+The lab bar has a **Font test** row to check how text reads on screen, with **two separate lists**: one font for **headlines** and one for **body** text. Each list starts with "Theme font (default)", so you can change one and keep the other. Press **F** to move both to the next font, **H** for the headlines alone, **B** for the body alone, and add **Shift** to go back (the cycle passes through the theme font). A second row, **Newspaper**, has its own Headlines and Body lists ("Follow default" when unset); inside a newspaper they win over the default pair, and **N** cycles both. The _Theme fonts_ button resets all four. The lab bundles its test fonts (Bangers, the original headline font, is the first so you can compare it with the new theme fonts): sans (Atkinson Hyperlegible, Lexend, Inter, Open Sans, Roboto, Source Sans 3, IBM Plex Sans, Fira Sans, Work Sans, Lato, Poppins), rounded (Nunito, Fredoka, Baloo 2), comic and handwriting (Comic Neue, Patrick Hand, Kalam), serif (Merriweather, Literata), mono (JetBrains Mono), comic display for headlines (Bangers, Lilita One, Luckiest Guy, Boogaloo, Passion One, Titan One, Sigmar One, Bowlby One, Bungee: readable stand-ins for Bangers) and typewriter (Special Elite, Courier Prime, Cutive Mono, Xanh Mono, Anonymous Pro: for the S.H.I.E.L.D. Dossier). A _headline_ is a heading or text of 17px or more (`text-base` and up); _body_ is anything smaller. The lab tags each piece of text with `data-font-role` while a font is on, so the roles follow what the text is, not which font utility it uses.
 
 The themes keep their own fonts ("Theme fonts (default)" is each theme's own, Kalam for Storyboard, Merriweather for Golden Age Newsprint, JetBrains Mono for Night Edition, Lexend for Hero HUD, Special Elite for the Dossier, Boogaloo for Splash Page, Lilita One for Pop-Art headlines): the choice is an override written on `<html>` while the lab is open (`font-test.css`), it applies to modals too, it skips the lab bar, and it is removed when the lab closes. It is remembered between visits. Files: `font-test.ts`, `useFontTest.ts`, `FontSwitcher.tsx`, `lab-font-list.ts`, `lab-fonts.css` and `fonts/*.woff2` (Google Fonts, latin subset, SIL Open Font License or Apache 2.0).
 

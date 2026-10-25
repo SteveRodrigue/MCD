@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DevStepErrorBanner } from '../../src/ui/components/board/DevStepErrorBanner';
-import { CombatLogDrawer } from '../../src/ui/components/board/CombatLogDrawer';
+import { CombatLogPanel } from '../../src/ui/components/board/CombatLogPanel';
 import { GameLogEntry, GameState } from '../../src/engine/models';
 import { TestSession } from '../support/render-with-session';
 
@@ -42,14 +42,14 @@ describe('Dev Mode step error message (Issue #225)', () => {
     const logs = [stepError('l1', '01039 ADD_TRAIT failed: boom')];
     const { unmount } = render(
       <TestSession state={state}>
-        <CombatLogDrawer isOpen onClose={() => {}} logs={logs} devMode={false} />
+        <CombatLogPanel logs={logs} devMode={false} />
       </TestSession>,
     );
     expect(screen.queryByText(/ADD_TRAIT failed/)).toBeNull();
     unmount();
     render(
       <TestSession state={state}>
-        <CombatLogDrawer isOpen onClose={() => {}} logs={logs} devMode />
+        <CombatLogPanel logs={logs} devMode />
       </TestSession>,
     );
     expect(screen.getAllByText(/ADD_TRAIT failed: boom/).length).toBeGreaterThan(0);

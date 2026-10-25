@@ -39,11 +39,11 @@ A 2026-10-14 audit of every z-index in `src/ui/` ([Appendix A](#appendix-a-layer
 
 **Chosen Option:** **Option 2.**
 
-1. **Scale** in [z-layers.ts](../../src/ui/styles/z-layers.ts), spaced ×10 (99 free values per gap): `table` 0, `content` 100, `raised` 200, `zoom` 400, `sticky` 500, `drawer` 600, `modal` 700, `banner` 800, `menu` 900, `critical` 1000. Exposed to Tailwind as `z-<token>` via `theme.extend.zIndex`.
+1. **Scale** in [z-layers.ts](../../src/ui/styles/z-layers.ts), spaced ×10 (99 free values per gap): `table` 0, `content` 100, `raised` 200, `zoom` 400, `drawer` 600, `modal` 700, `banner` 800, `menu` 900, `critical` 1000. Exposed to Tailwind as `z-<token>` via `theme.extend.zIndex`.
 2. **Isolated fans:** every fan container is `isolate` and raises itself with `hover:z-zoom focus-within:z-zoom`. Card values come from [fan-z.ts](../../src/ui/components/cards/fan-z.ts) (`count - index`, hovered `count + 1`), so they never leak and fit any count. `CardAttachmentFan` always wraps its host (local order: underneath `1…m` < attachments `m+1…m+n` < host `m+n+1` < hovered attachment `m+n+2`).
 3. **Overlays** render through [ModalLayer](../../src/ui/components/layout/ModalLayer.tsx), a portal to `document.body` with a `layer` prop (`drawer`, `modal`, `banner`, `critical`).
-4. **Owner decisions:** a zoomed card never covers the TopBar (`zoom` < `sticky`); Game Over (Heroes Win and Villain Wins) sits at `critical`; no zoom portal for now.
-5. **Sticky TopBar:** ancestors use `overflow-x-clip`, which hides horizontal overflow without creating a scroll container.
+4. **Owner decisions:** a zoomed card never covers the side dock (`zoom` < `drawer`); Game Over (Heroes Win and Villain Wins) sits at `critical`; no zoom portal for now.
+5. **Page scroll:** the App and GameBoard roots use `overflow-x-clip`, which hides horizontal overflow without creating a scroll container (it protected the sticky TopBar; the TopBar is gone since #378, the roots keep the rule so the page scrolls with the window).
 6. **Guard:** [z-literal-guard.test.ts](../../tests/ui/z-literal-guard.test.ts) fails on numeric/arbitrary z classes or numeric `zIndex` literals in `src/ui/` (allowlist: two `-z-*` back layers in `FacedownEncounterCard.tsx`).
 
 ### Rationale ("The Why")
@@ -109,13 +109,12 @@ A `z-index` only competes with siblings **inside the same stacking context**. A 
 inside a parent context at `z-content` can never rise above a sibling at `z-raised`. So each row
 shows an **effective path**:
 
-| Notation         | Meaning                                                                      |
-| ---------------- | ---------------------------------------------------------------------------- |
-| `root › 700`     | 700 in the document root context (portals to `document.body`).               |
-| `App(100) › 500` | 500 inside the App wrapper context (`z-content`), so globally capped at 100. |
-| `… › Sec(200)`   | A context that exists **only while hovered/focused** (`hover:z-raised`).     |
-| `auto`           | Positioned, no z-index: painted in DOM order above non-positioned content.   |
-| `local n`        | A value inside an isolated fan (§5); never compared with the global scale.   |
+| Notation       | Meaning                                                                    |
+| -------------- | -------------------------------------------------------------------------- |
+| `root › 700`   | 700 in the document root context (portals to `document.body`).             |
+| `… › Sec(200)` | A context that exists **only while hovered/focused** (`hover:z-raised`).   |
+| `auto`         | Positioned, no z-index: painted in DOM order above non-positioned content. |
+| `local n`      | A value inside an isolated fan (§5); never compared with the global scale. |
 
 What creates a stacking context in this codebase:
 
@@ -139,9 +138,8 @@ Higher rows paint on top. Everything inside `App(100)` is below every portaled l
 | `root › 900`                  | `menu`     | Card context menu, then its confirm dialog (same portal; later in DOM, so on top)                                                                               | [CardContextMenu.tsx:95](../../src/ui/components/cards/CardContextMenu.tsx#L95), [:180](../../src/ui/components/cards/CardContextMenu.tsx#L180)                                                                                                                                                                                                                                                                      |
 | `root › 800`                  | `banner`   | Dev step-error banner                                                                                                                                           | [DevStepErrorBanner.tsx:23](../../src/ui/components/board/DevStepErrorBanner.tsx#L23)                                                                                                                                                                                                                                                                                                                                |
 | `root › 700`                  | `modal`    | Every other modal (21 sites): action/target/payment/prompt modals, hand and encounter pile viewers, Options, End Turn, Daily Bugle, Combat Boost, facedown peek | `ModalLayer` callers, for example [VillainZone.tsx:456](../../src/ui/components/board/VillainZone.tsx#L456), [PlayerHandTray.tsx:491](../../src/ui/components/board/PlayerHandTray.tsx#L491), [RemovedFromGameBox.tsx:72](../../src/ui/components/board/RemovedFromGameBox.tsx#L72), [FacedownEncounterCard.tsx:143](../../src/ui/components/cards/FacedownEncounterCard.tsx#L143). List: `rg "<ModalLayer" src/ui`. |
-| `root › 600`                  | `drawer`   | Combat Log drawer                                                                                                                                               | [CombatLogDrawer.tsx:86](../../src/ui/components/board/CombatLogDrawer.tsx#L86)                                                                                                                                                                                                                                                                                                                                      |
+| `root › 600`                  | `drawer`   | Side dock: the quick-menu rail above the combat log                                                                                                             | [SideDock.tsx](../../src/ui/components/board/SideDock.tsx)                                                                                                                                                                                                                                                                                                                                                           |
 | — `App(100)` context starts — | `content`  | App screen wrapper: everything not portaled lives below this line                                                                                               | [App.tsx:232](../../src/ui/App.tsx#L232)                                                                                                                                                                                                                                                                                                                                                                             |
-| `App(100) › 500`              | `sticky`   | TopBar. Sticks to the viewport: no ancestor is a scroll container (`overflow-x-clip` on the App and GameBoard roots)                                            | [TopBar.tsx:45](../../src/ui/components/board/TopBar.tsx#L45), [App.tsx:227](../../src/ui/App.tsx#L227), [GameBoard.tsx:344](../../src/ui/components/board/GameBoard.tsx#L344)                                                                                                                                                                                                                                       |
 | `App(100) › 400`              | `zoom`     | Hovered card in solo play: a fan wrapper, the hand fan row, or a bare `CardView` raising itself                                                                 | [CardAttachmentFan.tsx:42](../../src/ui/components/cards/CardAttachmentFan.tsx#L42), [PlayerHandTray.tsx:441](../../src/ui/components/board/PlayerHandTray.tsx#L441), [CardView.tsx:231](../../src/ui/components/cards/CardView.tsx#L231)                                                                                                                                                                            |
 | `App(100) › Sec(200) › …`     | `raised`   | Villain & Scenario Zone or Removed-from-game box while hovered/focused (local ladder in §3)                                                                     | [VillainZone.tsx:136](../../src/ui/components/board/VillainZone.tsx#L136), [RemovedFromGameBox.tsx:32](../../src/ui/components/board/RemovedFromGameBox.tsx#L32)                                                                                                                                                                                                                                                     |
 | `App(100) › 200`              | `raised`   | Villain Phase stepper (flex item), multi-hero scroll arrows                                                                                                     | [VillainPhaseStepper.tsx:99](../../src/ui/components/board/VillainPhaseStepper.tsx#L99), [GameBoard.tsx:406](../../src/ui/components/board/GameBoard.tsx#L406), [:415](../../src/ui/components/board/GameBoard.tsx#L415)                                                                                                                                                                                             |
@@ -153,7 +151,7 @@ Higher rows paint on top. Everything inside `App(100)` is below every portaled l
 
 **Consistency rules this ladder satisfies:**
 
-1. A zoomed card never covers the TopBar: `zoom` 400 < `sticky` 500.
+1. A zoomed card never covers the side dock: `zoom` 400 < `drawer` 600.
 2. Every overlay is portaled, so its token is its real global rank.
 3. Game Over cannot be covered by a prompt.
 
@@ -176,7 +174,7 @@ not. Paths are relative to the zone section. The zone's pile viewers are portale
 | **Zone background**          | Section `bg-white/95`                                                                    | [VillainZone.tsx:136](../../src/ui/components/board/VillainZone.tsx#L136)                                                                                                                                                                                     |
 
 The zoomed villain card (400) paints over the stats, HP and side-scheme panels (100), and under the
-TopBar (the whole section is capped at 200 < 500). The Hero Zone uses the same fan for the identity
+side dock (the whole section is capped at 200 < 600). The Hero Zone uses the same fan for the identity
 ([HeroZone.tsx:720](../../src/ui/components/board/HeroZone.tsx#L720)), minions
 ([:442](../../src/ui/components/board/HeroZone.tsx#L442)) and allies
 ([:1027](../../src/ui/components/board/HeroZone.tsx#L1027)), so every host card behaves alike.
@@ -251,3 +249,9 @@ The scale (tokens, values and use) is defined only in [z-layers.ts](../../src/ui
 **Adding a layer:** reuse a token when the role matches. Otherwise add a key to `Z` and `Z_CLASS` in a
 free gap, update the layer map above, and record why in an ADR-0082 addendum. Any overlay that must
 cover the board goes through `ModalLayer`.
+
+---
+
+## Addendum 2026-10-25 ([Issue #378](https://github.com/SteveRodrigue/MCD/issues/378))
+
+The top bar is gone: the quick-menu rail now sits above the combat log in one `drawer` layer (`SideDock`). The `sticky` layer (500) had no other user and is removed from `Z`, `Z_CLASS` and the Tailwind config; the layer map, owner decision 4 and consistency rule 1 above name the dock instead of the TopBar. Appendix B stays as the record of what was found and fixed in 2026-10-14.

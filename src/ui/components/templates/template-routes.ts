@@ -181,7 +181,7 @@ export const KITS: readonly KitMeta[] = [
   {
     id: 'board',
     label: 'Board',
-    description: 'Top bar, villain, scheme, hero zone, hand tray.',
+    description: 'Side dock (quick-menu rail, log), villain, scheme, hero zone, hand tray.',
   },
   {
     id: 'newspaper',

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Newspaper } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   GameAction,
   CardInstance,
@@ -12,12 +12,12 @@ import {
 } from '../../../engine/models';
 import { VillainPhaseStepper } from './VillainPhaseStepper';
 import { CombatBoostModal } from './CombatBoostModal';
-import { TopBar } from './TopBar';
+import { SideDock } from './SideDock';
+import { ExtraActionsPill } from './ExtraActionsPill';
 import { VillainZone } from './VillainZone';
 import { RemovedFromGameBox } from './RemovedFromGameBox';
 import { HeroZone } from './HeroZone';
 import { PlayerHandTray } from './PlayerHandTray';
-import { CombatLogDrawer } from './CombatLogDrawer';
 import { DevStepErrorBanner } from './DevStepErrorBanner';
 import { GameOverScreen } from './GameOverScreen';
 import { DecisionPromptModal } from './DecisionPromptModal';
@@ -37,9 +37,7 @@ import { getDiscardCostBounds } from '../../../engine/pipeline/cost-engine';
 import type { ResourceCost } from '../../../data/supplemental/schema';
 import { peekDecisionPrompt } from '../../../engine/pipeline';
 import { optionRequiresPayment } from '../../utils/option-requires-payment';
-import { useNewspaperProps } from '../../theme/useNewspaperProps';
 import { useModalStyle } from '../../theme/useModalStyle';
-import { useThemeExtras } from '../../theme/useThemeExtras';
 
 interface GameBoardProps {
   onReset: () => void;
@@ -75,11 +73,8 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
   const [selectedSeatIndex, setActiveSeatIndex] = useState<number>(0);
   // An eliminated hero leaves the table (#246): a seat past the last one falls back to the last.
   const activeSeatIndex = Math.min(selectedSeatIndex, gameState.players.length - 1);
-  const [isLogOpen, setIsLogOpen] = useState<boolean>(true);
   const [isNewspaperOpen, setIsNewspaperOpen] = useState<boolean>(false);
-  const newspaperProps = useNewspaperProps();
   const { style } = useModalStyle();
-  const { newspaper } = useThemeExtras();
   const [isEndTurnPromptOpen, setIsEndTurnPromptOpen] = useState<boolean>(false);
   const [paymentModalCard, setPaymentModalCard] = useState<CardInstance | null>(null);
   const [pendingPaymentAction, setPendingPaymentAction] = useState<LegalActionItem | null>(null);
@@ -175,6 +170,13 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
     () => getLegalActionsForPlayer(gameState, activePlayer.id),
     [gameState, activePlayer.id],
   );
+
+  // Call for Action (teammates, multi-hero only) and Villain actions waiting: the EXTRA! pill and the
+  // Daily Bugle button of the rail ring while any is available in the player phase.
+  const teamActionCount = isMultiHero ? legalReport.callForActionCount : 0;
+  const villainActionCount = legalReport.villainActionCount || 0;
+  const extraActionCount =
+    gameState.phase === GamePhase.PLAYER_PHASE ? teamActionCount + villainActionCount : 0;
 
   // Auto-detect when active actions drop from >0 to 0 during an active turn to prompt End Turn confirmation (ADR-0026 / Issue #169, #310)
   const prevActionCountRef = useRef<number>(legalReport.activeActionCount);
@@ -351,65 +353,18 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
   return (
     <GameSessionContext.Provider value={{ ...session, dispatch: handleDispatchAction }}>
       <div className="relative min-h-screen w-full flex flex-col justify-between overflow-x-clip">
-        <div
-          className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
-            isLogOpen ? 'w-full lg:w-[calc(100%-420px)]' : 'w-full'
-          }`}
-        >
-          {/* 1. Sticky Top Navigation Bar */}
-          <TopBar
-            activeSeatIndex={activeSeatIndex}
-            legalActionCount={legalReport.activeActionCount}
-            onSelectSeat={handleSelectSeat}
-            onToggleLog={() => setIsLogOpen((prev) => !prev)}
-            isLogOpen={isLogOpen}
-            onReset={onReset}
-            onOpenNewspaper={() => setIsNewspaperOpen((prev) => !prev)}
-          />
+        <div className="flex-1 flex flex-col min-w-0 w-[calc(100%-420px)]">
+          {/* Floating EXTRA! pill: Call for Action and Villain actions are waiting */}
+          {extraActionCount > 0 && (
+            <ExtraActionsPill
+              teamActionCount={teamActionCount}
+              villainActionCount={villainActionCount}
+              isNewspaperOpen={isNewspaperOpen}
+              onOpen={() => setIsNewspaperOpen(true)}
+            />
+          )}
 
-          {/* Floating Hover "EXTRA!" Action Pill Button at Top-Left */}
-          {gameState.phase === GamePhase.PLAYER_PHASE &&
-            (isMultiHero ? legalReport.callForActionCount : 0) +
-              (legalReport.villainActionCount || 0) >
-              0 && (
-              <div className="fixed top-14 left-4 z-content">
-                <button
-                  onClick={() => setIsNewspaperOpen(true)}
-                  {...newspaperProps}
-                  className={`font-news-headline font-black flex items-center gap-2 px-3 py-1.5 cursor-pointer transition-all hover:scale-105 active:translate-y-0.5 animate-pulse ${newspaper.pill}`}
-                  title={`EXTRA! Daily Bugle Action Bulletin (${isMultiHero && legalReport.callForActionCount > 0 ? `${legalReport.callForActionCount} Call for Action` : ''}${isMultiHero && legalReport.callForActionCount > 0 && legalReport.villainActionCount > 0 ? ', ' : ''}${legalReport.villainActionCount > 0 ? `${legalReport.villainActionCount} Villain Actions` : ''})`}
-                >
-                  <div className="flex items-center gap-1.5">
-                    <Newspaper className="w-4 h-4 text-comic-red" />
-                    <span className="font-news-headline font-black tracking-tight text-xs uppercase">
-                      EXTRA!
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {isMultiHero && legalReport.callForActionCount > 0 && (
-                      <span
-                        data-testid="extra-call-count"
-                        className={`text-micro px-1.5 py-0.2 font-mono font-bold bg-comic-yellow text-comic-black ${style.badge}`}
-                        title={`${legalReport.callForActionCount} Teammate Action${legalReport.callForActionCount > 1 ? 's' : ''}`}
-                      >
-                        {legalReport.callForActionCount} TEAM
-                      </span>
-                    )}
-                    {legalReport.villainActionCount > 0 && (
-                      <span
-                        data-testid="extra-villain-count"
-                        className={`text-micro px-1.5 py-0.2 font-mono font-bold bg-comic-red text-white ${style.badge}`}
-                        title={`${legalReport.villainActionCount} Villain/Scheme Action${legalReport.villainActionCount > 1 ? 's' : ''}`}
-                      >
-                        {legalReport.villainActionCount} VILLAIN
-                      </span>
-                    )}
-                  </div>
-                </button>
-              </div>
-            )}
-
-          {/* 2. Panoramic Tabletop Main Stage */}
+          {/* 1. Panoramic Tabletop Main Stage */}
           <main className="flex-1 flex flex-col items-center justify-start p-2 md:p-4 gap-4 max-w-full">
             {/* Villain Phase Stepper Ribbon (Issue #140) */}
             {gameState.phase === 'VILLAIN_PHASE' && (
@@ -687,12 +642,13 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
           />
         )}
 
-        {/* 7. Slide-Out Combat Log & History Drawer */}
-        <CombatLogDrawer
-          isOpen={isLogOpen}
-          onClose={() => setIsLogOpen(false)}
-          logs={gameState.log}
-          devMode={devMode}
+        {/* 7. Side dock: quick menu rail above the combat log */}
+        <SideDock
+          legalActionCount={legalReport.activeActionCount}
+          extraActionCount={extraActionCount}
+          isNewspaperOpen={isNewspaperOpen}
+          onOpenNewspaper={() => setIsNewspaperOpen((prev) => !prev)}
+          onReset={onReset}
         />
         <DevStepErrorBanner logs={gameState.log} devMode={devMode} />
         <GameOverScreen onReset={onReset} />

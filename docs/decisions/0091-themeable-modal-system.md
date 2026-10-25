@@ -57,7 +57,7 @@ the game pick a random one for each new game.
 - **Player setting** (`themeMode`, `themeId`, `randomThemePool`, `cardAccents` in the existing game settings):
   fixed theme, or Random. Random rolls once when a game starts, never repeats the previous game's theme, and survives
   a reload. The roll uses the UI's random source, never the engine RNG.
-- **Tier 2 follows the theme as Newspaper kit pages:** the Daily Bugle action sheet, the end-turn flash and the combat log drawer are `NewspaperSheet` pages (`src/ui/theme/kit/newspaper.tsx`). Each theme draws its own era of newspaper (`newspaper` tokens in `theme-extras.ts`); the newspaper identity (masthead, edition line, stories, flash, ticker) and the three-column action sheet never change.
+- **Tier 2 follows the theme as Newspaper kit pages:** the Daily Bugle action sheet, the end-turn flash and the combat log panel are `NewspaperSheet` pages (`src/ui/theme/kit/newspaper.tsx`). Each theme draws its own era of newspaper (`newspaper` tokens in `theme-extras.ts`); the newspaper identity (masthead, edition line, stories, flash, ticker) and the three-column action sheet never change.
 - **Template lab:** `/templates/` renders the real game modals with sample prompts for every theme, and stays as the
   design reference (`src/ui/components/templates/`, `docs/templates/modals/`). The game never imports from it.
 

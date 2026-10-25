@@ -10,7 +10,6 @@ describe('Global z-index scale (Issue #312)', () => {
       content: 100,
       raised: 200,
       zoom: 400,
-      sticky: 500,
       drawer: 600,
       modal: 700,
       banner: 800,

@@ -339,6 +339,15 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
               ★ ACTIVE HERO
             </span>
           )}
+          {isMultiHero && gameState.players[gameState.firstPlayerIndex]?.id === player.id && (
+            <span
+              data-testid="first-player-badge"
+              title="This seat holds the First Player token"
+              className={`text-micro px-1.5 py-0.2 font-black ml-1 bg-comic-yellow text-comic-black ${style.badge}`}
+            >
+              👑 FIRST PLAYER
+            </span>
+          )}
           {isTargetOfIncomingAttack && (
             <span
               className={`text-micro px-1.5 py-0.2 font-black ml-1 bg-comic-red text-white animate-pulse ${style.badge}`}

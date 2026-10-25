@@ -80,19 +80,25 @@ describe('GameBoard Call for Action Top-Left Hover Button', () => {
       </GameSettingsProvider>,
     );
 
-    const extraBtn = screen.getByRole('button', { name: /extra/i });
+    const extraBtn = screen.getByRole('button', { name: /^EXTRA!/ });
     expect(extraBtn).toBeDefined();
-    // Verify container has fixed top-14 left-4 z-content
-    const container = extraBtn.parentElement;
-    expect(container?.className).toContain('fixed');
-    expect(container?.className).toContain('top-14');
+    // The pill floats at the top-left; there is no bar above it any more.
+    const container = extraBtn.closest('.fixed');
+    expect(container?.className).toContain('top-4');
     expect(container?.className).toContain('left-4');
     expect(container?.className).toContain('z-content');
 
-    // Verify button styling
+    // Verify button styling: a beacon ring, not a fading pulse (the label stays readable).
     expect(extraBtn.className).toContain('font-news-headline');
     expect(extraBtn.hasAttribute('data-newspaper')).toBe(true);
-    expect(extraBtn.className).toContain('animate-pulse');
+    expect(extraBtn.className).not.toContain('animate-pulse');
+    // The pill and the Daily Bugle button of the rail both ring.
+    expect(screen.getAllByTestId('attention-beacon')).toHaveLength(2);
+    expect(
+      screen.getByRole('button', {
+        name: /^Daily Bugle: \d+ legal moves?, \d+ extra actions? waiting$/,
+      }),
+    ).toBeDefined();
     expect(screen.getByTestId('extra-call-count')).toBeDefined();
     expect(screen.getByTestId('extra-call-count').textContent).toContain('TEAM');
   });
@@ -108,11 +114,12 @@ describe('GameBoard Call for Action Top-Left Hover Button', () => {
       </GameSettingsProvider>,
     );
 
-    const extraBtn = screen.getByRole('button', { name: /extra/i });
+    const extraBtn = screen.getByRole('button', { name: /^EXTRA!/ });
     fireEvent.click(extraBtn);
 
-    // Modal should now be open
+    // Modal should now be open, and the rings stop: the player has seen the bulletin
     expect(screen.getByTestId('daily-bugle-container')).toBeDefined();
+    expect(screen.queryAllByTestId('attention-beacon')).toHaveLength(0);
     expect(screen.getByTestId('daily-bugle-call-for-action-column')).toBeDefined();
   });
 
@@ -145,7 +152,7 @@ describe('GameBoard Call for Action Top-Left Hover Button', () => {
       </GameSettingsProvider>,
     );
 
-    expect(screen.queryByRole('button', { name: /extra/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^EXTRA!/ })).toBeNull();
 
     // Multiplayer game with no teammate actions (Tony has no tableau cards)
     const multiNoActionsState = setupGame({
@@ -184,6 +191,6 @@ describe('GameBoard Call for Action Top-Left Hover Button', () => {
       </GameSettingsProvider>,
     );
 
-    expect(screen.queryByRole('button', { name: /extra/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^EXTRA!/ })).toBeNull();
   });
 });

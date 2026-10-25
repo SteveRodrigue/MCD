@@ -66,4 +66,15 @@ describe('panoramic hero track jump buttons', () => {
     mountThreeHeroes();
     expect(screen.getByTitle('Scroll Right').hasAttribute('data-no-edge-scroll')).toBe(true);
   });
+
+  it('leaves the track as much room above the seats as the ribbon sticks out (Issue #383)', () => {
+    mountThreeHeroes();
+    const track = screen.getAllByTestId('hero-zone')[0].closest('.overflow-x-auto') as HTMLElement;
+    // The ribbon is `-top-N` above the seat; the track clips whatever lies above its top padding.
+    const ribbon = screen.getAllByTestId('hero-zone-ribbon')[0].parentElement as HTMLElement;
+    const overhang = Number(/(?:^|\s)-top-(\d+)(?:\s|$)/.exec(ribbon.className)?.[1]);
+    const padding = Number(/(?:^|\s)pt-(\d+)(?:\s|$)/.exec(track.className)?.[1]);
+    expect(overhang).toBeGreaterThan(0);
+    expect(padding).toBeGreaterThanOrEqual(overhang);
+  });
 });

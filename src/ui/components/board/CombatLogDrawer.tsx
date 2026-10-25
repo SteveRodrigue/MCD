@@ -1,10 +1,12 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { ModalLayer } from '../layout/ModalLayer';
-import { X, BookOpen, ChevronDown, ChevronRight, Globe } from 'lucide-react';
+import { ChevronDown, ChevronRight, Globe } from 'lucide-react';
 import { GameLogEntry } from '../../../engine/models';
 import { formatComicLogEntry } from '../../utils/comic-log-formatter';
 import { ComicSpeechBalloon } from './ComicSpeechBalloon';
 import { useGameSession } from '../../context/GameStateContext';
+import { NewsPill, NewspaperSheet } from '../../theme/kit/newspaper';
+import { useThemeExtras } from '../../theme/useThemeExtras';
 
 interface CombatLogDrawerProps {
   isOpen: boolean;
@@ -25,6 +27,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
   devMode = false,
 }) => {
   const { state: gameState } = useGameSession();
+  const { newspaper: np } = useThemeExtras();
   const [selectedCategory, setSelectedCategory] = useState<FilterCategory>('all');
   const [locale, setLocale] = useState<'en' | 'fr'>(currentLocale);
   const [showRawDebug, setShowRawDebug] = useState<boolean>(false);
@@ -66,107 +69,72 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
 
   if (!isOpen) return null;
 
+  const filters: Array<{ category: FilterCategory; label: string }> = [
+    { category: 'all', label: `ALL (${logs.length})` },
+    { category: 'heroes', label: '🦸 HEROES' },
+    { category: 'villains', label: '🦹 VILLAINS' },
+    { category: 'narrator', label: '📜 NARRATOR' },
+  ];
+
   return (
     <ModalLayer
       layer="drawer"
-      className="inset-y-0 right-0 w-full sm:w-[420px] lg:w-[420px] bg-slate-100 border-l-4 border-comic-black shadow-comic-lg flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-200"
+      className="inset-y-0 right-0 w-full sm:w-[420px] lg:w-[420px] p-2 animate-in slide-in-from-right duration-200"
     >
-      {/* 1. Daily Bugle Masthead Header Bar */}
-      <div className="bg-slate-900 p-3 sm:p-4 border-b-4 border-comic-black shadow-comic-sm">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded bg-comic-yellow border-2 border-comic-black text-comic-black shadow-comic-sm">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="font-comic text-xl text-comic-yellow leading-tight tracking-wide">
-                DAILY BUGLE
-              </h2>
-              <div className="text-micro font-bold text-slate-400 tracking-wider uppercase">
-                FLASH NEWS & ACTION CHRONICLE • ISSUE LOG
-              </div>
-            </div>
+      <NewspaperSheet
+        scrollable
+        scrollRef={scrollRef}
+        onClose={onClose}
+        className="h-full"
+        edition="Flash news & action chronicle"
+        issue="Issue log"
+        actions={
+          <button
+            type="button"
+            onClick={() => setLocale((prev) => (prev === 'en' ? 'fr' : 'en'))}
+            className={`cursor-pointer inline-flex items-center gap-1 ${np.pill}`}
+            title="Toggle Language / Basculer la langue"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span>{locale.toUpperCase()}</span>
+          </button>
+        }
+        toolbar={
+          <div role="group" aria-label="Log filter" className="flex flex-wrap gap-1.5">
+            {filters.map(({ category, label }) => (
+              <NewsPill
+                key={category}
+                active={selectedCategory === category}
+                onClick={() => setSelectedCategory(category)}
+              >
+                {label}
+              </NewsPill>
+            ))}
           </div>
-
-          <div className="flex items-center gap-2">
-            {/* Locale Toggle */}
+        }
+        footer={
+          <div className={`flex items-center justify-between gap-2 flex-wrap ${np.byline}`}>
+            <span>
+              Showing {filteredLogs.length} of {logs.length} Events
+            </span>
             <button
               type="button"
-              onClick={() => setLocale((prev) => (prev === 'en' ? 'fr' : 'en'))}
-              className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 border-2 border-slate-600 text-xs font-bold text-white shadow-comic-sm hover:bg-slate-700 cursor-pointer"
-              title="Toggle Language / Basculer la langue"
+              onClick={() => setShowRawDebug((prev) => !prev)}
+              className={`cursor-pointer inline-flex items-center gap-1 ${np.pill}`}
             >
-              <Globe className="w-3.5 h-3.5 text-sky-400" />
-              <span>{locale.toUpperCase()}</span>
-            </button>
-
-            {/* Close Button */}
-            <button
-              onClick={onClose}
-              className="p-1 rounded border-2 border-comic-black bg-slate-800 hover:bg-rose-900 text-rose-400 shadow-comic-sm cursor-pointer"
-            >
-              <X className="w-5 h-5" />
+              {showRawDebug ? (
+                <ChevronDown className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5" />
+              )}
+              <span>{showRawDebug ? 'Hide Debug' : 'Show Debug'}</span>
             </button>
           </div>
-        </div>
-
-        {/* 2. Filter Category Pills */}
-        <div className="grid grid-cols-4 gap-1.5 pt-2 border-t border-slate-800">
-          <button
-            type="button"
-            onClick={() => setSelectedCategory('all')}
-            className={`py-1 text-center text-mini font-bold uppercase rounded border transition-all cursor-pointer ${
-              selectedCategory === 'all'
-                ? 'bg-white text-slate-950 border-white shadow-comic-sm scale-105'
-                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
-            }`}
-          >
-            ALL ({logs.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setSelectedCategory('heroes')}
-            className={`py-1 text-center text-mini font-bold uppercase rounded border transition-all cursor-pointer ${
-              selectedCategory === 'heroes'
-                ? 'bg-sky-500 text-slate-950 border-sky-400 shadow-comic-sm scale-105'
-                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
-            }`}
-          >
-            🦸 HEROES
-          </button>
-          <button
-            type="button"
-            onClick={() => setSelectedCategory('villains')}
-            className={`py-1 text-center text-mini font-bold uppercase rounded border transition-all cursor-pointer ${
-              selectedCategory === 'villains'
-                ? 'bg-rose-600 text-white border-rose-500 shadow-comic-sm scale-105'
-                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
-            }`}
-          >
-            🦹 VILLAINS
-          </button>
-          <button
-            type="button"
-            onClick={() => setSelectedCategory('narrator')}
-            className={`py-1 text-center text-mini font-bold uppercase rounded border transition-all cursor-pointer ${
-              selectedCategory === 'narrator'
-                ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-comic-sm scale-105'
-                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
-            }`}
-          >
-            📜 NARRATOR
-          </button>
-        </div>
-      </div>
-
-      {/* 3. Log Stream Container */}
-      <div
-        ref={scrollRef}
-        className="flex-1 p-3 overflow-y-auto space-y-1 bg-[#f4ede2] bg-bendy-dots"
+        }
       >
         {filteredLogs.length === 0 ? (
-          <div className="p-8 text-center bg-white/10 rounded-xl border border-slate-700 my-4">
-            <p className="text-sm text-slate-400">No actions recorded for this category yet.</p>
+          <div className={`${np.classified} !p-8 text-center my-4`}>
+            <p className={np.body}>No actions recorded for this category yet.</p>
           </div>
         ) : (
           filteredLogs.map((dialogue, idx) => (
@@ -175,10 +143,10 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
 
               {/* Collapsed Raw Debug Inspector */}
               {showRawDebug && dialogue.rawEntry && (
-                <div className="mx-4 my-1 p-2 rounded bg-slate-950/80 border border-slate-700 text-micro font-mono text-slate-400 space-y-1">
-                  <div className="text-emerald-400 font-bold">KEY: {dialogue.rawEntry.key}</div>
+                <div className={`${np.classified} mx-4 my-1 space-y-1 font-mono`}>
+                  <div className="font-bold">KEY: {dialogue.rawEntry.key}</div>
                   {dialogue.rawEntry.params && (
-                    <pre className="overflow-x-auto text-nano text-slate-300">
+                    <pre className="overflow-x-auto text-nano">
                       {JSON.stringify(dialogue.rawEntry.params, null, 2)}
                     </pre>
                   )}
@@ -187,30 +155,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
             </div>
           ))
         )}
-      </div>
-
-      {/* 4. Footer & Debug Accordion */}
-      <div className="p-2.5 bg-slate-900 border-t-2 border-comic-black flex items-center justify-between text-xs font-bold text-slate-300 gap-2 flex-wrap">
-        <span>
-          Showing {filteredLogs.length} of {logs.length} Events
-        </span>
-
-        <div className="flex items-center gap-2">
-          {/* Collapsible Debug Inspector Button */}
-          <button
-            type="button"
-            onClick={() => setShowRawDebug((prev) => !prev)}
-            className="flex items-center gap-1 px-2 py-1 rounded border border-slate-700 bg-slate-800 hover:bg-slate-700 text-mini text-slate-200 cursor-pointer"
-          >
-            {showRawDebug ? (
-              <ChevronDown className="w-3.5 h-3.5" />
-            ) : (
-              <ChevronRight className="w-3.5 h-3.5" />
-            )}
-            <span>{showRawDebug ? 'Hide Debug' : 'Show Debug'}</span>
-          </button>
-        </div>
-      </div>
+      </NewspaperSheet>
     </ModalLayer>
   );
 };

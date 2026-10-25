@@ -25,6 +25,7 @@ import { getEffectiveVillainStats } from '../../../engine/pipeline/stat-calculat
 import { getCardBackUrl, getCardBackFallbackColor } from '../../services/card-cache-service';
 import { useModalStyle } from '../../theme/useModalStyle';
 import { ZonePanel } from '../../theme/kit/surfaces';
+import { StatBox } from '../../theme/kit/meters';
 
 interface VillainZoneProps {
   villain: VillainState;
@@ -261,36 +262,22 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                 data-testid="villain-stats-column"
                 className="relative z-content flex flex-col gap-1.5 items-center justify-center min-w-[36px]"
               >
-                {/* SCH */}
-                <div
-                  className={`flex flex-col items-center justify-center w-full px-1 py-0.5 bg-sky-50 text-center ${style.badge}`}
+                <StatBox
+                  label="SCH"
+                  tone="sky"
+                  value={effectiveStats.scheme}
+                  bonus={schBonus}
+                  alwaysAccent
                   title={`Scheme: ${effectiveStats.scheme}${schBonus > 0 ? ` (+${schBonus})` : ''}`}
-                >
-                  <span className="text-nano font-bold text-sky-800 uppercase leading-none">
-                    SCH
-                  </span>
-                  <span className="text-xs font-black leading-tight text-comic-blue">
-                    {effectiveStats.scheme}
-                    {schBonus > 0 && (
-                      <span className="text-nano text-sky-600 font-bold ml-0.5">+{schBonus}</span>
-                    )}
-                  </span>
-                </div>
-                {/* ATK */}
-                <div
-                  className={`flex flex-col items-center justify-center w-full px-1 py-0.5 bg-rose-50 text-center ${style.badge}`}
+                />
+                <StatBox
+                  label="ATK"
+                  tone="rose"
+                  value={effectiveStats.attack}
+                  bonus={atkBonus}
+                  alwaysAccent
                   title={`Attack: ${effectiveStats.attack}${atkBonus > 0 ? ` (+${atkBonus})` : ''}`}
-                >
-                  <span className="text-nano font-bold text-rose-800 uppercase leading-none">
-                    ATK
-                  </span>
-                  <span className="text-xs font-black leading-tight text-comic-red">
-                    {effectiveStats.attack}
-                    {atkBonus > 0 && (
-                      <span className="text-nano text-rose-500 font-bold ml-0.5">+{atkBonus}</span>
-                    )}
-                  </span>
-                </div>
+                />
               </div>
 
               {/* Center Column (Card) */}

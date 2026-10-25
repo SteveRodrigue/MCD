@@ -51,6 +51,9 @@ import {
 import { canInitiateAbility } from '../../../engine/pipeline/legality-checker';
 import { getAvailableResources } from '../../../engine/pipeline/cost-engine';
 import { useGameSession } from '../../context/GameStateContext';
+import { useModalStyle } from '../../theme/useModalStyle';
+import { StatBox, StatStrip } from '../../theme/kit/meters';
+import { ToneButton } from '../../theme/kit/controls';
 
 interface HeroZoneProps {
   player: PlayerState;
@@ -72,6 +75,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   onInitiateAction,
 }) => {
   const { state: gameState, dispatch: onDispatchAction } = useGameSession();
+  const { style } = useModalStyle();
   const [isIdentityModalOpen, setIsIdentityModalOpen] = useState(false);
   const palette = useMemo(() => getHeroColorPalette(player), [player]);
 
@@ -289,13 +293,14 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
 
   return (
     <section
+      data-testid="hero-zone"
       onClick={!isFocused && onFocus ? onFocus : undefined}
-      className={`comic-panel p-4 relative shadow-comic space-y-4 transition-all ${
+      className={`p-4 relative space-y-4 transition-all ${style.panel} ${style.text} ${
         isTargetOfIncomingAttack
-          ? 'ring-4 ring-rose-500 bg-rose-50/60 shadow-comic-lg'
+          ? 'ring-4 ring-rose-500'
           : !isFocused
-            ? 'ring-1 ring-slate-300/80 bg-slate-100/90 cursor-pointer'
-            : 'bg-white/95 ring-2 ring-comic-blue shadow-comic-lg'
+            ? 'ring-1 ring-current/30 opacity-90 cursor-pointer'
+            : 'ring-2 ring-comic-blue'
       }`}
       style={
         isTargetOfIncomingAttack
@@ -309,7 +314,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
       <div className="absolute -top-3 left-4 flex items-center gap-2">
         <div
           data-testid="hero-zone-ribbon"
-          className={`border border-comic-black text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1.5 ${
+          className={`text-xs px-3 py-0.5 tracking-wider flex items-center gap-1.5 ${style.badge} ${
             isFocused ? '' : 'bg-slate-700 text-white'
           }`}
           style={{
@@ -325,7 +330,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           </span>
           {isFocused && (
             <span
-              className="text-micro px-1.5 py-0.2 rounded font-black border border-comic-black ml-1 shadow-comic-xs"
+              className={`text-micro px-1.5 py-0.2 font-black ml-1 ${style.badge}`}
               style={{
                 backgroundColor: palette.accent || palette.secondary,
                 color: getContrastTextColor(palette.accent || palette.secondary),
@@ -335,31 +340,27 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
             </span>
           )}
           {isTargetOfIncomingAttack && (
-            <span className="text-micro px-1.5 py-0.2 rounded font-black border border-comic-black ml-1 bg-comic-red text-white shadow-comic-xs animate-pulse">
+            <span
+              className={`text-micro px-1.5 py-0.2 font-black ml-1 bg-comic-red text-white animate-pulse ${style.badge}`}
+            >
               💥 UNDER ATTACK
             </span>
           )}
         </div>
 
         {!isFocused && onFocus && (
-          <button
-            onClick={onFocus}
-            className="bg-amber-300 hover:bg-amber-400 text-slate-950 text-mini px-2.5 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-bold"
-          >
+          <ToneButton tone="amber" onClick={onFocus} className="text-mini px-2.5 py-0.5 font-bold">
             Switch Active Hand ➔
-          </button>
+          </ToneButton>
         )}
       </div>
 
       {/* 1. Engaged Minions & Dealt Encounter Cards Row (Always Visible for this Hero Seat!) */}
-      <div
-        data-testid="threat-zone"
-        className="bg-rose-50/80 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm"
-      >
-        <div className="flex items-center justify-between border-b border-rose-200 pb-1 mb-2">
+      <div data-testid="threat-zone" className={`p-3 ${style.inset}`}>
+        <div className="flex items-center justify-between border-b border-current/20 pb-1 mb-2">
           <div className="flex items-center gap-1.5">
             <AlertOctagon className="w-4 h-4 text-comic-red" />
-            <span className="text-xs text-comic-red uppercase font-bold">
+            <span className={`text-xs uppercase font-bold ${style.emphasis}`}>
               {hasDealtCards || hasObligations
                 ? `Threat Zone: ${player.name} (${engagedMinions.length} Minions • ${dealtCards.length} Dealt Cards${
                     hasObligations ? ` • ${obligations.length} Obligations` : ''
@@ -367,7 +368,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                 : `Minions Engaged with ${player.name} (${engagedMinions.length})`}
             </span>
           </div>
-          <span className="text-micro font-bold text-slate-500 uppercase">
+          <span className={`text-micro font-bold uppercase ${style.muted}`}>
             Encounter Threat Zone
           </span>
         </div>
@@ -436,24 +437,28 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       </CardAttachmentFan>
                       <div className="flex items-center gap-1 flex-wrap justify-center z-raised">
                         <span
-                          className="bg-white text-comic-blue border border-comic-black text-nano px-1 py-0.2 rounded font-bold shadow-comic-xs"
+                          className={`bg-sky-50 text-comic-blue text-nano px-1 py-0.2 font-bold ${style.badge}`}
                           title={`Scheme: ${(minion.card as any).scheme ?? 0}`}
                         >
                           SCH {(minion.card as any).scheme ?? 0}
                         </span>
                         <span
-                          className="bg-white text-comic-red border border-comic-black text-nano px-1 py-0.2 rounded font-bold shadow-comic-xs"
+                          className={`bg-rose-50 text-comic-red text-nano px-1 py-0.2 font-bold ${style.badge}`}
                           title={`Attack: ${(minion.card as any).attack ?? 0}`}
                         >
                           ATK {(minion.card as any).attack ?? 0}
                         </span>
                         {isGuard && (
-                          <span className="bg-slate-900 text-comic-yellow border border-comic-black text-micro px-1.5 py-0.5 rounded font-bold">
+                          <span
+                            className={`bg-slate-900 text-comic-yellow text-micro px-1.5 py-0.5 font-bold ${style.badge}`}
+                          >
                             GUARD
                           </span>
                         )}
                         {isTough && (
-                          <span className="bg-sky-400 text-slate-950 border border-comic-black text-micro px-1.5 py-0.5 rounded font-bold">
+                          <span
+                            className={`bg-sky-400 text-slate-950 text-micro px-1.5 py-0.5 font-bold ${style.badge}`}
+                          >
                             TOUGH
                           </span>
                         )}
@@ -464,7 +469,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
               </div>
             ) : (
               <div
-                className={`py-2 px-3 border-2 border-dashed border-rose-200 rounded-lg text-center text-xs text-rose-400 font-semibold bg-white/60 flex items-center justify-center gap-2 ${
+                className={`py-2 px-3 border-2 border-dashed border-current/30 rounded-lg text-center text-xs font-semibold flex items-center justify-center gap-2 ${style.muted} ${
                   hasDealtCards ? 'flex-1 self-stretch' : 'w-full'
                 }`}
               >
@@ -480,10 +485,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
         {/* ROW 1: Hero & Allies Roster Container */}
         <div
           data-testid="hero-allies-roster"
-          className={`flex flex-col md:flex-row items-stretch gap-3 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm transition-all ${
-            isTargetOfIncomingAttack
-              ? 'bg-rose-100/90 ring-4 ring-rose-500 animate-pulse border-rose-600 shadow-comic-lg'
-              : 'bg-sky-50/80'
+          className={`flex flex-col md:flex-row items-stretch gap-3 p-3 transition-all ${style.inset} ${
+            isTargetOfIncomingAttack ? 'ring-4 ring-rose-500 animate-pulse' : ''
           }`}
         >
           {/* Identity Station */}
@@ -492,7 +495,9 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
             className="w-full md:w-[220px] flex flex-col gap-2 shrink-0"
           >
             {isTargetOfIncomingAttack && (
-              <div className="w-full text-center py-1 px-2 bg-comic-red text-white text-xs font-black uppercase tracking-wider rounded border-2 border-comic-black shadow-comic-sm animate-bounce">
+              <div
+                className={`w-full text-center py-1 px-2 bg-comic-red text-white text-xs font-black uppercase tracking-wider animate-bounce ${style.buttonShape}`}
+              >
                 💥 UNDER ATTACK
               </div>
             )}
@@ -502,15 +507,12 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
               <div className="flex justify-between items-center gap-1.5 w-full">
                 <div className="flex items-center gap-1 min-w-0">
                   <Shield className="w-4 h-4 shrink-0" style={{ color: palette.primary }} />
-                  <span
-                    className="text-sm text-comic-black truncate"
-                    title={player.activeFormCard.name}
-                  >
+                  <span className="text-sm truncate" title={player.activeFormCard.name}>
                     {player.activeFormCard.name}
                   </span>
                 </div>
                 <span
-                  className={`text-micro px-1.5 py-0.5 rounded border border-comic-black uppercase shadow-comic-sm font-bold shrink-0 ${
+                  className={`text-micro px-1.5 py-0.5 uppercase font-bold shrink-0 ${style.badge} ${
                     isHero ? 'bg-comic-red text-white' : 'bg-amber-300 text-slate-950'
                   }`}
                 >
@@ -523,7 +525,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   {player.statusCards.map((st, i) => (
                     <span
                       key={i}
-                      className={`text-nano px-1 py-0.2 rounded border border-comic-black uppercase shadow-comic-xs font-bold ${
+                      className={`text-nano px-1 py-0.2 uppercase font-bold ${style.badge} ${
                         st === StatusCard.TOUGH
                           ? 'bg-sky-400 text-slate-950'
                           : st === StatusCard.STUNNED
@@ -541,157 +543,63 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
             {/* Center Tri-Column Row */}
             <div className="flex items-center justify-center gap-2 w-full">
               {/* Left Column (Stats) */}
-              {isHero ? (
-                <div
-                  className="relative z-content flex flex-col gap-1 items-center justify-center min-w-[36px]"
-                  data-testid="identity-stats-column"
-                >
-                  {/* THW */}
-                  <div
-                    className="flex flex-col items-center justify-center w-full px-1 py-0.5 bg-sky-50 border border-comic-black rounded shadow-comic-xs text-center"
-                    title={`Thwart: ${effectiveStats.thwart}${thwBonus > 0 ? ` (+${thwBonus})` : ''}`}
-                  >
-                    <span className="text-nano font-bold text-sky-800 uppercase leading-none">
-                      THW
-                    </span>
-                    <span
-                      className={`text-xs font-black leading-tight ${thwBonus > 0 ? 'text-comic-blue' : 'text-slate-900'}`}
-                    >
-                      {effectiveStats.thwart}
-                      {thwBonus > 0 && (
-                        <span className="text-nano text-sky-600 font-bold ml-0.5">+{thwBonus}</span>
-                      )}
-                    </span>
-                  </div>
-                  {/* ATK */}
-                  <div
-                    className="flex flex-col items-center justify-center w-full px-1 py-0.5 bg-rose-50 border border-comic-black rounded shadow-comic-xs text-center"
-                    title={`Attack: ${effectiveStats.attack}${atkBonus > 0 ? ` (+${atkBonus})` : ''}`}
-                  >
-                    <span className="text-nano font-bold text-rose-800 uppercase leading-none">
-                      ATK
-                    </span>
-                    <span
-                      className={`text-xs font-black leading-tight ${atkBonus > 0 ? 'text-comic-red' : 'text-slate-900'}`}
-                    >
-                      {effectiveStats.attack}
-                      {atkBonus > 0 && (
-                        <span className="text-nano text-rose-500 font-bold ml-0.5">
-                          +{atkBonus}
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  {/* DEF */}
-                  <div
-                    className="flex flex-col items-center justify-center w-full px-1 py-0.5 bg-emerald-50 border border-comic-black rounded shadow-comic-xs text-center"
-                    title={`Defense: ${effectiveStats.defense}${defBonus > 0 ? ` (+${defBonus})` : ''}`}
-                  >
-                    <span className="text-nano font-bold text-emerald-800 uppercase leading-none">
-                      DEF
-                    </span>
-                    <span
-                      className={`text-xs font-black leading-tight ${defBonus > 0 ? 'text-emerald-600' : 'text-slate-900'}`}
-                    >
-                      {effectiveStats.defense}
-                      {defBonus > 0 && (
-                        <span className="text-nano text-emerald-500 font-bold ml-0.5">
-                          +{defBonus}
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  {/* HS */}
-                  <div
-                    className="flex flex-col items-center justify-center w-full px-1 py-0.5 bg-slate-100 border border-comic-black rounded shadow-comic-xs text-center"
-                    title={`Hand Size: ${effectiveHandSize}${handBonus > 0 ? ` (+${handBonus})` : ''}`}
-                  >
-                    <span className="text-nano font-bold text-slate-600 uppercase leading-none">
-                      HS
-                    </span>
-                    <span
-                      className={`text-xs font-black leading-tight ${handBonus > 0 ? 'text-slate-800' : 'text-slate-900'}`}
-                    >
-                      {effectiveHandSize}
-                      {handBonus > 0 && (
-                        <span className="text-nano text-slate-600 font-bold ml-0.5">
-                          +{handBonus}
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  {/* RES */}
-                  <div
-                    className="flex flex-col items-center justify-center w-full px-1 py-0.5 bg-indigo-50 border border-comic-black rounded shadow-comic-xs text-center"
-                    title={`Available Resources: ${availableResources.total} (${availableResources.breakdown})`}
-                    data-testid="hero-available-resources-counter"
-                  >
-                    <span className="text-nano font-bold text-indigo-700 uppercase leading-none">
-                      RES
-                    </span>
-                    <span className="text-xs font-black leading-tight text-indigo-950">
-                      {availableResources.total}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  className="relative z-content flex flex-col gap-1.5 items-center justify-center min-w-[36px]"
-                  data-testid="identity-stats-column"
-                >
-                  {/* REC */}
-                  <div
-                    className="flex flex-col items-center justify-center w-full px-1 py-1 bg-amber-50 border border-comic-black rounded shadow-comic-xs text-center"
+              <div
+                className={`relative z-content flex flex-col items-center justify-center min-w-[36px] ${
+                  isHero ? 'gap-1' : 'gap-1.5'
+                }`}
+                data-testid="identity-stats-column"
+              >
+                {isHero ? (
+                  <>
+                    <StatBox
+                      label="THW"
+                      tone="sky"
+                      value={effectiveStats.thwart}
+                      bonus={thwBonus}
+                      title={`Thwart: ${effectiveStats.thwart}${thwBonus > 0 ? ` (+${thwBonus})` : ''}`}
+                    />
+                    <StatBox
+                      label="ATK"
+                      tone="rose"
+                      value={effectiveStats.attack}
+                      bonus={atkBonus}
+                      title={`Attack: ${effectiveStats.attack}${atkBonus > 0 ? ` (+${atkBonus})` : ''}`}
+                    />
+                    <StatBox
+                      label="DEF"
+                      tone="emerald"
+                      value={effectiveStats.defense}
+                      bonus={defBonus}
+                      title={`Defense: ${effectiveStats.defense}${defBonus > 0 ? ` (+${defBonus})` : ''}`}
+                    />
+                  </>
+                ) : (
+                  <StatBox
+                    label="REC"
+                    tone="amber"
+                    roomy
+                    value={effectiveStats.recovery}
+                    bonus={recBonus}
                     title={`Recovery: ${effectiveStats.recovery}${recBonus > 0 ? ` (+${recBonus})` : ''}`}
-                  >
-                    <span className="text-nano font-bold text-amber-800 uppercase leading-none">
-                      REC
-                    </span>
-                    <span
-                      className={`text-xs font-black leading-tight ${recBonus > 0 ? 'text-amber-600' : 'text-slate-900'}`}
-                    >
-                      {effectiveStats.recovery}
-                      {recBonus > 0 && (
-                        <span className="text-nano text-amber-500 font-bold ml-0.5">
-                          +{recBonus}
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  {/* HS */}
-                  <div
-                    className="flex flex-col items-center justify-center w-full px-1 py-1 bg-slate-100 border border-comic-black rounded shadow-comic-xs text-center"
-                    title={`Hand Size: ${effectiveHandSize}${handBonus > 0 ? ` (+${handBonus})` : ''}`}
-                  >
-                    <span className="text-nano font-bold text-slate-600 uppercase leading-none">
-                      HS
-                    </span>
-                    <span
-                      className={`text-xs font-black leading-tight ${handBonus > 0 ? 'text-slate-800' : 'text-slate-900'}`}
-                    >
-                      {effectiveHandSize}
-                      {handBonus > 0 && (
-                        <span className="text-nano text-slate-600 font-bold ml-0.5">
-                          +{handBonus}
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  {/* RES */}
-                  <div
-                    className="flex flex-col items-center justify-center w-full px-1 py-1 bg-indigo-50 border border-comic-black rounded shadow-comic-xs text-center"
-                    title={`Available Resources: ${availableResources.total} (${availableResources.breakdown})`}
-                    data-testid="hero-available-resources-counter"
-                  >
-                    <span className="text-nano font-bold text-indigo-700 uppercase leading-none">
-                      RES
-                    </span>
-                    <span className="text-xs font-black leading-tight text-indigo-950">
-                      {availableResources.total}
-                    </span>
-                  </div>
-                </div>
-              )}
+                  />
+                )}
+                <StatBox
+                  label="HS"
+                  tone="slate"
+                  roomy={!isHero}
+                  value={effectiveHandSize}
+                  bonus={handBonus}
+                  title={`Hand Size: ${effectiveHandSize}${handBonus > 0 ? ` (+${handBonus})` : ''}`}
+                />
+                <StatBox
+                  label="RES"
+                  tone="indigo"
+                  roomy={!isHero}
+                  value={availableResources.total}
+                  title={`Available Resources: ${availableResources.total} (${availableResources.breakdown})`}
+                  testId="hero-available-resources-counter"
+                />
+              </div>
 
               {/* Center Column (Card) */}
               <div
@@ -730,7 +638,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   <Heart className="w-2.5 h-2.5 text-comic-red fill-comic-red" />
                   {hpBonus > 0 && (
                     <span
-                      className="bg-emerald-400 text-slate-950 text-nano px-1 rounded border border-comic-black font-bold shadow-comic-xs flex items-center gap-0.5 mt-0.5"
+                      className={`bg-emerald-400 text-slate-950 text-nano px-1 font-bold flex items-center gap-0.5 mt-0.5 ${style.badge}`}
                       title={`+${hpBonus} bonus HP`}
                     >
                       <Sparkles className="w-2 h-2" />+{hpBonus}
@@ -743,7 +651,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   aria-valuemin={0}
                   aria-valuemax={effectiveMaxHealth}
                   aria-label="Identity Health"
-                  className="h-36 w-3.5 bg-neutral-800 rounded-full border border-black overflow-hidden relative flex flex-col justify-end shadow-comic-xs"
+                  className="h-36 w-3.5 bg-neutral-800 rounded-full border border-black overflow-hidden relative flex flex-col justify-end"
                 >
                   <div
                     className="w-full transition-all duration-300 rounded-b-full"
@@ -758,7 +666,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     }}
                   />
                 </div>
-                <span className="text-micro font-black text-slate-900 leading-none">
+                <span className="text-micro font-black leading-none">
                   {player.health}/{effectiveMaxHealth}
                 </span>
               </div>
@@ -766,20 +674,17 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
 
             {/* Bottom Action Row: Single horizontal row */}
             <div
-              className="w-full pt-1 border-t border-slate-200"
+              className="w-full pt-1 border-t border-current/20"
               data-testid="identity-action-row"
             >
               {!isHero ? (
                 <div className="grid grid-cols-2 gap-1.5 w-full">
                   {/* Suit Up / Flip */}
-                  <button
+                  <ToneButton
+                    tone="red"
                     disabled={!canFlip}
                     onClick={() => onDispatchAction({ type: 'CHANGE_FORM', playerId: player.id })}
-                    className={`text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
-                      canFlip
-                        ? 'bg-comic-red hover:bg-red-600 text-white active:translate-y-0.5'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                    }`}
+                    className="text-xs py-1.5 px-1 gap-1 truncate font-bold uppercase"
                     title={
                       canFlip
                         ? 'Suit Up (Hero Form) (Limit once per round)'
@@ -788,17 +693,14 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   >
                     <RefreshCw className={`w-3 h-3 shrink-0 ${canFlip ? 'animate-pulse' : ''}`} />
                     <span className="truncate">Suit Up</span>
-                  </button>
+                  </ToneButton>
 
                   {/* Recover */}
-                  <button
+                  <ToneButton
+                    tone="amber"
                     disabled={!canRecover}
                     onClick={() => onDispatchAction({ type: 'BASIC_RECOVER', playerId: player.id })}
-                    className={`text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
-                      canRecover
-                        ? 'bg-amber-300 hover:bg-amber-400 text-slate-950 active:translate-y-0.5'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                    }`}
+                    className="text-xs py-1.5 px-1 gap-1 truncate font-bold uppercase"
                     title={
                       player.exhausted
                         ? 'Identity is exhausted'
@@ -809,19 +711,16 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   >
                     <Heart className="w-3 h-3 shrink-0 fill-rose-600 text-rose-600" />
                     <span className="truncate">Recover (+{effectiveStats.recovery})</span>
-                  </button>
+                  </ToneButton>
                 </div>
               ) : (
                 <div className="grid grid-cols-3 gap-1.5 w-full">
                   {/* Flip */}
-                  <button
+                  <ToneButton
+                    tone="amber"
                     disabled={!canFlip}
                     onClick={() => onDispatchAction({ type: 'CHANGE_FORM', playerId: player.id })}
-                    className={`text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
-                      canFlip
-                        ? 'bg-amber-300 hover:bg-amber-400 text-slate-950 active:translate-y-0.5'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                    }`}
+                    className="text-xs py-1.5 px-1 gap-1 truncate font-bold uppercase"
                     title={
                       canFlip
                         ? 'Flip to Alter-Ego (Limit once per round)'
@@ -830,17 +729,14 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   >
                     <RefreshCw className={`w-3 h-3 shrink-0 ${canFlip ? 'animate-pulse' : ''}`} />
                     <span className="truncate">Flip</span>
-                  </button>
+                  </ToneButton>
 
                   {/* Attack */}
-                  <button
+                  <ToneButton
+                    tone="red"
                     disabled={!canAttack}
                     onClick={() => handleInitiateAttack('hero')}
-                    className={`text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
-                      canAttack
-                        ? 'bg-comic-red hover:bg-red-600 text-white active:translate-y-0.5'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                    }`}
+                    className="text-xs py-1.5 px-1 gap-1 truncate font-bold uppercase"
                     title={
                       player.exhausted
                         ? 'Hero is exhausted'
@@ -851,17 +747,14 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   >
                     <Swords className="w-3 h-3 shrink-0" />
                     <span className="truncate">Attack ({effectiveStats.attack})</span>
-                  </button>
+                  </ToneButton>
 
                   {/* Thwart */}
-                  <button
+                  <ToneButton
+                    tone="blue"
                     disabled={!canThwart}
                     onClick={() => handleInitiateThwart('hero')}
-                    className={`text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
-                      canThwart
-                        ? 'bg-comic-blue hover:bg-sky-600 text-white active:translate-y-0.5'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                    }`}
+                    className="text-xs py-1.5 px-1 gap-1 truncate font-bold uppercase"
                     title={
                       player.exhausted
                         ? 'Hero is exhausted'
@@ -872,21 +765,23 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   >
                     <Target className="w-3 h-3 shrink-0" />
                     <span className="truncate">Thwart ({effectiveStats.thwart})</span>
-                  </button>
+                  </ToneButton>
                 </div>
               )}
             </div>
           </div>
 
           {/* Vertical comic divider on md+ screens */}
-          <div className="hidden md:block w-0.5 bg-comic-black/15 self-stretch my-1 shrink-0" />
+          <div className="hidden md:block w-0.5 bg-current/15 self-stretch my-1 shrink-0" />
 
           {/* Nested Allies Section */}
           <div
             data-testid="nested-allies-section"
             className="flex-1 flex flex-col min-w-0 space-y-2 pt-2 md:pt-0"
           >
-            <div className="flex items-center justify-between text-xs font-bold uppercase text-slate-600 border-b border-comic-black/15 pb-1.5">
+            <div
+              className={`flex items-center justify-between text-xs font-bold uppercase border-b border-current/20 pb-1.5 ${style.muted}`}
+            >
               <span className="flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5 text-comic-blue" />
                 Allies in Play ({player.allies.length} / {effectiveAllyLimit})
@@ -928,10 +823,11 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     >
                       {/* Ally Action Mini-Console (Positioned above card (z-raised)) */}
                       <div className="flex items-center gap-1 w-full justify-center mb-1 z-raised">
-                        <button
+                        <ToneButton
+                          tone="red"
                           onClick={() => handleInitiateAttack('ally', ally.instanceId)}
                           disabled={!canAtk}
-                          className="px-1.5 py-0.5 text-micro bg-comic-red hover:bg-red-700 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2 flex items-center gap-0.5"
+                          className="px-1.5 py-0.5 text-micro font-bold gap-0.5"
                           title={
                             canAct
                               ? `Attack for ${allyStats.attack} damage${atkBonus > 0 ? ` (+${atkBonus} bonus)` : ''}`
@@ -944,11 +840,12 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                               (+{atkBonus})
                             </span>
                           )}
-                        </button>
-                        <button
+                        </ToneButton>
+                        <ToneButton
+                          tone="sky"
                           onClick={() => handleInitiateThwart('ally', ally.instanceId)}
                           disabled={!canThw}
-                          className="px-1.5 py-0.5 text-micro bg-sky-500 hover:bg-sky-600 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2 flex items-center gap-0.5"
+                          className="px-1.5 py-0.5 text-micro font-bold gap-0.5"
                           title={
                             canThw
                               ? `Thwart scheme for ${allyStats.thwart} threat${thwBonus > 0 ? ` (+${thwBonus} bonus)` : ''}`
@@ -961,39 +858,15 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                               (+{thwBonus})
                             </span>
                           )}
-                        </button>
+                        </ToneButton>
                       </div>
 
-                      {/* Pop-Art Ally Stat Bonus Strip (Matching Hero stat display) */}
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/95 border border-comic-black rounded shadow-comic-xs text-nano font-bold mb-1 z-raised">
-                        <div className="flex items-center gap-0.5">
-                          <span className="text-slate-500 uppercase text-nano">THW</span>
-                          <span
-                            className={`flex items-center ${
-                              thwBonus > 0 ? 'text-emerald-600 font-black' : 'text-slate-900'
-                            }`}
-                          >
-                            {thwDisplay}
-                            {thwBonus > 0 && (
-                              <span className="text-nano text-emerald-600 ml-0.5">+{thwBonus}</span>
-                            )}
-                          </span>
-                        </div>
-                        <div className="h-3 w-px bg-slate-300" />
-                        <div className="flex items-center gap-0.5">
-                          <span className="text-slate-500 uppercase text-nano">ATK</span>
-                          <span
-                            className={`flex items-center ${
-                              atkBonus > 0 ? 'text-comic-red font-black' : 'text-slate-900'
-                            }`}
-                          >
-                            {atkDisplay}
-                            {atkBonus > 0 && (
-                              <span className="text-nano text-rose-500 ml-0.5">+{atkBonus}</span>
-                            )}
-                          </span>
-                        </div>
-                      </div>
+                      <StatStrip
+                        items={[
+                          { label: 'THW', value: thwDisplay, bonus: thwBonus, tone: 'emerald' },
+                          { label: 'ATK', value: atkDisplay, bonus: atkBonus, tone: 'rose' },
+                        ]}
+                      />
 
                       {/* Dedicated Host Card & Attachment Anchor Container (Coordinates align with top of host card) */}
                       <CardAttachmentFan
@@ -1020,23 +893,22 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                 })}
               </div>
             ) : (
-              <div className="h-36 w-full border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-center p-3 text-xs text-slate-400 font-semibold bg-white/40">
-                <Users className="w-6 h-6 text-slate-300 mb-1" />
+              <div
+                className={`h-36 w-full border-2 border-dashed border-current/30 rounded-lg flex flex-col items-center justify-center text-center p-3 text-xs font-semibold ${style.muted}`}
+              >
+                <Users className="w-6 h-6 opacity-60 mb-1" />
                 <span>No allies in play</span>
-                <span className="text-micro text-slate-400 font-normal">
-                  Ally Limit: {effectiveAllyLimit}
-                </span>
+                <span className="text-micro font-normal">Ally Limit: {effectiveAllyLimit}</span>
               </div>
             )}
           </div>
         </div>
 
         {/* ROW 2: Tableau Upgrades & Supports */}
-        <div
-          data-testid="tableau-section"
-          className="w-full bg-slate-50 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2"
-        >
-          <div className="flex items-center justify-between text-xs font-bold uppercase text-slate-600 border-b border-slate-200 pb-1.5">
+        <div data-testid="tableau-section" className={`w-full p-3 space-y-2 ${style.inset}`}>
+          <div
+            className={`flex items-center justify-between text-xs font-bold uppercase border-b border-current/20 pb-1.5 ${style.muted}`}
+          >
             <span className="flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5 text-comic-yellow" />
               Tableau: Upgrades & Supports ({player.tableau.length})
@@ -1092,7 +964,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                         (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND');
 
                       return (
-                        <button
+                        <ToneButton
+                          tone="amber"
                           key={ab.id}
                           onClick={() => {
                             if (hasPaymentCost && onInitiateAction) {
@@ -1125,7 +998,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                             });
                           }}
                           disabled={!canUse}
-                          className="w-full text-micro bg-amber-300 hover:bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
+                          className="w-full text-micro px-1.5 py-0.5 font-bold"
                           title={
                             canUse
                               ? `Trigger ${ab.id}`
@@ -1136,7 +1009,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                           }
                         >
                           {label}
-                        </button>
+                        </ToneButton>
                       );
                     })}
                   </div>
@@ -1144,7 +1017,9 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
               })}
             </div>
           ) : (
-            <div className="h-36 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center text-center text-xs text-slate-400 font-semibold bg-white/50">
+            <div
+              className={`h-36 border-2 border-dashed border-current/30 rounded-lg flex items-center justify-center text-center text-xs font-semibold ${style.muted}`}
+            >
               No supports or upgrades
             </div>
           )}

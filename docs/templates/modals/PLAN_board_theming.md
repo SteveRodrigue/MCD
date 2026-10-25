@@ -1,6 +1,6 @@
 # Plan: the board, the setup and the shell follow the theme (N4)
 
-Status: **approved by you (whole plan, "the full UI follows the theme, only the Bangers banner is kept"). Phases 1 and 2 are done (kit, badge token, guard, villain zone); phase 3 (hero zone) is next.** Each phase is a separate change, committed on its own, and verified in the running game.
+Status: **approved by you (whole plan, "the full UI follows the theme, only the Bangers banner is kept"). Phases 1 to 3 are done (kit, tokens, guard, villain zone, hero zone); phase 4 (hand tray, removed box, piles) is next.** Each phase is a separate change, committed on its own, and verified in the running game.
 
 Related: [Game integration plan](./PLAN_game_integration.md) (N4 is its last big step), [Font plan](./PLAN_fonts.md), [Unthemed UI audit](./AUDIT_unthemed_ui.md) (the measurements and the decisions D1 to D10 this plan applies), [Theme engine plan](./PLAN_theme_engine.md).
 
@@ -30,6 +30,14 @@ Rules, from the audit decisions you accepted:
 | 8   | **Combat log drawer and Daily Bugle** | the drawer chrome and the action sheet adopt the Newspaper kit era of each theme (audit D1 and D6)                                                                                                                                                                                                                                                                | newspaper tests, running game                  |
 
 The table goes last on purpose: a dark table (Night, Hero HUD) is only readable once every surface on it is themed.
+
+## 2b. What the kit gained while doing the zones
+
+- `ModalStyle.badge` and `ModalStyle.buttonShape`: the shape (border, radius, shadow) of a small badge and of a compact button in each theme, without colours, so a badge or button whose colour carries a game meaning still looks like the theme.
+- `StatBox` (THW, ATK, DEF, SCH, HS, RES, REC) and `StatStrip` (an ally's THW and ATK): one component replaces nine copies of the same markup in the hero and villain zones; the stat colours are fixed meanings.
+- `ToneButton` (red, amber, blue, sky): the action buttons (Attack, Thwart, Flip, Suit Up, Recover, the ally mini-console, the tableau use button); coloured by what the action does, drawn in the theme's button shape, grey when disabled.
+- `ZonePanel` (icon, accent, body class), used by the villain zone.
+- The hero zone panel keeps its state signals as meanings: a red ring when under attack, a ring for the active hero, a dimmed panel for a waiting hero; its fill and border come from the theme.
 
 ## 3. Method for every phase
 

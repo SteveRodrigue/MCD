@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTimeout } from '../../hooks/useTimeout';
+import { useOnChange } from '../../hooks/useOnChange';
 import { CardDetailsResponse } from '../../../tools/editor/api-middleware';
 import { CardView } from '../cards/CardView';
 import { FormattedCardText } from '../cards/FormattedCardText';
@@ -30,6 +31,38 @@ interface DualCardInspectorProps {
   ) => Promise<boolean>;
 }
 
+type LiveValidation = { valid: boolean; errors: Array<{ path: string; message: string }> };
+
+function initialSupplementalFor(cardDetails: CardDetailsResponse | null): any {
+  if (!cardDetails) return {};
+  return cardDetails.supplemental
+    ? JSON.parse(JSON.stringify(cardDetails.supplemental))
+    : {
+        abilities: [],
+        audit: {
+          reviewedBy: 'developer',
+          confidence: 100,
+          rulesVersion: 'v1.8',
+        },
+      };
+}
+
+function validateSupplemental(supplemental: any): LiveValidation {
+  if (!supplemental || Object.keys(supplemental).length === 0) return { valid: true, errors: [] };
+
+  const res = CardEnrichmentSchema.safeParse(supplemental);
+  if (res.success) return { valid: true, errors: [] };
+
+  const issues = res.error.issues || (res.error as any).errors || [];
+  return {
+    valid: false,
+    errors: issues.map((iss: any) => ({
+      path: iss.path.length > 0 ? iss.path.join('.') : 'root',
+      message: iss.message,
+    })),
+  };
+}
+
 export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
   cardDetails,
   loading,
@@ -44,11 +77,11 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
   const [rawJsonString, setRawJsonString] = useState<string>('{}');
   const [jsonSyntaxError, setJsonSyntaxError] = useState<string | null>(null);
 
-  // Live Zod Validation State
-  const [liveValidation, setLiveValidation] = useState<{
-    valid: boolean;
-    errors: Array<{ path: string; message: string }>;
-  }>({ valid: true, errors: [] });
+  // Live Zod validation, rerun whenever editedSupplemental changes
+  const liveValidation = useMemo(
+    () => validateSupplemental(editedSupplemental),
+    [editedSupplemental],
+  );
 
   // Save feedback state
   const [isSaving, setIsSaving] = useState(false);
@@ -57,47 +90,16 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
   );
 
   // Synchronize local editable state when selected card changes
-  useEffect(() => {
-    if (cardDetails) {
-      const initial = cardDetails.supplemental
-        ? JSON.parse(JSON.stringify(cardDetails.supplemental))
-        : {
-            abilities: [],
-            audit: {
-              reviewedBy: 'developer',
-              confidence: 100,
-              rulesVersion: 'v1.8',
-            },
-          };
+  useOnChange(
+    cardDetails,
+    (details) => {
+      const initial = initialSupplementalFor(details);
       setEditedSupplemental(initial);
       setRawJsonString(JSON.stringify(initial, null, 2));
       setJsonSyntaxError(null);
-    } else {
-      setEditedSupplemental({});
-      setRawJsonString('{}');
-      setJsonSyntaxError(null);
-    }
-  }, [cardDetails]);
-
-  // Run live validation whenever editedSupplemental changes
-  useEffect(() => {
-    if (!editedSupplemental || Object.keys(editedSupplemental).length === 0) {
-      setLiveValidation({ valid: true, errors: [] });
-      return;
-    }
-
-    const res = CardEnrichmentSchema.safeParse(editedSupplemental);
-    if (res.success) {
-      setLiveValidation({ valid: true, errors: [] });
-    } else {
-      const issues = res.error.issues || (res.error as any).errors || [];
-      const formattedErrors = issues.map((iss: any) => ({
-        path: iss.path.length > 0 ? iss.path.join('.') : 'root',
-        message: iss.message,
-      }));
-      setLiveValidation({ valid: false, errors: formattedErrors });
-    }
-  }, [editedSupplemental]);
+    },
+    { runOnMount: true },
+  );
 
   // Handle Form Builder Updates
   const handleFormChange = (updated: any) => {

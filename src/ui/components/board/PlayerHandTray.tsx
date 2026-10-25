@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useTimeout } from '../../hooks/useTimeout';
+import { useStableCallback } from '../../hooks/useStableCallback';
 import { Layers, Sparkles, Skull, Eye, Filter, ArrowDownUp, Plus } from 'lucide-react';
 import { CardInstance, NormalizedCard, PlayerState } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
@@ -180,14 +181,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   };
 
   // The latest click handler behind one stable function, so memoised hand cards keep their props.
-  const handleCardClickRef = useRef(handleCardClick);
-  useEffect(() => {
-    handleCardClickRef.current = handleCardClick;
-  });
-  const selectHandCard = useCallback(
-    (cardInst: CardInstance) => handleCardClickRef.current(cardInst),
-    [],
-  );
+  const selectHandCard = useStableCallback(handleCardClick);
 
   const handleEndTurn = () => {
     if (player) {
@@ -209,7 +203,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   };
 
   // Dynamic Fan-Out Stack Layout Hook (size="hand" ~130px card width, +15% over sm)
-  const handFan = useHandFanLayout({
+  const { containerRef: handFanRef, overlapMargin: handOverlapMargin } = useHandFanLayout({
     cardCount: hand.length,
     cardWidth: 130, // size="hand" portrait width (130px)
     defaultGap: 12,
@@ -499,7 +493,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             )}
 
             <div
-              ref={handFan.containerRef}
+              ref={handFanRef}
               data-testid="hand-fan-row"
               className="relative isolate hover:z-zoom focus-within:z-zoom flex items-center justify-start overflow-visible px-1 min-h-[184px] w-full"
             >
@@ -518,7 +512,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                     onMouseLeave={() => setHoveredHandCardId(null)}
                     style={{
                       zIndex: getFanZIndex(hand.length, index, isHovered),
-                      marginLeft: index === 0 ? 0 : `${handFan.overlapMargin}px`,
+                      marginLeft: index === 0 ? 0 : `${handOverlapMargin}px`,
                     }}
                     className={`shrink-0 relative flex transition-transform duration-150 ease-out cursor-pointer ${
                       isHovered ? '-translate-y-8' : 'hover:-translate-y-2'

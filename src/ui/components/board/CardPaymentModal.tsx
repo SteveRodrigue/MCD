@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Sparkles, Shield, Swords, Zap, AlertTriangle, Heart, Users, Target } from 'lucide-react';
 import {
   CardInstance,
+  GameState,
   PlayerState,
   CardType,
   getActiveVillain,
@@ -27,6 +28,7 @@ import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 import { locateCard, readCardResources } from '../../../engine/queries/card-inspector';
 import { isHandCardIneligibleForCost, isGeneratorIneligibleForCost } from './payment-eligibility';
 import { useGameSession } from '../../context/GameStateContext';
+import { useOnChange } from '../../hooks/useOnChange';
 import { AccentStripe } from '../../theme/AccentStripe';
 import { CardRef } from '../../theme/CardRef';
 import { ModalScaffold } from '../../theme/ModalScaffold';
@@ -187,6 +189,156 @@ const TargetChoices: React.FC<TargetChoicesProps> = ({
   );
 };
 
+function getDiscardCost(
+  abilityCost: CardPaymentModalProps['abilityCost'],
+  cardToPlay: CardInstance | null | undefined,
+): { max: number; min: number; filter?: UniversalCardFilter } | undefined {
+  if (abilityCost?.discardCount && abilityCost.discardCount > 0) {
+    return {
+      max: abilityCost.discardCount,
+      min: abilityCost.discardMin ?? abilityCost.discardCount,
+      filter: abilityCost.discardFilter,
+    };
+  }
+  if (abilityCost || !cardToPlay || cardToPlay.card.type !== CardType.EVENT) return undefined;
+  for (const ability of cardToPlay.card.enrichment?.abilities || []) {
+    const declared = ability.cost?.discardCard;
+    if (declared?.from === 'HAND' && declared.mode !== 'RANDOM') {
+      return { ...getDiscardCostBounds(declared), filter: declared.filter };
+    }
+  }
+  return undefined;
+}
+
+/**
+ * What the modal starts with for `cardToPlay`: the matching "The Power of..." cards for its cost, and
+ * the likeliest target of its event.
+ */
+function getDefaultSelection(
+  gameState: GameState,
+  player: PlayerState,
+  cardToPlay: CardInstance,
+): { handCardIds: string[]; targetId: string | undefined } {
+  let targetId: string | undefined;
+  // Auto-select "The Power of [Aspect]" matching resource cards as a QoL improvement
+  const autoSelectedHandIds: string[] = [];
+  const cardCost = getEffectiveCardCost(gameState, player, cardToPlay).effectiveCost;
+  const cardFaction = cardToPlay.card.faction;
+
+  if (cardCost > 0 && cardFaction) {
+    let accumulatedRes = 0;
+    for (const hCard of player.hand) {
+      if (hCard.instanceId === cardToPlay.instanceId) continue;
+      if (accumulatedRes >= cardCost) break;
+
+      const aspectDoubleStep = hCard.card.enrichment?.abilities
+        ?.flatMap((a) => a.steps || [])
+        .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
+
+      const isMatchingPowerOf =
+        (aspectDoubleStep && aspectDoubleStep.effectParams?.aspect === cardFaction) ||
+        (hCard.card.name.toLowerCase().startsWith('the power of') &&
+          hCard.card.faction === cardFaction);
+
+      if (isMatchingPowerOf) {
+        autoSelectedHandIds.push(hCard.instanceId);
+        accumulatedRes += 2;
+      }
+    }
+  }
+
+  // Default target: villain for attacks, main scheme for thwarts, character for heals, ally, player, or minion attachment
+  const cardAbilities = cardToPlay.card.enrichment?.abilities || [];
+  const attachStep = cardAbilities
+    .flatMap((a) => a.steps || [])
+    .find((s) => s.effect === 'ATTACH_TO_HOST');
+  const attachTarget = attachStep?.effectParams?.target as string | undefined;
+  const isMinionAttachmentCard = attachTarget === 'CHOSEN_MINION' || attachTarget === 'MINION';
+
+  // ONLY event cards execute their abilities immediately upon being played from hand (RR v1.8 p. 12, 23; Issue #94).
+  // Supports, Upgrades, Allies, and Resource cards enter play without targets; their abilities trigger/activate later.
+  const isEventCard =
+    cardToPlay.card.type === CardType.EVENT || (cardToPlay.card as any).type_code === 'event';
+  const abilities = isEventCard ? cardAbilities : [];
+
+  let eventTargetScope: string | undefined;
+  for (const ab of abilities) {
+    for (const step of ab.steps || []) {
+      const stepParams = getStepEffectParams(step);
+      const tgt = stepParams.target as string | undefined;
+      if (tgt && tgt.startsWith('CHOSEN_')) {
+        eventTargetScope = tgt;
+        break;
+      }
+    }
+    if (eventTargetScope) break;
+  }
+
+  const hasAttack =
+    isEventCard &&
+    abilities.some((a) =>
+      (a.steps || []).some((s) =>
+        ['DEAL_DAMAGE', 'REPULSOR_BLAST', 'EXPLOSION'].includes(s.effect),
+      ),
+    );
+  const hasThwart =
+    isEventCard && abilities.some((a) => (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'));
+  const hasHeal =
+    isEventCard && abilities.some((a) => (a.steps || []).some((s) => s.effect === 'HEAL_DAMAGE'));
+  const hasAllyTarget =
+    isEventCard &&
+    !hasAttack &&
+    !hasThwart &&
+    !hasHeal &&
+    (eventTargetScope === 'CHOSEN_ALLY' || eventTargetScope === 'CHOSEN_CONTROLLED_ALLY');
+  const hasPlayerTarget =
+    isEventCard && !hasAttack && !hasThwart && !hasHeal && eventTargetScope === 'CHOSEN_PLAYER';
+
+  if (isMinionAttachmentCard) {
+    const firstMinion = gameState.players.flatMap((p) => p.engagedMinions || [])[0];
+    targetId = firstMinion?.instanceId;
+  } else if (isEventCard && hasAttack) {
+    if (eventTargetScope === 'CHOSEN_MINION' || eventTargetScope === 'CHOSEN_ENGAGED_MINION') {
+      const firstMinion = gameState.players.flatMap((p) => p.engagedMinions || [])[0];
+      targetId = firstMinion?.instanceId;
+    } else {
+      const activeVillain = getActiveVillain(gameState);
+      targetId = activeVillain.instanceId || activeVillain.card.code;
+    }
+  } else if (isEventCard && hasThwart) {
+    targetId = getActiveMainScheme(gameState).card.code;
+  } else if (isEventCard && hasHeal) {
+    // Default to active player if damaged, otherwise first damaged character, otherwise active player
+    const activeDamaged = player.health < getEffectiveMaxHealth(player, gameState);
+    if (activeDamaged) {
+      targetId = player.id;
+    } else {
+      const firstDamagedHero = gameState.players.find(
+        (p) => p.health < getEffectiveMaxHealth(p, gameState),
+      );
+      if (firstDamagedHero) {
+        targetId = firstDamagedHero.id;
+      } else {
+        const firstDamagedAlly = gameState.players
+          .flatMap((p) => p.allies || [])
+          .find((a) => (a.tokens?.damage || 0) > 0);
+        targetId = firstDamagedAlly ? firstDamagedAlly.instanceId : player.id;
+      }
+    }
+  } else if (isEventCard && hasAllyTarget) {
+    const firstExhausted = gameState.players
+      .flatMap((p) => p.allies || [])
+      .find((a) => a.exhausted);
+    const firstAlly = gameState.players.flatMap((p) => p.allies || [])[0];
+    targetId = (firstExhausted || firstAlly)?.instanceId;
+  } else if (isEventCard && hasPlayerTarget) {
+    targetId = player.id;
+  } else {
+    targetId = undefined;
+  }
+  return { handCardIds: autoSelectedHandIds, targetId };
+}
+
 export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   isOpen,
   onClose,
@@ -203,132 +355,22 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   const [selectedTargetId, setSelectedTargetId] = useState<string | undefined>(undefined);
 
   // Reset selections whenever a new card is selected, auto-selecting matching "The Power of..." cards
-  useEffect(() => {
-    if (cardToPlay) {
-      // Auto-select "The Power of [Aspect]" matching resource cards as a QoL improvement
-      const autoSelectedHandIds: string[] = [];
-      const cardCost = getEffectiveCardCost(gameState, player, cardToPlay).effectiveCost;
-      const cardFaction = cardToPlay.card.faction;
-
-      if (cardCost > 0 && cardFaction) {
-        let accumulatedRes = 0;
-        for (const hCard of player.hand) {
-          if (hCard.instanceId === cardToPlay.instanceId) continue;
-          if (accumulatedRes >= cardCost) break;
-
-          const aspectDoubleStep = hCard.card.enrichment?.abilities
-            ?.flatMap((a) => a.steps || [])
-            .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
-
-          const isMatchingPowerOf =
-            (aspectDoubleStep && aspectDoubleStep.effectParams?.aspect === cardFaction) ||
-            (hCard.card.name.toLowerCase().startsWith('the power of') &&
-              hCard.card.faction === cardFaction);
-
-          if (isMatchingPowerOf) {
-            autoSelectedHandIds.push(hCard.instanceId);
-            accumulatedRes += 2;
-          }
-        }
-      }
-
-      setSelectedHandCardIds(autoSelectedHandIds);
+  const selectionInputs = useMemo(
+    () => ({ cardToPlay, player, gameState }),
+    [cardToPlay, player, gameState],
+  );
+  useOnChange(
+    selectionInputs,
+    ({ cardToPlay: card }) => {
+      if (!card) return;
+      const { handCardIds, targetId } = getDefaultSelection(gameState, player, card);
+      setSelectedHandCardIds(handCardIds);
       setSelectedGeneratorIds([]);
       setSelectedDiscardCardIds([]);
-
-      // Default target: villain for attacks, main scheme for thwarts, character for heals, ally, player, or minion attachment
-      const cardAbilities = cardToPlay.card.enrichment?.abilities || [];
-      const attachStep = cardAbilities
-        .flatMap((a) => a.steps || [])
-        .find((s) => s.effect === 'ATTACH_TO_HOST');
-      const attachTarget = attachStep?.effectParams?.target as string | undefined;
-      const isMinionAttachmentCard = attachTarget === 'CHOSEN_MINION' || attachTarget === 'MINION';
-
-      // ONLY event cards execute their abilities immediately upon being played from hand (RR v1.8 p. 12, 23; Issue #94).
-      // Supports, Upgrades, Allies, and Resource cards enter play without targets; their abilities trigger/activate later.
-      const isEventCard =
-        cardToPlay.card.type === CardType.EVENT || (cardToPlay.card as any).type_code === 'event';
-      const abilities = isEventCard ? cardAbilities : [];
-
-      let eventTargetScope: string | undefined;
-      for (const ab of abilities) {
-        for (const step of ab.steps || []) {
-          const stepParams = getStepEffectParams(step);
-          const tgt = stepParams.target as string | undefined;
-          if (tgt && tgt.startsWith('CHOSEN_')) {
-            eventTargetScope = tgt;
-            break;
-          }
-        }
-        if (eventTargetScope) break;
-      }
-
-      const hasAttack =
-        isEventCard &&
-        abilities.some((a) =>
-          (a.steps || []).some((s) =>
-            ['DEAL_DAMAGE', 'REPULSOR_BLAST', 'EXPLOSION'].includes(s.effect),
-          ),
-        );
-      const hasThwart =
-        isEventCard &&
-        abilities.some((a) => (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'));
-      const hasHeal =
-        isEventCard &&
-        abilities.some((a) => (a.steps || []).some((s) => s.effect === 'HEAL_DAMAGE'));
-      const hasAllyTarget =
-        isEventCard &&
-        !hasAttack &&
-        !hasThwart &&
-        !hasHeal &&
-        (eventTargetScope === 'CHOSEN_ALLY' || eventTargetScope === 'CHOSEN_CONTROLLED_ALLY');
-      const hasPlayerTarget =
-        isEventCard && !hasAttack && !hasThwart && !hasHeal && eventTargetScope === 'CHOSEN_PLAYER';
-
-      if (isMinionAttachmentCard) {
-        const firstMinion = gameState.players.flatMap((p) => p.engagedMinions || [])[0];
-        setSelectedTargetId(firstMinion?.instanceId);
-      } else if (isEventCard && hasAttack) {
-        if (eventTargetScope === 'CHOSEN_MINION' || eventTargetScope === 'CHOSEN_ENGAGED_MINION') {
-          const firstMinion = gameState.players.flatMap((p) => p.engagedMinions || [])[0];
-          setSelectedTargetId(firstMinion?.instanceId);
-        } else {
-          const activeVillain = getActiveVillain(gameState);
-          setSelectedTargetId(activeVillain.instanceId || activeVillain.card.code);
-        }
-      } else if (isEventCard && hasThwart) {
-        setSelectedTargetId(getActiveMainScheme(gameState).card.code);
-      } else if (isEventCard && hasHeal) {
-        // Default to active player if damaged, otherwise first damaged character, otherwise active player
-        const activeDamaged = player.health < getEffectiveMaxHealth(player, gameState);
-        if (activeDamaged) {
-          setSelectedTargetId(player.id);
-        } else {
-          const firstDamagedHero = gameState.players.find(
-            (p) => p.health < getEffectiveMaxHealth(p, gameState),
-          );
-          if (firstDamagedHero) {
-            setSelectedTargetId(firstDamagedHero.id);
-          } else {
-            const firstDamagedAlly = gameState.players
-              .flatMap((p) => p.allies || [])
-              .find((a) => (a.tokens?.damage || 0) > 0);
-            setSelectedTargetId(firstDamagedAlly ? firstDamagedAlly.instanceId : player.id);
-          }
-        }
-      } else if (isEventCard && hasAllyTarget) {
-        const firstExhausted = gameState.players
-          .flatMap((p) => p.allies || [])
-          .find((a) => a.exhausted);
-        const firstAlly = gameState.players.flatMap((p) => p.allies || [])[0];
-        setSelectedTargetId((firstExhausted || firstAlly)?.instanceId);
-      } else if (isEventCard && hasPlayerTarget) {
-        setSelectedTargetId(player.id);
-      } else {
-        setSelectedTargetId(undefined);
-      }
-    }
-  }, [cardToPlay, player, gameState]);
+      setSelectedTargetId(targetId);
+    },
+    { runOnMount: true },
+  );
 
   // Keyboard shortcut: Esc to close
   useEffect(() => {
@@ -601,23 +643,10 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   }, [abilityCost?.resourceType, committedMatching, totalGenerated, cost]);
 
   // The discard cost: given by the ability being used, or declared on the event being played.
-  const discardCost = useMemo(() => {
-    if (abilityCost?.discardCount && abilityCost.discardCount > 0) {
-      return {
-        max: abilityCost.discardCount,
-        min: abilityCost.discardMin ?? abilityCost.discardCount,
-        filter: abilityCost.discardFilter,
-      };
-    }
-    if (abilityCost || !cardToPlay || cardToPlay.card.type !== CardType.EVENT) return undefined;
-    for (const ability of cardToPlay.card.enrichment?.abilities || []) {
-      const declared = ability.cost?.discardCard;
-      if (declared?.from === 'HAND' && declared.mode !== 'RANDOM') {
-        return { ...getDiscardCostBounds(declared), filter: declared.filter };
-      }
-    }
-    return undefined;
-  }, [abilityCost, cardToPlay]);
+  const discardCost = useMemo(
+    () => getDiscardCost(abilityCost, cardToPlay),
+    [abilityCost, cardToPlay],
+  );
 
   const isDiscardCostCovered = useMemo(() => {
     if (!discardCost) return true;

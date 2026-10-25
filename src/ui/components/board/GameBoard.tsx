@@ -138,15 +138,10 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
     if (!isAutoPlaying) return;
     if (villainPhasePacing === 'manual') return;
 
-    if (villainPhasePacing === 'instant') {
-      handleNextVillainStep();
-      return;
-    }
-
-    const delay = villainPhasePacing === 'auto_fast' ? 450 : 900;
-    const timer = setTimeout(() => {
-      handleNextVillainStep();
-    }, delay);
+    // Instant pacing still yields one tick, so a step never dispatches inside the effect itself
+    const delay =
+      villainPhasePacing === 'instant' ? 0 : villainPhasePacing === 'auto_fast' ? 450 : 900;
+    const timer = setTimeout(handleNextVillainStep, delay);
 
     return () => clearTimeout(timer);
   }, [
@@ -179,60 +174,53 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
     gameState.phase === GamePhase.PLAYER_PHASE ? teamActionCount + villainActionCount : 0;
 
   // Auto-detect when active actions drop from >0 to 0 during an active turn to prompt End Turn confirmation (ADR-0026 / Issue #169, #310)
-  const prevActionCountRef = useRef<number>(legalReport.activeActionCount);
-  const prevPlayerIdRef = useRef<string>(activePlayer.id);
-  const prevRoundRef = useRef<number>(gameState.roundNumber);
-  const prevPhaseRef = useRef<GamePhase>(gameState.phase);
+  const [turnWatch, setTurnWatch] = useState({
+    phase: gameState.phase,
+    round: gameState.roundNumber,
+    playerId: activePlayer.id,
+    actionCount: legalReport.activeActionCount,
+  });
+  const isSamePlayerTurn =
+    turnWatch.phase === GamePhase.PLAYER_PHASE &&
+    gameState.phase === GamePhase.PLAYER_PHASE &&
+    turnWatch.round === gameState.roundNumber &&
+    turnWatch.playerId === activePlayer.id;
 
-  useEffect(() => {
-    const isSamePlayerTurn =
-      prevPhaseRef.current === GamePhase.PLAYER_PHASE &&
-      gameState.phase === GamePhase.PLAYER_PHASE &&
-      prevRoundRef.current === gameState.roundNumber &&
-      prevPlayerIdRef.current === activePlayer.id;
-
-    // Reset prompt and suppress auto-prompting when transitioning round, phase, or active player
-    if (!isSamePlayerTurn) {
-      setIsEndTurnPromptOpen(false);
-      prevActionCountRef.current = legalReport.activeActionCount;
-      prevPlayerIdRef.current = activePlayer.id;
-      prevRoundRef.current = gameState.roundNumber;
-      prevPhaseRef.current = gameState.phase;
-      return;
-    }
-
+  // Reset prompt and suppress auto-prompting when transitioning round, phase, or active player
+  let endTurnPromptOpen = isSamePlayerTurn && isEndTurnPromptOpen;
+  let watchedActionCount = legalReport.activeActionCount;
+  if (isSamePlayerTurn) {
     // Dismiss modal whenever active actions become available again (#310)
-    if (legalReport.activeActionCount > 0) {
-      setIsEndTurnPromptOpen(false);
-    }
+    if (legalReport.activeActionCount > 0) endTurnPromptOpen = false;
 
     // Only prompt when actions drop from >0 to 0 during an ongoing turn and no decision prompt is pending
     if (
       !decisionPrompt &&
-      prevActionCountRef.current > 0 &&
+      turnWatch.actionCount > 0 &&
       legalReport.activeActionCount === 0 &&
       legalReport.isPlayerTurn &&
       !gameState.winner
     ) {
-      setIsEndTurnPromptOpen(true);
+      endTurnPromptOpen = true;
     }
 
-    // Preserve prevActionCount across active decision prompts; update once prompt is resolved (#310)
-    if (!decisionPrompt) {
-      prevActionCountRef.current = legalReport.activeActionCount;
-    }
-    prevPlayerIdRef.current = activePlayer.id;
-    prevRoundRef.current = gameState.roundNumber;
-    prevPhaseRef.current = gameState.phase;
-  }, [
-    legalReport.activeActionCount,
-    legalReport.isPlayerTurn,
-    gameState.winner,
-    gameState.phase,
-    gameState.roundNumber,
-    activePlayer.id,
-    decisionPrompt,
-  ]);
+    // Preserve the watched action count across active decision prompts; update once resolved (#310)
+    if (decisionPrompt) watchedActionCount = turnWatch.actionCount;
+  }
+  if (endTurnPromptOpen !== isEndTurnPromptOpen) setIsEndTurnPromptOpen(endTurnPromptOpen);
+  if (
+    turnWatch.phase !== gameState.phase ||
+    turnWatch.round !== gameState.roundNumber ||
+    turnWatch.playerId !== activePlayer.id ||
+    turnWatch.actionCount !== watchedActionCount
+  ) {
+    setTurnWatch({
+      phase: gameState.phase,
+      round: gameState.roundNumber,
+      playerId: activePlayer.id,
+      actionCount: watchedActionCount,
+    });
+  }
 
   // Horizontal Panoramic Track Edge-Scroll Hook (ADR-0017)
   const { containerRef, canScrollLeft, canScrollRight, scrollToChild, scrollToEdge } =
@@ -266,12 +254,13 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
     }
   }, [isMultiHero, activeSeatIndex, scrollToChild]);
 
-  // Synchronize activePlayerIndex with active seat in multiplayer
-  useEffect(() => {
-    if (isMultiHero && gameState.activePlayerIndex !== undefined) {
-      handleSelectSeat(gameState.activePlayerIndex);
-    }
-  }, [isMultiHero, gameState.activePlayerIndex, handleSelectSeat]);
+  // Synchronize activePlayerIndex with active seat in multiplayer; the effect above scrolls to it
+  const followedPlayerIndex = isMultiHero ? gameState.activePlayerIndex : undefined;
+  const [seatFollowedIndex, setSeatFollowedIndex] = useState<number | undefined>(undefined);
+  if (followedPlayerIndex !== seatFollowedIndex) {
+    setSeatFollowedIndex(followedPlayerIndex);
+    if (followedPlayerIndex !== undefined) setActiveSeatIndex(followedPlayerIndex);
+  }
 
   // Centralized Action Dispatcher with Payment Interception (Option A / Issue #162)
   const handleDispatchAction = (action: GameAction) => {

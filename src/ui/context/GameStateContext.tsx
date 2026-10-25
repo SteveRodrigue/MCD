@@ -22,29 +22,31 @@ export interface GameSessionProviderProps {
   children: React.ReactNode;
 }
 
+/** Calls `make` on the first call and returns that result from then on. */
+function once<T>(make: () => T): () => T {
+  let made: { value: T } | undefined;
+  return () => (made ??= { value: make() }).value;
+}
+
+function buildPlayability(state: GameState): Map<string, CardPlayabilityStatus> {
+  const playability = new Map<string, CardPlayabilityStatus>();
+  for (const player of state.players) {
+    for (const cardInst of player.hand) {
+      playability.set(cardInst.instanceId, evaluateCardPlayability(state, player.id, cardInst));
+    }
+  }
+  return playability;
+}
+
 export const GameSessionProvider: React.FC<GameSessionProviderProps> = ({
   state,
   dispatch,
   children,
 }) => {
-  const session = useMemo<GameSession>(() => {
-    let playability: Map<string, CardPlayabilityStatus> | undefined;
-    const getPlayability = () => {
-      if (!playability) {
-        playability = new Map();
-        for (const player of state.players) {
-          for (const cardInst of player.hand) {
-            playability.set(
-              cardInst.instanceId,
-              evaluateCardPlayability(state, player.id, cardInst),
-            );
-          }
-        }
-      }
-      return playability;
-    };
-    return { state, dispatch, getPlayability };
-  }, [state, dispatch]);
+  const session = useMemo<GameSession>(
+    () => ({ state, dispatch, getPlayability: once(() => buildPlayability(state)) }),
+    [state, dispatch],
+  );
   return <GameSessionContext.Provider value={session}>{children}</GameSessionContext.Provider>;
 };
 

@@ -95,7 +95,7 @@ const popArt: ThemeExtras = {
       'bg-comic-black text-comic-yellow font-news-body text-xs uppercase tracking-widest px-3 py-1',
     quote: 'border-l-4 border-comic-red pl-3 italic font-news-body',
     classified: 'border-2 border-slate-900 bg-white p-2 text-xs font-bold',
-    pill: 'px-2 py-1 border border-slate-900 text-mini font-black uppercase bg-white hover:bg-amber-100',
+    pill: 'px-2 py-1 border border-slate-900 text-slate-900 text-mini font-black uppercase bg-white hover:bg-amber-100',
     pillActive: 'px-2 py-1 border border-slate-900 text-mini font-black uppercase bg-comic-yellow',
   },
 };
@@ -139,7 +139,7 @@ const storyboard: ThemeExtras = {
     ticker: 'bg-comic-black text-white font-news-body text-xs uppercase tracking-wider px-3 py-1',
     quote: 'bg-white border-2 border-comic-black rounded-[1.5rem] px-3 py-2 font-bold',
     classified: 'border-2 border-comic-black bg-comic-yellow/30 p-2 text-xs font-black',
-    pill: 'px-2 py-1 border-2 border-comic-black text-mini font-black uppercase bg-white',
+    pill: 'px-2 py-1 border-2 border-comic-black text-comic-black text-mini font-black uppercase bg-white',
     pillActive:
       'px-2 py-1 border-2 border-comic-black text-mini font-black uppercase bg-comic-blue text-white',
   },
@@ -281,7 +281,7 @@ const splash: ThemeExtras = {
       'bg-comic-black text-comic-yellow font-news-body text-sm uppercase tracking-wider px-3 py-1',
     quote: 'bg-white border-[3px] border-comic-black rounded-3xl px-4 py-2 font-black',
     classified: 'border-[3px] border-comic-black bg-white rounded-xl p-2 text-xs font-black',
-    pill: 'px-3 py-1 border-[3px] border-comic-black rounded-full text-mini font-black uppercase bg-white',
+    pill: 'px-3 py-1 border-[3px] border-comic-black rounded-full text-comic-black text-mini font-black uppercase bg-white',
     pillActive:
       'px-3 py-1 border-[3px] border-comic-black rounded-full text-mini font-black uppercase bg-comic-yellow',
   },
@@ -324,7 +324,7 @@ const dossier: ThemeExtras = {
     ticker: 'bg-black text-[#f1cf5b] font-news-body text-xs tracking-widest px-3 py-1',
     quote: 'bg-[#fff3a8] border border-[#8a6d3b] p-2 text-sm',
     classified: 'border border-[#8a6d3b] bg-[#f6ecc8] p-2 text-xs',
-    pill: 'px-2 py-1 border border-[#8a6d3b] text-mini uppercase tracking-widest bg-[#fffdf5]',
+    pill: 'px-2 py-1 border border-[#8a6d3b] text-[#2a2110] text-mini uppercase tracking-widest bg-[#fffdf5]',
     pillActive:
       'px-2 py-1 border border-black text-mini uppercase tracking-widest bg-black text-[#f1cf5b]',
   },

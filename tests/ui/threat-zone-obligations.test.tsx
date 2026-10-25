@@ -43,11 +43,13 @@ describe('Threat Zone sub-zones: Obligations (Issue #158)', () => {
 
   it('keeps the existing header strings when the player holds no obligations', () => {
     const state = createGame();
+    state.players[0].engagedMinions = [createCardInstance(cardCatalog.getCard('01110')!)];
     const { unmount } = renderZone(state);
-    expect(screen.getByText('Minions Engaged with Carol Danvers (0)')).toBeDefined();
+    expect(screen.getByText('Minions Engaged with Carol Danvers (1)')).toBeDefined();
     expect(screen.queryByTestId('threat-zone-obligations')).toBeNull();
     unmount();
 
+    state.players[0].engagedMinions = [];
     state.players[0].dealtEncounterCards = [createCardInstance(cardCatalog.getCard('01005')!)];
     renderZone(state);
     expect(
@@ -64,9 +66,8 @@ describe('Threat Zone sub-zones: Obligations (Issue #158)', () => {
     const sub = screen.getByTestId('threat-zone-obligations');
     expect(threatZone.contains(sub)).toBe(true);
     expect(within(sub).getByAltText('Family Emergency')).toBeDefined();
-    expect(
-      within(screen.getByTestId('tableau-section')).queryByAltText('Family Emergency'),
-    ).toBeNull();
+    // The Tableau is empty and not drawn (Issue #379), so the obligation cannot be in it.
+    expect(screen.queryByTestId('tableau-section')).toBeNull();
     expect(
       screen.getByText('Threat Zone: Carol Danvers (0 Minions • 0 Dealt Cards • 1 Obligations)'),
     ).toBeDefined();

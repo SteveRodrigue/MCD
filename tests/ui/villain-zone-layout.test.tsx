@@ -53,13 +53,18 @@ describe('VillainZone Compact Tri-Column Layout', () => {
     },
   ];
 
-  function renderVillainZone(villain: VillainState = createMockVillain()) {
+  function renderVillainZone(
+    villain: VillainState = createMockVillain(),
+    sideSchemes: SideSchemeState[] = mockSideSchemes,
+    outOfPlayEmpty = false,
+  ) {
     return render(
       <GameSettingsProvider>
         <VillainZone
           villain={villain}
           mainScheme={mockMainScheme}
-          sideSchemes={mockSideSchemes}
+          sideSchemes={sideSchemes}
+          outOfPlayEmpty={outOfPlayEmpty}
           encounterDeck={[]}
           encounterDiscard={[]}
           accelerationTokens={0}
@@ -70,6 +75,37 @@ describe('VillainZone Compact Tri-Column Layout', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe('empty side schemes and out-of-play badges (Issue #379)', () => {
+    it('puts the side-scheme panel right after the main scheme, in the same row', () => {
+      renderVillainZone();
+      const panel = screen.getByTestId('side-schemes-panel');
+      const row = screen.getByTestId('villain-main-panel').parentElement;
+      expect(panel.parentElement).toBe(row);
+      expect(panel.previousElementSibling?.textContent).toContain(mainSchemeCard.name);
+      expect(screen.queryByTestId('empty-zone-badge-side-schemes')).toBeNull();
+    });
+
+    it('draws no panel without a side scheme, and badges the count in the header', () => {
+      renderVillainZone(createMockVillain(), []);
+      expect(screen.queryByTestId('side-schemes-panel')).toBeNull();
+      expect(screen.queryByText(/No side schemes active/)).toBeNull();
+      const header = screen.getByTestId('villain-zone');
+      expect(within(header).getByTestId('empty-zone-badge-side-schemes').textContent).toMatch(
+        /side schemes 0/i,
+      );
+    });
+
+    it('badges Out of Play only when the board has no box for it', () => {
+      const { unmount } = renderVillainZone(createMockVillain(), mockSideSchemes, true);
+      expect(screen.getByTestId('empty-zone-badge-out-of-play').textContent).toMatch(
+        /out of play 0/i,
+      );
+      unmount();
+      renderVillainZone(createMockVillain(), mockSideSchemes, false);
+      expect(screen.queryByTestId('empty-zone-badge-out-of-play')).toBeNull();
+    });
   });
 
   it('renders tri-column structure with stats column, card, and vertical HP column', () => {

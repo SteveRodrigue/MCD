@@ -346,6 +346,11 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
     }
   };
 
+  // The Out of Play box is drawn only while it holds a removed card or a defeated hero (Issue #379).
+  const isOutOfPlayEmpty =
+    (gameState.removedFromGame?.length ?? 0) === 0 &&
+    (gameState.eliminatedPlayers?.length ?? 0) === 0;
+
   // Single Hero (Active Player)
   const singlePlayer = gameState.players[0];
 
@@ -354,16 +359,6 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
     <GameSessionContext.Provider value={{ ...session, dispatch: handleDispatchAction }}>
       <div className="relative min-h-screen w-full flex flex-col justify-between overflow-x-clip">
         <div className="flex-1 flex flex-col min-w-0 w-[calc(100%-420px)]">
-          {/* Floating EXTRA! pill: Call for Action and Villain actions are waiting */}
-          {extraActionCount > 0 && (
-            <ExtraActionsPill
-              teamActionCount={teamActionCount}
-              villainActionCount={villainActionCount}
-              isNewspaperOpen={isNewspaperOpen}
-              onOpen={() => setIsNewspaperOpen(true)}
-            />
-          )}
-
           {/* Jump buttons of the hero track: sticky at the middle of the screen, not of the tall track */}
           {isMultiHero && (
             <div data-testid="track-jump-buttons" className="sticky top-1/2 h-0 w-full z-zoom">
@@ -401,15 +396,29 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
             )}
 
             {/* Scenario Main Villain & Out of Play Console */}
-            <div className="w-full flex flex-wrap items-start justify-center gap-4">
-              <RemovedFromGameBox
-                cards={gameState.removedFromGame || []}
-                eliminatedPlayers={gameState.eliminatedPlayers}
-              />
+            <div
+              data-testid="villain-row"
+              className="w-full flex flex-nowrap items-start justify-center gap-4"
+            >
+              {extraActionCount > 0 && (
+                <ExtraActionsPill
+                  teamActionCount={teamActionCount}
+                  villainActionCount={villainActionCount}
+                  isNewspaperOpen={isNewspaperOpen}
+                  onOpen={() => setIsNewspaperOpen(true)}
+                />
+              )}
+              {!isOutOfPlayEmpty && (
+                <RemovedFromGameBox
+                  cards={gameState.removedFromGame || []}
+                  eliminatedPlayers={gameState.eliminatedPlayers}
+                />
+              )}
               <VillainZone
                 villain={getActiveVillain(gameState)}
                 mainScheme={getActiveMainScheme(gameState)}
                 sideSchemes={gameState.sideSchemes}
+                outOfPlayEmpty={isOutOfPlayEmpty}
                 encounterDeck={gameState.encounterDeck}
                 encounterDiscard={gameState.encounterDiscard}
                 accelerationTokens={gameState.accelerationTokens}

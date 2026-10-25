@@ -15,7 +15,7 @@ interface ExtraActionsPillProps {
 }
 
 /**
- * EXTRA!: the floating pill that says Call for Action or Villain actions are waiting. Those actions
+ * EXTRA!: the pill, left of the Villain Zone, that says Call for Action or Villain actions are waiting. Those actions
  * are not always available and are easy to miss, so the pill carries a Beacon ring.
  */
 export const ExtraActionsPill: React.FC<ExtraActionsPillProps> = ({
@@ -36,43 +36,41 @@ export const ExtraActionsPill: React.FC<ExtraActionsPillProps> = ({
     .join(', ');
 
   return (
-    <div className="fixed top-4 left-4 z-content">
-      <Beacon active={!isNewspaperOpen}>
-        <button
-          onClick={onOpen}
-          {...newspaperProps}
-          className={`font-news-headline font-black flex items-center gap-2 px-4 py-2 cursor-pointer transition-all hover:scale-105 active:translate-y-0.5 ${newspaper.pill}`}
-          title={`EXTRA! Daily Bugle Action Bulletin (${summary})`}
-        >
-          <div className="flex items-center gap-1.5">
-            <Newspaper className="w-5 h-5 text-comic-red" />
-            <span className="font-news-headline font-black tracking-tight text-sm uppercase">
-              EXTRA!
+    <Beacon active={!isNewspaperOpen} className="shrink-0 self-start">
+      <button
+        onClick={onOpen}
+        {...newspaperProps}
+        className={`font-news-headline font-black flex flex-col items-center gap-1.5 px-3 py-2 cursor-pointer transition-all hover:scale-105 active:translate-y-0.5 ${newspaper.pill}`}
+        title={`EXTRA! Daily Bugle Action Bulletin (${summary})`}
+      >
+        <div className="flex items-center gap-1.5">
+          <Newspaper className="w-5 h-5 text-comic-red" />
+          <span className="font-news-headline font-black tracking-tight text-sm uppercase">
+            EXTRA!
+          </span>
+        </div>
+        <div className="flex items-center gap-1">
+          {teamActionCount > 0 && (
+            <span
+              data-testid="extra-call-count"
+              className={`text-micro px-1.5 py-0.2 font-mono font-bold bg-comic-yellow text-comic-black ${style.badge}`}
+              title={`${teamActionCount} Teammate Action${plural(teamActionCount)}`}
+            >
+              {teamActionCount} TEAM
             </span>
-          </div>
-          <div className="flex items-center gap-1">
-            {teamActionCount > 0 && (
-              <span
-                data-testid="extra-call-count"
-                className={`text-micro px-1.5 py-0.2 font-mono font-bold bg-comic-yellow text-comic-black ${style.badge}`}
-                title={`${teamActionCount} Teammate Action${plural(teamActionCount)}`}
-              >
-                {teamActionCount} TEAM
-              </span>
-            )}
-            {villainActionCount > 0 && (
-              <span
-                data-testid="extra-villain-count"
-                className={`text-micro px-1.5 py-0.2 font-mono font-bold bg-comic-red text-white ${style.badge}`}
-                title={`${villainActionCount} Villain/Scheme Action${plural(villainActionCount)}`}
-              >
-                {villainActionCount} VILLAIN
-              </span>
-            )}
-          </div>
-        </button>
-      </Beacon>
-    </div>
+          )}
+          {villainActionCount > 0 && (
+            <span
+              data-testid="extra-villain-count"
+              className={`text-micro px-1.5 py-0.2 font-mono font-bold bg-comic-red text-white ${style.badge}`}
+              title={`${villainActionCount} Villain/Scheme Action${plural(villainActionCount)}`}
+            >
+              {villainActionCount} VILLAIN
+            </span>
+          )}
+        </div>
+      </button>
+    </Beacon>
   );
 };
 

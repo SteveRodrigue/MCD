@@ -142,6 +142,7 @@ describe('Board Deck Piles & Facedown Card Backs (Issue #141)', () => {
       render(
         <GameSettingsProvider>
           <VillainZone
+            outOfPlayEmpty={false}
             villain={mockVillain}
             mainScheme={mockMainScheme}
             sideSchemes={[]}
@@ -169,6 +170,7 @@ describe('Board Deck Piles & Facedown Card Backs (Issue #141)', () => {
       render(
         <GameSettingsProvider>
           <VillainZone
+            outOfPlayEmpty={false}
             villain={mockVillain}
             mainScheme={mockMainScheme}
             sideSchemes={[]}

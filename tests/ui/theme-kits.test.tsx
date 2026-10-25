@@ -34,6 +34,16 @@ describe('theme extras', () => {
   });
 
   it.each(MODAL_STYLES.map((s) => [s.label, s] as const))(
+    '%s: a newspaper pill that paints its own background also sets its own text colour',
+    (_label, style) => {
+      // A pill outside a newspaper sheet (the EXTRA! pill) would inherit the table's text colour,
+      // which is cream on the Dossier table and unreadable on its light pill.
+      const { pill } = THEME_EXTRAS[style.id].newspaper;
+      if (/(?<![\w:-])bg-/.test(pill)) expect(pill).toMatch(/(?<![\w:-])text-(?!mini)/);
+    },
+  );
+
+  it.each(MODAL_STYLES.map((s) => [s.label, s] as const))(
     '%s keeps the newspaper identity: a Bugle masthead, a flash word and a layout',
     (_label, style) => {
       const np = THEME_EXTRAS[style.id].newspaper;

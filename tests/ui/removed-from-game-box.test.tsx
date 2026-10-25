@@ -157,6 +157,49 @@ describe('Visible Removed from Game Pile (Issue #282)', () => {
     expect(pile.textContent).toContain('1');
   });
 
+  it('does not draw the box when nothing is out of play, and badges it in the villain zone header (Issue #379)', () => {
+    const state = setupGame({
+      catalog: cardCatalog,
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Peter Parker',
+          hero: cardCatalog.getCard('01001a') as HeroCard,
+          alterEgo: cardCatalog.getCard('01001b') as AlterEgoCard,
+          deckCards: Array(15).fill(cardCatalog.getCard('01005')!),
+        },
+      ],
+      villain: cardCatalog.getCard('01094') as any,
+      mainScheme: cardCatalog.getCard('01097b') as any,
+      encounterCards: cardCatalog.getCardsBySet('rhino'),
+      skipMulligan: true,
+    });
+
+    const { rerender } = render(
+      <GameSettingsProvider>
+        <TestSession state={state}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
+      </GameSettingsProvider>,
+    );
+    expect(screen.queryByTestId('removed-from-game-box')).toBeNull();
+    expect(
+      within(screen.getByTestId('villain-zone')).getByTestId('empty-zone-badge-out-of-play'),
+    ).toBeDefined();
+
+    state.removedFromGame = [createCardInstance(cardCatalog.getCard('01026')!)];
+    rerender(
+      <GameSettingsProvider>
+        <TestSession state={{ ...state }}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
+      </GameSettingsProvider>,
+    );
+    expect(screen.getByTestId('removed-from-game-box')).toBeDefined();
+    expect(screen.queryByTestId('empty-zone-badge-out-of-play')).toBeNull();
+  });
+
   describe('Defeated Hero(es) in Removed from Game (Issue #357)', () => {
     const HEROES = [
       { id: 'p1', name: 'Peter Parker', hero: '01001a', alterEgo: '01001b' },

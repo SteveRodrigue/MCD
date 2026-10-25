@@ -1,6 +1,6 @@
 # Plan: the board, the setup and the shell follow the theme (N4)
 
-Status: **approved by you (whole plan, "the full UI follows the theme, only the Bangers banner is kept"). Phases 1 to 3 are done (kit, tokens, guard, villain zone, hero zone); phase 4 (hand tray, removed box, piles) is next.** Each phase is a separate change, committed on its own, and verified in the running game.
+Status: **approved by you (whole plan, "the full UI follows the theme, only the Bangers banner is kept"). Phases 1 to 4 are done (kit, tokens, guard, villain zone, hero zone, hand tray, removed box); phase 5 (shell) is next.** Each phase is a separate change, committed on its own, and verified in the running game.
 
 Related: [Game integration plan](./PLAN_game_integration.md) (N4 is its last big step), [Font plan](./PLAN_fonts.md), [Unthemed UI audit](./AUDIT_unthemed_ui.md) (the measurements and the decisions D1 to D10 this plan applies), [Theme engine plan](./PLAN_theme_engine.md).
 

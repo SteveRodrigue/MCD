@@ -16,6 +16,9 @@ const MIGRATED = [
   'src/ui/components/board/VillainZone.tsx',
   'src/ui/components/board/ThreatZoneSubzone.tsx',
   'src/ui/components/board/HeroZone.tsx',
+  'src/ui/components/board/PlayerHandTray.tsx',
+  'src/ui/components/board/RemovedFromGameBox.tsx',
+  'src/ui/components/board/PileViewerModal.tsx',
 ];
 
 const stripComments = (source: string): string =>

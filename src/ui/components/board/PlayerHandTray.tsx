@@ -17,6 +17,8 @@ import {
 import { useGameSession } from '../../context/GameStateContext';
 import { useHandFanLayout } from '../../hooks/useHandFanLayout';
 import { getHeroColorPalette } from '../../utils/hero-theme';
+import { useModalStyle } from '../../theme/useModalStyle';
+import { ToneButton } from '../../theme/kit/controls';
 import { getCardBackUrl, getCardBackFallbackColor } from '../../services/card-cache-service';
 import { getFanZIndex } from '../cards/fan-z';
 
@@ -118,15 +120,15 @@ const DevAddToHand: React.FC<{ instance: CardInstance; onAdd: (instanceId: strin
   instance,
   onAdd,
 }) => (
-  <button
-    type="button"
+  <ToneButton
+    tone="yellow"
     onClick={() => onAdd(instance.instanceId)}
-    className="w-full bg-comic-yellow hover:bg-amber-300 text-comic-black text-micro font-bold py-1 px-1.5 rounded border border-comic-black shadow-comic-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+    className="w-full text-micro font-bold py-1 px-1.5 gap-1"
     title={`Dev Mode: Add ${instance.card.name} to hand`}
   >
     <Plus className="w-3 h-3" />
     <span>+ Hand</span>
-  </button>
+  </ToneButton>
 );
 
 export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
@@ -143,6 +145,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   onFocus,
   onCardClick,
 }) => {
+  const { style } = useModalStyle();
   const { state: gameState, dispatch: onDispatchAction, getPlayability } = useGameSession();
   const playabilityById = getPlayability();
   const { devMode } = useGameSettings();
@@ -303,10 +306,9 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   return (
     <>
       <section
-        className={`comic-panel px-3.5 pt-3 pb-2.5 relative shadow-comic transition-all overflow-visible ${
-          !isFocused
-            ? 'ring-1 ring-slate-300/80 bg-slate-100/90'
-            : 'bg-amber-100/95 ring-2 ring-comic-blue shadow-comic-lg'
+        data-testid="hand-tray"
+        className={`px-3.5 pt-3 pb-2.5 relative transition-all overflow-visible ${style.panel} ${style.text} ${
+          !isFocused ? 'ring-1 ring-current/30 opacity-90' : 'ring-2 ring-comic-blue'
         }`}
         style={isFocused ? { borderColor: palette.primary } : undefined}
       >
@@ -314,7 +316,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
         <div className="absolute -top-3 left-4 right-4 flex items-center justify-between z-content">
           <div className="flex items-center gap-2">
             <div
-              className={`border border-comic-black text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1 ${
+              className={`text-xs px-3 py-0.5 tracking-wider flex items-center gap-1 ${style.badge} ${
                 isActivePlayerTurn
                   ? 'bg-comic-red font-bold text-white'
                   : isFocused
@@ -347,19 +349,21 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             </div>
 
             {!isFocused && onFocus && (
-              <button
+              <ToneButton
+                tone="amber"
                 onClick={onFocus}
-                className="bg-amber-300 hover:bg-amber-400 text-slate-950 text-mini px-2.5 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-bold"
+                className="text-mini px-2.5 py-0.5 font-bold"
               >
                 Focus Hand ➔
-              </button>
+              </ToneButton>
             )}
           </div>
 
           {gameState.phase === 'PLAYER_PHASE' && isActivePlayerTurn && (
-            <button
+            <ToneButton
+              tone="yellow"
               onClick={handleEndTurn}
-              className={`bg-comic-yellow hover:bg-yellow-400 text-comic-black text-xs px-3 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-black flex items-center gap-1 transition-all hover:scale-105 ${
+              className={`text-xs px-3 py-0.5 font-black gap-1 hover:scale-105 ${
                 shouldPulseEndTurn ? 'animate-pulse ring-2 ring-comic-yellow' : ''
               }`}
               title={
@@ -369,14 +373,16 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               }
             >
               <span>END TURN ➔</span>
-            </button>
+            </ToneButton>
           )}
         </div>
 
         <div className="flex flex-col md:flex-row items-center md:items-stretch gap-3 overflow-visible pt-1">
           {/* Turn Warning Toast (Mobile View) */}
           {turnWarning && (
-            <div className="p-2 bg-rose-500 text-white text-xs rounded-lg border-2 border-comic-black shadow-comic-sm flex items-center justify-between animate-pulse md:hidden">
+            <div
+              className={`p-2 bg-rose-500 text-white text-xs flex items-center justify-between animate-pulse md:hidden ${style.buttonShape}`}
+            >
               <span>⚠️ {turnWarning}</span>
               <button
                 onClick={() => setTurnWarning(null)}
@@ -388,13 +394,15 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
           )}
 
           {/* Column 1: Vertical Piles & Utilities Sidebar */}
-          <div className="w-full md:w-32 lg:w-36 shrink-0 flex flex-row md:flex-col items-stretch justify-center gap-1 bg-white/90 p-1.5 rounded-xl border-2 border-comic-black shadow-comic-sm">
+          <div
+            className={`w-full md:w-32 lg:w-36 shrink-0 flex flex-row md:flex-col items-stretch justify-center gap-1 p-1.5 ${style.inset}`}
+          >
             {/* Draw Pile & Tutor */}
             <div className="flex flex-col items-stretch w-full gap-0.5 md:flex-1">
               <div
                 data-testid="player-deck-pile"
                 onClick={() => devMode && setShowDeckModal(true)}
-                className={`relative flex items-center justify-center rounded overflow-hidden border border-comic-black shadow-comic-sm transition-transform ${
+                className={`relative flex items-center justify-center rounded overflow-hidden border border-black transition-transform ${
                   devMode ? 'cursor-pointer hover:scale-[1.02]' : 'cursor-default'
                 } h-10 md:h-auto md:min-h-14 md:flex-1`}
                 style={{
@@ -421,30 +429,31 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                     style={{ backgroundColor: getCardBackFallbackColor('player') }}
                   />
                 )}
-                <span className="absolute bottom-1 right-1 z-content bg-slate-950/80 text-white text-xs font-bold px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs backdrop-blur-xs leading-none">
+                <span className="absolute bottom-1 right-1 z-content bg-slate-950/80 text-white text-xs font-bold px-1.5 py-0.5 rounded border border-white/30 backdrop-blur-xs leading-none">
                   {deck.length}
                 </span>
               </div>
 
               {devMode && (
-                <button
+                <ToneButton
+                  tone="yellow"
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowDeckModal(true);
                   }}
-                  className="w-full px-2 py-0.5 rounded bg-comic-yellow text-comic-black hover:bg-amber-300 border border-comic-black shadow-comic-sm text-nano font-bold flex items-center justify-center gap-1 cursor-pointer transition-transform hover:scale-[1.02]"
+                  className="w-full px-2 py-0.5 text-nano font-bold gap-1"
                   title="Dev Mode: Select card from deck and add to hand"
                 >
                   <Plus className="w-3 h-3" />
                   <span>+ Add</span>
-                </button>
+                </ToneButton>
               )}
             </div>
 
             {/* Discard Pile */}
             <div
               onClick={() => discard.length > 0 && setShowDiscardModal(true)}
-              className={`w-full flex items-center justify-center gap-1.5 px-2 py-1 rounded bg-slate-100 text-slate-800 border border-comic-black shadow-comic-sm text-center ${
+              className={`w-full flex items-center justify-center gap-1.5 px-2 py-1 text-center ${style.chip} ${
                 discard.length > 0
                   ? 'cursor-pointer hover:bg-amber-100 transition-transform hover:scale-[1.02]'
                   : 'cursor-default opacity-60'
@@ -459,7 +468,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             {/* Nemesis Set */}
             <div
               onClick={() => setAsideCards.length > 0 && setShowNemesisModal(true)}
-              className={`w-full flex items-center justify-center gap-1.5 px-2 py-1 rounded bg-rose-50 text-rose-900 border border-comic-black shadow-comic-sm text-center ${
+              className={`w-full flex items-center justify-center gap-1.5 px-2 py-1 bg-rose-50 text-rose-900 text-center ${style.badge} ${
                 setAsideCards.length > 0
                   ? 'cursor-pointer hover:bg-rose-100 transition-transform hover:scale-[1.02]'
                   : 'cursor-default opacity-60'
@@ -476,7 +485,9 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
           {/* Column 2: Cards in Hand (Fan-Out Stack • Leftmost Card on Top) */}
           <div className="flex-1 min-w-0 flex flex-col justify-center overflow-visible">
             {turnWarning && (
-              <div className="hidden md:flex mb-1.5 p-1.5 bg-rose-500 text-white text-xs rounded-lg border-2 border-comic-black shadow-comic-sm items-center justify-between animate-pulse">
+              <div
+                className={`hidden md:flex mb-1.5 p-1.5 bg-rose-500 text-white text-xs items-center justify-between animate-pulse ${style.buttonShape}`}
+              >
                 <span>⚠️ {turnWarning}</span>
                 <button
                   onClick={() => setTurnWarning(null)}
@@ -524,8 +535,10 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               })}
 
               {hand.length === 0 && (
-                <div className="w-full py-6 text-center border-2 border-dashed border-slate-300 rounded-xl bg-white/60">
-                  <span className="text-xs text-slate-400">
+                <div
+                  className={`w-full py-6 text-center border-2 border-dashed border-current/30 rounded-xl ${style.muted}`}
+                >
+                  <span className="text-xs">
                     Hand is empty. (Cards will be drawn during Upkeep).
                   </span>
                 </div>

@@ -22,6 +22,9 @@ import { DifficultyMode, CardType, MainSchemeCard } from '../../../engine/models
 import { useGameSettings } from '../../context/useGameSettings';
 import { getModalStyle } from '../../theme/modal-styles';
 import { ThemePicker } from '../../theme/ThemePicker';
+import { ToneButton } from '../../theme/kit/controls';
+import { useModalStyle } from '../../theme/useModalStyle';
+import { useThemeExtras } from '../../theme/useThemeExtras';
 import { CardView } from '../cards/CardView';
 
 export interface SetupSelection {
@@ -38,6 +41,8 @@ interface ScenarioSelectorProps {
 }
 
 export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup }) => {
+  const { style } = useModalStyle();
+  const { field } = useThemeExtras();
   const { settings, defaultDifficulty, defaultHeroicLevel } = useGameSettings();
   const scenarios = useMemo(() => ScenarioRegistry.getAll().map((p) => p.definition), []);
   const starterDecks = useMemo(() => listStarterDecks(), []);
@@ -145,15 +150,19 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
       {/* ========================================================================= */}
       <div className="relative mb-8">
         {/* Comic Header Bar / Issue Badge */}
-        <div className="flex items-center justify-between bg-comic-black text-white px-4 py-2 rounded-t-2xl border-t-4 border-l-4 border-r-4 border-comic-black shadow-comic">
+        <div
+          className={`flex items-center justify-between px-4 py-2 !rounded-b-none ${style.chip}`}
+        >
           <div className="flex items-center gap-3">
             {/* Vintage Price Box */}
-            <div className="bg-comic-yellow text-comic-black font-black text-xs px-2 py-0.5 border-2 border-comic-black rounded rotate-[-2deg] shadow-comic-sm">
+            <div
+              className={`bg-comic-yellow text-comic-black font-black text-xs px-2 py-0.5 rotate-[-2deg] ${style.buttonShape}`}
+            >
               12¢ • ISSUE #{currentScenarioIndex + 1}
             </div>
             <div className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-comic-yellow" />
-              <span className="font-comic text-lg md:text-xl text-comic-yellow tracking-wider uppercase">
+              <BookOpen className="w-5 h-5" />
+              <span className="font-comic text-lg md:text-xl tracking-wider uppercase">
                 {selectedScenario.name}: {scenarioSubtitle}
               </span>
             </div>
@@ -161,7 +170,9 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
 
           <div className="flex items-center gap-2">
             {/* Comics Code Authority Badge */}
-            <div className="hidden sm:inline-flex items-center gap-1 bg-white text-comic-black border-2 border-comic-black px-2 py-0.5 rounded text-micro font-black uppercase">
+            <div
+              className={`hidden sm:inline-flex items-center gap-1 bg-slate-50 text-comic-black px-2 py-0.5 text-micro font-black uppercase ${style.badge}`}
+            >
               <Sparkles className="w-3 h-3 text-comic-blue" />
               APPROVED BY COMICS CODE
             </div>
@@ -172,7 +183,9 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
         </div>
 
         {/* The Open Comic Book Pages */}
-        <div className="relative bg-[#fffdfa] border-4 border-comic-black rounded-b-2xl shadow-comic p-4 md:p-6 overflow-hidden">
+        <div
+          className={`relative p-4 md:p-6 overflow-hidden !rounded-t-none ${style.panel} ${style.text}`}
+        >
           {/* Subtle Halftone & Paper Texture Background */}
           <div className="absolute inset-0 opacity-5 pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:16px_16px]" />
 
@@ -180,7 +193,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
           <button
             type="button"
             onClick={handlePrevScenario}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-zoom bg-comic-yellow hover:bg-amber-300 text-comic-black border-2 border-comic-black p-2 md:p-3 rounded-full shadow-comic hover:scale-110 active:scale-95 transition-all cursor-pointer"
+            className={`absolute left-2 top-1/2 -translate-y-1/2 z-zoom p-2 md:p-3 hover:scale-110 active:scale-95 transition-all cursor-pointer ${style.btnGo} !rounded-full`}
             title="Previous Scenario"
           >
             <ChevronLeft className="w-6 h-6 md:w-8 md:h-8 stroke-[3]" />
@@ -189,7 +202,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
           <button
             type="button"
             onClick={handleNextScenario}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-zoom bg-comic-yellow hover:bg-amber-300 text-comic-black border-2 border-comic-black p-2 md:p-3 rounded-full shadow-comic hover:scale-110 active:scale-95 transition-all cursor-pointer"
+            className={`absolute right-2 top-1/2 -translate-y-1/2 z-zoom p-2 md:p-3 hover:scale-110 active:scale-95 transition-all cursor-pointer ${style.btnGo} !rounded-full`}
             title="Next Scenario"
           >
             <ChevronRight className="w-6 h-6 md:w-8 md:h-8 stroke-[3]" />
@@ -206,13 +219,19 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
             </div>
 
             {/* 🔴 LEFT PAGE: VILLAIN DOSSIER */}
-            <div className="flex flex-col items-center justify-between space-y-4 bg-amber-50/60 p-4 rounded-xl border-2 border-comic-black/30 shadow-inner">
-              <div className="w-full flex items-center justify-between border-b-2 border-comic-black pb-2">
-                <div className="flex items-center gap-1.5 font-comic text-base text-comic-red font-bold uppercase tracking-wide">
+            <div
+              className={`flex flex-col items-center justify-between space-y-4 p-4 ${style.inset}`}
+            >
+              <div className="w-full flex items-center justify-between border-b-2 border-current/30 pb-2">
+                <div
+                  className={`flex items-center gap-1.5 font-comic text-base font-bold uppercase tracking-wide ${style.emphasis}`}
+                >
                   <Flame className="w-5 h-5 text-comic-red" />
                   <span>LEFT PAGE • VILLAIN DOSSIER</span>
                 </div>
-                <span className="bg-comic-red text-white text-xs font-black px-2 py-0.5 rounded border border-comic-black uppercase">
+                <span
+                  className={`bg-comic-red text-white text-xs font-black px-2 py-0.5 uppercase ${style.badge}`}
+                >
                   STAGE {difficulty === 'EXPERT' ? 'II' : 'I'}
                 </span>
               </div>
@@ -222,29 +241,35 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 {villainPreviewCard ? (
                   <CardView card={villainPreviewCard} size="md" />
                 ) : (
-                  <div className="w-56 h-80 bg-slate-200 border-2 border-comic-black rounded-xl flex items-center justify-center text-sm">
+                  <div
+                    className={`w-56 h-80 flex items-center justify-center text-sm ${style.inset}`}
+                  >
                     VILLAIN CARD
                   </div>
                 )}
               </div>
 
               {/* Villain Flavor Banner */}
-              <div className="w-full text-center bg-white/90 border border-comic-black rounded-lg p-2 shadow-sm">
-                <div className="font-comic text-lg text-comic-black font-bold">
-                  {selectedScenario.name}
-                </div>
-                <div className="text-xs text-comic-red font-medium">{scenarioSubtitle}</div>
+              <div className={`w-full text-center p-2 ${style.panel}`}>
+                <div className="font-comic text-lg font-bold">{selectedScenario.name}</div>
+                <div className={`text-xs font-medium ${style.emphasis}`}>{scenarioSubtitle}</div>
               </div>
             </div>
 
             {/* 🔵 RIGHT PAGE: MAIN SCHEME BRIEFING */}
-            <div className="flex flex-col items-center justify-between space-y-4 bg-blue-50/60 p-4 rounded-xl border-2 border-comic-black/30 shadow-inner">
-              <div className="w-full flex items-center justify-between border-b-2 border-comic-black pb-2">
-                <div className="flex items-center gap-1.5 font-comic text-base text-comic-blue font-bold uppercase tracking-wide">
+            <div
+              className={`flex flex-col items-center justify-between space-y-4 p-4 ${style.inset}`}
+            >
+              <div className="w-full flex items-center justify-between border-b-2 border-current/30 pb-2">
+                <div
+                  className={`flex items-center gap-1.5 font-comic text-base font-bold uppercase tracking-wide ${style.emphasis}`}
+                >
                   <Shield className="w-5 h-5 text-comic-blue" />
                   <span>RIGHT PAGE • MAIN SCHEME SETUP</span>
                 </div>
-                <span className="bg-comic-blue text-white text-xs font-black px-2 py-0.5 rounded border border-comic-black uppercase">
+                <span
+                  className={`bg-comic-blue text-white text-xs font-black px-2 py-0.5 uppercase ${style.badge}`}
+                >
                   STAGE 1A
                 </span>
               </div>
@@ -254,35 +279,33 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 {mainSchemePreviewCard ? (
                   <CardView card={mainSchemePreviewCard} size="md" />
                 ) : (
-                  <div className="w-80 h-56 bg-slate-200 border-2 border-comic-black rounded-xl flex items-center justify-center text-sm">
+                  <div
+                    className={`w-80 h-56 flex items-center justify-center text-sm ${style.inset}`}
+                  >
                     MAIN SCHEME CARD (1A)
                   </div>
                 )}
               </div>
 
               {/* Scheme Summary / Briefing */}
-              <div className="w-full bg-white/90 border border-comic-black rounded-lg p-2.5 shadow-sm space-y-1">
-                <div className="text-mini font-bold text-slate-500 uppercase tracking-wider">
+              <div className={`w-full p-2.5 space-y-1 ${style.panel}`}>
+                <div className={`text-mini font-bold uppercase tracking-wider ${style.muted}`}>
                   MISSION BRIEFING:
                 </div>
-                <p className="text-xs text-slate-700 leading-snug">
-                  {selectedScenario.description}
-                </p>
+                <p className="text-xs leading-snug">{selectedScenario.description}</p>
               </div>
             </div>
           </div>
 
           {/* Scenario Carousel Jump Bar (Thumbnails / Dots) */}
-          <div className="flex items-center justify-center gap-2 md:gap-4 mt-6 pt-4 border-t-2 border-comic-black/20">
+          <div className="flex items-center justify-center gap-2 md:gap-4 mt-6 pt-4 border-t-2 border-current/20">
             {scenarios.map((scen, idx) => (
               <button
                 key={scen.id}
                 type="button"
                 onClick={() => handleSelectScenarioByIndex(idx)}
-                className={`px-3 md:px-4 py-1.5 rounded-lg border-2 text-xs md:text-sm font-bold uppercase transition-all cursor-pointer ${
-                  currentScenarioIndex === idx
-                    ? 'bg-comic-yellow text-comic-black border-comic-black shadow-comic-sm scale-105'
-                    : 'bg-white text-slate-600 border-slate-300 hover:border-comic-black hover:text-comic-black'
+                className={`px-3 md:px-4 py-1.5 text-xs md:text-sm font-bold uppercase transition-all cursor-pointer ${
+                  currentScenarioIndex === idx ? `${style.tileSelected} scale-105` : style.tile
                 }`}
               >
                 #{idx + 1} {scen.name}
@@ -299,19 +322,17 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
         {/* Left Column: Difficulty & Encounter Sets */}
         <div className="lg:col-span-6 space-y-6">
           {/* Modular Encounter Set Customizer */}
-          <div className="comic-panel p-5 space-y-3.5">
-            <div className="flex items-center justify-between border-b-2 border-comic-black pb-2.5">
+          <div className={`p-5 space-y-3.5 ${style.panel} ${style.text}`}>
+            <div className="flex items-center justify-between border-b-2 border-current/30 pb-2.5">
               <div className="flex items-center gap-2">
                 <Info className="w-5 h-5 text-comic-blue" />
-                <h2 className="font-comic text-2xl text-comic-black">
-                  1. Encounter Sets & Modular
-                </h2>
+                <h2 className="font-comic text-2xl">1. Encounter Sets & Modular</h2>
               </div>
               {selectedModularSetCode !== defaultModularForScenario && (
                 <button
                   type="button"
                   onClick={() => setSelectedModularSetCode(defaultModularForScenario)}
-                  className="text-xs text-comic-red font-bold underline hover:text-red-700 cursor-pointer"
+                  className={`text-xs font-bold underline cursor-pointer ${style.emphasis}`}
                 >
                   Reset to Default
                 </button>
@@ -320,34 +341,42 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
 
             {/* Scenario-Mandatory Encounter Sets Badges */}
             <div className="space-y-1.5">
-              <div className="text-mini font-bold text-slate-500 uppercase tracking-wider">
+              <div className={`text-mini font-bold uppercase tracking-wider ${style.muted}`}>
                 Scenario-Mandatory Sets:
               </div>
               <div className="flex flex-wrap gap-1.5">
-                <span className="bg-slate-200 border border-comic-black px-2 py-0.5 text-xs font-bold text-slate-800 rounded flex items-center gap-1">
+                <span
+                  className={`bg-slate-200 text-slate-800 px-2 py-0.5 text-xs font-bold flex items-center gap-1 ${style.badge}`}
+                >
                   <span>🔒 {selectedScenario.name} Set</span>
-                  <span className="text-micro text-slate-500 font-normal">(Mandatory)</span>
+                  <span className="text-micro opacity-70 font-normal">(Mandatory)</span>
                 </span>
-                <span className="bg-slate-200 border border-comic-black px-2 py-0.5 text-xs font-bold text-slate-800 rounded flex items-center gap-1">
+                <span
+                  className={`bg-slate-200 text-slate-800 px-2 py-0.5 text-xs font-bold flex items-center gap-1 ${style.badge}`}
+                >
                   <span>🔒 Standard Set</span>
-                  <span className="text-micro text-slate-500 font-normal">(Mandatory)</span>
+                  <span className="text-micro opacity-70 font-normal">(Mandatory)</span>
                 </span>
                 {difficulty === 'EXPERT' && (
-                  <span className="bg-red-100 border border-comic-black px-2 py-0.5 text-xs font-bold text-comic-red rounded flex items-center gap-1">
+                  <span
+                    className={`bg-red-100 text-comic-red px-2 py-0.5 text-xs font-bold flex items-center gap-1 ${style.badge}`}
+                  >
                     <span>🔒 Expert Set</span>
-                    <span className="text-micro text-slate-500 font-normal">(Mandatory)</span>
+                    <span className="text-micro opacity-70 font-normal">(Mandatory)</span>
                   </span>
                 )}
               </div>
             </div>
 
             {/* Customizable Modular Slot (1 Slot) */}
-            <div className="space-y-1.5 pt-2 border-t border-slate-200">
+            <div className="space-y-1.5 pt-2 border-t border-current/20">
               <div className="flex items-center justify-between">
-                <div className="text-mini font-bold text-slate-700 uppercase tracking-wider">
+                <div className={`text-mini font-bold uppercase tracking-wider ${style.muted}`}>
                   Modular Encounter Slot (1 Required):
                 </div>
-                <span className="text-micro bg-amber-100 border border-comic-black px-1.5 py-0.2 rounded font-bold text-slate-800">
+                <span
+                  className={`text-micro bg-amber-100 text-slate-800 px-1.5 py-0.2 font-bold ${style.badge}`}
+                >
                   {selectedModularSetCode === defaultModularForScenario
                     ? 'Default Recommendation'
                     : 'Custom Modular Set'}
@@ -357,7 +386,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
               <select
                 value={selectedModularSetCode}
                 onChange={(e) => setSelectedModularSetCode(e.target.value)}
-                className="w-full p-2 bg-white border-2 border-comic-black rounded font-medium text-sm text-slate-800 shadow-comic-sm focus:outline-none focus:ring-2 focus:ring-comic-yellow cursor-pointer"
+                className={`w-full p-2 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-comic-yellow cursor-pointer ${field}`}
               >
                 {modularSets.map((mod) => (
                   <option key={mod.code} value={mod.code}>
@@ -367,22 +396,22 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 ))}
               </select>
 
-              <p className="text-mini text-slate-600 italic">
+              <p className={`text-mini italic ${style.muted}`}>
                 {modularSets.find((m) => m.code === selectedModularSetCode)?.description}
               </p>
             </div>
           </div>
 
           {/* Difficulty Mode & Heroic Variant Selection (NOW PROMINENT & HIGH-VISIBILITY) */}
-          <div className="comic-panel p-5 space-y-4">
-            <div className="flex items-center justify-between border-b-2 border-comic-black pb-2.5">
+          <div className={`p-5 space-y-4 ${style.panel} ${style.text}`}>
+            <div className="flex items-center justify-between border-b-2 border-current/30 pb-2.5">
               <div className="flex items-center gap-2">
                 <Zap className="w-5 h-5 text-comic-yellow" />
-                <h2 className="font-comic text-2xl text-comic-black">
-                  2. Select Difficulty & Modifiers
-                </h2>
+                <h2 className="font-comic text-2xl">2. Select Difficulty & Modifiers</h2>
               </div>
-              <span className="bg-amber-100 border border-comic-black px-2.5 py-0.5 text-xs font-black uppercase rounded">
+              <span
+                className={`bg-amber-100 text-slate-900 px-2.5 py-0.5 text-xs font-black uppercase ${style.badge}`}
+              >
                 MODE: {difficulty}
               </span>
             </div>
@@ -392,62 +421,56 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
               <button
                 type="button"
                 onClick={() => setDifficulty('SKIRMISH')}
-                className={`p-3 rounded-xl border-2 text-center transition-all cursor-pointer ${
+                className={`p-3 text-center transition-all cursor-pointer ${
                   difficulty === 'SKIRMISH'
-                    ? 'border-comic-black bg-sky-300 text-comic-black shadow-comic font-black scale-105'
-                    : 'border-slate-300 bg-white hover:border-comic-black hover:bg-slate-50'
+                    ? `${style.buttonShape} bg-sky-300 text-comic-black font-black scale-105`
+                    : style.tile
                 }`}
               >
                 <div className="font-comic text-sm sm:text-base font-bold">SKIRMISH</div>
-                <div className="text-micro text-slate-700 font-medium leading-tight mt-0.5">
-                  Stage I Only
-                </div>
+                <div className="text-micro font-medium leading-tight mt-0.5">Stage I Only</div>
               </button>
 
               <button
                 type="button"
                 onClick={() => setDifficulty('STANDARD')}
-                className={`p-3 rounded-xl border-2 text-center transition-all cursor-pointer ${
+                className={`p-3 text-center transition-all cursor-pointer ${
                   difficulty === 'STANDARD'
-                    ? 'border-comic-black bg-comic-yellow text-comic-black shadow-comic font-black scale-105'
-                    : 'border-slate-300 bg-white hover:border-comic-black hover:bg-slate-50'
+                    ? `${style.buttonShape} bg-comic-yellow text-comic-black font-black scale-105`
+                    : style.tile
                 }`}
               >
                 <div className="font-comic text-sm sm:text-base font-bold">STANDARD</div>
-                <div className="text-micro text-slate-700 font-medium leading-tight mt-0.5">
-                  Stage I ➔ II
-                </div>
+                <div className="text-micro font-medium leading-tight mt-0.5">Stage I ➔ II</div>
               </button>
 
               <button
                 type="button"
                 onClick={() => setDifficulty('EXPERT')}
-                className={`p-3 rounded-xl border-2 text-center transition-all cursor-pointer ${
+                className={`p-3 text-center transition-all cursor-pointer ${
                   difficulty === 'EXPERT'
-                    ? 'border-comic-black bg-comic-red text-white shadow-comic font-black scale-105'
-                    : 'border-slate-300 bg-white hover:border-comic-black hover:bg-slate-50'
+                    ? `${style.buttonShape} bg-comic-red text-white font-black scale-105`
+                    : style.tile
                 }`}
               >
                 <div className="font-comic text-sm sm:text-base font-bold">EXPERT</div>
-                <div className="text-micro text-slate-200 font-medium leading-tight mt-0.5">
+                <div className="text-micro opacity-80 font-medium leading-tight mt-0.5">
                   Stage II ➔ III
                 </div>
               </button>
             </div>
 
             {/* Heroic Mode Variant (Optional Rule) */}
-            <div className="bg-amber-50/80 border-2 border-comic-black rounded-xl p-3.5 space-y-2 shadow-comic-sm">
+            <div className={`p-3.5 space-y-2 ${style.inset}`}>
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-1.5">
                   <Award className="w-4 h-4 text-comic-red" />
-                  <span className="text-sm text-comic-black uppercase font-bold">
-                    Heroic Mode (Optional Rule)
-                  </span>
+                  <span className="text-sm uppercase font-bold">Heroic Mode (Optional Rule)</span>
                 </div>
 
                 {heroicLevel > 0 && (
                   <span
-                    className={`text-micro px-2 py-0.5 rounded border border-comic-black font-black uppercase ${
+                    className={`text-micro px-2 py-0.5 font-black uppercase ${style.badge} ${
                       difficulty === 'EXPERT'
                         ? 'bg-emerald-400 text-slate-950'
                         : 'bg-amber-300 text-slate-900'
@@ -459,16 +482,16 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
               </div>
 
               {/* Segmented Heroic Selector */}
-              <div className="grid grid-cols-4 gap-1.5 bg-white rounded-lg border-2 border-comic-black p-1 shadow-comic-sm">
+              <div className={`grid grid-cols-4 gap-1.5 p-1 ${style.panel}`}>
                 {[0, 1, 2, 3].map((lvl) => (
                   <button
                     key={lvl}
                     type="button"
                     onClick={() => setHeroicLevel(lvl)}
-                    className={`py-1 text-center text-xs uppercase rounded transition-all cursor-pointer font-bold ${
+                    className={`py-1 text-center text-xs uppercase transition-all cursor-pointer font-bold ${
                       heroicLevel === lvl
-                        ? 'bg-comic-red text-white border border-comic-black shadow-comic-sm'
-                        : 'text-slate-500 hover:text-slate-800'
+                        ? `${style.buttonShape} bg-comic-red text-white`
+                        : `opacity-80 hover:opacity-100 ${style.muted}`
                     }`}
                   >
                     {lvl === 0 ? 'Off (0)' : `Heroic ${lvl} (+${lvl})`}
@@ -476,7 +499,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 ))}
               </div>
 
-              <p className="text-mini text-slate-600 leading-relaxed">
+              <p className={`text-mini leading-relaxed ${style.muted}`}>
                 {heroicLevel === 0
                   ? 'Standard encounter dealing: 1 encounter card dealt per player during Step 4.'
                   : `Heroic ${heroicLevel} active: Deals ${1 + heroicLevel} encounter cards (+${heroicLevel} extra) to each player during Step 4.`}
@@ -487,20 +510,22 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
 
         {/* Right Column: 4 Hero Seats (Solo Mode) */}
         <div className="lg:col-span-6 space-y-6 flex flex-col justify-between">
-          <div className="comic-panel p-5 space-y-4">
-            <div className="flex items-center justify-between border-b-2 border-comic-black pb-2.5">
+          <div className={`p-5 space-y-4 ${style.panel} ${style.text}`}>
+            <div className="flex items-center justify-between border-b-2 border-current/30 pb-2.5">
               <div className="flex items-center gap-2">
                 <Users className="w-6 h-6 text-comic-blue" />
-                <h2 className="font-comic text-2xl text-comic-black">3. Hero Seats (1 to 4)</h2>
+                <h2 className="font-comic text-2xl">3. Hero Seats (1 to 4)</h2>
               </div>
-              <span className="bg-comic-blue text-white text-xs px-2.5 py-1 rounded-full border border-comic-black font-bold">
+              <span
+                className={`bg-comic-blue text-white text-xs px-2.5 py-1 font-bold ${style.badge}`}
+              >
                 {playerCount} {playerCount === 1 ? 'HERO ASSIGNED' : 'HEROES ASSIGNED'}
               </span>
             </div>
 
-            <p className="text-xs text-slate-600">
+            <p className={`text-xs ${style.muted}`}>
               Assign heroes to the seat slots below.{' '}
-              <span className="font-bold text-comic-black">
+              <span className={`font-bold ${style.text}`}>
                 Hero Seat 1 is designated as the Starting Player
               </span>{' '}
               (holds the First Player Token in Round 1 per RR v1.8 Step 12).
@@ -534,10 +559,8 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 return (
                   <div
                     key={index}
-                    className={`p-3 rounded-lg border-2 transition-all relative hover:z-zoom ${
-                      isAssigned
-                        ? 'bg-amber-50/80 border-comic-black shadow-comic-sm'
-                        : 'bg-slate-50 border-dashed border-slate-300 hover:border-slate-400'
+                    className={`p-3 transition-all relative hover:z-zoom ${
+                      isAssigned ? style.tileSelected : `${style.tile} border-dashed`
                     }`}
                   >
                     {isAssigned && deckDef ? (
@@ -548,7 +571,9 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                           {heroCard ? (
                             <CardView card={heroCard} size="sm" />
                           ) : (
-                            <div className="w-28 h-40 bg-slate-200 border-2 border-comic-black rounded-xl flex items-center justify-center text-xs">
+                            <div
+                              className={`w-28 h-40 flex items-center justify-center text-xs ${style.inset}`}
+                            >
                               HERO CARD
                             </div>
                           )}
@@ -558,21 +583,27 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                         <div className="flex-1 min-w-0 space-y-2">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="w-5 h-5 rounded-full bg-comic-red text-white text-xs flex items-center justify-center font-bold border border-comic-black">
+                              <span
+                                className={`w-5 h-5 bg-comic-red text-white text-xs flex items-center justify-center font-bold ${style.badge} !rounded-full`}
+                              >
                                 {index + 1}
                               </span>
-                              <span className="font-comic text-base text-comic-black font-bold truncate">
+                              <span className="font-comic text-base font-bold truncate">
                                 {deckDef.heroName}
                               </span>
                               {index === 0 && (
-                                <span className="bg-comic-yellow text-comic-black text-micro px-2 py-0.5 rounded border border-comic-black font-bold uppercase flex items-center gap-1 shadow-comic-sm">
+                                <span
+                                  className={`bg-comic-yellow text-comic-black text-micro px-2 py-0.5 font-bold uppercase flex items-center gap-1 ${style.badge}`}
+                                >
                                   <Crown className="w-3 h-3 text-comic-red" />
                                   <span>STARTING PLAYER</span>
                                 </span>
                               )}
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="bg-comic-blue text-white text-micro px-2 py-0.5 rounded border border-comic-black font-bold uppercase">
+                              <span
+                                className={`bg-comic-blue text-white text-micro px-2 py-0.5 font-bold uppercase ${style.badge}`}
+                              >
                                 {deckDef.aspect}
                               </span>
                               {/* Remove button (if more than 1 seat assigned) */}
@@ -580,7 +611,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                                 <button
                                   type="button"
                                   onClick={() => handleAssignSeat(index, null)}
-                                  className="text-slate-400 hover:text-comic-red p-1 rounded hover:bg-rose-50 transition-colors cursor-pointer"
+                                  className="opacity-60 hover:opacity-100 hover:text-comic-red p-1 rounded transition-colors cursor-pointer"
                                   title="Vacate this hero seat"
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -591,13 +622,15 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
 
                           {/* Deck Switcher Dropdown */}
                           <div>
-                            <label className="text-micro font-bold text-slate-500 uppercase block mb-0.5">
+                            <label
+                              className={`text-micro font-bold uppercase block mb-0.5 ${style.muted}`}
+                            >
                               Change Deck:
                             </label>
                             <select
                               value={deckId || ''}
                               onChange={(e) => handleAssignSeat(index, e.target.value)}
-                              className="w-full text-xs font-medium border border-comic-black rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-comic-blue cursor-pointer"
+                              className={`w-full text-xs font-medium focus:outline-none focus:ring-1 focus:ring-comic-blue cursor-pointer ${field}`}
                             >
                               {starterDecks.map((d) => {
                                 const isTakenElsewhere = takenInOtherSeats.some(
@@ -624,10 +657,12 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                       /* Empty Seat Placeholder */
                       <div className="flex items-center justify-between py-1 px-1">
                         <div className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-full bg-slate-300 text-slate-700 text-xs flex items-center justify-center font-bold border border-slate-400">
+                          <span
+                            className={`w-5 h-5 text-xs flex items-center justify-center font-bold ${style.chip} !rounded-full`}
+                          >
                             {index + 1}
                           </span>
-                          <span className="text-sm text-slate-500">
+                          <span className={`text-sm ${style.muted}`}>
                             Hero Seat {index + 1} (Empty)
                           </span>
                         </div>
@@ -641,7 +676,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                                 handleAssignSeat(index, e.target.value);
                               }
                             }}
-                            className="text-xs font-bold border-2 border-comic-black bg-comic-yellow text-comic-black rounded px-2.5 py-1 hover:bg-amber-300 cursor-pointer shadow-comic-sm"
+                            className={`text-xs font-bold px-2.5 py-1 cursor-pointer min-w-0 max-w-[55%] ${style.btnGo}`}
                           >
                             <option value="" disabled>
                               + Assign Hero Deck...
@@ -670,10 +705,13 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
           </div>
 
           {/* Theme: a chosen theme, or a random one for every game. Always open: the choice is made before the game starts. */}
-          <section aria-labelledby="setup-theme-heading" className="comic-panel p-4 bg-white">
+          <section
+            aria-labelledby="setup-theme-heading"
+            className={`p-4 ${style.panel} ${style.text}`}
+          >
             <h2
               id="setup-theme-heading"
-              className="flex items-center gap-2 font-comic text-lg font-bold text-comic-black mb-3"
+              className="flex items-center gap-2 font-comic text-lg font-bold mb-3"
             >
               <Palette className="w-5 h-5 text-comic-red" />
               <span>
@@ -687,30 +725,28 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
           </section>
 
           {/* Action Launch Bar */}
-          <div className="comic-panel p-4 bg-comic-yellow border-comic border-comic-black flex items-center justify-between gap-4 shadow-comic">
+          <div
+            className={`p-4 flex items-center justify-between gap-4 ${style.panel} ${style.text}`}
+          >
             <div>
-              <div className="font-comic text-xl text-comic-red font-bold leading-tight">
+              <div className={`font-comic text-xl font-bold leading-tight ${style.emphasis}`}>
                 READY FOR BATTLE?
               </div>
-              <div className="text-xs text-comic-black font-semibold">
+              <div className="text-xs font-semibold">
                 {playerCount} {playerCount === 1 ? 'Hero' : 'Heroes'} • {difficulty} Mode •{' '}
                 {selectedScenario.name}
               </div>
             </div>
 
-            <button
-              type="button"
+            <ToneButton
+              tone="red"
               onClick={handleStart}
               disabled={playerCount === 0}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl border-3 border-comic-black font-comic text-xl text-white font-black uppercase tracking-wider transition-all cursor-pointer shadow-comic hover:scale-105 active:scale-95 ${
-                playerCount > 0
-                  ? 'bg-comic-red hover:bg-red-600'
-                  : 'bg-slate-400 cursor-not-allowed'
-              }`}
+              className="gap-2 px-6 py-3 font-comic text-xl font-black uppercase tracking-wider hover:scale-105 active:scale-95"
             >
               <Play className="w-6 h-6 fill-current" />
               <span>START MISSION</span>
-            </button>
+            </ToneButton>
           </div>
         </div>
       </div>

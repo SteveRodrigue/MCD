@@ -25,6 +25,8 @@ const MIGRATED = [
   'src/ui/components/board/GameBoard.tsx',
   'src/ui/components/cards/CardContextMenu.tsx',
   'src/ui/components/cards/CardStatsModal.tsx',
+  'src/ui/components/setup/ScenarioSelector.tsx',
+  'src/ui/components/setup/MulliganScreen.tsx',
 ];
 
 const stripComments = (source: string): string =>
@@ -34,7 +36,9 @@ const stripComments = (source: string): string =>
 const runs = (source: string): string[] =>
   stripComments(source)
     .split('\n')
-    .flatMap((line) => line.split(/["'`]|\$\{|\}/));
+    .flatMap((line) => line.split(/["'`]|\$\{|\}/))
+    // The Bangers banner of the first screen is the one look that never follows a theme.
+    .filter((run) => !/(?<![\w-])font-bangers(?![\w-])/.test(run));
 
 const LITERAL_LOOK =
   /(?<![\w-])(comic-panel|bg-white|border-comic-black|shadow-comic(?:-[a-z]+)?)(?![\w-])/;

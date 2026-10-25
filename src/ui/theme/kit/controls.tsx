@@ -139,7 +139,7 @@ export const ThemedSelect: React.FC<SelectFieldProps> = ({
   );
 };
 
-export type ButtonTone = 'red' | 'amber' | 'blue' | 'sky' | 'yellow';
+export type ButtonTone = 'red' | 'amber' | 'blue' | 'sky' | 'yellow' | 'emerald';
 
 /** The colour of an action carries its meaning (attack red, thwart blue, flip amber); the shape follows the theme. */
 const BUTTON_TONE: Record<ButtonTone, string> = {
@@ -148,6 +148,7 @@ const BUTTON_TONE: Record<ButtonTone, string> = {
   blue: 'bg-comic-blue hover:bg-sky-600 text-white',
   sky: 'bg-sky-500 hover:bg-sky-600 text-white',
   yellow: 'bg-comic-yellow hover:bg-amber-300 text-comic-black',
+  emerald: 'bg-emerald-500 hover:bg-emerald-400 text-white',
 };
 
 export interface ToneButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

@@ -31,7 +31,7 @@ const toRow = (target: SchemeTarget): TargetRow => {
   return {
     id: target.id,
     name: target.name,
-    code: target.cardInstance?.card.code,
+    code: target.code,
     icon: isMain ? <Target className="w-5 h-5" /> : <ShieldAlert className="w-5 h-5" />,
     strong: isMain,
     kindLabel: isMain ? 'MAIN SCHEME' : 'SIDE SCHEME',

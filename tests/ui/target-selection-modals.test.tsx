@@ -1,7 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { cardCatalog } from '../../src/data/importer/card-loader';
-import { createCardInstance } from '../../src/engine/state/game-setup';
 import { AttackTargetModal } from '../../src/ui/components/board/AttackTargetModal';
 import { ThwartTargetModal } from '../../src/ui/components/board/ThwartTargetModal';
 import type { EnemyTarget } from '../../src/ui/components/board/attack-target-utils';
@@ -9,8 +7,6 @@ import type { SchemeTarget } from '../../src/ui/components/board/thwart-target-u
 import { ModalStyleProvider } from '../../src/ui/theme/ModalStyleContext';
 import { MODAL_STYLES } from '../../src/ui/theme/modal-styles';
 import { cardNamesWithoutThumbnail } from '../support/card-anchoring';
-
-const instance = (code: string) => createCardInstance(cardCatalog.getCard(code)!);
 
 const villain: EnemyTarget = {
   id: 'villain_1',
@@ -23,7 +19,7 @@ const villain: EnemyTarget = {
   traits: [],
   hasGuard: false,
   hasTough: true,
-  cardInstance: instance('01094'),
+  code: '01094',
 };
 const minion: EnemyTarget = {
   id: 'minion_1',
@@ -36,7 +32,7 @@ const minion: EnemyTarget = {
   traits: [],
   hasGuard: true,
   hasTough: false,
-  cardInstance: instance('01102'),
+  code: '01102',
 };
 
 const mainScheme: SchemeTarget = {
@@ -50,7 +46,7 @@ const mainScheme: SchemeTarget = {
   hasHazard: false,
   hasAcceleration: true,
   allowed: true,
-  cardInstance: instance('01097b'),
+  code: '01097b',
 };
 const blockedSide: SchemeTarget = {
   id: 'side_1',

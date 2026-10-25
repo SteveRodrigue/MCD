@@ -20,7 +20,7 @@ const toRow = (target: EnemyTarget): TargetRow => {
   return {
     id: target.id,
     name: target.name,
-    code: target.cardInstance?.card.code,
+    code: target.code,
     icon: isVillain ? <Skull className="w-5 h-5" /> : <ShieldAlert className="w-5 h-5" />,
     strong: isVillain,
     kindLabel: isVillain ? 'VILLAIN' : 'MINION',

@@ -145,7 +145,7 @@ export const TargetSelectionModal: React.FC<TargetSelectionModalProps> = ({
                 </span>
               ))}
             </div>
-            <div className={`flex items-center gap-2 mt-0.5 text-xs ${style.muted}`}>
+            <div className={`flex items-center gap-2 mt-2 text-xs ${style.muted}`}>
               {row.details}
             </div>
           </ActionRow>

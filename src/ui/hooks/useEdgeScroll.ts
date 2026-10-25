@@ -142,7 +142,16 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
     el.addEventListener('scroll', updateScrollBounds, { passive: true });
     window.addEventListener('resize', updateScrollBounds);
 
+    // The content resizes by itself (images load, a seat changes width): no scroll or resize event follows.
+    let observer: ResizeObserver | undefined;
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(updateScrollBounds);
+      observer.observe(el);
+      if (el.firstElementChild) observer.observe(el.firstElementChild);
+    }
+
     return () => {
+      observer?.disconnect();
       el.removeEventListener('scroll', updateScrollBounds);
       window.removeEventListener('resize', updateScrollBounds);
     };

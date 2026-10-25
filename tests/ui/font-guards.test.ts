@@ -89,6 +89,11 @@ describe('font guard: themes name only the font roles', () => {
       'src/ui/components/board/HeroZone.tsx',
       'src/ui/components/board/VillainZone.tsx',
       'src/ui/components/board/ThreatZoneSubzone.tsx',
+      'src/ui/components/board/PlayerHandTray.tsx',
+      'src/ui/components/board/VillainPhaseStepper.tsx',
+      'src/ui/components/board/CombatLogDrawer.tsx',
+      'src/ui/components/board/ComicSpeechBalloon.tsx',
+      'src/ui/components/board/ComicDamageSplash.tsx',
     ];
     for (const file of themedFiles) {
       const tiny = [...stripComments(read(file)).matchAll(/text-\[(\d+(?:\.\d+)?)px\]/g)]
@@ -116,7 +121,7 @@ describe('font guard: themes name only the font roles', () => {
 });
 
 describe('font guard: small text is Body, not Headlines (fonts plan N2)', () => {
-  /** The themed modals, newspapers, theme layer, kits and setup screens (batches 1 to 4). Each batch adds its files here; the last one covers the whole UI. */
+  /** The themed modals, newspapers, theme layer, kits and setup screens (batches 1 to 5). Each batch adds its files here; the last one covers the whole UI. */
   const BATCH_FILES = [
     ...listFiles('src/ui/components/board', ['Modal.tsx', 'Screen.tsx']),
     'src/ui/components/board/ActionRow.tsx',
@@ -132,6 +137,12 @@ describe('font guard: small text is Body, not Headlines (fonts plan N2)', () => 
     'src/ui/components/board/HeroZone.tsx',
     'src/ui/components/board/VillainZone.tsx',
     'src/ui/components/board/ThreatZoneSubzone.tsx',
+    'src/ui/components/board/PlayerHandTray.tsx',
+    'src/ui/components/board/TopBar.tsx',
+    'src/ui/components/board/VillainPhaseStepper.tsx',
+    'src/ui/components/board/CombatLogDrawer.tsx',
+    'src/ui/components/board/ComicSpeechBalloon.tsx',
+    'src/ui/components/board/ComicDamageSplash.tsx',
   ];
 
   const SMALL = /(?<![\w:-])text-(xs|sm|nano|micro|mini)(?![\w-])/;

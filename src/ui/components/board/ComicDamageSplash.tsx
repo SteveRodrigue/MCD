@@ -31,7 +31,7 @@ export const ComicDamageSplash: React.FC<ComicDamageSplashProps> = ({
           <span className="font-comic font-black text-sm md:text-base text-white tracking-wide bg-comic-black px-2 py-0.5 rounded border border-white/50 -rotate-3 mt-0.5">
             -{amount} HP
           </span>
-          <span className="text-[10px] font-comic font-bold text-comic-yellow drop-shadow-sm">
+          <span className="text-micro font-bold text-comic-yellow drop-shadow-sm">
             ({amount} dmg taken)
           </span>
         </div>

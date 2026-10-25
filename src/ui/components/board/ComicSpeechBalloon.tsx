@@ -52,7 +52,7 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({ dialogue
     <div className="relative my-2.5 bg-[#fdfbf7] border-2 border-comic-black rounded-md shadow-comic-sm overflow-hidden transition-all hover:border-comic-black animate-in fade-in duration-150">
       {/* 1. Top Classification Strip / Banner */}
       <div
-        className="flex items-center justify-between px-3 py-1.5 border-b-2 font-comic font-black text-xs uppercase tracking-wider"
+        className="flex items-center justify-between px-3 py-1.5 border-b-2 font-black text-xs uppercase tracking-wider"
         style={{
           backgroundColor: bannerBg,
           color: bannerText,
@@ -89,7 +89,7 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({ dialogue
 
         <div className="flex items-center gap-1.5 shrink-0 ml-2">
           {onomatopoeia && (
-            <span className="bg-comic-yellow text-comic-black font-comic text-micro font-black px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm transform -rotate-1">
+            <span className="bg-comic-yellow text-comic-black text-micro font-black px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm transform -rotate-1">
               {onomatopoeia}
             </span>
           )}
@@ -126,22 +126,22 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({ dialogue
             stats.cost !== undefined) && (
             <div className="flex flex-wrap items-center gap-1.5 mt-2.5 pt-2 border-t border-slate-200">
               {stats.damage !== undefined && (
-                <span className="bg-comic-red text-white text-mini font-comic font-black px-2 py-0.5 rounded border border-comic-black shadow-comic-sm">
+                <span className="bg-comic-red text-white text-mini font-black px-2 py-0.5 rounded border border-comic-black shadow-comic-sm">
                   💥 {stats.damage} DMG
                 </span>
               )}
               {stats.threat !== undefined && (
-                <span className="bg-purple-800 text-purple-100 text-mini font-comic font-black px-2 py-0.5 rounded border border-purple-950 shadow-comic-sm">
+                <span className="bg-purple-800 text-purple-100 text-mini font-black px-2 py-0.5 rounded border border-purple-950 shadow-comic-sm">
                   ⚠️ {stats.threat > 0 ? `+${stats.threat}` : stats.threat} THREAT
                 </span>
               )}
               {stats.recovery !== undefined && (
-                <span className="bg-emerald-600 text-white text-mini font-comic font-black px-2 py-0.5 rounded border border-emerald-950 shadow-comic-sm">
+                <span className="bg-emerald-600 text-white text-mini font-black px-2 py-0.5 rounded border border-emerald-950 shadow-comic-sm">
                   ✨ +{stats.recovery} RECOVER
                 </span>
               )}
               {stats.cost !== undefined && (
-                <span className="bg-amber-400 text-slate-950 text-mini font-comic font-black px-2 py-0.5 rounded border border-comic-black shadow-comic-sm">
+                <span className="bg-amber-400 text-slate-950 text-mini font-black px-2 py-0.5 rounded border border-comic-black shadow-comic-sm">
                   ⚡ {stats.cost} COST
                 </span>
               )}

@@ -96,7 +96,7 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
   return (
     <div
       data-testid="villain-phase-stepper"
-      className="w-full max-w-4xl mx-auto px-2 py-1 font-comic z-raised"
+      className="w-full max-w-4xl mx-auto px-2 py-1 z-raised"
     >
       <div className="bg-comic-paper border-3 border-comic-black rounded-xl shadow-comic p-2.5 sm:p-3 flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
         {/* Left: Step Category Badge & Narrative */}
@@ -112,12 +112,12 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
               <span className="font-black text-xs sm:text-sm text-comic-black truncate">
                 {description}
               </span>
-              <span className="bg-comic-yellow text-comic-black font-black text-[10px] px-1.5 py-0.2 rounded border border-comic-black shadow-comic-xs -rotate-2 shrink-0">
+              <span className="bg-comic-yellow text-comic-black font-black text-micro px-1.5 py-0.2 rounded border border-comic-black shadow-comic-xs -rotate-2 shrink-0">
                 {onomatopoeia}
               </span>
             </div>
             {isPromptOpen && (
-              <span className="text-[10px] text-comic-red font-black flex items-center gap-1 animate-pulse">
+              <span className="text-micro text-comic-red font-black flex items-center gap-1 animate-pulse">
                 <AlertTriangle className="w-3 h-3" />
                 Awaiting player decision prompt...
               </span>

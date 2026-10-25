@@ -93,7 +93,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
             <button
               type="button"
               onClick={() => setLocale((prev) => (prev === 'en' ? 'fr' : 'en'))}
-              className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 border-2 border-slate-600 font-comic text-xs font-bold text-white shadow-comic-sm hover:bg-slate-700 cursor-pointer"
+              className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 border-2 border-slate-600 text-xs font-bold text-white shadow-comic-sm hover:bg-slate-700 cursor-pointer"
               title="Toggle Language / Basculer la langue"
             >
               <Globe className="w-3.5 h-3.5 text-sky-400" />
@@ -115,7 +115,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
           <button
             type="button"
             onClick={() => setSelectedCategory('all')}
-            className={`py-1 text-center font-comic text-mini font-bold uppercase rounded border transition-all cursor-pointer ${
+            className={`py-1 text-center text-mini font-bold uppercase rounded border transition-all cursor-pointer ${
               selectedCategory === 'all'
                 ? 'bg-white text-slate-950 border-white shadow-comic-sm scale-105'
                 : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
@@ -126,7 +126,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
           <button
             type="button"
             onClick={() => setSelectedCategory('heroes')}
-            className={`py-1 text-center font-comic text-mini font-bold uppercase rounded border transition-all cursor-pointer ${
+            className={`py-1 text-center text-mini font-bold uppercase rounded border transition-all cursor-pointer ${
               selectedCategory === 'heroes'
                 ? 'bg-sky-500 text-slate-950 border-sky-400 shadow-comic-sm scale-105'
                 : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
@@ -137,7 +137,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
           <button
             type="button"
             onClick={() => setSelectedCategory('villains')}
-            className={`py-1 text-center font-comic text-mini font-bold uppercase rounded border transition-all cursor-pointer ${
+            className={`py-1 text-center text-mini font-bold uppercase rounded border transition-all cursor-pointer ${
               selectedCategory === 'villains'
                 ? 'bg-rose-600 text-white border-rose-500 shadow-comic-sm scale-105'
                 : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
@@ -148,7 +148,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
           <button
             type="button"
             onClick={() => setSelectedCategory('narrator')}
-            className={`py-1 text-center font-comic text-mini font-bold uppercase rounded border transition-all cursor-pointer ${
+            className={`py-1 text-center text-mini font-bold uppercase rounded border transition-all cursor-pointer ${
               selectedCategory === 'narrator'
                 ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-comic-sm scale-105'
                 : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
@@ -166,9 +166,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
       >
         {filteredLogs.length === 0 ? (
           <div className="p-8 text-center bg-white/10 rounded-xl border border-slate-700 my-4">
-            <p className="font-comic text-sm text-slate-400">
-              No actions recorded for this category yet.
-            </p>
+            <p className="text-sm text-slate-400">No actions recorded for this category yet.</p>
           </div>
         ) : (
           filteredLogs.map((dialogue, idx) => (

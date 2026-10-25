@@ -17,3 +17,10 @@ updates:
         patterns:
           - "vitest"
           - "@vitest/*"
+      # react-dom and the @types packages each need the matching react major, so they bump together
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"

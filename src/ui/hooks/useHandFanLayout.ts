@@ -8,7 +8,7 @@ interface UseHandFanLayoutOptions {
 }
 
 interface HandFanLayoutResult {
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
   overlapMargin: number; // negative number in px for cards index > 0 (or positive gap)
   isTightened: boolean;
 }

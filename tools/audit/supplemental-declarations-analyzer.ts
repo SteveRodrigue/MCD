@@ -895,8 +895,8 @@ export function runDeclarationsAudit(options: { outDir?: string } = {}) {
       const cardCount = usageMap.get(opt)?.length || 0;
       const hasEngine = handledSet.has(opt);
 
-      let status = '';
-      let note = '';
+      let status: string;
+      let note: string;
       if (hasEngine && cardCount > 0) {
         status = '🟢 Active';
         note = `Handled in ${handlerLocation}; declared by ${cardCount} card(s).`;

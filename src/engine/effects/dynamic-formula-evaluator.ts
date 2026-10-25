@@ -381,7 +381,7 @@ export function evaluateDynamicAmount(
     }
     case 'CARD_ATTRIBUTE': {
       const cardSelector = extParam.fromCard || extParam.targetCard;
-      let targetEntity: CardInstance | NormalizedCard | undefined = undefined;
+      let targetEntity: CardInstance | NormalizedCard | undefined;
 
       if (cardSelector && state) {
         targetEntity = locateCard(state, cardSelector, {

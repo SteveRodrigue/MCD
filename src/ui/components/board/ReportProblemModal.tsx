@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bug, Check, Send, ExternalLink, AlertTriangle } from 'lucide-react';
 import { useOptionalGameSession } from '../../context/GameStateContext';
+import { useOnChange } from '../../hooks/useOnChange';
 import { ModalScaffold } from '../../theme/ModalScaffold';
 import { useModalStyle } from '../../theme/useModalStyle';
 import {
@@ -46,20 +47,22 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
   // Opened from the top bar or a card context menu, the modal reads the live state from the board session
   const activeGameState = useOptionalGameSession()?.state ?? null;
 
+  // A fresh form each time the modal opens or its starting description changes
+  useOnChange(isOpen ? `open:${initialDescription}` : 'closed', () => {
+    if (!isOpen) return;
+    setDescription(initialDescription || '');
+    setType('bug');
+    setPriority('P2-medium');
+    setStatus('idle');
+    setGithubUrl(null);
+  });
+
   useEffect(() => {
-    if (isOpen) {
-      setDescription(initialDescription || '');
-      setType('bug');
-      setPriority('P2-medium');
-      setStatus('idle');
-      setGithubUrl(null);
-    } else {
-      if (autoCloseTimerRef.current) {
-        clearTimeout(autoCloseTimerRef.current);
-        autoCloseTimerRef.current = null;
-      }
+    if (!isOpen && autoCloseTimerRef.current) {
+      clearTimeout(autoCloseTimerRef.current);
+      autoCloseTimerRef.current = null;
     }
-  }, [isOpen, initialDescription]);
+  }, [isOpen]);
 
   useEffect(() => {
     return () => {

@@ -330,7 +330,7 @@ function getEncounterLegalActions(state: GameState, player: PlayerState): LegalA
       const costCheck = canInitiateAbility(state, player.id, ab, cardInst, {});
       if (!costCheck.allowed) continue;
 
-      let badge = 'DISCARD';
+      let badge: string;
       let requiresModal: 'payment' | undefined = undefined;
 
       if (ab.cost?.resourceCost) {

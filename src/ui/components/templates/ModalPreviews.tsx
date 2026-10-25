@@ -227,7 +227,7 @@ const ALL_TIME_STATS: AllTimeStats = {
  * and never change a game.
  */
 export const ModalPreview: React.FC<ModalPreviewProps> = ({ item, onAction }) => {
-  const game = useMemo(buildLabGame, []);
+  const game = useMemo(() => buildLabGame(), []);
   const { state, player, ally, upgrade, costly } = game;
   const close = () => onAction('Closed');
   const noop = (action: GameAction) => onAction(`Dispatched: ${action.type}`);

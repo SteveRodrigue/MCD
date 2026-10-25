@@ -99,7 +99,6 @@ async function run100GameSimulationGate() {
   console.log(`======================================================\n`);
 
   const results: CompletedGameRecord[] = [];
-  let failureCount = 0;
 
   for (const config of matrix) {
     const gameStart = Date.now();
@@ -148,7 +147,6 @@ async function run100GameSimulationGate() {
         `[${String(config.gameNumber).padStart(3, '0')}/100] ${config.mode.padEnd(11)} | ${config.difficulty.padEnd(8)} | ${heroesStr.padEnd(34)} | ${outcomeSymbol} (${matchResult.roundsPlayed} rnds, ${matchResult.totalActionsExecuted} acts, ${durationMs}ms)`,
       );
     } catch (err: any) {
-      failureCount++;
       console.error(
         `\n❌ SIMULATION CRASH at Game #${config.gameNumber} [Seed: ${config.seed}]:\n${err?.stack || err?.message || err}\n`,
       );
@@ -167,7 +165,6 @@ async function run100GameSimulationGate() {
   console.log(`\n======================================================`);
   console.log(`✅ 100-Game Simulation Gate Finished in ${totalDurationSec}s`);
   console.log(`   Wins: ${totalWins} | Losses: ${totalLosses} | Timeouts: ${totalTimeouts}`);
-  console.log(`   Failures/Crashes: ${failureCount}`);
   console.log(`======================================================\n`);
 
   // Write markdown report

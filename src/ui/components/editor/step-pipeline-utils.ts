@@ -5,7 +5,7 @@ function formatGatePrefix(step: any): string | null {
 
   const gate = step.gate;
   const gateParams = step.gateParams || {};
-  let base: string = gate;
+  let base: string;
 
   switch (gate) {
     case 'IF_RESULT':

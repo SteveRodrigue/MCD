@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAsyncData } from '../../hooks/useAsyncData';
 import {
   CardFilters,
   fetchPacksMetadata,
@@ -39,11 +40,8 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
     };
   });
 
-  const [cards, setCards] = useState<CardSummary[]>([]);
-  const [totalCards, setTotalCards] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
   const PAGE_SIZE = 50;
-  const [loadingList, setLoadingList] = useState<boolean>(true);
 
   // Selected card code
   const [selectedCode, setSelectedCode] = useState<string | null>(() => {
@@ -51,8 +49,6 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
     return params.get('code') || initialCode || null;
   });
 
-  const [cardDetails, setCardDetails] = useState<CardDetailsResponse | null>(null);
-  const [loadingDetails, setLoadingDetails] = useState<boolean>(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
 
   // 1. Fetch metadata on mount
@@ -63,40 +59,34 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
   }, []);
 
   // 2. Fetch cards when filters or page change
-  const loadCards = useCallback(() => {
-    setLoadingList(true);
-    fetchCards({ ...filters, page, limit: PAGE_SIZE })
-      .then((res) => {
-        setCards(res.cards);
-        setTotalCards(res.total);
-        // If selected card not in list, select first available card
-        setSelectedCode((curr) => curr || (res.cards.length > 0 ? res.cards[0].code : null));
-      })
-      .catch((err) => console.error('Failed to load cards:', err))
-      .finally(() => setLoadingList(false));
-  }, [filters, page]);
+  const cardList = useAsyncData(JSON.stringify({ ...filters, page }), () =>
+    fetchCards({ ...filters, page, limit: PAGE_SIZE }),
+  );
+  const cards: CardSummary[] = cardList.data?.cards ?? [];
+  const totalCards = cardList.data?.total ?? 0;
+  const loadingList = cardList.loading;
+  const reloadCards = cardList.reload;
 
-  useEffect(() => {
-    loadCards();
-  }, [loadCards]);
+  // If no card is selected, select the first available card
+  const firstCode = cards.length > 0 ? cards[0].code : null;
+  if (selectedCode === null && firstCode !== null) setSelectedCode(firstCode);
 
   // 3. Fetch card details when selectedCode changes
-  useEffect(() => {
-    if (!selectedCode) {
-      setCardDetails(null);
-      return;
-    }
+  const details = useAsyncData(selectedCode, () => fetchCardDetails(selectedCode as string));
+  const cardDetails: CardDetailsResponse | null = details.data;
+  const loadingDetails = details.loading;
+  const reloadDetails = details.reload;
 
-    setLoadingDetails(true);
-    fetchCardDetails(selectedCode)
-      .then((data) => {
-        setCardDetails(data);
-      })
-      .catch((err) => {
-        console.error(`Failed to load details for ${selectedCode}:`, err);
-        setCardDetails(null);
-      })
-      .finally(() => setLoadingDetails(false));
+  useEffect(() => {
+    if (cardList.error) console.error('Failed to load cards:', cardList.error);
+  }, [cardList.error]);
+
+  useEffect(() => {
+    if (details.error) console.error(`Failed to load details for ${selectedCode}:`, details.error);
+  }, [details.error, selectedCode]);
+
+  useEffect(() => {
+    if (!selectedCode) return;
 
     // Synchronize browser URL query param (?code=01001a)
     try {
@@ -128,7 +118,7 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
     try {
       const res = await saveCardSupplemental(code, payload);
       if (res.success) {
-        loadCards();
+        reloadCards();
         return true;
       }
       return false;
@@ -187,13 +177,8 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
 
           <button
             onClick={() => {
-              loadCards();
-              if (selectedCode) {
-                setLoadingDetails(true);
-                fetchCardDetails(selectedCode)
-                  .then(setCardDetails)
-                  .finally(() => setLoadingDetails(false));
-              }
+              reloadCards();
+              reloadDetails();
             }}
             className="flex items-center gap-1.5 text-xs font-bold bg-white hover:bg-gray-100 text-black px-2.5 py-1.5 border-2 border-black shadow-comic-xs cursor-pointer active:scale-95 transition-transform"
             title="Refresh catalog from disk"

@@ -161,7 +161,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
               type="button"
               aria-pressed={priority === opt.value}
               onClick={() => setPriority(opt.value)}
-              className={`${choice(priority === opt.value)} !text-[11px]`}
+              className={`${choice(priority === opt.value)} !text-mini`}
             >
               {opt.label}
             </button>

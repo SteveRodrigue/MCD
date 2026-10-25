@@ -23,3 +23,4 @@ type: Changed
   - The hero and villain zones use the Body font for small text and the size tokens for their tiny labels (the smallest 8px labels become 9px), so the zones follow the theme's text size change.
   - The hand tray, top bar, villain phase stepper, combat log drawer and damage splash use the Body font for small text and the size tokens for their tiny labels.
   - The card components (card view, context menu, face-down encounter card, attachment fan) use the Body font for small text and the size tokens for their tiny labels; card faces keep their own sizes.
+  - The font role rules (small text is Body, headline-size text names Headlines, no fixed tiny sizes) are enforced by tests over the whole themed UI, so new screens follow the theme's fonts and text sizes from the start.

@@ -26,6 +26,21 @@ const listFiles = (dir: string, extensions: readonly string[]): string[] =>
 const stripComments = (source: string): string =>
   source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`])\/\/.*$/gm, '$1');
 
+/**
+ * Every source file of the game UI that follows a theme: the whole of `src/ui` except the card editor (a
+ * developer tool, never themed) and the lab's own chrome (it never follows a theme). The lab's kits and
+ * previews are themed content and stay in.
+ */
+const UI_FILES = listFiles('src/ui', ['.ts', '.tsx']).filter(
+  (file) =>
+    !file.includes('/components/editor/') &&
+    !(
+      file.includes('/components/templates/') &&
+      !file.includes('/templates/kits/') &&
+      !file.endsWith('/ModalPreviews.tsx')
+    ),
+);
+
 const WEIGHTS = new Set([
   'thin',
   'extralight',
@@ -72,30 +87,7 @@ describe('font guard: themes name only the font roles', () => {
   });
 
   it('sizes text only with the size tokens: no arbitrary pixel size under 17px, so the theme size change reaches it', () => {
-    const themedFiles = [
-      ...themeFiles,
-      ...listFiles('src/ui/components/board', ['Modal.tsx']).filter(
-        (f) => !f.endsWith('ReportProblemModal.tsx'),
-      ),
-      'src/ui/components/board/OptionsMenu.tsx',
-      'src/ui/components/board/ActionRow.tsx',
-      'src/ui/components/board/PromptCardPanel.tsx',
-      'src/ui/components/board/GameOverScreen.tsx',
-      'src/ui/components/board/RemovedFromGameBox.tsx',
-      'src/ui/components/cards/CardStatsModal.tsx',
-      'src/ui/components/board/DailyBugleActionNewspaper.tsx',
-      'src/ui/components/board/TopBar.tsx',
-      'src/ui/components/board/GameBoard.tsx',
-      'src/ui/components/board/HeroZone.tsx',
-      'src/ui/components/board/VillainZone.tsx',
-      'src/ui/components/board/ThreatZoneSubzone.tsx',
-      'src/ui/components/board/PlayerHandTray.tsx',
-      'src/ui/components/board/VillainPhaseStepper.tsx',
-      'src/ui/components/board/CombatLogDrawer.tsx',
-      'src/ui/components/board/ComicSpeechBalloon.tsx',
-      'src/ui/components/board/ComicDamageSplash.tsx',
-      ...listFiles('src/ui/components/cards', ['.ts', '.tsx']),
-    ];
+    const themedFiles = UI_FILES;
     for (const file of themedFiles) {
       const tiny = [...stripComments(read(file)).matchAll(/text-\[(\d+(?:\.\d+)?)px\]/g)]
         .map((m) => ({ match: m[0], px: Number(m[1]) }))
@@ -122,30 +114,8 @@ describe('font guard: themes name only the font roles', () => {
 });
 
 describe('font guard: small text is Body, not Headlines (fonts plan N2)', () => {
-  /** The themed modals, newspapers, theme layer, kits and setup screens (batches 1 to 5). Each batch adds its files here; the last one covers the whole UI. */
-  const BATCH_FILES = [
-    ...listFiles('src/ui/components/board', ['Modal.tsx', 'Screen.tsx']),
-    'src/ui/components/board/ActionRow.tsx',
-    'src/ui/components/board/OptionsMenu.tsx',
-    'src/ui/components/board/PromptCardPanel.tsx',
-    'src/ui/components/board/RemovedFromGameBox.tsx',
-    'src/ui/components/board/DailyBugleActionNewspaper.tsx',
-    'src/ui/components/cards/CardStatsModal.tsx',
-    'src/ui/components/cards/ResetCardStatsConfirmModal.tsx',
-    ...listFiles('src/ui/theme', ['.ts', '.tsx']),
-    ...listFiles('src/ui/components/templates/kits', ['.tsx']),
-    ...listFiles('src/ui/components/setup', ['.tsx']),
-    'src/ui/components/board/HeroZone.tsx',
-    'src/ui/components/board/VillainZone.tsx',
-    'src/ui/components/board/ThreatZoneSubzone.tsx',
-    'src/ui/components/board/PlayerHandTray.tsx',
-    'src/ui/components/board/TopBar.tsx',
-    'src/ui/components/board/VillainPhaseStepper.tsx',
-    'src/ui/components/board/CombatLogDrawer.tsx',
-    'src/ui/components/board/ComicSpeechBalloon.tsx',
-    'src/ui/components/board/ComicDamageSplash.tsx',
-    ...listFiles('src/ui/components/cards', ['.ts', '.tsx']),
-  ];
+  /** The whole themed UI (see UI_FILES). */
+  const BATCH_FILES = UI_FILES;
 
   const SMALL = /(?<![\w:-])text-(xs|sm|nano|micro|mini)(?![\w-])/;
   const BIG = /(?<![\w-])(?:[a-z]+:)?text-(base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)(?![\w-])/;
@@ -167,8 +137,10 @@ describe('font guard: small text is Body, not Headlines (fonts plan N2)', () => 
       .split('\n')
       .flatMap((line) => (line.includes('titleEl(') ? [] : line.split(/["'`]|\$\{|\}/)));
 
-  it('scans the themed modals and the newspapers', () => {
-    expect(BATCH_FILES.length).toBeGreaterThan(20);
+  it('scans the whole themed UI, not the editor or the lab chrome', () => {
+    expect(BATCH_FILES.length).toBeGreaterThan(100);
+    expect(BATCH_FILES.some((f) => f.includes('/components/editor/'))).toBe(false);
+    expect(BATCH_FILES).not.toContain('src/ui/components/templates/LabSidebar.tsx');
     expect(BATCH_FILES).toContain('src/ui/components/board/DecisionPromptModal.tsx');
   });
 

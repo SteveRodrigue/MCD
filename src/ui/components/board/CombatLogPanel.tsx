@@ -77,17 +77,6 @@ export const CombatLogPanel: React.FC<CombatLogPanelProps> = ({
       className="flex-1 min-h-0"
       edition="Flash news & action chronicle"
       issue="Issue log"
-      actions={
-        <button
-          type="button"
-          onClick={() => setLocale((prev) => (prev === 'en' ? 'fr' : 'en'))}
-          className={`cursor-pointer inline-flex items-center gap-1 ${np.pill}`}
-          title="Toggle Language / Basculer la langue"
-        >
-          <Globe className="w-3.5 h-3.5" />
-          <span>{locale.toUpperCase()}</span>
-        </button>
-      }
       toolbar={
         <div role="group" aria-label="Log filter" className="flex flex-wrap gap-1.5">
           {filters.map(({ category, label }) => (
@@ -106,18 +95,29 @@ export const CombatLogPanel: React.FC<CombatLogPanelProps> = ({
           <span>
             Showing {filteredLogs.length} of {logs.length} Events
           </span>
-          <button
-            type="button"
-            onClick={() => setShowRawDebug((prev) => !prev)}
-            className={`cursor-pointer inline-flex items-center gap-1 ${np.pill}`}
-          >
-            {showRawDebug ? (
-              <ChevronDown className="w-3.5 h-3.5" />
-            ) : (
-              <ChevronRight className="w-3.5 h-3.5" />
-            )}
-            <span>{showRawDebug ? 'Hide Debug' : 'Show Debug'}</span>
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setLocale((prev) => (prev === 'en' ? 'fr' : 'en'))}
+              className={`cursor-pointer inline-flex items-center gap-1 ${np.pill}`}
+              title="Toggle Language / Basculer la langue"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span>{locale.toUpperCase()}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowRawDebug((prev) => !prev)}
+              className={`cursor-pointer inline-flex items-center gap-1 ${np.pill}`}
+            >
+              {showRawDebug ? (
+                <ChevronDown className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5" />
+              )}
+              <span>{showRawDebug ? 'Hide Debug' : 'Show Debug'}</span>
+            </button>
+          </div>
         </div>
       }
     >

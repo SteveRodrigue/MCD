@@ -15,6 +15,7 @@ const read = (file: string) => fs.readFileSync(path.join(REPO, file), 'utf8');
 const MIGRATED = [
   'src/ui/components/board/VillainZone.tsx',
   'src/ui/components/board/ThreatZoneSubzone.tsx',
+  'src/ui/components/board/HeroZone.tsx',
 ];
 
 const stripComments = (source: string): string =>

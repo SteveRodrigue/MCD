@@ -138,3 +138,43 @@ export const ThemedSelect: React.FC<SelectFieldProps> = ({
     </label>
   );
 };
+
+export type ButtonTone = 'red' | 'amber' | 'blue' | 'sky';
+
+/** The colour of an action carries its meaning (attack red, thwart blue, flip amber); the shape follows the theme. */
+const BUTTON_TONE: Record<ButtonTone, string> = {
+  red: 'bg-comic-red hover:bg-red-600 text-white',
+  amber: 'bg-amber-300 hover:bg-amber-400 text-slate-950',
+  blue: 'bg-comic-blue hover:bg-sky-600 text-white',
+  sky: 'bg-sky-500 hover:bg-sky-600 text-white',
+};
+
+export interface ToneButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  tone: ButtonTone;
+}
+
+/** A compact action button (Attack, Thwart, Flip...): coloured by what it does, drawn in the theme's button shape. Disabled is grey. */
+export const ToneButton: React.FC<ToneButtonProps> = ({
+  tone,
+  className = '',
+  disabled,
+  type = 'button',
+  children,
+  ...rest
+}) => {
+  const { style } = useModalStyle();
+  return (
+    <button
+      type={type}
+      disabled={disabled}
+      className={`flex items-center justify-center transition-all ${style.buttonShape} ${
+        disabled
+          ? 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+          : `${BUTTON_TONE[tone]} cursor-pointer active:translate-y-0.5`
+      } ${className}`}
+      {...rest}
+    >
+      {children}
+    </button>
+  );
+};

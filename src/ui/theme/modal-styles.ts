@@ -86,6 +86,8 @@ export interface ModalStyle {
   chip: string;
   /** The shape of a small badge (border, radius, shadow) without colours, for badges whose colour carries a game meaning. */
   badge: string;
+  /** The shape of a compact button (border, radius, shadow) without colours, for buttons whose colour carries a game meaning. */
+  buttonShape: string;
   /** Clickable option row. */
   option: string;
   optionTitleHover: string;
@@ -293,6 +295,7 @@ const popArt: ModalStyle = {
   inset: 'bg-amber-50 border-2 border-comic-black rounded-lg',
   chip: 'bg-comic-black text-comic-yellow border-2 border-comic-black rounded-lg shadow-comic-sm',
   badge: 'border border-comic-black rounded shadow-comic-xs',
+  buttonShape: 'border-2 border-comic-black rounded-lg shadow-comic-sm',
   option:
     'bg-white hover:bg-amber-50 active:bg-amber-100 border-[3px] border-comic-black rounded-xl shadow-comic-sm hover:shadow-comic-md',
   optionTitleHover: 'group-hover:text-comic-red',
@@ -392,6 +395,7 @@ const storyboard: ModalStyle = {
   inset: 'bg-amber-50 border-2 border-comic-black rounded',
   chip: 'bg-comic-black text-comic-yellow border-2 border-comic-black rounded shadow-comic-sm',
   badge: 'border border-comic-black rounded-sm shadow-comic-xs',
+  buttonShape: 'border-2 border-comic-black rounded-md shadow-comic-xs',
   option:
     'bg-white hover:bg-amber-50 border-[3px] border-comic-black rounded-md shadow-comic-xs hover:shadow-comic-sm',
   optionTitleHover: 'group-hover:text-comic-red',
@@ -500,6 +504,7 @@ const newsprint: ModalStyle = {
   inset: 'bg-[#f3e7c4] border border-dashed border-[#2b2118] rounded-none',
   chip: 'bg-[#2b2118] text-[#f3e7c4] border-2 border-[#2b2118] rounded-none',
   badge: 'border border-[#2b2118] rounded-none',
+  buttonShape: 'border-2 border-[#2b2118] rounded-none shadow-[2px_2px_0_0_rgba(43,33,24,0.85)]',
   option:
     'bg-[#fbf3d9] hover:bg-[#f7e9b8] border-2 border-[#2b2118] rounded-none shadow-[3px_3px_0_0_rgba(43,33,24,0.85)] hover:shadow-[5px_5px_0_0_rgba(43,33,24,0.85)]',
   optionTitleHover: 'group-hover:text-red-700',
@@ -605,6 +610,7 @@ const night: ModalStyle = {
   inset: 'bg-slate-900 border-2 border-slate-600 rounded-lg',
   chip: 'bg-yellow-300 text-black border-2 border-black rounded-lg',
   badge: 'border border-black rounded-md',
+  buttonShape: 'border-2 border-black rounded-lg',
   option:
     'bg-slate-800 hover:bg-slate-700 border-[3px] border-slate-600 hover:border-yellow-300 rounded-xl hover:shadow-[0_0_16px_rgba(255,222,0,0.3)]',
   optionTitleHover: 'group-hover:text-yellow-300',
@@ -714,6 +720,7 @@ const splash: ModalStyle = {
   inset: 'bg-yellow-100 border-[3px] border-comic-black rounded-xl',
   chip: 'bg-comic-red text-white border-[3px] border-comic-black rounded-full shadow-comic-sm -rotate-2',
   badge: 'border-2 border-comic-black rounded-full',
+  buttonShape: 'border-[3px] border-comic-black rounded-xl shadow-comic-sm',
   option:
     'bg-white hover:bg-yellow-100 border-[4px] border-comic-black rounded-2xl shadow-comic hover:shadow-comic-lg hover:-rotate-[0.5deg]',
   optionTitleHover: 'group-hover:text-comic-red',
@@ -822,6 +829,7 @@ const dossier: ModalStyle = {
   inset: 'bg-[#f6ecc8] border border-dashed border-[#8a6d3b] rounded-sm',
   chip: 'bg-black text-[#f1cf5b] border border-black rounded-sm tracking-widest',
   badge: 'border border-black rounded-sm',
+  buttonShape: 'border border-black rounded-sm',
   option:
     'bg-[#fffdf5] hover:bg-[#fff6d6] border border-[#8a6d3b] rounded-sm shadow-[2px_3px_0_0_rgba(0,0,0,0.25)] hover:shadow-[3px_4px_0_0_rgba(0,0,0,0.35)]',
   optionTitleHover: 'group-hover:text-red-700',
@@ -931,6 +939,7 @@ const hud: ModalStyle = {
   inset: 'bg-[#04101c] border border-dashed border-cyan-500/50 rounded-sm',
   chip: 'bg-cyan-400 text-[#021018] border border-cyan-200 rounded-sm tracking-widest',
   badge: 'border border-cyan-200 rounded-sm',
+  buttonShape: 'border border-cyan-200/70 rounded-sm',
   option:
     'bg-[#0a2036]/90 hover:bg-[#0d2a47] border border-cyan-500/60 hover:border-cyan-300 rounded-sm hover:shadow-[0_0_16px_rgba(34,211,238,0.4)]',
   optionTitleHover: 'group-hover:text-cyan-300',

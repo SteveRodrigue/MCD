@@ -100,7 +100,7 @@ describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
       );
 
       // 4. Outer panel border should match hero primary color
-      const panel = container.querySelector('section.comic-panel');
+      const panel = container.querySelector('[data-testid="hero-zone"]');
       expect(panel).not.toBeNull();
       expect(['#982828', 'rgb(152, 40, 40)']).toContain((panel as HTMLElement).style.borderColor);
     });
@@ -193,10 +193,12 @@ describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
       expect(inactiveSeatContainer.className).toContain('cursor-pointer');
 
       // Inactive seat HeroZone panel: muted ring and slate background
-      const inactiveHeroZonePanel = inactiveSeatContainer.querySelector('section.comic-panel');
+      const inactiveHeroZonePanel = inactiveSeatContainer.querySelector(
+        '[data-testid="hero-zone"]',
+      );
       expect(inactiveHeroZonePanel).not.toBeNull();
-      expect(inactiveHeroZonePanel?.className).toContain('ring-slate-300/80');
-      expect(inactiveHeroZonePanel?.className).toContain('bg-slate-100/90');
+      expect(inactiveHeroZonePanel?.className).toContain('ring-current/30');
+      expect(inactiveHeroZonePanel?.className).toContain('opacity-90');
 
       // Inactive ribbon: waiting indicator
       expect(inactiveSeatContainer.textContent).toContain('(WAITING)');
@@ -249,7 +251,7 @@ describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
         </GameSettingsProvider>,
       );
 
-      const panel = container.querySelector('section.comic-panel');
+      const panel = container.querySelector('[data-testid="hero-zone"]');
       expect(panel).not.toBeNull();
       fireEvent.click(panel!);
 

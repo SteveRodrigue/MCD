@@ -13,11 +13,13 @@ import {
 import { getEffectiveMinionHitPoints, getEffectiveRetaliate } from './stat-calculator';
 import { isImmuneToDamage } from './damage-immunity';
 import { eliminatePlayer } from './player-elimination';
-import { type DefeatSource } from '../triggers/trigger-dispatcher';
+import { type DefeatSource, type TriggerContext } from '../triggers/trigger-dispatcher';
 import { dispatchDefeat, type DefeatDispatch } from '../triggers/defeat-dispatch';
 import type { TriggerCallNode } from '../errors/infinite-loop-error';
 import { moveDefeatedCardToPile, isEncounterCard, processHostDefeated } from '../effects';
 import { appendLog } from '../state/game-log';
+import { nextEngineId } from '../state/rng';
+import type { PendingDamagePlacement } from '../models/state';
 
 export type DamageTargetType = 'villain' | 'minion' | 'player' | 'ally';
 
@@ -29,6 +31,45 @@ export interface TargetEntityRef {
   targetPlayerId?: string; // Player controlling/engaged with target (for minion, player, ally)
   attachments?: CardInstance[];
   statusCards?: StatusCard[];
+}
+
+/**
+ * The "would take" window of an attack (RR v1.8 Damage, step 3): Hero Interrupts such as Backflip
+ * and Cosmic Flight are offered for the damage an identity is about to take, including the
+ * Overkill excess of a defeated ally (#389).
+ */
+export interface WouldTakeWindow {
+  attackId: string;
+  /** What the offered cards show: the attacker, the defender and the target. */
+  context: Partial<TriggerContext>;
+  /** Called with the damage an interrupt took off, before the rest is placed. */
+  onPrevented?: (prevented: number) => void;
+}
+
+/** The request fields that survive a pause; everything else is rebuilt by the caller. */
+type ResumableRequest = Pick<
+  DamageRequest,
+  | 'sourceType'
+  | 'sourceCardInstance'
+  | 'sourcePlayerId'
+  | 'sourceInstanceId'
+  | 'isAttack'
+  | 'hasPiercing'
+  | 'hasOverkill'
+  | 'skipRetaliate'
+>;
+
+/**
+ * What an occurrence that stopped at the "would take" window needs to finish (plain data: state
+ * can be saved while the prompts are open). `earlier` is the ally stage of an Overkill excess: the
+ * ally is already defeated and discarded, its defeat is announced with the excess's.
+ */
+export interface DamageResume {
+  request: ResumableRequest;
+  damageDealt: number;
+  toughRemoved: boolean;
+  onomatopoeia?: string;
+  earlier?: { result: DamageResult; defeats: DefeatDispatch[] };
 }
 
 export interface DamageRequest {
@@ -52,6 +93,8 @@ export interface DamageRequest {
    * Called once the damage is placed, before the defeat is announced.
    */
   logPlayerHit?: (hit: { amount: number; remainingHealth: number }) => void;
+  /** Opens the attack's "would take" window on an identity target, after Tough and the shields. */
+  wouldTakeWindow?: WouldTakeWindow;
   /**
    * Opens the DAMAGE_TAKEN window on a player target, after Tough and the damage shields, so an
    * interrupt can lower the damage. Used by ability damage to a hero (identity, all heroes).
@@ -514,6 +557,11 @@ interface ResolvedDamage {
   result: DamageResult;
   /** The defeats of this occurrence, in the order they are announced (the target's first). */
   defeats: DefeatDispatch[];
+  /**
+   * Set when the occurrence stopped at the "would take" window because its prompts are open: the
+   * damage is not placed and no defeat is announced yet. `resumeDamage` finishes it.
+   */
+  paused?: PendingDamagePlacement;
 }
 
 /**
@@ -537,14 +585,17 @@ function overkillTargetOf(
   }
   const controller =
     target.type === 'ally' ? state.players.find((p) => p.id === defeat?.targetPlayerId) : undefined;
-  if (!controller) return undefined;
+  return controller ? playerTarget(controller) : undefined;
+}
+
+function playerTarget(player: PlayerState): TargetEntityRef {
   return {
     type: 'player',
-    entity: controller,
-    name: controller.name,
-    targetPlayerId: controller.id,
-    attachments: controller.attachments,
-    statusCards: controller.statusCards,
+    entity: player,
+    name: player.name,
+    targetPlayerId: player.id,
+    attachments: player.attachments,
+    statusCards: player.statusCards,
   };
 }
 
@@ -555,9 +606,14 @@ function overkillTargetOf(
 export function applyDamageToTarget(
   state: GameState,
   request: DamageRequest,
-): { state: GameState; result: DamageResult } {
+): { state: GameState; result: DamageResult; paused?: true } {
   const resolved = resolveDamage(state, request);
   state = resolved.state;
+
+  if (resolved.paused) {
+    state.pendingDamagePlacements = [...(state.pendingDamagePlacements ?? []), resolved.paused];
+    return { state, result: resolved.result, paused: true };
+  }
 
   // One occurrence, one window (RR v1.8 Triggering Condition): every defeat is announced once its
   // state changes (stage advance, elimination, discard), Overkill included, have all been applied.
@@ -576,8 +632,7 @@ export function applyDamageToTarget(
 }
 
 function resolveDamage(state: GameState, request: DamageRequest): ResolvedDamage {
-  const { target, amount, isAttack, hasPiercing, sourcePlayerId } = request;
-  const defeatSource = defeatSourceOf(request);
+  const { target, amount, hasPiercing } = request;
 
   let currentDamage = amount;
   let toughRemoved = false;
@@ -686,6 +741,38 @@ function resolveDamage(state: GameState, request: DamageRequest): ResolvedDamage
     }
   }
 
+  // The interrupts of an attack (Backflip, Cosmic Flight) come after Tough, so a character whose
+  // Tough card prevents the damage is not offered them (#389). Open prompts pause the occurrence.
+  if (request.wouldTakeWindow && target.type === 'player' && currentDamage > 0) {
+    const player = target.entity as PlayerState;
+    const opened = openWouldTakeWindow(state, request.wouldTakeWindow, player, currentDamage);
+    currentDamage = opened.amount;
+    if (opened.placementId) {
+      return {
+        state,
+        result: {
+          initialAmount: amount,
+          damageDealt,
+          damageTaken: 0,
+          toughRemoved,
+          targetDefeated: false,
+          excessDamage: 0,
+          onomatopoeia,
+        },
+        defeats: [],
+        paused: {
+          id: opened.placementId,
+          targetPlayerId: player.id,
+          sourceType: 'ATTACK',
+          amount: currentDamage,
+          initialAmount: currentDamage,
+          attackId: request.wouldTakeWindow.attackId,
+          resume: { request: resumableRequest(request), damageDealt, toughRemoved, onomatopoeia },
+        },
+      };
+    }
+  }
+
   if (request.dispatchDamageTaken && target.type === 'player' && currentDamage > 0) {
     const interrupted = kernel.dispatchTrigger(state, 'DAMAGE_TAKEN', {
       targetPlayerId: (target.entity as PlayerState).id,
@@ -696,38 +783,68 @@ function resolveDamage(state: GameState, request: DamageRequest): ResolvedDamage
     currentDamage = interrupted.damageAmount ?? currentDamage;
   }
 
-  const damageTaken = currentDamage;
+  return placeDamage(
+    state,
+    request,
+    { damageDealt, toughRemoved, absorbedByShield, onomatopoeia },
+    currentDamage,
+  );
+}
 
-  // ---------------------------------------------------------------------------
-  // STEPS 5-8: Placing of damage on character & Defeat handling
-  // ---------------------------------------------------------------------------
+interface PlacementFacts {
+  damageDealt: number;
+  toughRemoved: boolean;
+  absorbedByShield?: ShieldAbsorptionInfo;
+  onomatopoeia?: string;
+}
+
+/**
+ * STEPS 5-8: placing the damage on the character, defeat handling and Overkill. Also where a paused
+ * occurrence continues (`resumeDamage`).
+ */
+function placeDamage(
+  state: GameState,
+  request: DamageRequest,
+  facts: PlacementFacts,
+  damageTaken: number,
+): ResolvedDamage {
+  const { target, amount, isAttack, hasPiercing, sourcePlayerId } = request;
+
   const defeatRes = applyDamageAndCheckDefeat(
     state,
     target,
     damageTaken,
     sourcePlayerId,
-    defeatSource,
-    onomatopoeia,
+    defeatSourceOf(request),
+    facts.onomatopoeia,
     request.logPlayerHit,
   );
   state = defeatRes.state;
-  const targetDefeated = defeatRes.targetDefeated;
-  const excessDamage = defeatRes.excessDamage;
-  onomatopoeia = defeatRes.onomatopoeia;
+  const result: DamageResult = {
+    initialAmount: amount,
+    damageDealt: facts.damageDealt,
+    damageTaken,
+    toughRemoved: facts.toughRemoved,
+    absorbedByShield: facts.absorbedByShield,
+    targetDefeated: defeatRes.targetDefeated,
+    excessDamage: defeatRes.excessDamage,
+    onomatopoeia: defeatRes.onomatopoeia,
+  };
   const defeats: DefeatDispatch[] = defeatRes.pendingDefeat ? [defeatRes.pendingDefeat] : [];
 
   // ---------------------------------------------------------------------------
   // Overkill: the excess over a defeated minion or ally goes to the villain or to the ally's
-  // controller, as damage of the same attack (RR v1.8 glossary O), so Tough and shields apply.
+  // controller, as damage of the same attack (RR v1.8 glossary O), so Tough, shields and the
+  // "would take" window of an identity apply.
   // ---------------------------------------------------------------------------
   const overkillTarget =
-    request.hasOverkill && targetDefeated && excessDamage > 0
+    request.hasOverkill && result.targetDefeated && result.excessDamage > 0
       ? overkillTargetOf(state, target, defeatRes.pendingDefeat)
       : undefined;
   if (overkillTarget) {
-    const overkillRes = resolveDamage(state, {
+    const overkill = resolveDamage(state, {
       target: overkillTarget,
-      amount: excessDamage,
+      amount: result.excessDamage,
       sourceType: 'OVERKILL',
       sourceCardInstance: request.sourceCardInstance,
       sourceInstanceId: request.sourceInstanceId,
@@ -735,37 +852,142 @@ function resolveDamage(state: GameState, request: DamageRequest): ResolvedDamage
       isAttack,
       hasPiercing,
       skipRetaliate: true,
+      // The defender stays the one who defended the attack: no `onPrevented`.
+      wouldTakeWindow: request.wouldTakeWindow && {
+        attackId: request.wouldTakeWindow.attackId,
+        context: request.wouldTakeWindow.context,
+      },
     });
-    state = overkillRes.state;
-    defeats.push(...overkillRes.defeats);
-    const dealt = overkillRes.result.damageTaken;
-    if (dealt > 0) {
-      appendLog(state, {
-        category: 'combat',
-        key: 'overkill.hit',
-        params: { amount: dealt, target: overkillTarget.name },
-        onomatopoeia:
-          overkillTarget.type === 'villain'
-            ? `OVERKILL! ${dealt} DAMAGE TO VILLAIN!`
-            : 'OVERKILL SPILLOVER!',
-      });
+    state = overkill.state;
+    if (overkill.paused) {
+      overkill.paused.resume.earlier = { result, defeats };
+      return { state, result, defeats: [], paused: overkill.paused };
     }
+    defeats.push(...overkill.defeats);
+    logOverkillHit(state, overkillTarget, overkill.result.damageTaken);
   }
 
+  return { state, result, defeats };
+}
+
+function logOverkillHit(state: GameState, target: TargetEntityRef, dealt: number): void {
+  if (dealt <= 0) return;
+  appendLog(state, {
+    category: 'combat',
+    key: 'overkill.hit',
+    params: { amount: dealt, target: target.name },
+    onomatopoeia:
+      target.type === 'villain' ? `OVERKILL! ${dealt} DAMAGE TO VILLAIN!` : 'OVERKILL SPILLOVER!',
+  });
+}
+
+function resumableRequest(request: DamageRequest): ResumableRequest {
+  const {
+    sourceType,
+    sourceCardInstance,
+    sourcePlayerId,
+    sourceInstanceId,
+    isAttack,
+    hasPiercing,
+    hasOverkill,
+    skipRetaliate,
+  } = request;
   return {
-    state,
-    result: {
-      initialAmount: amount,
-      damageDealt,
-      damageTaken,
-      toughRemoved,
-      absorbedByShield,
-      targetDefeated,
-      excessDamage,
-      onomatopoeia,
-    },
-    defeats,
+    sourceType,
+    sourceCardInstance,
+    sourcePlayerId,
+    sourceInstanceId,
+    isAttack,
+    hasPiercing,
+    hasOverkill,
+    skipRetaliate,
   };
+}
+
+/**
+ * Offers the interrupts to damage an identity is about to take (RR v1.8 Damage, step 3). Returns
+ * the amount left after the interrupts that resolved at once; when prompts stay open it also
+ * returns the id of the placement they are tagged with (`damagePlacementId`), which the caller
+ * stores so the prompts can lower its live amount (#267).
+ */
+function openWouldTakeWindow(
+  state: GameState,
+  takeWindow: WouldTakeWindow,
+  player: PlayerState,
+  amount: number,
+): { amount: number; placementId?: string } {
+  const promptsBefore = new Set((state.pendingDecisionQueue ?? []).map((p) => p.promptId));
+  const dispatched = kernel.dispatchTrigger(state, 'DAMAGE_WOULD_BE_TAKEN', {
+    ...takeWindow.context,
+    targetPlayerId: player.id,
+    damageAmount: amount,
+    damageSource: 'ATTACK',
+  });
+  const remaining = dispatched.damageAmount ?? amount;
+  if (remaining < amount) takeWindow.onPrevented?.(amount - remaining);
+
+  const prompts = (state.pendingDecisionQueue ?? []).filter((p) => !promptsBefore.has(p.promptId));
+  if (!dispatched.hasPendingPrompt || prompts.length === 0) return { amount: remaining };
+
+  const placementId = nextEngineId(state, 'damage_placement');
+  for (const prompt of prompts) {
+    for (const option of prompt.options) {
+      if (option.effect === 'EXECUTE_OPTIONAL_TRIGGER' && option.params) {
+        option.params = {
+          ...option.params,
+          context: { ...(option.params.context as object), damagePlacementId: placementId },
+        };
+      }
+    }
+  }
+  return { amount: remaining, placementId };
+}
+
+export interface ResumeHooks {
+  logPlayerHit?: DamageRequest['logPlayerHit'];
+  /** Called with the damage the answered prompts took off, before the rest is placed. */
+  onPrevented?: (prevented: number) => void;
+}
+
+/**
+ * Finishes an occurrence that stopped at the "would take" window, once its prompts are answered:
+ * places the live amount of `placement`, then announces every defeat of the occurrence in order
+ * (an Overkill excess announces the ally's defeat first). Attack damage only, whose Retaliate is
+ * step 7 of the attack (`skipRetaliate`).
+ */
+export function resumeDamage(
+  state: GameState,
+  placement: PendingDamagePlacement,
+  hooks: ResumeHooks = {},
+): { state: GameState; result: DamageResult } {
+  const { resume } = placement;
+  const player = state.players.find((p) => p.id === placement.targetPlayerId);
+  if (!player) {
+    throw new Error(`Paused damage ${placement.id} waits for ${placement.targetPlayerId}`);
+  }
+  const prevented = placement.initialAmount - placement.amount;
+  if (prevented > 0) hooks.onPrevented?.(prevented);
+
+  const { earlier } = resume;
+  const target = playerTarget(player);
+  const placed = placeDamage(
+    state,
+    {
+      ...resume.request,
+      target,
+      amount: placement.initialAmount,
+      // The ally stage logged its own hit; the excess is logged as Overkill below.
+      logPlayerHit: earlier ? undefined : hooks.logPlayerHit,
+    },
+    resume,
+    placement.amount,
+  );
+  state = placed.state;
+  if (earlier) logOverkillHit(state, target, placed.result.damageTaken);
+  for (const defeat of [...(earlier?.defeats ?? []), ...placed.defeats]) {
+    dispatchDefeat(state, defeat);
+  }
+  return { state, result: earlier?.result ?? placed.result };
 }
 
 bindKernel({ applyDamageToTarget, defeatMinionsBeyondHitPoints });

@@ -44,7 +44,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
   });
 
   describe('Damage Prevention & Tough Status Preservation (Step 6)', () => {
-    it('preserves Tough status when incoming damage is mitigated or prevented to 0', () => {
+    it('resolves Tough before the would-take interrupts (RR v1.8 Damage, step 2 before step 3)', () => {
       state.players[0].statusCards.push(StatusCard.TOUGH);
       // Give Backflip (01003) to player hand
       state.players[0].hand = [createCardInstance(cardCatalog.getCard('01003')!)];
@@ -59,10 +59,11 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
 
       executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
-      // Backflip prevented all 4 damage
+      // Tough prevented all 4 damage and was discarded: no damage would be taken, so Backflip is not offered
       expect(state.players[0].health).toBe(initialHp);
-      // Tough status was PRESERVED because 0 damage reached the character
-      expect(state.players[0].statusCards).toContain(StatusCard.TOUGH);
+      expect(state.players[0].statusCards).not.toContain(StatusCard.TOUGH);
+      expect(state.players[0].hand.map((c) => c.card.code)).toContain('01003');
+      expect(state.players[0].discard.map((c) => c.card.code)).not.toContain('01003');
     });
 
     it('consumes Tough status only when unmitigated damage > 0', () => {

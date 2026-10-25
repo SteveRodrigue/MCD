@@ -3,18 +3,18 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import fs from 'fs';
 import https from 'https';
-import { cardSupplementalEditorPlugin } from './src/tools/editor/api-middleware';
+import { cardSupplementalEditorPlugin } from './src/tools/editor/api-middleware.ts';
 import {
   FONT_CHOICES_ENDPOINT,
   FONT_CHOICES_FILE,
   mergeFontChoices,
-} from './src/ui/components/templates/font-save';
+} from './src/ui/components/templates/font-save.ts';
 import {
   AllTimeStats,
   applyStatsReset,
   createInitialAllTimeStats,
   mergeDeltaIntoAllTime,
-} from './src/engine/models/stats';
+} from './src/engine/models/stats.ts';
 
 type Req = {
   url?: string;
@@ -128,8 +128,8 @@ interface CachedImageRoute {
 }
 
 function cardCachePlugin(): Plugin {
-  const cacheDir = path.resolve(__dirname, 'cache', 'cards');
-  const cacheBackDir = path.resolve(__dirname, 'cache', 'back');
+  const cacheDir = path.resolve(import.meta.dirname, 'cache', 'cards');
+  const cacheBackDir = path.resolve(import.meta.dirname, 'cache', 'back');
 
   const cardBackRemoteUrls: Record<string, string> = {
     'player.png': 'https://hallofheroeslcg.com/wp-content/uploads/2021/02/marvel-player-back.png',
@@ -190,8 +190,8 @@ function cardCachePlugin(): Plugin {
     closeBundle() {
       // Copy local cached cards and card backs to dist for production offline play
       for (const [from, to] of [
-        [cacheDir, path.resolve(__dirname, 'dist', 'cards')],
-        [cacheBackDir, path.resolve(__dirname, 'dist', 'back')],
+        [cacheDir, path.resolve(import.meta.dirname, 'dist', 'cards')],
+        [cacheBackDir, path.resolve(import.meta.dirname, 'dist', 'back')],
       ]) {
         if (!fs.existsSync(from)) continue;
         fs.mkdirSync(to, { recursive: true });
@@ -206,7 +206,7 @@ function cardCachePlugin(): Plugin {
 // The plugins below write to disk: they run on the dev server only, never on `vite preview`.
 
 function gameStateSnapshotPlugin(): Plugin {
-  const snapshotsDir = path.resolve(__dirname, 'logs', 'gamestates');
+  const snapshotsDir = path.resolve(import.meta.dirname, 'logs', 'gamestates');
 
   const snapshotMiddleware = (req: any, res: any, next: any) => {
     if (req.url === '/api/logs/gamestate' && req.method === 'POST') {
@@ -254,7 +254,7 @@ function gameStateSnapshotPlugin(): Plugin {
 }
 
 function problemReportPlugin(): Plugin {
-  const reportsDir = path.resolve(__dirname, 'logs', 'reports');
+  const reportsDir = path.resolve(import.meta.dirname, 'logs', 'reports');
 
   const reportMiddleware = (req: any, res: any, next: any) => {
     if (req.url === '/api/logs/report' && req.method === 'POST') {
@@ -281,7 +281,7 @@ function problemReportPlugin(): Plugin {
 }
 
 function cardStatsPlugin(): Plugin {
-  const statsDir = path.resolve(__dirname, 'stats');
+  const statsDir = path.resolve(import.meta.dirname, 'stats');
   const statsFilePath = path.join(statsDir, 'card_play_stats.json');
 
   function writeStatsFile(stats: AllTimeStats): AllTimeStats {
@@ -331,7 +331,7 @@ function cardStatsPlugin(): Plugin {
 
 /** The lab's "Save font choices" button writes the font test values of a theme to a git-ignored file. */
 function labFontChoicesPlugin(): Plugin {
-  const filePath = path.resolve(__dirname, FONT_CHOICES_FILE);
+  const filePath = path.resolve(import.meta.dirname, FONT_CHOICES_FILE);
 
   const readExisting = (): unknown => {
     try {
@@ -374,10 +374,10 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@engine': path.resolve(__dirname, './src/engine'),
-      '@data': path.resolve(__dirname, './src/data'),
-      '@ui': path.resolve(__dirname, './src/ui'),
-      '@assets': path.resolve(__dirname, './src/assets'),
+      '@engine': path.resolve(import.meta.dirname, './src/engine'),
+      '@data': path.resolve(import.meta.dirname, './src/data'),
+      '@ui': path.resolve(import.meta.dirname, './src/ui'),
+      '@assets': path.resolve(import.meta.dirname, './src/assets'),
     },
   },
   server: {

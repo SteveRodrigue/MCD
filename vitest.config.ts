@@ -2,10 +2,10 @@ import { defineConfig } from 'vitest/config';
 import path from 'path';
 
 const alias = {
-  '@engine': path.resolve(__dirname, './src/engine'),
-  '@data': path.resolve(__dirname, './src/data'),
-  '@ui': path.resolve(__dirname, './src/ui'),
-  '@assets': path.resolve(__dirname, './src/assets'),
+  '@engine': path.resolve(import.meta.dirname, './src/engine'),
+  '@data': path.resolve(import.meta.dirname, './src/data'),
+  '@ui': path.resolve(import.meta.dirname, './src/ui'),
+  '@assets': path.resolve(import.meta.dirname, './src/assets'),
 };
 
 export default defineConfig({

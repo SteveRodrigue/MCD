@@ -4,7 +4,7 @@
  * exists once and the game bundle does not load Zod (AUD-20261017-232534 F014-A).
  */
 
-import type { EffectParamsMap } from './effect-params';
+import type { EffectParamsMap } from './effect-params.ts';
 
 /** Every effect a step can execute (ADR-0046). */
 export const EFFECT_TYPES = [

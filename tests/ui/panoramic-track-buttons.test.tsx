@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { GameBoard } from '../../src/ui/components/board/GameBoard';
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
 import { newRhinoGame } from '../support/game-fixtures';
@@ -9,13 +9,29 @@ import { TestSession } from '../support/render-with-session';
 const SCROLL_WIDTH = 2728;
 const CLIENT_WIDTH = 1112;
 
+let scrollWidth = SCROLL_WIDTH;
+let resizeCallbacks: ResizeObserverCallback[] = [];
+
 describe('panoramic hero track jump buttons', () => {
   beforeEach(() => {
     localStorage.clear();
+    scrollWidth = SCROLL_WIDTH;
+    resizeCallbacks = [];
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: ResizeObserverCallback) {
+          resizeCallbacks.push(callback);
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
     Element.prototype.scrollTo = vi.fn();
     Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
       configurable: true,
-      get: () => SCROLL_WIDTH,
+      get: () => scrollWidth,
     });
     Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
       configurable: true,
@@ -24,6 +40,7 @@ describe('panoramic hero track jump buttons', () => {
   });
 
   afterEach(() => {
+    vi.unstubAllGlobals();
     delete (HTMLElement.prototype as { scrollWidth?: number }).scrollWidth;
     delete (HTMLElement.prototype as { clientWidth?: number }).clientWidth;
   });
@@ -60,6 +77,17 @@ describe('panoramic hero track jump buttons', () => {
     expect(wrapper?.className).toContain('sticky');
     expect(wrapper?.className).toContain('top-1/2');
     expect(button.closest('.overflow-hidden')).toBeNull();
+  });
+
+  it('hides Scroll Right once the track no longer overflows, without a scroll or window resize (Issue #396)', () => {
+    mountThreeHeroes();
+    expect(screen.getByTitle('Scroll Right')).toBeTruthy();
+    // The content shrinks to fit when a seat narrows or images settle; a size observer must notice.
+    scrollWidth = CLIENT_WIDTH;
+    act(() => {
+      resizeCallbacks.forEach((callback) => callback([], {} as ResizeObserver));
+    });
+    expect(screen.queryByTitle('Scroll Right')).toBeNull();
   });
 
   it('opts the buttons out of edge scrolling, which would cancel the smooth jump', () => {

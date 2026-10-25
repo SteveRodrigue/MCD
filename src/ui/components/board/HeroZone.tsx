@@ -308,7 +308,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
       {/* Zone Title Ribbon */}
       <div className="absolute -top-3 left-4 flex items-center gap-2">
         <div
-          className={`border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1.5 ${
+          data-testid="hero-zone-ribbon"
+          className={`border border-comic-black text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1.5 ${
             isFocused ? '' : 'bg-slate-700 text-white'
           }`}
           style={{
@@ -324,7 +325,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           </span>
           {isFocused && (
             <span
-              className="text-[10px] px-1.5 py-0.2 rounded font-black border border-comic-black ml-1 shadow-comic-xs"
+              className="text-micro px-1.5 py-0.2 rounded font-black border border-comic-black ml-1 shadow-comic-xs"
               style={{
                 backgroundColor: palette.accent || palette.secondary,
                 color: getContrastTextColor(palette.accent || palette.secondary),
@@ -334,7 +335,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
             </span>
           )}
           {isTargetOfIncomingAttack && (
-            <span className="text-[10px] px-1.5 py-0.2 rounded font-black border border-comic-black ml-1 bg-comic-red text-white shadow-comic-xs animate-pulse">
+            <span className="text-micro px-1.5 py-0.2 rounded font-black border border-comic-black ml-1 bg-comic-red text-white shadow-comic-xs animate-pulse">
               💥 UNDER ATTACK
             </span>
           )}
@@ -343,7 +344,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
         {!isFocused && onFocus && (
           <button
             onClick={onFocus}
-            className="bg-amber-300 hover:bg-amber-400 text-slate-950 font-comic text-[11px] px-2.5 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-bold"
+            className="bg-amber-300 hover:bg-amber-400 text-slate-950 text-mini px-2.5 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-bold"
           >
             Switch Active Hand ➔
           </button>
@@ -358,7 +359,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
         <div className="flex items-center justify-between border-b border-rose-200 pb-1 mb-2">
           <div className="flex items-center gap-1.5">
             <AlertOctagon className="w-4 h-4 text-comic-red" />
-            <span className="font-comic text-xs text-comic-red uppercase font-bold">
+            <span className="text-xs text-comic-red uppercase font-bold">
               {hasDealtCards || hasObligations
                 ? `Threat Zone: ${player.name} (${engagedMinions.length} Minions • ${dealtCards.length} Dealt Cards${
                     hasObligations ? ` • ${obligations.length} Obligations` : ''
@@ -366,7 +367,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                 : `Minions Engaged with ${player.name} (${engagedMinions.length})`}
             </span>
           </div>
-          <span className="text-[10px] font-bold text-slate-500 uppercase">
+          <span className="text-micro font-bold text-slate-500 uppercase">
             Encounter Threat Zone
           </span>
         </div>
@@ -435,24 +436,24 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       </CardAttachmentFan>
                       <div className="flex items-center gap-1 flex-wrap justify-center z-raised">
                         <span
-                          className="bg-white text-comic-blue border border-comic-black font-comic text-[9px] px-1 py-0.2 rounded font-bold shadow-comic-xs"
+                          className="bg-white text-comic-blue border border-comic-black text-nano px-1 py-0.2 rounded font-bold shadow-comic-xs"
                           title={`Scheme: ${(minion.card as any).scheme ?? 0}`}
                         >
                           SCH {(minion.card as any).scheme ?? 0}
                         </span>
                         <span
-                          className="bg-white text-comic-red border border-comic-black font-comic text-[9px] px-1 py-0.2 rounded font-bold shadow-comic-xs"
+                          className="bg-white text-comic-red border border-comic-black text-nano px-1 py-0.2 rounded font-bold shadow-comic-xs"
                           title={`Attack: ${(minion.card as any).attack ?? 0}`}
                         >
                           ATK {(minion.card as any).attack ?? 0}
                         </span>
                         {isGuard && (
-                          <span className="bg-slate-900 text-comic-yellow border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded font-bold">
+                          <span className="bg-slate-900 text-comic-yellow border border-comic-black text-micro px-1.5 py-0.5 rounded font-bold">
                             GUARD
                           </span>
                         )}
                         {isTough && (
-                          <span className="bg-sky-400 text-slate-950 border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded font-bold">
+                          <span className="bg-sky-400 text-slate-950 border border-comic-black text-micro px-1.5 py-0.5 rounded font-bold">
                             TOUGH
                           </span>
                         )}
@@ -491,7 +492,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
             className="w-full md:w-[220px] flex flex-col gap-2 shrink-0"
           >
             {isTargetOfIncomingAttack && (
-              <div className="w-full text-center py-1 px-2 bg-comic-red text-white font-comic text-xs font-black uppercase tracking-wider rounded border-2 border-comic-black shadow-comic-sm animate-bounce">
+              <div className="w-full text-center py-1 px-2 bg-comic-red text-white text-xs font-black uppercase tracking-wider rounded border-2 border-comic-black shadow-comic-sm animate-bounce">
                 💥 UNDER ATTACK
               </div>
             )}
@@ -502,14 +503,14 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                 <div className="flex items-center gap-1 min-w-0">
                   <Shield className="w-4 h-4 shrink-0" style={{ color: palette.primary }} />
                   <span
-                    className="font-comic text-sm text-comic-black truncate"
+                    className="text-sm text-comic-black truncate"
                     title={player.activeFormCard.name}
                   >
                     {player.activeFormCard.name}
                   </span>
                 </div>
                 <span
-                  className={`font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black uppercase shadow-comic-sm font-bold shrink-0 ${
+                  className={`text-micro px-1.5 py-0.5 rounded border border-comic-black uppercase shadow-comic-sm font-bold shrink-0 ${
                     isHero ? 'bg-comic-red text-white' : 'bg-amber-300 text-slate-950'
                   }`}
                 >
@@ -522,7 +523,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   {player.statusCards.map((st, i) => (
                     <span
                       key={i}
-                      className={`font-comic text-[9px] px-1 py-0.2 rounded border border-comic-black uppercase shadow-comic-xs font-bold ${
+                      className={`text-nano px-1 py-0.2 rounded border border-comic-black uppercase shadow-comic-xs font-bold ${
                         st === StatusCard.TOUGH
                           ? 'bg-sky-400 text-slate-950'
                           : st === StatusCard.STUNNED
@@ -550,17 +551,15 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     className="flex flex-col items-center justify-center w-full px-1 py-0.5 bg-sky-50 border border-comic-black rounded shadow-comic-xs text-center"
                     title={`Thwart: ${effectiveStats.thwart}${thwBonus > 0 ? ` (+${thwBonus})` : ''}`}
                   >
-                    <span className="text-[8px] font-bold text-sky-800 uppercase leading-none">
+                    <span className="text-nano font-bold text-sky-800 uppercase leading-none">
                       THW
                     </span>
                     <span
-                      className={`font-comic text-xs font-black leading-tight ${thwBonus > 0 ? 'text-comic-blue' : 'text-slate-900'}`}
+                      className={`text-xs font-black leading-tight ${thwBonus > 0 ? 'text-comic-blue' : 'text-slate-900'}`}
                     >
                       {effectiveStats.thwart}
                       {thwBonus > 0 && (
-                        <span className="text-[8px] text-sky-600 font-bold ml-0.5">
-                          +{thwBonus}
-                        </span>
+                        <span className="text-nano text-sky-600 font-bold ml-0.5">+{thwBonus}</span>
                       )}
                     </span>
                   </div>
@@ -569,15 +568,15 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     className="flex flex-col items-center justify-center w-full px-1 py-0.5 bg-rose-50 border border-comic-black rounded shadow-comic-xs text-center"
                     title={`Attack: ${effectiveStats.attack}${atkBonus > 0 ? ` (+${atkBonus})` : ''}`}
                   >
-                    <span className="text-[8px] font-bold text-rose-800 uppercase leading-none">
+                    <span className="text-nano font-bold text-rose-800 uppercase leading-none">
                       ATK
                     </span>
                     <span
-                      className={`font-comic text-xs font-black leading-tight ${atkBonus > 0 ? 'text-comic-red' : 'text-slate-900'}`}
+                      className={`text-xs font-black leading-tight ${atkBonus > 0 ? 'text-comic-red' : 'text-slate-900'}`}
                     >
                       {effectiveStats.attack}
                       {atkBonus > 0 && (
-                        <span className="text-[8px] text-rose-500 font-bold ml-0.5">
+                        <span className="text-nano text-rose-500 font-bold ml-0.5">
                           +{atkBonus}
                         </span>
                       )}
@@ -588,15 +587,15 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     className="flex flex-col items-center justify-center w-full px-1 py-0.5 bg-emerald-50 border border-comic-black rounded shadow-comic-xs text-center"
                     title={`Defense: ${effectiveStats.defense}${defBonus > 0 ? ` (+${defBonus})` : ''}`}
                   >
-                    <span className="text-[8px] font-bold text-emerald-800 uppercase leading-none">
+                    <span className="text-nano font-bold text-emerald-800 uppercase leading-none">
                       DEF
                     </span>
                     <span
-                      className={`font-comic text-xs font-black leading-tight ${defBonus > 0 ? 'text-emerald-600' : 'text-slate-900'}`}
+                      className={`text-xs font-black leading-tight ${defBonus > 0 ? 'text-emerald-600' : 'text-slate-900'}`}
                     >
                       {effectiveStats.defense}
                       {defBonus > 0 && (
-                        <span className="text-[8px] text-emerald-500 font-bold ml-0.5">
+                        <span className="text-nano text-emerald-500 font-bold ml-0.5">
                           +{defBonus}
                         </span>
                       )}
@@ -607,15 +606,15 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     className="flex flex-col items-center justify-center w-full px-1 py-0.5 bg-slate-100 border border-comic-black rounded shadow-comic-xs text-center"
                     title={`Hand Size: ${effectiveHandSize}${handBonus > 0 ? ` (+${handBonus})` : ''}`}
                   >
-                    <span className="text-[8px] font-bold text-slate-600 uppercase leading-none">
+                    <span className="text-nano font-bold text-slate-600 uppercase leading-none">
                       HS
                     </span>
                     <span
-                      className={`font-comic text-xs font-black leading-tight ${handBonus > 0 ? 'text-slate-800' : 'text-slate-900'}`}
+                      className={`text-xs font-black leading-tight ${handBonus > 0 ? 'text-slate-800' : 'text-slate-900'}`}
                     >
                       {effectiveHandSize}
                       {handBonus > 0 && (
-                        <span className="text-[8px] text-slate-600 font-bold ml-0.5">
+                        <span className="text-nano text-slate-600 font-bold ml-0.5">
                           +{handBonus}
                         </span>
                       )}
@@ -627,10 +626,10 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     title={`Available Resources: ${availableResources.total} (${availableResources.breakdown})`}
                     data-testid="hero-available-resources-counter"
                   >
-                    <span className="text-[8px] font-bold text-indigo-700 uppercase leading-none">
+                    <span className="text-nano font-bold text-indigo-700 uppercase leading-none">
                       RES
                     </span>
-                    <span className="font-comic text-xs font-black leading-tight text-indigo-950">
+                    <span className="text-xs font-black leading-tight text-indigo-950">
                       {availableResources.total}
                     </span>
                   </div>
@@ -645,15 +644,15 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     className="flex flex-col items-center justify-center w-full px-1 py-1 bg-amber-50 border border-comic-black rounded shadow-comic-xs text-center"
                     title={`Recovery: ${effectiveStats.recovery}${recBonus > 0 ? ` (+${recBonus})` : ''}`}
                   >
-                    <span className="text-[8px] font-bold text-amber-800 uppercase leading-none">
+                    <span className="text-nano font-bold text-amber-800 uppercase leading-none">
                       REC
                     </span>
                     <span
-                      className={`font-comic text-xs font-black leading-tight ${recBonus > 0 ? 'text-amber-600' : 'text-slate-900'}`}
+                      className={`text-xs font-black leading-tight ${recBonus > 0 ? 'text-amber-600' : 'text-slate-900'}`}
                     >
                       {effectiveStats.recovery}
                       {recBonus > 0 && (
-                        <span className="text-[8px] text-amber-500 font-bold ml-0.5">
+                        <span className="text-nano text-amber-500 font-bold ml-0.5">
                           +{recBonus}
                         </span>
                       )}
@@ -664,15 +663,15 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     className="flex flex-col items-center justify-center w-full px-1 py-1 bg-slate-100 border border-comic-black rounded shadow-comic-xs text-center"
                     title={`Hand Size: ${effectiveHandSize}${handBonus > 0 ? ` (+${handBonus})` : ''}`}
                   >
-                    <span className="text-[8px] font-bold text-slate-600 uppercase leading-none">
+                    <span className="text-nano font-bold text-slate-600 uppercase leading-none">
                       HS
                     </span>
                     <span
-                      className={`font-comic text-xs font-black leading-tight ${handBonus > 0 ? 'text-slate-800' : 'text-slate-900'}`}
+                      className={`text-xs font-black leading-tight ${handBonus > 0 ? 'text-slate-800' : 'text-slate-900'}`}
                     >
                       {effectiveHandSize}
                       {handBonus > 0 && (
-                        <span className="text-[8px] text-slate-600 font-bold ml-0.5">
+                        <span className="text-nano text-slate-600 font-bold ml-0.5">
                           +{handBonus}
                         </span>
                       )}
@@ -684,10 +683,10 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     title={`Available Resources: ${availableResources.total} (${availableResources.breakdown})`}
                     data-testid="hero-available-resources-counter"
                   >
-                    <span className="text-[8px] font-bold text-indigo-700 uppercase leading-none">
+                    <span className="text-nano font-bold text-indigo-700 uppercase leading-none">
                       RES
                     </span>
-                    <span className="font-comic text-xs font-black leading-tight text-indigo-950">
+                    <span className="text-xs font-black leading-tight text-indigo-950">
                       {availableResources.total}
                     </span>
                   </div>
@@ -731,7 +730,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   <Heart className="w-2.5 h-2.5 text-comic-red fill-comic-red" />
                   {hpBonus > 0 && (
                     <span
-                      className="bg-emerald-400 text-slate-950 font-comic text-[8px] px-1 rounded border border-comic-black font-bold shadow-comic-xs flex items-center gap-0.5 mt-0.5"
+                      className="bg-emerald-400 text-slate-950 text-nano px-1 rounded border border-comic-black font-bold shadow-comic-xs flex items-center gap-0.5 mt-0.5"
                       title={`+${hpBonus} bonus HP`}
                     >
                       <Sparkles className="w-2 h-2" />+{hpBonus}
@@ -759,7 +758,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     }}
                   />
                 </div>
-                <span className="font-comic text-[10px] font-black text-slate-900 leading-none">
+                <span className="text-micro font-black text-slate-900 leading-none">
                   {player.health}/{effectiveMaxHealth}
                 </span>
               </div>
@@ -776,7 +775,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   <button
                     disabled={!canFlip}
                     onClick={() => onDispatchAction({ type: 'CHANGE_FORM', playerId: player.id })}
-                    className={`font-comic text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
+                    className={`text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
                       canFlip
                         ? 'bg-comic-red hover:bg-red-600 text-white active:translate-y-0.5'
                         : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
@@ -795,7 +794,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   <button
                     disabled={!canRecover}
                     onClick={() => onDispatchAction({ type: 'BASIC_RECOVER', playerId: player.id })}
-                    className={`font-comic text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
+                    className={`text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
                       canRecover
                         ? 'bg-amber-300 hover:bg-amber-400 text-slate-950 active:translate-y-0.5'
                         : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
@@ -818,7 +817,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   <button
                     disabled={!canFlip}
                     onClick={() => onDispatchAction({ type: 'CHANGE_FORM', playerId: player.id })}
-                    className={`font-comic text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
+                    className={`text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
                       canFlip
                         ? 'bg-amber-300 hover:bg-amber-400 text-slate-950 active:translate-y-0.5'
                         : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
@@ -837,7 +836,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   <button
                     disabled={!canAttack}
                     onClick={() => handleInitiateAttack('hero')}
-                    className={`font-comic text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
+                    className={`text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
                       canAttack
                         ? 'bg-comic-red hover:bg-red-600 text-white active:translate-y-0.5'
                         : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
@@ -858,7 +857,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   <button
                     disabled={!canThwart}
                     onClick={() => handleInitiateThwart('hero')}
-                    className={`font-comic text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
+                    className={`text-xs py-1.5 px-1 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm truncate font-bold uppercase ${
                       canThwart
                         ? 'bg-comic-blue hover:bg-sky-600 text-white active:translate-y-0.5'
                         : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
@@ -932,7 +931,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                         <button
                           onClick={() => handleInitiateAttack('ally', ally.instanceId)}
                           disabled={!canAtk}
-                          className="px-1.5 py-0.5 font-comic text-[10px] bg-comic-red hover:bg-red-700 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2 flex items-center gap-0.5"
+                          className="px-1.5 py-0.5 text-micro bg-comic-red hover:bg-red-700 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2 flex items-center gap-0.5"
                           title={
                             canAct
                               ? `Attack for ${allyStats.attack} damage${atkBonus > 0 ? ` (+${atkBonus} bonus)` : ''}`
@@ -941,7 +940,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                         >
                           <span>⚔️ {atkDisplay}</span>
                           {atkBonus > 0 && (
-                            <span className="text-yellow-300 text-[9px] font-black">
+                            <span className="text-yellow-300 text-nano font-black">
                               (+{atkBonus})
                             </span>
                           )}
@@ -949,7 +948,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                         <button
                           onClick={() => handleInitiateThwart('ally', ally.instanceId)}
                           disabled={!canThw}
-                          className="px-1.5 py-0.5 font-comic text-[10px] bg-sky-500 hover:bg-sky-600 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2 flex items-center gap-0.5"
+                          className="px-1.5 py-0.5 text-micro bg-sky-500 hover:bg-sky-600 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2 flex items-center gap-0.5"
                           title={
                             canThw
                               ? `Thwart scheme for ${allyStats.thwart} threat${thwBonus > 0 ? ` (+${thwBonus} bonus)` : ''}`
@@ -958,7 +957,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                         >
                           <span>🛡️ {thwDisplay}</span>
                           {thwBonus > 0 && (
-                            <span className="text-yellow-300 text-[9px] font-black">
+                            <span className="text-yellow-300 text-nano font-black">
                               (+{thwBonus})
                             </span>
                           )}
@@ -966,9 +965,9 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       </div>
 
                       {/* Pop-Art Ally Stat Bonus Strip (Matching Hero stat display) */}
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/95 border border-comic-black rounded shadow-comic-xs text-[9px] font-comic font-bold mb-1 z-raised">
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/95 border border-comic-black rounded shadow-comic-xs text-nano font-bold mb-1 z-raised">
                         <div className="flex items-center gap-0.5">
-                          <span className="text-slate-500 uppercase text-[8px]">THW</span>
+                          <span className="text-slate-500 uppercase text-nano">THW</span>
                           <span
                             className={`flex items-center ${
                               thwBonus > 0 ? 'text-emerald-600 font-black' : 'text-slate-900'
@@ -976,15 +975,13 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                           >
                             {thwDisplay}
                             {thwBonus > 0 && (
-                              <span className="text-[8px] text-emerald-600 ml-0.5">
-                                +{thwBonus}
-                              </span>
+                              <span className="text-nano text-emerald-600 ml-0.5">+{thwBonus}</span>
                             )}
                           </span>
                         </div>
                         <div className="h-3 w-px bg-slate-300" />
                         <div className="flex items-center gap-0.5">
-                          <span className="text-slate-500 uppercase text-[8px]">ATK</span>
+                          <span className="text-slate-500 uppercase text-nano">ATK</span>
                           <span
                             className={`flex items-center ${
                               atkBonus > 0 ? 'text-comic-red font-black' : 'text-slate-900'
@@ -992,7 +989,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                           >
                             {atkDisplay}
                             {atkBonus > 0 && (
-                              <span className="text-[8px] text-rose-500 ml-0.5">+{atkBonus}</span>
+                              <span className="text-nano text-rose-500 ml-0.5">+{atkBonus}</span>
                             )}
                           </span>
                         </div>
@@ -1026,7 +1023,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
               <div className="h-36 w-full border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-center p-3 text-xs text-slate-400 font-semibold bg-white/40">
                 <Users className="w-6 h-6 text-slate-300 mb-1" />
                 <span>No allies in play</span>
-                <span className="text-[10px] text-slate-400 font-normal">
+                <span className="text-micro text-slate-400 font-normal">
                   Ally Limit: {effectiveAllyLimit}
                 </span>
               </div>
@@ -1128,7 +1125,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                             });
                           }}
                           disabled={!canUse}
-                          className="w-full font-comic text-[10px] bg-amber-300 hover:bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
+                          className="w-full text-micro bg-amber-300 hover:bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
                           title={
                             canUse
                               ? `Trigger ${ab.id}`

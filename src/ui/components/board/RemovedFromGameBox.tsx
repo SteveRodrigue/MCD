@@ -3,6 +3,7 @@ import { Archive, Skull } from 'lucide-react';
 import { CardInstance, NormalizedCard, PlayerState } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
 import { useModalStyle } from '../../theme/useModalStyle';
+import { ZonePanel } from '../../theme/kit/surfaces';
 import { PileCardTile, PileChoice, PileGrid, PileGroup, PileViewerModal } from './PileViewerModal';
 
 import { getEncounterSetName } from './villain-zone-utils';
@@ -96,19 +97,16 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
 
   return (
     <>
-      <section
+      <ZonePanel
         data-testid="removed-from-game-box"
-        className="comic-panel p-4 bg-white/95 relative hover:z-raised focus-within:z-raised shadow-comic shrink-0"
+        title="OUT OF PLAY"
+        icon={<Archive className="w-3.5 h-3.5" />}
+        className="hover:z-raised focus-within:z-raised shrink-0"
+        bodyClassName="p-4"
       >
-        {/* Zone Title Ribbon */}
-        <div className="absolute -top-3 left-4 bg-slate-900 text-white border border-comic-black text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1">
-          <Archive className="w-3.5 h-3.5" />
-          <span>OUT OF PLAY</span>
-        </div>
-
         <div
           data-testid="out-of-play-stacks"
-          className="flex flex-wrap items-center justify-center gap-4 pt-2"
+          className="flex flex-wrap items-center justify-center gap-4"
         >
           {/* General Removed from Game Pile */}
           {topCard ? (
@@ -119,10 +117,12 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
               title={`Inspect Removed from Game Pile (${cards.length} Cards)`}
             >
               <CardView card={topCard.card} size="sm" showTokens={false} enableHoverZoom={true} />
-              <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-comic-red text-white text-nano px-1 py-0.5 rounded border border-comic-black shadow-comic-xs uppercase font-bold pointer-events-none">
+              <span
+                className={`absolute -top-2 left-1/2 -translate-x-1/2 bg-comic-red text-white text-nano px-1 py-0.5 uppercase font-bold pointer-events-none ${style.badge}`}
+              >
                 REMOVED
               </span>
-              <span className="absolute -bottom-2 -right-2 bg-slate-900 text-white text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
+              <span className={`absolute -bottom-2 -right-2 text-xs px-1.5 py-0.5 ${style.chip}`}>
                 {cards.length}
               </span>
             </div>
@@ -130,11 +130,11 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
             <div
               data-testid="removed-from-game-pile-empty"
               onClick={() => inspect(null)}
-              className="w-28 h-40 bg-slate-100 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-center p-1 cursor-pointer hover:border-slate-400"
+              className={`w-28 h-40 border-dashed flex flex-col items-center justify-center text-center p-1 cursor-pointer ${style.inset} ${style.muted}`}
               title="Removed from Game (Empty)"
             >
-              <span className="text-xs text-slate-400">REMOVED</span>
-              <span className="text-micro text-slate-400 font-bold">EMPTY</span>
+              <span className="text-xs">REMOVED</span>
+              <span className="text-micro font-bold">EMPTY</span>
             </div>
           )}
 
@@ -172,13 +172,15 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
                     <CardView card={heroCard} size="sm" showTokens={false} enableHoverZoom={true} />
 
                     {/* DEFEATED Ribbon Badge */}
-                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-comic-red text-white text-nano px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs uppercase font-bold pointer-events-none whitespace-nowrap">
+                    <span
+                      className={`absolute -top-2 left-1/2 -translate-x-1/2 bg-comic-red text-white text-nano px-1.5 py-0.5 uppercase font-bold pointer-events-none whitespace-nowrap ${style.badge}`}
+                    >
                       DEFEATED
                     </span>
 
                     {/* Deck Count Badge */}
                     <span
-                      className="absolute -bottom-2 -right-2 bg-slate-900 text-white text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm"
+                      className={`absolute -bottom-2 -right-2 text-xs px-1.5 py-0.5 ${style.chip}`}
                       title={`${player.deck.length} cards in deck`}
                     >
                       {player.deck.length}
@@ -189,7 +191,7 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
             );
           })}
         </div>
-      </section>
+      </ZonePanel>
 
       {/* Removed from Game / Defeated Heroes Modal */}
       {showModal && (

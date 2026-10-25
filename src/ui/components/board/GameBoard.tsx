@@ -350,7 +350,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
   // Everything below dispatches through the payment interception above
   return (
     <GameSessionContext.Provider value={{ ...session, dispatch: handleDispatchAction }}>
-      <div className="relative min-h-screen w-full flex flex-col justify-between bg-comic-paper overflow-x-clip">
+      <div className="relative min-h-screen w-full flex flex-col justify-between overflow-x-clip">
         <div
           className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
             isLogOpen ? 'w-full lg:w-[calc(100%-420px)]' : 'w-full'

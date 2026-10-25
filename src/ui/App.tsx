@@ -212,17 +212,14 @@ const AppContent: React.FC = () => {
   return (
     <GameThemeRoot
       active={isGameStage(stage)}
-      className="relative min-h-screen w-full bg-comic-paper flex flex-col items-center justify-start overflow-x-clip"
+      className="relative min-h-screen w-full flex flex-col items-center justify-start overflow-x-clip"
     >
-      {/* Halftone Dot Overlay */}
-      <div className="fixed inset-0 bg-bendy-dots pointer-events-none z-table" />
-
       {/* Screen Render Switcher */}
       <div className="relative z-content w-full">
         <React.Suspense
           fallback={
-            <div className="flex items-center justify-center h-screen bg-comic-paper">
-              <div className="font-bangers text-2xl text-black animate-pulse">Loading...</div>
+            <div className="flex items-center justify-center h-screen">
+              <div className="font-comic text-2xl animate-pulse">Loading...</div>
             </div>
           }
         >
@@ -247,10 +244,8 @@ const AppContent: React.FC = () => {
         {stage === 'EDITOR' && (
           <React.Suspense
             fallback={
-              <div className="flex items-center justify-center h-screen bg-comic-paper">
-                <div className="font-bangers text-2xl text-black animate-pulse">
-                  Loading Editor...
-                </div>
+              <div className="flex items-center justify-center h-screen">
+                <div className="font-comic text-2xl animate-pulse">Loading Editor...</div>
               </div>
             }
           >
@@ -268,10 +263,8 @@ const AppContent: React.FC = () => {
         {stage === 'TEMPLATES' && ModalTemplatesScreen && (
           <React.Suspense
             fallback={
-              <div className="flex items-center justify-center h-screen bg-comic-paper">
-                <div className="font-bangers text-2xl text-black animate-pulse">
-                  Loading Modal Templates...
-                </div>
+              <div className="flex items-center justify-center h-screen">
+                <div className="font-comic text-2xl animate-pulse">Loading Modal Templates...</div>
               </div>
             }
           >

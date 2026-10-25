@@ -117,7 +117,7 @@ describe('TopBar and GameBoard Layout In-Flow Architecture (Issue #301)', () => 
 
   it('App root clips horizontally without becoming a scroll container (Issue #312)', () => {
     const source = readFileSync(join(__dirname, '..', '..', 'src', 'ui', 'App.tsx'), 'utf8');
-    const rootLine = source.match(/^.*relative min-h-screen w-full bg-comic-paper.*$/m)?.[0];
+    const rootLine = source.match(/^.*relative min-h-screen w-full flex.*$/m)?.[0];
     expect(rootLine).toBeDefined();
     expect(rootLine).toContain('overflow-x-clip');
     expect(rootLine).not.toContain('overflow-x-hidden');

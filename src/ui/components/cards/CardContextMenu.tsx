@@ -151,7 +151,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
               <span className={`font-mono text-micro font-bold px-1.5 py-0.2 ${style.chip}`}>
                 {card.code}
               </span>
-              <span className="font-comic text-sm truncate tracking-wide">{card.name}</span>
+              <span className="font-bold text-sm truncate tracking-wide">{card.name}</span>
             </div>
             <button
               onClick={onClose}

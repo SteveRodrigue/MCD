@@ -11,3 +11,9 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
+    groups:
+      # @vitest/coverage-v8 pins the exact vitest version, so the two must bump in one PR
+      vitest:
+        patterns:
+          - "vitest"
+          - "@vitest/*"

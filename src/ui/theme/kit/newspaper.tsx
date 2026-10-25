@@ -1,6 +1,7 @@
 import React from 'react';
+import { X } from 'lucide-react';
 import { CardArtThumbnail } from '../../components/cards/CardArtThumbnail';
-import { CardRef, type CardReference } from '../CardRef';
+import { CardRef, type CardReference, type TriggerCard } from '../CardRef';
 import { useNewspaperProps } from '../useNewspaperProps';
 import { useThemeExtras } from '../useThemeExtras';
 
@@ -25,6 +26,17 @@ export interface NewspaperSheetProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
+  /** Adds a close button above the masthead. */
+  onClose?: () => void;
+  /** Buttons shown before the close button (a language toggle). */
+  actions?: React.ReactNode;
+  /** Stays under the masthead while the stories scroll (a filter bar). */
+  toolbar?: React.ReactNode;
+  /** The page keeps its masthead and footer in view and scrolls its stories; the caller bounds its height. */
+  scrollable?: boolean;
+  /** Reads the scrolling stories (to follow the latest entry). Needs `scrollable`. */
+  scrollRef?: React.Ref<HTMLDivElement>;
+  testId?: string;
 }
 
 export const NewspaperSheet: React.FC<NewspaperSheetProps> = ({
@@ -35,33 +47,66 @@ export const NewspaperSheet: React.FC<NewspaperSheetProps> = ({
   children,
   footer,
   className = '',
+  onClose,
+  actions,
+  toolbar,
+  scrollable = false,
+  scrollRef,
+  testId,
 }) => {
   const { newspaper: np } = useThemeExtras();
   const newspaperProps = useNewspaperProps();
   return (
     <article
       aria-label={np.title}
+      data-testid={testId}
       {...newspaperProps}
-      className={`relative isolate overflow-hidden ${np.sheet} ${className}`}
+      className={`relative isolate overflow-hidden ${scrollable ? 'flex flex-col' : ''} ${np.sheet} ${className}`}
     >
       <div
         aria-hidden="true"
         className={`absolute inset-0 pointer-events-none ${np.textureClass}`}
         style={np.texture}
       />
-      <div className="relative p-4 sm:p-5 space-y-4">
-        <header className={np.mastheadWrap}>
-          <h2 className={np.mastheadTitle}>{np.title}</h2>
-          <div className={np.edition}>
-            <span>{edition}</span>
-            {issue && <span>{issue}</span>}
-          </div>
-          <p className={np.taglineClass}>{np.tagline}</p>
-        </header>
-        {flash && <ExtraFlash>{flash}</ExtraFlash>}
-        {ticker && ticker.length > 0 && <NewsTicker items={ticker} />}
-        <div className="space-y-3">{children}</div>
-        {footer && <footer className={`border-t pt-3 ${np.rule}`}>{footer}</footer>}
+      <div className="relative flex flex-col min-h-0 flex-1">
+        <div className="p-4 sm:p-5 pb-0 space-y-4 shrink-0">
+          {(actions || onClose) && (
+            <div className="flex items-center justify-end gap-2">
+              {actions}
+              {onClose && (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  title="Close Newspaper"
+                  aria-label="Close Newspaper"
+                  className={`cursor-pointer inline-flex items-center ${np.pill}`}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          )}
+          <header className={np.mastheadWrap}>
+            <h2 className={np.mastheadTitle}>{np.title}</h2>
+            <div className={np.edition}>
+              <span>{edition}</span>
+              {issue && <span className="ml-3">{issue}</span>}
+            </div>
+            <p className={np.taglineClass}>{np.tagline}</p>
+          </header>
+          {flash && <ExtraFlash>{flash}</ExtraFlash>}
+          {ticker && ticker.length > 0 && <NewsTicker items={ticker} />}
+          {toolbar}
+        </div>
+        <div
+          ref={scrollRef}
+          className={`p-4 sm:p-5 space-y-3 ${scrollable ? 'overflow-y-auto min-h-0 flex-1' : ''}`}
+        >
+          {children}
+        </div>
+        {footer && (
+          <footer className={`border-t px-4 sm:px-5 py-3 shrink-0 ${np.rule}`}>{footer}</footer>
+        )}
       </div>
     </article>
   );
@@ -265,9 +310,12 @@ export const NewsSection: React.FC<NewsSectionProps> = ({ title, tag, children }
 };
 
 export interface NewsActionItemProps {
-  card: CardReference;
+  /** The card the action is about; an identity action has none, and its icon is the thumbnail. */
+  card: TriggerCard;
+  /** Shown beside the headline and as the thumbnail when there is no card art. */
+  icon?: React.ReactNode;
   headline: string;
-  subtext: string;
+  subtext: React.ReactNode;
   /** Small badge next to the headline ("1 / ROUND", "COST 2"). */
   badge?: string;
   /** What clicking does ("Execute", "Play card", "Ask teammate"). */
@@ -278,6 +326,7 @@ export interface NewsActionItemProps {
 /** One legal action, written as a dispatch: the card's photo, a headline, a line of text, a call to act. */
 export const NewsActionItem: React.FC<NewsActionItemProps> = ({
   card,
+  icon,
   headline,
   subtext,
   badge,
@@ -292,13 +341,16 @@ export const NewsActionItem: React.FC<NewsActionItemProps> = ({
       onClick={onSelect}
       className={`w-full text-left flex items-start gap-2.5 p-2 cursor-pointer ${np.story} !mb-0 !pb-2`}
     >
-      <CardArtThumbnail cardCode={card.code} cardName={card.name} size="sm" />
+      <CardArtThumbnail cardCode={card.code} cardName={card.name} fallbackIcon={icon} size="sm" />
       <span className="flex-1 min-w-0 flex flex-col gap-0.5">
         <span className="flex items-start justify-between gap-1">
-          <span className={`${np.headline} !text-sm`}>{headline}</span>
+          <span className={`${np.headline} !text-sm flex items-center gap-1`}>
+            {icon}
+            {headline}
+          </span>
           {badge && <span className={`shrink-0 ${np.pillActive}`}>{badge}</span>}
         </span>
-        <span className={`${np.body} !text-xs line-clamp-2`}>{subtext}</span>
+        <span className={`${np.body} !text-xs line-clamp-2 block`}>{subtext}</span>
         <span className={`${np.byline} text-right`}>{cue} ➔</span>
       </span>
     </button>

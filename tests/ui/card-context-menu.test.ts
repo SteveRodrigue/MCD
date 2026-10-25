@@ -113,19 +113,6 @@ describe('CardContextMenu Actions & Invariants', () => {
       expect(content).toContain('z-menu');
     });
 
-    it('guards raw data modal with modalRef to prevent premature dismiss on inside click', async () => {
-      const fs = await import('fs');
-      const path = await import('path');
-      const filePath = path.resolve(process.cwd(), 'src/ui/components/cards/CardContextMenu.tsx');
-      const content = fs.readFileSync(filePath, 'utf8');
-
-      // Must declare modalRef
-      expect(content).toContain('modalRef');
-
-      // handlePointerDown must verify modalRef does not contain target
-      expect(content).toMatch(/modalRef\.current(\?)?\.contains/);
-    });
-
     it('enforces select-text and cursor-text on raw attributes modal (Fixes #71)', async () => {
       const fs = await import('fs');
       const path = await import('path');

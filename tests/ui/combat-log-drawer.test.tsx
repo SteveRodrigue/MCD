@@ -86,12 +86,12 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
       </TestSession>,
     );
 
-    expect(screen.getByText('DAILY BUGLE')).toBeDefined();
-    expect(screen.getByText(/FLASH NEWS & ACTION CHRONICLE/)).toBeDefined();
+    expect(screen.getByRole('heading', { name: /DAILY BUGLE/ })).toBeDefined();
+    expect(screen.getByText(/Flash news & action chronicle/)).toBeDefined();
     expect(screen.getByText('Iron-Man dealt 2 damage to Rhino.')).toBeDefined();
   });
 
-  it('has no font selector: the log follows the theme (Body for the dialogue, Headlines for the banners)', () => {
+  it('has no font selector: the log is a newspaper page that follows the theme (Newspaper fonts)', () => {
     render(
       <TestSession state={mockGameState as GameState}>
         <CombatLogDrawer isOpen={true} onClose={vi.fn()} logs={mockLogs} />
@@ -103,7 +103,8 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
     expect(drawer.className).toContain('font-body');
     expect(drawer.style.getPropertyValue('--font-comic')).not.toBe('');
     const dialogue = screen.getByText('Iron-Man dealt 2 damage to Rhino.');
-    expect(dialogue.className).toContain('font-body');
+    expect(dialogue.className).toContain('font-news-body');
+    expect(document.body.querySelector('[data-newspaper]')).not.toBeNull();
   });
 
   it('applies docked desktop classes to drawer container', () => {
@@ -288,6 +289,6 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
       </GameSettingsProvider>,
     );
 
-    expect(screen.getByText(/FLASH NEWS & ACTION CHRONICLE/)).toBeDefined();
+    expect(screen.getByText(/Flash news & action chronicle/)).toBeDefined();
   });
 });

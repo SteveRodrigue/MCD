@@ -138,4 +138,22 @@ describe('CardContextMenu Stats Recap & Modals (#315)', () => {
     expect(screen.getByText(/Card Plays & Reveals/i)).toBeDefined();
     expect(screen.getByText(/Basic Actions/i)).toBeDefined();
   });
+
+  it('a click inside the inspect window does not close the menu (the modal scaffold stops it at its overlay)', async () => {
+    const onClose = vi.fn();
+    render(
+      <GameSettingsProvider>
+        <TestSession state={mockGameState}>
+          <CardContextMenu card={spiderManCard} position={{ x: 100, y: 100 }} onClose={onClose} />
+        </TestSession>
+      </GameSettingsProvider>,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: /Inspect Attributes/i }));
+    const modal = await screen.findByTestId('card-raw-modal');
+
+    modal.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('card-raw-modal')).not.toBeNull();
+  });
 });

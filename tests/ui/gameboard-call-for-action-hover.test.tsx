@@ -112,7 +112,7 @@ describe('GameBoard Call for Action Top-Left Hover Button', () => {
     fireEvent.click(extraBtn);
 
     // Modal should now be open
-    expect(screen.getByText('THE DAILY BUGLE')).toBeDefined();
+    expect(screen.getByTestId('daily-bugle-container')).toBeDefined();
     expect(screen.getByTestId('daily-bugle-call-for-action-column')).toBeDefined();
   });
 

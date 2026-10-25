@@ -148,7 +148,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
         <div className="flex items-center justify-between bg-comic-black text-white px-4 py-2 rounded-t-2xl border-t-4 border-l-4 border-r-4 border-comic-black shadow-comic">
           <div className="flex items-center gap-3">
             {/* Vintage Price Box */}
-            <div className="bg-comic-yellow text-comic-black font-black font-comic text-xs px-2 py-0.5 border-2 border-comic-black rounded rotate-[-2deg] shadow-comic-sm">
+            <div className="bg-comic-yellow text-comic-black font-black text-xs px-2 py-0.5 border-2 border-comic-black rounded rotate-[-2deg] shadow-comic-sm">
               12¢ • ISSUE #{currentScenarioIndex + 1}
             </div>
             <div className="flex items-center gap-2">
@@ -161,11 +161,11 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
 
           <div className="flex items-center gap-2">
             {/* Comics Code Authority Badge */}
-            <div className="hidden sm:inline-flex items-center gap-1 bg-white text-comic-black border-2 border-comic-black px-2 py-0.5 rounded text-[10px] font-black uppercase font-comic">
+            <div className="hidden sm:inline-flex items-center gap-1 bg-white text-comic-black border-2 border-comic-black px-2 py-0.5 rounded text-micro font-black uppercase">
               <Sparkles className="w-3 h-3 text-comic-blue" />
               APPROVED BY COMICS CODE
             </div>
-            <span className="bg-comic-red text-white text-xs font-bold px-2.5 py-0.5 rounded-full border border-white font-comic">
+            <span className="bg-comic-red text-white text-xs font-bold px-2.5 py-0.5 rounded-full border border-white">
               {currentScenarioIndex + 1} OF {scenarios.length}
             </span>
           </div>
@@ -212,7 +212,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                   <Flame className="w-5 h-5 text-comic-red" />
                   <span>LEFT PAGE • VILLAIN DOSSIER</span>
                 </div>
-                <span className="bg-comic-red text-white text-xs font-black px-2 py-0.5 rounded border border-comic-black font-comic uppercase">
+                <span className="bg-comic-red text-white text-xs font-black px-2 py-0.5 rounded border border-comic-black uppercase">
                   STAGE {difficulty === 'EXPERT' ? 'II' : 'I'}
                 </span>
               </div>
@@ -222,7 +222,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 {villainPreviewCard ? (
                   <CardView card={villainPreviewCard} size="md" />
                 ) : (
-                  <div className="w-56 h-80 bg-slate-200 border-2 border-comic-black rounded-xl flex items-center justify-center font-comic text-sm">
+                  <div className="w-56 h-80 bg-slate-200 border-2 border-comic-black rounded-xl flex items-center justify-center text-sm">
                     VILLAIN CARD
                   </div>
                 )}
@@ -244,7 +244,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                   <Shield className="w-5 h-5 text-comic-blue" />
                   <span>RIGHT PAGE • MAIN SCHEME SETUP</span>
                 </div>
-                <span className="bg-comic-blue text-white text-xs font-black px-2 py-0.5 rounded border border-comic-black font-comic uppercase">
+                <span className="bg-comic-blue text-white text-xs font-black px-2 py-0.5 rounded border border-comic-black uppercase">
                   STAGE 1A
                 </span>
               </div>
@@ -254,7 +254,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 {mainSchemePreviewCard ? (
                   <CardView card={mainSchemePreviewCard} size="md" />
                 ) : (
-                  <div className="w-80 h-56 bg-slate-200 border-2 border-comic-black rounded-xl flex items-center justify-center font-comic text-sm">
+                  <div className="w-80 h-56 bg-slate-200 border-2 border-comic-black rounded-xl flex items-center justify-center text-sm">
                     MAIN SCHEME CARD (1A)
                   </div>
                 )}
@@ -262,7 +262,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
 
               {/* Scheme Summary / Briefing */}
               <div className="w-full bg-white/90 border border-comic-black rounded-lg p-2.5 shadow-sm space-y-1">
-                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <div className="text-mini font-bold text-slate-500 uppercase tracking-wider">
                   MISSION BRIEFING:
                 </div>
                 <p className="text-xs text-slate-700 leading-snug">
@@ -279,7 +279,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 key={scen.id}
                 type="button"
                 onClick={() => handleSelectScenarioByIndex(idx)}
-                className={`px-3 md:px-4 py-1.5 rounded-lg border-2 font-comic text-xs md:text-sm font-bold uppercase transition-all cursor-pointer ${
+                className={`px-3 md:px-4 py-1.5 rounded-lg border-2 text-xs md:text-sm font-bold uppercase transition-all cursor-pointer ${
                   currentScenarioIndex === idx
                     ? 'bg-comic-yellow text-comic-black border-comic-black shadow-comic-sm scale-105'
                     : 'bg-white text-slate-600 border-slate-300 hover:border-comic-black hover:text-comic-black'
@@ -320,22 +320,22 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
 
             {/* Scenario-Mandatory Encounter Sets Badges */}
             <div className="space-y-1.5">
-              <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <div className="text-mini font-bold text-slate-500 uppercase tracking-wider">
                 Scenario-Mandatory Sets:
               </div>
               <div className="flex flex-wrap gap-1.5">
                 <span className="bg-slate-200 border border-comic-black px-2 py-0.5 text-xs font-bold text-slate-800 rounded flex items-center gap-1">
                   <span>🔒 {selectedScenario.name} Set</span>
-                  <span className="text-[10px] text-slate-500 font-normal">(Mandatory)</span>
+                  <span className="text-micro text-slate-500 font-normal">(Mandatory)</span>
                 </span>
                 <span className="bg-slate-200 border border-comic-black px-2 py-0.5 text-xs font-bold text-slate-800 rounded flex items-center gap-1">
                   <span>🔒 Standard Set</span>
-                  <span className="text-[10px] text-slate-500 font-normal">(Mandatory)</span>
+                  <span className="text-micro text-slate-500 font-normal">(Mandatory)</span>
                 </span>
                 {difficulty === 'EXPERT' && (
                   <span className="bg-red-100 border border-comic-black px-2 py-0.5 text-xs font-bold text-comic-red rounded flex items-center gap-1">
                     <span>🔒 Expert Set</span>
-                    <span className="text-[10px] text-slate-500 font-normal">(Mandatory)</span>
+                    <span className="text-micro text-slate-500 font-normal">(Mandatory)</span>
                   </span>
                 )}
               </div>
@@ -344,10 +344,10 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
             {/* Customizable Modular Slot (1 Slot) */}
             <div className="space-y-1.5 pt-2 border-t border-slate-200">
               <div className="flex items-center justify-between">
-                <div className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                <div className="text-mini font-bold text-slate-700 uppercase tracking-wider">
                   Modular Encounter Slot (1 Required):
                 </div>
-                <span className="text-[10px] bg-amber-100 border border-comic-black px-1.5 py-0.2 rounded font-bold text-slate-800">
+                <span className="text-micro bg-amber-100 border border-comic-black px-1.5 py-0.2 rounded font-bold text-slate-800">
                   {selectedModularSetCode === defaultModularForScenario
                     ? 'Default Recommendation'
                     : 'Custom Modular Set'}
@@ -367,7 +367,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 ))}
               </select>
 
-              <p className="text-[11px] text-slate-600 italic">
+              <p className="text-mini text-slate-600 italic">
                 {modularSets.find((m) => m.code === selectedModularSetCode)?.description}
               </p>
             </div>
@@ -382,7 +382,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                   2. Select Difficulty & Modifiers
                 </h2>
               </div>
-              <span className="bg-amber-100 border border-comic-black px-2.5 py-0.5 text-xs font-black uppercase rounded font-comic">
+              <span className="bg-amber-100 border border-comic-black px-2.5 py-0.5 text-xs font-black uppercase rounded">
                 MODE: {difficulty}
               </span>
             </div>
@@ -399,7 +399,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 }`}
               >
                 <div className="font-comic text-sm sm:text-base font-bold">SKIRMISH</div>
-                <div className="text-[10px] text-slate-700 font-medium leading-tight mt-0.5">
+                <div className="text-micro text-slate-700 font-medium leading-tight mt-0.5">
                   Stage I Only
                 </div>
               </button>
@@ -414,7 +414,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 }`}
               >
                 <div className="font-comic text-sm sm:text-base font-bold">STANDARD</div>
-                <div className="text-[10px] text-slate-700 font-medium leading-tight mt-0.5">
+                <div className="text-micro text-slate-700 font-medium leading-tight mt-0.5">
                   Stage I ➔ II
                 </div>
               </button>
@@ -429,7 +429,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 }`}
               >
                 <div className="font-comic text-sm sm:text-base font-bold">EXPERT</div>
-                <div className="text-[10px] text-slate-200 font-medium leading-tight mt-0.5">
+                <div className="text-micro text-slate-200 font-medium leading-tight mt-0.5">
                   Stage II ➔ III
                 </div>
               </button>
@@ -440,14 +440,14 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-1.5">
                   <Award className="w-4 h-4 text-comic-red" />
-                  <span className="font-comic text-sm text-comic-black uppercase font-bold">
+                  <span className="text-sm text-comic-black uppercase font-bold">
                     Heroic Mode (Optional Rule)
                   </span>
                 </div>
 
                 {heroicLevel > 0 && (
                   <span
-                    className={`font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black font-black uppercase ${
+                    className={`text-micro px-2 py-0.5 rounded border border-comic-black font-black uppercase ${
                       difficulty === 'EXPERT'
                         ? 'bg-emerald-400 text-slate-950'
                         : 'bg-amber-300 text-slate-900'
@@ -465,7 +465,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                     key={lvl}
                     type="button"
                     onClick={() => setHeroicLevel(lvl)}
-                    className={`py-1 text-center font-comic text-xs uppercase rounded transition-all cursor-pointer font-bold ${
+                    className={`py-1 text-center text-xs uppercase rounded transition-all cursor-pointer font-bold ${
                       heroicLevel === lvl
                         ? 'bg-comic-red text-white border border-comic-black shadow-comic-sm'
                         : 'text-slate-500 hover:text-slate-800'
@@ -476,7 +476,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 ))}
               </div>
 
-              <p className="text-[11px] text-slate-600 leading-relaxed">
+              <p className="text-mini text-slate-600 leading-relaxed">
                 {heroicLevel === 0
                   ? 'Standard encounter dealing: 1 encounter card dealt per player during Step 4.'
                   : `Heroic ${heroicLevel} active: Deals ${1 + heroicLevel} encounter cards (+${heroicLevel} extra) to each player during Step 4.`}
@@ -493,7 +493,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 <Users className="w-6 h-6 text-comic-blue" />
                 <h2 className="font-comic text-2xl text-comic-black">3. Hero Seats (1 to 4)</h2>
               </div>
-              <span className="bg-comic-blue text-white font-comic text-xs px-2.5 py-1 rounded-full border border-comic-black font-bold">
+              <span className="bg-comic-blue text-white text-xs px-2.5 py-1 rounded-full border border-comic-black font-bold">
                 {playerCount} {playerCount === 1 ? 'HERO ASSIGNED' : 'HEROES ASSIGNED'}
               </span>
             </div>
@@ -548,7 +548,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                           {heroCard ? (
                             <CardView card={heroCard} size="sm" />
                           ) : (
-                            <div className="w-28 h-40 bg-slate-200 border-2 border-comic-black rounded-xl flex items-center justify-center font-comic text-xs">
+                            <div className="w-28 h-40 bg-slate-200 border-2 border-comic-black rounded-xl flex items-center justify-center text-xs">
                               HERO CARD
                             </div>
                           )}
@@ -558,21 +558,21 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                         <div className="flex-1 min-w-0 space-y-2">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="w-5 h-5 rounded-full bg-comic-red text-white font-comic text-xs flex items-center justify-center font-bold border border-comic-black">
+                              <span className="w-5 h-5 rounded-full bg-comic-red text-white text-xs flex items-center justify-center font-bold border border-comic-black">
                                 {index + 1}
                               </span>
                               <span className="font-comic text-base text-comic-black font-bold truncate">
                                 {deckDef.heroName}
                               </span>
                               {index === 0 && (
-                                <span className="bg-comic-yellow text-comic-black font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black font-bold uppercase flex items-center gap-1 shadow-comic-sm">
+                                <span className="bg-comic-yellow text-comic-black text-micro px-2 py-0.5 rounded border border-comic-black font-bold uppercase flex items-center gap-1 shadow-comic-sm">
                                   <Crown className="w-3 h-3 text-comic-red" />
                                   <span>STARTING PLAYER</span>
                                 </span>
                               )}
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="bg-comic-blue text-white font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black font-bold uppercase">
+                              <span className="bg-comic-blue text-white text-micro px-2 py-0.5 rounded border border-comic-black font-bold uppercase">
                                 {deckDef.aspect}
                               </span>
                               {/* Remove button (if more than 1 seat assigned) */}
@@ -591,7 +591,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
 
                           {/* Deck Switcher Dropdown */}
                           <div>
-                            <label className="text-[10px] font-bold text-slate-500 uppercase block mb-0.5">
+                            <label className="text-micro font-bold text-slate-500 uppercase block mb-0.5">
                               Change Deck:
                             </label>
                             <select
@@ -624,10 +624,10 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                       /* Empty Seat Placeholder */
                       <div className="flex items-center justify-between py-1 px-1">
                         <div className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-full bg-slate-300 text-slate-700 font-comic text-xs flex items-center justify-center font-bold border border-slate-400">
+                          <span className="w-5 h-5 rounded-full bg-slate-300 text-slate-700 text-xs flex items-center justify-center font-bold border border-slate-400">
                             {index + 1}
                           </span>
-                          <span className="font-comic text-sm text-slate-500">
+                          <span className="text-sm text-slate-500">
                             Hero Seat {index + 1} (Empty)
                           </span>
                         </div>

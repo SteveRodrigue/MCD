@@ -113,7 +113,7 @@ describe('font guard: themes name only the font roles', () => {
 });
 
 describe('font guard: small text is Body, not Headlines (fonts plan N2)', () => {
-  /** The themed modals and newspapers (batch 1). Each batch adds its files here; the last one covers the whole UI. */
+  /** The themed modals, newspapers, theme layer, kits and setup screens (batches 1 to 3). Each batch adds its files here; the last one covers the whole UI. */
   const BATCH_FILES = [
     ...listFiles('src/ui/components/board', ['Modal.tsx', 'Screen.tsx']),
     'src/ui/components/board/ActionRow.tsx',
@@ -125,6 +125,7 @@ describe('font guard: small text is Body, not Headlines (fonts plan N2)', () => 
     'src/ui/components/cards/ResetCardStatsConfirmModal.tsx',
     ...listFiles('src/ui/theme', ['.ts', '.tsx']),
     ...listFiles('src/ui/components/templates/kits', ['.tsx']),
+    ...listFiles('src/ui/components/setup', ['.tsx']),
   ];
 
   const SMALL = /(?<![\w:-])text-(xs|sm|nano|micro|mini)(?![\w-])/;

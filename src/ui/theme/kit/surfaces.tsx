@@ -6,21 +6,46 @@ import { useThemeExtras } from '../useThemeExtras';
 
 export interface ZonePanelProps {
   title: string;
+  icon?: React.ReactNode;
+  /** A colour shown as an edge on the panel: a hero's palette is an accent on the theme, never the panel itself. */
+  accent?: string;
   right?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  bodyClassName?: string;
+  'data-testid'?: string;
 }
 
 /** A named area of the table (hero zone, villain zone, hand tray, threat zone). */
-export const ZonePanel: React.FC<ZonePanelProps> = ({ title, right, children, className = '' }) => {
+export const ZonePanel: React.FC<ZonePanelProps> = ({
+  title,
+  icon,
+  accent,
+  right,
+  children,
+  className = '',
+  bodyClassName = 'p-3',
+  'data-testid': testId,
+}) => {
   const { style } = useModalStyle();
   return (
-    <section className={`${style.panel} ${style.text} ${className}`}>
+    <section data-testid={testId} className={`relative ${style.panel} ${style.text} ${className}`}>
+      {accent && (
+        <div
+          aria-hidden="true"
+          data-testid="zone-accent"
+          className="absolute left-0 top-0 bottom-0 w-2.5"
+          style={{ backgroundColor: accent }}
+        />
+      )}
       <header className={`flex items-center justify-between gap-2 px-3 py-1.5 ${style.panelHead}`}>
-        <h3 className="text-xs font-black uppercase tracking-wide">{title}</h3>
+        <h3 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wide">
+          {icon}
+          <span>{title}</span>
+        </h3>
         {right}
       </header>
-      <div className="p-3">{children}</div>
+      <div className={bodyClassName}>{children}</div>
     </section>
   );
 };

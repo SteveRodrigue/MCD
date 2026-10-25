@@ -12,12 +12,16 @@ No component changes are needed to add one; the gallery, lab navigation and the 
 | Shell | `overlay`, `frame`, `texture` + `textureClass`, `header`, `body`, `footer` | `ModalScaffold` |
 | Header | `headerLayout` (`bar`, `caption`, `burst`, `masthead`, `tab`), `flavor`, `verbs[verb]` (`banner`, `iconBox`, `kicker`, `title`, `rule`, `word`) | `ModalScaffold` |
 | Text | `text`, `muted`, `emphasis` | all templates |
-| Surfaces | `panel`, `panelHead`, `inset`, `chip` | all templates |
+| Surfaces | `panel`, `panelHead`, `inset`, `chip`, `badge`, `buttonShape` (shape without colours, for badges and buttons whose colour carries a game meaning) | all templates, the board and the setup screens |
 | Choices | `option`, `optionTitleHover`, `tile`, `tileSelected` | Decision, Select |
 | Sequence | `slot`, `slotFinal`, `slotOver`, `step`, `stepFinal`, `btnMove` | Sequence |
 | Actions | `btnGo` | Sequence, Select |
-| Comic flavour | `fx` (burst words, shape, classes), `caption`, `bubble`, `finisher` | `ActionBurst`, `ComicSpeech`, Sequence |
+| Comic flavour | `fx` (burst words, shape, classes), `caption`, `bubble`, `finisher` | `ActionBurst`, `ComicSpeech`, Sequence, the damage splash |
+| Cards | `accent` (how a card's colour edge is drawn) | `CardRef`, `AccentStripe` |
+| Fonts | `fonts` (`ThemeFonts`: Headlines, Body, Newspaper pair, Numbers & codes, text size changes) | `themeFontVars`, `newspaperFontVars`; see [FONT_RECORD.md](./FONT_RECORD.md) |
 | Gallery | `previewPage` | `StyleGallery` |
+
+Beyond the style, each theme has a `ThemeExtras` entry in [`theme-extras.ts`](../../../src/ui/theme/theme-extras.ts): the `table` (background, text, texture, read by `GameThemeRoot`), the `danger` button, the form `field` and the `newspaper` tokens (read by the Newspaper kit). The `Record` type keeps a theme from shipping without one.
 
 ## Rules for writing tokens
 
@@ -42,4 +46,4 @@ No component changes are needed to add one; the gallery, lab navigation and the 
 </ModalStyleProvider>
 ```
 
-Inside the game there will be one provider at the root once a style is chosen.
+Inside the game one provider at the root (`ThemeProvider`) gives every component the active style; use `useModalStyle()` and `useThemeExtras()` instead of writing a palette by hand. A screen that follows the theme writes no literal comic look (`comic-panel`, `bg-white`, `border-comic-black`, `shadow-comic*`) and no fixed surface text colour; `tests/ui/theme-guards.test.ts` lists the files it covers and fails when one comes back.

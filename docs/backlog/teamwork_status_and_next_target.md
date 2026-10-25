@@ -1,6 +1,6 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-21 (code audit AUD-20261017-232534 remediated; R1–R16 delivered; Gate 1 reopened with 15 issues after triage)
+> **Last updated:** 2026-10-25 (code audit AUD-20261017-232534 remediated; R1–R16 delivered; Gate 1 queue re-synchronised with the open issues of the milestone)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
 > **Verification baseline:** run `npm run verify` (tests, types, lint, format, build). The pre-push hook enforces 0 failed and 0 skipped tests; no test count is recorded here because it goes stale with every commit.
@@ -68,12 +68,13 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 ### 3.2 Rules gaps that affect core cards
 
-| Issue                                                   | Problem (from the Dev Mode report)                                                                    | Notes                                                                  |
-| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| [#360](https://github.com/SteveRodrigue/MCD/issues/360) | Enemy Overkill on a defeated ally bypasses the damage pipeline and ignores Tough (follow-up of #342). | Rules (Overkill, Tough); Charge `01099`.                               |
-| [#361](https://github.com/SteveRodrigue/MCD/issues/361) | Defeat window resolves a later player's Forced ability before an earlier player's optional Response.  | P1. Two-pass dispatch (forced first, then optional); multiplayer only. |
-| [#362](https://github.com/SteveRodrigue/MCD/issues/362) | Ending the game leaves pending placements, attack and encounter state behind.                         | One `endGame` helper; decide whether post-victory combat steps run.    |
-| [#363](https://github.com/SteveRodrigue/MCD/issues/363) | Defeat triggers scan every player; filter-less abilities can fire for the wrong player.               | Owner analysis first (default scope of a defeat ability).              |
+| Issue                                                   | Problem (from the Dev Mode report)                                                                    | Notes                                                                                   |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| [#360](https://github.com/SteveRodrigue/MCD/issues/360) | Enemy Overkill on a defeated ally bypasses the damage pipeline and ignores Tough (follow-up of #342). | Rules (Overkill, Tough); Charge `01099`.                                                |
+| [#361](https://github.com/SteveRodrigue/MCD/issues/361) | Defeat window resolves a later player's Forced ability before an earlier player's optional Response.  | P1. Two-pass dispatch (forced first, then optional); multiplayer only.                  |
+| [#362](https://github.com/SteveRodrigue/MCD/issues/362) | Ending the game leaves pending placements, attack and encounter state behind.                         | One `endGame` helper; decide whether post-victory combat steps run.                     |
+| [#363](https://github.com/SteveRodrigue/MCD/issues/363) | Defeat triggers scan every player; filter-less abilities can fire for the wrong player.               | Owner analysis first (default scope of a defeat ability).                               |
+| [#369](https://github.com/SteveRodrigue/MCD/issues/369) | Threat removal mixed with a no-target step skips the legality check (review of #331).                 | P2. `checkAbilityTargets` in `src/engine/effects/target-choice.ts`; failing test first. |
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 
@@ -83,11 +84,12 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 ### 3.4 UI should-haves
 
-| Issue                                                   | Problem (from the Dev Mode report)                                                       | Notes           |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------- |
-| [#328](https://github.com/SteveRodrigue/MCD/issues/328) | Counter-Punch `01077`: the 2 damage dealt to Rhino is not shown in the combat log.       | Log display.    |
-| [#330](https://github.com/SteveRodrigue/MCD/issues/330) | Loss of Tough (and other) status cards is not shown in the combat log (seen on Sandman). | Log display.    |
-| [#344](https://github.com/SteveRodrigue/MCD/issues/344) | Interrupt modal does not show which player or seat is offered Emergency `01085`.         | UI, multi-hero. |
+| Issue                                                   | Problem (from the Dev Mode report)                                                       | Notes                                                                      |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| [#328](https://github.com/SteveRodrigue/MCD/issues/328) | Counter-Punch `01077`: the 2 damage dealt to Rhino is not shown in the combat log.       | Log display.                                                               |
+| [#330](https://github.com/SteveRodrigue/MCD/issues/330) | Loss of Tough (and other) status cards is not shown in the combat log (seen on Sandman). | Log display.                                                               |
+| [#344](https://github.com/SteveRodrigue/MCD/issues/344) | Interrupt modal does not show which player or seat is offered Emergency `01085`.         | UI, multi-hero.                                                            |
+| [#358](https://github.com/SteveRodrigue/MCD/issues/358) | Wakanda Forever modal: move buttons at 3/4 of the card height (real cards are done).     | UI. Open: restore or drop the bottom recap (see the comment on the issue). |
 
 ### 3.5 Code audit AUD-20261017-232534: delivered
 
@@ -114,13 +116,19 @@ Run the `next-task` skill (it reads this file). Plan anatomy and owner preferenc
 
 ## 5. Open decisions waiting for the owner
 
-From the audit plans (section 3.5); each plan states the options and a recommendation:
+Waiting for your answer:
 
-_None currently._
+- **#342** (Relentless Assault `01053`): the reported Overkill defect is fixed in code (`f5e5bb83`, `Refs`), and the follow-ups it exposed are filed (#359 closed, #360 to #363 queued above). Close #342 once you have checked the report's scenario, or tell me what is still missing.
 
 Decisions taken are recorded in the row they affect (section 3) and on the issue.
 
 ### Filed outside Gate 1 (not queued)
+
+Milestone Tech Debt & Tooling, from the legality gate review (ADR-0090): [#365](https://github.com/SteveRodrigue/MCD/issues/365), [#366](https://github.com/SteveRodrigue/MCD/issues/366), [#367](https://github.com/SteveRodrigue/MCD/issues/367), [#370](https://github.com/SteveRodrigue/MCD/issues/370), [#371](https://github.com/SteveRodrigue/MCD/issues/371), [#372](https://github.com/SteveRodrigue/MCD/issues/372).
+
+Milestone Tech Debt & Tooling, from the theming work (plans in `docs/templates/modals/`): [#364](https://github.com/SteveRodrigue/MCD/issues/364) `py-0.2` is not a Tailwind utility; [#373](https://github.com/SteveRodrigue/MCD/issues/373) `border-3` no-ops; [#374](https://github.com/SteveRodrigue/MCD/issues/374) player font choice (N7); [#375](https://github.com/SteveRodrigue/MCD/issues/375) rename `ModalStyle` to `ThemeStyle`; [#376](https://github.com/SteveRodrigue/MCD/issues/376) `CardArtThumbnail` frame follows the theme.
+
+Milestone Gate 4:
 
 Missing triggers removed as dead code in `a6c5542` (Card Editor re-architecture, #319). Each issue lists the candidate cards, a recommended evidence card and the engine work; restore the old dispatch sites with `git show a6c5542`. Milestone: Gate 4.
 

@@ -1,6 +1,6 @@
 # Final plan: Theme Engine for the game
 
-Status: **approved. Phases 0 to 5 are done. Phase 6 is done for the top bar and the dev banner; the table background, zones and hand tray panels are the open follow-up.** Each phase is developed, tested and committed in turn.
+Status: **approved. All phases are done. Phase 6 (the rest of the UI, so a theme is a full skin) was carried out as N4 of [the integration plan](./PLAN_game_integration.md), with its own plan: [PLAN_board_theming.md](./PLAN_board_theming.md).** Each phase is developed, tested and committed in turn.
 
 ## 0. Decisions already made
 
@@ -88,11 +88,11 @@ and its existing tests must pass unchanged.
 | 1: gameplay prompts | Batch A | `WakandaForeverModal` (317 lines, closes #358), `DecisionPromptModal` (533), `SelectCardsModal` (121) | themed via `ModalScaffold` |
 | 1 | Batch B | `AttackTargetModal`, `ThwartTargetModal`, `CombatBoostModal`, `DistributeAmountModal`, `SimultaneousAbilitiesModal`, `AllyActionModal`, `TableauActionModal`, `IdentityActionModal`, `CardPaymentModal` (1355) | themed |
 | 3: utility | Batch C | `OptionsMenu`, `ReportProblemModal`, `CardStatsModal`, `ResetCardStatsConfirmModal`, `GameOverScreen` | themed |
-| 2: in-universe newspapers | `DailyBugleActionNewspaper`, `EndTurnConfirmationModal` | **exempt**: they stay The Daily Bugle in every theme (ADR-0056 preserves it) |
-| Not modals | `CombatLogDrawer`, `DevStepErrorBanner`, `RemovedFromGameBox`, hand tray and zone overlays | out of scope here; revisited in Phase 6 |
+| 2: in-universe newspapers | `DailyBugleActionNewspaper`, `EndTurnConfirmationModal` | planned as exempt (they stay The Daily Bugle in every theme); later they became Newspaper kit pages that follow the theme (board plan, phase 8) |
+| Not modals | `CombatLogDrawer`, `DevStepErrorBanner`, `RemovedFromGameBox`, hand tray and zone overlays | out of scope here; done in Phase 6 (N4) |
 
 Each migrated file also drops its `border-3` classes (that utility does not exist in our Tailwind config, so those
-borders silently never render): 10 uses across 7 files today. Fixed in the same change, as debt in the path.
+borders silently never render). Fixed in the same change, as debt in the path; the remaining uses are tracked in issue #373.
 
 ## 6. Phases (each shippable, each verified before the next)
 
@@ -103,7 +103,7 @@ borders silently never render): 10 uses across 7 files today. Fixed in the same 
 | 3 (done) | `ThemePicker` in Options and on the setup screen; Random mode, pool, Re-roll, card-accent switch; per-game roll in `App.tsx` | player picks a theme or Random; Random changes per game | picker/provider/App-flow tests, browser run of a full game start | 1 session |
 | 4 (done) | Migrate Batch B | all gameplay prompts themed | each modal's existing tests + matrix; browser pass per modal | 2 to 3 sessions |
 | 5 (done) | Migrate Batch C | utility dialogs themed | same | 1 session |
-| 6 (partly done) | Board chrome (top bar, zones, hand tray, drawers) so a theme is a full skin | whole UI themed | visual pass | 2 sessions |
+| 6 (done, as N4) | Board chrome (top bar, zones, hand tray, drawers) so a theme is a full skin | whole UI themed | visual pass | 2 sessions |
 
 Phases 2 and 3 are ordered so the picker never ships before at least the key modals respond to it.
 Phases 4 and 5 can each be split by modal if you prefer smaller reviews.
@@ -128,7 +128,7 @@ Phases 4 and 5 can each be split by modal if you prefer smaller reviews.
 ## 9. Docs and ADR
 
 - New **ADR-0091 "Themeable modal system"**: amends ADR-0056 (one pop-art style becomes a registry of themes; the 3 tiers stay;
-  verb colours fixed; Daily Bugle exempt; Card Anchoring Rule). Registered in `docs/decisions/README.md`.
+  verb colours fixed; Card Anchoring Rule; the Daily Bugle was planned exempt and later followed the theme). Registered in `docs/decisions/README.md`.
 - `docs/coding_guidelines.md`: pointer to the scaffold and Card Anchoring Rule for new modals.
 - `docs/templates/modals/`: README and styles.md updated for the `theme/` move; this plan marked done as phases land.
 

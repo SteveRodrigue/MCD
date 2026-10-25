@@ -57,7 +57,7 @@ the game pick a random one for each new game.
 - **Player setting** (`themeMode`, `themeId`, `randomThemePool`, `cardAccents` in the existing game settings):
   fixed theme, or Random. Random rolls once when a game starts, never repeats the previous game's theme, and survives
   a reload. The roll uses the UI's random source, never the engine RNG.
-- **Tier 2 stays exempt:** The Daily Bugle and the end-turn broadsheet keep their newsprint look in every theme.
+- **Tier 2 follows the theme as Newspaper kit pages:** the Daily Bugle action sheet, the end-turn flash and the combat log drawer are `NewspaperSheet` pages (`src/ui/theme/kit/newspaper.tsx`). Each theme draws its own era of newspaper (`newspaper` tokens in `theme-extras.ts`); the newspaper identity (masthead, edition line, stories, flash, ticker) and the three-column action sheet never change.
 - **Template lab:** `/templates/` renders the real game modals with sample prompts for every theme, and stays as the
   design reference (`src/ui/components/templates/`, `docs/templates/modals/`). The game never imports from it.
 
@@ -102,6 +102,6 @@ switch themes freely without losing any rules information.
 - **A theme can hurt readability:** Pop-Art is the default; the player can switch at any time; contrast is checked per
   theme when a theme is added.
 - **New modals can bypass the scaffold:** guidelines point to it, and the matrix test lists every migrated modal.
-- **Most of the board is not themed yet:** the top bar and the dev banner follow the theme; the table background, the
-  hero and villain zones and the hand tray panels keep the pop-art look. They are a follow-up that needs a per-surface
-  review (text sits directly on the table), so Random can look mixed with the board until then.
+- **The whole player-facing UI follows the theme** (board, setup, table, newspapers), except the first-screen Bangers
+  banner and the card editor, which is a developer tool. Guards keep it that way: `tests/ui/theme-guards.test.ts` keeps
+  literal comic looks out of migrated files and `tests/ui/font-guards.test.ts` keeps the font roles.

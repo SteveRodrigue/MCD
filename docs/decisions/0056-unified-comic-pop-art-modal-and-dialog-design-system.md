@@ -4,7 +4,7 @@
 - **Date:** 2026-09-13
 - **Authors:** MCD Core Team
 - **Deciders:** User & Antigravity
-- **Amended by:** [ADR-0091](0091-themeable-modal-system.md) (the single pop-art look becomes a registry of themes; the 3 tiers stay)
+- **Amended by:** [ADR-0091](0091-themeable-modal-system.md) (the single pop-art look becomes a registry of themes; the 3 tiers stay, and tier 2 follows the theme as Newspaper kit pages)
 
 ---
 

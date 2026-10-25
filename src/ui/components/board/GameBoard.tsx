@@ -38,6 +38,8 @@ import type { ResourceCost } from '../../../data/supplemental/schema';
 import { peekDecisionPrompt } from '../../../engine/pipeline';
 import { optionRequiresPayment } from '../../utils/option-requires-payment';
 import { useNewspaperProps } from '../../theme/useNewspaperProps';
+import { useModalStyle } from '../../theme/useModalStyle';
+import { useThemeExtras } from '../../theme/useThemeExtras';
 
 interface GameBoardProps {
   onReset: () => void;
@@ -76,6 +78,8 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
   const [isLogOpen, setIsLogOpen] = useState<boolean>(true);
   const [isNewspaperOpen, setIsNewspaperOpen] = useState<boolean>(false);
   const newspaperProps = useNewspaperProps();
+  const { style } = useModalStyle();
+  const { newspaper } = useThemeExtras();
   const [isEndTurnPromptOpen, setIsEndTurnPromptOpen] = useState<boolean>(false);
   const [paymentModalCard, setPaymentModalCard] = useState<CardInstance | null>(null);
   const [pendingPaymentAction, setPendingPaymentAction] = useState<LegalActionItem | null>(null);
@@ -372,12 +376,12 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                 <button
                   onClick={() => setIsNewspaperOpen(true)}
                   {...newspaperProps}
-                  className="bg-[#fbf7ee] hover:bg-amber-100 text-slate-900 border-2 border-comic-black shadow-comic-md font-news-headline font-black flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-all hover:scale-105 active:translate-y-0.5 animate-pulse"
+                  className={`font-news-headline font-black flex items-center gap-2 px-3 py-1.5 cursor-pointer transition-all hover:scale-105 active:translate-y-0.5 animate-pulse ${newspaper.pill}`}
                   title={`EXTRA! Daily Bugle Action Bulletin (${isMultiHero && legalReport.callForActionCount > 0 ? `${legalReport.callForActionCount} Call for Action` : ''}${isMultiHero && legalReport.callForActionCount > 0 && legalReport.villainActionCount > 0 ? ', ' : ''}${legalReport.villainActionCount > 0 ? `${legalReport.villainActionCount} Villain Actions` : ''})`}
                 >
                   <div className="flex items-center gap-1.5">
                     <Newspaper className="w-4 h-4 text-comic-red" />
-                    <span className="font-news-headline font-black tracking-tight text-xs uppercase text-slate-950">
+                    <span className="font-news-headline font-black tracking-tight text-xs uppercase">
                       EXTRA!
                     </span>
                   </div>
@@ -385,7 +389,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                     {isMultiHero && legalReport.callForActionCount > 0 && (
                       <span
                         data-testid="extra-call-count"
-                        className="text-micro px-1.5 py-0.2 rounded font-mono font-bold bg-comic-yellow text-comic-black border border-comic-black"
+                        className={`text-micro px-1.5 py-0.2 font-mono font-bold bg-comic-yellow text-comic-black ${style.badge}`}
                         title={`${legalReport.callForActionCount} Teammate Action${legalReport.callForActionCount > 1 ? 's' : ''}`}
                       >
                         {legalReport.callForActionCount} TEAM
@@ -394,7 +398,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                     {legalReport.villainActionCount > 0 && (
                       <span
                         data-testid="extra-villain-count"
-                        className="text-micro px-1.5 py-0.2 rounded font-mono font-bold bg-comic-red text-white border border-comic-black"
+                        className={`text-micro px-1.5 py-0.2 font-mono font-bold bg-comic-red text-white ${style.badge}`}
                         title={`${legalReport.villainActionCount} Villain/Scheme Action${legalReport.villainActionCount > 1 ? 's' : ''}`}
                       >
                         {legalReport.villainActionCount} VILLAIN
@@ -451,7 +455,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                 {canScrollLeft && (
                   <button
                     onClick={() => scrollByAmount(-400)}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 z-raised bg-comic-yellow hover:bg-amber-400 text-comic-black p-2 rounded-full border-2 border-comic-black shadow-comic transition-all cursor-pointer"
+                    className={`absolute left-2 top-1/2 -translate-y-1/2 z-raised p-2 transition-all cursor-pointer ${style.btnGo} !rounded-full`}
                     title="Scroll Left"
                   >
                     <ChevronLeft className="w-6 h-6" />
@@ -460,7 +464,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                 {canScrollRight && (
                   <button
                     onClick={() => scrollByAmount(400)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 z-raised bg-comic-yellow hover:bg-amber-400 text-comic-black p-2 rounded-full border-2 border-comic-black shadow-comic transition-all cursor-pointer"
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 z-raised p-2 transition-all cursor-pointer ${style.btnGo} !rounded-full`}
                     title="Scroll Right"
                   >
                     <ChevronRight className="w-6 h-6" />

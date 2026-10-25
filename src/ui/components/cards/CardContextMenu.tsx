@@ -5,6 +5,9 @@ import { NormalizedCard } from '../../../engine/models';
 import { AllTimeStats } from '../../../engine/models/stats';
 import { ExternalLink, Copy, Check, Info, X, Bug, BarChart2, Trash2 } from 'lucide-react';
 import { ReportProblemModal } from '../board/ReportProblemModal';
+import { ModalScaffold } from '../../theme/ModalScaffold';
+import { themeFontVars } from '../../theme/modal-styles';
+import { useModalStyle } from '../../theme/useModalStyle';
 import { CardStatsModal } from './CardStatsModal';
 import { ResetCardStatsConfirmModal } from './ResetCardStatsConfirmModal';
 import { useOptionalGameSession } from '../../context/GameStateContext';
@@ -19,8 +22,8 @@ interface CardContextMenuProps {
 
 export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position, onClose }) => {
   const later = useTimeout();
+  const { style } = useModalStyle();
   const menuRef = useRef<HTMLDivElement>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [copiedJson, setCopiedJson] = useState(false);
   const [showRawModal, setShowRawModal] = useState(false);
@@ -41,11 +44,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
   // Close when clicking outside
   useEffect(() => {
     const handlePointerDown = (e: MouseEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(e.target as Node) &&
-        (!modalRef.current || !modalRef.current.contains(e.target as Node))
-      ) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         onClose();
       }
     };
@@ -138,26 +137,25 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
         <div
           ref={menuRef}
           style={{
+            ...themeFontVars(style),
             left: `${Math.max(10, adjustedX)}px`,
             top: `${Math.max(10, adjustedY)}px`,
           }}
-          className="fixed z-menu w-64 bg-white border-3 border-black shadow-comic-lg rounded-md overflow-hidden font-sans select-none animate-in fade-in zoom-in-95 duration-100"
+          className={`fixed z-menu w-64 overflow-hidden select-none animate-in fade-in zoom-in-95 duration-100 font-body ${style.panel} ${style.text}`}
           onClick={(e) => e.stopPropagation()}
           onContextMenu={(e) => e.preventDefault()}
         >
           {/* Header Strip */}
-          <div className="bg-comic-panel border-b-2 border-black px-3 py-2 flex items-center justify-between">
+          <div className={`px-3 py-2 flex items-center justify-between ${style.panelHead}`}>
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="font-mono text-micro font-bold bg-black text-white px-1.5 py-0.2 rounded">
+              <span className={`font-mono text-micro font-bold px-1.5 py-0.2 ${style.chip}`}>
                 {card.code}
               </span>
-              <span className="font-bangers text-sm text-black truncate tracking-wide">
-                {card.name}
-              </span>
+              <span className="font-comic text-sm truncate tracking-wide">{card.name}</span>
             </div>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-black cursor-pointer p-0.5"
+              className={`cursor-pointer p-0.5 opacity-70 hover:opacity-100 ${style.muted}`}
               title="Close"
             >
               <X className="w-3.5 h-3.5" />
@@ -165,27 +163,29 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
           </div>
 
           {/* Quick Stats Recap */}
-          <div className="bg-amber-50/90 border-b-2 border-black px-3 py-1.5 text-mini space-y-0.5">
-            <div className="flex items-center justify-between text-slate-700">
+          <div
+            className={`px-3 py-1.5 text-mini space-y-0.5 !rounded-none !border-x-0 !border-t-0 ${style.inset}`}
+          >
+            <div className="flex items-center justify-between">
               <span className="font-bold">Plays:</span>
               <span className="font-mono text-micro">
                 Game: <b className="text-comic-red">{gamePlays}</b> | All:{' '}
-                <b className="text-comic-darkBlue">{allTimePlays}</b>
+                <b className={style.emphasis}>{allTimePlays}</b>
               </span>
             </div>
-            <div className="flex items-center justify-between text-slate-700">
+            <div className="flex items-center justify-between">
               <span className="font-bold">Abilities:</span>
               <span className="font-mono text-micro">
                 Game: <b className="text-comic-red">{gameAbilities}</b> | All:{' '}
-                <b className="text-comic-darkBlue">{allTimeAbilities}</b>
+                <b className={style.emphasis}>{allTimeAbilities}</b>
               </span>
             </div>
             {(gameBasicActions > 0 || allTimeBasicActions > 0) && (
-              <div className="flex items-center justify-between text-slate-700">
+              <div className="flex items-center justify-between">
                 <span className="font-bold">Actions:</span>
                 <span className="font-mono text-micro">
                   Game: <b className="text-comic-red">{gameBasicActions}</b> | All:{' '}
-                  <b className="text-comic-darkBlue">{allTimeBasicActions}</b>
+                  <b className={style.emphasis}>{allTimeBasicActions}</b>
                 </span>
               </div>
             )}
@@ -197,9 +197,9 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
             <button
               type="button"
               onClick={() => setShowStatsModal(true)}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-gray-800 hover:bg-comic-yellow/50 rounded text-left transition-colors cursor-pointer"
+              className={`group w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-left cursor-pointer ${style.option}`}
             >
-              <BarChart2 className="w-4 h-4 text-comic-darkBlue shrink-0" />
+              <BarChart2 className="w-4 h-4 text-comic-blue shrink-0" />
               <span>View Detailed Stats</span>
             </button>
 
@@ -207,7 +207,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
             <button
               type="button"
               onClick={handleOpenEditor}
-              className="w-full flex items-center gap-2 px-2.5 py-2 font-comic font-bold text-black hover:bg-comic-yellow rounded text-left transition-colors cursor-pointer"
+              className={`group w-full flex items-center gap-2 px-2.5 py-2 font-comic font-bold text-left cursor-pointer ${style.option}`}
             >
               <ExternalLink className="w-4 h-4 text-comic-accent shrink-0" />
               <span>Open in Supplemental Editor</span>
@@ -217,9 +217,9 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
             <button
               type="button"
               onClick={handleOpenMarvelCdb}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-gray-800 hover:bg-comic-yellow/50 rounded text-left transition-colors cursor-pointer"
+              className={`group w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-left cursor-pointer ${style.option}`}
             >
-              <ExternalLink className="w-4 h-4 text-comic-darkBlue shrink-0" />
+              <ExternalLink className="w-4 h-4 text-comic-blue shrink-0" />
               <span>Open in MarvelCDB</span>
             </button>
 
@@ -227,12 +227,12 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
             <button
               type="button"
               onClick={handleCopyCode}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-gray-800 hover:bg-gray-100 rounded text-left transition-colors cursor-pointer"
+              className={`group w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-left cursor-pointer ${style.option}`}
             >
               {copied ? (
                 <Check className="w-4 h-4 text-green-700 shrink-0" />
               ) : (
-                <Copy className="w-4 h-4 text-gray-500 shrink-0" />
+                <Copy className="w-4 h-4 opacity-60 shrink-0" />
               )}
               <span>{copied ? 'Code Copied!' : 'Copy Card Code'}</span>
             </button>
@@ -241,9 +241,9 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
             <button
               type="button"
               onClick={() => setShowRawModal(true)}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-gray-800 hover:bg-gray-100 rounded text-left transition-colors cursor-pointer"
+              className={`group w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-left cursor-pointer ${style.option}`}
             >
-              <Info className="w-4 h-4 text-gray-500 shrink-0" />
+              <Info className="w-4 h-4 opacity-60 shrink-0" />
               <span>Inspect Attributes</span>
             </button>
 
@@ -251,7 +251,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
             <button
               type="button"
               onClick={() => setShowReportModal(true)}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-gray-800 hover:bg-rose-50 rounded text-left transition-colors cursor-pointer"
+              className={`group w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-left cursor-pointer ${style.option}`}
             >
               <Bug className="w-4 h-4 text-comic-red shrink-0" />
               <span>Create issue for this card</span>
@@ -262,7 +262,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
               <button
                 type="button"
                 onClick={() => setShowResetConfirmModal(true)}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-comic-red hover:bg-rose-50 rounded text-left transition-colors cursor-pointer border-t border-gray-200 mt-1 pt-1.5"
+                className={`group w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-comic-red text-left cursor-pointer border-t border-current/20 mt-1 pt-1.5 ${style.option}`}
               >
                 <Trash2 className="w-4 h-4 text-comic-red shrink-0" />
                 <span>Reset Card Stats</span>
@@ -272,59 +272,46 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
         </div>
       )}
 
-      {/* Raw Attributes Quick Modal */}
+      {/* Raw Attributes Quick Modal (Dev) */}
       {showRawModal && (
-        <div
-          className="fixed inset-0 bg-comic-black/80 z-menu flex items-center justify-center p-4 backdrop-blur-xs font-comic"
-          onClick={() => {
+        <ModalScaffold
+          title="Inspect card"
+          kicker="Raw attributes"
+          verb="blue"
+          trigger={{ name: card.name, code: card.code }}
+          icon={<Info className="w-5 h-5" />}
+          onClose={() => {
             setShowRawModal(false);
             onClose();
           }}
+          closeOnBackdrop
+          maxWidthClass="max-w-xl"
+          testId="card-raw-modal"
+          footer={
+            <>
+              <span />
+              <button
+                type="button"
+                onClick={handleCopyJson}
+                className={`flex items-center gap-1.5 text-xs font-black px-2.5 py-1 cursor-pointer ${style.btnGo}`}
+                title="Copy full card JSON to clipboard"
+              >
+                {copiedJson ? (
+                  <Check className="w-3.5 h-3.5 shrink-0" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5 shrink-0" />
+                )}
+                <span>{copiedJson ? 'Copied JSON!' : 'Copy JSON'}</span>
+              </button>
+            </>
+          }
         >
-          <div
-            ref={modalRef}
-            className="bg-comic-paper border-4 border-comic-black max-w-xl w-full rounded-xl shadow-comic-xl max-h-[85vh] flex flex-col overflow-hidden select-text"
-            onClick={(e) => e.stopPropagation()}
-            onPointerDown={(e) => e.stopPropagation()}
+          <pre
+            className={`w-full font-mono text-xs p-3.5 overflow-auto max-h-[60vh] select-text cursor-text ${style.inset}`}
           >
-            <div className="flex items-center justify-between px-5 py-3 bg-comic-darkBlue text-white border-b-4 border-comic-black select-none">
-              <span className="font-comic text-lg uppercase tracking-wide text-comic-yellow truncate mr-2 select-text">
-                INSPECT CARD: {card.name} ({card.code})
-              </span>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={handleCopyJson}
-                  className="flex items-center gap-1.5 text-xs font-black px-2.5 py-1 bg-comic-yellow text-comic-black hover:bg-amber-300 border-2 border-comic-black rounded-lg transition-all cursor-pointer shadow-comic-sm"
-                  title="Copy full card JSON to clipboard"
-                >
-                  {copiedJson ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-800 shrink-0" />
-                  ) : (
-                    <Copy className="w-3.5 h-3.5 text-comic-black shrink-0" />
-                  )}
-                  <span>{copiedJson ? 'Copied JSON!' : 'Copy JSON'}</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setShowRawModal(false);
-                    onClose();
-                  }}
-                  className="text-white p-1 bg-comic-black hover:bg-slate-800 rounded-lg border border-white/20 cursor-pointer shadow-comic-sm"
-                  title="Close"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="p-4 flex-1 overflow-auto bg-comic-paper">
-              <pre className="w-full bg-slate-950 text-emerald-400 font-mono text-xs p-3.5 rounded-lg border-2 border-comic-black overflow-auto max-h-[60vh] select-text cursor-text shadow-comic-sm">
-                {JSON.stringify(card, null, 2)}
-              </pre>
-            </div>
-          </div>
-        </div>
+            {JSON.stringify(card, null, 2)}
+          </pre>
+        </ModalScaffold>
       )}
 
       {showReportModal && (

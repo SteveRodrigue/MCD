@@ -19,6 +19,12 @@ const MIGRATED = [
   'src/ui/components/board/PlayerHandTray.tsx',
   'src/ui/components/board/RemovedFromGameBox.tsx',
   'src/ui/components/board/PileViewerModal.tsx',
+  'src/ui/components/board/TopBar.tsx',
+  'src/ui/components/board/VillainPhaseStepper.tsx',
+  'src/ui/components/board/ComicDamageSplash.tsx',
+  'src/ui/components/board/GameBoard.tsx',
+  'src/ui/components/cards/CardContextMenu.tsx',
+  'src/ui/components/cards/CardStatsModal.tsx',
 ];
 
 const stripComments = (source: string): string =>

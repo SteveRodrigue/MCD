@@ -96,7 +96,7 @@ export const CardStatsModal: React.FC<CardStatsModalProps> = ({
         (allTimeCardStats?.basicActions?.[key] || 0) > 0,
     );
 
-  const heading = `font-bangers text-base uppercase tracking-wider mb-3 ${style.emphasis}`;
+  const heading = `font-comic text-base uppercase tracking-wider mb-3 ${style.emphasis}`;
 
   return (
     <>
@@ -142,13 +142,13 @@ export const CardStatsModal: React.FC<CardStatsModalProps> = ({
                 <div className={`text-mini font-bold uppercase tracking-wide ${style.muted}`}>
                   This Game
                 </div>
-                <div className="font-bangers text-3xl text-comic-red mt-0.5">{gamePlays}</div>
+                <div className="font-comic text-3xl text-comic-red mt-0.5">{gamePlays}</div>
               </div>
               <div className={`p-3 text-center ${style.inset}`}>
                 <div className={`text-mini font-bold uppercase tracking-wide ${style.muted}`}>
                   All-Time
                 </div>
-                <div className="font-bangers text-3xl mt-0.5">{allTimePlays}</div>
+                <div className="font-comic text-3xl mt-0.5">{allTimePlays}</div>
               </div>
             </div>
           </div>

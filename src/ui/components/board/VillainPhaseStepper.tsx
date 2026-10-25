@@ -4,6 +4,8 @@ import { VillainPhaseStep } from '../../../engine/models';
 import { peekDecisionPrompt } from '../../../engine/pipeline';
 import { VillainPhasePacing } from '../../context/game-settings-context';
 import { useGameSession } from '../../context/GameStateContext';
+import { useModalStyle } from '../../theme/useModalStyle';
+import { ToneButton } from '../../theme/kit/controls';
 
 export interface VillainPhaseStepperProps {
   pacing: VillainPhasePacing;
@@ -20,6 +22,7 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
   onSkip,
   isAutoPlaying = true,
 }) => {
+  const { style } = useModalStyle();
   const { state: gameState } = useGameSession();
   if (gameState.phase !== 'VILLAIN_PHASE') return null;
 
@@ -98,21 +101,23 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
       data-testid="villain-phase-stepper"
       className="w-full max-w-4xl mx-auto px-2 py-1 z-raised"
     >
-      <div className="bg-comic-paper border-3 border-comic-black rounded-xl shadow-comic p-2.5 sm:p-3 flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+      <div
+        className={`p-2.5 sm:p-3 flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-300 ${style.panel} ${style.text}`}
+      >
         {/* Left: Step Category Badge & Narrative */}
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <span
-            className={`px-2.5 py-1 rounded-lg border-2 border-comic-black font-black text-xs uppercase shadow-comic-xs shrink-0 ${categoryColor}`}
+            className={`px-2.5 py-1 font-black text-xs uppercase shrink-0 ${style.buttonShape} ${categoryColor}`}
           >
             {categoryLabel}
           </span>
 
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-black text-xs sm:text-sm text-comic-black truncate">
-                {description}
-              </span>
-              <span className="bg-comic-yellow text-comic-black font-black text-micro px-1.5 py-0.2 rounded border border-comic-black shadow-comic-xs -rotate-2 shrink-0">
+              <span className="font-black text-xs sm:text-sm truncate">{description}</span>
+              <span
+                className={`bg-comic-yellow text-comic-black font-black text-micro px-1.5 py-0.2 -rotate-2 shrink-0 ${style.badge}`}
+              >
                 {onomatopoeia}
               </span>
             </div>
@@ -131,7 +136,7 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
           {pacing !== 'instant' && onToggleAutoPlay && (
             <button
               onClick={onToggleAutoPlay}
-              className={`px-2.5 py-1.5 rounded-lg border-2 border-comic-black font-bold text-xs uppercase shadow-comic-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-2.5 py-1.5 font-bold text-xs uppercase flex items-center gap-1.5 transition-all cursor-pointer ${style.buttonShape} ${
                 isAutoPlaying
                   ? 'bg-amber-300 hover:bg-amber-400 text-comic-black'
                   : 'bg-slate-200 hover:bg-slate-300 text-slate-800'
@@ -144,25 +149,22 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
           )}
 
           {/* Next Step Button */}
-          <button
+          <ToneButton
+            tone="yellow"
             onClick={onNextStep}
             disabled={isPromptOpen}
-            className={`px-3 py-1.5 rounded-lg border-2 border-comic-black font-black text-xs uppercase shadow-comic-sm flex items-center gap-1.5 transition-transform cursor-pointer active:scale-95 ${
-              isPromptOpen
-                ? 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                : 'bg-comic-yellow hover:bg-yellow-400 text-comic-black hover:scale-105'
-            }`}
+            className="px-3 py-1.5 font-black text-xs uppercase gap-1.5 hover:scale-105"
           >
             <span>Next Step</span>
             <ChevronRight className="w-4 h-4" />
-          </button>
+          </ToneButton>
 
           {/* Skip All Pacing Button */}
           {onSkip && (
             <button
               onClick={onSkip}
               disabled={isPromptOpen}
-              className="p-1.5 rounded-lg border-2 border-comic-black bg-white hover:bg-slate-100 text-comic-black font-bold shadow-comic-xs transition-all cursor-pointer hover:scale-105"
+              className={`p-1.5 font-bold transition-all cursor-pointer hover:scale-105 ${style.btnMove}`}
               title="Skip remaining steps (Auto-Resolve Phase)"
             >
               <FastForward className="w-4 h-4" />

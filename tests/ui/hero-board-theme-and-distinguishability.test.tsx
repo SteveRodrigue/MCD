@@ -76,7 +76,7 @@ describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
 
       // Spider-Man primary color is #982828
       // 1. Ribbon background should match hero primary color
-      const ribbon = container.querySelector('.font-comic.text-xs.tracking-wider');
+      const ribbon = container.querySelector('[data-testid="hero-zone-ribbon"]');
       expect(ribbon).not.toBeNull();
       const ribbonBg = (ribbon as HTMLElement).style.backgroundColor;
       expect(['#982828', 'rgb(152, 40, 40)']).toContain(ribbonBg);
@@ -150,7 +150,7 @@ describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
       );
 
       // Default primary is #1d4ed8 (rgb(29, 78, 216))
-      const ribbon = container.querySelector('.font-comic.text-xs.tracking-wider');
+      const ribbon = container.querySelector('[data-testid="hero-zone-ribbon"]');
       expect(ribbon).not.toBeNull();
       expect([DEFAULT_HERO_PALETTE.primary, 'rgb(29, 78, 216)']).toContain(
         (ribbon as HTMLElement).style.backgroundColor,

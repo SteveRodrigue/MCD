@@ -23,7 +23,7 @@ export const ThreatZoneSubzone: React.FC<ThreatZoneSubzoneProps> = ({
   children,
 }) => (
   <section data-testid={testId} className={`flex flex-col gap-1 ${grow ? 'flex-1' : ''}`}>
-    <span className="self-start bg-slate-900 text-comic-yellow border border-comic-black font-comic text-[9px] px-1.5 py-0.5 rounded font-bold uppercase shadow-comic-xs">
+    <span className="self-start bg-slate-900 text-comic-yellow border border-comic-black text-nano px-1.5 py-0.5 rounded font-bold uppercase shadow-comic-xs">
       {label}
       {count !== undefined ? ` (${count})` : ''}
     </span>

@@ -24,3 +24,7 @@ updates:
           - "react-dom"
           - "@types/react"
           - "@types/react-dom"
+      # The plugin requires a parser of the same minor version, so they bump together
+      typescript-eslint:
+        patterns:
+          - "@typescript-eslint/*"

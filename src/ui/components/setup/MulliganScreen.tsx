@@ -85,7 +85,7 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
               <button
                 key={p.id}
                 onClick={() => setActiveSeatIndex(idx)}
-                className={`px-4 py-2.5 rounded-lg font-comic text-sm border-2 transition-all flex items-center gap-2 cursor-pointer ${
+                className={`px-4 py-2.5 rounded-lg text-sm border-2 transition-all flex items-center gap-2 cursor-pointer ${
                   isSelected
                     ? 'bg-comic-blue text-white border-comic-black shadow-comic font-bold transform -translate-y-0.5'
                     : isDone
@@ -96,21 +96,21 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
                 {isDone ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 ) : (
-                  <span className="w-4 h-4 rounded-full bg-comic-red text-white text-[10px] flex items-center justify-center font-bold">
+                  <span className="w-4 h-4 rounded-full bg-comic-red text-white text-micro flex items-center justify-center font-bold">
                     {idx + 1}
                   </span>
                 )}
                 <span>
                   Seat {idx + 1}: {p.activeFormCard.name}
                 </span>
-                <span className="text-[10px] opacity-75 uppercase">({p.hero.name})</span>
+                <span className="text-micro opacity-75 uppercase">({p.hero.name})</span>
                 {isStartingPlayer && (
-                  <span className="text-[10px] bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded font-bold flex items-center gap-0.5">
+                  <span className="text-micro bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded font-bold flex items-center gap-0.5">
                     👑 STARTING
                   </span>
                 )}
                 {isDone && (
-                  <span className="text-[10px] bg-emerald-600 text-white px-1.5 py-0.2 rounded font-bold">
+                  <span className="text-micro bg-emerald-600 text-white px-1.5 py-0.2 rounded font-bold">
                     READY
                   </span>
                 )}
@@ -125,17 +125,17 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b-2 border-comic-black pb-4 mb-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="w-7 h-7 rounded-full bg-comic-red text-white font-comic text-sm flex items-center justify-center font-bold border border-comic-black">
+              <span className="w-7 h-7 rounded-full bg-comic-red text-white text-sm flex items-center justify-center font-bold border border-comic-black">
                 {activeSeatIndex + 1}
               </span>
               <h2 className="font-comic text-3xl text-comic-black tracking-wide">
                 {activePlayer.alterEgo.name}{' '}
-                <span className="text-xl text-comic-blue font-normal">
+                <span className="font-comic text-xl text-comic-blue font-normal">
                   ({activePlayer.hero.name})
                 </span>
               </h2>
               {activeSeatIndex === 0 && (
-                <span className="bg-comic-yellow text-comic-black font-comic text-xs px-2.5 py-0.5 rounded-full border border-comic-black font-bold uppercase flex items-center gap-1 shadow-comic-sm">
+                <span className="bg-comic-yellow text-comic-black text-xs px-2.5 py-0.5 rounded-full border border-comic-black font-bold uppercase flex items-center gap-1 shadow-comic-sm">
                   <Crown className="w-3.5 h-3.5 text-comic-red" />
                   <span>STARTING PLAYER (ROUND 1)</span>
                 </span>
@@ -149,12 +149,12 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
 
           {/* Individual Seat Status Badge */}
           {isCurrentHeroCompleted ? (
-            <div className="bg-emerald-500 text-white font-comic text-sm px-4 py-1.5 rounded-full border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 font-bold animate-fade-in">
+            <div className="bg-emerald-500 text-white text-sm px-4 py-1.5 rounded-full border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 font-bold animate-fade-in">
               <CheckCircle2 className="w-4 h-4 text-white" />
               <span>MULLIGAN CONFIRMED (HAND READY)</span>
             </div>
           ) : (
-            <div className="bg-amber-100 text-amber-900 font-comic text-xs px-3 py-1 rounded border border-comic-black font-bold uppercase">
+            <div className="bg-amber-100 text-amber-900 text-xs px-3 py-1 rounded border border-comic-black font-bold uppercase">
               SELECT CARDS TO DISCARD & REDRAW
             </div>
           )}
@@ -187,7 +187,7 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
                   onClick={() => toggleDiscard(cardInst.instanceId)}
                 />
                 {!isCurrentHeroCompleted && isDiscarded && (
-                  <div className="absolute top-2 right-2 bg-rose-600 text-white font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black shadow-comic-sm pointer-events-none uppercase font-bold z-content">
+                  <div className="absolute top-2 right-2 bg-rose-600 text-white text-micro px-2 py-0.5 rounded border border-comic-black shadow-comic-sm pointer-events-none uppercase font-bold z-content">
                     DISCARD
                   </div>
                 )}
@@ -200,12 +200,12 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
         {!isCurrentHeroCompleted && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-200 bg-amber-50/60 p-4 rounded-lg">
             <div className="text-xs text-slate-700">
-              <span className="font-bold font-comic text-sm text-comic-black">
+              <span className="font-bold text-sm text-comic-black">
                 {currentSelectedDiscards.length === 0
                   ? 'Keep All 6 Cards'
                   : `Discarding ${currentSelectedDiscards.length} card(s)`}
               </span>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-mini text-slate-500">
                 {currentSelectedDiscards.length === 0
                   ? 'Confirming will keep your current opening hand.'
                   : 'Replacements will be drawn and discards shuffled back into your deck.'}

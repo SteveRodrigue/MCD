@@ -151,7 +151,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
       <div className="relative mb-8">
         {/* Comic Header Bar / Issue Badge */}
         <div
-          className={`flex items-center justify-between px-4 py-2 !rounded-b-none ${style.chip}`}
+          className={`flex items-center justify-between px-4 py-2 !rounded-b-none !rotate-0 ${style.chip}`}
         >
           <div className="flex items-center gap-3">
             {/* Vintage Price Box */}

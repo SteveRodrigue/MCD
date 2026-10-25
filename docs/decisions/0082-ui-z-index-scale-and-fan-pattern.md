@@ -255,3 +255,7 @@ cover the board goes through `ModalLayer`.
 ## Addendum 2026-10-25 ([Issue #378](https://github.com/SteveRodrigue/MCD/issues/378))
 
 The top bar is gone: the quick-menu rail now sits above the combat log in one `drawer` layer (`SideDock`). The `sticky` layer (500) had no other user and is removed from `Z`, `Z_CLASS` and the Tailwind config; the layer map, owner decision 4 and consistency rule 1 above name the dock instead of the TopBar. Appendix B stays as the record of what was found and fixed in 2026-10-14.
+
+## Addendum 2026-10-25 ([Issue #380](https://github.com/SteveRodrigue/MCD/issues/380))
+
+The hero track's Scroll Left / Scroll Right buttons float at the middle of the screen (`sticky top-1/2`) and use `zoom` (400): they must stay above a Villain or Removed zone raised by hover (`raised`, 200), and below the side dock and every modal. No new layer.

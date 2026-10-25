@@ -441,7 +441,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                 {/* Scrollable Panoramic Track */}
                 <div
                   ref={containerRef}
-                  className="w-full overflow-x-auto no-scrollbar scroll-smooth px-4 py-2"
+                  className="w-full overflow-x-auto no-scrollbar scroll-smooth px-4 pt-4 pb-2"
                 >
                   <div className="flex items-start justify-center min-w-full w-max gap-6">
                     {gameState.players.map((player, idx) => {

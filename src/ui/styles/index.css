@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* The hero track scrolls with its own buttons and edge scrolling: no browser scrollbar (Issue #384). */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Digits only (U+0030-0039): Bangers' 1 and 7 are hard to tell apart at small sizes, so digits in
    Bangers text render in the body font (Inter Bold, bundled via @fontsource). */
 @font-face {

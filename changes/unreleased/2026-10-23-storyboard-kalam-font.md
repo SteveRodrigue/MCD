@@ -22,3 +22,4 @@ type: Changed
   - The setup and mulligan screens use the Body font for small text and the size tokens for their tiny labels: the tiny text on the first screen is 1 to 3px bigger depending on the theme, following the theme's text size change. The Bangers banner is unchanged.
   - The hero and villain zones use the Body font for small text and the size tokens for their tiny labels (the smallest 8px labels become 9px), so the zones follow the theme's text size change.
   - The hand tray, top bar, villain phase stepper, combat log drawer and damage splash use the Body font for small text and the size tokens for their tiny labels.
+  - The card components (card view, context menu, face-down encounter card, attachment fan) use the Body font for small text and the size tokens for their tiny labels; card faces keep their own sizes.

@@ -129,15 +129,15 @@ const CardViewImpl: React.FC<CardViewProps> = ({
         sm: 'w-44 h-32 text-xs',
         hand: 'w-[202px] h-[148px] text-xs',
         md: 'w-64 h-44 text-sm',
-        lg: 'w-80 h-56 text-base',
-        xl: 'w-[410px] h-72 text-lg',
+        lg: 'w-80 h-56 text-base font-body',
+        xl: 'w-[410px] h-72 text-lg font-body',
       }[size]
     : {
         sm: 'w-28 h-40 text-xs',
         hand: 'w-[130px] h-[184px] text-xs',
         md: 'w-44 h-64 text-sm',
-        lg: 'w-56 h-80 text-base',
-        xl: 'w-72 h-[410px] text-lg',
+        lg: 'w-56 h-80 text-base font-body',
+        xl: 'w-72 h-[410px] text-lg font-body',
       }[size];
 
   // Scale Factors to achieve a UNIFIED CONSTANT ZOOM SIZE across all UI locations (~308px portrait width, ~440px landscape width at 100%)
@@ -267,7 +267,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
       >
         {/* Exhausted Indicator Tag */}
         {exhaustedState && (
-          <div className="absolute top-1.5 left-1.5 z-content bg-slate-950/90 text-amber-300 font-comic text-[8px] px-1.5 py-0.5 rounded border border-comic-black shadow-sm font-bold uppercase pointer-events-none">
+          <div className="absolute top-1.5 left-1.5 z-content bg-slate-950/90 text-amber-300 text-nano px-1.5 py-0.5 rounded border border-comic-black shadow-sm font-bold uppercase pointer-events-none">
             EXHAUSTED
           </div>
         )}
@@ -275,7 +275,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
         {/* Unplayable / Inactive Form Indicator Tag */}
         {!isFacedown && (isPlayable === false || isUsable === false) && (
           <div
-            className="absolute top-1.5 right-1.5 z-content bg-slate-900/90 text-white font-comic text-[8px] px-1.5 py-0.5 rounded border border-comic-black shadow-sm font-bold uppercase pointer-events-none group-hover:hidden"
+            className="absolute top-1.5 right-1.5 z-content bg-slate-900/90 text-white text-nano px-1.5 py-0.5 rounded border border-comic-black shadow-sm font-bold uppercase pointer-events-none group-hover:hidden"
             title={
               unusableReason || unplayableReason
                 ? `Cannot use: ${unusableReason || unplayableReason}`
@@ -296,7 +296,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
               <span
                 key={idx}
                 data-testid={`dynamic-trait-badge-${trait.toLowerCase()}`}
-                className="bg-cyan-300 text-slate-950 font-comic text-[9px] px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-sm font-black uppercase tracking-wider flex items-center gap-1"
+                className="bg-cyan-300 text-slate-950 text-nano px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-sm font-black uppercase tracking-wider flex items-center gap-1"
               >
                 <span>✨</span>
                 <span>{trait}</span>
@@ -326,7 +326,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
                 style={{ backgroundColor: getCardBackFallbackColor(resolvedBackType) }}
                 data-testid="card-back-fallback"
               >
-                <span className="font-comic text-xs uppercase tracking-wider text-white bg-slate-950/70 px-2 py-0.5 rounded border border-comic-black shadow-comic-xs">
+                <span className="text-xs uppercase tracking-wider text-white bg-slate-950/70 px-2 py-0.5 rounded border border-comic-black shadow-comic-xs">
                   {resolvedBackType}
                 </span>
               </div>
@@ -339,7 +339,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
           <div className="relative w-full h-full bg-slate-900 flex items-center justify-center">
             {loading && (
               <div className="absolute inset-0 bg-amber-50 flex flex-col items-center justify-center p-2 text-center bg-bendy-dots animate-pulse">
-                <span className="font-comic text-xs text-comic-black">LOADING ART...</span>
+                <span className="text-xs text-comic-black">LOADING ART...</span>
               </div>
             )}
 
@@ -363,29 +363,27 @@ const CardViewImpl: React.FC<CardViewProps> = ({
             {/* Top Bar: Cost & Type */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="w-6 h-6 rounded-full bg-slate-950 text-comic-yellow font-comic text-sm flex items-center justify-center font-bold border border-comic-black">
+                <span className="w-6 h-6 rounded-full bg-slate-950 text-comic-yellow text-sm flex items-center justify-center font-bold border border-comic-black">
                   {card.cost ?? 0}
                 </span>
-                <span className="text-[10px] font-bold uppercase text-slate-500 bg-white/90 px-1 rounded border border-slate-300">
+                <span className="text-micro font-bold uppercase text-slate-500 bg-white/90 px-1 rounded border border-slate-300">
                   {card.type}
                 </span>
               </div>
-              <h4 className="font-comic text-sm text-comic-black leading-tight line-clamp-2">
-                {card.name}
-              </h4>
+              <h4 className="text-sm text-comic-black leading-tight line-clamp-2">{card.name}</h4>
               {card.subname && (
-                <p className="text-[10px] font-bold text-comic-red italic">{card.subname}</p>
+                <p className="text-micro font-bold text-comic-red italic">{card.subname}</p>
               )}
               {(card.printedTraits ||
                 (card.traits && card.traits.length > 0) ||
                 activeDynamicTraits.length > 0) && (
-                <div className="text-[9px] font-semibold text-slate-600 italic flex items-center flex-wrap gap-1">
+                <div className="text-nano font-semibold text-slate-600 italic flex items-center flex-wrap gap-1">
                   <span>{card.printedTraits || (card.traits || []).join('. ')}</span>
                   {activeDynamicTraits.map((trait, idx) => (
                     <span
                       key={idx}
                       data-testid={`fallback-dynamic-trait-${trait.toLowerCase()}`}
-                      className="bg-cyan-300 text-slate-950 font-comic text-[8px] not-italic px-1.5 py-0.2 rounded-full border border-comic-black font-black uppercase tracking-wide"
+                      className="bg-cyan-300 text-slate-950 text-nano not-italic px-1.5 py-0.2 rounded-full border border-comic-black font-black uppercase tracking-wide"
                     >
                       +{trait}
                     </span>
@@ -395,12 +393,12 @@ const CardViewImpl: React.FC<CardViewProps> = ({
             </div>
 
             {/* Card Body Text */}
-            <div className="my-1 text-[10px] text-slate-700 line-clamp-5 leading-tight bg-white/80 p-1 rounded border border-slate-200">
+            <div className="my-1 text-micro text-slate-700 line-clamp-5 leading-tight bg-white/80 p-1 rounded border border-slate-200">
               <FormattedCardText text={card.text} />
             </div>
 
             {/* Bottom Bar: Faction & Resources */}
-            <div className="border-t border-slate-300 pt-1 flex items-center justify-between text-[9px] font-semibold text-slate-600 bg-white/90">
+            <div className="border-t border-slate-300 pt-1 flex items-center justify-between text-nano font-semibold text-slate-600 bg-white/90">
               <span className="capitalize">{card.faction}</span>
               <span className="font-bold text-comic-black uppercase">
                 {card.resources.total > 0
@@ -422,7 +420,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
         {/* 3. Mulligan / Keep Status Ribbons */}
         {isMulliganSelected && (
           <div className="absolute inset-0 bg-rose-950/40 flex flex-col items-center justify-center pointer-events-none">
-            <div className="bg-comic-red text-white border-2 border-comic-black font-comic text-xs px-3 py-1 tracking-wider shadow-comic transform -rotate-6">
+            <div className="bg-comic-red text-white border-2 border-comic-black text-xs px-3 py-1 tracking-wider shadow-comic transform -rotate-6">
               MULLIGAN (DISCARD)
             </div>
           </div>
@@ -430,7 +428,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
 
         {isKeepSelected && (
           <div className="absolute top-2 right-2 pointer-events-none">
-            <div className="bg-emerald-500 text-slate-950 border border-comic-black font-comic text-[10px] px-2 py-0.5 font-bold tracking-wider rounded shadow-comic-sm">
+            <div className="bg-emerald-500 text-slate-950 border border-comic-black text-micro px-2 py-0.5 font-bold tracking-wider rounded shadow-comic-sm">
               KEEP
             </div>
           </div>
@@ -443,14 +441,14 @@ const CardViewImpl: React.FC<CardViewProps> = ({
             <div className="absolute bottom-1.5 left-1.5 flex flex-wrap items-center gap-1 pointer-events-none z-content">
               {/* Damage Tokens */}
               {(instance.tokens?.damage ?? 0) > 0 && (
-                <span className="bg-comic-red text-white font-comic text-xs px-2 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
+                <span className="bg-comic-red text-white text-xs px-2 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
                   💥 {instance.tokens?.damage}
                 </span>
               )}
 
               {/* Threat Tokens */}
               {(instance.tokens?.threat ?? 0) > 0 && (
-                <span className="bg-comic-yellow text-comic-black font-comic text-xs px-2 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
+                <span className="bg-comic-yellow text-comic-black text-xs px-2 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
                   ⚠️ {instance.tokens?.threat}
                 </span>
               )}
@@ -460,7 +458,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
                 instance.statusCards.map((st, i) => (
                   <span
                     key={i}
-                    className={`font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black uppercase shadow-comic-sm font-bold ${
+                    className={`text-micro px-1.5 py-0.5 rounded border border-comic-black uppercase shadow-comic-sm font-bold ${
                       st === StatusCard.TOUGH
                         ? 'bg-sky-300 text-slate-950'
                         : st === StatusCard.STUNNED
@@ -476,7 +474,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
             {/* Right Badge: General Counter Tokens (All-Purpose Green Game Counter: Tac Team, Web-Shooter) */}
             {(instance.tokens?.counters ?? 0) > 0 && (
               <div className="absolute bottom-1.5 right-1.5 z-content pointer-events-none">
-                <div className="bg-emerald-600 text-white font-comic text-xs font-black min-w-[22px] h-[22px] px-1 rounded-md border-2 border-comic-black shadow-comic-sm flex items-center justify-center">
+                <div className="bg-emerald-600 text-white text-xs font-black min-w-[22px] h-[22px] px-1 rounded-md border-2 border-comic-black shadow-comic-sm flex items-center justify-center">
                   {instance.tokens?.counters}
                 </div>
               </div>

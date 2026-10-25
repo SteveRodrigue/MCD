@@ -47,7 +47,7 @@ export const BoostIconsPill: React.FC<BoostIconsPillProps> = ({
       {icons > 0 ? (
         Array.from({ length: icons }, (_, i) => <BoostIcon key={i} />)
       ) : (
-        <span className="text-[10px] font-black uppercase">none</span>
+        <span className="text-micro font-black uppercase">none</span>
       )}
       {star && (
         <span aria-hidden="true" className="text-sm font-black leading-none">

@@ -148,7 +148,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
           {/* Header Strip */}
           <div className="bg-comic-panel border-b-2 border-black px-3 py-2 flex items-center justify-between">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="font-mono text-[10px] font-bold bg-black text-white px-1.5 py-0.2 rounded">
+              <span className="font-mono text-micro font-bold bg-black text-white px-1.5 py-0.2 rounded">
                 {card.code}
               </span>
               <span className="font-bangers text-sm text-black truncate tracking-wide">
@@ -165,17 +165,17 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
           </div>
 
           {/* Quick Stats Recap */}
-          <div className="bg-amber-50/90 border-b-2 border-black px-3 py-1.5 text-[11px] font-comic space-y-0.5">
+          <div className="bg-amber-50/90 border-b-2 border-black px-3 py-1.5 text-mini space-y-0.5">
             <div className="flex items-center justify-between text-slate-700">
               <span className="font-bold">Plays:</span>
-              <span className="font-mono text-[10px]">
+              <span className="font-mono text-micro">
                 Game: <b className="text-comic-red">{gamePlays}</b> | All:{' '}
                 <b className="text-comic-darkBlue">{allTimePlays}</b>
               </span>
             </div>
             <div className="flex items-center justify-between text-slate-700">
               <span className="font-bold">Abilities:</span>
-              <span className="font-mono text-[10px]">
+              <span className="font-mono text-micro">
                 Game: <b className="text-comic-red">{gameAbilities}</b> | All:{' '}
                 <b className="text-comic-darkBlue">{allTimeAbilities}</b>
               </span>
@@ -183,7 +183,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
             {(gameBasicActions > 0 || allTimeBasicActions > 0) && (
               <div className="flex items-center justify-between text-slate-700">
                 <span className="font-bold">Actions:</span>
-                <span className="font-mono text-[10px]">
+                <span className="font-mono text-micro">
                   Game: <b className="text-comic-red">{gameBasicActions}</b> | All:{' '}
                   <b className="text-comic-darkBlue">{allTimeBasicActions}</b>
                 </span>
@@ -295,7 +295,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
                 <button
                   type="button"
                   onClick={handleCopyJson}
-                  className="flex items-center gap-1.5 text-xs font-comic font-black px-2.5 py-1 bg-comic-yellow text-comic-black hover:bg-amber-300 border-2 border-comic-black rounded-lg transition-all cursor-pointer shadow-comic-sm"
+                  className="flex items-center gap-1.5 text-xs font-black px-2.5 py-1 bg-comic-yellow text-comic-black hover:bg-amber-300 border-2 border-comic-black rounded-lg transition-all cursor-pointer shadow-comic-sm"
                   title="Copy full card JSON to clipboard"
                 >
                   {copiedJson ? (

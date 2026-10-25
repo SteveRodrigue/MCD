@@ -42,7 +42,8 @@ describe('CardView Dynamic Traits Display (Issue #4)', () => {
     expect(badge).toBeDefined();
     expect(badge.textContent).toContain('Aerial');
     expect(badge.className).toContain('bg-cyan-300');
-    expect(badge.className).toContain('font-comic');
+    expect(badge.className).toContain('text-nano');
+    expect(badge.className).not.toContain('font-comic');
   });
 
   it('renders multiple dynamic traits badges', () => {

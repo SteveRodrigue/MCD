@@ -62,13 +62,17 @@ Themes that set a Newspaper font: Pop-Art Action-Coded. Every other newspaper fo
 
 ## Known gaps
 
-- **Headline versus body is decided by the font utility in the game, not by text size.** The game's
-  `font-comic` role is the Headlines font, and many small pieces of text use it (254 uses in 42 files;
-  `font-body` has no uses in the game yet). The lab font test classifies by size (17px and up is a
-  headline) so you can judge readability, but a real theme still gives all `font-comic` text its Headlines
-  font. To make the game follow the size rule, small `font-comic` text has to move to `font-body`
-  (integration step N2 of the plan).
-- **The game's page base is the system sans** (`font-sans`), not the Body font, until the integration step N1.
+- **Headline versus body is decided by the font utility, and a test keeps it true.** Headlines are text with
+  an explicit headline size (`text-base` and up) that names `font-comic`; small text (`text-xs`, `text-sm`,
+  `text-nano`, `text-micro`, `text-mini`) uses the Body font; text with no size and no font class is Body. A
+  guard test covers the whole themed UI (everything in `src/ui` except the card editor and the lab's own
+  chrome) and fails when small text names `font-comic` or headline-size text names no font role. Explicit
+  sizeless `font-comic` stays where the author meant a title (menu buttons, a few labels, the inline `[hero]`
+  and `[alter-ego]` keywords in card text).
+- **The game screens set the theme on their root and on the modal layer.** The setup, mulligan and game
+  screens carry the theme's font roles and text sizes (`GameThemeRoot`), and everything rendered through the
+  modal layer (modals, drawers, newspapers) carries them too, because that layer sits outside the root.
+  Unlabelled text is the theme's Body. The card editor and the lab chrome are outside the themes.
 - **Digits** use the default body font (Inter) only inside the default Bangers stack. A theme that sets
   its own Headlines font does not use the digit face.
 - **The Numbers & codes size change only reaches numbers that carry their own size class.** A `font-mono` span

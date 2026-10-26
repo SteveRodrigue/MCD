@@ -147,6 +147,15 @@ export interface DamageResult {
   onomatopoeia?: string;
 }
 
+/** The card or hero that dealt the damage, for the combat log; none for an enemy's attack. */
+function damageSourceName(state: GameState, request: DamageRequest): string | undefined {
+  if (request.sourceCardInstance) return request.sourceCardInstance.card.name;
+  if (request.sourceType !== 'HERO') return undefined;
+  return state.players.find((p) => p.id === request.sourcePlayerId)?.activeFormCard?.name;
+}
+
+const sourceParam = (sourceName: string | undefined) => (sourceName ? { source: sourceName } : {});
+
 function defeatSourceOf(request: DamageRequest): DefeatSource {
   const kind: DefeatSource['kind'] =
     request.sourceType === 'HERO'
@@ -260,6 +269,7 @@ function applyDamageAndCheckDefeat(
   target: TargetEntityRef,
   damageTaken: number,
   sourcePlayerId: string | undefined,
+  sourceName: string | undefined,
   defeatSource: DefeatSource,
   onomatopoeia: string | undefined,
   logPlayerHit: DamageRequest['logPlayerHit'],
@@ -291,6 +301,7 @@ function applyDamageAndCheckDefeat(
           key: 'damage.applied.villain',
           params: {
             target: villain.card?.name || (villain as { name?: string }).name || 'Villain',
+            ...sourceParam(sourceName),
             amount: damageTaken,
             remainingHealth: villain.health,
           },
@@ -328,6 +339,7 @@ function applyDamageAndCheckDefeat(
           key: 'damage.applied.minion',
           params: {
             target: minion.card.name,
+            ...sourceParam(sourceName),
             amount: damageTaken,
             totalDamage: newDmg,
             health: minionHealth,
@@ -376,6 +388,7 @@ function applyDamageAndCheckDefeat(
             key: 'damage.applied.player',
             params: {
               target: player.name,
+              ...sourceParam(sourceName),
               amount: damageTaken,
               remainingHealth: player.health,
             },
@@ -411,6 +424,7 @@ function applyDamageAndCheckDefeat(
           key: 'damage.applied.ally',
           params: {
             target: ally.card?.name || 'Ally',
+            ...sourceParam(sourceName),
             amount: damageTaken,
             totalDamage: newDmg,
             health: allyMaxHp,
@@ -815,6 +829,7 @@ function placeDamage(
     target,
     damageTaken,
     sourcePlayerId,
+    damageSourceName(state, request),
     defeatSourceOf(request),
     facts.onomatopoeia,
     request.logPlayerHit,

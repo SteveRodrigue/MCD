@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { ALL_LOG_EVENT_KEYS } from '../../src/engine/models/log-events';
-import { formatComicLogEntry } from '../../src/ui/utils/comic-log-formatter';
+import {
+  formatComicLogEntry,
+  formatHierarchicalLogKey,
+} from '../../src/ui/utils/comic-log-formatter';
 import { GameLogEntry, GameState } from '../../src/engine/models';
 
 const mockGameState = {
@@ -90,6 +93,24 @@ const canonicalMockParams: Record<string, any> = {
   totalThreat: 3,
 };
 
+/** Developer diagnostics, shown raw on purpose; every other key needs a player-facing sentence. */
+const DEVELOPER_ONLY_KEYS: ReadonlySet<string> = new Set([
+  'engine.infinite_loop_detected',
+  'engine.stepError',
+]);
+
+/** Rendered from the `narrator` dictionary of a narrator caption, not from `templates`. */
+const NARRATOR_KEYS: ReadonlySet<string> = new Set([
+  'ROUND_STARTED',
+  'PHASE_CHANGED',
+  'GAME_STARTED',
+  'DECK_EXHAUSTED',
+  'ACCELERATION_TOKEN_ADDED',
+  'MAIN_SCHEME_ADVANCED',
+  'MULLIGAN_RESOLVED',
+  'FIRST_PLAYER_PASSED',
+]);
+
 describe('Log Catalog Coverage Guard Test (Plan R7)', () => {
   it('covers all static log event keys in ALL_LOG_EVENT_KEYS', () => {
     expect(ALL_LOG_EVENT_KEYS.length).toBeGreaterThan(120);
@@ -110,6 +131,9 @@ describe('Log Catalog Coverage Guard Test (Plan R7)', () => {
       expect(result.narrativeAction).toBeDefined();
       expect(result.narrativeAction.trim().length).toBeGreaterThan(0);
       expect(result.narrativeAction).not.toMatch(/\{\{.*?\}\}/);
+      if (!DEVELOPER_ONLY_KEYS.has(key) && !NARRATOR_KEYS.has(key)) {
+        expect(result.narrativeAction).not.toBe(formatHierarchicalLogKey(key, entry));
+      }
     });
 
     it(`formats ${key} into non-empty narrativeAction without raw {{placeholders}} in French`, () => {
@@ -126,6 +150,9 @@ describe('Log Catalog Coverage Guard Test (Plan R7)', () => {
       expect(result.narrativeAction).toBeDefined();
       expect(result.narrativeAction.trim().length).toBeGreaterThan(0);
       expect(result.narrativeAction).not.toMatch(/\{\{.*?\}\}/);
+      if (!DEVELOPER_ONLY_KEYS.has(key) && !NARRATOR_KEYS.has(key)) {
+        expect(result.narrativeAction).not.toBe(formatHierarchicalLogKey(key, entry));
+      }
     });
   });
 });

@@ -28,3 +28,8 @@ updates:
       typescript-eslint:
         patterns:
           - "@typescript-eslint/*"
+    ignore:
+      # The @types/node major follows the Node version CI runs on (22): newer types would allow APIs
+      # the runtime lacks. Raise it together with `node-version` in .github/workflows/ci.yml.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]

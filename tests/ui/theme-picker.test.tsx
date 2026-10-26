@@ -87,6 +87,19 @@ describe('ThemePicker', () => {
     expect(onReroll).toHaveBeenCalledTimes(1);
   });
 
+  it('sets dark text on its own light cards and boxes, so a dark page cannot wash them out (#442)', () => {
+    renderWithSettings(<ThemePicker />, { themeMode: 'random' });
+    const surfaces = [
+      ...MODAL_STYLES.map((style) => screen.getByTestId(`theme-card-${style.id}`)),
+      screen.getByTestId('theme-random'),
+      screen.getByText('Include in random').closest('div'),
+      screen.getByText('Card accents').closest('label'),
+    ];
+    for (const surface of surfaces) {
+      expect(surface?.className).toContain('text-comic-black');
+    }
+  });
+
   it('offers no Re-roll for a fixed theme or before a game', () => {
     renderWithSettings(<ThemePicker game={{ activeThemeId: 'splash', onReroll: vi.fn() }} />);
     expect(screen.queryByRole('button', { name: /Re-roll/ })).toBeNull();

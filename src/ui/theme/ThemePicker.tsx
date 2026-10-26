@@ -27,7 +27,7 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({ themed = false, game }
         ? selected
           ? active.tileSelected
           : active.tile
-        : `rounded-xl border-comic shadow-comic-sm ${
+        : `rounded-xl border-comic shadow-comic-sm text-comic-black ${
             selected
               ? 'border-comic-red bg-comic-yellow'
               : 'border-comic-black bg-white hover:bg-amber-50'
@@ -35,7 +35,7 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({ themed = false, game }
     }`;
   const boxClass = themed
     ? `p-3 ${active.inset}`
-    : 'p-3 rounded-xl border-2 border-comic-black bg-amber-50 shadow-comic-sm';
+    : 'p-3 rounded-xl border-2 border-comic-black bg-amber-50 text-comic-black shadow-comic-sm';
   const mutedClass = themed ? active.muted : 'text-slate-600';
 
   const togglePool = (id: ModalStyleId) => {

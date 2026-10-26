@@ -171,10 +171,11 @@ Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist
 
 ### Step 8: Present Fix & Verification Recap
 
-Present the solution, verification results, and diff summary to the user. Per `AGENTS.md`, delivery (commit and push) is only executed upon the user's explicit request in the conversation. When requested, follow the `commit-and-push` protocol:
-1. Stage the intentionally changed files (e.g. `rtk git add <files>`).
+Present the solution, verification results, and diff summary to the user. Per `AGENTS.md`, delivery (commit, push, pull request, merge) is only executed upon the user's explicit request in the conversation. When requested, follow the `commit-and-push` protocol:
+1. Branch off `main` (protected) and stage the intentionally changed files (e.g. `rtk git add <files>`).
 2. Commit with Conventional Commits syntax (e.g. `rtk git commit -m "fix(<scope>): <description> (Fixes #<NUM>)"`), letting `.githooks/pre-commit` verify `format:check`, `lint`, and `typecheck`.
-3. Push to remote (`rtk git push`), letting `.githooks/pre-push` run the full `npm test` suite once, and verify issue closure.
+3. Push the branch (`rtk git push -u origin <branch>`), letting `.githooks/pre-push` run the full `npm test` suite once.
+4. Open the pull request, wait for CI, squash-merge it, and verify issue closure.
 
 
 ---

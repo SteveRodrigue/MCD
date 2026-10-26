@@ -114,3 +114,5 @@ The engine had about 200 hand-written `state.log.push({ id: log_${Date.now()}, t
    - `tests/engine/typed-game-log.test.ts`: Verifies compile-time type enforcement via `@ts-expect-error` for missing params, invalid keys, and type mismatches.
    - `tests/ui/log-catalog-guard.test.ts`: Iterates over `ALL_LOG_EVENT_KEYS` verifying that every single catalog key produces a non-empty `narrativeAction` without raw un-interpolated template placeholders in both English and French.
 
+
+6. **Every key has a sentence (#328, #330):** the guard now fails when a key renders as the raw-key fallback instead of a template (the engine-only `engine.*` keys and the narrator-dictionary keys are listed exceptions). `damage.applied.*` carries an optional `source` (the card, or the hero for a basic attack) and renders as `DAMAGE_APPLIED` or, without a source, `DAMAGE_APPLIED_UNSOURCED`. The `DEAL_DAMAGE` handler no longer writes its own damage lines; the damage pipeline is the only writer, so a hit is one sentence.

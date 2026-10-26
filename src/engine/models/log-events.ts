@@ -94,14 +94,6 @@ export interface LogEvents {
     isImmune?: boolean;
   };
   'card.effect.addTrait': { actor: string; trait: string; duration: string };
-  'card.effect.dealDamage': {
-    actor: string;
-    target: string;
-    amount: number;
-    toughAbsorbed?: boolean;
-    defeated?: boolean;
-    remainingHealth?: number;
-  };
   'card.effect.drawCards': {
     actor: string;
     amount: number;
@@ -200,23 +192,27 @@ export interface LogEvents {
   // Damage Application & Absorption
   'damage.applied.ally': {
     target: string;
+    source?: string;
     amount: number;
     totalDamage?: number;
     health?: number;
   };
   'damage.applied.minion': {
     target: string;
+    source?: string;
     amount: number;
     totalDamage?: number;
     health?: number;
   };
   'damage.applied.player': {
     target: string;
+    source?: string;
     amount: number;
     remainingHealth?: number;
   };
   'damage.applied.villain': {
     target: string;
+    source?: string;
     amount: number;
     remainingHealth?: number;
   };
@@ -491,7 +487,6 @@ export const ALL_LOG_EVENT_KEYS = [
   'card.discarded.uses_exhausted',
   'card.effect.addStatus',
   'card.effect.addTrait',
-  'card.effect.dealDamage',
   'card.effect.drawCards',
   'card.effect.flipForm',
   'card.effect.heal',

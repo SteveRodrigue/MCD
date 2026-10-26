@@ -214,7 +214,7 @@ function getCharacterQuote(
  * - player.action.allyAttack -> `${playerName}: action.allyAttack`
  * - villain.attack / villain.boost -> `${villainName}: attack` / `${villainName}: boost`
  */
-function formatHierarchicalLogKey(key: string, entry: GameLogEntry): string {
+export function formatHierarchicalLogKey(key: string, entry: GameLogEntry): string {
   const params = (entry.params || {}) as Record<string, any>;
 
   if (key.startsWith('card.')) {
@@ -325,8 +325,13 @@ function mapToCanonicalTemplateKey(key?: string, entry?: GameLogEntry): string |
   switch (key) {
     case 'DEAL_DAMAGE':
     case 'player.action.attackVillain':
-    case 'card.effect.dealDamage':
       return 'DEAL_DAMAGE';
+
+    case 'damage.applied.villain':
+    case 'damage.applied.minion':
+    case 'damage.applied.ally':
+    case 'damage.applied.player':
+      return entry?.params?.source ? 'DAMAGE_APPLIED' : 'DAMAGE_APPLIED_UNSOURCED';
 
     case 'HEAL_DAMAGE':
     case 'BASIC_RECOVER':

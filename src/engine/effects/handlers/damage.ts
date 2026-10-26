@@ -16,7 +16,7 @@ import { getStepEffectParams } from '../../../data/supplemental/runtime';
 import { enqueueDistributionPrompt } from '../../pipeline/prompt-queue';
 import { removeThreatFromScheme } from '../../pipeline/threat-pipeline';
 import { isImmuneToDamage } from '../../pipeline/damage-immunity';
-import { getEffectiveMaxHealth, getEffectiveMinionHitPoints } from '../../pipeline/stat-calculator';
+import { getEffectiveMaxHealth } from '../../pipeline/stat-calculator';
 import { nextEngineId } from '../../state/rng';
 import { resolveCharacterTargets } from '../target-resolver';
 import { appendLog } from '../../state/game-log';
@@ -98,11 +98,6 @@ function handleDealDamage(
     }
 
     const onomatopoeia = `WHAM! ${amount} DAMAGE TO ALL CHARACTERS!`;
-    appendLog(state, {
-      key: 'card.effect.dealDamage',
-      params: { actor: player.name, target: 'all_characters', amount },
-      onomatopoeia,
-    });
 
     return { state, success: true, mutatedState: amount > 0, value: amount, onomatopoeia };
   }
@@ -121,11 +116,6 @@ function handleDealDamage(
     }
 
     const onomatopoeia = `BOOM! ${amount} DAMAGE TO HEROES AND ALLIES!`;
-    appendLog(state, {
-      key: 'card.effect.dealDamage',
-      params: { actor: player.name, target: 'all_heroes_and_allies', amount },
-      onomatopoeia,
-    });
 
     return { state, success: true, mutatedState: amount > 0, value: amount, onomatopoeia };
   }
@@ -134,11 +124,6 @@ function handleDealDamage(
     state = dealDamageToEnemies(state, amount, state.players, damageOpts);
 
     const onomatopoeia = `BOOM! ${amount} DAMAGE TO ALL ENEMIES!`;
-    appendLog(state, {
-      key: 'card.effect.dealDamage',
-      params: { actor: player.name, target: 'all_enemies', amount },
-      onomatopoeia,
-    });
 
     return { state, success: true, onomatopoeia };
   }
@@ -183,11 +168,6 @@ function handleDealDamage(
     state = dealDamageToEnemies(state, amount, [chosenPlayer], damageOpts);
 
     const onomatopoeia = `BOOM! ${amount} DAMAGE TO ${chosenPlayer.name.toUpperCase()}'S ENGAGED ENEMIES!`;
-    appendLog(state, {
-      key: 'card.effect.dealDamage',
-      params: { actor: player.name, target: 'engaged_enemies', amount },
-      onomatopoeia,
-    });
 
     return { state, success: true, onomatopoeia };
   }
@@ -259,8 +239,6 @@ function handleDealDamage(
         hasKeyword(context.sourceCardInstance, Keyword.OVERKILL),
       );
 
-      const minionHp = getEffectiveMinionHitPoints(state, minion);
-      const damageBefore = minion.tokens?.damage || 0;
       const damageRes = applyAbilityDamage(
         state,
         minionTargetRef(minion, p.id),
@@ -274,16 +252,6 @@ function handleDealDamage(
 
       if (res.toughRemoved && res.damageTaken === 0) {
         const onomatopoeia = 'CLANG!';
-        appendLog(state, {
-          key: 'card.effect.dealDamage',
-          params: {
-            actor: player.name,
-            target: minion.card.name,
-            amount: 0,
-            toughAbsorbed: true,
-          },
-          onomatopoeia,
-        });
         return {
           state,
           success: true,
@@ -298,18 +266,6 @@ function handleDealDamage(
       }
 
       const onomatopoeia = res.targetDefeated ? 'SMASH! MINION DEFEATED!' : 'WHAM!';
-      appendLog(state, {
-        key: 'card.effect.dealDamage',
-        params: {
-          actor: player.name,
-          target: minion.card.name,
-          amount,
-          ...(res.targetDefeated
-            ? { defeated: true }
-            : { remainingHealth: minionHp - damageBefore - res.damageTaken }),
-        },
-        onomatopoeia,
-      });
 
       return {
         state,

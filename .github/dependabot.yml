@@ -28,6 +28,14 @@ updates:
       typescript-eslint:
         patterns:
           - "@typescript-eslint/*"
+      # Every other minor and patch update lands in one weekly PR. A package goes to the first group it
+      # matches, so the groups above keep their majors; any other major still gets its own PR.
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
     ignore:
       # The @types/node major follows the Node version CI runs on (22): newer types would allow APIs
       # the runtime lacks. Raise it together with `node-version` in .github/workflows/ci.yml.

@@ -42,7 +42,6 @@ export interface LogEvents {
   'player.action.attackVillain': { amount: number; actor?: string; target?: string };
   'player.deck.exhausted': { actor: string };
   'player.eliminated': { actor: string; remaining: number };
-  'player.phase.cleanup.cardDiscarded': { actor: string; card: string };
   'player.phase.cleanup.complete': {
     actor: string;
     discardedCount: number;
@@ -470,7 +469,6 @@ export const ALL_LOG_EVENT_KEYS = [
   'player.action.attackVillain',
   'player.deck.exhausted',
   'player.eliminated',
-  'player.phase.cleanup.cardDiscarded',
   'player.phase.cleanup.complete',
   'player.tableau.discarded',
   'player.turn.ended',

@@ -134,13 +134,12 @@ describe('Villain Phase Stepping & Pacing Engine (ADR-0068 / Issue #140)', () =>
       gameState.options = { ...gameState.options, villainPhaseStepping: true };
       gameState.players[0].hand = [createCardInstance(catalog.getCard('01107')!)];
       const ended = dispatchAction(gameState, { type: 'END_PLAYER_TURN', playerId: 'p1' });
-      expect(peekDecisionPrompt(ended.state)?.options.some((o) => o.id === 'done_cleanup')).toBe(
-        true,
-      );
+      expect(peekDecisionPrompt(ended.state)?.kind).toBe('PLAYER_CLEANUP');
       const finished = dispatchAction(ended.state, {
         type: 'RESOLVE_DECISION_PROMPT',
         playerId: 'p1',
-        selectedOptionId: 'done_cleanup',
+        selectedOptionId: 'confirm_selection',
+        selectedOptionIds: [],
       });
       expect(finished.result.success).toBe(true);
       return finished.state;

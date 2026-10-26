@@ -65,28 +65,17 @@ function processNextPlayerInCleanupQueue(
 
   // If player has cards in hand and not auto-passing, prompt for voluntary discard
   if (player.hand.length > 0 && !options?.autoDiscardNone) {
+    // One answer for the whole hand: the chosen cards are discarded, none keeps them all.
+    // Option ids are the hand cards' instance ids.
     const promptOptions: DecisionPromptOption[] = player.hand.map((c) => ({
-      id: `discard_${c.instanceId}`,
+      id: c.instanceId,
       label: `Discard ${c.card.name}`,
       cardCode: c.card.code,
       cardName: c.card.name,
       description: c.card.text || `Discard ${c.card.name} to discard pile`,
-      effect: 'PLAYER_PHASE_DISCARD_CARD',
-      params: {
-        cardInstanceId: c.instanceId,
-        playerId: player.id,
-        cardCode: c.card.code,
-        cardName: c.card.name,
-      },
+      effect: 'PLAYER_CLEANUP_DISCARD',
+      params: { cardCode: c.card.code, cardName: c.card.name },
     }));
-
-    promptOptions.push({
-      id: 'done_cleanup',
-      label: 'Done / Keep Remaining Cards',
-      description: 'Proceed to refill hand and ready all cards',
-      effect: 'FINISH_PLAYER_CLEANUP',
-      params: { playerId: player.id },
-    });
 
     const prompt: PendingDecisionPrompt = {
       promptId: `prompt_cleanup_${player.id}_${nextEngineId(state, 'id')}`,
@@ -96,6 +85,8 @@ function processNextPlayerInCleanupQueue(
       sourceCardName: player.hero?.name || player.name,
       options: promptOptions,
       isVoluntary: true,
+      kind: 'PLAYER_CLEANUP',
+      selection: { min: 0, max: promptOptions.length },
     };
 
     return enqueueDecisionPrompt(state, prompt);

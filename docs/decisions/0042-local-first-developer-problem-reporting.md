@@ -38,6 +38,14 @@ Developers and testers using Dev Mode need a fast way to flag bugs, improvements
 
 Option 2 requires zero new infrastructure, follows an already-proven and reviewed pattern (`gameStateSnapshotPlugin`), and completely avoids storing or transmitting any GitHub credential from the browser. The trade-off — the capture endpoint only works under `vite dev`/`vite preview`, not a production build — is acceptable at this project phase and is explicitly called out in the in-app UI copy. A prefilled `github.com/.../issues/new?title=&body=&labels=` link is also offered as an immediate, token-free convenience path for anyone who wants to file directly. When the project matures, this can be swapped for a real "Open GitHub Issue" deep link or a properly authenticated backend without changing the capture UX.
 
+### Amendment (2026-10-26): Pinned GameState snapshot
+
+Issues cite a local GameState path, but the rolling snapshot history (`gameStateSnapshotPlugin`, newest 25 files in `logs/gamestates/`) deleted those files, and the snapshot was only written at triage time. Now:
+
+- Submitting a report saves its `gameState` to `logs/gamestates/pinned/gamestate_<timestamp>_<type>.json` (atomic write, collision-safe name) via `saveProblemReport` in `src/tools/problem-report-store.ts`. The rolling pruner only scans the top-level folder, so `pinned/` is never pruned.
+- `report_*.json` stores `gameStateFile` instead of an embedded copy of the state (absent when no game was open).
+- `problem-report-triage` no longer writes snapshots; it verifies the pinned file and cites its path. The delete guard hook reads `gameStateFile` and checks the pinned file.
+
 ---
 
 ## Evaluation of Options

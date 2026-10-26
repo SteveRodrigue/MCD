@@ -144,4 +144,32 @@ describe('SimultaneousAbilitiesModal UI Component Tests (Issue #287)', () => {
 
     expect(onConfirmOrder).toHaveBeenCalledWith(['cand_1', 'cand_2', 'cand_3']);
   });
+
+  it('4. Orders simultaneous Forced abilities of two players, with no Pass option (#361)', () => {
+    const onConfirmOrder = vi.fn();
+    const forcedPrompt: PendingDecisionPrompt = {
+      ...samplePrompt,
+      title: 'Simultaneous Forced Abilities: Choose Resolution Order',
+      description:
+        'Multiple forced abilities triggered simultaneously. The first player determines the order in which they resolve.',
+      options: [
+        { ...samplePrompt.options[0], label: 'Black Widow (Player 1)' },
+        { ...samplePrompt.options[2], label: 'Get Behind Me! (Player 2)' },
+      ],
+      simultaneousPrompts: [
+        samplePrompt.simultaneousPrompts![0],
+        samplePrompt.simultaneousPrompts![2],
+      ],
+    };
+    render(<SimultaneousAbilitiesModal prompt={forcedPrompt} onConfirmOrder={onConfirmOrder} />);
+
+    expect(screen.getByText(/Multiple forced abilities triggered simultaneously/)).toBeDefined();
+    expect(screen.getByText('Player 1 (Spider-Man)')).toBeDefined();
+    expect(screen.getByText('Player 2 (Captain Marvel)')).toBeDefined();
+    expect(screen.queryByText(/pass/i)).toBeNull();
+
+    fireEvent.click(screen.getByTestId('move-down-cand_1'));
+    fireEvent.click(screen.getByTestId('confirm-order-button'));
+    expect(onConfirmOrder).toHaveBeenCalledWith(['cand_3', 'cand_1']);
+  });
 });

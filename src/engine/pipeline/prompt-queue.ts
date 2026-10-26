@@ -402,7 +402,12 @@ function pruneStaleOptionalPrompts(state: GameState): void {
  */
 function resumeAfterPromptResolved(state: GameState): GameState {
   pruneStaleOptionalPrompts(state);
-  if (peekDecisionPrompt(state)) return state;
+  // A Forced ability whose turn has come resolves with no player input (RR v1.8 "Forced").
+  const head = peekDecisionPrompt(state);
+  if (head?.forced) {
+    return resolveDecisionPrompt(state, head.playerId, head.options[0].id).state;
+  }
+  if (head) return state;
 
   let current = state;
   if (current.pendingThreatPlacements && current.pendingThreatPlacements.length > 0) {
@@ -541,7 +546,28 @@ export function resolveSimultaneousAbilitiesOrderPrompt(
     onomatopoeia: 'ORDER SET!',
   });
 
-  return { state: poppedState, result: { success: true, onomatopoeia: 'ORDER SET!' } };
+  return {
+    state: resumeAfterPromptResolved(poppedState),
+    result: { success: true, onomatopoeia: 'ORDER SET!' },
+  };
+}
+
+/**
+ * An encounter card interrupt (e.g. WHEN_REVEALED / TREACHERY_REVEALED) was passed: the card
+ * resolves once every interrupt queued for its reveal has been answered.
+ */
+function resolveEncounterCardOnceRevealPromptsAnswered(state: GameState): void {
+  const activeCtx = state.activeEncounterContext;
+  if (!activeCtx || hasQueuedRevealPrompts(state, activeCtx.encounterInstanceId)) return;
+  const targetPlayer = state.players.find((p) => p.id === activeCtx.targetPlayerId);
+  if (targetPlayer && activeCtx.encounterCard) {
+    kernel.resolveActiveEncounterCardAfterInterrupt(
+      state,
+      activeCtx.encounterCard,
+      targetPlayer,
+      Boolean(activeCtx.cancelled),
+    );
+  }
 }
 
 /**
@@ -616,23 +642,7 @@ export function resolveDecisionPrompt(
       onomatopoeia: 'PASSED',
     });
 
-    // If resolving an encounter card interrupt (e.g. WHEN_REVEALED / TREACHERY_REVEALED)
-    // The card resolves once every interrupt queued for its reveal has been answered.
-    if (
-      nextState.activeEncounterContext &&
-      !hasQueuedRevealPrompts(nextState, nextState.activeEncounterContext.encounterInstanceId)
-    ) {
-      const activeCtx = nextState.activeEncounterContext;
-      const targetPlayer = nextState.players.find((p) => p.id === activeCtx.targetPlayerId);
-      if (targetPlayer && activeCtx.encounterCard) {
-        kernel.resolveActiveEncounterCardAfterInterrupt(
-          nextState,
-          activeCtx.encounterCard,
-          targetPlayer,
-          Boolean(activeCtx.cancelled),
-        );
-      }
-    }
+    resolveEncounterCardOnceRevealPromptsAnswered(nextState);
 
     const finalState = resumeAfterPromptResolved(nextState);
 
@@ -644,12 +654,14 @@ export function resolveDecisionPrompt(
 
   const optionLabel = selectedOption ? selectedOption.label : selectedOptionId;
 
-  appendLog(nextState, {
-    category: 'ability',
-    key: 'decision.prompt.resolved',
-    params: { actor: playerName, option: optionLabel, promptId: prompt.promptId },
-    onomatopoeia: 'CHOICE MADE!',
-  });
+  if (!prompt.forced) {
+    appendLog(nextState, {
+      category: 'ability',
+      key: 'decision.prompt.resolved',
+      params: { actor: playerName, option: optionLabel, promptId: prompt.promptId },
+      onomatopoeia: 'CHOICE MADE!',
+    });
+  }
 
   // Handle optional trigger execution
   const optContext = selectedOption?.params?.context as
@@ -765,23 +777,7 @@ export function resolveDecisionPrompt(
       });
     }
 
-    // If resolving an encounter card interrupt (e.g. WHEN_REVEALED / TREACHERY_REVEALED)
-    // The card resolves once every interrupt queued for its reveal has been answered.
-    if (
-      nextState.activeEncounterContext &&
-      !hasQueuedRevealPrompts(nextState, nextState.activeEncounterContext.encounterInstanceId)
-    ) {
-      const activeCtx = nextState.activeEncounterContext;
-      const targetPlayer = nextState.players.find((p) => p.id === activeCtx.targetPlayerId);
-      if (targetPlayer && activeCtx.encounterCard) {
-        kernel.resolveActiveEncounterCardAfterInterrupt(
-          nextState,
-          activeCtx.encounterCard,
-          targetPlayer,
-          Boolean(activeCtx.cancelled),
-        );
-      }
-    }
+    resolveEncounterCardOnceRevealPromptsAnswered(nextState);
 
     if (isHandEvent && player && sourceCardInst) {
       const pendingPrompts = nextState.pendingDecisionQueue || [];

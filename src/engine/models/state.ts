@@ -452,6 +452,11 @@ export interface PendingDecisionPrompt {
   targetRetaliate?: number;
   preventAmount?: number | 'ALL';
   simultaneousPrompts?: PendingDecisionPrompt[];
+  /**
+   * A Forced ability waiting for its turn: the first player has ordered the simultaneous Forced
+   * abilities (RR v1.8 "Forced"), and the engine answers this prompt itself, with no player input.
+   */
+  forced?: boolean;
 }
 
 export interface EncounterExecutionContext {

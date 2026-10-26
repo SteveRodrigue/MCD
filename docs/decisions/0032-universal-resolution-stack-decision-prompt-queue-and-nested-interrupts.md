@@ -6,6 +6,7 @@
 * **Deciders:** User & Antigravity
 * **Supersedes:** [ADR-0020](0020-optional-vs-forced-triggers-exact-event-scoping-and-interactive-interrupts.md)
 * **Amendment (2026-10-20, audit R14):** the `executionStack` / `ExecutionFrame` part of this design was never used by production code and was removed. Nested resolution runs on the call stack and `pendingDecisionQueue`.
+* **Amendment (2026-10-25, #361):** forced-before-optional ordering is implemented in `dispatchTrigger`. Each trigger runs a Forced pass (identity, then in-play abilities of every scanned player), then the optional pass. One Forced ability resolves at once. Two or more simultaneous ones are queued as prompts flagged `forced`, behind the first player's `ORDER_SIMULTANEOUS_ABILITIES` prompt (whoever controls the cards, identical copies included), and ahead of every optional prompt. `resumeAfterPromptResolved` answers a `forced` head prompt itself through the same executor as `EXECUTE_OPTIONAL_TRIGGER`, so costs, limits and the live amounts of paused threat and damage placements behave the same. Abilities in hand have no Forced timing in the data and still resolve in the optional pass.
 
 ---
 

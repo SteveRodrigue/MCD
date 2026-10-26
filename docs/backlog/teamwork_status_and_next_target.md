@@ -78,12 +78,10 @@ No open row.
 
 ### 3.4 UI should-haves
 
-| Issue                                                   | Problem (from the Dev Mode report)                                                       | Notes                                                                      |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| [#328](https://github.com/SteveRodrigue/MCD/issues/328) | Counter-Punch `01077`: the 2 damage dealt to Rhino is not shown in the combat log.       | Log display.                                                               |
-| [#330](https://github.com/SteveRodrigue/MCD/issues/330) | Loss of Tough (and other) status cards is not shown in the combat log (seen on Sandman). | Log display.                                                               |
-| [#344](https://github.com/SteveRodrigue/MCD/issues/344) | Interrupt modal does not show which player or seat is offered Emergency `01085`.         | UI, multi-hero.                                                            |
-| [#358](https://github.com/SteveRodrigue/MCD/issues/358) | Wakanda Forever modal: move buttons at 3/4 of the card height (real cards are done).     | UI. Open: restore or drop the bottom recap (see the comment on the issue). |
+| Issue                                                   | Problem (from the Dev Mode report)                                                   | Notes                                                                      |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| [#344](https://github.com/SteveRodrigue/MCD/issues/344) | Interrupt modal does not show which player or seat is offered Emergency `01085`.     | UI, multi-hero.                                                            |
+| [#358](https://github.com/SteveRodrigue/MCD/issues/358) | Wakanda Forever modal: move buttons at 3/4 of the card height (real cards are done). | UI. Open: restore or drop the bottom recap (see the comment on the issue). |
 
 ### 3.5 Code audit AUD-20261017-232534: delivered
 

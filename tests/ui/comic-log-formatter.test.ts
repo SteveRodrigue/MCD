@@ -142,18 +142,18 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
     expect(formatted.narrativeAction).toContain('The Encounter deck runs completely dry!');
   });
 
-  it('formats unmapped card.* keys with card.name: remainder (e.g. card.attachment.attached)', () => {
+  it('formats unmapped card.* keys with card.name: remainder (e.g. card.unmapped.example)', () => {
     const cardEffectEntry: GameLogEntry = {
       id: 'log-400',
       timestamp: 4000,
       round: 1,
-      key: 'card.attachment.attached',
+      key: 'card.unmapped.example',
       actor: { name: 'Tony Stark', type: 'hero' },
       params: { card: 'Arc Reactor', target: 'Iron Man' },
     };
 
     const formatted = formatComicLogEntry(cardEffectEntry, 'en');
-    expect(formatted.narrativeAction).toBe('Arc Reactor: attachment.attached');
+    expect(formatted.narrativeAction).toBe('Arc Reactor: unmapped.example');
   });
 
   it('maps card.effect.readyCharacter to READY_CHARACTER template', () => {
@@ -170,44 +170,44 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
     expect(formatted.narrativeAction).toBe('Arc Reactor readies Iron Man.');
   });
 
-  it('formats player.* keys with player.name: remainder (e.g. player.action.allyAttack)', () => {
+  it('formats player.* keys with player.name: remainder (e.g. an unmapped player.action key)', () => {
     const playerActionEntry: GameLogEntry = {
       id: 'log-401',
       timestamp: 4001,
       round: 1,
-      key: 'player.action.allyAttack',
+      key: 'player.action.unmapped',
       actor: { name: 'Spider-Man', type: 'hero' },
       params: { player: 'Spider-Man', ally: 'Black Cat', damage: 1 },
     };
 
     const formatted = formatComicLogEntry(playerActionEntry, 'en');
-    expect(formatted.narrativeAction).toBe('Spider-Man: action.allyAttack');
+    expect(formatted.narrativeAction).toBe('Spider-Man: action.unmapped');
   });
 
-  it('formats villain.* keys with villain.name: remainder (e.g. villain.attack, villain.boost)', () => {
+  it('formats villain.* keys with villain.name: remainder (e.g. unmapped villain.* keys)', () => {
     const villainAttackEntry: GameLogEntry = {
       id: 'log-402',
       timestamp: 4002,
       round: 1,
-      key: 'villain.attack',
+      key: 'villain.unmapped',
       actor: { name: 'Rhino', type: 'villain' },
       params: { villain: 'Rhino', target: 'Spider-Man' },
     };
 
     const formattedAttack = formatComicLogEntry(villainAttackEntry, 'en');
-    expect(formattedAttack.narrativeAction).toBe('Rhino: attack');
+    expect(formattedAttack.narrativeAction).toBe('Rhino: unmapped');
 
     const villainBoostEntry: GameLogEntry = {
       id: 'log-403',
       timestamp: 4003,
       round: 1,
-      key: 'villain.boost.revealed',
+      key: 'villain.unmapped.boost',
       actor: { name: 'Rhino', type: 'villain' },
       params: { villain: 'Rhino', card: 'Hydra Soldier', boostIcons: 2 },
     };
 
     const formattedBoost = formatComicLogEntry(villainBoostEntry, 'en');
-    expect(formattedBoost.narrativeAction).toBe('Rhino: boost.revealed');
+    expect(formattedBoost.narrativeAction).toBe('Rhino: unmapped.boost');
   });
 
   describe('State-Driven Canonical Sentence Formats (Issue #142)', () => {

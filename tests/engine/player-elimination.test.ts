@@ -12,6 +12,8 @@ import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { applyDamageToTarget } from '@engine/pipeline/damage-pipeline';
 import { eliminatePlayer } from '@engine/pipeline/player-elimination';
 import { step1_placeThreat, step4_revealEncounterCards } from '@engine/pipeline/villain-phase';
+import { dispatchAction } from '@engine/pipeline';
+import { executeSequence } from '@engine/effects';
 import { getActiveMainScheme } from '@engine/models';
 
 // Issue #246: a defeated hero eliminates that player only (RR v1.8 Player Elimination). The group
@@ -326,6 +328,93 @@ describe('Player elimination (#246)', () => {
         eliminatePlayer(state, 'p1');
 
         expect(state.pendingDecisionQueue.map((p) => p.promptId)).toEqual(['for_p2']);
+      });
+    });
+
+    describe('Issue #429: ability resolution after hero elimination', () => {
+      it('solo hero eliminated by Stampede 01106 produces no engine.stepError', () => {
+        state.players.splice(1); // solo p1
+        const p1 = state.players[0];
+        p1.health = 1;
+        p1.hand = [];
+        const stampede = encounterCard('01106');
+        p1.dealtEncounterCards.push(stampede);
+
+        state = step4_revealEncounterCards(state);
+        while ((state.pendingDecisionQueue?.length ?? 0) > 0) {
+          const head = state.pendingDecisionQueue![0];
+          const optionId = head.options.some((o) => o.id === 'undefended')
+            ? 'undefended'
+            : head.options.some((o) => o.id === 'pass')
+              ? 'pass'
+              : head.options[0].id;
+          state = dispatchAction(state, {
+            type: 'RESOLVE_DECISION_PROMPT',
+            playerId: head.playerId,
+            selectedOptionId: optionId,
+          }).state;
+        }
+
+        expect(state.winner).toBe('VILLAIN');
+        expect(state.players).toHaveLength(0);
+        const stepErrors = state.log.filter((e) => e.key === 'engine.stepError');
+        expect(stepErrors).toHaveLength(0);
+      });
+
+      it('multiplayer hero eliminated by Stampede 01106 skips missing target without engine.stepError', () => {
+        build(2);
+        const p1 = state.players[0];
+        p1.health = 1;
+        p1.hand = [];
+        const stampede = encounterCard('01106');
+        p1.dealtEncounterCards.push(stampede);
+
+        state = step4_revealEncounterCards(state);
+        while ((state.pendingDecisionQueue?.length ?? 0) > 0) {
+          const head = state.pendingDecisionQueue![0];
+          const optionId = head.options.some((o) => o.id === 'undefended')
+            ? 'undefended'
+            : head.options.some((o) => o.id === 'pass')
+              ? 'pass'
+              : head.options[0].id;
+          state = dispatchAction(state, {
+            type: 'RESOLVE_DECISION_PROMPT',
+            playerId: head.playerId,
+            selectedOptionId: optionId,
+          }).state;
+        }
+
+        expect(state.winner).toBeNull();
+        expect(state.players.map((p) => p.id)).toEqual(['p2']);
+        expect(state.eliminatedPlayers?.map((p) => p.id)).toEqual(['p1']);
+        const stepErrors = state.log.filter((e) => e.key === 'engine.stepError');
+        expect(stepErrors).toHaveLength(0);
+      });
+
+      it('sequence terminates early when a step triggers endGame', () => {
+        build(2);
+        const steps = [
+          {
+            id: 'step_damage',
+            effect: 'DEAL_DAMAGE',
+            effectParams: { amount: 999, target: 'SELF_HERO' },
+          },
+          {
+            id: 'step_heal',
+            effect: 'HEAL',
+            effectParams: { amount: 5, target: 'SELF_HERO' },
+          },
+        ];
+        // Eliminate p2 so p1 is solo
+        state.players.splice(1);
+
+        const res = executeSequence(state, steps as any, { playerId: 'p1' });
+
+        expect(res.state.winner).toBe('VILLAIN');
+        expect(res.state.players).toHaveLength(0);
+        // The healing step should never run on the dead player
+        const stepErrors = res.state.log.filter((e) => e.key === 'engine.stepError');
+        expect(stepErrors).toHaveLength(0);
       });
     });
   });

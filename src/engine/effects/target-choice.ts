@@ -293,6 +293,10 @@ export function chooseStepTarget(
   step: AbilityStep,
   context: EffectExecutionContext,
 ): StepTargetChoice {
+  if (state.eliminatedPlayers?.some((p) => p.id === player.id)) {
+    return { kind: 'NO_VALID_TARGET' };
+  }
+
   const selector = stepTargetSelector(step);
   if (!selector) return { kind: 'NOT_REQUIRED' };
   if (step.effectParams?.targetInstanceId || context.chosenTargetInstanceId) {

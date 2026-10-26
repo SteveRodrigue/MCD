@@ -1,13 +1,13 @@
 ---
 name: commit-and-push
-description: 'Inspect staged/unstaged changes, run quality gates, format Conventional Commit messages, and push when explicitly requested by user. Trigger on "commit and push" or prefixed with "commit-and-push:".'
+description: 'Deliver a reviewed change end to end: branch (main is protected), commit with a Conventional Commit message, push, open a pull request, wait for CI, squash-merge, and verify issue closure. Only when explicitly requested by the user. Trigger on "commit and push", "deliver", "open a PR" or prefixed with "commit-and-push:".'
 ---
 
-# 🚀 Commit-and-Push Protocol (Clean Delivery & Quality Gate Workflow)
+# 🚀 Commit-Push-PR-Merge Protocol (Clean Delivery & Quality Gate Workflow)
 
 **Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, command, verification, and delivery authorization policies.
 
-A commit and push only ever happen in response to the user's explicit request in the current message (e.g. "commit and push", "commit this", or the skill's trigger prefix); the agent never initiates delivery on its own.
+Delivery only ever happens in response to the user's explicit request in the current message (e.g. "commit and push", "commit this", "deliver", or the skill's trigger prefix); the agent never initiates delivery on its own. `main` is protected: nothing is committed or pushed to it directly. A request to deliver covers the whole chain below (branch, commit, push, pull request, merge once CI is green). A request that names only part of it ("commit this", "just push", "open a PR but don't merge") stops after that part.
 
 **Needs:** `rtk` (see [`antigravity-rtk-rules.md`](../../rules/antigravity-rtk-rules.md)), Node.js with `npm ci`, and the GitHub CLI authenticated via `gh auth login` (check with `gh auth status`).
 
@@ -16,12 +16,14 @@ A commit and push only ever happen in response to the user's explicit request in
 Copy this checklist and tick each step as you go:
 
 - [ ] Step 1: Inspect the working tree, delete completed plans, update progress docs, and record the intended file set
-- [ ] Step 2: Format and stage by name
+- [ ] Step 2: Branch off `main`, format, and stage by name
 - [ ] Step 3: Rely on the git hooks (no manual gate runs)
 - [ ] Step 4: Pick category and scope
 - [ ] Step 5: Write the commit message
 - [ ] Step 6: Validate issue references, then commit
-- [ ] Step 7: Push and verify
+- [ ] Step 7: Push the branch
+- [ ] Step 8: Open the pull request
+- [ ] Step 9: Wait for CI, squash-merge, and verify
 
 If the pre-commit or pre-push hook fails, fix the cause, re-stage, and go back to Step 6 to make a new commit. If a staged path is not in the intended file set, unstage it and go back to Step 2.
 
@@ -38,8 +40,9 @@ If the pre-commit or pre-push hook fails, fix the cause, re-stage, and go back t
 
 ---
 
-## 📦 Step 2: Stage Target Changes
+## 📦 Step 2: Branch, Format and Stage
 
+0. `main` is protected. If the current branch is `main`, create a branch first: `rtk git checkout -b <type>/<issue>-<slug>` (e.g. `fix/361-forced-before-optional`; `<type>` is the commit category of Step 4, `<issue>` is omitted when there is none). Uncommitted changes carry over to the new branch. If a branch already exists for this work, stay on it. Never commit on `main` and never push to it.
 1. Format only the modified TS/TSX/JS files before staging so `.githooks/pre-commit` passes on the first try:
    ```sh
    rtk npx prettier --write <modified-ts-tsx-js-files>
@@ -149,20 +152,43 @@ _Note:_ The pre-commit hook in `.githooks/pre-commit` will automatically execute
 
 ---
 
-## 🚀 Step 7: Native Git Push & Final Verification
+## 🚀 Step 7: Push the Branch
 
-1. Since the user's request already authorized commit and push together, push to the remote tracking branch directly after a successful commit:
+1. Push the branch to its remote (never `main`, never `--force` or `--no-verify`):
    ```sh
-   rtk git push
+   rtk git push -u origin <branch>
    ```
-2. Verify the pre-push hook executes `npm test` cleanly with **0 failures and 0 skipped tests** (`passed: N, failed: 0, skipped: 0`).
-3. Re-query every referenced issue after push:
+2. Verify the pre-push hook executes `npm test` cleanly with **0 failures and 0 skipped tests** (`passed: N, failed: 0, skipped: 0`). If it fails, fix the cause, make a new commit (Step 6) and push again.
+
+---
+
+## 🔀 Step 8: Open the Pull Request
+
+1. Write the body to a file with the file-writing tool (not a heredoc: apostrophes break the shell). Mirror the headings of `.github/pull_request_template.md` (Description, Related Issues, Type of Change, Quality & Verification Checklist) and fill them from the diff. Tick only the boxes that are true; use the verification results already reported. Put `Fixes #N` or `Refs #N` under Related Issues with the same meaning as in the commit. End the body with the attribution line given in the session's system reminder, if one is present.
+2. Create it against `main`, with the commit header as title:
    ```sh
-   rtk gh issue view <NUM> --json number,state,closedAt,title,url
+   gh pr create --base main --head <branch> --title "<commit header>" --body-file <body-file>
    ```
-   - For `Fixes` and `Closes`, verify the issue is now `CLOSED`.
+3. If the pull request was only requested to be opened, stop here and report its URL.
+
+---
+
+## ✅ Step 9: Wait for CI, Squash-Merge and Verify
+
+1. Wait for the required checks: `gh pr checks <PR> --watch --interval 20`. If a check fails, stop and report the failing job; fix the cause on the same branch (new commit, push) and wait again. Never merge on red or pending checks.
+2. Merge with a squash, which matches the history of `main`, and delete the branch:
+   ```sh
+   gh pr merge <PR> --squash --delete-branch
+   ```
+   - Never use `--admin`, never bypass or weaken the branch protection, never merge a pull request someone else owns without being asked. If the merge is blocked (required review, out-of-date branch, conflicts), stop and report the exact reason; do not work around it.
+   - If the branch is out of date with `main`, bring it up to date (merge `main` into it, resolve conflicts, push) and wait for CI again.
+3. Sync the local checkout: `rtk git checkout main` then `rtk git pull`.
+4. Re-query every referenced issue and the pull request:
+   ```sh
+   gh issue view <NUM> --json number,state,closedAt,title,url
+   gh pr view <PR> --json state,mergedAt
+   ```
+   - For `Fixes` and `Closes`, verify the issue is now `CLOSED` and the pull request `MERGED`.
    - For `Refs` and informational references, report the current state and URL; do not claim the issue was closed.
-   - If the expected state is not reached, report the post-push discrepancy explicitly instead of treating the delivery as fully verified.
-4. Run `rtk git status` to verify:
-   - Working tree is clean (`nothing to commit, working tree clean`).
-   - Branch is up to date with its remote tracking branch (`Your branch is up to date with 'origin/<branch>'`).
+   - If the expected state is not reached, report the discrepancy explicitly instead of treating the delivery as verified.
+5. Run `rtk git status` and verify the working tree is clean and `main` is up to date with `origin/main`.

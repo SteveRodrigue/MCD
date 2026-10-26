@@ -40,7 +40,7 @@ Sources: [AGENTS.md](../../AGENTS.md), `.agents/rules/*.md` (shared quality gate
 8. **Out-of-scope gaps become GitHub issues** (with printed text, evidence, acceptance criteria and a milestone), not silent notes.
 9. **Gates before reporting done:** `npm test`, `npm run typecheck`, `npm run lint`, `npx prettier --check "src/**/*.{ts,tsx}" "tests/**/*.{ts,tsx}"` (all green), then `npm run report:declarations` after any supplemental change.
 10. **After each item:** update `CHANGELOG.md` `[Unreleased]`, delete the plan file in the same commit, and update this file: remove the finished row from section 3 (do not keep a "done" list here; the commit and changelog are the record).
-11. **Commit and push only when the owner asks.** Conventional Commits, one commit per issue where possible, `Fixes #N` only when the issue is fully done (`Refs #N` otherwise), end with the `Co-Authored-By` line used in recent commits. Verify the issue state after pushing.
+11. **Deliver only when the owner asks.** `main` is protected: branch, commit, push, pull request, CI, squash-merge (the `commit-and-push` skill does the chain). Conventional Commits, one commit per issue where possible, `Fixes #N` only when the issue is fully done (`Refs #N` otherwise), end with the `Co-Authored-By` line used in recent commits. Verify the issue state after the merge.
 
 ### Practical pitfalls
 

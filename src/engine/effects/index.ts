@@ -1084,6 +1084,9 @@ export function resumePendingSequence(state: GameState): GameState {
       },
     );
     currentState = res.state;
+    if (currentState.winner) {
+      break;
+    }
     if ((currentState.pendingSequences?.length ?? 0) <= pendingBefore) {
       finishLabelledAttack(currentState, pending.context as EffectExecutionContext);
       finishLabelledThwart(currentState, pending.context as EffectExecutionContext);
@@ -1114,6 +1117,9 @@ function executeForEachPlayer(
   let currentState = state;
   let anyStepMutated = false;
   for (let i = 0; i < playerIds.length; i++) {
+    if (currentState.winner) {
+      break;
+    }
     const pendingBefore = currentState.pendingSequences?.length ?? 0;
     const promptsBefore = currentState.pendingDecisionQueue?.length ?? 0;
     const res = executeSequence(currentState, steps, {
@@ -1125,6 +1131,9 @@ function executeForEachPlayer(
       discardedCards: undefined,
     });
     currentState = res.state;
+    if (currentState.winner) {
+      break;
+    }
     anyStepMutated = anyStepMutated || Boolean(res.mutatedState);
     if (!res.success) {
       return {
@@ -1200,6 +1209,9 @@ export function executeSequence(
   const onomatopoeias: string[] = resumeState?.onomatopoeias ? [...resumeState.onomatopoeias] : [];
 
   for (let i = 0; i < steps.length; i++) {
+    if (currentState.winner) {
+      break;
+    }
     const step = steps[i];
     const shouldRun = shouldExecuteStep(
       step,
@@ -1253,6 +1265,9 @@ export function executeSequence(
     const promptsBefore = currentState.pendingDecisionQueue?.length ?? 0;
     const res = executeStep(currentState, normalizedStep, stepContext);
     currentState = res.state;
+    if (currentState.winner) {
+      break;
+    }
 
     if (res.discardedCards) {
       context.discardedCards = res.discardedCards;
@@ -2097,7 +2112,13 @@ export function executeDiscard(
   step: TypedStep<'DISCARD'>,
   context: EffectExecutionContext,
 ): EffectResult {
-  const player = state.players.find((p) => p.id === context.playerId);
+  if (state.winner) {
+    return { state, success: true, mutatedState: false, value: 0 };
+  }
+
+  const player =
+    state.players.find((p) => p.id === context.playerId) ||
+    state.eliminatedPlayers?.find((p) => p.id === context.playerId);
   if (!player) return { state, success: false, error: 'Player not found' };
 
   const params = getStepEffectParams(step);
@@ -2219,7 +2240,13 @@ export function executeStep(
   step: AbilityStep,
   context: EffectExecutionContext,
 ): EffectResult {
-  const player = state.players.find((p) => p.id === context.playerId);
+  if (state.winner) {
+    return { state, success: true, mutatedState: false, value: 0 };
+  }
+
+  const player =
+    state.players.find((p) => p.id === context.playerId) ||
+    state.eliminatedPlayers?.find((p) => p.id === context.playerId);
   if (!player) return { state, success: false, error: 'Player not found' };
 
   step = {

@@ -360,6 +360,14 @@ const stepEventSelector = (step: AbilityStep): string | undefined => {
 const stepsNeedingChoice = (steps: AbilityStep[]): AbilityStep[] =>
   steps.filter((s) => judgedSelector(s) !== undefined || stepEventSelector(s) !== undefined);
 
+/**
+ * RR v1.8 "Target": an ability that draws always has a valid target while the player has a card
+ * to draw. Only a draw that always happens counts: a gated (conditional) draw is not known to
+ * happen when the ability is initiated, and no other step without a judged target is a target.
+ */
+const isAlwaysValidStep = (step: AbilityStep, player: PlayerState): boolean =>
+  step.effect === 'DRAW' && !step.gate && player.deck.length + player.discard.length > 0;
+
 /** The target a triggering event named, for abilities whose steps target "that enemy". */
 export interface EventTarget {
   targetType?: string;
@@ -395,9 +403,9 @@ export type TargetCheck = { allowed: true } | { allowed: false; reason: string }
 
 /**
  * RR v1.8 "Target" / "Initiating Abilities" step 2: an ability that requires a target can only be
- * initiated if it has at least one valid target. An ability with any step that needs no judged
- * target can always be initiated. A step on the enemy the triggering event named ("that enemy",
- * `TRIGGERING_ENEMY`) needs that enemy to be in play and affectable (defeated, already stunned or
+ * initiated if it has at least one valid target. An ability with a draw step that always happens
+ * has one while the player has a card to draw (`isAlwaysValidStep`). A step on the enemy the
+ * triggering event named ("that enemy", `TRIGGERING_ENEMY`) needs that enemy to be in play and affectable (defeated, already stunned or
  * Stalwart: no valid target); callers that pass no event target skip that check.
  *
  * The one legality gate for target validity (ADR-0090): trigger scans, queued prompts, prompt
@@ -417,7 +425,7 @@ export function checkAbilityTargets(
   );
   const choiceSteps = stepsNeedingChoice(openSteps);
   if (isCancelledByOwnStatus(player, ability)) return { allowed: true };
-  if (choiceSteps.length === 0 || choiceSteps.length < openSteps.length) {
+  if (choiceSteps.length === 0 || openSteps.some((s) => isAlwaysValidStep(s, player))) {
     return { allowed: true };
   }
   const hasTarget = (step: AbilityStep): boolean => {

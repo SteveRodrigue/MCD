@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): Ending the game clears all in-flight resolution state ([Issue #362](https://github.com/SteveRodrigue/MCD/issues/362))**
+  - One `endGame(state, winner)` helper replaces `declareVictory` and the three direct `state.winner = 'VILLAIN'` assignments; it is the only writer of `state.winner`.
+  - Clears pending placements, activations, clean-up, boost, attack and encounter context for a HEROES or VILLAIN win.
+  - Attack damage that ends the game skips the post-attack reactions, Retaliate and clean-up.
+
 - **Fix (Engine & Data): Separate "Threat Reached 0" from "Scheme Defeated" ([Issue #323](https://github.com/SteveRodrigue/MCD/issues/323))**
   - Promotes `SCHEME_THREAT_REDUCED_TO_ZERO` to a schema-supported trigger in `TriggerTypeSchema` and regenerates `schema.json`.
   - Removes the off-schema alias `TRIGGER_EQUIVALENTS` from `trigger-dispatcher.ts`, isolating `SCHEME_DEFEATED` strictly to defeated side schemes.

@@ -187,9 +187,9 @@ describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
       expect(activeSeatContainer.className).toContain('z-content');
       expect(activeSeatContainer.className).not.toContain('opacity-60');
 
-      // Inactive seat: opacity-60, grayscale-[35%], cursor-pointer
+      // Inactive seat: opacity-60, grayscale-35, cursor-pointer
       expect(inactiveSeatContainer.className).toContain('opacity-60');
-      expect(inactiveSeatContainer.className).toContain('grayscale-[35%]');
+      expect(inactiveSeatContainer.className).toContain('grayscale-35');
       expect(inactiveSeatContainer.className).toContain('cursor-pointer');
 
       // Inactive seat HeroZone panel: muted ring and slate background
@@ -229,7 +229,7 @@ describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
       expect(seat1After.className).toContain('opacity-100');
       expect(seat1After.className).toContain('z-content');
       expect(seat0After.className).toContain('opacity-60');
-      expect(seat0After.className).toContain('grayscale-[35%]');
+      expect(seat0After.className).toContain('grayscale-35');
     });
 
     it('clicking inactive HeroZone calls onFocus', () => {

@@ -88,7 +88,7 @@ const SectionFrame: React.FC<{
 }> = ({ chip, title, onRemove, children }) => (
   <div
     data-testid={`card-section-${chip}`}
-    className="bg-yellow-50/50 p-2.5 border-2 border-black rounded shadow-comic-xs space-y-2"
+    className="bg-yellow-50/50 p-2.5 border-2 border-black rounded-sm shadow-comic-xs space-y-2"
   >
     <div className="flex items-center justify-between">
       <span className="text-[10px] font-bold uppercase text-gray-700">{title}</span>
@@ -97,7 +97,7 @@ const SectionFrame: React.FC<{
         data-testid={`card-chip-remove-${chip}`}
         title={`Remove ${title}`}
         onClick={onRemove}
-        className="p-0.5 text-gray-400 hover:text-comic-red cursor-pointer rounded hover:bg-red-50 transition-colors"
+        className="p-0.5 text-gray-400 hover:text-comic-red cursor-pointer rounded-sm hover:bg-red-50 transition-colors"
       >
         <X className="w-3.5 h-3.5" />
       </button>
@@ -185,14 +185,14 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
           {audit.rulesVersion && (
             <span
               data-testid="card-audit-rules-version"
-              className="text-[10px] font-sans font-bold bg-blue-100 text-blue-900 border border-blue-400 px-1.5 py-0.5 rounded ml-1"
+              className="text-[10px] font-sans font-bold bg-blue-100 text-blue-900 border border-blue-400 px-1.5 py-0.5 rounded-sm ml-1"
             >
               Rules: {audit.rulesVersion}
             </span>
           )}
         </div>
         {hasErrors && (
-          <div className="flex items-center gap-1 text-[11px] font-bold text-comic-red bg-red-50 border border-comic-red px-1.5 py-0.5 rounded">
+          <div className="flex items-center gap-1 text-[11px] font-bold text-comic-red bg-red-50 border border-comic-red px-1.5 py-0.5 rounded-sm">
             <AlertCircle className="w-3.5 h-3.5 text-comic-red" />
             <span>Attributes Issue</span>
           </div>
@@ -202,7 +202,7 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
       {errors.length > 0 && (
         <div
           data-testid="card-attributes-errors"
-          className="p-2 bg-red-50 border border-comic-red rounded text-[11px] text-red-800 space-y-0.5"
+          className="p-2 bg-red-50 border border-comic-red rounded-sm text-[11px] text-red-800 space-y-0.5"
         >
           {errors.map((err, i) => (
             <div key={i} className="flex items-center gap-1">
@@ -213,14 +213,14 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
         </div>
       )}
 
-      <div className="bg-yellow-50/50 p-2.5 border-2 border-black rounded shadow-comic-xs">
+      <div className="bg-yellow-50/50 p-2.5 border-2 border-black rounded-sm shadow-comic-xs">
         <label className="flex items-center gap-2 cursor-pointer select-none">
           <input
             type="checkbox"
             data-testid="no-supplemental-needed-checkbox"
             checked={Boolean(supplemental.noSupplementalNeeded)}
             onChange={onNoSupplementalNeededChange || handleFallbackNoSupplementalNeededChange}
-            className="w-4 h-4 rounded border-black text-comic-accent focus:ring-black cursor-pointer"
+            className="w-4 h-4 rounded-sm border-black text-comic-accent focus:ring-black cursor-pointer"
           />
           <span className="font-bold text-xs text-black">
             🛡️ No Supplemental Rules Needed (Vanilla Card)
@@ -239,7 +239,7 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
             <span
               key={badge.id}
               data-testid={`upstream-badge-${kebabCase(badge.id)}`}
-              className="text-[10px] font-bold bg-gray-100 text-black border border-black px-1.5 py-0.5 rounded shadow-comic-xs"
+              className="text-[10px] font-bold bg-gray-100 text-black border border-black px-1.5 py-0.5 rounded-sm shadow-comic-xs"
             >
               {badge.text}
             </span>
@@ -319,7 +319,7 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
           value={supplemental.errata ?? ''}
           placeholder="Leave empty if no official errata applies"
           onChange={(e) => setKey('errata', e.target.value)}
-          className="w-full bg-white border border-black p-1.5 text-xs rounded"
+          className="w-full bg-white border border-black p-1.5 text-xs rounded-sm"
         />,
       )}
 
@@ -351,7 +351,7 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
                       key={id}
                       data-testid={`audit-${id}-at`}
                       title={stamp}
-                      className={`text-[10px] font-sans border px-1.5 py-0.5 rounded ${tone}`}
+                      className={`text-[10px] font-sans border px-1.5 py-0.5 rounded-sm ${tone}`}
                     >
                       {label}: {new Date(stamp).toLocaleDateString()}
                     </span>
@@ -364,7 +364,7 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
           {audit.originalText && (
             <div
               data-testid="card-audit-original-text-container"
-              className="bg-gray-50 border border-gray-300 p-2 rounded text-xs"
+              className="bg-gray-50 border border-gray-300 p-2 rounded-sm text-xs"
             >
               <span className="font-bold text-[10px] uppercase text-gray-500 block mb-1">
                 Original Printed Rules Text (Audit Reference)

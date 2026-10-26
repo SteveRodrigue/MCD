@@ -152,7 +152,7 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
               CARD SUPPLEMENTAL REVIEWER & EDITOR
             </h1>
           </div>
-          <span className="hidden sm:inline-block text-xs font-comic font-bold bg-comic-yellow text-black px-2 py-0.5 border border-black rounded shadow-comic-xs">
+          <span className="hidden sm:inline-block text-xs font-comic font-bold bg-comic-yellow text-black px-2 py-0.5 border border-black rounded-sm shadow-comic-xs">
             Phase 2.5 Tooling
           </span>
         </div>

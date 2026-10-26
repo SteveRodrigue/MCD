@@ -235,7 +235,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
       onContextMenu={handleContextMenu}
       className={`relative inline-block transition-all duration-200 select-none group cursor-pointer z-table hover:z-zoom ${
         exhaustedState
-          ? 'rotate-[30deg] filter brightness-95 hover:rotate-0 hover:brightness-100'
+          ? 'rotate-30 filter brightness-95 hover:rotate-0 hover:brightness-100'
           : 'rotate-0'
       } ${className}`}
     >
@@ -246,9 +246,9 @@ const CardViewImpl: React.FC<CardViewProps> = ({
             '--card-zoom-scale': effectiveZoomScale,
           } as React.CSSProperties
         }
-        className={`relative rounded-xl overflow-hidden border-3 border-comic-black shadow-comic transition-all duration-200 ease-out transform ${originClass} ${
+        className={`relative rounded-xl overflow-hidden border-comic border-comic-black shadow-comic transition-all duration-200 ease-out transform ${originClass} ${
           enableHoverZoom
-            ? 'group-hover:scale-[var(--card-zoom-scale)] group-hover:-translate-y-4 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.85)] group-hover:border-4'
+            ? 'group-hover:scale-(--card-zoom-scale) group-hover:-translate-y-4 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.85)] group-hover:border-4'
             : enableHoverLift
               ? 'group-hover:-translate-y-1'
               : ''
@@ -268,7 +268,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
       >
         {/* Exhausted Indicator Tag */}
         {exhaustedState && (
-          <div className="absolute top-1.5 left-1.5 z-content bg-slate-950/90 text-amber-300 text-nano px-1.5 py-0.5 rounded border border-comic-black shadow-sm font-bold uppercase pointer-events-none">
+          <div className="absolute top-1.5 left-1.5 z-content bg-slate-950/90 text-amber-300 text-nano px-1.5 py-0.5 rounded-sm border border-comic-black shadow-xs font-bold uppercase pointer-events-none">
             EXHAUSTED
           </div>
         )}
@@ -276,7 +276,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
         {/* Unplayable / Inactive Form Indicator Tag */}
         {!isFacedown && (isPlayable === false || isUsable === false) && (
           <div
-            className="absolute top-1.5 right-1.5 z-content bg-slate-900/90 text-white text-nano px-1.5 py-0.5 rounded border border-comic-black shadow-sm font-bold uppercase pointer-events-none group-hover:hidden"
+            className="absolute top-1.5 right-1.5 z-content bg-slate-900/90 text-white text-nano px-1.5 py-0.5 rounded-sm border border-comic-black shadow-xs font-bold uppercase pointer-events-none group-hover:hidden"
             title={
               unusableReason || unplayableReason
                 ? `Cannot use: ${unusableReason || unplayableReason}`
@@ -327,7 +327,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
                 style={{ backgroundColor: getCardBackFallbackColor(resolvedBackType) }}
                 data-testid="card-back-fallback"
               >
-                <span className="text-xs uppercase tracking-wider text-white bg-slate-950/70 px-2 py-0.5 rounded border border-comic-black shadow-comic-xs">
+                <span className="text-xs uppercase tracking-wider text-white bg-slate-950/70 px-2 py-0.5 rounded-sm border border-comic-black shadow-comic-xs">
                   {resolvedBackType}
                 </span>
               </div>
@@ -367,7 +367,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
                 <span className="w-6 h-6 rounded-full bg-slate-950 text-comic-yellow text-sm flex items-center justify-center font-bold border border-comic-black">
                   {card.cost ?? 0}
                 </span>
-                <span className="text-micro font-bold uppercase text-slate-500 bg-white/90 px-1 rounded border border-slate-300">
+                <span className="text-micro font-bold uppercase text-slate-500 bg-white/90 px-1 rounded-sm border border-slate-300">
                   {card.type}
                 </span>
               </div>
@@ -394,7 +394,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
             </div>
 
             {/* Card Body Text */}
-            <div className="my-1 text-micro text-slate-700 line-clamp-5 leading-tight bg-white/80 p-1 rounded border border-slate-200">
+            <div className="my-1 text-micro text-slate-700 line-clamp-5 leading-tight bg-white/80 p-1 rounded-sm border border-slate-200">
               <FormattedCardText text={card.text} />
             </div>
 
@@ -429,7 +429,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
 
         {isKeepSelected && (
           <div className="absolute top-2 right-2 pointer-events-none">
-            <div className="bg-emerald-500 text-slate-950 border border-comic-black text-micro px-2 py-0.5 font-bold tracking-wider rounded shadow-comic-sm">
+            <div className="bg-emerald-500 text-slate-950 border border-comic-black text-micro px-2 py-0.5 font-bold tracking-wider rounded-sm shadow-comic-sm">
               KEEP
             </div>
           </div>

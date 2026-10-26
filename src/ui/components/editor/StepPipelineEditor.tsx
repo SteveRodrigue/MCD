@@ -118,7 +118,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
             Resolution Steps ({steps.length})
           </span>
           {hasErrors && (
-            <span className="flex items-center gap-0.5 text-[9px] font-bold text-comic-red bg-red-50 border border-comic-red px-1 rounded">
+            <span className="flex items-center gap-0.5 text-[9px] font-bold text-comic-red bg-red-50 border border-comic-red px-1 rounded-sm">
               <AlertCircle className="w-2.5 h-2.5" />
               <span>Step Errors</span>
             </span>
@@ -191,7 +191,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="font-mono text-[10px] font-bold bg-gray-300 text-black px-1.5 py-0.5 rounded border border-gray-400 shrink-0">
+                    <span className="font-mono text-[10px] font-bold bg-gray-300 text-black px-1.5 py-0.5 rounded-sm border border-gray-400 shrink-0">
                       Step #{sIdx + 1}
                     </span>
                     <span
@@ -238,7 +238,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                       type="button"
                       data-testid={`step-remove-${abilityIndex}-${sIdx}`}
                       onClick={() => handleRemoveStep(sIdx)}
-                      className="text-gray-400 hover:text-comic-red cursor-pointer p-0.5 rounded hover:bg-red-50 transition-colors"
+                      className="text-gray-400 hover:text-comic-red cursor-pointer p-0.5 rounded-sm hover:bg-red-50 transition-colors"
                       title="Remove step"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -265,7 +265,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                 onClick={() => setExpandedStep(expandedStep === sIdx ? null : sIdx)}
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-mono text-[10px] font-bold bg-comic-yellow text-black px-1.5 py-0.5 rounded border border-black shrink-0">
+                  <span className="font-mono text-[10px] font-bold bg-comic-yellow text-black px-1.5 py-0.5 rounded-sm border border-black shrink-0">
                     Step #{sIdx + 1}
                   </span>
                   <span
@@ -313,7 +313,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                     type="button"
                     data-testid={`step-remove-${abilityIndex}-${sIdx}`}
                     onClick={() => handleRemoveStep(sIdx)}
-                    className="text-gray-400 hover:text-comic-red cursor-pointer p-0.5 rounded hover:bg-red-50 transition-colors"
+                    className="text-gray-400 hover:text-comic-red cursor-pointer p-0.5 rounded-sm hover:bg-red-50 transition-colors"
                     title="Remove step"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -325,7 +325,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
               </div>
 
               {errorsForStep.length > 0 && (
-                <div className="p-1.5 bg-red-50 border border-comic-red rounded text-[10px] text-red-800 space-y-0.5">
+                <div className="p-1.5 bg-red-50 border border-comic-red rounded-sm text-[10px] text-red-800 space-y-0.5">
                   {errorsForStep.map((err, i) => (
                     <div key={i}>• {err}</div>
                   ))}
@@ -368,7 +368,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                       value={step.id ?? ''}
                       onChange={(e) => handleUpdateStep(sIdx, { id: e.target.value })}
                       placeholder="e.g. photonic_blast_damage"
-                      className="w-full bg-white border border-black p-1 text-xs rounded font-mono"
+                      className="w-full bg-white border border-black p-1 text-xs rounded-sm font-mono"
                     />
                   )}
                   {chip.key === 'gate' && (
@@ -448,7 +448,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
 
               {/* Effect parameters, rendered from EFFECT_PARAM_SCHEMAS[effect] */}
               {effectSchema && effectFields.length > 0 ? (
-                <div className="space-y-2 bg-white/80 p-2.5 border border-black rounded shadow-comic-xs">
+                <div className="space-y-2 bg-white/80 p-2.5 border border-black rounded-sm shadow-comic-xs">
                   {effect === 'GENERATE_RESOURCE' && (
                     <div>
                       <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
@@ -494,7 +494,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                   />
                 </div>
               ) : (
-                <div className="text-[11px] italic text-gray-500 bg-gray-100 p-1.5 rounded border border-gray-300">
+                <div className="text-[11px] italic text-gray-500 bg-gray-100 p-1.5 rounded-sm border border-gray-300">
                   No additional parameters required for this operational primitive.
                 </div>
               )}

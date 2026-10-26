@@ -67,7 +67,7 @@ export const CardGalleryList: React.FC<CardGalleryListProps> = ({
           // Determine status icon and color
           let statusBadge = (
             <span
-              className="inline-flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-gray-200 px-1.5 py-0.5 border border-gray-400 rounded"
+              className="inline-flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-gray-200 px-1.5 py-0.5 border border-gray-400 rounded-sm"
               title="No supplemental entry defined"
             >
               <HelpCircle className="w-3 h-3 text-gray-400" />
@@ -79,7 +79,7 @@ export const CardGalleryList: React.FC<CardGalleryListProps> = ({
             if (!card.isValid) {
               statusBadge = (
                 <span
-                  className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-comic-red px-1.5 py-0.5 border border-black rounded shadow-comic-xs"
+                  className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-comic-red px-1.5 py-0.5 border border-black rounded-sm shadow-comic-xs"
                   title={`${card.errorCount || 1} schema error(s)`}
                 >
                   <AlertTriangle className="w-3 h-3 text-white" />
@@ -89,7 +89,7 @@ export const CardGalleryList: React.FC<CardGalleryListProps> = ({
             } else if (card.noSupplementalNeeded) {
               statusBadge = (
                 <span
-                  className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-900 bg-blue-100 px-1.5 py-0.5 border border-black rounded shadow-comic-xs"
+                  className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-900 bg-blue-100 px-1.5 py-0.5 border border-black rounded-sm shadow-comic-xs"
                   title="Vanilla Card: No supplemental rules needed"
                 >
                   <ShieldCheck className="w-3 h-3 text-blue-700" />
@@ -99,7 +99,7 @@ export const CardGalleryList: React.FC<CardGalleryListProps> = ({
             } else if ((card.confidence ?? 0) >= 95) {
               statusBadge = (
                 <span
-                  className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-green-700 px-1.5 py-0.5 border border-black rounded shadow-comic-xs"
+                  className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-green-700 px-1.5 py-0.5 border border-black rounded-sm shadow-comic-xs"
                   title={`Verified (${card.confidence}%)`}
                 >
                   <CheckCircle className="w-3 h-3 text-green-200" />
@@ -109,7 +109,7 @@ export const CardGalleryList: React.FC<CardGalleryListProps> = ({
             } else {
               statusBadge = (
                 <span
-                  className="inline-flex items-center gap-1 text-[10px] font-bold text-black bg-comic-yellow px-1.5 py-0.5 border border-black rounded shadow-comic-xs"
+                  className="inline-flex items-center gap-1 text-[10px] font-bold text-black bg-comic-yellow px-1.5 py-0.5 border border-black rounded-sm shadow-comic-xs"
                   title={`Draft / Review (${card.confidence || 0}%)`}
                 >
                   <CheckCircle className="w-3 h-3 text-black" />
@@ -132,7 +132,7 @@ export const CardGalleryList: React.FC<CardGalleryListProps> = ({
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-mono text-[11px] font-bold bg-black text-white px-1.5 py-0.2 rounded">
+                  <span className="font-mono text-[11px] font-bold bg-black text-white px-1.5 py-0.2 rounded-sm">
                     {card.code}
                   </span>
                   <span className="font-bangers tracking-wide text-sm truncate text-black">

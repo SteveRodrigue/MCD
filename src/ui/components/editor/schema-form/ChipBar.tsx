@@ -26,7 +26,7 @@ export const ChipBar: React.FC<ChipBarProps> = ({ items, onAdd, testId }) => {
           data-testid={item.testId}
           title={item.title}
           onClick={() => onAdd(item.key)}
-          className="flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold text-black bg-white border-2 border-black rounded shadow-comic-xs cursor-pointer hover:bg-comic-yellow active:scale-95 transition-transform"
+          className="flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold text-black bg-white border-2 border-black rounded-sm shadow-comic-xs cursor-pointer hover:bg-comic-yellow active:scale-95 transition-transform"
         >
           <Plus className="w-2.5 h-2.5" />
           <span>{item.label}</span>

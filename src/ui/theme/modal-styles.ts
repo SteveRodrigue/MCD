@@ -290,25 +290,25 @@ const popArt: ModalStyle = {
   text: 'text-comic-black',
   muted: 'text-slate-600',
   emphasis: 'text-comic-red',
-  panel: 'bg-white border-[3px] border-comic-black rounded-xl shadow-comic-sm',
+  panel: 'bg-white border-comic border-comic-black rounded-xl shadow-comic-sm',
   panelHead: 'border-b-2 border-comic-black',
   inset: 'bg-amber-50 border-2 border-comic-black rounded-lg',
   chip: 'bg-comic-black text-comic-yellow border-2 border-comic-black rounded-lg shadow-comic-sm',
-  badge: 'border border-comic-black rounded shadow-comic-xs',
+  badge: 'border border-comic-black rounded-sm shadow-comic-xs',
   buttonShape: 'border-2 border-comic-black rounded-lg shadow-comic-sm',
   option:
-    'bg-white hover:bg-amber-50 active:bg-amber-100 border-[3px] border-comic-black rounded-xl shadow-comic-sm hover:shadow-comic-md',
+    'bg-white hover:bg-amber-50 active:bg-amber-100 border-comic border-comic-black rounded-xl shadow-comic-sm hover:shadow-comic-md',
   optionTitleHover: 'group-hover:text-comic-red',
-  tile: 'border-[3px] border-comic-black bg-white hover:bg-amber-50 rounded-xl shadow-comic-sm',
+  tile: 'border-comic border-comic-black bg-white hover:bg-amber-50 rounded-xl shadow-comic-sm',
   tileSelected:
-    'border-[3px] border-comic-red bg-comic-yellow rounded-xl shadow-comic-sm scale-[1.03]',
-  slot: 'border-[3px] border-comic-black bg-white rounded-xl shadow-comic-sm',
-  slotFinal: 'border-[3px] border-comic-red ring-2 ring-comic-red/40 bg-red-50/30 rounded-xl',
+    'border-comic border-comic-red bg-comic-yellow rounded-xl shadow-comic-sm scale-[1.03]',
+  slot: 'border-comic border-comic-black bg-white rounded-xl shadow-comic-sm',
+  slotFinal: 'border-comic border-comic-red ring-2 ring-comic-red/40 bg-red-50/30 rounded-xl',
   slotOver: 'border-comic-blue ring-4 ring-sky-300 scale-[1.02]',
-  step: 'bg-comic-yellow text-comic-black border border-comic-black rounded shadow-comic-xs',
-  stepFinal: 'bg-comic-red text-white border border-comic-black rounded shadow-comic-xs',
+  step: 'bg-comic-yellow text-comic-black border border-comic-black rounded-sm shadow-comic-xs',
+  stepFinal: 'bg-comic-red text-white border border-comic-black rounded-sm shadow-comic-xs',
   btnGo:
-    'bg-comic-red hover:bg-red-700 text-white border-[3px] border-comic-black rounded-xl shadow-comic hover:shadow-comic-md active:translate-y-0.5 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none',
+    'bg-comic-red hover:bg-red-700 text-white border-comic border-comic-black rounded-xl shadow-comic hover:shadow-comic-md active:translate-y-0.5 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none',
   btnMove:
     'bg-comic-yellow hover:bg-amber-400 text-comic-black border-2 border-comic-black rounded-lg shadow-comic-xs disabled:opacity-30',
   previewPage: 'bg-comic-black/80',
@@ -320,7 +320,7 @@ const popArt: ModalStyle = {
   caption:
     'bg-comic-yellow text-comic-black border-2 border-comic-black shadow-comic-xs px-3 py-1.5 text-xs font-black uppercase tracking-wide',
   bubble:
-    "relative bg-white text-comic-black border-[3px] border-comic-black rounded-2xl px-3 py-2 text-sm font-bold before:content-[''] before:absolute before:-left-[12px] before:top-4 before:border-[9px] before:border-transparent before:border-r-comic-black",
+    "relative bg-white text-comic-black border-comic border-comic-black rounded-2xl px-3 py-2 text-sm font-bold before:content-[''] before:absolute before:left-[-12px] before:top-4 before:border-[9px] before:border-transparent before:border-r-comic-black",
   finisher: {
     label: 'FINISHER!',
     star: true,
@@ -337,7 +337,7 @@ const storyboard: ModalStyle = {
   traits: ['Tilted caption sticker', 'White framed panels', 'Tight square-ish corners'],
   bestFor: 'Multi-step prompts and sequences',
   headerLayout: 'caption',
-  overlay: 'bg-comic-black/85 backdrop-blur-sm',
+  overlay: 'bg-comic-black/85 backdrop-blur-xs',
   frame:
     'bg-comic-paper border-4 border-comic-black rounded-lg shadow-[8px_8px_0_0_rgba(0,0,0,1)] font-body',
   texture: DOTS(14),
@@ -390,26 +390,26 @@ const storyboard: ModalStyle = {
   text: 'text-comic-black',
   muted: 'text-slate-700',
   emphasis: 'text-comic-red',
-  panel: 'bg-white border-[3px] border-comic-black rounded-md shadow-comic-xs',
+  panel: 'bg-white border-comic border-comic-black rounded-md shadow-comic-xs',
   panelHead: 'border-b-2 border-comic-black',
-  inset: 'bg-amber-50 border-2 border-comic-black rounded',
-  chip: 'bg-comic-black text-comic-yellow border-2 border-comic-black rounded shadow-comic-sm',
-  badge: 'border border-comic-black rounded-sm shadow-comic-xs',
+  inset: 'bg-amber-50 border-2 border-comic-black rounded-sm',
+  chip: 'bg-comic-black text-comic-yellow border-2 border-comic-black rounded-sm shadow-comic-sm',
+  badge: 'border border-comic-black rounded-xs shadow-comic-xs',
   buttonShape: 'border-2 border-comic-black rounded-md shadow-comic-xs',
   option:
-    'bg-white hover:bg-amber-50 border-[3px] border-comic-black rounded-md shadow-comic-xs hover:shadow-comic-sm',
+    'bg-white hover:bg-amber-50 border-comic border-comic-black rounded-md shadow-comic-xs hover:shadow-comic-sm',
   optionTitleHover: 'group-hover:text-comic-red',
-  tile: 'border-[3px] border-comic-black bg-white hover:bg-amber-50 rounded-md shadow-comic-xs',
-  tileSelected: 'border-[3px] border-comic-red bg-comic-yellow rounded-md shadow-comic-xs',
-  slot: 'border-2 border-comic-black bg-white rounded',
-  slotFinal: 'border-2 border-comic-red bg-red-50/30 rounded shadow-comic-xs',
+  tile: 'border-comic border-comic-black bg-white hover:bg-amber-50 rounded-md shadow-comic-xs',
+  tileSelected: 'border-comic border-comic-red bg-comic-yellow rounded-md shadow-comic-xs',
+  slot: 'border-2 border-comic-black bg-white rounded-sm',
+  slotFinal: 'border-2 border-comic-red bg-red-50/30 rounded-sm shadow-comic-xs',
   slotOver: 'border-comic-blue ring-4 ring-sky-300 scale-[1.02]',
-  step: 'bg-comic-yellow text-comic-black border border-comic-black rounded',
-  stepFinal: 'bg-comic-red text-white border border-comic-black rounded',
+  step: 'bg-comic-yellow text-comic-black border border-comic-black rounded-sm',
+  stepFinal: 'bg-comic-red text-white border border-comic-black rounded-sm',
   btnGo:
-    'bg-comic-red hover:bg-red-700 text-white border-[3px] border-comic-black rounded shadow-comic-sm active:translate-y-0.5 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none',
+    'bg-comic-red hover:bg-red-700 text-white border-comic border-comic-black rounded-sm shadow-comic-sm active:translate-y-0.5 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none',
   btnMove:
-    'bg-comic-yellow hover:bg-amber-400 text-comic-black border border-comic-black rounded shadow-xs disabled:opacity-30',
+    'bg-comic-yellow hover:bg-amber-400 text-comic-black border border-comic-black rounded-sm shadow-2xs disabled:opacity-30',
   previewPage: 'bg-comic-black/85',
   fx: {
     words: ['BAM!', 'KAPOW!', 'THWIP!'],
@@ -419,7 +419,7 @@ const storyboard: ModalStyle = {
   caption:
     'bg-white text-comic-black border-2 border-comic-black shadow-comic-xs px-3 py-1.5 text-xs font-black uppercase tracking-wide -rotate-1',
   bubble:
-    "relative bg-white text-comic-black border-2 border-comic-black rounded-[2rem] px-4 py-2.5 text-sm font-bold before:content-[''] before:absolute before:-left-[10px] before:bottom-3 before:border-[8px] before:border-transparent before:border-r-comic-black",
+    "relative bg-white text-comic-black border-2 border-comic-black rounded-4xl px-4 py-2.5 text-sm font-bold before:content-[''] before:absolute before:left-[-10px] before:bottom-3 before:border-8 before:border-transparent before:border-r-comic-black",
   finisher: {
     label: 'FINISHER!',
     star: true,
@@ -438,13 +438,13 @@ const newsprint: ModalStyle = {
   },
   label: 'Golden Age Newsprint',
   tagline: 'Aged paper, ink-black print, a masthead for every moment.',
-  traits: ['Aged paper + ink brown', 'Hard ink shadow', 'Serif masthead header'],
+  traits: ['Aged paper + ink brown', 'Hard ink shadow-sm', 'Serif masthead header'],
   bestFor: 'Story beats, information, confirmations',
   headerLayout: 'masthead',
   flavor: 'Vol. 1 · No. 1 · 10¢',
   overlay: 'bg-[#2b2118]/85 backdrop-blur-xs',
   frame:
-    'bg-[#f3e7c4] border-[3px] border-[#2b2118] rounded-none shadow-[8px_8px_0_0_#2b2118] font-body',
+    'bg-[#f3e7c4] border-comic border-[#2b2118] rounded-none shadow-[8px_8px_0_0_#2b2118] font-body',
   texture: {
     backgroundImage:
       'repeating-linear-gradient(0deg, rgba(43,33,24,0.5) 0 1px, transparent 1px 3px)',
@@ -452,7 +452,7 @@ const newsprint: ModalStyle = {
   textureClass: 'opacity-[0.07]',
   header: '',
   body: 'p-5 sm:p-6 space-y-4',
-  footer: 'bg-[#ead9a8] border-t-[3px] border-double border-[#2b2118]',
+  footer: 'bg-[#ead9a8] border-t-comic border-double border-[#2b2118]',
   verbs: {
     yellow: {
       banner: 'bg-[#f3e7c4] text-[#2b2118]',
@@ -526,11 +526,11 @@ const newsprint: ModalStyle = {
     words: ['EXTRA!', 'STOP THE PRESSES!', 'HOT OFF THE PRESS!'],
     shape: 'rect',
     className:
-      'bg-[#fbf3d9] text-red-700 border-[3px] border-double border-red-700 shadow-[4px_4px_0_0_rgba(43,33,24,0.85)] uppercase',
+      'bg-[#fbf3d9] text-red-700 border-comic border-double border-red-700 shadow-[4px_4px_0_0_rgba(43,33,24,0.85)] uppercase',
   },
   caption: 'bg-[#2b2118] text-[#f3e7c4] px-3 py-1.5 text-xs font-black uppercase tracking-[0.2em]',
   bubble:
-    "relative bg-[#fbf3d9] text-[#2b2118] border-2 border-[#2b2118] rounded-none italic px-3 py-2 text-sm before:content-[''] before:absolute before:-left-[12px] before:top-4 before:border-[9px] before:border-transparent before:border-r-[#2b2118]",
+    "relative bg-[#fbf3d9] text-[#2b2118] border-2 border-[#2b2118] rounded-none italic px-3 py-2 text-sm before:content-[''] before:absolute before:left-[-12px] before:top-4 before:border-[9px] before:border-transparent before:border-r-[#2b2118]",
   finisher: {
     label: 'FINAL EDITION',
     star: false,
@@ -552,7 +552,7 @@ const night: ModalStyle = {
   traits: ['Dark slate frame', 'Neon verb-colour rule + glow', 'Easy on the eyes'],
   bestFor: 'Long sessions, dark-table feel',
   headerLayout: 'bar',
-  overlay: 'bg-black/85 backdrop-blur-sm',
+  overlay: 'bg-black/85 backdrop-blur-xs',
   frame:
     'bg-slate-900 border-4 border-yellow-300 rounded-xl shadow-[0_0_0_4px_#000,0_0_44px_rgba(255,222,0,0.28)] font-body',
   texture: DOTS(14, '#fff'),
@@ -605,26 +605,26 @@ const night: ModalStyle = {
   text: 'text-slate-100',
   muted: 'text-slate-400',
   emphasis: 'text-yellow-300',
-  panel: 'bg-slate-800 border-[3px] border-slate-600 rounded-xl',
+  panel: 'bg-slate-800 border-comic border-slate-600 rounded-xl',
   panelHead: 'border-b-2 border-slate-600',
   inset: 'bg-slate-900 border-2 border-slate-600 rounded-lg',
   chip: 'bg-yellow-300 text-black border-2 border-black rounded-lg',
   badge: 'border border-black rounded-md',
   buttonShape: 'border-2 border-black rounded-lg',
   option:
-    'bg-slate-800 hover:bg-slate-700 border-[3px] border-slate-600 hover:border-yellow-300 rounded-xl hover:shadow-[0_0_16px_rgba(255,222,0,0.3)]',
+    'bg-slate-800 hover:bg-slate-700 border-comic border-slate-600 hover:border-yellow-300 rounded-xl hover:shadow-[0_0_16px_rgba(255,222,0,0.3)]',
   optionTitleHover: 'group-hover:text-yellow-300',
-  tile: 'border-[3px] border-slate-600 bg-slate-800 hover:bg-slate-700 rounded-xl',
+  tile: 'border-comic border-slate-600 bg-slate-800 hover:bg-slate-700 rounded-xl',
   tileSelected:
-    'border-[3px] border-yellow-300 bg-slate-700 rounded-xl shadow-[0_0_20px_rgba(255,222,0,0.45)] scale-[1.03]',
-  slot: 'border-[3px] border-slate-600 bg-slate-800 rounded-xl',
+    'border-comic border-yellow-300 bg-slate-700 rounded-xl shadow-[0_0_20px_rgba(255,222,0,0.45)] scale-[1.03]',
+  slot: 'border-comic border-slate-600 bg-slate-800 rounded-xl',
   slotFinal:
-    'border-[3px] border-red-500 bg-slate-800 rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.45)]',
+    'border-comic border-red-500 bg-slate-800 rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.45)]',
   slotOver: 'border-sky-400 ring-4 ring-sky-400/40 scale-[1.02]',
-  step: 'bg-yellow-300 text-black rounded',
-  stepFinal: 'bg-red-500 text-black rounded',
+  step: 'bg-yellow-300 text-black rounded-sm',
+  stepFinal: 'bg-red-500 text-black rounded-sm',
   btnGo:
-    'bg-yellow-300 hover:bg-yellow-200 text-black border-[3px] border-black rounded-xl shadow-[0_0_18px_rgba(255,222,0,0.5)] active:translate-y-0.5 disabled:bg-slate-700 disabled:text-slate-500 disabled:shadow-none',
+    'bg-yellow-300 hover:bg-yellow-200 text-black border-comic border-black rounded-xl shadow-[0_0_18px_rgba(255,222,0,0.5)] active:translate-y-0.5 disabled:bg-slate-700 disabled:text-slate-500 disabled:shadow-none',
   btnMove:
     'bg-slate-700 hover:bg-slate-600 text-yellow-300 border-2 border-slate-500 rounded-lg disabled:opacity-30',
   previewPage: 'bg-black/85',
@@ -636,7 +636,7 @@ const night: ModalStyle = {
   caption:
     'bg-slate-950 text-yellow-300 border-2 border-yellow-300/70 px-3 py-1.5 text-xs font-black uppercase tracking-wide shadow-[0_0_12px_rgba(255,222,0,0.25)]',
   bubble:
-    "relative bg-slate-800 text-slate-100 border-[3px] border-yellow-300 rounded-2xl px-3 py-2 text-sm font-bold before:content-[''] before:absolute before:-left-[12px] before:top-4 before:border-[9px] before:border-transparent before:border-r-yellow-300",
+    "relative bg-slate-800 text-slate-100 border-comic border-yellow-300 rounded-2xl px-3 py-2 text-sm font-bold before:content-[''] before:absolute before:left-[-12px] before:top-4 before:border-[9px] before:border-transparent before:border-r-yellow-300",
   finisher: {
     label: 'FINISHER!',
     star: true,
@@ -659,7 +659,7 @@ const splash: ModalStyle = {
   traits: ['Jagged explosion header', 'Speed-line texture', 'POW / THWIP stickers'],
   bestFor: 'Combat and big moments',
   headerLayout: 'burst',
-  overlay: 'bg-comic-black/85 backdrop-blur-sm',
+  overlay: 'bg-comic-black/85 backdrop-blur-xs',
   frame:
     'bg-yellow-50 border-[6px] border-comic-black rounded-3xl shadow-[10px_10px_0_0_#ED1D24,14px_14px_0_0_#111111] font-body',
   texture: {
@@ -715,28 +715,28 @@ const splash: ModalStyle = {
   text: 'text-comic-black',
   muted: 'text-slate-700',
   emphasis: 'text-comic-red',
-  panel: 'bg-white border-[4px] border-comic-black rounded-2xl shadow-comic',
-  panelHead: 'border-b-[3px] border-comic-black',
-  inset: 'bg-yellow-100 border-[3px] border-comic-black rounded-xl',
-  chip: 'bg-comic-red text-white border-[3px] border-comic-black rounded-full shadow-comic-sm -rotate-2',
+  panel: 'bg-white border-4 border-comic-black rounded-2xl shadow-comic',
+  panelHead: 'border-b-comic border-comic-black',
+  inset: 'bg-yellow-100 border-comic border-comic-black rounded-xl',
+  chip: 'bg-comic-red text-white border-comic border-comic-black rounded-full shadow-comic-sm -rotate-2',
   badge: 'border-2 border-comic-black rounded-full',
-  buttonShape: 'border-[3px] border-comic-black rounded-xl shadow-comic-sm',
+  buttonShape: 'border-comic border-comic-black rounded-xl shadow-comic-sm',
   option:
-    'bg-white hover:bg-yellow-100 border-[4px] border-comic-black rounded-2xl shadow-comic hover:shadow-comic-lg hover:-rotate-[0.5deg]',
+    'bg-white hover:bg-yellow-100 border-4 border-comic-black rounded-2xl shadow-comic hover:shadow-comic-lg hover:rotate-[-0.5deg]',
   optionTitleHover: 'group-hover:text-comic-red',
-  tile: 'border-[4px] border-comic-black bg-white hover:bg-yellow-100 rounded-2xl shadow-comic',
+  tile: 'border-4 border-comic-black bg-white hover:bg-yellow-100 rounded-2xl shadow-comic',
   tileSelected:
-    'border-[4px] border-comic-red bg-comic-yellow rounded-2xl shadow-comic scale-[1.05] -rotate-1',
-  slot: 'border-[4px] border-comic-black bg-white rounded-2xl shadow-comic',
+    'border-4 border-comic-red bg-comic-yellow rounded-2xl shadow-comic scale-[1.05] -rotate-1',
+  slot: 'border-4 border-comic-black bg-white rounded-2xl shadow-comic',
   slotFinal:
-    'border-[4px] border-comic-red bg-yellow-50 rounded-2xl shadow-comic ring-4 ring-comic-yellow',
+    'border-4 border-comic-red bg-yellow-50 rounded-2xl shadow-comic ring-4 ring-comic-yellow',
   slotOver: 'border-comic-blue ring-4 ring-sky-300 scale-[1.04]',
   step: 'bg-comic-yellow text-comic-black border-2 border-comic-black rounded-full',
   stepFinal: 'bg-comic-red text-white border-2 border-comic-black rounded-full',
   btnGo:
-    'bg-comic-red hover:bg-red-700 text-white border-[4px] border-comic-black rounded-2xl shadow-comic-lg hover:-rotate-1 active:translate-y-1 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none uppercase tracking-wide',
+    'bg-comic-red hover:bg-red-700 text-white border-4 border-comic-black rounded-2xl shadow-comic-lg hover:-rotate-1 active:translate-y-1 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none uppercase tracking-wide',
   btnMove:
-    'bg-comic-yellow hover:bg-amber-400 text-comic-black border-[3px] border-comic-black rounded-full shadow-comic-sm disabled:opacity-30',
+    'bg-comic-yellow hover:bg-amber-400 text-comic-black border-comic border-comic-black rounded-full shadow-comic-sm disabled:opacity-30',
   previewPage: 'bg-comic-black/85',
   fx: {
     words: ['KA-POW!', 'KRAKOOM!', 'BAAAM!', 'SKRAKK!'],
@@ -746,11 +746,11 @@ const splash: ModalStyle = {
   caption:
     'bg-comic-black text-comic-yellow px-4 py-1.5 text-sm font-black uppercase tracking-wide -rotate-1 shadow-[4px_4px_0_0_#ED1D24]',
   bubble:
-    "font-comic relative bg-white text-comic-black border-[4px] border-comic-black rounded-3xl px-4 py-2.5 text-base font-black before:content-[''] before:absolute before:-left-[16px] before:top-5 before:border-[12px] before:border-transparent before:border-r-comic-black",
+    "font-comic relative bg-white text-comic-black border-4 border-comic-black rounded-3xl px-4 py-2.5 text-base font-black before:content-[''] before:absolute before:left-[-16px] before:top-5 before:border-12 before:border-transparent before:border-r-comic-black",
   finisher: {
     label: 'FINISHER!',
     star: true,
-    className: 'bg-comic-yellow text-comic-red border-[3px] border-comic-black',
+    className: 'bg-comic-yellow text-comic-red border-comic border-comic-black',
   },
   accent: { edge: 'dot', name: 'underline' },
 };
@@ -768,7 +768,7 @@ const dossier: ModalStyle = {
   traits: ['Manila folder + tab', 'Typewriter type', 'Verb-coloured rubber stamp'],
   bestFor: 'Decisions, searches, rules text',
   headerLayout: 'tab',
-  overlay: 'bg-slate-950/85 backdrop-blur-sm',
+  overlay: 'bg-slate-950/85 backdrop-blur-xs',
   frame:
     'bg-[#e9d29a] border-2 border-[#8a6d3b] rounded-md shadow-[6px_8px_0_0_rgba(0,0,0,0.55)] font-body',
   texture: {
@@ -782,7 +782,7 @@ const dossier: ModalStyle = {
   verbs: {
     yellow: {
       banner: 'bg-[#f1cf5b] text-black',
-      iconBox: 'bg-black/85 text-[#f1cf5b] rounded-sm p-1.5',
+      iconBox: 'bg-black/85 text-[#f1cf5b] rounded-xs p-1.5',
       kicker: 'text-black/80',
       title: 'text-black',
       rule: 'border-black/60',
@@ -790,7 +790,7 @@ const dossier: ModalStyle = {
     },
     red: {
       banner: 'bg-[#b91c1c] text-white',
-      iconBox: 'bg-black/85 text-red-200 rounded-sm p-1.5',
+      iconBox: 'bg-black/85 text-red-200 rounded-xs p-1.5',
       kicker: 'text-red-100',
       title: 'text-white',
       rule: 'border-black/60',
@@ -798,7 +798,7 @@ const dossier: ModalStyle = {
     },
     blue: {
       banner: 'bg-[#2b6cb0] text-white',
-      iconBox: 'bg-black/85 text-sky-200 rounded-sm p-1.5',
+      iconBox: 'bg-black/85 text-sky-200 rounded-xs p-1.5',
       kicker: 'text-sky-100',
       title: 'text-white',
       rule: 'border-black/60',
@@ -806,7 +806,7 @@ const dossier: ModalStyle = {
     },
     purple: {
       banner: 'bg-[#553c9a] text-white',
-      iconBox: 'bg-black/85 text-amber-200 rounded-sm p-1.5',
+      iconBox: 'bg-black/85 text-amber-200 rounded-xs p-1.5',
       kicker: 'text-amber-100',
       title: 'text-white',
       rule: 'border-black/60',
@@ -814,7 +814,7 @@ const dossier: ModalStyle = {
     },
     green: {
       banner: 'bg-[#2f855a] text-white',
-      iconBox: 'bg-black/85 text-emerald-200 rounded-sm p-1.5',
+      iconBox: 'bg-black/85 text-emerald-200 rounded-xs p-1.5',
       kicker: 'text-emerald-100',
       title: 'text-white',
       rule: 'border-black/60',
@@ -824,28 +824,28 @@ const dossier: ModalStyle = {
   text: 'text-[#2a2110]',
   muted: 'text-[#6a5628]',
   emphasis: 'text-red-700',
-  panel: 'bg-[#fffdf5] border border-[#8a6d3b] rounded-sm shadow-[2px_3px_0_0_rgba(0,0,0,0.25)]',
+  panel: 'bg-[#fffdf5] border border-[#8a6d3b] rounded-xs shadow-[2px_3px_0_0_rgba(0,0,0,0.25)]',
   panelHead: 'border-b border-dashed border-[#8a6d3b]',
-  inset: 'bg-[#f6ecc8] border border-dashed border-[#8a6d3b] rounded-sm',
-  chip: 'bg-black text-[#f1cf5b] border border-black rounded-sm tracking-widest',
-  badge: 'border border-black rounded-sm',
-  buttonShape: 'border border-black rounded-sm',
+  inset: 'bg-[#f6ecc8] border border-dashed border-[#8a6d3b] rounded-xs',
+  chip: 'bg-black text-[#f1cf5b] border border-black rounded-xs tracking-widest',
+  badge: 'border border-black rounded-xs',
+  buttonShape: 'border border-black rounded-xs',
   option:
-    'bg-[#fffdf5] hover:bg-[#fff6d6] border border-[#8a6d3b] rounded-sm shadow-[2px_3px_0_0_rgba(0,0,0,0.25)] hover:shadow-[3px_4px_0_0_rgba(0,0,0,0.35)]',
+    'bg-[#fffdf5] hover:bg-[#fff6d6] border border-[#8a6d3b] rounded-xs shadow-[2px_3px_0_0_rgba(0,0,0,0.25)] hover:shadow-[3px_4px_0_0_rgba(0,0,0,0.35)]',
   optionTitleHover: 'group-hover:text-red-700',
-  tile: 'border border-[#8a6d3b] bg-[#fffdf5] hover:bg-[#fff6d6] rounded-sm shadow-[2px_3px_0_0_rgba(0,0,0,0.25)]',
+  tile: 'border border-[#8a6d3b] bg-[#fffdf5] hover:bg-[#fff6d6] rounded-xs shadow-[2px_3px_0_0_rgba(0,0,0,0.25)]',
   tileSelected:
-    'border-2 border-red-700 bg-[#fff1b8] rounded-sm shadow-[3px_4px_0_0_rgba(0,0,0,0.35)]',
-  slot: 'border border-[#8a6d3b] bg-[#fffdf5] rounded-sm shadow-[2px_3px_0_0_rgba(0,0,0,0.25)]',
+    'border-2 border-red-700 bg-[#fff1b8] rounded-xs shadow-[3px_4px_0_0_rgba(0,0,0,0.35)]',
+  slot: 'border border-[#8a6d3b] bg-[#fffdf5] rounded-xs shadow-[2px_3px_0_0_rgba(0,0,0,0.25)]',
   slotFinal:
-    'border-2 border-red-700 bg-[#fffdf5] rounded-sm shadow-[3px_4px_0_0_rgba(185,28,28,0.45)]',
+    'border-2 border-red-700 bg-[#fffdf5] rounded-xs shadow-[3px_4px_0_0_rgba(185,28,28,0.45)]',
   slotOver: 'border-[#2b6cb0] ring-4 ring-sky-300 scale-[1.02]',
-  step: 'bg-black text-[#f1cf5b] rounded-sm tracking-widest',
-  stepFinal: 'bg-red-700 text-white rounded-sm tracking-widest',
+  step: 'bg-black text-[#f1cf5b] rounded-xs tracking-widest',
+  stepFinal: 'bg-red-700 text-white rounded-xs tracking-widest',
   btnGo:
-    'bg-red-700 hover:bg-red-800 text-white border-2 border-black rounded-sm uppercase tracking-widest shadow-[3px_3px_0_0_rgba(0,0,0,0.6)] active:translate-y-0.5 disabled:bg-[#c9b57a] disabled:text-[#6a5628] disabled:shadow-none',
+    'bg-red-700 hover:bg-red-800 text-white border-2 border-black rounded-xs uppercase tracking-widest shadow-[3px_3px_0_0_rgba(0,0,0,0.6)] active:translate-y-0.5 disabled:bg-[#c9b57a] disabled:text-[#6a5628] disabled:shadow-none',
   btnMove:
-    'bg-[#f1cf5b] hover:bg-[#e6bf3c] text-black border border-black rounded-sm disabled:opacity-30',
+    'bg-[#f1cf5b] hover:bg-[#e6bf3c] text-black border border-black rounded-xs disabled:opacity-30',
   previewPage: 'bg-slate-950/85',
   fx: {
     words: ['APPROVED', 'FILED', 'CONFIRMED'],
@@ -856,19 +856,19 @@ const dossier: ModalStyle = {
   caption:
     'bg-[#fff3a8] text-[#2a2110] border border-[#8a6d3b] shadow-[2px_3px_0_0_rgba(0,0,0,0.3)] rotate-1 px-3 py-1.5 text-xs font-bold',
   bubble:
-    "relative bg-[#fff3a8] text-[#2a2110] border border-[#8a6d3b] rounded-sm shadow-[2px_3px_0_0_rgba(0,0,0,0.3)] rotate-[-0.5deg] px-3 py-2 text-sm before:content-[''] before:absolute before:-left-[10px] before:top-4 before:border-[8px] before:border-transparent before:border-r-[#8a6d3b]",
+    "relative bg-[#fff3a8] text-[#2a2110] border border-[#8a6d3b] rounded-xs shadow-[2px_3px_0_0_rgba(0,0,0,0.3)] rotate-[-0.5deg] px-3 py-2 text-sm before:content-[''] before:absolute before:left-[-10px] before:top-4 before:border-8 before:border-transparent before:border-r-[#8a6d3b]",
   finisher: {
     label: 'PRIORITY',
     star: false,
     className:
-      'bg-transparent text-red-700 border-[3px] border-double border-red-700 tracking-[0.25em] -rotate-6',
+      'bg-transparent text-red-700 border-comic border-double border-red-700 tracking-[0.25em] -rotate-6',
   },
   accent: { edge: 'tab', name: 'marker' },
 };
 
 const hudVerb = (hue: string, glow: string, word: string, text: string): VerbTokens => ({
   banner: `bg-[#04101c] ${text}`,
-  iconBox: `border border-current rounded-sm p-1.5 ${text}`,
+  iconBox: `border border-current rounded-xs p-1.5 ${text}`,
   kicker: `${text} opacity-70`,
   title: `${text} ${glow}`,
   rule: hue,
@@ -888,9 +888,9 @@ const hud: ModalStyle = {
   traits: ['Scanline hologram', 'Cyan glow + monospace readouts', 'Sharp, square, techy'],
   bestFor: 'Tech heroes, targeting, combat readouts',
   headerLayout: 'bar',
-  overlay: 'bg-[#020a14]/90 backdrop-blur-sm',
+  overlay: 'bg-[#020a14]/90 backdrop-blur-xs',
   frame:
-    'bg-[#061726] border-2 border-cyan-400 rounded-sm shadow-[0_0_0_1px_#000,0_0_36px_rgba(34,211,238,0.35),inset_0_0_40px_rgba(34,211,238,0.08)] font-body',
+    'bg-[#061726] border-2 border-cyan-400 rounded-xs shadow-[0_0_0_1px_#000,0_0_36px_rgba(34,211,238,0.35),inset_0_0_40px_rgba(34,211,238,0.08)] font-body',
   texture: {
     backgroundImage:
       'repeating-linear-gradient(0deg, rgba(34,211,238,0.9) 0 1px, transparent 1px 4px)',
@@ -934,28 +934,28 @@ const hud: ModalStyle = {
   text: 'text-cyan-50',
   muted: 'text-cyan-200/60',
   emphasis: 'text-amber-300',
-  panel: 'bg-[#0a2036]/90 border border-cyan-500/60 rounded-sm',
+  panel: 'bg-[#0a2036]/90 border border-cyan-500/60 rounded-xs',
   panelHead: 'border-b border-cyan-500/40',
-  inset: 'bg-[#04101c] border border-dashed border-cyan-500/50 rounded-sm',
-  chip: 'bg-cyan-400 text-[#021018] border border-cyan-200 rounded-sm tracking-widest',
-  badge: 'border border-cyan-200 rounded-sm',
-  buttonShape: 'border border-cyan-200/70 rounded-sm',
+  inset: 'bg-[#04101c] border border-dashed border-cyan-500/50 rounded-xs',
+  chip: 'bg-cyan-400 text-[#021018] border border-cyan-200 rounded-xs tracking-widest',
+  badge: 'border border-cyan-200 rounded-xs',
+  buttonShape: 'border border-cyan-200/70 rounded-xs',
   option:
-    'bg-[#0a2036]/90 hover:bg-[#0d2a47] border border-cyan-500/60 hover:border-cyan-300 rounded-sm hover:shadow-[0_0_16px_rgba(34,211,238,0.4)]',
+    'bg-[#0a2036]/90 hover:bg-[#0d2a47] border border-cyan-500/60 hover:border-cyan-300 rounded-xs hover:shadow-[0_0_16px_rgba(34,211,238,0.4)]',
   optionTitleHover: 'group-hover:text-cyan-300',
-  tile: 'border border-cyan-500/60 bg-[#0a2036]/90 hover:bg-[#0d2a47] rounded-sm',
+  tile: 'border border-cyan-500/60 bg-[#0a2036]/90 hover:bg-[#0d2a47] rounded-xs',
   tileSelected:
-    'border-2 border-cyan-300 bg-[#0d2a47] rounded-sm shadow-[0_0_22px_rgba(34,211,238,0.5)]',
-  slot: 'border border-cyan-500/60 bg-[#0a2036]/90 rounded-sm',
+    'border-2 border-cyan-300 bg-[#0d2a47] rounded-xs shadow-[0_0_22px_rgba(34,211,238,0.5)]',
+  slot: 'border border-cyan-500/60 bg-[#0a2036]/90 rounded-xs',
   slotFinal:
-    'border-2 border-amber-300 bg-[#0a2036]/90 rounded-sm shadow-[0_0_22px_rgba(252,211,77,0.45)]',
+    'border-2 border-amber-300 bg-[#0a2036]/90 rounded-xs shadow-[0_0_22px_rgba(252,211,77,0.45)]',
   slotOver: 'border-cyan-300 ring-4 ring-cyan-300/40 scale-[1.02]',
-  step: 'bg-cyan-400 text-[#021018] rounded-sm tracking-widest',
-  stepFinal: 'bg-amber-300 text-[#021018] rounded-sm tracking-widest',
+  step: 'bg-cyan-400 text-[#021018] rounded-xs tracking-widest',
+  stepFinal: 'bg-amber-300 text-[#021018] rounded-xs tracking-widest',
   btnGo:
-    'bg-cyan-400 hover:bg-cyan-300 text-[#021018] border border-cyan-100 rounded-sm uppercase tracking-widest shadow-[0_0_18px_rgba(34,211,238,0.6)] active:translate-y-0.5 disabled:bg-slate-700 disabled:text-slate-500 disabled:shadow-none',
+    'bg-cyan-400 hover:bg-cyan-300 text-[#021018] border border-cyan-100 rounded-xs uppercase tracking-widest shadow-[0_0_18px_rgba(34,211,238,0.6)] active:translate-y-0.5 disabled:bg-slate-700 disabled:text-slate-500 disabled:shadow-none',
   btnMove:
-    'bg-[#0d2a47] hover:bg-[#12385f] text-cyan-300 border border-cyan-500/70 rounded-sm disabled:opacity-30',
+    'bg-[#0d2a47] hover:bg-[#12385f] text-cyan-300 border border-cyan-500/70 rounded-xs disabled:opacity-30',
   previewPage: 'bg-[#020a14]/90',
   fx: {
     words: ['TARGET LOCKED', 'ENGAGED', 'ACKNOWLEDGED'],
@@ -966,7 +966,7 @@ const hud: ModalStyle = {
   caption:
     'bg-[#04101c] text-cyan-300 border border-cyan-400/70 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.15em] shadow-[0_0_12px_rgba(34,211,238,0.25)]',
   bubble:
-    "relative bg-[#04101c] text-cyan-100 border border-cyan-400 rounded-sm px-3 py-2 text-sm shadow-[0_0_14px_rgba(34,211,238,0.3)] before:content-[''] before:absolute before:-left-[10px] before:top-4 before:border-[8px] before:border-transparent before:border-r-cyan-400",
+    "relative bg-[#04101c] text-cyan-100 border border-cyan-400 rounded-xs px-3 py-2 text-sm shadow-[0_0_14px_rgba(34,211,238,0.3)] before:content-[''] before:absolute before:left-[-10px] before:top-4 before:border-8 before:border-transparent before:border-r-cyan-400",
   finisher: {
     label: 'OVERRIDE',
     star: false,

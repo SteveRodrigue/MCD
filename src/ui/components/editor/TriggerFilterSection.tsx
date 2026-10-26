@@ -51,7 +51,7 @@ export const TriggerFilterSection: React.FC<TriggerFilterSectionProps> = ({
             Trigger Filter & Event Scope
           </span>
           {hasErrors && (
-            <span className="flex items-center gap-0.5 text-[9px] font-bold text-comic-red bg-red-50 border border-comic-red px-1 rounded">
+            <span className="flex items-center gap-0.5 text-[9px] font-bold text-comic-red bg-red-50 border border-comic-red px-1 rounded-sm">
               <AlertCircle className="w-2.5 h-2.5" />
               <span>Issue</span>
             </span>
@@ -68,7 +68,7 @@ export const TriggerFilterSection: React.FC<TriggerFilterSectionProps> = ({
       </div>
 
       {errors.length > 0 && (
-        <div className="p-1.5 bg-red-50 border border-comic-red rounded text-[10px] text-red-800 space-y-0.5">
+        <div className="p-1.5 bg-red-50 border border-comic-red rounded-sm text-[10px] text-red-800 space-y-0.5">
           {errors.map((err, i) => (
             <div key={i}>• {err}</div>
           ))}

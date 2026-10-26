@@ -27,7 +27,7 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({ themed = false, game }
         ? selected
           ? active.tileSelected
           : active.tile
-        : `rounded-xl border-[3px] shadow-comic-sm ${
+        : `rounded-xl border-comic shadow-comic-sm ${
             selected
               ? 'border-comic-red bg-comic-yellow'
               : 'border-comic-black bg-white hover:bg-amber-50'
@@ -72,7 +72,7 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({ themed = false, game }
           aria-checked={themeMode === 'random'}
           data-testid="theme-random"
           onClick={() => updateSettings({ themeMode: 'random' })}
-          className={`${cardClass(themeMode === 'random')} flex flex-col items-center justify-center gap-1.5 min-h-[9rem]`}
+          className={`${cardClass(themeMode === 'random')} flex flex-col items-center justify-center gap-1.5 min-h-36`}
         >
           <Shuffle className="w-8 h-8" />
           <div className="text-xs font-black uppercase leading-tight text-center">

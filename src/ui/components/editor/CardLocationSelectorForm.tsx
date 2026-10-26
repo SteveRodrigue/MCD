@@ -71,7 +71,7 @@ export const CardLocationSelectorForm: React.FC<CardLocationSelectorFormProps> =
   return (
     <div
       data-testid={`${testIdPrefix}-form`}
-      className="space-y-2 rounded border border-black bg-yellow-50/50 p-2 text-xs shadow-comic-xs"
+      className="space-y-2 rounded-sm border border-black bg-yellow-50/50 p-2 text-xs shadow-comic-xs"
     >
       {label && (
         <div className="text-[10px] font-bold uppercase tracking-wider text-black">{label}</div>
@@ -88,7 +88,7 @@ export const CardLocationSelectorForm: React.FC<CardLocationSelectorFormProps> =
               const zoneVal = e.target.value as CardLocationZone | '';
               updateField({ zone: zoneVal || undefined });
             }}
-            className="w-full rounded border border-black bg-white p-1 text-xs font-mono font-bold text-black"
+            className="w-full rounded-sm border border-black bg-white p-1 text-xs font-mono font-bold text-black"
           >
             <option value="">Select Zone...</option>
             {CardLocationZoneSchema.options.map((zone) => (
@@ -111,7 +111,7 @@ export const CardLocationSelectorForm: React.FC<CardLocationSelectorFormProps> =
                 const posVal = e.target.value as CardLocationPosition | '';
                 updateField({ position: posVal || undefined });
               }}
-              className="w-full rounded border border-black bg-white p-1 text-xs font-bold text-black"
+              className="w-full rounded-sm border border-black bg-white p-1 text-xs font-bold text-black"
             >
               <option value="">Default (TOP)</option>
               {CardLocationPositionSchema.options.map((pos) => (
@@ -139,7 +139,7 @@ export const CardLocationSelectorForm: React.FC<CardLocationSelectorFormProps> =
                   const targetVal = e.target.value as CardLocationTarget | '';
                   updateField({ target: targetVal || undefined });
                 }}
-                className="w-full rounded border border-black bg-white p-1 text-xs font-bold text-black"
+                className="w-full rounded-sm border border-black bg-white p-1 text-xs font-bold text-black"
               >
                 <option value="">None / Contextual</option>
                 {CardLocationTargetSchema.options.map((tgt) => (
@@ -163,7 +163,7 @@ export const CardLocationSelectorForm: React.FC<CardLocationSelectorFormProps> =
                   const val = e.target.value;
                   updateField({ cardCode: val.trim() ? val : undefined });
                 }}
-                className="w-full rounded border border-black bg-white px-2 py-1 text-xs font-mono text-black"
+                className="w-full rounded-sm border border-black bg-white px-2 py-1 text-xs font-mono text-black"
               />
             </div>
           </div>
@@ -171,12 +171,12 @@ export const CardLocationSelectorForm: React.FC<CardLocationSelectorFormProps> =
           {/* Filter Accordion */}
           <div
             data-testid={`${testIdPrefix}-filter-accordion`}
-            className="rounded border border-black bg-white/80 p-2 space-y-2"
+            className="rounded-sm border border-black bg-white/80 p-2 space-y-2"
           >
             <div
               data-testid={`${testIdPrefix}-filter-accordion-toggle`}
               onClick={() => setIsFilterExpanded(!isFilterExpanded)}
-              className="flex items-center justify-between cursor-pointer select-none hover:bg-yellow-100/70 p-1 rounded"
+              className="flex items-center justify-between cursor-pointer select-none hover:bg-yellow-100/70 p-1 rounded-sm"
             >
               <div className="flex items-center gap-1.5">
                 {isFilterExpanded ? (
@@ -191,7 +191,7 @@ export const CardLocationSelectorForm: React.FC<CardLocationSelectorFormProps> =
               </div>
               <span
                 data-testid={`${testIdPrefix}-filter-badge`}
-                className="bg-comic-yellow border border-black px-1.5 py-0.5 rounded text-[9px] font-bold text-black"
+                className="bg-comic-yellow border border-black px-1.5 py-0.5 rounded-sm text-[9px] font-bold text-black"
               >
                 {filterCriteriaCount > 0
                   ? `${filterCriteriaCount} criteri${filterCriteriaCount > 1 ? 'a' : 'on'}`

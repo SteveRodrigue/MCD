@@ -25,7 +25,7 @@ const CATEGORY_LABEL: Record<FontCategory, string> = {
   mono: 'Mono',
 };
 
-const kbd = 'px-1 border border-slate-500 rounded';
+const kbd = 'px-1 border border-slate-500 rounded-sm';
 
 /** The list of fonts, starting with the default entry, grouped by kind. Values are `FONT_CHOICES` indexes. */
 const fontGroups = (defaultLabel: string): CycleGroup[] => [

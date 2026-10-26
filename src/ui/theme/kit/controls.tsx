@@ -111,7 +111,7 @@ export const ThemedSwitch: React.FC<SwitchProps> = ({ checked, onChange, label }
       onClick={() => onChange(!checked)}
       className={`relative w-12 h-6 shrink-0 cursor-pointer transition-colors ${
         checked ? style.tileSelected : style.inset
-      } !scale-100`}
+      } scale-100!`}
     >
       <span
         aria-hidden="true"

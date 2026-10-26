@@ -164,7 +164,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
 
           {/* Quick Stats Recap */}
           <div
-            className={`px-3 py-1.5 text-mini space-y-0.5 !rounded-none !border-x-0 !border-t-0 ${style.inset}`}
+            className={`px-3 py-1.5 text-mini space-y-0.5 rounded-none! border-x-0! border-t-0! ${style.inset}`}
           >
             <div className="flex items-center justify-between">
               <span className="font-bold">Plays:</span>

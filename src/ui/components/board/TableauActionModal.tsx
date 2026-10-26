@@ -73,7 +73,7 @@ export const TableauActionModal: React.FC<TableauActionModalProps> = ({
             {tokenEntries.map(([type, count]) => (
               <span
                 key={type}
-                className="bg-amber-400 text-slate-950 px-2 py-0.5 rounded border border-comic-black font-black text-micro uppercase shadow-comic-xs"
+                className="bg-amber-400 text-slate-950 px-2 py-0.5 rounded-sm border border-comic-black font-black text-micro uppercase shadow-comic-xs"
               >
                 {type}: {count}
               </span>

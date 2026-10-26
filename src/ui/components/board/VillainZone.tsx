@@ -244,7 +244,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                     style={{ backgroundColor: getCardBackFallbackColor('encounter') }}
                   />
                 )}
-                <span className="absolute bottom-1 right-1 z-content bg-slate-950/80 text-white text-xs font-bold px-1.5 py-0.5 rounded border border-white/30 backdrop-blur-xs leading-none">
+                <span className="absolute bottom-1 right-1 z-content bg-slate-950/80 text-white text-xs font-bold px-1.5 py-0.5 rounded-sm border border-white/30 backdrop-blur-xs leading-none">
                   {encounterDeck.length}
                 </span>
               </div>
@@ -418,10 +418,10 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                   <div
                     className={`w-full transition-all duration-300 ${
                       threatPercent > 75
-                        ? 'bg-gradient-to-t from-amber-400 via-orange-500 to-comic-red'
+                        ? 'bg-linear-to-t from-amber-400 via-orange-500 to-comic-red'
                         : threatPercent > 40
-                          ? 'bg-gradient-to-t from-comic-blue via-sky-400 to-amber-400'
-                          : 'bg-gradient-to-t from-sky-600 to-comic-blue'
+                          ? 'bg-linear-to-t from-comic-blue via-sky-400 to-amber-400'
+                          : 'bg-linear-to-t from-sky-600 to-comic-blue'
                     }`}
                     style={{ height: `${threatPercent}%` }}
                   />

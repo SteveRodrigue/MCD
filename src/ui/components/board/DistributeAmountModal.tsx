@@ -210,7 +210,7 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
     >
       {/* Budget Tracker */}
       <div
-        className={`-mx-5 sm:-mx-6 -mt-5 sm:-mt-6 px-5 py-3 flex items-center justify-between !rounded-none !border-x-0 ${style.inset}`}
+        className={`-mx-5 sm:-mx-6 -mt-5 sm:-mt-6 px-5 py-3 flex items-center justify-between rounded-none! border-x-0! ${style.inset}`}
       >
         <div className="flex items-center gap-3 flex-wrap">
           <div className="text-sm font-black uppercase tracking-wider">POINTS TO ASSIGN:</div>
@@ -234,7 +234,7 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
 
       {/* Shortfall Alert Notice (if board capacity < nominal budget) */}
       {config?.shortfallNotice && (
-        <div className="px-3 py-2 bg-amber-100 border-2 border-amber-300 rounded flex items-center gap-2 text-amber-900 text-xs font-bold">
+        <div className="px-3 py-2 bg-amber-100 border-2 border-amber-300 rounded-sm flex items-center gap-2 text-amber-900 text-xs font-bold">
           <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
           <span>{config.shortfallNotice}</span>
         </div>
@@ -296,7 +296,7 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
                               </span>
                             )}
                             {target.hasTough && (
-                              <span className="bg-amber-400 text-comic-black font-black px-1 rounded text-nano">
+                              <span className="bg-amber-400 text-comic-black font-black px-1 rounded-sm text-nano">
                                 TOUGH
                               </span>
                             )}
@@ -306,7 +306,7 @@ export const DistributeAmountModal: React.FC<DistributeAmountModalProps> = ({
 
                       {/* Ineligible Badge */}
                       {!isEligible && target.ineligibilityReason && (
-                        <span className="bg-rose-100 text-rose-800 border border-rose-400 text-micro font-black px-2 py-0.5 rounded uppercase tracking-wider text-right">
+                        <span className="bg-rose-100 text-rose-800 border border-rose-400 text-micro font-black px-2 py-0.5 rounded-sm uppercase tracking-wider text-right">
                           {target.ineligibilityReason}
                         </span>
                       )}

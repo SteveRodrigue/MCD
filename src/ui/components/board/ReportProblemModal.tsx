@@ -164,7 +164,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
               type="button"
               aria-pressed={priority === opt.value}
               onClick={() => setPriority(opt.value)}
-              className={`${choice(priority === opt.value)} !text-mini`}
+              className={`${choice(priority === opt.value)} text-mini!`}
             >
               {opt.label}
             </button>
@@ -180,7 +180,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
           onChange={(e) => setDescription(e.target.value)}
           rows={5}
           placeholder="Describe what happened, what you expected, or what's missing..."
-          className="w-full p-2.5 rounded-lg border-2 border-comic-black bg-white text-slate-900 text-sm font-sans focus:outline-none focus:ring-2 focus:ring-comic-blue resize-none"
+          className="w-full p-2.5 rounded-lg border-2 border-comic-black bg-white text-slate-900 text-sm font-sans focus:outline-hidden focus:ring-2 focus:ring-comic-blue resize-none"
         />
       </div>
 
@@ -209,7 +209,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
       </button>
 
       {status === 'success' && (
-        <div className="p-2.5 rounded bg-emerald-100 border border-emerald-500 text-emerald-900 text-xs font-bold space-y-2">
+        <div className="p-2.5 rounded-sm bg-emerald-100 border border-emerald-500 text-emerald-900 text-xs font-bold space-y-2">
           <div className="flex items-center gap-1.5">
             <Check className="w-4 h-4" />
             <span>Report saved to logs/reports/. It will be filed as a GitHub Issue later.</span>
@@ -229,7 +229,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
       )}
 
       {status === 'error' && (
-        <div className="p-2.5 rounded bg-rose-100 border border-rose-500 text-rose-900 text-xs font-bold space-y-2">
+        <div className="p-2.5 rounded-sm bg-rose-100 border border-rose-500 text-rose-900 text-xs font-bold space-y-2">
           <div className="flex items-center gap-1.5">
             <AlertTriangle className="w-4 h-4" />
             <span>

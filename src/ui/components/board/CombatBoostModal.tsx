@@ -70,7 +70,7 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
         <>
           <span className={`text-xs font-bold hidden sm:inline ${style.muted}`}>
             Press{' '}
-            <kbd className="px-1.5 py-0.5 bg-white text-comic-black border border-comic-black rounded shadow-comic-xs font-mono text-micro">
+            <kbd className="px-1.5 py-0.5 bg-white text-comic-black border border-comic-black rounded-sm shadow-comic-xs font-mono text-micro">
               Spacebar
             </kbd>{' '}
             or click Continue
@@ -197,12 +197,12 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
           </div>
           <div className="flex items-center gap-2">
             {outcome.hasOverkill && (
-              <span className="bg-rose-600 text-white text-micro font-black px-1.5 py-0.5 rounded border border-white">
+              <span className="bg-rose-600 text-white text-micro font-black px-1.5 py-0.5 rounded-sm border border-white">
                 OVERKILL
               </span>
             )}
             {outcome.hasPiercing && (
-              <span className="bg-amber-400 text-comic-black text-micro font-black px-1.5 py-0.5 rounded border border-comic-black">
+              <span className="bg-amber-400 text-comic-black text-micro font-black px-1.5 py-0.5 rounded-sm border border-comic-black">
                 PIERCING
               </span>
             )}

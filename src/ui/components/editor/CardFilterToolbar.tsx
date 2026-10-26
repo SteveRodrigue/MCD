@@ -83,7 +83,7 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
             <Filter className="w-4 h-4" />
             <span>CARD CATALOG FILTER</span>
           </div>
-          <span className="font-comic text-xs font-bold bg-comic-paper px-2 py-1 border border-black rounded">
+          <span className="font-comic text-xs font-bold bg-comic-paper px-2 py-1 border border-black rounded-sm">
             Showing {loading ? '...' : filteredCards} of {totalCards} cards
           </span>
         </div>
@@ -111,7 +111,7 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
           <select
             value={filters.pack || ''}
             onChange={handlePackChange}
-            className="w-full bg-white text-black text-xs font-medium border-2 border-black px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-comic-red shadow-comic-xs"
+            className="w-full bg-white text-black text-xs font-medium border-2 border-black px-2 py-1.5 focus:outline-hidden focus:ring-2 focus:ring-comic-red shadow-comic-xs"
           >
             <option value="">All Packs ({metadata?.packs.length || 0})</option>
             {metadata?.packs.map((p) => (
@@ -130,7 +130,7 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
           <select
             value={filters.set || ''}
             onChange={handleSetChange}
-            className="w-full bg-white text-black text-xs font-medium border-2 border-black px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-comic-red shadow-comic-xs"
+            className="w-full bg-white text-black text-xs font-medium border-2 border-black px-2 py-1.5 focus:outline-hidden focus:ring-2 focus:ring-comic-red shadow-comic-xs"
           >
             <option value="">All Sets ({metadata?.sets.length || 0})</option>
             {metadata?.sets.map((s) => (
@@ -149,7 +149,7 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
           <select
             value={filters.faction || ''}
             onChange={handleFactionChange}
-            className="w-full bg-white text-black text-xs font-medium border-2 border-black px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-comic-red shadow-comic-xs capitalize"
+            className="w-full bg-white text-black text-xs font-medium border-2 border-black px-2 py-1.5 focus:outline-hidden focus:ring-2 focus:ring-comic-red shadow-comic-xs capitalize"
           >
             <option value="">All Affinities</option>
             {metadata?.factions.map((f) => (
@@ -168,7 +168,7 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
           <select
             value={filters.status || ''}
             onChange={handleStatusChange}
-            className="w-full bg-white text-black text-xs font-medium border-2 border-black px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-comic-red shadow-comic-xs"
+            className="w-full bg-white text-black text-xs font-medium border-2 border-black px-2 py-1.5 focus:outline-hidden focus:ring-2 focus:ring-comic-red shadow-comic-xs"
           >
             <option value="">All Statuses</option>
             <option value="has_supplemental">🟢 Defined Supplemental</option>
@@ -192,7 +192,7 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
               placeholder="e.g. 01001a, Spider-Man..."
               value={filters.search || ''}
               onChange={handleSearchChange}
-              className="w-full bg-white text-black text-xs font-medium border-2 border-black pl-7 pr-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-comic-red shadow-comic-xs"
+              className="w-full bg-white text-black text-xs font-medium border-2 border-black pl-7 pr-2 py-1.5 focus:outline-hidden focus:ring-2 focus:ring-comic-red shadow-comic-xs"
             />
             <Search className="w-3.5 h-3.5 absolute left-2 top-2 text-gray-500 pointer-events-none" />
           </div>

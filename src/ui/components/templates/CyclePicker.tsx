@@ -43,7 +43,7 @@ const stepButton =
   'p-1.5 rounded-lg border-2 border-slate-600 bg-slate-800 text-slate-300 hover:bg-slate-700 cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed';
 
 const sizeButton =
-  'w-5 h-5 rounded border border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700 cursor-pointer text-xs font-black leading-none disabled:opacity-40 disabled:cursor-not-allowed';
+  'w-5 h-5 rounded-sm border border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700 cursor-pointer text-xs font-black leading-none disabled:opacity-40 disabled:cursor-not-allowed';
 
 /**
  * The lab's cycling choice: previous, a list, next. Used for the fonts and for the style, kit and
@@ -85,7 +85,7 @@ export const CyclePicker: React.FC<CyclePickerProps> = ({
               title="Size change in px. Click to clear."
               disabled={!size.isChanged}
               onClick={size.onClear}
-              className="min-w-[2rem] h-5 rounded border border-slate-600 bg-slate-900 text-[10px] font-black text-comic-yellow cursor-pointer disabled:text-slate-400 disabled:cursor-default"
+              className="min-w-8 h-5 rounded-sm border border-slate-600 bg-slate-900 text-[10px] font-black text-comic-yellow cursor-pointer disabled:text-slate-400 disabled:cursor-default"
             >
               {size.value}px
             </button>
@@ -102,7 +102,7 @@ export const CyclePicker: React.FC<CyclePickerProps> = ({
           </div>
         )}
         {shortcut && (
-          <kbd className="px-1 border border-slate-500 rounded text-[10px] text-slate-400">
+          <kbd className="px-1 border border-slate-500 rounded-sm text-[10px] text-slate-400">
             {shortcut}
           </kbd>
         )}

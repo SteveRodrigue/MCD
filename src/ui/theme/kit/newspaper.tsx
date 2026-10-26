@@ -223,7 +223,7 @@ export const NewsLogEntry: React.FC<NewsLogEntryProps> = ({
 }) => {
   const { newspaper: np } = useThemeExtras();
   return (
-    <div data-log-kind={kind} className={`${np.story} !mb-2 flex gap-3`}>
+    <div data-log-kind={kind} className={`${np.story} mb-2! flex gap-3`}>
       <div
         aria-hidden="true"
         className="w-1.5 shrink-0 self-stretch"
@@ -333,18 +333,18 @@ export const NewsActionItem: React.FC<NewsActionItemProps> = ({
       type="button"
       data-card-anchor={card.code}
       onClick={onSelect}
-      className={`w-full text-left flex items-start gap-2.5 p-2 cursor-pointer ${np.story} !mb-0 !pb-2`}
+      className={`w-full text-left flex items-start gap-2.5 p-2 cursor-pointer ${np.story} mb-0! pb-2!`}
     >
       <CardArtThumbnail cardCode={card.code} cardName={card.name} fallbackIcon={icon} size="sm" />
       <span className="flex-1 min-w-0 flex flex-col gap-0.5">
         <span className="flex items-start justify-between gap-1">
-          <span className={`${np.headline} !text-sm flex items-center gap-1`}>
+          <span className={`${np.headline} text-sm! flex items-center gap-1`}>
             {icon}
             {headline}
           </span>
           {badge && <span className={`shrink-0 ${np.pillActive}`}>{badge}</span>}
         </span>
-        <span className={`${np.body} !text-xs line-clamp-2 block`}>{subtext}</span>
+        <span className={`${np.body} text-xs! line-clamp-2 block`}>{subtext}</span>
         <span className={`${np.byline} text-right`}>{cue} ➔</span>
       </span>
     </button>
@@ -363,8 +363,8 @@ export interface CallForActionProps {
 export const CallForActionGroup: React.FC<CallForActionProps> = ({ teammate, count, children }) => {
   const { newspaper: np } = useThemeExtras();
   return (
-    <div className={`overflow-hidden ${np.classified} !p-0`}>
-      <div className={`flex items-center justify-between gap-2 ${np.ticker} !rounded-none`}>
+    <div className={`overflow-hidden ${np.classified} p-0!`}>
+      <div className={`flex items-center justify-between gap-2 ${np.ticker} rounded-none!`}>
         <span className="font-black">{teammate}</span>
         <span className="text-micro">
           {count} ACTION{count === 1 ? '' : 'S'}

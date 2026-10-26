@@ -243,7 +243,7 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
         </div>
 
         {/* Printed Card Text Box */}
-        <div className="w-full bg-white border-3 border-black p-3.5 shadow-comic-sm">
+        <div className="w-full bg-white border-comic border-black p-3.5 shadow-comic-sm">
           <div className="flex items-center gap-2 border-b-2 border-black pb-1.5 mb-2 font-bangers text-sm tracking-wide text-comic-red">
             <Zap className="w-4 h-4 text-comic-red" />
             <span>PRINTED CARD TEXT</span>
@@ -263,50 +263,50 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
         </div>
 
         {/* Upstream Properties Table */}
-        <div className="w-full bg-white border-3 border-black p-3.5 shadow-comic-sm">
+        <div className="w-full bg-white border-comic border-black p-3.5 shadow-comic-sm">
           <div className="flex items-center gap-2 border-b-2 border-black pb-1.5 mb-2.5 font-bangers text-sm tracking-wide text-comic-dark">
             <Tag className="w-4 h-4 text-black" />
             <span>UPSTREAM ZZORBA PROPERTIES</span>
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs font-sans">
-            <div className="bg-comic-paper p-1.5 border border-black rounded">
+            <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
               <span className="text-[10px] uppercase font-bold text-gray-500 block">Type</span>
               <span className="font-bold capitalize">{upstream.type_code || 'N/A'}</span>
             </div>
-            <div className="bg-comic-paper p-1.5 border border-black rounded">
+            <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
               <span className="text-[10px] uppercase font-bold text-gray-500 block">Faction</span>
               <span className="font-bold capitalize">{upstream.faction_code || 'N/A'}</span>
             </div>
-            <div className="bg-comic-paper p-1.5 border border-black rounded">
+            <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
               <span className="text-[10px] uppercase font-bold text-gray-500 block">Set</span>
               <span className="font-bold truncate block">{upstream.set_code || 'None'}</span>
             </div>
-            <div className="bg-comic-paper p-1.5 border border-black rounded">
+            <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
               <span className="text-[10px] uppercase font-bold text-gray-500 block">Cost</span>
               <span className="font-bold">{upstream.cost !== undefined ? upstream.cost : '—'}</span>
             </div>
-            <div className="bg-comic-paper p-1.5 border border-black rounded">
+            <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
               <span className="text-[10px] uppercase font-bold text-gray-500 block">Health</span>
               <span className="font-bold">
                 {upstream.health !== undefined ? upstream.health : '—'}
                 {upstream.health_per_hero ? ' / hero' : ''}
               </span>
             </div>
-            <div className="bg-comic-paper p-1.5 border border-black rounded">
+            <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
               <span className="text-[10px] uppercase font-bold text-gray-500 block">Hand Size</span>
               <span className="font-bold">
                 {upstream.hand_size !== undefined ? upstream.hand_size : '—'}
               </span>
             </div>
-            <div className="bg-comic-paper p-1.5 border border-black rounded">
+            <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
               <span className="text-[10px] uppercase font-bold text-gray-500 block">Attack</span>
               <span className="font-bold">
                 {upstream.attack !== undefined ? upstream.attack : '—'}
               </span>
             </div>
             <div
-              className="bg-comic-paper p-1.5 border border-black rounded"
+              className="bg-comic-paper p-1.5 border border-black rounded-sm"
               title={
                 upstream.scheme !== undefined
                   ? `Scheme (SCH): ${upstream.scheme}`
@@ -325,7 +325,7 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
               </span>
             </div>
             <div
-              className="bg-comic-paper p-1.5 border border-black rounded"
+              className="bg-comic-paper p-1.5 border border-black rounded-sm"
               title={
                 upstream.recover !== undefined
                   ? `Recovery (REC): ${upstream.recover}`
@@ -357,10 +357,10 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
       {/* RIGHT COLUMN: Declarative Supplemental Reviewer & Editor */}
       <div className="flex-1 w-full p-4 md:p-6 overflow-y-auto flex flex-col gap-4 bg-comic-paper">
         {/* Header Strip with Code, Save Button & Tab Switcher */}
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-comic-panel border-3 border-black p-3 shadow-comic-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-comic-panel border-comic border-black p-3 shadow-comic-sm">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-mono text-sm font-bold bg-black text-white px-2 py-0.5 rounded">
+              <span className="font-mono text-sm font-bold bg-black text-white px-2 py-0.5 rounded-sm">
                 {code}
               </span>
               <span className="font-bangers text-xl tracking-wide text-black truncate">
@@ -369,7 +369,7 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
               {editedSupplemental?.noSupplementalNeeded && (
                 <span
                   data-testid="inspector-vanilla-badge"
-                  className="inline-flex items-center gap-1 text-xs font-bold text-blue-900 bg-blue-100 px-2 py-0.5 border border-black rounded shadow-comic-xs"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-blue-900 bg-blue-100 px-2 py-0.5 border border-black rounded-sm shadow-comic-xs"
                   title="Vanilla Card: No supplemental rules needed"
                 >
                   <ShieldCheck className="w-3.5 h-3.5 text-blue-700" />
@@ -410,9 +410,9 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
         <div className="flex items-center border-b-2 border-black gap-1">
           <button
             onClick={() => setActiveTab('form')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 font-comic text-xs font-bold border-t-2 border-x-2 border-black rounded-t transition-colors cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 font-comic text-xs font-bold border-t-2 border-x-2 border-black rounded-t-sm transition-colors cursor-pointer ${
               activeTab === 'form'
-                ? 'bg-comic-yellow text-black -mb-[2px] pb-2 shadow-sm'
+                ? 'bg-comic-yellow text-black mb-[-2px] pb-2 shadow-xs'
                 : 'bg-white text-gray-600 hover:bg-gray-100'
             }`}
           >
@@ -422,9 +422,9 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
 
           <button
             onClick={() => setActiveTab('raw')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 font-comic text-xs font-bold border-t-2 border-x-2 border-black rounded-t transition-colors cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 font-comic text-xs font-bold border-t-2 border-x-2 border-black rounded-t-sm transition-colors cursor-pointer ${
               activeTab === 'raw'
-                ? 'bg-comic-yellow text-black -mb-[2px] pb-2 shadow-sm'
+                ? 'bg-comic-yellow text-black mb-[-2px] pb-2 shadow-xs'
                 : 'bg-white text-gray-600 hover:bg-gray-100'
             }`}
           >
@@ -436,7 +436,7 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
         {/* Save Toast Feedback */}
         {saveToast && (
           <div
-            className={`p-3 border-3 border-black shadow-comic-sm rounded text-xs font-bold flex items-start gap-2 animate-in fade-in ${
+            className={`p-3 border-comic border-black shadow-comic-sm rounded text-xs font-bold flex items-start gap-2 animate-in fade-in ${
               saveToast.type === 'success'
                 ? 'bg-green-100 text-green-900 border-green-800'
                 : 'bg-red-100 text-red-900 border-comic-red'
@@ -460,7 +460,7 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
 
         {/* Live Validation Error Box */}
         {!liveValidation.valid && (
-          <div className="bg-red-50 border-3 border-comic-red p-3 shadow-comic-sm">
+          <div className="bg-red-50 border-comic border-comic-red p-3 shadow-comic-sm">
             <div className="flex items-center gap-2 text-comic-red font-bangers text-base tracking-wide">
               <AlertTriangle className="w-5 h-5" />
               <span>SCHEMA VALIDATION ERRORS ({liveValidation.errors.length})</span>
@@ -478,7 +478,7 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
 
         {/* TAB 1: Visual Form Builder */}
         {activeTab === 'form' && (
-          <div className="bg-comic-panel border-3 border-black p-4 shadow-comic-sm">
+          <div className="bg-comic-panel border-comic border-black p-4 shadow-comic-sm">
             <AbilityFormBuilder
               supplemental={editedSupplemental}
               onChange={handleFormChange}
@@ -491,7 +491,7 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
 
         {/* TAB 2: Raw JSON Editor */}
         {activeTab === 'raw' && (
-          <div className="bg-white border-3 border-black p-3 shadow-comic-sm flex flex-col gap-3">
+          <div className="bg-white border-comic border-black p-3 shadow-comic-sm flex flex-col gap-3">
             <div className="flex items-center justify-between border-b-2 border-black pb-1.5 font-bangers text-sm tracking-wide text-black">
               <div className="flex items-center gap-2">
                 <FileCode className="w-4 h-4 text-black" />

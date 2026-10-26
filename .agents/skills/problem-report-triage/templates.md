@@ -11,7 +11,7 @@
 ## Bug body
 
 ```markdown
-> 🎮 **Filed via Dev Mode "Report a Problem"** — this issue was submitted directly by a player from the live game table, not pre-triaged by a maintainer. Reproduction context below is inferred automatically from the local GameState snapshot; verify it against the original report before acting.
+> 🎮 **Filed via Dev Mode "Report a Problem"** — this issue was submitted directly by a player from the live game table, not pre-triaged by a maintainer. Reproduction context below is inferred automatically from the pinned GameState snapshot; verify it against the original report before acting.
 
 ### 🐛 Describe the Bug
 
@@ -47,8 +47,8 @@ N/A — filed via Dev Mode; no rules citation was captured. Add one during triag
 
 ### 💾 Local GameState Snapshot
 
-- **Path:** `logs/gamestates/gamestate_<timestamp>_<type>.json`
-- **Notice:** This snapshot is retained locally in the developer environment and is gitignored. It is unavailable to public GitHub readers; a maintainer must retrieve the local file to inspect the exact state.
+- **Path:** `logs/gamestates/pinned/<report.gameStateFile>`
+- **Notice:** This snapshot was pinned when the report was submitted. It is retained locally, is gitignored, and is never pruned by the rolling snapshot history. It is unavailable to public GitHub readers; a maintainer must retrieve the local file to inspect the exact state.
 
 ---
 
@@ -88,8 +88,8 @@ N/A — not captured via Dev Mode; explore during triage.
 
 ### 💾 Local GameState Snapshot
 
-- **Path:** `logs/gamestates/gamestate_<timestamp>_<type>.json`
-- **Notice:** This snapshot is retained locally in the developer environment and is gitignored. It is unavailable to public GitHub readers; a maintainer must retrieve the local file to inspect the exact state.
+- **Path:** `logs/gamestates/pinned/<report.gameStateFile>`
+- **Notice:** This snapshot was pinned when the report was submitted. It is retained locally, is gitignored, and is never pruned by the rolling snapshot history. It is unavailable to public GitHub readers; a maintainer must retrieve the local file to inspect the exact state.
 
 ---
 
@@ -107,8 +107,8 @@ _Filed automatically via Dev Mode "Report a Problem" by the `problem-report-tria
 
 ### 💾 Local GameState Snapshot
 
-- **Path:** `logs/gamestates/gamestate_<timestamp>_<type>.json`
-- **Notice:** This snapshot is retained locally in the developer environment and is gitignored. It is unavailable to public GitHub readers; a maintainer must retrieve the local file to inspect the exact state.
+- **Path:** `logs/gamestates/pinned/<report.gameStateFile>`
+- **Notice:** This snapshot was pinned when the report was submitted. It is retained locally, is gitignored, and is never pruned by the rolling snapshot history. It is unavailable to public GitHub readers; a maintainer must retrieve the local file to inspect the exact state.
 
 ---
 

@@ -9,6 +9,7 @@ import {
   type AbilityStep,
   type CardAbility,
   type GameState,
+  type SideSchemeCard,
 } from '@engine/models';
 import type { EffectType } from '../../src/data/supplemental/runtime';
 import { abilityOf, newRhinoGame } from '../support/game-fixtures';
@@ -181,4 +182,40 @@ describe('checkAbilityTargets: named schemes are judged only for threat removal 
     });
     expect(result).toEqual({ allowed: false, reason: 'No scheme has threat to remove.' });
   });
+});
+
+/**
+ * #438: the payment modal names the main scheme by card code, the resolver by instance id. A named
+ * scheme the effect cannot affect is not a valid target, however it is spelled, and a side scheme
+ * with threat elsewhere does not excuse it.
+ */
+describe('checkAbilityTargets: a named main scheme is judged by any of its ids (#438)', () => {
+  const thwartEvent = (): CardAbility => ({
+    id: 'thwart_chosen_scheme',
+    timing: 'ACTION',
+    steps: [{ effect: 'REMOVE_THREAT', effectParams: { target: 'CHOSEN_SCHEME', amount: 1 } }],
+  });
+
+  it.each(['instanceId', 'code', 'main_scheme'] as const)(
+    'rejects a 0-threat main scheme named by %s while a side scheme has threat',
+    (spelling) => {
+      const state = newRhinoGame();
+      const main = getActiveMainScheme(state)!;
+      main.threat = 0;
+      state.sideSchemes = [
+        { instanceId: 'side-1', card: cardCatalog.getCard('01108') as SideSchemeCard, threat: 2 },
+      ];
+      const chosenTargetId =
+        spelling === 'instanceId'
+          ? main.instanceId!
+          : spelling === 'code'
+            ? main.card.code
+            : 'main_scheme';
+
+      const result = checkAbilityTargets(state, state.players[0], thwartEvent(), undefined, {
+        chosenTargetId,
+      });
+      expect(result.allowed).toBe(false);
+    },
+  );
 });

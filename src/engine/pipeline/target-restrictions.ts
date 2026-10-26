@@ -1,5 +1,5 @@
 ﻿import { Keyword, hasKeyword } from '@engine/models';
-import type { GameState, PlayerState } from '@engine/models';
+import type { CardInstance, GameState, PlayerState } from '@engine/models';
 import { hasCrisisInPlay } from './icons';
 
 /**
@@ -45,5 +45,10 @@ export function getMainSchemeThreatBlock(
 
 /** Whether a Guard minion engaged with this player stops their cards attacking a villain (RR v1.8 "Guard"). */
 export function isVillainAttackBlockedByGuard(actingPlayer: PlayerState): boolean {
-  return actingPlayer.engagedMinions.some((m) => hasKeyword(m.card, Keyword.GUARD));
+  return actingPlayer.engagedMinions.some(isGuardMinion);
+}
+
+/** Whether a minion has the Guard keyword (RR v1.8 "Guard"). */
+export function isGuardMinion(minion: CardInstance): boolean {
+  return hasKeyword(minion.card, Keyword.GUARD);
 }

@@ -18,6 +18,13 @@ interface CompletedGameRecord {
   durationMs: number;
 }
 
+/** Why the game ended, so a 0-win run can be diagnosed from the report alone. */
+function describeOutcome(result: MatchSimulationResult): string {
+  if (result.winner === 'TIMEOUT') return 'timeout';
+  if (result.winner === 'HEROES') return 'villain defeated';
+  return result.finalState.players.length === 0 ? 'all heroes defeated' : 'main scheme completed';
+}
+
 async function run100GameSimulationGate() {
   const startTime = Date.now();
   const logsDir = path.resolve(process.cwd(), 'logs', 'simulations');
@@ -144,7 +151,7 @@ async function run100GameSimulationGate() {
       const heroesStr = config.deckIds.map((id) => loadedDecks[id].hero.name).join(' & ');
 
       console.log(
-        `[${String(config.gameNumber).padStart(3, '0')}/100] ${config.mode.padEnd(11)} | ${config.difficulty.padEnd(8)} | ${heroesStr.padEnd(34)} | ${outcomeSymbol} (${matchResult.roundsPlayed} rnds, ${matchResult.totalActionsExecuted} acts, ${durationMs}ms)`,
+        `[${String(config.gameNumber).padStart(3, '0')}/100] ${config.mode.padEnd(11)} | ${config.difficulty.padEnd(8)} | ${heroesStr.padEnd(34)} | ${outcomeSymbol} (${matchResult.roundsPlayed} rnds, ${matchResult.totalActionsExecuted} acts, ${durationMs}ms, ${describeOutcome(matchResult)})`,
       );
     } catch (err: any) {
       console.error(
@@ -229,8 +236,8 @@ function generateSimulationSummary(
 
 ## 🎲 Game Matrix Breakdown (100 Matches)
 
-| Game # | Mode | Difficulty | Hero(es) | Outcome | Rounds | Actions | Duration | Seed |
-| :---: | :---: | :---: | :--- | :---: | :---: | :---: | :---: | :--- |
+| Game # | Mode | Difficulty | Hero(es) | Outcome | Reason | Rounds | Actions | Duration | Seed |
+| :---: | :---: | :---: | :--- | :---: | :--- | :---: | :---: | :---: | :--- |
 ${records
   .map((r) => {
     const outcome =
@@ -240,7 +247,7 @@ ${records
           ? '💀 VILLAIN'
           : '⏱️ TIMEOUT';
     const heroes = r.result.heroNames.join(' & ');
-    return `| ${r.config.gameNumber} | ${r.config.mode} | ${r.config.difficulty} | ${heroes} | ${outcome} | ${r.result.roundsPlayed} | ${r.result.totalActionsExecuted} | ${r.durationMs}ms | \`${r.config.seed}\` |`;
+    return `| ${r.config.gameNumber} | ${r.config.mode} | ${r.config.difficulty} | ${heroes} | ${outcome} | ${describeOutcome(r.result)} | ${r.result.roundsPlayed} | ${r.result.totalActionsExecuted} | ${r.durationMs}ms | \`${r.config.seed}\` |`;
   })
   .join('\n')}
 

@@ -51,22 +51,25 @@ export {
 };
 
 /**
+ * The threat step 1 puts on the main scheme: escalation threat per player, acceleration tokens and
+ * one per side scheme with an acceleration icon.
+ */
+export function getVillainPhaseThreatToAdd(state: GameState): number {
+  let total =
+    getActiveMainScheme(state).card.escalationThreat * getPerPlayerCount(state) +
+    state.accelerationTokens;
+  for (const sideScheme of state.sideSchemes) {
+    if ((sideScheme.card as SideSchemeCard).hasAcceleration) total += 1;
+  }
+  return total;
+}
+
+/**
  * Step 1: Place Threat on Main Scheme (RR v1.8 p. 31)
  */
 export function step1_placeThreat(state: GameState): GameState {
   state.villainPhaseStep = VillainPhaseStep.MAIN_SCHEME_THREAT;
-  const playerCount = getPerPlayerCount(state);
-
-  // Escalation threat per player + acceleration tokens + side scheme acceleration icons
-  let totalThreatToAdd =
-    getActiveMainScheme(state).card.escalationThreat * playerCount + state.accelerationTokens;
-
-  for (const sideScheme of state.sideSchemes) {
-    const card = sideScheme.card as SideSchemeCard;
-    if (card.hasAcceleration) {
-      totalThreatToAdd += 1;
-    }
-  }
+  const totalThreatToAdd = getVillainPhaseThreatToAdd(state);
 
   const res = applyThreatPlacement(state, {
     targetType: 'main_scheme',

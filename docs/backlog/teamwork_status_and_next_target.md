@@ -72,9 +72,9 @@ No open row.
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 
-| Issue                                                   | Problem (from the Dev Mode report)                                                                                                                                 | Notes                                                                                     |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| [#309](https://github.com/SteveRodrigue/MCD/issues/309) | Strategic heuristic policy and card evaluation for the player bot (roadmap 1.4). The 100-game gate passes (0 crashes, 0 timeouts) but the bots win 0 of 100 games. | Moved back into Gate 1 on 2026-10-21. Do last: it needs the rules bugs above fixed first. |
+| Issue                                                   | Problem (from the Dev Mode report)                                                                                                                                 | Notes                                                                                                                                                                                                 |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [#309](https://github.com/SteveRodrigue/MCD/issues/309) | Strategic heuristic policy and card evaluation for the player bot (roadmap 1.4). The 100-game gate passes (0 crashes, 0 timeouts) but the bots win 0 of 100 games. | **In progress (2026-10-26):** code done, uncommitted; 0/100 wins after two 4-iteration passes. Results in sections 9 and 11 of `plan_issue_309_strategic_player_bot.md`; next strategy review needed. |
 
 ### 3.4 UI should-haves
 

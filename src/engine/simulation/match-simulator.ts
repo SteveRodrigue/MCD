@@ -29,23 +29,15 @@ function resolveDecisionPromptHeuristically(state: GameState, seed: string): Gam
   const prompt = peekDecisionPrompt(state);
   if (!prompt) return state;
 
-  // 1. Cleanup prompt: prefer 'done_cleanup' to keep remaining hand cards and advance
-  const doneCleanupOption = prompt.options.find((o) => o.id === 'done_cleanup');
-  if (doneCleanupOption) {
-    const { state: nextState, result } = dispatchAction(state, {
-      type: 'RESOLVE_DECISION_PROMPT',
-      playerId: prompt.playerId,
-      selectedOptionId: doneCleanupOption.id,
-    });
-    if (result.success) return nextState;
-  }
-
-  // 2. Multi-select search prompt (selection: { min, max })
+  // 1. Multi-select prompt (selection: { min, max }); the clean-up discard keeps the whole hand
   if (prompt.selection) {
     const min = prompt.selection.min;
     const max = prompt.selection.max;
     const validOptions = prompt.options.filter((o) => !o.disabled && o.id !== 'confirm');
-    const chosenCount = Math.min(max, Math.max(min, validOptions.length > 0 ? 1 : 0));
+    const keepsHand = prompt.kind === 'PLAYER_CLEANUP';
+    const chosenCount = keepsHand
+      ? 0
+      : Math.min(max, Math.max(min, validOptions.length > 0 ? 1 : 0));
     const chosen = validOptions.slice(0, chosenCount).map((o) => o.id);
     const confirmOpt = prompt.options.find((o) => o.id === 'confirm') || prompt.options[0];
     const { state: nextState, result } = dispatchAction(state, {
@@ -62,7 +54,7 @@ function resolveDecisionPromptHeuristically(state: GameState, seed: string): Gam
     return nextState;
   }
 
-  // 3. Distribution prompt (DISTRIBUTE_POINTS / distributionConfig)
+  // 2. Distribution prompt (DISTRIBUTE_POINTS / distributionConfig)
   if (prompt.distributionConfig || prompt.kind === 'DISTRIBUTE_POINTS') {
     const config = prompt.distributionConfig;
     if (config) {
@@ -101,7 +93,7 @@ function resolveDecisionPromptHeuristically(state: GameState, seed: string): Gam
     }
   }
 
-  // 4. Defender declaration: defend only when the hit is dangerous (the bot's defender policy)
+  // 3. Defender declaration: defend only when the hit is dangerous (the bot's defender policy)
   const defenderId = chooseDefenderOption(state, prompt);
   if (defenderId) {
     const { state: nextState, result } = dispatchAction(state, {
@@ -112,7 +104,7 @@ function resolveDecisionPromptHeuristically(state: GameState, seed: string): Gam
     if (result.success) return nextState;
   }
 
-  // 5. Standard decision prompt: pick first enabled option
+  // 4. Standard decision prompt: pick first enabled option
   const enabledOptions = prompt.options.filter((o) => !o.disabled);
   if (enabledOptions.length === 0) {
     if (prompt.isVoluntary) {

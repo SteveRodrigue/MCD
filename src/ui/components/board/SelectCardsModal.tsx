@@ -62,6 +62,13 @@ export const SelectCardsModal: React.FC<SelectCardsModalProps> = ({
   };
 
   const canConfirm = chosen.length >= selection.min && chosen.length <= selection.max;
+  // The clean-up discard answers "none" with the whole hand kept
+  const isCleanup = prompt.kind === 'PLAYER_CLEANUP';
+  const confirmLabel = !isCleanup
+    ? 'Confirm'
+    : chosen.length === 0
+      ? 'Keep all cards'
+      : `Discard ${chosen.length}`;
   const modalKicker =
     isMultiHero && seatNumber ? `SEAT ${seatNumber} • Card selection` : 'Card selection';
 
@@ -104,7 +111,7 @@ export const SelectCardsModal: React.FC<SelectCardsModalProps> = ({
           onClick={() => onConfirm(chosen)}
           className={`ml-auto px-5 py-2 font-black uppercase cursor-pointer disabled:cursor-not-allowed ${style.btnGo}`}
         >
-          Confirm
+          {confirmLabel}
         </button>
       }
     >

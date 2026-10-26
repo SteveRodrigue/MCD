@@ -105,7 +105,6 @@
     "player.action.allyAttack": "{{actor}} attacks with {{card}} for {{amount}} damage.",
     "player.deck.exhausted": "{{actor}}'s deck is empty.",
     "player.eliminated": "{{actor}} is eliminated! {{remaining}} hero(es) remain.",
-    "player.phase.cleanup.cardDiscarded": "{{actor}} discards {{card}} at end of turn.",
     "player.phase.cleanup.complete": "{{actor}} ends the turn with {{handSize}} cards in hand.",
     "card.ability.used": "{{card}} ability used.",
     "card.ally.defeated": "{{card}} is defeated.",

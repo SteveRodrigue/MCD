@@ -105,7 +105,6 @@
     "player.action.allyAttack": "{{actor}} attaque avec {{card}} pour {{amount}} dégât(s).",
     "player.deck.exhausted": "La pioche de {{actor}} est vide.",
     "player.eliminated": "{{actor}} est éliminé ! Il reste {{remaining}} héros.",
-    "player.phase.cleanup.cardDiscarded": "{{actor}} défausse {{card}} en fin de tour.",
     "player.phase.cleanup.complete": "{{actor}} termine son tour avec {{handSize}} cartes en main.",
     "card.ability.used": "Capacité de {{card}} utilisée.",
     "card.ally.defeated": "{{card}} est vaincu.",

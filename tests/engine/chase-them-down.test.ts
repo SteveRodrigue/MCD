@@ -291,8 +291,9 @@ describe('Responses to a defeat by an attack (#247): Chase Them Down and Tigra',
       state = res.state;
 
       expect(tigraPrompts()).toHaveLength(1);
-      // Attacking costs Tigra 1 damage (2 now); healing 1 leaves 1.
-      expect(damageOn(tigra.instanceId)).toBe(2);
+      // Tigra heals before consequential damage is applied (RR v1.8 & FAQ Appendix 04).
+      // Damage is still 1 here; healing 1 leaves 0, then consequential damage deals 1 (leaving 1).
+      expect(damageOn(tigra.instanceId)).toBe(1);
       answer('p1', 'trigger_tigra_defeat_heal');
       expect(damageOn(tigra.instanceId)).toBe(1);
     });

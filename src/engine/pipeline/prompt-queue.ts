@@ -17,6 +17,7 @@ import {
 } from './cost-engine';
 import { isEffectType } from '../../data/supplemental/runtime';
 import { abilityCancelsEncounterReveal } from './encounter-cancel';
+import { finishPendingConsequentialDamage } from './consequential-damage';
 import { type TriggerContext } from '../triggers/trigger-dispatcher';
 import { nextEngineId } from '../state/rng';
 import { appendLog } from '../state/game-log';
@@ -415,6 +416,13 @@ function resumeAfterPromptResolved(state: GameState): GameState {
   }
   if (current.pendingDamagePlacements && current.pendingDamagePlacements.length > 0) {
     current = kernel.finishPendingDamagePlacements(current);
+  }
+  if (
+    !peekDecisionPrompt(current) &&
+    current.pendingConsequentialDamage &&
+    current.pendingConsequentialDamage.length > 0
+  ) {
+    current = finishPendingConsequentialDamage(current);
   }
   if (!peekDecisionPrompt(current) && current.activeAttackContext?.phase === 'INITIATION') {
     current = kernel.continueAttackAfterInitiation(current, current.activeAttackContext);

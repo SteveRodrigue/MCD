@@ -115,14 +115,21 @@ describe('Issue #95: Ally Attachment Rules Compliance & Cascading Cleanup', () =
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.players[0].allies.length).toBe(0);
-    expect(res.state.players[0].discard.some((c) => c.instanceId === daredevil.instanceId)).toBe(
+    // Daredevil has a response to thwarting; passing it resolves consequential damage (RR v1.8).
+    const finalState = dispatchAction(res.state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: 'pass',
+    }).state;
+
+    expect(finalState.players[0].allies.length).toBe(0);
+    expect(finalState.players[0].discard.some((c) => c.instanceId === daredevil.instanceId)).toBe(
       true,
     );
-    expect(res.state.players[0].discard.some((c) => c.instanceId === inspired.instanceId)).toBe(
+    expect(finalState.players[0].discard.some((c) => c.instanceId === inspired.instanceId)).toBe(
       true,
     );
-    const discardedDaredevilThw = res.state.players[0].discard.find(
+    const discardedDaredevilThw = finalState.players[0].discard.find(
       (c) => c.instanceId === daredevil.instanceId,
     );
     expect(discardedDaredevilThw?.attachments?.length).toBe(0);

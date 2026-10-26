@@ -64,6 +64,7 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 No open row.
 
+
 ### 3.2 Rules gaps that affect core cards
 
 No open row.

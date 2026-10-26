@@ -62,6 +62,9 @@ export function eliminatePlayer(state: GameState, playerId: string): void {
   state.players.splice(index, 1);
   state.eliminatedPlayers = [...(state.eliminatedPlayers ?? []), player];
 
+  // No prompt waits for an answer from a player who has left the game
+  state.pendingDecisionQueue = state.pendingDecisionQueue.filter((p) => p.playerId !== playerId);
+
   appendLog(state, {
     category: 'combat',
     key: 'player.eliminated',

@@ -606,12 +606,74 @@ function scanHandReactions(
   return hasPendingPrompt;
 }
 
+/**
+ * A Forced ability that matched the trigger. `run` resolves it now; `prompt` describes it as a
+ * queued prompt, built only when two or more Forced abilities need the first player's order.
+ */
+interface ForcedCandidate {
+  controller: PlayerState;
+  run: () => void;
+  prompt: () => PendingDecisionPrompt;
+}
+
+/** Forced abilities initiate before any optional one (RR v1.8 "Forced"): two passes per trigger. */
+type TriggerPass = 'FORCED' | 'OPTIONAL';
+
 interface TriggerScanState {
   currentDamage: number;
   isPrevented: boolean;
   currentThreat: number;
   isCancelled: boolean;
   hasPendingPrompt: boolean;
+  pass: TriggerPass;
+  forcedCandidates: ForcedCandidate[];
+  /** The first player's ordering of the simultaneous Forced abilities, ahead of every optional prompt. */
+  forcedOrdering?: PendingDecisionPrompt;
+}
+
+/**
+ * A Forced ability as a prompt the engine answers itself, once the first player has ordered the
+ * simultaneous Forced abilities. It carries what `EXECUTE_OPTIONAL_TRIGGER` needs to resolve it
+ * (live placement amounts, cost, limits), so one executor serves both.
+ */
+function forcedAbilityPrompt(
+  state: GameState,
+  scanState: TriggerScanState,
+  trigger: TriggerType,
+  context: TriggerContext,
+  controller: PlayerState,
+  ability: CardAbility,
+  source: { name: string; code: string; instanceId?: string },
+): PendingDecisionPrompt {
+  return {
+    promptId: nextEngineId(state, `prompt_trigger_${ability.id}`),
+    playerId: controller.id,
+    title: source.name,
+    description: formatAbilityStepsSummary(trigger, ability.steps || []),
+    sourceCardName: source.name,
+    sourceCardCode: source.code,
+    sourceCardInstanceId: source.instanceId,
+    triggerType: ability.timing,
+    isVoluntary: false,
+    forced: true,
+    options: [
+      {
+        id: `trigger_${ability.id}`,
+        label: source.name,
+        effect: 'EXECUTE_OPTIONAL_TRIGGER',
+        params: {
+          ability,
+          context: {
+            ...context,
+            threatAmount: scanState.currentThreat,
+            damageAmount: scanState.currentDamage,
+            interceptedValue: scanState.currentThreat || scanState.currentDamage,
+          },
+          sourceCardInstanceId: source.instanceId,
+        },
+      },
+    ],
+  };
 }
 
 function getAbilityPreventAmount(ability: CardAbility): number | 'ALL' | undefined {
@@ -694,50 +756,68 @@ function scanIdentityTriggerAbilities(
         }
 
         const isForced = isForcedTiming(ability.timing);
+        if (isForced !== (scanState.pass === 'FORCED')) continue;
         if (isForced || context.acceptOptionalTriggers === true) {
-          const node: TriggerCallNode = {
-            trigger,
-            abilityId: ability.id,
-            sourceInstanceId: identityPlayer.id,
-            cardCode: identityPlayer.activeFormCard.code,
-            cardName: identityPlayer.activeFormCard.name,
-          };
-          const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
+          const run = (): void => {
+            const node: TriggerCallNode = {
+              trigger,
+              abilityId: ability.id,
+              sourceInstanceId: identityPlayer.id,
+              cardCode: identityPlayer.activeFormCard.code,
+              cardName: identityPlayer.activeFormCard.name,
+            };
+            const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
 
-          if (ability.cost) {
-            executeAbilityCost(state, identityPlayer, ability);
-          }
-          if (ability.limit === 'ONCE_PER_ROUND') {
-            if (!identityPlayer.usedAbilitiesThisRound) identityPlayer.usedAbilitiesThisRound = {};
-            identityPlayer.usedAbilitiesThisRound[ability.id] =
-              (identityPlayer.usedAbilitiesThisRound[ability.id] || 0) + 1;
-          } else if (ability.limit === 'ONCE_PER_PHASE') {
-            if (!identityPlayer.usedAbilitiesThisPhase) identityPlayer.usedAbilitiesThisPhase = {};
-            identityPlayer.usedAbilitiesThisPhase[ability.id] =
-              (identityPlayer.usedAbilitiesThisPhase[ability.id] || 0) + 1;
-          }
-          const effCtx: EffectExecutionContext = {
-            playerId: identityPlayer.id,
-            eventTargetType: context.targetType,
-            eventTargetInstanceId: context.targetInstanceId,
-            threatAmount: scanState.currentThreat,
-            damageAmount: scanState.currentDamage,
-            interceptedValue: scanState.currentThreat || scanState.currentDamage,
-            triggerChain: nextChain,
+            if (ability.cost) {
+              executeAbilityCost(state, identityPlayer, ability);
+            }
+            if (ability.limit === 'ONCE_PER_ROUND') {
+              if (!identityPlayer.usedAbilitiesThisRound)
+                identityPlayer.usedAbilitiesThisRound = {};
+              identityPlayer.usedAbilitiesThisRound[ability.id] =
+                (identityPlayer.usedAbilitiesThisRound[ability.id] || 0) + 1;
+            } else if (ability.limit === 'ONCE_PER_PHASE') {
+              if (!identityPlayer.usedAbilitiesThisPhase)
+                identityPlayer.usedAbilitiesThisPhase = {};
+              identityPlayer.usedAbilitiesThisPhase[ability.id] =
+                (identityPlayer.usedAbilitiesThisPhase[ability.id] || 0) + 1;
+            }
+            const effCtx: EffectExecutionContext = {
+              playerId: identityPlayer.id,
+              eventTargetType: context.targetType,
+              eventTargetInstanceId: context.targetInstanceId,
+              threatAmount: scanState.currentThreat,
+              damageAmount: scanState.currentDamage,
+              interceptedValue: scanState.currentThreat || scanState.currentDamage,
+              triggerChain: nextChain,
+            };
+            kernel.executeEffect(state, ability, effCtx);
+            if (trigger === 'THREAT_WOULD_BE_PLACED' && effCtx.threatAmount !== undefined) {
+              scanState.currentThreat = effCtx.threatAmount;
+            }
+            if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && effCtx.damageAmount !== undefined) {
+              scanState.currentDamage = effCtx.damageAmount;
+              if (scanState.currentDamage === 0) scanState.isPrevented = true;
+            }
+            appendLog(state, {
+              key: `ability.${ability.id}.triggered`,
+              params: { actor: identityPlayer.name },
+              onomatopoeia: 'ABILITY TRIGGERED!',
+            });
           };
-          kernel.executeEffect(state, ability, effCtx);
-          if (trigger === 'THREAT_WOULD_BE_PLACED' && effCtx.threatAmount !== undefined) {
-            scanState.currentThreat = effCtx.threatAmount;
+          if (isForced) {
+            scanState.forcedCandidates.push({
+              controller: identityPlayer,
+              run,
+              prompt: () =>
+                forcedAbilityPrompt(state, scanState, trigger, context, identityPlayer, ability, {
+                  name: identityPlayer.activeFormCard.name,
+                  code: identityPlayer.activeFormCard.code,
+                }),
+            });
+          } else {
+            run();
           }
-          if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && effCtx.damageAmount !== undefined) {
-            scanState.currentDamage = effCtx.damageAmount;
-            if (scanState.currentDamage === 0) scanState.isPrevented = true;
-          }
-          appendLog(state, {
-            key: `ability.${ability.id}.triggered`,
-            params: { actor: identityPlayer.name },
-            onomatopoeia: 'ABILITY TRIGGERED!',
-          });
         } else {
           // Optional Identity Ability: Check cost & limits before prompting
           const costCheck = canPayAbilityCost(state, identityPlayer, ability);
@@ -882,16 +962,8 @@ function scanInPlayTriggerAbilities(
           }
 
           const isForced = isForcedTiming(ability.timing);
+          if (isForced !== (scanState.pass === 'FORCED')) continue;
           if (isForced || context.acceptOptionalTriggers === true) {
-            const node: TriggerCallNode = {
-              trigger,
-              abilityId: ability.id,
-              sourceInstanceId: cardInst.instanceId,
-              cardCode: cardInst.card.code,
-              cardName: cardInst.card.name,
-            };
-            const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
-
             // RR v1.8 Forced: a forced ability that requires a target and has no valid one does not initiate
             if (
               !kernel.checkAbilityTargets(state, controller, ability, cardInst, {
@@ -901,29 +973,52 @@ function scanInPlayTriggerAbilities(
             ) {
               continue;
             }
-            if (ability.cost) {
-              const costCheck = canPayAbilityCost(state, controller, ability, cardInst);
-              if (!costCheck.allowed) continue;
-              executeAbilityCost(state, controller, ability, cardInst);
+            if (ability.cost && !canPayAbilityCost(state, controller, ability, cardInst).allowed) {
+              continue;
             }
-            const effCtx: EffectExecutionContext = {
-              playerId: controller.id,
-              sourceCardInstance: cardInst,
-              eventTargetType: context.targetType,
-              eventTargetInstanceId: context.targetInstanceId,
-              resourcesSpent: context.resourcesSpent,
-              threatAmount: scanState.currentThreat,
-              damageAmount: scanState.currentDamage,
-              interceptedValue: scanState.currentThreat || scanState.currentDamage,
-              triggerChain: nextChain,
+            const run = (): void => {
+              const node: TriggerCallNode = {
+                trigger,
+                abilityId: ability.id,
+                sourceInstanceId: cardInst.instanceId,
+                cardCode: cardInst.card.code,
+                cardName: cardInst.card.name,
+              };
+              const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
+              if (ability.cost) executeAbilityCost(state, controller, ability, cardInst);
+              const effCtx: EffectExecutionContext = {
+                playerId: controller.id,
+                sourceCardInstance: cardInst,
+                eventTargetType: context.targetType,
+                eventTargetInstanceId: context.targetInstanceId,
+                resourcesSpent: context.resourcesSpent,
+                threatAmount: scanState.currentThreat,
+                damageAmount: scanState.currentDamage,
+                interceptedValue: scanState.currentThreat || scanState.currentDamage,
+                triggerChain: nextChain,
+              };
+              kernel.executeEffect(state, ability, effCtx);
+              if (trigger === 'THREAT_WOULD_BE_PLACED' && effCtx.threatAmount !== undefined) {
+                scanState.currentThreat = effCtx.threatAmount;
+              }
+              if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && effCtx.damageAmount !== undefined) {
+                scanState.currentDamage = effCtx.damageAmount;
+                if (scanState.currentDamage === 0) scanState.isPrevented = true;
+              }
             };
-            kernel.executeEffect(state, ability, effCtx);
-            if (trigger === 'THREAT_WOULD_BE_PLACED' && effCtx.threatAmount !== undefined) {
-              scanState.currentThreat = effCtx.threatAmount;
-            }
-            if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && effCtx.damageAmount !== undefined) {
-              scanState.currentDamage = effCtx.damageAmount;
-              if (scanState.currentDamage === 0) scanState.isPrevented = true;
+            if (isForced) {
+              scanState.forcedCandidates.push({
+                controller,
+                run,
+                prompt: () =>
+                  forcedAbilityPrompt(state, scanState, trigger, context, controller, ability, {
+                    name: cardInst.card.name,
+                    code: cardInst.card.code,
+                    instanceId: cardInst.instanceId,
+                  }),
+              });
+            } else {
+              run();
             }
           } else {
             // Optional In-Play Ability: Check cost & limits before prompting
@@ -1231,6 +1326,86 @@ function scanAllHandTriggerReactions(
   }
 }
 
+/**
+ * The first player's prompt to order simultaneous abilities (RR v1.8 p. 27). Choosing one resolves
+ * it first; the rest follow in turn order. Forced abilities name their controller, since the
+ * first player orders them whoever controls the cards.
+ */
+function simultaneousAbilitiesPrompt(
+  state: GameState,
+  candidates: PendingDecisionPrompt[],
+  kind: { title: string; description: string },
+): PendingDecisionPrompt {
+  const firstPlayerId =
+    state.players[state.firstPlayerIndex]?.id || state.players[0]?.id || candidates[0].playerId;
+  return {
+    promptId: nextEngineId(state, 'prompt_order_simultaneous'),
+    playerId: firstPlayerId,
+    kind: 'ORDER_SIMULTANEOUS_ABILITIES',
+    title: kind.title,
+    description: kind.description,
+    sourceCardName:
+      candidates[0]?.triggerSourceName || candidates[0]?.sourceCardName || 'Simultaneous Abilities',
+    sourceCardCode: candidates[0]?.triggerSourceCode,
+    triggerSourceName: candidates[0]?.triggerSourceName,
+    triggerSourceCode: candidates[0]?.triggerSourceCode,
+    triggerSourceCard: candidates[0]?.triggerSourceCard,
+    triggerType: candidates[0]?.triggerType,
+    isVoluntary: false,
+    options: candidates.map((candidate) => {
+      const owner = state.players.find((pl) => pl.id === candidate.playerId);
+      const ownerName = owner?.hero?.name || owner?.name || owner?.id || candidate.playerId;
+      const candidateOption = candidate.options?.find(
+        (o) => o.effect === 'EXECUTE_OPTIONAL_TRIGGER',
+      );
+      return {
+        id: candidate.promptId,
+        label: candidate.forced
+          ? `${candidate.sourceCardName} (${owner?.name ?? candidate.playerId})`
+          : candidate.sourceCardName,
+        cardName: candidate.sourceCardName,
+        cardCode: candidate.sourceCardCode,
+        description: candidate.description,
+        effect: 'EXECUTE_OPTIONAL_TRIGGER',
+        params: {
+          promptId: candidate.promptId,
+          playerId: candidate.playerId,
+          playerName: ownerName,
+          triggerType: candidate.triggerType,
+          sourceCardInstanceId: candidate.sourceCardInstanceId,
+          ...(candidateOption?.params || {}),
+          context: { ...(candidateOption?.params?.context || {}) },
+        },
+      };
+    }),
+    simultaneousPrompts: candidates,
+  };
+}
+
+/**
+ * Forced abilities initiate before any optional one (RR v1.8 "Forced"). One resolves at once.
+ * Two or more simultaneous ones are queued as prompts the engine answers itself, behind the first
+ * player's ordering prompt (whoever controls the cards): `finalizeQueuedTriggerPrompts` puts it
+ * ahead of every optional prompt.
+ */
+function resolveForcedCandidates(state: GameState, scanState: TriggerScanState): void {
+  const { forcedCandidates } = scanState;
+  if (forcedCandidates.length === 1) {
+    forcedCandidates[0].run();
+  } else if (forcedCandidates.length > 1) {
+    scanState.forcedOrdering = simultaneousAbilitiesPrompt(
+      state,
+      forcedCandidates.map((candidate) => candidate.prompt()),
+      {
+        title: 'Simultaneous Forced Abilities: Choose Resolution Order',
+        description:
+          'Multiple forced abilities triggered simultaneously. The first player determines the order in which they resolve.',
+      },
+    );
+  }
+  scanState.forcedCandidates = [];
+}
+
 function finalizeQueuedTriggerPrompts(
   state: GameState,
   priorityOrder: PlayerState[],
@@ -1238,91 +1413,51 @@ function finalizeQueuedTriggerPrompts(
   context: TriggerContext,
   scanState: TriggerScanState,
 ): void {
-  if (state.pendingDecisionQueue && state.pendingDecisionQueue.length > queueLenBefore) {
-    const turnOrder = priorityOrder.map((p) => p.id);
-    const existing = state.pendingDecisionQueue.slice(0, queueLenBefore);
-    const newlyAdded = state.pendingDecisionQueue.slice(queueLenBefore);
-    newlyAdded.sort((a, b) => {
-      const idxA = turnOrder.indexOf(a.playerId);
-      const idxB = turnOrder.indexOf(b.playerId);
-      const orderA = idxA === -1 ? 999 : idxA;
-      const orderB = idxB === -1 ? 999 : idxB;
-      return orderA - orderB;
-    });
-    const isIdenticalHandDuplicates =
-      newlyAdded.length > 1 &&
-      newlyAdded.every((c) => {
-        const first = newlyAdded[0];
-        if (c.playerId !== first.playerId) return false;
-        if (!c.sourceCardCode || c.sourceCardCode !== first.sourceCardCode) return false;
-        const owner = state.players.find((p) => p.id === c.playerId);
-        return Boolean(owner?.hand?.some((h) => h.instanceId === c.sourceCardInstanceId));
-      });
+  const queue = state.pendingDecisionQueue ?? [];
+  if (queue.length <= queueLenBefore && !scanState.forcedOrdering) return;
 
-    if (
-      newlyAdded.length > 1 &&
-      context.acceptOptionalTriggers !== true &&
-      !isIdenticalHandDuplicates
-    ) {
-      const firstPlayerId =
-        state.players[state.firstPlayerIndex]?.id || state.players[0]?.id || newlyAdded[0].playerId;
-      const orderingPrompt: PendingDecisionPrompt = {
-        promptId: nextEngineId(state, 'prompt_order_simultaneous'),
-        playerId: firstPlayerId,
-        kind: 'ORDER_SIMULTANEOUS_ABILITIES',
-        title: 'Simultaneous Optional Abilities: Choose Resolution Order',
-        description:
-          'Multiple optional abilities triggered simultaneously. The first player determines the order in which they resolve.',
-        sourceCardName:
-          newlyAdded[0]?.triggerSourceName ||
-          newlyAdded[0]?.sourceCardName ||
-          'Simultaneous Abilities',
-        sourceCardCode: newlyAdded[0]?.triggerSourceCode,
-        triggerSourceName: newlyAdded[0]?.triggerSourceName,
-        triggerSourceCode: newlyAdded[0]?.triggerSourceCode,
-        triggerSourceCard: newlyAdded[0]?.triggerSourceCard,
-        triggerType: newlyAdded[0]?.triggerType,
-        isVoluntary: false,
-        options: newlyAdded.map((candidate) => {
-          const owner = state.players.find((pl) => pl.id === candidate.playerId);
-          const ownerName = owner?.hero?.name || owner?.name || owner?.id || candidate.playerId;
-          const candidateOption = candidate.options?.find(
-            (o) => o.effect === 'EXECUTE_OPTIONAL_TRIGGER',
-          );
-          return {
-            id: candidate.promptId,
-            label: candidate.sourceCardName,
-            cardName: candidate.sourceCardName,
-            cardCode: candidate.sourceCardCode,
-            description: candidate.description,
-            effect: 'EXECUTE_OPTIONAL_TRIGGER',
-            params: {
-              promptId: candidate.promptId,
-              playerId: candidate.playerId,
-              playerName: ownerName,
-              triggerType: candidate.triggerType,
-              sourceCardInstanceId: candidate.sourceCardInstanceId,
-              ...(candidateOption?.params || {}),
-              context: { ...(candidateOption?.params?.context || {}) },
-            },
-          };
-        }),
-        simultaneousPrompts: newlyAdded,
-      };
-      state.pendingDecisionQueue = [...existing, orderingPrompt];
-    } else {
-      state.pendingDecisionQueue = [...existing, ...newlyAdded];
-    }
-    const total = state.pendingDecisionQueue.length;
-    for (let i = 0; i < total; i++) {
-      state.pendingDecisionQueue[i].queuePosition = i + 1;
-      state.pendingDecisionQueue[i].totalQueued = total;
-    }
-    if (state.pendingDecisionQueue.length > 0) {
-      kernel.refreshPromptOptionAvailability(state, state.pendingDecisionQueue[0]);
-      scanState.hasPendingPrompt = true;
-    }
+  const turnOrder = priorityOrder.map((p) => p.id);
+  const existing = queue.slice(0, queueLenBefore);
+  const newlyAdded = queue.slice(queueLenBefore);
+  newlyAdded.sort((a, b) => {
+    const idxA = turnOrder.indexOf(a.playerId);
+    const idxB = turnOrder.indexOf(b.playerId);
+    const orderA = idxA === -1 ? 999 : idxA;
+    const orderB = idxB === -1 ? 999 : idxB;
+    return orderA - orderB;
+  });
+  const isIdenticalHandDuplicates =
+    newlyAdded.length > 1 &&
+    newlyAdded.every((c) => {
+      const first = newlyAdded[0];
+      if (c.playerId !== first.playerId) return false;
+      if (!c.sourceCardCode || c.sourceCardCode !== first.sourceCardCode) return false;
+      const owner = state.players.find((p) => p.id === c.playerId);
+      return Boolean(owner?.hand?.some((h) => h.instanceId === c.sourceCardInstanceId));
+    });
+
+  const optionalPrompts =
+    newlyAdded.length > 1 && context.acceptOptionalTriggers !== true && !isIdenticalHandDuplicates
+      ? [
+          simultaneousAbilitiesPrompt(state, newlyAdded, {
+            title: 'Simultaneous Optional Abilities: Choose Resolution Order',
+            description:
+              'Multiple optional abilities triggered simultaneously. The first player determines the order in which they resolve.',
+          }),
+        ]
+      : newlyAdded;
+  state.pendingDecisionQueue = [
+    ...existing,
+    ...(scanState.forcedOrdering ? [scanState.forcedOrdering] : []),
+    ...optionalPrompts,
+  ];
+  const total = state.pendingDecisionQueue.length;
+  for (let i = 0; i < total; i++) {
+    state.pendingDecisionQueue[i].queuePosition = i + 1;
+    state.pendingDecisionQueue[i].totalQueued = total;
   }
+  kernel.refreshPromptOptionAvailability(state, state.pendingDecisionQueue[0]);
+  scanState.hasPendingPrompt = true;
 }
 
 /**
@@ -1379,6 +1514,8 @@ export function dispatchTrigger(
     currentThreat: context.threatAmount ?? 0,
     isCancelled: false,
     hasPendingPrompt: false,
+    pass: 'FORCED',
+    forcedCandidates: [],
   };
 
   const queueLenBefore = state.pendingDecisionQueue?.length ?? 0;
@@ -1397,13 +1534,15 @@ export function dispatchTrigger(
   const playersToScan: PlayerState[] =
     isGlobalTrigger || isDefeatTrigger(trigger) ? priorityOrder : [player];
 
-  // 1. Scan in-play identity card abilities (e.g. Spider-Sense on Spider-Man 01001a)
+  // Forced abilities initiate first (RR v1.8 "Forced"): identity, then tableau, allies & in-play cards.
   scanIdentityTriggerAbilities(state, trigger, context, currentChain, playersToScan, scanState);
-
-  // 2. Scan tableau, allies & in-play cards
   scanInPlayTriggerAbilities(state, trigger, context, currentChain, playersToScan, scanState);
+  resolveForcedCandidates(state, scanState);
 
-  // 3. Scan in-hand reactions
+  // Then the optional ones: identity (e.g. Spider-Sense on Spider-Man 01001a), in play, in hand.
+  scanState.pass = 'OPTIONAL';
+  scanIdentityTriggerAbilities(state, trigger, context, currentChain, playersToScan, scanState);
+  scanInPlayTriggerAbilities(state, trigger, context, currentChain, playersToScan, scanState);
   scanAllHandTriggerReactions(state, trigger, context, currentChain, player, scanState);
 
   // 4. Finalize queued prompts

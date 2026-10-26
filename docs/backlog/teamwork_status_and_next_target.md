@@ -70,7 +70,6 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 | Issue                                                   | Problem (from the Dev Mode report)                                                                   | Notes                                                                                   |
 | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| [#361](https://github.com/SteveRodrigue/MCD/issues/361) | Defeat window resolves a later player's Forced ability before an earlier player's optional Response. | P1. Two-pass dispatch (forced first, then optional); multiplayer only.                  |
 | [#362](https://github.com/SteveRodrigue/MCD/issues/362) | Ending the game leaves pending placements, attack and encounter state behind.                        | One `endGame` helper; decide whether post-victory combat steps run.                     |
 | [#363](https://github.com/SteveRodrigue/MCD/issues/363) | Defeat triggers scan every player; filter-less abilities can fire for the wrong player.              | Owner analysis first (default scope of a defeat ability).                               |
 | [#369](https://github.com/SteveRodrigue/MCD/issues/369) | Threat removal mixed with a no-target step skips the legality check (review of #331).                | P2. `checkAbilityTargets` in `src/engine/effects/target-choice.ts`; failing test first. |
@@ -117,7 +116,7 @@ Run the `next-task` skill (it reads this file). Plan anatomy and owner preferenc
 
 Waiting for your answer:
 
-- **#342** (Relentless Assault `01053`): the reported Overkill defect is fixed in code (`f5e5bb83`, `Refs`), and the follow-ups it exposed are filed (#359 closed, #360 to #363 queued above). Close #342 once you have checked the report's scenario, or tell me what is still missing.
+- **#342** (Relentless Assault `01053`): the reported Overkill defect is fixed in code (`f5e5bb83`, `Refs`), and the follow-ups it exposed are filed (#359 closed, #360 to #363, of which #361 is delivered). Close #342 once you have checked the report's scenario, or tell me what is still missing.
 
 Decisions taken are recorded in the row they affect (section 3) and on the issue.
 

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { CheckCircle2, XCircle, ArrowRight, Zap, ShieldAlert, Swords } from 'lucide-react';
-import { PendingDecisionPrompt } from '../../../engine/models';
+import React, { useState, useMemo } from 'react';
+import { CheckCircle2, XCircle, ArrowRight, Zap, ShieldAlert, Swords, Shield } from 'lucide-react';
+import { PendingDecisionPrompt, PlayerState } from '../../../engine/models';
 import { cardCatalog } from '../../../data/importer/card-loader';
 import { CardView } from '../cards/CardView';
 import { PromptCardPanel } from './PromptCardPanel';
@@ -14,19 +14,30 @@ import { optionRequiresPayment } from '../../utils/option-requires-payment';
 import { AccentStripe } from '../../theme/AccentStripe';
 import { ModalScaffold } from '../../theme/ModalScaffold';
 import { useModalStyle } from '../../theme/useModalStyle';
+import { useOptionalGameSession } from '../../context/GameStateContext';
+import { getHeroColorPalette, getContrastTextColor } from '../../utils/hero-theme';
+import { resolvePlayerSeatInfo } from '../../utils/player-seat';
 
 interface DecisionPromptModalProps {
   prompt?: PendingDecisionPrompt;
   onSelectOption: (optionId: string, payload?: any) => void;
+  players?: PlayerState[];
 }
 
 export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
   prompt,
   onSelectOption,
+  players: propsPlayers,
 }) => {
   const { style } = useModalStyle();
+  const gameSession = useOptionalGameSession();
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
   const [hoveredOptionCardId, setHoveredOptionCardId] = useState<string | null>(null);
+
+  const effectivePlayers = propsPlayers ?? gameSession?.state.players;
+  const seatInfo = resolvePlayerSeatInfo(effectivePlayers, prompt?.playerId);
+  const { player: promptPlayer, seatNumber, isMultiHero, label: playerSeatLabel } = seatInfo;
+  const playerPalette = useMemo(() => getHeroColorPalette(promptPlayer), [promptPlayer]);
 
   if (!prompt) return null;
 
@@ -69,6 +80,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
     return (
       <SelectCardsModal
         prompt={prompt}
+        players={effectivePlayers}
         onConfirm={(selectedOptionIds) =>
           onSelectOption('confirm_selection', { selectedOptionIds })
         }
@@ -145,27 +157,71 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
   const bodyShowsTrigger =
     showTriggerCardShowcase || Boolean(headerTrigger?.code && matchupCodes.has(headerTrigger.code));
 
+  const kickerText = isForced ? 'FORCED RESOLUTION' : 'OPTIONAL DECISION';
+  const modalKicker = isMultiHero && seatNumber ? `SEAT ${seatNumber} • ${kickerText}` : kickerText;
+
   return (
     <ModalScaffold
       title={prompt.title}
-      kicker={isForced ? 'FORCED RESOLUTION' : 'OPTIONAL DECISION'}
+      kicker={modalKicker}
       verb={isForced ? 'red' : 'yellow'}
       trigger={bodyShowsTrigger ? null : headerTrigger}
       icon={
         isForced ? <ShieldAlert className="w-5 h-5 animate-pulse" /> : <Zap className="w-5 h-5" />
       }
       headerRight={
-        prompt.totalQueued && prompt.totalQueued > 1 ? (
-          <span className={`text-micro font-black px-1.5 py-0.5 ${style.chip}`}>
-            QUEUE: {prompt.queuePosition ?? 1} OF {prompt.totalQueued}
-          </span>
-        ) : undefined
+        <div className="flex items-center gap-2">
+          {promptPlayer && (
+            <span
+              data-testid="decision-prompt-player-badge"
+              className="text-micro font-black px-2 py-0.5 border border-comic-black shadow-comic-xs rounded-sm truncate max-w-[200px] sm:max-w-[260px] uppercase tracking-wider flex items-center gap-1.5"
+              style={{
+                backgroundColor: playerPalette.primary,
+                color: playerPalette.contrastText.primary,
+              }}
+            >
+              <Shield className="w-3 h-3 shrink-0" />
+              <span className="truncate">{playerSeatLabel}</span>
+            </span>
+          )}
+          {prompt.totalQueued && prompt.totalQueued > 1 ? (
+            <span className={`text-micro font-black px-1.5 py-0.5 ${style.chip}`}>
+              QUEUE: {prompt.queuePosition ?? 1} OF {prompt.totalQueued}
+            </span>
+          ) : undefined}
+        </div>
       }
       maxWidthClass="max-w-xl"
       testId="decision-prompt-modal"
     >
       {/* 2. Modal Body */}
       <div className="space-y-4">
+        {/* Deciding Player Ribbon in Multiplayer */}
+        {promptPlayer && isMultiHero && (
+          <div
+            data-testid="decision-prompt-player-banner"
+            className="flex items-center justify-between px-3 py-1.5 rounded-sm border border-comic-black shadow-comic-xs font-black text-xs uppercase tracking-wider"
+            style={{
+              backgroundColor: playerPalette.primary,
+              color: playerPalette.contrastText.primary,
+            }}
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <Shield className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">{playerSeatLabel}</span>
+            </div>
+            <span
+              className="text-nano font-black px-1.5 py-0.2 rounded-sm border border-comic-black shadow-comic-xs shrink-0"
+              style={{
+                backgroundColor: playerPalette.accent || playerPalette.secondary,
+                color: getContrastTextColor(playerPalette.accent || playerPalette.secondary),
+              }}
+            >
+              DECIDING PLAYER
+            </span>
+          </div>
+        )}
+
         {/* Question Title & Description */}
         <div className="space-y-1">
           {showMatchup && (

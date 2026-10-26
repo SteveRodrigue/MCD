@@ -568,6 +568,9 @@ export function resolveDefenderDeclaration(
   // Step 6: Damage Calculation, Prevention & Overkill
   step6_calculateAndApplyAttackDamage(state, attackContext);
 
+  // The game ended during the damage (RR v1.8): no reaction, Retaliate or clean-up follows.
+  if (state.winner) return state;
+
   if (attackContext.pendingDamage !== undefined) {
     state.activeAttackContext = attackContext;
     return state;
@@ -986,6 +989,7 @@ export function finishAttackDamageAndPostResolution(
     onPrevented: hooks.wouldTakeWindow.onPrevented,
   });
   completeAttackDamage(resumed.state, player, attackContext, resumed.result.damageTaken);
+  if (resumed.state.winner) return resumed.state;
   state = step7_resolvePostAttackAndRetaliate(resumed.state, attackContext);
   recordOutcomeOnStepEvent(state, player, attackContext);
 

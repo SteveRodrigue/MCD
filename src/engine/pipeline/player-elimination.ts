@@ -1,6 +1,7 @@
 import type { CardInstance, GameState, PlayerState } from '../models';
 import { isEncounterCard, resetCardState } from '../effects';
 import { appendLog } from '../state/game-log';
+import { endGame } from '../state/victory';
 
 /** The card lists of a player's play area that hold cards in play (the identity's attachments, the tableau, allies, obligations). */
 function playAreaHosts(player: PlayerState): CardInstance[][] {
@@ -71,7 +72,7 @@ export function eliminatePlayer(state: GameState, playerId: string): void {
   if (state.players.length === 0) {
     state.firstPlayerIndex = 0;
     state.activePlayerIndex = 0;
-    state.winner = 'VILLAIN';
+    endGame(state, 'VILLAIN');
     return;
   }
 

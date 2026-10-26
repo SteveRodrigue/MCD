@@ -68,7 +68,10 @@ describe('End of Player Phase Clean-Up & Voluntary Hand Discard (Issue #41, RR v
     const prompt = peekDecisionPrompt(res.state);
     expect(prompt).toBeDefined();
     expect(prompt?.title).toContain('End of Player Phase: Voluntary Discard');
-    expect(prompt?.options.length).toBe(3); // Discard cardA, Discard cardB, Keep All (Done)
+    // One option per hand card, answered together in a single multi-select (none keeps all)
+    expect(prompt?.kind).toBe('PLAYER_CLEANUP');
+    expect(prompt?.selection).toEqual({ min: 0, max: 2 });
+    expect(prompt?.options.map((o) => o.id)).toEqual([cardA.instanceId, cardB.instanceId]);
     expect(prompt?.options[0].cardCode).toBe(cardA.card.code);
     expect(prompt?.options[0].cardName).toBe(cardA.card.name);
     expect(prompt?.options[0].description).toBe(cardA.card.text);
@@ -223,5 +226,84 @@ describe('End of Player Phase Clean-Up & Voluntary Hand Discard (Issue #41, RR v
     expect(cleanupLog?.params?.discardedCards).toContain(discardCard.card.name);
     expect(cleanupLog?.params?.drawnCount).toBe(5);
     expect(cleanupLog?.params?.drawnCards).toHaveLength(5);
+  });
+
+  describe('answering the clean-up prompt', () => {
+    function endTurnWithHand(handSize: number) {
+      const state = setupGame({
+        catalog: cardCatalog,
+        scenarioId: 'rhino',
+        players: [
+          {
+            id: 'p1',
+            name: 'Captain Marvel',
+            hero: captainMarvelHero,
+            alterEgo: carolDanversAlterEgo,
+            deckCards: Array(12).fill(cardCatalog.getCard('01013')!),
+          },
+        ],
+        villain: rhinoVillain,
+        mainScheme,
+        encounterCards: cardCatalog.getCardsBySet('rhino'),
+        skipMulligan: true,
+      });
+      const player = state.players[0];
+      player.currentForm = 'hero';
+      player.activeFormCard = captainMarvelHero; // Hand Size = 5
+      player.hand = Array.from({ length: handSize }, () =>
+        createCardInstance(cardCatalog.getCard('01013')!),
+      );
+      const ended = dispatchAction(state, { type: 'END_PLAYER_TURN', playerId: 'p1' });
+      return { hand: [...player.hand], state: ended.state };
+    }
+
+    it('discards several cards in one answer, then draws back up and moves on', () => {
+      const { hand, state } = endTurnWithHand(4);
+      const res = dispatchAction(state, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: 'confirm_selection',
+        selectedOptionIds: [hand[0].instanceId, hand[2].instanceId],
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(peekDecisionPrompt(res.state)?.kind).not.toBe('PLAYER_CLEANUP');
+      const player = res.state.players[0];
+      const discardedIds = player.discard.map((c) => c.instanceId);
+      expect(discardedIds).toEqual(
+        expect.arrayContaining([hand[0].instanceId, hand[2].instanceId]),
+      );
+      expect(player.hand.map((c) => c.instanceId)).toEqual(
+        expect.arrayContaining([hand[1].instanceId, hand[3].instanceId]),
+      );
+      expect(player.hand).toHaveLength(5);
+    });
+
+    it('keeps the whole hand when nothing is chosen', () => {
+      const { hand, state } = endTurnWithHand(3);
+      const res = dispatchAction(state, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: 'confirm_selection',
+        selectedOptionIds: [],
+      });
+
+      expect(res.result.success).toBe(true);
+      const handIds = res.state.players[0].hand.map((c) => c.instanceId);
+      expect(handIds).toEqual(expect.arrayContaining(hand.map((c) => c.instanceId)));
+    });
+
+    it('rejects a card that is not in the hand and keeps the prompt', () => {
+      const { state } = endTurnWithHand(2);
+      const res = dispatchAction(state, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: 'confirm_selection',
+        selectedOptionIds: ['not_a_hand_card'],
+      });
+
+      expect(res.result.success).toBe(false);
+      expect(peekDecisionPrompt(res.state)?.kind).toBe('PLAYER_CLEANUP');
+    });
   });
 });

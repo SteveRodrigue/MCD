@@ -82,12 +82,13 @@ describe('lifecycle triggers, hero/alter-ego timings and STATUS_REMOVED (#276)',
       support = withAbility(counterAbility('ended', 'FORCED_RESPONSE', 'PLAYER_PHASE_ENDED'));
       const ended = dispatchAction(state, { type: 'END_PLAYER_TURN', playerId: 'p1' });
       const cleanup = peekDecisionPrompt(ended.state)!;
-      expect(cleanup.options.some((o) => o.id === 'done_cleanup')).toBe(true);
+      expect(cleanup.kind).toBe('PLAYER_CLEANUP');
 
       const next = dispatchAction(ended.state, {
         type: 'RESOLVE_DECISION_PROMPT',
         playerId: 'p1',
-        selectedOptionId: 'done_cleanup',
+        selectedOptionId: 'confirm_selection',
+        selectedOptionIds: [],
       }).state;
 
       const keys = next.log.map((l) => l.key);

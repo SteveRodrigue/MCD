@@ -250,14 +250,13 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
     expect(screen.getByText('Prevents: 3 DMG')).toBeDefined();
   });
 
-  it('voluntary discard options display card thumbnail, name, cost, and formatted printed text without raw markup', async () => {
+  it('single-choice card options display card thumbnail, name, cost, and formatted printed text without raw markup', async () => {
     const webShooter = cardCatalog.getCard('01005')!;
     const prompt: PendingDecisionPrompt = {
-      promptId: 'prompt_cleanup_discard',
+      promptId: 'prompt_card_option_thumbnail',
       playerId: 'p1',
-      title: 'End of Player Phase: Voluntary Discard',
-      description:
-        'Spider-Man: Select any cards in your hand you wish to discard before drawing up to hand size:',
+      title: 'Discard a card',
+      description: 'Spider-Man: Choose a card to discard:',
       sourceCardName: 'Spider-Man',
       isVoluntary: true,
       options: [
@@ -268,15 +267,8 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
           cardName: webShooter.name,
           description:
             'Uses (3 web counters). <b>Hero Resource</b>: Exhaust Web-Shooter -> generate a [wild] resource.',
-          effect: 'PLAYER_PHASE_DISCARD_CARD',
+          effect: 'DISCARD_CARD',
           params: { cardInstanceId: 'inst_1', playerId: 'p1' },
-        },
-        {
-          id: 'done_cleanup',
-          label: 'Done / Keep Remaining Cards',
-          description: 'Proceed to refill hand and ready all cards',
-          effect: 'FINISH_PLAYER_CLEANUP',
-          params: { playerId: 'p1' },
         },
       ],
     };

@@ -363,7 +363,11 @@ export interface VillainPhaseStepEvent {
 }
 
 export type DecisionPromptKind =
-  'SINGLE_CHOICE' | 'DISTRIBUTE_POINTS' | 'MULTI_SELECT_TARGETS' | 'ORDER_SIMULTANEOUS_ABILITIES';
+  | 'SINGLE_CHOICE'
+  | 'DISTRIBUTE_POINTS'
+  | 'MULTI_SELECT_TARGETS'
+  | 'ORDER_SIMULTANEOUS_ABILITIES'
+  | 'PLAYER_CLEANUP';
 
 export interface TargetAllocationItem {
   instanceId: string;

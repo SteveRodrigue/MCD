@@ -84,3 +84,55 @@ describe('multi-select card prompt (SEARCH minimumTake / takeCount)', () => {
     expect(confirm.disabled).toBe(false);
   });
 });
+
+describe('End of Player Phase discard (PLAYER_CLEANUP multi-select)', () => {
+  const handCard = (id: string, name: string, code: string) => ({
+    id,
+    label: `Discard ${name}`,
+    cardCode: code,
+    cardName: name,
+    description: '',
+    effect: 'PLAYER_CLEANUP_DISCARD',
+    params: { cardCode: code, cardName: name },
+  });
+  const cleanupPrompt: PendingDecisionPrompt = {
+    promptId: 'prompt_cleanup_p1_1',
+    playerId: 'p1',
+    title: 'End of Player Phase: Voluntary Discard',
+    description: 'Select any cards in your hand you wish to discard:',
+    sourceCardName: 'Black Panther',
+    isVoluntary: true,
+    kind: 'PLAYER_CLEANUP',
+    selection: { min: 0, max: 3 },
+    options: [
+      handCard('i1', 'Energy Daggers', '01047'),
+      handCard('i2', 'Backflip', '01003'),
+      handCard('i3', 'Swinging Web Kick', '01004'),
+    ],
+  };
+
+  it('shows every hand card with its thumbnail anchor, keeping all when nothing is chosen', () => {
+    const onSelect = vi.fn();
+    render(<DecisionPromptModal prompt={cleanupPrompt} onSelectOption={onSelect} />);
+    for (const o of cleanupPrompt.options) {
+      expect(screen.getByTestId(`select-card-${o.id}`).getAttribute('data-card-anchor')).toBe(
+        o.cardCode,
+      );
+    }
+    const confirm = screen.getByTestId('select-cards-confirm') as HTMLButtonElement;
+    expect(confirm.textContent).toBe('Keep all cards');
+    fireEvent.click(confirm);
+    expect(onSelect).toHaveBeenCalledWith('confirm_selection', { selectedOptionIds: [] });
+  });
+
+  it('discards all chosen cards in one confirmation', () => {
+    const onSelect = vi.fn();
+    render(<DecisionPromptModal prompt={cleanupPrompt} onSelectOption={onSelect} />);
+    fireEvent.click(screen.getByTestId('select-card-i1'));
+    fireEvent.click(screen.getByTestId('select-card-i3'));
+    const confirm = screen.getByTestId('select-cards-confirm');
+    expect(confirm.textContent).toBe('Discard 2');
+    fireEvent.click(confirm);
+    expect(onSelect).toHaveBeenCalledWith('confirm_selection', { selectedOptionIds: ['i1', 'i3'] });
+  });
+});

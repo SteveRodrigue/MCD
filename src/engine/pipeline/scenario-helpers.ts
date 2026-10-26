@@ -1,7 +1,7 @@
 import { bindKernel } from '../kernel';
 import { GameState, getActiveVillain } from '@engine/models';
 import { ScenarioRegistry } from '@engine/scenarios';
-import { declareVictory } from '../state/victory';
+import { endGame } from '../state/victory';
 
 /**
  * Handles a villain reaching 0 HP by delegating stage progression,
@@ -16,7 +16,7 @@ export function handleVillainDefeat(state: GameState, villainInstanceId?: string
     return res.state;
   }
 
-  declareVictory(state);
+  endGame(state, 'HEROES');
   return state;
 }
 
@@ -39,7 +39,7 @@ export function handleMainSchemeCompletion(
     return res.state;
   }
 
-  state.winner = 'VILLAIN';
+  endGame(state, 'VILLAIN');
   return state;
 }
 

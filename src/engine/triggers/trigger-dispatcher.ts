@@ -1471,7 +1471,7 @@ export function dispatchTrigger(
   context: TriggerContext,
   triggerChainOverride?: TriggerCallNode[],
 ): TriggerDispatchResult {
-  // The game is over (the players won): nothing triggers any more.
+  // The game is over (either side won): nothing triggers any more.
   if (state.winner) return { state };
 
   const currentChain = triggerChainOverride || context.triggerChain || [];

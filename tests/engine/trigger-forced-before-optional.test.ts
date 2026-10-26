@@ -32,7 +32,7 @@ function forcedDrawSupport(id: string, name: string): NormalizedCard {
           id,
           timing: 'FORCED_RESPONSE',
           trigger: 'CHARACTER_DEFEATED',
-          triggerFilter: { targetType: 'MINION' },
+          triggerFilter: { targetType: 'MINION', targetPlayerScope: 'ANY' },
           steps: [{ effect: 'DRAW', effectParams: { count: 1 } }],
         },
       ],

@@ -210,7 +210,7 @@ describe('hero defeat', () => {
   it('H1: the damage pipeline announces a hero defeat after the elimination', () => {
     const state = duo();
     const [a, b] = state.players;
-    a.tableau.push(forcedResponseProbe('ALL_HEROES'));
+    a.tableau.push(forcedResponseProbe('ALL_HEROES', { targetPlayerScope: 'ANY' }));
     const aHealth = a.health;
 
     hit(state, b, 999);

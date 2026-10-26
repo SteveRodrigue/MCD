@@ -131,3 +131,14 @@ RR v1.8 (Triggering Condition): one game occurrence that creates several trigger
 - `DEFEATED` and `CHARACTER_DEFEATED` scan the in-play cards and the hand of every player in turn order, and the trigger filter decides. "After you defeat" (`defeatedByAttackOf: YOUR_HERO`) belongs to the player whose hero attacked (RR v1.8 glossary Y), not to the player the minion was engaged with.
 - When the last villain stage is defeated, `endGame` sets the winner and clears every pending resolution state, and `dispatchTrigger` returns at once for a finished game: nothing fires after the victory.
 - The enemy attack path (`applyCalculatedAttackDamage` in `combat-pipeline.ts`) applies its damage through `applyDamageToTarget` (#269, #360). The pipeline collects the defeats of one occurrence (the ally, then the identity by Overkill; the minion, then the villain) and announces them in that order after the last state change. A side scheme defeat uses the same `dispatchDefeat` (#359).
+
+## Addendum (2026-10-25, #363): Defeat abilities default to their controller
+
+`DEFEATED` and `CHARACTER_DEFEATED` scan every player (the defeater is not the engaged player, #342), but a defeat ability with no scope of its own now reacts only to defeats of its controller's characters, the same default as `DAMAGE_WOULD_BE_TAKEN`. "Your ally" is never another player's ally (the you/your rule).
+
+**Decision:**
+
+1. **One implicit controller scope:** `failsImplicitControllerScope` in `trigger-dispatcher.ts` applies to `DAMAGE_WOULD_BE_TAKEN`, `DEFEATED` and `CHARACTER_DEFEATED` when the filter has no `targetPlayerScope`.
+2. **Opt out:** `targetPlayerScope: 'ANY'` reacts to any player's defeat; `OTHER` is unchanged.
+3. **Already scoped abilities keep their meaning:** a defeat ability with `defeatedByAttackOf` (who defeated) or `targetScope` (which card) is not given the implicit scope.
+4. **Highway Robbery 01166** resolves its own defeat through `defeatSideScheme`, not the player scan, so it cannot double fire (`tests/engine/highway-robbery.test.ts`).

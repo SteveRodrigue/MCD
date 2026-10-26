@@ -68,9 +68,7 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 ### 3.2 Rules gaps that affect core cards
 
-| Issue                                                   | Problem (from the Dev Mode report)                                                                   | Notes                                                                                   |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| [#363](https://github.com/SteveRodrigue/MCD/issues/363) | Defeat triggers scan every player; filter-less abilities can fire for the wrong player.              | Owner analysis first (default scope of a defeat ability).                               |
+No open row.
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 

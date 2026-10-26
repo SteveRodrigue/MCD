@@ -1,169 +1,62 @@
 import { describe, it, expect } from 'vitest';
-import { CardType } from '../../src/engine/models';
-import { CardCatalog } from '../../src/data/importer/card-loader';
-import { getStepEffectParams } from '../../src/data/supplemental/runtime';
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import { CardType, getActiveMainScheme, type SideSchemeCard } from '../../src/engine/models';
+import { cardCatalog } from '../../src/data/importer/card-loader';
+import { createCardInstance } from '../../src/engine/state/game-setup';
+import { getEventTargetChoice } from '../../src/engine/effects/target-choice';
+import { newRhinoGame } from '../support/game-fixtures';
 
-describe('CardPaymentModal Targeting Invariants (Issue #94 & Issue #146)', () => {
-  const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+describe('CardPaymentModal Targeting Invariants (Issue #94, #146, #438)', () => {
+  const choiceFor = (code: string) => {
+    const state = newRhinoGame();
+    const card = cardCatalog.getCard(code)!;
+    return {
+      state,
+      card,
+      choice: getEventTargetChoice(state, state.players[0], createCardInstance(card)),
+    };
+  };
 
-  function evaluatePaymentModalTargeting(card: any) {
-    const isEventCard = card?.type === CardType.EVENT || (card as any)?.type_code === 'event';
-    const abilities = isEventCard ? card?.enrichment?.abilities || [] : [];
-
-    let eventTargetScope: string | undefined;
-    for (const ab of abilities) {
-      for (const step of ab.steps || []) {
-        const stepParams = getStepEffectParams(step);
-        const tgt = stepParams.target as string | undefined;
-        if (tgt && tgt.startsWith('CHOSEN_')) {
-          eventTargetScope = tgt;
-          break;
-        }
-      }
-      if (eventTargetScope) break;
-    }
-
-    const isAttack =
-      isEventCard &&
-      abilities.some((a: any) =>
-        (a.steps || []).some((s: any) =>
-          ['DEAL_DAMAGE', 'REPULSOR_BLAST', 'EXPLOSION'].includes(s.effect),
-        ),
-      );
-    const isThwart =
-      isEventCard &&
-      abilities.some((a: any) => (a.steps || []).some((s: any) => s.effect === 'REMOVE_THREAT'));
-    const isHeal =
-      isEventCard &&
-      abilities.some((a: any) =>
-        (a.steps || []).some((s: any) => ['HEAL', 'HEAL_DAMAGE'].includes(s.effect)),
-      );
-    const isAllyTarget =
-      isEventCard &&
-      !isAttack &&
-      !isThwart &&
-      !isHeal &&
-      (eventTargetScope === 'CHOSEN_ALLY' || eventTargetScope === 'CHOSEN_CONTROLLED_ALLY');
-    const isPlayerTarget =
-      isEventCard && !isAttack && !isThwart && !isHeal && eventTargetScope === 'CHOSEN_PLAYER';
-
-    return { isAttack, isThwart, isHeal, isAllyTarget, isPlayerTarget };
-  }
-
-  it('Support card (Interrogation Room 01063) does NOT trigger scheme target prompt in payment modal', () => {
-    const interrogationRoom = catalog.getCard('01063');
-    expect(interrogationRoom).toBeDefined();
-    expect(interrogationRoom?.type).toBe(CardType.SUPPORT);
-
-    const { isAttack, isThwart } = evaluatePaymentModalTargeting(interrogationRoom);
-    expect(isThwart).toBe(false);
-    expect(isAttack).toBe(false);
+  it.each([
+    ['Support (Interrogation Room 01063)', '01063', CardType.SUPPORT],
+    ['Support (Surveillance Team 01064)', '01064', CardType.SUPPORT],
+    ['Support (Tac Team 01056)', '01056', CardType.SUPPORT],
+    ['Upgrade (Mark V Helmet 01037)', '01037', CardType.UPGRADE],
+    ['Ally (Hawkeye 01066)', '01066', CardType.ALLY],
+  ])('%s asks for no target when played from hand', (_name, code, type) => {
+    const { card, choice } = choiceFor(code);
+    expect(card.type).toBe(type);
+    expect(choice).toBeUndefined();
   });
 
-  it('Support card (Surveillance Team 01064) does NOT trigger scheme target prompt in payment modal', () => {
-    const surveillanceTeam = catalog.getCard('01064');
-    expect(surveillanceTeam).toBeDefined();
-    expect(surveillanceTeam?.type).toBe(CardType.SUPPORT);
-
-    const { isAttack, isThwart } = evaluatePaymentModalTargeting(surveillanceTeam);
-    expect(isThwart).toBe(false);
-    expect(isAttack).toBe(false);
+  it.each([
+    ['Thwart Event (For Justice! 01060)', 'CHOSEN_SCHEME', '01060'],
+    ['Attack Event (Swinging Web Kick 01005)', 'CHOSEN_ENEMY', '01005'],
+    ['Attack Event (Relentless Assault 01053)', 'CHOSEN_MINION', '01053'],
+    ['Ally Event (Get Ready 01069)', 'CHOSEN_ALLY', '01069'],
+  ])('%s asks for a target with %s', (_name, selector, code) => {
+    const { card, choice } = choiceFor(code);
+    expect(card.type).toBe(CardType.EVENT);
+    expect(choice?.selector).toBe(selector);
   });
 
-  it('Support card with damage ability (Tac Team 01056) does NOT trigger attack target prompt in payment modal', () => {
-    const tacTeam = catalog.getCard('01056');
-    expect(tacTeam).toBeDefined();
-    expect(tacTeam?.type).toBe(CardType.SUPPORT);
-
-    const { isAttack, isThwart } = evaluatePaymentModalTargeting(tacTeam);
-    expect(isAttack).toBe(false);
-    expect(isThwart).toBe(false);
+  it('Heal Event (First Aid 01086) asks for a character target', () => {
+    const { choice } = choiceFor('01086');
+    expect(choice?.selector).toMatch(/^CHOSEN_/);
+    expect(choice?.selector).not.toMatch(/SCHEME|ENEMY/);
   });
 
-  it('Upgrade card with thwart ability (Mark V Helmet 01037) does NOT trigger scheme target prompt in payment modal', () => {
-    const helmet = catalog.getCard('01037');
-    expect(helmet).toBeDefined();
-    expect(helmet?.type).toBe(CardType.UPGRADE);
+  it('offers only the schemes with threat to a thwart event (#438)', () => {
+    const state = newRhinoGame();
+    const main = getActiveMainScheme(state)!;
+    main.threat = 0;
+    state.sideSchemes = [
+      { instanceId: 'side-1', card: cardCatalog.getCard('01108') as SideSchemeCard, threat: 2 },
+      { instanceId: 'side-2', card: cardCatalog.getCard('01108') as SideSchemeCard, threat: 0 },
+    ];
+    const forJustice = createCardInstance(cardCatalog.getCard('01060')!);
 
-    const { isAttack, isThwart } = evaluatePaymentModalTargeting(helmet);
-    expect(isThwart).toBe(false);
-    expect(isAttack).toBe(false);
-  });
-
-  it('Ally card with damage ability (Hawkeye 01066) does NOT trigger attack target prompt in payment modal', () => {
-    const hawkeye = catalog.getCard('01066');
-    expect(hawkeye).toBeDefined();
-    expect(hawkeye?.type).toBe(CardType.ALLY);
-
-    const { isAttack, isThwart } = evaluatePaymentModalTargeting(hawkeye);
-    expect(isAttack).toBe(false);
-    expect(isThwart).toBe(false);
-  });
-
-  it('Thwart Event (For Justice! 01060) DOES trigger scheme target prompt in payment modal', () => {
-    const forJustice = catalog.getCard('01060');
-    expect(forJustice).toBeDefined();
-    expect(forJustice?.type).toBe(CardType.EVENT);
-
-    const { isAttack, isThwart } = evaluatePaymentModalTargeting(forJustice);
-    expect(isThwart).toBe(true);
-    expect(isAttack).toBe(false);
-  });
-
-  it('Attack Event (Swinging Web Kick 01005) DOES trigger attack target prompt in payment modal', () => {
-    const swingingWebKick = catalog.getCard('01005');
-    expect(swingingWebKick).toBeDefined();
-    expect(swingingWebKick?.type).toBe(CardType.EVENT);
-
-    const { isAttack, isThwart } = evaluatePaymentModalTargeting(swingingWebKick);
-    expect(isAttack).toBe(true);
-    expect(isThwart).toBe(false);
-  });
-
-  it('Attack Event (Relentless Assault 01053) DOES trigger attack target prompt in payment modal', () => {
-    const relentlessAssault = catalog.getCard('01053');
-    expect(relentlessAssault).toBeDefined();
-    expect(relentlessAssault?.type).toBe(CardType.EVENT);
-
-    const { isAttack, isThwart } = evaluatePaymentModalTargeting(relentlessAssault);
-    expect(isAttack).toBe(true);
-    expect(isThwart).toBe(false);
-  });
-
-  it('Heal Event (First Aid 01086) DOES trigger heal target prompt in payment modal', () => {
-    const firstAid = catalog.getCard('01086');
-    expect(firstAid).toBeDefined();
-    expect(firstAid?.type).toBe(CardType.EVENT);
-
-    const { isAttack, isThwart, isHeal } = evaluatePaymentModalTargeting(firstAid);
-    expect(isHeal).toBe(true);
-    expect(isAttack).toBe(false);
-    expect(isThwart).toBe(false);
-  });
-
-  it('Ally-targeting Event (Get Ready 01069) DOES trigger ally target prompt in payment modal', () => {
-    const getReady = catalog.getCard('01069');
-    expect(getReady).toBeDefined();
-    expect(getReady?.type).toBe(CardType.EVENT);
-
-    const { isAttack, isThwart, isHeal, isAllyTarget } = evaluatePaymentModalTargeting(getReady);
-    expect(isAllyTarget).toBe(true);
-    expect(isHeal).toBe(false);
-    expect(isAttack).toBe(false);
-    expect(isThwart).toBe(false);
-  });
-
-  it('Support card with heal ability (Medical Team 01064) does NOT trigger heal prompt upon playing from hand', () => {
-    const medicalTeam = catalog.getCard('01064');
-    expect(medicalTeam).toBeDefined();
-    expect(medicalTeam?.type).toBe(CardType.SUPPORT);
-
-    const { isHeal, isAttack, isThwart } = evaluatePaymentModalTargeting(medicalTeam);
-    expect(isHeal).toBe(false);
-    expect(isAttack).toBe(false);
-    expect(isThwart).toBe(false);
+    const choice = getEventTargetChoice(state, state.players[0], forJustice);
+    expect(choice?.targets.map((t) => t.id)).toEqual(['side-1']);
   });
 
   describe('CardPaymentModal Cost Reduction & Caution Banner Invariants (Issue #46)', () => {

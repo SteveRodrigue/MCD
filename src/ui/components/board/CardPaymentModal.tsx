@@ -5,10 +5,10 @@ import {
   GameState,
   PlayerState,
   CardType,
-  getActiveVillain,
-  getActiveMainScheme,
-  getVillainsInPlay,
+  VillainState,
 } from '../../../engine/models';
+import { getEventTargetChoice } from '../../../engine/effects/target-choice';
+import type { ResolvedTarget } from '../../../engine/effects/target-resolver';
 import { getCardEnrichment } from '../../../data/supplemental';
 import {
   isResourceAbility,
@@ -22,7 +22,6 @@ import {
 } from '../../../engine/pipeline/stat-calculator';
 import { matchesCardFilter } from '../../../engine/filters/card-filter';
 import type { UniversalCardFilter, CardLocationSelector } from '../../../data/supplemental/schema';
-import { getStepEffectParams } from '../../../data/supplemental/runtime';
 import { FormattedCardText } from '../cards/FormattedCardText';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 import { locateCard, readCardResources } from '../../../engine/queries/card-inspector';
@@ -210,6 +209,120 @@ function getDiscardCost(
   return undefined;
 }
 
+interface TargetPicker {
+  title: string;
+  icon: React.ReactNode;
+  tone: TargetTone;
+}
+
+/** The picker an event's chosen-target selector (`CHOSEN_SCHEME`, `CHOSEN_ENEMY`, ...) is shown in. */
+function getTargetPicker(selector: string): TargetPicker {
+  if (selector.includes('SCHEME')) {
+    return {
+      title: 'Select Scheme Target:',
+      icon: <Shield className="w-4 h-4 text-comic-blue" />,
+      tone: 'info',
+    };
+  }
+  if (selector.includes('ENEMY') || selector.includes('MINION')) {
+    return {
+      title: 'Select Enemy Target:',
+      icon: <Swords className="w-4 h-4 text-comic-red" />,
+      tone: 'danger',
+    };
+  }
+  if (selector.includes('ALLY')) {
+    return {
+      title: 'Select Ally Target:',
+      icon: <Users className="w-4 h-4 text-comic-blue" />,
+      tone: 'info',
+    };
+  }
+  if (selector.includes('PLAYER')) {
+    return {
+      title: 'Select Player Target:',
+      icon: <Users className="w-4 h-4 text-purple-600" />,
+      tone: 'purple',
+    };
+  }
+  return {
+    title: 'Select Character Target:',
+    icon: <Heart className="w-4 h-4 text-emerald-600" />,
+    tone: 'success',
+  };
+}
+
+interface TargetOption {
+  id: string;
+  code?: string;
+  name: string;
+  detail?: string;
+}
+
+/** How one engine-resolved target is named and summarised in a picker. */
+function describeTarget(
+  gameState: GameState,
+  player: PlayerState,
+  target: ResolvedTarget,
+): TargetOption {
+  const whose = (owner: PlayerState | undefined, noun: string, name: string) =>
+    !owner || owner.id === player.id ? `${name} (${noun})` : `${name} (${owner.name}'s ${noun})`;
+
+  if (target.kind === 'scheme') {
+    return {
+      id: target.id,
+      code: target.entity.card.code,
+      name: `${target.entity.card.name} (${target.entityType === 'main_scheme' ? 'Main' : 'Side'} Scheme)`,
+      detail: `${target.entity.threat} Threat`,
+    };
+  }
+  if (target.kind === 'player') {
+    const p = target.entity;
+    return {
+      id: target.id,
+      code: p.activeFormCard.code,
+      name: `${p.name} (${p.activeFormCard.name})`,
+    };
+  }
+  if (target.kind === 'card') {
+    return { id: target.id, code: target.entity.card.code, name: target.entity.card.name };
+  }
+
+  if (target.entityType === 'hero' || target.entityType === 'alter_ego') {
+    const p = target.entity as PlayerState;
+    return {
+      id: target.id,
+      code: p.activeFormCard.code,
+      name: `${p.name} (${p.activeFormCard.name})`,
+      detail: `${p.health}/${getEffectiveMaxHealth(p, gameState)} HP`,
+    };
+  }
+  if (target.entityType === 'villain') {
+    const villain = target.entity as VillainState;
+    return {
+      id: target.id,
+      code: villain.card.code,
+      name: `${villain.card.name} (Villain)`,
+      detail: `${villain.health} HP`,
+    };
+  }
+  const inst = target.entity as CardInstance;
+  if (target.entityType === 'minion') {
+    return {
+      id: target.id,
+      code: inst.card.code,
+      name: whose(target.player, 'Minion', inst.card.name),
+      detail: `${Math.max(0, getEffectiveMinionHitPoints(gameState, inst) - (inst.tokens?.damage || 0))} HP`,
+    };
+  }
+  return {
+    id: target.id,
+    code: inst.card.code,
+    name: whose(target.player, 'Ally', inst.card.name),
+    detail: inst.exhausted ? 'Exhausted' : 'Ready',
+  };
+}
+
 /**
  * What the modal starts with for `cardToPlay`: the matching "The Power of..." cards for its cost, and
  * the likeliest target of its event.
@@ -247,94 +360,15 @@ function getDefaultSelection(
     }
   }
 
-  // Default target: villain for attacks, main scheme for thwarts, character for heals, ally, player, or minion attachment
-  const cardAbilities = cardToPlay.card.enrichment?.abilities || [];
-  const attachStep = cardAbilities
+  // Default target: the first valid target of the event, or the first engaged minion it attaches to
+  const attachStep = (cardToPlay.card.enrichment?.abilities || [])
     .flatMap((a) => a.steps || [])
     .find((s) => s.effect === 'ATTACH_TO_HOST');
   const attachTarget = attachStep?.effectParams?.target as string | undefined;
-  const isMinionAttachmentCard = attachTarget === 'CHOSEN_MINION' || attachTarget === 'MINION';
-
-  // ONLY event cards execute their abilities immediately upon being played from hand (RR v1.8 p. 12, 23; Issue #94).
-  // Supports, Upgrades, Allies, and Resource cards enter play without targets; their abilities trigger/activate later.
-  const isEventCard =
-    cardToPlay.card.type === CardType.EVENT || (cardToPlay.card as any).type_code === 'event';
-  const abilities = isEventCard ? cardAbilities : [];
-
-  let eventTargetScope: string | undefined;
-  for (const ab of abilities) {
-    for (const step of ab.steps || []) {
-      const stepParams = getStepEffectParams(step);
-      const tgt = stepParams.target as string | undefined;
-      if (tgt && tgt.startsWith('CHOSEN_')) {
-        eventTargetScope = tgt;
-        break;
-      }
-    }
-    if (eventTargetScope) break;
-  }
-
-  const hasAttack =
-    isEventCard &&
-    abilities.some((a) =>
-      (a.steps || []).some((s) =>
-        ['DEAL_DAMAGE', 'REPULSOR_BLAST', 'EXPLOSION'].includes(s.effect),
-      ),
-    );
-  const hasThwart =
-    isEventCard && abilities.some((a) => (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'));
-  const hasHeal =
-    isEventCard && abilities.some((a) => (a.steps || []).some((s) => s.effect === 'HEAL_DAMAGE'));
-  const hasAllyTarget =
-    isEventCard &&
-    !hasAttack &&
-    !hasThwart &&
-    !hasHeal &&
-    (eventTargetScope === 'CHOSEN_ALLY' || eventTargetScope === 'CHOSEN_CONTROLLED_ALLY');
-  const hasPlayerTarget =
-    isEventCard && !hasAttack && !hasThwart && !hasHeal && eventTargetScope === 'CHOSEN_PLAYER';
-
-  if (isMinionAttachmentCard) {
-    const firstMinion = gameState.players.flatMap((p) => p.engagedMinions || [])[0];
-    targetId = firstMinion?.instanceId;
-  } else if (isEventCard && hasAttack) {
-    if (eventTargetScope === 'CHOSEN_MINION' || eventTargetScope === 'CHOSEN_ENGAGED_MINION') {
-      const firstMinion = gameState.players.flatMap((p) => p.engagedMinions || [])[0];
-      targetId = firstMinion?.instanceId;
-    } else {
-      const activeVillain = getActiveVillain(gameState);
-      targetId = activeVillain.instanceId || activeVillain.card.code;
-    }
-  } else if (isEventCard && hasThwart) {
-    targetId = getActiveMainScheme(gameState).card.code;
-  } else if (isEventCard && hasHeal) {
-    // Default to active player if damaged, otherwise first damaged character, otherwise active player
-    const activeDamaged = player.health < getEffectiveMaxHealth(player, gameState);
-    if (activeDamaged) {
-      targetId = player.id;
-    } else {
-      const firstDamagedHero = gameState.players.find(
-        (p) => p.health < getEffectiveMaxHealth(p, gameState),
-      );
-      if (firstDamagedHero) {
-        targetId = firstDamagedHero.id;
-      } else {
-        const firstDamagedAlly = gameState.players
-          .flatMap((p) => p.allies || [])
-          .find((a) => (a.tokens?.damage || 0) > 0);
-        targetId = firstDamagedAlly ? firstDamagedAlly.instanceId : player.id;
-      }
-    }
-  } else if (isEventCard && hasAllyTarget) {
-    const firstExhausted = gameState.players
-      .flatMap((p) => p.allies || [])
-      .find((a) => a.exhausted);
-    const firstAlly = gameState.players.flatMap((p) => p.allies || [])[0];
-    targetId = (firstExhausted || firstAlly)?.instanceId;
-  } else if (isEventCard && hasPlayerTarget) {
-    targetId = player.id;
+  if (attachTarget === 'CHOSEN_MINION' || attachTarget === 'MINION') {
+    targetId = gameState.players.flatMap((p) => p.engagedMinions || [])[0]?.instanceId;
   } else {
-    targetId = undefined;
+    targetId = getEventTargetChoice(gameState, player, cardToPlay)?.targets[0]?.id;
   }
   return { handCardIds: autoSelectedHandIds, targetId };
 }
@@ -703,181 +737,17 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
 
   // ONLY event cards execute their abilities immediately upon being played from hand (RR v1.8 p. 12, 23; Issue #94).
   // Supports, Upgrades, Allies, and Resource cards enter play without targets; their abilities trigger/activate later.
-  const isEventCard =
-    !abilityCost && (card?.type === CardType.EVENT || (card as any)?.type_code === 'event');
-  const abilities = isEventCard ? cardAbilities : [];
-
-  let eventTargetScope: string | undefined;
-  for (const ab of abilities) {
-    for (const step of ab.steps || []) {
-      const stepParams = getStepEffectParams(step);
-      const tgt = stepParams.target as string | undefined;
-      if (tgt && tgt.startsWith('CHOSEN_')) {
-        eventTargetScope = tgt;
-        break;
-      }
-    }
-    if (eventTargetScope) break;
-  }
-
-  const isAttack =
-    isEventCard &&
-    abilities.some((a) =>
-      (a.steps || []).some((s) =>
-        ['DEAL_DAMAGE', 'REPULSOR_BLAST', 'EXPLOSION'].includes(s.effect),
-      ),
-    );
-  const isThwart =
-    isEventCard && abilities.some((a) => (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'));
-  const isHeal =
-    isEventCard && abilities.some((a) => (a.steps || []).some((s) => s.effect === 'HEAL_DAMAGE'));
-  const isAllyTarget =
-    isEventCard &&
-    !isAttack &&
-    !isThwart &&
-    !isHeal &&
-    (eventTargetScope === 'CHOSEN_ALLY' || eventTargetScope === 'CHOSEN_CONTROLLED_ALLY');
-  const isPlayerTarget =
-    isEventCard && !isAttack && !isThwart && !isHeal && eventTargetScope === 'CHOSEN_PLAYER';
-
-  const enemyTargets = useMemo(() => {
-    const targets: {
-      id: string;
-      code: string;
-      name: string;
-      type: 'villain' | 'minion';
-      hp: number;
-    }[] = [];
-
-    if (eventTargetScope !== 'CHOSEN_MINION' && eventTargetScope !== 'CHOSEN_ENGAGED_MINION') {
-      for (const villain of getVillainsInPlay(gameState)) {
-        targets.push({
-          id: villain.instanceId || villain.card.code,
-          code: villain.card.code,
-          name: `${villain.card.name} (Villain)`,
-          type: 'villain',
-          hp: villain.health,
-        });
-      }
-    }
-
-    // Engaged minions across all players (RR v1.8 p. 5, 10)
-    gameState.players.forEach((p) => {
-      (p.engagedMinions || []).forEach((m) => {
-        targets.push({
-          id: m.instanceId,
-          code: m.card.code,
-          name:
-            p.id === player.id ? `${m.card.name} (Minion)` : `${m.card.name} (${p.name}'s Minion)`,
-          type: 'minion',
-          hp: Math.max(0, getEffectiveMinionHitPoints(gameState, m) - (m.tokens?.damage || 0)),
-        });
-      });
-    });
-    return targets;
-  }, [gameState, player.id, eventTargetScope]);
-
-  const schemeTargets = useMemo(() => {
-    const targets: {
-      id: string;
-      code: string;
-      name: string;
-      type: 'main_scheme' | 'side_scheme';
-      threat: number;
-    }[] = [
-      {
-        id: getActiveMainScheme(gameState).card.code,
-        code: getActiveMainScheme(gameState).card.code,
-        name: `${getActiveMainScheme(gameState).card.name} (Main Scheme)`,
-        type: 'main_scheme',
-        threat: getActiveMainScheme(gameState).threat,
-      },
-    ];
-    gameState.sideSchemes.forEach((s) => {
-      targets.push({
-        id: s.instanceId,
-        code: s.card.code,
-        name: `${s.card.name} (Side Scheme)`,
-        type: 'side_scheme',
-        threat: s.threat,
-      });
-    });
-    return targets;
-  }, [gameState]);
-
-  const healTargets = useMemo(() => {
-    const targets: {
-      id: string;
-      code: string;
-      name: string;
-      type: 'hero' | 'alter_ego' | 'ally';
-      hp: number;
-      maxHp: number;
-      damageTaken: number;
-    }[] = [];
-
-    gameState.players.forEach((p) => {
-      const maxHp = getEffectiveMaxHealth(p, gameState);
-      targets.push({
-        id: p.id,
-        code: p.currentForm === 'hero' ? p.hero.code : p.alterEgo.code,
-        name: `${p.name} (${p.currentForm === 'hero' ? p.hero.name : p.alterEgo.name})`,
-        type: p.currentForm === 'hero' ? 'hero' : 'alter_ego',
-        hp: p.health,
-        maxHp,
-        damageTaken: Math.max(0, maxHp - p.health),
-      });
-    });
-
-    gameState.players.forEach((p) => {
-      (p.allies || []).forEach((a) => {
-        const allyCard = a.card as any;
-        const maxHp = allyCard.health || 0;
-        const damage = a.tokens?.damage || 0;
-        targets.push({
-          id: a.instanceId,
-          code: a.card.code,
-          name: p.id === player.id ? `${a.card.name} (Ally)` : `${a.card.name} (${p.name}'s Ally)`,
-          type: 'ally',
-          hp: Math.max(0, maxHp - damage),
-          maxHp,
-          damageTaken: damage,
-        });
-      });
-    });
-
-    return targets;
-  }, [gameState, player.id]);
-
-  const allyTargets = useMemo(() => {
-    const targets: {
-      id: string;
-      code: string;
-      name: string;
-      exhausted: boolean;
-    }[] = [];
-
-    gameState.players.forEach((p) => {
-      (p.allies || []).forEach((a) => {
-        targets.push({
-          id: a.instanceId,
-          code: a.card.code,
-          name: p.id === player.id ? `${a.card.name} (Ally)` : `${a.card.name} (${p.name}'s Ally)`,
-          exhausted: Boolean(a.exhausted),
-        });
-      });
-    });
-
-    return targets;
-  }, [gameState.players, player.id]);
-
-  const playerTargets = useMemo(() => {
-    return gameState.players.map((p) => ({
-      id: p.id,
-      code: p.currentForm === 'hero' ? p.hero.code : p.alterEgo.code,
-      name: `${p.name} (${p.currentForm === 'hero' ? p.hero.name : p.alterEgo.name})`,
-    }));
-  }, [gameState.players]);
+  // The engine decides which targets are valid (RR v1.8 "Target", ADR-0090); the modal only shows them.
+  const eventTargetChoice = useMemo(
+    () =>
+      abilityCost || !cardToPlay ? undefined : getEventTargetChoice(gameState, player, cardToPlay),
+    [abilityCost, cardToPlay, gameState, player],
+  );
+  const eventTargetPicker = eventTargetChoice && getTargetPicker(eventTargetChoice.selector);
+  const eventTargets = useMemo(
+    () => (eventTargetChoice?.targets ?? []).map((t) => describeTarget(gameState, player, t)),
+    [eventTargetChoice, gameState, player],
+  );
 
   if (!isOpen || !cardToPlay || !card) return null;
 
@@ -1287,102 +1157,19 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
           />
         )}
 
-        {isAttack && (
+        {eventTargetPicker && (
           <TargetChoices
-            title="Select Attack Target:"
-            icon={<Swords className="w-4 h-4 text-comic-red" />}
-            tone="danger"
+            title={eventTargetPicker.title}
+            icon={eventTargetPicker.icon}
+            tone={eventTargetPicker.tone}
             selectedId={selectedTargetId}
             onSelect={setSelectedTargetId}
-            targets={enemyTargets.map((t) => ({
+            targets={eventTargets.map((t) => ({
               id: t.id,
               code: t.code,
               name: t.name,
-              trailing: () => <span>{t.hp} HP</span>,
+              trailing: t.detail ? () => <span>{t.detail}</span> : undefined,
             }))}
-          />
-        )}
-
-        {isThwart && (
-          <TargetChoices
-            title="Select Scheme Target:"
-            icon={<Shield className="w-4 h-4 text-comic-blue" />}
-            tone="info"
-            selectedId={selectedTargetId}
-            onSelect={setSelectedTargetId}
-            targets={schemeTargets.map((t) => ({
-              id: t.id,
-              code: t.code,
-              name: t.name,
-              trailing: () => <span>{t.threat} Threat</span>,
-            }))}
-          />
-        )}
-
-        {isHeal && (
-          <TargetChoices
-            title="Select Character to Heal:"
-            icon={<Heart className="w-4 h-4 text-emerald-600" />}
-            tone="success"
-            selectedId={selectedTargetId}
-            onSelect={setSelectedTargetId}
-            targets={healTargets.map((t) => ({
-              id: t.id,
-              code: t.code,
-              name: t.name,
-              trailing: (selected) => (
-                <span
-                  className={`text-micro px-1.5 py-0.5 rounded shrink-0 font-black ${
-                    selected
-                      ? 'bg-black/20 text-white'
-                      : t.damageTaken > 0
-                        ? 'bg-rose-100 text-rose-800'
-                        : 'bg-gray-100 text-gray-700'
-                  }`}
-                >
-                  {t.hp}/{t.maxHp} HP {t.damageTaken > 0 ? `(-${t.damageTaken})` : '(Full)'}
-                </span>
-              ),
-            }))}
-          />
-        )}
-
-        {isAllyTarget && (
-          <TargetChoices
-            title="Select Ally Target:"
-            icon={<Users className="w-4 h-4 text-comic-blue" />}
-            tone="info"
-            selectedId={selectedTargetId}
-            onSelect={setSelectedTargetId}
-            targets={allyTargets.map((t) => ({
-              id: t.id,
-              code: t.code,
-              name: t.name,
-              trailing: (selected) => (
-                <span
-                  className={`text-micro px-1.5 py-0.5 rounded shrink-0 font-black ${
-                    selected
-                      ? 'bg-black/20 text-white'
-                      : t.exhausted
-                        ? 'bg-amber-100 text-amber-800'
-                        : 'bg-gray-100 text-gray-700'
-                  }`}
-                >
-                  {t.exhausted ? 'Exhausted' : 'Ready'}
-                </span>
-              ),
-            }))}
-          />
-        )}
-
-        {isPlayerTarget && (
-          <TargetChoices
-            title="Select Player Target:"
-            icon={<Users className="w-4 h-4 text-purple-600" />}
-            tone="purple"
-            selectedId={selectedTargetId}
-            onSelect={setSelectedTargetId}
-            targets={playerTargets.map((t) => ({ id: t.id, code: t.code, name: t.name }))}
           />
         )}
       </div>

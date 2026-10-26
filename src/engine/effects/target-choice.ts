@@ -9,7 +9,7 @@ import type {
   PlayerState,
   VillainState,
 } from '../models';
-import { StatusCard } from '../models';
+import { CardType, StatusCard } from '../models';
 import {
   getEffectiveMaxHealth,
   hasEntityKeyword,
@@ -58,7 +58,8 @@ const stepTargetSelector = (step: AbilityStep): string | undefined => {
   return typeof target === 'string' && PLAYER_CHOSEN_SELECTORS.has(target) ? target : undefined;
 };
 
-const isSameScheme = (target: ResolvedTarget, id: string): boolean => {
+/** Whether `id` names the target: its id, or for the main scheme also `main_scheme` or its card code. */
+const isNamedTarget = (target: ResolvedTarget, id: string): boolean => {
   if (target.id === id) return true;
   if (target.kind !== 'scheme' || target.entityType !== 'main_scheme') return false;
   const main = target.entity as { card?: { code?: string } };
@@ -255,9 +256,43 @@ export function getValidStepTargets(
   const excluded = context.distinctFromId;
   return candidates.filter(
     (t) =>
-      !(excluded && isSameScheme(t, excluded)) &&
+      !(excluded && isNamedTarget(t, excluded)) &&
       canAffect(state, step, t, context.sourceCardInstance, player, context.ability),
   );
+}
+
+/** What the player picks from when playing an event: its chosen-target selector and valid targets. */
+export interface EventTargetChoice {
+  selector: string;
+  targets: ResolvedTarget[];
+}
+
+/**
+ * The target an event asks the player to choose when it is played (RR v1.8 "Target"): the valid
+ * targets of its first `CHOSEN_*` step, or `undefined` when the event chooses nothing. The payment
+ * modal offers exactly these, so it never lists a target the gate would refuse (#438).
+ */
+export function getEventTargetChoice(
+  state: GameState,
+  player: PlayerState,
+  cardInstance: CardInstance,
+): EventTargetChoice | undefined {
+  if (cardInstance.card.type !== CardType.EVENT) return undefined;
+  for (const ability of cardInstance.card.enrichment?.abilities ?? []) {
+    for (const step of ability.steps ?? []) {
+      const selector = step.effectParams?.target;
+      if (typeof selector !== 'string' || !selector.startsWith('CHOSEN_')) continue;
+      const targets = getValidStepTargets(
+        state,
+        player,
+        step,
+        { sourceCardInstance: cardInstance, ability },
+        selector,
+      );
+      return { selector, targets };
+    }
+  }
+  return undefined;
 }
 
 const targetLabel = (target: ResolvedTarget): { label: string; cardCode?: string } => {
@@ -439,7 +474,7 @@ export function checkAbilityTargets(
       const chosenId = eventTarget?.chosenTargetId;
       const named =
         chosenId && selector
-          ? getEligibleTargets(state, player, selector).find((t) => t.id === chosenId)
+          ? getEligibleTargets(state, player, selector).find((t) => isNamedTarget(t, chosenId))
           : undefined;
       // A named target the effect cannot affect is not a valid target, whatever else is in play.
       if (named) return canAffect(state, step, named, sourceCardInstance, player, ability);

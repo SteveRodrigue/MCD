@@ -3,7 +3,14 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { CardPaymentModal } from '../../src/ui/components/board/CardPaymentModal';
-import { GamePhase, HeroCard, AlterEgoCard } from '../../src/engine/models';
+import {
+  GamePhase,
+  HeroCard,
+  AlterEgoCard,
+  GameState,
+  SideSchemeCard,
+  getActiveMainScheme,
+} from '../../src/engine/models';
 import { TestSession } from '../support/render-with-session';
 
 // #277: the payment modal asks for the discard choice of an event ("up to 5") before it resolves.
@@ -45,8 +52,9 @@ describe('Legal Practice discard choice in the payment modal (#277)', () => {
     return { gameState, player, legalPractice };
   };
 
-  const renderModal = (handSize: number) => {
+  const renderModal = (handSize: number, prepare?: (state: GameState) => void) => {
     const { gameState, player, legalPractice } = setup(handSize);
+    prepare?.(gameState);
     const onConfirmPlay = vi.fn();
     render(
       <TestSession state={gameState}>
@@ -78,5 +86,30 @@ describe('Legal Practice discard choice in the payment modal (#277)', () => {
     fireEvent.click(confirm());
     expect(onConfirmPlay).toHaveBeenCalledTimes(1);
     expect(onConfirmPlay.mock.calls[0][3]).toEqual(['h1', 'h2', 'h3', 'h4', 'h5']);
+  });
+
+  // RR v1.8 "Target": a scheme with no threat is not a valid target of "remove threat".
+  it('offers only schemes with threat and defaults to one of them', () => {
+    const sideSchemeId = 'side-1';
+    let mainSchemeName = '';
+    const onConfirmPlay = renderModal(1, (state) => {
+      const mainScheme = getActiveMainScheme(state);
+      mainScheme.threat = 0;
+      mainSchemeName = mainScheme.card.name;
+      state.sideSchemes = [
+        {
+          instanceId: sideSchemeId,
+          card: cardCatalog.getCard('01108') as SideSchemeCard,
+          threat: 2,
+        },
+      ];
+    });
+
+    expect(screen.queryByText(`${mainSchemeName} (Main Scheme)`)).toBeNull();
+    expect(screen.getByText(/\(Side Scheme\)/)).not.toBeNull();
+
+    fireEvent.click(screen.getAllByText('Filler 1')[0]);
+    fireEvent.click(confirm());
+    expect(onConfirmPlay.mock.calls[0][2]).toBe(sideSchemeId);
   });
 });

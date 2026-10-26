@@ -61,8 +61,6 @@ describe('legality gate: no target-validity check outside the gate', () => {
       'display: prompt summaries and the threat-placement prompt wiring, no legality',
     'src/engine/simulation/player-bot.ts':
       'heuristic: the bot ranks heal cards; legality comes from the gate',
-    'src/ui/components/board/CardPaymentModal.tsx':
-      'debt (#366): the payment modal picks its target picker by effect name; targets come from the engine',
   };
 
   const sourceFiles = (dir: string): string[] =>

@@ -310,5 +310,23 @@ describe('Player elimination (#246)', () => {
       expect(getPerPlayerCount(state)).toBe(3);
       expect(state.players).toHaveLength(2);
     });
+
+    describe('pending prompts', () => {
+      it('drops the prompts addressed to the eliminated player and keeps the others', () => {
+        build(2);
+        const prompt = (promptId: string, playerId: string) =>
+          ({
+            promptId,
+            playerId,
+            title: promptId,
+            options: [{ id: 'pass', label: 'Pass' }],
+          }) as never;
+        state.pendingDecisionQueue = [prompt('for_p1', 'p1'), prompt('for_p2', 'p2')];
+
+        eliminatePlayer(state, 'p1');
+
+        expect(state.pendingDecisionQueue.map((p) => p.promptId)).toEqual(['for_p2']);
+      });
+    });
   });
 });

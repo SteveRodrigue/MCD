@@ -1,6 +1,6 @@
 import { GameState, GamePhase, getActiveVillain } from '@engine/models';
 import { dispatchAction, peekDecisionPrompt } from '../pipeline';
-import { chooseBotAction } from './player-bot';
+import { chooseBotAction, chooseDefenderOption } from './player-bot';
 import { assertGameStateInvariants } from '../state/state-validator';
 
 export interface MatchSimulationOptions {
@@ -101,7 +101,18 @@ function resolveDecisionPromptHeuristically(state: GameState, seed: string): Gam
     }
   }
 
-  // 4. Standard decision prompt: pick first enabled option
+  // 4. Defender declaration: defend only when the hit is dangerous (the bot's defender policy)
+  const defenderId = chooseDefenderOption(state, prompt);
+  if (defenderId) {
+    const { state: nextState, result } = dispatchAction(state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: prompt.playerId,
+      selectedOptionId: defenderId,
+    });
+    if (result.success) return nextState;
+  }
+
+  // 5. Standard decision prompt: pick first enabled option
   const enabledOptions = prompt.options.filter((o) => !o.disabled);
   if (enabledOptions.length === 0) {
     if (prompt.isVoluntary) {
@@ -120,6 +131,7 @@ function resolveDecisionPromptHeuristically(state: GameState, seed: string): Gam
     );
   }
 
+  const rejections: string[] = [];
   for (const candidate of enabledOptions) {
     const { state: nextState, result } = dispatchAction(state, {
       type: 'RESOLVE_DECISION_PROMPT',
@@ -129,10 +141,11 @@ function resolveDecisionPromptHeuristically(state: GameState, seed: string): Gam
     if (result.success) {
       return nextState;
     }
+    rejections.push(`${candidate.id}: ${result.error ?? 'rejected'}`);
   }
 
   throw new Error(
-    `[MatchSimulator] Failed to legally resolve prompt '${prompt.title}' across ${enabledOptions.length} candidate option(s) (seed: ${seed}).`,
+    `[MatchSimulator] Failed to legally resolve prompt '${prompt.title}' across ${enabledOptions.length} candidate option(s) [${rejections.join('; ')}] (seed: ${seed}).`,
   );
 }
 

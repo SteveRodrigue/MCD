@@ -8,7 +8,6 @@ import {
   CardType,
   CardInstance,
   SideSchemeCard,
-  MinionCard,
   PlayerState,
   Keyword,
   hasKeyword,
@@ -22,7 +21,11 @@ import {
 } from '@engine/models';
 
 import { applyThreatPlacement } from './threat-pipeline';
-import { getEffectiveVillainStats, consumeEntityStatusCards } from './stat-calculator';
+import {
+  getEffectiveVillainStats,
+  getEffectiveMinionScheme,
+  consumeEntityStatusCards,
+} from './stat-calculator';
 import { recordCardPlay, recordBasicAction } from './stats';
 import { initiateEnemyAttack, CombatOptions } from './combat-pipeline';
 export type { CombatOptions };
@@ -177,8 +180,7 @@ export function executeMinionSchemeAgainstPlayer(
   }
   recordBasicAction(state, 'minionScheme', minion.card.code);
 
-  const minionCard = minion.card as MinionCard;
-  const baseScheme = minionCard.scheme ?? (minionCard as unknown as { sch?: number }).sch ?? 1;
+  const baseScheme = getEffectiveMinionScheme(state, minion);
 
   // A Villainous minion deals a base boost card (RR v1.8 p. 30); any minion resolves the ones it holds.
   const boostLog: BoostLogContext = {

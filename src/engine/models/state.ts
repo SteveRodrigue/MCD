@@ -518,6 +518,12 @@ export interface PendingDamagePlacement {
   resume: import('../pipeline/damage-pipeline').DamageResume;
 }
 
+export interface PendingConsequentialDamage {
+  playerId: string;
+  allyInstanceId: string;
+  amount: number;
+}
+
 export interface PendingSequence {
   sequenceId?: string;
   remainingSteps: AbilityStep[];
@@ -580,6 +586,8 @@ export interface GameState {
   pendingThreatPlacements?: PendingThreatPlacement[];
   /** Damage placements waiting for their interrupt prompts to be answered (#267) */
   pendingDamagePlacements?: PendingDamagePlacement[];
+  /** Consequential damage waiting for attack/thwart response prompts to be answered (#385, RR v1.8) */
+  pendingConsequentialDamage?: PendingConsequentialDamage[];
   /** Ordered player queue for End of Player Phase voluntary cleanup (RR v1.8 p. 23) */
   pendingCleanUpPlayerIds?: string[];
   scenarioId?: string;

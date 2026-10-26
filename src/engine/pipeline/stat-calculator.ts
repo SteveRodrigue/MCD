@@ -56,8 +56,7 @@ export interface EffectiveVillainStats {
 
 /**
  * A minion's effective attack: the printed value (an X attack is stored as -1 and counts as 0)
- * plus its own CONSTANT `MODIFY_STAT` `ATTACK` steps, whose amounts may be dynamic formulas
- * (Titania: "X is equal to Titania's remaining hit points").
+ * plus its own CONSTANT `MODIFY_STAT` `ATTACK` steps, attachment bonuses, and active modifiers.
  */
 export function getEffectiveMinionAttack(state: GameState, minion: CardInstance): number {
   const printed = (minion.card as { attack?: number }).attack;
@@ -76,9 +75,77 @@ export function getEffectiveMinionAttack(state: GameState, minion: CardInstance)
       }
     }
   }
+  for (const attachment of minion.attachments || []) {
+    for (const ab of attachment.card.enrichment?.abilities || []) {
+      if (ab.timing !== 'CONSTANT') continue;
+      for (const step of ab.steps || []) {
+        if (!isStep(step, 'MODIFY_STAT')) continue;
+        const stepParams = getStepEffectParams(step);
+        if (stepParams.stat === 'ATTACK') {
+          attack += kernel.evaluateDynamicAmount(
+            stepParams.amount as number | DynamicValueSource | undefined,
+            {},
+            { state, sourceCardInstance: attachment, targetCardInstance: minion },
+          );
+        }
+      }
+    }
+  }
+  for (const mod of minion.activeStatModifiers || []) {
+    if (mod.stat === 'ATTACK') {
+      attack += mod.amount;
+    }
+  }
   // A dash (–) power is an unmodifiable 0 (RR v1.8 "Dash (Value)")
   if (hasDashPower(minion.card, 'attack')) return 0;
   return Math.max(0, attack);
+}
+
+/**
+ * A minion's effective scheme: the printed value (an X scheme is stored as -1 and counts as 0)
+ * plus CONSTANT `MODIFY_STAT` `SCHEME` steps (from self or attachments) and active modifiers.
+ */
+export function getEffectiveMinionScheme(state: GameState, minion: CardInstance): number {
+  const printed = (minion.card as { scheme?: number }).scheme;
+  let scheme = printed === undefined ? 1 : Math.max(0, printed);
+  for (const ab of minion.card.enrichment?.abilities || []) {
+    if (ab.timing !== 'CONSTANT') continue;
+    for (const step of ab.steps || []) {
+      if (!isStep(step, 'MODIFY_STAT')) continue;
+      const stepParams = getStepEffectParams(step);
+      if (stepParams.stat === 'SCHEME' || (stepParams.stat as string) === 'THWART') {
+        scheme += kernel.evaluateDynamicAmount(
+          stepParams.amount as number | DynamicValueSource | undefined,
+          {},
+          { state, sourceCardInstance: minion, targetCardInstance: minion },
+        );
+      }
+    }
+  }
+  for (const attachment of minion.attachments || []) {
+    for (const ab of attachment.card.enrichment?.abilities || []) {
+      if (ab.timing !== 'CONSTANT') continue;
+      for (const step of ab.steps || []) {
+        if (!isStep(step, 'MODIFY_STAT')) continue;
+        const stepParams = getStepEffectParams(step);
+        if (stepParams.stat === 'SCHEME' || (stepParams.stat as string) === 'THWART') {
+          scheme += kernel.evaluateDynamicAmount(
+            stepParams.amount as number | DynamicValueSource | undefined,
+            {},
+            { state, sourceCardInstance: attachment, targetCardInstance: minion },
+          );
+        }
+      }
+    }
+  }
+  for (const mod of minion.activeStatModifiers || []) {
+    if (mod.stat === 'THWART' || (mod.stat as string) === 'SCHEME') {
+      scheme += mod.amount;
+    }
+  }
+  // A dash (–) power is an unmodifiable 0 (RR v1.8 "Dash (Value)")
+  if (hasDashPower(minion.card, 'scheme')) return 0;
+  return Math.max(0, scheme);
 }
 
 /**

@@ -48,6 +48,8 @@ import {
   getEffectiveAllyLimit,
   getEffectivePlayerTraitsDetails,
   getEffectiveCardTraitsDetails,
+  getEffectiveMinionAttack,
+  getEffectiveMinionScheme,
 } from '../../../engine/pipeline/stat-calculator';
 import { canInitiateAbility } from '../../../engine/pipeline/legality-checker';
 import { getAvailableResources } from '../../../engine/pipeline/cost-engine';
@@ -444,6 +446,12 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   {engagedMinions.map((minion) => {
                     const isGuard = hasKeyword(minion.card, Keyword.GUARD);
                     const isTough = minion.statusCards?.includes(StatusCard.TOUGH) ?? false;
+                    const minionAtk = getEffectiveMinionAttack(gameState, minion);
+                    const minionSch = getEffectiveMinionScheme(gameState, minion);
+                    const atkDash = hasDashPower(minion.card, 'attack');
+                    const schDash = hasDashPower(minion.card, 'scheme');
+                    const atkDisplay = atkDash ? '–' : minionAtk;
+                    const schDisplay = schDash ? '–' : minionSch;
                     const { extraBottomPx: verticalExtraPx, extraLeftClass: horizontalExtraClass } =
                       getStaircaseExpansion(minion.attachments, minion.cardsUnderneath);
 
@@ -469,15 +477,15 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                         <div className="flex items-center gap-1 flex-wrap justify-center z-raised">
                           <span
                             className={`bg-sky-50 text-comic-blue text-nano px-1 py-0.2 font-bold ${style.badge}`}
-                            title={`Scheme: ${(minion.card as any).scheme ?? 0}`}
+                            title={`Scheme: ${schDisplay}`}
                           >
-                            SCH {(minion.card as any).scheme ?? 0}
+                            SCH {schDisplay}
                           </span>
                           <span
                             className={`bg-rose-50 text-comic-red text-nano px-1 py-0.2 font-bold ${style.badge}`}
-                            title={`Attack: ${(minion.card as any).attack ?? 0}`}
+                            title={`Attack: ${atkDisplay}`}
                           >
-                            ATK {(minion.card as any).attack ?? 0}
+                            ATK {atkDisplay}
                           </span>
                           {isGuard && (
                             <span

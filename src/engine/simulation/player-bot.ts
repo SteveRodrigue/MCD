@@ -9,7 +9,6 @@ import {
   CardType,
   NormalizedCard,
   StatusCard,
-  MinionCard,
   getActiveMainScheme,
   getActiveVillain,
 } from '@engine/models';
@@ -23,6 +22,7 @@ import {
   evaluateCardPlayability,
   getEffectiveCardCost,
   getEffectiveMinionAttack,
+  getEffectiveMinionScheme,
   getEffectiveVillainStats,
   getGeneratorProvidedResources,
   getHandCardResourceValue,
@@ -274,7 +274,7 @@ function projectedThreat(
     if ((p.id === player.id ? form : p.currentForm) !== 'alter_ego') continue;
     projected += villainScheme + BOT_POLICY.threatSafetyMargin;
     for (const minion of p.engagedMinions) {
-      projected += Math.max(0, (minion.card as MinionCard).scheme ?? 0);
+      projected += getEffectiveMinionScheme(state, minion);
     }
   }
   return projected;
@@ -360,7 +360,7 @@ function chooseHealing(player: PlayerState): GameAction | undefined {
 /** Engaged minions in attack order: Guard blocks the villain, then the most dangerous first. */
 function rankedMinions(state: GameState, player: PlayerState): CardInstance[] {
   const danger = (m: CardInstance) =>
-    getEffectiveMinionAttack(state, m) + ((m.card as MinionCard).scheme ?? 0);
+    getEffectiveMinionAttack(state, m) + getEffectiveMinionScheme(state, m);
   return [...player.engagedMinions].sort(
     (a, b) => Number(isGuardMinion(b)) - Number(isGuardMinion(a)) || danger(b) - danger(a),
   );

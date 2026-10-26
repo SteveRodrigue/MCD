@@ -296,15 +296,20 @@ export function readCardAttribute(
       if (typeof maxHealth === 'number' && typeof health === 'number') {
         return Math.max(0, maxHealth - health);
       }
-      const tokensDamage = (cardObj.tokens as { damage?: number } | undefined)?.damage;
-      const damage = tokensDamage ?? (cardObj.damage as number | undefined) ?? 0;
-      return typeof damage === 'number' ? damage : 0;
+      const tokensDamage = (cardObj.tokens as { damage?: number } | undefined)?.damage ?? 0;
+      const propDamage = (cardObj.damage as number | undefined) ?? 0;
+      return Math.max(tokensDamage, propDamage);
     }
 
     case 'REMAINING_HIT_POINTS': {
+      if (typeof cardObj.health === 'number') {
+        return Math.max(0, cardObj.health);
+      }
       const health = (cardData as { health?: number } | undefined)?.health;
       const tokensDamage = (cardObj.tokens as { damage?: number } | undefined)?.damage ?? 0;
-      return typeof health === 'number' ? Math.max(0, health - tokensDamage) : 0;
+      const propDamage = (cardObj.damage as number | undefined) ?? 0;
+      const damage = Math.max(tokensDamage, propDamage);
+      return typeof health === 'number' ? Math.max(0, health - damage) : 0;
     }
 
     case 'COUNTERS': {

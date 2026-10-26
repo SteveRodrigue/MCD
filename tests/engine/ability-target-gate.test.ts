@@ -3,7 +3,13 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { createCardInstance } from '@engine/state/game-setup';
 import { checkAbilityTargets } from '@engine/effects/target-choice';
 import { canInitiateAbility } from '@engine/pipeline/legality-checker';
-import { getActiveMainScheme, StatusCard, type CardAbility, type GameState } from '@engine/models';
+import {
+  getActiveMainScheme,
+  StatusCard,
+  type AbilityStep,
+  type CardAbility,
+  type GameState,
+} from '@engine/models';
 import type { EffectType } from '../../src/data/supplemental/runtime';
 import { abilityOf, newRhinoGame } from '../support/game-fixtures';
 
@@ -54,14 +60,53 @@ describe('checkAbilityTargets: self selectors are targets (#340)', () => {
     expect(gate(state, AUNT_MAY).allowed).toBe(true);
   });
 
-  it('an ability with any step that judges no target stays initiable (any part can affect)', () => {
-    const state = heroGame();
-    state.players[0].exhausted = false;
-    const mixed: CardAbility = {
-      ...ONE_TWO_PUNCH,
-      steps: [...ONE_TWO_PUNCH.steps, { effect: 'DRAW', effectParams: { count: 1 } }],
+  describe('a step that judges no target (#369)', () => {
+    const NO_THREAT: CardAbility = {
+      id: 'test_remove_threat_then',
+      timing: 'ACTION',
+      steps: [{ effect: 'REMOVE_THREAT', effectParams: { target: 'CHOSEN_SCHEME', amount: 2 } }],
     };
-    expect(gate(state, mixed).allowed).toBe(true);
+    const blockedBoard = (): GameState => {
+      const state = heroGame();
+      for (const scheme of [getActiveMainScheme(state), ...state.sideSchemes]) scheme.threat = 0;
+      return state;
+    };
+    const withStep = (step: AbilityStep): CardAbility => ({
+      ...NO_THREAT,
+      steps: [...NO_THREAT.steps, step],
+    });
+    const DRAW: AbilityStep = { effect: 'DRAW', effectParams: { count: 1 } };
+
+    it('an unconditional draw is a valid target while the player has a card to draw', () => {
+      const state = blockedBoard();
+      expect(state.players[0].deck.length).toBeGreaterThan(0);
+      expect(gate(state, withStep(DRAW)).allowed).toBe(true);
+    });
+
+    it('an unconditional draw is not a valid target when deck and discard are empty', () => {
+      const state = blockedBoard();
+      state.players[0].deck = [];
+      state.players[0].discard = [];
+      expect(gate(state, withStep(DRAW)).allowed).toBe(false);
+    });
+
+    it('a conditional draw (Photonic Blast shape) does not excuse a missing target', () => {
+      expect(gate(blockedBoard(), withStep({ ...DRAW, gate: 'IF_RESOURCE_MATCH' })).allowed).toBe(
+        false,
+      );
+    });
+
+    it('a discard step does not excuse a missing target (Repulsor Blast shape)', () => {
+      const discard: AbilityStep = { effect: 'DISCARD', effectParams: { count: 5 } };
+      expect(gate(blockedBoard(), withStep(discard)).allowed).toBe(false);
+    });
+
+    it('Relentless Assault (01053) cannot be played with no minion in play', () => {
+      const state = heroGame();
+
+      const result = gate(state, abilityOf('01053', 'relentless_assault'));
+      expect(result.allowed).toBe(false);
+    });
   });
 
   it('a Confused hero may still initiate a thwart-labelled ability: the Confused card is the target', () => {

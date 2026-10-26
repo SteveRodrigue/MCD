@@ -62,9 +62,7 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 ### 3.1 Bugs seen in real Rhino games (do first)
 
-| Issue                                                   | Problem (from the Dev Mode report)                                                   | Notes                                                                                                                               |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| [#327](https://github.com/SteveRodrigue/MCD/issues/327) | "Current state for the Daily Bugle fix": report text not captured in the issue body. | **Blocked (2026-10-22):** report text is only a title and `gamestate_1792150734287_bug.json` is not in `logs/`. Needs the snapshot. |
+No open row.
 
 ### 3.2 Rules gaps that affect core cards
 

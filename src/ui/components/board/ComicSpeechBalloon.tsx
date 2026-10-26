@@ -58,18 +58,18 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({ dialogue
     >
       {/* 1. Top Classification Strip / Banner */}
       <div
-        className="flex items-center justify-between px-3 py-1.5 border-b-2 font-black text-xs uppercase tracking-wider"
+        className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 px-3 py-1.5 border-b-2 font-black text-xs uppercase tracking-wider"
         style={{
           backgroundColor: bannerBg,
           color: bannerText,
           borderColor: bannerBorder,
         }}
       >
-        <div className="flex items-center gap-2 overflow-hidden">
+        <div className="flex flex-wrap items-center gap-2 min-w-0">
           <span className="text-sm shrink-0">
             {speakerAvatar || (type === 'narrator_caption' ? '📜' : '💬')}
           </span>
-          <span className="truncate font-bold">{speakerName || defaultTitle}</span>
+          <span className="whitespace-nowrap font-bold">{speakerName || defaultTitle}</span>
           {speakerRole && (
             <span
               className={`px-1.5 py-0.2 text-nano font-black uppercase tracking-wider shrink-0 opacity-90 ${style.badge}`}
@@ -99,7 +99,7 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({ dialogue
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0 ml-2">
+        <div className="flex items-center gap-1.5 shrink-0 ml-auto">
           {onomatopoeia && (
             <span className={`text-micro font-black px-1.5 py-0.5 -rotate-1 ${style.chip}`}>
               {onomatopoeia}

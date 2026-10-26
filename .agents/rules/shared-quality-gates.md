@@ -88,7 +88,7 @@ Coverage thresholds in `vitest.config.ts` are a ratchet; raise them when coverag
 
 ## Delivery authorization
 
-Commit and push only happen in response to the user's explicit request in the current message (e.g. "commit and push", "commit this"); the agent never initiates delivery on its own. Once requested, the workflow stages the reviewed file set, states the commit message, and proceeds through `git commit` (which runs `pre-commit`: `format:check`, `lint`, `typecheck`) and `git push` (which runs `pre-push`: `npm test`) directly without manually duplicating those checks beforehand.
+Delivery (commit, push, pull request, merge) only happens in response to the user's explicit request in the current message (e.g. "commit and push", "deliver"); the agent never initiates it on its own. `main` is protected: work goes on a branch, never straight to `main`. Once requested, the `commit-and-push` workflow stages the reviewed file set, states the commit message, proceeds through `git commit` (which runs `pre-commit`: `format:check`, `lint`, `typecheck`) and `git push` (which runs `pre-push`: `npm test`) without manually duplicating those checks beforehand, opens a pull request, waits for CI, squash-merges it and verifies the issue state. It never bypasses the branch protection (no `--admin`, no force push, no `--no-verify`); a red or blocked pull request is reported, not worked around. A request that names only part of the chain stops after that part.
 
 ## Documentation invariants
 

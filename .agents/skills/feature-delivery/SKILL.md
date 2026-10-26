@@ -199,10 +199,10 @@ rtk npx prettier --check <changed-files> && rtk npm run lint && rtk npm run type
 2. **Present Verification & Solution Recap:**
    Present the completed feature, verification logs, and proposed diff to the user.
 3. **Delivery Authorization:**
-   Per `AGENTS.md`, commit and push occur only upon explicit user request in the current message. When authorized, follow `commit-and-push`:
-   - Stage reviewed files (`rtk git add <files>`).
+   Per `AGENTS.md`, delivery (commit, push, pull request, merge) occurs only upon explicit user request in the current message. When authorized, follow `commit-and-push`:
+   - Branch off `main` (protected) and stage reviewed files (`rtk git add <files>`).
    - Commit with auto-closing syntax: `rtk git commit -m "feat(<scope>): <description> (Closes #<NUM>)"` (letting `.githooks/pre-commit` run `format:check`, `lint`, `typecheck`).
-   - Push to remote and confirm issue closure (`rtk git push`, letting `.githooks/pre-push` run the full `npm test` suite once).
+   - Push the branch (`rtk git push -u origin <branch>`, letting `.githooks/pre-push` run the full `npm test` suite once), open the pull request, wait for CI, squash-merge it, and confirm issue closure.
 
 
 ---

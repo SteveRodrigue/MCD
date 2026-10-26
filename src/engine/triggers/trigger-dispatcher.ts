@@ -72,6 +72,27 @@ function revealCannotBeCanceledBy(
   );
 }
 
+/**
+ * Without its own scope, a damage or defeat ability reacts only to its controller's events ("your
+ * ally" is never another player's ally, #363). `targetPlayerScope: ANY` opts out. A defeat ability
+ * that already names who defeated (`defeatedByAttackOf`) or which card (`targetScope`) keeps that.
+ */
+function failsImplicitControllerScope(
+  filter: TriggerFilter | undefined,
+  context: TriggerContext,
+  player: PlayerState | undefined,
+  trigger: TriggerType | string | undefined,
+): boolean {
+  if (filter?.targetPlayerScope || !player || !context.targetPlayerId) return false;
+  if (context.targetPlayerScope === 'ANY') return false;
+  const implicitlyScoped =
+    triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN') ||
+    ((trigger === 'DEFEATED' || trigger === 'CHARACTER_DEFEATED') &&
+      !filter?.defeatedByAttackOf &&
+      !filter?.targetScope);
+  return implicitlyScoped && context.targetPlayerId !== player.id;
+}
+
 export function matchesTriggerFilter(
   filter: TriggerFilter | undefined,
   context: TriggerContext,
@@ -93,6 +114,8 @@ export function matchesTriggerFilter(
       return false;
     }
   }
+
+  if (failsImplicitControllerScope(filter, context, player, trigger)) return false;
 
   if (!filter) return true;
 
@@ -171,15 +194,6 @@ export function matchesTriggerFilter(
       } else if (actualScope !== filter.targetPlayerScope) {
         return false;
       }
-    }
-  } else if (
-    triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN') &&
-    player &&
-    context.targetPlayerId &&
-    context.targetPlayerScope !== 'ANY'
-  ) {
-    if (context.targetPlayerId !== player.id) {
-      return false;
     }
   }
 

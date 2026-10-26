@@ -661,6 +661,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
         {/* 8. Interactive Decision Prompt Modal (ADR-0020 / ADR-0032 / ADR-0038) */}
         <DecisionPromptModal
           prompt={decisionPrompt}
+          players={gameState.players}
           onSelectOption={(optionId, payload) => {
             const activePrompt = decisionPrompt;
             if (!activePrompt) return;

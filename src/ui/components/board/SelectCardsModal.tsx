@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
-import { CheckCircle2, Layers } from 'lucide-react';
-import { PendingDecisionPrompt } from '../../../engine/models';
+import React, { useState, useMemo } from 'react';
+import { CheckCircle2, Layers, Shield } from 'lucide-react';
+import { PendingDecisionPrompt, PlayerState } from '../../../engine/models';
 import { AccentStripe } from '../../theme/AccentStripe';
 import { CardRef } from '../../theme/CardRef';
 import { ModalScaffold } from '../../theme/ModalScaffold';
 import { useModalStyle } from '../../theme/useModalStyle';
 import { FormattedCardText } from '../cards/FormattedCardText';
+import { useOptionalGameSession } from '../../context/GameStateContext';
+import { getHeroColorPalette } from '../../utils/hero-theme';
+import { resolvePlayerSeatInfo } from '../../utils/player-seat';
 
 interface SelectCardsModalProps {
   prompt: PendingDecisionPrompt;
   onConfirm: (selectedOptionIds: string[]) => void;
+  players?: PlayerState[];
 }
 
 interface CardOptionParams {
@@ -22,10 +26,24 @@ interface CardOptionParams {
  * never two cards with the same name when `distinctBy` is `NAME` (SEARCH `takeCount` /
  * `minimumTake` / `distinctBy`).
  */
-export const SelectCardsModal: React.FC<SelectCardsModalProps> = ({ prompt, onConfirm }) => {
+export const SelectCardsModal: React.FC<SelectCardsModalProps> = ({
+  prompt,
+  onConfirm,
+  players: propsPlayers,
+}) => {
   const { style } = useModalStyle();
+  const gameSession = useOptionalGameSession();
   const selection = prompt.selection!;
   const [chosen, setChosen] = useState<string[]>([]);
+
+  const effectivePlayers = propsPlayers ?? gameSession?.state.players;
+  const {
+    player: promptPlayer,
+    seatNumber,
+    isMultiHero,
+    label: playerSeatLabel,
+  } = resolvePlayerSeatInfo(effectivePlayers, prompt.playerId);
+  const playerPalette = useMemo(() => getHeroColorPalette(promptPlayer), [promptPlayer]);
 
   const infoOf = (optionId: string): CardOptionParams =>
     (prompt.options.find((o) => o.id === optionId)?.params as CardOptionParams) ?? {};
@@ -44,22 +62,39 @@ export const SelectCardsModal: React.FC<SelectCardsModalProps> = ({ prompt, onCo
   };
 
   const canConfirm = chosen.length >= selection.min && chosen.length <= selection.max;
+  const modalKicker =
+    isMultiHero && seatNumber ? `SEAT ${seatNumber} • Card selection` : 'Card selection';
 
   return (
     <ModalScaffold
       title={prompt.title}
-      kicker="Card selection"
+      kicker={modalKicker}
       verb="yellow"
       trigger={{ code: prompt.sourceCardCode, name: prompt.sourceCardName }}
       icon={<Layers className="w-5 h-5" />}
       maxWidthClass="max-w-2xl"
       headerRight={
-        <span
-          data-testid="select-cards-counter"
-          className={`text-sm font-black px-2.5 py-1 ${style.chip}`}
-        >
-          {chosen.length} / {selection.max}
-        </span>
+        <div className="flex items-center gap-2">
+          {promptPlayer && (
+            <span
+              data-testid="select-cards-player-badge"
+              className="text-micro font-black px-2 py-0.5 border border-comic-black shadow-comic-xs rounded-sm truncate max-w-[200px] sm:max-w-[260px] uppercase tracking-wider flex items-center gap-1.5"
+              style={{
+                backgroundColor: playerPalette.primary,
+                color: playerPalette.contrastText.primary,
+              }}
+            >
+              <Shield className="w-3 h-3 shrink-0" />
+              <span className="truncate">{playerSeatLabel}</span>
+            </span>
+          )}
+          <span
+            data-testid="select-cards-counter"
+            className={`text-sm font-black px-2.5 py-1 ${style.chip}`}
+          >
+            {chosen.length} / {selection.max}
+          </span>
+        </div>
       }
       footer={
         <button

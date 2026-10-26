@@ -29,7 +29,6 @@ import { newRhinoGame } from '../support/game-fixtures';
 
 const CHARGE = '01099';
 const BLACK_CAT = '01002';
-const DAREDEVIL = '01058';
 const NICK_FURY = '01084';
 const INTERROGATION_ROOM = '01063';
 const MINION = '01110';
@@ -296,7 +295,7 @@ describe('ally, minion and scheme-free defeats', () => {
   it('A3: an ally defeated by the consequential damage of its thwart is already in the discard pile', () => {
     const state = duo();
     const [a] = state.players;
-    const ally = inPlay(DAREDEVIL);
+    const ally = inPlay(NICK_FURY);
     ally.tokens = { damage: (ally.card as AllyCard).health - 1 };
     a.allies.push(ally);
     const scheme = state.mainSchemes![state.activeMainSchemeIndex ?? 0];

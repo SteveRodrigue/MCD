@@ -11,6 +11,7 @@ export function endGame(state: GameState, winner: 'HEROES' | 'VILLAIN'): void {
   state.pendingDecisionQueue = [];
   delete state.pendingDamagePlacements;
   delete state.pendingThreatPlacements;
+  delete state.pendingConsequentialDamage;
   delete state.pendingCleanUpPlayerIds;
   delete state.pendingActivations;
   delete state.activeBoostCard;

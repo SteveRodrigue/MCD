@@ -6,13 +6,12 @@ import {
   consumeEntityStatusCards,
 } from '../stat-calculator';
 import { applyDamageToTarget } from '../damage-pipeline';
-import { dispatchDefeat } from '../../triggers/defeat-dispatch';
 import { applyThwart } from '../threat-pipeline';
 import { recordBasicAction } from '../stats';
 import { appendLog } from '../../state/game-log';
 import { dispatchTrigger } from '../../triggers/trigger-dispatcher';
-import { processHostDefeated, resetCardState } from '../../effects';
 import { resolveDefenderDeclaration } from '../combat-pipeline';
+import { applyConsequentialDamage } from '../consequential-damage';
 import { resolveAttackedVillain } from './shared';
 import type { ActionHandler } from './types';
 
@@ -221,26 +220,6 @@ export const handleAllyAttack: ActionHandler<'ALLY_ATTACK'> = (nextState, state,
     }
   }
 
-  // Consequential damage to ally (e.g. 1 damage)
-  const consequential = allyCard.attackCost ?? 1;
-  ally.tokens = { ...ally.tokens, damage: (ally.tokens?.damage || 0) + consequential };
-
-  // Check Ally Defeat
-  const allyHp = allyCard.health || 2;
-  if ((ally.tokens?.damage || 0) >= allyHp) {
-    player.allies.splice(allyIdx, 1);
-    processHostDefeated(nextState, ally, { player });
-    const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
-    resetCardState(ally);
-    owner.discard.push(ally);
-    dispatchDefeat(nextState, {
-      targetPlayerId: player.id,
-      targetInstanceId: ally.instanceId,
-      targetType: 'ALLY',
-      defeatSource: { kind: 'EFFECT', playerId: player.id, byAttack: false },
-    });
-  }
-
   dispatchTrigger(nextState, 'ATTACK_RESOLVED', {
     targetPlayerId: player.id,
     targetType: action.targetType,
@@ -250,6 +229,10 @@ export const handleAllyAttack: ActionHandler<'ALLY_ATTACK'> = (nextState, state,
     attackerCard: ally,
     attackSource: { kind: 'ALLY', playerId: player.id, instanceId: ally.instanceId },
   });
+
+  // Consequential damage to ally per RR v1.8 (after resolving abilities triggered by the ally attacking)
+  const consequential = allyCard.attackCost ?? 1;
+  applyConsequentialDamage(nextState, player.id, ally.instanceId, consequential);
 
   const onomatopoeia = 'ALLY ATTACK!';
   return { state: nextState, result: { success: true, onomatopoeia } };
@@ -293,25 +276,9 @@ export const handleAllyThwart: ActionHandler<'ALLY_THWART'> = (nextState, state,
     onomatopoeia: 'EXHAUST',
   });
 
-  // Consequential damage to ally
+  // Consequential damage to ally per RR v1.8 (after resolving abilities triggered by the ally thwarting)
   const consequential = allyCard.thwartCost ?? 1;
-  ally.tokens = { ...ally.tokens, damage: (ally.tokens?.damage || 0) + consequential };
-
-  // Check Ally Defeat
-  const allyHp = allyCard.health || 2;
-  if ((ally.tokens?.damage || 0) >= allyHp) {
-    player.allies.splice(allyIdx, 1);
-    processHostDefeated(nextState, ally, { player });
-    const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
-    resetCardState(ally);
-    owner.discard.push(ally);
-    dispatchDefeat(nextState, {
-      targetPlayerId: player.id,
-      targetInstanceId: ally.instanceId,
-      targetType: 'ALLY',
-      defeatSource: { kind: 'EFFECT', playerId: player.id, byAttack: false },
-    });
-  }
+  applyConsequentialDamage(nextState, player.id, ally.instanceId, consequential);
 
   const onomatopoeia = thwartRes.result.onomatopoeia || 'ALLY THWART!';
   return { state: nextState, result: { success: true, onomatopoeia } };

@@ -137,7 +137,7 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <span
-                className={`w-7 h-7 bg-comic-red text-white text-sm flex items-center justify-center font-bold ${style.badge} !rounded-full`}
+                className={`w-7 h-7 bg-comic-red text-white text-sm flex items-center justify-center font-bold ${style.badge} rounded-full!`}
               >
                 {activeSeatIndex + 1}
               </span>

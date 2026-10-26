@@ -248,7 +248,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
         }
       >
         {activeActionCount === 0 && callForActionItems.length === 0 ? (
-          <div className={`${np.classified} !p-8 text-center space-y-1 my-4`}>
+          <div className={`${np.classified} p-8! text-center space-y-1 my-4`}>
             <h3 className={np.headline}>★ PRESS RUN COMPLETE: NO ACTIONS REMAIN ★</h3>
             <p className={np.body}>
               You have exhausted your character and played all available cards. You may now conclude

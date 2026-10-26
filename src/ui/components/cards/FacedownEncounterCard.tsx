@@ -88,7 +88,7 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
           )}
 
           {/* Top: Header & Icons */}
-          <div className="flex items-center justify-between z-content bg-slate-950/80 px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs backdrop-blur-xs">
+          <div className="flex items-center justify-between z-content bg-slate-950/80 px-1.5 py-0.5 rounded-sm border border-comic-black shadow-comic-xs backdrop-blur-xs">
             <div className="flex items-center gap-1">
               <Skull className="w-3.5 h-3.5 text-comic-red" />
               <span className="text-micro tracking-wider text-rose-300 font-bold uppercase">
@@ -97,7 +97,7 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
             </div>
             {isDevMode ? (
               <span
-                className="bg-amber-400 text-slate-950 text-nano px-1 py-0.2 rounded border border-comic-black font-bold flex items-center gap-0.5"
+                className="bg-amber-400 text-slate-950 text-nano px-1 py-0.2 rounded-sm border border-comic-black font-bold flex items-center gap-0.5"
                 title="Dev Mode Peek Available"
               >
                 <Eye className="w-2.5 h-2.5" />
@@ -113,7 +113,7 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
             <div className="w-10 h-10 rounded-full border-2 border-comic-black bg-rose-700/90 flex items-center justify-center shadow-comic-xs">
               <Skull className="w-6 h-6 text-amber-300 drop-shadow-md" />
             </div>
-            <span className="text-nano font-sans font-bold text-rose-100 mt-1 tracking-tight uppercase bg-slate-950/80 px-1.5 py-0.5 rounded border border-comic-black">
+            <span className="text-nano font-sans font-bold text-rose-100 mt-1 tracking-tight uppercase bg-slate-950/80 px-1.5 py-0.5 rounded-sm border border-comic-black">
               {heroName ? `For ${heroName}` : 'Dealt'}
             </span>
           </div>
@@ -122,7 +122,7 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
           <div className="flex justify-center z-content">
             <span
               data-testid="facedown-count-badge"
-              className="bg-amber-400 text-slate-950 text-micro px-2 py-0.5 rounded border border-comic-black font-bold shadow-comic-xs uppercase tracking-wide"
+              className="bg-amber-400 text-slate-950 text-micro px-2 py-0.5 rounded-sm border border-comic-black font-bold shadow-comic-xs uppercase tracking-wide"
             >
               FACEDOWN ({cards.length})
             </span>

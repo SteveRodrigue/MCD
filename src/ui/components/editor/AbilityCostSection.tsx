@@ -86,7 +86,7 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
       </div>
 
       {errors.length > 0 && (
-        <div className="p-1.5 bg-red-50 border border-comic-red rounded text-[10px] text-red-800 space-y-0.5">
+        <div className="p-1.5 bg-red-50 border border-comic-red rounded-sm text-[10px] text-red-800 space-y-0.5">
           {errors.map((err, i) => (
             <div key={i}>• {err}</div>
           ))}
@@ -136,7 +136,7 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
             return (
               <div
                 key={res}
-                className="flex items-center gap-1 bg-white border border-black px-1.5 py-0.5 rounded text-xs shadow-comic-xs"
+                className="flex items-center gap-1 bg-white border border-black px-1.5 py-0.5 rounded-sm text-xs shadow-comic-xs"
               >
                 <span className="capitalize font-bold text-[11px]">{res}:</span>
                 <span
@@ -149,7 +149,7 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
                   type="button"
                   data-testid={`cost-res-plus-${res}-${abilityIndex}`}
                   onClick={() => handleAddResource(res)}
-                  className="w-4 h-4 bg-gray-200 hover:bg-gray-300 font-bold flex items-center justify-center rounded text-xs border border-gray-400 cursor-pointer"
+                  className="w-4 h-4 bg-gray-200 hover:bg-gray-300 font-bold flex items-center justify-center rounded-sm text-xs border border-gray-400 cursor-pointer"
                   title={`Add ${res} resource`}
                 >
                   +
@@ -159,7 +159,7 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
                     type="button"
                     data-testid={`cost-res-minus-${res}-${abilityIndex}`}
                     onClick={() => handleRemoveResource(res)}
-                    className="w-4 h-4 bg-gray-200 hover:bg-gray-300 font-bold flex items-center justify-center rounded text-xs border border-gray-400 cursor-pointer"
+                    className="w-4 h-4 bg-gray-200 hover:bg-gray-300 font-bold flex items-center justify-center rounded-sm text-xs border border-gray-400 cursor-pointer"
                     title={`Remove ${res} resource`}
                   >
                     -

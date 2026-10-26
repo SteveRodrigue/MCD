@@ -178,7 +178,7 @@ export const SimultaneousAbilitiesModal: React.FC<SimultaneousAbilitiesModalProp
                     </span>
                   )}
                   {candidate.triggerType && (
-                    <span className="text-micro font-black uppercase px-1.5 py-0.5 rounded bg-amber-300 text-comic-black border border-comic-black/40">
+                    <span className="text-micro font-black uppercase px-1.5 py-0.5 rounded-sm bg-amber-300 text-comic-black border border-comic-black/40">
                       {candidate.triggerType}
                     </span>
                   )}

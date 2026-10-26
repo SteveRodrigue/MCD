@@ -23,7 +23,7 @@ export const RawJsonEditor: React.FC<RawJsonEditorProps> = ({
         <button
           type="button"
           onClick={onFormat}
-          className="flex items-center gap-1 text-[11px] font-bold bg-white hover:bg-gray-100 text-black px-2 py-0.5 border border-black rounded shadow-comic-xs cursor-pointer active:scale-95 transition-transform"
+          className="flex items-center gap-1 text-[11px] font-bold bg-white hover:bg-gray-100 text-black px-2 py-0.5 border border-black rounded-sm shadow-comic-xs cursor-pointer active:scale-95 transition-transform"
         >
           <AlignLeft className="w-3 h-3" />
           <span>Format JSON</span>
@@ -31,7 +31,7 @@ export const RawJsonEditor: React.FC<RawJsonEditorProps> = ({
       </div>
 
       {jsonSyntaxError && (
-        <div className="bg-red-100 border border-comic-red p-2 rounded text-comic-red text-xs font-mono flex items-center gap-1.5">
+        <div className="bg-red-100 border border-comic-red p-2 rounded-sm text-comic-red text-xs font-mono flex items-center gap-1.5">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>JSON Syntax Error: {jsonSyntaxError}</span>
         </div>
@@ -42,7 +42,7 @@ export const RawJsonEditor: React.FC<RawJsonEditorProps> = ({
         onChange={(e) => onChange(e.target.value)}
         spellCheck={false}
         rows={20}
-        className="w-full flex-1 bg-gray-950 text-green-400 font-mono text-xs p-3 border-2 border-black rounded shadow-inner focus:outline-none focus:ring-2 focus:ring-comic-red resize-y leading-relaxed"
+        className="w-full flex-1 bg-gray-950 text-green-400 font-mono text-xs p-3 border-2 border-black rounded-sm shadow-inner focus:outline-hidden focus:ring-2 focus:ring-comic-red resize-y leading-relaxed"
       />
     </div>
   );

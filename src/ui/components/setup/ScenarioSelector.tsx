@@ -151,12 +151,12 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
       <div className="relative mb-8">
         {/* Comic Header Bar / Issue Badge */}
         <div
-          className={`flex items-center justify-between px-4 py-2 !rounded-b-none !rotate-0 ${style.chip}`}
+          className={`flex items-center justify-between px-4 py-2 rounded-b-none! rotate-0! ${style.chip}`}
         >
           <div className="flex items-center gap-3">
             {/* Vintage Price Box */}
             <div
-              className={`bg-comic-yellow text-comic-black font-black text-xs px-2 py-0.5 rotate-[-2deg] ${style.buttonShape}`}
+              className={`bg-comic-yellow text-comic-black font-black text-xs px-2 py-0.5 -rotate-2 ${style.buttonShape}`}
             >
               12¢ • ISSUE #{currentScenarioIndex + 1}
             </div>
@@ -184,10 +184,10 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
 
         {/* The Open Comic Book Pages */}
         <div
-          className={`relative p-4 md:p-6 overflow-hidden !rounded-t-none ${style.panel} ${style.text}`}
+          className={`relative p-4 md:p-6 overflow-hidden rounded-t-none! ${style.panel} ${style.text}`}
         >
           {/* Subtle Halftone & Paper Texture Background */}
-          <div className="absolute inset-0 opacity-5 pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:16px_16px]" />
+          <div className="absolute inset-0 opacity-5 pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] bg-size-[16px_16px]" />
 
           {/* Left / Right Page-Flip Buttons */}
           {/* The wrapper centres the button, so the button's own press transform stays free. It sits at a
@@ -202,10 +202,10 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 <button
                   type="button"
                   onClick={direction === 'prev' ? handlePrevScenario : handleNextScenario}
-                  className={`block p-2 md:p-3 pointer-events-auto transition-all cursor-pointer ${style.btnGo} !rounded-full`}
+                  className={`block p-2 md:p-3 pointer-events-auto transition-all cursor-pointer ${style.btnGo} rounded-full!`}
                   title={direction === 'prev' ? 'Previous Scenario' : 'Next Scenario'}
                 >
-                  <Arrow className="w-6 h-6 md:w-8 md:h-8 stroke-[3]" />
+                  <Arrow className="w-6 h-6 md:w-8 md:h-8 stroke-3" />
                 </button>
               </div>
             );
@@ -215,10 +215,10 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-content px-4 md:px-8">
             {/* Center Spine Fold / Binding Crease */}
             <div className="hidden md:block absolute left-1/2 top-0 bottom-0 -translate-x-1/2 w-8 pointer-events-none z-raised">
-              <div className="w-full h-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
+              <div className="w-full h-full bg-linear-to-r from-transparent via-black/10 to-transparent" />
               {/* Metal Staples */}
-              <div className="absolute top-12 left-1/2 -translate-x-1/2 w-1.5 h-6 bg-slate-400 rounded-sm border border-slate-600 shadow-sm" />
-              <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-1.5 h-6 bg-slate-400 rounded-sm border border-slate-600 shadow-sm" />
+              <div className="absolute top-12 left-1/2 -translate-x-1/2 w-1.5 h-6 bg-slate-400 rounded-xs border border-slate-600 shadow-xs" />
+              <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-1.5 h-6 bg-slate-400 rounded-xs border border-slate-600 shadow-xs" />
             </div>
 
             {/* 🔴 LEFT PAGE: VILLAIN DOSSIER */}
@@ -389,7 +389,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
               <select
                 value={selectedModularSetCode}
                 onChange={(e) => setSelectedModularSetCode(e.target.value)}
-                className={`w-full p-2 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-comic-yellow cursor-pointer ${field}`}
+                className={`w-full p-2 font-medium text-sm focus:outline-hidden focus:ring-2 focus:ring-comic-yellow cursor-pointer ${field}`}
               >
                 {modularSets.map((mod) => (
                   <option key={mod.code} value={mod.code}>
@@ -587,7 +587,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span
-                                className={`w-5 h-5 bg-comic-red text-white text-xs flex items-center justify-center font-bold ${style.badge} !rounded-full`}
+                                className={`w-5 h-5 bg-comic-red text-white text-xs flex items-center justify-center font-bold ${style.badge} rounded-full!`}
                               >
                                 {index + 1}
                               </span>
@@ -614,7 +614,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                                 <button
                                   type="button"
                                   onClick={() => handleAssignSeat(index, null)}
-                                  className="opacity-60 hover:opacity-100 hover:text-comic-red p-1 rounded transition-colors cursor-pointer"
+                                  className="opacity-60 hover:opacity-100 hover:text-comic-red p-1 rounded-sm transition-colors cursor-pointer"
                                   title="Vacate this hero seat"
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -633,7 +633,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                             <select
                               value={deckId || ''}
                               onChange={(e) => handleAssignSeat(index, e.target.value)}
-                              className={`w-full text-xs font-medium focus:outline-none focus:ring-1 focus:ring-comic-blue cursor-pointer ${field}`}
+                              className={`w-full text-xs font-medium focus:outline-hidden focus:ring-1 focus:ring-comic-blue cursor-pointer ${field}`}
                             >
                               {starterDecks.map((d) => {
                                 const isTakenElsewhere = takenInOtherSeats.some(
@@ -661,7 +661,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                       <div className="flex items-center justify-between py-1 px-1">
                         <div className="flex items-center gap-2">
                           <span
-                            className={`w-5 h-5 text-xs flex items-center justify-center font-bold ${style.chip} !rounded-full`}
+                            className={`w-5 h-5 text-xs flex items-center justify-center font-bold ${style.chip} rounded-full!`}
                           >
                             {index + 1}
                           </span>

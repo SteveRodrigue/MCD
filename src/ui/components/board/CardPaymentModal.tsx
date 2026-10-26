@@ -156,7 +156,7 @@ const TargetChoices: React.FC<TargetChoicesProps> = ({
   const { style } = useModalStyle();
 
   return (
-    <div className={`space-y-2 pt-2 border-t-2 ${style.panelHead} !border-b-0`}>
+    <div className={`space-y-2 pt-2 border-t-2 ${style.panelHead} border-b-0!`}>
       <label className="text-xs font-black uppercase flex items-center space-x-1">
         {icon}
         <span>{title}</span>
@@ -172,7 +172,7 @@ const TargetChoices: React.FC<TargetChoicesProps> = ({
               onClick={() => onSelect(t.id)}
               className={`relative flex items-center justify-between gap-2 p-2.5 pl-4 text-xs font-bold cursor-pointer ${
                 selected
-                  ? `${TARGET_SELECTED[tone]} text-white border-2 border-comic-black rounded shadow-comic-sm`
+                  ? `${TARGET_SELECTED[tone]} text-white border-2 border-comic-black rounded-sm shadow-comic-sm`
                   : style.tile
               }`}
             >
@@ -968,7 +968,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
             <CardArtThumbnail cardCode={card.code} cardName={card.name} size="md" />
             <div className="space-y-1">
               <div className="flex items-center space-x-2">
-                <span className="text-xs font-black uppercase px-2 py-0.5 bg-comic-blue text-white rounded border border-comic-black">
+                <span className="text-xs font-black uppercase px-2 py-0.5 bg-comic-blue text-white rounded-sm border border-comic-black">
                   {card.type}
                 </span>
                 <span className={`text-xs font-black uppercase px-2 py-0.5 ${style.chip}`}>
@@ -1012,7 +1012,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                   </span>
                 </>
               ) : discardCost ? (
-                <span className="text-sm font-black uppercase px-2.5 py-1 bg-comic-red text-white rounded border border-comic-black shadow-comic-xs">
+                <span className="text-sm font-black uppercase px-2.5 py-1 bg-comic-red text-white rounded-sm border border-comic-black shadow-comic-xs">
                   Discard {discardCost.min < discardCost.max ? 'up to ' : ''}
                   {discardCost.max}
                 </span>
@@ -1021,7 +1021,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
               )}
             </div>
             {isRequirePrinted && (
-              <span className="mt-1 text-nano font-black uppercase px-1.5 py-0.5 bg-comic-red text-white rounded border border-comic-black shadow-comic-xs">
+              <span className="mt-1 text-nano font-black uppercase px-1.5 py-0.5 bg-comic-red text-white rounded-sm border border-comic-black shadow-comic-xs">
                 Printed Only (No Wild)
               </span>
             )}
@@ -1064,7 +1064,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
               <span
                 className={`text-xs font-black px-2 py-0.5 shrink-0 ${
                   isDiscardCostCovered
-                    ? 'bg-comic-green text-white rounded border border-comic-black'
+                    ? 'bg-comic-green text-white rounded-sm border border-comic-black'
                     : style.chip
                 }`}
               >
@@ -1091,7 +1091,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                       <span
                         className={`text-xs font-black px-2 py-0.5 ${
                           isSelected
-                            ? 'bg-comic-red text-white rounded border border-comic-black'
+                            ? 'bg-comic-red text-white rounded-sm border border-comic-black'
                             : style.chip
                         }`}
                       >
@@ -1130,7 +1130,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
             </div>
 
             {/* Visual Meter Bar */}
-            <div className={`w-full h-4 overflow-hidden flex !rounded-full ${style.inset}`}>
+            <div className={`w-full h-4 overflow-hidden flex rounded-full! ${style.inset}`}>
               <div
                 className={`h-full transition-all duration-300 ${
                   isCostCovered ? 'bg-comic-green' : 'bg-comic-yellow'

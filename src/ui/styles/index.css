@@ -1,6 +1,25 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* The theme (colours, fonts, shadows, z-index scale) lives in tailwind.config.js, loaded below. */
+@import 'tailwindcss' source(none);
+@config '../../../tailwind.config.js';
+@source '../../../index.html';
+@source '../..';
+
+/* Tailwind 4 changed two defaults; these keep the v3 look: a gray-200 default border colour, and a
+   pointer cursor on buttons. */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
 
 /* The hero track scrolls with its own buttons and edge scrolling: no browser scrollbar (Issue #384). */
 .no-scrollbar {

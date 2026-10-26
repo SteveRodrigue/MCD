@@ -363,7 +363,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                       <button
                         data-no-edge-scroll=""
                         onClick={() => scrollToEdge(side)}
-                        className={`block p-2 pointer-events-auto transition-all cursor-pointer ${style.btnGo} !rounded-full`}
+                        className={`block p-2 pointer-events-auto transition-all cursor-pointer ${style.btnGo} rounded-full!`}
                         title={side === 'left' ? 'Scroll Left' : 'Scroll Right'}
                       >
                         <Arrow className="w-6 h-6" />
@@ -450,7 +450,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                           className={`w-[820px] lg:w-[880px] shrink-0 space-y-4 ${
                             isFocused
                               ? 'opacity-100 z-content transition-all duration-300'
-                              : 'opacity-60 grayscale-[35%] hover:opacity-95 hover:grayscale-0 z-table transition-all duration-300 cursor-pointer'
+                              : 'opacity-60 grayscale-35 hover:opacity-95 hover:grayscale-0 z-table transition-all duration-300 cursor-pointer'
                           }`}
                         >
                           {/* Hero Play Area */}

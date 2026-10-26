@@ -19,7 +19,7 @@ export const ChipSection: React.FC<ChipSectionProps> = ({
 }) => (
   <div
     data-testid={testId}
-    className="bg-yellow-50/50 p-2 border-2 border-black rounded shadow-comic-xs space-y-1.5"
+    className="bg-yellow-50/50 p-2 border-2 border-black rounded-sm shadow-comic-xs space-y-1.5"
   >
     <div className="flex items-center justify-between">
       <span className="text-[10px] font-bold uppercase text-gray-700">{title}</span>
@@ -28,7 +28,7 @@ export const ChipSection: React.FC<ChipSectionProps> = ({
         data-testid={removeTestId}
         title={`Remove ${title}`}
         onClick={onRemove}
-        className="p-0.5 text-gray-400 hover:text-comic-red cursor-pointer rounded hover:bg-red-50 transition-colors"
+        className="p-0.5 text-gray-400 hover:text-comic-red cursor-pointer rounded-sm hover:bg-red-50 transition-colors"
       >
         <X className="w-3.5 h-3.5" />
       </button>

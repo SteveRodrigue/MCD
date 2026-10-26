@@ -185,7 +185,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                   </span>
                 </div>
                 {prompt.preventAmount !== undefined && (
-                  <span className="font-mono font-black text-xs bg-emerald-600 text-white px-2 py-0.5 rounded border border-comic-black shadow-comic-xs">
+                  <span className="font-mono font-black text-xs bg-emerald-600 text-white px-2 py-0.5 rounded-sm border border-comic-black shadow-comic-xs">
                     Prevents:{' '}
                     {prompt.preventAmount === 'ALL' ? 'ALL DMG' : `${prompt.preventAmount} DMG`}
                   </span>
@@ -216,12 +216,12 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                     </div>
                     <div className="flex items-center gap-1 flex-wrap mt-0.5">
                       {prompt.hasOverkill && (
-                        <span className="bg-comic-red text-white text-nano font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                        <span className="bg-comic-red text-white text-nano font-black uppercase px-1 py-0.2 rounded-sm border border-comic-black shadow-comic-xs">
                           OVERKILL
                         </span>
                       )}
                       {prompt.hasPiercing && (
-                        <span className="bg-purple-600 text-white text-nano font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                        <span className="bg-purple-600 text-white text-nano font-black uppercase px-1 py-0.2 rounded-sm border border-comic-black shadow-comic-xs">
                           PIERCING
                         </span>
                       )}
@@ -265,12 +265,12 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                     </div>
                     <div className="flex items-center gap-1 flex-wrap mt-0.5">
                       {prompt.targetHasTough && (
-                        <span className="bg-amber-400 text-slate-950 text-nano font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                        <span className="bg-amber-400 text-slate-950 text-nano font-black uppercase px-1 py-0.2 rounded-sm border border-comic-black shadow-comic-xs">
                           TOUGH
                         </span>
                       )}
                       {prompt.targetRetaliate !== undefined && prompt.targetRetaliate > 0 && (
-                        <span className="bg-orange-500 text-white text-nano font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                        <span className="bg-orange-500 text-white text-nano font-black uppercase px-1 py-0.2 rounded-sm border border-comic-black shadow-comic-xs">
                           RETALIATE {prompt.targetRetaliate}
                         </span>
                       )}
@@ -360,7 +360,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                   >
                     <CardView card={rc.card} size="sm" enableHoverZoom={true} zoomOrigin="center" />
                     <span
-                      className={`text-nano px-2 py-0.5 rounded border border-comic-black font-black uppercase shadow-xs ${
+                      className={`text-nano px-2 py-0.5 rounded border border-comic-black font-black uppercase shadow-2xs ${
                         rc.isSelectable
                           ? 'bg-emerald-400 text-slate-950 animate-pulse'
                           : 'bg-slate-300 text-slate-700'
@@ -454,31 +454,31 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                         )}
                       </div>
                     ) : option.icon === 'punch' || option.id === 'undefended' ? (
-                      <div className="p-1 bg-comic-red text-white rounded border border-comic-black shadow-comic-xs flex items-center justify-center">
+                      <div className="p-1 bg-comic-red text-white rounded-sm border border-comic-black shadow-comic-xs flex items-center justify-center">
                         <Swords className="w-4 h-4 text-white" />
                       </div>
                     ) : null}
                     <span className="font-comic">{option.label}</span>
                     {option.statusBadges?.isTough && (
-                      <span className="bg-amber-400 text-slate-950 text-nano font-black uppercase px-1.5 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                      <span className="bg-amber-400 text-slate-950 text-nano font-black uppercase px-1.5 py-0.2 rounded-sm border border-comic-black shadow-comic-xs">
                         TOUGH
                       </span>
                     )}
                     {option.statusBadges?.retaliate !== undefined &&
                       option.statusBadges.retaliate > 0 && (
-                        <span className="bg-orange-500 text-white text-nano font-black uppercase px-1.5 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                        <span className="bg-orange-500 text-white text-nano font-black uppercase px-1.5 py-0.2 rounded-sm border border-comic-black shadow-comic-xs">
                           RETALIATE {option.statusBadges.retaliate}
                         </span>
                       )}
                     {requiresPayment && costAmount !== undefined && costAmount > 0 && (
-                      <span className="inline-flex items-center gap-1 text-micro font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-300 border border-comic-black text-slate-950 shadow-xs">
+                      <span className="inline-flex items-center gap-1 text-micro font-black uppercase tracking-wider px-2 py-0.5 rounded-sm bg-amber-300 border border-comic-black text-slate-950 shadow-2xs">
                         ⚡ COST: {costAmount} {costAmount === 1 ? 'RESOURCE' : 'RESOURCES'}
                       </span>
                     )}
                     {!requiresPayment &&
                       !option.label.toLowerCase().includes('cost') &&
                       optionCard?.cost !== undefined && (
-                        <span className="inline-flex items-center gap-1 text-micro font-black uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-200 border border-comic-black text-slate-950 shadow-xs">
+                        <span className="inline-flex items-center gap-1 text-micro font-black uppercase tracking-wider px-1.5 py-0.2 rounded-sm bg-amber-200 border border-comic-black text-slate-950 shadow-2xs">
                           Cost: {optionCard.cost}
                         </span>
                       )}
@@ -493,7 +493,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                 </div>
                 {option.disabledReason && (
                   <div className="mt-1 pl-8">
-                    <span className="inline-flex items-center gap-1 text-micro font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-200 border border-comic-black text-amber-950">
+                    <span className="inline-flex items-center gap-1 text-micro font-black uppercase tracking-wider px-2 py-0.5 rounded-sm bg-amber-200 border border-comic-black text-amber-950">
                       ⚠️ {option.disabledReason}
                     </span>
                   </div>

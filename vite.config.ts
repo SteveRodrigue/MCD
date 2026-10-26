@@ -1,5 +1,6 @@
 import { defineConfig, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 import fs from 'fs';
 import https from 'https';
@@ -365,6 +366,7 @@ function labFontChoicesPlugin(): Plugin {
 export default defineConfig({
   plugins: [
     react(),
+    tailwindcss(),
     cardCachePlugin(),
     cardStatsPlugin(),
     gameStateSnapshotPlugin(),

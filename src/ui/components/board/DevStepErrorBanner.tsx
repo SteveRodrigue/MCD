@@ -31,7 +31,7 @@ export const DevStepErrorBanner: React.FC<DevStepErrorBannerProps> = ({ logs, de
       <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
       <div className="text-sm">
         <div className="uppercase tracking-wide">Dev Mode: ability step failed</div>
-        <div className="font-mono font-normal break-words">{latest.text}</div>
+        <div className="font-mono font-normal wrap-break-word">{latest.text}</div>
       </div>
       <button
         type="button"

@@ -23,7 +23,7 @@ export const ThemePreview: React.FC<{ style: ModalStyle; heightClass?: string }>
       </div>
       <div className="relative p-2.5 space-y-2">
         <div className={`flex items-center gap-2 p-1.5 ${style.panel}`}>
-          <div className="w-7 h-7 bg-slate-300 rounded-sm shrink-0" />
+          <div className="w-7 h-7 bg-slate-300 rounded-xs shrink-0" />
           <div className="space-y-1 flex-1">
             <div className="h-1.5 w-2/3 bg-current opacity-60 rounded-full" />
             <div className="h-1.5 w-1/2 bg-current opacity-25 rounded-full" />

@@ -61,7 +61,7 @@ export const GateParamsPanel: React.FC<GateParamsPanelProps> = ({
               data-testid={testId}
               value={value !== undefined ? value : ''}
               onChange={(e) => onChange(field.key, e.target.value || undefined)}
-              className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold rounded"
+              className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold rounded-sm"
             >
               {field.required ? (
                 <option value="" disabled={Boolean(value)}>
@@ -110,7 +110,7 @@ export const GateParamsPanel: React.FC<GateParamsPanelProps> = ({
                     ? 'e.g. 01109'
                     : `Enter ${field.label}...`
               }
-              className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+              className="w-full bg-white border border-black p-1 text-xs rounded-sm font-bold"
             />
           </div>
         );
@@ -142,7 +142,7 @@ export const GateParamsPanel: React.FC<GateParamsPanelProps> = ({
               placeholder={
                 field.defaultValue !== undefined ? String(field.defaultValue) : undefined
               }
-              className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+              className="w-full bg-white border border-black p-1 text-xs rounded-sm font-bold"
             />
           </div>
         );
@@ -164,7 +164,7 @@ export const GateParamsPanel: React.FC<GateParamsPanelProps> = ({
               data-testid={testId}
               value={value !== undefined ? value : ''}
               onChange={(e) => onChange(field.key, e.target.value || undefined)}
-              className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold rounded"
+              className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold rounded-sm"
             >
               <option value="">Previous step</option>
               {availableStepIds.map((sid) => (
@@ -190,7 +190,7 @@ export const GateParamsPanel: React.FC<GateParamsPanelProps> = ({
               data-testid={testId}
               checked={Boolean(value)}
               onChange={(e) => onChange(field.key, e.target.checked || undefined)}
-              className="rounded border-black text-black accent-black focus:ring-0"
+              className="rounded-sm border-black text-black accent-black focus:ring-0"
             />
             <span>{field.label}</span>
           </label>
@@ -202,7 +202,7 @@ export const GateParamsPanel: React.FC<GateParamsPanelProps> = ({
   };
 
   return (
-    <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-2">
+    <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded-sm shadow-comic-xs space-y-2">
       <span className="text-[9px] uppercase font-bold text-yellow-800 block">{title}</span>
 
       {nonBooleanFields.length > 0 && (

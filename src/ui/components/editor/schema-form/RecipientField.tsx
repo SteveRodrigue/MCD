@@ -10,7 +10,7 @@ export interface RecipientFieldProps {
 }
 
 const SELECT_CLASS =
-  'w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black';
+  'w-full bg-white border border-black p-1.5 text-xs rounded-sm focus:ring-1 focus:ring-black';
 
 /** Obligation recipient override (`CardEnrichment.recipient`, Issue #158): a discriminated union. */
 export const RecipientField: React.FC<RecipientFieldProps> = ({ value, onChange }) => {

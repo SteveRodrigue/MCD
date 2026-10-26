@@ -65,7 +65,7 @@ export const AccentStripe: React.FC<{ code: string }> = ({ code }) => {
       return (
         <span
           {...common}
-          className={`${BASE} -top-2.5 left-4 z-content w-10 h-3 rounded-t-sm border border-b-0 border-black/50 overflow-hidden`}
+          className={`${BASE} -top-2.5 left-4 z-content w-10 h-3 rounded-t-xs border border-b-0 border-black/50 overflow-hidden`}
           style={{ backgroundImage: accentGradient(accent.colors, 'to right') }}
         />
       );

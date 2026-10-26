@@ -179,7 +179,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
             {label || 'Universal Card Filter'}
           </span>
           {criteriaCount > 0 && (
-            <span className="rounded bg-comic-yellow border border-black px-1.5 py-0.2 text-[10px] font-bold">
+            <span className="rounded-sm bg-comic-yellow border border-black px-1.5 py-0.2 text-[10px] font-bold">
               {criteriaCount} {criteriaCount === 1 ? 'criterion' : 'criteria'}
             </span>
           )}
@@ -207,7 +207,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
             value={effectiveCodes.join(', ')}
             placeholder="e.g. 01002, 01046"
             onChange={(e) => handleCsvChange('codes', e.target.value)}
-            className="w-full rounded border border-black bg-white px-2 py-1 text-xs text-black focus:ring-1 focus:ring-black"
+            className="w-full rounded-sm border border-black bg-white px-2 py-1 text-xs text-black focus:ring-1 focus:ring-black"
           />
         </div>
 
@@ -221,7 +221,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
             value={effectiveNames.join(', ')}
             placeholder="e.g. Captain America, Hulk"
             onChange={(e) => handleCsvChange('names', e.target.value)}
-            className="w-full rounded border border-black bg-white px-2 py-1 text-xs text-black focus:ring-1 focus:ring-black"
+            className="w-full rounded-sm border border-black bg-white px-2 py-1 text-xs text-black focus:ring-1 focus:ring-black"
           />
         </div>
 
@@ -235,7 +235,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
             value={(currentFilter.sets || []).join(', ')}
             placeholder="e.g. core, spider_man"
             onChange={(e) => handleCsvChange('sets', e.target.value)}
-            className="w-full rounded border border-black bg-white px-2 py-1 text-xs text-black focus:ring-1 focus:ring-black"
+            className="w-full rounded-sm border border-black bg-white px-2 py-1 text-xs text-black focus:ring-1 focus:ring-black"
           />
         </div>
       </div>
@@ -251,7 +251,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
           value={(currentFilter.traits || []).join(', ')}
           placeholder="e.g. Avenger, Aerial, Tech"
           onChange={(e) => handleCsvChange('traits', e.target.value)}
-          className="w-full rounded border border-black bg-white px-2 py-1 text-xs text-black focus:ring-1 focus:ring-black"
+          className="w-full rounded-sm border border-black bg-white px-2 py-1 text-xs text-black focus:ring-1 focus:ring-black"
         />
       </div>
 
@@ -350,7 +350,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
               value={currentFilter.cost?.min ?? ''}
               placeholder="e.g. 1"
               onChange={(e) => handleCostChange('min', e.target.value)}
-              className="w-full rounded border border-black bg-white px-2 py-0.5 text-xs text-center font-bold text-black"
+              className="w-full rounded-sm border border-black bg-white px-2 py-0.5 text-xs text-center font-bold text-black"
             />
           </div>
           <div>
@@ -363,7 +363,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
               value={currentFilter.cost?.max ?? ''}
               placeholder="e.g. 3"
               onChange={(e) => handleCostChange('max', e.target.value)}
-              className="w-full rounded border border-black bg-white px-2 py-0.5 text-xs text-center font-bold text-black"
+              className="w-full rounded-sm border border-black bg-white px-2 py-0.5 text-xs text-center font-bold text-black"
             />
           </div>
           <div>
@@ -376,7 +376,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
               value={currentFilter.cost?.equals ?? ''}
               placeholder="e.g. 2"
               onChange={(e) => handleCostChange('equals', e.target.value)}
-              className="w-full rounded border border-black bg-white px-2 py-0.5 text-xs text-center font-bold text-black"
+              className="w-full rounded-sm border border-black bg-white px-2 py-0.5 text-xs text-center font-bold text-black"
             />
           </div>
         </div>
@@ -401,7 +401,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
               const val = e.target.value;
               handleBooleanToggle('isUnique', val === '' ? undefined : val === 'true');
             }}
-            className="w-full rounded border border-black bg-white p-1 text-xs font-bold text-black"
+            className="w-full rounded-sm border border-black bg-white p-1 text-xs font-bold text-black"
           >
             <option value="">Any (Unfiltered)</option>
             <option value="true">Must be Unique (True)</option>
@@ -426,7 +426,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
               const val = e.target.value;
               handleBooleanToggle('isIdentitySpecific', val === '' ? undefined : val === 'true');
             }}
-            className="w-full rounded border border-black bg-white p-1 text-xs font-bold text-black"
+            className="w-full rounded-sm border border-black bg-white p-1 text-xs font-bold text-black"
           >
             <option value="">Any (Unfiltered)</option>
             <option value="true">Identity Specific Only</option>
@@ -451,7 +451,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
               const val = e.target.value;
               handleBooleanToggle('isExhausted', val === '' ? undefined : val === 'true');
             }}
-            className="w-full rounded border border-black bg-white p-1 text-xs font-bold text-black"
+            className="w-full rounded-sm border border-black bg-white p-1 text-xs font-bold text-black"
           >
             <option value="">Any (Unfiltered)</option>
             <option value="true">Must be Exhausted</option>
@@ -475,7 +475,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
                 hasKeyword: (e.target.value || undefined) as Keyword | undefined,
               });
             }}
-            className="w-full rounded border border-black bg-white p-1 text-xs font-bold text-black"
+            className="w-full rounded-sm border border-black bg-white p-1 text-xs font-bold text-black"
           >
             <option value="">None (Any)</option>
             {KEYWORD_OPTIONS.map((kw) => (
@@ -523,7 +523,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
           {(['all', 'any', 'none'] as const).map((comb) => {
             const branches = currentFilter[comb] || [];
             return (
-              <div key={comb} className="rounded border border-black bg-white/70 p-2 space-y-2">
+              <div key={comb} className="rounded-sm border border-black bg-white/70 p-2 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-black">
                     Match {comb.toUpperCase()} of the following ({branches.length})

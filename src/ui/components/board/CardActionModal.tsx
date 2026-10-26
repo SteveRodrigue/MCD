@@ -80,7 +80,7 @@ export const InfoStrip: React.FC<{
   return (
     <div
       data-testid={testId}
-      className={`px-5 py-2 text-xs !rounded-none !border-x-0 ${style.inset} ${className}`}
+      className={`px-5 py-2 text-xs rounded-none! border-x-0! ${style.inset} ${className}`}
     >
       {children}
     </div>

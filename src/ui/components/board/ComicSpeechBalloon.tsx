@@ -54,7 +54,7 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({ dialogue
 
   return (
     <div
-      className={`relative my-2.5 overflow-hidden !p-0 ${np.classified} animate-in fade-in duration-150`}
+      className={`relative my-2.5 overflow-hidden p-0! ${np.classified} animate-in fade-in duration-150`}
     >
       {/* 1. Top Classification Strip / Banner */}
       <div

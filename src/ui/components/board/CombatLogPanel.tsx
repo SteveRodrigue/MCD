@@ -121,7 +121,7 @@ export const CombatLogPanel: React.FC<CombatLogPanelProps> = ({
       }
     >
       {filteredLogs.length === 0 ? (
-        <div className={`${np.classified} !p-8 text-center my-4`}>
+        <div className={`${np.classified} p-8! text-center my-4`}>
           <p className={np.body}>No actions recorded for this category yet.</p>
         </div>
       ) : (

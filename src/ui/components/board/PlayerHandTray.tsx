@@ -423,7 +423,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                     style={{ backgroundColor: getCardBackFallbackColor('player') }}
                   />
                 )}
-                <span className="absolute bottom-1 right-1 z-content bg-slate-950/80 text-white text-xs font-bold px-1.5 py-0.5 rounded border border-white/30 backdrop-blur-xs leading-none">
+                <span className="absolute bottom-1 right-1 z-content bg-slate-950/80 text-white text-xs font-bold px-1.5 py-0.5 rounded-sm border border-white/30 backdrop-blur-xs leading-none">
                   {deck.length}
                 </span>
               </div>

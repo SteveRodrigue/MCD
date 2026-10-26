@@ -94,7 +94,7 @@ function Segmented<T extends string | number>({
             value === opt.value
               ? activeTone === 'red'
                 ? 'bg-comic-red text-white border border-comic-black shadow-comic-sm'
-                : `${style.btnMove} !opacity-100`
+                : `${style.btnMove} opacity-100!`
               : `${style.muted} hover:opacity-80`
           }`}
         >
@@ -182,7 +182,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
   if (!isOpen) return null;
 
   const success = (message: string) => (
-    <div className="p-2 rounded bg-emerald-100 border border-emerald-500 text-emerald-900 text-xs font-bold flex items-center gap-1.5">
+    <div className="p-2 rounded-sm bg-emerald-100 border border-emerald-500 text-emerald-900 text-xs font-bold flex items-center gap-1.5">
       <span>✅</span>
       <span>{message}</span>
     </div>
@@ -337,7 +337,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
           description={
             <>
               Exports full table state to{' '}
-              <code className="bg-white text-slate-900 px-1 py-0.5 rounded border font-mono text-micro">
+              <code className="bg-white text-slate-900 px-1 py-0.5 rounded-sm border font-mono text-micro">
                 logs/gamestates/latest_gamestate.json
               </code>{' '}
               for instant debugging and test generation.
@@ -356,7 +356,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
               onClick={() => {
                 window.open('/editor', '_blank');
               }}
-              className="px-3 py-1 text-xs rounded border-2 border-comic-black bg-comic-accent text-white font-bold shadow-comic-sm cursor-pointer flex items-center gap-1.5 shrink-0"
+              className="px-3 py-1 text-xs rounded-sm border-2 border-comic-black bg-comic-accent text-white font-bold shadow-comic-sm cursor-pointer flex items-center gap-1.5 shrink-0"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               <span>Open Editor</span>

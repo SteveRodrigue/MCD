@@ -129,7 +129,7 @@ export const LabSidebar: React.FC<LabSidebarProps> = ({
       ref={ref}
       data-lab-chrome
       aria-label="Lab controls"
-      className="h-full w-[19rem] bg-comic-black border-r-4 border-comic-yellow shadow-comic-md flex flex-col"
+      className="h-full w-76 bg-comic-black border-r-4 border-comic-yellow shadow-comic-md flex flex-col"
     >
       <div className="shrink-0 px-3 py-2.5 flex items-center justify-between gap-2 border-b-2 border-slate-700">
         <div className="flex items-center gap-2 min-w-0">
@@ -277,7 +277,7 @@ export const LabSidebar: React.FC<LabSidebarProps> = ({
             {lastEvent && (
               <span
                 role="status"
-                className="block text-xs font-bold text-amber-300 bg-slate-900 border border-slate-600 rounded px-2 py-1"
+                className="block text-xs font-bold text-amber-300 bg-slate-900 border border-slate-600 rounded-sm px-2 py-1"
               >
                 {lastEvent}
               </span>
@@ -306,7 +306,7 @@ export const LabSidebar: React.FC<LabSidebarProps> = ({
               <ul aria-label="Card accent legend" className="grid grid-cols-2 gap-x-2 gap-y-1">
                 {ACCENT_KINDS.map((kind) => (
                   <li key={kind} className="flex items-center gap-1 text-[10px] text-slate-400">
-                    <span className="flex w-2.5 h-3 overflow-hidden rounded-sm border border-white/30 shrink-0">
+                    <span className="flex w-2.5 h-3 overflow-hidden rounded-xs border border-white/30 shrink-0">
                       {ACCENT_PALETTE[kind].colors.map((c) => (
                         <span key={c} className="flex-1" style={{ backgroundColor: c }} />
                       ))}
@@ -320,9 +320,10 @@ export const LabSidebar: React.FC<LabSidebarProps> = ({
               {buildTemplatesPath(route)}
             </code>
             <p className="text-[10px] text-slate-400 leading-relaxed">
-              Keys: <kbd className="px-1 border border-slate-500 rounded">T</kbd> style{' '}
-              <kbd className="px-1 border border-slate-500 rounded">K</kbd> kit{' '}
-              <kbd className="px-1 border border-slate-500 rounded">P</kbd> prompt, Shift goes back.
+              Keys: <kbd className="px-1 border border-slate-500 rounded-sm">T</kbd> style{' '}
+              <kbd className="px-1 border border-slate-500 rounded-sm">K</kbd> kit{' '}
+              <kbd className="px-1 border border-slate-500 rounded-sm">P</kbd> prompt, Shift goes
+              back.
             </p>
           </Section>
         )}

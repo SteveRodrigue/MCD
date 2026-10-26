@@ -65,9 +65,9 @@ const popArt: ThemeExtras = {
     textureClass: 'opacity-[0.12]',
   },
   danger:
-    'bg-comic-red hover:bg-red-700 text-white border-[3px] border-comic-black rounded-xl shadow-comic-sm',
+    'bg-comic-red hover:bg-red-700 text-white border-comic border-comic-black rounded-xl shadow-comic-sm',
   field:
-    'bg-white text-slate-900 border-2 border-comic-black rounded-lg px-2.5 py-1.5 text-sm font-body focus:outline-none focus:ring-2 focus:ring-comic-blue',
+    'bg-white text-slate-900 border-2 border-comic-black rounded-lg px-2.5 py-1.5 text-sm font-body focus:outline-hidden focus:ring-2 focus:ring-comic-blue',
   newspaper: {
     era: '1960s broadsheet',
     title: 'THE DAILY BUGLE',
@@ -108,9 +108,9 @@ const storyboard: ThemeExtras = {
     textureClass: 'opacity-[0.12]',
   },
   danger:
-    'bg-comic-red hover:bg-red-700 text-white border-[3px] border-comic-black rounded shadow-comic-sm',
+    'bg-comic-red hover:bg-red-700 text-white border-comic border-comic-black rounded-sm shadow-comic-sm',
   field:
-    'bg-white text-slate-900 border-2 border-comic-black rounded px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-comic-blue',
+    'bg-white text-slate-900 border-2 border-comic-black rounded-sm px-2.5 py-1.5 text-sm focus:outline-hidden focus:ring-2 focus:ring-comic-blue',
   newspaper: {
     era: 'Comic-strip newspaper page',
     title: 'THE DAILY BUGLE',
@@ -122,7 +122,7 @@ const storyboard: ThemeExtras = {
     textureClass: 'opacity-[0.1]',
     mastheadWrap: 'text-center pb-3',
     mastheadTitle:
-      'inline-block font-news-headline font-black uppercase text-4xl bg-comic-yellow border-[3px] border-comic-black px-4 py-1 -rotate-1 shadow-comic-sm',
+      'inline-block font-news-headline font-black uppercase text-4xl bg-comic-yellow border-comic border-comic-black px-4 py-1 -rotate-1 shadow-comic-sm',
     edition:
       'flex items-center justify-center gap-4 text-micro font-black uppercase tracking-widest mt-3',
     taglineClass: 'text-xs font-bold',
@@ -133,11 +133,11 @@ const storyboard: ThemeExtras = {
     standfirst: 'text-sm font-bold',
     byline: 'text-micro font-black uppercase text-comic-red',
     body: 'text-sm font-bold leading-snug',
-    story: 'border-[3px] border-comic-black bg-comic-paper p-3 shadow-comic-sm',
+    story: 'border-comic border-comic-black bg-comic-paper p-3 shadow-comic-sm',
     flash:
-      'font-news-headline bg-comic-yellow text-comic-black border-[3px] border-comic-black font-black uppercase px-3 py-1 rotate-2 shadow-comic',
+      'font-news-headline bg-comic-yellow text-comic-black border-comic border-comic-black font-black uppercase px-3 py-1 rotate-2 shadow-comic',
     ticker: 'bg-comic-black text-white font-news-body text-xs uppercase tracking-wider px-3 py-1',
-    quote: 'bg-white border-2 border-comic-black rounded-[1.5rem] px-3 py-2 font-bold',
+    quote: 'bg-white border-2 border-comic-black rounded-3xl px-3 py-2 font-bold',
     classified: 'border-2 border-comic-black bg-comic-yellow/30 p-2 text-xs font-black',
     pill: 'px-2 py-1 border-2 border-comic-black text-comic-black text-mini font-black uppercase bg-white',
     pillActive:
@@ -155,14 +155,14 @@ const newsprint: ThemeExtras = {
   danger:
     'bg-red-700 hover:bg-red-800 text-[#fbf3d9] border-2 border-[#2b2118] rounded-none shadow-[3px_3px_0_0_rgba(43,33,24,0.85)]',
   field:
-    'bg-[#fbf3d9] text-[#2b2118] border-2 border-[#2b2118] rounded-none px-2.5 py-1.5 text-sm font-body focus:outline-none focus:ring-2 focus:ring-red-700',
+    'bg-[#fbf3d9] text-[#2b2118] border-2 border-[#2b2118] rounded-none px-2.5 py-1.5 text-sm font-body focus:outline-hidden focus:ring-2 focus:ring-red-700',
   newspaper: {
     era: 'Old-school printing press',
     title: 'THE DAILY BUGLE',
     tagline: 'Set in wood type since 1897',
     flashWord: 'STOP THE PRESSES!',
     sheet:
-      'bg-[#e9dcb5] text-[#2b2118] border-[3px] border-[#2b2118] shadow-[8px_8px_0_0_#2b2118] font-news-body',
+      'bg-[#e9dcb5] text-[#2b2118] border-comic border-[#2b2118] shadow-[8px_8px_0_0_#2b2118] font-news-body',
     texture: lines('rgba(43,33,24,0.7)', 3),
     textureClass: 'opacity-[0.1]',
     mastheadWrap: 'text-center border-y-[6px] border-double border-[#2b2118] py-2',
@@ -197,9 +197,9 @@ const night: ThemeExtras = {
     textureClass: 'opacity-[0.05]',
   },
   danger:
-    'bg-red-500 hover:bg-red-400 text-black border-[3px] border-black rounded-xl shadow-[0_0_16px_rgba(239,68,68,0.5)]',
+    'bg-red-500 hover:bg-red-400 text-black border-comic border-black rounded-xl shadow-[0_0_16px_rgba(239,68,68,0.5)]',
   field:
-    'bg-slate-800 text-slate-100 border-2 border-slate-600 rounded-lg px-2.5 py-1.5 text-sm font-body focus:outline-none focus:border-yellow-300',
+    'bg-slate-800 text-slate-100 border-2 border-slate-600 rounded-lg px-2.5 py-1.5 text-sm font-body focus:outline-hidden focus:border-yellow-300',
   newspaper: {
     era: 'Dark news site',
     title: 'THE DAILY BUGLE',
@@ -225,7 +225,7 @@ const night: ThemeExtras = {
     flash:
       'font-news-headline bg-red-500 text-black font-black uppercase tracking-widest rounded-full px-3 py-1 shadow-[0_0_16px_rgba(239,68,68,0.6)]',
     ticker:
-      'bg-slate-900 border border-slate-700 text-yellow-300 font-news-body text-xs px-3 py-1 rounded',
+      'bg-slate-900 border border-slate-700 text-yellow-300 font-news-body text-xs px-3 py-1 rounded-sm',
     quote: 'border-l-2 border-yellow-300 pl-3 text-slate-200 italic',
     classified: 'bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs',
     pill: 'rounded-full px-2.5 py-1 border border-slate-600 text-mini text-slate-300 hover:border-yellow-300',
@@ -245,9 +245,9 @@ const splash: ThemeExtras = {
     textureClass: 'opacity-[0.07]',
   },
   danger:
-    'bg-comic-red hover:bg-red-700 text-white border-[4px] border-comic-black rounded-2xl shadow-comic uppercase tracking-wide',
+    'bg-comic-red hover:bg-red-700 text-white border-4 border-comic-black rounded-2xl shadow-comic uppercase tracking-wide',
   field:
-    'bg-white text-black border-[3px] border-comic-black rounded-xl px-2.5 py-1.5 text-sm focus:outline-none focus:ring-4 focus:ring-comic-yellow',
+    'bg-white text-black border-comic border-comic-black rounded-xl px-2.5 py-1.5 text-sm focus:outline-hidden focus:ring-4 focus:ring-comic-yellow',
   newspaper: {
     era: 'Screaming tabloid',
     title: 'THE DAILY BUGLE',
@@ -274,16 +274,16 @@ const splash: ThemeExtras = {
     standfirst: 'text-sm font-bold',
     byline: 'text-micro font-black uppercase text-comic-red',
     body: 'text-sm font-bold leading-snug',
-    story: 'bg-white border-[4px] border-comic-black rounded-2xl p-3 shadow-comic -rotate-[0.4deg]',
+    story: 'bg-white border-4 border-comic-black rounded-2xl p-3 shadow-comic rotate-[-0.4deg]',
     flash:
-      'font-news-headline bg-comic-red text-white font-black uppercase tracking-wide border-[4px] border-comic-black rounded-full px-4 py-1 shadow-comic-lg -rotate-3 text-lg',
+      'font-news-headline bg-comic-red text-white font-black uppercase tracking-wide border-4 border-comic-black rounded-full px-4 py-1 shadow-comic-lg -rotate-3 text-lg',
     ticker:
       'bg-comic-black text-comic-yellow font-news-body text-sm uppercase tracking-wider px-3 py-1',
-    quote: 'bg-white border-[3px] border-comic-black rounded-3xl px-4 py-2 font-black',
-    classified: 'border-[3px] border-comic-black bg-white rounded-xl p-2 text-xs font-black',
-    pill: 'px-3 py-1 border-[3px] border-comic-black rounded-full text-comic-black text-mini font-black uppercase bg-white',
+    quote: 'bg-white border-comic border-comic-black rounded-3xl px-4 py-2 font-black',
+    classified: 'border-comic border-comic-black bg-white rounded-xl p-2 text-xs font-black',
+    pill: 'px-3 py-1 border-comic border-comic-black rounded-full text-comic-black text-mini font-black uppercase bg-white',
     pillActive:
-      'px-3 py-1 border-[3px] border-comic-black rounded-full text-mini font-black uppercase bg-comic-yellow',
+      'px-3 py-1 border-comic border-comic-black rounded-full text-mini font-black uppercase bg-comic-yellow',
   },
 };
 
@@ -295,9 +295,9 @@ const dossier: ThemeExtras = {
     textureClass: 'opacity-[0.12]',
   },
   danger:
-    'bg-red-700 hover:bg-red-800 text-white border-2 border-black rounded-sm uppercase tracking-widest shadow-[3px_3px_0_0_rgba(0,0,0,0.6)]',
+    'bg-red-700 hover:bg-red-800 text-white border-2 border-black rounded-xs uppercase tracking-widest shadow-[3px_3px_0_0_rgba(0,0,0,0.6)]',
   field:
-    'bg-[#fffdf5] text-[#2a2110] border border-[#8a6d3b] rounded-sm px-2.5 py-1.5 text-sm font-body focus:outline-none focus:ring-2 focus:ring-[#8a6d3b]',
+    'bg-[#fffdf5] text-[#2a2110] border border-[#8a6d3b] rounded-xs px-2.5 py-1.5 text-sm font-body focus:outline-hidden focus:ring-2 focus:ring-[#8a6d3b]',
   newspaper: {
     era: 'Wire-service teletype',
     title: 'DAILY BUGLE WIRE',
@@ -338,16 +338,16 @@ const hud: ThemeExtras = {
     textureClass: 'opacity-[0.07]',
   },
   danger:
-    'bg-red-500 hover:bg-red-400 text-[#021018] border border-red-200 rounded-sm uppercase tracking-widest shadow-[0_0_16px_rgba(239,68,68,0.6)]',
+    'bg-red-500 hover:bg-red-400 text-[#021018] border border-red-200 rounded-xs uppercase tracking-widest shadow-[0_0_16px_rgba(239,68,68,0.6)]',
   field:
-    'bg-[#04101c] text-cyan-100 border border-cyan-500/60 rounded-sm px-2.5 py-1.5 text-sm font-body focus:outline-none focus:border-cyan-300',
+    'bg-[#04101c] text-cyan-100 border border-cyan-500/60 rounded-xs px-2.5 py-1.5 text-sm font-body focus:outline-hidden focus:border-cyan-300',
   newspaper: {
     era: 'Holographic news feed',
     title: 'DAILY BUGLE // LIVE',
     tagline: 'Streaming from 40,000 feeds',
     flashWord: 'ALERT',
     sheet:
-      'bg-[#04101c] text-cyan-100 border border-cyan-400 rounded-sm shadow-[0_0_0_1px_#000,0_0_36px_rgba(34,211,238,0.35)] font-news-body',
+      'bg-[#04101c] text-cyan-100 border border-cyan-400 rounded-xs shadow-[0_0_0_1px_#000,0_0_36px_rgba(34,211,238,0.35)] font-news-body',
     texture: lines('rgba(34,211,238,0.9)', 4),
     textureClass: 'opacity-[0.05]',
     mastheadWrap: 'border-b border-cyan-500/60 pb-2',

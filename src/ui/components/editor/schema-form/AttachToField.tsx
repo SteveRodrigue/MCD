@@ -10,7 +10,7 @@ type Host = AttachTo['host'];
 type NonVillainHost = Extract<Host, { type: 'MINION' | 'ENEMY' }>;
 
 const SELECT_CLASS =
-  'w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black';
+  'w-full bg-white border border-black p-1.5 text-xs rounded-sm focus:ring-1 focus:ring-black';
 
 /** Encounter attachment host (`CardEnrichment.attachTo`, #209): hosts are a discriminated union. */
 export const AttachToField: React.FC<AttachToFieldProps> = ({ value, onChange }) => {
@@ -84,7 +84,7 @@ export const AttachToField: React.FC<AttachToFieldProps> = ({ value, onChange })
             data-testid="attach-to-stat-select"
             value={searchHost.superlative?.stat ?? ''}
             onChange={(e) => handleSuperlativeChange('stat', e.target.value)}
-            className="bg-white border border-black p-1.5 text-xs rounded"
+            className="bg-white border border-black p-1.5 text-xs rounded-sm"
           >
             <option value="">Any (first player chooses)</option>
             <option value="PRINTED_HIT_POINTS">Printed hit points</option>
@@ -95,7 +95,7 @@ export const AttachToField: React.FC<AttachToFieldProps> = ({ value, onChange })
             value={searchHost.superlative?.extreme ?? 'HIGHEST'}
             disabled={!searchHost.superlative}
             onChange={(e) => handleSuperlativeChange('extreme', e.target.value)}
-            className="bg-white border border-black p-1.5 text-xs rounded"
+            className="bg-white border border-black p-1.5 text-xs rounded-sm"
           >
             <option value="HIGHEST">Highest</option>
             <option value="LOWEST">Lowest</option>

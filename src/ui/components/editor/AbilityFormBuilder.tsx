@@ -276,7 +276,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
         {supplemental.noSupplementalNeeded && (
           <div
             data-testid="vanilla-card-notice"
-            className="p-3 bg-blue-50 border-2 border-blue-600 rounded flex items-start gap-2 shadow-comic-xs"
+            className="p-3 bg-blue-50 border-2 border-blue-600 rounded-sm flex items-start gap-2 shadow-comic-xs"
           >
             <ShieldCheck className="w-5 h-5 text-blue-700 shrink-0 mt-0.5" />
             <div>
@@ -293,7 +293,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
         )}
 
         {!supplemental.noSupplementalNeeded && abilities.length === 0 && (
-          <div className="p-4 bg-white border-2 border-dashed border-gray-300 rounded text-center text-gray-500 italic">
+          <div className="p-4 bg-white border-2 border-dashed border-gray-300 rounded-sm text-center text-gray-500 italic">
             No abilities defined. Click &quot;Add Ability&quot; to attach rules logic.
           </div>
         )}
@@ -322,25 +322,25 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                   ) : (
                     <ChevronRight className="w-4 h-4 text-gray-600" />
                   )}
-                  <span className="font-mono font-bold bg-black text-white px-1.5 py-0.2 rounded text-[11px]">
+                  <span className="font-mono font-bold bg-black text-white px-1.5 py-0.2 rounded-sm text-[11px]">
                     #{aIdx + 1}
                   </span>
                   <span className="font-bold text-xs">{ability.id || 'unnamed_ability'}</span>
-                  <span className="bg-comic-yellow text-black px-1.5 py-0.2 border border-black rounded text-[10px] font-bold">
+                  <span className="bg-comic-yellow text-black px-1.5 py-0.2 border border-black rounded-sm text-[10px] font-bold">
                     {ability.timing}
                   </span>
                   {ability.trigger && (
-                    <span className="bg-gray-200 text-gray-700 px-1.5 py-0.2 rounded text-[10px] font-mono">
+                    <span className="bg-gray-200 text-gray-700 px-1.5 py-0.2 rounded-sm text-[10px] font-mono">
                       {ability.trigger}
                     </span>
                   )}
                   {ability.limit && (
-                    <span className="bg-amber-100 text-amber-900 border border-amber-400 px-1.5 py-0.2 rounded text-[10px] font-bold">
+                    <span className="bg-amber-100 text-amber-900 border border-amber-400 px-1.5 py-0.2 rounded-sm text-[10px] font-bold">
                       ⏳ {ability.limit}
                     </span>
                   )}
                   {ability.zone && (
-                    <span className="bg-blue-100 text-blue-900 border border-blue-400 px-1.5 py-0.2 rounded text-[10px] font-mono">
+                    <span className="bg-blue-100 text-blue-900 border border-blue-400 px-1.5 py-0.2 rounded-sm text-[10px] font-mono">
                       📍 {ability.zone}
                     </span>
                   )}
@@ -349,7 +349,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                       key={label}
                       data-testid={`ability-label-badge-${aIdx}-${label}`}
                       title="Printed ability label, derived from the card text (read-only)"
-                      className="bg-sky-100 text-sky-900 border border-sky-500 px-1.5 py-0.2 rounded text-[10px] font-bold"
+                      className="bg-sky-100 text-sky-900 border border-sky-500 px-1.5 py-0.2 rounded-sm text-[10px] font-bold"
                     >
                       AUTO: {label}
                     </span>
@@ -357,7 +357,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                   {isInvalid && (
                     <span
                       data-testid={`ability-invalid-badge-${aIdx}`}
-                      className="bg-comic-red text-white px-1.5 py-0.2 rounded text-[10px] font-bold"
+                      className="bg-comic-red text-white px-1.5 py-0.2 rounded-sm text-[10px] font-bold"
                     >
                       ⚠️ INVALID
                     </span>
@@ -368,7 +368,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                   <button
                     type="button"
                     onClick={() => handleRemoveAbility(aIdx)}
-                    className="p-1 text-gray-400 hover:text-comic-red cursor-pointer rounded hover:bg-red-50 transition-colors"
+                    className="p-1 text-gray-400 hover:text-comic-red cursor-pointer rounded-sm hover:bg-red-50 transition-colors"
                     title="Remove ability"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -382,7 +382,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                   {isInvalid && (
                     <div
                       data-testid={`ability-errors-${aIdx}`}
-                      className="p-2 bg-red-50 border border-comic-red rounded text-[11px] text-red-800 space-y-0.5"
+                      className="p-2 bg-red-50 border border-comic-red rounded-sm text-[11px] text-red-800 space-y-0.5"
                     >
                       <div className="font-bold">Ability Validation Issues:</div>
                       {errors.map((err, i) => (
@@ -401,7 +401,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                         type="text"
                         value={ability.id || ''}
                         onChange={(e) => handleUpdateAbility(aIdx, { id: e.target.value })}
-                        className="w-full bg-white border border-black p-1 text-xs rounded font-mono"
+                        className="w-full bg-white border border-black p-1 text-xs rounded-sm font-mono"
                       />
                     </div>
                     <div>
@@ -411,7 +411,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                       <select
                         value={ability.timing || 'ACTION'}
                         onChange={(e) => handleUpdateAbility(aIdx, { timing: e.target.value })}
-                        className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+                        className="w-full bg-white border border-black p-1 text-xs rounded-sm font-bold"
                       >
                         {TimingTypeSchema.options.map((t) => (
                           <option key={t} value={t}>
@@ -437,7 +437,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                             triggerFilter: !e.target.value ? undefined : ability.triggerFilter,
                           })
                         }
-                        className="w-full bg-white border border-black p-1 text-xs rounded font-mono"
+                        className="w-full bg-white border border-black p-1 text-xs rounded-sm font-mono"
                       >
                         <option value="">None (Voluntary Action / Constant)</option>
                         {TriggerTypeSchema.options.map((tr) => (
@@ -503,7 +503,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                               limit: e.target.value as 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE',
                             })
                           }
-                          className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+                          className="w-full bg-white border border-black p-1 text-xs rounded-sm font-bold"
                         >
                           <option value="ONCE_PER_ROUND">
                             Limit once per round (ONCE_PER_ROUND)
@@ -522,7 +522,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                               zone: e.target.value as 'HAND' | 'PLAY' | 'DISCARD',
                             })
                           }
-                          className="w-full bg-white border border-black p-1 text-xs rounded font-mono"
+                          className="w-full bg-white border border-black p-1 text-xs rounded-sm font-mono"
                         >
                           <option value="HAND">From Hand (HAND)</option>
                           <option value="PLAY">In Play (PLAY)</option>
@@ -552,7 +552,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                           value={ability.errata ?? ''}
                           placeholder="e.g. This ability resolves before..."
                           onChange={(e) => handleUpdateAbility(aIdx, { errata: e.target.value })}
-                          className="w-full bg-white border border-black p-1.5 text-xs rounded"
+                          className="w-full bg-white border border-black p-1.5 text-xs rounded-sm"
                         />
                       )}
                     </ChipSection>

@@ -92,7 +92,7 @@ const CardAttachmentFanImpl: React.FC<CardAttachmentFanProps> = ({
                     {/* Interactive Action Available Badge */}
                     {hasAction && (
                       <div className="absolute bottom-1 right-1 z-raised pointer-events-none">
-                        <span className="bg-amber-400 text-slate-950 text-nano font-black px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm animate-bounce">
+                        <span className="bg-amber-400 text-slate-950 text-nano font-black px-1.5 py-0.5 rounded-sm border border-comic-black shadow-comic-sm animate-bounce">
                           ⚡ ACTION
                         </span>
                       </div>

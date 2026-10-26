@@ -107,7 +107,7 @@ const ModalHeader: React.FC<HeaderProps> = ({
     return (
       <div className="relative flex items-center justify-between gap-3 px-5 pt-5">
         <div
-          className={`inline-flex items-center gap-2.5 px-4 py-2 border-[3px] border-comic-black rounded-md shadow-comic-sm -rotate-1 min-w-0 ${verb.banner}`}
+          className={`inline-flex items-center gap-2.5 px-4 py-2 border-comic border-comic-black rounded-md shadow-comic-sm -rotate-1 min-w-0 ${verb.banner}`}
         >
           {iconBox}
           <div className="min-w-0">
@@ -136,7 +136,7 @@ const ModalHeader: React.FC<HeaderProps> = ({
         <div className="shrink-0 flex flex-col items-end gap-2">
           <span
             aria-hidden="true"
-            className="rotate-6 bg-comic-yellow text-comic-black border-[3px] border-comic-black px-2 py-0.5 text-sm font-black shadow-comic-sm"
+            className="rotate-6 bg-comic-yellow text-comic-black border-comic border-comic-black px-2 py-0.5 text-sm font-black shadow-comic-sm"
           >
             {verb.word}
           </span>
@@ -298,7 +298,7 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
       <div
         ref={frameRef}
         tabIndex={-1}
-        className={`relative w-full outline-none ${maxWidthClass} max-h-full overflow-hidden flex flex-col ${style.frame} ${style.text}`}
+        className={`relative w-full outline-hidden ${maxWidthClass} max-h-full overflow-hidden flex flex-col ${style.frame} ${style.text}`}
       >
         <div
           aria-hidden="true"
@@ -314,7 +314,7 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
             />
             <span
               aria-hidden="true"
-              className="absolute -top-1 right-3 w-14 h-5 bg-white/45 rotate-[18deg] z-content"
+              className="absolute -top-1 right-3 w-14 h-5 bg-white/45 rotate-18 z-content"
             />
           </>
         )}

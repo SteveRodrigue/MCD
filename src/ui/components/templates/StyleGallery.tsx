@@ -15,7 +15,7 @@ export const StyleGallery: React.FC = () => (
         <h2 className="text-2xl font-black uppercase text-comic-yellow">All styles</h2>
         <p className="text-sm text-slate-300 mt-1">
           Every style shows the same modals and the same verb colours. Open one with the Style list
-          on the left, or press <kbd className="px-1 border border-slate-500 rounded">T</kbd> to
+          on the left, or press <kbd className="px-1 border border-slate-500 rounded-sm">T</kbd> to
           cycle through them.
         </p>
       </div>
@@ -27,7 +27,7 @@ export const StyleGallery: React.FC = () => (
           {VERB_COLORS.map((verb) => (
             <span
               key={verb}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-900 border border-slate-600"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm bg-slate-900 border border-slate-600"
             >
               <span
                 className="w-3 h-3 rounded-full border border-white/40"
@@ -64,7 +64,7 @@ export const StyleGallery: React.FC = () => (
             {style.traits.map((trait) => (
               <li
                 key={trait}
-                className="text-[11px] px-2 py-0.5 rounded bg-slate-900 border border-slate-600 text-slate-300"
+                className="text-[11px] px-2 py-0.5 rounded-sm bg-slate-900 border border-slate-600 text-slate-300"
               >
                 {trait}
               </li>

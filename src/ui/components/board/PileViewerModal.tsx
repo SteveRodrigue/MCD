@@ -94,7 +94,7 @@ export const PileChoice: React.FC<{
       aria-pressed={active}
       onClick={onClick}
       className={`px-2.5 py-1 text-xs cursor-pointer ${
-        active ? `${style.btnMove} font-bold !opacity-100` : style.tile
+        active ? `${style.btnMove} font-bold opacity-100!` : style.tile
       }`}
     >
       {children}

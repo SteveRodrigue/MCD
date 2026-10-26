@@ -111,7 +111,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
     : 0;
 
   return (
-    <div className="space-y-2 rounded border-2 border-black bg-comic-paper p-2.5 text-black font-sans shadow-comic-xs">
+    <div className="space-y-2 rounded-sm border-2 border-black bg-comic-paper p-2.5 text-black font-sans shadow-comic-xs">
       <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-black pb-1.5">
         <label className="text-xs font-bold uppercase tracking-wider text-black flex items-center gap-1">
           <Calculator className="w-3.5 h-3.5 text-comic-accent" />
@@ -172,7 +172,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
             data-testid="dynamic-value-number-input"
             value={numValue}
             onChange={(e) => onChange(parseInt(e.target.value, 10) || 0)}
-            className="w-full rounded border border-black bg-white px-2.5 py-1 text-xs text-black font-bold focus:ring-1 focus:ring-black"
+            className="w-full rounded-sm border border-black bg-white px-2.5 py-1 text-xs text-black font-bold focus:ring-1 focus:ring-black"
           />
         </div>
       )}
@@ -180,7 +180,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
       {currentMode === 'all' && (
         <div
           data-testid="dynamic-value-all-notice"
-          className="rounded border border-amber-500 bg-amber-50 p-2 text-xs text-amber-900 font-comic"
+          className="rounded-sm border border-amber-500 bg-amber-50 p-2 text-xs text-amber-900 font-comic"
         >
           <span className="font-bold">Entire Pool (&quot;ALL&quot;):</span> Resolves to all matching
           cards or counters without an explicit numeric bound (RR v1.8 p. 10).
@@ -201,7 +201,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                   from: e.target.value as any,
                 })
               }
-              className="w-full rounded border border-black bg-white p-1 text-xs text-black font-bold focus:ring-1 focus:ring-black"
+              className="w-full rounded-sm border border-black bg-white p-1 text-xs text-black font-bold focus:ring-1 focus:ring-black"
             >
               {FROM_SOURCES.map((src) => (
                 <option key={src} value={src}>
@@ -230,7 +230,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                         discardAttribute: e.target.value as any,
                       })
                     }
-                    className="w-full rounded border border-black bg-white p-1 text-xs text-black font-bold"
+                    className="w-full rounded-sm border border-black bg-white p-1 text-xs text-black font-bold"
                   >
                     {DISCARD_ATTRIBUTE_OPTIONS.map((att) => (
                       <option key={att} value={att}>
@@ -254,7 +254,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                           resourceType: (e.target.value as any) || undefined,
                         })
                       }
-                      className="w-full rounded border border-black bg-white p-1 text-xs text-black font-bold"
+                      className="w-full rounded-sm border border-black bg-white p-1 text-xs text-black font-bold"
                     >
                       <option value="">All Printed Resources</option>
                       {RESOURCE_TYPE_OPTIONS.map((rt) => (
@@ -270,12 +270,12 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
               {/* Collapsible UniversalCardFilter Accordion for discarded cards */}
               <div
                 data-testid="discard-filter-accordion"
-                className="rounded border border-black bg-white/70 p-2 space-y-2"
+                className="rounded-sm border border-black bg-white/70 p-2 space-y-2"
               >
                 <div
                   onClick={() => setIsFilterExpanded(!isFilterExpanded)}
                   data-testid="toggle-discard-filter-btn"
-                  className="flex items-center justify-between cursor-pointer select-none hover:bg-yellow-50 p-1 rounded"
+                  className="flex items-center justify-between cursor-pointer select-none hover:bg-yellow-50 p-1 rounded-sm"
                 >
                   <div className="flex items-center gap-1.5">
                     {isFilterExpanded ? (
@@ -288,7 +288,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                       Discarded Card Match Filter
                     </span>
                   </div>
-                  <span className="bg-comic-yellow border border-black px-1.5 py-0.2 rounded text-[9px] font-bold text-black">
+                  <span className="bg-comic-yellow border border-black px-1.5 py-0.2 rounded-sm text-[9px] font-bold text-black">
                     {filterCriteriaCount > 0
                       ? `${filterCriteriaCount} ${filterCriteriaCount === 1 ? 'criterion' : 'criteria'}`
                       : 'No criteria configured'}
@@ -323,7 +323,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                       stat: e.target.value as any,
                     })
                   }
-                  className="w-full rounded border border-black bg-white p-1 text-xs text-black font-bold"
+                  className="w-full rounded-sm border border-black bg-white p-1 text-xs text-black font-bold"
                 >
                   {STAT_OPTIONS.map((st) => (
                     <option key={st} value={st}>
@@ -345,7 +345,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                       target: (e.target.value as any) || undefined,
                     })
                   }
-                  className="w-full rounded border border-black bg-white p-1 text-xs text-black font-mono font-bold"
+                  className="w-full rounded-sm border border-black bg-white p-1 text-xs text-black font-mono font-bold"
                 >
                   <option value="">Default (Contextual Target)</option>
                   {TargetSelectorSchema.options.map((tgt) => (
@@ -375,7 +375,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                       counterType: e.target.value.trim() || undefined,
                     })
                   }
-                  className="w-full rounded border border-black bg-white px-2 py-1 text-xs text-black"
+                  className="w-full rounded-sm border border-black bg-white px-2 py-1 text-xs text-black"
                 />
               </div>
 
@@ -391,7 +391,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                       target: (e.target.value as any) || undefined,
                     })
                   }
-                  className="w-full rounded border border-black bg-white p-1 text-xs text-black font-mono font-bold"
+                  className="w-full rounded-sm border border-black bg-white p-1 text-xs text-black font-mono font-bold"
                 >
                   <option value="">Default (SELF)</option>
                   {TargetSelectorSchema.options.map((tgt) => (
@@ -420,7 +420,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                         attribute: e.target.value as any,
                       })
                     }
-                    className="w-full rounded border border-black bg-white p-1 text-xs text-black font-bold"
+                    className="w-full rounded-sm border border-black bg-white p-1 text-xs text-black font-bold"
                   >
                     {ATTRIBUTE_OPTIONS.map((att) => (
                       <option key={att} value={att}>
@@ -471,7 +471,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                 onChange={(e) =>
                   handleUpdateFormula({ targetCardCode: e.target.value.trim() || undefined })
                 }
-                className="w-full rounded border border-black bg-white px-2 py-1 text-xs text-black font-mono"
+                className="w-full rounded-sm border border-black bg-white px-2 py-1 text-xs text-black font-mono"
               />
             </div>
           )}
@@ -482,12 +482,12 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
             sourceValue.from === 'HAS_IDENTITY') && (
             <div
               data-testid="entity-count-filter-accordion"
-              className="rounded border border-black bg-white/70 p-2 space-y-2"
+              className="rounded-sm border border-black bg-white/70 p-2 space-y-2"
             >
               <div
                 onClick={() => setIsFilterExpanded(!isFilterExpanded)}
                 data-testid="toggle-entity-filter-btn"
-                className="flex items-center justify-between cursor-pointer select-none hover:bg-yellow-50 p-1 rounded"
+                className="flex items-center justify-between cursor-pointer select-none hover:bg-yellow-50 p-1 rounded-sm"
               >
                 <div className="flex items-center gap-1.5">
                   {isFilterExpanded ? (
@@ -500,7 +500,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                     Entity Match Criteria Filter
                   </span>
                 </div>
-                <span className="bg-comic-yellow border border-black px-1.5 py-0.2 rounded text-[9px] font-bold text-black">
+                <span className="bg-comic-yellow border border-black px-1.5 py-0.2 rounded-sm text-[9px] font-bold text-black">
                   {filterCriteriaCount > 0
                     ? `${filterCriteriaCount} ${filterCriteriaCount === 1 ? 'criterion' : 'criteria'}`
                     : 'No criteria configured'}
@@ -534,7 +534,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                       resource: (e.target.value as any) || undefined,
                     })
                   }
-                  className="w-full rounded border border-black bg-white p-1 text-xs text-black font-bold"
+                  className="w-full rounded-sm border border-black bg-white p-1 text-xs text-black font-bold"
                 >
                   {RESOURCE_TYPE_OPTIONS.map((rt) => (
                     <option key={rt} value={rt}>
@@ -557,7 +557,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                       amount: e.target.value === '' ? undefined : parseInt(e.target.value, 10) || 0,
                     })
                   }
-                  className="w-full rounded border border-black bg-white px-2 py-1 text-xs text-black font-bold"
+                  className="w-full rounded-sm border border-black bg-white px-2 py-1 text-xs text-black font-bold"
                 />
               </div>
             </div>
@@ -578,7 +578,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                       resource: (e.target.value as any) || undefined,
                     })
                   }
-                  className="w-full rounded border border-black bg-white p-1 text-xs text-black font-bold"
+                  className="w-full rounded-sm border border-black bg-white p-1 text-xs text-black font-bold"
                 >
                   <option value="">All Spent Resources</option>
                   {RESOURCE_TYPE_OPTIONS.map((rt) => (
@@ -607,7 +607,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                     multiplier: e.target.value === '' ? 1 : parseFloat(e.target.value) || 1,
                   })
                 }
-                className="w-full rounded border border-black bg-white px-1.5 py-0.5 text-xs text-black text-center"
+                className="w-full rounded-sm border border-black bg-white px-1.5 py-0.5 text-xs text-black text-center"
               />
             </div>
 
@@ -624,7 +624,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                     offset: e.target.value === '' ? 0 : parseInt(e.target.value, 10) || 0,
                   })
                 }
-                className="w-full rounded border border-black bg-white px-1.5 py-0.5 text-xs text-black text-center"
+                className="w-full rounded-sm border border-black bg-white px-1.5 py-0.5 text-xs text-black text-center"
               />
             </div>
 
@@ -644,7 +644,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                     clamp: { ...existingClamp, min: val },
                   });
                 }}
-                className="w-full rounded border border-black bg-white px-1.5 py-0.5 text-xs text-black text-center"
+                className="w-full rounded-sm border border-black bg-white px-1.5 py-0.5 text-xs text-black text-center"
               />
             </div>
 
@@ -664,7 +664,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                     clamp: { ...existingClamp, max: val },
                   });
                 }}
-                className="w-full rounded border border-black bg-white px-1.5 py-0.5 text-xs text-black text-center"
+                className="w-full rounded-sm border border-black bg-white px-1.5 py-0.5 text-xs text-black text-center"
               />
             </div>
           </div>

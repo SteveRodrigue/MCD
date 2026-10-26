@@ -64,7 +64,7 @@ function peel(schema: ZodType): ZodType {
 
 const LABEL_CLASS = 'block text-[9px] uppercase font-bold text-gray-500 mb-0.5';
 const SELECT_CLASS = 'w-full bg-white border border-black p-1 text-[11px] font-mono';
-const INPUT_CLASS = 'w-full bg-white border border-black p-1 text-xs rounded';
+const INPUT_CLASS = 'w-full bg-white border border-black p-1 text-xs rounded-sm';
 
 interface FieldContext {
   field: FieldDescriptor;
@@ -154,11 +154,11 @@ const StringListField: React.FC<FieldContext> = ({ field, value, set, path, test
 const CardFilterField: React.FC<FieldContext> = ({ field, value, set, path, testId }) => {
   const [open, setOpen] = React.useState(isPopulated(value));
   return (
-    <div className="col-span-full rounded border border-black bg-white p-2 space-y-1.5">
+    <div className="col-span-full rounded-sm border border-black bg-white p-2 space-y-1.5">
       <div
         onClick={() => setOpen(!open)}
         data-testid={testId(path, 'toggle')}
-        className="flex items-center justify-between cursor-pointer select-none hover:bg-yellow-50 p-1 rounded"
+        className="flex items-center justify-between cursor-pointer select-none hover:bg-yellow-50 p-1 rounded-sm"
       >
         <span className="text-[10px] font-bold uppercase text-gray-700 flex items-center gap-1">
           {open ? (
@@ -168,7 +168,7 @@ const CardFilterField: React.FC<FieldContext> = ({ field, value, set, path, test
           )}
           <span title={field.description}>{field.label}</span>
         </span>
-        <span className="bg-comic-yellow border border-black px-1.5 py-0.5 rounded text-[9px] font-bold text-black">
+        <span className="bg-comic-yellow border border-black px-1.5 py-0.5 rounded-sm text-[9px] font-bold text-black">
           {isPopulated(value) ? 'Configured' : 'None'}
         </span>
       </div>
@@ -434,7 +434,7 @@ export const ZodSchemaForm: React.FC<ZodSchemaFormProps> = ({
               disabled={disabledKeys.includes(field.key)}
               renderNested={() =>
                 isNestedObject ? (
-                  <div className="rounded border border-black bg-white/80 p-2 space-y-1.5 shadow-comic-xs">
+                  <div className="rounded-sm border border-black bg-white/80 p-2 space-y-1.5 shadow-comic-xs">
                     <span
                       className="text-[9px] uppercase font-bold text-gray-700"
                       title={field.description}
@@ -471,7 +471,7 @@ export const ZodSchemaForm: React.FC<ZodSchemaFormProps> = ({
                 data-testid={testId(path, 'remove')}
                 title={`Remove ${field.label}`}
                 onClick={() => removeField(field.key)}
-                className="absolute top-0 right-0 p-0.5 text-gray-400 hover:text-comic-red cursor-pointer rounded hover:bg-red-50 transition-colors"
+                className="absolute top-0 right-0 p-0.5 text-gray-400 hover:text-comic-red cursor-pointer rounded-sm hover:bg-red-50 transition-colors"
               >
                 <X className="w-3 h-3" />
               </button>

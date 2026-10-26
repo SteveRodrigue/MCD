@@ -18,10 +18,10 @@ export const PromptCardPanel: React.FC<PromptCardPanelProps> = ({ label, card })
     <div data-card-anchor={card.code} className={`relative p-3 pl-4 space-y-2 ${style.panel}`}>
       <AccentStripe code={card.code} />
       <div className={`flex items-center justify-between pb-1.5 ${style.panelHead}`}>
-        <span className="text-micro font-black uppercase bg-comic-red text-white px-2 py-0.5 rounded border border-comic-black shadow-comic-xs">
+        <span className="text-micro font-black uppercase bg-comic-red text-white px-2 py-0.5 rounded-sm border border-comic-black shadow-comic-xs">
           {label}
         </span>
-        <span className="text-micro font-mono font-bold uppercase bg-slate-200 text-slate-800 px-1.5 py-0.5 rounded border border-comic-black/40">
+        <span className="text-micro font-mono font-bold uppercase bg-slate-200 text-slate-800 px-1.5 py-0.5 rounded-sm border border-comic-black/40">
           {card.type}
         </span>
       </div>

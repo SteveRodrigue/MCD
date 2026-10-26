@@ -143,7 +143,7 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
               onClick={() => onExecuteSequence(orderedUpgrades.map((u) => u.id))}
               className={`px-6 py-2.5 font-black text-sm cursor-pointer flex items-center gap-2 ${style.btnGo}`}
             >
-              <Check className="w-4 h-4 stroke-[3]" />
+              <Check className="w-4 h-4 stroke-3" />
               <span>EXECUTE SEQUENCE!</span>
             </button>
           </div>

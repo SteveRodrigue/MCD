@@ -78,7 +78,6 @@ No open row.
 
 | Issue                                                   | Problem (from the Dev Mode report)                                                   | Notes                                                                      |
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| [#344](https://github.com/SteveRodrigue/MCD/issues/344) | Interrupt modal does not show which player or seat is offered Emergency `01085`.     | UI, multi-hero.                                                            |
 | [#358](https://github.com/SteveRodrigue/MCD/issues/358) | Wakanda Forever modal: move buttons at 3/4 of the card height (real cards are done). | UI. Open: restore or drop the bottom recap (see the comment on the issue). |
 
 ### 3.5 Code audit AUD-20261017-232534: delivered

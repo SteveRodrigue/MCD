@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { getHeroColorPalette, getContrastTextColor } from '../../utils/hero-theme';
+import { formatSeatPrefix } from '../../utils/player-seat';
 import {
   Shield,
   Heart,
@@ -330,7 +331,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
         >
           <Shield className="w-3.5 h-3.5" />
           <span>
-            {seatNumber && isMultiHero ? `SEAT ${seatNumber}: ` : ''}
+            {formatSeatPrefix(seatNumber, isMultiHero)}
             {player.name}
             {!isFocused && ' • (WAITING)'}
           </span>

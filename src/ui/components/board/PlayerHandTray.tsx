@@ -18,6 +18,7 @@ import {
 import { useGameSession } from '../../context/GameStateContext';
 import { useHandFanLayout } from '../../hooks/useHandFanLayout';
 import { getHeroColorPalette } from '../../utils/hero-theme';
+import { formatSeatPrefix } from '../../utils/player-seat';
 import { useModalStyle } from '../../theme/useModalStyle';
 import { ToneButton } from '../../theme/kit/controls';
 import { getCardBackUrl, getCardBackFallbackColor } from '../../services/card-cache-service';
@@ -332,7 +333,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             >
               <Sparkles className="w-3.5 h-3.5 text-comic-yellow" />
               <span>
-                {seatNumber && isMultiHero ? `SEAT ${seatNumber}: ` : ''}
+                {formatSeatPrefix(seatNumber, isMultiHero)}
                 {heroName}'s HAND ({hand.length} / {handSizeLimit})
                 {gameState.phase === 'VILLAIN_PHASE'
                   ? ' • (VILLAIN PHASE)'

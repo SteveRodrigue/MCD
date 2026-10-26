@@ -35,8 +35,9 @@ If the pre-commit or pre-push hook fails, fix the cause, re-stage, and go back t
 2. Run `rtk git diff` and `rtk git diff --cached` to inspect the exact lines of code changed.
 3. Verify that no unwanted files (e.g. debug scripts in `scratch/`, OS artifacts, temporary logs) are inadvertently staged.
 4. Record the intended file set. Do not silently absorb unrelated staged or unstaged changes.
-5. Check the progress documentation: if the change completes a plan, delete that plan file in the same delivery, and update the queue, status headers, and any other progress or tracking document (e.g. `docs/backlog/`) the change affects. Include these files in the intended file set.
-6. If the diff deletes, renames or merges a document, run `rtk rg -n "<old file name>"` over `docs/`, `.agents/` and the root `*.md` files and fix every inbound reference in the same delivery (`rtk npm run docs:check` also reports dead links and orphan documents).
+5. Changelog: a change under `src/` needs a new fragment `changes/unreleased/<issue>-<slug>.md` (or `YYYY-MM-DD-<slug>.md` without an issue) with `type:` front matter, format in `changes/README.md`; CI fails without it. Never edit `CHANGELOG.md` directly. Check with `rtk npm run changelog:check` and include the fragment in the intended file set.
+6. Check the progress documentation: if the change completes a plan, delete that plan file in the same delivery, and update the queue, status headers, and any other progress or tracking document (e.g. `docs/backlog/`) the change affects. Include these files in the intended file set.
+7. If the diff deletes, renames or merges a document, run `rtk rg -n "<old file name>"` over `docs/`, `.agents/` and the root `*.md` files and fix every inbound reference in the same delivery (`rtk npm run docs:check` also reports dead links and orphan documents).
 
 ---
 

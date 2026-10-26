@@ -175,7 +175,7 @@ _Note:_ The pre-commit hook in `.githooks/pre-commit` will automatically execute
 
 ## ✅ Step 9: Wait for CI, Squash-Merge and Verify
 
-1. Wait for the required checks: `gh pr checks <PR> --watch --interval 20`. If a check fails, stop and report the failing job; fix the cause on the same branch (new commit, push) and wait again. Never merge on red or pending checks.
+1. Wait for the required checks: `gh pr checks <PR> --watch --interval 20`. Right after the pull request opens, GitHub may report "no checks reported" before the CI run registers: wait about 20 seconds and query again until a check appears; absent checks are not a pass. If a check fails, stop and report the failing job; fix the cause on the same branch (new commit, push) and wait again. Never merge on red or pending checks.
 2. Merge with a squash, which matches the history of `main`, and delete the branch:
    ```sh
    gh pr merge <PR> --squash --delete-branch

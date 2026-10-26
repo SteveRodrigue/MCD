@@ -120,7 +120,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
     expect(gameState.lastError?.type).toBe('INFINITE_LOOP');
   });
 
-  it('2. Detects a forced trigger loop when two distinct cards respond to the same live trigger', () => {
+  it('2. Two distinct forced cards on the same live trigger are ordered by the first player', () => {
     const player = gameState.players[0];
 
     const makeEchoCard = (code: string, name: string, abilityId: string) =>
@@ -154,26 +154,22 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
       createCardInstance(makeEchoCard('test_loop_b', 'Painful Memory', 'ability_memory_b')),
     );
 
-    let capturedError: InfiniteLoopError | undefined;
-    try {
-      dispatchTrigger(gameState, 'DAMAGE_TAKEN', {
-        targetPlayerId: player.id,
-        targetType: 'player',
-        damageAmount: 1,
-      });
-    } catch (err) {
-      if (err instanceof InfiniteLoopError) {
-        capturedError = err;
-      }
-    }
+    // Two Forced abilities on one trigger are simultaneous: the first player orders them (RR v1.8
+    // "Forced"), so a loop between distinct cards advances one answered prompt at a time.
+    const result = dispatchTrigger(gameState, 'DAMAGE_TAKEN', {
+      targetPlayerId: player.id,
+      targetType: 'player',
+      damageAmount: 1,
+    });
 
-    expect(capturedError).toBeDefined();
-    expect(capturedError?.formattedCycle).toContain('DAMAGE_TAKEN');
-    expect(capturedError?.cycle.length).toBeGreaterThanOrEqual(2);
-
-    const logEntry = gameState.log.find((l) => l.onomatopoeia === 'INFINITE LOOP DETECTED!');
-    expect(logEntry).toBeDefined();
-    expect(gameState.lastError?.type).toBe('INFINITE_LOOP');
+    expect(result.hasPendingPrompt).toBe(true);
+    const ordering = gameState.pendingDecisionQueue![0];
+    expect(ordering.kind).toBe('ORDER_SIMULTANEOUS_ABILITIES');
+    expect(ordering.simultaneousPrompts!.map((p) => p.sourceCardName)).toEqual([
+      'Spiteful Vengeance',
+      'Painful Memory',
+    ]);
+    expect(gameState.lastError).toBeUndefined();
   });
 
   it('3. Safely halts when maximum trigger depth ceiling (MAX_TRIGGER_DEPTH = 15) is exceeded', () => {

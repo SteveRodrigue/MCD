@@ -16,8 +16,8 @@ This skill converts locally-captured Dev Mode problem reports (`logs/reports/*.j
 ## 🛑 Hard rules (read first)
 
 - Keep the reporter's `description` verbatim in the issue; summaries elsewhere never replace it.
-- GameState JSON never goes to GitHub; it is saved locally under `logs/gamestates/` (hook-enforced).
-- Delete a report only after the GitHub outcome is confirmed and the snapshot is saved and valid (snapshot check is hook-enforced).
+- GameState JSON never goes to GitHub; it is pinned locally under `logs/gamestates/pinned/` when the report is submitted (hook-enforced).
+- Delete a report only after the GitHub outcome is confirmed and its pinned snapshot exists and is valid (snapshot check is hook-enforced).
 - Duplicates need the same root problem and mechanic, not just the same card or title; when unsure, file a new issue.
 - Use the templates in [`templates.md`](templates.md); one failed report never stops the batch.
 
@@ -34,7 +34,7 @@ Each `logs/reports/report_{timestamp}_{type}.json` file (written by [src/ui/serv
   "title": "string (user-entered, truncated)",
   "description": "string (user-entered free text — this is the reporter's ORIGINAL TEXT and must be preserved verbatim in the issue body, never paraphrased)",
   "labels": ["bug", "triage", "priority:P1-high"], // pre-computed by mapReportToLabels(); DO NOT use verbatim — see Step 4 for the repo's actual label taxonomy
-  "gameState": { /* full GameState tree at time of report */ },
+  "gameStateFile": "gamestate_<timestamp>_<type>.json", // pinned snapshot in logs/gamestates/pinned/ (absent when no game was open)
   "timestamp": 1234567890123
 }
 ```
@@ -53,11 +53,10 @@ flowchart TD
     S2 -- "Yes" --> S3["2. Build Issue Body per Report<br/>(description + local GameState path)"]
     S3 --> S3B{"3. Duplicate/Merge Detection<br/>(gh issue list --search)"}
     S3B -- "Duplicate Found" --> M1["3a. Comment on Existing Issue<br/>+ Apply 'duplicate' Label"]
-    M1 --> S4B["4b. Write and verify local GameState"]
+    M1 --> S6["5. Delete Local Report File, Log [PRUNE]"]
     S3B -- "No Match" --> S4["4. File New GitHub Issue (gh issue create --label <labels>)"]
     S4 --> S5["4a. Verify Issue Created, Log [FILE]"]
-    S5 --> S4B
-    S4B --> S6["5. Delete Local Report File, Log [PRUNE]"]
+    S5 --> S6
     S6 --> S2
 ```
 
@@ -66,7 +65,7 @@ Copy this checklist per report and tick each step as you go:
 - [ ] Step 1: Scan `logs/reports/` (none pending: log `[DONE]` and end the turn)
 - [ ] Step 2: Build the issue title and body
 - [ ] Step 3: Duplicate check (merge via 3a, or continue to Step 4)
-- [ ] Step 4: File the new issue, verify (4a), write and verify the GameState (4b)
+- [ ] Step 4: File the new issue, verify (4a)
 - [ ] Step 5: Prune the local report, log `[PRUNE]`
 
 If issue creation, the merge, or snapshot verification fails, leave the report file in place, log the failure, and move to the next report.
@@ -90,12 +89,12 @@ Never invent Expected Behavior, Rules Citations, Environment details, or Alterna
 
 #### 🛡️ Local GameState Retention Guardrail
 
-Full serialized `gameState` trees are debugging evidence and must remain local under `logs/gamestates/`.
+The game submits each report's full `gameState` to `logs/gamestates/pinned/` (ADR-0042); the report holds only `gameStateFile`. The rolling snapshot pruner never touches that folder, so an issue's cited path stays valid.
 
 1. **GameState JSON stays off GitHub:** A hook blocks `gh` calls whose body contains it; GameState is gitignored debugging evidence that public readers must not see.
-2. **Use a collision-safe filename:** Start with `logs/gamestates/gamestate_<timestamp>_<type>.json`; add a numeric suffix if that path exists.
-3. **Write atomically:** Write to a temporary sibling file, rename it to the final path, then parse the final JSON to verify it.
-4. **Preserve before pruning:** Do not delete the report until both GitHub filing or merge confirmation and local snapshot verification succeed.
+2. **Cite the pinned path:** Use `logs/gamestates/pinned/<report.gameStateFile>` in the issue. Verify the file exists and parses before filing; log `[SNAPSHOT]` with that path.
+3. **Missing snapshot:** A report without `gameStateFile` was filed with no game open; write "No GameState captured" instead of a path.
+4. **Preserve before pruning:** Do not delete the report until the GitHub filing or merge confirmation succeeds and the pinned snapshot is verified.
 
 ### Step 3: Duplicate / Merge Detection 🔍
 
@@ -129,7 +128,7 @@ gh issue edit <NUM> --add-label "duplicate"
 ```
 
 3. **If the new report's priority is higher** than the existing issue's current `priority:P?-*` label, swap the priority label up (e.g. remove `priority:P2-medium`, add `priority:P1-high`) so the escalated severity is visible without manual triage.
-4. Log `[MERGE]` with the issue number and running report count, then proceed to Step 4b to write and verify the local GameState before pruning.
+4. Log `[MERGE]` with the issue number and running report count, then proceed to Step 5.
 
 ### Step 4: File a New GitHub Issue (No Duplicate Found)
 
@@ -162,22 +161,15 @@ gh issue create \
 1. Confirm the issue was created (`gh issue view <NUM>` or inspect the `gh issue create` output URL).
 2. Append a `[FILE]` log line with the real issue number and URL.
 
-### Step 4b: Write And Verify The Local GameState
-
-1. Reserve a collision-safe path under `logs/gamestates/` using `gamestate_<timestamp>_<type>.json` with a numeric suffix when needed.
-2. Write the complete `report.gameState` JSON to a temporary sibling file, then rename it to the reserved final path.
-3. Verify the final file exists, is readable, and parses as JSON. Log `[SNAPSHOT]` with the exact repository-relative path.
-4. Never upload any part of the GameState to GitHub.
-
 ### Step 5: Prune the Local Report (Inbox Zero)
 
-Once — and only once — both the GitHub outcome is confirmed and the local GameState snapshot is written and verified, delete the local report file:
+Once — and only once — the GitHub outcome is confirmed and the pinned GameState snapshot is verified, delete the local report file (never the pinned snapshot):
 
 ```bash
 Remove-Item logs/reports/report_<timestamp>_<type>.json
 ```
 
-A hook blocks deleting a report whose valid GameState snapshot is missing (the GitHub outcome is still your check); a deleted report is lost for good. If GitHub filing, duplicate merge, local snapshot writing, or snapshot verification fails, leave the file in place, log the failure, and continue to the next report — do not stop the whole batch on one failure.
+A hook blocks deleting a report whose valid pinned GameState snapshot is missing (the GitHub outcome is still your check); a deleted report is lost for good. If GitHub filing, duplicate merge, or snapshot verification fails, leave the file in place, log the failure, and continue to the next report — do not stop the whole batch on one failure.
 
 Repeat Steps 2–5 for every pending report, then confirm `logs/reports/` contains zero `report_*.json` files and log `[DONE]`.
 

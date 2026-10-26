@@ -56,12 +56,12 @@ export function buildGithubIssueUrl(
 }
 
 /**
- * Saves a Problem Report snapshot to the local logs/reports/ directory via the Vite dev server
- * endpoint. Dev/preview server only — no-op (network error is swallowed) in production builds.
+ * Saves a Problem Report to logs/reports/ and its GameState to logs/gamestates/pinned/ (which the
+ * rolling snapshot pruner never touches) via the Vite dev server endpoint. Dev/preview server only — no-op (network error is swallowed) in production builds.
  */
 export async function submitProblemReport(
   input: SubmitProblemReportInput,
-): Promise<{ success: boolean; file?: string }> {
+): Promise<{ success: boolean; file?: string; gameStateFile?: string }> {
   const payload: ProblemReportPayload = {
     type: input.type,
     priority: input.priority,
@@ -88,7 +88,7 @@ export async function submitProblemReport(
     });
     if (!response.ok) return { success: false };
     const result = await response.json();
-    return { success: true, file: result.file };
+    return { success: true, file: result.file, gameStateFile: result.gameStateFile };
   } catch (err) {
     // Gracefully ignore network errors when running standalone (production/Tauri build)
     return { success: false };

@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import https from 'https';
 import { cardSupplementalEditorPlugin } from './src/tools/editor/api-middleware.ts';
+import { saveProblemReport } from './src/tools/problem-report-store.ts';
 import {
   FONT_CHOICES_ENDPOINT,
   FONT_CHOICES_FILE,
@@ -255,20 +256,12 @@ function gameStateSnapshotPlugin(): Plugin {
 }
 
 function problemReportPlugin(): Plugin {
-  const reportsDir = path.resolve(import.meta.dirname, 'logs', 'reports');
-
   const reportMiddleware = (req: any, res: any, next: any) => {
     if (req.url === '/api/logs/report' && req.method === 'POST') {
-      return handleJsonPost(req, res, (payload) => {
-        fs.mkdirSync(reportsDir, { recursive: true });
-        const reportFileName = `report_${payload.timestamp || Date.now()}_${payload.type || 'bug'}.json`;
-        fs.writeFileSync(
-          path.join(reportsDir, reportFileName),
-          JSON.stringify(payload, null, 2),
-          'utf8',
-        );
-        return { success: true, file: reportFileName };
-      });
+      return handleJsonPost(req, res, (payload) => ({
+        success: true,
+        ...saveProblemReport(import.meta.dirname, payload),
+      }));
     }
     next();
   };

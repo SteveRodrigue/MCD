@@ -86,7 +86,11 @@ describe('Problem Report Service', () => {
     it('posts a well-formed payload to /api/logs/report', async () => {
       const fetchMock = vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => ({ success: true, file: 'report_123_bug.json' }),
+        json: async () => ({
+          success: true,
+          file: 'report_123_bug.json',
+          gameStateFile: 'gamestate_123_bug.json',
+        }),
       });
       global.fetch = fetchMock as any;
 
@@ -113,7 +117,11 @@ describe('Problem Report Service', () => {
       expect(body.labels).toEqual(['bug', 'triage', 'priority:P1-high']);
       expect(body.gameState.roundNumber).toBe(3);
       expect(typeof body.timestamp).toBe('number');
-      expect(result).toEqual({ success: true, file: 'report_123_bug.json' });
+      expect(result).toEqual({
+        success: true,
+        file: 'report_123_bug.json',
+        gameStateFile: 'gamestate_123_bug.json',
+      });
     });
 
     it('gracefully catches fetch errors without throwing', async () => {

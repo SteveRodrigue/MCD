@@ -110,4 +110,90 @@ describe('Powered Gauntlets (01038) Ability Cost & Resolution Contract (RR v1.8 
       )!.exhausted,
     ).toBe(true);
   });
+
+  it('prompts to select enemy without leaking player seat designations into minion labels (Fixes #459)', () => {
+    const blackPantherHero = cardCatalog.getCard('01040a') as HeroCard;
+    const tChallaAlterEgo = cardCatalog.getCard('01040b') as AlterEgoCard;
+
+    const state = setupGame({
+      catalog: cardCatalog,
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Hero Seat 1 (Black Panther)',
+          hero: blackPantherHero,
+          alterEgo: tChallaAlterEgo,
+          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+        },
+        {
+          id: 'p2',
+          name: 'Hero Seat 2 (Iron Man)',
+          hero: ironManHero,
+          alterEgo: tonyStarkAlterEgo,
+          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+        },
+      ],
+      skipMulligan: true,
+    });
+
+    const ironManPlayer = state.players[1];
+    ironManPlayer.currentForm = 'hero';
+
+    // Put Powered Gauntlets in Iron Man's tableau
+    const gauntletsInst = createCardInstance(cardCatalog.getCard('01038')!);
+    ironManPlayer.tableau.push(gauntletsInst);
+
+    // Engage Sandman with Player 1 and Hydra Mercenary with Player 2
+    const sandman = createCardInstance(cardCatalog.getCard('01102')!);
+    state.players[0].engagedMinions.push(sandman);
+
+    const hydraMerc = createCardInstance(cardCatalog.getCard('01101')!);
+    ironManPlayer.engagedMinions.push(hydraMerc);
+
+    // Activate Powered Gauntlets
+    const activationRes = dispatchAction(state, {
+      type: 'USE_CARD_ABILITY',
+      playerId: 'p2',
+      cardInstanceId: gauntletsInst.instanceId,
+      abilityId: 'powered_gauntlets',
+    });
+
+    expect(activationRes.result.success).toBe(true);
+    expect(activationRes.state.pendingDecisionQueue?.length).toBe(1);
+
+    const prompt = activationRes.state.pendingDecisionQueue![0];
+    expect(prompt.title).toBe('Choose Target for Powered Gauntlets');
+
+    // Labels should identify the enemy only, without seat prefix leakage like (Hero Seat 1 (Black Panther))
+    const labels = prompt.options.map((o) => o.label);
+    expect(labels).toContain('Sandman');
+    expect(labels).toContain('Hydra Mercenary');
+    expect(labels.some((l) => l.includes('Hero Seat'))).toBe(false);
+
+    // Duplicate minions with identical names disambiguate with engaged hero
+    const nextState = thaw(activationRes.state);
+    const hydraMerc2 = createCardInstance(cardCatalog.getCard('01101')!);
+    nextState.players[0].engagedMinions.push(hydraMerc2);
+
+    // Ready Powered Gauntlets and re-activate
+    nextState.players[1].tableau.find((c) => c.instanceId === gauntletsInst.instanceId)!.exhausted =
+      false;
+    nextState.players[1].usedAbilitiesThisRound = {};
+    nextState.players[1].usedAbilitiesThisPhase = {};
+
+    const dupRes = dispatchAction(nextState, {
+      type: 'USE_CARD_ABILITY',
+      playerId: 'p2',
+      cardInstanceId: gauntletsInst.instanceId,
+      abilityId: 'powered_gauntlets',
+    });
+    expect(dupRes.result.success).toBe(true);
+    const dupPrompt = dupRes.state.pendingDecisionQueue![1];
+    const dupLabels = dupPrompt.options.map((o) => o.label);
+    expect(dupLabels).toContain('Sandman');
+    expect(dupLabels).toContain('Hydra Mercenary (engaged with Black Panther)');
+    expect(dupLabels).toContain('Hydra Mercenary (engaged with Iron Man)');
+    expect(dupLabels.some((l) => l.includes('Hero Seat'))).toBe(false);
+  });
 });

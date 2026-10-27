@@ -5,7 +5,7 @@ import {
   interpolateTemplate,
   getSpeakerAvatar,
 } from '../../src/ui/utils/comic-log-formatter';
-import { GameLogEntry, GamePhase } from '../../src/engine/models';
+import { GameLogEntry, GamePhase, GameState } from '../../src/engine/models';
 
 describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)', () => {
   it('correctly classifies dialogue types based on actor and action category', () => {
@@ -744,6 +744,44 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
           'Spider-Man dealt 8 damage to Rhino.',
         );
       });
+    });
+  });
+
+  describe('speaker of a line without actor, and the damage-transfer line (#398)', () => {
+    const twoPlayers = {
+      activePlayerIndex: 1,
+      players: [
+        { id: 'p1', name: 'She-Hulk', hero: { name: 'She-Hulk' }, currentForm: 'hero' },
+        { id: 'p2', name: 'Black Panther', hero: { name: 'Black Panther' }, currentForm: 'hero' },
+      ],
+      villains: [],
+      mainSchemes: [],
+    } as unknown as GameState;
+
+    it('names the active player, not the first seat, when an entry has no actor', () => {
+      const entry: GameLogEntry = {
+        id: 'log-398-1',
+        timestamp: 1,
+        key: 'damage.applied.villain',
+        params: { target: 'Rhino', source: 'Panther Claws', amount: 4 },
+      };
+      expect(formatComicLogEntry(entry, 'en', twoPlayers).speakerName).toBe('Black Panther');
+    });
+
+    it('renders the damage a hero moves to an enemy, in English and French', () => {
+      const entry: GameLogEntry = {
+        id: 'log-398-2',
+        timestamp: 2,
+        key: 'damage.transferred',
+        actor: { name: 'Black Panther', type: 'hero' },
+        params: { actor: 'Black Panther', source: 'Vibranium Suit', amount: 1, target: 'Rhino' },
+      };
+      expect(formatComicLogEntry(entry, 'en', twoPlayers).narrativeAction).toBe(
+        'Black Panther moved 1 damage from their hero to Rhino with Vibranium Suit.',
+      );
+      expect(formatComicLogEntry(entry, 'fr', twoPlayers).narrativeAction).toBe(
+        'Black Panther a déplacé 1 dégât(s) de son héros vers Rhino avec Vibranium Suit.',
+      );
     });
   });
 });

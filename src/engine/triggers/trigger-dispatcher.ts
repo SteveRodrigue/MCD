@@ -916,6 +916,7 @@ function scanInPlayTriggerAbilities(
     if (
       scanState.hasPendingPrompt &&
       trigger !== 'THREAT_WOULD_BE_PLACED' &&
+      trigger !== 'DAMAGE_WOULD_BE_TAKEN' &&
       !isDefeatTrigger(trigger)
     ) {
       break;
@@ -1126,11 +1127,19 @@ function scanInPlayTriggerAbilities(
               ],
             });
             scanState.hasPendingPrompt = true;
-            break;
+            if (trigger !== 'THREAT_WOULD_BE_PLACED' && trigger !== 'DAMAGE_WOULD_BE_TAKEN') {
+              break;
+            }
           }
         }
       }
-      if (scanState.hasPendingPrompt && trigger !== 'THREAT_WOULD_BE_PLACED') break;
+      if (
+        scanState.hasPendingPrompt &&
+        trigger !== 'THREAT_WOULD_BE_PLACED' &&
+        trigger !== 'DAMAGE_WOULD_BE_TAKEN'
+      ) {
+        break;
+      }
     }
   }
 }
@@ -1541,6 +1550,7 @@ export function dispatchTrigger(
 
   const isGlobalTrigger =
     trigger === 'THREAT_WOULD_BE_PLACED' ||
+    trigger === 'DAMAGE_WOULD_BE_TAKEN' ||
     trigger === 'MINION_ENTERS_PLAY' ||
     trigger === 'ENCOUNTER_CARD_REVEALED';
 

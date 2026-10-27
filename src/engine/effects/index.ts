@@ -783,31 +783,15 @@ export function applyAbilityDamage(
     sourcePlayerId: opts.sourcePlayerId,
     isAttack: opts.isAttack,
     hasPiercing: opts.hasPiercing,
+    triggerChain: opts.triggerChain,
     ...extra,
   });
 }
 
 /**
- * Damage to a player's identity (hero or alter-ego), through the pipeline. Tough and damage shields
- * apply first, then the DAMAGE_TAKEN interrupt window opens and the hit points drop. Shared by the
- * identity selectors (`SELF_IDENTITY`, `SELF_HERO`) and `ALL_HEROES`.
- */
-export function dealDamageToIdentity(
-  state: GameState,
-  player: PlayerState,
-  amount: number,
-  opts: AbilityDamageOptions,
-): GameState {
-  return applyAbilityDamage(state, playerTargetRef(player), amount, opts, {
-    dispatchDamageTaken: true,
-    triggerChain: opts.triggerChain,
-  }).state;
-}
-
-/**
  * Applies a distribution of damage (DISTRIBUTE_AMOUNT, domain DAMAGE): every portion goes through
- * the damage pipeline, so Tough, damage shields, DAMAGE_TAKEN interrupts, defeat and its triggers
- * are the ones of any other damage. The source card is the defeat source (#296).
+ * the damage pipeline, so Tough, damage shields, DAMAGE_WOULD_BE_TAKEN interrupts, defeat and its
+ * triggers are the ones of any other damage. The source card is the defeat source (#296).
  */
 export function applyDistributedDamage(
   state: GameState,
@@ -837,7 +821,7 @@ export function applyDistributedDamage(
         pl.id === targetId || pl.activeFormCard?.code === targetId || pl.hero?.code === targetId,
     );
     if (targetPlayer) {
-      state = dealDamageToIdentity(state, targetPlayer, amount, opts);
+      state = applyAbilityDamage(state, playerTargetRef(targetPlayer), amount, opts).state;
       continue;
     }
 

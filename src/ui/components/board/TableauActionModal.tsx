@@ -42,10 +42,7 @@ export const TableauActionModal: React.FC<TableauActionModalProps> = ({
     (ab) =>
       ab.timing === 'ACTION' ||
       (isHero && ab.timing === 'HERO_ACTION') ||
-      (!isHero && ab.timing === 'ALTER_EGO_ACTION') ||
-      ab.timing === 'RESOURCE' ||
-      (isHero && ab.timing === 'HERO_RESOURCE') ||
-      (!isHero && ab.timing === 'ALTER_EGO_RESOURCE'),
+      (!isHero && ab.timing === 'ALTER_EGO_ACTION'),
   );
 
   const cardType = (cardInstance.card.type || 'UPGRADE').toUpperCase();

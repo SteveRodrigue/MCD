@@ -24,7 +24,7 @@ import {
   getEffectiveMaxHealth,
   getEffectiveHandSize,
 } from './stat-calculator';
-import { isResourceAbility, getEffectiveCardCost } from './cost-engine';
+import { getEffectiveCardCost } from './cost-engine';
 import type { ResourceCost } from '../../data/supplemental/schema';
 
 export interface LegalActionItem {
@@ -78,7 +78,6 @@ function getTableauActionItems(
   for (const tableauItem of player.tableau || []) {
     const abilities = tableauItem.card.enrichment?.abilities || [];
     for (const ab of abilities) {
-      if (isResourceAbility(ab.timing)) continue; // Never present resource abilities as standalone turn actions (RR v1.8 p. 25 / ADR-0039)
       if (
         ab.timing === 'ACTION' ||
         (isHero && ab.timing === 'HERO_ACTION') ||
@@ -157,7 +156,6 @@ function getIdentityActionItems(
   const idAbilities = player.activeFormCard.enrichment?.abilities || [];
 
   for (const ab of idAbilities) {
-    if (isResourceAbility(ab.timing)) continue; // Never present resource abilities as standalone turn actions (RR v1.8 p. 25 / ADR-0039)
     if (
       ab.timing === 'ACTION' ||
       (isHero && ab.timing === 'HERO_ACTION') ||
@@ -309,8 +307,6 @@ function getEncounterLegalActions(state: GameState, player: PlayerState): LegalA
   for (const { cardInst, hostName } of uniqueSources) {
     const abilities = cardInst.card.enrichment?.abilities || [];
     for (const ab of abilities) {
-      if (isResourceAbility(ab.timing)) continue;
-
       const isAction =
         ab.timing === 'ACTION' ||
         (isHero && ab.timing === 'HERO_ACTION') ||

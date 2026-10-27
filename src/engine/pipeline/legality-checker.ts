@@ -13,7 +13,6 @@ import {
   hasDashPower,
   CharacterPower,
   getVillainsInPlay,
-  VillainState,
 } from '@engine/models';
 import { kernel } from '../kernel';
 import { isStep, type TypedStep } from '../effects/handlers/types';
@@ -29,7 +28,12 @@ import {
 } from './cost-engine';
 import { matchesCardFilter } from '../filters/card-filter';
 import { getEffectiveAllyLimit, hasPlayerTrait } from './stat-calculator';
-import { getStepEffectParams } from '../../data/supplemental/runtime';
+import {
+  abilitiesRunOnPlay,
+  attachStepOf,
+  getStepEffectParams,
+  isActionTiming,
+} from '../../data/supplemental/runtime';
 import { findInPlayCardInstance } from '../state/state-validator';
 import {
   GUARD_BLOCK_REASON,
@@ -552,244 +556,17 @@ function evaluatePlayFromZoneRequirement(
 }
 
 /**
- * Validates whether hand cards specified for payment cover the cost of the card being played.
+ * A card needs a valid target for each ability it runs when played (RR v1.8 "Initiating Abilities"
+ * step 2, "Target"): an event's actions and an attachment's host. The generic target gate decides
+ * (ADR-0090), for events and attachments alike.
  */
-/**
- * Evaluates whether a card requires minion targets (tablewide or locally engaged)
- * and whether those minion targets currently exist in play (RR v1.8 p. 6, 19, 28).
- */
-export function evaluateMinionTargetRequirement(
-  state: GameState,
-  player: PlayerState,
-  card: NormalizedCard,
-): { allowed: boolean; reason?: string } {
-  const abilities = card.enrichment?.abilities || [];
-
-  let requiresTablewideMinion = false;
-  let requiresLocalMinion = false;
-
-  for (const ab of abilities) {
-    for (const step of ab.steps || []) {
-      const stepParams = getStepEffectParams(step);
-      const target = stepParams.target;
-      if (
-        step.effect === 'ATTACH_TO_HOST' &&
-        (target === 'CHOSEN_MINION' || target === 'MINION' || target === 'ALL_MINIONS')
-      ) {
-        requiresTablewideMinion = true;
-      } else if (
-        step.effect === 'ATTACH_TO_HOST' &&
-        (target === 'CHOSEN_ENGAGED_MINION' || target === 'ENGAGED_MINIONS')
-      ) {
-        requiresLocalMinion = true;
-      } else if (
-        card.type === CardType.EVENT &&
-        (target === 'CHOSEN_MINION' || target === 'MINION' || target === 'ALL_MINIONS')
-      ) {
-        requiresTablewideMinion = true;
-      } else if (card.type === CardType.EVENT && target === 'CHOSEN_ENGAGED_MINION') {
-        requiresLocalMinion = true;
-      }
-    }
-  }
-
-  if (requiresLocalMinion) {
-    const localCount = player.engagedMinions?.length || 0;
-    if (localCount === 0) {
-      return {
-        allowed: false,
-        reason: 'Cannot play this card: requires a minion engaged with you.',
-      };
-    }
-  }
-
-  if (requiresTablewideMinion) {
-    const totalMinions = state.players.reduce((acc, p) => acc + (p.engagedMinions?.length || 0), 0);
-    if (totalMinions === 0) {
-      return { allowed: false, reason: 'Cannot play this card: requires a minion in play.' };
-    }
-  }
-
-  return { allowed: true };
-}
-
-/**
- * Evaluates whether a card requires ally targets (RR v1.8 p. 5, 16, 17)
- * and whether eligible ally targets currently exist in play (respecting maxPerHost).
- */
-function evaluateAllyTargetRequirement(
-  state: GameState,
-  card: NormalizedCard,
-): { allowed: boolean; reason?: string } {
-  const abilities = card.enrichment?.abilities || [];
-
-  let requiresAlly = false;
-  let maxPerHost: number | undefined;
-
-  for (const ab of abilities) {
-    for (const step of ab.steps || []) {
-      const stepParams = getStepEffectParams(step);
-      const target = stepParams.target;
-      if (
-        step.effect === 'ATTACH_TO_HOST' &&
-        (target === 'CHOSEN_ALLY' || target === 'ALLY' || target === 'ALL_ALLIES')
-      ) {
-        requiresAlly = true;
-        if (stepParams.maxPerHost !== undefined) {
-          maxPerHost = Number(stepParams.maxPerHost);
-        }
-      }
-    }
-  }
-
-  if (requiresAlly) {
-    const allAllies: CardInstance[] = [];
-    for (const p of state.players) {
-      for (const a of p.allies || []) {
-        allAllies.push(a);
-      }
-    }
-
-    if (allAllies.length === 0) {
-      return {
-        allowed: false,
-        reason: 'Cannot play this card: requires an ally in play to attach to.',
-      };
-    }
-
-    if (maxPerHost !== undefined && maxPerHost > 0) {
-      const eligibleAllies = allAllies.filter((ally) => {
-        const attachedCount = (ally.attachments || []).filter(
-          (att) => att.card.code === card.code || att.card.name === card.name,
-        ).length;
-        return attachedCount < maxPerHost!;
-      });
-
-      if (!eligibleAllies.length) {
-        return {
-          allowed: false,
-          reason: `Cannot play this card: all in-play allies already have the maximum number (${maxPerHost}) of '${card.name}' attached.`,
-        };
-      }
-    }
-  }
-
-  return { allowed: true };
-}
-
-/**
- * Evaluates whether a card requires enemy targets (RR v1.8 p. 5, 16, 17)
- * and whether eligible enemy targets currently exist in play (respecting maxPerHost).
- */
-function evaluateEnemyTargetRequirement(
-  state: GameState,
-  _player: PlayerState,
-  card: NormalizedCard,
-  targetEnemyId?: string,
-): { allowed: boolean; reason?: string } {
-  const abilities = card.enrichment?.abilities || [];
-
-  let requiresEnemy = false;
-  let maxPerHost: number | undefined;
-
-  for (const ab of abilities) {
-    for (const step of ab.steps || []) {
-      const stepParams = getStepEffectParams(step);
-      const target = stepParams.target;
-      if (
-        step.effect === 'ATTACH_TO_HOST' &&
-        (target === 'CHOSEN_ENEMY' || target === 'ENEMY' || target === 'ALL_ENEMIES')
-      ) {
-        requiresEnemy = true;
-        if (stepParams.maxPerHost !== undefined) {
-          maxPerHost = Number(stepParams.maxPerHost);
-        }
-      }
-    }
-  }
-
-  if (requiresEnemy) {
-    const allEnemies: {
-      entity: VillainState | CardInstance;
-      id: string;
-      attachments?: CardInstance[];
-    }[] = [];
-    for (const villain of getVillainsInPlay(state)) {
-      allEnemies.push({
-        entity: villain,
-        id: villain.instanceId || 'villain',
-        attachments: villain.attachments,
-      });
-    }
-    for (const p of state.players) {
-      for (const m of p.engagedMinions || []) {
-        allEnemies.push({
-          entity: m,
-          id: m.instanceId,
-          attachments: m.attachments,
-        });
-      }
-    }
-
-    if (allEnemies.length === 0) {
-      return {
-        allowed: false,
-        reason: 'Cannot play this card: requires an enemy in play to attach to.',
-      };
-    }
-
-    if (targetEnemyId) {
-      const targetEnemy = allEnemies.find(
-        (e) => e.id === targetEnemyId || e.entity.card?.code === targetEnemyId,
-      );
-      if (targetEnemy && maxPerHost !== undefined && maxPerHost > 0) {
-        const attachedCount = (targetEnemy.attachments || []).filter(
-          (att) => att.card.code === card.code || att.card.name === card.name,
-        ).length;
-        if (attachedCount >= maxPerHost) {
-          return {
-            allowed: false,
-            reason: `Cannot play this card: target enemy already has the maximum number (${maxPerHost}) of '${card.name}' attached.`,
-          };
-        }
-      }
-    }
-
-    if (maxPerHost !== undefined && maxPerHost > 0) {
-      const eligibleEnemies = allEnemies.filter((enemy) => {
-        const attachedCount = (enemy.attachments || []).filter(
-          (att) => att.card.code === card.code || att.card.name === card.name,
-        ).length;
-        return attachedCount < maxPerHost!;
-      });
-
-      if (!eligibleEnemies.length) {
-        return {
-          allowed: false,
-          reason: `Cannot play this card: all in-play enemies already have the maximum number (${maxPerHost}) of '${card.name}' attached.`,
-        };
-      }
-    }
-  }
-
-  return { allowed: true };
-}
-
-/**
- * An event executes its abilities when it is played (RR v1.8 p. 12, 15), so each of them needs a
- * valid target to be played (RR v1.8 "Target"). The generic target gate decides (ADR-0090).
- */
-function evaluateEventTargetRequirement(
+function evaluatePlayTargetRequirement(
   state: GameState,
   player: PlayerState,
   cardInstance: CardInstance,
   choices: PlayChoices,
 ): { allowed: boolean; reason?: string } {
-  if (cardInstance.card.type !== CardType.EVENT) return { allowed: true };
-
-  for (const ability of cardInstance.card.enrichment?.abilities ?? []) {
-    const isAction = isActionTiming(ability) || !ability.timing;
-    if (!isAction) continue;
+  for (const ability of abilitiesRunOnPlay(cardInstance.card)) {
     const check = kernel.checkAbilityTargets(state, player, ability, cardInstance, {
       chosenTargetId: choices.targetInstanceId,
     });
@@ -797,81 +574,6 @@ function evaluateEventTargetRequirement(
       return { allowed: false, reason: `Cannot play this card: ${check.reason}` };
     }
   }
-  return { allowed: true };
-}
-
-/**
- * Evaluates the legality of initiating a SEARCH ability step (RR v1.8 p. 2, 28).
- * Ensures at least one eligible target exists to change the game state.
- */
-function evaluateSearchLegality(
-  state: GameState,
-  player: PlayerState,
-  step: TypedStep<'SEARCH'>,
-): { allowed: boolean; reason?: string } {
-  const stepParams = getStepEffectParams(step);
-  const source = stepParams.source || 'PLAYER_DECK';
-  const target = (stepParams.target as string) || 'SELF';
-  const filter = stepParams.filter;
-
-  const sources = Array.isArray(source) ? source : [source];
-
-  if (sources.includes('PLAYER_DISCARD')) {
-    if (target === 'CHOSEN_PLAYER' || target === 'ALL_PLAYERS') {
-      const anyPlayerHasMatch = (state.players || []).some((p) =>
-        (p.discard || []).some(
-          (c) => !filter || matchesCardFilter(c, filter, { state, player: p }),
-        ),
-      );
-      if (!anyPlayerHasMatch) {
-        return {
-          allowed: false,
-          reason: 'Cannot trigger ability: No player has a matching card in their discard pile.',
-        };
-      }
-    } else if (target === 'SELF' || target === 'ACTIVE_PLAYER' || !target) {
-      const hasMatch = (player.discard || []).some(
-        (c) => !filter || matchesCardFilter(c, filter, { state, player }),
-      );
-      if (!hasMatch) {
-        return {
-          allowed: false,
-          reason: 'Cannot trigger ability: No matching card in your discard pile.',
-        };
-      }
-    }
-  }
-
-  if (sources.includes('ENCOUNTER_DISCARD')) {
-    const hasMatch = (state.encounterDiscard || []).some(
-      (c) => !filter || matchesCardFilter(c, filter, { state, player }),
-    );
-    if (!hasMatch) {
-      return {
-        allowed: false,
-        reason: 'Cannot trigger ability: No matching card in encounter discard pile.',
-      };
-    }
-  }
-
-  if (sources.includes('PLAYER_DECK')) {
-    if ((player.deck || []).length === 0) {
-      return {
-        allowed: false,
-        reason: 'Cannot trigger ability: Player deck is empty.',
-      };
-    }
-  }
-
-  if (sources.includes('ENCOUNTER_DECK')) {
-    if ((state.encounterDeck || []).length === 0) {
-      return {
-        allowed: false,
-        reason: 'Cannot trigger ability: Encounter deck is empty.',
-      };
-    }
-  }
-
   return { allowed: true };
 }
 
@@ -944,7 +646,7 @@ export function canInitiateAbility(
   // card needs. Once the card is in play it offers no action of its own (#259).
   if (
     sourceCardInst &&
-    ability.steps?.some((s) => s.effect === 'ATTACH_TO_HOST') &&
+    attachStepOf(ability) &&
     findInPlayCardInstance(state, sourceCardInst.instanceId)
   ) {
     return { allowed: false, reason: 'This card attaches when it is played.' };
@@ -977,18 +679,7 @@ export function canInitiateAbility(
     return costCheck;
   }
 
-  // 5. Target & Potential to Change Game State (RR v1.8 p. 15-16, 29, 30)
-  for (const step of ability.steps || []) {
-    // Search / Deck / Discard Target (RR v1.8 p. 2, 28)
-    if (isStep(step, 'SEARCH')) {
-      const searchCheck = evaluateSearchLegality(state, player, step);
-      if (!searchCheck.allowed) {
-        return searchCheck;
-      }
-    }
-  }
-
-  // 6. Valid target for every judged step (RR v1.8 "Target"; ADR-0090): the one generic gate, never
+  // 5. Valid target for every judged step (RR v1.8 "Target"; ADR-0090): the one generic gate, never
   // an effect- or selector-specific check here.
   const targetCheck = kernel.checkAbilityTargets(state, player, ability, sourceCardInst, {
     chosenTargetId: options?.targetInstanceId,
@@ -1017,16 +708,10 @@ export function evaluatePlayRequirements(
   const isEvent = card.type === CardType.EVENT;
   const abilities = card.enrichment?.abilities || [];
   const hasHeroPlayAbility = abilities.some(
-    (a) =>
-      a.timing &&
-      a.timing.startsWith('HERO_') &&
-      (isEvent || a.steps?.some((s) => s.effect === 'ATTACH_TO_HOST')),
+    (a) => a.timing && a.timing.startsWith('HERO_') && (isEvent || attachStepOf(a)),
   );
   const hasAlterEgoPlayAbility = abilities.some(
-    (a) =>
-      a.timing &&
-      a.timing.startsWith('ALTER_EGO_') &&
-      (isEvent || a.steps?.some((s) => s.effect === 'ATTACH_TO_HOST')),
+    (a) => a.timing && a.timing.startsWith('ALTER_EGO_') && (isEvent || attachStepOf(a)),
   );
 
   const isHeroFormRequired =
@@ -1126,11 +811,6 @@ interface PlayChoices {
   targetInstanceId?: string;
 }
 
-const isActionTiming = (ability: CardAbility) =>
-  ability.timing === 'ACTION' ||
-  ability.timing === 'HERO_ACTION' ||
-  ability.timing === 'ALTER_EGO_ACTION';
-
 /**
  * Every rule that stops a card from being played, cost payment aside (RR v1.8 p. 16 "Play").
  * The dispatcher rejects on the first reason; the hand, the legal-action list and the bot show
@@ -1152,10 +832,7 @@ function collectPlayRestrictions(
   // Universal Play Requirements (RR v1.8 p. 16)
   check(evaluatePlayRequirements(state, player, card));
   // Target requirements (RR v1.8 p. 3, 5, 6, 11, 15-17, 19, 28-30; Issues #101, #173)
-  check(evaluateMinionTargetRequirement(state, player, card));
-  check(evaluateAllyTargetRequirement(state, card));
-  check(evaluateEnemyTargetRequirement(state, player, card, choices.targetInstanceId));
-  check(evaluateEventTargetRequirement(state, player, cardInstance, choices));
+  check(evaluatePlayTargetRequirement(state, player, cardInstance, choices));
   check(evaluatePlayFromZoneRequirement(state, player, cardInstance));
 
   // Player Turn Validation (RR v1.8 p. 19 "Player Turn" & "Ask for an Action")

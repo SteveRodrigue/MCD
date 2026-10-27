@@ -97,6 +97,70 @@ export function putIntoPlayCandidates(
   return cards.filter((c) => !c.card.isUnique || checkUniqueCardPlayable(state, c.card).allowed);
 }
 
+/** Whether a host already holds `maxPerHost` copies of the card (same code or name): it cannot take another. */
+export function hostHasRoom(
+  host: { attachments?: CardInstance[] },
+  card: { code: string; name: string },
+  maxPerHost: number | undefined,
+): boolean {
+  if (maxPerHost === undefined || maxPerHost <= 0) return true;
+  const held = (host.attachments ?? []).filter(
+    (att) => att.card.code === card.code || att.card.name === card.name,
+  );
+  return held.length < maxPerHost;
+}
+
+/** The most copies of the played card one host may hold, when the ATTACH_TO_HOST step limits it. */
+export const attachMaxPerHost = (step: AbilityStep | undefined): number | undefined =>
+  step?.effectParams?.maxPerHost !== undefined ? Number(step.effectParams.maxPerHost) : undefined;
+
+/** The filter a SEARCH step looks for: its `filter`, else the card fields its params name. */
+export function searchFilter(step: AbilityStep): UniversalCardFilter | undefined {
+  const params = step.effectParams;
+  if (params?.filter) return params.filter as UniversalCardFilter;
+  const type = params?.type || params?.type_code || params?.cardType;
+  return params?.targetCardCode || params?.targetCardName || params?.trait || type
+    ? ({
+        targetCardCode: params.targetCardCode,
+        targetCardName: params.targetCardName,
+        trait: params.trait,
+        type,
+      } as UniversalCardFilter)
+    : undefined;
+}
+
+/**
+ * Whether a SEARCH step has a zone to look in. A public discard pile must hold a matching card; a
+ * deck is hidden, so a search of it only needs the deck not to be empty.
+ */
+export function searchHasCards(state: GameState, player: PlayerState, step: AbilityStep): boolean {
+  const params = step.effectParams ?? {};
+  const rawSource = params.source ?? 'PLAYER_DECK';
+  const sources: string[] = Array.isArray(rawSource) ? rawSource : [rawSource];
+  const target = (params.target as string | undefined) ?? 'SELF';
+  const filter = searchFilter(step);
+  const holdsMatch = (cards: CardInstance[] | undefined, owner?: PlayerState): boolean =>
+    (cards ?? []).some((c) => matchesCardFilter(c, filter, { state, player: owner ?? player }));
+
+  return sources.some((source) => {
+    switch (source) {
+      case 'PLAYER_DISCARD':
+        if (target === 'CHOSEN_PLAYER' || target === 'ALL_PLAYERS') {
+          return state.players.some((p) => holdsMatch(p.discard, p));
+        }
+        return target === 'SELF' || target === 'ACTIVE_PLAYER' ? holdsMatch(player.discard) : true;
+      case 'ENCOUNTER_DISCARD':
+        return holdsMatch(state.encounterDiscard);
+      case 'PLAYER_DECK':
+        return (player.deck ?? []).length > 0;
+      case 'ENCOUNTER_DECK':
+        return (state.encounterDeck ?? []).length > 0;
+      default:
+        return true;
+    }
+  });
+}
+
 /** The cards a DISCARD from hand may take from `player`'s hand. */
 export const discardableHandCards = (
   player: PlayerState,

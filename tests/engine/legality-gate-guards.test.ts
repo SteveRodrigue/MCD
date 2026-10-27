@@ -39,7 +39,7 @@ describe('legality gate: no target-validity check outside the gate', () => {
 
   /** Effect-name comparisons that decide target validity or legality, by effect named in a rule. */
   const EFFECT_NAME_CHECK =
-    /\.effect\s*===\s*'(READY|HEAL_DAMAGE|EXHAUST|ADD_STATUS|REMOVE_THREAT|DEAL_DAMAGE|TRANSFER_DAMAGE)'/;
+    /\.effect\s*===\s*'(READY|HEAL_DAMAGE|EXHAUST|ADD_STATUS|REMOVE_THREAT|DEAL_DAMAGE|TRANSFER_DAMAGE|REMOVE_STATUS|ATTACH_TO_HOST|SEARCH|ADD_THREAT|ADD_TRAIT|DISCARD|PUT_INTO_PLAY|REMOVE_COUNTERS|REMOVE_COUNTERS_MATCHING_FILTER|RETURN_TO_HAND)'|isStep\([^)]*'(ATTACH_TO_HOST|SEARCH|DEAL_DAMAGE|REMOVE_THREAT)'\)/;
   /** A target enumeration: callers use the gate's `getValidStepTargets`, not the raw resolver. */
   const STATE_FILTERED_TARGETS = /getEligibleTargets\(/;
 
@@ -47,6 +47,7 @@ describe('legality gate: no target-validity check outside the gate', () => {
   const GATE_FILES = [
     'src/engine/effects/target-choice.ts',
     'src/engine/effects/target-resolver.ts',
+    'src/engine/effects/step-selection.ts',
   ];
 
   /**
@@ -58,6 +59,8 @@ describe('legality gate: no target-validity check outside the gate', () => {
       'display: picks the play onomatopoeia by effect, no legality',
     'src/engine/triggers/trigger-dispatcher.ts':
       'display: prompt summaries and the threat-placement prompt wiring, no legality',
+    'src/engine/pipeline/legal-actions-generator.ts':
+      'display: titles an encounter action "Discard" or "Encounter Action", no legality',
     'src/engine/simulation/player-bot.ts':
       'heuristic: the bot ranks heal cards; legality comes from the gate',
   };

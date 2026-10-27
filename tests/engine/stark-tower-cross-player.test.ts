@@ -63,9 +63,7 @@ describe('Stark Tower (01034): Cross-Player Targeting, Discard Legality & Auto-R
     const ability = starkTower.card.enrichment!.abilities![0];
     const check = canInitiateAbility(state, 'p1', ability, starkTower);
     expect(check.allowed).toBe(false);
-    expect(check.reason).toBe(
-      'Cannot trigger ability: No player has a matching card in their discard pile.',
-    );
+    expect(check.reason).toBe('Cannot trigger ability: No matching card to search.');
 
     // Attempting to dispatch USE_CARD_ABILITY fails
     const res = dispatchAction(state, {
@@ -76,9 +74,7 @@ describe('Stark Tower (01034): Cross-Player Targeting, Discard Legality & Auto-R
     });
 
     expect(res.result.success).toBe(false);
-    expect(res.result.error).toContain(
-      'Cannot trigger ability: No player has a matching card in their discard pile.',
-    );
+    expect(res.result.error).toContain('Cannot trigger ability: No matching card to search.');
     expect(starkTower.exhausted).toBeFalsy();
     expect(player.hand.length).toBe(state.players[0].hand.length);
   });

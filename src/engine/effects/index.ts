@@ -34,6 +34,10 @@ import {
   checkDeckExhaustionInvariants,
 } from '../pipeline/deck-exhaustion';
 import { dealSurgeCard } from '../pipeline/surge';
+import {
+  MAIN_SCHEME_BLOCK_REASON,
+  getMainSchemeThreatBlock,
+} from '../pipeline/target-restrictions';
 import { canCancelEncounterReveal } from '../pipeline/encounter-cancel';
 import { chooseStepTarget } from './target-choice';
 
@@ -453,6 +457,7 @@ export function compileDistributionTargets(
   state: GameState,
   targetScope: string,
   allocationDomain: string,
+  source?: { actor: PlayerState; isPlayerSource: boolean },
 ): TargetAllocationItem[] {
   const targets: TargetAllocationItem[] = [];
 
@@ -591,7 +596,12 @@ export function compileDistributionTargets(
   // 2. Schemes (Main Scheme + Side Schemes)
   if (includeSchemes && getActiveMainScheme(state)) {
     const mainThreat = getActiveMainScheme(state).threat || 0;
-    const isMainEligible = mainThreat > 0;
+    // Crisis and Patrol shield the main scheme from the acting player's cards (#370).
+    const block =
+      allocationDomain === 'THREAT_REMOVAL' && source
+        ? getMainSchemeThreatBlock(state, source.actor, { isPlayerSource: source.isPlayerSource })
+        : undefined;
+    const isMainEligible = mainThreat > 0 && !block;
     targets.push({
       instanceId: 'main_scheme',
       name: getActiveMainScheme(state).card.name,
@@ -600,7 +610,11 @@ export function compileDistributionTargets(
       currentValue: mainThreat,
       allocationCap: mainThreat,
       isEligible: isMainEligible,
-      ineligibilityReason: isMainEligible ? undefined : 'No threat on scheme',
+      ineligibilityReason: isMainEligible
+        ? undefined
+        : block
+          ? MAIN_SCHEME_BLOCK_REASON[block]
+          : 'No threat on scheme',
     });
 
     for (const side of state.sideSchemes || []) {

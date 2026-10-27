@@ -11,12 +11,7 @@ import {
 } from '../../models';
 import { getPlayer } from '../legality-checker';
 import { executeResourceCostPayment } from '../cost-engine';
-import {
-  applyDistributedDamage,
-  validateDistributionAssignments,
-  resetCardState,
-} from '../../effects';
-import { removeThreatFromScheme } from '../threat-pipeline';
+import { validateDistributionAssignments, resetCardState } from '../../effects';
 import { shuffleArray } from '../../state/rng';
 import { completeEncounterAttachment } from '../villain-phase';
 import { executePlayerCleanup } from '../player-phase-cleanup';
@@ -38,6 +33,7 @@ import { resolveEntityByInstanceId } from '../../effects/target-resolver';
 import { appendLog } from '../../state/game-log';
 import { resolveEventAbilities } from './shared';
 import { routeCardInstances } from '../../effects/card-routing';
+import { applyDistributedAmounts } from '../../effects/distribution';
 import type { ActionHandler, TypedAction } from './types';
 
 export function resolveDistributionPrompt(
@@ -77,71 +73,19 @@ export function resolveDistributionPrompt(
   const config = activePrompt.distributionConfig;
   const domain = config?.allocationDomain || 'DAMAGE';
 
-  // Damage goes through the damage pipeline, like any other damage (#296). The source card
-  // is the defeat source; an encounter treachery is already in the encounter discard pile.
-  if (domain === 'DAMAGE') {
-    const sourceCard = activePrompt.sourceCardInstanceId
-      ? poppedState.encounterDiscard.find((c) => c.instanceId === activePrompt.sourceCardInstanceId)
-      : undefined;
-    applyDistributedDamage(poppedState, assignments, player, sourceCard);
-  }
-
-  // Apply assignments across targets
-  for (const [targetId, amount] of Object.entries(assignments)) {
-    if (amount <= 0) continue;
-
-    if (domain === 'THREAT_REMOVAL') {
-      removeThreatFromScheme(poppedState, {
-        playerId: player.id,
-        targetType: targetId === 'main_scheme' ? 'main_scheme' : 'side_scheme',
-        targetInstanceId: targetId,
-        amount,
-        sourceName: activePrompt.sourceCardName,
-      });
-    } else if (domain === 'HEAL') {
-      let ally: CardInstance | undefined;
-      for (const p of poppedState.players) {
-        const found = p.allies.find((a) => a.instanceId === targetId);
-        if (found) {
-          ally = found;
-          break;
-        }
-      }
-      if (ally) {
-        const currentDmg = ally.tokens?.damage || 0;
-        ally.tokens = { ...ally.tokens, damage: Math.max(0, currentDmg - amount) };
-      } else {
-        const targetPlayer = poppedState.players.find(
-          (pl) =>
-            pl.id === targetId ||
-            pl.activeFormCard?.code === targetId ||
-            pl.hero?.code === targetId,
-        );
-        if (targetPlayer) {
-          targetPlayer.health = Math.min(targetPlayer.maxHealth, targetPlayer.health + amount);
-        }
-      }
-    } else if (domain === 'EXHAUST') {
-      const cardInst = findInPlayCardInstance(poppedState, targetId);
-      if (cardInst) {
-        cardInst.exhausted = true;
-      } else {
-        const targetPlayer = poppedState.players.find((pl) => pl.id === targetId);
-        if (targetPlayer) targetPlayer.exhausted = true;
-      }
-    } else if (domain === 'COUNTERS') {
-      const cardInst = findInPlayCardInstance(poppedState, targetId);
-      if (cardInst) {
-        cardInst.tokens = {
-          ...cardInst.tokens,
-          counters: (cardInst.tokens?.counters || 0) + amount,
-        };
-      }
-    }
-  }
+  // The source card is the defeat source of damage and the Crisis/Patrol source of threat removal
+  // (#296, #370); an encounter treachery is already in the encounter discard pile.
+  const sourceCard = activePrompt.sourceCardInstanceId
+    ? (findInPlayCardInstance(poppedState, activePrompt.sourceCardInstanceId) ??
+      poppedState.encounterDiscard.find((c) => c.instanceId === activePrompt.sourceCardInstanceId))
+    : undefined;
+  const distributed = applyDistributedAmounts(poppedState, domain, assignments, player, {
+    name: activePrompt.sourceCardName,
+    card: sourceCard,
+  });
 
   const assignedTotal = Object.values(assignments).reduce((sum, n) => sum + (n || 0), 0);
-  appendLog(poppedState, {
+  appendLog(distributed, {
     category: 'ability',
     actor: { name: player.name, type: player.currentForm },
     key: 'decision.distribution.resolved',
@@ -155,7 +99,7 @@ export function resolveDistributionPrompt(
   });
 
   return {
-    state: poppedState,
+    state: distributed,
     result: { success: true, onomatopoeia: 'POINTS ASSIGNED!' },
   };
 }

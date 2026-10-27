@@ -423,6 +423,28 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
       expect(frFormatted.narrativeAction).toBe('Mockingbird a sonné Rhino !');
     });
 
+    it("formats a status a Stalwart target is immune to (Webbed Up's stun) as not applied", () => {
+      const entry: GameLogEntry = {
+        id: 'log-webbed-up-stalwart',
+        timestamp: Date.now(),
+        round: 1,
+        key: 'card.effect.addStatus',
+        actor: { name: 'Webbed Up', type: 'hero' },
+        params: {
+          actor: 'Webbed Up',
+          card: 'Webbed Up',
+          status: 'Stunned',
+          target: 'Sinister Six Guard',
+          mutatedState: false,
+          isImmune: true,
+        },
+      };
+
+      expect(formatComicLogEntry(entry, 'en', mockGameState).narrativeAction).toBe(
+        "Webbed Up: Stunned can't be applied because Sinister Six Guard has Stalwart.",
+      );
+    });
+
     it('formats player.turn.ended and strips Hero Seat designations to "Spider-Man turns ended."', () => {
       const rawEntry: GameLogEntry = {
         id: 'log-turn-ended',

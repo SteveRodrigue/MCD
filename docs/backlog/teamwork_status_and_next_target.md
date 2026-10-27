@@ -110,7 +110,7 @@ Decisions taken are recorded in the row they affect (section 3) and on the issue
 
 ### Filed outside Gate 1 (not queued)
 
-Milestone Tech Debt & Tooling, from the legality gate review (ADR-0090): [#365](https://github.com/SteveRodrigue/MCD/issues/365), [#366](https://github.com/SteveRodrigue/MCD/issues/366), [#367](https://github.com/SteveRodrigue/MCD/issues/367) (#370 to #372 delivered).
+Milestone Tech Debt & Tooling, from the legality gate review (ADR-0090): [#366](https://github.com/SteveRodrigue/MCD/issues/366) (#365, #367, #457 and #370 to #372 delivered).
 
 Milestone Tech Debt & Tooling, from the theming work (plans in `docs/templates/modals/`): [#364](https://github.com/SteveRodrigue/MCD/issues/364) `py-0.2` is not a Tailwind utility; [#373](https://github.com/SteveRodrigue/MCD/issues/373) `border-3` no-ops; [#374](https://github.com/SteveRodrigue/MCD/issues/374) player font choice (N7); [#375](https://github.com/SteveRodrigue/MCD/issues/375) rename `ModalStyle` to `ThemeStyle`; [#376](https://github.com/SteveRodrigue/MCD/issues/376) `CardArtThumbnail` frame follows the theme.
 

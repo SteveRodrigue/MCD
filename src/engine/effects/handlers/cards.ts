@@ -35,6 +35,7 @@ import { getAvailableResources } from '../../pipeline/cost-engine';
 import { appendLog } from '../../state/game-log';
 import { placeSideScheme } from '../../state/side-scheme';
 import { routeCardInstances } from '../card-routing';
+import { putIntoPlayCandidates } from '../step-selection';
 import {
   EffectExecutionContext,
   EffectResult,
@@ -320,22 +321,12 @@ function handlePutIntoPlay(
   // keyword-provided Surge resolve. A card only put into play never triggers them.
   const reveal = params.reveal === true;
 
-  let sourceList: CardInstance[] = [];
-  if (fromZone === 'SET_ASIDE') {
-    sourceList = player.setAsideCards || [];
-  } else if (fromZone === 'DISCARD') {
-    sourceList = player.discard || [];
-  } else if (fromZone === 'DECK') {
-    sourceList = player.deck || [];
-  } else if (fromZone === 'HAND') {
-    sourceList = player.hand || [];
-  }
-
-  const matches = (
-    step.effectParams?.target === 'SELF' && context.sourceCardInstance
-      ? [context.sourceCardInstance]
-      : sourceList.filter((c) => matchesCardFilter(c, filter, { player, state }))
-  ).filter((c) => !c.card.isUnique || checkUniqueCardPlayable(state, c.card).allowed);
+  const matches = putIntoPlayCandidates(
+    state,
+    player,
+    { from: fromZone, target: step.effectParams?.target as string | undefined, filter },
+    context.sourceCardInstance,
+  );
 
   if (matches.length === 0) {
     return {

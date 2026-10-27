@@ -46,6 +46,7 @@
     "REMOVE_THREAT": "{{actor}} a retiré {{amount}} menace de {{scheme}}.",
     "card.effect.threatBlockedByCrisis": "CRISE ! {{source}} ne peut pas retirer de menace de {{scheme}} tant qu'une icône Crise est en jeu.",
     "card.effect.threatBlockedByPatrol": "PATROUILLE ! {{source}} ne peut pas retirer de menace de {{scheme}} tant qu'un sbire engagé a Patrouille.",
+    "STATUS_IMMUNE": "{{card}} : {{status}} ne peut pas être appliqué car {{target}} a Inébranlable.",
     "STATUS_STUNNED": "{{actor}} a sonné {{target}} !",
     "STATUS_CONFUSED": "{{actor}} a désorienté {{target}} !",
     "STATUS_TOUGH": "{{actor}} a conféré Tenace à {{target}} !",

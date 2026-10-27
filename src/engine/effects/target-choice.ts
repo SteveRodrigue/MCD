@@ -1,5 +1,5 @@
 import type { EffectType } from '../../data/supplemental/runtime';
-import type { TargetSelector } from '../../data/supplemental/schema';
+import type { TargetSelector, UniversalCardFilter } from '../../data/supplemental/schema';
 import { bindKernel, kernel } from '../kernel';
 import type {
   AbilityStep,
@@ -13,6 +13,7 @@ import type {
 import { CardType, StatusCard } from '../models';
 import {
   getEffectiveMaxHealth,
+  getEffectivePlayerTraits,
   hasEntityKeyword,
   isEntityIncapacitatedByStatus,
 } from '../pipeline/stat-calculator';
@@ -24,7 +25,27 @@ import {
   isVillainAttackBlockedByGuard,
 } from '../pipeline/target-restrictions';
 import { nextEngineId } from '../state/rng';
-import { getEligibleTargets, resolveTargets, type ResolvedTarget } from './target-resolver';
+import {
+  getEligibleTargets,
+  resolvePlayerTargets,
+  resolveTargets,
+  type ResolvedTarget,
+} from './target-resolver';
+import {
+  cardCounterCount,
+  cardsUnderneathHost,
+  counterFilterCards,
+  discardableHandCards,
+  discardableTableauCards,
+  holdsMatchingCounter,
+  isAttachedAnywhere,
+  isSchemeInPlay,
+  namedSchemeCode,
+  playerCounterCount,
+  putIntoPlayCandidates,
+  requestedStatuses,
+  stepTarget,
+} from './step-selection';
 import type { EffectExecutionContext } from './index';
 
 /**
@@ -93,8 +114,9 @@ export const SELECTOR_CLASS: Readonly<Record<TargetSelector, SelectorClass>> = {
  * moment: 0 means the step does nothing, 1 is used without asking, 2 or more open a prompt whose
  * options re-run the same step with the chosen target.
  *
- * `CHOSEN_PLAYER` is a CHOSEN selector too but joins only with #367 (it needs its play-time prompt
- * and a `getEligibleTargets` case).
+ * `CHOSEN_PLAYER` is a CHOSEN selector the gate judges (any player is a candidate) but this prompt
+ * skips: the handlers that give a card, a resource or damage to a player open their own player
+ * prompt.
  */
 const PLAYER_CHOSEN_SELECTORS: ReadonlySet<string> = new Set(
   Object.entries(SELECTOR_CLASS)
@@ -233,17 +255,107 @@ const AFFECT_RULES: Partial<Record<EffectType, AffectRule>> = {
   },
   EXHAUST: (_state, _step, target) => !isExhausted(target),
   READY: (_state, _step, target) => isExhausted(target),
+  // The target must hold a status card the step removes.
+  REMOVE_STATUS: (_state, step, target) =>
+    target.kind === 'character' &&
+    requestedStatuses(step).some((s) => (target.entity.statusCards ?? []).includes(s)),
 };
 
 /**
- * Effects with no target-state rule, by reason. Every effect is in `AFFECT_RULES` or here
- * (guard: `tests/engine/legality-gate-guards.test.ts`), so a new effect cannot silently default to
- * "always valid".
+ * The effects whose target is named by their own params rather than a selector (a source zone, a
+ * card code, the source card). The rule is whether the step has anything to act on; it shares each
+ * handler's selection helper (`step-selection.ts`), so the two cannot disagree (RR v1.8 "Target").
+ * `source` is the card whose ability runs; a rule that needs it passes when none is given.
+ */
+type StepRule = (
+  state: GameState,
+  player: PlayerState,
+  step: AbilityStep,
+  source: CardInstance | undefined,
+) => boolean;
+
+const STEP_RULES: Partial<Record<EffectType, StepRule>> = {
+  // The scheme a card code names must be in play (Yon-Rogg 01177 names the Psyche-Magnitron).
+  ADD_THREAT: (state, _player, step) => {
+    const code = namedSchemeCode(step);
+    return !code || isSchemeInPlay(state, code);
+  },
+  // The identity must lack the trait it would gain.
+  ADD_TRAIT: (state, player, step) => {
+    const trait = String(step.effectParams?.trait ?? '')
+      .trim()
+      .toLowerCase();
+    return (
+      !trait || !getEffectivePlayerTraits(player, state).some((t) => t.toLowerCase() === trait)
+    );
+  },
+  DISCARD: (state, player, step, source) => {
+    const params = step.effectParams ?? {};
+    const filter = params.filter as UniversalCardFilter | undefined;
+    switch ((params.source as string | undefined) ?? 'HAND') {
+      case 'HAND': {
+        const resolved = resolvePlayerTargets(state, params.target as string | undefined, {
+          playerId: player.id,
+          sourceCardInstance: source,
+        });
+        return (resolved.length > 0 ? resolved : [player]).some(
+          (p) => discardableHandCards(p, filter).length > 0,
+        );
+      }
+      // An empty deck is reset by the discard (RR v1.8 "Player Deck"), so cards in the deck or its
+      // discard pile are something to act on, as for a draw (`isAlwaysValidStep`).
+      case 'DECK':
+        return player.deck.length + player.discard.length > 0;
+      case 'ENCOUNTER_DECK':
+        return state.encounterDeck.length + state.encounterDiscard.length > 0;
+      case 'TABLEAU':
+        return discardableTableauCards(state, player, filter).length > 0;
+      case 'SELF':
+        return source !== undefined;
+      case 'HOST':
+        return source === undefined || isAttachedAnywhere(state, source);
+      case 'CARDS_UNDER_HOST':
+        return (
+          (cardsUnderneathHost(state, params.target as string | undefined)?.cardsUnderneath ?? [])
+            .length > 0
+        );
+      default:
+        return true;
+    }
+  },
+  PUT_INTO_PLAY: (state, player, step, source) =>
+    putIntoPlayCandidates(state, player, step.effectParams ?? {}, source).length > 0,
+  REMOVE_COUNTERS: (_state, player, step, source) => {
+    const params = step.effectParams ?? {};
+    const counterType = (params.counterType as string | undefined) ?? 'all_purpose';
+    if (params.target === 'IDENTITY') return playerCounterCount(player, counterType) > 0;
+    return !source || cardCounterCount(source, counterType) > 0;
+  },
+  REMOVE_COUNTERS_MATCHING_FILTER: (_state, player, step) => {
+    const params = step.effectParams ?? {};
+    return counterFilterCards(player, params).some((c) =>
+      holdsMatchingCounter(c, params.counterType as string | undefined),
+    );
+  },
+  // The source card must be in its controller's play area, or hold cards underneath that go back
+  // to hand (Hellcat 01020, Make the Call 01071, Highway Robbery 01166).
+  RETURN_TO_HAND: (_state, player, _step, source) =>
+    !source ||
+    (source.cardsUnderneath?.length ?? 0) > 0 ||
+    player.allies.includes(source) ||
+    player.tableau.includes(source),
+};
+
+/**
+ * Effects with no target-state rule, by reason. Every effect is in `AFFECT_RULES`, `STEP_RULES` or
+ * here (guard: `tests/engine/legality-gate-guards.test.ts`), so a new effect cannot silently default
+ * to "always valid".
  */
 export const EFFECTS_WITHOUT_AFFECT_RULE: Readonly<Record<string, readonly EffectType[]>> = {
   'acts on the game, a player or the source card; no target state limits it': [
     'DRAW',
     'ADD_ACCELERATION',
+    'ADD_COUNTERS',
     'ATTACHMENT_DAMAGE_SHIELD',
     'ATTACH_FACEDOWN_CARDS_FROM_HAND',
     'ATTACH_TO_HOST',
@@ -266,11 +378,13 @@ export const EFFECTS_WITHOUT_AFFECT_RULE: Readonly<Record<string, readonly Effec
     'MODIFY_MAX_HEALTH',
     'MODIFY_RESTRICTED_LIMIT',
     'MODIFY_STAT',
+    'PLACE_CARD_UNDER_HOST',
     'PLAYER_CHOICE',
     'PLAY_FROM_ZONE',
     'PREVENT_DAMAGE',
     'PREVENT_THREAT',
     'REDUCE_NEXT_CARD_COST',
+    'REMOVE_FROM_GAME',
     'REVEAL_ENCOUNTER_CARD',
     'SEARCH',
     'SHUFFLE_INTO_DECK',
@@ -281,22 +395,6 @@ export const EFFECTS_WITHOUT_AFFECT_RULE: Readonly<Record<string, readonly Effec
     'VILLAIN_ATTACKS',
     'VILLAIN_SCHEMES',
   ],
-  // #365. RETURN_TO_HAND: Hellcat 01020 + Make the Call 01071 show "your hand" is the resolving
-  // player's, and the handler only finds a source in that player's play area
-  // (tests/engine/hellcat-make-the-call.test.ts).
-  'acts on a target but its state rule is not written yet (tracked gap, ADR-0090)': [
-    'ADD_COUNTERS',
-    'ADD_THREAT',
-    'ADD_TRAIT',
-    'DISCARD',
-    'PLACE_CARD_UNDER_HOST',
-    'PUT_INTO_PLAY',
-    'REMOVE_COUNTERS',
-    'REMOVE_COUNTERS_MATCHING_FILTER',
-    'REMOVE_FROM_GAME',
-    'REMOVE_STATUS',
-    'RETURN_TO_HAND',
-  ],
 };
 
 /** Whether this step's effect can affect the target (RR v1.8 "Target": valid targets only). */
@@ -305,23 +403,10 @@ export const canAffect: AffectRule = (state, step, target, sourceCard, actor, ab
   true;
 
 /** Effects that have a target-state rule; with `EFFECTS_WITHOUT_AFFECT_RULE` they cover every effect. */
-export const EFFECTS_WITH_AFFECT_RULE: readonly string[] = Object.keys(AFFECT_RULES);
-
-/** Self selectors name the acting player's own hero or identity: a target like any other. */
-const SELF_SELECTORS: ReadonlySet<string> = new Set(['SELF', 'SELF_HERO', 'SELF_IDENTITY']);
-
-/**
- * Selectors the ability names rather than the player chooses, with the effects the gate judges them
- * for. No prompt is opened for them. Crisis and Patrol limit threat removal from a named scheme
- * (#331); Guard limits an attack on the named villain. Any other effect on a named selector needs
- * no valid target, so a forced ability naming one is never skipped (#368). #367 judges every
- * FIXED and GROUP selector and deletes this list.
- */
-const NAMED_SELECTOR_JUDGED_EFFECTS: Readonly<Record<string, ReadonlySet<string>>> = {
-  MAIN_SCHEME: new Set(['REMOVE_THREAT']),
-  ALL_SCHEMES: new Set(['REMOVE_THREAT']),
-  VILLAIN: new Set(['DEAL_DAMAGE']),
-};
+export const EFFECTS_WITH_AFFECT_RULE: readonly string[] = [
+  ...Object.keys(AFFECT_RULES),
+  ...Object.keys(STEP_RULES),
+];
 
 /**
  * A step with a fallback ("attach to X, if able; if you cannot, ...") always has something to do,
@@ -329,13 +414,33 @@ const NAMED_SELECTOR_JUDGED_EFFECTS: Readonly<Record<string, ReadonlySet<string>
  */
 const hasFallback = (step: AbilityStep): boolean => step.effectParams?.fallback !== undefined;
 
-/** The selector whose targets the legality gate enumerates for this step (chosen or self). */
+/**
+ * The selector whose targets the legality gate enumerates for this step: every chosen, fixed or
+ * group selector (RR v1.8 "Target"). Event selectors are judged against the event's target, and
+ * dependent selectors are filled in at run time, so neither is enumerated here.
+ */
 const judgedSelector = (step: AbilityStep): string | undefined => {
-  const target = step.effectParams?.target;
-  if (typeof target !== 'string' || hasFallback(step)) return undefined;
-  if (PLAYER_CHOSEN_SELECTORS.has(target) || SELF_SELECTORS.has(target)) return target;
-  return NAMED_SELECTOR_JUDGED_EFFECTS[target]?.has(step.effect) ? target : undefined;
+  const target = stepTarget(step);
+  if (!target || hasFallback(step)) return undefined;
+  const kind = SELECTOR_CLASS[target as TargetSelector];
+  return kind === 'CHOSEN' || kind === 'FIXED' || kind === 'GROUP' ? target : undefined;
 };
+
+/**
+ * The targets a selector names on the board. A chosen selector lists what the player may pick from;
+ * a fixed or group selector resolves to the entities the ability names ("each ..." included).
+ */
+function selectorCandidates(
+  state: GameState,
+  player: PlayerState,
+  selector: string,
+  sourceCardInstance: CardInstance | undefined,
+): ResolvedTarget[] {
+  const kind = SELECTOR_CLASS[selector as TargetSelector];
+  return kind === 'FIXED' || kind === 'GROUP'
+    ? resolveTargets(state, selector, { playerId: player.id, sourceCardInstance })
+    : getEligibleTargets(state, player, selector);
+}
 
 /**
  * Valid targets for a step, computed from the current board: the targets its selector names that
@@ -351,13 +456,7 @@ export function getValidStepTargets(
 ): ResolvedTarget[] {
   const selector = selectorOverride ?? judgedSelector(step);
   if (!selector) return [];
-  const candidates =
-    selector === 'SELF' && context.sourceCardInstance
-      ? resolveTargets(state, 'SELF', {
-          playerId: player.id,
-          sourceCardInstance: context.sourceCardInstance,
-        })
-      : getEligibleTargets(state, player, selector);
+  const candidates = selectorCandidates(state, player, selector, context.sourceCardInstance);
   const excluded = context.distinctFromId;
   return candidates.filter(
     (t) =>
@@ -516,10 +615,29 @@ const isJudgedChoice = (step: AbilityStep): boolean => {
   return options.length > 0 && options.every((o) => stepsNeedingChoice(optionSteps(o)).length > 0);
 };
 
+/** Whether the gate judges a step's own params as well as its selector (see `STEP_RULES`). */
+const hasStepRule = (step: AbilityStep): boolean =>
+  STEP_RULES[step.effect as EffectType] !== undefined && !hasFallback(step);
+
+/**
+ * A step judged only by its own params (a discard, a card put into play). Draw is the RR's own
+ * example of a step that is a target (RR v1.8 "Target"); these steps follow it only when the
+ * ability names no selector target, so a spare discard never excuses a thwart with nothing to
+ * thwart (#369).
+ */
+const isParamsOnlyStep = (step: AbilityStep): boolean =>
+  hasStepRule(step) &&
+  judgedSelector(step) === undefined &&
+  stepEventSelector(step) === undefined &&
+  !isJudgedChoice(step);
+
 const stepsNeedingChoice = (steps: AbilityStep[]): AbilityStep[] =>
   steps.filter(
     (s) =>
-      judgedSelector(s) !== undefined || stepEventSelector(s) !== undefined || isJudgedChoice(s),
+      judgedSelector(s) !== undefined ||
+      stepEventSelector(s) !== undefined ||
+      hasStepRule(s) ||
+      isJudgedChoice(s),
   );
 
 /**
@@ -546,6 +664,14 @@ const NO_VALID_TARGET_REASON: Partial<Record<EffectType, string>> = {
   REMOVE_THREAT: 'No scheme has threat to remove.',
   ADD_STATUS: 'No character can receive that status card.',
   DEAL_DAMAGE: 'No character can take that damage.',
+  REMOVE_STATUS: 'No character has that status card.',
+  ADD_THREAT: 'That scheme is not in play.',
+  ADD_TRAIT: 'Your identity already has that trait.',
+  DISCARD: 'There is no card to discard.',
+  PUT_INTO_PLAY: 'No card can be put into play.',
+  REMOVE_COUNTERS: 'There is no counter to remove.',
+  REMOVE_COUNTERS_MATCHING_FILTER: 'There is no counter to remove.',
+  RETURN_TO_HAND: 'There is no card to return to hand.',
 };
 
 /**
@@ -620,10 +746,12 @@ function unmetChoiceSteps(
   const openSteps = steps.filter(
     (s) => !isStepGateClosedByState(s, state, { playerId: player.id }),
   );
-  const choiceSteps = stepsNeedingChoice(openSteps);
-  if (choiceSteps.length === 0 || openSteps.some((s) => isAlwaysValidStep(s, player))) {
+  const judgedSteps = stepsNeedingChoice(openSteps);
+  if (judgedSteps.length === 0 || openSteps.some((s) => isAlwaysValidStep(s, player))) {
     return undefined;
   }
+  const selectorSteps = judgedSteps.filter((s) => !isParamsOnlyStep(s));
+  const choiceSteps = selectorSteps.length > 0 ? selectorSteps : judgedSteps;
   const hasTarget = (step: AbilityStep): boolean => {
     if (step.effect === 'PLAYER_CHOICE') {
       return choiceOptions(step).some(
@@ -648,7 +776,13 @@ function unmetChoiceSteps(
           : undefined;
       // A named target the effect cannot affect is not a valid target, whatever else is in play.
       if (named) return canAffect(state, step, named, sourceCardInstance, player, ability);
-      return getValidStepTargets(state, player, step, { sourceCardInstance, ability }).length > 0;
+      // "This side scheme" is the source card: without it the selector cannot be judged.
+      const selectorHasTarget =
+        !selector ||
+        (selector === 'THIS_SIDE_SCHEME' && !sourceCardInstance) ||
+        getValidStepTargets(state, player, step, { sourceCardInstance, ability }).length > 0;
+      const rule = hasStepRule(step) ? STEP_RULES[step.effect as EffectType] : undefined;
+      return selectorHasTarget && (!rule || rule(state, player, step, sourceCardInstance));
     }
     // Callers without a triggering event (a prompt answered later) cannot judge "that enemy".
     if (!eventTarget?.targetInstanceId && !eventTarget?.targetType) return true;

@@ -1,4 +1,4 @@
-import { AlterEgoCard, CardType, DecisionPromptOption, PendingDecisionPrompt } from '../../models';
+import { AlterEgoCard, CardType, PendingDecisionPrompt } from '../../models';
 import { getPlayer, canChangeForm, canBasicRecover, canInitiateAbility } from '../legality-checker';
 import { getEffectiveMaxHealth } from '../stat-calculator';
 import { executeAbilityCost, checkAndDiscardZeroCounterCard } from '../cost-engine';
@@ -8,13 +8,7 @@ import { recordBasicAction } from '../stats';
 import { appendLog } from '../../state/game-log';
 import { dispatchTrigger } from '../../triggers/trigger-dispatcher';
 import { nextEngineId } from '../../state/rng';
-import {
-  firstChosenTargetStep,
-  getValidStepTargets,
-  isCancelledByOwnStatus,
-  targetChoiceLabel,
-} from '../../effects/target-choice';
-import { isStepGateClosedByState } from '../step-gate-evaluator';
+import { chooseInitialTarget, targetChoiceOptions } from '../../effects/target-choice';
 import { enqueueDecisionPrompt } from '../prompt-queue';
 import type { ActionHandler } from './types';
 
@@ -238,60 +232,38 @@ export const handleUseCardAbility: ActionHandler<'USE_CARD_ABILITY'> = (
   const costContext = { discardedCards, resourcesSpent };
 
   let abilityTargetId = action.targetInstanceId;
-  const chosen = firstChosenTargetStep(
-    ability.steps,
-    (step) => !isStepGateClosedByState(step, nextState, { playerId: action.playerId }),
+  const initial = chooseInitialTarget(
+    nextState,
+    player,
+    [ability],
+    targetCardInst,
+    abilityTargetId,
   );
-  const choiceStep = chosen?.step;
-  const requiredAbilityScope = chosen?.selector;
-
-  const willBeCanceledByStatus = isCancelledByOwnStatus(player, ability);
-
-  if (choiceStep && requiredAbilityScope && !abilityTargetId && !willBeCanceledByStatus) {
-    const eligibleTargets = getValidStepTargets(
-      nextState,
-      player,
-      choiceStep!,
-      { sourceCardInstance: targetCardInst, ability },
-      requiredAbilityScope,
-    );
-    if (eligibleTargets.length === 1) {
-      abilityTargetId = eligibleTargets[0].id;
-    } else if (eligibleTargets.length > 1) {
-      const options: DecisionPromptOption[] = eligibleTargets.map((t) => {
-        const label = targetChoiceLabel(t);
-        return {
-          id: t.id,
-          label,
-          description: `Target ${label} with ${targetCardInst?.card.name || ability.id}`,
-          effect: 'ABILITY_CHOSEN_TARGET',
-          params: {
-            isAbilityTargetChoice: true,
-            ability,
-            sourceCardInst: sourceCardSnapshot || targetCardInst,
-            abilityKey,
-            playerId: action.playerId,
-            ...costContext,
-          },
-        };
-      });
-
-      const prompt: PendingDecisionPrompt = {
-        promptId: `prompt_ability_target_${nextEngineId(nextState, 'id')}`,
+  if (initial.kind === 'CHOSEN') {
+    abilityTargetId = initial.target.id;
+  } else if (initial.kind === 'CHOICES') {
+    const sourceName = targetCardInst?.card.name || 'Ability';
+    const prompt: PendingDecisionPrompt = {
+      promptId: `prompt_ability_target_${nextEngineId(nextState, 'id')}`,
+      playerId: action.playerId,
+      title: `Choose Target for ${sourceName}`,
+      description: `Select target for ${sourceName}:`,
+      sourceCardName: sourceName,
+      options: targetChoiceOptions(initial.targets, sourceName, 'ABILITY_CHOSEN_TARGET', {
+        isAbilityTargetChoice: true,
+        ability,
+        sourceCardInst: sourceCardSnapshot || targetCardInst,
+        abilityKey,
         playerId: action.playerId,
-        title: `Choose Target for ${targetCardInst?.card.name || 'Ability'}`,
-        description: `Select target for ${targetCardInst?.card.name || 'Ability'}:`,
-        sourceCardName: targetCardInst?.card.name || 'Ability',
-        options,
-        isVoluntary: false,
-      };
+        ...costContext,
+      }),
+      isVoluntary: false,
+    };
 
-      const enqueuedState = enqueueDecisionPrompt(nextState, prompt);
-      return {
-        state: enqueuedState,
-        result: { success: true, onomatopoeia: 'CHOOSE TARGET!' },
-      };
-    }
+    return {
+      state: enqueueDecisionPrompt(nextState, prompt),
+      result: { success: true, onomatopoeia: 'CHOOSE TARGET!' },
+    };
   }
 
   // Execute effect primitive

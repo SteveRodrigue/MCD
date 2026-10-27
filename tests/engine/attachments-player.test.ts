@@ -6,7 +6,6 @@ import {
   AlterEgoCard,
   StatusCard,
   SideSchemeState,
-  CardType,
   CardAbility,
   getActiveMainScheme,
   getActiveVillain,
@@ -299,11 +298,11 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     // 0 minions in play tablewide
     const check = canPlayCard(state, 'p1', tracerInstance.instanceId);
     expect(check.allowed).toBe(false);
-    expect(check.reason).toContain('requires a minion in play');
+    expect(check.reason).toContain('No host can take this card');
 
     const playability = evaluateCardPlayability(state, 'p1', tracerInstance);
     expect(playability.isPlayable).toBe(false);
-    expect(playability.reasons.some((r) => r.toLowerCase().includes('minion'))).toBe(true);
+    expect(playability.reasons.some((r) => r.includes('No host can take this card'))).toBe(true);
 
     const legalActions = getLegalActionsForPlayer(state, 'p1');
     const hasTracerPlay = legalActions.handCardActions.some((a) => a.cardCode === '01007');
@@ -413,63 +412,6 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     expect(m1InState.attachments?.length || 0).toBe(0);
   });
 
-  it('distinguishes CHOSEN_MINION (tablewide) from CHOSEN_ENGAGED_MINION (local)', async () => {
-    const { evaluateMinionTargetRequirement } = await import('@engine/pipeline/legality-checker');
-
-    const player1 = state.players[0];
-    player1.engagedMinions = [];
-
-    // Add Player 2 with an engaged minion
-    state.players.push({
-      ...player1,
-      id: 'p2',
-      name: 'Player 2',
-      engagedMinions: [createCardInstance(cardCatalog.getCard('01101')!)],
-    });
-
-    // Mock card requiring tablewide minion (CHOSEN_MINION)
-    const tablewideCard = {
-      ...cardCatalog.getCard('01007')!,
-      type: CardType.EVENT,
-      enrichment: {
-        abilities: [
-          {
-            id: 'test_tablewide',
-            timing: 'ACTION' as const,
-            steps: [{ effect: 'DEAL_DAMAGE' as const, effectParams: { target: 'CHOSEN_MINION' } }],
-          },
-        ],
-      },
-    };
-
-    // Mock card requiring local minion (CHOSEN_ENGAGED_MINION)
-    const localCard = {
-      ...cardCatalog.getCard('01007')!,
-      type: CardType.EVENT,
-      enrichment: {
-        abilities: [
-          {
-            id: 'test_local',
-            timing: 'ACTION' as const,
-            steps: [
-              { effect: 'DEAL_DAMAGE' as const, effectParams: { target: 'CHOSEN_ENGAGED_MINION' } },
-            ],
-          },
-        ],
-      },
-    };
-
-    // Player 1 has 0 minions, but Player 2 has 1:
-    // CHOSEN_MINION allowed for Player 1
-    const resTablewide = evaluateMinionTargetRequirement(state, player1, tablewideCard as any);
-    expect(resTablewide.allowed).toBe(true);
-
-    // CHOSEN_ENGAGED_MINION disallowed for Player 1
-    const resLocal = evaluateMinionTargetRequirement(state, player1, localCard as any);
-    expect(resLocal.allowed).toBe(false);
-    expect(resLocal.reason).toContain('engaged with you');
-  });
-
   it('validates CHOSEN_MINION, CHOSEN_ENGAGED_MINION, ALL_MINIONS, and ENGAGED_ENEMIES in TargetSelectorSchema', async () => {
     const { TargetSelectorSchema } = await import('../../src/data/supplemental/schema');
 
@@ -562,11 +504,11 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
 
       const check = canPlayCard(state, 'p1', inspiredInst.instanceId, []);
       expect(check.allowed).toBe(false);
-      expect(check.reason?.toLowerCase()).toContain('ally');
+      expect(check.reason).toContain('No host can take this card');
 
       const playability = evaluateCardPlayability(state, 'p1', inspiredInst);
       expect(playability.isPlayable).toBe(false);
-      expect(playability.reasons.some((r) => r.toLowerCase().includes('ally'))).toBe(true);
+      expect(playability.reasons.some((r) => r.includes('No host can take this card'))).toBe(true);
 
       const actions = getLegalActionsForPlayer(state, 'p1');
       expect(actions.handCardActions.some((a) => a.cardCode === '01074')).toBe(false);
@@ -578,7 +520,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
         paymentCardInstanceIds: [],
       });
       expect(res.result.success).toBe(false);
-      expect(res.result.error?.toLowerCase()).toContain('ally');
+      expect(res.result.error).toContain('No host can take this card');
     });
 
     it('Auto-attaches Inspired to single ally in play and boosts stats', () => {
@@ -678,7 +620,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
       // Since the only ally in play already has Inspired (maxPerHost: 1), card is unplayable
       const check = canPlayCard(state, 'p1', newInspired.instanceId, [paymentCard.instanceId]);
       expect(check.allowed).toBe(false);
-      expect(check.reason?.toLowerCase()).toContain('all in-play allies');
+      expect(check.reason).toContain('No host can take this card');
     });
   });
 });

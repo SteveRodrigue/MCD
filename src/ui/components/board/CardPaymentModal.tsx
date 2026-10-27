@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Sparkles, Shield, Swords, Zap, AlertTriangle, Heart, Users, Target } from 'lucide-react';
+import { Sparkles, Shield, Swords, Zap, AlertTriangle, Heart, Users } from 'lucide-react';
 import {
   CardInstance,
   GameState,
@@ -7,7 +7,7 @@ import {
   CardType,
   VillainState,
 } from '../../../engine/models';
-import { getEventTargetChoice } from '../../../engine/effects/target-choice';
+import { getPlayTargetChoice } from '../../../engine/effects/target-choice';
 import type { ResolvedTarget } from '../../../engine/effects/target-resolver';
 import { getCardEnrichment } from '../../../data/supplemental';
 import {
@@ -215,7 +215,7 @@ interface TargetPicker {
   tone: TargetTone;
 }
 
-/** The picker an event's chosen-target selector (`CHOSEN_SCHEME`, `CHOSEN_ENEMY`, ...) is shown in. */
+/** The picker a played card's chosen-target selector (`CHOSEN_SCHEME`, `CHOSEN_ENEMY`, ...) is shown in. */
 function getTargetPicker(selector: string): TargetPicker {
   if (selector.includes('SCHEME')) {
     return {
@@ -360,16 +360,8 @@ function getDefaultSelection(
     }
   }
 
-  // Default target: the first valid target of the event, or the first engaged minion it attaches to
-  const attachStep = (cardToPlay.card.enrichment?.abilities || [])
-    .flatMap((a) => a.steps || [])
-    .find((s) => s.effect === 'ATTACH_TO_HOST');
-  const attachTarget = attachStep?.effectParams?.target as string | undefined;
-  if (attachTarget === 'CHOSEN_MINION' || attachTarget === 'MINION') {
-    targetId = gameState.players.flatMap((p) => p.engagedMinions || [])[0]?.instanceId;
-  } else {
-    targetId = getEventTargetChoice(gameState, player, cardToPlay)?.targets[0]?.id;
-  }
+  // Default target: the first valid target of what the card runs when played
+  targetId = getPlayTargetChoice(gameState, player, cardToPlay)?.targets[0]?.id;
   return { handCardIds: autoSelectedHandIds, targetId };
 }
 
@@ -703,50 +695,18 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     });
   }, [discardCost, cardToPlay?.instanceId, player, gameState]);
 
-  // Potential Targets (Enemies, Schemes, or Minion Hosts)
-  const cardAbilities = card?.enrichment?.abilities || [];
-  const attachStep = cardAbilities
-    .flatMap((a) => a.steps || [])
-    .find((s) => s.effect === 'ATTACH_TO_HOST');
-  const attachTarget = attachStep?.effectParams?.target as string | undefined;
-  const isMinionAttachment =
-    !abilityCost && (attachTarget === 'CHOSEN_MINION' || attachTarget === 'MINION');
-
-  const minionAttachmentTargets = useMemo(() => {
-    const targets: {
-      id: string;
-      code: string;
-      name: string;
-      hp: number;
-    }[] = [];
-
-    // Engaged minions across all players (RR v1.8 p. 5, 10)
-    gameState.players.forEach((p) => {
-      (p.engagedMinions || []).forEach((m) => {
-        targets.push({
-          id: m.instanceId,
-          code: m.card.code,
-          name:
-            p.id === player.id ? `${m.card.name} (Minion)` : `${m.card.name} (${p.name}'s Minion)`,
-          hp: Math.max(0, getEffectiveMinionHitPoints(gameState, m) - (m.tokens?.damage || 0)),
-        });
-      });
-    });
-    return targets;
-  }, [gameState, player.id]);
-
-  // ONLY event cards execute their abilities immediately upon being played from hand (RR v1.8 p. 12, 23; Issue #94).
-  // Supports, Upgrades, Allies, and Resource cards enter play without targets; their abilities trigger/activate later.
+  // An event runs its abilities and an upgrade or support attaches to a host when played from hand
+  // (RR v1.8 p. 12, 23; Issue #94); other cards enter play without targets.
   // The engine decides which targets are valid (RR v1.8 "Target", ADR-0090); the modal only shows them.
-  const eventTargetChoice = useMemo(
+  const playTargetChoice = useMemo(
     () =>
-      abilityCost || !cardToPlay ? undefined : getEventTargetChoice(gameState, player, cardToPlay),
+      abilityCost || !cardToPlay ? undefined : getPlayTargetChoice(gameState, player, cardToPlay),
     [abilityCost, cardToPlay, gameState, player],
   );
-  const eventTargetPicker = eventTargetChoice && getTargetPicker(eventTargetChoice.selector);
-  const eventTargets = useMemo(
-    () => (eventTargetChoice?.targets ?? []).map((t) => describeTarget(gameState, player, t)),
-    [eventTargetChoice, gameState, player],
+  const playTargetPicker = playTargetChoice && getTargetPicker(playTargetChoice.selector);
+  const playTargets = useMemo(
+    () => (playTargetChoice?.targets ?? []).map((t) => describeTarget(gameState, player, t)),
+    [playTargetChoice, gameState, player],
   );
 
   if (!isOpen || !cardToPlay || !card) return null;
@@ -1140,31 +1100,15 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
           </div>
         )}
 
-        {/* Target Selector (if Minion Attachment, Attack or Thwart) */}
-        {isMinionAttachment && (
+        {/* Target Selector: the target an event or an attachment's host asks for */}
+        {playTargetPicker && (
           <TargetChoices
-            title="Select Minion to Attach To:"
-            icon={<Target className="w-4 h-4 text-comic-red" />}
-            tone="danger"
+            title={playTargetPicker.title}
+            icon={playTargetPicker.icon}
+            tone={playTargetPicker.tone}
             selectedId={selectedTargetId}
             onSelect={setSelectedTargetId}
-            targets={minionAttachmentTargets.map((t) => ({
-              id: t.id,
-              code: t.code,
-              name: t.name,
-              trailing: () => <span>{t.hp} HP</span>,
-            }))}
-          />
-        )}
-
-        {eventTargetPicker && (
-          <TargetChoices
-            title={eventTargetPicker.title}
-            icon={eventTargetPicker.icon}
-            tone={eventTargetPicker.tone}
-            selectedId={selectedTargetId}
-            onSelect={setSelectedTargetId}
-            targets={eventTargets.map((t) => ({
+            targets={playTargets.map((t) => ({
               id: t.id,
               code: t.code,
               name: t.name,

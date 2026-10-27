@@ -6,7 +6,6 @@ import {
   DecisionPromptOption,
   PendingDecisionPrompt,
   PlayerState,
-  getVillainsInPlay,
 } from '../../models';
 import {
   getPlayer,
@@ -24,6 +23,7 @@ import {
   getApplicableCostReductions,
 } from '../cost-engine';
 import { resetCardState } from '../../effects';
+import { attachStepOf } from '../../../data/supplemental/runtime';
 import { initializeCardUses, attachCardToHost } from '../../state/state-validator';
 import { placeSideScheme } from '../../state/side-scheme';
 import { getEffectiveMaxHealth } from '../stat-calculator';
@@ -31,42 +31,30 @@ import { applyToughnessOnEntry } from '../../state/card-instance';
 import { dispatchTrigger } from '../../triggers/trigger-dispatcher';
 import { recordCardPlay } from '../stats';
 import { appendLog } from '../../state/game-log';
-import { nextEngineId } from '../../state/rng';
 import { resolveEntityByInstanceId } from '../../effects/target-resolver';
+import { nextEngineId } from '../../state/rng';
 import {
-  firstChosenTargetStep,
+  chooseInitialTarget,
+  describeTarget,
   getValidStepTargets,
-  isCancelledByOwnStatus,
-  targetChoiceLabel,
+  targetChoiceOptions,
 } from '../../effects/target-choice';
-import { isStepGateClosedByState } from '../step-gate-evaluator';
 import { enqueueDecisionPrompt } from '../prompt-queue';
-import { resolveAttackedVillain, resolveEventAbilities } from './shared';
+import { chosenTargetTypeOf, resolveAttackedVillain, resolveEventAbilities } from './shared';
 import type { ActionHandler, TypedAction } from './types';
 import type { ActionResult, GameState } from '../../models';
 
-interface HostCandidate {
-  id: string;
-  /** Label shown in the prompt and written to the log. */
-  name: string;
-}
-
 interface HostKind {
-  hosts: readonly string[];
+  /** The host selector this kind serves. */
+  host: string;
   /** Prompt id slug, option flag and text for the "choose a host" decision. */
   slug: 'minion' | 'ally' | 'enemy';
   choiceFlag: 'isAttachmentMinionChoice' | 'isAttachmentAllyChoice' | 'isAttachmentEnemyChoice';
   title: string;
   onomatopoeia: string;
-  collect: (state: GameState, hasRoom: (host: HostLike) => boolean) => HostCandidate[];
   /** Display name for a host picked explicitly, or the fallback when none is picked. */
   describe: (state: GameState, hostId: string | undefined) => string;
 }
-
-type HostLike = { attachments?: CardInstance[] };
-
-const withController = (card: CardInstance, player: PlayerState) =>
-  `${card.card.name} (${player.name})`;
 
 const findControlled = (
   state: GameState,
@@ -75,49 +63,34 @@ const findControlled = (
 ): string | undefined => {
   for (const p of state.players) {
     const found = p[zone]?.find((c) => c.instanceId === instanceId);
-    if (found) return withController(found, p);
+    if (found) return `${found.card.name} (${p.name})`;
   }
   return undefined;
 };
 
-const controlledCandidates = (state: GameState, zone: 'engagedMinions' | 'allies') =>
-  state.players.flatMap((p) =>
-    (p[zone] || []).map((c) => ({ host: c, id: c.instanceId, name: withController(c, p) })),
-  );
-
 const HOST_KINDS: readonly HostKind[] = [
   {
-    hosts: ['CHOSEN_MINION', 'MINION'],
+    host: 'CHOSEN_MINION',
     slug: 'minion',
     choiceFlag: 'isAttachmentMinionChoice',
     title: 'Choose Minion Host',
     onomatopoeia: 'CHOOSE MINION!',
-    collect: (state, hasRoom) =>
-      controlledCandidates(state, 'engagedMinions').filter((c) => hasRoom(c.host)),
     describe: (state, id) => findControlled(state, 'engagedMinions', id) ?? (id || 'Minion'),
   },
   {
-    hosts: ['CHOSEN_ALLY', 'ALLY'],
+    host: 'CHOSEN_ALLY',
     slug: 'ally',
     choiceFlag: 'isAttachmentAllyChoice',
     title: 'Choose Ally Host',
     onomatopoeia: 'CHOOSE ALLY!',
-    collect: (state, hasRoom) =>
-      controlledCandidates(state, 'allies').filter((c) => hasRoom(c.host)),
     describe: (state, id) => findControlled(state, 'allies', id) ?? (id || 'Ally'),
   },
   {
-    hosts: ['CHOSEN_ENEMY', 'ENEMY'],
+    host: 'CHOSEN_ENEMY',
     slug: 'enemy',
     choiceFlag: 'isAttachmentEnemyChoice',
     title: 'Choose Enemy Host',
     onomatopoeia: 'CHOOSE ENEMY!',
-    collect: (state, hasRoom) => [
-      ...getVillainsInPlay(state)
-        .filter(hasRoom)
-        .map((v) => ({ id: v.instanceId || 'villain', name: v.card.name })),
-      ...controlledCandidates(state, 'engagedMinions').filter((c) => hasRoom(c.host)),
-    ],
     describe: (state, id) =>
       findControlled(state, 'engagedMinions', id) ??
       resolveAttackedVillain(state, id)?.card.name ??
@@ -140,21 +113,9 @@ export function resolveChosenHostAttachment(
   action: TypedAction<'PLAY_CARD'>,
   playedCardInstance: CardInstance,
   targetHost: string,
-  attachStep: AbilityStep | undefined,
+  attachStep: AbilityStep,
 ): { state: GameState; result: ActionResult } | undefined {
-  const kind = HOST_KINDS.find((k) => k.hosts.includes(targetHost));
-  const maxPerHost =
-    attachStep?.effectParams?.maxPerHost !== undefined
-      ? Number(attachStep.effectParams.maxPerHost)
-      : undefined;
-  const hasRoom = (host: HostLike) =>
-    maxPerHost === undefined ||
-    maxPerHost <= 0 ||
-    (host.attachments || []).filter(
-      (att) =>
-        att.card.code === playedCardInstance.card.code ||
-        att.card.name === playedCardInstance.card.name,
-    ).length < maxPerHost;
+  const kind = HOST_KINDS.find((k) => k.host === targetHost);
 
   const attachAndLog = (hostId: string | undefined, hostName: string) => {
     attachCardToHost(nextState, playedCardInstance, targetHost, hostId);
@@ -179,19 +140,30 @@ export function resolveChosenHostAttachment(
     return undefined;
   }
 
-  const candidates = kind.collect(nextState, hasRoom);
+  // The hosts the gate accepts: the same list that lets the card be played (ADR-0090).
+  const candidates = getValidStepTargets(
+    nextState,
+    player,
+    attachStep,
+    { sourceCardInstance: playedCardInstance },
+    targetHost,
+  );
   if (candidates.length > 1) {
-    const options: DecisionPromptOption[] = candidates.map(({ id, name }) => ({
-      id,
-      label: name,
-      description: `Attach ${playedCardInstance.card.name} to ${name}`,
-      effect: 'ATTACH_TO_HOST',
-      params: {
-        [kind.choiceFlag]: true,
-        attachmentCard: playedCardInstance,
-        ownerId: action.playerId,
-      },
-    }));
+    const options: DecisionPromptOption[] = candidates.map((target) => {
+      const { label, cardCode } = describeTarget(target);
+      return {
+        id: target.id,
+        label,
+        cardCode,
+        description: `Attach ${playedCardInstance.card.name} to ${label}`,
+        effect: 'ATTACH_TO_HOST',
+        params: {
+          [kind.choiceFlag]: true,
+          attachmentCard: playedCardInstance,
+          ownerId: action.playerId,
+        },
+      };
+    });
     const prompt: PendingDecisionPrompt = {
       promptId: `prompt_attach_${kind.slug}_${nextEngineId(nextState, 'id')}`,
       playerId: action.playerId,
@@ -209,7 +181,7 @@ export function resolveChosenHostAttachment(
 
   // One candidate attaches to it; none attaches without a chosen host.
   const only = candidates[0];
-  attachAndLog(only?.id, only?.name ?? describe(nextState, undefined));
+  attachAndLog(only?.id, only ? describeTarget(only).label : describe(nextState, undefined));
   return undefined;
 }
 
@@ -223,10 +195,9 @@ export function playUpgradeOrSupport(
   resourcesSpent?: string[],
   onomatopoeia: string = 'PLAY!',
 ): { state: GameState; result: ActionResult } {
-  const attachAbility = abilities.find((a) => a.steps?.some((s) => s.effect === 'ATTACH_TO_HOST'));
+  const attachStep = abilities.map(attachStepOf).find(Boolean);
 
-  if (attachAbility) {
-    const attachStep = attachAbility.steps.find((s) => s.effect === 'ATTACH_TO_HOST');
+  if (attachStep) {
     const targetHost = (attachStep?.effectParams?.target as string) || 'VILLAIN';
     playedCardInstance.ownerId = action.playerId;
 
@@ -392,95 +363,55 @@ export function playEvent(
   let eventTargetId = action.targetInstanceId;
   let targetType = initialTargetType;
 
-  // Check if event has a CHOSEN_* target scope
-  const isOpenStep = (step: AbilityStep) =>
-    !isStepGateClosedByState(step, nextState, { playerId: action.playerId });
-  let choiceAbility: CardAbility | undefined;
-  let chosen: ReturnType<typeof firstChosenTargetStep>;
-  for (const ab of abilities) {
-    chosen = firstChosenTargetStep(ab.steps, isOpenStep);
-    if (chosen) {
-      choiceAbility = ab;
-      break;
-    }
-  }
-  const choiceStep = chosen?.step;
-  const requiredTargetScope = chosen?.selector;
+  // The first chosen target is asked before any effect runs (RR v1.8 "Target").
+  const initial = chooseInitialTarget(
+    nextState,
+    player,
+    abilities,
+    playedCardInstance,
+    eventTargetId,
+  );
+  if (initial.kind === 'CHOSEN') {
+    eventTargetId = initial.target.id;
+    targetType = chosenTargetTypeOf(nextState, eventTargetId, targetType);
+  } else if (initial.kind === 'CHOICES') {
+    const cardName = playedCardInstance.card.name;
+    const resume = {
+      isEventTargetChoice: true,
+      playedCardInstance,
+      ownerId: action.playerId,
+      resourcesSpent,
+    };
+    const options = targetChoiceOptions(initial.targets, cardName, 'EVENT_CHOSEN_TARGET', {
+      ...resume,
+      discardCardInstanceIds: action.discardCardInstanceIds,
+    });
+    options.push({
+      id: 'cancel_target',
+      label: 'Cancel (Return to Hand)',
+      description: `Cancel playing ${cardName} and return it to hand`,
+      effect: 'EVENT_CHOSEN_TARGET',
+      params: resume,
+    });
 
-  const willBeCanceledByStatus = abilities.some((a) => isCancelledByOwnStatus(player, a));
-
-  if (choiceStep && requiredTargetScope && !eventTargetId && !willBeCanceledByStatus) {
-    const eligibleTargets = getValidStepTargets(
-      nextState,
-      player,
-      choiceStep!,
-      { sourceCardInstance: playedCardInstance, ability: choiceAbility },
-      requiredTargetScope,
-    );
-    if (eligibleTargets.length === 1) {
-      eventTargetId = eligibleTargets[0].id;
-      const resolved = resolveEntityByInstanceId(nextState, eventTargetId);
-      if (resolved) {
-        if (resolved.kind === 'scheme') targetType = resolved.entityType;
-        else if (resolved.kind === 'character') {
-          if (resolved.entityType === 'villain') targetType = 'villain';
-          else if (resolved.entityType === 'minion') targetType = 'minion';
-          else if (resolved.entityType === 'ally') targetType = 'ally';
-          else targetType = 'character';
-        } else if (resolved.kind === 'player') targetType = 'identity';
-      }
-    } else if (eligibleTargets.length > 1) {
-      const options: DecisionPromptOption[] = eligibleTargets.map((t) => {
-        const label = targetChoiceLabel(t);
-        return {
-          id: t.id,
-          label,
-          description: `Target ${label} with ${playedCardInstance.card.name}`,
-          effect: 'EVENT_CHOSEN_TARGET',
-          params: {
-            isEventTargetChoice: true,
-            playedCardInstance,
-            ownerId: action.playerId,
-            resourcesSpent,
-            discardCardInstanceIds: action.discardCardInstanceIds,
-          },
-        };
-      });
-
-      options.push({
-        id: 'cancel_target',
-        label: 'Cancel (Return to Hand)',
-        description: `Cancel playing ${playedCardInstance.card.name} and return it to hand`,
-        effect: 'EVENT_CHOSEN_TARGET',
-        params: {
-          isEventTargetChoice: true,
-          playedCardInstance,
-          ownerId: action.playerId,
-          resourcesSpent,
-        },
-      });
-
-      const prompt: PendingDecisionPrompt = {
-        promptId: `prompt_event_target_${nextEngineId(nextState, 'id')}`,
-        playerId: action.playerId,
-        title: `Choose Target for ${playedCardInstance.card.name}`,
-        description: `Select target for ${playedCardInstance.card.name}:`,
-        sourceCardName: playedCardInstance.card.name,
-        options,
-        isVoluntary: true,
-      };
-
-      const enqueuedState = enqueueDecisionPrompt(nextState, prompt);
-      return {
-        state: enqueuedState,
-        result: { success: true, onomatopoeia: 'CHOOSE TARGET!' },
-      };
-    } else {
-      return {
-        state,
-        result: { success: false, error: 'No eligible targets found for card effect.' },
-      };
-    }
+    const prompt: PendingDecisionPrompt = {
+      promptId: `prompt_event_target_${nextEngineId(nextState, 'id')}`,
+      playerId: action.playerId,
+      title: `Choose Target for ${cardName}`,
+      description: `Select target for ${cardName}:`,
+      sourceCardName: cardName,
+      options,
+      isVoluntary: true,
+    };
+    return {
+      state: enqueueDecisionPrompt(nextState, prompt),
+      result: { success: true, onomatopoeia: 'CHOOSE TARGET!' },
+    };
+  } else if (initial.kind === 'NO_VALID_TARGET') {
+    return {
+      state,
+      result: { success: false, error: 'No eligible targets found for card effect.' },
+    };
   }
 
   // Execute declarative event abilities

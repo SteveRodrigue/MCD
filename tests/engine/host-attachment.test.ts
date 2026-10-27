@@ -65,9 +65,11 @@ describe('resolveChosenHostAttachment (R6b)', () => {
       },
       played,
       targetHost,
-      maxPerHost === undefined
-        ? undefined
-        : { effect: 'ATTACH_TO_HOST', effectParams: { target: targetHost, maxPerHost } },
+      {
+        effect: 'ATTACH_TO_HOST',
+        effectParams:
+          maxPerHost === undefined ? { target: targetHost } : { target: targetHost, maxPerHost },
+      },
     );
 
   beforeEach(() => {

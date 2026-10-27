@@ -410,7 +410,7 @@ describe('Systemic CHOSEN_* Entity Targeting Pipeline (Fixes #146)', () => {
       // No minions in play
       const check = canPlayCard(state, 'p1', 'ra_1', ['res_1']);
       expect(check.allowed).toBe(false);
-      expect(check.reason).toContain('requires a minion in play');
+      expect(check.reason).toContain('No character can take that damage');
     });
   });
 });

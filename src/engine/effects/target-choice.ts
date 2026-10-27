@@ -162,7 +162,7 @@ export function firstChosenTargetStep(
 export function describeTarget(target: ResolvedTarget): { label: string; cardCode?: string } {
   if (target.kind === 'player') {
     const p = target.entity;
-    return { label: p.name, cardCode: p.activeFormCard?.code };
+    return { label: p.hero?.name || p.name, cardCode: p.activeFormCard?.code };
   }
   if (target.kind === 'scheme') {
     const scheme = target.entity;
@@ -174,13 +174,23 @@ export function describeTarget(target: ResolvedTarget): { label: string; cardCod
       const p = target.entity as PlayerState;
       const form =
         p.activeFormCard?.name ?? (p.currentForm === 'hero' ? p.hero.name : p.alterEgo.name);
-      return { label: `${p.name} (${form})`, cardCode: p.activeFormCard?.code };
+      const heroName = p.hero?.name || p.name;
+      return {
+        label: heroName === form ? form : `${heroName} (${form})`,
+        cardCode: p.activeFormCard?.code,
+      };
     }
     const card = (target.entity as CardInstance | VillainState).card;
     const name = card?.name ?? 'Target';
-    const isControlled = target.entityType === 'ally' || target.entityType === 'minion';
+    if (target.entityType === 'ally') {
+      const owner = target.player?.hero?.name || target.player?.name;
+      return {
+        label: owner ? `${name} (${owner})` : name,
+        cardCode: card?.code,
+      };
+    }
     return {
-      label: isControlled && target.player ? `${name} (${target.player.name})` : name,
+      label: name,
       cardCode: card?.code,
     };
   }
@@ -198,8 +208,25 @@ export function targetChoiceOptions(
   effect: 'EVENT_CHOSEN_TARGET' | 'ABILITY_CHOSEN_TARGET',
   params: Record<string, unknown>,
 ): DecisionPromptOption[] {
+  const minionNameCounts = new Map<string, number>();
+  for (const t of targets) {
+    if (t.kind === 'character' && t.entityType === 'minion') {
+      const name = (t.entity as CardInstance).card?.name ?? 'Minion';
+      minionNameCounts.set(name, (minionNameCounts.get(name) || 0) + 1);
+    }
+  }
+
   return targets.map((target) => {
-    const { label, cardCode } = describeTarget(target);
+    let { label, cardCode } = describeTarget(target);
+    if (
+      target.kind === 'character' &&
+      target.entityType === 'minion' &&
+      target.player &&
+      (minionNameCounts.get(label) || 0) > 1
+    ) {
+      const engagedHero = target.player.hero?.name || target.player.name;
+      label = `${label} (engaged with ${engagedHero})`;
+    }
     return {
       id: target.id,
       label,

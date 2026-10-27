@@ -58,6 +58,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
   if (prompt.kind === 'DISTRIBUTE_POINTS' || prompt.distributionConfig) {
     return (
       <DistributeAmountModal
+        key={prompt.promptId}
         prompt={prompt}
         onConfirm={(assignments) => onSelectOption('confirm_distribution', { assignments })}
         onCancel={prompt.distributionConfig?.canCancel ? () => onSelectOption('cancel') : undefined}
@@ -69,6 +70,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
   if (prompt.kind === 'ORDER_SIMULTANEOUS_ABILITIES') {
     return (
       <SimultaneousAbilitiesModal
+        key={prompt.promptId}
         prompt={prompt}
         onConfirmOrder={(sequenceOrder) => onSelectOption('confirm_order', { sequenceOrder })}
       />
@@ -79,6 +81,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
   if (prompt.selection) {
     return (
       <SelectCardsModal
+        key={prompt.promptId}
         prompt={prompt}
         players={effectivePlayers}
         onConfirm={(selectedOptionIds) =>

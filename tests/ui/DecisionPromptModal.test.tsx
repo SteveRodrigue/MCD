@@ -3,6 +3,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { DecisionPromptModal } from '../../src/ui/components/board/DecisionPromptModal';
 import { PendingDecisionPrompt } from '../../src/engine/models';
+import { createCardInstance } from '../../src/engine/state/card-instance';
 
 describe('DecisionPromptModal Card Preview (Issue #104)', () => {
   it('renders triggering card showcase and thumbnail with printed text and handles option selection', () => {
@@ -410,5 +411,53 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
     fireEvent.click(optionButton);
 
     expect(onSelectOption).toHaveBeenCalledWith('discard_inst_web_shooter');
+  });
+
+  it('renders discarded encounter card showcase with thumbnail and boost icon badge (Issue #460)', async () => {
+    const hydraBomber = cardCatalog.getCard('01110')!;
+    const discardedInstance = createCardInstance(hydraBomber);
+
+    const prompt: PendingDecisionPrompt = {
+      promptId: 'prompt_ritual_combat_test',
+      playerId: 'p1',
+      title: 'Ritual Combat',
+      description:
+        "Choose an effect to resolve for Ritual Combat's When Revealed trigger (X is 1 more than the boost icons on the discarded card; currently X = 2):",
+      sourceCardName: 'Ritual Combat',
+      sourceCardCode: '01159',
+      isVoluntary: false,
+      discardedCards: [discardedInstance],
+      options: [
+        {
+          id: 'deal_damage',
+          label: 'Deal 2 damage to your hero',
+          description:
+            'X is 1 more than the number of boost icons on the discarded encounter card. (X = 2)',
+          effect: 'DEAL_DAMAGE',
+        },
+        {
+          id: 'place_threat',
+          label: 'Place 2 threat on the main scheme',
+          description:
+            'X is 1 more than the number of boost icons on the discarded encounter card. (X = 2)',
+          effect: 'ADD_THREAT',
+        },
+      ],
+    };
+
+    await act(async () => {
+      render(<DecisionPromptModal prompt={prompt} onSelectOption={vi.fn()} />);
+    });
+
+    // Check discarded card panel
+    expect(screen.getByTestId('decision-prompt-discarded-cards')).toBeDefined();
+    expect(screen.getByText('Discarded Encounter Card')).toBeDefined();
+    expect(screen.getByText('Hydra Bomber')).toBeDefined();
+    expect(screen.getByTestId('discarded-card-boost-badge')).toBeDefined();
+    expect(screen.getByText(/1 BOOST ICON/i)).toBeDefined();
+
+    // Check resolved options
+    expect(screen.getByText('Deal 2 damage to your hero')).toBeDefined();
+    expect(screen.getByText('Place 2 threat on the main scheme')).toBeDefined();
   });
 });

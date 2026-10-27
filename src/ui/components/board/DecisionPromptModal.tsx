@@ -434,6 +434,55 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
           </div>
         )}
 
+        {/* Discarded Cards Gallery */}
+        {prompt.discardedCards && prompt.discardedCards.length > 0 && (
+          <div
+            data-testid="decision-prompt-discarded-cards"
+            className={`p-3 overflow-visible ${style.panel}`}
+          >
+            <div className="flex justify-between items-center mb-2 px-1">
+              <span className="text-mini font-black uppercase tracking-wider">
+                {prompt.discardedCards.length === 1
+                  ? 'Discarded Encounter Card'
+                  : `Discarded Cards (${prompt.discardedCards.length})`}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap justify-start items-center gap-3 pt-1 overflow-visible">
+              {prompt.discardedCards.map((inst) => {
+                const card = inst.card;
+                const boostCount = card.boostIcons ?? card.raw?.boost ?? 0;
+                return (
+                  <div
+                    key={inst.instanceId}
+                    data-card-anchor={card.code}
+                    className={`relative flex items-center gap-3 p-2 rounded-sm border border-comic-black shadow-comic-xs ${style.inset}`}
+                  >
+                    <AccentStripe code={card.code} />
+                    <CardArtThumbnail cardCode={card.code} cardName={card.name} size="sm" />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-black text-xs truncate">{card.name}</div>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-nano font-mono font-bold uppercase bg-slate-200 text-slate-800 px-1 py-0.2 rounded-sm border border-comic-black/40">
+                          {card.type}
+                        </span>
+                        {boostCount > 0 && (
+                          <span
+                            data-testid="discarded-card-boost-badge"
+                            className="text-nano font-black uppercase bg-amber-400 text-comic-black px-1.5 py-0.2 rounded-sm border border-comic-black shadow-comic-xs"
+                          >
+                            ⚡ {boostCount} {boostCount === 1 ? 'BOOST ICON' : 'BOOST ICONS'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Option Selection List */}
         <div className="flex flex-col gap-2.5 pt-1">
           {prompt.options.map((option, index) => {

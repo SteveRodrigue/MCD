@@ -169,7 +169,7 @@ describe('Cards that say "your hero" (#222)', () => {
       }).state;
     };
 
-    it('discards the top card of the encounter deck and offers both options', () => {
+    it('discards the top card of the encounter deck and offers both options with resolved X', () => {
       stackTop();
       const discardBefore = state.encounterDiscard.length;
       revealFor('p2', RITUAL_COMBAT);
@@ -178,6 +178,13 @@ describe('Cards that say "your hero" (#222)', () => {
       expect(prompt.playerId).toBe('p2');
       expect(prompt.options.map((o) => o.id)).toEqual(
         expect.arrayContaining(['deal_damage', 'place_threat']),
+      );
+      expect(prompt.discardedCards).toHaveLength(1);
+      expect(prompt.options.find((o) => o.id === 'deal_damage')?.label).toBe(
+        'Deal 3 damage to your hero',
+      );
+      expect(prompt.options.find((o) => o.id === 'place_threat')?.label).toBe(
+        'Place 3 threat on the main scheme',
       );
     });
 

@@ -12,7 +12,6 @@ import {
   CardResources,
 } from '../models';
 import { getEffectiveMaxHealth } from './stat-calculator';
-import { removeCardFromAllZones } from '../state/state-validator';
 import { randomInt } from '../state/rng';
 import { getStepEffectParams } from '../../data/supplemental/runtime';
 import type { ResourceCost, DynamicValueSource } from '../../data/supplemental/schema';
@@ -20,6 +19,7 @@ import { matchesCardFilter } from '../filters/card-filter';
 import { locateCard, readCardResources } from '../queries/card-inspector';
 import { getCardEnrichment } from '../../data/supplemental';
 import { appendLog } from '../state/game-log';
+import { discardCardInstance } from '../state/card-discard';
 
 export interface AbilityPaymentOptions {
   paymentCardInstanceIds?: string[];
@@ -673,9 +673,8 @@ export function executeAbilityCost(
       };
       const health = (sourceCardInst.card as { health?: number }).health;
       if (health && (sourceCardInst.tokens.damage || 0) >= health) {
-        // Defeated from self-damage cost -> remove and discard
-        removeCardFromAllZones(state, sourceCardInst.instanceId);
-        player.discard.push(sourceCardInst);
+        // Defeated from self-damage cost -> remove and discard cleanly
+        discardCardInstance(state, sourceCardInst, player.id);
         appendLog(state, {
           key: 'card.ally.defeated',
           params: { card: sourceCardInst.card.name },
@@ -689,8 +688,7 @@ export function executeAbilityCost(
 
   // 2c. Discard Self Cost (e.g. Superhuman Strength 01028)
   if (cost.discardSelf && sourceCardInst) {
-    removeCardFromAllZones(state, sourceCardInst.instanceId);
-    player.discard.push(sourceCardInst);
+    discardCardInstance(state, sourceCardInst, player.id);
     discardedCards.push(sourceCardInst);
     discardedCount += 1;
   }
@@ -1046,58 +1044,9 @@ export function isAbilityPlayableInForm(
 }
 
 /**
- * Cascades hosted attachments and tucked cards to appropriate discard piles when a host leaves play (RR v1.8 p. 5, 6).
- */
-function cascadeAttachmentsAndTuckedCards(
-  state: GameState,
-  cardInstance: CardInstance,
-  defaultPlayerId: string,
-): void {
-  if (cardInstance.attachments && cardInstance.attachments.length > 0) {
-    for (const attachment of cardInstance.attachments) {
-      const type = attachment.card?.type?.toLowerCase();
-      const isEncounter =
-        type === 'minion' ||
-        type === 'treachery' ||
-        type === 'side_scheme' ||
-        type === 'attachment' ||
-        type === 'obligation';
-      if (isEncounter) {
-        state.encounterDiscard.push(attachment);
-      } else {
-        const ownerId = attachment.ownerId || defaultPlayerId;
-        const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
-        targetP.discard.push(attachment);
-      }
-    }
-    cardInstance.attachments = [];
-  }
-
-  if (cardInstance.cardsUnderneath && cardInstance.cardsUnderneath.length > 0) {
-    for (const tucked of cardInstance.cardsUnderneath) {
-      const type = tucked.card?.type?.toLowerCase();
-      const isEncounter =
-        type === 'minion' ||
-        type === 'treachery' ||
-        type === 'side_scheme' ||
-        type === 'attachment' ||
-        type === 'obligation';
-      if (isEncounter) {
-        state.encounterDiscard.push(tucked);
-      } else {
-        const ownerId = tucked.ownerId || defaultPlayerId;
-        const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
-        targetP.discard.push(tucked);
-      }
-    }
-    cardInstance.cardsUnderneath = [];
-  }
-}
-
-/**
  * Checks if an in-play card has exhausted its 'Uses' counters and discards it per RR v1.8 p. 30 and ADR-0057.
- * Cascades hosted attachments and cards underneath to appropriate discard piles, routes host card to owner's
- * discard, and logs comic onomatopoeia.
+ * Discards host card cleanly via discardCardInstance, cascading attachments and tucked cards, resetting
+ * state, routing to owner's discard, and logging comic onomatopoeia.
  * Strictly respects discardOnEmpty: false for cards that enter with counters but lack the Uses keyword (e.g. Hawkeye 01066).
  */
 export function checkAndDiscardZeroCounterCard(
@@ -1134,20 +1083,10 @@ export function checkAndDiscardZeroCounterCard(
       state.encounterDiscard.some((c) => c.instanceId === cardInstance.instanceId);
     if (isAlreadyDiscarded) return false;
 
-    // 1. Remove using removeCardFromAllZones
-    removeCardFromAllZones(state, cardInstance.instanceId);
+    // Discard cleanly through canonical engine choke point (cascades attachments, resets card state, routes to owner)
+    discardCardInstance(state, cardInstance, player.id);
 
-    // 2. Cascade attachments & cards underneath to discard via helper or loop
-    cascadeAttachmentsAndTuckedCards(state, cardInstance, player.id);
-
-    // 3. Push to owner's discard (or player's discard if owner not found)
-    const owner =
-      (cardInstance.ownerId
-        ? state.players.find((p) => p.id === cardInstance.ownerId)
-        : undefined) || player;
-    owner.discard.push(cardInstance);
-
-    // 4. Append comic log entry card.discarded.uses_exhausted with onomatopoeia 'USES EXHAUSTED!'
+    // Append comic log entry card.discarded.uses_exhausted with onomatopoeia 'USES EXHAUSTED!'
     appendLog(state, {
       category: 'card_play',
       actor: { name: player.name, type: player.currentForm },

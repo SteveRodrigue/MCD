@@ -104,7 +104,7 @@
     "dev.card.tutor": "DEV : {{actor}} a récupéré {{card}}.",
     "player.action.recover": "{{actor}} récupère {{amount}} dégât(s).",
     "player.action.allyAttack": "{{actor}} attaque avec {{card}} pour {{amount}} dégât(s).",
-    "player.deck.exhausted": "La pioche de {{actor}} est vide.",
+    "player.deck.exhausted": "La pioche de {{actor}} est vide. Défausse remélangée et 1 carte de rencontre distribuée face cachée.",
     "player.eliminated": "{{actor}} est éliminé ! Il reste {{remaining}} héros.",
     "player.phase.cleanup.complete": "{{actor}} termine son tour avec {{handSize}} cartes en main.",
     "card.ability.used": "Capacité de {{card}} utilisée.",

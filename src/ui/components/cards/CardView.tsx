@@ -57,7 +57,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
   cardBackType,
   dynamicTraits,
   effectiveTraits: _effectiveTraits,
-  isExhausted = false,
+  isExhausted,
   isPlayable,
   unplayableReason,
   isUsable,

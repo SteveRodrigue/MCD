@@ -138,6 +138,48 @@ describe('HeroZone Nested Allies & 2-Tier Tableau Architecture (Issue #156)', ()
     expect(within(tableauSection).getByAltText('Web-Shooter')).toBeDefined();
   });
 
+  it('5b. An exhausted Golden City with no action left is tilted and grayed out (#453)', () => {
+    const gameState = createTestGame();
+    const player = gameState.players[0];
+    player.currentForm = 'alter_ego';
+    player.activeFormCard = player.alterEgo;
+    const goldenCity = createCardInstance(cardCatalog.getCard('01045')!);
+    goldenCity.exhausted = true;
+    player.tableau = [goldenCity];
+
+    render(
+      <TestSession state={gameState}>
+        <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+      </TestSession>,
+    );
+
+    const cardRoot = screen
+      .getByTestId('tableau-section')
+      .querySelector('[data-card-view="01045"]') as HTMLElement;
+    expect(cardRoot.className).toContain('rotate-30');
+    expect((cardRoot.firstElementChild as HTMLElement).className).toContain('grayscale');
+  });
+
+  it('5c. A ready Golden City is neither tilted nor grayed out (#453)', () => {
+    const gameState = createTestGame();
+    const player = gameState.players[0];
+    player.currentForm = 'alter_ego';
+    player.activeFormCard = player.alterEgo;
+    player.tableau = [createCardInstance(cardCatalog.getCard('01045')!)];
+
+    render(
+      <TestSession state={gameState}>
+        <HeroZone player={player} seatNumber={1} isFocused={true} isMultiHero={false} />
+      </TestSession>,
+    );
+
+    const cardRoot = screen
+      .getByTestId('tableau-section')
+      .querySelector('[data-card-view="01045"]') as HTMLElement;
+    expect(cardRoot.className).not.toContain('rotate-30');
+    expect((cardRoot.firstElementChild as HTMLElement).className).not.toContain('grayscale');
+  });
+
   it('6. Ally action button is clickable and opens Attack Target Modal', () => {
     const gameState = createTestGame();
     const player = gameState.players[0];

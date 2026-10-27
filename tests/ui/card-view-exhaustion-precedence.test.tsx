@@ -27,4 +27,16 @@ describe('CardView exhaustion prop precedence', () => {
     expect(root.className).not.toContain('rotate-30');
     expect(root.className).toContain('rotate-0');
   });
+
+  it('tilts and tags the card from instance.exhausted when no isExhausted prop is given (#453)', () => {
+    const card = cardCatalog.getCard('01008')!; // Web-Shooter
+    const instance = createCardInstance(card);
+    instance.exhausted = true;
+
+    const { container, getByText } = render(<CardView card={card} instance={instance} />);
+
+    expect(getByText('EXHAUSTED')).toBeDefined();
+    const root = container.firstElementChild as HTMLElement;
+    expect(root.className).toContain('rotate-30');
+  });
 });

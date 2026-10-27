@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import path from 'path';
+import { buildDefines } from './src/tools/build-define.ts';
 
 const alias = {
   '@engine': path.resolve(import.meta.dirname, './src/engine'),
@@ -7,6 +8,8 @@ const alias = {
   '@ui': path.resolve(import.meta.dirname, './src/ui'),
   '@assets': path.resolve(import.meta.dirname, './src/assets'),
 };
+
+const define = buildDefines(import.meta.dirname, false);
 
 export default defineConfig({
   test: {
@@ -47,6 +50,7 @@ export default defineConfig({
           ],
         },
         resolve: { alias },
+        define,
       },
       {
         // JSX UI component tests — browser-like DOM via happy-dom
@@ -64,6 +68,7 @@ export default defineConfig({
           include: ['tests/ui/**/*.test.tsx'],
         },
         resolve: { alias },
+        define,
       },
     ],
   },

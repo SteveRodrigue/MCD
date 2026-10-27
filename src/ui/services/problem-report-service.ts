@@ -1,4 +1,5 @@
 import { GameState } from '../../engine/models';
+import { BUILD_LABEL } from '../build-info';
 
 export type ProblemReportType = 'bug' | 'improvement' | 'feature';
 export type ProblemReportPriority = 'P0-critical' | 'P1-high' | 'P2-medium' | 'P3-low';
@@ -10,6 +11,8 @@ export interface ProblemReportPayload {
   description: string;
   labels: string[];
   gameState?: GameState | null;
+  /** The build that produced the report, e.g. `v0.1.1 · f4b6a60` */
+  build: string;
   timestamp: number;
 }
 
@@ -69,6 +72,7 @@ export async function submitProblemReport(
     description: input.description,
     labels: mapReportToLabels(input.type, input.priority),
     gameState: input.gameState ?? undefined,
+    build: BUILD_LABEL,
     timestamp: Date.now(),
   };
 

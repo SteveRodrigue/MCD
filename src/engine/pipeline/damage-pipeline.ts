@@ -57,6 +57,7 @@ type ResumableRequest = Pick<
   | 'hasPiercing'
   | 'hasOverkill'
   | 'skipRetaliate'
+  | 'triggerChain'
 >;
 
 /**
@@ -855,6 +856,15 @@ function placeDamage(
   };
   const defeats: DefeatDispatch[] = defeatRes.pendingDefeat ? [defeatRes.pendingDefeat] : [];
 
+  if (target.type === 'player' && damageTaken > 0) {
+    kernel.dispatchTrigger(state, 'DAMAGE_TAKEN', {
+      targetPlayerId: (target.entity as PlayerState).id,
+      targetType: 'player',
+      damageAmount: damageTaken,
+      triggerChain: request.triggerChain,
+    });
+  }
+
   // ---------------------------------------------------------------------------
   // Overkill: the excess over a defeated minion or ally goes to the villain or to the ally's
   // controller, as damage of the same attack (RR v1.8 glossary O), so Tough, shields and the
@@ -914,6 +924,7 @@ function resumableRequest(request: DamageRequest): ResumableRequest {
     hasPiercing,
     hasOverkill,
     skipRetaliate,
+    triggerChain,
   } = request;
   return {
     sourceType,
@@ -924,6 +935,7 @@ function resumableRequest(request: DamageRequest): ResumableRequest {
     hasPiercing,
     hasOverkill,
     skipRetaliate,
+    triggerChain,
   };
 }
 

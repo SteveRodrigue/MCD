@@ -223,7 +223,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
       'top-right': 'origin-top-right',
     }[activeOrigin] || 'origin-center';
 
-  const exhaustedState = instance?.exhausted || isExhausted;
+  const exhaustedState = isExhausted !== undefined ? isExhausted : Boolean(instance?.exhausted);
   const showFallback = imageFailed || error || (!artUrl && !loading);
 
   return (

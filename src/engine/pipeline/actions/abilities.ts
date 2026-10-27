@@ -209,6 +209,17 @@ export const handleUseCardAbility: ActionHandler<'USE_CARD_ABILITY'> = (
     return { state, result: { success: false, error: initCheck.reason } };
   }
 
+  // Snapshot pre-cost transient state (tokens, counters) if ability discards self as cost (e.g. Energy Channel 01018)
+  const sourceCardSnapshot =
+    targetCardInst && ability.cost?.discardSelf
+      ? {
+          ...targetCardInst,
+          tokens: { ...(targetCardInst.tokens || {}) },
+          counters: { ...(targetCardInst.counters || {}) },
+          activeStatModifiers: [...(targetCardInst.activeStatModifiers || [])],
+        }
+      : targetCardInst;
+
   // Execute cost payment
   const { discardedCards, resourcesSpent } = executeAbilityCost(
     nextState,
@@ -282,7 +293,7 @@ export const handleUseCardAbility: ActionHandler<'USE_CARD_ABILITY'> = (
           params: {
             isAbilityTargetChoice: true,
             ability,
-            sourceCardInst: targetCardInst,
+            sourceCardInst: sourceCardSnapshot || targetCardInst,
             abilityKey,
             playerId: action.playerId,
             ...costContext,
@@ -311,7 +322,7 @@ export const handleUseCardAbility: ActionHandler<'USE_CARD_ABILITY'> = (
   // Execute effect primitive
   const effectRes = executeEffect(nextState, ability, {
     playerId: action.playerId,
-    sourceCardInstance: targetCardInst,
+    sourceCardInstance: sourceCardSnapshot || targetCardInst,
     chosenTargetInstanceId: abilityTargetId,
     ...costContext,
   });

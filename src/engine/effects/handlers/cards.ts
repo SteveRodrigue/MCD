@@ -560,6 +560,7 @@ function handleReturnToHand(
   const underneath = context.sourceCardInstance?.cardsUnderneath;
   if (underneath && underneath.length > 0) {
     for (const card of underneath) {
+      resetCardState(card);
       const owner = state.players.find((p) => p.id === card.ownerId) || player;
       owner.hand.push(card);
     }
@@ -575,11 +576,13 @@ function handleReturnToHand(
     const allyIdx = player.allies.indexOf(context.sourceCardInstance);
     if (allyIdx !== -1) {
       player.allies.splice(allyIdx, 1);
+      resetCardState(context.sourceCardInstance);
       player.hand.push(context.sourceCardInstance);
     } else {
       const tabIdx = player.tableau.indexOf(context.sourceCardInstance);
       if (tabIdx !== -1) {
         player.tableau.splice(tabIdx, 1);
+        resetCardState(context.sourceCardInstance);
         player.hand.push(context.sourceCardInstance);
       }
     }

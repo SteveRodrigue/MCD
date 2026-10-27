@@ -59,6 +59,7 @@ const HandCard = React.memo(function HandCard({
       card={cardInst.card}
       instance={cardInst}
       size="hand"
+      isExhausted={false}
       isPlayable={isPlayable}
       unplayableReason={unplayableReason}
       enableHoverZoom={true}

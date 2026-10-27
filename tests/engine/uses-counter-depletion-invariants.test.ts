@@ -133,8 +133,9 @@ describe('Universal Uses (X) Counter Depletion & Discard Lifecycle Invariants (A
         (c) => c.instanceId === webShooter.instanceId,
       );
       expect(inDiscard).toBeDefined();
-      expect(inDiscard?.tokens?.counters).toBe(0);
-      expect(inDiscard?.counters?.web).toBe(0);
+      expect(inDiscard?.exhausted).toBe(false);
+      expect(inDiscard?.tokens?.counters ?? 0).toBe(0);
+      expect(inDiscard?.counters?.web ?? 0).toBe(0);
 
       // Comic log entry must be present with onomatopoeia 'USES EXHAUSTED!'
       const exhaustedLog = res.state.log.find(

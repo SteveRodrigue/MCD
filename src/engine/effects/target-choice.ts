@@ -58,6 +58,44 @@ const stepTargetSelector = (step: AbilityStep): string | undefined => {
   return typeof target === 'string' && PLAYER_CHOSEN_SELECTORS.has(target) ? target : undefined;
 };
 
+/**
+ * The first step of an ability the player must choose a target for, with its selector: the one
+ * definition of "this step needs a target prompt" (#372). The legality gate judges these steps
+ * (`judgedSelector` covers them), and the play-time prompts of abilities and events ask for the
+ * same one. `isOpen` skips the steps whose state gate is closed.
+ */
+export function firstChosenTargetStep(
+  steps: readonly AbilityStep[] | undefined,
+  isOpen: (step: AbilityStep) => boolean = () => true,
+): { step: AbilityStep; selector: string } | undefined {
+  for (const step of steps ?? []) {
+    const selector = stepTargetSelector(step);
+    if (selector && isOpen(step)) return { step, selector };
+  }
+  return undefined;
+}
+
+/** The label of a target in a play-time choice prompt (an ability's or an event's chosen target). */
+export function targetChoiceLabel(target: ResolvedTarget): string {
+  if (target.kind === 'character') {
+    if (target.entityType === 'hero' || target.entityType === 'alter_ego') {
+      const p = target.entity as PlayerState;
+      return `${p.name} (${p.currentForm === 'hero' ? p.hero.name : p.alterEgo.name})`;
+    }
+    if (target.entityType === 'ally' || target.entityType === 'minion') {
+      const cardName = (target.entity as CardInstance).card.name;
+      return target.player ? `${cardName} (${target.player.name})` : cardName;
+    }
+    if (target.entityType === 'villain')
+      return `${(target.entity as VillainState).card.name} (Villain)`;
+  } else if (target.kind === 'player') {
+    return (target.entity as PlayerState).name;
+  } else if (target.kind === 'scheme') {
+    return (target.entity as { card?: { name?: string } }).card?.name || target.id;
+  }
+  return target.id;
+}
+
 /** Whether `id` names the target: its id, or for the main scheme also `main_scheme` or its card code. */
 const isNamedTarget = (target: ResolvedTarget, id: string): boolean => {
   if (target.id === id) return true;
@@ -285,9 +323,9 @@ export function getEventTargetChoice(
 ): EventTargetChoice | undefined {
   if (cardInstance.card.type !== CardType.EVENT) return undefined;
   for (const ability of cardInstance.card.enrichment?.abilities ?? []) {
-    for (const step of ability.steps ?? []) {
-      const selector = step.effectParams?.target;
-      if (typeof selector !== 'string' || !selector.startsWith('CHOSEN_')) continue;
+    const chosen = firstChosenTargetStep(ability.steps);
+    if (chosen) {
+      const { step, selector } = chosen;
       const targets = getValidStepTargets(
         state,
         player,

@@ -1043,6 +1043,40 @@ function resolveEnemyAndMinionTarget(
   }
 }
 
+/** The id a main scheme goes by when it has no instance id. */
+const MAIN_SCHEME_FALLBACK_ID = 'main_scheme';
+
+/** The scheme target of the active main scheme, the one place its id is decided (#371). */
+function mainSchemeTarget(state: GameState): SchemeTarget | undefined {
+  const main = getActiveMainScheme(state);
+  return main
+    ? {
+        kind: 'scheme',
+        entityType: 'main_scheme',
+        entity: main,
+        id: main.instanceId || MAIN_SCHEME_FALLBACK_ID,
+      }
+    : undefined;
+}
+
+function sideSchemeTarget(side: SideSchemeState): SchemeTarget {
+  return { kind: 'scheme', entityType: 'side_scheme', entity: side, id: side.instanceId };
+}
+
+/**
+ * Every scheme in play the selector scope covers, in the order the rules list them: the main
+ * scheme first, then the side schemes. Structural only: Crisis, Patrol and threat are the effect's
+ * business (`canAffect`).
+ */
+function schemeCandidates(
+  state: GameState,
+  scope: { main: boolean; side: boolean },
+): SchemeTarget[] {
+  const main = scope.main ? mainSchemeTarget(state) : undefined;
+  const sides = scope.side ? (state.sideSchemes || []).map(sideSchemeTarget) : [];
+  return main ? [main, ...sides] : sides;
+}
+
 function resolveSchemeAndContinuityTarget(
   state: GameState,
   selector: string,
@@ -1051,20 +1085,8 @@ function resolveSchemeAndContinuityTarget(
 ): ResolvedTarget[] | undefined {
   switch (selector) {
     // 7. SCHEMES
-    case 'MAIN_SCHEME': {
-      const activeMainScheme = getActiveMainScheme(state);
-      if (activeMainScheme) {
-        return [
-          {
-            kind: 'scheme',
-            entityType: 'main_scheme',
-            entity: activeMainScheme,
-            id: activeMainScheme.instanceId || 'main_scheme',
-          },
-        ];
-      }
-      return [];
-    }
+    case 'MAIN_SCHEME':
+      return schemeCandidates(state, { main: true, side: false });
 
     case 'THIS_SIDE_SCHEME': {
       if (context?.sourceCardInstance) {
@@ -1072,28 +1094,9 @@ function resolveSchemeAndContinuityTarget(
         const side = (state.sideSchemes || []).find(
           (s) => s.instanceId === inst.instanceId || s.card?.code === inst.card?.code,
         );
-        if (side) {
-          return [
-            {
-              kind: 'scheme',
-              entityType: 'side_scheme',
-              entity: side,
-              id: side.instanceId,
-            },
-          ];
-        }
+        if (side) return [sideSchemeTarget(side)];
       }
-      if (state.sideSchemes && state.sideSchemes.length > 0) {
-        return [
-          {
-            kind: 'scheme',
-            entityType: 'side_scheme',
-            entity: state.sideSchemes[0],
-            id: state.sideSchemes[0].instanceId,
-          },
-        ];
-      }
-      return [];
+      return schemeCandidates(state, { main: false, side: true }).slice(0, 1);
     }
 
     case 'SIDE_SCHEME':
@@ -1104,29 +1107,9 @@ function resolveSchemeAndContinuityTarget(
             s.instanceId === context.chosenTargetInstanceId ||
             s.card?.code === context.chosenTargetInstanceId,
         );
-        if (side) {
-          return [
-            {
-              kind: 'scheme',
-              entityType: 'side_scheme',
-              entity: side,
-              id: side.instanceId,
-            },
-          ];
-        }
+        if (side) return [sideSchemeTarget(side)];
       }
-      const firstSide = state.sideSchemes?.[0];
-      if (firstSide) {
-        return [
-          {
-            kind: 'scheme',
-            entityType: 'side_scheme',
-            entity: firstSide,
-            id: firstSide.instanceId,
-          },
-        ];
-      }
-      return [];
+      return schemeCandidates(state, { main: false, side: true }).slice(0, 1);
     }
 
     case 'CHOSEN_SCHEME': {
@@ -1135,90 +1118,30 @@ function resolveSchemeAndContinuityTarget(
         if (
           chosenMainScheme &&
           (context.chosenTargetInstanceId === chosenMainScheme.instanceId ||
-            context.chosenTargetInstanceId === 'main_scheme' ||
+            context.chosenTargetInstanceId === MAIN_SCHEME_FALLBACK_ID ||
             context.chosenTargetInstanceId === chosenMainScheme.card?.code)
         ) {
-          return [
-            {
-              kind: 'scheme',
-              entityType: 'main_scheme',
-              entity: chosenMainScheme,
-              id: chosenMainScheme.instanceId || 'main_scheme',
-            },
-          ];
+          return schemeCandidates(state, { main: true, side: false });
         }
         const side = (state.sideSchemes || []).find(
           (s) =>
             s.instanceId === context.chosenTargetInstanceId ||
             s.card?.code === context.chosenTargetInstanceId,
         );
-        if (side) {
-          return [
-            {
-              kind: 'scheme',
-              entityType: 'side_scheme',
-              entity: side,
-              id: side.instanceId,
-            },
-          ];
-        }
+        if (side) return [sideSchemeTarget(side)];
       }
-      const activeMainScheme = getActiveMainScheme(state);
-      if (activeMainScheme) {
-        return [
-          {
-            kind: 'scheme',
-            entityType: 'main_scheme',
-            entity: activeMainScheme,
-            id: activeMainScheme.instanceId || 'main_scheme',
-          },
-        ];
-      }
+      const activeMainScheme = schemeCandidates(state, { main: true, side: false });
+      if (activeMainScheme.length > 0) return activeMainScheme;
       const sideWithThreat =
         (state.sideSchemes || []).find((s) => (s.threat || 0) > 0) || (state.sideSchemes || [])[0];
-      if (sideWithThreat) {
-        return [
-          {
-            kind: 'scheme',
-            entityType: 'side_scheme',
-            entity: sideWithThreat,
-            id: sideWithThreat.instanceId,
-          },
-        ];
-      }
-      return [];
+      return sideWithThreat ? [sideSchemeTarget(sideWithThreat)] : [];
     }
 
-    case 'ALL_SIDE_SCHEMES': {
-      return (state.sideSchemes || []).map((s) => ({
-        kind: 'scheme',
-        entityType: 'side_scheme',
-        entity: s,
-        id: s.instanceId,
-      }));
-    }
+    case 'ALL_SIDE_SCHEMES':
+      return schemeCandidates(state, { main: false, side: true });
 
-    case 'ALL_SCHEMES': {
-      const results: ResolvedTarget[] = [];
-      const activeMainScheme = getActiveMainScheme(state);
-      if (activeMainScheme) {
-        results.push({
-          kind: 'scheme',
-          entityType: 'main_scheme',
-          entity: activeMainScheme,
-          id: activeMainScheme.instanceId || 'main_scheme',
-        });
-      }
-      for (const s of state.sideSchemes || []) {
-        results.push({
-          kind: 'scheme',
-          entityType: 'side_scheme',
-          entity: s,
-          id: s.instanceId,
-        });
-      }
-      return results;
-    }
+    case 'ALL_SCHEMES':
+      return schemeCandidates(state, { main: true, side: true });
 
     case 'TRIGGERING_SCHEME': {
       if (context?.eventTargetInstanceId) {
@@ -1227,18 +1150,7 @@ function resolveSchemeAndContinuityTarget(
           return [found];
         }
       }
-      const activeMainScheme = getActiveMainScheme(state);
-      if (activeMainScheme) {
-        return [
-          {
-            kind: 'scheme',
-            entityType: 'main_scheme',
-            entity: activeMainScheme,
-            id: activeMainScheme.instanceId || 'main_scheme',
-          },
-        ];
-      }
-      return [];
+      return schemeCandidates(state, { main: true, side: false });
     }
 
     // 8. CONTINUITY
@@ -1469,6 +1381,11 @@ export interface TargetFilterOptions {
  * Returns all live game entities structurally eligible for the given target selector,
  * filtered by optional criteria (damaged, exhausted, traits, status).
  * If no filters are provided, returns the complete unfiltered set of candidate entities.
+ *
+ * Structural only: it knows no actor and no effect, so a main scheme shielded by Crisis or Patrol is
+ * still a candidate. Whether a candidate is a valid target is the legality gate's answer
+ * (`getValidStepTargets`, `canAffect`; ADR-0090), which every caller outside the gate files uses
+ * (guard: `tests/engine/legality-gate-guards.test.ts`).
  */
 export function getEligibleTargets(
   state: GameState,
@@ -1729,40 +1646,16 @@ export function getEligibleTargets(
 
     case 'MAIN_SCHEME':
     case 'CHOSEN_SCHEME':
-    case 'ALL_SCHEMES': {
-      const activeMainScheme = getActiveMainScheme(state);
-      if (activeMainScheme) {
-        candidates.push({
-          kind: 'scheme',
-          entityType: 'main_scheme',
-          entity: activeMainScheme,
-          id: activeMainScheme.instanceId || activeMainScheme.card.code,
-        });
-      }
-      if (targetScope === 'MAIN_SCHEME') break;
-      for (const s of state.sideSchemes || []) {
-        candidates.push({
-          kind: 'scheme',
-          entityType: 'side_scheme',
-          entity: s,
-          id: s.instanceId,
-        });
-      }
-      break;
-    }
-
+    case 'ALL_SCHEMES':
     case 'SIDE_SCHEME':
-    case 'CHOSEN_SIDE_SCHEME': {
-      for (const s of state.sideSchemes || []) {
-        candidates.push({
-          kind: 'scheme',
-          entityType: 'side_scheme',
-          entity: s,
-          id: s.instanceId,
-        });
-      }
+    case 'CHOSEN_SIDE_SCHEME':
+      candidates.push(
+        ...schemeCandidates(state, {
+          main: targetScope !== 'SIDE_SCHEME' && targetScope !== 'CHOSEN_SIDE_SCHEME',
+          side: targetScope !== 'MAIN_SCHEME',
+        }),
+      );
       break;
-    }
 
     default:
       return [];

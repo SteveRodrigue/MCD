@@ -72,3 +72,10 @@ The payment modal listed every scheme, enemy, character and ally for an event (i
 ## Addendum (2026-10-26, #387): the gate refuses resource abilities as actions
 
 Web-Shooter (`01008`) could be started from the tableau action modal, spending a counter and exhausting for nothing. A resource ability is triggered only while paying a cost (RR v1.8 "Resource Ability"). `canInitiateAbility` now refuses `RESOURCE`, `HERO_RESOURCE` and `ALTER_EGO_RESOURCE` timings; the payment flow reads generators without asking the gate. The three "skip resource abilities" lines in `legal-actions-generator.ts` and the resource timings in `TableauActionModal` and `tableau-card-legality.ts` are deleted: the gate is the one place that decides.
+
+## Addendum (2026-10-26, #370 to #372): where Crisis and Patrol are enforced, and who needs a prompt
+
+1. **The block is where threat is removed.** `removeThreatFromScheme` (`threat-pipeline.ts`) is the only function that lowers scheme threat. It asks `getMainSchemeThreatBlock` (with `isPlayerSource` and `ignoresCrisis`), announces a block and returns `blocked`; `applyThwart` forwards to it. A distributed removal (`DISTRIBUTE_AMOUNT`, domain `THREAT_REMOVAL`) therefore obeys Crisis and Patrol, and `compileDistributionTargets` marks the shielded main scheme ineligible. A guard test fails if another engine module writes `.threat`.
+2. **One distribution application.** `applyDistributedAmounts` (`effects/distribution.ts`) serves the step with assignments and the prompt answer, replacing two near-identical blocks.
+3. **`getEligibleTargets` is structural.** It shares `schemeCandidates` with `resolveTargets` (one main-scheme id rule) and states in its comment that state rules are the gate's (`getValidStepTargets`).
+4. **One definition of a prompted step.** `firstChosenTargetStep` (`target-choice.ts`) is used by the ability prompt, the event prompt and `getEventTargetChoice`; `CHOSEN_PLAYER` is never prompted there. The gate still judges a wider set (self and named selectors), which includes every prompted step. Ability and event choice prompts share `targetChoiceLabel`.

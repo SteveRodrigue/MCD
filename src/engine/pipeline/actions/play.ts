@@ -150,7 +150,8 @@ export function resolveChosenHostAttachment(
   );
   if (candidates.length > 1) {
     const options: DecisionPromptOption[] = candidates.map((target) => {
-      const { label, cardCode } = describeTarget(target);
+      const label = describe(nextState, target.id);
+      const { cardCode } = describeTarget(target);
       return {
         id: target.id,
         label,
@@ -181,7 +182,7 @@ export function resolveChosenHostAttachment(
 
   // One candidate attaches to it; none attaches without a chosen host.
   const only = candidates[0];
-  attachAndLog(only?.id, only ? describeTarget(only).label : describe(nextState, undefined));
+  attachAndLog(only?.id, describe(nextState, only?.id));
   return undefined;
 }
 

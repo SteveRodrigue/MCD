@@ -265,8 +265,16 @@ function describeTarget(
   player: PlayerState,
   target: ResolvedTarget,
 ): TargetOption {
-  const whose = (owner: PlayerState | undefined, noun: string, name: string) =>
-    !owner || owner.id === player.id ? `${name} (${noun})` : `${name} (${owner.name}'s ${noun})`;
+  const whoseAlly = (owner: PlayerState | undefined, name: string) => {
+    if (!owner || owner.id === player.id) return `${name} (Ally)`;
+    const ownerName = owner.hero?.name || owner.name;
+    return `${name} (${ownerName}'s Ally)`;
+  };
+  const whoseMinion = (owner: PlayerState | undefined, name: string) => {
+    if (!owner || owner.id === player.id) return `${name} (Minion)`;
+    const ownerName = owner.hero?.name || owner.name;
+    return `${name} (engaged with ${ownerName})`;
+  };
 
   if (target.kind === 'scheme') {
     return {
@@ -278,10 +286,12 @@ function describeTarget(
   }
   if (target.kind === 'player') {
     const p = target.entity;
+    const heroName = p.hero?.name || p.name;
+    const form = p.activeFormCard.name;
     return {
       id: target.id,
       code: p.activeFormCard.code,
-      name: `${p.name} (${p.activeFormCard.name})`,
+      name: heroName === form ? form : `${heroName} (${form})`,
     };
   }
   if (target.kind === 'card') {
@@ -290,10 +300,12 @@ function describeTarget(
 
   if (target.entityType === 'hero' || target.entityType === 'alter_ego') {
     const p = target.entity as PlayerState;
+    const heroName = p.hero?.name || p.name;
+    const form = p.activeFormCard.name;
     return {
       id: target.id,
       code: p.activeFormCard.code,
-      name: `${p.name} (${p.activeFormCard.name})`,
+      name: heroName === form ? form : `${heroName} (${form})`,
       detail: `${p.health}/${getEffectiveMaxHealth(p, gameState)} HP`,
     };
   }
@@ -311,14 +323,14 @@ function describeTarget(
     return {
       id: target.id,
       code: inst.card.code,
-      name: whose(target.player, 'Minion', inst.card.name),
+      name: whoseMinion(target.player, inst.card.name),
       detail: `${Math.max(0, getEffectiveMinionHitPoints(gameState, inst) - (inst.tokens?.damage || 0))} HP`,
     };
   }
   return {
     id: target.id,
     code: inst.card.code,
-    name: whose(target.player, 'Ally', inst.card.name),
+    name: whoseAlly(target.player, inst.card.name),
     detail: inst.exhausted ? 'Exhausted' : 'Ready',
   };
 }

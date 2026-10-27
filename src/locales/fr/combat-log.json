@@ -139,6 +139,7 @@
     "retaliate.hit": "{{actor}} riposte contre {{target}} pour {{amount}} dégât(s).",
     "DAMAGE_APPLIED": "{{source}} a infligé {{amount}} dégât(s) à {{target}}.",
     "DAMAGE_APPLIED_UNSOURCED": "{{target}} subit {{amount}} dégât(s).",
+    "damage.transferred": "{{actor}} a déplacé {{amount}} dégât(s) de son héros vers {{target}} avec {{source}}.",
     "damage.prevented.immune": "{{target}} est immunisé et ne subit aucun dégât.",
     "damage.prevented.tough": "{{target}} perd Robuste et ne subit aucun dégât.",
     "damage.tough.pierced": "{{target}} perd Robuste ; Perforant laisse passer les dégâts.",

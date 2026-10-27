@@ -479,7 +479,7 @@ function normalizeLogParams(
         pl.hero?.name === actorName ||
         cleanCharacterName(pl.name) === actorName ||
         ownerNames.some((n) => pl.name === n || pl.hero?.name === n),
-    ) || gameState?.players?.[0];
+    ) || gameState?.players?.[gameState.activePlayerIndex];
 
   const defaultHeroName =
     cleanCharacterName(matchedPlayer?.hero?.name || matchedPlayer?.name, matchedPlayer) || 'Hero';
@@ -694,7 +694,7 @@ function resolveComicColors(
         p.name === whoName ||
         p.hero?.name === whoName ||
         p.name === playerName,
-    ) ?? gameState?.players?.[0];
+    ) ?? gameState?.players?.[gameState.activePlayerIndex];
 
   const palette = getHeroColorPalette(matchedPlayer);
   return {
@@ -732,7 +732,7 @@ export function formatComicLogEntry(
         pl.name === rawSpeakerName ||
         pl.hero?.name === rawSpeakerName ||
         cleanCharacterName(pl.name) === rawSpeakerName,
-    ) || gameState?.players?.[0];
+    ) || gameState?.players?.[gameState.activePlayerIndex];
 
   const speakerName = cleanCharacterName(rawSpeakerName, matchedPlayer);
 

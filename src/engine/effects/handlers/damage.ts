@@ -147,6 +147,8 @@ function handleDealDamage(
         title: 'Choose a Player',
         description: `Deal ${amount} damage to the villain and each enemy engaged with the chosen player:`,
         sourceCardName,
+        sourceCardCode: context.sourceCardInstance?.card.code,
+        sourceCardInstanceId: context.sourceCardInstance?.instanceId,
         options: state.players.map((p) => ({
           id: `engaged_enemies_${p.id}`,
           label: `${p.name} (${p.hero?.name || 'Hero'})`,
@@ -678,6 +680,20 @@ function handleTransferDamage(
   }
   amount = Math.min(amount, heroDamage);
   player.health = Math.min(getEffectiveMaxHealth(player, state), player.health + amount);
+  appendLog(state, {
+    category: 'combat',
+    actor: { name: player.name, type: player.currentForm },
+    key: 'damage.transferred',
+    params: {
+      actor: player.name,
+      source: context.sourceCardInstance?.card.name || player.activeFormCard?.name || 'Ability',
+      amount,
+      target:
+        transferTarget?.card?.name ||
+        (transferTarget as { name?: string } | undefined)?.name ||
+        'Enemy',
+    },
+  });
 
   // The enemy side goes through the damage pipeline like DEAL_DAMAGE (#247): shields, Tough,
   // Retaliate for an attack, defeat triggers and villain defeat. A labelled "(attack)" ability

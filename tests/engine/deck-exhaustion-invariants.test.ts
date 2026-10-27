@@ -8,6 +8,7 @@ import {
   VillainCard,
   MainSchemeCard,
   getActiveVillain,
+  GamePhase,
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import {
@@ -18,6 +19,7 @@ import {
   discardFromPlayerDeckUntil,
   drawPlayerCard,
 } from '@engine/pipeline';
+import { step4_revealEncounterCards } from '../../src/engine/pipeline/villain-phase';
 import { executeEffect, discardCardInstance } from '@engine/effects';
 
 describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Discard Loops (RR v1.8 p. 11, 18, 26)', () => {
@@ -236,6 +238,37 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       expect(reset).toBe(false);
       expect(state.accelerationTokens).toBe(1);
       expect(state.encounterDeck.length).toBe(0);
+    });
+
+    it('9. Issue #462: penalty encounter card dealt during player phase remains facedown until Step 4 of the villain phase', () => {
+      const player = state.players[0];
+      const cardA = createCardInstance(cardCatalog.getCard('01005')!);
+      const discard1 = createCardInstance(cardCatalog.getCard('01006')!);
+
+      player.deck = [cardA];
+      player.discard = [discard1];
+      player.dealtEncounterCards = [];
+      state.phase = GamePhase.PLAYER_PHASE;
+
+      // Draw final card: triggers immediate player deck exhaustion and deals 1 facedown penalty card
+      drawPlayerCard(state, 'p1');
+
+      expect(player.dealtEncounterCards.length).toBe(1);
+      const dealtCard = player.dealtEncounterCards[0];
+      expect(dealtCard).toBeDefined();
+
+      // Card remains unrevealed in dealtEncounterCards during remainder of player phase
+      expect(state.phase).toBe(GamePhase.PLAYER_PHASE);
+      expect(player.dealtEncounterCards).toHaveLength(1);
+
+      // Verify combat log entry explicitly notes reshuffle and facedown encounter card dealt
+      const logEntry = state.log.find((l) => l.key === 'player.deck.exhausted');
+      expect(logEntry).toBeDefined();
+      expect(logEntry?.onomatopoeia).toBe('EXTRA ENCOUNTER CARD!');
+
+      // Transition to Villain Phase Step 4: Reveal and Resolve Encounter Cards
+      const postRevealState = step4_revealEncounterCards(state);
+      expect(postRevealState.players[0].dealtEncounterCards).toHaveLength(0);
     });
   });
 

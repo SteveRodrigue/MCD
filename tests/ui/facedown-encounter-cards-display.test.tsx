@@ -69,7 +69,7 @@ describe('Facedown Encounter Card Display in Hero Zone (Issue #138)', () => {
       const cardElement = screen.getByTestId('facedown-encounter-card');
       expect(cardElement).toBeDefined();
       expect(cardElement.getAttribute('title')).toBe(
-        'Dealt facedown. Will be revealed and resolved during Step 5 of the Villain Phase.',
+        'Dealt facedown. Will be revealed and resolved during Step 4 of the Villain Phase.',
       );
 
       const countBadge = screen.getByTestId('facedown-count-badge');
@@ -126,6 +126,9 @@ describe('Facedown Encounter Card Display in Hero Zone (Issue #138)', () => {
       const modal = screen.getByTestId('facedown-peek-modal');
       expect(modal).toBeDefined();
       expect(screen.getByText(/\[DEV\] Dealt Encounter Cards Peek \(1\)/i)).toBeDefined();
+      expect(
+        screen.getByText(/Will be revealed and resolved during Step 4 of the Villain Phase/i),
+      ).toBeDefined();
       expect(screen.getByText(cardA.card.name)).toBeDefined();
 
       // Close peek modal

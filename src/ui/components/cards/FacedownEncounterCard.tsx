@@ -27,7 +27,7 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
   }
 
   const tooltipText =
-    'Dealt facedown. Will be revealed and resolved during Step 5 of the Villain Phase.';
+    'Dealt facedown. Will be revealed and resolved during Step 4 of the Villain Phase.';
 
   const handleCardClick = () => {
     if (isDevMode) {
@@ -134,7 +134,7 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
       {isDevMode && isPeekOpen && (
         <PileViewerModal
           title={`[DEV] Dealt Encounter Cards Peek (${cards.length})`}
-          description={`${heroName ? `Cards dealt to ${heroName}. ` : ''}Will be revealed and resolved during Step 5 of the Villain Phase.`}
+          description={`${heroName ? `Cards dealt to ${heroName}. ` : ''}Will be revealed and resolved during Step 4 of the Villain Phase.`}
           icon={<Eye className="w-5 h-5" />}
           verb="yellow"
           devBadge

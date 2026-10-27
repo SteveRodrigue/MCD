@@ -37,7 +37,18 @@ export interface NewspaperTokens {
 }
 
 export interface ThemeExtras {
-  table: { bg: string; text: string; texture: CSSProperties; textureClass: string };
+  /**
+   * `muted` and `emphasis` are the table's own secondary and accent text: `ModalStyle.muted` and
+   * `.emphasis` are made for paper surfaces and can vanish on the table.
+   */
+  table: {
+    bg: string;
+    text: string;
+    muted: string;
+    emphasis: string;
+    texture: CSSProperties;
+    textureClass: string;
+  };
   danger: string;
   field: string;
   newspaper: NewspaperTokens;
@@ -61,6 +72,8 @@ const popArt: ThemeExtras = {
   table: {
     bg: 'bg-comic-paper',
     text: 'text-comic-black',
+    muted: 'text-slate-600',
+    emphasis: 'text-red-700',
     texture: dots('rgba(237,29,36,0.5)', 20),
     textureClass: 'opacity-[0.12]',
   },
@@ -104,6 +117,8 @@ const storyboard: ThemeExtras = {
   table: {
     bg: 'bg-[#f3efe2]',
     text: 'text-comic-black',
+    muted: 'text-slate-700',
+    emphasis: 'text-red-700',
     texture: dots('rgba(0,0,0,0.5)', 14),
     textureClass: 'opacity-[0.12]',
   },
@@ -131,7 +146,7 @@ const storyboard: ThemeExtras = {
       'font-news-headline inline-block bg-comic-red text-white text-mini font-black uppercase px-2 py-0.5 -rotate-1 border-2 border-comic-black',
     headline: 'font-news-headline font-black uppercase text-lg leading-tight',
     standfirst: 'text-sm font-bold',
-    byline: 'text-micro font-black uppercase text-comic-red',
+    byline: 'text-micro font-black uppercase text-red-700',
     body: 'text-sm font-bold leading-snug',
     story: 'border-comic border-comic-black bg-comic-paper p-3 shadow-comic-sm',
     flash:
@@ -149,6 +164,8 @@ const newsprint: ThemeExtras = {
   table: {
     bg: 'bg-[#cdbd91]',
     text: 'text-[#2b2118]',
+    muted: 'text-[#4a3c2a]',
+    emphasis: 'text-red-900',
     texture: lines('rgba(43,33,24,0.6)', 3),
     textureClass: 'opacity-[0.08]',
   },
@@ -193,6 +210,8 @@ const night: ThemeExtras = {
   table: {
     bg: 'bg-slate-900',
     text: 'text-slate-100',
+    muted: 'text-slate-400',
+    emphasis: 'text-yellow-300',
     texture: dots('rgba(255,255,255,0.5)', 22),
     textureClass: 'opacity-[0.05]',
   },
@@ -219,7 +238,7 @@ const night: ThemeExtras = {
       'font-news-headline inline-block text-micro font-black uppercase tracking-widest text-yellow-300 border border-yellow-300/60 rounded-full px-2 py-0.5',
     headline: 'font-news-headline font-black text-lg leading-snug text-white',
     standfirst: 'text-sm text-slate-300',
-    byline: 'text-mini text-slate-500 font-news-body',
+    byline: 'text-mini text-slate-400 font-news-body',
     body: 'text-sm text-slate-300 leading-relaxed',
     story: 'bg-slate-900 border border-slate-700 rounded-xl p-3 hover:border-yellow-300/60',
     flash:
@@ -238,6 +257,8 @@ const splash: ThemeExtras = {
   table: {
     bg: 'bg-yellow-100',
     text: 'text-comic-black',
+    muted: 'text-slate-700',
+    emphasis: 'text-red-700',
     texture: {
       backgroundImage:
         'repeating-conic-gradient(from 0deg at 50% 30%, rgba(237,29,36,0.9) 0deg 4deg, transparent 4deg 12deg)',
@@ -272,7 +293,7 @@ const splash: ThemeExtras = {
     headline:
       'font-news-headline font-black uppercase text-2xl leading-none [text-shadow:2px_2px_0_#FFDE00]',
     standfirst: 'text-sm font-bold',
-    byline: 'text-micro font-black uppercase text-comic-red',
+    byline: 'text-micro font-black uppercase text-red-700',
     body: 'text-sm font-bold leading-snug',
     story: 'bg-white border-4 border-comic-black rounded-2xl p-3 shadow-comic rotate-[-0.4deg]',
     flash:
@@ -289,8 +310,10 @@ const splash: ThemeExtras = {
 
 const dossier: ThemeExtras = {
   table: {
-    bg: 'bg-[#7a6a46]',
+    bg: 'bg-[#6b5b3a]',
     text: 'text-[#f7ecd0]',
+    muted: 'text-[#efe0b4]',
+    emphasis: 'text-[#ffd966]',
     texture: lines('rgba(0,0,0,0.6)', 24),
     textureClass: 'opacity-[0.12]',
   },
@@ -334,6 +357,8 @@ const hud: ThemeExtras = {
   table: {
     bg: 'bg-[#020a14]',
     text: 'text-cyan-100',
+    muted: 'text-cyan-200/70',
+    emphasis: 'text-amber-300',
     texture: grid('rgba(34,211,238,0.7)'),
     textureClass: 'opacity-[0.07]',
   },
@@ -360,7 +385,7 @@ const hud: ThemeExtras = {
       'font-news-headline text-micro uppercase tracking-[0.25em] text-amber-300 border-l-2 border-amber-300 pl-2',
     headline: 'font-news-headline font-bold text-base text-cyan-50 leading-snug',
     standfirst: 'text-sm text-cyan-200/80',
-    byline: 'text-micro uppercase tracking-widest text-cyan-200/50',
+    byline: 'text-micro uppercase tracking-widest text-cyan-200/70',
     body: 'text-sm text-cyan-100/90 leading-relaxed',
     story: 'bg-[#0a2036]/90 border border-cyan-500/60 p-3',
     flash:

@@ -35,7 +35,7 @@ import { getAvailableResources } from '../../pipeline/cost-engine';
 import { appendLog } from '../../state/game-log';
 import { placeSideScheme } from '../../state/side-scheme';
 import { routeCardInstances } from '../card-routing';
-import { putIntoPlayCandidates } from '../step-selection';
+import { putIntoPlayCandidates, searchFilter } from '../step-selection';
 import {
   EffectExecutionContext,
   EffectResult,
@@ -710,22 +710,7 @@ function handleSearch(
   const isTakeAll = resolvedTakeCount === 'ALL' || resolvedTakeCount === 0;
   const countToTake = isTakeAll ? 0 : Math.max(1, resolvedTakeCount as number);
 
-  const filter =
-    step.effectParams?.filter ??
-    (step.effectParams?.targetCardCode ||
-    step.effectParams?.targetCardName ||
-    step.effectParams?.trait ||
-    step.effectParams?.type ||
-    step.effectParams?.type_code ||
-    step.effectParams?.cardType
-      ? {
-          targetCardCode: step.effectParams?.targetCardCode,
-          targetCardName: step.effectParams?.targetCardName,
-          trait: step.effectParams?.trait,
-          type:
-            step.effectParams?.type || step.effectParams?.type_code || step.effectParams?.cardType,
-        }
-      : undefined);
+  const filter = searchFilter(step);
 
   const targetParam = (step.effectParams?.target as string) || 'SELF';
   let targetPlayerId: string | undefined =

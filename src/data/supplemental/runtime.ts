@@ -109,3 +109,27 @@ export function getStepEffectParams<E extends EffectType>(step: {
 export function getStepGateParams(step: { gateParams?: Record<string, any> }): Record<string, any> {
   return step.gateParams ?? {};
 }
+
+/** The "attach to" step of an ability: the one a played upgrade or support runs to pick its host. */
+export function attachStepOf<S extends { effect: string }>(ability: {
+  steps?: S[];
+}): S | undefined {
+  return ability.steps?.find((s) => s.effect === 'ATTACH_TO_HOST');
+}
+
+/** Whether an ability is an action the player takes on their turn. */
+export const isActionTiming = (ability: { timing?: string }): boolean =>
+  ability.timing === 'ACTION' ||
+  ability.timing === 'HERO_ACTION' ||
+  ability.timing === 'ALTER_EGO_ACTION';
+
+/** The abilities a card runs when it is played: an event's actions, an attachment's "attach to". */
+export function abilitiesRunOnPlay<
+  A extends { timing?: string; steps?: { effect: string }[] },
+>(card: { type: string; enrichment?: { abilities?: A[] } }): A[] {
+  return (card.enrichment?.abilities ?? []).filter((ability) =>
+    card.type === 'event'
+      ? isActionTiming(ability) || !ability.timing
+      : attachStepOf(ability) !== undefined,
+  );
+}

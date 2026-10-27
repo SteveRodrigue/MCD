@@ -207,7 +207,7 @@ Target evaluation implements a systemic two-layer architecture separating struct
    - When target is omitted and multiple candidates exist: enqueues a `PendingDecisionPrompt` into `state.pendingDecisionQueue` allowing the user to select the recipient entity.
 
 4. **Pre-Play Targeting UI (`CardPaymentModal.tsx`)**:
-   - Displays comic badge target selectors directly inside the payment modal for cards requiring heal, ally, scheme, enemy or player targets, avoiding unexpected mid-action prompts. The modal lists only the targets the engine judges valid (`getEventTargetChoice`, ADR-0090 addendum #438): a scheme with no threat is never offered to a thwart event.
+   - Displays comic badge target selectors directly inside the payment modal for cards requiring heal, ally, scheme, enemy or player targets, avoiding unexpected mid-action prompts. The modal lists only the targets the engine judges valid (`getPlayTargetChoice`, ADR-0090 addenda #438 and #366): a scheme with no threat is never offered to a thwart event.
 
 5. **Layer 3: Step-level target choice for every execution path (#234, ADR-0077)** — [`target-choice.ts`](../../../src/engine/effects/target-choice.ts):
    - Applies to the single-target selectors `CHOSEN_ENEMY`, `CHOSEN_MINION`, `CHOSEN_ENGAGED_MINION`, `CHOSEN_CHARACTER`, `CHOSEN_ALLY`, `CHOSEN_CONTROLLED_ALLY`, `CHOSEN_CONTROLLED_CHARACTER`, `CHOSEN_FRIENDLY_CHARACTER`, `CHOSEN_SCHEME`, `CHOSEN_SIDE_SCHEME` (`CHOSEN_PLAYER` keeps its own "Choose a Player" prompts).

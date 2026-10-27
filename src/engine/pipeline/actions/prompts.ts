@@ -29,9 +29,8 @@ import {
   findInPlayCardInstance,
 } from '../../state/state-validator';
 import { applyToughnessOnEntry } from '../../state/card-instance';
-import { resolveEntityByInstanceId } from '../../effects/target-resolver';
 import { appendLog } from '../../state/game-log';
-import { resolveEventAbilities } from './shared';
+import { chosenTargetTypeOf, resolveEventAbilities } from './shared';
 import { routeCardInstances } from '../../effects/card-routing';
 import { applyDistributedAmounts } from '../../effects/distribution';
 import type { ActionHandler, TypedAction } from './types';
@@ -264,19 +263,7 @@ export function resolveEventOrAbilityTargetPrompt(
       activePrompt.options[0]?.params?.discardCardInstanceIds) as string[] | undefined;
 
     if (playedCardInstance) {
-      let targetType:
-        'villain' | 'minion' | 'main_scheme' | 'side_scheme' | 'character' | 'identity' | 'ally' =
-        'villain';
-      const resolved = resolveEntityByInstanceId(poppedState, chosenTargetId);
-      if (resolved) {
-        if (resolved.kind === 'scheme') targetType = resolved.entityType;
-        else if (resolved.kind === 'character') {
-          if (resolved.entityType === 'villain') targetType = 'villain';
-          else if (resolved.entityType === 'minion') targetType = 'minion';
-          else if (resolved.entityType === 'ally') targetType = 'ally';
-          else targetType = 'character';
-        } else if (resolved.kind === 'player') targetType = 'identity';
-      }
+      const targetType = chosenTargetTypeOf(poppedState, chosenTargetId);
 
       resolveEventAbilities(poppedState, targetPlayer, playedCardInstance, {
         chosenTargetType: targetType,

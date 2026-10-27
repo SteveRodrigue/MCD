@@ -142,7 +142,7 @@ describe('Feature Delivery: Webbed Up (01009) & Host Attack Interception (Issue 
       paymentCard4.instanceId,
     ]);
     expect(checkA.allowed).toBe(false);
-    expect(checkA.reason?.toLowerCase()).toContain('all in-play enemies');
+    expect(checkA.reason).toContain('No host can take this card');
 
     // Case B: An engaged minion enters play with no Webbed Up attached -> now playable!
     const minionCard = cardCatalog.getCard('01101')!;
@@ -175,6 +175,6 @@ describe('Feature Delivery: Webbed Up (01009) & Host Attack Interception (Issue 
       getActiveVillain(state).instanceId || 'villain',
     );
     expect(checkC.allowed).toBe(false);
-    expect(checkC.reason?.toLowerCase()).toContain('already has the maximum number');
+    expect(checkC.reason).toContain('No host can take this card');
   });
 });

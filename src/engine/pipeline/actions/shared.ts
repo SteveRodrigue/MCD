@@ -8,6 +8,7 @@ import {
 } from '@engine/models';
 import { executeAbilityCost, getEventAbilityExtraCost } from '../cost-engine';
 import { executeEffect } from '../../effects';
+import { resolveEntityByInstanceId } from '../../effects/target-resolver';
 
 /**
  * Resolves the villain a player attacks or attaches to: the one named by `targetInstanceId`
@@ -53,4 +54,25 @@ export function resolveEventAbilities(
       discardedCards,
     });
   }
+}
+
+/** What a chosen target is, for the `chosenTargetType` of the effects an event runs. */
+export type ChosenTargetType =
+  'villain' | 'minion' | 'main_scheme' | 'side_scheme' | 'character' | 'identity' | 'ally' | 'hero';
+
+/** The type of the entity a player chose; `fallback` when the id names nothing in play. */
+export function chosenTargetTypeOf(
+  state: GameState,
+  targetId: string,
+  fallback: ChosenTargetType = 'villain',
+): ChosenTargetType {
+  const resolved = resolveEntityByInstanceId(state, targetId);
+  if (!resolved) return fallback;
+  if (resolved.kind === 'scheme') return resolved.entityType;
+  if (resolved.kind === 'player') return 'identity';
+  if (resolved.kind !== 'character') return fallback;
+  if (resolved.entityType === 'villain') return 'villain';
+  if (resolved.entityType === 'minion') return 'minion';
+  if (resolved.entityType === 'ally') return 'ally';
+  return 'character';
 }

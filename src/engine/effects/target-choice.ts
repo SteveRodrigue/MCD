@@ -1,4 +1,4 @@
-import type { EffectType } from '../../data/supplemental/runtime';
+import { abilitiesRunOnPlay, type EffectType } from '../../data/supplemental/runtime';
 import type { TargetSelector, UniversalCardFilter } from '../../data/supplemental/schema';
 import { bindKernel, kernel } from '../kernel';
 import type {
@@ -10,7 +10,7 @@ import type {
   PlayerState,
   VillainState,
 } from '../models';
-import { CardType, StatusCard } from '../models';
+import { StatusCard } from '../models';
 import {
   getEffectiveMaxHealth,
   getEffectivePlayerTraits,
@@ -32,18 +32,21 @@ import {
   type ResolvedTarget,
 } from './target-resolver';
 import {
+  attachMaxPerHost,
   cardCounterCount,
   cardsUnderneathHost,
   counterFilterCards,
   discardableHandCards,
   discardableTableauCards,
   holdsMatchingCounter,
+  hostHasRoom,
   isAttachedAnywhere,
   isSchemeInPlay,
   namedSchemeCode,
   playerCounterCount,
   putIntoPlayCandidates,
   requestedStatuses,
+  searchHasCards,
   stepTarget,
 } from './step-selection';
 import type { EffectExecutionContext } from './index';
@@ -152,25 +155,60 @@ export function firstChosenTargetStep(
   return undefined;
 }
 
-/** The label of a target in a play-time choice prompt (an ability's or an event's chosen target). */
-export function targetChoiceLabel(target: ResolvedTarget): string {
+/**
+ * How a target is named in a choice prompt and which card it shows: the one description every
+ * target prompt uses (an ability's, an event's, a step's and an attachment's host).
+ */
+export function describeTarget(target: ResolvedTarget): { label: string; cardCode?: string } {
+  if (target.kind === 'player') {
+    const p = target.entity;
+    return { label: p.name, cardCode: p.activeFormCard?.code };
+  }
+  if (target.kind === 'scheme') {
+    const scheme = target.entity;
+    const name = scheme.card?.name ?? 'Target';
+    return { label: `${name} (${scheme.threat ?? 0} Threat)`, cardCode: scheme.card?.code };
+  }
   if (target.kind === 'character') {
     if (target.entityType === 'hero' || target.entityType === 'alter_ego') {
       const p = target.entity as PlayerState;
-      return `${p.name} (${p.currentForm === 'hero' ? p.hero.name : p.alterEgo.name})`;
+      const form =
+        p.activeFormCard?.name ?? (p.currentForm === 'hero' ? p.hero.name : p.alterEgo.name);
+      return { label: `${p.name} (${form})`, cardCode: p.activeFormCard?.code };
     }
-    if (target.entityType === 'ally' || target.entityType === 'minion') {
-      const cardName = (target.entity as CardInstance).card.name;
-      return target.player ? `${cardName} (${target.player.name})` : cardName;
-    }
-    if (target.entityType === 'villain')
-      return `${(target.entity as VillainState).card.name} (Villain)`;
-  } else if (target.kind === 'player') {
-    return (target.entity as PlayerState).name;
-  } else if (target.kind === 'scheme') {
-    return (target.entity as { card?: { name?: string } }).card?.name || target.id;
+    const card = (target.entity as CardInstance | VillainState).card;
+    const name = card?.name ?? 'Target';
+    const isControlled = target.entityType === 'ally' || target.entityType === 'minion';
+    return {
+      label: isControlled && target.player ? `${name} (${target.player.name})` : name,
+      cardCode: card?.code,
+    };
   }
-  return target.id;
+  const card = target.entity.card;
+  return { label: card?.name ?? target.id, cardCode: card?.code };
+}
+
+/**
+ * The options of a play-time target prompt (an ability's or an event's chosen target): one per
+ * valid target, each carrying the params that resume the play with that target.
+ */
+export function targetChoiceOptions(
+  targets: readonly ResolvedTarget[],
+  sourceName: string,
+  effect: 'EVENT_CHOSEN_TARGET' | 'ABILITY_CHOSEN_TARGET',
+  params: Record<string, unknown>,
+): DecisionPromptOption[] {
+  return targets.map((target) => {
+    const { label, cardCode } = describeTarget(target);
+    return {
+      id: target.id,
+      label,
+      cardCode,
+      description: `Target ${label} with ${sourceName}`,
+      effect,
+      params,
+    };
+  });
 }
 
 /** Whether `id` names the target: its id, or for the main scheme also `main_scheme` or its card code. */
@@ -259,6 +297,15 @@ const AFFECT_RULES: Partial<Record<EffectType, AffectRule>> = {
   REMOVE_STATUS: (_state, step, target) =>
     target.kind === 'character' &&
     requestedStatuses(step).some((s) => (target.entity.statusCards ?? []).includes(s)),
+  // A host that already holds `maxPerHost` copies of the card being played cannot take another.
+  // Without the card, the host cannot be judged.
+  ATTACH_TO_HOST: (_state, step, target, sourceCard) =>
+    !sourceCard ||
+    hostHasRoom(
+      target.entity as { attachments?: CardInstance[] },
+      sourceCard.card,
+      attachMaxPerHost(step),
+    ),
 };
 
 /**
@@ -344,6 +391,8 @@ const STEP_RULES: Partial<Record<EffectType, StepRule>> = {
     (source.cardsUnderneath?.length ?? 0) > 0 ||
     player.allies.includes(source) ||
     player.tableau.includes(source),
+  // A zone to look in: a matching card in a discard pile, or a deck that is not empty.
+  SEARCH: (state, player, step) => searchHasCards(state, player, step),
 };
 
 /**
@@ -358,7 +407,6 @@ export const EFFECTS_WITHOUT_AFFECT_RULE: Readonly<Record<string, readonly Effec
     'ADD_COUNTERS',
     'ATTACHMENT_DAMAGE_SHIELD',
     'ATTACH_FACEDOWN_CARDS_FROM_HAND',
-    'ATTACH_TO_HOST',
     'CANCEL_ATTACK',
     'CANCEL_WHEN_REVEALED',
     'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER',
@@ -386,7 +434,6 @@ export const EFFECTS_WITHOUT_AFFECT_RULE: Readonly<Record<string, readonly Effec
     'REDUCE_NEXT_CARD_COST',
     'REMOVE_FROM_GAME',
     'REVEAL_ENCOUNTER_CARD',
-    'SEARCH',
     'SHUFFLE_INTO_DECK',
     'SPEND_COUNTERS',
     'SURGE',
@@ -465,24 +512,24 @@ export function getValidStepTargets(
   );
 }
 
-/** What the player picks from when playing an event: its chosen-target selector and valid targets. */
-export interface EventTargetChoice {
+/** What the player picks from when playing a card: its chosen-target selector and valid targets. */
+export interface PlayTargetChoice {
   selector: string;
   targets: ResolvedTarget[];
 }
 
 /**
- * The target an event asks the player to choose when it is played (RR v1.8 "Target"): the valid
- * targets of its first `CHOSEN_*` step, or `undefined` when the event chooses nothing. The payment
- * modal offers exactly these, so it never lists a target the gate would refuse (#438).
+ * The target a played card asks the player to choose (RR v1.8 "Target"): the valid targets of the
+ * first `CHOSEN_*` step of what it runs when played (an event's actions, an attachment's host), or
+ * `undefined` when it chooses nothing. The payment modal offers exactly these, so it never lists a
+ * target the gate would refuse (#438).
  */
-export function getEventTargetChoice(
+export function getPlayTargetChoice(
   state: GameState,
   player: PlayerState,
   cardInstance: CardInstance,
-): EventTargetChoice | undefined {
-  if (cardInstance.card.type !== CardType.EVENT) return undefined;
-  for (const ability of cardInstance.card.enrichment?.abilities ?? []) {
+): PlayTargetChoice | undefined {
+  for (const ability of abilitiesRunOnPlay(cardInstance.card)) {
     const chosen = firstChosenTargetStep(ability.steps);
     if (chosen) {
       const { step, selector } = chosen;
@@ -499,28 +546,51 @@ export function getEventTargetChoice(
   return undefined;
 }
 
-const targetLabel = (target: ResolvedTarget): { label: string; cardCode?: string } => {
-  if (target.kind === 'player') {
-    const p = target.entity;
-    return { label: p.activeFormCard?.name || p.name, cardCode: p.activeFormCard?.code };
+/**
+ * The target the player picks before a played card or an initiated ability runs: that of the first
+ * chosen-target step whose state gate is open (RR v1.8 "Target"). Asking first keeps the effects in
+ * order, since a plain sequence does not pause at a step-level prompt (`chooseStepTarget`, ADR-0077).
+ * - `NONE`: nothing to ask: no such step, a target is already named, or the actor's own status card
+ *   cancels the ability.
+ * - `CHOSEN`: exactly one valid target; it is used without asking.
+ * - `CHOICES`: two or more; the caller opens a prompt.
+ * - `NO_VALID_TARGET`: the step has nothing to act on.
+ */
+export type InitialTargetChoice =
+  | { kind: 'NONE' }
+  | { kind: 'CHOSEN'; target: ResolvedTarget }
+  | { kind: 'CHOICES'; targets: ResolvedTarget[] }
+  | { kind: 'NO_VALID_TARGET' };
+
+export function chooseInitialTarget(
+  state: GameState,
+  player: PlayerState,
+  abilities: readonly CardAbility[],
+  sourceCardInstance: CardInstance | undefined,
+  namedTargetId?: string,
+): InitialTargetChoice {
+  if (namedTargetId || abilities.some((a) => isCancelledByOwnStatus(player, a))) {
+    return { kind: 'NONE' };
   }
-  if (target.kind === 'character') {
-    if (target.entityType === 'hero' || target.entityType === 'alter_ego') {
-      const p = target.entity as PlayerState;
-      return { label: p.activeFormCard?.name || p.name, cardCode: p.activeFormCard?.code };
-    }
-    const card = (target.entity as CardInstance | VillainState).card;
-    return { label: card?.name ?? 'Target', cardCode: card?.code };
+  const isOpen = (step: AbilityStep) =>
+    !isStepGateClosedByState(step, state, { playerId: player.id });
+  for (const ability of abilities) {
+    const chosen = firstChosenTargetStep(ability.steps, isOpen);
+    if (!chosen) continue;
+    const targets = getValidStepTargets(
+      state,
+      player,
+      chosen.step,
+      { sourceCardInstance, ability },
+      chosen.selector,
+    );
+    if (targets.length === 0) return { kind: 'NO_VALID_TARGET' };
+    return targets.length === 1
+      ? { kind: 'CHOSEN', target: targets[0] }
+      : { kind: 'CHOICES', targets };
   }
-  if (target.kind === 'scheme') {
-    const s = target.entity;
-    const name = s.card?.name ?? 'Target';
-    const suffix = ` (${s.threat ?? 0} Threat)`;
-    return { label: `${name}${suffix}`, cardCode: s.card?.code };
-  }
-  const card = target.entity.card;
-  return { label: card?.name ?? 'Target', cardCode: card?.code };
-};
+  return { kind: 'NONE' };
+}
 
 /**
  * Decides the target of a CHOSEN_* step that has no chosen target yet. Called by step execution
@@ -553,7 +623,7 @@ export function chooseStepTarget(
       ? 'an Enemy'
       : 'a Target';
   const options: DecisionPromptOption[] = valid.map((target) => {
-    const { label, cardCode } = targetLabel(target);
+    const { label, cardCode } = describeTarget(target);
     return {
       id: target.id,
       label,
@@ -672,6 +742,8 @@ const NO_VALID_TARGET_REASON: Partial<Record<EffectType, string>> = {
   REMOVE_COUNTERS: 'There is no counter to remove.',
   REMOVE_COUNTERS_MATCHING_FILTER: 'There is no counter to remove.',
   RETURN_TO_HAND: 'There is no card to return to hand.',
+  ATTACH_TO_HOST: 'No host can take this card.',
+  SEARCH: 'No matching card to search.',
 };
 
 /**

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { CardType, getActiveMainScheme, type SideSchemeCard } from '../../src/engine/models';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { createCardInstance } from '../../src/engine/state/game-setup';
-import { getEventTargetChoice } from '../../src/engine/effects/target-choice';
+import { getPlayTargetChoice } from '../../src/engine/effects/target-choice';
 import { newRhinoGame } from '../support/game-fixtures';
 
 describe('CardPaymentModal Targeting Invariants (Issue #94, #146, #438)', () => {
@@ -12,7 +12,7 @@ describe('CardPaymentModal Targeting Invariants (Issue #94, #146, #438)', () => 
     return {
       state,
       card,
-      choice: getEventTargetChoice(state, state.players[0], createCardInstance(card)),
+      choice: getPlayTargetChoice(state, state.players[0], createCardInstance(card)),
     };
   };
 
@@ -55,8 +55,33 @@ describe('CardPaymentModal Targeting Invariants (Issue #94, #146, #438)', () => 
     ];
     const forJustice = createCardInstance(cardCatalog.getCard('01060')!);
 
-    const choice = getEventTargetChoice(state, state.players[0], forJustice);
+    const choice = getPlayTargetChoice(state, state.players[0], forJustice);
     expect(choice?.targets.map((t) => t.id)).toEqual(['side-1']);
+  });
+
+  describe('attachments ask for a host the engine accepts (#366)', () => {
+    it('Spider-Tracer (01007) lists the minions in play', () => {
+      const state = newRhinoGame();
+      const minion = createCardInstance(cardCatalog.getCard('01101')!, 'p1');
+      state.players[0].engagedMinions = [minion];
+      const tracer = createCardInstance(cardCatalog.getCard('01007')!, 'p1');
+
+      const choice = getPlayTargetChoice(state, state.players[0], tracer);
+      expect(choice?.selector).toBe('CHOSEN_MINION');
+      expect(choice?.targets.map((t) => t.id)).toEqual([minion.instanceId]);
+    });
+
+    it('Inspired (01074) leaves out an ally that already holds one', () => {
+      const state = newRhinoGame();
+      const full = createCardInstance(cardCatalog.getCard('01058')!, 'p1');
+      const free = createCardInstance(cardCatalog.getCard('01066')!, 'p1');
+      full.attachments = [createCardInstance(cardCatalog.getCard('01074')!, 'p1')];
+      state.players[0].allies = [full, free];
+      const inspired = createCardInstance(cardCatalog.getCard('01074')!, 'p1');
+
+      const choice = getPlayTargetChoice(state, state.players[0], inspired);
+      expect(choice?.targets.map((t) => t.id)).toEqual([free.instanceId]);
+    });
   });
 
   describe('CardPaymentModal Cost Reduction & Caution Banner Invariants (Issue #46)', () => {

@@ -6,7 +6,7 @@ import { Z_CLASS } from '../styles/z-layers';
 export const BuildVersionBadge: React.FC = () => (
   <div
     aria-label="Build version"
-    className={`fixed bottom-1 right-2 ${Z_CLASS.raised} pointer-events-none select-text font-mono text-[10px] opacity-60`}
+    className={`fixed bottom-1 right-2 ${Z_CLASS.raised} pointer-events-none select-text font-mono text-micro opacity-60`}
   >
     {BUILD_LABEL}
   </div>

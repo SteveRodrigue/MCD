@@ -120,14 +120,13 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
       outcome.id &&
       outcome.id !== prevOutcomeIdRef.current &&
       gameState.phase === 'VILLAIN_PHASE' &&
-      !decisionPrompt &&
       villainPhasePacing !== 'instant'
     ) {
       setActiveCombatOutcome(outcome);
       setIsBoostModalOpen(true);
       prevOutcomeIdRef.current = outcome.id;
     }
-  }, [gameState.lastCombatOutcome, gameState.phase, decisionPrompt, villainPhasePacing]);
+  }, [gameState.lastCombatOutcome, gameState.phase, villainPhasePacing]);
 
   // Auto-advance timer during VILLAIN_PHASE
   useEffect(() => {
@@ -659,84 +658,88 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
         <GameOverScreen onReset={onReset} />
 
         {/* 8. Interactive Decision Prompt Modal (ADR-0020 / ADR-0032 / ADR-0038) */}
-        <DecisionPromptModal
-          prompt={decisionPrompt}
-          players={gameState.players}
-          onSelectOption={(optionId, payload) => {
-            const activePrompt = decisionPrompt;
-            if (!activePrompt) return;
+        {!isBoostModalOpen && (
+          <DecisionPromptModal
+            prompt={decisionPrompt}
+            players={gameState.players}
+            onSelectOption={(optionId, payload) => {
+              const activePrompt = decisionPrompt;
+              if (!activePrompt) return;
 
-            const selectedOption = activePrompt.options?.find((o) => o.id === optionId);
-            const promptPlayer =
-              gameState.players.find((p) => p.id === activePrompt.playerId) || activePlayer;
+              const selectedOption = activePrompt.options?.find((o) => o.id === optionId);
+              const promptPlayer =
+                gameState.players.find((p) => p.id === activePrompt.playerId) || activePlayer;
 
-            const optParams = selectedOption?.params as Record<string, any> | undefined;
-            const requiresPayment = selectedOption ? optionRequiresPayment(selectedOption) : false;
+              const optParams = selectedOption?.params as Record<string, any> | undefined;
+              const requiresPayment = selectedOption
+                ? optionRequiresPayment(selectedOption)
+                : false;
 
-            if (requiresPayment && selectedOption) {
-              const cardInstanceId =
-                (optParams?.costCardInstanceId as string | undefined) ||
-                (optParams?.sourceCardInstanceId as string | undefined);
-              const inPlayCard =
-                (optParams?.cardInstance as CardInstance | undefined) ||
-                (cardInstanceId
-                  ? promptPlayer.hand.find((c) => c.instanceId === cardInstanceId) ||
-                    promptPlayer.tableau.find((c) => c.instanceId === cardInstanceId) ||
-                    promptPlayer.discard.find((c) => c.instanceId === cardInstanceId) ||
-                    gameState.players
-                      .flatMap((p) => p.discard)
-                      .find((c) => c.instanceId === cardInstanceId)
-                  : undefined) ||
-                (activePrompt.sourceCardCode
-                  ? promptPlayer.hand.find((c) => c.card.code === activePrompt.sourceCardCode) ||
-                    promptPlayer.tableau.find((c) => c.card.code === activePrompt.sourceCardCode)
-                  : undefined);
+              if (requiresPayment && selectedOption) {
+                const cardInstanceId =
+                  (optParams?.costCardInstanceId as string | undefined) ||
+                  (optParams?.sourceCardInstanceId as string | undefined);
+                const inPlayCard =
+                  (optParams?.cardInstance as CardInstance | undefined) ||
+                  (cardInstanceId
+                    ? promptPlayer.hand.find((c) => c.instanceId === cardInstanceId) ||
+                      promptPlayer.tableau.find((c) => c.instanceId === cardInstanceId) ||
+                      promptPlayer.discard.find((c) => c.instanceId === cardInstanceId) ||
+                      gameState.players
+                        .flatMap((p) => p.discard)
+                        .find((c) => c.instanceId === cardInstanceId)
+                    : undefined) ||
+                  (activePrompt.sourceCardCode
+                    ? promptPlayer.hand.find((c) => c.card.code === activePrompt.sourceCardCode) ||
+                      promptPlayer.tableau.find((c) => c.card.code === activePrompt.sourceCardCode)
+                    : undefined);
 
-              const resCost = optParams?.resourceCost;
-              const ability = optParams?.ability;
-              const costAmount = resCost?.amount ?? inPlayCard?.card?.cost ?? 1;
-              const resourceType =
-                resCost?.resourceType ??
-                (ability?.cost?.resourceCost
-                  ? Object.keys(ability.cost.resourceCost)[0]
-                  : undefined);
+                const resCost = optParams?.resourceCost;
+                const ability = optParams?.ability;
+                const costAmount = resCost?.amount ?? inPlayCard?.card?.cost ?? 1;
+                const resourceType =
+                  resCost?.resourceType ??
+                  (ability?.cost?.resourceCost
+                    ? Object.keys(ability.cost.resourceCost)[0]
+                    : undefined);
 
-              // Fallback synthetic card if prompt is from an encounter card or villain attachment
-              const paymentCard = inPlayCard || {
-                instanceId: cardInstanceId || activePrompt.promptId,
-                card: activePrompt.triggerSourceCard || {
-                  code: activePrompt.sourceCardCode || 'encounter_cost',
-                  name: activePrompt.sourceCardName || 'Card Cost',
-                  type: 'encounter' as any,
-                  cost: costAmount,
-                },
-                ownerId: activePrompt.playerId,
-              };
+                // Fallback synthetic card if prompt is from an encounter card or villain attachment
+                const paymentCard = inPlayCard || {
+                  instanceId: cardInstanceId || activePrompt.promptId,
+                  card: activePrompt.triggerSourceCard || {
+                    code: activePrompt.sourceCardCode || 'encounter_cost',
+                    name: activePrompt.sourceCardName || 'Card Cost',
+                    type: 'encounter' as any,
+                    cost: costAmount,
+                  },
+                  ownerId: activePrompt.playerId,
+                };
 
-              setPendingPromptPayment({
-                optionId,
-                playerId: activePrompt.playerId,
-                card: paymentCard as CardInstance,
-                abilityCost: {
-                  amount: costAmount,
-                  resourceType: resourceType as any,
-                  requirePrinted: ability?.cost?.requirePrinted,
-                },
-              });
-              setPaymentModalCard(paymentCard as CardInstance);
-              return;
-            }
+                setPendingPromptPayment({
+                  optionId,
+                  playerId: activePrompt.playerId,
+                  card: paymentCard as CardInstance,
+                  abilityCost: {
+                    amount: costAmount,
+                    resourceType: resourceType as any,
+                    requirePrinted: ability?.cost?.requirePrinted,
+                  },
+                });
+                setPaymentModalCard(paymentCard as CardInstance);
+                return;
+              }
 
-            if (onDispatchAction) {
-              onDispatchAction({
-                type: 'RESOLVE_DECISION_PROMPT',
-                playerId: activePrompt.playerId,
-                selectedOptionId: optionId,
-                ...payload,
-              });
-            }
-          }}
-        />
+              if (onDispatchAction) {
+                onDispatchAction({
+                  type: 'RESOLVE_DECISION_PROMPT',
+                  playerId: activePrompt.playerId,
+                  selectedOptionId: optionId,
+                  ...payload,
+                });
+              }
+            }}
+          />
+        )}
 
         {/* 9. Combat Boost & Damage Resolution Modal (Issue #140) */}
         <CombatBoostModal

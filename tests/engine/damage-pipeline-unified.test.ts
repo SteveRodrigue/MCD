@@ -14,7 +14,7 @@ import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
 import { applyDamageToTarget } from '@engine/pipeline/damage-pipeline';
 import { dispatchDefeat } from '@engine/triggers/defeat-dispatch';
-import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
+import { peekDecisionPrompt, resolveDecisionPrompt } from '@engine/pipeline/prompt-queue';
 
 const dispatched = recordDispatchedTriggers();
 
@@ -299,19 +299,19 @@ describe('One damage pipeline for ability damage (#247 part 1)', () => {
       ).toHaveLength(1);
     });
 
-    it('identity and all heroes still open the DAMAGE_TAKEN window once per hero hit', () => {
+    it('identity and all heroes open the DAMAGE_WOULD_BE_TAKEN window once per hero hit (#268)', () => {
       run({ amount: 1, target: 'SELF_IDENTITY' });
-      expect(dispatched.filter((d) => d.trigger === 'DAMAGE_TAKEN')).toHaveLength(1);
+      expect(dispatched.filter((d) => d.trigger === 'DAMAGE_WOULD_BE_TAKEN')).toHaveLength(1);
 
       dispatched.length = 0;
       run({ amount: 1, target: 'ALL_HEROES' });
-      expect(dispatched.filter((d) => d.trigger === 'DAMAGE_TAKEN')).toHaveLength(2);
+      expect(dispatched.filter((d) => d.trigger === 'DAMAGE_WOULD_BE_TAKEN')).toHaveLength(2);
     });
 
-    it('Tough absorbing the hit skips the DAMAGE_TAKEN window', () => {
+    it('Tough absorbing the hit skips the DAMAGE_WOULD_BE_TAKEN window (#268)', () => {
       state.players[0].statusCards.push(StatusCard.TOUGH);
       run({ amount: 1, target: 'SELF_IDENTITY' });
-      expect(dispatched.filter((d) => d.trigger === 'DAMAGE_TAKEN')).toHaveLength(0);
+      expect(dispatched.filter((d) => d.trigger === 'DAMAGE_WOULD_BE_TAKEN')).toHaveLength(0);
     });
 
     it('keeps the "choose a player" prompt for engaged enemies in multiplayer', () => {
@@ -642,6 +642,212 @@ describe('One damage pipeline for ability damage (#247 part 1)', () => {
     it('a hero that survives does not end the game', () => {
       run({ amount: 1, target: 'SELF_IDENTITY' });
       expect(state.winner).toBeNull();
+    });
+  });
+
+  describe('6. Pausable DAMAGE_WOULD_BE_TAKEN prevention across non-attack damage sources (#268)', () => {
+    const cosmicFlight = (owner = 'p2'): CardInstance =>
+      createCardInstance(cardCatalog.getCard('01017')!, owner);
+    const backflip = (owner = 'p1'): CardInstance =>
+      createCardInstance(cardCatalog.getCard('01003')!, owner);
+
+    it('pauses non-attack DEAL_DAMAGE when Cosmic Flight (01017) is in play; accepting discards it and prevents up to 3 damage', () => {
+      const cf = cosmicFlight('p2');
+      state.players[1].tableau.push(cf);
+      const hpBefore = state.players[1].health;
+
+      const res = executeEffect(state, ability({ amount: 2, target: 'SELF_IDENTITY' }), {
+        playerId: 'p2',
+        sourceCardInstance: createCardInstance(cardCatalog.getCard('01103')!), // Shocker
+      } as any);
+      state = res.state ?? state;
+
+      // Damage is paused while Cosmic Flight prompt is open
+      const prompt = peekDecisionPrompt(state);
+      expect(prompt?.playerId).toBe('p2');
+      expect(prompt?.sourceCardCode).toBe('01017');
+      expect(prompt?.triggerSourceCode).toBe('01103');
+      expect(state.players[1].health).toBe(hpBefore);
+      expect(state.pendingDamagePlacements).toHaveLength(1);
+      expect(state.pendingDamagePlacements![0]).toMatchObject({
+        targetPlayerId: 'p2',
+        amount: 2,
+        initialAmount: 2,
+      });
+      expect(state.pendingDamagePlacements![0].attackId).toBeUndefined();
+
+      // Accept Cosmic Flight: prevents 3 (all 2 incoming), discards Cosmic Flight, resumes placement
+      const yesOpt = prompt!.options.find((o) => o.effect === 'EXECUTE_OPTIONAL_TRIGGER')!;
+      state = resolveDecisionPrompt(state, 'p2', yesOpt.id).state;
+
+      expect(peekDecisionPrompt(state)).toBeUndefined();
+      expect(state.pendingDamagePlacements ?? []).toHaveLength(0);
+      expect(state.players[1].health).toBe(hpBefore);
+      expect(state.players[1].tableau.some((c) => c.instanceId === cf.instanceId)).toBe(false);
+      expect(state.players[1].discard.some((c) => c.instanceId === cf.instanceId)).toBe(true);
+    });
+
+    it('passing Cosmic Flight on non-attack DEAL_DAMAGE applies the full damage on resume', () => {
+      const cf = cosmicFlight('p2');
+      state.players[1].tableau.push(cf);
+      const hpBefore = state.players[1].health;
+
+      const res = executeEffect(state, ability({ amount: 2, target: 'SELF_IDENTITY' }), {
+        playerId: 'p2',
+        sourceCardInstance: createCardInstance(cardCatalog.getCard('01103')!),
+      } as any);
+      state = res.state ?? state;
+
+      expect(state.players[1].health).toBe(hpBefore);
+      state = resolveDecisionPrompt(state, 'p2', 'pass').state;
+
+      expect(peekDecisionPrompt(state)).toBeUndefined();
+      expect(state.pendingDamagePlacements ?? []).toHaveLength(0);
+      expect(state.players[1].health).toBe(hpBefore - 2);
+      expect(state.players[1].tableau.some((c) => c.instanceId === cf.instanceId)).toBe(true);
+    });
+
+    it('does NOT offer Backflip (01003, damageSource: ATTACK) on non-attack DEAL_DAMAGE', () => {
+      state.players[0].hand.push(backflip('p1'));
+      const hpBefore = state.players[0].health;
+
+      run({ amount: 2, target: 'SELF_IDENTITY' });
+
+      expect(peekDecisionPrompt(state)).toBeUndefined();
+      expect(state.pendingDamagePlacements ?? []).toHaveLength(0);
+      expect(state.players[0].health).toBe(hpBefore - 2);
+    });
+
+    it('pauses distributed indirect damage (DISTRIBUTE_AMOUNT / Explosion 01111) for Cosmic Flight and applies remaining excess', () => {
+      const cf = cosmicFlight('p2');
+      state.players[1].tableau.push(cf);
+      const hpBefore = state.players[1].health;
+
+      const distribute = {
+        id: 'test_distribute',
+        timing: 'WHEN_REVEALED',
+        steps: [
+          {
+            id: 'dist',
+            effect: 'DISTRIBUTE_AMOUNT',
+            effectParams: {
+              budget: 5,
+              allocationDomain: 'DAMAGE',
+              targetScope: 'ALL_HEROES_AND_ALLIES',
+            },
+          },
+        ],
+      } as any;
+
+      state =
+        executeEffect(state, distribute, {
+          playerId: 'p2',
+          sourceCardInstance: createCardInstance(cardCatalog.getCard('01111')!),
+          assignments: { p2: 5 },
+        }).state ?? state;
+
+      expect(peekDecisionPrompt(state)?.sourceCardCode).toBe('01017');
+      expect(state.players[1].health).toBe(hpBefore);
+
+      const yesOpt = peekDecisionPrompt(state)!.options.find(
+        (o) => o.effect === 'EXECUTE_OPTIONAL_TRIGGER',
+      )!;
+      state = resolveDecisionPrompt(state, 'p2', yesOpt.id).state;
+
+      expect(peekDecisionPrompt(state)).toBeUndefined();
+      // 5 assigned - 3 prevented by Cosmic Flight = 2 taken
+      expect(state.players[1].health).toBe(hpBefore - 2);
+    });
+
+    it('pauses Retaliate damage against a hero when Cosmic Flight is in play', () => {
+      const cf = cosmicFlight('p2');
+      state.players[1].tableau.push(cf);
+      const hpBefore = state.players[1].health;
+
+      // Give villain Retaliate 1 via Armored Rhino Suit or custom attachment with RETALIATE
+      const retaliateAttachment = createCardInstance({
+        code: 'custom_retaliate',
+        name: 'Retaliate Armor',
+        type: 'attachment',
+        enrichment: {
+          abilities: [
+            {
+              id: 'grant_retaliate',
+              timing: 'CONSTANT',
+              steps: [
+                {
+                  effect: 'GRANT_KEYWORD',
+                  effectParams: { keyword: 'RETALIATE', amount: 1 },
+                },
+              ],
+            },
+          ],
+        },
+      } as any);
+      getActiveVillain(state).attachments = [retaliateAttachment];
+
+      const v = getActiveVillain(state);
+      applyDamageToTarget(state, {
+        target: {
+          type: 'villain',
+          entity: v,
+          name: v.card.name,
+          attachments: v.attachments,
+          statusCards: v.statusCards,
+        },
+        amount: 2,
+        sourceType: 'HERO',
+        sourcePlayerId: 'p2',
+        isAttack: true,
+      });
+
+      const prompt = peekDecisionPrompt(state);
+      expect(prompt?.playerId).toBe('p2');
+      expect(prompt?.sourceCardCode).toBe('01017');
+      expect(state.players[1].health).toBe(hpBefore);
+      expect(state.pendingDamagePlacements).toHaveLength(1);
+      expect(state.pendingDamagePlacements![0].sourceType).toBe('RETALIATE');
+
+      const yesOpt = prompt!.options.find((o) => o.effect === 'EXECUTE_OPTIONAL_TRIGGER')!;
+      state = resolveDecisionPrompt(state, 'p2', yesOpt.id).state;
+
+      expect(peekDecisionPrompt(state)).toBeUndefined();
+      expect(state.players[1].health).toBe(hpBefore);
+    });
+
+    it('queues multiple in-play DAMAGE_WOULD_BE_TAKEN upgrades and prunes the second when the first reduces damage to 0', () => {
+      const cf1 = cosmicFlight('p2');
+      const cf2 = cosmicFlight('p2');
+      state.players[1].tableau.push(cf1, cf2);
+      const hpBefore = state.players[1].health;
+
+      const res = executeEffect(state, ability({ amount: 2, target: 'SELF_IDENTITY' }), {
+        playerId: 'p2',
+        sourceCardInstance: createCardInstance(cardCatalog.getCard('01103')!),
+      } as any);
+      state = res.state ?? state;
+
+      // Two distinct in-play instances -> simultaneous ordering prompt first
+      if (peekDecisionPrompt(state)?.kind === 'ORDER_SIMULTANEOUS_ABILITIES') {
+        state = resolveDecisionPrompt(
+          state,
+          peekDecisionPrompt(state)!.playerId,
+          'confirm_order',
+        ).state;
+      }
+      expect(state.pendingDecisionQueue).toHaveLength(2);
+
+      // Accept first Cosmic Flight -> prevents all 2 damage, prunes second Cosmic Flight prompt
+      const yesOpt = peekDecisionPrompt(state)!.options.find(
+        (o) => o.effect === 'EXECUTE_OPTIONAL_TRIGGER',
+      )!;
+      state = resolveDecisionPrompt(state, 'p2', yesOpt.id).state;
+
+      expect(peekDecisionPrompt(state)).toBeUndefined();
+      expect(state.players[1].health).toBe(hpBefore);
+      // One Cosmic Flight remains in play, one is in discard
+      expect(state.players[1].tableau.filter((c) => c.card.code === '01017')).toHaveLength(1);
+      expect(state.players[1].discard.filter((c) => c.card.code === '01017')).toHaveLength(1);
     });
   });
 });

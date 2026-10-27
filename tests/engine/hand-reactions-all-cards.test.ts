@@ -259,7 +259,6 @@ describe('Issue #267: Hand reactions offer all eligible cards in first-player or
 
       // Live amount is now 1
       expect(state.pendingDamagePlacements![0].amount).toBe(1);
-      expect(state.activeAttackContext?.pendingDamage).toBe(1);
 
       // Backflip prompt is still open (since amount 1 > 0)
       expect(peekDecisionPrompt(state)).toBeDefined();

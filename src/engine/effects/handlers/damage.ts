@@ -29,7 +29,6 @@ import {
   applyAbilityDamage,
   compileDistributionTargets,
   dealDamageToEnemies,
-  dealDamageToIdentity,
   isEncounterCard,
   minionTargetRef,
   playerTargetRef,
@@ -106,7 +105,7 @@ function handleDealDamage(
     // hero eliminated by this damage leaves state.players (#246). Splitting an amount among
     // them is DISTRIBUTE_AMOUNT, not this selector.
     for (const p of [...state.players].filter((pl) => pl.currentForm === 'hero')) {
-      state = dealDamageToIdentity(state, p, amount, damageOpts);
+      state = applyAbilityDamage(state, playerTargetRef(p), amount, damageOpts).state;
     }
     for (const p of state.players) {
       for (const ally of [...p.allies].reverse()) {
@@ -194,7 +193,7 @@ function handleDealDamage(
     (targetParam as string) === 'IDENTITY' ||
     targetParam === 'SELF'
   ) {
-    state = dealDamageToIdentity(state, player, amount, damageOpts);
+    state = applyAbilityDamage(state, playerTargetRef(player), amount, damageOpts).state;
     return {
       state,
       success: true,
@@ -205,8 +204,8 @@ function handleDealDamage(
   }
 
   if (targetParam === 'ALL_HEROES' || (targetType === 'hero' && !context.chosenTargetInstanceId)) {
-    for (const p of state.players.filter((pl) => pl.currentForm === 'hero')) {
-      state = dealDamageToIdentity(state, p, amount, damageOpts);
+    for (const p of [...state.players].filter((pl) => pl.currentForm === 'hero')) {
+      state = applyAbilityDamage(state, playerTargetRef(p), amount, damageOpts).state;
     }
     return {
       state,

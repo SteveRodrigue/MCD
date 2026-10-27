@@ -235,6 +235,7 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
     - [x] **[Issue #90](https://github.com/SteveRodrigue/MCD/issues/90):** `feat(engine): Implement universal CONSUME_INTERCEPTED_EVENT and scalar value binding in trigger dispatcher (ADR-0049)` ✅ (Completed)
     - [x] **[Issue #91](https://github.com/SteveRodrigue/MCD/issues/91):** `feat(engine): Implement explicit condition evaluation and IF_CONDITION_MET sequential gating (ADR-0049)` ✅ (Completed)
     - [x] **[Issue #92](https://github.com/SteveRodrigue/MCD/issues/92):** `refactor(data): Retrofit Core Set replacement & condition cards to ADR-0049 and prune single-use primitives` ✅ (Completed)
+  - [x] **[Issue #268](https://github.com/SteveRodrigue/MCD/issues/268):** `refactor(engine): pausable damage application for prevention prompts (replace the attack-only pendingDamage special case)` ([ADR-0078](decisions/0078-one-damage-pipeline-and-the-attack-label.md)) ✅ (Completed) — Pause live damage application across all damage sources (not only enemy attacks) when a `DAMAGE_WOULD_BE_TAKEN` prompt opens (e.g. _Cosmic Flight_ `01017` on non-attack damage and stacked preventions).
 
 ### 1.2. 🔴 `[Must-Have]` Rhino Scenario & Encounter Pools (34 Cards)
 
@@ -262,8 +263,8 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
 - [x] **Monte Carlo Verification Suite ([Issue #304](https://github.com/SteveRodrigue/MCD/issues/304), needs [Issue #252](https://github.com/SteveRodrigue/MCD/issues/252) seeded RNG) ✅ (Completed):**
   - Automated headless runner executing 100 complete simulated games (Spider-Man, Captain Marvel, She-Hulk, Iron Man, Black Panther) against Rhino on Standard and Expert.
   - Asserts zero state corruption, zero deadlocks, and verified win/loss condition evaluations.
-- [ ] **Simulation Player Logic & Strategic Heuristics ([Issue #309](https://github.com/SteveRodrigue/MCD/issues/309)):**
-  - Mid/long-term heuristic table and card evaluation priority in `player-bot.ts` (dynamic threat threshold awareness, high-value card protection, intelligent form change timing) to achieve realistic player win rates against core scenarios.
+- [x] **Simulation Player Logic & Strategic Heuristics ([Issue #309](https://github.com/SteveRodrigue/MCD/issues/309)) ✅ (Initial Strategic Policy Delivered):**
+  - Value-based resource payment (generators first), threat look-ahead, Guard-first targeting, opening thwart priority, stun/draw prioritization, and defender policy delivered in `player-bot.ts` (`02a57dbd`). Follow-up win-rate tuning ([#309](https://github.com/SteveRodrigue/MCD/issues/309)) and automated card-ability coverage simulation ([#431](https://github.com/SteveRodrigue/MCD/issues/431)) are tracked in `Tech Debt & Tooling`.
 
 ---
 

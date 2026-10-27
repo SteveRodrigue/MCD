@@ -57,6 +57,7 @@ type ResumableRequest = Pick<
   | 'hasPiercing'
   | 'hasOverkill'
   | 'skipRetaliate'
+  | 'triggerChain'
 >;
 
 /**
@@ -68,6 +69,7 @@ export interface DamageResume {
   request: ResumableRequest;
   damageDealt: number;
   toughRemoved: boolean;
+  absorbedByShield?: ShieldAbsorptionInfo;
   onomatopoeia?: string;
   earlier?: { result: DamageResult; defeats: DefeatDispatch[] };
 }
@@ -93,13 +95,8 @@ export interface DamageRequest {
    * Called once the damage is placed, before the defeat is announced.
    */
   logPlayerHit?: (hit: { amount: number; remainingHealth: number }) => void;
-  /** Opens the attack's "would take" window on an identity target, after Tough and the shields. */
+  /** Extra attack context and defender callback for the "would take" window on an identity target. */
   wouldTakeWindow?: WouldTakeWindow;
-  /**
-   * Opens the DAMAGE_TAKEN window on a player target, after Tough and the damage shields, so an
-   * interrupt can lower the damage. Used by ability damage to a hero (identity, all heroes).
-   */
-  dispatchDamageTaken?: boolean;
   triggerChain?: TriggerCallNode[];
 }
 
@@ -555,13 +552,7 @@ function applyRetaliateDamage(
         const attackingPlayer = state.players.find((p) => p.id === sourcePlayerId);
         if (attackingPlayer) {
           applyDamageToTarget(state, {
-            target: {
-              type: 'player',
-              entity: attackingPlayer,
-              name: attackingPlayer.name,
-              attachments: attackingPlayer.attachments,
-              statusCards: attackingPlayer.statusCards,
-            },
+            target: playerTarget(attackingPlayer),
             amount: retaliateX,
             sourceType: 'RETALIATE',
             isAttack: false,
@@ -776,11 +767,11 @@ function resolveDamage(state: GameState, request: DamageRequest): ResolvedDamage
     }
   }
 
-  // The interrupts of an attack (Backflip, Cosmic Flight) come after Tough, so a character whose
-  // Tough card prevents the damage is not offered them (#389). Open prompts pause the occurrence.
-  if (request.wouldTakeWindow && target.type === 'player' && currentDamage > 0) {
+  // Every identity damage occurrence opens the step-3 "would take" window (Backflip on attacks,
+  // Cosmic Flight on any damage) after Tough and damage shields (#268, #389). Open prompts pause it.
+  if (target.type === 'player' && currentDamage > 0) {
     const player = target.entity as PlayerState;
-    const opened = openWouldTakeWindow(state, request.wouldTakeWindow, player, currentDamage);
+    const opened = openWouldTakeWindow(state, request, player, currentDamage);
     currentDamage = opened.amount;
     if (opened.placementId) {
       return {
@@ -790,6 +781,7 @@ function resolveDamage(state: GameState, request: DamageRequest): ResolvedDamage
           damageDealt,
           damageTaken: 0,
           toughRemoved,
+          absorbedByShield,
           targetDefeated: false,
           excessDamage: 0,
           onomatopoeia,
@@ -798,24 +790,20 @@ function resolveDamage(state: GameState, request: DamageRequest): ResolvedDamage
         paused: {
           id: opened.placementId,
           targetPlayerId: player.id,
-          sourceType: 'ATTACK',
+          sourceType: request.wouldTakeWindow ? 'ATTACK' : (request.sourceType ?? 'CARD_EFFECT'),
           amount: currentDamage,
           initialAmount: currentDamage,
-          attackId: request.wouldTakeWindow.attackId,
-          resume: { request: resumableRequest(request), damageDealt, toughRemoved, onomatopoeia },
+          ...(request.wouldTakeWindow ? { attackId: request.wouldTakeWindow.attackId } : {}),
+          resume: {
+            request: resumableRequest(request),
+            damageDealt,
+            toughRemoved,
+            absorbedByShield,
+            onomatopoeia,
+          },
         },
       };
     }
-  }
-
-  if (request.dispatchDamageTaken && target.type === 'player' && currentDamage > 0) {
-    const interrupted = kernel.dispatchTrigger(state, 'DAMAGE_TAKEN', {
-      targetPlayerId: (target.entity as PlayerState).id,
-      targetType: 'player',
-      damageAmount: currentDamage,
-      triggerChain: request.triggerChain,
-    });
-    currentDamage = interrupted.damageAmount ?? currentDamage;
   }
 
   return placeDamage(
@@ -867,6 +855,15 @@ function placeDamage(
     onomatopoeia: defeatRes.onomatopoeia,
   };
   const defeats: DefeatDispatch[] = defeatRes.pendingDefeat ? [defeatRes.pendingDefeat] : [];
+
+  if (target.type === 'player' && damageTaken > 0) {
+    kernel.dispatchTrigger(state, 'DAMAGE_TAKEN', {
+      targetPlayerId: (target.entity as PlayerState).id,
+      targetType: 'player',
+      damageAmount: damageTaken,
+      triggerChain: request.triggerChain,
+    });
+  }
 
   // ---------------------------------------------------------------------------
   // Overkill: the excess over a defeated minion or ally goes to the villain or to the ally's
@@ -927,6 +924,7 @@ function resumableRequest(request: DamageRequest): ResumableRequest {
     hasPiercing,
     hasOverkill,
     skipRetaliate,
+    triggerChain,
   } = request;
   return {
     sourceType,
@@ -937,6 +935,7 @@ function resumableRequest(request: DamageRequest): ResumableRequest {
     hasPiercing,
     hasOverkill,
     skipRetaliate,
+    triggerChain,
   };
 }
 
@@ -944,23 +943,31 @@ function resumableRequest(request: DamageRequest): ResumableRequest {
  * Offers the interrupts to damage an identity is about to take (RR v1.8 Damage, step 3). Returns
  * the amount left after the interrupts that resolved at once; when prompts stay open it also
  * returns the id of the placement they are tagged with (`damagePlacementId`), which the caller
- * stores so the prompts can lower its live amount (#267).
+ * stores so the prompts can lower its live amount (#267, #268).
  */
 function openWouldTakeWindow(
   state: GameState,
-  takeWindow: WouldTakeWindow,
+  request: DamageRequest,
   player: PlayerState,
   amount: number,
 ): { amount: number; placementId?: string } {
+  const takeWindow = request.wouldTakeWindow;
   const promptsBefore = new Set((state.pendingDecisionQueue ?? []).map((p) => p.promptId));
   const dispatched = kernel.dispatchTrigger(state, 'DAMAGE_WOULD_BE_TAKEN', {
-    ...takeWindow.context,
+    targetType: 'player',
+    targetCardCode: player.activeFormCard?.code,
+    targetName: player.activeFormCard?.name || player.name,
+    targetCurrentHp: player.health,
+    targetMaxHp: player.maxHealth,
+    encounterCardInstance: request.sourceCardInstance,
+    triggerChain: request.triggerChain,
+    ...takeWindow?.context,
     targetPlayerId: player.id,
     damageAmount: amount,
-    damageSource: 'ATTACK',
+    ...(takeWindow || request.isAttack ? { damageSource: 'ATTACK' } : {}),
   });
   const remaining = dispatched.damageAmount ?? amount;
-  if (remaining < amount) takeWindow.onPrevented?.(amount - remaining);
+  if (remaining < amount) takeWindow?.onPrevented?.(amount - remaining);
 
   const prompts = (state.pendingDecisionQueue ?? []).filter((p) => !promptsBefore.has(p.promptId));
   if (!dispatched.hasPendingPrompt || prompts.length === 0) return { amount: remaining };

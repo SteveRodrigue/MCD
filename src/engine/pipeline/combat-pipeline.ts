@@ -571,7 +571,7 @@ export function resolveDefenderDeclaration(
   // The game ended during the damage (RR v1.8): no reaction, Retaliate or clean-up follows.
   if (state.winner) return state;
 
-  if (attackContext.pendingDamage !== undefined) {
+  if (state.pendingDamagePlacements?.some((p) => p.attackId === attackContext.attackId)) {
     state.activeAttackContext = attackContext;
     return state;
   }
@@ -793,7 +793,7 @@ function attackDamageHooks(
 
 /**
  * Applies calculated attack damage to hero or ally (Step 6 continuation). When the damage stops at
- * the "would take" window the attack waits (`pendingDamage`) and
+ * the "would take" window the attack waits (`pendingDamagePlacements`) and
  * `finishAttackDamageAndPostResolution` completes it once the prompts are answered.
  */
 export function applyCalculatedAttackDamage(
@@ -857,10 +857,7 @@ export function applyCalculatedAttackDamage(
     });
   }
 
-  if (damage?.paused) {
-    attackContext.pendingDamage = state.pendingDamagePlacements?.at(-1)?.amount ?? 0;
-    return;
-  }
+  if (damage?.paused) return;
   completeAttackDamage(state, player, attackContext, damage?.result.damageTaken ?? rawDamage);
 }
 
@@ -981,7 +978,6 @@ export function finishAttackDamageAndPostResolution(
 ): GameState {
   const player = state.players.find((p) => p.id === attackContext.targetPlayerId);
   if (!player) return state;
-  delete attackContext.pendingDamage;
 
   const hooks = attackDamageHooks(state, player, attackContext);
   const resumed = resumeDamage(state, placement, {
@@ -998,18 +994,27 @@ export function finishAttackDamageAndPostResolution(
 }
 
 /**
- * Finishes the attack damage that waited for its "would take" prompts (#267, #389). Called once
- * all the interrupt prompts of the window are answered.
+ * Finishes every damage occurrence that waited for its "would take" prompts (#267, #268, #389).
+ * Called once all the interrupt prompts of the window are answered.
  */
 export function finishPendingDamagePlacements(state: GameState): GameState {
   const pending: PendingDamagePlacement[] = state.pendingDamagePlacements ?? [];
   delete state.pendingDamagePlacements;
   let current = state;
   for (const placement of pending) {
-    if (!current.activeAttackContext) {
-      throw new Error(`Paused damage ${placement.id} has no attack to finish`);
+    if (current.winner) break;
+    if (placement.attackId) {
+      if (!current.activeAttackContext) {
+        throw new Error(`Paused damage ${placement.id} has no attack to finish`);
+      }
+      current = finishAttackDamageAndPostResolution(
+        current,
+        current.activeAttackContext,
+        placement,
+      );
+    } else {
+      current = resumeDamage(current, placement).state;
     }
-    current = finishAttackDamageAndPostResolution(current, current.activeAttackContext, placement);
   }
   return current;
 }

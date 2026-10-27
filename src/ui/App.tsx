@@ -7,6 +7,7 @@ import { resetSessionSyncTracking } from './services/stats-storage-service';
 
 import { GameSettingsProvider } from './context/GameSettingsProvider';
 import { useGameSettings } from './context/useGameSettings';
+import { BuildVersionBadge } from './components/BuildVersionBadge';
 import { InfiniteLoopModal } from './components/board/InfiniteLoopModal';
 import { GameThemeRoot } from './theme/GameThemeRoot';
 import { isGameStage } from './theme/game-stage';
@@ -287,6 +288,7 @@ const AppContent: React.FC = () => {
           />
         )}
       </div>
+      <BuildVersionBadge />
     </GameThemeRoot>
   );
 };

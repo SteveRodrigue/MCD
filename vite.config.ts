@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import https from 'https';
 import { cardSupplementalEditorPlugin } from './src/tools/editor/api-middleware.ts';
+import { buildDefines } from './src/tools/build-define.ts';
 import { saveProblemReport } from './src/tools/problem-report-store.ts';
 import {
   FONT_CHOICES_ENDPOINT,
@@ -356,7 +357,8 @@ function labFontChoicesPlugin(): Plugin {
 }
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  define: buildDefines(import.meta.dirname, command === 'serve'),
   plugins: [
     react(),
     tailwindcss(),
@@ -383,4 +385,4 @@ export default defineConfig({
       ignored: ['**/logs/**', '**/cache/**', '**/stats/**'],
     },
   },
-});
+}));

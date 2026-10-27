@@ -117,6 +117,7 @@ describe('Problem Report Service', () => {
       expect(body.labels).toEqual(['bug', 'triage', 'priority:P1-high']);
       expect(body.gameState.roundNumber).toBe(3);
       expect(typeof body.timestamp).toBe('number');
+      expect(body.build).toMatch(/^v\d+\.\d+\.\d+ · \S+$/);
       expect(result).toEqual({
         success: true,
         file: 'report_123_bug.json',

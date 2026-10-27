@@ -1,6 +1,6 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-25 (code audit AUD-20261017-232534 remediated; R1–R16 delivered; Gate 1 queue re-synchronised with the open issues of the milestone)
+> **Last updated:** 2026-10-27 (code audit AUD-20261017-232534 remediated; R1–R16 delivered; #268 delivered; #309 moved to Tech Debt & Tooling after initial strategic bot `02a57dbd`)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
 > **Verification baseline:** run `npm run verify` (tests, types, lint, format, build). The pre-push hook enforces 0 failed and 0 skipped tests; no test count is recorded here because it goes stale with every commit.
@@ -64,16 +64,13 @@ Every row needs a plan file and the owner's approval before code (rule 1). Rows 
 
 No open row.
 
-
 ### 3.2 Rules gaps that affect core cards
 
 No open row.
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 
-| Issue                                                   | Problem (from the Dev Mode report)                                                                                                                                 | Notes                                                                                                                                                                                                 |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [#309](https://github.com/SteveRodrigue/MCD/issues/309) | Strategic heuristic policy and card evaluation for the player bot (roadmap 1.4). The 100-game gate passes (0 crashes, 0 timeouts) but the bots win 0 of 100 games. | **In progress (2026-10-26):** code done, uncommitted; 0/100 wins after two 4-iteration passes. Results in sections 9 and 11 of `plan_issue_309_strategic_player_bot.md`; next strategy review needed. |
+No open row. (`npm run simulate` passes 100 games with 0 crashes/timeouts and the strategic player bot / defender policy from `02a57dbd`; further win-rate tuning `#309` and ability-coverage simulation `#431` are tracked in `Tech Debt & Tooling`.)
 
 ### 3.4 UI should-haves
 
@@ -109,6 +106,8 @@ Nothing is waiting for your answer.
 Decisions taken are recorded in the row they affect (section 3) and on the issue.
 
 ### Filed outside Gate 1 (not queued)
+
+Milestone Tech Debt & Tooling, simulation follow-ups: [#309](https://github.com/SteveRodrigue/MCD/issues/309) further win-rate tuning beyond the two 4-iteration passes (`02a57dbd`, notes in `plan_issue_309_strategic_player_bot.md`); [#431](https://github.com/SteveRodrigue/MCD/issues/431) automatic card-ability coverage mode in the match simulator.
 
 Milestone Tech Debt & Tooling, from the legality gate review (ADR-0090): all delivered (#365 to #367, #457 and #370 to #372).
 

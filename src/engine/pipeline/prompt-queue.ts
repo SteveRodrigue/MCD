@@ -804,9 +804,6 @@ export function resolveDecisionPrompt(
     }
     if (canInitiate && pendingDamagePlacement && effectContext.damageAmount !== undefined) {
       pendingDamagePlacement.amount = Math.max(0, effectContext.damageAmount);
-      if (nextState.activeAttackContext) {
-        nextState.activeAttackContext.pendingDamage = pendingDamagePlacement.amount;
-      }
     }
     if (canInitiate && nextState.activeEncounterContext?.cancelled) {
       removeMootCancelPrompts(nextState, nextState.activeEncounterContext.encounterInstanceId);

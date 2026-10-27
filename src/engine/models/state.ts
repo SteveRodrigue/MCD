@@ -304,7 +304,6 @@ export interface AttackExecutionContext {
   defenseValue?: number;
   hasOverkill?: boolean;
   hasPiercing?: boolean;
-  pendingDamage?: number;
   acceptOptionalTriggers?: boolean;
   synchronousPolicy?: 'HERO_IF_READY' | 'ALLY_CHUMP_BLOCK' | 'AUTO_OPTIMAL' | 'TAKE_UNDEFENDED';
   finalDamage?: number;
@@ -509,17 +508,18 @@ export interface PendingThreatPlacement {
 }
 
 /**
- * Damage an enemy attack is about to place on an identity, paused while the "would take" prompts
- * are answered (#267, #389). `amount` is the live amount left after the interrupts resolved so
- * far; `resume` is what the damage pipeline needs to place it and announce the defeats.
+ * Damage about to be placed on an identity, paused while the "would take" prompts are answered
+ * (#267, #268, #389). `amount` is the live amount left after the interrupts resolved so far;
+ * `resume` is what the damage pipeline needs to place it and announce the defeats.
  */
 export interface PendingDamagePlacement {
   id: string;
   targetPlayerId: string;
-  sourceType: 'ATTACK';
+  sourceType:
+    'ATTACK' | NonNullable<import('../pipeline/damage-pipeline').DamageRequest['sourceType']>;
   amount: number;
   initialAmount: number;
-  attackId: string;
+  attackId?: string;
   resume: import('../pipeline/damage-pipeline').DamageResume;
 }
 

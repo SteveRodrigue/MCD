@@ -104,7 +104,7 @@
     "dev.card.tutor": "DEV: {{actor}} fetched {{card}}.",
     "player.action.recover": "{{actor}} recovers {{amount}} damage.",
     "player.action.allyAttack": "{{actor}} attacks with {{card}} for {{amount}} damage.",
-    "player.deck.exhausted": "{{actor}}'s deck is empty.",
+    "player.deck.exhausted": "{{actor}}'s deck is empty. Discard pile reshuffled and dealt 1 facedown encounter card.",
     "player.eliminated": "{{actor}} is eliminated! {{remaining}} hero(es) remain.",
     "player.phase.cleanup.complete": "{{actor}} ends the turn with {{handSize}} cards in hand.",
     "card.ability.used": "{{card}} ability used.",

@@ -32,6 +32,7 @@ function handlePlayerChoice(
     sourceCardInstanceId: context.sourceCardInstance?.instanceId,
     triggerSourceCard: context.sourceCardInstance?.card,
     options,
+    checkOptionTargets: true,
     discardedCards: context.discardedCards,
     isVoluntary: params.isVoluntary ?? false,
     completion:

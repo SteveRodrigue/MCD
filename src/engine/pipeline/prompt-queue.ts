@@ -17,10 +17,33 @@ import {
 } from './cost-engine';
 import { isEffectType } from '../../data/supplemental/runtime';
 import { abilityCancelsEncounterReveal } from './encounter-cancel';
+import { optionSteps } from '../effects/target-choice';
 import { finishPendingConsequentialDamage } from './consequential-damage';
 import { type TriggerContext } from '../triggers/trigger-dispatcher';
 import { nextEngineId } from '../state/rng';
 import { appendLog } from '../state/game-log';
+
+const NO_VALID_TARGET_REASON = 'No valid target';
+
+/**
+ * The options of a PLAYER_CHOICE prompt whose steps have no valid target (ADR-0090). When every
+ * option lacks one, none is disabled: a When Revealed choice still resolves as much as it can.
+ */
+function optionsWithoutValidTarget(
+  state: GameState,
+  player: GameState['players'][number],
+  prompt: PendingDecisionPrompt,
+  source: Parameters<typeof kernel.checkAbilityTargets>[3],
+): Set<string> {
+  const blocked = new Set<string>();
+  if (!prompt.checkOptionTargets) return blocked;
+  for (const option of prompt.options) {
+    const steps = optionSteps(option);
+    const ability: CardAbility = { id: `${prompt.promptId}_${option.id}`, timing: 'ACTION', steps };
+    if (!kernel.checkAbilityTargets(state, player, ability, source).allowed) blocked.add(option.id);
+  }
+  return blocked.size === prompt.options.length ? new Set() : blocked;
+}
 
 /**
  * Re-evaluates per-option availability (`gate`, `cost`) against the current state (Issue #158).
@@ -40,8 +63,19 @@ export function refreshPromptOptionAvailability(
       )
     : undefined;
 
+  const noTarget = optionsWithoutValidTarget(state, player, prompt, source);
+
   for (const option of prompt.options) {
-    if (!option.gate && !option.cost) continue;
+    if (!option.gate && !option.cost) {
+      if (noTarget.has(option.id)) {
+        option.disabled = true;
+        option.disabledReason = NO_VALID_TARGET_REASON;
+      } else if (option.disabledReason === NO_VALID_TARGET_REASON) {
+        option.disabled = false;
+        option.disabledReason = undefined;
+      }
+      continue;
+    }
     let reason: string | undefined;
 
     if (option.gate) {
@@ -73,6 +107,8 @@ export function refreshPromptOptionAvailability(
       );
       if (!check.allowed) reason = check.reason || 'Cannot pay the cost';
     }
+
+    if (!reason && noTarget.has(option.id)) reason = NO_VALID_TARGET_REASON;
 
     option.disabled = Boolean(reason);
     option.disabledReason = reason;

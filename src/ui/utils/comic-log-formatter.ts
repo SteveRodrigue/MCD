@@ -352,6 +352,7 @@ function mapToCanonicalTemplateKey(key?: string, entry?: GameLogEntry): string |
     case 'APPLY_STATUS':
     case 'STATUS_APPLIED': {
       const status = entry?.params?.status ? String(entry.params.status).toUpperCase() : '';
+      if (entry?.params?.isImmune) return 'STATUS_IMMUNE';
       if (status.includes('STUN')) return 'STATUS_STUNNED';
       if (status.includes('CONFUS')) return 'STATUS_CONFUSED';
       if (status.includes('TOUGH')) return 'STATUS_TOUGH';

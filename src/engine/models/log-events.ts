@@ -382,6 +382,7 @@ export interface LogEvents {
     drawCount: number;
   };
   FIRST_PLAYER_PASSED: { player: string };
+  STATUS_IMMUNE: { card: string; status: string; target: string };
   STATUS_STUNNED: { actor: string; target: string };
   STATUS_CONFUSED: { actor: string; target: string };
   STATUS_TOUGH: { actor: string; target: string };
@@ -598,6 +599,7 @@ export const ALL_LOG_EVENT_KEYS = [
   'SIDE_SCHEME_DEFEATED',
   'MULLIGAN_RESOLVED',
   'FIRST_PLAYER_PASSED',
+  'STATUS_IMMUNE',
   'STATUS_STUNNED',
   'STATUS_CONFUSED',
   'STATUS_TOUGH',

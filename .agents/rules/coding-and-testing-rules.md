@@ -19,7 +19,7 @@ Enforceable summary. Explanations, examples, naming tables and architecture live
 - Validators fail closed: a check that could not run is an error; no empty `catch`.
 - Identify cards by code or enum, never by name substring or regex over free-form input.
 - One source of truth: derive lists, schemas and tiles from engine enums or card data; share one function for legality and payment.
-- Legality has one gate (ADR-0090): fix a legality defect in `legality-checker.ts` / `checkAbilityTargets`, never in the caller; a new effect adds an `AFFECT_RULES` entry (or a reasoned `EFFECTS_WITHOUT_AFFECT_RULE` entry); no effect-name or selector legality check outside the gate (guard: `tests/engine/legality-gate-guards.test.ts`).
+- Legality has one gate (ADR-0090): fix a legality defect in `legality-checker.ts` / `checkAbilityTargets`, never in the caller; a new effect adds an `AFFECT_RULES` entry (a rule per target), a `STEP_RULES` entry (a rule on its own params) or a reasoned `EFFECTS_WITHOUT_AFFECT_RULE` entry, and a new selector a `SELECTOR_CLASS` entry; no effect-name or selector legality check outside the gate (guard: `tests/engine/legality-gate-guards.test.ts`).
 - Untrusted data gets a type guard (`Array.isArray`, `typeof`), not `as any`.
 - No `Date.now()`, `new Date()` or `Math.random()` in `src/engine/`; use `appendLog` and the seeded RNG.
 - UI timers use `useTimeout`; dev-server writes stay inside the intended folder.

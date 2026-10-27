@@ -27,11 +27,10 @@ describe('legality gate: every effect has a target-state rule or a stated reason
     expect([...EFFECTS_WITH_AFFECT_RULE, ...without].filter((e) => !known.includes(e))).toEqual([]);
   });
 
-  it('keeps the tracked gap visible: effects that act on a target without a state rule', () => {
-    const gap = Object.entries(EFFECTS_WITHOUT_AFFECT_RULE).find(([reason]) =>
-      reason.includes('tracked gap'),
-    );
-    expect(gap?.[1].length).toBeGreaterThan(0);
+  it('has no tracked gap: every reason states why no target state limits the effect', () => {
+    expect(
+      Object.keys(EFFECTS_WITHOUT_AFFECT_RULE).filter((r) => r.includes('tracked gap')),
+    ).toEqual([]);
   });
 });
 

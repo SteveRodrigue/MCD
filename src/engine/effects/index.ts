@@ -40,6 +40,11 @@ import {
 } from '../pipeline/target-restrictions';
 import { canCancelEncounterReveal } from '../pipeline/encounter-cancel';
 import { chooseStepTarget } from './target-choice';
+import {
+  cardsUnderneathHost,
+  discardableHandCards,
+  discardableTableauCards,
+} from './step-selection';
 
 import {
   type DamageRequest,
@@ -1684,9 +1689,7 @@ function discardFromHand(
   const discardedCards: CardInstance[] = [];
 
   for (const targetPlayer of targetPlayers) {
-    const candidates = filter
-      ? targetPlayer.hand.filter((c) => matchesCardFilter(c, filter, { player: targetPlayer }))
-      : [...targetPlayer.hand];
+    const candidates = discardableHandCards(targetPlayer, filter);
     const toDiscardCount = isCountAll ? candidates.length : Math.min(count, candidates.length);
     const chosen: CardInstance[] = [];
     for (let i = 0; i < toDiscardCount; i++) {
@@ -1945,9 +1948,7 @@ function discardFromTableau(
     return { state, success: false, error: 'Target card not found in tableau' };
   }
 
-  const matchingCards = player.tableau.filter(
-    (inst) => !filter || matchesCardFilter(inst, filter, { player, state }),
-  );
+  const matchingCards = discardableTableauCards(state, player, filter);
 
   if (matchingCards.length === 0) {
     if (fallback === 'SURGE') {
@@ -2111,16 +2112,9 @@ export function executeDiscard(
 
   // 7. DISCARD CARDS UNDER HOST
   if (source === 'CARDS_UNDER_HOST') {
-    const targetHost = (params.target as string) || 'VILLAIN';
-    let cardsToDiscard: CardInstance[] = [];
-
-    if (targetHost === 'VILLAIN') {
-      cardsToDiscard = getActiveVillain(state).cardsUnderneath || [];
-      getActiveVillain(state).cardsUnderneath = [];
-    } else if (targetHost === 'MAIN_SCHEME') {
-      cardsToDiscard = getActiveMainScheme(state).cardsUnderneath || [];
-      getActiveMainScheme(state).cardsUnderneath = [];
-    }
+    const host = cardsUnderneathHost(state, params.target as string | undefined);
+    const cardsToDiscard = host?.cardsUnderneath ?? [];
+    if (host) host.cardsUnderneath = [];
 
     for (const card of cardsToDiscard) {
       if (isEncounterCard(card.card)) {

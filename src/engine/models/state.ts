@@ -412,6 +412,11 @@ export interface PendingDecisionPrompt {
   triggerSourceCard?: NormalizedCard;
   triggerType?: string;
   options: DecisionPromptOption[];
+  /**
+   * PLAYER_CHOICE prompts: an option with no valid target is disabled while another option has one
+   * (RR v1.8 "Target"; ADR-0090).
+   */
+  checkOptionTargets?: boolean;
   /** When set, the source obligation is discarded once the chosen option has resolved (Issue #158) */
   completion?: 'DISCARD_SOURCE_OBLIGATION' | 'DISCARD_RESOLVING_EVENT';
   sourceCardInstance?: CardInstance;

@@ -77,9 +77,7 @@ No open row.
 
 ### 3.4 UI should-haves
 
-| Issue                                                   | Problem (from the Dev Mode report)                                                   | Notes                                                                      |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| [#358](https://github.com/SteveRodrigue/MCD/issues/358) | Wakanda Forever modal: move buttons at 3/4 of the card height (real cards are done). | UI. Open: restore or drop the bottom recap (see the comment on the issue). |
+No open row.
 
 ### 3.5 Code audit AUD-20261017-232534: delivered
 

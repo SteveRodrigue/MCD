@@ -13,6 +13,7 @@ import {
 } from '../../src/engine/models';
 import { evaluateTableauCardLegality } from '../../src/ui/components/board/tableau-card-legality';
 import { HeroZone } from '../../src/ui/components/board/HeroZone';
+import { TableauActionModal } from '../../src/ui/components/board/TableauActionModal';
 import { TestSession } from '../support/render-with-session';
 
 vi.mock('../../src/ui/hooks/useCardArt', () => ({
@@ -175,6 +176,41 @@ describe('Tableau Card Actionability Graying (Issue #185)', () => {
       expect(
         screen.getByTestId('tableau-section').querySelector('.filter.grayscale'),
       ).not.toBeNull();
+    });
+  });
+
+  describe('Web-Shooter (01008) Hero Resource ability (Issue #387)', () => {
+    let webShooter: CardInstance;
+
+    beforeEach(() => {
+      state.players[0].tableau = [];
+      webShooter = createCardInstance(cardCatalog.getCard('01008')!);
+      webShooter.tokens = { damage: 0, threat: 0, counters: 3 };
+      state.players[0].tableau.push(webShooter);
+    });
+
+    it('is unusable on the table: it is triggered only while paying a cost', () => {
+      const result = evaluateTableauCardLegality(webShooter, 'hero', {
+        gameState: state,
+        playerId: 'p1',
+      });
+      expect(result.isUsable).toBe(false);
+      expect(result.reason).toMatch(/paying a cost/i);
+    });
+
+    it('lists no resource ability in the tableau action modal', () => {
+      render(
+        <TestSession state={state}>
+          <TableauActionModal
+            isOpen={true}
+            cardInstance={webShooter}
+            player={state.players[0]}
+            onClose={vi.fn()}
+            onSelectAbility={vi.fn()}
+          />
+        </TestSession>,
+      );
+      expect(screen.queryAllByText(/WEB SHOOTER RESOURCE/i)).toHaveLength(0);
     });
   });
 });

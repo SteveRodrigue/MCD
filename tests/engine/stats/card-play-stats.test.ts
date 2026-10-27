@@ -91,22 +91,25 @@ describe('Engine Card Play and Usage Stats (#315)', () => {
   });
 
   it('USE_CARD_ABILITY and triggered abilities record ability usage', () => {
-    const webShooterCard = cardCatalog.getCard('01008')!;
-    const webShooterInst = createCardInstance(webShooterCard);
-    webShooterInst.counters = { 'web-counter': 3 };
-    p1().tableau.push(webShooterInst);
+    const medTeamCard = cardCatalog.getCard('01080')!;
+    const medTeamInst = createCardInstance(medTeamCard);
+    medTeamInst.tokens = { ...medTeamInst.tokens, counters: 3 };
+    medTeamInst.counters = { medical: 3 };
+    p1().tableau.push(medTeamInst);
+    p1().health = p1().maxHealth - 2;
 
-    const abId = webShooterCard.enrichment?.abilities?.[0]?.id || '01008_res';
+    const abId = medTeamCard.enrichment!.abilities![0].id;
 
     const res = dispatchAction(state, {
       type: 'USE_CARD_ABILITY',
       playerId: p1().id,
-      cardInstanceId: webShooterInst.instanceId,
+      cardInstanceId: medTeamInst.instanceId,
       abilityId: abId,
+      targetInstanceId: p1().id,
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.stats?.cards['01008']?.abilitiesUsed[abId]).toBe(1);
+    expect(res.state.stats?.cards['01080']?.abilitiesUsed[abId]).toBe(1);
   });
 
   it('Basic actions increment character and global action counters', () => {

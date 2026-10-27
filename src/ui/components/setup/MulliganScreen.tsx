@@ -4,6 +4,7 @@ import { GameState, CardInstance, peekDecisionPrompt } from '../../../engine';
 import { CardView } from '../cards/CardView';
 import { ToneButton } from '../../theme/kit/controls';
 import { useModalStyle } from '../../theme/useModalStyle';
+import { useThemeExtras } from '../../theme/useThemeExtras';
 import { DecisionPromptModal } from '../board/DecisionPromptModal';
 
 interface MulliganScreenProps {
@@ -21,6 +22,7 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
   onResolvePrompt,
 }) => {
   const { style } = useModalStyle();
+  const { table } = useThemeExtras();
   const [activeSeatIndex, setActiveSeatIndex] = useState<number>(0);
   const [discardsByPlayer, setDiscardsByPlayer] = useState<Record<string, string[]>>({});
 
@@ -71,11 +73,11 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
           SETUP STEP 8 • MULTI-HERO MULLIGAN PHASE
         </div>
         <h1
-          className={`font-comic text-4xl md:text-5xl tracking-wide drop-shadow-md ${style.emphasis}`}
+          className={`font-comic text-4xl md:text-5xl tracking-wide drop-shadow-md ${table.emphasis}`}
         >
           REVIEW & PREVIEW ALL HERO HANDS
         </h1>
-        <p className={`font-comic text-lg tracking-wider uppercase ${style.muted}`}>
+        <p className={`font-comic text-lg tracking-wider uppercase ${table.muted}`}>
           Switch tabs freely between heroes to strategize before confirming discards
         </p>
       </div>
@@ -143,7 +145,7 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
               </span>
               <h2 className="font-comic text-3xl tracking-wide">
                 {activePlayer.alterEgo.name}{' '}
-                <span className="font-comic text-xl text-comic-blue font-normal">
+                <span className="font-comic text-xl text-sky-700 font-normal">
                   ({activePlayer.hero.name})
                 </span>
               </h2>
@@ -165,7 +167,7 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
           {/* Individual Seat Status Badge */}
           {isCurrentHeroCompleted ? (
             <div
-              className={`bg-emerald-500 text-white text-sm px-4 py-1.5 flex items-center gap-1.5 font-bold animate-fade-in ${style.buttonShape}`}
+              className={`bg-emerald-700 text-white text-sm px-4 py-1.5 flex items-center gap-1.5 font-bold animate-fade-in ${style.buttonShape}`}
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>MULLIGAN CONFIRMED (HAND READY)</span>

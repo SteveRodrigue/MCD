@@ -149,11 +149,11 @@ describe('Aunt May (01006): needs a change in the board state to be used (#340)'
 });
 
 /**
- * #368: a scheme an ability names ("the main scheme", "each side scheme") is not a target the
- * player chooses. The gate judges it only for REMOVE_THREAT, where Crisis and Patrol limit it
- * (#331); every other effect on a named scheme resolves, and a forced ability is not skipped.
+ * #367: a scheme an ability names ("the main scheme", "each side scheme") is judged like any other
+ * target: valid while the effect can affect it. The main scheme always exists, so naming it never
+ * blocks an effect without a rule of its own; a group needs at least one member (RR v1.8 "Target").
  */
-describe('checkAbilityTargets: named schemes are judged only for threat removal (#368)', () => {
+describe('checkAbilityTargets: named schemes are judged by their effect (#367)', () => {
   const namedSchemeAbility = (effect: EffectType, target: string): CardAbility => ({
     id: `named_${effect}_${target}`,
     timing: 'FORCED_RESPONSE',
@@ -168,12 +168,14 @@ describe('checkAbilityTargets: named schemes are judged only for threat removal 
   };
 
   it.each<[EffectType, string]>([
-    ['ADD_STATUS', 'MAIN_SCHEME'],
     ['ADD_THREAT', 'MAIN_SCHEME'],
-    ['ADD_THREAT', 'SIDE_SCHEME'],
     ['ADD_THREAT', 'ALL_SCHEMES'],
-  ])('%s on %s with no side scheme is initiated', (effect, target) => {
+  ])('%s on %s is initiated: the main scheme is in play', (effect, target) => {
     expect(gate(effect, target).allowed).toBe(true);
+  });
+
+  it('ADD_THREAT on each side scheme needs one in play', () => {
+    expect(gate('ADD_THREAT', 'ALL_SIDE_SCHEMES').allowed).toBe(false);
   });
 
   it('REMOVE_THREAT on the main scheme still needs threat to remove', () => {

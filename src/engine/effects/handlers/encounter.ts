@@ -13,6 +13,7 @@ import {
   resolveNumericAmount,
 } from '../index';
 import { getRuntimeParams, type TypedStep, type StepHandlerMap } from './types';
+import { namedSchemeCode } from '../step-selection';
 import { getStepEffectParams } from '../../../data/supplemental/runtime';
 
 function handlePreventThreat(
@@ -302,14 +303,7 @@ function handleAddThreat(
     }
     return { state, success: true, mutatedState: false, onomatopoeia: 'NO SIDE SCHEMES' };
   }
-  const cardCode =
-    (step.effectParams?.cardCode as string) ||
-    (targetParam !== 'MAIN_SCHEME' &&
-    targetParam !== 'THIS_SIDE_SCHEME' &&
-    targetParam !== 'CHOSEN_SCHEME' &&
-    /^\d{5}$/.test(targetParam)
-      ? targetParam
-      : undefined);
+  const cardCode = namedSchemeCode(step);
   if (cardCode) {
     const sideScheme = (state.sideSchemes || []).find((s) => s.card?.code === cardCode);
     if (sideScheme) {

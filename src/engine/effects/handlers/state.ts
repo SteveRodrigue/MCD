@@ -19,6 +19,13 @@ import {
   type EffectContext,
 } from '../target-resolver';
 import { checkAndDiscardZeroCounterCard } from '../../pipeline/cost-engine';
+import {
+  cardCounterCount,
+  counterFilterCards,
+  playerCounterCount,
+  requestedStatuses,
+  stepTarget,
+} from '../step-selection';
 import { appendLog } from '../../state/game-log';
 import {
   EffectExecutionContext,
@@ -181,21 +188,8 @@ function handleRemoveStatus(
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const params = getStepEffectParams(step);
-  const requestedStatus = String(params.status || 'ALL');
-  const normalizedStatus =
-    requestedStatus === 'STUNNED'
-      ? StatusCard.STUNNED
-      : requestedStatus === 'CONFUSED'
-        ? StatusCard.CONFUSED
-        : requestedStatus === 'TOUGH'
-          ? StatusCard.TOUGH
-          : requestedStatus;
-  const statuses =
-    normalizedStatus === 'ALL'
-      ? [StatusCard.STUNNED, StatusCard.CONFUSED, StatusCard.TOUGH]
-      : [normalizedStatus as StatusCard];
-  const target = String(params.target || 'VILLAIN');
+  const statuses = requestedStatuses(step);
+  const target = String(stepTarget(step));
   const targetPlayer =
     state.players.find((candidate) => candidate.id === context.targetPlayerId) || player;
   const targets: Array<{ statusCards?: StatusCard[]; instanceId?: string }> = [];
@@ -674,14 +668,10 @@ function handleSpendCounters(
 
   if (targetParam === 'IDENTITY') {
     player.counters = player.counters || {};
-    const current = player.counters[counterType] || 0;
-    player.counters[counterType] = Math.max(0, current - amount);
+    player.counters[counterType] = Math.max(0, playerCounterCount(player, counterType) - amount);
   } else if (context.sourceCardInstance) {
     context.sourceCardInstance.counters = context.sourceCardInstance.counters || {};
-    const current =
-      context.sourceCardInstance.counters[counterType] ??
-      context.sourceCardInstance.tokens?.counters ??
-      0;
+    const current = cardCounterCount(context.sourceCardInstance, counterType);
     context.sourceCardInstance.counters[counterType] = Math.max(0, current - amount);
     if (context.sourceCardInstance.tokens) {
       context.sourceCardInstance.tokens.counters = Math.max(
@@ -709,23 +699,9 @@ function handleRemoveCountersMatchingFilter(
   player: PlayerState,
 ): EffectResult {
   const params = getStepEffectParams(step);
-  const targetZone = (params.targetZone as string) || 'TABLEAU';
-  const traitFilter = params.traitFilter as string | undefined;
   const counterType = params.counterType as string | undefined;
   const amountParam = params.amount;
-
-  let targetCards: CardInstance[] = [];
-  if (targetZone === 'TABLEAU' || targetZone === 'ALL_CONTROLLED') {
-    targetCards = [...player.tableau, ...player.allies];
-  }
-
-  if (traitFilter) {
-    targetCards = targetCards.filter((c) =>
-      (c.card.traits || []).some(
-        (t) => t.toLowerCase().trim() === traitFilter.toLowerCase().trim(),
-      ),
-    );
-  }
+  const targetCards = counterFilterCards(player, params);
 
   let totalRemoved = 0;
   for (const cardInst of targetCards) {

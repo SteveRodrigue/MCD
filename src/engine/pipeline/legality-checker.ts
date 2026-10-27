@@ -21,6 +21,7 @@ import {
   canPayAbilityCost,
   getEventAbilityExtraCost,
   AbilityPaymentOptions,
+  isResourceAbility,
   getEffectiveCardCost,
   getAvailableResources,
   getGeneratorProvidedResources,
@@ -920,6 +921,15 @@ export function canInitiateAbility(
         };
       }
     }
+  }
+
+  // A resource ability is triggered only while paying a cost (RR v1.8 "Resource Ability"), never as
+  // an action of its own (#387); the payment flow reads generators without asking this gate.
+  if (isResourceAbility(ability.timing)) {
+    return {
+      allowed: false,
+      reason: 'Resource abilities can only be triggered while paying a cost.',
+    };
   }
 
   // 2. Identity Form Validation

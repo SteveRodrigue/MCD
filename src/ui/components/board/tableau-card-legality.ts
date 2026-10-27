@@ -1,5 +1,5 @@
 import { CardInstance, GameState } from '../../../engine/models/state';
-import { isAbilityPlayableInForm } from '../../../engine/pipeline/cost-engine';
+import { isAbilityPlayableInForm, isResourceAbility } from '../../../engine/pipeline/cost-engine';
 import { canInitiateAbility } from '../../../engine/pipeline/legality-checker';
 
 export interface TableauCardLegality {
@@ -17,9 +17,10 @@ export interface TableauLegalityContext {
  * Evaluates whether an in-play tableau card (Upgrade / Support) is active and legal
  * to trigger or benefit from in the player's current identity form (RR v1.8 p. 14, 15).
  *
- * When a game context is supplied, a card whose only player-triggered abilities (Action /
- * Resource) cannot currently be initiated (no legal target, exhausted, outside player phase,
- * unpayable cost) is also reported unusable (RR v1.8 p. 15-16).
+ * When a game context is supplied, a card whose only player-triggered abilities (Action) cannot
+ * currently be initiated (no legal target, exhausted, outside player phase, unpayable cost) is also
+ * reported unusable (RR v1.8 p. 15-16). A card with only a resource ability is unusable here too:
+ * that ability is triggered while paying a cost (#387).
  */
 export function evaluateTableauCardLegality(
   cardInst: CardInstance,
@@ -90,6 +91,10 @@ export function evaluateTableauCardLegality(
       (ab) =>
         isTriggerableTiming(ab.timing) && isAbilityPlayableInForm(ab.timing as any, currentForm),
     );
+    // A resource ability is triggered only while paying a cost (RR v1.8 "Resource Ability", #387).
+    if (triggerable.length === 0 && abilities.some((ab) => isResourceAbility(ab.timing))) {
+      return { isUsable: false, reason: 'Used when paying a cost' };
+    }
     if (triggerable.length > 0) {
       const checks = triggerable.map((ab) =>
         canInitiateAbility(context.gameState, context.playerId, ab, cardInst, {}),
@@ -104,12 +109,5 @@ export function evaluateTableauCardLegality(
 }
 
 function isTriggerableTiming(timing?: string): boolean {
-  return (
-    timing === 'ACTION' ||
-    timing === 'HERO_ACTION' ||
-    timing === 'ALTER_EGO_ACTION' ||
-    timing === 'RESOURCE' ||
-    timing === 'HERO_RESOURCE' ||
-    timing === 'ALTER_EGO_RESOURCE'
-  );
+  return timing === 'ACTION' || timing === 'HERO_ACTION' || timing === 'ALTER_EGO_ACTION';
 }

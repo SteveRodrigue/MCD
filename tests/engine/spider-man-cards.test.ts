@@ -237,7 +237,7 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
   });
 
   describe('Web-Shooter Uses & Resource (01008)', () => {
-    it('enters play with 3 web-counters and exhausts via USE_CARD_ABILITY', () => {
+    it('enters play with 3 web-counters; its resource ability is not a standalone action (#387)', () => {
       gameState.players[0].currentForm = 'hero';
       gameState.players[0].activeFormCard = gameState.players[0].hero;
 
@@ -263,7 +263,7 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
       expect(inPlayShooter.tokens?.counters).toBe(3); // 3 counters initialized!
       expect(inPlayShooter.counters?.web).toBe(3); // Typed web counter initialized!
 
-      // Activate Web-Shooter resource ability
+      // A resource ability is triggered only while paying a cost, never as an action
       const resourceRes = dispatchAction(res.state, {
         type: 'USE_CARD_ABILITY',
         playerId: 'p1',
@@ -271,13 +271,10 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
         abilityId: 'web_shooter_resource',
       });
 
-      expect(resourceRes.result.success).toBe(true);
-      const updatedShooter = resourceRes.state.players[0].tableau.find(
-        (c) => c.card.code === '01008',
-      )!;
-      expect(updatedShooter.tokens?.counters).toBe(2);
-      expect(updatedShooter.counters?.web).toBe(2);
-      expect(updatedShooter.exhausted).toBe(true);
+      expect(resourceRes.result.success).toBe(false);
+      expect(resourceRes.result.error).toMatch(/paying a cost/i);
+      expect(inPlayShooter.tokens?.counters).toBe(3);
+      expect(inPlayShooter.exhausted).toBeFalsy();
     });
 
     it('prevents Web-Shooter (01008) HERO_ACTION from being used while in Alter-Ego form', () => {

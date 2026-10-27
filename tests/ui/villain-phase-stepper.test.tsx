@@ -48,6 +48,37 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
       expect(screen.getByText('SCHEME GROWS!')).toBeDefined();
     });
 
+    it('dynamically sizes the ribbon and renders full narrative without truncate', () => {
+      const longDescription =
+        '3 encounter card(s) dealt to player threat zone(s) (2 base + 1 for Hazard (Usurp the Throne)).';
+      const dealState: Partial<GameState> = {
+        phase: GamePhase.VILLAIN_PHASE,
+        villainPhaseStep: VillainPhaseStep.DEAL_ENCOUNTER_CARDS,
+        villainPhaseStepEvent: {
+          type: 'DEAL_ENCOUNTER_CARD',
+          step: VillainPhaseStep.DEAL_ENCOUNTER_CARDS,
+          description: longDescription,
+          onomatopoeia: 'ENCOUNTER DEALT!',
+        },
+      };
+
+      render(
+        <TestSession state={dealState as GameState}>
+          <VillainPhaseStepper pacing="manual" onNextStep={vi.fn()} />
+        </TestSession>,
+      );
+
+      const stepper = screen.getByTestId('villain-phase-stepper');
+      expect(stepper.className).toContain('w-fit');
+      expect(stepper.className).toContain('max-w-full');
+      expect(stepper.className).not.toContain('max-w-4xl');
+
+      const descElement = screen.getByText(longDescription);
+      expect(descElement).toBeDefined();
+      expect(descElement.className).not.toContain('truncate');
+      expect(descElement.getAttribute('title')).toBe(longDescription);
+    });
+
     it('renders target name in category badge during activations (Issue #144)', () => {
       const attackState: Partial<GameState> = {
         phase: GamePhase.VILLAIN_PHASE,

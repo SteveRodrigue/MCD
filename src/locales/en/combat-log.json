@@ -139,6 +139,7 @@
     "retaliate.hit": "{{actor}} retaliates against {{target}} for {{amount}} damage.",
     "DAMAGE_APPLIED": "{{source}} dealt {{amount}} damage to {{target}}.",
     "DAMAGE_APPLIED_UNSOURCED": "{{target}} took {{amount}} damage.",
+    "damage.transferred": "{{actor}} moved {{amount}} damage from their hero to {{target}} with {{source}}.",
     "damage.prevented.immune": "{{target}} is immune and takes no damage.",
     "damage.prevented.tough": "{{target}} loses Tough and takes no damage.",
     "damage.tough.pierced": "{{target}} loses Tough; Piercing lets the damage through.",

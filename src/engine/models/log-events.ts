@@ -215,6 +215,7 @@ export interface LogEvents {
     amount: number;
     remainingHealth?: number;
   };
+  'damage.transferred': { actor: string; source: string; amount: number; target: string };
   'damage.prevented.immune': { target: string };
   'damage.prevented.tough': { target: string };
   'damage.tough.pierced': { target: string };
@@ -524,6 +525,7 @@ export const ALL_LOG_EVENT_KEYS = [
   'damage.applied.minion',
   'damage.applied.player',
   'damage.applied.villain',
+  'damage.transferred',
   'damage.prevented.immune',
   'damage.prevented.tough',
   'damage.tough.pierced',

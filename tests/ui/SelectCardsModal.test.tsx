@@ -135,4 +135,34 @@ describe('End of Player Phase discard (PLAYER_CLEANUP multi-select)', () => {
     fireEvent.click(confirm);
     expect(onSelect).toHaveBeenCalledWith('confirm_selection', { selectedOptionIds: ['i1', 'i3'] });
   });
+
+  it("starts the next player's discard with nothing chosen (multi-seat)", () => {
+    const onSelect = vi.fn();
+    const seat2Prompt: PendingDecisionPrompt = {
+      ...cleanupPrompt,
+      promptId: 'prompt_cleanup_p2_2',
+      playerId: 'p2',
+      options: [
+        handCard('j1', 'Helicarrier', '01040'),
+        handCard('j2', 'Haymaker', '01041'),
+        handCard('j3', 'Strength', '01042'),
+      ],
+    };
+    const { rerender } = render(
+      <DecisionPromptModal prompt={cleanupPrompt} onSelectOption={onSelect} />,
+    );
+    fireEvent.click(screen.getByTestId('select-card-i1'));
+    fireEvent.click(screen.getByTestId('select-card-i2'));
+    fireEvent.click(screen.getByTestId('select-cards-confirm'));
+
+    // Seat 1 resolved: the engine now offers seat 2's hand in the same modal slot
+    rerender(<DecisionPromptModal prompt={seat2Prompt} onSelectOption={onSelect} />);
+
+    expect(screen.getByTestId('select-cards-counter').textContent).toContain('0 / 3');
+    const confirm = screen.getByTestId('select-cards-confirm');
+    expect(confirm.textContent).toBe('Keep all cards');
+    fireEvent.click(screen.getByTestId('select-card-j2'));
+    fireEvent.click(confirm);
+    expect(onSelect).toHaveBeenLastCalledWith('confirm_selection', { selectedOptionIds: ['j2'] });
+  });
 });

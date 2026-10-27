@@ -1,4 +1,5 @@
 import type { EffectType } from '../../data/supplemental/runtime';
+import type { TargetSelector } from '../../data/supplemental/schema';
 import { bindKernel, kernel } from '../kernel';
 import type {
   AbilityStep,
@@ -27,25 +28,79 @@ import { getEligibleTargets, resolveTargets, type ResolvedTarget } from './targe
 import type { EffectExecutionContext } from './index';
 
 /**
+ * How the legality gate treats each target selector (ADR-0090). Exhaustive over the schema, so a new
+ * selector fails `typecheck` until it is classified:
+ * - CHOSEN: the player picks one target; candidates come from `getEligibleTargets`.
+ * - FIXED: the ability names one target.
+ * - GROUP: "each ...": valid while at least one member can be affected (RR v1.8 "Target").
+ * - EVENT: the enemy or minion the triggering event named ("that enemy").
+ * - DEPENDENT: a value an earlier step or the host produces at run time (`PREVIOUS_TARGET`,
+ *   `HOST`); it cannot be judged before the ability runs, so it never blocks the ability.
+ */
+export type SelectorClass = 'CHOSEN' | 'FIXED' | 'GROUP' | 'EVENT' | 'DEPENDENT';
+
+export const SELECTOR_CLASS: Readonly<Record<TargetSelector, SelectorClass>> = {
+  SELF: 'FIXED',
+  SELF_IDENTITY: 'FIXED',
+  SELF_HERO: 'FIXED',
+  ACTIVE_PLAYER: 'FIXED',
+  ALL_PLAYERS: 'GROUP',
+  DEFENDING_PLAYER: 'FIXED',
+  ALL_HEROES: 'GROUP',
+  ALL_HEROES_AND_ALLIES: 'GROUP',
+  TRIGGERING_HERO: 'DEPENDENT',
+  DAMAGED_CHARACTER: 'DEPENDENT',
+  CHOSEN_PLAYER: 'CHOSEN',
+  VILLAIN: 'FIXED',
+  MAIN_SCHEME: 'FIXED',
+  CHOSEN_SCHEME: 'CHOSEN',
+  CHOSEN_ENEMY: 'CHOSEN',
+  ALL_ENEMIES: 'GROUP',
+  ENGAGED_ENEMIES: 'GROUP',
+  ENGAGED_MINIONS: 'GROUP',
+  CHOSEN_MINION: 'CHOSEN',
+  CHOSEN_ENGAGED_MINION: 'CHOSEN',
+  ALL_MINIONS: 'GROUP',
+  CHOSEN_ALLY: 'CHOSEN',
+  CHOSEN_CONTROLLED_ALLY: 'CHOSEN',
+  ALL_CONTROLLED_ALLIES: 'GROUP',
+  ALL_CONTROLLED_TABLEAU: 'GROUP',
+  ALL_ALLIES: 'GROUP',
+  CHOSEN_CHARACTER: 'CHOSEN',
+  CHOSEN_CONTROLLED_CHARACTER: 'CHOSEN',
+  ALL_CONTROLLED_CHARACTERS: 'GROUP',
+  CHOSEN_FRIENDLY_CHARACTER: 'CHOSEN',
+  ALL_FRIENDLY_CHARACTERS: 'GROUP',
+  ALL_CHARACTERS: 'GROUP',
+  CHOSEN_SIDE_SCHEME: 'CHOSEN',
+  THIS_SIDE_SCHEME: 'FIXED',
+  ALL_SIDE_SCHEMES: 'GROUP',
+  ALL_SCHEMES: 'GROUP',
+  TRIGGERING_SCHEME: 'DEPENDENT',
+  PREVIOUS_TARGET: 'DEPENDENT',
+  PREVIOUS_SELECTED_CARD: 'DEPENDENT',
+  TRIGGERING_MINION: 'EVENT',
+  TRIGGERING_ENEMY: 'EVENT',
+  HOST: 'DEPENDENT',
+  HOST_ENEMY: 'DEPENDENT',
+};
+
+/**
  * Player-chosen target selection (RR v1.8 "Target", "Choose (Game Element)", "Initiating Abilities").
  *
  * A step whose target is a single-target CHOSEN_* selector is resolved against the target the
  * player chose. When nobody has chosen yet, the valid targets are computed from the board at that
  * moment: 0 means the step does nothing, 1 is used without asking, 2 or more open a prompt whose
  * options re-run the same step with the chosen target.
+ *
+ * `CHOSEN_PLAYER` is a CHOSEN selector too but joins only with #367 (it needs its play-time prompt
+ * and a `getEligibleTargets` case).
  */
-const PLAYER_CHOSEN_SELECTORS: ReadonlySet<string> = new Set([
-  'CHOSEN_ENEMY',
-  'CHOSEN_MINION',
-  'CHOSEN_ENGAGED_MINION',
-  'CHOSEN_CHARACTER',
-  'CHOSEN_ALLY',
-  'CHOSEN_CONTROLLED_ALLY',
-  'CHOSEN_CONTROLLED_CHARACTER',
-  'CHOSEN_FRIENDLY_CHARACTER',
-  'CHOSEN_SCHEME',
-  'CHOSEN_SIDE_SCHEME',
-]);
+const PLAYER_CHOSEN_SELECTORS: ReadonlySet<string> = new Set(
+  Object.entries(SELECTOR_CLASS)
+    .filter(([selector, kind]) => kind === 'CHOSEN' && selector !== 'CHOSEN_PLAYER')
+    .map(([selector]) => selector),
+);
 
 export type StepTargetChoice =
   | { kind: 'NOT_REQUIRED' }
@@ -259,19 +314,25 @@ const SELF_SELECTORS: ReadonlySet<string> = new Set(['SELF', 'SELF_HERO', 'SELF_
  * Selectors the ability names rather than the player chooses, with the effects the gate judges them
  * for. No prompt is opened for them. Crisis and Patrol limit threat removal from a named scheme
  * (#331); Guard limits an attack on the named villain. Any other effect on a named selector needs
- * no valid target, so a forced ability naming one is never skipped (#368).
+ * no valid target, so a forced ability naming one is never skipped (#368). #367 judges every
+ * FIXED and GROUP selector and deletes this list.
  */
 const NAMED_SELECTOR_JUDGED_EFFECTS: Readonly<Record<string, ReadonlySet<string>>> = {
   MAIN_SCHEME: new Set(['REMOVE_THREAT']),
-  SIDE_SCHEME: new Set(['REMOVE_THREAT']),
   ALL_SCHEMES: new Set(['REMOVE_THREAT']),
   VILLAIN: new Set(['DEAL_DAMAGE']),
 };
 
+/**
+ * A step with a fallback ("attach to X, if able; if you cannot, ...") always has something to do,
+ * so a missing target never blocks it.
+ */
+const hasFallback = (step: AbilityStep): boolean => step.effectParams?.fallback !== undefined;
+
 /** The selector whose targets the legality gate enumerates for this step (chosen or self). */
 const judgedSelector = (step: AbilityStep): string | undefined => {
   const target = step.effectParams?.target;
-  if (typeof target !== 'string') return undefined;
+  if (typeof target !== 'string' || hasFallback(step)) return undefined;
   if (PLAYER_CHOSEN_SELECTORS.has(target) || SELF_SELECTORS.has(target)) return target;
   return NAMED_SELECTOR_JUDGED_EFFECTS[target]?.has(step.effect) ? target : undefined;
 };
@@ -430,18 +491,36 @@ export function chooseStepTarget(
 }
 
 /** Selectors naming the enemy or minion the triggering event was about ("that enemy"). */
-const EVENT_TARGET_SELECTORS: ReadonlySet<string> = new Set([
-  'TRIGGERING_ENEMY',
-  'TRIGGERING_MINION',
-]);
-
 const stepEventSelector = (step: AbilityStep): string | undefined => {
   const target = step.effectParams?.target;
-  return typeof target === 'string' && EVENT_TARGET_SELECTORS.has(target) ? target : undefined;
+  return typeof target === 'string' && SELECTOR_CLASS[target as TargetSelector] === 'EVENT'
+    ? target
+    : undefined;
+};
+
+/** The steps a PLAYER_CHOICE option runs when it is taken. */
+export const optionSteps = (option: DecisionPromptOption): AbilityStep[] =>
+  option.steps ?? [{ effect: option.effect as EffectType, effectParams: option.params }];
+
+const choiceOptions = (step: AbilityStep): DecisionPromptOption[] =>
+  step.effect === 'PLAYER_CHOICE'
+    ? ((step.effectParams?.options as DecisionPromptOption[] | undefined) ?? [])
+    : [];
+
+/**
+ * A PLAYER_CHOICE the gate judges: every option names a target to judge. When one option needs no
+ * target the player can always take it, so the choice never blocks the ability.
+ */
+const isJudgedChoice = (step: AbilityStep): boolean => {
+  const options = choiceOptions(step);
+  return options.length > 0 && options.every((o) => stepsNeedingChoice(optionSteps(o)).length > 0);
 };
 
 const stepsNeedingChoice = (steps: AbilityStep[]): AbilityStep[] =>
-  steps.filter((s) => judgedSelector(s) !== undefined || stepEventSelector(s) !== undefined);
+  steps.filter(
+    (s) =>
+      judgedSelector(s) !== undefined || stepEventSelector(s) !== undefined || isJudgedChoice(s),
+  );
 
 /**
  * RR v1.8 "Target": an ability that draws always has a valid target while the player has a card
@@ -501,17 +580,64 @@ export function checkAbilityTargets(
   sourceCardInstance?: CardInstance,
   eventTarget?: EventTarget,
 ): TargetCheck {
+  if (isCancelledByOwnStatus(player, ability)) return { allowed: true };
+  const unmet = unmetChoiceSteps(
+    state,
+    player,
+    ability,
+    ability.steps ?? [],
+    sourceCardInstance,
+    eventTarget,
+  );
+  if (!unmet) return { allowed: true };
+  const isGuarded =
+    unmet[0].effect === 'DEAL_DAMAGE' &&
+    ability.labels?.includes('ATTACK') &&
+    isVillainAttackBlockedByGuard(player);
+  return {
+    allowed: false,
+    reason: isGuarded
+      ? GUARD_BLOCK_REASON
+      : (NO_VALID_TARGET_REASON[unmet[0].effect as EffectType] ?? 'No valid target.'),
+  };
+}
+
+/**
+ * The judged steps of `steps` when none has a valid target, or `undefined` when the steps can be
+ * initiated. A PLAYER_CHOICE has a valid target when any of its options does (RR v1.8 "Target": a
+ * target is valid if any part of the ability can affect it).
+ */
+function unmetChoiceSteps(
+  state: GameState,
+  player: PlayerState,
+  ability: CardAbility,
+  steps: AbilityStep[],
+  sourceCardInstance?: CardInstance,
+  eventTarget?: EventTarget,
+): AbilityStep[] | undefined {
   // A step whose state gate is closed cannot run, so it neither needs a target nor excuses a
   // missing one (Mark V Helmet: one step per Aerial branch).
-  const openSteps = (ability.steps ?? []).filter(
+  const openSteps = steps.filter(
     (s) => !isStepGateClosedByState(s, state, { playerId: player.id }),
   );
   const choiceSteps = stepsNeedingChoice(openSteps);
-  if (isCancelledByOwnStatus(player, ability)) return { allowed: true };
   if (choiceSteps.length === 0 || openSteps.some((s) => isAlwaysValidStep(s, player))) {
-    return { allowed: true };
+    return undefined;
   }
   const hasTarget = (step: AbilityStep): boolean => {
+    if (step.effect === 'PLAYER_CHOICE') {
+      return choiceOptions(step).some(
+        (o) =>
+          !unmetChoiceSteps(
+            state,
+            player,
+            ability,
+            optionSteps(o),
+            sourceCardInstance,
+            eventTarget,
+          ),
+      );
+    }
     const eventSelector = stepEventSelector(step);
     if (!eventSelector) {
       const selector = judgedSelector(step);
@@ -533,17 +659,7 @@ export function checkAbilityTargets(
       eventTargetInstanceId: eventTarget?.targetInstanceId,
     }).some((t) => canAffect(state, step, t, sourceCardInstance, player, ability));
   };
-  if (choiceSteps.some(hasTarget)) return { allowed: true };
-  const isGuarded =
-    choiceSteps[0].effect === 'DEAL_DAMAGE' &&
-    ability.labels?.includes('ATTACK') &&
-    isVillainAttackBlockedByGuard(player);
-  return {
-    allowed: false,
-    reason: isGuarded
-      ? GUARD_BLOCK_REASON
-      : (NO_VALID_TARGET_REASON[choiceSteps[0].effect as EffectType] ?? 'No valid target.'),
-  };
+  return choiceSteps.some(hasTarget) ? undefined : choiceSteps;
 }
 
 bindKernel({ checkAbilityTargets });

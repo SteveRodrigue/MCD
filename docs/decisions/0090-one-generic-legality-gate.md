@@ -79,3 +79,13 @@ Web-Shooter (`01008`) could be started from the tableau action modal, spending a
 2. **One distribution application.** `applyDistributedAmounts` (`effects/distribution.ts`) serves the step with assignments and the prompt answer, replacing two near-identical blocks.
 3. **`getEligibleTargets` is structural.** It shares `schemeCandidates` with `resolveTargets` (one main-scheme id rule) and states in its comment that state rules are the gate's (`getValidStepTargets`).
 4. **One definition of a prompted step.** `firstChosenTargetStep` (`target-choice.ts`) is used by the ability prompt, the event prompt and `getEventTargetChoice`; `CHOSEN_PLAYER` is never prompted there. The gate still judges a wider set (self and named selectors), which includes every prompted step. Ability and event choice prompts share `targetChoiceLabel`.
+
+## Addendum (2026-10-27, #457): the gate model for #365 and #367
+
+Reading 3,995 upstream cards showed the gate could not yet express what later packs need, so #365 (effect rules) and #367 (every selector) build on this model.
+
+1. **One selector table.** `SELECTOR_CLASS` (`target-choice.ts`) classifies every schema selector as `CHOSEN`, `FIXED`, `GROUP`, `EVENT` or `DEPENDENT`, exhaustive over the schema (a new selector fails `typecheck`). `PLAYER_CHOSEN_SELECTORS` and the event selectors are derived from it. `DEPENDENT` selectors (`PREVIOUS_TARGET`, `DAMAGED_CHARACTER`, `HOST`, `HOST_ENEMY`, `TRIGGERING_*`) take their value from an earlier step or the host at run time, so they are never judged up front (Titania's Fury 01164 heals `PREVIOUS_TARGET` after its attack).
+2. **`PLAYER_CHOICE` is read.** A choice whose options all name a target is valid when any option has a valid target (RR v1.8 "Target": a target is valid if any part can affect it). A choice with an option that needs no target never blocks. An option runs `option.steps`, or its own `effect` and `params` (`optionSteps`).
+3. **Options are disabled, not hidden.** A `PLAYER_CHOICE` prompt (`checkOptionTargets`) disables an option with no valid target while another has one; when none has, all stay open (When Revealed is not gated and resolves as much as it can).
+4. **Fallback.** A step with `fallback` ("attach to X, if able; if you cannot, ...") never blocks.
+5. **Not yet.** Targets that live in params rather than a selector (a card in the discard pile, "up to 3 different enemies", a filtered ally) are not judged; #365 gives each effect its own candidates. `CHOSEN_PLAYER` and the `FIXED` and `GROUP` selectors are judged with #367.

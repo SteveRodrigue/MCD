@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { createCardInstance } from '@engine/state/game-setup';
-import { checkAbilityTargets } from '@engine/effects/target-choice';
+import { checkAbilityTargets, firstChosenTargetStep } from '@engine/effects/target-choice';
 import { canInitiateAbility } from '@engine/pipeline/legality-checker';
 import {
   getActiveMainScheme,
@@ -218,4 +218,50 @@ describe('checkAbilityTargets: a named main scheme is judged by any of its ids (
       expect(result.allowed).toBe(false);
     },
   );
+});
+
+/**
+ * #372: "which step needs a target prompt" is decided once. The gate, the ability prompt and the
+ * event prompt all ask `firstChosenTargetStep`, so a named scheme, a self selector or a chosen
+ * player never masks the step the player actually chooses.
+ */
+describe('firstChosenTargetStep: the one definition of a step that needs a prompt (#372)', () => {
+  const step = (effect: EffectType, target: string): AbilityStep => ({
+    effect,
+    effectParams: { target },
+  });
+
+  it('skips named schemes, self selectors and a chosen player, and finds the chosen step', () => {
+    const chosen = step('ADD_STATUS', 'CHOSEN_MINION');
+    const found = firstChosenTargetStep([
+      step('REMOVE_THREAT', 'MAIN_SCHEME'),
+      step('READY', 'SELF_HERO'),
+      step('READY', 'CHOSEN_PLAYER'),
+      chosen,
+    ]);
+    expect(found).toEqual({ step: chosen, selector: 'CHOSEN_MINION' });
+  });
+
+  it('skips steps the caller reports closed and returns undefined when none is left', () => {
+    const closed = step('EXHAUST', 'CHOSEN_ENEMY');
+    const open = step('HEAL_DAMAGE', 'CHOSEN_ALLY');
+    expect(firstChosenTargetStep([closed, open], (s) => s !== closed)?.step).toBe(open);
+    expect(firstChosenTargetStep([closed], (s) => s !== closed)).toBeUndefined();
+    expect(firstChosenTargetStep(undefined)).toBeUndefined();
+  });
+
+  it('agrees with the gate: a mixed named-scheme and chosen-target ability judges both steps', () => {
+    const state = newRhinoGame();
+    state.sideSchemes = [];
+    getActiveMainScheme(state)!.threat = 3;
+    const ability: CardAbility = {
+      id: 'mixed_named_and_chosen',
+      timing: 'ACTION',
+      steps: [step('REMOVE_THREAT', 'MAIN_SCHEME'), step('ADD_STATUS', 'CHOSEN_MINION')],
+    };
+
+    expect(firstChosenTargetStep(ability.steps)?.selector).toBe('CHOSEN_MINION');
+    // The named scheme has threat to remove, so the ability is initiable although no minion is.
+    expect(checkAbilityTargets(state, state.players[0], ability).allowed).toBe(true);
+  });
 });

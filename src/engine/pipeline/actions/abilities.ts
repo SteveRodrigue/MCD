@@ -1,13 +1,4 @@
-import {
-  AbilityStep,
-  AlterEgoCard,
-  CardInstance,
-  CardType,
-  DecisionPromptOption,
-  PendingDecisionPrompt,
-  PlayerState,
-  VillainState,
-} from '../../models';
+import { AlterEgoCard, CardType, DecisionPromptOption, PendingDecisionPrompt } from '../../models';
 import { getPlayer, canChangeForm, canBasicRecover, canInitiateAbility } from '../legality-checker';
 import { getEffectiveMaxHealth } from '../stat-calculator';
 import { executeAbilityCost, checkAndDiscardZeroCounterCard } from '../cost-engine';
@@ -17,8 +8,12 @@ import { recordBasicAction } from '../stats';
 import { appendLog } from '../../state/game-log';
 import { dispatchTrigger } from '../../triggers/trigger-dispatcher';
 import { nextEngineId } from '../../state/rng';
-import { getValidStepTargets, isCancelledByOwnStatus } from '../../effects/target-choice';
-import { getStepEffectParams } from '../../../data/supplemental/runtime';
+import {
+  firstChosenTargetStep,
+  getValidStepTargets,
+  isCancelledByOwnStatus,
+  targetChoiceLabel,
+} from '../../effects/target-choice';
 import { isStepGateClosedByState } from '../step-gate-evaluator';
 import { enqueueDecisionPrompt } from '../prompt-queue';
 import type { ActionHandler } from './types';
@@ -243,17 +238,12 @@ export const handleUseCardAbility: ActionHandler<'USE_CARD_ABILITY'> = (
   const costContext = { discardedCards, resourcesSpent };
 
   let abilityTargetId = action.targetInstanceId;
-  let requiredAbilityScope: string | undefined;
-  let choiceStep: AbilityStep | undefined;
-  for (const step of ability.steps || []) {
-    if (isStepGateClosedByState(step, nextState, { playerId: action.playerId })) continue;
-    const tgt = getStepEffectParams(step).target as string | undefined;
-    if (tgt && tgt.startsWith('CHOSEN_') && tgt !== 'CHOSEN_PLAYER') {
-      requiredAbilityScope = tgt;
-      choiceStep = step;
-      break;
-    }
-  }
+  const chosen = firstChosenTargetStep(
+    ability.steps,
+    (step) => !isStepGateClosedByState(step, nextState, { playerId: action.playerId }),
+  );
+  const choiceStep = chosen?.step;
+  const requiredAbilityScope = chosen?.selector;
 
   const willBeCanceledByStatus = isCancelledByOwnStatus(player, ability);
 
@@ -269,22 +259,7 @@ export const handleUseCardAbility: ActionHandler<'USE_CARD_ABILITY'> = (
       abilityTargetId = eligibleTargets[0].id;
     } else if (eligibleTargets.length > 1) {
       const options: DecisionPromptOption[] = eligibleTargets.map((t) => {
-        let label = t.id;
-        if (t.kind === 'character') {
-          if (t.entityType === 'hero' || t.entityType === 'alter_ego') {
-            const p = t.entity as PlayerState;
-            label = `${p.name} (${p.currentForm === 'hero' ? p.hero.name : p.alterEgo.name})`;
-          } else if (t.entityType === 'ally' || t.entityType === 'minion') {
-            const cardName = (t.entity as CardInstance).card.name;
-            label = t.player ? `${cardName} (${t.player.name})` : cardName;
-          } else if (t.entityType === 'villain') {
-            label = `${(t.entity as VillainState).card.name} (Villain)`;
-          }
-        } else if (t.kind === 'player') {
-          label = (t.entity as PlayerState).name;
-        } else if (t.kind === 'scheme') {
-          label = (t.entity as { card?: { name?: string } }).card?.name || t.id;
-        }
+        const label = targetChoiceLabel(t);
         return {
           id: t.id,
           label,

@@ -14,11 +14,11 @@ import {
 } from '@engine/models';
 import { getStepEffectParams } from '../../../data/supplemental/runtime';
 import { enqueueDistributionPrompt } from '../../pipeline/prompt-queue';
-import { removeThreatFromScheme } from '../../pipeline/threat-pipeline';
 import { isImmuneToDamage } from '../../pipeline/damage-immunity';
 import { getEffectiveMaxHealth } from '../../pipeline/stat-calculator';
 import { nextEngineId } from '../../state/rng';
 import { resolveCharacterTargets } from '../target-resolver';
+import { applyDistributedAmounts } from '../distribution';
 import { appendLog } from '../../state/game-log';
 import {
   executeStep,
@@ -27,7 +27,6 @@ import {
   EffectResult,
   allyTargetRef,
   applyAbilityDamage,
-  applyDistributedDamage,
   compileDistributionTargets,
   dealDamageToEnemies,
   dealDamageToIdentity,
@@ -331,62 +330,10 @@ function handleDistributeAmount(
   // 1. If assignments already provided, execute immediately
   if (context.assignments && typeof context.assignments === 'object') {
     const assignments = context.assignments;
-    if (allocationDomain === 'DAMAGE') {
-      state = applyDistributedDamage(state, assignments, player, context.sourceCardInstance);
-    }
-    for (const [targetId, amount] of Object.entries(assignments)) {
-      if (amount <= 0) continue;
-
-      if (allocationDomain === 'THREAT_REMOVAL') {
-        removeThreatFromScheme(state, {
-          playerId: player.id,
-          targetType: targetId === 'main_scheme' ? 'main_scheme' : 'side_scheme',
-          targetInstanceId: targetId,
-          amount,
-          sourceName: context.sourceCardInstance?.card.name || 'Game Effect',
-        });
-      } else if (allocationDomain === 'HEAL') {
-        let ally: CardInstance | undefined;
-        for (const p of state.players) {
-          const found = p.allies.find((a) => a.instanceId === targetId);
-          if (found) {
-            ally = found;
-            break;
-          }
-        }
-        if (ally) {
-          const currentDmg = ally.tokens?.damage || 0;
-          ally.tokens = { ...ally.tokens, damage: Math.max(0, currentDmg - amount) };
-        } else {
-          const targetPlayer = state.players.find(
-            (pl) =>
-              pl.id === targetId ||
-              pl.activeFormCard?.code === targetId ||
-              pl.hero?.code === targetId,
-          );
-          if (targetPlayer) {
-            targetPlayer.health = Math.min(targetPlayer.maxHealth, targetPlayer.health + amount);
-          }
-        }
-      } else if (allocationDomain === 'EXHAUST') {
-        for (const p of state.players) {
-          const c =
-            p.tableau.find((i) => i.instanceId === targetId) ||
-            p.allies.find((i) => i.instanceId === targetId);
-          if (c) c.exhausted = true;
-          if (p.id === targetId) p.exhausted = true;
-        }
-      } else if (allocationDomain === 'COUNTERS') {
-        for (const p of state.players) {
-          const c =
-            p.tableau.find((i) => i.instanceId === targetId) ||
-            p.allies.find((i) => i.instanceId === targetId);
-          if (c) {
-            c.tokens = { ...c.tokens, counters: (c.tokens?.counters || 0) + amount };
-          }
-        }
-      }
-    }
+    state = applyDistributedAmounts(state, allocationDomain, assignments, player, {
+      name: context.sourceCardInstance?.card.name || 'Game Effect',
+      card: context.sourceCardInstance,
+    });
 
     const totalAssigned = Object.values(assignments).reduce((s, n) => s + (n || 0), 0);
     return {
@@ -409,7 +356,12 @@ function handleDistributeAmount(
     };
   }
 
-  const targets = compileDistributionTargets(state, targetScope, allocationDomain);
+  const targets = compileDistributionTargets(state, targetScope, allocationDomain, {
+    actor: player,
+    isPlayerSource: !(
+      context.sourceCardInstance && isEncounterCard(context.sourceCardInstance.card)
+    ),
+  });
   const legalTargets = targets.filter((t) => t.isEligible !== false && (t.allocationCap ?? 0) > 0);
 
   // No legal target: the points are ignored.

@@ -346,6 +346,18 @@ export function finishPendingThreatPlacements(state: GameState): GameState {
   return current;
 }
 
+/** How a blocked main scheme thwart is announced in the game log. */
+const MAIN_SCHEME_BLOCK_LOG: Record<
+  MainSchemeThreatBlock,
+  {
+    key: 'card.effect.threatBlockedByCrisis' | 'card.effect.threatBlockedByPatrol';
+    onomatopoeia: string;
+  }
+> = {
+  CRISIS: { key: 'card.effect.threatBlockedByCrisis', onomatopoeia: 'CRISIS BLOCKS!' },
+  PATROL: { key: 'card.effect.threatBlockedByPatrol', onomatopoeia: 'PATROL BLOCKS!' },
+};
+
 export interface SchemeThreatRemoval {
   playerId: string;
   targetType: ThreatTargetType;
@@ -354,6 +366,10 @@ export interface SchemeThreatRemoval {
   amount: number;
   /** Card or character responsible, shown in the combat log. */
   sourceName: string;
+  /** False for an encounter card's ability: Crisis and Patrol limit player cards only. */
+  isPlayerSource?: boolean;
+  /** The removal may happen while Crisis is in play; Patrol still applies. */
+  ignoresCrisis?: boolean;
 }
 
 export interface SchemeThreatRemovalResult {
@@ -364,14 +380,17 @@ export interface SchemeThreatRemovalResult {
   remainingThreat: number;
   schemeDefeated: boolean;
   onomatopoeia: string;
+  /** Set when Crisis or Patrol stopped a removal from the main scheme: nothing was removed. */
+  blocked?: MainSchemeThreatBlock;
 }
 
 /**
  * The one place threat leaves a scheme (RR v1.8 "Threat"): removes up to `amount`, writes the
  * `card.effect.removeThreat` entry (actor, source, target, amount actually removed, threat left),
  * defeats a side scheme left at 0 and announces the "reduced to zero" trigger. A removal of 0
- * changes nothing and logs nothing. Callers decide whether the removal is allowed (Crisis, Patrol,
- * Confused) before calling it.
+ * changes nothing and logs nothing. Crisis and Patrol are enforced here (RR v1.8 "Crisis Icon",
+ * "Patrol"), so no path that removes threat can forget them (#370); a blocked removal is announced
+ * and returns `blocked`. Callers still decide Confused.
  */
 export function removeThreatFromScheme(
   state: GameState,
@@ -398,6 +417,30 @@ export function removeThreatFromScheme(
   }
 
   const targetSchemeName = scheme.card?.name || (isMain ? 'Main Scheme' : 'Side Scheme');
+  const blocked = isMain
+    ? getMainSchemeThreatBlock(state, player, {
+        isPlayerSource: request.isPlayerSource,
+        ignoresCrisis: request.ignoresCrisis,
+      })
+    : undefined;
+  if (blocked) {
+    const { key, onomatopoeia } = MAIN_SCHEME_BLOCK_LOG[blocked];
+    appendLog(state, {
+      category: 'ability',
+      key,
+      params: { actor: player.name, source: sourceName, target: targetSchemeName },
+      onomatopoeia,
+    });
+    return {
+      found: true,
+      removed: 0,
+      targetSchemeName,
+      remainingThreat: scheme.threat || 0,
+      schemeDefeated: false,
+      onomatopoeia,
+      blocked,
+    };
+  }
   const currentThreat = scheme.threat || 0;
   const removed = Math.min(currentThreat, amount);
   scheme.threat = currentThreat - removed;
@@ -441,18 +484,6 @@ export function removeThreatFromScheme(
 
   return { found: true, removed, targetSchemeName, remainingThreat, schemeDefeated, onomatopoeia };
 }
-
-/** How a blocked main scheme thwart is announced in the game log. */
-const MAIN_SCHEME_BLOCK_LOG: Record<
-  MainSchemeThreatBlock,
-  {
-    key: 'card.effect.threatBlockedByCrisis' | 'card.effect.threatBlockedByPatrol';
-    onomatopoeia: string;
-  }
-> = {
-  CRISIS: { key: 'card.effect.threatBlockedByCrisis', onomatopoeia: 'CRISIS BLOCKS!' },
-  PATROL: { key: 'card.effect.threatBlockedByPatrol', onomatopoeia: 'PATROL BLOCKS!' },
-};
 
 /**
  * Universal RR v1.8 Thwart & Threat Removal Pipeline.
@@ -500,44 +531,8 @@ export function applyThwart(
   }
 
   // ---------------------------------------------------------------------------
-  // STEP 2: Crisis Icon and Patrol Check (RR v1.8 p. 11, 20)
-  // ---------------------------------------------------------------------------
-  const mainSchemeBlock =
-    targetType === 'main_scheme'
-      ? getMainSchemeThreatBlock(state, player, {
-          isPlayerSource: request.isPlayerSource,
-          ignoresCrisis: request.ignoresCrisis,
-        })
-      : undefined;
-  if (mainSchemeBlock) {
-    const { key, onomatopoeia } = MAIN_SCHEME_BLOCK_LOG[mainSchemeBlock];
-    appendLog(state, {
-      category: 'ability',
-      key,
-      params: {
-        actor: player.name,
-        source: request.sourceName ?? thwarterName,
-        target: getActiveMainScheme(state)?.card?.name || 'Main Scheme',
-      },
-      onomatopoeia,
-    });
-
-    return {
-      state,
-      result: {
-        thwartAttempted: false,
-        confusedCleared: false,
-        threatRemoved: 0,
-        targetSchemeName: getActiveMainScheme(state)?.card?.name || 'Main Scheme',
-        remainingThreat: getActiveMainScheme(state)?.threat || 0,
-        schemeDefeated: false,
-        onomatopoeia,
-      },
-    };
-  }
-
-  // ---------------------------------------------------------------------------
-  // STEP 3: Threat Removal, side scheme defeat at 0 and the "reduced to zero" trigger
+  // STEP 2: Threat Removal (Crisis and Patrol block it), side scheme defeat at 0 and the "reduced
+  // to zero" trigger
   // ---------------------------------------------------------------------------
   const removal = removeThreatFromScheme(state, {
     playerId,
@@ -545,7 +540,23 @@ export function applyThwart(
     targetInstanceId,
     amount: thwartValue,
     sourceName: request.sourceName ?? thwarterName,
+    isPlayerSource: request.isPlayerSource,
+    ignoresCrisis: request.ignoresCrisis,
   });
+  if (removal.blocked) {
+    return {
+      state,
+      result: {
+        thwartAttempted: false,
+        confusedCleared: false,
+        threatRemoved: 0,
+        targetSchemeName: removal.targetSchemeName,
+        remainingThreat: removal.remainingThreat,
+        schemeDefeated: false,
+        onomatopoeia: removal.onomatopoeia,
+      },
+    };
+  }
   if (!removal.found) {
     return {
       state,
@@ -563,7 +574,7 @@ export function applyThwart(
   const { removed, targetSchemeName, remainingThreat, schemeDefeated, onomatopoeia } = removal;
 
   // ---------------------------------------------------------------------------
-  // STEP 4: Post-Thwart Triggers
+  // STEP 3: Post-Thwart Triggers
   // ---------------------------------------------------------------------------
 
   const sourceInstId =

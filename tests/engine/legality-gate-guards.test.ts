@@ -97,6 +97,23 @@ describe('legality gate: no target-validity check outside the gate', () => {
   });
 
   /**
+   * Scheme threat is written in one module (`threat-pipeline.ts`: placement and
+   * `removeThreatFromScheme`, which enforces Crisis and Patrol). A handler that edits `.threat`
+   * directly would skip the block unseen (#370).
+   */
+  const THREAT_WRITE = /\.threat\s*(-=|\+=|=(?!=))/;
+
+  it('writes scheme threat only in the threat pipeline', () => {
+    const offenders = files.filter(
+      (f) =>
+        f.startsWith('src/engine/') &&
+        f !== 'src/engine/pipeline/threat-pipeline.ts' &&
+        THREAT_WRITE.test(read(f)),
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  /**
    * Crisis, Patrol and Guard are read in one place (`target-restrictions.ts`, with the Crisis icon
    * count in `icons.ts`). A caller asks `getMainSchemeThreatBlock` / `isVillainAttackBlockedByGuard`
    * and never repeats the rule (#331).

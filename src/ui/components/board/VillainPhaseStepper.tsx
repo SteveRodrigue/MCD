@@ -99,7 +99,7 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
   return (
     <div
       data-testid="villain-phase-stepper"
-      className="w-full max-w-4xl mx-auto px-2 py-1 z-raised"
+      className="w-fit max-w-full mx-auto px-2 py-1 z-raised"
     >
       <div
         className={`p-2.5 sm:p-3 flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-300 ${style.panel} ${style.text}`}
@@ -113,8 +113,10 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
           </span>
 
           <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="font-black text-xs sm:text-sm truncate">{description}</span>
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+              <span className="font-black text-xs sm:text-sm" title={description}>
+                {description}
+              </span>
               <span
                 className={`bg-comic-yellow text-comic-black font-black text-micro px-1.5 py-0.2 -rotate-2 shrink-0 ${style.badge}`}
               >

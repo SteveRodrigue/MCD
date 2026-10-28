@@ -269,8 +269,8 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
   - Asserts zero state corruption, zero deadlocks, and verified win/loss condition evaluations.
 - [x] **Simulation Player Logic & Strategic Heuristics ([Issue #309](https://github.com/SteveRodrigue/MCD/issues/309)) ✅ (Initial Strategic Policy Delivered):**
   - Value-based resource payment (generators first), threat look-ahead, Guard-first targeting, opening thwart priority, stun/draw prioritization, and defender policy delivered in `player-bot.ts` (`02a57dbd`). Follow-up win-rate tuning ([#309](https://github.com/SteveRodrigue/MCD/issues/309)) is tracked in `Tech Debt & Tooling`.
-- [ ] **Automated Card-Ability Coverage Simulation ([Issue #431](https://github.com/SteveRodrigue/MCD/issues/431)):**
-  - Use the headless match simulation to exercise every Core Set card ability automatically without a win/loss objective, verifying that each ability resolves cleanly without engine errors.
+- [x] **Automated Card-Ability Coverage Simulation ([Issue #431](https://github.com/SteveRodrigue/MCD/issues/431)) ✅ (Completed):**
+  - `npm run simulate` is now the card-ability coverage gate: a deterministic Stage-Setter drives all 161 Core Set abilities through the real engine (100% by a per-timing rule, zero `engine.stepError`), and a stats-driven Gauntlet of 20 full matches (coverage-seeking bot, scarcity-weighted decks, rotating prompt choices) fails the run on any crash, step error or broken invariant. The 100-game win-rate run stays as `--balance`, informational only.
 
 ---
 

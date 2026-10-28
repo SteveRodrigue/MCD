@@ -51,6 +51,7 @@ import {
 import { drainPrompts, type PromptOptionPicker } from './match-simulator';
 import {
   abilityUseCount,
+  fnv1a,
   type AbilityTarget,
   type CoverageLedger,
   type CoverageEvidence,
@@ -499,21 +500,14 @@ const RESOURCE_TIMINGS = new Set(['RESOURCE', 'HERO_RESOURCE', 'ALTER_EGO_RESOUR
 
 const ACTION_TIMINGS = new Set(['ACTION', 'HERO_ACTION', 'ALTER_EGO_ACTION']);
 
-/**
- * Exercises one player-initiated ability: stages the card, repairs preconditions the legality gate
- * names, fires through `dispatchAction`, drains prompts and verifies the result.
- */
-/** Verifies a finished run and decides what evidence covers the ability. */
+/** A hash of the final state digest: the same staged run must reproduce it. */
 function fingerprintOf(state: GameState): string {
-  const text = JSON.stringify(digestState(state));
-  let hash = 0x811c9dc5;
-  for (let i = 0; i < text.length; i++) {
-    hash ^= text.charCodeAt(i);
-    hash = Math.imul(hash, 0x01000193) >>> 0;
-  }
-  return hash.toString(16).padStart(8, '0');
+  return fnv1a(JSON.stringify(digestState(state)))
+    .toString(16)
+    .padStart(8, '0');
 }
 
+/** Verifies a finished run and decides what evidence covers the ability. */
 function conclude(
   target: AbilityTarget,
   variant: string,
@@ -548,6 +542,10 @@ function conclude(
   return { ok: false, variant, reason: 'abilitiesUsed did not increment', verification, trace };
 }
 
+/**
+ * Exercises one player-initiated ability: stages the card, repairs preconditions the legality gate
+ * names, fires through `dispatchAction`, drains prompts and verifies the result.
+ */
 function exercisePlayerAbility(
   target: AbilityTarget,
   options: StageOptions,
@@ -1453,4 +1451,131 @@ function exerciseSpecial(
     verification,
     fingerprint: fingerprintOf(state),
   };
+}
+
+const WINDOW_SOURCE_TYPES = new Set<CardType>([
+  CardType.ALLY,
+  CardType.UPGRADE,
+  CardType.SUPPORT,
+  CardType.EVENT,
+  CardType.MINION,
+]);
+
+/** An ability that can share a trigger window with another: it reacts to an event, from a stageable card. */
+const isWindowCandidate = (target: AbilityTarget): boolean =>
+  TRIGGERED_TIMINGS.has(target.ability.timing) &&
+  target.ability.trigger !== undefined &&
+  SCENARIOS[target.ability.trigger] !== undefined &&
+  WINDOW_SOURCE_TYPES.has(target.card.type) &&
+  !attachesWhenPlayed(target.card);
+
+export interface TriggerWindowResult {
+  trigger: string;
+  /** `cardCode#abilityId` of every ability staged in the window. */
+  abilities: string[];
+  ok: boolean;
+  reason?: string;
+  /**
+   * `checked`: a forced and an optional ability both resolved, so their order was verified.
+   * `unobserved`: one side never resolved in this window, so the order rule had nothing to judge.
+   */
+  order?: 'checked' | 'unobserved';
+}
+
+const isForced = (target: AbilityTarget) => target.ability.timing.startsWith('FORCED_');
+
+/**
+ * Forced abilities resolve before optional ones in the same window (RR v1.8 "Forced"). Judged from
+ * the log keys the engine writes as each ability triggers; with only one side resolved there is no
+ * order to judge and the window reports `checked: false`.
+ */
+export function windowOrder(
+  logKeys: readonly string[],
+  targets: readonly AbilityTarget[],
+): { checked: boolean; violation?: string } {
+  const position = (t: AbilityTarget) => logKeys.indexOf(`ability.${t.abilityId}.triggered`);
+  const resolved = (forced: boolean) =>
+    targets
+      .filter((t) => isForced(t) === forced)
+      .map(position)
+      .filter((i) => i >= 0);
+  const forced = resolved(true);
+  const optional = resolved(false);
+  if (forced.length === 0 || optional.length === 0) return { checked: false };
+  return Math.max(...forced) > Math.min(...optional)
+    ? { checked: true, violation: 'an optional ability resolved before a forced one' }
+    : { checked: true };
+}
+
+/**
+ * Stages several abilities that react to the same trigger, opens the window once through the real
+ * engine action, and checks it resolves cleanly: no step error, no stuck prompt, invariants hold,
+ * and a forced ability never resolves after an optional one (RR v1.8 "Forced" abilities go first).
+ */
+export function exerciseTriggerWindow(
+  targets: readonly AbilityTarget[],
+  options: StageOptions,
+): TriggerWindowResult {
+  const trigger = targets[0].ability.trigger ?? '';
+  const abilities = targets.map((t) => `${t.cardCode}#${t.abilityId}`);
+  const fail = (reason: string): TriggerWindowResult => ({ trigger, abilities, ok: false, reason });
+  try {
+    const stage = createStage(targets[0], options);
+    const p = player1(stage);
+    const wantsHero = targets.some((t) => t.ability.timing.startsWith('HERO_'));
+    const wantsEgo = targets.some((t) => t.ability.timing.startsWith('ALTER_EGO_'));
+    if (wantsHero || !wantsEgo) setForm(p, 'hero');
+    else setForm(p, 'alter_ego');
+    const staged: { target: AbilityTarget; inst: CardInstance }[] = [];
+    for (const target of targets) {
+      const inst = createCardInstance(target.card, PLAYER_ID);
+      installInPlay(stage, inst, target.card.type);
+      primeForEffects(stage, target, inst);
+      staged.push({ target, inst });
+    }
+    const before = digestState(stage.state);
+    const scenario = SCENARIOS[trigger];
+    const first = staged[0];
+    let state = scenario(stage, { target: first.target, source: first.inst });
+    state = drainPrompts(state, options.seed ?? trigger);
+    const verification = verifyAbilityExecution({ id: trigger, steps: [] }, before, state, {
+      checkDeltas: false,
+    });
+    if (!verification.ok) return fail(verification.failures.join('; '));
+
+    const order = windowOrder(
+      state.log.map((entry) => entry.key),
+      targets,
+    );
+    if (order.violation) return fail(order.violation);
+    return { trigger, abilities, ok: true, order: order.checked ? 'checked' : 'unobserved' };
+  } catch (error) {
+    return fail(`threw: ${error instanceof Error ? error.message : error}`);
+  }
+}
+
+const WINDOW_PAIR_LIMIT = 8;
+
+/** Every trigger shared by two or more stageable abilities, each staged as neighbouring pairs. */
+export function sweepTriggerWindows(
+  inventory: readonly AbilityTarget[],
+  options: StageOptions,
+): TriggerWindowResult[] {
+  const byTrigger = new Map<string, AbilityTarget[]>();
+  for (const target of inventory.filter(isWindowCandidate)) {
+    const trigger = target.ability.trigger!;
+    byTrigger.set(trigger, [...(byTrigger.get(trigger) ?? []), target]);
+  }
+  const results: TriggerWindowResult[] = [];
+  for (const [, group] of [...byTrigger.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+    // Forced abilities first so every window mixes forced with optional ones when it can
+    const sorted = [...group].sort((a, b) => Number(isForced(b)) - Number(isForced(a)));
+    const distinct = sorted.filter(
+      (t, i) => sorted.findIndex((o) => o.cardCode === t.cardCode) === i,
+    );
+    for (let i = 0; i + 1 < distinct.length && i < WINDOW_PAIR_LIMIT; i++) {
+      results.push(exerciseTriggerWindow([distinct[i], distinct[i + 1]], options));
+    }
+  }
+  return results;
 }

@@ -26,23 +26,64 @@ import { appendLog } from '../state/game-log';
 const NO_VALID_TARGET_REASON = 'No valid target';
 
 /**
- * The options of a PLAYER_CHOICE prompt whose steps have no valid target (ADR-0090). When every
- * option lacks one, none is disabled: a When Revealed choice still resolves as much as it can.
+ * The options of a PLAYER_CHOICE prompt whose steps have no valid target (ADR-0090). Only options
+ * the player can take at all (gate and cost pass) count: when none of those has a valid target,
+ * none is disabled, because a forced choice still resolves as much as it can. Disabling the last
+ * option that could resolve would leave the game on a prompt with nothing to pick.
  */
 function optionsWithoutValidTarget(
   state: GameState,
   player: GameState['players'][number],
   prompt: PendingDecisionPrompt,
   source: Parameters<typeof kernel.checkAbilityTargets>[3],
+  available: readonly PendingDecisionPrompt['options'][number][],
 ): Set<string> {
   const blocked = new Set<string>();
   if (!prompt.checkOptionTargets) return blocked;
-  for (const option of prompt.options) {
+  for (const option of available) {
     const steps = optionSteps(option);
     const ability: CardAbility = { id: `${prompt.promptId}_${option.id}`, timing: 'ACTION', steps };
     if (!kernel.checkAbilityTargets(state, player, ability, source).allowed) blocked.add(option.id);
   }
-  return blocked.size === prompt.options.length ? new Set() : blocked;
+  return blocked.size === available.length ? new Set() : blocked;
+}
+
+/** Why an option cannot be taken now: its gate fails or its cost cannot be paid. */
+function gateOrCostReason(
+  state: GameState,
+  player: GameState['players'][number],
+  prompt: PendingDecisionPrompt,
+  option: PendingDecisionPrompt['options'][number],
+  source: Parameters<typeof kernel.checkAbilityTargets>[3],
+): string | undefined {
+  if (option.gate) {
+    const ok = kernel.evaluateStepGate(
+      {
+        effect: 'RESOLVED',
+        gate: option.gate,
+        gateParams: option.gateParams,
+      } as unknown as AbilityStep,
+      undefined,
+      state,
+      { playerId: player.id },
+    );
+    if (!ok) {
+      const form = String(option.gateParams?.form ?? '').replace('_', '-');
+      return option.gate === 'IF_FORM' && form
+        ? `Requires ${form} form`
+        : 'Option requirements not met';
+    }
+  }
+  if (option.cost) {
+    const check = canPayAbilityCost(
+      state,
+      player,
+      { id: `${prompt.promptId}_${option.id}`, timing: 'ACTION', cost: option.cost, steps: [] },
+      source,
+    );
+    if (!check.allowed) return check.reason || 'Cannot pay the cost';
+  }
+  return undefined;
 }
 
 /**
@@ -63,7 +104,11 @@ export function refreshPromptOptionAvailability(
       )
     : undefined;
 
-  const noTarget = optionsWithoutValidTarget(state, player, prompt, source);
+  const reasons = new Map(
+    prompt.options.map((o) => [o.id, gateOrCostReason(state, player, prompt, o, source)]),
+  );
+  const available = prompt.options.filter((o) => !reasons.get(o.id));
+  const noTarget = optionsWithoutValidTarget(state, player, prompt, source, available);
 
   for (const option of prompt.options) {
     if (!option.gate && !option.cost) {
@@ -76,40 +121,8 @@ export function refreshPromptOptionAvailability(
       }
       continue;
     }
-    let reason: string | undefined;
-
-    if (option.gate) {
-      const ok = kernel.evaluateStepGate(
-        {
-          effect: 'RESOLVED',
-          gate: option.gate,
-          gateParams: option.gateParams,
-        } as unknown as AbilityStep,
-        undefined,
-        state,
-        { playerId: player.id },
-      );
-      if (!ok) {
-        const form = String(option.gateParams?.form ?? '').replace('_', '-');
-        reason =
-          option.gate === 'IF_FORM' && form
-            ? `Requires ${form} form`
-            : 'Option requirements not met';
-      }
-    }
-
-    if (!reason && option.cost) {
-      const check = canPayAbilityCost(
-        state,
-        player,
-        { id: `${prompt.promptId}_${option.id}`, timing: 'ACTION', cost: option.cost, steps: [] },
-        source,
-      );
-      if (!check.allowed) reason = check.reason || 'Cannot pay the cost';
-    }
-
-    if (!reason && noTarget.has(option.id)) reason = NO_VALID_TARGET_REASON;
-
+    const reason =
+      reasons.get(option.id) ?? (noTarget.has(option.id) ? NO_VALID_TARGET_REASON : undefined);
     option.disabled = Boolean(reason);
     option.disabledReason = reason;
   }

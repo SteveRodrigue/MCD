@@ -8,6 +8,7 @@ import {
   CardInstance,
   CardType,
   NormalizedCard,
+  type UseCardAbilityAction,
   StatusCard,
   getActiveMainScheme,
   getActiveVillain,
@@ -25,6 +26,7 @@ import {
   getEffectiveMinionScheme,
   getEffectiveVillainStats,
   getGeneratorProvidedResources,
+  getLegalActionsForPlayer,
   getHandCardResourceValue,
   getVillainPhaseThreatToAdd,
   HERO_ACTOR,
@@ -32,11 +34,15 @@ import {
 import { getStepEffectParams } from '../../data/supplemental/runtime';
 import type { AbilityStep } from '../../data/supplemental/schema';
 import { isGuardMinion } from '../pipeline/target-restrictions';
+import { matchesCardFilter } from '../filters/card-filter';
+import { abilityKey, scarcityOf, untestedWeight, type ScarcityLedger } from './ability-coverage';
 import type { ActionActor } from '../pipeline';
 
 export interface BotDecisionContext {
   state: GameState;
   playerId: string;
+  /** What has been played and used so far; present, the bot also works to test untested abilities. */
+  scarcity?: ScarcityLedger;
 }
 
 /** The tunable numbers of the bot; every threshold of the policy lives here. */
@@ -76,6 +82,16 @@ export const BOT_POLICY = {
   boostAllowance: 1,
   /** Health the bot wants left after an undefended hit; below it, it defends. */
   defendHealthFloor: 4,
+  /** Play bonus of a card with untested abilities, scaled by how untested the scarcest one is. */
+  untestedCardBonus: 6,
+  /** Keep value added to a card with untested abilities, so payment spends tested cards first. */
+  untestedKeepProtection: 8,
+  /** Scarcity from which an ability counts as untested (never used, or used once). */
+  untestedThreshold: 0.5,
+  /** Play bonus of a setup piece that another card in hand needs in play. */
+  setupBonus: 3,
+  /** Health left after a hit the bot takes on purpose to enable a heal ability. */
+  safeHitHealthFloor: 2,
 } as const;
 
 const IDENTITY_GENERATOR = 'identity_ability';
@@ -113,21 +129,47 @@ function drawsCards(card: NormalizedCard): boolean {
   return stepsOf(card).some((s) => s.effect === 'DRAW');
 }
 
+/** True when another card in hand needs this one in play (its play requirement names this card). */
+function isSetupFor(card: CardInstance, hand: readonly CardInstance[]): boolean {
+  return hand.some((other) => {
+    const filter = other.card.enrichment?.playRequirements?.controlFilter;
+    return other !== card && filter !== undefined && matchesCardFilter(card, filter);
+  });
+}
+
 /** What a play is worth now: the card value plus the bonuses of the opening plan. */
-function playValue(state: GameState, player: PlayerState, card: CardInstance): number {
+function playValue(
+  state: GameState,
+  player: PlayerState,
+  card: CardInstance,
+  ledger?: ScarcityLedger,
+): number {
   let value = cardValue(card);
   const villainStunned = getActiveVillain(state).statusCards.includes(StatusCard.STUNNED);
   if (!villainStunned && stunsEnemy(card.card)) value += BOT_POLICY.stunBonus;
   if (drawsCards(card.card)) value += BOT_POLICY.drawBonus;
   const fillsTableau = card.card.type === CardType.UPGRADE || card.card.type === CardType.SUPPORT;
   if (player.tableau.length === 0 && fillsTableau) value += BOT_POLICY.emptyTableauBonus;
+  if (ledger) {
+    value += BOT_POLICY.untestedCardBonus * untestedWeight(ledger, card.card);
+    // The payoff in hand cannot be played before its setup piece is in play
+    if (isSetupFor(card, player.hand)) value += BOT_POLICY.setupBonus;
+  }
   return value;
 }
 
 /** What a hand card is worth to keep: its play value, less what it is worth as a payment. */
-function keepValue(card: CardInstance, playedCard: CardInstance): number {
-  const resources = getHandCardResourceValue(card, playedCard.card);
-  return Math.max(0, cardValue(card) - (resources - 1) * BOT_POLICY.extraResourceDiscount);
+function keepValue(
+  card: CardInstance,
+  played: NormalizedCard | undefined,
+  ledger?: ScarcityLedger,
+): number {
+  const resources = getHandCardResourceValue(card, played);
+  const base = Math.max(0, cardValue(card) - (resources - 1) * BOT_POLICY.extraResourceDiscount);
+  // A card with abilities still to test is spent last, so it reaches the table
+  return ledger
+    ? base + BOT_POLICY.untestedKeepProtection * untestedWeight(ledger, card.card)
+    : base;
 }
 
 /**
@@ -138,12 +180,25 @@ function choosePayment(
   state: GameState,
   player: PlayerState,
   card: CardInstance,
+  ledger?: ScarcityLedger,
 ): Payment | undefined {
   const { effectiveCost } = getEffectiveCardCost(state, player, card);
+  return payResources(state, player, effectiveCost, card, ledger);
+}
+
+/** Pays `cost` resources (a card's cost or an ability's resource cost) at the least value given up. */
+function payResources(
+  state: GameState,
+  player: PlayerState,
+  cost: number,
+  played: CardInstance | undefined,
+  ledger?: ScarcityLedger,
+): Payment | undefined {
   const generatorInstanceIds: string[] = [];
-  let missing = effectiveCost;
+  let missing = cost;
   for (const id of [IDENTITY_GENERATOR, ...player.tableau.map((c) => c.instanceId)]) {
     if (missing <= 0) break;
+    if (id === played?.instanceId) continue;
     const provided = getGeneratorProvidedResources(state, player, id);
     if (provided > 0) {
       generatorInstanceIds.push(id);
@@ -154,15 +209,15 @@ function choosePayment(
 
   const priceShare =
     player.tableau.length === 0 ? BOT_POLICY.emptyTableauPriceShare : BOT_POLICY.paymentPriceShare;
-  const others = player.hand.filter((c) => c.instanceId !== card.instanceId);
+  const others = player.hand.filter((c) => c.instanceId !== played?.instanceId);
   if (others.length > MAX_PAYMENT_SEARCH_CARDS) return undefined;
   let best: { ids: string[]; price: number } | undefined;
   for (let mask = 1; mask < 1 << others.length; mask++) {
     const chosen = others.filter((_, i) => mask & (1 << i));
-    const provided = chosen.reduce((sum, c) => sum + getHandCardResourceValue(c, card.card), 0);
+    const provided = chosen.reduce((sum, c) => sum + getHandCardResourceValue(c, played?.card), 0);
     if (provided < missing) continue;
     const price =
-      priceShare * chosen.reduce((sum, c) => sum + keepValue(c, card), 0) +
+      priceShare * chosen.reduce((sum, c) => sum + keepValue(c, played?.card, ledger), 0) +
       (provided - missing) * BOT_POLICY.wastedResourceCost;
     if (!best || price < best.price) best = { ids: chosen.map((c) => c.instanceId), price };
   }
@@ -176,19 +231,67 @@ interface AbilitySource {
   instance?: CardInstance;
 }
 
-/** An action ability the bot pays for by exhausting its card only (no resources, discards or damage). */
-function isFreeCost(cost: CardAbility['cost']): boolean {
-  return !cost || Object.keys(cost).every((key) => key === 'exhaustSelf');
-}
+type AbilityPayment = Pick<
+  UseCardAbilityAction,
+  'paymentCardInstanceIds' | 'generatorInstanceIds' | 'discardCardInstanceIds'
+>;
+
+const isUntested = (ledger: ScarcityLedger | undefined, cardCode: string, ability: CardAbility) =>
+  ledger !== undefined &&
+  scarcityOf(ledger, abilityKey(cardCode, ability.id)) >= BOT_POLICY.untestedThreshold;
 
 /**
- * A legal action ability on the identity or a tableau card that costs at most its own exhaustion
- * and satisfies `wanted`. Resource abilities are not actions: they pay for plays (`choosePayment`).
+ * What the bot pays for an action ability, or `undefined` when it will not use it. An ability that
+ * costs at most its own exhaustion is always free to use. A paid ability (resources, a discard,
+ * counters, damage, healing) is used only while it is still untested, and only with a ledger.
  */
+function payAbilityCost(
+  state: GameState,
+  player: PlayerState,
+  source: AbilitySource,
+  ability: CardAbility,
+  ledger?: ScarcityLedger,
+): AbilityPayment | undefined {
+  const cost = ability.cost;
+  if (!cost || Object.keys(cost).every((key) => key === 'exhaustSelf')) return {};
+  if (!isUntested(ledger, source.card.code, ability)) return undefined;
+
+  const payment: AbilityPayment = {};
+  let spentCardIds = new Set<string>();
+  const resources = Object.values(cost.resourceCost ?? {}).reduce((sum, n) => sum + (n ?? 0), 0);
+  if (resources > 0) {
+    const pay = payResources(state, player, resources, source.instance, ledger);
+    if (!pay) return undefined;
+    payment.paymentCardInstanceIds = pay.paymentCardInstanceIds;
+    if (pay.generatorInstanceIds.length > 0)
+      payment.generatorInstanceIds = pay.generatorInstanceIds;
+    spentCardIds = new Set(pay.paymentCardInstanceIds);
+  }
+  if (cost.discardCard) {
+    const count = cost.discardCard.count || 1;
+    const spare = player.hand
+      .filter((c) => !spentCardIds.has(c.instanceId))
+      .sort((a, b) => keepValue(a, undefined, ledger) - keepValue(b, undefined, ledger));
+    if (spare.length < count) return undefined;
+    payment.discardCardInstanceIds = spare.slice(0, count).map((c) => c.instanceId);
+  }
+  return payment;
+}
+
+const spentThisPeriod = (player: PlayerState, source: AbilitySource, ability: CardAbility) => {
+  const key = source.instance ? `${source.instance.instanceId}_${ability.id}` : ability.id;
+  return (
+    (ability.limit === 'ONCE_PER_ROUND' && player.usedAbilitiesThisRound?.[key]) ||
+    (ability.limit === 'ONCE_PER_PHASE' && player.usedAbilitiesThisPhase?.[key])
+  );
+};
+
+/** A legal action ability the bot is willing to pay for, on the identity, the tableau or the encounter. */
 function chooseAbility(
   state: GameState,
   player: PlayerState,
   wanted: (ability: CardAbility) => boolean,
+  ledger?: ScarcityLedger,
 ): GameAction | undefined {
   const isHero = player.currentForm === 'hero';
   const sources: AbilitySource[] = [
@@ -200,39 +303,65 @@ function chooseAbility(
       instance: c,
     })),
   ];
+  const tryAbility = (source: AbilitySource, ability: CardAbility): GameAction | undefined => {
+    const isAction =
+      ability.timing === 'ACTION' ||
+      (isHero ? ability.timing === 'HERO_ACTION' : ability.timing === 'ALTER_EGO_ACTION');
+    if (!isAction || !wanted(ability) || spentThisPeriod(player, source, ability)) return undefined;
+    const payment = payAbilityCost(state, player, source, ability, ledger);
+    if (!payment) return undefined;
+    if (!canInitiateAbility(state, player.id, ability, source.instance, payment).allowed) {
+      return undefined;
+    }
+    return {
+      type: 'USE_CARD_ABILITY',
+      playerId: player.id,
+      cardInstanceId: source.ref,
+      abilityId: ability.id,
+      ...payment,
+    };
+  };
+
   for (const source of sources) {
     if (source.exhausted) continue;
     for (const ability of source.card.enrichment?.abilities ?? []) {
-      const isAction =
-        ability.timing === 'ACTION' ||
-        (isHero ? ability.timing === 'HERO_ACTION' : ability.timing === 'ALTER_EGO_ACTION');
-      if (!isAction || !wanted(ability) || !isFreeCost(ability.cost)) continue;
-      const key = source.instance ? `${source.instance.instanceId}_${ability.id}` : ability.id;
-      const spent =
-        (ability.limit === 'ONCE_PER_ROUND' && player.usedAbilitiesThisRound?.[key]) ||
-        (ability.limit === 'ONCE_PER_PHASE' && player.usedAbilitiesThisPhase?.[key]);
-      if (spent || !canInitiateAbility(state, player.id, ability, source.instance, {}).allowed) {
-        continue;
-      }
-      return {
-        type: 'USE_CARD_ABILITY',
-        playerId: player.id,
-        cardInstanceId: source.ref,
-        abilityId: ability.id,
-      };
+      const action = tryAbility(source, ability);
+      if (action) return action;
     }
+  }
+  if (!ledger) return undefined;
+
+  // Encounter cards the player may act on (attachments, schemes, obligations), through the one
+  // action discovery of the legal-actions generator
+  for (const item of getLegalActionsForPlayer(state, player.id).villainActionItems) {
+    const itemAction = item.action;
+    if (itemAction.type !== 'USE_CARD_ABILITY') continue;
+    const instance = item.targetCardInstance;
+    const ability = instance?.card.enrichment?.abilities?.find(
+      (a) => a.id === itemAction.abilityId,
+    );
+    if (!instance || !ability || instance.exhausted) continue;
+    const action = tryAbility(
+      { ref: instance.instanceId, card: instance.card, exhausted: instance.exhausted, instance },
+      ability,
+    );
+    if (action) return action;
   }
   return undefined;
 }
 
 /** The most valuable legal play whose payment costs less than the card is worth. */
-function choosePlay(state: GameState, player: PlayerState): GameAction | undefined {
+function choosePlay(
+  state: GameState,
+  player: PlayerState,
+  ledger?: ScarcityLedger,
+): GameAction | undefined {
   let best: { action: GameAction; net: number } | undefined;
   for (const card of player.hand) {
     if (!evaluateCardPlayability(state, player.id, card).isPlayable) continue;
-    const payment = choosePayment(state, player, card);
+    const payment = choosePayment(state, player, card, ledger);
     if (!payment) continue;
-    const net = playValue(state, player, card) - payment.price;
+    const net = playValue(state, player, card, ledger) - payment.price;
     if (net <= 0 || (best && net <= best.net)) continue;
     if (
       !canPlayCard(
@@ -307,9 +436,41 @@ function flip(player: PlayerState, to: CardType.HERO | CardType.ALTER_EGO): Game
   return form && { type: 'CHANGE_FORM', playerId: player.id, targetFormCode: form.code };
 }
 
+/** The form most of the untested abilities in hand, in play and on the identity need to be used. */
+function wantedForm(player: PlayerState, ledger: ScarcityLedger): 'hero' | 'alter_ego' | undefined {
+  let hero = 0;
+  let egoCount = 0;
+  const cards = [...player.hand.map((c) => c.card), ...player.tableau.map((c) => c.card)];
+  for (const card of [...cards, player.hero, player.alterEgo]) {
+    for (const ability of card.enrichment?.abilities ?? []) {
+      if (!isUntested(ledger, card.code, ability)) continue;
+      const form = card.enrichment?.playRequirements?.identityForm;
+      if (ability.timing.startsWith('HERO_') || form === 'HERO' || card === player.hero) hero++;
+      if (
+        ability.timing.startsWith('ALTER_EGO_') ||
+        form === 'ALTER_EGO' ||
+        card === player.alterEgo
+      ) {
+        egoCount++;
+      }
+    }
+  }
+  if (hero === egoCount) return undefined;
+  return hero > egoCount ? 'hero' : 'alter_ego';
+}
+
 /** Form change: hero when the scheme is about to complete or health allows, Alter-Ego to recover. */
-function chooseFormChange(state: GameState, player: PlayerState): GameAction | undefined {
+function chooseFormChange(
+  state: GameState,
+  player: PlayerState,
+  ledger?: ScarcityLedger,
+): GameAction | undefined {
   if (!canChangeForm(state, player.id).allowed) return undefined;
+  const wanted = ledger && wantedForm(player, ledger);
+  if (wanted && wanted !== player.currentForm) {
+    const safe = wanted === 'hero' || !isMainSchemeUrgent(state, player, 'alter_ego');
+    if (safe) return flip(player, wanted === 'hero' ? CardType.HERO : CardType.ALTER_EGO);
+  }
   const half = Math.floor(player.maxHealth / 2);
   if (player.currentForm === 'alter_ego') {
     const worthFlipping =
@@ -448,16 +609,22 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
   const player = state.players.find((p) => p.id === playerId);
   if (!player) return { type: 'END_PLAYER_TURN', playerId };
 
-  const draw = chooseAbility(state, player, (a) => !!a.steps?.some((s) => s.effect === 'DRAW'));
+  const ledger = context.scarcity;
+  const draw = chooseAbility(
+    state,
+    player,
+    (a) => !!a.steps?.some((s) => s.effect === 'DRAW'),
+    ledger,
+  );
   if (draw) return draw;
 
-  const formChange = chooseFormChange(state, player);
+  const formChange = chooseFormChange(state, player, ledger);
   if (formChange) return formChange;
 
-  const play = choosePlay(state, player);
+  const play = choosePlay(state, player, ledger);
   if (play) return play;
 
-  const ability = chooseAbility(state, player, () => true);
+  const ability = chooseAbility(state, player, () => true, ledger);
   if (ability) return ability;
 
   const urgent = isMainSchemeUrgent(state, player, player.currentForm);
@@ -503,6 +670,7 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
 export function chooseDefenderOption(
   state: GameState,
   prompt: Pick<PendingDecisionPrompt, 'playerId' | 'options'>,
+  ledger?: ScarcityLedger,
 ): string | undefined {
   const ids = prompt.options.filter((o) => !o.disabled).map((o) => o.id);
   if (!ids.includes('undefended')) return undefined;
@@ -516,6 +684,15 @@ export function chooseDefenderOption(
     incomingAttack(state, target),
   );
   if (target.health - expectedDamage > BOT_POLICY.defendHealthFloor) return 'undefended';
+  // A healthy hero cannot use an untested heal ability: a hit it survives enables it
+  if (
+    ledger &&
+    target.health >= target.maxHealth &&
+    target.health - expectedDamage >= BOT_POLICY.safeHitHealthFloor &&
+    holdsUntestedHeal(target, ledger)
+  ) {
+    return 'undefended';
+  }
   // An ally that survives the hit blocks first: the hero keeps its next turn
   const survivor = ids.find((id) => {
     const ally = allyOfOption(state, id);
@@ -526,6 +703,18 @@ export function chooseDefenderOption(
     ids.find((id) => id === 'defend_hero') ??
     ids.find((id) => id.startsWith('defend_ally_')) ??
     'undefended'
+  );
+}
+
+/** Whether an untested ability in hand, in play or on the identity needs missing health. */
+function holdsUntestedHeal(player: PlayerState, ledger: ScarcityLedger): boolean {
+  const cards = [...player.hand.map((c) => c.card), ...player.tableau.map((c) => c.card)];
+  return [...cards, player.activeFormCard].some((card) =>
+    (card.enrichment?.abilities ?? []).some(
+      (ability) =>
+        isUntested(ledger, card.code, ability) &&
+        (Boolean(ability.cost?.heal) || ability.steps.some((s) => s.effect === 'HEAL_DAMAGE')),
+    ),
   );
 }
 

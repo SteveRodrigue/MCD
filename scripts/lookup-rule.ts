@@ -9,22 +9,11 @@
  */
 import fs from 'fs';
 import path from 'path';
-
-interface FaqEntry {
-  group: string;
-  question: string;
-}
-
-interface GraphEntry {
-  title: string;
-  file: string;
-  anchor: string;
-  see_also?: string[];
-  referenced_by?: string[];
-  faqs?: FaqEntry[];
-}
-
-type RulesGraph = Record<string, GraphEntry>;
+import {
+  rulesGraph as graph,
+  type RuleEntry,
+  type RuleSlug,
+} from '../src/engine/simulation/rules-graph';
 
 function normalize(term: string): string {
   let s = term.toLowerCase();
@@ -40,7 +29,7 @@ function escapeRegExp(value: string): string {
 function main(): void {
   const args = process.argv.slice(2);
   if (args.length < 1) {
-    console.log('Usage: python scripts/lookup-rule.py <rule_name>');
+    console.log('Usage: npm run rule -- <rule_name>');
     process.exitCode = 1;
     return;
   }
@@ -48,19 +37,11 @@ function main(): void {
   const query = args.join(' ').trim();
   const normQuery = normalize(query);
 
-  const graphPath = path.join('references', 'rules', 'rules_graph.json');
-  if (!fs.existsSync(graphPath)) {
-    console.log(`Error: ${graphPath} not found. Run python tools/build_rules_markdown.py first.`);
-    process.exitCode = 1;
-    return;
-  }
-
-  const graph = JSON.parse(fs.readFileSync(graphPath, 'utf8')) as RulesGraph;
-  const entries = Object.entries(graph);
+  const entries = Object.entries(graph) as [RuleSlug, RuleEntry][];
 
   // 1. Exact match by anchor or normalized title; otherwise first partial match.
-  let bestKey: string | null = null;
-  const matches: string[] = [];
+  let bestKey: RuleSlug | null = null;
+  const matches: RuleSlug[] = [];
 
   for (const [anchor, data] of entries) {
     const titleNorm = normalize(data.title);

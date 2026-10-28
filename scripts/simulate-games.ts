@@ -1,7 +1,17 @@
 import fs from 'fs';
 import path from 'path';
 import { cardCatalog } from '../src/data/importer/card-loader';
-import { setupGame, resetInstanceCounter, runMatch, MatchSimulationResult } from '../src/engine';
+import {
+  setupGame,
+  resetInstanceCounter,
+  runMatch,
+  MatchSimulationResult,
+  buildAbilityInventory,
+  CoverageLedger,
+  hashCardData,
+  sweepAbilities,
+  exerciseAbility,
+} from '../src/engine';
 import { getStarterDeck } from '../src/engine/decks/starter-decks';
 
 interface GameConfig {
@@ -25,7 +35,8 @@ function describeOutcome(result: MatchSimulationResult): string {
   return result.finalState.players.length === 0 ? 'all heroes defeated' : 'main scheme completed';
 }
 
-async function run100GameSimulationGate() {
+/** Informational win-rate report over 100 games; never a gate (roadmap 1.4 gates ability coverage). */
+async function runBalanceReport() {
   const startTime = Date.now();
   const logsDir = path.resolve(process.cwd(), 'logs', 'simulations');
   if (!fs.existsSync(logsDir)) {
@@ -99,7 +110,7 @@ async function run100GameSimulationGate() {
   }
 
   console.log(`\n======================================================`);
-  console.log(`🎮 Marvel Champions Digital: 100-Game Simulation Gate`);
+  console.log(`🎮 Marvel Champions Digital: 100-Game Balance Report`);
   console.log(`   50 Solo Games (5 Heroes x 2 Difficulties x 5 Runs)`);
   console.log(`   50 2-Player Games (5 Pairs x 2 Difficulties x 5 Runs)`);
   console.log(`   Target Scenario: Rhino (Standard / Expert)`);
@@ -170,13 +181,13 @@ async function run100GameSimulationGate() {
   const totalTimeouts = results.filter((r) => r.result.winner === 'TIMEOUT').length;
 
   console.log(`\n======================================================`);
-  console.log(`✅ 100-Game Simulation Gate Finished in ${totalDurationSec}s`);
+  console.log(`✅ 100-Game Balance Report Finished in ${totalDurationSec}s`);
   console.log(`   Wins: ${totalWins} | Losses: ${totalLosses} | Timeouts: ${totalTimeouts}`);
   console.log(`======================================================\n`);
 
   // Write markdown report
   const summaryMd = generateSimulationSummary(results, totalDurationSec);
-  const summaryPath = path.join(logsDir, 'simulation_summary.md');
+  const summaryPath = path.join(logsDir, 'balance_report.md');
   fs.writeFileSync(summaryPath, summaryMd, 'utf8');
   console.log(`📄 Detailed simulation report saved to: ${summaryPath}`);
 }
@@ -209,7 +220,9 @@ function generateSimulationSummary(
     records.reduce((sum, r) => sum + r.result.totalActionsExecuted, 0) / totalGames
   ).toFixed(1);
 
-  return `# 100-Game Headless Match Simulation Gate Summary
+  return `# 100-Game Headless Match Balance Report (informational, not a gate)
+
+> The starter-deck bot does not play representatively: use these rates to spot regressions, not to judge balance.
 
 * **Execution Date:** ${new Date().toISOString()}
 * **Total Execution Time:** ${totalDurationSec}s
@@ -256,7 +269,172 @@ ${records
 `;
 }
 
-run100GameSimulationGate().catch((err) => {
+interface CliArgs {
+  card?: string;
+  replay?: string;
+  seed: string;
+  balance: boolean;
+}
+
+function parseArgs(argv: string[]): CliArgs {
+  const args: CliArgs = { seed: 'coverage', balance: false };
+  for (let i = 0; i < argv.length; i++) {
+    const flag = argv[i];
+    if (flag === '--card') args.card = argv[++i];
+    else if (flag === '--replay') args.replay = argv[++i];
+    else if (flag === '--seed') args.seed = argv[++i];
+    else if (flag === '--balance') args.balance = true;
+    else
+      throw new Error(
+        `Unknown flag '${flag}'. Use --card <code>, --replay <id>, --seed <s>, --balance.`,
+      );
+  }
+  return args;
+}
+
+interface CatalogEntry {
+  id: string;
+  cardCode: string;
+  abilityId: string;
+  variant: string;
+  seed: string;
+  playerCount: 1 | 2;
+  branch?: number;
+  ok: boolean;
+  reason?: string;
+  fingerprint?: string;
+  cardDataHash: string;
+}
+
+const LOGS_DIR = path.resolve(process.cwd(), 'logs', 'simulations');
+
+function readCatalog(): CatalogEntry[] {
+  const file = path.join(LOGS_DIR, 'replay_catalog.json');
+  return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : [];
+}
+
+function stageOptions(seed: string) {
+  return { catalog: cardCatalog, allCards: cardCatalog.getAllCards(), seed };
+}
+
+/** The Stage-Setter sweep: the Gate 1.4 card-ability coverage gate. */
+function runCoverageGate(args: CliArgs): boolean {
+  const allCards = cardCatalog.getAllCards();
+  const inventory = buildAbilityInventory(allCards, args.card ? { cardCodes: [args.card] } : {});
+  if (args.card && inventory.length === 0) {
+    throw new Error(`Card '${args.card}' declares no abilities in scope.`);
+  }
+  const ledger = new CoverageLedger(inventory);
+  const hash = hashCardData(inventory);
+  const results = sweepAbilities(ledger, stageOptions(args.seed));
+
+  const entries: CatalogEntry[] = results.flatMap(({ target, outcomes }) =>
+    outcomes.map((outcome, index) => ({
+      id: `${target.cardCode}#${target.abilityId}@${outcome.variant}`,
+      cardCode: target.cardCode,
+      abilityId: target.abilityId,
+      variant: outcome.variant,
+      seed: args.seed,
+      playerCount: outcome.variant.startsWith('p2') ? (2 as const) : (1 as const),
+      ...(outcome.variant.includes(':b') && { branch: Number(outcome.variant.split(':b')[1]) }),
+      ok: outcome.ok,
+      reason: outcome.reason,
+      fingerprint: outcome.fingerprint,
+      cardDataHash: hash,
+      primary: index === 0,
+    })),
+  );
+  const variantFailures = entries.filter(
+    (e) =>
+      !e.ok &&
+      !ledger
+        .untested()
+        .some((t) => `${t.cardCode}#${t.abilityId}` === `${e.cardCode}#${e.abilityId}`),
+  );
+
+  fs.mkdirSync(LOGS_DIR, { recursive: true });
+  fs.writeFileSync(path.join(LOGS_DIR, 'replay_catalog.json'), JSON.stringify(entries, null, 2));
+
+  const failures = ledger.failureList();
+  const byTiming = new Map<string, { covered: number; total: number }>();
+  for (const t of inventory) {
+    const row = byTiming.get(t.ability.timing) ?? { covered: 0, total: 0 };
+    row.total += 1;
+    if (ledger.isCovered(t.cardCode, t.abilityId)) row.covered += 1;
+    byTiming.set(t.ability.timing, row);
+  }
+  const summary = [
+    '# Card-Ability Coverage Gate (Roadmap 1.4)',
+    '',
+    `* **Abilities in scope:** ${inventory.length}`,
+    `* **Covered:** ${ledger.coveredCount} (${ledger.percent.toFixed(1)}%)`,
+    `* **Uncovered:** ${failures.length}`,
+    `* **Variant failures (2-player / choice branches):** ${variantFailures.length}`,
+    `* **Card data hash:** \`${hash}\``,
+    '',
+    '## Coverage by timing',
+    '',
+    '| Timing | Covered | Total |',
+    '| :--- | ---: | ---: |',
+    ...[...byTiming.entries()]
+      .sort()
+      .map(([timing, r]) => `| ${timing} | ${r.covered} | ${r.total} |`),
+    '',
+    '## Uncovered abilities',
+    '',
+    ...(failures.length === 0
+      ? ['None.']
+      : failures.map((f) => `* \`${f.cardCode}#${f.abilityId}\`: ${f.reason}`)),
+    '',
+  ].join('\n');
+  fs.writeFileSync(path.join(LOGS_DIR, 'simulation_summary.md'), summary, 'utf8');
+
+  console.log(
+    `Ability coverage: ${ledger.coveredCount}/${inventory.length} (${ledger.percent.toFixed(1)}%), ${variantFailures.length} variant failure(s).`,
+  );
+  for (const f of failures) console.log(`  UNCOVERED ${f.cardCode}#${f.abilityId}: ${f.reason}`);
+  for (const e of variantFailures) console.log(`  VARIANT   ${e.id}: ${e.reason}`);
+  console.log(`Report: ${path.join(LOGS_DIR, 'simulation_summary.md')}`);
+  if (args.card) {
+    for (const e of entries) console.log(`  replay: npm run simulate -- --replay "${e.id}"`);
+  }
+  return failures.length === 0 && variantFailures.length === 0;
+}
+
+/** Re-runs a recorded catalog entry and checks it reproduces the same outcome and state. */
+function runReplay(id: string): boolean {
+  const entry = readCatalog().find((e) => e.id === id);
+  if (!entry) throw new Error(`No replay entry '${id}' in logs/simulations/replay_catalog.json.`);
+  const inventory = buildAbilityInventory(cardCatalog.getAllCards(), {
+    cardCodes: [entry.cardCode],
+  });
+  const target = inventory.find((t) => t.abilityId === entry.abilityId);
+  if (!target) throw new Error(`Ability ${entry.cardCode}#${entry.abilityId} no longer exists.`);
+  if (hashCardData(inventory) !== entry.cardDataHash) {
+    console.warn('Warning: the card data changed since this entry was recorded.');
+  }
+  const outcome = exerciseAbility(target, {
+    ...stageOptions(entry.seed),
+    playerCount: entry.playerCount,
+    branch: entry.branch,
+  });
+  const same = outcome.ok === entry.ok && outcome.fingerprint === entry.fingerprint;
+  console.log(
+    same
+      ? `Replay reproduced ${id}.`
+      : `Replay DIVERGED for ${id}: ${outcome.reason ?? 'different state'}`,
+  );
+  return same;
+}
+
+async function main() {
+  const args = parseArgs(process.argv.slice(2));
+  if (args.balance) return runBalanceReport();
+  const ok = args.replay ? runReplay(args.replay) : runCoverageGate(args);
+  if (!ok) process.exitCode = 1;
+}
+
+main().catch((err) => {
   console.error('Fatal simulation runner failure:', err);
   process.exit(1);
 });

@@ -11,9 +11,11 @@ To maximize delivery velocity, eliminate scope dispersion, and ship our first co
 - **🏁 Gate 1: The "Rhino Release" (Active Primary Milestone):**
   - **Objective:** Deliver a 100% polished, complete, and rules-verified playable vertical slice featuring **all 5 Core Heroes (101 Player Cards: Spider-Man, Captain Marvel, She-Hulk, Iron Man, Black Panther + 4 Aspects + Basic)** battling against the **Rhino Scenario (34 Encounter Cards: Rhino I/II/III, Standard, Expert, Bomb Scare, and 5 Nemesis Sets)**.
   - **Scope Boundary Invariant:** ALL active tasks, bug fixes, engine primitives, and card integrations must strictly target Core Set Player cards or Rhino Encounter cards. Non-Rhino villains (Klaw, Ultron) and expansion mechanics are strictly deferred. Localized technical debt or refactors are explicitly accepted to achieve complete vertical slice closure.
-- **📦 Gate 2: Core Boss Expansion (Klaw & Ultron):** Klaw scenario + Masters of Evil modular set; Ultron scenario + Under Attack modular set.
-- **📦 Gate 3: Multiplayer Co-op & Headless Simulator (2–4 Player Tabletop):** Ask-another-player triggers, Alliance pooling, Team-Up prerequisites, and 100-game headless Monte Carlo match verification.
-- **📦 Gate 4: Official Expansion Waves & Advanced Mechanics (v1.1+):** Incremental Hero/Scenario packs, Player Side Schemes, Multi-Form 3-sided identities, and Universal 51-Counter Engine.
+- **📦 Gate 2: Core Boss Expansion (Klaw & Ultron):** Scenario Plug-In & Scenario Editor overhaul ([#275](https://github.com/SteveRodrigue/MCD/issues/275)); Klaw scenario + Masters of Evil modular set; Ultron scenario + Under Attack modular set; Legions of Hydra & The Doomsday Chair.
+- **📦 Gate 3: Green Goblin Scenario Pack (MC02):** *Risky Business* (Norman Osborn / Green Goblin flip, Criminal Enterprise / State of Madness) & *Mutagen Formula* scenarios + 4 Goblin modular sets (*Goblin Gimmicks*, *A Mess of Things*, *Power Drain*, *Running Interference*).
+- **📦 Gate 4: Wrecking Crew Scenario Pack (MC03):** Multi-villain scenario (*Breakout*) with 4 simultaneous villains, per-villain encounter decks and signature side schemes, and active counter movement.
+- **📦 Gate 5: Expansions & Advanced Mechanics:** Advanced mechanics not yet implemented or incomplete (non-side-scheme acceleration icons, player-deck obligations, `Permanent` on player elimination, generic value-comparison gates, card-level uncancellable flags, and `CARD_DISCARDED` / `WHEN_BOOST_CARD_REVEALED` / `CARD_LEFT_PLAY` triggers).
+- **⏳ Undetermined (Far Future): Multiplayer Co-op (2–4 Player Tabletop):** Ask-another-player triggers, Alliance pooling, and Team-Up prerequisites.
 
 ---
 
@@ -39,8 +41,10 @@ graph TD
     P2 --> P25["Phase 2.5: Developer Ergonomics & Supplemental Reviewer GUI ✅<br/>(Visual Dual Inspector, Vite REST Middleware, Right-Click Context Menu)"]
     P25 --> G1["🏁 Gate 1: The 'Rhino Release' Vertical Slice 🚧<br/>(100% Core 5 Heroes + Rhino Standard/Expert/Bomb Scare + Pop-Art UI)"]
     G1 --> G2["📦 Gate 2: Core Boss Expansion (Klaw & Ultron) 📅"]
-    G2 --> G3["📦 Gate 3: Multiplayer Co-op & Automated Match Simulator 📅"]
-    G3 --> G4["📦 Gate 4: Expansion Waves & Advanced Mechanics 📅"]
+    G2 --> G3["📦 Gate 3: Green Goblin Scenario Pack (MC02) 📅"]
+    G3 --> G4["📦 Gate 4: Wrecking Crew Scenario Pack (MC03) 📅"]
+    G4 --> G5["📦 Gate 5: Expansion Waves & Advanced Mechanics 📅"]
+    G5 -.-> MP["⏳ Undetermined: Multiplayer Co-op (2–4 Players) 📅"]
 ```
 
 ---
@@ -201,7 +205,7 @@ _Objective: Equip developers and card authors with an integrated visual editor a
 
 _Objective: Complete, test, and ship a 100% polished, playable vertical slice featuring all 5 Core Heroes battling against the Rhino Scenario on Standard and Expert difficulty with full UI and headless simulation proof ([ADR-0002](decisions/0002-decoupled-headless-rules-engine.md), [ADR-0004](decisions/0004-visual-art-direction-comic-pop-art.md))._
 
-**Open work:** every remaining Gate 1 issue is in the GitHub milestone [Gate 1 — Rhino Release](https://github.com/SteveRodrigue/MCD/milestone/2); the ordered queue is in [docs/backlog/teamwork_status_and_next_target.md](backlog/teamwork_status_and_next_target.md). Later gates have their own milestones (Gate 2 to Gate 4, plus Tech Debt & Tooling).
+**Open work:** every remaining Gate 1 issue is in the GitHub milestone [Gate 1 — Rhino Release](https://github.com/SteveRodrigue/MCD/milestone/2); the ordered queue is in [docs/backlog/teamwork_status_and_next_target.md](backlog/teamwork_status_and_next_target.md). Later gates have their own milestones (Gate 2 to Gate 5, plus Tech Debt & Tooling).
 
 ### 1.1. 🔴 `[Must-Have]` Core Set Player Cards & Primitives (101 Cards — Inbox Zero)
 
@@ -264,47 +268,88 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
   - Automated headless runner executing 100 complete simulated games (Spider-Man, Captain Marvel, She-Hulk, Iron Man, Black Panther) against Rhino on Standard and Expert.
   - Asserts zero state corruption, zero deadlocks, and verified win/loss condition evaluations.
 - [x] **Simulation Player Logic & Strategic Heuristics ([Issue #309](https://github.com/SteveRodrigue/MCD/issues/309)) ✅ (Initial Strategic Policy Delivered):**
-  - Value-based resource payment (generators first), threat look-ahead, Guard-first targeting, opening thwart priority, stun/draw prioritization, and defender policy delivered in `player-bot.ts` (`02a57dbd`). Follow-up win-rate tuning ([#309](https://github.com/SteveRodrigue/MCD/issues/309)) and automated card-ability coverage simulation ([#431](https://github.com/SteveRodrigue/MCD/issues/431)) are tracked in `Tech Debt & Tooling`.
+  - Value-based resource payment (generators first), threat look-ahead, Guard-first targeting, opening thwart priority, stun/draw prioritization, and defender policy delivered in `player-bot.ts` (`02a57dbd`). Follow-up win-rate tuning ([#309](https://github.com/SteveRodrigue/MCD/issues/309)) is tracked in `Tech Debt & Tooling`.
+- [ ] **Automated Card-Ability Coverage Simulation ([Issue #431](https://github.com/SteveRodrigue/MCD/issues/431)):**
+  - Use the headless match simulation to exercise every Core Set card ability automatically without a win/loss objective, verifying that each ability resolves cleanly without engine errors.
 
 ---
 
 ## 📦 Gate 2: The Core Boss Expansion (Klaw & Ultron) 📅 (Planned Next)
 
-_Objective: Expand the Core Set scenario catalog to include Klaw and Ultron bosses with their unique encounter mechanics ([ADR-0033](decisions/0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md))._
+_Objective: Overhaul the Scenario Plug-In architecture and Scenario Editor GUI, and expand the Core Set scenario catalog to include Klaw, Ultron, and all 4 remaining Core modular sets ([Milestone #3](https://github.com/SteveRodrigue/MCD/milestone/3), [ADR-0033](decisions/0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md))._
 
 ### Milestones & Tasks:
 
-- [ ] **Klaw Scenario Plugin (`klaw` - 17 cards) & Masters of Evil (`masters_of_evil` - 6 cards):**
-  - 2 boost cards per attack, sonic convergence weapons, minion horde spawning.
-- [ ] **Ultron Scenario Plugin (`ultron` - 22 cards) & Under Attack (`under_attack` - 4 cards):**
-  - Facedown drone deck attachments, drone minion state machine, Invulnerable keyword.
-- [ ] **Modular Scenario Customizer:** Free mix-and-match of _Bomb Scare_, _Masters of Evil_, and _Under Attack_.
+- [ ] **[Issue #275](https://github.com/SteveRodrigue/MCD/issues/275) — Scenario Plug-In & Scenario Editor Overhaul:**
+  - Authoritative Zod `ScenarioDefinitionSchema`, 100% declarative `definition.json` + Main Scheme `1A` (`SETUP`) / `1B` (`WHEN_REVEALED`) execution (zero per-scenario TypeScript `plugin.ts` setup code), and a visual **Scenario Editor** tab in `/editor` (`/api/scenarios/*`).
+- [ ] **Klaw Scenario (`klaw` - 16 cards, [Issue #351](https://github.com/SteveRodrigue/MCD/issues/351)) & Masters of Evil (`masters_of_evil` - 6 cards, [Issue #353](https://github.com/SteveRodrigue/MCD/issues/353)):**
+  - Conditional additional boost card Forced Interrupts ([Issue #292](https://github.com/SteveRodrigue/MCD/issues/292)), sonic convergence attachments, and minion horde spawning.
+- [ ] **Ultron Scenario (`ultron` - 22 cards, [Issue #352](https://github.com/SteveRodrigue/MCD/issues/352)) & Under Attack (`under_attack` - 4 cards, [Issue #354](https://github.com/SteveRodrigue/MCD/issues/354)):**
+  - Facedown Drone minion state machine, mixed per-player + run-once steps ([Issue #272](https://github.com/SteveRodrigue/MCD/issues/272)).
+- [ ] **Remaining Core Modular Sets ([Issue #265](https://github.com/SteveRodrigue/MCD/issues/265)):**
+  - _Legions of Hydra_ (`01180`–`01182`, [Issue #355](https://github.com/SteveRodrigue/MCD/issues/355)) and _The Doomsday Chair_ (`01183`–`01185`, [Issue #356](https://github.com/SteveRodrigue/MCD/issues/356), [Issue #262](https://github.com/SteveRodrigue/MCD/issues/262)).
 
 ---
 
-## 📦 Gate 3: Multiplayer Co-op & Ecosystem 📅 (Planned)
+## 📦 Gate 3: Green Goblin Scenario Pack (MC02) 📅 (Planned)
 
-_Objective: Scale to 2–4 players cooperative tabletop with collaborative triggers and community deck import ([ADR-0014](decisions/0014-marvelcdb-deck-schema-and-metadata-decks.md), [ADR-0032](decisions/0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md))._
+_Objective: Integrate the MC02 Green Goblin Scenario Pack ([Milestone #4](https://github.com/SteveRodrigue/MCD/milestone/4)) following Core Set completion._
 
 ### Milestones & Tasks:
 
-- [ ] **[Issue #37](https://github.com/SteveRodrigue/MCD/issues/37):** `Alliance` keyword collaborative resource pooling and `Team-Up` dual-identity prerequisites.
-- [ ] **Cross-Player Cooperative Actions:** "Action: Ask another player to..." resolution stack prompts.
-- [ ] **1-Click MarvelCDB Community Deck Import:** Direct deck loading via REST API.
-- [ ] **Native Desktop Packaging (Tauri):** Standalone lightweight binaries for Windows, Mac, and Linux.
+- [ ] **[Issue #470](https://github.com/SteveRodrigue/MCD/issues/470) — Double-Sided Villain & Environment Form-Flipping Engine:**
+  - Villain & environment `back_link` flipping (_Norman Osborn_ `02001a`–`02003a` ⇄ _Green Goblin_ `02001b`–`02003b`; _Criminal Enterprise_ `02006a` ⇄ _State of Madness_ `02006b`), villain attack/scheme/damage replacement interrupts, and villain-form-gated `When Revealed (Norman Osborn)` / `When Revealed (Green Goblin)` clauses.
+- [ ] **[Issue #291](https://github.com/SteveRodrigue/MCD/issues/291):** Facedown boost cards given to an enemy for its next activation (`GIVE_FACEDOWN_BOOST_CARD` for _Hired Gun_ `02007` and _Intimidation_ `02035`).
+- [ ] **Risky Business Scenario (`risky_business` - 13 cards):** Norman Osborn / Green Goblin two-faced villain flip, _Criminal Enterprise_ (`02006a`) infamy counters, and _State of Madness_ (`02006b`) madness counters.
+- [ ] **Mutagen Formula Scenario (`mutagen_formula` - 19 cards):** Goblin minion horde mechanics, stage-scaled treacheries, and _Goblin Nation_ (`02027`).
+- [ ] **4 Green Goblin Modular Sets (`gob_encounter.json`):** _Goblin Gimmicks_ (`02033`–`02036`), _A Mess of Things_ (`02037`–`02040`), _Power Drain_ (`02041`–`02045`), and _Running Interference_ (`02046`–`02049`).
 
 ---
 
-## 📦 Gate 4: Expansion Waves & Advanced Mechanics 📅 (Planned)
+## 📦 Gate 4: Wrecking Crew Scenario Pack (MC03) 📅 (Planned)
 
-_Objective: Scale the engine to support official expansion waves, campaign expansions, and advanced card archetypes ([ADR-0034](decisions/0034-player-side-schemes-victory-display-and-auxiliary-decks.md), [ADR-0035](decisions/0035-universal-multi-form-identities-and-generic-counter-engine.md), [ADR-0036](decisions/0036-advanced-status-card-dynamics-and-minion-activations.md))._
+_Objective: Support multi-villain scenarios via the MC03 Wrecking Crew ("Breakout") scenario pack ([ADR-0076](decisions/0076-active-villain-id-and-multi-villain-accessors.md), [Milestone #5](https://github.com/SteveRodrigue/MCD/milestone/5))._
+
+### Milestones & Tasks:
+
+- [x] **[ADR-0076](decisions/0076-active-villain-id-and-multi-villain-accessors.md) / [Issue #194](https://github.com/SteveRodrigue/MCD/issues/194) & [Issue #215](https://github.com/SteveRodrigue/MCD/issues/215):** Multi-villain `state.villains[]` / `state.mainSchemes[]` collections and active villain/scheme accessors.
+- [ ] **[Issue #210](https://github.com/SteveRodrigue/MCD/issues/210):** Per-villain encounter decks and discard piles for multi-villain scenarios.
+- [ ] **[Issue #211](https://github.com/SteveRodrigue/MCD/issues/211):** Per-villain scheme threat destination and signature side schemes.
+- [ ] **[Issue #212](https://github.com/SteveRodrigue/MCD/issues/212):** Multi-villain targeting, Guard across all villains, and all-villains-defeated win condition.
+- [ ] **[Issue #213](https://github.com/SteveRodrigue/MCD/issues/213):** Active counter placement and movement effects (`MOVE_ACTIVE_COUNTER`).
+- [ ] **[Issue #214](https://github.com/SteveRodrigue/MCD/issues/214):** MC03 Wrecking Crew ("Breakout") `ScenarioPlugin` and supplemental card data.
+
+---
+
+## 📦 Gate 5: Expansions & Advanced Mechanics 📅 (Planned)
+
+_Objective: Implement remaining advanced mechanics that are not yet implemented or are currently incomplete ([Milestone #7](https://github.com/SteveRodrigue/MCD/milestone/7))._
 
 ### Milestones & Tasks:
 
 - [x] **[ADR-0034](decisions/0034-player-side-schemes-victory-display-and-auxiliary-decks.md) / [Issue #34](https://github.com/SteveRodrigue/MCD/issues/34):** Player Side Schemes, persistent Victory Display, and auxiliary campaign decks.
 - [x] **[ADR-0035](decisions/0035-universal-multi-form-identities-and-generic-counter-engine.md) / [Issue #33](https://github.com/SteveRodrigue/MCD/issues/33):** Universal 51-counter engine and multi-form identities.
 - [x] **[ADR-0036](decisions/0036-advanced-status-card-dynamics-and-minion-activations.md) / [Issue #35](https://github.com/SteveRodrigue/MCD/issues/35):** Stalwart/Steady status dynamics and minion activation modifiers.
-- [ ] **Official Pack Integration Pipeline:** Captain America, Ms. Marvel, Thor, Doctor Strange, Rise of Red Skull, Galaxy's Most Wanted, Sinister Motives, Mutant Genesis, Next Evolution, Age of Apocalypse.
+- [ ] **[Issue #208](https://github.com/SteveRodrigue/MCD/issues/208):** Player-deck obligations placed into the play area on draw (RR v1.8 Obligation).
+- [ ] **[Issue #224](https://github.com/SteveRodrigue/MCD/issues/224):** Acceleration icons on non-side-scheme cards in Villain Phase Step 1.
+- [ ] **[Issue #274](https://github.com/SteveRodrigue/MCD/issues/274):** `Permanent` cards when a player is eliminated.
+- [ ] **[Issue #278](https://github.com/SteveRodrigue/MCD/issues/278):** Generic value-comparison condition for gates (counters, hit points, counts).
+- [ ] **[Issue #286](https://github.com/SteveRodrigue/MCD/issues/286):** Card-level `cannotBeCanceled` flag for encounter cards.
+- [ ] **[Issue #320](https://github.com/SteveRodrigue/MCD/issues/320), [Issue #321](https://github.com/SteveRodrigue/MCD/issues/321), [Issue #322](https://github.com/SteveRodrigue/MCD/issues/322):** Reaction triggers for `CARD_DISCARDED`, `WHEN_BOOST_CARD_REVEALED`, and `CARD_LEFT_PLAY`.
+
+---
+
+## ⏳ Undetermined (Far Future): Multiplayer Co-op & Ecosystem 📅
+
+_Objective: Scale to 2–4 players cooperative tabletop with collaborative triggers and community deck import ([Milestone #8](https://github.com/SteveRodrigue/MCD/milestone/8), [ADR-0014](decisions/0014-marvelcdb-deck-schema-and-metadata-decks.md), [ADR-0032](decisions/0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md))._
+
+### Milestones & Tasks:
+
+- [ ] **[Issue #37](https://github.com/SteveRodrigue/MCD/issues/37):** `Alliance` keyword collaborative resource pooling and `Team-Up` dual-identity prerequisites.
+- [ ] **[Issue #109](https://github.com/SteveRodrigue/MCD/issues/109):** Observer-scoped minion & enemy reaction triggers (`MINION_SCHEMED`, `ENEMY_ATTACKED`).
+- [ ] **Cross-Player Cooperative Actions:** "Action: Ask another player to..." resolution stack prompts.
+- [ ] **1-Click MarvelCDB Community Deck Import:** Direct deck loading via REST API.
+- [ ] **Native Desktop Packaging (Tauri):** Standalone lightweight binaries for Windows, Mac, and Linux.
 
 ---
 

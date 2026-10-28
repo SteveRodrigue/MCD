@@ -1,3 +1,4 @@
+import { recordAbilityUsage } from './stats';
 import { bindKernel, kernel } from '../kernel';
 import {
   GameState,
@@ -251,6 +252,9 @@ function resolveDamageShieldForHost(
       moveDefeatedCardToPile(state, shieldCard, owner.discard);
     }
   }
+
+  // The shield absorbs outside the effect pipeline, so its use is counted here
+  if (ability) recordAbilityUsage(state, shieldCard.card.code, ability.id);
 
   const onomatopoeia = discarded ? 'ARMORED SUIT SHATTERED!' : 'ARMORED SUIT ABSORBS DAMAGE!';
   appendLog(state, {

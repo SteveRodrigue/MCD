@@ -14,13 +14,15 @@ Phases 1 to 5 track A (combat flow, ability legality, shared gating, audit clean
 
 Open work lives in **GitHub milestones**, one per release gate. Every open issue belongs to exactly one:
 
-| Milestone                                                                                    | Scope                                                                 |
-| :------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------- |
-| [Gate 1 — Rhino Release](https://github.com/SteveRodrigue/MCD/milestone/2)                   | **Active.** Core heroes vs Rhino, rules-verified, 100-game simulation |
-| [Gate 2 — Klaw & Ultron](https://github.com/SteveRodrigue/MCD/milestone/3)                   | Klaw, Ultron, their modular sets, scenario packaging                  |
-| [Gate 3 — Multiplayer Co-op](https://github.com/SteveRodrigue/MCD/milestone/4)               | Alliance, Team-Up, cross-player triggers                              |
-| [Gate 4 — Expansions & Advanced Mechanics](https://github.com/SteveRodrigue/MCD/milestone/5) | Expansion packs and the mechanics only they need                      |
-| [Tech Debt & Tooling](https://github.com/SteveRodrigue/MCD/milestone/6)                      | Refactors, guards, tooling; no gate depends on them                   |
+| Milestone                                                                                    | Scope                                                                       |
+| :------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| [Gate 1 — Rhino Release](https://github.com/SteveRodrigue/MCD/milestone/2)                   | **Active.** Core heroes vs Rhino, rules-verified, 100-game simulation       |
+| [Gate 2 — Klaw & Ultron](https://github.com/SteveRodrigue/MCD/milestone/3)                   | Klaw, Ultron, 4 Core modular sets, Scenario Plug-In & Editor overhaul       |
+| [Gate 3 — Green Goblin (MC02)](https://github.com/SteveRodrigue/MCD/milestone/4)             | MC02 double-sided villain form flip (#470), Risky Business, Mutagen Formula |
+| [Gate 4 — Wrecking Crew (MC03)](https://github.com/SteveRodrigue/MCD/milestone/5)            | MC03 multi-villain scenario, per-villain decks/schemes, active counter      |
+| [Gate 5 — Expansions & Advanced Mechanics](https://github.com/SteveRodrigue/MCD/milestone/7) | Advanced mechanics not yet implemented or incomplete                        |
+| [Tech Debt & Tooling](https://github.com/SteveRodrigue/MCD/milestone/6)                      | Refactors, guards, tooling; no gate depends on them                         |
+| [Undetermined — Multiplayer Co-op](https://github.com/SteveRodrigue/MCD/milestone/8)         | Far future: 2–4 player tabletop, Alliance, Team-Up, cross-player triggers   |
 
 New issues get a milestone at triage. Scope rule (roadmap): Gate 1 work targets only Core Set player cards and Rhino encounter cards (Rhino, Standard, Expert, Bomb Scare, the 5 core nemesis sets).
 
@@ -70,7 +72,9 @@ No open row.
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 
-No open row. (`npm run simulate` passes 100 games with 0 crashes/timeouts and the strategic player bot / defender policy from `02a57dbd`; further win-rate tuning `#309` and ability-coverage simulation `#431` are tracked in `Tech Debt & Tooling`.)
+| #   | Issue                                                 | What it is                                                                                | Tier | Estimate | Plan |
+| --- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------- | ---- | -------- | ---- |
+| 1   | [#431](https://github.com/SteveRodrigue/MCD/issues/431) | **Use the match simulation to test card abilities automatically** (no win/loss goal)      | 2    | ~2 days (2 phases) | [plan_issue_431_card_ability_simulation.md](plan_issue_431_card_ability_simulation.md), [review checklist](review_issue_431_card_ability_simulation.md) |
 
 ### 3.4 UI should-haves
 
@@ -107,15 +111,15 @@ Decisions taken are recorded in the row they affect (section 3) and on the issue
 
 ### Filed outside Gate 1 (not queued)
 
-Milestone Tech Debt & Tooling, simulation follow-ups: [#309](https://github.com/SteveRodrigue/MCD/issues/309) further win-rate tuning beyond the two 4-iteration passes (`02a57dbd`, notes in `plan_issue_309_strategic_player_bot.md`); [#431](https://github.com/SteveRodrigue/MCD/issues/431) automatic card-ability coverage mode in the match simulator.
+Milestone Tech Debt & Tooling, simulation follow-ups: [#309](https://github.com/SteveRodrigue/MCD/issues/309) further win-rate tuning beyond the two 4-iteration passes (`02a57dbd`, notes in `plan_issue_309_strategic_player_bot.md`).
 
 Milestone Tech Debt & Tooling, from the legality gate review (ADR-0090): all delivered (#365 to #367, #457 and #370 to #372).
 
 Milestone Tech Debt & Tooling, from the theming work (plans in `docs/templates/modals/`): [#364](https://github.com/SteveRodrigue/MCD/issues/364) `py-0.2` is not a Tailwind utility; [#373](https://github.com/SteveRodrigue/MCD/issues/373) `border-3` no-ops; [#374](https://github.com/SteveRodrigue/MCD/issues/374) player font choice (N7); [#375](https://github.com/SteveRodrigue/MCD/issues/375) rename `ModalStyle` to `ThemeStyle`; [#376](https://github.com/SteveRodrigue/MCD/issues/376) `CardArtThumbnail` frame follows the theme.
 
-Milestone Gate 4:
+Milestone Gate 5:
 
-Missing triggers removed as dead code in `a6c5542` (Card Editor re-architecture, #319). Each issue lists the candidate cards, a recommended evidence card and the engine work; restore the old dispatch sites with `git show a6c5542`. Milestone: Gate 4.
+Missing triggers removed as dead code in `a6c5542` (Card Editor re-architecture, #319). Each issue lists the candidate cards, a recommended evidence card and the engine work; restore the old dispatch sites with `git show a6c5542`. Milestone: Gate 5.
 
 - [#320](https://github.com/SteveRodrigue/MCD/issues/320) `CARD_DISCARDED` ("After X is discarded"): evidence card Digging Deep 40060.
 - [#321](https://github.com/SteveRodrigue/MCD/issues/321) `WHEN_BOOST_CARD_REVEALED` ("When a boost card is turned faceup"): evidence card Target Acquired 08024.

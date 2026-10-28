@@ -4,6 +4,8 @@ import { getActiveMainScheme } from '@engine/models';
 import type { GameState, PlayerState, SideSchemeCard } from '@engine/models';
 import { createCardInstance } from '@engine/state/game-setup';
 import { chooseBotAction, chooseDefenderOption } from '@engine/simulation/player-bot';
+import { attachCardToHost } from '@engine/state/state-validator';
+import { abilityKey, cardKey, type ScarcityLedger } from '@engine/simulation/ability-coverage';
 import { newRhinoGame } from '../support/game-fixtures';
 
 const BREAKIN_SIDE_SCHEME = '01107';
@@ -247,5 +249,134 @@ describe('chooseBotAction in multiplayer (one hero in Alter-Ego at a time, #309)
     setup('hero', 4, 2);
     expect(botAction('p1').type).not.toBe('CHANGE_FORM');
     expect(botAction('p2').type).toBe('CHANGE_FORM');
+  });
+});
+
+describe('chooseBotAction that tests untested abilities (scarcity ledger, #431)', () => {
+  const ALPHA_FLIGHT_STATION = '01015'; // support, action: exhaust and discard a card
+  const SUPERHUMAN_LAW_DIVISION = '01026'; // support, alter-ego action
+  const IVORY_HORN = '01100'; // encounter attachment, hero action: pay 3 physical
+  const FIRST_AID = '01086'; // event that heals
+  /** Everything counts as used many times, except what a test leaves out. */
+  const worn = (...keys: string[]): ScarcityLedger => Object.fromEntries(keys.map((k) => [k, 9]));
+  let state: GameState;
+  let player: PlayerState;
+
+  beforeEach(() => {
+    state = newRhinoGame({ players: [{ hero: '01001a', form: 'hero' }] });
+    player = state.players[0];
+    player.hand = [];
+    state.sideSchemes = [];
+    getActiveMainScheme(state).threat = 0;
+  });
+
+  it('spends a card with untested abilities last when it pays', () => {
+    const auntMay = card(AUNT_MAY);
+    const nickFury = card(NICK_FURY);
+    const strength = card(STRENGTH);
+    player.hand = [auntMay, nickFury, strength];
+    const ledger = worn(cardKey(STRENGTH), cardKey(AUNT_MAY), abilityKey(AUNT_MAY, 'aunt_may'));
+
+    const action = chooseBotAction({ state, playerId: 'p1', scarcity: ledger });
+    expect(action).toMatchObject({ type: 'PLAY_CARD', cardInstanceId: auntMay.instanceId });
+    expect((action as { paymentCardInstanceIds: string[] }).paymentCardInstanceIds).toEqual([
+      strength.instanceId,
+    ]);
+  });
+
+  it('pays the discard cost of an untested ability, which the plain bot never does', () => {
+    const station = card(ALPHA_FLIGHT_STATION);
+    const filler = card(STRENGTH);
+    player.tableau = [station];
+    player.hand = [filler];
+
+    expect(chooseBotAction({ state, playerId: 'p1', scarcity: {} })).toMatchObject({
+      type: 'USE_CARD_ABILITY',
+      cardInstanceId: station.instanceId,
+      discardCardInstanceIds: [filler.instanceId],
+    });
+    expect(chooseBotAction({ state, playerId: 'p1' }).type).not.toBe('USE_CARD_ABILITY');
+  });
+
+  it('does not pay for an ability that was already tested', () => {
+    player.tableau = [card(ALPHA_FLIGHT_STATION)];
+    player.hand = [card(STRENGTH)];
+    const ledger = worn(abilityKey(ALPHA_FLIGHT_STATION, 'alpha_flight_station'));
+
+    expect(chooseBotAction({ state, playerId: 'p1', scarcity: ledger }).type).not.toBe(
+      'USE_CARD_ABILITY',
+    );
+  });
+
+  it('pays for an action on an encounter attachment through the legal-actions generator', () => {
+    const horn = createCardInstance(cardCatalog.getCard(IVORY_HORN)!);
+    attachCardToHost(state, horn, 'VILLAIN');
+    const payers = [card(STRENGTH), card(STRENGTH)];
+    player.hand = payers;
+
+    const action = chooseBotAction({ state, playerId: 'p1', scarcity: {} });
+    expect(action).toMatchObject({
+      type: 'USE_CARD_ABILITY',
+      cardInstanceId: horn.instanceId,
+      abilityId: 'ivory_horn_discard_action',
+    });
+  });
+
+  it('flips to Alter-Ego for an untested Alter-Ego action when the scheme is safe', () => {
+    player.tableau = [card(SUPERHUMAN_LAW_DIVISION)];
+    const ledger = worn(abilityKey('01001a', 'spider_sense'), abilityKey('01001b', 'scientist'));
+
+    expect(chooseBotAction({ state, playerId: 'p1', scarcity: ledger }).type).toBe('CHANGE_FORM');
+  });
+
+  it('keeps its form when the untested abilities need the form it is in', () => {
+    player.tableau = [card(SUPERHUMAN_LAW_DIVISION)];
+    const ledger = worn(
+      abilityKey('01001a', 'spider_sense'),
+      abilityKey('01001b', 'scientist'),
+      abilityKey(SUPERHUMAN_LAW_DIVISION, 'superhuman_law_division'),
+    );
+
+    expect(chooseBotAction({ state, playerId: 'p1', scarcity: ledger }).type).not.toBe(
+      'CHANGE_FORM',
+    );
+  });
+
+  it('plays the setup piece another card in hand needs in play', () => {
+    // Wakanda Forever! needs a Black Panther upgrade in play: the upgrade comes first
+    const wakanda = card('01043a');
+    const claws = card('01047');
+    player.hand = [wakanda, claws, card(STRENGTH), card(STRENGTH)];
+    const ledger = worn(cardKey('01043a'));
+
+    const action = chooseBotAction({ state, playerId: 'p1', scarcity: ledger });
+    expect(action).toMatchObject({ type: 'PLAY_CARD', cardInstanceId: claws.instanceId });
+  });
+
+  describe('taking a hit on purpose to enable a heal ability', () => {
+    const prompt = { playerId: 'p1', options: [{ id: 'defend_hero' }, { id: 'undefended' }] };
+    const dangerous = () => {
+      state.activeAttackContext = { baseAttack: 6 } as GameState['activeAttackContext'];
+      player.health = player.maxHealth;
+    };
+
+    it('takes a survivable hit while holding an untested heal card at full health', () => {
+      dangerous();
+      player.hand = [card(FIRST_AID)];
+      expect(chooseDefenderOption(state, prompt as never, {})).toBe('undefended');
+    });
+
+    it('defends as usual without the ledger', () => {
+      dangerous();
+      player.hand = [card(FIRST_AID)];
+      expect(chooseDefenderOption(state, prompt as never)).toBe('defend_hero');
+    });
+
+    it('defends when the heal ability was already tested', () => {
+      dangerous();
+      player.hand = [card(FIRST_AID)];
+      const ledger = worn(abilityKey(FIRST_AID, 'first_aid'));
+      expect(chooseDefenderOption(state, prompt as never, ledger)).toBe('defend_hero');
+    });
   });
 });

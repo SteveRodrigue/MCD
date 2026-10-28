@@ -72,9 +72,7 @@ No open row.
 
 ### 3.3 Release gate: 100-game simulation (roadmap 1.4)
 
-| #   | Issue                                                 | What it is                                                                                | Tier | Estimate | Plan |
-| --- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------- | ---- | -------- | ---- |
-| 1   | [#431](https://github.com/SteveRodrigue/MCD/issues/431) | **Use the match simulation to test card abilities automatically** (no win/loss goal)      | 2    | ~2 days (2 phases) | [plan_issue_431_card_ability_simulation.md](plan_issue_431_card_ability_simulation.md), [review checklist](review_issue_431_card_ability_simulation.md) |
+No open row.
 
 ### 3.4 UI should-haves
 

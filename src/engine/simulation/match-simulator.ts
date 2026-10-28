@@ -3,6 +3,7 @@ import { dispatchAction, peekDecisionPrompt } from '../pipeline';
 import { chooseBotAction, chooseDefenderOption } from './player-bot';
 import { assertGameStateInvariants } from '../state/state-validator';
 import { assertNoStepErrors } from './effect-delta-verifier';
+import { addStatsToLedger, choiceKey, fnv1a, type ScarcityLedger } from './ability-coverage';
 
 export interface MatchSimulationOptions {
   maxRounds?: number;
@@ -10,6 +11,13 @@ export interface MatchSimulationOptions {
   seed?: string;
   /** Tolerate `engine.stepError` log entries; only for tests of the error log itself. */
   allowStepErrors?: boolean;
+  /**
+   * What earlier matches (or the statistics file) already tested. Present, the bot works to test
+   * untested abilities and prompt choices rotate; absent, the match is the plain survival bot.
+   */
+  scarcity?: ScarcityLedger;
+  /** Seeds the tie-break of the prompt choice rotation, so a recorded match replays identically. */
+  rotationSeed?: string;
 }
 
 export interface MatchSimulationResult {
@@ -23,6 +31,8 @@ export interface MatchSimulationResult {
   villainName: string;
   difficulty: string;
   playerCount: number;
+  /** The input ledger plus this match's plays, ability uses and prompt choices (when one was given). */
+  scarcity?: ScarcityLedger;
 }
 
 /**
@@ -32,9 +42,12 @@ function resolveDecisionPromptHeuristically(
   state: GameState,
   seed: string,
   pickOption?: PromptOptionPicker,
+  scarcity?: ScarcityLedger,
 ): GameState {
   const prompt = peekDecisionPrompt(state);
   if (!prompt) return state;
+  // Asked once per prompt: both the defender step and the option step use the same answer
+  const preferredId = pickOption?.(prompt);
 
   // 1. Multi-select prompt (selection: { min, max }); the clean-up discard keeps the whole hand
   if (prompt.selection) {
@@ -101,14 +114,17 @@ function resolveDecisionPromptHeuristically(
   }
 
   // 3. Defender declaration: defend only when the hit is dangerous (the bot's defender policy)
-  const defenderId = pickOption?.(prompt) ?? chooseDefenderOption(state, prompt);
+  const defenderId = preferredId ?? chooseDefenderOption(state, prompt, scarcity);
   if (defenderId) {
     const { state: nextState, result } = dispatchAction(state, {
       type: 'RESOLVE_DECISION_PROMPT',
       playerId: prompt.playerId,
       selectedOptionId: defenderId,
     });
-    if (result.success) return nextState;
+    if (result.success) {
+      if (preferredId !== undefined) pickOption?.commit?.(prompt, defenderId);
+      return nextState;
+    }
   }
 
   // 4. Standard decision prompt: pick first enabled option
@@ -126,12 +142,11 @@ function resolveDecisionPromptHeuristically(
       }
     }
     throw new Error(
-      `[MatchSimulator] Prompt '${prompt.title}' (${prompt.promptId}) has no enabled options to select (seed: ${seed}).`,
+      `[MatchSimulator] Prompt '${prompt.title}' (${prompt.promptId}) has no enabled options to select [${prompt.options.map((o) => `${o.id}: ${o.disabledReason ?? 'disabled'}`).join('; ')}] (seed: ${seed}).`,
     );
   }
 
   // A caller-chosen option is tried first (e.g. the Stage-Setter walking every PLAYER_CHOICE branch)
-  const preferredId = pickOption?.(prompt);
   const ordered = preferredId
     ? [...enabledOptions].sort(
         (a, b) => Number(b.id === preferredId) - Number(a.id === preferredId),
@@ -145,6 +160,7 @@ function resolveDecisionPromptHeuristically(
       selectedOptionId: candidate.id,
     });
     if (result.success) {
+      if (preferredId !== undefined) pickOption?.commit?.(prompt, candidate.id);
       return nextState;
     }
     rejections.push(`${candidate.id}: ${result.error ?? 'rejected'}`);
@@ -155,8 +171,50 @@ function resolveDecisionPromptHeuristically(
   );
 }
 
-/** Picks the option id to try first for a prompt, or `undefined` to keep the default order. */
-export type PromptOptionPicker = (prompt: PendingDecisionPrompt) => string | undefined;
+/**
+ * Rotates a prompt through its options: the least chosen option wins, ties go to accepting over
+ * passing and are broken by the seed. Defender declarations, multi-selects and distributions keep
+ * their own policies. Counts are kept in `ledger` under `choice:` keys.
+ */
+export function createRotatingPicker(
+  ledger: ScarcityLedger,
+  rotationSeed: string,
+): PromptOptionPicker {
+  const sourceOf = (prompt: PendingDecisionPrompt) => prompt.sourceCardCode ?? prompt.title;
+  const pick: PromptOptionPicker = (prompt) => {
+    const enabled = prompt.options.filter((o) => !o.disabled);
+    if (
+      enabled.length < 2 ||
+      prompt.selection ||
+      prompt.distributionConfig ||
+      enabled.some((o) => o.id === 'undefended')
+    ) {
+      return undefined;
+    }
+    const source = sourceOf(prompt);
+    const used = (id: string) => ledger[choiceKey(source, id)] ?? 0;
+    const least = Math.min(...enabled.map((o) => used(o.id)));
+    const tied = enabled.filter((o) => used(o.id) === least);
+    const accepting = tied.filter((o) => o.id !== 'pass' && o.id !== 'cancel');
+    const pool = accepting.length > 0 ? accepting : tied;
+    return pool[fnv1a(`${rotationSeed}:${prompt.promptId}`) % pool.length].id;
+  };
+  pick.commit = (prompt, optionId) => {
+    const key = choiceKey(sourceOf(prompt), optionId);
+    ledger[key] = (ledger[key] ?? 0) + 1;
+  };
+  return pick;
+}
+
+/**
+ * Picks the option id to try first for a prompt, or `undefined` to keep the default order. Asking is
+ * free of side effects; a picker that keeps count learns the option that actually resolved through
+ * `commit`, so a rejected pick is never counted.
+ */
+export interface PromptOptionPicker {
+  (prompt: PendingDecisionPrompt): string | undefined;
+  commit?: (prompt: PendingDecisionPrompt, optionId: string) => void;
+}
 
 /**
  * Drain all queued decision prompts iteratively until empty or game ends.
@@ -165,6 +223,7 @@ export function drainPrompts(
   currentState: GameState,
   seed: string,
   pickOption?: PromptOptionPicker,
+  scarcity?: ScarcityLedger,
 ): GameState {
   let s = currentState;
   let count = 0;
@@ -177,7 +236,7 @@ export function drainPrompts(
         `[MatchSimulator] Exceeded max prompt resolution attempts (${MAX_ATTEMPTS}) on prompt '${prompt?.title}' (ID: ${prompt?.promptId}) with seed: ${seed}`,
       );
     }
-    s = resolveDecisionPromptHeuristically(s, seed, pickOption);
+    s = resolveDecisionPromptHeuristically(s, seed, pickOption, scarcity);
     count++;
   }
 
@@ -204,6 +263,16 @@ export function runMatch(
   let state: GameState = initialState;
   let totalActions = 0;
 
+  // A per-match copy: prompt choices are counted in it; plays and uses are read from the game's stats
+  const matchLedger: ScarcityLedger | undefined = options.scarcity && { ...options.scarcity };
+  const pickOption = matchLedger && createRotatingPicker(matchLedger, options.rotationSeed ?? seed);
+  const decisionLedger = (): ScarcityLedger | undefined => {
+    if (!matchLedger) return undefined;
+    const live = { ...matchLedger };
+    addStatsToLedger(live, state.stats);
+    return live;
+  };
+
   // 0. Auto-resolve mulligan if match starts in SETUP_PHASE
   if (state.phase === GamePhase.SETUP_PHASE) {
     for (const p of state.players) {
@@ -219,7 +288,7 @@ export function runMatch(
   }
 
   // Drain any setup prompts (e.g. Black Panther's Foresight)
-  state = drainPrompts(state, seed);
+  state = drainPrompts(state, seed, pickOption, decisionLedger());
 
   // The engine drives the round: END_PLAYER_TURN runs clean-up, the villain phase and round upkeep.
   let actionCountForTurn = 0;
@@ -232,12 +301,16 @@ export function runMatch(
     const player = state.players[state.activePlayerIndex];
 
     if (actionCountForTurn < maxActionsPerTurn) {
-      const botAction = chooseBotAction({ state, playerId: player.id });
+      const botAction = chooseBotAction({
+        state,
+        playerId: player.id,
+        scarcity: decisionLedger(),
+      });
       if (botAction.type !== 'END_PLAYER_TURN') {
         const dispatchResult = dispatchAction(state, botAction);
         // An illegal bot choice ends the turn
         if (dispatchResult.result.success) {
-          state = drainPrompts(dispatchResult.state, seed);
+          state = drainPrompts(dispatchResult.state, seed, pickOption, decisionLedger());
           totalActions += 1;
           actionCountForTurn += 1;
           continue;
@@ -252,7 +325,7 @@ export function runMatch(
         `[MatchSimulator] END_PLAYER_TURN rejected for ${player.id}: ${endTurn.result.error} (seed: ${seed}).`,
       );
     }
-    state = drainPrompts(endTurn.state, seed);
+    state = drainPrompts(endTurn.state, seed, pickOption, decisionLedger());
     actionCountForTurn = 0;
 
     if (state.roundNumber !== roundBefore) {
@@ -281,5 +354,6 @@ export function runMatch(
     villainName,
     difficulty,
     playerCount,
+    ...(matchLedger && { scarcity: decisionLedger() }),
   };
 }

@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+
+# Ensure Node/npm are available in PATH (critical for VS Code GUI / Git clients on Windows & macOS)
+if ! command -v npm >/dev/null 2>&1; then
+  export PATH="/c/Program Files/nodejs:/c/Program Files (x86)/nodejs:$APPDATA/npm:$LOCALAPPDATA/Programs/nodejs:/usr/local/bin:/opt/homebrew/bin:$PATH"
+fi
+
+NPM="npm"
+if ! command -v "$NPM" >/dev/null 2>&1 && command -v npm.cmd >/dev/null 2>&1; then
+  NPM="npm.cmd"
+fi
+
+PREV_HEAD="$1"
+NEW_HEAD="$2"
+IS_BRANCH_CHECKOUT="$3"
+
+# Only run on branch checkout (not file checkout), when previous HEAD is known
+if [ "$IS_BRANCH_CHECKOUT" = "1" ] && [ -n "$PREV_HEAD" ] && [ -n "$NEW_HEAD" ]; then
+  if git diff-tree -r --name-only --no-commit-id "$PREV_HEAD" "$NEW_HEAD" 2>/dev/null | grep -Eq '(^|/)package-lock\.json$'; then
+    echo "📦 package-lock.json changed on branch checkout. Running npm install to sync dependencies..."
+    "$NPM" install
+  fi
+fi
+

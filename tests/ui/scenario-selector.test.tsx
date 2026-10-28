@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ScenarioSelector } from '../../src/ui/components/setup/ScenarioSelector';
+import {
+  ScenarioSelector,
+  RANDOM_MODULAR_SET_CODE,
+} from '../../src/ui/components/setup/ScenarioSelector';
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame } from '../../src/engine/state/game-setup';
@@ -82,5 +85,40 @@ describe('ScenarioSelector', () => {
     expect(villain.card.code).toBe('01095');
     expect(villain.maxHealth).toBe((cardCatalog.getCard('01095') as VillainCard).health);
     expect((cardCatalog.getCard('01094') as VillainCard).health).toBe(rhinoOneHealth);
+  });
+
+  it('renders Pick Randomly option and toggles house rule checkbox', () => {
+    renderSelector();
+    expect(screen.getByRole('option', { name: /Pick Randomly/ })).toBeTruthy();
+
+    const select = screen.getAllByRole('combobox')[0];
+    fireEvent.change(select, { target: { value: RANDOM_MODULAR_SET_CODE } });
+    expect(screen.getByText('Random pick exclude the recommended (house rule)')).toBeTruthy();
+    expect(screen.getByText('Random Modular Set')).toBeTruthy();
+  });
+
+  it('resolves random modular set excluding recommended when checkbox is checked', () => {
+    const onStartSetup = renderSelector();
+    const select = screen.getAllByRole('combobox')[0];
+    fireEvent.change(select, { target: { value: RANDOM_MODULAR_SET_CODE } });
+
+    fireEvent.click(screen.getByText('START MISSION'));
+    const selection = onStartSetup.mock.calls[0][0] as SetupSelection;
+    expect(selection.selectedModularSetCodes).toBeDefined();
+    expect(selection.selectedModularSetCodes?.[0]).not.toBe('bomb_scare');
+    expect(['masters_of_evil', 'under_attack', 'legions_of_hydra', 'the_doomsday_chair']).toContain(
+      selection.selectedModularSetCodes?.[0],
+    );
+  });
+
+  it('resets modular set to default when Reset to Default is clicked', () => {
+    renderSelector();
+    const select = screen.getAllByRole('combobox')[0];
+    fireEvent.change(select, { target: { value: RANDOM_MODULAR_SET_CODE } });
+    expect(screen.getByText('Reset to Default')).toBeTruthy();
+
+    fireEvent.click(screen.getByText('Reset to Default'));
+    expect(screen.queryByText('Reset to Default')).toBeNull();
+    expect(screen.getByText('Default Recommendation')).toBeTruthy();
   });
 });

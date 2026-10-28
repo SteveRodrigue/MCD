@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Target Selectors In Use:** **29/43**
+> **Active Target Selectors In Use:** **31/43**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -40,7 +40,7 @@
 | `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
 | `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
 
-### <a id="self"></a>`SELF` (10 Cards, 10 Declarations)
+### <a id="self"></a>`SELF` (11 Cards, 11 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -49,6 +49,7 @@
 | `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
 | `01051` | **Tigra (ally)** | `core` | `tigra_defeat_heal` |
 | `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
+| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response` |
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
 | `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
 | `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
@@ -70,6 +71,29 @@
 | `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
 | `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
 
+### <a id="villain"></a>`VILLAIN` (8 Cards, 8 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01011` | **Spider-Woman (ally)** | `core` | `spider_woman_enters_play` |
+| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
+| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
+| `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
+| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
+| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_forced_response` |
+| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
+| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
+
+### <a id="chosen-player"></a>`CHOSEN_PLAYER` (5 Cards, 5 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01010b` | **Carol Danvers (alter_ego)** | `core` | `commander` |
+| `01034` | **Stark Tower (support)** | `core` | `stark_tower_retrieve` |
+| `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
+| `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
+| `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
+
 ### <a id="self-hero"></a>`SELF_HERO` (5 Cards, 5 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -80,24 +104,12 @@
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
 
-### <a id="villain"></a>`VILLAIN` (5 Cards, 5 Declarations)
+### <a id="defending-player"></a>`DEFENDING_PLAYER` (2 Cards, 3 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01011` | **Spider-Woman (ally)** | `core` | `spider_woman_enters_play` |
-| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
-| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
-| `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
-| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
-
-### <a id="chosen-player"></a>`CHOSEN_PLAYER` (4 Cards, 4 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01010b` | **Carol Danvers (alter_ego)** | `core` | `commander` |
-| `01034` | **Stark Tower (support)** | `core` | `stark_tower_retrieve` |
-| `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
-| `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
+| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response`, `radioactive_man_boost` |
+| `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
 
 ### <a id="main-scheme"></a>`MAIN_SCHEME` (2 Cards, 3 Declarations)
 
@@ -105,6 +117,21 @@
 | :--- | :--- | :--- | :--- |
 | `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
 | `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
+
+### <a id="this-side-scheme"></a>`THIS_SIDE_SCHEME` (3 Cards, 3 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01107` | **Breakin' & Takin' (side_scheme)** | `core_encounter` | `breakin_and_takin_when_revealed` |
+| `01109` | **Bomb Scare (side_scheme)** | `core_encounter` | `bomb_scare_when_revealed` |
+| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
+
+### <a id="all-controlled-characters"></a>`ALL_CONTROLLED_CHARACTERS` (2 Cards, 2 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01070` | **Lead from the Front (event)** | `core` | `lead_from_the_front_action` |
+| `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
 
 ### <a id="all-enemies"></a>`ALL_ENEMIES` (2 Cards, 2 Declarations)
 
@@ -155,13 +182,6 @@
 | `01046` | **Energy Daggers (upgrade)** | `core` | `energy_daggers_special` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed` |
 
-### <a id="this-side-scheme"></a>`THIS_SIDE_SCHEME` (2 Cards, 2 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01107` | **Breakin' & Takin' (side_scheme)** | `core_encounter` | `breakin_and_takin_when_revealed` |
-| `01109` | **Bomb Scare (side_scheme)** | `core_encounter` | `bomb_scare_when_revealed` |
-
 ### <a id="triggering-enemy"></a>`TRIGGERING_ENEMY` (2 Cards, 2 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -181,11 +201,11 @@
 | :--- | :--- | :--- | :--- |
 | `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
 
-### <a id="all-controlled-characters"></a>`ALL_CONTROLLED_CHARACTERS` (1 Cards, 1 Declarations)
+### <a id="all-friendly-characters"></a>`ALL_FRIENDLY_CHARACTERS` (1 Cards, 1 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01070` | **Lead from the Front (event)** | `core` | `lead_from_the_front_action` |
+| `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed` |
 
 ### <a id="all-schemes"></a>`ALL_SCHEMES` (1 Cards, 1 Declarations)
 
@@ -211,11 +231,11 @@
 | :--- | :--- | :--- | :--- |
 | `01080` | **Med Team (support)** | `core` | `med_team_heal` |
 
-### <a id="defending-player"></a>`DEFENDING_PLAYER` (1 Cards, 1 Declarations)
+### <a id="chosen-side-scheme"></a>`CHOSEN_SIDE_SCHEME` (1 Cards, 1 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_scheme_attack_response` |
 
 ### <a id="host"></a>`HOST` (1 Cards, 1 Declarations)
 

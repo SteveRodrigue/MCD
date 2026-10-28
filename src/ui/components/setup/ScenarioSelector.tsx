@@ -27,6 +27,8 @@ import { useModalStyle } from '../../theme/useModalStyle';
 import { useThemeExtras } from '../../theme/useThemeExtras';
 import { CardView } from '../cards/CardView';
 
+export const RANDOM_MODULAR_SET_CODE = 'random';
+
 export interface SetupSelection {
   scenarioId: string;
   difficulty: DifficultyMode;
@@ -65,6 +67,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
   const [selectedModularSetCode, setSelectedModularSetCode] = useState<string>(
     () => defaultModularForScenario,
   );
+  const [excludeRecommendedFromRandom, setExcludeRecommendedFromRandom] = useState<boolean>(true);
 
   const handleSelectScenarioByIndex = (newIndex: number) => {
     const validIndex = (newIndex + scenarios.length) % scenarios.length;
@@ -120,13 +123,24 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
 
   const handleStart = () => {
     if (playerCount === 0) return;
+
+    let resolvedModularCode = selectedModularSetCode;
+    if (resolvedModularCode === RANDOM_MODULAR_SET_CODE) {
+      const candidates = excludeRecommendedFromRandom
+        ? modularSets.filter((m) => m.code !== defaultModularForScenario)
+        : modularSets;
+      const pool = candidates.length > 0 ? candidates : modularSets;
+      const randomIndex = Math.floor(Math.random() * pool.length);
+      resolvedModularCode = pool[randomIndex]?.code || defaultModularForScenario;
+    }
+
     onStartSetup({
       scenarioId: selectedScenarioId,
       difficulty,
       heroicLevel,
       playerCount,
       deckIds: activeDecks,
-      selectedModularSetCodes: [selectedModularSetCode],
+      selectedModularSetCodes: [resolvedModularCode],
     });
   };
 
@@ -380,9 +394,11 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 <span
                   className={`text-micro bg-amber-100 text-slate-800 px-1.5 py-0.2 font-bold ${style.badge}`}
                 >
-                  {selectedModularSetCode === defaultModularForScenario
-                    ? 'Default Recommendation'
-                    : 'Custom Modular Set'}
+                  {selectedModularSetCode === RANDOM_MODULAR_SET_CODE
+                    ? 'Random Modular Set'
+                    : selectedModularSetCode === defaultModularForScenario
+                      ? 'Default Recommendation'
+                      : 'Custom Modular Set'}
                 </span>
               </div>
 
@@ -391,6 +407,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                 onChange={(e) => setSelectedModularSetCode(e.target.value)}
                 className={`w-full p-2 font-medium text-sm focus:outline-hidden focus:ring-2 focus:ring-comic-yellow cursor-pointer ${field}`}
               >
+                <option value={RANDOM_MODULAR_SET_CODE}>🎲 Pick Randomly</option>
                 {modularSets.map((mod) => (
                   <option key={mod.code} value={mod.code}>
                     {mod.name} ({mod.cardCount} cards){' '}
@@ -400,8 +417,24 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
               </select>
 
               <p className={`text-mini italic ${style.muted}`}>
-                {modularSets.find((m) => m.code === selectedModularSetCode)?.description}
+                {selectedModularSetCode === RANDOM_MODULAR_SET_CODE
+                  ? 'A modular encounter set will be selected randomly when the mission begins.'
+                  : modularSets.find((m) => m.code === selectedModularSetCode)?.description}
               </p>
+
+              {selectedModularSetCode === RANDOM_MODULAR_SET_CODE && (
+                <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={excludeRecommendedFromRandom}
+                    onChange={(e) => setExcludeRecommendedFromRandom(e.target.checked)}
+                    className="w-4 h-4 text-comic-blue rounded-sm focus:ring-comic-yellow cursor-pointer"
+                  />
+                  <span className="text-xs font-bold">
+                    Random pick exclude the recommended (house rule)
+                  </span>
+                </label>
+              )}
             </div>
           </div>
 

@@ -1,4 +1,5 @@
 import { bindKernel, kernel } from '../kernel';
+import { routeCardInstances } from './card-routing';
 
 import {
   GameState,
@@ -1811,7 +1812,11 @@ function discardFromEncounterDeck(
       return { state, success: false, error: 'DISCARD UNTIL_MATCH requires untilFilter' };
     }
     const matchingDestination = (params.matchingDestination as string | undefined) ?? 'DISCARD';
-    if (matchingDestination !== 'DISCARD' && matchingDestination !== 'REVEAL') {
+    if (
+      matchingDestination !== 'DISCARD' &&
+      matchingDestination !== 'REVEAL' &&
+      matchingDestination !== 'PLAY'
+    ) {
       return {
         state,
         success: false,
@@ -1839,6 +1844,13 @@ function discardFromEncounterDeck(
     }
     if (found && matchingDestination === 'REVEAL') {
       kernel.resolveActiveEncounterCardAfterInterrupt(state, found, player, false);
+    }
+    if (found && matchingDestination === 'PLAY') {
+      const targetPlayer =
+        (params.target as string) === 'FIRST_PLAYER'
+          ? (state.players[state.firstPlayerIndex] ?? player)
+          : player;
+      routeCardInstances(state, targetPlayer, [found], 'TABLEAU', 'ENCOUNTER_DECK');
     }
     return {
       state,

@@ -4,6 +4,16 @@
 
 ## 1. Condition Gates (`StepGateSchema` — 9/9 In Use)
 
+### <a id="if-card-in-play"></a>`IF_CARD_IN_PLAY` (5 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
+| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_invulnerable`, `madame_hydra_scheme_attack_response` |
+| `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
+
 ### <a id="if-form"></a>`IF_FORM` (4 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -46,13 +56,6 @@
 | `01025` | **Split Personality (event)** | `core` | `split_personality` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 | `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
-
-### <a id="if-card-in-play"></a>`IF_CARD_IN_PLAY` (2 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
 
 ### <a id="if-undefended-attack"></a>`IF_UNDEFENDED_ATTACK` (2 Cards)
 

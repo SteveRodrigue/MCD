@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { getStarterDeck } from '../../src/engine/decks/starter-decks';
 import { setupGame } from '../../src/engine/state/game-setup';
-import { runMatch } from '../../src/engine/simulation/match-simulator';
+import { runMatch, createRotatingPicker } from '../../src/engine/simulation/match-simulator';
+import { choiceKey, type ScarcityLedger } from '../../src/engine/simulation/ability-coverage';
 import { executeVillainAttackAgainstPlayer } from '../../src/engine/pipeline';
 import { attachCardToHost } from '../../src/engine/state/state-validator';
 import { createCardInstance } from '../../src/engine/state/card-instance';
@@ -206,5 +207,98 @@ describe('Fast Multi-Hero Match Simulator Battery (Roadmap 1.4)', () => {
       expect(nextState.winner).toBe('VILLAIN');
       expect(nextState.players).toHaveLength(0);
     });
+  });
+});
+
+describe('prompt choice rotation and the scarcity ledger (#431)', () => {
+  const prompt = (promptId: string, ids: string[], extra: object = {}) =>
+    ({
+      promptId,
+      title: 'Choose',
+      sourceCardCode: '01084',
+      options: ids.map((id) => ({ id })),
+      ...extra,
+    }) as never;
+  /** Ask the picker, then report the pick as resolved, the way a successful dispatch does. */
+  const choose = (
+    picker: ReturnType<typeof createRotatingPicker>,
+    p: ReturnType<typeof prompt>,
+  ) => {
+    const id = picker(p);
+    if (id !== undefined) picker.commit?.(p, id);
+    return id;
+  };
+
+  it('rotates through every branch of a choice before repeating one', () => {
+    const picker = createRotatingPicker({}, 'seed');
+    const picked = [1, 2, 3].map((n) =>
+      choose(picker, prompt(`p${n}`, ['opt_1', 'opt_2', 'opt_3'])),
+    );
+    expect(new Set(picked)).toEqual(new Set(['opt_1', 'opt_2', 'opt_3']));
+  });
+
+  it('breaks ties with the seed, the same way every time', () => {
+    const run = (seed: string) => {
+      const picker = createRotatingPicker({}, seed);
+      return [1, 2, 3].map((n) => choose(picker, prompt(`p${n}`, ['a', 'b', 'c'])));
+    };
+    expect(run('same')).toEqual(run('same'));
+  });
+
+  it('accepts an optional ability before passing on it, then lets the pass have its turn', () => {
+    const ledger: ScarcityLedger = {};
+    const picker = createRotatingPicker(ledger, 'seed');
+    expect(choose(picker, prompt('p1', ['trigger_x', 'pass']))).toBe('trigger_x');
+    expect(choose(picker, prompt('p2', ['trigger_x', 'pass']))).toBe('pass');
+    expect(ledger[choiceKey('01084', 'trigger_x')]).toBe(1);
+    expect(ledger[choiceKey('01084', 'pass')]).toBe(1);
+  });
+
+  it('counts a choice only once it resolved, and answers the same when asked twice', () => {
+    const ledger: ScarcityLedger = {};
+    const picker = createRotatingPicker(ledger, 'seed');
+    const p = prompt('p1', ['a', 'b', 'c']);
+    expect(picker(p)).toBe(picker(p));
+    expect(ledger).toEqual({});
+    picker.commit?.(p, 'b');
+    expect(ledger[choiceKey('01084', 'b')]).toBe(1);
+  });
+
+  it('leaves defender declarations, multi-selects and single options to their own policies', () => {
+    const picker = createRotatingPicker({}, 'seed');
+    expect(picker(prompt('d', ['defend_hero', 'undefended']))).toBeUndefined();
+    expect(picker(prompt('s', ['a', 'b'], { selection: { min: 0, max: 2 } }))).toBeUndefined();
+    expect(picker(prompt('o', ['only']))).toBeUndefined();
+  });
+
+  it('runs a whole match with a ledger, counts what it tested and replays identically', () => {
+    const play = () => {
+      resetInstanceCounter();
+      const loaded = getStarterDeck('spider_man_justice')!.loadDeck(cardCatalog);
+      const state = setupGame({
+        catalog: cardCatalog,
+        scenarioId: 'rhino',
+        seed: 'ledger-match',
+        players: [
+          {
+            id: 'p1',
+            name: loaded.hero.name,
+            hero: loaded.hero,
+            alterEgo: loaded.alterEgo,
+            deckCards: loaded.deckCards,
+            obligation: loaded.obligation,
+            nemesisCards: loaded.nemesisCards,
+          },
+        ],
+      });
+      return runMatch(state, { maxRounds: 8, seed: 'ledger-match', scarcity: {} });
+    };
+    const first = play();
+    const second = play();
+    expect(first.logSummary).toEqual(second.logSummary);
+    expect(first.scarcity).toEqual(second.scarcity);
+    const keys = Object.keys(first.scarcity ?? {});
+    expect(keys.some((k) => k.startsWith('card:'))).toBe(true);
+    expect(keys.some((k) => k.startsWith('ability:'))).toBe(true);
   });
 });

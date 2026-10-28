@@ -152,18 +152,63 @@ export interface SimulationRecipe {
   /** Which ability the Stage-Setter targeted, when the recipe came from a sweep or `--card`. */
   target?: { cardCode: string; abilityId: string; variant: string };
   /** Per-match scarcity snapshot, frozen so bot decisions replay identically (Phase 2 reads it). */
-  ledgerSnapshot: Record<string, number>;
+  ledgerSnapshot: ScarcityLedger;
   /** Hash of the card data the recipe was recorded against; replay warns when it differs. */
   cardDataHash: string;
 }
 
-/** FNV-1a over the ability definitions of the inventory; cheap and stable across runs. */
-export function hashCardData(inventory: readonly AbilityTarget[]): string {
+/** FNV-1a over a string: cheap and stable across runs; the one hash of the simulation. */
+export function fnv1a(text: string): number {
   let hash = 0x811c9dc5;
-  const text = JSON.stringify(inventory.map((t) => [t.cardCode, t.ability]));
   for (let i = 0; i < text.length; i++) {
     hash ^= text.charCodeAt(i);
     hash = Math.imul(hash, 0x01000193) >>> 0;
   }
-  return hash.toString(16).padStart(8, '0');
+  return hash;
+}
+
+/** Hash of the ability definitions of the inventory; a recipe records it to flag stale replays. */
+export function hashCardData(inventory: readonly AbilityTarget[]): string {
+  const text = JSON.stringify(inventory.map((t) => [t.cardCode, t.ability]));
+  return fnv1a(text).toString(16).padStart(8, '0');
+}
+
+/**
+ * How often each card was played and each ability or prompt choice used. One flat record so a match
+ * can freeze it in its `SimulationRecipe` and replay the same bot decisions. Keys: `card:<code>`,
+ * `ability:<code>#<id>`, `choice:<source>#<optionId>`.
+ */
+export type ScarcityLedger = Record<string, number>;
+
+export const cardKey = (cardCode: string) => `card:${cardCode}`;
+export const abilityKey = (cardCode: string, abilityId: string) =>
+  `ability:${cardCode}#${abilityId}`;
+export const choiceKey = (source: string, optionId: string) => `choice:${source}#${optionId}`;
+
+/** An ability or card used `n` times weighs `1 / (1 + n)`: untouched content weighs 1. */
+export const scarcityOf = (ledger: ScarcityLedger, key: string): number =>
+  1 / (1 + (ledger[key] ?? 0));
+
+/** The statistics file shape the game writes (`stats/card_play_stats.json`). */
+export interface StatsFileShape {
+  cards?: Record<string, { played?: number; abilitiesUsed?: Record<string, number> }>;
+}
+
+/** Adds the card plays and ability uses of a stats record into a ledger (a file or a finished match). */
+export function addStatsToLedger(ledger: ScarcityLedger, stats: StatsFileShape | undefined): void {
+  for (const [code, card] of Object.entries(stats?.cards ?? {})) {
+    if (card.played) ledger[cardKey(code)] = (ledger[cardKey(code)] ?? 0) + card.played;
+    for (const [id, uses] of Object.entries(card.abilitiesUsed ?? {})) {
+      ledger[abilityKey(code, id)] = (ledger[abilityKey(code, id)] ?? 0) + uses;
+    }
+  }
+}
+
+/** The weight of a card with abilities still to test: the scarcest of its ability weights. */
+export function untestedWeight(ledger: ScarcityLedger, card: NormalizedCard): number {
+  const abilities = (card.enrichment?.abilities ?? []).filter(
+    (a) => a.timing !== 'CONSTANT' && a.timing !== 'SETUP',
+  );
+  if (abilities.length === 0) return scarcityOf(ledger, cardKey(card.code));
+  return Math.max(...abilities.map((a) => scarcityOf(ledger, abilityKey(card.code, a.id))));
 }

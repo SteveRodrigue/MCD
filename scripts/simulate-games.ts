@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { cardCatalog } from '../src/data/importer/card-loader';
 import {
   setupGame,
@@ -11,7 +12,20 @@ import {
   hashCardData,
   sweepAbilities,
   exerciseAbility,
+  sweepTriggerWindows,
+  runGauntlet,
+  playRecipe,
+  addStatsToLedger,
+  fnv1a,
+  type GauntletMatch,
+  type ScarcityLedger,
+  type SimulationRecipe,
 } from '../src/engine';
+import {
+  createInitialAllTimeStats,
+  mergeDeltaIntoAllTime,
+  type AllTimeStats,
+} from '../src/engine/models/stats';
 import { getStarterDeck } from '../src/engine/decks/starter-decks';
 
 interface GameConfig {
@@ -38,7 +52,7 @@ function describeOutcome(result: MatchSimulationResult): string {
 /** Informational win-rate report over 100 games; never a gate (roadmap 1.4 gates ability coverage). */
 async function runBalanceReport() {
   const startTime = Date.now();
-  const logsDir = path.resolve(process.cwd(), 'logs', 'simulations');
+  const logsDir = LOGS_DIR;
   if (!fs.existsSync(logsDir)) {
     fs.mkdirSync(logsDir, { recursive: true });
   }
@@ -269,24 +283,43 @@ ${records
 `;
 }
 
+/** Paths are anchored to the repository, so the script behaves the same from any directory. */
+const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url));
+const LOGS_DIR = path.join(REPO_ROOT, 'logs', 'simulations');
+const DEFAULT_STATS_FILE = path.join(REPO_ROOT, 'stats', 'card_play_stats.json');
+
 interface CliArgs {
   card?: string;
   replay?: string;
   seed: string;
   balance: boolean;
+  updateStats: boolean;
+  /** The statistics file the Gauntlet reads as its baseline (and `--update-stats` writes). */
+  statsFile: string;
+  /** Ignore the statistics file as a baseline: every ability counts as untested. */
+  noStats: boolean;
 }
 
 function parseArgs(argv: string[]): CliArgs {
-  const args: CliArgs = { seed: 'coverage', balance: false };
+  const args: CliArgs = {
+    seed: 'coverage',
+    balance: false,
+    updateStats: false,
+    statsFile: DEFAULT_STATS_FILE,
+    noStats: false,
+  };
   for (let i = 0; i < argv.length; i++) {
     const flag = argv[i];
     if (flag === '--card') args.card = argv[++i];
     else if (flag === '--replay') args.replay = argv[++i];
     else if (flag === '--seed') args.seed = argv[++i];
     else if (flag === '--balance') args.balance = true;
+    else if (flag === '--update-stats') args.updateStats = true;
+    else if (flag === '--stats-file') args.statsFile = path.resolve(argv[++i]);
+    else if (flag === '--no-stats') args.noStats = true;
     else
       throw new Error(
-        `Unknown flag '${flag}'. Use --card <code>, --replay <id>, --seed <s>, --balance.`,
+        `Unknown flag '${flag}'. Use --card <code>, --replay <id>, --seed <s>, --balance, --update-stats, --stats-file <path>, --no-stats.`,
       );
   }
   return args;
@@ -306,27 +339,119 @@ interface CatalogEntry {
   cardDataHash: string;
 }
 
-const LOGS_DIR = path.resolve(process.cwd(), 'logs', 'simulations');
+/** One Gauntlet match, recorded so `--replay gauntlet:<seed>:<n>` plays it again. */
+interface GauntletEntry {
+  id: string;
+  kind: 'gauntlet';
+  recipe: SimulationRecipe;
+  ok: boolean;
+  error?: string;
+  fingerprint?: string;
+}
 
-function readCatalog(): CatalogEntry[] {
+/** A statistics file (the live one is gitignored, so a fresh checkout or CI has none). */
+function readStatsAt(file: string): AllTimeStats | undefined {
+  return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : undefined;
+}
+
+/** The baseline a run starts from: the statistics file, or nothing with `--no-stats`. */
+function readBaseline(args: CliArgs): AllTimeStats | undefined {
+  return args.noStats ? undefined : readStatsAt(args.statsFile);
+}
+
+/**
+ * Names the baseline in the catalog and the summary. A Gauntlet depends on it by design (it steers
+ * toward what the statistics call untested), so two runs only match when their baselines do.
+ */
+function baselineId(stats: AllTimeStats | undefined): string {
+  return stats ? fnv1a(JSON.stringify(stats)).toString(16).padStart(8, '0') : 'none';
+}
+
+/** The catalog file: the baseline id, then the ability entries and the Gauntlet entries. */
+interface CatalogFile {
+  statsBaseline: string;
+  entries: (CatalogEntry | GauntletEntry)[];
+}
+
+function readCatalog(): (CatalogEntry | GauntletEntry)[] {
   const file = path.join(LOGS_DIR, 'replay_catalog.json');
-  return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : [];
+  if (!fs.existsSync(file)) return [];
+  const parsed = JSON.parse(fs.readFileSync(file, 'utf8')) as CatalogFile;
+  return parsed.entries ?? [];
+}
+
+function warnIfCardDataChanged(recordedHash: string): void {
+  const current = hashCardData(buildAbilityInventory(cardCatalog.getAllCards()));
+  if (current !== recordedHash) {
+    console.warn('Warning: the card data changed since this entry was recorded.');
+  }
 }
 
 function stageOptions(seed: string) {
   return { catalog: cardCatalog, allCards: cardCatalog.getAllCards(), seed };
 }
 
+/** How many abilities the Gauntlet matches used at least once, beyond the ledger they started from. */
+function seen(gauntlet: GauntletMatch[]): number {
+  const used = new Set<string>();
+  for (const match of gauntlet) {
+    for (const [key, n] of Object.entries(match.result?.finalState.stats?.cards ?? {})) {
+      for (const [id, count] of Object.entries(n.abilitiesUsed ?? {})) {
+        if (count > 0) used.add(`${key}#${id}`);
+      }
+    }
+  }
+  return used.size;
+}
+
+/** The Gauntlet: full matches by the coverage-seeking bot, steered by what the stats file shows as untested. */
+function playGauntlet(args: CliArgs, ledger: ScarcityLedger): GauntletMatch[] {
+  const allCards = cardCatalog.getAllCards();
+  const hash = hashCardData(buildAbilityInventory(allCards));
+  return runGauntlet({
+    catalog: cardCatalog,
+    allCards,
+    seed: args.seed,
+    ledger,
+    cardDataHash: hash,
+  });
+}
+
+/** `--update-stats`: the one place that writes the live statistics file. */
+function mergeIntoStatsFile(args: CliArgs, gauntlet: GauntletMatch[]): void {
+  const clean = gauntlet.filter((m) => m.ok && m.result?.finalState.stats);
+  if (clean.length === 0) {
+    console.log('No clean Gauntlet match to merge: the statistics file is untouched.');
+    return;
+  }
+  const allTime = readStatsAt(args.statsFile) ?? createInitialAllTimeStats();
+  for (const match of gauntlet) {
+    const stats = match.result?.finalState.stats;
+    if (!match.ok || !stats) continue;
+    mergeDeltaIntoAllTime(allTime, {
+      cards: stats.cards,
+      basicActions: stats.basicActions,
+      gameCompleted: true,
+    });
+  }
+  fs.mkdirSync(path.dirname(args.statsFile), { recursive: true });
+  fs.writeFileSync(args.statsFile, JSON.stringify(allTime, null, 2));
+  console.log(`Merged ${clean.length} match(es) into ${args.statsFile}.`);
+}
+
 /** The Stage-Setter sweep: the Gate 1.4 card-ability coverage gate. */
-function runCoverageGate(args: CliArgs): boolean {
+function runCoverageGate(args: CliArgs, gauntlet: GauntletMatch[], baseline: string): boolean {
   const allCards = cardCatalog.getAllCards();
   const inventory = buildAbilityInventory(allCards, args.card ? { cardCodes: [args.card] } : {});
   if (args.card && inventory.length === 0) {
     throw new Error(`Card '${args.card}' declares no abilities in scope.`);
   }
   const ledger = new CoverageLedger(inventory);
-  const hash = hashCardData(inventory);
+  const hash = hashCardData(buildAbilityInventory(allCards));
   const results = sweepAbilities(ledger, stageOptions(args.seed));
+  const windows = args.card ? [] : sweepTriggerWindows(inventory, stageOptions(args.seed));
+  const windowFailures = windows.filter((w) => !w.ok);
+  const gauntletFailures = gauntlet.filter((m) => !m.ok);
 
   const entries: CatalogEntry[] = results.flatMap(({ target, outcomes }) =>
     outcomes.map((outcome, index) => ({
@@ -353,7 +478,22 @@ function runCoverageGate(args: CliArgs): boolean {
   );
 
   fs.mkdirSync(LOGS_DIR, { recursive: true });
-  fs.writeFileSync(path.join(LOGS_DIR, 'replay_catalog.json'), JSON.stringify(entries, null, 2));
+  const gauntletEntries: GauntletEntry[] = gauntlet.map((m) => ({
+    id: m.recipe.id,
+    kind: 'gauntlet',
+    recipe: m.recipe,
+    ok: m.ok,
+    error: m.error,
+    fingerprint: m.fingerprint,
+  }));
+  const catalogFile: CatalogFile = {
+    statsBaseline: baseline,
+    entries: [...entries, ...gauntletEntries],
+  };
+  fs.writeFileSync(
+    path.join(LOGS_DIR, 'replay_catalog.json'),
+    JSON.stringify(catalogFile, null, 2),
+  );
 
   const failures = ledger.failureList();
   const byTiming = new Map<string, { covered: number; total: number }>();
@@ -370,7 +510,11 @@ function runCoverageGate(args: CliArgs): boolean {
     `* **Covered:** ${ledger.coveredCount} (${ledger.percent.toFixed(1)}%)`,
     `* **Uncovered:** ${failures.length}`,
     `* **Variant failures (2-player / choice branches):** ${variantFailures.length}`,
+    `* **Trigger windows (two abilities, one trigger):** ${windows.length - windowFailures.length}/${windows.length} clean`,
+    `* **Gauntlet:** ${gauntlet.length - gauntletFailures.length}/${gauntlet.length} matches clean, ${seen(gauntlet)} of ${inventory.length} abilities seen`,
     `* **Card data hash:** \`${hash}\``,
+    `* **Statistics baseline:** \`${baseline}\` (the Gauntlet steers by it; \`--no-stats\` makes a run independent of the statistics file)`,
+    `* **Gauntlet scope:** Rhino only, the Gate 1 scenario; trigger windows ordered-checked in ${windows.filter((w) => w.order === 'checked').length} of ${windows.length} (Core data has no window that mixes forced and optional abilities)`,
     '',
     '## Coverage by timing',
     '',
@@ -379,6 +523,18 @@ function runCoverageGate(args: CliArgs): boolean {
     ...[...byTiming.entries()]
       .sort()
       .map(([timing, r]) => `| ${timing} | ${r.covered} | ${r.total} |`),
+    '',
+    '## Gauntlet findings (errors fail the run; coverage here is only reported)',
+    '',
+    ...(gauntletFailures.length === 0
+      ? ['None.']
+      : gauntletFailures.map((m) => `* \`${m.recipe.id}\`: ${m.error}`)),
+    '',
+    '## Trigger window findings',
+    '',
+    ...(windowFailures.length === 0
+      ? ['None.']
+      : windowFailures.map((w) => `* ${w.trigger} ${w.abilities.join(' + ')}: ${w.reason}`)),
     '',
     '## Uncovered abilities',
     '',
@@ -393,26 +549,54 @@ function runCoverageGate(args: CliArgs): boolean {
     `Ability coverage: ${ledger.coveredCount}/${inventory.length} (${ledger.percent.toFixed(1)}%), ${variantFailures.length} variant failure(s).`,
   );
   for (const f of failures) console.log(`  UNCOVERED ${f.cardCode}#${f.abilityId}: ${f.reason}`);
+  console.log(
+    `Gauntlet: ${gauntlet.length - gauntletFailures.length}/${gauntlet.length} matches clean, ${seen(gauntlet)} abilities seen. Windows: ${windows.length - windowFailures.length}/${windows.length} clean.`,
+  );
+  for (const m of gauntletFailures) {
+    console.log(`  GAUNTLET ${m.recipe.id}: ${m.error}`);
+    console.log(`    replay: npm run simulate -- --replay "${m.recipe.id}"`);
+  }
+  for (const w of windowFailures)
+    console.log(`  WINDOW   ${w.trigger}: ${w.abilities.join(' + ')}: ${w.reason}`);
   for (const e of variantFailures) console.log(`  VARIANT   ${e.id}: ${e.reason}`);
   console.log(`Report: ${path.join(LOGS_DIR, 'simulation_summary.md')}`);
   if (args.card) {
     for (const e of entries) console.log(`  replay: npm run simulate -- --replay "${e.id}"`);
   }
-  return failures.length === 0 && variantFailures.length === 0;
+  return (
+    failures.length === 0 &&
+    variantFailures.length === 0 &&
+    windowFailures.length === 0 &&
+    gauntletFailures.length === 0
+  );
 }
 
 /** Re-runs a recorded catalog entry and checks it reproduces the same outcome and state. */
 function runReplay(id: string): boolean {
   const entry = readCatalog().find((e) => e.id === id);
   if (!entry) throw new Error(`No replay entry '${id}' in logs/simulations/replay_catalog.json.`);
+  if ('kind' in entry) {
+    warnIfCardDataChanged(entry.recipe.cardDataHash);
+    const again = playRecipe(entry.recipe, cardCatalog);
+    // A recorded crash must reproduce the same crash, a recorded match the same final state
+    const sameMatch =
+      again.ok === entry.ok &&
+      again.fingerprint === entry.fingerprint &&
+      again.error === entry.error;
+    console.log(
+      sameMatch
+        ? `Replay reproduced ${id}.`
+        : `Replay DIVERGED for ${id}: ${again.error ?? 'different match'}`,
+    );
+    if (again.error) console.log(`  ${again.error}`);
+    return sameMatch;
+  }
   const inventory = buildAbilityInventory(cardCatalog.getAllCards(), {
     cardCodes: [entry.cardCode],
   });
   const target = inventory.find((t) => t.abilityId === entry.abilityId);
   if (!target) throw new Error(`Ability ${entry.cardCode}#${entry.abilityId} no longer exists.`);
-  if (hashCardData(inventory) !== entry.cardDataHash) {
-    console.warn('Warning: the card data changed since this entry was recorded.');
-  }
+  warnIfCardDataChanged(entry.cardDataHash);
   const outcome = exerciseAbility(target, {
     ...stageOptions(entry.seed),
     playerCount: entry.playerCount,
@@ -430,7 +614,17 @@ function runReplay(id: string): boolean {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.balance) return runBalanceReport();
-  const ok = args.replay ? runReplay(args.replay) : runCoverageGate(args);
+  if (args.replay) {
+    if (!runReplay(args.replay)) process.exitCode = 1;
+    return;
+  }
+  // The Gauntlet reads what the live statistics already tested and steers toward the rest
+  const baselineStats = readBaseline(args);
+  const ledger: ScarcityLedger = {};
+  addStatsToLedger(ledger, baselineStats);
+  const gauntlet = args.card ? [] : playGauntlet(args, ledger);
+  const ok = runCoverageGate(args, gauntlet, baselineId(baselineStats));
+  if (args.updateStats) mergeIntoStatsFile(args, gauntlet);
   if (!ok) process.exitCode = 1;
 }
 

@@ -1020,6 +1020,12 @@ function scanInPlayTriggerAbilities(
                 scanState.currentDamage = effCtx.damageAmount;
                 if (scanState.currentDamage === 0) scanState.isPrevented = true;
               }
+              // Logged like the identity and optional paths, so the order of a window can be read
+              appendLog(state, {
+                key: `ability.${ability.id}.triggered`,
+                params: { actor: controller.name },
+                onomatopoeia: 'ABILITY TRIGGERED!',
+              });
             };
             if (isForced) {
               scanState.forcedCandidates.push({

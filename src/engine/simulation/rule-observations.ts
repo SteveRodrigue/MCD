@@ -49,6 +49,8 @@ const effects = (...names: EffectType[]): RuleObservation => ({
 const triggers = (...names: string[]): RuleObservation => ({
   observe: names.map((trigger) => ({ trigger })),
 });
+/** A rule no log key names: a passing rule scenario checks the situation itself. */
+const scenario = (id: RuleScenarioId): RuleObservation => ({ observe: [{ scenario: id }] });
 const mixed = (...observe: Observable[]): RuleObservation => ({ observe });
 
 const definition = (reason: string): RuleObservation => ({ untested: 'definition', reason });
@@ -126,7 +128,7 @@ export const RULE_OBSERVATIONS: Record<RuleSlug, RuleObservation> = {
     'minion.confused.cancelled',
     'villain.confused.cancelled',
   ),
-  'consequential-damage': unobservable,
+  'consequential-damage': scenario('consequential-damage'),
   'constant-ability': timings('CONSTANT'),
   control: unobservable,
   copy: unobservable,
@@ -173,7 +175,7 @@ export const RULE_OBSERVATIONS: Record<RuleSlug, RuleObservation> = {
   'enemy-attacks': logs('villain.attack', 'minion.attack.hit'),
   'enemy-schemes': logs('villain.scheme.threat', 'minion.scheme.threat'),
   'energy-resource': unobservable,
-  engage: unobservable,
+  engage: logs('encounter.reveal.minion', 'scenario.setup.minion'),
   'enters-play': mixed(
     { trigger: 'MINION_ENTERS_PLAY' },
     { log: 'card.putIntoPlay' },
@@ -181,7 +183,7 @@ export const RULE_OBSERVATIONS: Record<RuleSlug, RuleObservation> = {
   ),
   environment: logs('scenario.setup.environment'),
   event: unobservable,
-  'excess-damage': unobservable,
+  'excess-damage': logs('overkill.hit'),
   exhausted: mixed({ effect: 'EXHAUST' }, { log: 'card.state.exhausted' }),
   'expert-mode': unobservable,
   'expert-set': unobservable,
@@ -200,7 +202,7 @@ export const RULE_OBSERVATIONS: Record<RuleSlug, RuleObservation> = {
   'game-element': unobservable,
   generate: effects('GENERATE_RESOURCE'),
   gets: effects('MODIFY_STAT'),
-  guard: unobservable,
+  guard: scenario('guard-blocks'),
   'hand-size': effects('MODIFY_HAND_SIZE'),
   'hazard-icon': unobservable,
   heal: mixed({ effect: 'HEAL_DAMAGE' }, { log: 'card.effect.heal' }),
@@ -240,7 +242,7 @@ export const RULE_OBSERVATIONS: Record<RuleSlug, RuleObservation> = {
   'look-looked-at': unobservable,
   loses: unobservable,
   'main-scheme-main-scheme-deck': logs('scenario.mainSchemeAdvance', 'villain.stageAdvance'),
-  'max-maximum': unobservable,
+  'max-maximum': scenario('max-per-player'),
   'maximum-hit-points': effects('MODIFY_MAX_HEALTH'),
   may: logs('decision.prompt.passed'),
   'mental-resource': unobservable,
@@ -248,7 +250,7 @@ export const RULE_OBSERVATIONS: Record<RuleSlug, RuleObservation> = {
   'modes-of-play': definition('lists the modes of play'),
   modifiers: effects('MODIFY_STAT'),
   'modular-encounter-set': unobservable,
-  move: unobservable,
+  move: logs('damage.transferred'),
   'nemesis-encounter-set': unobservable,
   'non-numerical-variable': unobservable,
   obligation: logs('encounter.reveal.obligation'),
@@ -260,7 +262,7 @@ export const RULE_OBSERVATIONS: Record<RuleSlug, RuleObservation> = {
   pay: logs('card.cost.*', 'cost.reduced'),
   'per-player-icon': unobservable,
   peril: unobservable,
-  permanent: unobservable,
+  permanent: scenario('permanent-card'),
   'physical-resource': unobservable,
   piercing: logs('damage.tough.pierced'),
   'play-put-into-play': mixed(
@@ -291,7 +293,7 @@ export const RULE_OBSERVATIONS: Record<RuleSlug, RuleObservation> = {
   ),
   printed: unobservable,
   qualifiers: unobservable,
-  quickstrike: unobservable,
+  quickstrike: scenario('quickstrike-minion'),
   ranged: unobservable,
   ready: mixed({ effect: 'READY' }, { log: 'card.effect.readyCharacter' }),
   rec: logs('player.action.recover'),

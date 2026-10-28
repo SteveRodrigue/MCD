@@ -1,6 +1,7 @@
 import type { CardAbility } from '../models';
 import type { LogEvents } from '../models/log-events';
 import type { EffectType } from '../../data/supplemental/runtime';
+import type { RuleScenarioId } from './rule-scenarios';
 import type { RuleSlug } from './rules-graph';
 
 export type LogKey = keyof LogEvents;
@@ -20,7 +21,9 @@ export type Observable =
   /** A covered ability resolved a step with this effect. */
   | { effect: EffectType }
   /** A covered ability reacted to this trigger, or a trigger window opened it. */
-  | { trigger: string };
+  | { trigger: string }
+  /** A rule scenario ran and passed: for a rule no log key names, the scenario checks the state itself. */
+  | { scenario: RuleScenarioId };
 
 export type UntestedKind =
   /** Text, wording, table-talk or mode rule: there is no engine behavior to observe. */
@@ -309,7 +312,7 @@ export const RULE_OBSERVATIONS: Record<RuleSlug, RuleObservation> = {
   'resource-card': timings(...RESOURCE_TIMINGS),
   'resource-type': unobservable,
   response: timings('RESPONSE', 'HERO_RESPONSE', 'ALTER_EGO_RESPONSE'),
-  restricted: effects('MODIFY_RESTRICTED_LIMIT'),
+  restricted: mixed({ effect: 'MODIFY_RESTRICTED_LIMIT' }, { scenario: 'restricted-limit' }),
   'retaliate-x': logs('retaliate.hit'),
   reveal: logs('encounter.card.revealed', 'villain.boost.revealed'),
   'rookie-mode': unobservable,
@@ -386,7 +389,7 @@ export const RULE_OBSERVATIONS: Record<RuleSlug, RuleObservation> = {
   traits: mixed({ effect: 'ADD_TRAIT' }, { log: 'card.effect.addTrait' }),
   'triggered-ability': timings('FORCED_INTERRUPT', 'INTERRUPT', 'FORCED_RESPONSE', 'RESPONSE'),
   'triggering-condition': triggers('CARD_PLAYED', 'ATTACK_RESOLVED', 'ROUND_ENDED'),
-  tuck: effects('PLACE_CARD_UNDER_HOST'),
+  tuck: effects('PLACE_CARD_UNDER_HOST', 'ATTACH_FACEDOWN_CARDS_FROM_HAND'),
   undefended: logs('combat.attack.undefended'),
   'unique-icon': unobservable,
   upgrade: unobservable,

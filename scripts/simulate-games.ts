@@ -28,6 +28,7 @@ import {
 } from '../src/engine/models/stats';
 import { getStarterDeck } from '../src/engine/decks/starter-decks';
 import { STAGED_TRIGGERS } from '../src/engine/simulation/ability-stage-setter';
+import { RULE_SCENARIOS, sweepRuleScenarios } from '../src/engine/simulation/rule-scenarios';
 import { COVERAGE_RULE_BY_TIMING } from '../src/engine/simulation/ability-coverage';
 import { EFFECT_DELTA_CONTRACTS } from '../src/engine/simulation/effect-delta-verifier';
 import {
@@ -492,6 +493,8 @@ function runCoverageGate(args: CliArgs, gauntlet: GauntletMatch[], baseline: str
   const windows = args.card ? [] : sweepTriggerWindows(inventory, stageOptions(args.seed));
   const windowFailures = windows.filter((w) => !w.ok);
   const gauntletFailures = gauntlet.filter((m) => !m.ok);
+  const ruleScenarios = args.card ? [] : sweepRuleScenarios(stageOptions(args.seed));
+  const scenarioFailures = ruleScenarios.filter((r) => !r.ok);
 
   const entries: CatalogEntry[] = results.flatMap(({ target, outcomes }) =>
     outcomes.map((outcome, index) => ({
@@ -542,11 +545,12 @@ function runCoverageGate(args: CliArgs, gauntlet: GauntletMatch[], baseline: str
     : reportRuleCoverage(
         rulesGraph,
         RULE_OBSERVATIONS,
-        collectEvidence({ ledger, sweep: results, windows, gauntlet }),
+        collectEvidence({ ledger, sweep: results, windows, gauntlet, scenarios: ruleScenarios }),
         {
           timings: Object.keys(COVERAGE_RULE_BY_TIMING),
           effects: Object.keys(EFFECT_DELTA_CONTRACTS),
           triggers: STAGED_TRIGGERS,
+          scenarios: Object.keys(RULE_SCENARIOS),
         },
       );
   const byTiming = new Map<string, { covered: number; total: number }>();
@@ -563,6 +567,7 @@ function runCoverageGate(args: CliArgs, gauntlet: GauntletMatch[], baseline: str
     `* **Covered:** ${ledger.coveredCount} (${ledger.percent.toFixed(1)}%)`,
     `* **Uncovered:** ${failures.length}`,
     `* **Variant failures (2-player / choice branches):** ${variantFailures.length}`,
+    `* **Rule scenarios (one situation per rule):** ${ruleScenarios.length - scenarioFailures.length}/${ruleScenarios.length} pass`,
     `* **Trigger windows (two abilities, one trigger):** ${windows.length - windowFailures.length}/${windows.length} clean`,
     `* **Gauntlet:** ${gauntlet.length - gauntletFailures.length}/${gauntlet.length} matches clean, ${seen(gauntlet)} of ${inventory.length} abilities seen`,
     ...(rules
@@ -587,6 +592,12 @@ function runCoverageGate(args: CliArgs, gauntlet: GauntletMatch[], baseline: str
     ...(gauntletFailures.length === 0
       ? ['None.']
       : gauntletFailures.map((m) => `* \`${m.recipe.id}\`: ${m.error}`)),
+    '',
+    '## Rule scenario findings',
+    '',
+    ...(scenarioFailures.length === 0
+      ? ['None.']
+      : scenarioFailures.map((r) => `* \`${r.id}\`: ${r.reason}`)),
     '',
     '## Trigger window findings',
     '',
@@ -621,6 +632,7 @@ function runCoverageGate(args: CliArgs, gauntlet: GauntletMatch[], baseline: str
     console.log(`  GAUNTLET ${m.recipe.id}: ${m.error}`);
     console.log(`    replay: npm run simulate -- --replay "${m.recipe.id}"`);
   }
+  for (const r of scenarioFailures) console.log(`  RULE SCENARIO ${r.id}: ${r.reason}`);
   for (const w of windowFailures)
     console.log(`  WINDOW   ${w.trigger}: ${w.abilities.join(' + ')}: ${w.reason}`);
   for (const e of variantFailures) console.log(`  VARIANT   ${e.id}: ${e.reason}`);
@@ -633,6 +645,7 @@ function runCoverageGate(args: CliArgs, gauntlet: GauntletMatch[], baseline: str
     (rules?.drift.length ?? 0) === 0 &&
     variantFailures.length === 0 &&
     windowFailures.length === 0 &&
+    scenarioFailures.length === 0 &&
     gauntletFailures.length === 0
   );
 }

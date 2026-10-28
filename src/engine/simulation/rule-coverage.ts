@@ -2,6 +2,7 @@ import type { AbilitySweepResult, TriggerWindowResult } from './ability-stage-se
 import type { CoverageLedger } from './ability-coverage';
 import type { GauntletMatch } from './gauntlet';
 import type { Observable, RuleObservation } from './rule-observations';
+import type { RuleScenarioResult } from './rule-scenarios';
 import type { RuleEntry } from './rules-graph';
 
 export type EvidenceSource = 'stage' | 'gauntlet';
@@ -12,6 +13,8 @@ export interface EvidenceSet {
   timings: Set<string>;
   effects: Set<string>;
   triggers: Set<string>;
+  /** Rule scenarios that passed. */
+  scenarios: Set<string>;
 }
 
 export type RuleEvidence = Record<EvidenceSource, EvidenceSet>;
@@ -21,6 +24,7 @@ const emptySet = (): EvidenceSet => ({
   timings: new Set(),
   effects: new Set(),
   triggers: new Set(),
+  scenarios: new Set(),
 });
 
 export const emptyEvidence = (): RuleEvidence => ({ stage: emptySet(), gauntlet: emptySet() });
@@ -30,14 +34,21 @@ export interface EvidenceInput {
   sweep: readonly AbilitySweepResult[];
   windows: readonly TriggerWindowResult[];
   gauntlet: readonly GauntletMatch[];
+  scenarios: readonly RuleScenarioResult[];
 }
 
 /**
- * Gathers what the Stage-Setter (covered abilities, passing runs, clean trigger windows) and the
- * Gauntlet (log of every match that finished) showed. Only runs that passed count: a failed run
+ * Gathers what the Stage-Setter (covered abilities, passing runs, clean trigger windows, passing
+ * rule scenarios) and the Gauntlet (log of every match that finished) showed. Only runs that passed count: a failed run
  * proves nothing about the rule.
  */
-export function collectEvidence({ ledger, sweep, windows, gauntlet }: EvidenceInput): RuleEvidence {
+export function collectEvidence({
+  ledger,
+  sweep,
+  windows,
+  gauntlet,
+  scenarios,
+}: EvidenceInput): RuleEvidence {
   const evidence = emptyEvidence();
   for (const { target, outcomes } of sweep) {
     for (const outcome of outcomes) {
@@ -52,6 +63,11 @@ export function collectEvidence({ ledger, sweep, windows, gauntlet }: EvidenceIn
     if (!window.ok) continue;
     evidence.stage.triggers.add(window.trigger);
     for (const key of window.logKeys ?? []) evidence.stage.logKeys.add(key);
+  }
+  for (const scenario of scenarios) {
+    if (!scenario.ok) continue;
+    evidence.stage.scenarios.add(scenario.id);
+    for (const key of scenario.logKeys) evidence.stage.logKeys.add(key);
   }
   for (const match of gauntlet) {
     for (const key of match.result?.logSummary ?? []) evidence.gauntlet.logKeys.add(key);
@@ -68,7 +84,8 @@ function seenIn(observable: Observable, set: EvidenceSet): boolean {
   if ('log' in observable) return matchesLog(observable.log, set.logKeys);
   if ('timing' in observable) return set.timings.has(observable.timing);
   if ('effect' in observable) return set.effects.has(observable.effect);
-  return set.triggers.has(observable.trigger);
+  if ('trigger' in observable) return set.triggers.has(observable.trigger);
+  return set.scenarios.has(observable.scenario);
 }
 
 export interface ObservedRule {
@@ -100,6 +117,7 @@ export interface KnownVocabulary {
   timings: readonly string[];
   effects: readonly string[];
   triggers: readonly string[];
+  scenarios: readonly string[];
 }
 
 const SOURCES: readonly EvidenceSource[] = ['stage', 'gauntlet'];
@@ -126,6 +144,8 @@ function driftOf(
         drift.push(`'${slug}' names unknown effect '${observable.effect}'`);
       } else if ('trigger' in observable && !known.triggers.includes(observable.trigger)) {
         drift.push(`'${slug}' names a trigger no scenario stages: '${observable.trigger}'`);
+      } else if ('scenario' in observable && !known.scenarios.includes(observable.scenario)) {
+        drift.push(`'${slug}' names unknown rule scenario '${observable.scenario}'`);
       }
     }
   }

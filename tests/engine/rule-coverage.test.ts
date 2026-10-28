@@ -17,6 +17,11 @@ import {
   reportRuleCoverage,
   type KnownVocabulary,
 } from '@engine/simulation/rule-coverage';
+import {
+  RULE_SCENARIOS,
+  sweepRuleScenarios,
+  type RuleScenarioResult,
+} from '@engine/simulation/rule-scenarios';
 import { RULE_OBSERVATIONS, type RuleObservation } from '@engine/simulation/rule-observations';
 import { rulesGraph, type RuleEntry } from '@engine/simulation/rules-graph';
 
@@ -24,6 +29,7 @@ const known: KnownVocabulary = {
   timings: Object.keys(COVERAGE_RULE_BY_TIMING),
   effects: [...EFFECT_TYPES],
   triggers: STAGED_TRIGGERS,
+  scenarios: Object.keys(RULE_SCENARIOS),
 };
 
 const entry = (title: string): RuleEntry => ({ title, file: 'glossary/X.md', anchor: title });
@@ -112,7 +118,8 @@ describe('Stage-Setter rule evidence', () => {
   const options = { catalog: cardCatalog, allCards };
   const sweep = sweepAbilities(ledger, options);
   const windows = sweepTriggerWindows(inventory, options);
-  const evidence = collectEvidence({ ledger, sweep, windows, gauntlet: [] });
+  const scenarios = sweepRuleScenarios(options);
+  const evidence = collectEvidence({ ledger, sweep, windows, gauntlet: [], scenarios });
   const report = reportRuleCoverage(rulesGraph, RULE_OBSERVATIONS, evidence, known);
 
   it('records the log keys of every passing run', () => {
@@ -146,5 +153,44 @@ describe('Stage-Setter rule evidence', () => {
     ];
     expect(new Set(slugs).size).toBe(report.total);
     expect(slugs.length).toBe(report.total);
+  });
+});
+
+describe('rule scenario evidence', () => {
+  const options = { catalog: cardCatalog, allCards: cardCatalog.getAllCards() };
+  const scenarios = sweepRuleScenarios(options);
+  const evidence = collectEvidence({
+    ledger: new CoverageLedger([]),
+    sweep: [],
+    windows: [],
+    gauntlet: [],
+    scenarios,
+  });
+
+  it('observes the rules a passing scenario writes the log for', () => {
+    const report = reportRuleCoverage(rulesGraph, RULE_OBSERVATIONS, evidence, known);
+    const observed = new Set(report.observed.map((r) => r.slug));
+    for (const slug of ['overkill', 'stun-stunned', 'patrol', 'restricted', 'valid-target']) {
+      expect(observed.has(slug), slug).toBe(true);
+    }
+  });
+
+  it('counts only the scenarios that passed', () => {
+    const failed: RuleScenarioResult = { id: 'victory', ok: false, reason: 'x', logKeys: [] };
+    const only = collectEvidence({
+      ledger: new CoverageLedger([]),
+      sweep: [],
+      windows: [],
+      gauntlet: [],
+      scenarios: [failed],
+    });
+    expect(only.stage.scenarios.size).toBe(0);
+    expect(only.stage.logKeys.size).toBe(0);
+  });
+
+  it('names a rule scenario that does not exist as drift', () => {
+    const table = { alpha: { observe: [{ scenario: 'no-such-scenario' as never }] } };
+    const report = reportRuleCoverage({ alpha: graph.alpha }, table, emptyEvidence(), known);
+    expect(report.drift).toEqual(["'alpha' names unknown rule scenario 'no-such-scenario'"]);
   });
 });

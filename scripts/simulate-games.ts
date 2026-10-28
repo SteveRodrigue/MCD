@@ -27,6 +27,16 @@ import {
   type AllTimeStats,
 } from '../src/engine/models/stats';
 import { getStarterDeck } from '../src/engine/decks/starter-decks';
+import { STAGED_TRIGGERS } from '../src/engine/simulation/ability-stage-setter';
+import { COVERAGE_RULE_BY_TIMING } from '../src/engine/simulation/ability-coverage';
+import { EFFECT_DELTA_CONTRACTS } from '../src/engine/simulation/effect-delta-verifier';
+import {
+  collectEvidence,
+  reportRuleCoverage,
+  type RuleCoverageReport,
+} from '../src/engine/simulation/rule-coverage';
+import { RULE_OBSERVATIONS } from '../src/engine/simulation/rule-observations';
+import { rulesGraph } from '../src/engine/simulation/rules-graph';
 
 interface GameConfig {
   gameNumber: number;
@@ -439,6 +449,36 @@ function mergeIntoStatsFile(args: CliArgs, gauntlet: GauntletMatch[]): void {
   console.log(`Merged ${clean.length} match(es) into ${args.statsFile}.`);
 }
 
+/** The rule-keyed half of the summary: what the glossary says versus what the runs showed. */
+function ruleCoverageSections(rules: RuleCoverageReport): string[] {
+  const bySource = (source: 'stage' | 'gauntlet') =>
+    rules.observed.filter((r) => r.by.includes(source)).length;
+  return [
+    '## Rule coverage (glossary entries of the Rules Reference v1.8)',
+    '',
+    `* **Observed:** ${rules.observed.length} of ${rules.total} (Stage-Setter ${bySource('stage')}, Gauntlet ${bySource('gauntlet')})`,
+    `* **Mapped, no scenario showed it:** ${rules.unobserved.length}`,
+    `* **Declared untested:** ${rules.untested.length}`,
+    '',
+    '## Rule drift (fails the run)',
+    '',
+    ...(rules.drift.length === 0 ? ['None.'] : rules.drift.map((d) => `* ${d}`)),
+    '',
+    '## Rules no scenario observed',
+    '',
+    ...(rules.unobserved.length === 0
+      ? ['None.']
+      : rules.unobserved.map((r) => `* ${r.title} (\`${r.slug}\`)`)),
+    '',
+    '## Rules declared untested',
+    '',
+    ...(rules.untested.length === 0
+      ? ['None.']
+      : rules.untested.map((r) => `* ${r.title} (\`${r.slug}\`): ${r.kind}, ${r.reason}`)),
+    '',
+  ];
+}
+
 /** The Stage-Setter sweep: the Gate 1.4 card-ability coverage gate. */
 function runCoverageGate(args: CliArgs, gauntlet: GauntletMatch[], baseline: string): boolean {
   const allCards = cardCatalog.getAllCards();
@@ -496,6 +536,19 @@ function runCoverageGate(args: CliArgs, gauntlet: GauntletMatch[], baseline: str
   );
 
   const failures = ledger.failureList();
+  // Partial evidence (one card) would list almost every rule as unobserved
+  const rules = args.card
+    ? undefined
+    : reportRuleCoverage(
+        rulesGraph,
+        RULE_OBSERVATIONS,
+        collectEvidence({ ledger, sweep: results, windows, gauntlet }),
+        {
+          timings: Object.keys(COVERAGE_RULE_BY_TIMING),
+          effects: Object.keys(EFFECT_DELTA_CONTRACTS),
+          triggers: STAGED_TRIGGERS,
+        },
+      );
   const byTiming = new Map<string, { covered: number; total: number }>();
   for (const t of inventory) {
     const row = byTiming.get(t.ability.timing) ?? { covered: 0, total: 0 };
@@ -512,6 +565,11 @@ function runCoverageGate(args: CliArgs, gauntlet: GauntletMatch[], baseline: str
     `* **Variant failures (2-player / choice branches):** ${variantFailures.length}`,
     `* **Trigger windows (two abilities, one trigger):** ${windows.length - windowFailures.length}/${windows.length} clean`,
     `* **Gauntlet:** ${gauntlet.length - gauntletFailures.length}/${gauntlet.length} matches clean, ${seen(gauntlet)} of ${inventory.length} abilities seen`,
+    ...(rules
+      ? [
+          `* **Rules observed (Rules Reference v1.8 glossary):** ${rules.observed.length} of ${rules.total} (${rules.unobserved.length} mapped but unseen, ${rules.untested.length} declared untested, ${rules.drift.length} drift)`,
+        ]
+      : []),
     `* **Card data hash:** \`${hash}\``,
     `* **Statistics baseline:** \`${baseline}\` (the Gauntlet steers by it; \`--no-stats\` makes a run independent of the statistics file)`,
     `* **Gauntlet scope:** Rhino only, the Gate 1 scenario; trigger windows ordered-checked in ${windows.filter((w) => w.order === 'checked').length} of ${windows.length} (Core data has no window that mixes forced and optional abilities)`,
@@ -542,12 +600,19 @@ function runCoverageGate(args: CliArgs, gauntlet: GauntletMatch[], baseline: str
       ? ['None.']
       : failures.map((f) => `* \`${f.cardCode}#${f.abilityId}\`: ${f.reason}`)),
     '',
+    ...(rules ? ruleCoverageSections(rules) : []),
   ].join('\n');
   fs.writeFileSync(path.join(LOGS_DIR, 'simulation_summary.md'), summary, 'utf8');
 
   console.log(
     `Ability coverage: ${ledger.coveredCount}/${inventory.length} (${ledger.percent.toFixed(1)}%), ${variantFailures.length} variant failure(s).`,
   );
+  if (rules) {
+    console.log(
+      `Rule coverage: ${rules.observed.length}/${rules.total} observed, ${rules.unobserved.length} mapped but unseen, ${rules.untested.length} declared untested.`,
+    );
+    for (const d of rules.drift) console.log(`  RULE DRIFT ${d}`);
+  }
   for (const f of failures) console.log(`  UNCOVERED ${f.cardCode}#${f.abilityId}: ${f.reason}`);
   console.log(
     `Gauntlet: ${gauntlet.length - gauntletFailures.length}/${gauntlet.length} matches clean, ${seen(gauntlet)} abilities seen. Windows: ${windows.length - windowFailures.length}/${windows.length} clean.`,
@@ -565,6 +630,7 @@ function runCoverageGate(args: CliArgs, gauntlet: GauntletMatch[], baseline: str
   }
   return (
     failures.length === 0 &&
+    (rules?.drift.length ?? 0) === 0 &&
     variantFailures.length === 0 &&
     windowFailures.length === 0 &&
     gauntletFailures.length === 0

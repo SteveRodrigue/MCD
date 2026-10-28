@@ -24,7 +24,13 @@ export interface CardSummary {
 
 export interface PackMetadataResponse {
   packs: Array<{ code: string; name: string; pack_type_code?: string; size?: number }>;
-  sets: Array<{ code: string; name: string; card_set_type_code?: string }>;
+  sets: Array<{
+    code: string;
+    name: string;
+    card_set_type_code?: string;
+    pack_code?: string;
+    pack_codes?: string[];
+  }>;
   factions: Array<{ code: string; name: string; is_primary?: boolean }>;
   packFiles: string[];
 }
@@ -75,7 +81,31 @@ export class CardSupplementalService {
       ? fs.readdirSync(upstreamPackDir).filter((f) => f.endsWith('.json'))
       : [];
 
-    return { packs, sets, factions, packFiles };
+    const cardsMap = this.loadAllUpstreamCards();
+    const setPackMap = new Map<string, Set<string>>();
+    for (const { card } of cardsMap.values()) {
+      if (card && card.set_code && card.pack_code) {
+        let setPacks = setPackMap.get(card.set_code);
+        if (!setPacks) {
+          setPacks = new Set<string>();
+          setPackMap.set(card.set_code, setPacks);
+        }
+        setPacks.add(card.pack_code);
+      }
+    }
+
+    const enrichedSets = sets.map(
+      (s: { code: string; name: string; card_set_type_code?: string }) => {
+        const packCodes = Array.from(setPackMap.get(s.code) || []);
+        return {
+          ...s,
+          pack_code: packCodes[0],
+          pack_codes: packCodes,
+        };
+      },
+    );
+
+    return { packs, sets: enrichedSets, factions, packFiles };
   }
 
   private loadAllUpstreamCards(): Map<string, { card: any; packFile: string }> {

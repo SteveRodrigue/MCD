@@ -24,10 +24,9 @@ src-tauri/target/
 src-tauri/Cargo.lock
 
 # Logs & Game History
-logs/
-logs/**
-/logs/
-/logs/**
+# Simulation reports are tracked; everything else under logs/ is local
+**/logs/*
+!/logs/simulations/
 *.log
 
 # Local Card Image Cache

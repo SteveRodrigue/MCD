@@ -16,7 +16,7 @@ import {
   getActiveMainScheme,
 } from '@engine/models';
 import { matchesCardFilter } from '../../filters/card-filter';
-import { executeMinionAttackAgainstPlayer } from '../../pipeline/villain-phase';
+import { resolveQuickstrike } from '../../pipeline/villain-phase';
 import type { SearchZone } from '../../../data/supplemental/schema';
 import { drawPlayerCard } from '../../pipeline/deck-exhaustion';
 import { dealSurgeCard } from '../../pipeline/surge';
@@ -391,11 +391,6 @@ function handlePutIntoPlay(
 
       player.engagedMinions.push(cardInst as MinionCard & CardInstance);
 
-      const hasQuickstrike = hasKeyword(cardInst.card, Keyword.QUICKSTRIKE);
-      if (hasQuickstrike && player.currentForm === 'hero') {
-        executeMinionAttackAgainstPlayer(state, cardInst as MinionCard & CardInstance, player);
-      }
-
       if (reveal) {
         const abilities = cardInst.card.enrichment?.abilities || [];
         for (const ab of abilities) {
@@ -417,6 +412,9 @@ function handlePutIntoPlay(
         targetInstanceId: cardInst.instanceId,
         encounterCardInstance: cardInst,
       });
+
+      // Quickstrike resolves after the When Revealed abilities, if the minion is still engaged
+      if (player.engagedMinions.includes(cardInst)) resolveQuickstrike(state, cardInst, player);
     }
   }
 

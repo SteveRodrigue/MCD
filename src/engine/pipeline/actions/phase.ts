@@ -3,8 +3,7 @@ import { getPlayer } from '../legality-checker';
 import { expireLastingEffects } from '../player-phase';
 import { initiatePlayerPhaseCleanup } from '../player-phase-cleanup';
 import { peekDecisionPrompt } from '../prompt-queue';
-import { advanceVillainPhaseStep, executeMinionAttackAgainstPlayer } from '../villain-phase';
-import { hasEntityKeyword } from '../stat-calculator';
+import { advanceVillainPhaseStep, resolveQuickstrike } from '../villain-phase';
 import { applyThreatPlacement } from '../threat-pipeline';
 import { appendLog } from '../../state/game-log';
 import type { ActionHandler } from './types';
@@ -109,12 +108,10 @@ export const handleMinionEngagesPlayer: ActionHandler<'MINION_ENGAGES_PLAYER'> =
     player.engagedMinions.push(minionInst);
 
     // Quickstrike Keyword check (RR v1.8 p. 18)
-    if (hasEntityKeyword(minionInst, 'Quickstrike') && player.currentForm === 'hero') {
-      const updated = executeMinionAttackAgainstPlayer(nextState, minionInst, player, {
-        synchronousPolicy: 'TAKE_UNDEFENDED',
-      });
-      return { state: updated, result: { success: true, onomatopoeia: 'QUICKSTRIKE!' } };
-    }
+    const updated = resolveQuickstrike(nextState, minionInst, player, {
+      synchronousPolicy: 'TAKE_UNDEFENDED',
+    });
+    if (updated) return { state: updated, result: { success: true, onomatopoeia: 'QUICKSTRIKE!' } };
   }
 
   return { state: nextState, result: { success: true } };
@@ -149,12 +146,10 @@ export const handleRevealEncounterCard: ActionHandler<'REVEAL_ENCOUNTER_CARD'> =
   // Route card according to type
   if (encounterCard.card.type === CardType.MINION) {
     targetPlayer.engagedMinions.push(encounterCard);
-    if (hasEntityKeyword(encounterCard, 'Quickstrike') && targetPlayer.currentForm === 'hero') {
-      const updated = executeMinionAttackAgainstPlayer(nextState, encounterCard, targetPlayer, {
-        synchronousPolicy: 'TAKE_UNDEFENDED',
-      });
-      return { state: updated, result: { success: true, onomatopoeia: 'QUICKSTRIKE!' } };
-    }
+    const updated = resolveQuickstrike(nextState, encounterCard, targetPlayer, {
+      synchronousPolicy: 'TAKE_UNDEFENDED',
+    });
+    if (updated) return { state: updated, result: { success: true, onomatopoeia: 'QUICKSTRIKE!' } };
   }
 
   return { state: nextState, result: { success: true, onomatopoeia: 'REVEALED!' } };

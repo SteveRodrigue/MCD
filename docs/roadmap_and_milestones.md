@@ -273,7 +273,7 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
   - `npm run simulate` is now the card-ability coverage gate: a deterministic Stage-Setter drives all 161 Core Set abilities through the real engine (100% by a per-timing rule, zero `engine.stepError`), and a stats-driven Gauntlet of 20 full matches (coverage-seeking bot, scarcity-weighted decks, rotating prompt choices) fails the run on any crash, step error or broken invariant. The 100-game win-rate run stays as `--balance`, informational only.
 - [x] **Rule-Keyed Coverage ([Issue #472](https://github.com/SteveRodrigue/MCD/issues/472)) ✅ (Completed):**
   - Every entry of the Rules Reference v1.8 glossary maps, in `rule-observations.ts`, to what the simulation must show (a log key, ability timing, effect or trigger) or is declared untested with a reason. `simulation_summary.md` lists the rules no scenario observed and the declared-untested rules; the run fails only when the mapping drifts from `references/rules/rules_graph.json`.
-  - Rule scenarios (`rule-scenarios.ts`) stage 17 rule situations through real engine actions (Stun, Tough, Overkill, Patrol, Crisis, Restricted, Uses, victory and others), so no mapped rule is left unseen. A scenario that does not write the log keys it expects, or fails its own state check, fails the run.
+  - Rule scenarios (`rule-scenarios.ts`) stage 22 rule situations through real engine actions (Stun, Tough, Overkill, Patrol, Crisis, Restricted, Uses, victory, Guard, Max, Quickstrike, Permanent, consequential damage and others), so no mapped rule is left unseen. A scenario that does not write the log keys it expects, or fails its own state check, fails the run.
 
 ---
 

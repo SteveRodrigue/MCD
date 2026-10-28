@@ -1,5 +1,14 @@
-import { CardType, Keyword, StatusCard, type HeroCard, type NormalizedCard } from '../models';
-import type { GameState, LogEvents, CardInstance } from '../models';
+import {
+  CardType,
+  Keyword,
+  StatusCard,
+  type AllyCard,
+  type HeroCard,
+  type NormalizedCard,
+} from '../models';
+import type { GameAction, GameState, LogEvents, CardInstance } from '../models';
+import { dispatchAction } from '../pipeline';
+import { GUARD_BLOCK_REASON } from '../pipeline/target-restrictions';
 import { createCardInstance } from '../state/game-setup';
 import { executeEnemyAttackSynchronously } from '../pipeline/combat-pipeline';
 import { applyThreatPlacement, removeThreatFromScheme } from '../pipeline/threat-pipeline';
@@ -67,12 +76,20 @@ const printedWith = (card: NormalizedCard, name: string): NormalizedCard =>
     keywords: [...(card.keywords ?? []), keywordNamed(name)],
   }) as NormalizedCard;
 
-function newStage(options: StageOptions, scenarioId?: string): Stage {
+function newStage(
+  options: StageOptions,
+  scenarioId?: string,
+  deckExtras: readonly NormalizedCard[] = [],
+): Stage {
   const hero = options.catalog
     .getCardsBySet('spider_man')
     .find((c): c is HeroCard => c.type === CardType.HERO);
   if (!hero) throw new Error('[RuleScenarios] no hero in the spider_man set');
-  const stage = createStage({ card: hero, seed: SEED, setup: false, scenarioId }, options);
+  const stage = createStage(
+    { card: hero, seed: SEED, setup: false, scenarioId },
+    options,
+    deckExtras,
+  );
   setForm(player1(stage), 'hero');
   return stage;
 }
@@ -410,6 +427,135 @@ const usesExhausted: RuleScenario = {
   },
 };
 
+/** An action the rules forbid: it must be rejected for `reason`, and the state it leaves is what the scenario checks. */
+function refused(stage: Stage, action: GameAction, reason: string | RegExp): GameState {
+  const out = dispatchAction(stage.state, action);
+  if (out.result.success) throw new Error(`${action.type} was allowed`);
+  const error = out.result.error ?? '';
+  const matches = typeof reason === 'string' ? error === reason : reason.test(error);
+  if (!matches) throw new Error(`${action.type} was refused for '${error}', not '${reason}'`);
+  return stage.state;
+}
+
+const guardBlocksVillainAttack: RuleScenario = {
+  expects: [],
+  stage: (options) => {
+    const stage = newStage(options);
+    engage(stage, minionWith(stage, 'guard'));
+    setForm(player1(stage), 'hero');
+    return refused(
+      stage,
+      { type: 'BASIC_ATTACK', playerId: player1(stage).id, targetType: 'villain' },
+      GUARD_BLOCK_REASON,
+    );
+  },
+  verify: (state) =>
+    state.players[0].engagedMinions.some((m) => hasKeywordNamed(m.card, 'guard'))
+      ? undefined
+      : 'the Guard minion is no longer engaged',
+};
+
+const MAX_PER_PLAYER = 1;
+
+/** A second copy of a "Max 1 per player" card stays in hand: the first is in play. */
+const maxPerPlayer: RuleScenario = {
+  expects: [],
+  stage: (options) => {
+    const card = fixture(
+      'Max 1 per player card',
+      options.allCards.find(
+        (c) => c.maxPerPlayer === MAX_PER_PLAYER && !c.enrichment?.playUnderAnyPlayerControl,
+      ),
+    );
+    const stage = newStage(options);
+    const p = player1(stage);
+    p.tableau.push(instance(stage, card));
+    const second = instance(stage, card);
+    p.hand.push(second);
+    return refused(
+      stage,
+      {
+        type: 'PLAY_CARD',
+        playerId: p.id,
+        cardInstanceId: second.instanceId,
+        paymentCardInstanceIds: paymentIds(stage, second.instanceId),
+      },
+      /max \d+ per player/i,
+    );
+  },
+  verify: (state) => {
+    const p = state.players[0];
+    const inPlay = p.tableau.filter((c) => c.card.maxPerPlayer === MAX_PER_PLAYER).length;
+    const inHand = p.hand.filter((c) => c.card.maxPerPlayer === MAX_PER_PLAYER).length;
+    return inPlay === MAX_PER_PLAYER && inHand === 1
+      ? undefined
+      : `${inPlay} in play and ${inHand} in hand, expected ${MAX_PER_PLAYER} and 1`;
+  },
+};
+
+const quickstrikeMinion: RuleScenario = {
+  expects: ['encounter.reveal.minion', 'minion.attack.hit'],
+  stage: (options) => {
+    const stage = newStage(options);
+    const revealed = revealFixture(stage, minionWith(stage, 'quickstrike'));
+    return drainPrompts(revealed, SEED, prefer('pass', 'undefended'));
+  },
+};
+
+/** A card printed Permanent starts in play, not in the deck: setup puts it in the tableau. */
+const permanentCard: RuleScenario = {
+  expects: [],
+  stage: (options) => {
+    const upgrade = fixture(
+      'upgrade',
+      options.allCards.find((c) => c.type === CardType.UPGRADE),
+    );
+    return newStage(options, undefined, [printedWith(upgrade, 'permanent')]).state;
+  },
+  verify: (state) => {
+    const p = state.players[0];
+    const permanent = (c: CardInstance) => hasKeywordNamed(c.card, 'permanent');
+    if (!p.tableau.some(permanent)) return 'the Permanent card did not start in play';
+    return [...p.deck, ...p.hand, ...p.discard].some(permanent)
+      ? 'the Permanent card was also in the deck, hand or discard'
+      : undefined;
+  },
+};
+
+/** An ally that attacks takes the damage its ATK field's icons print, after the attack resolves. */
+const consequentialDamage: RuleScenario = {
+  expects: ['player.action.allyAttack'],
+  stage: (options) => {
+    const card = fixture(
+      'ally with consequential damage',
+      options.allCards.find((c) => {
+        const ally = c as AllyCard;
+        return (
+          c.type === CardType.ALLY &&
+          (ally.attackCost ?? 0) > 0 &&
+          (ally.health ?? 0) > (ally.attackCost ?? 0)
+        );
+      }),
+    );
+    const stage = newStage(options);
+    const ally = instance(stage, card);
+    player1(stage).allies.push(ally);
+    return dispatchOrThrow(stage.state, {
+      type: 'ALLY_ATTACK',
+      playerId: player1(stage).id,
+      allyInstanceId: ally.instanceId,
+      targetType: 'villain',
+    });
+  },
+  verify: (state) => {
+    const ally = state.players[0].allies[0];
+    if (!ally) return 'the ally left play';
+    const expected = (ally.card as AllyCard).attackCost;
+    const damage = ally.tokens?.damage ?? 0;
+    return damage === expected ? undefined : `ally has ${damage} damage, expected ${expected}`;
+  },
+};
+
 const environmentSetup: RuleScenario = {
   expects: ['scenario.setup.environment'],
   stage: (options) => newStage(options, 'ultron').state,
@@ -433,6 +579,11 @@ export const RULE_SCENARIOS = {
   'restricted-limit': restrictedLimit,
   'uses-exhausted': usesExhausted,
   'environment-setup': environmentSetup,
+  'guard-blocks': guardBlocksVillainAttack,
+  'max-per-player': maxPerPlayer,
+  'quickstrike-minion': quickstrikeMinion,
+  'permanent-card': permanentCard,
+  'consequential-damage': consequentialDamage,
 } as const satisfies Record<string, RuleScenario>;
 
 export type RuleScenarioId = keyof typeof RULE_SCENARIOS;

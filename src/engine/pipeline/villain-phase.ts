@@ -25,6 +25,7 @@ import {
   getEffectiveVillainStats,
   getEffectiveMinionScheme,
   consumeEntityStatusCards,
+  hasEntityKeyword,
 } from './stat-calculator';
 import { recordCardPlay, recordBasicAction } from './stats';
 import { initiateEnemyAttack, CombatOptions } from './combat-pipeline';
@@ -157,6 +158,21 @@ export function executeMinionAttackAgainstPlayer(
   );
 
   return nextState;
+}
+
+/**
+ * Quickstrike (RR v1.8 p. 18): a minion that engages a hero-form player attacks that player right away.
+ * Returns the state after the attack, or undefined when the minion has no Quickstrike or the player is
+ * in alter-ego form.
+ */
+export function resolveQuickstrike(
+  state: GameState,
+  minion: CardInstance,
+  player: PlayerState,
+  options?: CombatOptions,
+): GameState | undefined {
+  if (player.currentForm !== 'hero' || !hasEntityKeyword(minion, 'Quickstrike')) return undefined;
+  return executeMinionAttackAgainstPlayer(state, minion, player, options);
 }
 
 /**
@@ -628,6 +644,9 @@ export function resolveActiveEncounterCardAfterInterrupt(
       targetInstanceId: cardInstance.instanceId,
       encounterCardInstance: cardInstance,
     });
+    // Quickstrike resolves after the When Revealed abilities, if the minion is still engaged
+    if (player.engagedMinions.includes(cardInstance))
+      resolveQuickstrike(state, cardInstance, player);
   } else if (card.type === CardType.SIDE_SCHEME) {
     const baseThreat = placeSideScheme(state, cardInstance);
     appendLog(state, {

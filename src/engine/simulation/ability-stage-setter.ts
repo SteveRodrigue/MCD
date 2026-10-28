@@ -83,6 +83,8 @@ export interface StageOutcome {
   fingerprint?: string;
   /** The last log keys of a failed run, to see what the engine did instead. */
   trace?: string[];
+  /** Every distinct log key an `ok` run wrote, sorted: the rule-coverage evidence. */
+  logKeys?: string[];
 }
 
 const PLAYER_ID = 'p1';
@@ -507,6 +509,11 @@ function fingerprintOf(state: GameState): string {
     .padStart(8, '0');
 }
 
+/** The distinct log keys a state holds, sorted, so the same run always reports the same evidence. */
+export function logKeysOf(state: GameState): string[] {
+  return [...new Set(state.log.map((entry) => entry.key))].sort();
+}
+
 /** Verifies a finished run and decides what evidence covers the ability. */
 function conclude(
   target: AbilityTarget,
@@ -527,6 +534,7 @@ function conclude(
       evidence: 'used-counter',
       verification,
       fingerprint: fingerprintOf(state),
+      logKeys: logKeysOf(state),
     };
   }
   // An "Attach to ..." ability runs as the card is played and records no use of its own
@@ -537,6 +545,7 @@ function conclude(
       evidence: 'digest-delta',
       verification,
       fingerprint: fingerprintOf(state),
+      logKeys: logKeysOf(state),
     };
   }
   return { ok: false, variant, reason: 'abilitiesUsed did not increment', verification, trace };
@@ -884,6 +893,9 @@ const SCENARIOS: Record<string, Scenario> = {
   HOST_ATTACK_ENDED: villainAttack,
   ATTACK_DEFENDED: villainAttack,
 };
+
+/** The triggers a real engine action can open; the rule-coverage table may only name these. */
+export const STAGED_TRIGGERS: readonly string[] = Object.keys(SCENARIOS);
 
 const isPlayerCard = (type: CardType) =>
   [CardType.ALLY, CardType.UPGRADE, CardType.SUPPORT, CardType.EVENT, CardType.RESOURCE].includes(
@@ -1350,6 +1362,7 @@ function exerciseResource(
       evidence: 'resource',
       verification,
       fingerprint: fingerprintOf(state),
+      logKeys: logKeysOf(state),
     };
   }
   return { ok: false, variant, reason: 'no card could be played with only this resource source' };
@@ -1399,6 +1412,7 @@ function exerciseSetup(
     evidence: 'setup',
     verification,
     fingerprint: fingerprintOf(settled),
+    logKeys: logKeysOf(settled),
   };
 }
 
@@ -1450,6 +1464,7 @@ function exerciseSpecial(
     evidence: 'special',
     verification,
     fingerprint: fingerprintOf(state),
+    logKeys: logKeysOf(state),
   };
 }
 
@@ -1480,6 +1495,8 @@ export interface TriggerWindowResult {
    * `unobserved`: one side never resolved in this window, so the order rule had nothing to judge.
    */
   order?: 'checked' | 'unobserved';
+  /** Every distinct log key an `ok` window wrote, sorted: the rule-coverage evidence. */
+  logKeys?: string[];
 }
 
 const isForced = (target: AbilityTarget) => target.ability.timing.startsWith('FORCED_');
@@ -1548,7 +1565,13 @@ export function exerciseTriggerWindow(
       targets,
     );
     if (order.violation) return fail(order.violation);
-    return { trigger, abilities, ok: true, order: order.checked ? 'checked' : 'unobserved' };
+    return {
+      trigger,
+      abilities,
+      ok: true,
+      order: order.checked ? 'checked' : 'unobserved',
+      logKeys: logKeysOf(state),
+    };
   } catch (error) {
     return fail(`threw: ${error instanceof Error ? error.message : error}`);
   }

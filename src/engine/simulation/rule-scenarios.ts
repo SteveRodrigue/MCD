@@ -52,12 +52,19 @@ const prefer =
 const hasKeywordNamed = (card: NormalizedCard, name: string) =>
   (card.keywords ?? []).some((k) => String(k).toLowerCase().startsWith(name));
 
-/** A catalog card re-printed with keywords the core set never prints (Patrol, Piercing, Restricted). */
-const withKeywords = (card: NormalizedCard, tag: string, keywords: readonly Keyword[]) =>
+/** The keyword a rule is named after: a scenario asks for 'patrol' and prints it on a fixture, it never reads the rule. */
+const keywordNamed = (name: string): Keyword => {
+  const keyword = Object.values(Keyword).find((k) => k.toLowerCase() === name);
+  if (!keyword) throw new Error(`[RuleScenarios] '${name}' is not a keyword`);
+  return keyword;
+};
+
+/** A catalog card re-printed with a keyword the Core set never prints (Patrol, Piercing, Restricted). */
+const printedWith = (card: NormalizedCard, name: string): NormalizedCard =>
   ({
     ...card,
-    code: `${card.code}_${tag}`,
-    keywords: [...(card.keywords ?? []), ...keywords],
+    code: `${card.code}_${name}`,
+    keywords: [...(card.keywords ?? []), keywordNamed(name)],
   }) as NormalizedCard;
 
 function newStage(options: StageOptions, scenarioId?: string): Stage {
@@ -140,9 +147,9 @@ const retaliateMinion: RuleScenario = {
 };
 
 /** A minion printed with a keyword it does not have in the core set, engaged with the player. */
-function engageWith(stage: Stage, keyword: Keyword, tag: string, stats = {}): CardInstance {
+function engageWith(stage: Stage, keyword: string, stats = {}): CardInstance {
   const base = fixture('minion', stage.fixtures.minion);
-  return engage(stage, { ...withKeywords(base, tag, [keyword]), ...stats } as NormalizedCard);
+  return engage(stage, { ...printedWith(base, keyword), ...stats } as NormalizedCard);
 }
 
 const piercingAttack: RuleScenario = {
@@ -150,7 +157,7 @@ const piercingAttack: RuleScenario = {
   stage: (options) => {
     const stage = newStage(options);
     player1(stage).statusCards.push(StatusCard.TOUGH);
-    const minion = engageWith(stage, Keyword.PIERCING, 'piercing');
+    const minion = engageWith(stage, 'piercing');
     return executeEnemyAttackSynchronously(
       stage.state,
       { type: 'MINION', card: minion },
@@ -168,7 +175,7 @@ const overkillAttack: RuleScenario = {
     // One hit point left, so the attack's excess damage spills over to the hero
     ally.tokens = { ...ally.tokens, damage: getEffectiveMinionHitPoints(stage.state, ally) - 1 };
     player1(stage).allies.push(ally);
-    const minion = engageWith(stage, Keyword.OVERKILL, 'overkill', { attack: 5 });
+    const minion = engageWith(stage, 'overkill', { attack: 5 });
     return executeEnemyAttackSynchronously(
       stage.state,
       { type: 'MINION', card: minion },
@@ -198,7 +205,7 @@ const patrolBlocks: RuleScenario = {
   expects: ['card.effect.threatBlockedByPatrol'],
   stage: (options) => {
     const stage = newStage(options);
-    engageWith(stage, Keyword.PATROL, 'patrol');
+    engageWith(stage, 'patrol');
     return thwartMainScheme(stage);
   },
 };
@@ -300,22 +307,30 @@ const victory: RuleScenario = {
 };
 
 /**
- * Two copies of an optional response that readies the hero, opened by the trigger they share: the
- * first copy's ready takes away the second's target, so the second is skipped with no valid target.
+ * Two copies of an optional event response, opened by the trigger they share. When the first copy
+ * takes away the second's target (a ready needs an exhausted hero), the second is skipped. The
+ * first catalog event that does so is the fixture: found by what the window wrote, not by effect.
  */
 const noValidTarget: RuleScenario = {
   expects: ['ability.skipped.noValidTarget'],
   stage: (options) => {
-    const readyResponse = buildAbilityInventory(options.allCards).find(
+    const candidates = buildAbilityInventory(options.allCards).filter(
       (t) =>
         t.card.type === CardType.EVENT &&
         t.ability.trigger !== undefined &&
-        STAGED_TRIGGERS.includes(t.ability.trigger) &&
-        t.ability.steps.some((step) => step.effect === 'READY'),
+        STAGED_TRIGGERS.includes(t.ability.trigger),
     );
-    if (!readyResponse)
-      throw new Error('no event readies the hero in response to a staged trigger');
-    return openTriggerWindow([readyResponse, readyResponse], options).state;
+    let last: GameState | undefined;
+    for (const candidate of candidates) {
+      try {
+        last = openTriggerWindow([candidate, candidate], options).state;
+      } catch {
+        continue; // this event cannot be staged twice: try the next one
+      }
+      if (logKeysOf(last).includes('ability.skipped.noValidTarget')) return last;
+    }
+    if (!last) throw new Error('no event response could be staged twice');
+    return last;
   },
 };
 
@@ -331,7 +346,7 @@ const restrictedLimit: RuleScenario = {
       stage.options.allCards.find((c) => c.type === CardType.UPGRADE),
     );
     const restricted = {
-      ...withKeywords(upgrade, 'restricted', [Keyword.RESTRICTED]),
+      ...printedWith(upgrade, 'restricted'),
       cost: 1,
       enrichment: undefined,
     } as NormalizedCard;

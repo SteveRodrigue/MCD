@@ -160,8 +160,23 @@ function heroSetFor(card: NormalizedCard, catalog: CardRepository): string {
   return hero ? set : 'spider_man';
 }
 
+/** What a stage is built around: the card whose hero set seats the player, and how the game starts. */
+export interface StageSubject {
+  card: NormalizedCard;
+  seed: string;
+  /** Setup abilities run before the mulligan, so the stage stops at the freshly set-up game. */
+  setup: boolean;
+  scenarioId?: string;
+}
+
+export const subjectOf = (target: AbilityTarget): StageSubject => ({
+  card: target.card,
+  seed: `stage:${target.cardCode}:${target.abilityId}`,
+  setup: target.ability.timing === 'SETUP',
+});
+
 export function createStage(
-  target: AbilityTarget,
+  subject: StageSubject,
   options: StageOptions,
   deckExtras: readonly NormalizedCard[] = [],
 ): Stage {
@@ -169,7 +184,8 @@ export function createStage(
   // Instance ids are part of the state digest, so each stage starts the counter from zero
   resetInstanceCounter();
   const fixtures = pickFixtures(allCards);
-  const setCode = heroSetFor(target.card, catalog);
+  const scenarioId = subject.scenarioId ?? 'rhino';
+  const setCode = heroSetFor(subject.card, catalog);
   const setCards = catalog.getCardsBySet(setCode);
   const hero = setCards.find((c) => c.type === CardType.HERO) as HeroCard;
   const alterEgo = setCards.find((c) => c.type === CardType.ALTER_EGO) as AlterEgoCard;
@@ -197,15 +213,15 @@ export function createStage(
 
   const state = setupGame({
     catalog,
-    scenarioId: 'rhino',
+    scenarioId,
     players,
-    encounterCards: catalog.getCardsBySet('rhino'),
-    skipMulligan: target.ability.timing !== 'SETUP',
-    seed: options.seed ?? `stage:${target.cardCode}:${target.abilityId}`,
+    encounterCards: catalog.getCardsBySet(scenarioId),
+    skipMulligan: !subject.setup,
+    seed: options.seed ?? subject.seed,
     shuffleFn: (arr) => arr,
   });
   const stage: Stage = { state, options, fixtures };
-  if (target.ability.timing === 'SETUP') return stage;
+  if (subject.setup) return stage;
   const player = state.players[0];
   player.hand = [];
   for (let i = 0; i < PAYER_COUNT; i++) player.hand.push(createPayer(fixtures.filler));
@@ -225,7 +241,7 @@ const SHARED_KEYS = new Set([
 ]);
 
 /** A mutable deep copy of a (frozen) dispatch result, so the stage can keep sculpting it. */
-function thaw<T>(value: T, key?: string): T {
+export function thaw<T>(value: T, key?: string): T {
   if (value === null || typeof value !== 'object' || (key && SHARED_KEYS.has(key))) return value;
   if (Array.isArray(value)) return value.map((v) => thaw(v)) as unknown as T;
   const copy: Record<string, unknown> = {};
@@ -233,11 +249,11 @@ function thaw<T>(value: T, key?: string): T {
   return copy as T;
 }
 
-function player1(stage: Stage): PlayerState {
+export function player1(stage: Stage): PlayerState {
   return stage.state.players[0];
 }
 
-function setForm(player: PlayerState, form: 'hero' | 'alter_ego'): void {
+export function setForm(player: PlayerState, form: 'hero' | 'alter_ego'): void {
   player.currentForm = form;
   player.activeFormCard = form === 'hero' ? player.hero : player.alterEgo;
 }
@@ -410,7 +426,7 @@ function buildRepairs(target: AbilityTarget): Repair[] {
   return repairs;
 }
 
-function paymentIds(stage: Stage, exceptId?: string): string[] {
+export function paymentIds(stage: Stage, exceptId?: string): string[] {
   return player1(stage)
     .hand.filter((c) => c.card.code === PAYER_CODE && c.instanceId !== exceptId)
     .map((c) => c.instanceId);
@@ -424,7 +440,7 @@ function discardIds(stage: Stage, count: number, exceptId?: string): string[] {
 }
 
 /** Keeps the hand stocked with payers and plain discardable cards after a card was played. */
-function restock(stage: Stage): void {
+export function restock(stage: Stage): void {
   const p = player1(stage);
   while (p.hand.filter((c) => c.card.code === PAYER_CODE).length < PAYER_COUNT) {
     p.hand.push(createPayer(stage.fixtures.filler));
@@ -560,7 +576,7 @@ function exercisePlayerAbility(
   options: StageOptions,
   variant: string,
 ): StageOutcome {
-  const stage = createStage(target, options);
+  const stage = createStage(subjectOf(target), options);
   const placed = placeSource(stage, target);
   if ('error' in placed) return { ok: false, variant, reason: placed.error };
 
@@ -684,7 +700,7 @@ function exerciseReveal(
   options: StageOptions,
   variant: string,
 ): StageOutcome {
-  const stage = createStage(target, options);
+  const stage = createStage(subjectOf(target), options);
   primeForEffects(stage, target);
   const p = player1(stage);
   p.dealtEncounterCards.push(createCardInstance(target.card, PLAYER_ID));
@@ -702,7 +718,7 @@ function exerciseBoost(
   options: StageOptions,
   variant: string,
 ): StageOutcome {
-  const stage = createStage(target, options);
+  const stage = createStage(subjectOf(target), options);
   primeForEffects(stage, target);
   const villain = stage.state.villains[0];
   villain.facedownBoostCards = [createCardInstance(target.card)];
@@ -746,7 +762,7 @@ interface ScenarioContext {
 
 type Scenario = (stage: Stage, ctx: ScenarioContext) => GameState;
 
-const dispatchOrThrow = (state: GameState, action: GameAction): GameState => {
+export const dispatchOrThrow = (state: GameState, action: GameAction): GameState => {
   const out = dispatchAction(state, action);
   if (!out.result.success) {
     throw new Error(`scenario action ${action.type} rejected: ${out.result.error}`);
@@ -755,13 +771,17 @@ const dispatchOrThrow = (state: GameState, action: GameAction): GameState => {
 };
 
 /** Reveals a fixture card as the next encounter card of the stage player. */
-function revealFixture(stage: Stage, card: NormalizedCard | undefined): GameState {
+export function revealFixture(stage: Stage, card: NormalizedCard | undefined): GameState {
   if (!card) throw new Error('no fixture card for the reveal scenario');
   player1(stage).dealtEncounterCards.push(createCardInstance(card, PLAYER_ID));
   return step4_revealEncounterCards(stage.state);
 }
 
-function basicAttack(stage: Stage, targetType: 'villain' | 'minion', targetInstanceId?: string) {
+export function basicAttack(
+  stage: Stage,
+  targetType: 'villain' | 'minion',
+  targetInstanceId?: string,
+) {
   setForm(player1(stage), 'hero');
   return dispatchOrThrow(stage.state, {
     type: 'BASIC_ATTACK',
@@ -810,7 +830,7 @@ function defeatEnemy(stage: Stage, ctx: ScenarioContext): GameState {
   return basicAttack(stage, 'minion', inst.instanceId);
 }
 
-function endRound(stage: Stage): GameState {
+export function endRound(stage: Stage): GameState {
   let state = stage.state;
   for (const p of state.players) {
     state = dispatchOrThrow(state, { type: 'END_PLAYER_TURN', playerId: p.id });
@@ -903,7 +923,7 @@ const isPlayerCard = (type: CardType) =>
   );
 
 /** Sculpts the source card into the zone its type lives in (events wait in hand). */
-function installInPlay(stage: Stage, inst: CardInstance, type: CardType): void {
+export function installInPlay(stage: Stage, inst: CardInstance, type: CardType): void {
   const p = player1(stage);
   const villain = stage.state.villains[0];
   switch (type) {
@@ -979,7 +999,7 @@ function exerciseTriggered(
       (card.type === CardType.OBLIGATION || card.type === CardType.TREACHERY));
   if (revealsItself) return exerciseReveal(target, options, variant);
 
-  const stage = createStage(target, options);
+  const stage = createStage(subjectOf(target), options);
   primeForEffects(stage, target);
   const p = player1(stage);
   const ownForm: 'hero' | 'alter_ego' | undefined =
@@ -1140,7 +1160,7 @@ function exerciseConstant(
   options: StageOptions,
   variant: string,
 ): StageOutcome {
-  const stage = createStage(target, options);
+  const stage = createStage(subjectOf(target), options);
   primeForEffects(stage, target);
   const p = player1(stage);
   const { card } = target;
@@ -1291,7 +1311,7 @@ function exerciseResource(
   options: StageOptions,
   variant: string,
 ): StageOutcome {
-  const stage = createStage(target, options);
+  const stage = createStage(subjectOf(target), options);
   primeForEffects(stage, target);
   const p = player1(stage);
   p.hand = [];
@@ -1383,7 +1403,7 @@ function exerciseSetup(
     )
     .find(Boolean);
   const deckExtras = witness ? [witness] : [];
-  const stage = createStage(target, options, deckExtras);
+  const stage = createStage(subjectOf(target), options, deckExtras);
   const { state } = stage;
   const seed = options.seed ?? target.cardCode;
   // Setup abilities resolve once the opening hands are kept (the mulligan step)
@@ -1431,7 +1451,7 @@ function exerciseSpecial(
     ),
   );
   if (!trigger) return { ok: false, variant, reason: 'no card plays Special abilities' };
-  const stage = createStage(target, options);
+  const stage = createStage(subjectOf(target), options);
   primeForEffects(stage, target);
   for (const repair of buildRepairs(target)) repair.apply(stage);
   const p = player1(stage);
@@ -1525,6 +1545,34 @@ export function windowOrder(
 }
 
 /**
+ * Stages every target in play and opens the trigger window they share through a real engine
+ * action, then resolves each prompt. Returns the state before and after, for checking or reading.
+ */
+export function openTriggerWindow(
+  targets: readonly AbilityTarget[],
+  options: StageOptions,
+): { before: ReturnType<typeof digestState>; state: GameState } {
+  const trigger = targets[0].ability.trigger ?? '';
+  const stage = createStage(subjectOf(targets[0]), options);
+  const p = player1(stage);
+  const wantsHero = targets.some((t) => t.ability.timing.startsWith('HERO_'));
+  const wantsEgo = targets.some((t) => t.ability.timing.startsWith('ALTER_EGO_'));
+  if (wantsHero || !wantsEgo) setForm(p, 'hero');
+  else setForm(p, 'alter_ego');
+  const staged: { target: AbilityTarget; inst: CardInstance }[] = [];
+  for (const target of targets) {
+    const inst = createCardInstance(target.card, PLAYER_ID);
+    installInPlay(stage, inst, target.card.type);
+    primeForEffects(stage, target, inst);
+    staged.push({ target, inst });
+  }
+  const before = digestState(stage.state);
+  const first = staged[0];
+  const opened = SCENARIOS[trigger](stage, { target: first.target, source: first.inst });
+  return { before, state: drainPrompts(opened, options.seed ?? trigger) };
+}
+
+/**
  * Stages several abilities that react to the same trigger, opens the window once through the real
  * engine action, and checks it resolves cleanly: no step error, no stuck prompt, invariants hold,
  * and a forced ability never resolves after an optional one (RR v1.8 "Forced" abilities go first).
@@ -1537,24 +1585,7 @@ export function exerciseTriggerWindow(
   const abilities = targets.map((t) => `${t.cardCode}#${t.abilityId}`);
   const fail = (reason: string): TriggerWindowResult => ({ trigger, abilities, ok: false, reason });
   try {
-    const stage = createStage(targets[0], options);
-    const p = player1(stage);
-    const wantsHero = targets.some((t) => t.ability.timing.startsWith('HERO_'));
-    const wantsEgo = targets.some((t) => t.ability.timing.startsWith('ALTER_EGO_'));
-    if (wantsHero || !wantsEgo) setForm(p, 'hero');
-    else setForm(p, 'alter_ego');
-    const staged: { target: AbilityTarget; inst: CardInstance }[] = [];
-    for (const target of targets) {
-      const inst = createCardInstance(target.card, PLAYER_ID);
-      installInPlay(stage, inst, target.card.type);
-      primeForEffects(stage, target, inst);
-      staged.push({ target, inst });
-    }
-    const before = digestState(stage.state);
-    const scenario = SCENARIOS[trigger];
-    const first = staged[0];
-    let state = scenario(stage, { target: first.target, source: first.inst });
-    state = drainPrompts(state, options.seed ?? trigger);
+    const { before, state } = openTriggerWindow(targets, options);
     const verification = verifyAbilityExecution({ id: trigger, steps: [] }, before, state, {
       checkDeltas: false,
     });

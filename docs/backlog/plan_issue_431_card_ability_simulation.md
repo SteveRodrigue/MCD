@@ -20,8 +20,8 @@
 3. **"Covered" is defined per timing (§4.1).** Not every ability has a use event (22 `CONSTANT`, plus `RESOURCE`, `SETUP`, `SPECIAL`), so each timing class has an explicit observable.
 4. **Fail on unsupported ability.** The inventory is auto-built from card data. An ability the Stage-Setter cannot drive fails the gate with a named reason (card, ability, unmet precondition). There is no allowlist.
 5. **Stats-Driven Prioritization (Phase 2, `stats/card_play_stats.json`):**
-   - The Gauntlet reads [card_play_stats.json](../../stats/card_play_stats.json) as its baseline scarcity ledger (`scarcity = 1 / (1 + uses)`), drafts legal hero/aspect decks weighted toward under-played cards and combo pairs, and protects under-tested cards from being spent as resources.
-   - `npm run simulate` writes its coverage report and replay catalog to `logs/simulations/` and merges back into [card_play_stats.json](../../stats/card_play_stats.json) only when `--update-stats` is passed, so automated runs never pollute live human stats.
+   - The Gauntlet reads `stats/card_play_stats.json` as its baseline scarcity ledger (`scarcity = 1 / (1 + uses)`), drafts legal hero/aspect decks weighted toward under-played cards and combo pairs, and protects under-tested cards from being spent as resources.
+   - `npm run simulate` writes its coverage report and replay catalog to `logs/simulations/` and merges back into `stats/card_play_stats.json` only when `--update-stats` is passed, so automated runs never pollute live human stats.
 6. **Combo Prerequisite Enabler & Branch-Rotating Prompt Resolver (Phase 2):** The bot performs enabling actions (form flips, safe undefended hits, setup pieces before payoffs), and the prompt resolver rotates across `PLAYER_CHOICE` / modal options so every choice branch is exercised.
 7. **Unified `chooseBotAction` & Repurposed Roadmap 1.4 Gate:** Keep one `chooseBotAction` and `BOT_POLICY` in [player-bot.ts](../../src/engine/simulation/player-bot.ts). Roadmap 1.4 changes from a win-rate gate to a **100% Core Set Card-Ability Coverage & Zero-Error Gate**. Win rate by hero, aspect, and difficulty stays in `simulation_summary.md` as a **non-gating informational report**, labelled as non-representative play because the coverage bot deliberately takes damage and holds cards.
 8. **Reproducibility:** Every tested match or combo yields a self-contained `SimulationRecipe` (§4.5) saved in `logs/simulations/replay_catalog.json` for `--replay <id>` and `--card <code>`.
@@ -77,7 +77,7 @@
    | `SPECIAL` (4) | Defined per ability in the Stage-Setter; each of the 4 is listed explicitly in the test with its observable |
 
    "Enters play" and "defeated" are **triggers** (`ENTERS_PLAY`, `DEFEATED`, `CHARACTER_DEFEATED`), not timings. `WHEN_PLAYED`, `SURGE`, and `WHEN_DEFEATED` do not occur as Core timings.
-3. **Ledger API:** `untestedAbilities(): Array<{ cardCode; abilityId }>`, updated live. Scarcity (`cardScarcity = 1 / (1 + playedCount)`, `abilityScarcity = 1 / (1 + abilityCount)`) is used only by Phase 2 and is initialized from [card_play_stats.json](../../stats/card_play_stats.json) (zeroed in isolated tests).
+3. **Ledger API:** `untestedAbilities(): Array<{ cardCode; abilityId }>`, updated live. Scarcity (`cardScarcity = 1 / (1 + playedCount)`, `abilityScarcity = 1 / (1 + abilityCount)`) is used only by Phase 2 and is initialized from `stats/card_play_stats.json` (zeroed in isolated tests).
 4. **`SimulationRecipe` type** lives here (fields in §4.5).
 
 ### 4.2 Scarcity-Weighted Matchmaker & Combo Drafter (`src/engine/simulation/scarcity-matchmaker.ts`) — Phase 2
@@ -121,7 +121,7 @@ Extends `BOT_POLICY`, `chooseBotAction`, `chooseFormChange`, `chooseDefenderOpti
 - `npm run simulate -- --card <cardCode>` (Phase 1): Stage-Setter for that card, printing each ability's before/after delta and replay command.
 - `npm run simulate -- --replay <recipeIdOrSeed>` (Phase 1): replays a recorded recipe and verifies identical state and coverage output.
 - `npm run simulate -- --seed <n>` (Phase 1): seeds the run.
-- `npm run simulate -- --update-stats` (Phase 2): merges the run's `StatsDelta` into [card_play_stats.json](../../stats/card_play_stats.json).
+- `npm run simulate -- --update-stats` (Phase 2): merges the run's `StatsDelta` into `stats/card_play_stats.json`.
 
 ### 4.6 Extra Invariants (`src/engine/state/state-validator.ts`) — Phase 1
 

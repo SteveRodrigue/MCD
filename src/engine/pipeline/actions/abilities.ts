@@ -270,6 +270,8 @@ export const handleUseCardAbility: ActionHandler<'USE_CARD_ABILITY'> = (
   const effectRes = executeEffect(nextState, ability, {
     playerId: action.playerId,
     sourceCardInstance: sourceCardSnapshot || targetCardInst,
+    // An identity card has no instance; its code names the source so its ability use is counted
+    ...(isIdentity && { sourceCardId: player.activeFormCard.code }),
     chosenTargetInstanceId: abilityTargetId,
     ...costContext,
   });

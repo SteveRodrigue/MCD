@@ -781,6 +781,8 @@ export function resolveDecisionPrompt(
     const effectContext: EffectExecutionContext = {
       playerId,
       sourceCardInstance: sourceCardInst,
+      // An identity ability has no card instance; the prompt's card code names the source for stats
+      ...(!sourceCardInst && prompt.sourceCardCode && { sourceCardId: prompt.sourceCardCode }),
       eventTargetType: optContext?.targetType,
       eventTargetInstanceId: optContext?.targetInstanceId,
       threatAmount: pendingPlacement ? pendingPlacement.amount : optContext?.threatAmount,

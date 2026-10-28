@@ -1,12 +1,15 @@
-import { GameState, GamePhase, getActiveVillain } from '@engine/models';
+import { GameState, GamePhase, getActiveVillain, PendingDecisionPrompt } from '@engine/models';
 import { dispatchAction, peekDecisionPrompt } from '../pipeline';
 import { chooseBotAction, chooseDefenderOption } from './player-bot';
 import { assertGameStateInvariants } from '../state/state-validator';
+import { assertNoStepErrors } from './effect-delta-verifier';
 
 export interface MatchSimulationOptions {
   maxRounds?: number;
   maxActionsPerTurn?: number;
   seed?: string;
+  /** Tolerate `engine.stepError` log entries; only for tests of the error log itself. */
+  allowStepErrors?: boolean;
 }
 
 export interface MatchSimulationResult {
@@ -25,7 +28,11 @@ export interface MatchSimulationResult {
 /**
  * Automatically and legally resolves a single pending decision prompt using heuristic defaults.
  */
-function resolveDecisionPromptHeuristically(state: GameState, seed: string): GameState {
+function resolveDecisionPromptHeuristically(
+  state: GameState,
+  seed: string,
+  pickOption?: PromptOptionPicker,
+): GameState {
   const prompt = peekDecisionPrompt(state);
   if (!prompt) return state;
 
@@ -94,7 +101,7 @@ function resolveDecisionPromptHeuristically(state: GameState, seed: string): Gam
   }
 
   // 3. Defender declaration: defend only when the hit is dangerous (the bot's defender policy)
-  const defenderId = chooseDefenderOption(state, prompt);
+  const defenderId = pickOption?.(prompt) ?? chooseDefenderOption(state, prompt);
   if (defenderId) {
     const { state: nextState, result } = dispatchAction(state, {
       type: 'RESOLVE_DECISION_PROMPT',
@@ -123,8 +130,15 @@ function resolveDecisionPromptHeuristically(state: GameState, seed: string): Gam
     );
   }
 
+  // A caller-chosen option is tried first (e.g. the Stage-Setter walking every PLAYER_CHOICE branch)
+  const preferredId = pickOption?.(prompt);
+  const ordered = preferredId
+    ? [...enabledOptions].sort(
+        (a, b) => Number(b.id === preferredId) - Number(a.id === preferredId),
+      )
+    : enabledOptions;
   const rejections: string[] = [];
-  for (const candidate of enabledOptions) {
+  for (const candidate of ordered) {
     const { state: nextState, result } = dispatchAction(state, {
       type: 'RESOLVE_DECISION_PROMPT',
       playerId: prompt.playerId,
@@ -141,10 +155,17 @@ function resolveDecisionPromptHeuristically(state: GameState, seed: string): Gam
   );
 }
 
+/** Picks the option id to try first for a prompt, or `undefined` to keep the default order. */
+export type PromptOptionPicker = (prompt: PendingDecisionPrompt) => string | undefined;
+
 /**
  * Drain all queued decision prompts iteratively until empty or game ends.
  */
-function drainPrompts(currentState: GameState, seed: string): GameState {
+export function drainPrompts(
+  currentState: GameState,
+  seed: string,
+  pickOption?: PromptOptionPicker,
+): GameState {
   let s = currentState;
   let count = 0;
   const MAX_ATTEMPTS = 50;
@@ -156,7 +177,7 @@ function drainPrompts(currentState: GameState, seed: string): GameState {
         `[MatchSimulator] Exceeded max prompt resolution attempts (${MAX_ATTEMPTS}) on prompt '${prompt?.title}' (ID: ${prompt?.promptId}) with seed: ${seed}`,
       );
     }
-    s = resolveDecisionPromptHeuristically(s, seed);
+    s = resolveDecisionPromptHeuristically(s, seed, pickOption);
     count++;
   }
 
@@ -236,11 +257,14 @@ export function runMatch(
 
     if (state.roundNumber !== roundBefore) {
       assertGameStateInvariants(state);
+      if (!options.allowStepErrors)
+        assertNoStepErrors(state, `round ${state.roundNumber} (seed: ${seed})`);
     }
   }
 
   // Invariant assertion at match end
   assertGameStateInvariants(state);
+  if (!options.allowStepErrors) assertNoStepErrors(state, `match end (seed: ${seed})`);
 
   const finalWinner = state.winner || 'TIMEOUT';
 

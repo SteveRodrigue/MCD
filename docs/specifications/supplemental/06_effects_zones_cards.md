@@ -123,7 +123,7 @@ The step always returns `discardedCards` (all players, in seat order) and `value
 
 #### `ENCOUNTER_DECK` with `mode: "UNTIL_MATCH"` (_Masterplan_ `01192`)
 
-"Discard cards from the top of the encounter deck until a ... is discarded. Reveal it." discards one card at a time until a card matches `untilFilter`. Each non-matching card goes to the encounter discard pile. The matching card goes to `matchingDestination`: `"DISCARD"` (default) puts it in the encounter discard pile; `"REVEAL"` has the player resolving the ability reveal it through the normal reveal path (RR v1.8 glossary "Reveal"), so its When Revealed abilities resolve. `HAND` and `PLAY` are not supported from the encounter deck.
+"Discard cards from the top of the encounter deck until a ... is discarded. Reveal it." discards one card at a time until a card matches `untilFilter`. Each non-matching card goes to the encounter discard pile. The matching card goes to `matchingDestination`: `"DISCARD"` (default) puts it in the encounter discard pile; `"REVEAL"` has the player resolving the ability reveal it through the normal reveal path (RR v1.8 glossary "Reveal"), so its When Revealed abilities resolve; `"PLAY"` puts the matching minion into play engaged with the designated player (`target: "FIRST_PLAYER"`). `HAND` is not supported from the encounter deck.
 
 **Empty deck rule** (RR v1.8 glossary "Encounter Deck"): if the encounter deck is emptied before a match is found, the discard stops and the effect is fulfilled; the discard pile (including the cards just discarded) is shuffled into a new encounter deck and an acceleration token is placed. The discard does not continue with the new deck.
 

@@ -6,7 +6,7 @@
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
-### <a id="deal-damage"></a>`DEAL_DAMAGE` (23 Cards, 24 Step Occurrences)
+### <a id="deal-damage"></a>`DEAL_DAMAGE` (24 Cards, 26 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -32,9 +32,10 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01077` | **Counter-Punch (event)** | `core` | `counter_punch_response` |
 | `01087` | **Haymaker (event)** | `core` | `haymaker` |
 | `01103` | **Shocker (minion)** | `core_encounter` | `shocker_when_revealed` |
+| `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed`, `concussive_blast_boost` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
 
-### <a id="discard"></a>`DISCARD` (14 Cards, 15 Step Occurrences)
+### <a id="discard"></a>`DISCARD` (17 Cards, 19 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -45,6 +46,9 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01084` | **Nick Fury (ally)** | `core` | `nick_fury_round_end_discard` |
 | `01099` | **Charge (attachment)** | `core_encounter` | `charge_discard` |
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
+| `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
+| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response`, `radioactive_man_boost` |
+| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_discard` |
 | `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` |
 | `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
@@ -100,6 +104,21 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
 | `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
 
+### <a id="add-threat"></a>`ADD_THREAT` (10 Cards, 11 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01107` | **Breakin' & Takin' (side_scheme)** | `core_encounter` | `breakin_and_takin_when_revealed` |
+| `01109` | **Bomb Scare (side_scheme)** | `core_encounter` | `bomb_scare_when_revealed` |
+| `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
+| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
+| `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
+| `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
+| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
+| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
+| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
+| `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
+
 ### <a id="draw"></a>`DRAW` (11 Cards, 11 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -115,6 +134,22 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01067` | **Maria Hill (ally)** | `core` | `maria_hill_enters_play` |
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
+
+### <a id="player-choice"></a>`PLAYER_CHOICE` (11 Cards, 11 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01068` | **Vision (ally)** | `core` | `vision_boost` |
+| `01084` | **Nick Fury (ally)** | `core` | `nick_fury_enters_play` |
+| `01110` | **Hydra Bomber (minion)** | `core_encounter` | `hydra_bomber_when_revealed` |
+| `01151` | **Under Attack (side_scheme)** | `core_encounter` | `under_attack_when_revealed` |
+| `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` |
+| `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` |
+| `01160` | **Legal Work (obligation)** | `core_encounter` | `legal_work_resolve` |
+| `01165` | **Eviction Notice (obligation)** | `core_encounter` | `eviction_notice_resolve` |
+| `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
+| `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_when_revealed` |
+| `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 
 ### <a id="surge"></a>`SURGE` (11 Cards, 11 Step Occurrences)
 
@@ -132,36 +167,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
 | `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
 
-### <a id="add-threat"></a>`ADD_THREAT` (9 Cards, 10 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01107` | **Breakin' & Takin' (side_scheme)** | `core_encounter` | `breakin_and_takin_when_revealed` |
-| `01109` | **Bomb Scare (side_scheme)** | `core_encounter` | `bomb_scare_when_revealed` |
-| `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
-| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
-| `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
-| `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
-| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
-| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
-| `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
-
-### <a id="player-choice"></a>`PLAYER_CHOICE` (10 Cards, 10 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01068` | **Vision (ally)** | `core` | `vision_boost` |
-| `01084` | **Nick Fury (ally)** | `core` | `nick_fury_enters_play` |
-| `01110` | **Hydra Bomber (minion)** | `core_encounter` | `hydra_bomber_when_revealed` |
-| `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` |
-| `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` |
-| `01160` | **Legal Work (obligation)** | `core_encounter` | `legal_work_resolve` |
-| `01165` | **Eviction Notice (obligation)** | `core_encounter` | `eviction_notice_resolve` |
-| `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
-| `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_when_revealed` |
-| `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
-
-### <a id="search"></a>`SEARCH` (7 Cards, 7 Step Occurrences)
+### <a id="search"></a>`SEARCH` (9 Cards, 9 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -172,6 +178,8 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
 | `01095` | **Rhino (villain)** | `core_encounter` | `rhino_stage_ii_when_revealed` |
 | `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_when_revealed` |
+| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
+| `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
 
 ### <a id="heal-damage"></a>`HEAL_DAMAGE` (6 Cards, 6 Step Occurrences)
 
@@ -232,6 +240,15 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01043c` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_c` |
 | `01043d` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_d` |
 
+### <a id="grant-keyword"></a>`GRANT_KEYWORD` (4 Cards, 4 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01040a` | **Black Panther (hero)** | `core` | `black_panther_retaliate` |
+| `01099` | **Charge (attachment)** | `core_encounter` | `charge_overkill` |
+| `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
+| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
+
 ### <a id="attach-to-host"></a>`ATTACH_TO_HOST` (3 Cards, 3 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -247,14 +264,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01001b` | **Peter Parker (alter_ego)** | `core` | `scientist` |
 | `01008` | **Web-Shooter (upgrade)** | `core` | `web_shooter_resource` |
 | `01033` | **Pepper Potts (support)** | `core` | `pepper_potts_res` |
-
-### <a id="grant-keyword"></a>`GRANT_KEYWORD` (3 Cards, 3 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01040a` | **Black Panther (hero)** | `core` | `black_panther_retaliate` |
-| `01099` | **Charge (attachment)** | `core_encounter` | `charge_overkill` |
-| `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
 
 ### <a id="prevent-threat"></a>`PREVENT_THREAT` (3 Cards, 3 Step Occurrences)
 

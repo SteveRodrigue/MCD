@@ -313,10 +313,14 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         ).toBe(true);
       });
 
-      // Check Scanned Encounter Sets (Rhino, Bomb Scare, Standard, Expert, All 5 Core Hero Nemesis sets)
+      // Check Scanned Encounter Sets (Rhino, Modular Sets, Standard, Expert, All 5 Core Hero Nemesis sets)
       const scannedEncounterSets = new Set([
         'rhino',
         'bomb_scare',
+        'masters_of_evil',
+        'under_attack',
+        'legions_of_hydra',
+        'the_doomsday_chair',
         'standard',
         'expert',
         'spider_man',

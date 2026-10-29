@@ -68,3 +68,4 @@ __pycache__/
 .agents/teamwork/**
 # Local link to .agents/skills (see AGENTS.md "Claude Code setup")
 .claude/skills
+.claude/worktrees

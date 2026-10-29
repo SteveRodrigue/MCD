@@ -40,7 +40,7 @@
 | `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
 | `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
 
-### <a id="self"></a>`SELF` (10 Cards, 10 Declarations)
+### <a id="self"></a>`SELF` (11 Cards, 11 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -53,6 +53,7 @@
 | `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
 | `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
 | `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
 ### <a id="self-identity"></a>`SELF_IDENTITY` (10 Cards, 10 Declarations)

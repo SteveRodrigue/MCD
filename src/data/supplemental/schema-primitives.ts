@@ -100,6 +100,7 @@ export const TriggerTypeSchema = z.enum([
   'ATTACK_RESOLVED',
   'THWART_RESOLVED',
   'MINION_ATTACKED',
+  'MINION_SCHEMED',
   'ATTACK',
   'ROUND_BEGAN',
   'ROUND_ENDED',

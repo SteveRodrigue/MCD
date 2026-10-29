@@ -229,11 +229,11 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row h-full overflow-hidden bg-comic-paper">
+    <div className="flex-1 flex flex-col md:flex-row h-full overflow-visible bg-comic-paper">
       {/* LEFT / CENTER COLUMN: Card Visual Preview & Printed Text */}
-      <div className="w-full md:w-[320px] lg:w-[340px] shrink-0 p-4 md:p-6 overflow-y-auto border-r-4 border-black flex flex-col items-center gap-4 bg-[#fbf9f4]">
+      <div className="w-full md:w-[320px] lg:w-[340px] shrink-0 border-r-4 border-black flex flex-col items-center bg-[#fbf9f4] relative z-raised hover:z-zoom focus-within:z-zoom overflow-visible">
         {/* Card View Visual Preview (ADR-0012 Unconstrained Z-Axis Elevation) */}
-        <div className="flex flex-col items-center relative z-zoom overflow-visible">
+        <div className="p-4 pb-2 flex flex-col items-center relative z-zoom overflow-visible">
           <div className="shadow-comic-lg border-2 border-black rounded-lg bg-black p-1 overflow-visible">
             <CardView card={normalizedCard} size="lg" enableHoverZoom={true} zoomOrigin="center" />
           </div>
@@ -242,115 +242,126 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
           </span>
         </div>
 
-        {/* Printed Card Text Box */}
-        <div className="w-full bg-white border-comic border-black p-3.5 shadow-comic-sm">
-          <div className="flex items-center gap-2 border-b-2 border-black pb-1.5 mb-2 font-bangers text-sm tracking-wide text-comic-red">
-            <Zap className="w-4 h-4 text-comic-red" />
-            <span>PRINTED CARD TEXT</span>
-          </div>
-          <div className="font-comic text-xs text-black leading-relaxed">
-            {upstream.text ? (
-              <FormattedCardText text={upstream.text} />
-            ) : (
-              <span className="italic text-gray-400">No printed rules text on card face.</span>
+        {/* Scrollable details: Printed Card Text & Upstream Properties */}
+        <div className="flex-1 w-full p-4 pt-2 overflow-y-auto flex flex-col gap-4">
+          {/* Printed Card Text Box */}
+          <div className="w-full bg-white border-comic border-black p-3.5 shadow-comic-sm">
+            <div className="flex items-center gap-2 border-b-2 border-black pb-1.5 mb-2 font-bangers text-sm tracking-wide text-comic-red">
+              <Zap className="w-4 h-4 text-comic-red" />
+              <span>PRINTED CARD TEXT</span>
+            </div>
+            <div className="font-comic text-xs text-black leading-relaxed">
+              {upstream.text ? (
+                <FormattedCardText text={upstream.text} />
+              ) : (
+                <span className="italic text-gray-400">No printed rules text on card face.</span>
+              )}
+            </div>
+            {upstream.flavor && (
+              <div className="mt-3 pt-2 border-t border-dashed border-gray-300 italic text-[11px] text-gray-600 font-comic">
+                {upstream.flavor}
+              </div>
             )}
           </div>
-          {upstream.flavor && (
-            <div className="mt-3 pt-2 border-t border-dashed border-gray-300 italic text-[11px] text-gray-600 font-comic">
-              {upstream.flavor}
-            </div>
-          )}
-        </div>
 
-        {/* Upstream Properties Table */}
-        <div className="w-full bg-white border-comic border-black p-3.5 shadow-comic-sm">
-          <div className="flex items-center gap-2 border-b-2 border-black pb-1.5 mb-2.5 font-bangers text-sm tracking-wide text-comic-dark">
-            <Tag className="w-4 h-4 text-black" />
-            <span>UPSTREAM ZZORBA PROPERTIES</span>
+          {/* Upstream Properties Table */}
+          <div className="w-full bg-white border-comic border-black p-3.5 shadow-comic-sm">
+            <div className="flex items-center gap-2 border-b-2 border-black pb-1.5 mb-2.5 font-bangers text-sm tracking-wide text-comic-dark">
+              <Tag className="w-4 h-4 text-black" />
+              <span>UPSTREAM ZZORBA PROPERTIES</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-xs font-sans">
+              <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
+                <span className="text-[10px] uppercase font-bold text-gray-500 block">Type</span>
+                <span className="font-bold capitalize">{upstream.type_code || 'N/A'}</span>
+              </div>
+              <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
+                <span className="text-[10px] uppercase font-bold text-gray-500 block">Faction</span>
+                <span className="font-bold capitalize">{upstream.faction_code || 'N/A'}</span>
+              </div>
+              <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
+                <span className="text-[10px] uppercase font-bold text-gray-500 block">Set</span>
+                <span className="font-bold truncate block">{upstream.set_code || 'None'}</span>
+              </div>
+              <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
+                <span className="text-[10px] uppercase font-bold text-gray-500 block">Cost</span>
+                <span className="font-bold">
+                  {upstream.cost !== undefined ? upstream.cost : '—'}
+                </span>
+              </div>
+              <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
+                <span className="text-[10px] uppercase font-bold text-gray-500 block">Health</span>
+                <span className="font-bold">
+                  {upstream.health !== undefined ? upstream.health : '—'}
+                  {upstream.health_per_hero ? ' / hero' : ''}
+                </span>
+              </div>
+              <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
+                <span className="text-[10px] uppercase font-bold text-gray-500 block">
+                  Hand Size
+                </span>
+                <span className="font-bold">
+                  {upstream.hand_size !== undefined ? upstream.hand_size : '—'}
+                </span>
+              </div>
+              <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
+                <span className="text-[10px] uppercase font-bold text-gray-500 block">Attack</span>
+                <span className="font-bold">
+                  {upstream.attack !== undefined ? upstream.attack : '—'}
+                </span>
+              </div>
+              <div
+                className="bg-comic-paper p-1.5 border border-black rounded-sm"
+                title={
+                  upstream.scheme !== undefined
+                    ? `Scheme (SCH): ${upstream.scheme}`
+                    : upstream.thwart !== undefined
+                      ? `Thwart (THW): ${upstream.thwart}`
+                      : 'No THW or SCH stat'
+                }
+              >
+                <span className="text-[10px] uppercase font-bold text-gray-500 block">
+                  THW / SCH
+                </span>
+                <span className="font-bold">
+                  {upstream.scheme !== undefined
+                    ? `${upstream.scheme} (SCH)`
+                    : upstream.thwart !== undefined
+                      ? `${upstream.thwart} (THW)`
+                      : '—'}
+                </span>
+              </div>
+              <div
+                className="bg-comic-paper p-1.5 border border-black rounded-sm"
+                title={
+                  upstream.recover !== undefined
+                    ? `Recovery (REC): ${upstream.recover}`
+                    : upstream.defense !== undefined
+                      ? `Defense (DEF): ${upstream.defense}`
+                      : 'No DEF or REC stat'
+                }
+              >
+                <span className="text-[10px] uppercase font-bold text-gray-500 block">
+                  DEF / REC
+                </span>
+                <span className="font-bold">
+                  {upstream.recover !== undefined
+                    ? `${upstream.recover} (REC)`
+                    : upstream.defense !== undefined
+                      ? `${upstream.defense} (DEF)`
+                      : '—'}
+                </span>
+              </div>
+            </div>
+
+            {upstream.traits && (
+              <div className="mt-2.5 pt-2 border-t border-gray-200 text-xs">
+                <span className="font-bold text-gray-600">Traits: </span>
+                <span className="italic font-comic">{upstream.traits}</span>
+              </div>
+            )}
           </div>
-
-          <div className="grid grid-cols-2 gap-2 text-xs font-sans">
-            <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
-              <span className="text-[10px] uppercase font-bold text-gray-500 block">Type</span>
-              <span className="font-bold capitalize">{upstream.type_code || 'N/A'}</span>
-            </div>
-            <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
-              <span className="text-[10px] uppercase font-bold text-gray-500 block">Faction</span>
-              <span className="font-bold capitalize">{upstream.faction_code || 'N/A'}</span>
-            </div>
-            <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
-              <span className="text-[10px] uppercase font-bold text-gray-500 block">Set</span>
-              <span className="font-bold truncate block">{upstream.set_code || 'None'}</span>
-            </div>
-            <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
-              <span className="text-[10px] uppercase font-bold text-gray-500 block">Cost</span>
-              <span className="font-bold">{upstream.cost !== undefined ? upstream.cost : '—'}</span>
-            </div>
-            <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
-              <span className="text-[10px] uppercase font-bold text-gray-500 block">Health</span>
-              <span className="font-bold">
-                {upstream.health !== undefined ? upstream.health : '—'}
-                {upstream.health_per_hero ? ' / hero' : ''}
-              </span>
-            </div>
-            <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
-              <span className="text-[10px] uppercase font-bold text-gray-500 block">Hand Size</span>
-              <span className="font-bold">
-                {upstream.hand_size !== undefined ? upstream.hand_size : '—'}
-              </span>
-            </div>
-            <div className="bg-comic-paper p-1.5 border border-black rounded-sm">
-              <span className="text-[10px] uppercase font-bold text-gray-500 block">Attack</span>
-              <span className="font-bold">
-                {upstream.attack !== undefined ? upstream.attack : '—'}
-              </span>
-            </div>
-            <div
-              className="bg-comic-paper p-1.5 border border-black rounded-sm"
-              title={
-                upstream.scheme !== undefined
-                  ? `Scheme (SCH): ${upstream.scheme}`
-                  : upstream.thwart !== undefined
-                    ? `Thwart (THW): ${upstream.thwart}`
-                    : 'No THW or SCH stat'
-              }
-            >
-              <span className="text-[10px] uppercase font-bold text-gray-500 block">THW / SCH</span>
-              <span className="font-bold">
-                {upstream.scheme !== undefined
-                  ? `${upstream.scheme} (SCH)`
-                  : upstream.thwart !== undefined
-                    ? `${upstream.thwart} (THW)`
-                    : '—'}
-              </span>
-            </div>
-            <div
-              className="bg-comic-paper p-1.5 border border-black rounded-sm"
-              title={
-                upstream.recover !== undefined
-                  ? `Recovery (REC): ${upstream.recover}`
-                  : upstream.defense !== undefined
-                    ? `Defense (DEF): ${upstream.defense}`
-                    : 'No DEF or REC stat'
-              }
-            >
-              <span className="text-[10px] uppercase font-bold text-gray-500 block">DEF / REC</span>
-              <span className="font-bold">
-                {upstream.recover !== undefined
-                  ? `${upstream.recover} (REC)`
-                  : upstream.defense !== undefined
-                    ? `${upstream.defense} (DEF)`
-                    : '—'}
-              </span>
-            </div>
-          </div>
-
-          {upstream.traits && (
-            <div className="mt-2.5 pt-2 border-t border-gray-200 text-xs">
-              <span className="font-bold text-gray-600">Traits: </span>
-              <span className="italic font-comic">{upstream.traits}</span>
-            </div>
-          )}
         </div>
       </div>
 

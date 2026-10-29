@@ -238,7 +238,7 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
         </div>
 
         {/* RIGHT PANE: Dual Inspector */}
-        <div className="flex-1 h-full overflow-hidden flex flex-col">
+        <div className="flex-1 h-full overflow-visible flex flex-col">
           <DualCardInspector
             cardDetails={cardDetails}
             loading={loadingDetails}

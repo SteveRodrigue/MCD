@@ -16,7 +16,8 @@ export function isImmuneToDamage(
   target: unknown,
   sourceCard?: CardInstance,
 ): boolean {
-  const abilities = (target as { card?: { enrichment?: { abilities?: unknown[] } } })?.card
+  const entity = (target as { entity?: unknown })?.entity ?? target;
+  const abilities = (entity as { card?: { enrichment?: { abilities?: unknown[] } } })?.card
     ?.enrichment?.abilities as
     | {
         timing?: string;
@@ -26,10 +27,10 @@ export function isImmuneToDamage(
   const player =
     state?.players?.find(
       (p) =>
-        p.engagedMinions?.some((m) => m === target) ||
-        p.tableau?.some((c) => c === target) ||
-        p.allies?.some((a) => a === target) ||
-        p.id === (target as { id?: string })?.id,
+        p.engagedMinions?.some((m) => m === entity) ||
+        p.tableau?.some((c) => c === entity) ||
+        p.allies?.some((a) => a === entity) ||
+        p.id === (entity as { id?: string })?.id,
     ) ?? state?.players?.[0];
 
   for (const ability of abilities ?? []) {

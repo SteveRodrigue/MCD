@@ -20,11 +20,39 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
   filteredCards,
   loading,
 }) => {
+  const sets = metadata?.sets;
+  const availableSets = React.useMemo(() => {
+    if (!sets) return [];
+    if (!filters.pack) return sets;
+    return sets.filter((s) => {
+      if (s.pack_codes && s.pack_codes.length > 0) {
+        return s.pack_codes.includes(filters.pack!);
+      }
+      return s.pack_code === filters.pack;
+    });
+  }, [sets, filters.pack]);
+
   const handlePackChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
+    const nextPack = val || undefined;
+
+    let nextSet = filters.set;
+    if (nextSet && nextPack) {
+      const setObj = metadata?.sets.find((s) => s.code === nextSet);
+      const setBelongsToPack =
+        setObj &&
+        (setObj.pack_codes && setObj.pack_codes.length > 0
+          ? setObj.pack_codes.includes(nextPack)
+          : setObj.pack_code === nextPack);
+      if (!setBelongsToPack) {
+        nextSet = undefined;
+      }
+    }
+
     onFiltersChange({
       ...filters,
-      pack: val || undefined,
+      pack: nextPack,
+      set: nextSet,
       packFile: undefined, // reset specific file when pack changes
     });
   };
@@ -105,10 +133,14 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5 mt-3">
         {/* 1. Pack Filter */}
         <div>
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-comic-dark mb-1">
+          <label
+            htmlFor="filter-pack"
+            className="block text-[11px] font-bold uppercase tracking-wider text-comic-dark mb-1"
+          >
             Zzorba Pack
           </label>
           <select
+            id="filter-pack"
             value={filters.pack || ''}
             onChange={handlePackChange}
             className="w-full bg-white text-black text-xs font-medium border-2 border-black px-2 py-1.5 focus:outline-hidden focus:ring-2 focus:ring-comic-red shadow-comic-xs"
@@ -124,16 +156,24 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
 
         {/* 2. Encounter / Card Set Filter */}
         <div>
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-comic-dark mb-1">
+          <label
+            htmlFor="filter-set"
+            className="block text-[11px] font-bold uppercase tracking-wider text-comic-dark mb-1"
+          >
             Encounter / Set
           </label>
           <select
+            id="filter-set"
             value={filters.set || ''}
             onChange={handleSetChange}
             className="w-full bg-white text-black text-xs font-medium border-2 border-black px-2 py-1.5 focus:outline-hidden focus:ring-2 focus:ring-comic-red shadow-comic-xs"
           >
-            <option value="">All Sets ({metadata?.sets.length || 0})</option>
-            {metadata?.sets.map((s) => (
+            <option value="">
+              {filters.pack
+                ? `All Sets in Pack (${availableSets.length})`
+                : `All Sets (${metadata?.sets.length || 0})`}
+            </option>
+            {availableSets.map((s) => (
               <option key={s.code} value={s.code}>
                 {s.name} {s.card_set_type_code ? `[${s.card_set_type_code}]` : ''}
               </option>
@@ -143,10 +183,14 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
 
         {/* 3. Faction / Affinity Filter */}
         <div>
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-comic-dark mb-1">
+          <label
+            htmlFor="filter-faction"
+            className="block text-[11px] font-bold uppercase tracking-wider text-comic-dark mb-1"
+          >
             Affinity / Aspect
           </label>
           <select
+            id="filter-faction"
             value={filters.faction || ''}
             onChange={handleFactionChange}
             className="w-full bg-white text-black text-xs font-medium border-2 border-black px-2 py-1.5 focus:outline-hidden focus:ring-2 focus:ring-comic-red shadow-comic-xs capitalize"
@@ -162,10 +206,14 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
 
         {/* 4. Supplemental Status Filter */}
         <div>
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-comic-dark mb-1">
+          <label
+            htmlFor="filter-status"
+            className="block text-[11px] font-bold uppercase tracking-wider text-comic-dark mb-1"
+          >
             Supplemental Status
           </label>
           <select
+            id="filter-status"
             value={filters.status || ''}
             onChange={handleStatusChange}
             className="w-full bg-white text-black text-xs font-medium border-2 border-black px-2 py-1.5 focus:outline-hidden focus:ring-2 focus:ring-comic-red shadow-comic-xs"
@@ -183,11 +231,15 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
 
         {/* 5. Live Search Input */}
         <div>
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-comic-dark mb-1">
+          <label
+            htmlFor="filter-search"
+            className="block text-[11px] font-bold uppercase tracking-wider text-comic-dark mb-1"
+          >
             Search Text / Code
           </label>
           <div className="relative">
             <input
+              id="filter-search"
               type="text"
               placeholder="e.g. 01001a, Spider-Man..."
               value={filters.search || ''}

@@ -777,11 +777,11 @@
       ],
       "audit": {
         "createdAt": "2026-10-28T19:30",
-        "updatedAt": "2026-10-28T19:30",
-        "reviewedAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-29T18:12",
+        "reviewedAt": "2026-10-29T18:12",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "[star] <b>Forced Response</b>: After Radioactive Man attacks you, discard 1 card at random from your hand.\n<hr />\n[star] <b>Boost</b>: Discard 1 card at random from your hand."
       }
     },

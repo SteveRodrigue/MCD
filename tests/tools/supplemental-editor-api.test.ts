@@ -30,6 +30,8 @@ describe('CardSupplementalService & Editor API Middleware', () => {
 
       const rhinoSet = meta.sets.find((s) => s.code === 'rhino');
       expect(rhinoSet).toBeDefined();
+      expect(rhinoSet?.pack_code).toBe('core');
+      expect(rhinoSet?.pack_codes).toContain('core');
 
       const aggression = meta.factions.find((f) => f.code === 'aggression');
       expect(aggression).toBeDefined();

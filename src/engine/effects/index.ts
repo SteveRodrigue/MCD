@@ -420,7 +420,9 @@ export function defeatSideScheme(
     const timing = ability.timing as string | undefined;
     if (
       (trigger === 'DEFEATED' || trigger === 'WHEN_DEFEATED') &&
-      (timing === 'FORCED_RESPONSE' ||
+      (timing === 'FORCED_INTERRUPT' ||
+        timing === 'INTERRUPT' ||
+        timing === 'FORCED_RESPONSE' ||
         timing === 'RESPONSE' ||
         timing === 'WHEN_DEFEATED' ||
         !timing)

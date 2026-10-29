@@ -396,6 +396,17 @@ function resolvePlayerSelectorTarget(
       return [{ kind: 'player', entity: p, id: p.id }];
     }
 
+    case 'ENGAGED_PLAYER': {
+      const sourceCard = context?.sourceCardInstance;
+      const engagedPlayer = sourceCard
+        ? state.players.find((pl) =>
+            pl.engagedMinions?.some((m) => m.instanceId === sourceCard.instanceId),
+          )
+        : undefined;
+      const p = engagedPlayer || resolvingPlayer || state.players[0];
+      return [{ kind: 'player', entity: p, id: p.id }];
+    }
+
     case 'PLAYER':
     case 'ACTIVE_PLAYER': {
       const activeP = state.players[state.activePlayerIndex] || resolvingPlayer || state.players[0];

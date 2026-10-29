@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Effects In Use:** **48/56**
+> **Active Effects In Use:** **49/57**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
@@ -351,6 +351,12 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
+
+### <a id="deal-facedown-encounter-card"></a>`DEAL_FACEDOWN_ENCOUNTER_CARD` (1 Cards, 1 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
 
 ### <a id="distribute-amount"></a>`DISTRIBUTE_AMOUNT` (1 Cards, 1 Step Occurrences)
 

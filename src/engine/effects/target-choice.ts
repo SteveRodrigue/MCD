@@ -68,6 +68,7 @@ export const SELECTOR_CLASS: Readonly<Record<TargetSelector, SelectorClass>> = {
   SELF_IDENTITY: 'FIXED',
   SELF_HERO: 'FIXED',
   ACTIVE_PLAYER: 'FIXED',
+  FIRST_PLAYER: 'FIXED',
   ALL_PLAYERS: 'GROUP',
   DEFENDING_PLAYER: 'FIXED',
   ENGAGED_PLAYER: 'FIXED',

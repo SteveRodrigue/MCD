@@ -1851,9 +1851,9 @@ function discardFromEncounterDeck(
     }
     if (found && matchingDestination === 'PLAY') {
       const targetPlayer =
-        (params.target as string) === 'FIRST_PLAYER'
-          ? (state.players[state.firstPlayerIndex] ?? player)
-          : player;
+        (params.target
+          ? resolvePlayerTargets(state, params.target, { playerId: player.id })[0]
+          : undefined) ?? player;
       if (found.card.type === CardType.MINION) {
         targetPlayer.engagedMinions.push(found as MinionCard & CardInstance);
         kernel.dispatchTrigger(state, 'MINION_ENTERS_PLAY', {

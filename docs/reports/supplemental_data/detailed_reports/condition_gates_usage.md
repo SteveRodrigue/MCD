@@ -4,16 +4,6 @@
 
 ## 1. Condition Gates (`StepGateSchema` — 9/9 In Use)
 
-### <a id="if-card-in-play"></a>`IF_CARD_IN_PLAY` (5 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
-| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
-| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_invulnerable`, `madame_hydra_scheme_attack_response` |
-| `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
-
 ### <a id="if-form"></a>`IF_FORM` (4 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -22,6 +12,15 @@
 | `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
 | `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
 | `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
+
+### <a id="if-card-in-play"></a>`IF_CARD_IN_PLAY` (4 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
+| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
+| `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
 
 ### <a id="if-resource-match"></a>`IF_RESOURCE_MATCH` (3 Cards)
 

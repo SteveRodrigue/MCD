@@ -798,43 +798,14 @@
       }
     },
     "01131": {
-      "abilities": [
-        {
-          "id": "tiger_shark_forced_response",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "MINION_ATTACKED",
-          "steps": [
-            {
-              "effect": "ADD_STATUS",
-              "effectParams": {
-                "status": "TOUGH",
-                "target": "SELF"
-              }
-            }
-          ]
-        },
-        {
-          "id": "tiger_shark_boost",
-          "timing": "BOOST",
-          "trigger": "BOOST",
-          "steps": [
-            {
-              "effect": "ADD_STATUS",
-              "effectParams": {
-                "status": "TOUGH",
-                "target": "VILLAIN"
-              }
-            }
-          ]
-        }
-      ],
       "audit": {
         "createdAt": "2026-10-28T19:30",
         "updatedAt": "2026-10-28T19:30",
         "reviewedAt": "2026-10-28T19:30",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 75,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01131_tiger-shark.md",
         "originalText": "[star] <b>Forced Response</b>: After Tiger Shark attacks, give him a tough status card.\n<hr />\n[star] <b>Boost</b>: Give the villain a tough status card."
       }
     },
@@ -912,47 +883,14 @@
       }
     },
     "01152": {
-      "abilities": [
-        {
-          "id": "vibranium_armor_forced_response",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "DAMAGE_TAKEN",
-          "steps": [
-            {
-              "effect": "ADD_STATUS",
-              "effectParams": {
-                "status": "TOUGH",
-                "target": "VILLAIN"
-              }
-            }
-          ]
-        },
-        {
-          "id": "vibranium_armor_discard",
-          "timing": "HERO_ACTION",
-          "cost": {
-            "exhaustCard": "SELF_IDENTITY",
-            "resourceCost": {
-              "physical": 2
-            }
-          },
-          "steps": [
-            {
-              "effect": "DISCARD",
-              "effectParams": {
-                "source": "SELF"
-              }
-            }
-          ]
-        }
-      ],
       "audit": {
         "createdAt": "2026-10-28T19:30",
         "updatedAt": "2026-10-28T19:30",
         "reviewedAt": "2026-10-28T19:30",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 75,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01152_vibranium-armor.md",
         "originalText": "Attach to the villain.\n<b>Forced Response</b>: After the villain take damage, give it a tough status card.\n<b>Hero Action</b>: Exhaust your hero and spend [physical] [physical] resources → discard this card."
       }
     },
@@ -2201,47 +2139,14 @@
       }
     },
     "01181": {
-      "abilities": [
-        {
-          "id": "madame_hydra_invulnerable",
-          "timing": "CONSTANT",
-          "steps": [
-            {
-              "effect": "CANNOT_TAKE_DAMAGE",
-              "gate": "IF_CARD_IN_PLAY",
-              "gateParams": {
-                "cardCode": "01180"
-              }
-            }
-          ]
-        },
-        {
-          "id": "madame_hydra_scheme_attack_response",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "ATTACK_RESOLVED",
-          "steps": [
-            {
-              "effect": "ADD_THREAT",
-              "gate": "IF_CARD_IN_PLAY",
-              "gateParams": {
-                "cardCode": "01180"
-              },
-              "effectParams": {
-                "amount": 2,
-                "target": "CHOSEN_SIDE_SCHEME",
-                "cardCode": "01180"
-              }
-            }
-          ]
-        }
-      ],
       "audit": {
         "createdAt": "2026-10-28T19:30",
         "updatedAt": "2026-10-28T19:30",
         "reviewedAt": "2026-10-28T19:30",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95,
+        "confidence": 75,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01181_madame-hydra.md",
         "originalText": "Madame Hydra cannot take damage while the Legions of Hydra side scheme is in play.\n[star] <b>Forced Response</b>: After Madame Hydra schemes or attacks, place 2 threat on the Legions of Hydra side scheme."
       }
     },

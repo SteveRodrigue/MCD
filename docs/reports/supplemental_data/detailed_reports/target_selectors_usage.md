@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Target Selectors In Use:** **31/43**
+> **Active Target Selectors In Use:** **30/43**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -40,7 +40,7 @@
 | `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
 | `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
 
-### <a id="self"></a>`SELF` (11 Cards, 11 Declarations)
+### <a id="self"></a>`SELF` (10 Cards, 10 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -49,7 +49,6 @@
 | `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
 | `01051` | **Tigra (ally)** | `core` | `tigra_defeat_heal` |
 | `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
-| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response` |
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
 | `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
 | `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
@@ -71,7 +70,7 @@
 | `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
 | `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
 
-### <a id="villain"></a>`VILLAIN` (8 Cards, 8 Declarations)
+### <a id="villain"></a>`VILLAIN` (6 Cards, 6 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -79,8 +78,6 @@
 | `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
 | `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
 | `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
-| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
-| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_forced_response` |
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
 
@@ -230,12 +227,6 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01080` | **Med Team (support)** | `core` | `med_team_heal` |
-
-### <a id="chosen-side-scheme"></a>`CHOSEN_SIDE_SCHEME` (1 Cards, 1 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_scheme_attack_response` |
 
 ### <a id="host"></a>`HOST` (1 Cards, 1 Declarations)
 

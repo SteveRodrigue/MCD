@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-## 1. Cards with Multiple Abilities (2+ Declared Abilities — 23 Cards)
+## 1. Cards with Multiple Abilities (2+ Declared Abilities — 20 Cards)
 
 | Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -17,8 +17,6 @@
 | `01099` | **Charge** | `attachment` | `core_encounter` | **3** | • `charge_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `charge_overkill` (`CONSTANT`, **1 step**)<br/>• `charge_discard` (`FORCED_RESPONSE` / `HOST_ATTACK_ENDED`, **1 step**) |
 | `01100` | **Enhanced Ivory Horn** | `attachment` | `core_encounter` | **2** | • `ivory_horn_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `ivory_horn_discard_action` (`HERO_ACTION`, **1 step**) |
 | `01129` | **Radioactive Man** | `minion` | `core_encounter` | **2** | • `radioactive_man_forced_response` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**)<br/>• `radioactive_man_boost` (`BOOST` / `BOOST`, **1 step**) |
-| `01131` | **Tiger Shark** | `minion` | `core_encounter` | **2** | • `tiger_shark_forced_response` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**)<br/>• `tiger_shark_boost` (`BOOST` / `BOOST`, **1 step**) |
-| `01152` | **Vibranium Armor** | `attachment` | `core_encounter` | **2** | • `vibranium_armor_forced_response` (`FORCED_RESPONSE` / `DAMAGE_TAKEN`, **1 step**)<br/>• `vibranium_armor_discard` (`HERO_ACTION`, **1 step**) |
 | `01153` | **Concussion Blasters** | `attachment` | `core_encounter` | **2** | • `concussion_blasters_retaliate` (`CONSTANT`, **1 step**)<br/>• `concussion_blasters_discard` (`HERO_ACTION`, **1 step**) |
 | `01154` | **Concussive Blast** | `treachery` | `core_encounter` | **2** | • `concussive_blast_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `concussive_blast_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01158` | **Heart-Shaped Herb** | `treachery` | `core_encounter` | **2** | • `heart_shaped_herb_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `heart_shaped_herb_boost` (`BOOST` / `BOOST`, **1 step**) |
@@ -27,7 +25,6 @@
 | `01168` | **Sweeping Swoop** | `treachery` | `core_encounter` | **2** | • `sweeping_swoop_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `sweeping_swoop_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01173` | **Electric Whip Attack** | `treachery` | `core_encounter` | **2** | • `electric_whip_attack_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `electric_whip_attack_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01178` | **Kree Manipulator** | `treachery` | `core_encounter` | **2** | • `kree_manipulator_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `kree_manipulator_boost` (`BOOST` / `BOOST`, **1 step**) |
-| `01181` | **Madame Hydra** | `minion` | `core_encounter` | **2** | • `madame_hydra_invulnerable` (`CONSTANT`, **1 step**)<br/>• `madame_hydra_scheme_attack_response` (`FORCED_RESPONSE` / `ATTACK_RESOLVED`, **1 step**) |
 | `45109` | **The Fittest** | `attachment` | `aoa_encounter` | **2** | • `the_fittest_hit_points` (`CONSTANT`, **1 step**)<br/>• `the_fittest_tough` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**) |
 
 ## 2. Multi-Step Execution Pipelines (2+ Steps — 33 Pipelines Across 33 Cards)

@@ -1,7 +1,5 @@
 import { kernel } from '../kernel';
-import { CardInstance, CardType, GameState, PlayerState, MinionCard } from '@engine/models';
-import { applyToughnessOnEntry } from '../state/card-instance';
-import { resolveQuickstrike } from '../pipeline/villain-phase';
+import { CardInstance, CardType, GameState, PlayerState } from '@engine/models';
 
 import { shuffleArray } from '../state/rng';
 import { attachCardToHost } from '../state/state-validator';
@@ -72,18 +70,6 @@ export function routeCardInstances(
               sourceCardInstance: card,
             });
           }
-        }
-      } else if (card.card.type === CardType.MINION) {
-        applyToughnessOnEntry(card);
-        player.engagedMinions.push(card as MinionCard & CardInstance);
-        kernel.dispatchTrigger(state, 'MINION_ENTERS_PLAY', {
-          targetPlayerId: player.id,
-          sourceInstanceId: card.instanceId,
-          targetInstanceId: card.instanceId,
-          encounterCardInstance: card,
-        });
-        if (player.engagedMinions.includes(card as MinionCard & CardInstance)) {
-          resolveQuickstrike(state, card, player);
         }
       } else {
         player.tableau.push(card);

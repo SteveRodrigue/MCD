@@ -4,6 +4,8 @@ import { routeCardInstances } from './card-routing';
 import {
   GameState,
   CardInstance,
+  CardType,
+  MinionCard,
   StatusCard,
   CardAbility,
   AbilityStep,
@@ -1850,7 +1852,17 @@ function discardFromEncounterDeck(
         (params.target as string) === 'FIRST_PLAYER'
           ? (state.players[state.firstPlayerIndex] ?? player)
           : player;
-      routeCardInstances(state, targetPlayer, [found], 'TABLEAU', 'ENCOUNTER_DECK');
+      if (found.card.type === CardType.MINION) {
+        targetPlayer.engagedMinions.push(found as MinionCard & CardInstance);
+        kernel.dispatchTrigger(state, 'MINION_ENTERS_PLAY', {
+          targetPlayerId: targetPlayer.id,
+          sourceInstanceId: found.instanceId,
+          targetInstanceId: found.instanceId,
+          encounterCardInstance: found,
+        });
+      } else {
+        routeCardInstances(state, targetPlayer, [found], 'TABLEAU', 'ENCOUNTER_DECK');
+      }
     }
     return {
       state,

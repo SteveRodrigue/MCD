@@ -47,7 +47,7 @@
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
-### <a id="hero-action"></a>`HERO_ACTION` (27 Cards)
+### <a id="hero-action"></a>`HERO_ACTION` (26 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -76,10 +76,9 @@
 | `01087` | **Haymaker (event)** | `core` | `haymaker` |
 | `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
-| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_discard` |
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_discard` |
 
-### <a id="constant"></a>`CONSTANT` (23 Cards)
+### <a id="constant"></a>`CONSTANT` (22 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -104,7 +103,6 @@
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
 | `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
 | `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
-| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_invulnerable` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
 
 ### <a id="action"></a>`ACTION` (19 Cards)
@@ -131,7 +129,7 @@
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 
-### <a id="forced-response"></a>`FORCED_RESPONSE` (18 Cards)
+### <a id="forced-response"></a>`FORCED_RESPONSE` (15 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -141,8 +139,6 @@
 | `01084` | **Nick Fury (ally)** | `core` | `nick_fury_enters_play`, `nick_fury_round_end_discard` |
 | `01099` | **Charge (attachment)** | `core_encounter` | `charge_discard` |
 | `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response` |
-| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response` |
-| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_forced_response` |
 | `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` |
 | `01160` | **Legal Work (obligation)** | `core_encounter` | `legal_work_resolve` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
@@ -151,7 +147,6 @@
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 | `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
-| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_scheme_attack_response` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
 ### <a id="response"></a>`RESPONSE` (13 Cards)
@@ -172,13 +167,12 @@
 | `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 
-### <a id="boost"></a>`BOOST` (9 Cards)
+### <a id="boost"></a>`BOOST` (8 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
 | `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_boost` |
-| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
@@ -256,7 +250,7 @@
 | :--- | :--- | :--- | :--- |
 | `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
 
-## 2. Trigger Windows (`TriggerTypeSchema` — 21/31 In Use)
+## 2. Trigger Windows (`TriggerTypeSchema` — 20/31 In Use)
 
 ### <a id="when-revealed"></a>`WHEN_REVEALED` (39 Cards)
 
@@ -317,27 +311,18 @@
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 
-### <a id="boost"></a>`BOOST` (9 Cards)
+### <a id="boost"></a>`BOOST` (8 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
 | `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_boost` |
-| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
 | `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
-
-### <a id="attack-resolved"></a>`ATTACK_RESOLVED` (3 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
-| `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
-| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_scheme_attack_response` |
 
 ### <a id="character-defeated"></a>`CHARACTER_DEFEATED` (3 Cards)
 
@@ -363,14 +348,6 @@
 | `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
 | `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
 
-### <a id="minion-attacked"></a>`MINION_ATTACKED` (3 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response` |
-| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response` |
-| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
-
 ### <a id="threat-would-be-placed"></a>`THREAT_WOULD_BE_PLACED` (3 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -386,12 +363,26 @@
 | `01077` | **Counter-Punch (event)** | `core` | `counter_punch_response` |
 | `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
 
+### <a id="attack-resolved"></a>`ATTACK_RESOLVED` (2 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
+| `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
+
 ### <a id="defeated"></a>`DEFEATED` (2 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01052` | **Chase Them Down (event)** | `core` | `chase_them_down` |
 | `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
+
+### <a id="minion-attacked"></a>`MINION_ATTACKED` (2 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response` |
+| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
 
 ### <a id="basic-attack-performed"></a>`BASIC_ATTACK_PERFORMED` (1 Cards)
 
@@ -404,12 +395,6 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01002` | **Black Cat (ally)** | `core` | `black_cat_when_played` |
-
-### <a id="damage-taken"></a>`DAMAGE_TAKEN` (1 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_forced_response` |
 
 ### <a id="enemy-initiates-attack"></a>`ENEMY_INITIATES_ATTACK` (1 Cards)
 

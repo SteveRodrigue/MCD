@@ -7,6 +7,32 @@ import { kernel } from '@engine/kernel';
 describe('Core Modular Sets Supplemental Data Integration', () => {
   const spiderManHero = cardCatalog.getCard('01001a') as HeroCard;
   const peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
+  const ironManHero = cardCatalog.getCard('01029a') as HeroCard;
+  const tonyStarkAlterEgo = cardCatalog.getCard('01029b') as AlterEgoCard;
+
+  const createTwoPlayerState = () =>
+    setupGame({
+      catalog: cardCatalog,
+      scenarioId: 'rhino',
+      difficulty: 'STANDARD',
+      modularSetCodes: ['masters_of_evil'],
+      players: [
+        {
+          id: 'p1',
+          name: 'Spider-Man',
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+        },
+        {
+          id: 'p2',
+          name: 'Iron Man',
+          hero: ironManHero,
+          alterEgo: tonyStarkAlterEgo,
+          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+        },
+      ],
+    });
 
   const createTestState = () =>
     setupGame({
@@ -108,6 +134,55 @@ describe('Core Modular Sets Supplemental Data Integration', () => {
     expect(state.players[0].engagedMinions.some((m) => m.card.code === '01129')).toBe(true);
     // Filler card should be in encounter discard
     expect(state.encounterDiscard.some((c) => c.card.code === '01154')).toBe(true);
+  });
+
+  it('puts the MoE minion into play engaged with the first player even when another player resolves it', () => {
+    const state = createTwoPlayerState();
+    // p1 is first player (index 0)
+    state.firstPlayerIndex = 0;
+
+    const sideSchemeCard = cardCatalog.getCard('01128')!;
+    const radioactiveManCard = cardCatalog.getCard('01129')!;
+    const fillerCard = cardCatalog.getCard('01154')!;
+
+    state.encounterDeck = [
+      {
+        instanceId: 'radioactive-1',
+        card: radioactiveManCard,
+        ownerId: 'encounter',
+        counters: {},
+        attachments: [],
+        statusCards: [],
+      },
+      {
+        instanceId: 'filler-1',
+        card: fillerCard,
+        ownerId: 'encounter',
+        counters: {},
+        attachments: [],
+        statusCards: [],
+      },
+    ];
+
+    const ability = sideSchemeCard.enrichment?.abilities?.[0];
+    expect(ability).toBeDefined();
+
+    // p2 resolves the When Revealed ability
+    kernel.executeEffect(state, ability!, {
+      playerId: 'p2',
+      sourceCardInstance: {
+        instanceId: 'moe-scheme',
+        card: sideSchemeCard,
+        ownerId: 'encounter',
+        counters: {},
+        attachments: [],
+        statusCards: [],
+      },
+    });
+
+    // Minion MUST engage p1 (the first player), NOT p2 (resolving player)
+    expect(state.players[0].engagedMinions.some((m) => m.card.code === '01129')).toBe(true);
+    expect(state.players[1].engagedMinions.some((m) => m.card.code === '01129')).toBe(false);
   });
 
   it('resolves Under Attack (01151) When Revealed by enqueuing a decision prompt for the player', () => {

@@ -724,7 +724,7 @@
                   ]
                 },
                 "matchingDestination": "PLAY",
-                "target": "CHOSEN_PLAYER"
+                "target": "FIRST_PLAYER"
               }
             }
           ]
@@ -732,11 +732,11 @@
       ],
       "audit": {
         "createdAt": "2026-10-28T19:30",
-        "updatedAt": "2026-10-28T19:30",
-        "reviewedAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-29T14:24",
+        "reviewedAt": "2026-10-29T14:24",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>When Revealed</b>: Discard cards from the encounter deck until a [[Masters of Evil]] minion is discarded. Put that minion into play engaged with the first player."
       }
     },

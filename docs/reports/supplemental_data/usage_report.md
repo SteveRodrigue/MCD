@@ -15,7 +15,7 @@
 | **False-Vanilla Violations** | **0** | 🟢 0 | Cards marked `noSupplementalNeeded` that have printed rules text |
 | **Overall Schema Engine Coverage** | **100.0%** | [Matrix](detailed_reports/schema_code_path_audit.md) | Percentage of all schema primitives with active engine code paths |
 | **Effect Types Code Path Coverage** | **100.0%** | **57/57** | [49 In Use](detailed_reports/effects_usage.md) |
-| **Target Selectors Code Path Coverage** | **100.0%** | **44/44** | [31 In Use](detailed_reports/target_selectors_usage.md) |
+| **Target Selectors Code Path Coverage** | **100.0%** | **45/45** | [32 In Use](detailed_reports/target_selectors_usage.md) |
 | **Condition Gates Code Path Coverage** | **100.0%** | **9/9** | [9 In Use](detailed_reports/condition_gates_usage.md) |
 | **Step Conditions Code Path Coverage** | **100.0%** | **0/0** | [0 In Use](detailed_reports/condition_gates_usage.md) |
 | **Trigger Types Code Path Coverage** | **100.0%** | **32/32** | [21 In Use](detailed_reports/timing_and_triggers_usage.md) |
@@ -76,13 +76,13 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | `CHOSEN_SCHEME` | **11** | 10 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-scheme) |
 | `SELF_IDENTITY` | **10** | 10 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self-identity) |
 | `VILLAIN` | **6** | 6 | [Inspect Cards](detailed_reports/target_selectors_usage.md#villain) |
-| `CHOSEN_PLAYER` | **5** | 5 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-player) |
 | `SELF_HERO` | **5** | 5 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self-hero) |
+| `CHOSEN_PLAYER` | **4** | 4 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-player) |
 | `THIS_SIDE_SCHEME` | **3** | 3 | [Inspect Cards](detailed_reports/target_selectors_usage.md#this-side-scheme) |
 | `DEFENDING_PLAYER` | **3** | 2 | [Inspect Cards](detailed_reports/target_selectors_usage.md#defending-player) |
 | `MAIN_SCHEME` | **3** | 2 | [Inspect Cards](detailed_reports/target_selectors_usage.md#main-scheme) |
 
-> 🔗 **[View all 31 Target Selectors in Use →](detailed_reports/target_selectors_usage.md)**
+> 🔗 **[View all 32 Target Selectors in Use →](detailed_reports/target_selectors_usage.md)**
 
 ---
 
@@ -133,13 +133,13 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 
 ## ⚠️ 9. Code Path Verification & Zero-Usage Detection
 
-Every schema primitive is verified for a matching engine handler. Check the complete **[Schema Primitives Code Path Matrix](detailed_reports/schema_code_path_audit.md)** for status on all 161 schema definitions.
+Every schema primitive is verified for a matching engine handler. Check the complete **[Schema Primitives Code Path Matrix](detailed_reports/schema_code_path_audit.md)** for status on all 162 schema definitions.
 
 ### Summary of Unhandled or Zero-Usage Primitives:
 | Category | Schema Total | Unused in Cards (0 Cards) | Missing Engine Handler |
 | :--- | :---: | :---: | :---: |
 | **Effects** | 57 | 8 | 🟢 0 |
-| **Targets** | 44 | 13 | 🟢 0 |
+| **Targets** | 45 | 13 | 🟢 0 |
 | **Gates** | 9 | 0 | 🟢 0 |
 | **Step Conditions** | 0 | 0 | 🟢 0 |
 | **Triggers** | 32 | 11 | 🟢 0 |

@@ -1,10 +1,11 @@
 import { kernel } from '../kernel';
-import { CardInstance, CardType, GameState, PlayerState } from '@engine/models';
+import { CardInstance, CardType, GameState, MinionCard, PlayerState } from '@engine/models';
 
 import { shuffleArray } from '../state/rng';
 import { attachCardToHost } from '../state/state-validator';
 import { appendLog } from '../state/game-log';
 import { placeSideScheme } from '../state/side-scheme';
+import { applyToughnessOnEntry } from '../state/card-instance';
 
 /** Zone the cards came from: one for all of them, or looked up per card (multi-zone search). */
 export type CardOrigin = string | ((card: CardInstance) => string);
@@ -71,6 +72,24 @@ export function routeCardInstances(
             });
           }
         }
+      } else if (card.card.type === CardType.MINION) {
+        applyToughnessOnEntry(card);
+        player.engagedMinions.push(card as MinionCard & CardInstance);
+        appendLog(state, {
+          category: 'ability',
+          key: 'encounter.reveal.minion',
+          params: { actor: player.name, card: card.card.name },
+          onomatopoeia: 'MINION SPAWNS!',
+        });
+        kernel.dispatchTrigger(state, 'MINION_ENTERS_PLAY', {
+          targetPlayerId: player.id,
+          sourceInstanceId: card.instanceId,
+          targetInstanceId: card.instanceId,
+          encounterCardInstance: card,
+        });
+      } else if (card.card.type === CardType.ALLY) {
+        applyToughnessOnEntry(card);
+        player.allies.push(card);
       } else {
         player.tableau.push(card);
       }

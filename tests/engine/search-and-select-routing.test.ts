@@ -434,9 +434,11 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     });
 
     expect(resolveRes.result.success).toBe(true);
-    // Minion is put into play
+    // Minion is put into play engaged with player
     expect(
-      resolveRes.state.players[0].tableau.some((c) => c.instanceId === instMinion.instanceId),
+      resolveRes.state.players[0].engagedMinions.some(
+        (c) => c.instanceId === instMinion.instanceId,
+      ),
     ).toBe(true);
     // Treachery remains in encounter deck
     expect(resolveRes.state.encounterDeck.length).toBe(1);

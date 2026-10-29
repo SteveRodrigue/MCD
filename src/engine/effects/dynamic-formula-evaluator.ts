@@ -21,6 +21,7 @@ import type {
   DynamicValueSource,
   CardLocationSelector,
   CardInspectionAttribute,
+  TargetSelector,
 } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
 import {
@@ -29,6 +30,7 @@ import {
   hasPlayerTrait,
 } from '../pipeline/stat-calculator';
 import { locateCard, readCardAttribute } from '../queries/card-inspector';
+import { resolveTargets } from './target-resolver';
 import type { EffectExecutionContext } from './index';
 import { bindKernel } from '../kernel';
 
@@ -41,6 +43,7 @@ type ExtendedDynamicSource = DynamicValueSource & {
   trait?: string;
   resource?: string;
   amount?: number;
+  target?: TargetSelector | string;
 };
 
 export interface DynamicEvaluationOptions {
@@ -369,8 +372,15 @@ export function evaluateDynamicAmount(
     }
     case 'ENTITY_COUNT': {
       if (state) {
-        if (filter?.types?.includes('side_scheme')) {
-          baseValue = (state.sideSchemes || []).length;
+        if (extParam.target) {
+          const targets = resolveTargets(state, extParam.target as TargetSelector, context);
+          baseValue = targets.filter((t) =>
+            matchesCardFilter(t.entity as CardInstance | NormalizedCard, filter, { player, state }),
+          ).length;
+        } else if (filter?.types?.includes('side_scheme')) {
+          baseValue = (state.sideSchemes || []).filter((s) =>
+            matchesCardFilter(s, filter, { player, state }),
+          ).length;
         } else if (filter) {
           baseValue = (player?.tableau || []).filter((inst: CardInstance) =>
             matchesCardFilter(inst, filter, { player, state }),

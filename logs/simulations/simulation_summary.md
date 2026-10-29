@@ -1,16 +1,16 @@
 # Card-Ability Coverage Gate (Roadmap 1.4)
 
-* **Abilities in scope:** 161
-* **Covered:** 161 (100.0%)
+* **Abilities in scope:** 175
+* **Covered:** 175 (100.0%)
 * **Uncovered:** 0
 * **Variant failures (2-player / choice branches):** 0
 * **Rule scenarios (one situation per rule):** 22/22 pass
-* **Trigger windows (two abilities, one trigger):** 7/7 clean
-* **Gauntlet:** 20/20 matches clean, 81 of 161 abilities seen
+* **Trigger windows (two abilities, one trigger):** 10/10 clean
+* **Gauntlet:** 20/20 matches clean, 81 of 175 abilities seen
 * **Rules observed (Rules Reference v1.8 glossary):** 143 of 257 (0 mapped but unseen, 114 declared untested, 0 drift)
-* **Card data hash:** `70680974`
+* **Card data hash:** `3d487d0a`
 * **Statistics baseline:** `96c234eb` (the Gauntlet steers by it; `--no-stats` makes a run independent of the statistics file)
-* **Gauntlet scope:** Rhino only, the Gate 1 scenario; trigger windows ordered-checked in 0 of 7 (Core data has no window that mixes forced and optional abilities)
+* **Gauntlet scope:** Rhino only, the Gate 1 scenario; trigger windows ordered-checked in 0 of 10 (Core data has no window that mixes forced and optional abilities)
 
 ## Coverage by timing
 
@@ -18,11 +18,11 @@
 | :--- | ---: | ---: |
 | ACTION | 19 | 19 |
 | ALTER_EGO_ACTION | 6 | 6 |
-| BOOST | 6 | 6 |
-| CONSTANT | 22 | 22 |
-| FORCED_INTERRUPT | 3 | 3 |
-| FORCED_RESPONSE | 14 | 14 |
-| HERO_ACTION | 25 | 25 |
+| BOOST | 8 | 8 |
+| CONSTANT | 24 | 24 |
+| FORCED_INTERRUPT | 4 | 4 |
+| FORCED_RESPONSE | 17 | 17 |
+| HERO_ACTION | 26 | 26 |
 | HERO_INTERRUPT | 4 | 4 |
 | HERO_RESOURCE | 1 | 1 |
 | INTERRUPT | 5 | 5 |
@@ -30,7 +30,7 @@
 | RESPONSE | 13 | 13 |
 | SETUP | 1 | 1 |
 | SPECIAL | 4 | 4 |
-| WHEN_REVEALED | 32 | 32 |
+| WHEN_REVEALED | 37 | 37 |
 
 ## Gauntlet findings (errors fail the run; coverage here is only reported)
 

@@ -73,6 +73,22 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed`, `sweeping_swoop_boost` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
+### <a id="add-threat"></a>`ADD_THREAT` (11 Cards, 13 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01107` | **Breakin' & Takin' (side_scheme)** | `core_encounter` | `breakin_and_takin_when_revealed` |
+| `01109` | **Bomb Scare (side_scheme)** | `core_encounter` | `bomb_scare_when_revealed` |
+| `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
+| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
+| `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
+| `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
+| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
+| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
+| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks`, `madame_hydra_schemes` |
+| `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
+
 ### <a id="modify-stat"></a>`MODIFY_STAT` (11 Cards, 13 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -103,21 +119,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01060` | **For Justice! (event)** | `core` | `for_justice` |
 | `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
 | `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
-
-### <a id="add-threat"></a>`ADD_THREAT` (10 Cards, 11 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01107` | **Breakin' & Takin' (side_scheme)** | `core_encounter` | `breakin_and_takin_when_revealed` |
-| `01109` | **Bomb Scare (side_scheme)** | `core_encounter` | `bomb_scare_when_revealed` |
-| `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
-| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
-| `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
-| `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
-| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
-| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
-| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
-| `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 
 ### <a id="draw"></a>`DRAW` (11 Cards, 11 Step Occurrences)
 
@@ -302,6 +303,13 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01004` | **Enhanced Spider-Sense (event)** | `core` | `enhanced_spider_sense` |
 | `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
 
+### <a id="cannot-take-damage"></a>`CANNOT_TAKE_DAMAGE` (2 Cards, 2 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
+
 ### <a id="prevent-damage"></a>`PREVENT_DAMAGE` (2 Cards, 2 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -345,12 +353,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
-
-### <a id="cannot-take-damage"></a>`CANNOT_TAKE_DAMAGE` (1 Cards, 1 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
 
 ### <a id="deal-facedown-encounter-card"></a>`DEAL_FACEDOWN_ENCOUNTER_CARD` (1 Cards, 1 Step Occurrences)
 

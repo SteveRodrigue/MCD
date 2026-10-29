@@ -78,7 +78,7 @@
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_discard` |
 
-### <a id="constant"></a>`CONSTANT` (22 Cards)
+### <a id="constant"></a>`CONSTANT` (23 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -103,6 +103,7 @@
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
 | `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
 | `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
 
 ### <a id="action"></a>`ACTION` (19 Cards)
@@ -129,7 +130,7 @@
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 
-### <a id="forced-response"></a>`FORCED_RESPONSE` (15 Cards)
+### <a id="forced-response"></a>`FORCED_RESPONSE` (16 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -147,6 +148,7 @@
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 | `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks`, `madame_hydra_schemes` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
 ### <a id="response"></a>`RESPONSE` (13 Cards)
@@ -251,7 +253,7 @@
 | :--- | :--- | :--- | :--- |
 | `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
 
-## 2. Trigger Windows (`TriggerTypeSchema` — 20/31 In Use)
+## 2. Trigger Windows (`TriggerTypeSchema` — 21/32 In Use)
 
 ### <a id="when-revealed"></a>`WHEN_REVEALED` (39 Cards)
 
@@ -357,6 +359,14 @@
 | `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
 | `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
 
+### <a id="minion-attacked"></a>`MINION_ATTACKED` (3 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response` |
+| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks` |
+
 ### <a id="threat-would-be-placed"></a>`THREAT_WOULD_BE_PLACED` (3 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -378,13 +388,6 @@
 | :--- | :--- | :--- | :--- |
 | `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
 | `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
-
-### <a id="minion-attacked"></a>`MINION_ATTACKED` (2 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response` |
-| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
 
 ### <a id="basic-attack-performed"></a>`BASIC_ATTACK_PERFORMED` (1 Cards)
 
@@ -427,6 +430,12 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01066` | **Hawkeye (ally)** | `core` | `hawkeye_arrow_response` |
+
+### <a id="minion-schemed"></a>`MINION_SCHEMED` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_schemes` |
 
 ### <a id="round-ended"></a>`ROUND_ENDED` (1 Cards)
 

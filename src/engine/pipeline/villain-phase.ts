@@ -218,6 +218,22 @@ export function executeMinionSchemeAgainstPlayer(
     sourcePlayerId: player.id,
     boostIcons: totalBoostIcons,
   });
+
+  // Forced Responses on minion scheme (e.g. Madame Hydra 01181)
+  const isMinionEngaged =
+    (player?.engagedMinions.some((m) => m.instanceId === minion.instanceId) ?? false) ||
+    state.players.some((p) => p.engagedMinions.some((m) => m.instanceId === minion.instanceId));
+  if (player && isMinionEngaged) {
+    const abilities = minion.card.enrichment?.abilities || [];
+    for (const ability of abilities) {
+      if (ability.trigger === 'MINION_SCHEMED') {
+        kernel.executeEffect(state, ability, {
+          playerId: player.id,
+          sourceCardInstance: minion,
+        });
+      }
+    }
+  }
 }
 
 /**

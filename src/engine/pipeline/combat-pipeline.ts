@@ -1150,12 +1150,9 @@ function step7_resolvePostAttackAndRetaliate(
 
   // Forced Responses on minion attack (e.g. Sandman 01102, Yon-Rogg 01177). An attack whose target
   // was eliminated has ended (RR v1.8 Player Elimination).
-  const isMinionEngaged =
-    (player?.engagedMinions.some((m) => m.instanceId === attackContext.attackerCard?.instanceId) ??
-      false) ||
-    state.players.some((p) =>
-      p.engagedMinions.some((m) => m.instanceId === attackContext.attackerCard?.instanceId),
-    );
+  const isMinionEngaged = state.players.some((p) =>
+    p.engagedMinions.some((m) => m.instanceId === attackContext.attackerCard?.instanceId),
+  );
   if (
     player &&
     attackContext.attackerType === 'MINION' &&

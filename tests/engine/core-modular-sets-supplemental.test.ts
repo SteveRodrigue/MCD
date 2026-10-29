@@ -1,8 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { setupGame } from '@engine/state/game-setup';
-import { HeroCard, AlterEgoCard } from '@engine/models';
+import { setupGame, createCardInstance } from '@engine/state/game-setup';
+import { HeroCard, AlterEgoCard, MinionCard, AllyCard } from '@engine/models';
 import { kernel } from '@engine/kernel';
+import {
+  executeEnemyAttackSynchronously,
+  initiateEnemyAttack,
+  resolveDefenderDeclaration,
+} from '@engine/pipeline/combat-pipeline';
 
 describe('Core Modular Sets Supplemental Data Integration', () => {
   const spiderManHero = cardCatalog.getCard('01001a') as HeroCard;
@@ -215,5 +220,206 @@ describe('Core Modular Sets Supplemental Data Integration', () => {
     expect(modok.enrichment?.noSupplementalNeeded).toBe(true);
     expect(modok.enrichment?.audit?.confidence).toBe(100);
     expect(modok.keywords).toContain('Retaliate 2');
+  });
+
+  describe('Radioactive Man (01129) - Forced Response & Boost', () => {
+    it('marks Radioactive Man (01129) supplemental data with 100% confidence', () => {
+      const rm = cardCatalog.getCard('01129')!;
+      expect(rm.enrichment?.audit?.confidence).toBe(100);
+    });
+
+    it('Forced Response: discards 1 random card from player hand after undefended attack', () => {
+      const state = createTestState();
+      const p1 = state.players[0];
+      const card1 = createCardInstance(cardCatalog.getCard('01005')!, 'p1');
+      const card2 = createCardInstance(cardCatalog.getCard('01006')!, 'p1');
+      const card3 = createCardInstance(cardCatalog.getCard('01007')!, 'p1');
+      p1.hand = [card1, card2, card3];
+      p1.discard = [];
+
+      const radioactiveMan = createCardInstance(cardCatalog.getCard('01129')! as MinionCard);
+      p1.engagedMinions.push(radioactiveMan);
+
+      executeEnemyAttackSynchronously(
+        state,
+        { type: 'MINION', card: radioactiveMan },
+        'p1',
+        'TAKE_UNDEFENDED',
+      );
+
+      expect(p1.hand.length).toBe(2);
+      expect(p1.discard.length).toBe(1);
+    });
+
+    it('Forced Response: discards 1 random card from player hand when defended by an ally', () => {
+      const state = createTestState();
+      const p1 = state.players[0];
+      const card1 = createCardInstance(cardCatalog.getCard('01005')!, 'p1');
+      const card2 = createCardInstance(cardCatalog.getCard('01006')!, 'p1');
+      const card3 = createCardInstance(cardCatalog.getCard('01007')!, 'p1');
+      p1.hand = [card1, card2, card3];
+      p1.discard = [];
+
+      const ally = createCardInstance(cardCatalog.getCard('01002')! as AllyCard, 'p1');
+      p1.allies = [ally];
+
+      const radioactiveMan = createCardInstance(cardCatalog.getCard('01129')! as MinionCard);
+      p1.engagedMinions.push(radioactiveMan);
+
+      executeEnemyAttackSynchronously(
+        state,
+        { type: 'MINION', card: radioactiveMan },
+        'p1',
+        'ALLY_CHUMP_BLOCK',
+      );
+
+      // Ally defended, but player was attacked (RR v1.8), so player discards 1 card
+      expect(p1.hand.length).toBe(2);
+      expect(p1.discard.length).toBe(1);
+    });
+
+    it('Forced Response: discards 1 random card from defending player when cross-table defended in multiplayer', () => {
+      const state = createTwoPlayerState();
+      const p1 = state.players[0];
+      const p2 = state.players[1];
+      p1.hand = [
+        createCardInstance(cardCatalog.getCard('01005')!, 'p1'),
+        createCardInstance(cardCatalog.getCard('01006')!, 'p1'),
+        createCardInstance(cardCatalog.getCard('01007')!, 'p1'),
+      ];
+      p2.hand = [
+        createCardInstance(cardCatalog.getCard('01005')!, 'p2'),
+        createCardInstance(cardCatalog.getCard('01006')!, 'p2'),
+        createCardInstance(cardCatalog.getCard('01007')!, 'p2'),
+      ];
+      p1.discard = [];
+      p2.discard = [];
+
+      const radioactiveMan = createCardInstance(cardCatalog.getCard('01129')! as MinionCard);
+      p1.engagedMinions.push(radioactiveMan);
+
+      initiateEnemyAttack(state, { type: 'MINION', card: radioactiveMan }, 'p1');
+      resolveDefenderDeclaration(
+        state,
+        { type: 'HERO', playerId: 'p2' },
+        state.activeAttackContext!,
+      );
+
+      // p2 defended, so p2 became target player and discards 1 card; p1 hand is untouched
+      expect(p2.hand.length).toBe(2);
+      expect(p2.discard.length).toBe(1);
+      expect(p1.hand.length).toBe(3);
+      expect(p1.discard.length).toBe(0);
+    });
+
+    it('Forced Response: handles empty hand gracefully (0 cards discarded)', () => {
+      const state = createTestState();
+      const p1 = state.players[0];
+      p1.hand = [];
+      p1.discard = [];
+
+      const radioactiveMan = createCardInstance(cardCatalog.getCard('01129')! as MinionCard);
+      p1.engagedMinions.push(radioactiveMan);
+
+      executeEnemyAttackSynchronously(
+        state,
+        { type: 'MINION', card: radioactiveMan },
+        'p1',
+        'TAKE_UNDEFENDED',
+      );
+
+      expect(p1.hand.length).toBe(0);
+      expect(p1.discard.length).toBe(0);
+    });
+
+    it('Forced Response: discards the single card when hand has exactly 1 card', () => {
+      const state = createTestState();
+      const p1 = state.players[0];
+      const card = createCardInstance(cardCatalog.getCard('01005')!, 'p1');
+      p1.hand = [card];
+      p1.discard = [];
+
+      const radioactiveMan = createCardInstance(cardCatalog.getCard('01129')! as MinionCard);
+      p1.engagedMinions.push(radioactiveMan);
+
+      executeEnemyAttackSynchronously(
+        state,
+        { type: 'MINION', card: radioactiveMan },
+        'p1',
+        'TAKE_UNDEFENDED',
+      );
+
+      expect(p1.hand.length).toBe(0);
+      expect(p1.discard.length).toBe(1);
+      expect(p1.discard[0].card.code).toBe('01005');
+    });
+
+    it('Boost: discards 1 random card from defending player hand during villain attack', () => {
+      const state = createTestState();
+      const p1 = state.players[0];
+      p1.hand = [
+        createCardInstance(cardCatalog.getCard('01005')!, 'p1'),
+        createCardInstance(cardCatalog.getCard('01006')!, 'p1'),
+        createCardInstance(cardCatalog.getCard('01007')!, 'p1'),
+      ];
+      p1.discard = [];
+
+      const radioactiveMan = createCardInstance(cardCatalog.getCard('01129')! as MinionCard);
+      state.encounterDeck = [radioactiveMan];
+
+      executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
+
+      expect(p1.hand.length).toBe(2);
+      expect(p1.discard.length).toBe(1);
+    });
+
+    it('Boost: discards 1 random card from cross-table defender in multiplayer', () => {
+      const state = createTwoPlayerState();
+      const p1 = state.players[0];
+      const p2 = state.players[1];
+      p1.hand = [
+        createCardInstance(cardCatalog.getCard('01005')!, 'p1'),
+        createCardInstance(cardCatalog.getCard('01006')!, 'p1'),
+        createCardInstance(cardCatalog.getCard('01007')!, 'p1'),
+      ];
+      p2.hand = [
+        createCardInstance(cardCatalog.getCard('01005')!, 'p2'),
+        createCardInstance(cardCatalog.getCard('01006')!, 'p2'),
+        createCardInstance(cardCatalog.getCard('01007')!, 'p2'),
+      ];
+      p1.discard = [];
+      p2.discard = [];
+
+      const radioactiveMan = createCardInstance(cardCatalog.getCard('01129')! as MinionCard);
+      state.encounterDeck = [radioactiveMan];
+
+      initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1');
+      resolveDefenderDeclaration(
+        state,
+        { type: 'HERO', playerId: 'p2' },
+        state.activeAttackContext!,
+      );
+
+      // p2 defended, so boost effect discards from p2's hand; p1 hand is untouched
+      expect(p2.hand.length).toBe(2);
+      expect(p2.discard.length).toBe(1);
+      expect(p1.hand.length).toBe(3);
+      expect(p1.discard.length).toBe(0);
+    });
+
+    it('Boost: handles empty hand gracefully during boost resolution', () => {
+      const state = createTestState();
+      const p1 = state.players[0];
+      p1.hand = [];
+      p1.discard = [];
+
+      const radioactiveMan = createCardInstance(cardCatalog.getCard('01129')! as MinionCard);
+      state.encounterDeck = [radioactiveMan];
+
+      executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
+
+      expect(p1.hand.length).toBe(0);
+      expect(p1.discard.length).toBe(0);
+    });
   });
 });

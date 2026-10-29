@@ -270,4 +270,16 @@ describe('Editor UI Contrast & Layout Ergonomics (Issue #116)', () => {
     expect(previewCol?.classList.contains('overflow-visible')).toBe(true);
     expect(previewCol?.classList.contains('hover:z-zoom')).toBe(true);
   });
+  it('keeps the editor workspace above the header and unclipped so hover-zoom is not hidden behind the menu bar', async () => {
+    await act(async () => {
+      render(<SupplementalEditorScreen />);
+    });
+    const workspace = screen.getByTestId('card-gallery-pane').parentElement;
+    const bars = Array.from(workspace?.parentElement?.children ?? []).filter(
+      (el) => el !== workspace,
+    );
+    expect(workspace?.classList.contains('overflow-hidden')).toBe(false);
+    expect(workspace?.classList.contains('z-raised')).toBe(true);
+    bars.forEach((el) => expect(el.classList.contains('z-raised')).toBe(false));
+  });
 });

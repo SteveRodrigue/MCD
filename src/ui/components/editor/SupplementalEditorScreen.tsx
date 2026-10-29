@@ -136,7 +136,7 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
   return (
     <div className="min-h-screen w-full bg-comic-paper flex flex-col overflow-hidden font-sans select-none">
       {/* TOP HEADER BAR */}
-      <header className="relative z-raised bg-comic-panel border-b-4 border-black px-4 py-2.5 flex items-center justify-between shadow-comic-md">
+      <header className="relative z-content bg-comic-panel border-b-4 border-black px-4 py-2.5 flex items-center justify-between shadow-comic-md">
         <div className="flex items-center gap-3">
           <button
             onClick={handleBack}
@@ -202,7 +202,7 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
       />
 
       {/* MAIN WORKSPACE SPLIT (Left: Card Gallery List, Right: Dual Inspector) */}
-      <div className="relative z-content flex-1 flex flex-col md:flex-row overflow-hidden border-t-2 border-black">
+      <div className="relative z-raised flex-1 min-h-0 flex flex-col md:flex-row overflow-visible border-t-2 border-black">
         {/* Edge toggle when collapsed */}
         {isSidebarCollapsed && (
           <button

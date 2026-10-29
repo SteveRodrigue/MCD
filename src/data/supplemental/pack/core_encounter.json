@@ -2139,14 +2139,59 @@
       }
     },
     "01181": {
+      "abilities": [
+        {
+          "id": "madame_hydra_immunity",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "CANNOT_TAKE_DAMAGE",
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "01180"
+              },
+              "effectParams": {
+                "target": "SELF"
+              }
+            }
+          ]
+        },
+        {
+          "id": "madame_hydra_attacks",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "MINION_ATTACKED",
+          "steps": [
+            {
+              "effect": "ADD_THREAT",
+              "effectParams": {
+                "amount": 2,
+                "cardCode": "01180"
+              }
+            }
+          ]
+        },
+        {
+          "id": "madame_hydra_schemes",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "MINION_SCHEMED",
+          "steps": [
+            {
+              "effect": "ADD_THREAT",
+              "effectParams": {
+                "amount": 2,
+                "cardCode": "01180"
+              }
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-10-28T19:30",
-        "updatedAt": "2026-10-28T19:30",
-        "reviewedAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-29T05:20",
+        "reviewedAt": "2026-10-29T05:20",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 75,
-        "ambiguityFile": "docs/ambiguities/core_encounter_01181_madame-hydra.md",
+        "confidence": 100,
         "originalText": "Madame Hydra cannot take damage while the Legions of Hydra side scheme is in play.\n[star] <b>Forced Response</b>: After Madame Hydra schemes or attacks, place 2 threat on the Legions of Hydra side scheme."
       }
     },

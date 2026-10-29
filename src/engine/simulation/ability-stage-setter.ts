@@ -30,6 +30,7 @@ import type { UniversalCardFilter } from '../../data/supplemental/schema';
 import { attachStepOf } from '../../data/supplemental/runtime';
 import { isImmuneToDamage } from '../pipeline/damage-immunity';
 import { applyThreatPlacement } from '../pipeline/threat-pipeline';
+import { namedSchemeCode } from '../effects/step-selection';
 import { matchesCardFilter } from '../filters/card-filter';
 import { findInPlayCardInstance } from '../state/state-validator';
 import {
@@ -304,6 +305,20 @@ function primeForEffects(stage: Stage, target: AbilityTarget, source?: CardInsta
       amount: 3,
       sourceType: 'CARD_EFFECT',
     });
+  }
+  // Adding threat to a named side scheme needs that scheme in play
+  if (effects.has('ADD_THREAT')) {
+    const namedScheme = target.ability.steps.map(namedSchemeCode).find(Boolean);
+    if (namedScheme && !stage.state.sideSchemes.some((s) => s.card?.code === namedScheme)) {
+      const schemeCard = stage.options.allCards.find((c) => c.code === namedScheme);
+      if (schemeCard) {
+        stage.state.sideSchemes.push({
+          instanceId: `sim_side_${stage.state.sideSchemes.length}`,
+          card: schemeCard as SideSchemeState['card'],
+          threat: 2,
+        });
+      }
+    }
   }
   // Healing the card itself needs it to carry damage
   if (effects.has('HEAL_DAMAGE') && source) source.tokens = { ...source.tokens, damage: 1 };
@@ -898,6 +913,10 @@ const SCENARIOS: Record<string, Scenario> = {
     setForm(player1(stage), 'hero');
     return endRound(stage);
   },
+  MINION_SCHEMED: (stage) => {
+    setForm(player1(stage), 'alter_ego');
+    return endRound(stage);
+  },
   MINION_ENTERS_PLAY: (stage) => revealFixture(stage, stage.fixtures.minion),
   ENCOUNTER_CARD_REVEALED: (stage) => revealFixture(stage, stage.fixtures.treachery),
   THREAT_WOULD_BE_PLACED: (stage) => {
@@ -1170,6 +1189,13 @@ function exerciseConstant(
   const gatedForm = target.ability.steps.find((step) => step.gate === 'IF_FORM')?.gateParams
     ?.form as string | undefined;
   if (gatedForm) setForm(p, gatedForm === 'HERO' ? 'hero' : 'alter_ego');
+  const gatedCardCode = target.ability.steps.find((step) => step.gate === 'IF_CARD_IN_PLAY')
+    ?.gateParams?.cardCode as string | undefined;
+  if (gatedCardCode && !state.sideSchemes.some((s) => s.card?.code === gatedCardCode)) {
+    const witnessScheme = options.allCards.find((c) => c.code === gatedCardCode);
+    if (witnessScheme)
+      installInPlay(stage, createCardInstance(witnessScheme, PLAYER_ID), witnessScheme.type);
+  }
   for (const filter of declaredFilters(target)) {
     const witness = options.allCards.find(
       (c) => c.code !== card.code && c.packCode === 'core' && matchesCardFilter(c, filter),

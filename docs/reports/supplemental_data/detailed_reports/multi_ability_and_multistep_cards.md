@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-## 1. Cards with Multiple Abilities (2+ Declared Abilities — 20 Cards)
+## 1. Cards with Multiple Abilities (2+ Declared Abilities — 21 Cards)
 
 | Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -25,6 +25,7 @@
 | `01168` | **Sweeping Swoop** | `treachery` | `core_encounter` | **2** | • `sweeping_swoop_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `sweeping_swoop_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01173` | **Electric Whip Attack** | `treachery` | `core_encounter` | **2** | • `electric_whip_attack_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `electric_whip_attack_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01178` | **Kree Manipulator** | `treachery` | `core_encounter` | **2** | • `kree_manipulator_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `kree_manipulator_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `01181` | **Madame Hydra** | `minion` | `core_encounter` | **3** | • `madame_hydra_immunity` (`CONSTANT`, **1 step**)<br/>• `madame_hydra_attacks` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**)<br/>• `madame_hydra_schemes` (`FORCED_RESPONSE` / `MINION_SCHEMED`, **1 step**) |
 | `45109` | **The Fittest** | `attachment` | `aoa_encounter` | **2** | • `the_fittest_hit_points` (`CONSTANT`, **1 step**)<br/>• `the_fittest_tough` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**) |
 
 ## 2. Multi-Step Execution Pipelines (2+ Steps — 33 Pipelines Across 33 Cards)

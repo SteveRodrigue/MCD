@@ -1,6 +1,6 @@
 ---
 title: "Random modular selector option and core modular sets supplemental data"
-type: feature
+type: Added
 date: "2026-10-28"
 ---
 

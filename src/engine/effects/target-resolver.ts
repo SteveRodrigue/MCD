@@ -413,6 +413,11 @@ function resolvePlayerSelectorTarget(
       return [{ kind: 'player', entity: activeP, id: activeP.id }];
     }
 
+    case 'FIRST_PLAYER': {
+      const fp = state.players[state.firstPlayerIndex] || resolvingPlayer || state.players[0];
+      return [{ kind: 'player', entity: fp, id: fp.id }];
+    }
+
     case 'CHOSEN_PLAYER': {
       if (context?.targetPlayerId) {
         const p = state.players.find(

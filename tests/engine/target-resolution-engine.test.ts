@@ -101,6 +101,22 @@ describe('Target Resolution Engine Contract Tests (Issue #68 & RR v1.8)', () => 
       expect(targets[0].id).toBe('p2');
     });
 
+    it('resolves FIRST_PLAYER to designated first player regardless of active or resolving player', () => {
+      const state = createTwoPlayerState();
+      state.firstPlayerIndex = 0;
+      state.activePlayerIndex = 1;
+
+      const targets = resolvePlayerTargets(state, 'FIRST_PLAYER', { playerId: 'p2' });
+      expect(targets).toHaveLength(1);
+      expect(targets[0].id).toBe('p1');
+
+      // Rotates token to p2
+      state.firstPlayerIndex = 1;
+      const rotatedTargets = resolvePlayerTargets(state, 'FIRST_PLAYER', { playerId: 'p1' });
+      expect(rotatedTargets).toHaveLength(1);
+      expect(rotatedTargets[0].id).toBe('p2');
+    });
+
     it('resolves CHOSEN_PLAYER to targetPlayerId', () => {
       const state = createTwoPlayerState();
       const targets = resolvePlayerTargets(state, 'CHOSEN_PLAYER', {

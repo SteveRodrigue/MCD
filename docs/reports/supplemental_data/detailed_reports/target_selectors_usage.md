@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Target Selectors In Use:** **31/44**
+> **Active Target Selectors In Use:** **32/45**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -82,16 +82,6 @@
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
 
-### <a id="chosen-player"></a>`CHOSEN_PLAYER` (5 Cards, 5 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01010b` | **Carol Danvers (alter_ego)** | `core` | `commander` |
-| `01034` | **Stark Tower (support)** | `core` | `stark_tower_retrieve` |
-| `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
-| `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
-| `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
-
 ### <a id="self-hero"></a>`SELF_HERO` (5 Cards, 5 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -101,6 +91,15 @@
 | `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
+
+### <a id="chosen-player"></a>`CHOSEN_PLAYER` (4 Cards, 4 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01010b` | **Carol Danvers (alter_ego)** | `core` | `commander` |
+| `01034` | **Stark Tower (support)** | `core` | `stark_tower_retrieve` |
+| `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
+| `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 
 ### <a id="defending-player"></a>`DEFENDING_PLAYER` (2 Cards, 3 Declarations)
 
@@ -234,6 +233,12 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
+
+### <a id="first-player"></a>`FIRST_PLAYER` (1 Cards, 1 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
 
 ### <a id="host"></a>`HOST` (1 Cards, 1 Declarations)
 

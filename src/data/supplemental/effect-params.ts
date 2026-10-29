@@ -163,6 +163,20 @@ export const EFFECT_PARAM_SCHEMAS = {
       }),
     })
     .strict(),
+  DEAL_FACEDOWN_ENCOUNTER_CARD: z
+    .object({
+      target: optional(
+        z.enum(['ENGAGED_PLAYER', 'ACTIVE_PLAYER', 'FIRST_PLAYER', 'ALL_PLAYERS']),
+        { label: 'Target', defaultValue: 'ENGAGED_PLAYER' },
+      ),
+      count: optional(AMOUNT, {
+        label: 'Encounter Card Count',
+        placeholder: '1',
+        description: 'Number of facedown encounter cards to deal',
+        primary: true,
+      }),
+    })
+    .strict(),
   DECLARE_DEFENDER: effectOnly(),
   DISCARD: z
     .object({
@@ -779,6 +793,7 @@ export const EFFECT_PARAM_KEYS: Record<EffectType, readonly string[]> = Object.f
 /** One-line help text per effect primitive, shown next to the effect selector in the Card Editor. */
 export const EFFECT_DESCRIPTIONS: Record<EffectType, string> = {
   DEAL_DAMAGE: "Deal damage to a target character or enemy.",
+  DEAL_FACEDOWN_ENCOUNTER_CARD: "Deal facedown encounter cards to target player(s) (RR v1.8 p. 8).",
   DISTRIBUTE_AMOUNT: "Distribute a pool of damage, threat removal, heal, or counters across multiple eligible targets (ADR-0064).",
   PREVENT_DAMAGE: "Prevent incoming attack or effect damage to a character.",
   HEAL_DAMAGE: "Heal damage from target identity, ally, or friendly character.",

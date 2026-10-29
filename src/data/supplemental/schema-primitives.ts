@@ -125,6 +125,7 @@ export const TargetSelectorSchema = z.enum([
   'ACTIVE_PLAYER',
   'ALL_PLAYERS',
   'DEFENDING_PLAYER',
+  'ENGAGED_PLAYER',
   'ALL_HEROES',
   'ALL_HEROES_AND_ALLIES',
   'TRIGGERING_HERO',

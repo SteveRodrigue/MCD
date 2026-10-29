@@ -24,6 +24,10 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
   const availableSets = React.useMemo(() => {
     if (!sets) return [];
     if (!filters.pack) return sets;
+    // Metadata from a server that predates pack enrichment carries no pack info; show every set
+    // instead of an empty list.
+    const hasPackInfo = sets.some((s) => s.pack_code || (s.pack_codes && s.pack_codes.length > 0));
+    if (!hasPackInfo) return sets;
     return sets.filter((s) => {
       if (s.pack_codes && s.pack_codes.length > 0) {
         return s.pack_codes.includes(filters.pack!);

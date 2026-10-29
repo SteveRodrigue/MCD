@@ -69,9 +69,27 @@ Returns catalog categorization metadata for populating multi-select filter menus
     { "code": "cap", "name": "Captain America", "pack_type_code": "hero", "size": 56 }
   ],
   "sets": [
-    { "code": "rhino", "name": "Rhino", "card_set_type_code": "villain" },
-    { "code": "spider_man", "name": "Spider-Man", "card_set_type_code": "hero" },
-    { "code": "bomb_scare", "name": "Bomb Scare", "card_set_type_code": "modular" }
+    {
+      "code": "rhino",
+      "name": "Rhino",
+      "card_set_type_code": "villain",
+      "pack_code": "core",
+      "pack_codes": ["core"]
+    },
+    {
+      "code": "spider_man",
+      "name": "Spider-Man",
+      "card_set_type_code": "hero",
+      "pack_code": "core",
+      "pack_codes": ["core"]
+    },
+    {
+      "code": "bomb_scare",
+      "name": "Bomb Scare",
+      "card_set_type_code": "modular",
+      "pack_code": "core",
+      "pack_codes": ["core"]
+    }
   ],
   "factions": [
     { "code": "aggression", "name": "Aggression" },

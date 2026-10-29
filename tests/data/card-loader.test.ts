@@ -12,6 +12,7 @@ import {
   AlterEgoCard,
   VillainCard,
   SideSchemeCard,
+  MinionCard,
 } from '@engine/models';
 import { matchesCardFilter } from '@engine/effects';
 
@@ -246,6 +247,31 @@ describe('Card Loader & Normalizer Unit Tests', () => {
       expect(bomber).toBeDefined();
       expect(bomber?.type).toBe(CardType.MINION);
       expect(bomber?.traits).toContain('Hydra');
+    });
+
+    it('normalizes Legions of Hydra modular encounter set cards', () => {
+      const hydraCards = catalog.getCardsBySet('legions_of_hydra');
+      expect(hydraCards.length).toBe(3);
+
+      // Legions of Hydra Side Scheme (01180)
+      const sideScheme = catalog.getCard('01180') as SideSchemeCard;
+      expect(sideScheme).toBeDefined();
+      expect(sideScheme?.type).toBe(CardType.SIDE_SCHEME);
+      expect(sideScheme?.baseThreat).toBe(3);
+
+      // Madame Hydra Minion (01181)
+      const madame = catalog.getCard('01181') as MinionCard;
+      expect(madame).toBeDefined();
+      expect(madame?.type).toBe(CardType.MINION);
+      expect(madame?.traits).toContain('Hydra');
+      expect(madame?.traits).toContain('Elite');
+
+      // Hydra Soldier Minion (01182)
+      const soldier = catalog.getCard('01182') as MinionCard;
+      expect(soldier).toBeDefined();
+      expect(soldier?.type).toBe(CardType.MINION);
+      expect(soldier?.traits).toEqual(['Hydra']);
+      expect(soldier?.keywords).toContain('Guard');
     });
   });
 

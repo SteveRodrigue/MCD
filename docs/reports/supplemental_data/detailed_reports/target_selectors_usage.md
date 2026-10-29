@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Target Selectors In Use:** **30/43**
+> **Active Target Selectors In Use:** **31/44**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -227,6 +227,12 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01080` | **Med Team (support)** | `core` | `med_team_heal` |
+
+### <a id="engaged-player"></a>`ENGAGED_PLAYER` (1 Cards, 1 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
 
 ### <a id="host"></a>`HOST` (1 Cards, 1 Declarations)
 

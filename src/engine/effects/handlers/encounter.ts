@@ -255,6 +255,60 @@ function handleRevealEncounterCard(
   };
 }
 
+function handleDealFacedownEncounterCard(
+  state: GameState,
+  step: TypedStep<'DEAL_FACEDOWN_ENCOUNTER_CARD'>,
+  context: EffectExecutionContext,
+  player: PlayerState,
+): EffectResult {
+  const params = getStepEffectParams(step);
+  const targetSelector = params.target ?? 'ENGAGED_PLAYER';
+  const count =
+    typeof params.count === 'number'
+      ? params.count
+      : params.count
+        ? resolveNumericAmount(params.count, context, 1)
+        : 1;
+
+  let targetPlayers: PlayerState[] = [];
+  if (targetSelector === 'ALL_PLAYERS') {
+    targetPlayers = state.players;
+  } else if (targetSelector === 'FIRST_PLAYER') {
+    const fp = state.players[state.firstPlayerIndex] ?? state.players[0];
+    if (fp) targetPlayers = [fp];
+  } else {
+    const p =
+      (context.playerId ? state.players.find((pl) => pl.id === context.playerId) : undefined) ??
+      player ??
+      state.players[0];
+    if (p) targetPlayers = [p];
+  }
+
+  let totalDealt = 0;
+  for (const targetPlayer of targetPlayers) {
+    for (let i = 0; i < count; i++) {
+      const card = drawEncounterCard(state);
+      if (card) {
+        targetPlayer.dealtEncounterCards.push(card);
+        totalDealt++;
+      }
+    }
+    appendLog(state, {
+      key: 'encounter.card.revealed',
+      params: { actor: targetPlayer.name },
+      onomatopoeia: 'DEALT ENCOUNTER CARD!',
+    });
+  }
+
+  return {
+    state,
+    success: totalDealt > 0,
+    mutatedState: totalDealt > 0,
+    value: totalDealt,
+    onomatopoeia: 'DEALT ENCOUNTER CARD!',
+  };
+}
+
 function handleAddThreat(
   state: GameState,
   step: TypedStep<'ADD_THREAT'>,
@@ -450,6 +504,7 @@ export const ENCOUNTER_HANDLERS = {
   ADD_ACCELERATION: handleAddAcceleration,
   SURGE: handleSurge,
   REVEAL_ENCOUNTER_CARD: handleRevealEncounterCard,
+  DEAL_FACEDOWN_ENCOUNTER_CARD: handleDealFacedownEncounterCard,
   ADD_THREAT: handleAddThreat,
   CANCEL_WHEN_REVEALED: handleCancelWhenRevealed,
   CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER: handleCancelWhenRevealedAndRevealAnother,

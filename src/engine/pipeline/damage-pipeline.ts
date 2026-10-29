@@ -102,6 +102,54 @@ export interface DamageRequest {
 }
 
 /**
+ * Resolves minion defeat per RR v1.8 (When Defeated Abilities, Defeat):
+ * 1. Resolves all When Defeated abilities on the minion before leaving play.
+ * 2. Processes host attachments/tucked cards via processHostDefeated.
+ * 3. Moves the minion to the encounter discard pile.
+ * 4. Returns the DefeatDispatch payload to be dispatched after state changes.
+ */
+export function resolveMinionDefeat(
+  state: GameState,
+  minion: CardInstance,
+  targetPlayer: PlayerState,
+  defeatSource?: DefeatSource,
+): DefeatDispatch {
+  // 1. Resolve 'When Defeated' abilities declared on the minion itself before it leaves play (RR v1.8 p. 23)
+  const abilities = minion.card.enrichment?.abilities || [];
+  for (const ability of abilities) {
+    const trigger = ability.trigger as string | undefined;
+    const timing = ability.timing as string | undefined;
+    if (
+      (trigger === 'DEFEATED' || trigger === 'WHEN_DEFEATED') &&
+      (timing === 'FORCED_INTERRUPT' ||
+        timing === 'INTERRUPT' ||
+        timing === 'FORCED_RESPONSE' ||
+        timing === 'RESPONSE' ||
+        timing === 'WHEN_DEFEATED' ||
+        !timing)
+    ) {
+      kernel.executeEffect(state, ability, {
+        playerId: targetPlayer.id,
+        sourceCardInstance: minion,
+      });
+    }
+  }
+
+  // 2. Clean up attachments or cards underneath
+  processHostDefeated(state, minion, { player: targetPlayer });
+
+  // 3. Move minion to encounter discard pile
+  moveDefeatedCardToPile(state, minion, state.encounterDiscard);
+
+  return {
+    targetPlayerId: targetPlayer.id,
+    targetInstanceId: minion.instanceId,
+    targetType: 'MINION',
+    defeatSource,
+  };
+}
+
+/**
  * Defeats every engaged minion whose damage reached its hit points. A lost hit point bonus (the
  * attachment leaves play) lowers only the ceiling; the damage stays (RR v1.8 hit points).
  */
@@ -112,14 +160,11 @@ export function defeatMinionsBeyondHitPoints(state: GameState): void {
       const idx = player.engagedMinions.findIndex((m) => m.instanceId === minion.instanceId);
       if (idx === -1) continue;
       player.engagedMinions.splice(idx, 1);
-      processHostDefeated(state, minion);
-      moveDefeatedCardToPile(state, minion, state.encounterDiscard);
-      dispatchDefeat(state, {
-        targetPlayerId: player.id,
-        targetInstanceId: minion.instanceId,
-        targetType: 'MINION',
-        defeatSource: { kind: 'EFFECT', byAttack: false },
+      const defeat = resolveMinionDefeat(state, minion, player, {
+        kind: 'EFFECT',
+        byAttack: false,
       });
+      dispatchDefeat(state, defeat);
     }
   }
 }
@@ -382,14 +427,12 @@ function applyDamageAndCheckDefeat(
             );
             if (idx !== -1) {
               const [defeatedMinion] = targetPlayer.engagedMinions.splice(idx, 1);
-              processHostDefeated(state, defeatedMinion);
-              pendingDefeat = {
-                targetPlayerId: targetPlayer.id,
-                targetInstanceId: defeatedMinion.instanceId,
-                targetType: 'MINION',
+              pendingDefeat = resolveMinionDefeat(
+                state,
+                defeatedMinion,
+                targetPlayer,
                 defeatSource,
-              };
-              moveDefeatedCardToPile(state, defeatedMinion, state.encounterDiscard);
+              );
             }
           }
         }

@@ -212,6 +212,15 @@
 | `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
 | `01085` | **Emergency (event)** | `core` | `emergency_interrupt` |
 
+### <a id="forced-interrupt"></a>`FORCED_INTERRUPT` (4 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_defeat_trigger` |
+| `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
+| `01098` | **Armored Rhino Suit (attachment)** | `core_encounter` | `armored_rhino_suit_shield` |
+| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
+
 ### <a id="hero-interrupt"></a>`HERO_INTERRUPT` (4 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -229,14 +238,6 @@
 | `01047` | **Panther Claws (upgrade)** | `core` | `panther_claws_special` |
 | `01048` | **Tactical Genius (upgrade)** | `core` | `tactical_genius_special` |
 | `01049` | **Vibranium Suit (upgrade)** | `core` | `vibranium_suit_special` |
-
-### <a id="forced-interrupt"></a>`FORCED_INTERRUPT` (3 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_defeat_trigger` |
-| `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
-| `01098` | **Armored Rhino Suit (attachment)** | `core_encounter` | `armored_rhino_suit_shield` |
 
 ### <a id="hero-resource"></a>`HERO_RESOURCE` (1 Cards)
 
@@ -340,6 +341,14 @@
 | `01017` | **Cosmic Flight (upgrade)** | `core` | `cosmic_flight_prevent` |
 | `01098` | **Armored Rhino Suit (attachment)** | `core_encounter` | `armored_rhino_suit_shield` |
 
+### <a id="defeated"></a>`DEFEATED` (3 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01052` | **Chase Them Down (event)** | `core` | `chase_them_down` |
+| `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
+| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
+
 ### <a id="encounter-card-revealed"></a>`ENCOUNTER_CARD_REVEALED` (3 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -369,13 +378,6 @@
 | :--- | :--- | :--- | :--- |
 | `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
 | `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
-
-### <a id="defeated"></a>`DEFEATED` (2 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01052` | **Chase Them Down (event)** | `core` | `chase_them_down` |
-| `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
 
 ### <a id="minion-attacked"></a>`MINION_ATTACKED` (2 Cards)
 

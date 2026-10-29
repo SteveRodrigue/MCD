@@ -235,4 +235,39 @@ describe('Editor UI Contrast & Layout Ergonomics (Issue #116)', () => {
       limit: 50,
     });
   });
+
+  it('verifies DualCardInspector card preview column enables unconstrained z-axis hover-zoom (ADR-0012, Issue #482)', async () => {
+    const mockDetails: CardDetailsResponse = {
+      code: '01001a',
+      packCode: 'core',
+      packFile: 'core.json',
+      upstream: {
+        code: '01001a',
+        name: 'Spider-Man',
+        type_code: 'hero',
+        faction_code: 'hero',
+        text: 'Spider-Sense',
+      },
+      supplemental: {},
+      validation: { valid: true, errors: [] },
+    };
+
+    await act(async () => {
+      render(
+        <DualCardInspector
+          cardDetails={mockDetails}
+          loading={false}
+          onSaveSupplemental={vi.fn()}
+        />,
+      );
+    });
+
+    // The column holding the card visual preview must not clip on the z-axis / overflow
+    const printedHeading = screen.getByText('PRINTED CARD TEXT');
+    const previewCol = printedHeading.closest('.border-r-4');
+    expect(previewCol).toBeDefined();
+    expect(previewCol?.classList.contains('overflow-y-auto')).toBe(false);
+    expect(previewCol?.classList.contains('overflow-visible')).toBe(true);
+    expect(previewCol?.classList.contains('hover:z-zoom')).toBe(true);
+  });
 });

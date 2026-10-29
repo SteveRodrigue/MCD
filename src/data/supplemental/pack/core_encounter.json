@@ -703,6 +703,283 @@
         "originalText": "Klaw gets +10 hit points. <i>(When this scheme is defeated, Klaw loses those hit points.)</i>"
       }
     },
+    "01128": {
+      "abilities": [
+        {
+          "id": "masters_of_evil_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "mode": "UNTIL_MATCH",
+                "untilFilter": {
+                  "traits": [
+                    "Masters of Evil"
+                  ],
+                  "types": [
+                    "minion"
+                  ]
+                },
+                "matchingDestination": "PLAY",
+                "target": "CHOSEN_PLAYER"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-28T19:30",
+        "reviewedAt": "2026-10-28T19:30",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>When Revealed</b>: Discard cards from the encounter deck until a [[Masters of Evil]] minion is discarded. Put that minion into play engaged with the first player."
+      }
+    },
+    "01129": {
+      "abilities": [
+        {
+          "id": "radioactive_man_forced_response",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "MINION_ATTACKED",
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "HAND",
+                "count": 1,
+                "mode": "RANDOM",
+                "target": "DEFENDING_PLAYER"
+              }
+            }
+          ]
+        },
+        {
+          "id": "radioactive_man_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "HAND",
+                "count": 1,
+                "mode": "RANDOM",
+                "target": "DEFENDING_PLAYER"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-28T19:30",
+        "reviewedAt": "2026-10-28T19:30",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "[star] <b>Forced Response</b>: After Radioactive Man attacks you, discard 1 card at random from your hand.\n<hr />\n[star] <b>Boost</b>: Discard 1 card at random from your hand."
+      }
+    },
+    "01130": {
+      "audit": {
+        "createdAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-28T19:30",
+        "reviewedAt": "2026-10-28T19:30",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 75,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01130_whirlwind.md",
+        "originalText": "[star] <b>Forced Interrupt</b>: When Whirlwind attacks you, also resolve his attack against each other hero.\n<hr />\n[star] <b>Boost</b>: Deal 1 damage to each hero."
+      }
+    },
+    "01131": {
+      "audit": {
+        "createdAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-28T19:30",
+        "reviewedAt": "2026-10-28T19:30",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 75,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01131_tiger-shark.md",
+        "originalText": "[star] <b>Forced Response</b>: After Tiger Shark attacks, give him a tough status card.\n<hr />\n[star] <b>Boost</b>: Give the villain a tough status card."
+      }
+    },
+    "01132": {
+      "audit": {
+        "createdAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-28T19:30",
+        "reviewedAt": "2026-10-28T19:30",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 75,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01132_melter.md",
+        "originalText": "[star] The engaged player must defend against Melter's attacks with an ally they control, if able.\n<hr />\n[star] <b>Boost</b>: Exhaust each ally you control."
+      }
+    },
+    "01133": {
+      "audit": {
+        "createdAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-28T19:30",
+        "reviewedAt": "2026-10-28T19:30",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 75,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01133_masters-of-mayhem.md",
+        "originalText": "<b>When Revealed</b>: Each [[Masters of Evil]] minion attacks the hero it is engaged with. If no attacks were made this way, search the encounter deck and discard pile for a [[Masters of Evil]] minion and put it into play engaged with you, then shuffle the encounter deck."
+      }
+    },
+    "01151": {
+      "abilities": [
+        {
+          "id": "under_attack_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Under Attack",
+                "description": "Choose an option for Under Attack's When Revealed trigger:",
+                "options": [
+                  {
+                    "id": "place_threat",
+                    "label": "Place 2 Threat",
+                    "description": "Place 2 threat on Under Attack.",
+                    "effect": "ADD_THREAT",
+                    "params": {
+                      "target": "THIS_SIDE_SCHEME",
+                      "amount": 2
+                    }
+                  },
+                  {
+                    "id": "deal_damage",
+                    "label": "Deal 3 Damage to Hero",
+                    "description": "Deal 3 damage to your hero.",
+                    "effect": "DEAL_DAMAGE",
+                    "params": {
+                      "target": "SELF_HERO",
+                      "amount": 3
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-29T00:02:35Z",
+        "reviewedAt": "2026-10-29T00:02:35Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>When Revealed</b>: Each player chooses to either place 2 threat here or deal 3 damage to their hero."
+      }
+    },
+    "01152": {
+      "audit": {
+        "createdAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-28T19:30",
+        "reviewedAt": "2026-10-28T19:30",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 75,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01152_vibranium-armor.md",
+        "originalText": "Attach to the villain.\n<b>Forced Response</b>: After the villain take damage, give it a tough status card.\n<b>Hero Action</b>: Exhaust your hero and spend [physical] [physical] resources → discard this card."
+      }
+    },
+    "01153": {
+      "abilities": [
+        {
+          "id": "concussion_blasters_retaliate",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "GRANT_KEYWORD",
+              "effectParams": {
+                "keyword": "Retaliate",
+                "amount": 1,
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        },
+        {
+          "id": "concussion_blasters_discard",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "exhaustCard": "SELF_IDENTITY",
+            "resourceCost": {
+              "energy": 2
+            }
+          },
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "SELF"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-28T19:30",
+        "reviewedAt": "2026-10-28T19:30",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "Attach to the villain.\nThe villain gains retaliate 1.\n<b>Hero Action</b>: Exhaust your hero and spend [energy] [energy] resources → discard this card."
+      }
+    },
+    "01154": {
+      "abilities": [
+        {
+          "id": "concussive_blast_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "effectParams": {
+                "amount": 1,
+                "target": "ALL_FRIENDLY_CHARACTERS"
+              }
+            }
+          ]
+        },
+        {
+          "id": "concussive_blast_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "effectParams": {
+                "amount": 1,
+                "target": "ALL_CONTROLLED_CHARACTERS"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-28T19:30",
+        "reviewedAt": "2026-10-28T19:30",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>When Revealed</b>: Deal 1 damage to each friendly character.\n<hr />\n[star] <b>Boost</b>: Deal 1 damage to each character you control."
+      }
+    },
     "01155": {
       "abilities": [
         {
@@ -1798,6 +2075,160 @@
         "rulesVersion": "v1.8",
         "confidence": 95,
         "originalText": "<b>When Revealed</b>: Discard each [energy] resource from your hand. If you discarded no cards this way, this card gains surge."
+      }
+    },
+    "01180": {
+      "abilities": [
+        {
+          "id": "legions_of_hydra_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "step_1_search_madame_hydra",
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "01181",
+                "negate": true
+              },
+              "effect": "SEARCH",
+              "effectParams": {
+                "source": [
+                  "ENCOUNTER_DECK",
+                  "ENCOUNTER_DISCARD"
+                ],
+                "filter": {
+                  "codes": [
+                    "01181"
+                  ]
+                },
+                "takeCount": 1,
+                "selectedDestination": "TABLEAU",
+                "shuffleAfter": true,
+                "autoSelectIfUnambiguous": true
+              }
+            },
+            {
+              "id": "step_2_threat_per_hydra_enemy",
+              "effect": "ADD_THREAT",
+              "effectParams": {
+                "target": "THIS_SIDE_SCHEME",
+                "amount": {
+                  "from": "ENTITY_COUNT",
+                  "target": "ALL_ENEMIES",
+                  "filter": {
+                    "traits": [
+                      "Hydra"
+                    ]
+                  },
+                  "multiplier": 2
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-28T19:30",
+        "reviewedAt": "2026-10-28T19:30",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>When Revealed</b>: If Madame Hydra is not in play, search the encounter deck and discard pile for Madame Hydra and put her into play engaged with you, then shuffle the encounter deck. Place 2 additional threat here for each [[Hydra]] enemy in play."
+      }
+    },
+    "01181": {
+      "audit": {
+        "createdAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-28T19:30",
+        "reviewedAt": "2026-10-28T19:30",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 75,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01181_madame-hydra.md",
+        "originalText": "Madame Hydra cannot take damage while the Legions of Hydra side scheme is in play.\n[star] <b>Forced Response</b>: After Madame Hydra schemes or attacks, place 2 threat on the Legions of Hydra side scheme."
+      }
+    },
+    "01182": {
+      "audit": {
+        "createdAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-28T19:30",
+        "reviewedAt": "2026-10-28T19:30",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 75,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01182_hydra-soldier.md",
+        "originalText": "Guard. <i>(While this minion is engaged with you, you cannot attack the villain.)</i>\n<b>When Defeated</b>: Deal the engaged player an encounter card."
+      }
+    },
+    "01183": {
+      "abilities": [
+        {
+          "id": "the_doomsday_chair_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "step_1_search_modok",
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "01184",
+                "negate": true
+              },
+              "effect": "SEARCH",
+              "effectParams": {
+                "source": [
+                  "ENCOUNTER_DECK",
+                  "ENCOUNTER_DISCARD"
+                ],
+                "filter": {
+                  "codes": [
+                    "01184"
+                  ]
+                },
+                "takeCount": 1,
+                "selectedDestination": "TABLEAU",
+                "shuffleAfter": true,
+                "autoSelectIfUnambiguous": true
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-28T19:30",
+        "reviewedAt": "2026-10-28T19:30",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>When Revealed</b>: If M.O.D.O.K. is not in play, search the encounter deck and discard pile for M.O.D.O.K. and put him into play engaged with you, then shuffle the encounter deck."
+      }
+    },
+    "01184": {
+      "noSupplementalNeeded": true,
+      "abilities": [],
+      "audit": {
+        "createdAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-28T19:30",
+        "reviewedAt": "2026-10-28T19:30",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Retaliate 2. <i>(After this character is attacked, deal 2 damage to the attacking character.)</i>"
+      }
+    },
+    "01185": {
+      "audit": {
+        "createdAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-28T19:30",
+        "reviewedAt": "2026-10-28T19:30",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 75,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01185_biomechanical-upgrades.md",
+        "originalText": "Surge.\nAttach to the minion with the highest printed hit points and without another Biomechanical Upgrades attached.\n<b>Forced Interrupt</b>: When attached minion would be defeated, heal all damage from it instead, then discard this card."
       }
     },
     "01186": {

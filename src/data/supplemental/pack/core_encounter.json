@@ -834,14 +834,43 @@
       }
     },
     "01131": {
+      "abilities": [
+        {
+          "id": "tiger_shark_forced_response",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "MINION_ATTACKED",
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "effectParams": {
+                "status": "TOUGH",
+                "target": "SELF"
+              }
+            }
+          ]
+        },
+        {
+          "id": "tiger_shark_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "effectParams": {
+                "status": "TOUGH",
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-10-28T19:30",
-        "updatedAt": "2026-10-28T19:30",
-        "reviewedAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-29T23:50",
+        "reviewedAt": "2026-10-29T23:50",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 75,
-        "ambiguityFile": "docs/ambiguities/core_encounter_01131_tiger-shark.md",
+        "confidence": 100,
         "originalText": "[star] <b>Forced Response</b>: After Tiger Shark attacks, give him a tough status card.\n<hr />\n[star] <b>Boost</b>: Give the villain a tough status card."
       }
     },

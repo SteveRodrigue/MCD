@@ -172,26 +172,28 @@ function resolveIdentityAndSelfTarget(
         const inst = context.sourceCardInstance;
         // Check if source card is an ally, minion, side scheme, or generic card
         for (const p of state.players) {
-          if (p.allies?.some((a) => a.instanceId === inst.instanceId)) {
+          const ally = p.allies?.find((a) => a.instanceId === inst.instanceId);
+          if (ally) {
             return [
               {
                 kind: 'character',
                 entityType: 'ally',
-                entity: inst,
-                id: inst.instanceId,
+                entity: ally,
+                id: ally.instanceId,
                 player: p,
               },
             ];
           }
         }
         for (const p of state.players) {
-          if (p.engagedMinions?.some((m) => m.instanceId === inst.instanceId)) {
+          const minion = p.engagedMinions?.find((m) => m.instanceId === inst.instanceId);
+          if (minion) {
             return [
               {
                 kind: 'character',
                 entityType: 'minion',
-                entity: inst,
-                id: inst.instanceId,
+                entity: minion,
+                id: minion.instanceId,
                 player: p,
               },
             ];

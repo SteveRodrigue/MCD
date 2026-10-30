@@ -58,7 +58,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01188` | **Caught Off Guard (treachery)** | `core_encounter` | `caught_off_guard_when_revealed` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 
-### <a id="add-status"></a>`ADD_STATUS` (11 Cards, 13 Step Occurrences)
+### <a id="add-status"></a>`ADD_STATUS` (12 Cards, 15 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -70,6 +70,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
 | `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
+| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response`, `tiger_shark_boost` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed`, `heart_shaped_herb_boost` |
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed`, `sweeping_swoop_boost` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |

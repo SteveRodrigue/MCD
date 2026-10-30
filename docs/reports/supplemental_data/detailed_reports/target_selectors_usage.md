@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Target Selectors In Use:** **32/45**
+> **Active Target Selectors In Use:** **33/46**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -101,6 +101,14 @@
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 
+### <a id="all-heroes"></a>`ALL_HEROES` (3 Cards, 3 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01096` | **Rhino (villain)** | `core_encounter` | `rhino_stage_iii_when_revealed` |
+| `01103` | **Shocker (minion)** | `core_encounter` | `shocker_when_revealed` |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
+
 ### <a id="defending-player"></a>`DEFENDING_PLAYER` (2 Cards, 3 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -136,13 +144,6 @@
 | :--- | :--- | :--- | :--- |
 | `01022` | **Ground Stomp (event)** | `core` | `ground_stomp_action` |
 | `01030` | **War Machine (ally)** | `core` | `war_machine_action` |
-
-### <a id="all-heroes"></a>`ALL_HEROES` (2 Cards, 2 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01096` | **Rhino (villain)** | `core_encounter` | `rhino_stage_iii_when_revealed` |
-| `01103` | **Shocker (minion)** | `core_encounter` | `shocker_when_revealed` |
 
 ### <a id="all-players"></a>`ALL_PLAYERS` (2 Cards, 2 Declarations)
 
@@ -203,6 +204,12 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed` |
+
+### <a id="all-other-heroes"></a>`ALL_OTHER_HEROES` (1 Cards, 1 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
 
 ### <a id="all-schemes"></a>`ALL_SCHEMES` (1 Cards, 1 Declarations)
 

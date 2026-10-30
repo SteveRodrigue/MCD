@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-## 1. Cards with Multiple Abilities (2+ Declared Abilities — 21 Cards)
+## 1. Cards with Multiple Abilities (2+ Declared Abilities — 22 Cards)
 
 | Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -17,6 +17,7 @@
 | `01099` | **Charge** | `attachment` | `core_encounter` | **3** | • `charge_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `charge_overkill` (`CONSTANT`, **1 step**)<br/>• `charge_discard` (`FORCED_RESPONSE` / `HOST_ATTACK_ENDED`, **1 step**) |
 | `01100` | **Enhanced Ivory Horn** | `attachment` | `core_encounter` | **2** | • `ivory_horn_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `ivory_horn_discard_action` (`HERO_ACTION`, **1 step**) |
 | `01129` | **Radioactive Man** | `minion` | `core_encounter` | **2** | • `radioactive_man_forced_response` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**)<br/>• `radioactive_man_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `01130` | **Whirlwind** | `minion` | `core_encounter` | **2** | • `whirlwind_interrupt_multi_hero_attack` (`FORCED_INTERRUPT` / `ENEMY_INITIATES_ATTACK`, **1 step**)<br/>• `whirlwind_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01153` | **Concussion Blasters** | `attachment` | `core_encounter` | **2** | • `concussion_blasters_retaliate` (`CONSTANT`, **1 step**)<br/>• `concussion_blasters_discard` (`HERO_ACTION`, **1 step**) |
 | `01154` | **Concussive Blast** | `treachery` | `core_encounter` | **2** | • `concussive_blast_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `concussive_blast_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01158` | **Heart-Shaped Herb** | `treachery` | `core_encounter` | **2** | • `heart_shaped_herb_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `heart_shaped_herb_boost` (`BOOST` / `BOOST`, **1 step**) |

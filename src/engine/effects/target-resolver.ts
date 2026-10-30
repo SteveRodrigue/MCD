@@ -673,6 +673,18 @@ function resolveFriendlyAndUniversalCharacterTarget(
         }));
     }
 
+    case 'ALL_OTHER_HEROES': {
+      return state.players
+        .filter((p) => p.id !== resolvingPlayer.id && p.currentForm === 'hero')
+        .map((p) => ({
+          kind: 'character',
+          entityType: 'hero',
+          entity: p,
+          id: p.id,
+          player: p,
+        }));
+    }
+
     case 'ALL_HEROES_AND_ALLIES': {
       const results: ResolvedTarget[] = [];
       for (const p of state.players) {

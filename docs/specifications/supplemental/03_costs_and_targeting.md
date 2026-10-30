@@ -73,6 +73,7 @@ Defines which game entity is chosen or affected by the ability:
 | `'ALL_PLAYERS'`                 | Every player currently in the game session.                                                                           | Iterates all players.                                   |
 | `'DEFENDING_PLAYER'`            | The player being attacked by the attack currently resolving (falls back to the resolving player outside an attack).    | Attack context.                             |
 | `'ALL_HEROES'`                  | Every hero identity currently in play.                                                                                | Iterates all heroes.                                    |
+| `'ALL_OTHER_HEROES'`            | Every hero identity currently in play other than the resolving player (#497).                                         | Iterates other heroes.                                  |
 | `'ALL_HEROES_AND_ALLIES'`       | All identities strictly in Hero form plus all allies across all players.                                              | Batch hero and ally target.                             |
 | `'TRIGGERING_HERO'`             | Hero identity that initiated or suffered the trigger event.                                                           | Context hero reference.                                 |
 | `'CHOSEN_PLAYER'`               | Prompt user to choose 1 player.                                                                                       | Decision prompt modal.                                  |
@@ -113,6 +114,7 @@ Per RR v1.8 p. 14 ("Damage"), p. 23 ("Identity"), p. 24 ("Indirect Damage"), p. 
 | Target Selector               | Affects Heroes? | Affects Alter-Egos? |  Affects Allies?   | Canonical Meaning & Card Text Equivalent                                            |
 | :---------------------------- | :-------------: | :-----------------: | :----------------: | :---------------------------------------------------------------------------------- |
 | **`ALL_HEROES`**              |     ✅ Yes      |      ❌ **No**      |       ❌ No        | Identities strictly in **Hero** form (_"each hero"_, _"heroes"_).                   |
+| **`ALL_OTHER_HEROES`**        |     ✅ Yes      |      ❌ **No**      |       ❌ No        | Identities in **Hero** form other than the resolving player (_"each other hero"_).  |
 | **`ALL_PLAYERS`**             |     ✅ Yes      |     ✅ **Yes**      |       ❌ No        | Every player / identity regardless of form (_"each player"_, _"players"_).          |
 | **`ALL_HEROES_AND_ALLIES`**   |     ✅ Yes      |      ❌ **No**      |       ✅ Yes       | Identities strictly in **Hero** form + all allies (_"heroes and allies"_).          |
 | **`ALL_FRIENDLY_CHARACTERS`** |     ✅ Yes      |     ✅ **Yes**      |       ✅ Yes       | All player identities (any form) + all allies (_"characters you/players control"_). |

@@ -129,6 +129,7 @@ export const TargetSelectorSchema = z.enum([
   'DEFENDING_PLAYER',
   'ENGAGED_PLAYER',
   'ALL_HEROES',
+  'ALL_OTHER_HEROES',
   'ALL_HEROES_AND_ALLIES',
   'TRIGGERING_HERO',
   'DAMAGED_CHARACTER',
@@ -341,6 +342,7 @@ export const TriggerFilterSchema = z
       .meta({ label: 'Threat Source' })
       .optional(),
     damageSource: z.enum(['ATTACK']).meta({ label: 'Damage Source' }).optional(),
+    isSecondaryAttack: z.boolean().meta({ label: 'Is Secondary Attack' }).optional(),
   })
   .strict();
 

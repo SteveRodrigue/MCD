@@ -280,7 +280,7 @@ export const EFFECT_PARAM_SCHEMAS = {
         placeholder: 'e.g. 01162',
         primary: true,
       }),
-      target: optional(z.enum(['SELF_HERO', 'SELF_IDENTITY']), {
+      target: optional(z.enum(['SELF_HERO', 'SELF_IDENTITY', 'ALL_OTHER_HEROES']), {
         label: 'Attacked Character',
         defaultValue: 'SELF_HERO',
       }),

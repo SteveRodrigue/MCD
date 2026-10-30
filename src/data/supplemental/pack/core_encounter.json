@@ -786,14 +786,50 @@
       }
     },
     "01130": {
+      "abilities": [
+        {
+          "id": "whirlwind_interrupt_multi_hero_attack",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "ENEMY_INITIATES_ATTACK",
+          "triggerFilter": {
+            "attackerKind": "MINION",
+            "targetScope": "SELF",
+            "isSecondaryAttack": false
+          },
+          "steps": [
+            {
+              "id": "step_1_attack_each_other_hero",
+              "effect": "ENEMY_ATTACKS",
+              "effectParams": {
+                "enemy": "SELF",
+                "target": "ALL_OTHER_HEROES"
+              }
+            }
+          ]
+        },
+        {
+          "id": "whirlwind_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "id": "step_1_damage_each_hero",
+              "effect": "DEAL_DAMAGE",
+              "effectParams": {
+                "target": "ALL_HEROES",
+                "amount": 1
+              }
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-10-28T19:30",
-        "updatedAt": "2026-10-28T19:30",
-        "reviewedAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-29T20:00",
+        "reviewedAt": "2026-10-29T20:00",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 75,
-        "ambiguityFile": "docs/ambiguities/core_encounter_01130_whirlwind.md",
+        "confidence": 100,
         "originalText": "[star] <b>Forced Interrupt</b>: When Whirlwind attacks you, also resolve his attack against each other hero.\n<hr />\n[star] <b>Boost</b>: Deal 1 damage to each hero."
       }
     },

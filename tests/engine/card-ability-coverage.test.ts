@@ -14,7 +14,11 @@ import {
   digestState,
   verifyAbilityExecution,
 } from '@engine/simulation/effect-delta-verifier';
-import { exerciseAbility, sweepAbilities } from '@engine/simulation/ability-stage-setter';
+import {
+  exerciseAbility,
+  sweepAbilities,
+  variantsFor,
+} from '@engine/simulation/ability-stage-setter';
 import { runMatch } from '@engine/simulation/match-simulator';
 import { setupGame } from '@engine/state/game-setup';
 import { appendLog } from '@engine/state/game-log';
@@ -255,7 +259,8 @@ describe('Gate 1.4: Core Set card-ability coverage', () => {
     const mismatches = results
       .filter(({ outcomes }) => outcomes[0].ok)
       .filter(({ target, outcomes }) => {
-        const again = exerciseAbility(target, { ...options, playerCount: 1 });
+        const [primary] = variantsFor(target);
+        const again = exerciseAbility(target, { ...options, ...primary });
         return again.fingerprint !== outcomes[0].fingerprint;
       })
       .map(({ target }) => `${target.cardCode}#${target.abilityId}`);

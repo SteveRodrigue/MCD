@@ -169,12 +169,13 @@
 | `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 
-### <a id="boost"></a>`BOOST` (8 Cards)
+### <a id="boost"></a>`BOOST` (9 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
 | `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_boost` |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
@@ -204,6 +205,16 @@
 | `01072` | **The Power of Leadership (resource)** | `core` | `power_of_leadership` |
 | `01079` | **The Power of Protection (resource)** | `core` | `power_of_protection` |
 
+### <a id="forced-interrupt"></a>`FORCED_INTERRUPT` (5 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_defeat_trigger` |
+| `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
+| `01098` | **Armored Rhino Suit (attachment)** | `core_encounter` | `armored_rhino_suit_shield` |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
+| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
+
 ### <a id="interrupt"></a>`INTERRUPT` (5 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -213,15 +224,6 @@
 | `01019b` | **Jennifer Walters (alter_ego)** | `core` | `i_object` |
 | `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
 | `01085` | **Emergency (event)** | `core` | `emergency_interrupt` |
-
-### <a id="forced-interrupt"></a>`FORCED_INTERRUPT` (4 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_defeat_trigger` |
-| `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
-| `01098` | **Armored Rhino Suit (attachment)** | `core_encounter` | `armored_rhino_suit_shield` |
-| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
 
 ### <a id="hero-interrupt"></a>`HERO_INTERRUPT` (4 Cards)
 
@@ -314,12 +316,13 @@
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 
-### <a id="boost"></a>`BOOST` (8 Cards)
+### <a id="boost"></a>`BOOST` (9 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
 | `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_boost` |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
@@ -389,6 +392,13 @@
 | `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
 | `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
 
+### <a id="enemy-initiates-attack"></a>`ENEMY_INITIATES_ATTACK` (2 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
+
 ### <a id="basic-attack-performed"></a>`BASIC_ATTACK_PERFORMED` (1 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -400,12 +410,6 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01002` | **Black Cat (ally)** | `core` | `black_cat_when_played` |
-
-### <a id="enemy-initiates-attack"></a>`ENEMY_INITIATES_ATTACK` (1 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
 
 ### <a id="form-changed"></a>`FORM_CHANGED` (1 Cards)
 

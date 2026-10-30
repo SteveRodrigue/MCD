@@ -14,6 +14,7 @@ import {
   VillainState,
   getActiveVillain,
   getVillainById,
+  getMinionById,
   PendingDamagePlacement,
   AllyCard,
 } from '../models';
@@ -44,6 +45,7 @@ export interface CombatOptions {
   synchronousPolicy?: DefensePolicy;
   acceptOptionalTriggers?: boolean;
   stepping?: boolean;
+  isSecondaryAttack?: boolean;
 }
 
 /**
@@ -141,13 +143,19 @@ function step2_dispatchInitiationTriggers(
   state: GameState,
   attackerType: 'VILLAIN' | 'MINION',
   targetPlayerId: string,
-  acceptOptionalTriggers?: boolean,
+  attackerCard?: CardInstance,
+  options?: CombatOptions,
 ): TriggerDispatchResult {
   return kernel.dispatchTrigger(state, 'ENEMY_INITIATES_ATTACK', {
     targetPlayerId,
     attackerType,
     attackerKind: attackerType,
-    acceptOptionalTriggers,
+    attackerCard,
+    targetInstanceId: attackerCard?.instanceId,
+    sourceCardCode: attackerCard?.card?.code,
+    sourceInstanceId: attackerCard?.instanceId,
+    isSecondaryAttack: options?.isSecondaryAttack,
+    acceptOptionalTriggers: options?.acceptOptionalTriggers,
   });
 }
 
@@ -216,7 +224,8 @@ export function beginEnemyAttack(
     state,
     attacker.type,
     targetPlayerId,
-    options?.acceptOptionalTriggers,
+    attacker.card,
+    options,
   );
 
   // Compute Base Stats & Keywords
@@ -601,11 +610,13 @@ export function resolveDefenderDeclaration(
       if (act.type === 'VILLAIN') {
         initiateEnemyAttack(state, { type: 'VILLAIN' }, targetPlayer.id);
       } else if (act.type === 'MINION') {
-        const minion = targetPlayer.engagedMinions.find(
-          (m) => m.instanceId === act.minionInstanceId,
-        );
+        const minion = getMinionById(state, act.minionInstanceId!);
         if (minion) {
-          initiateEnemyAttack(state, { type: 'MINION', card: minion }, targetPlayer.id);
+          initiateEnemyAttack(state, { type: 'MINION', card: minion }, targetPlayer.id, {
+            synchronousPolicy: attackContext.synchronousPolicy,
+            acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
+            isSecondaryAttack: act.isSecondaryAttack,
+          });
         }
       }
     }

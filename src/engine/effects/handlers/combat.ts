@@ -1,5 +1,11 @@
 /** Attacks, schemes, defenders and boosts (step handlers, AUD-20261017-232534 F010-A). */
-import { GameState, PlayerState, getVillainsInPlay } from '@engine/models';
+import {
+  GameState,
+  PlayerState,
+  getVillainsInPlay,
+  getMinionsInPlay,
+  PendingActivation,
+} from '@engine/models';
 import {
   executeVillainAttackAgainstPlayer,
   executeVillainSchemeAgainstPlayer,
@@ -137,19 +143,22 @@ function handleVillainAttacks(
 function handleEnemyAttacks(
   state: GameState,
   step: TypedStep<'ENEMY_ATTACKS'>,
-  _context: EffectExecutionContext,
+  context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  // A specific enemy (card code) attacks the resolving player's hero or identity. The result
-  // is `success` and `mutatedState` only when the attack happened, so a later step can gate
-  // on "if it did not attack" with `IF_FAILED`; `targetId` is the enemy, attacked or not.
+  // A specific enemy (card code or SELF) attacks the resolving player's hero or identity,
+  // or with target ALL_OTHER_HEROES queues attacks against each other hero (Whirlwind 01130).
   const params = getStepEffectParams(step);
   const enemyCode = params.enemy;
   const targetParam = params.target || 'SELF_HERO';
-  const minion = state.players
-    .flatMap((p) => p.engagedMinions)
-    .find((m) => m.card.code === enemyCode);
-  const villain = getVillainsInPlay(state).find((v) => v.card.code === enemyCode);
+  const minion =
+    enemyCode === 'SELF' && context.sourceCardInstance
+      ? context.sourceCardInstance
+      : getMinionsInPlay(state).find((m) => m.card.code === enemyCode);
+  const villain =
+    enemyCode === 'SELF' && context.sourceCardInstance
+      ? undefined
+      : getVillainsInPlay(state).find((v) => v.card.code === enemyCode);
   const enemy = minion ?? villain;
   const noAttack = (targetId?: string): EffectResult => ({
     state,
@@ -160,6 +169,34 @@ function handleEnemyAttacks(
   });
   if (!enemy) return noAttack();
   const enemyId = enemy.instanceId;
+
+  if (targetParam === 'ALL_OTHER_HEROES') {
+    const otherHeroes = state.players.filter((p) => p.id !== player.id && p.currentForm === 'hero');
+    if (otherHeroes.length === 0) {
+      return {
+        state,
+        success: true,
+        mutatedState: false,
+        targetId: enemyId,
+        onomatopoeia: 'NO OTHER HEROES!',
+      };
+    }
+    const activations: PendingActivation[] = otherHeroes.map((h) => ({
+      type: minion ? ('MINION' as const) : ('VILLAIN' as const),
+      playerId: h.id,
+      minionInstanceId: minion?.instanceId,
+      isSecondaryAttack: true,
+    }));
+    state.pendingActivations = [...activations, ...(state.pendingActivations || [])];
+    return {
+      state,
+      success: true,
+      mutatedState: true,
+      targetId: enemyId,
+      onomatopoeia: 'ATTACK RESOLVES AGAINST EACH OTHER HERO!',
+    };
+  }
+
   if (targetParam === 'SELF_HERO' && player.currentForm !== 'hero') {
     // "Your hero" in alter-ego form: there is no hero to attack.
     return noAttack(enemyId);

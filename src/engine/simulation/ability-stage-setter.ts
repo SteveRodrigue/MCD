@@ -20,6 +20,7 @@ import {
   step4_revealEncounterCards,
   executeVillainAttackAgainstPlayer,
   executeVillainSchemeAgainstPlayer,
+  executeMinionAttackAgainstPlayer,
 } from '../pipeline/villain-phase';
 import {
   canInitiateAbility,
@@ -927,7 +928,13 @@ const SCENARIOS: Record<string, Scenario> = {
     isPlayerCard(ctx.target.card.type) || ctx.target.card.type === CardType.HERO
       ? villainAttack(stage, ctx)
       : basicAttack(stage, 'villain'),
-  ENEMY_INITIATES_ATTACK: villainAttack,
+  ENEMY_INITIATES_ATTACK: (stage, ctx) => {
+    setForm(player1(stage), 'hero');
+    if (stage.state.players[1]) setForm(stage.state.players[1], 'hero');
+    return ctx.target.card.type === CardType.MINION
+      ? executeMinionAttackAgainstPlayer(stage.state, ctx.source, player1(stage))
+      : villainAttack(stage, ctx);
+  },
   HOST_WOULD_ATTACK: villainAttack,
   HOST_ATTACK_ENDED: villainAttack,
   ATTACK_DEFENDED: villainAttack,
@@ -1285,6 +1292,12 @@ const TWO_PLAYER_TIMINGS = new Set([
 
 /** Every run an ability gets: one player, plus two players and each choice branch where they apply. */
 export function variantsFor(target: AbilityTarget): Pick<StageOptions, 'playerCount' | 'branch'>[] {
+  const needsTwoPlayers = target.ability.steps?.some(
+    (s) => s.effectParams?.target === 'ALL_OTHER_HEROES',
+  );
+  if (needsTwoPlayers) {
+    return [{ playerCount: 2 }];
+  }
   const variants: Pick<StageOptions, 'playerCount' | 'branch'>[] = [{ playerCount: 1 }];
   if (TWO_PLAYER_TIMINGS.has(target.ability.timing)) variants.push({ playerCount: 2 });
   const branches = choiceBranchCount(target);

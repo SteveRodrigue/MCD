@@ -551,6 +551,8 @@ export interface PendingActivation {
   minionInstanceId?: string;
   /** ENGAGED_MINIONS only: instance ids that already activated in this step 2b. */
   activatedMinionIds?: string[];
+  /** Secondary attack triggered by an ability (e.g. Whirlwind 01130); does not re-trigger multi-hero attacks. */
+  isSecondaryAttack?: boolean;
 }
 
 export interface GameOptions {
@@ -686,6 +688,22 @@ export function getActiveVillain(state: GameState): VillainState {
  */
 export function getVillainsInPlay(state: GameState): VillainState[] {
   return state.villains;
+}
+
+/**
+ * Every minion currently engaged with any player.
+ */
+export function getMinionsInPlay(state: GameState): CardInstance[] {
+  return state.players.flatMap((p) => p.engagedMinions || []);
+}
+
+/**
+ * Finds a minion in play across all players by its instance ID.
+ */
+export function getMinionById(state: GameState, instanceId: string): CardInstance | undefined {
+  return state.players
+    .flatMap((p) => p.engagedMinions || [])
+    .find((m) => m.instanceId === instanceId);
 }
 
 /**

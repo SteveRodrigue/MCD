@@ -17,6 +17,7 @@ import {
   getActiveMainScheme,
   getFirstPlayer,
   getPerPlayerCount,
+  getMinionById,
   VillainPhaseStepEvent,
 } from '@engine/models';
 
@@ -340,9 +341,12 @@ export function step2_villainAndMinionActivations(
         executeVillainSchemeAgainstPlayer(state, player);
       }
     } else if (act.type === 'MINION') {
-      const minion = player.engagedMinions.find((m) => m.instanceId === act.minionInstanceId);
+      const minion = getMinionById(state, act.minionInstanceId!);
       if (minion) {
-        state = executeMinionActivationAgainstPlayer(state, minion, player, resolvedOptions);
+        state = executeMinionActivationAgainstPlayer(state, minion, player, {
+          ...resolvedOptions,
+          isSecondaryAttack: act.isSecondaryAttack,
+        });
       }
     }
 
@@ -860,15 +864,13 @@ function advanceStepOnDraft(nextState: GameState, options?: CombatOptions): Game
           return nextState;
         }
       } else if (act.type === 'MINION') {
-        const minion = player.engagedMinions.find((m) => m.instanceId === act.minionInstanceId);
+        const minion = getMinionById(nextState, act.minionInstanceId!);
         if (minion) {
           if (player.currentForm === 'hero') {
-            const mutatedState = executeMinionActivationAgainstPlayer(
-              nextState,
-              minion,
-              player,
-              resolvedOptions,
-            );
+            const mutatedState = executeMinionActivationAgainstPlayer(nextState, minion, player, {
+              ...resolvedOptions,
+              isSecondaryAttack: act.isSecondaryAttack,
+            });
             if (kernel.peekDecisionPrompt(mutatedState)) {
               mutatedState.villainPhaseStepEvent = {
                 type: 'MINION_ATTACK',

@@ -6,7 +6,7 @@
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
-### <a id="deal-damage"></a>`DEAL_DAMAGE` (24 Cards, 26 Step Occurrences)
+### <a id="deal-damage"></a>`DEAL_DAMAGE` (25 Cards, 27 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -32,6 +32,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01077` | **Counter-Punch (event)** | `core` | `counter_punch_response` |
 | `01087` | **Haymaker (event)** | `core` | `haymaker` |
 | `01103` | **Shocker (minion)** | `core_encounter` | `shocker_when_revealed` |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed`, `concussive_blast_boost` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
 
@@ -310,6 +311,13 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
 
+### <a id="enemy-attacks"></a>`ENEMY_ATTACKS` (2 Cards, 2 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
+
 ### <a id="prevent-damage"></a>`PREVENT_DAMAGE` (2 Cards, 2 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -365,12 +373,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
-
-### <a id="enemy-attacks"></a>`ENEMY_ATTACKS` (1 Cards, 1 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 
 ### <a id="exhaust"></a>`EXHAUST` (1 Cards, 1 Step Occurrences)
 

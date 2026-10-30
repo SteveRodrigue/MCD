@@ -266,6 +266,13 @@ export function matchesTriggerFilter(
     }
   }
 
+  if (filter.isSecondaryAttack !== undefined) {
+    const actual = context.isSecondaryAttack ?? false;
+    if (actual !== filter.isSecondaryAttack) {
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -317,6 +324,7 @@ export interface TriggerContext {
   defenderCardCode?: string;
   defenderName?: string;
   defenderType?: 'HERO' | 'ALLY' | 'UNDEFENDED';
+  isSecondaryAttack?: boolean;
   /** What placed the threat, for THREAT_WOULD_BE_PLACED (e.g. 'VILLAIN_SCHEME' for Emergency). */
   threatSource?: NonNullable<TriggerFilter['threatSource']>;
   /** What dealt the damage, for DAMAGE_WOULD_BE_TAKEN (Backflip: 'ATTACK'). Absent never matches. */
@@ -929,6 +937,7 @@ function scanInPlayTriggerAbilities(
       ...(playerAbilitiesSuspended
         ? []
         : (controller.allies || []).flatMap((a) => a.attachments || [])),
+      ...(controller.engagedMinions || []),
       ...(controller.engagedMinions || []).flatMap((m) => m.attachments || []),
     ];
     for (const cardInst of inPlayCards) {
@@ -1558,7 +1567,8 @@ export function dispatchTrigger(
     trigger === 'THREAT_WOULD_BE_PLACED' ||
     trigger === 'DAMAGE_WOULD_BE_TAKEN' ||
     trigger === 'MINION_ENTERS_PLAY' ||
-    trigger === 'ENCOUNTER_CARD_REVEALED';
+    trigger === 'ENCOUNTER_CARD_REVEALED' ||
+    trigger === 'ENEMY_INITIATES_ATTACK';
 
   // "After you defeat ..." belongs to the player who defeated, not to the one the enemy engaged.
   const playersToScan: PlayerState[] =

@@ -376,7 +376,7 @@ describe('Card Loader & Normalizer Unit Tests', () => {
             `Encounter Card ${card.code} (${card.name}) must either define abilities, have "noSupplementalNeeded: true", or specify an "ambiguityFile"`
           ).toBe(true);
         } else {
-          // Unscanned cards (Klaw, Ultron, Masters of Evil) must NOT be in supplemental
+          // Unscanned cards (Klaw, Ultron) must NOT be in supplemental
           expect(
             enrichment,
             `Unscanned Card ${card.code} (${card.name}) must not be in supplemental registry until scanned`

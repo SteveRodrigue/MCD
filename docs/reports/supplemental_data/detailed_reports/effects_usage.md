@@ -170,7 +170,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
 | `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
 
-### <a id="search"></a>`SEARCH` (9 Cards, 9 Step Occurrences)
+### <a id="search"></a>`SEARCH` (10 Cards, 10 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -181,6 +181,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
 | `01095` | **Rhino (villain)** | `core_encounter` | `rhino_stage_ii_when_revealed` |
 | `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_when_revealed` |
+| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
 | `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
 | `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
 
@@ -260,6 +261,14 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_attach` |
 | `01074` | **Inspired (upgrade)** | `core` | `inspired_attach` |
 
+### <a id="enemy-attacks"></a>`ENEMY_ATTACKS` (3 Cards, 3 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
+| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
+
 ### <a id="generate-resource"></a>`GENERATE_RESOURCE` (3 Cards, 3 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -311,13 +320,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | :--- | :--- | :--- | :--- |
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
-
-### <a id="enemy-attacks"></a>`ENEMY_ATTACKS` (2 Cards, 2 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 
 ### <a id="exhaust"></a>`EXHAUST` (2 Cards, 2 Step Occurrences)
 

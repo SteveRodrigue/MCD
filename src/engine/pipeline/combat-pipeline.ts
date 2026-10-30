@@ -17,6 +17,7 @@ import {
   getMinionById,
   PendingDamagePlacement,
   AllyCard,
+  VillainPhaseStep,
 } from '../models';
 import { popDecisionPrompt } from './prompt-queue';
 import { dealBoostCards, resolveBoostCards, type BoostLogContext } from './boost-resolution';
@@ -656,9 +657,10 @@ export function resolveDefenderDeclaration(
     popDecisionPrompt(state);
   }
 
-  // Trigger next pending activation if outside of Villain Phase (e.g. Gang-Up treachery)
+  // Trigger next pending activation if outside of Villain Phase or outside Step 2 (e.g. Gang-Up treachery / Masters of Mayhem)
   if (
-    state.phase !== GamePhase.VILLAIN_PHASE &&
+    (state.phase !== GamePhase.VILLAIN_PHASE ||
+      state.villainPhaseStep !== VillainPhaseStep.VILLAIN_ACTIVATIONS) &&
     !kernel.peekDecisionPrompt(state) &&
     state.pendingActivations &&
     state.pendingActivations.length > 0

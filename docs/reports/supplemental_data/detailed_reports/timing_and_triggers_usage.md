@@ -4,7 +4,7 @@
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (38 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (39 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -21,6 +21,7 @@
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
 | `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_when_revealed` |
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
+| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
 | `01151` | **Under Attack (side_scheme)** | `core_encounter` | `under_attack_when_revealed` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed` |
@@ -261,7 +262,7 @@
 
 ## 2. Trigger Windows (`TriggerTypeSchema` — 21/32 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (39 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (40 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -278,6 +279,7 @@
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
 | `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_when_revealed` |
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
+| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
 | `01151` | **Under Attack (side_scheme)** | `core_encounter` | `under_attack_when_revealed` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed` |

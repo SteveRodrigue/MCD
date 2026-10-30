@@ -23,15 +23,7 @@
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
 | `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
 
-### <a id="if-resource-match"></a>`IF_RESOURCE_MATCH` (3 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01013` | **Photonic Blast (event)** | `core` | `photonic_blast` |
-| `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
-| `01053` | **Relentless Assault (event)** | `core` | `relentless_assault` |
-
-### <a id="if-result"></a>`IF_RESULT` (5 Cards)
+### <a id="if-result"></a>`IF_RESULT` (6 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -39,7 +31,16 @@
 | `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
 | `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
+| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
 | `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
+
+### <a id="if-resource-match"></a>`IF_RESOURCE_MATCH` (3 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01013` | **Photonic Blast (event)** | `core` | `photonic_blast` |
+| `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
+| `01053` | **Relentless Assault (event)** | `core` | `relentless_assault` |
 
 ### <a id="if-player-has-trait"></a>`IF_PLAYER_HAS_TRAIT` (3 Cards)
 

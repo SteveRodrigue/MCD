@@ -955,7 +955,8 @@ export function resumePendingSequence(state: GameState): GameState {
     // The attack that paused the sequence is still open: its remaining steps keep waiting (#295).
     if (
       peekPendingSequence(currentState)?.awaitsAttackOutcome &&
-      currentState.activeAttackContext
+      (currentState.activeAttackContext ||
+        (currentState.pendingActivations && currentState.pendingActivations.length > 0))
     ) {
       break;
     }

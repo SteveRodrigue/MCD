@@ -9,9 +9,9 @@
 | Metric | Count | Health / Coverage | Description |
 | :--- | :---: | :---: | :--- |
 | **Total Cards Registered** | **176** | 100% | Total cards present in `src/data/supplemental/` |
-| **Active Declared Cards** | **155** | - | Cards with executable `abilities: [...]` |
+| **Active Declared Cards** | **156** | - | Cards with executable `abilities: [...]` |
 | **No Supplemental Needed** | [15](detailed_reports/vanilla_and_passive_cards.md) | Verified | Vanilla / passive cards explicitly requiring no supplemental hooks |
-| **Open Ambiguity Reports** | **7** | Blocked | Cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
+| **Open Ambiguity Reports** | **6** | Blocked | Cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🟢 0 | Cards marked `noSupplementalNeeded` that have printed rules text |
 | **Overall Schema Engine Coverage** | **100.0%** | [Matrix](detailed_reports/schema_code_path_audit.md) | Percentage of all schema primitives with active engine code paths |
 | **Effect Types Code Path Coverage** | **100.0%** | **57/57** | [49 In Use](detailed_reports/effects_usage.md) |
@@ -20,19 +20,18 @@
 | **Step Conditions Code Path Coverage** | **100.0%** | **0/0** | [0 In Use](detailed_reports/condition_gates_usage.md) |
 | **Trigger Types Code Path Coverage** | **100.0%** | **32/32** | [21 In Use](detailed_reports/timing_and_triggers_usage.md) |
 | **Timing Types Code Path Coverage** | **100.0%** | **19/19** | [15 In Use](detailed_reports/timing_and_triggers_usage.md) |
-| **Total Abilities Declared** | **180** | - | Total individual ability definitions declared |
+| **Total Abilities Declared** | **182** | - | Total individual ability definitions declared |
 | **Multi-Step Pipelines (2+ Steps)** | [33](detailed_reports/multi_ability_and_multistep_cards.md) | - | Abilities decomposed into sequenced execution pipelines |
-| **Cards with Multiple Abilities (2+)** | [22](detailed_reports/multi_ability_and_multistep_cards.md) | - | Cards declaring more than 1 distinct ability header |
+| **Cards with Multiple Abilities (2+)** | [23](detailed_reports/multi_ability_and_multistep_cards.md) | - | Cards declaring more than 1 distinct ability header |
 
 ---
 
-## 🔴 2. Active Ambiguity & Blocker Queue (7 Cards)
+## 🔴 2. Active Ambiguity & Blocker Queue (6 Cards)
 
 These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/README.md) pending rules engine primitives or targeting extensions:
 
 | Card Code | Card Name | Pack | Confidence | Blocker Category | Ambiguity Report File |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `01131` | **Tiger Shark** | `core_encounter` | `75%` | `TIER_3_STRUCTURAL_REFACTOR` | [`core_encounter_01131_tiger-shark.md`](../../ambiguities/core_encounter_01131_tiger-shark.md) |
 | `01132` | **Melter** | `core_encounter` | `75%` | `TIER_3_STRUCTURAL_REFACTOR` | [`core_encounter_01132_melter.md`](../../ambiguities/core_encounter_01132_melter.md) |
 | `01133` | **Masters of Mayhem** | `core_encounter` | `75%` | `TIER_3_STRUCTURAL_REFACTOR` | [`core_encounter_01133_masters-of-mayhem.md`](../../ambiguities/core_encounter_01133_masters-of-mayhem.md) |
 | `01152` | **Vibranium Armor** | `core_encounter` | `75%` | `TIER_3_STRUCTURAL_REFACTOR` | [`core_encounter_01152_vibranium-armor.md`](../../ambiguities/core_encounter_01152_vibranium-armor.md) |
@@ -62,7 +61,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | **Trigger Windows** | **21** | 32 | 100.0% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md#2-trigger-windows-triggertypeschema) |
 | **Trigger Filters** | **12** | - | - | `attackerKind` (2), `targetPlayerScope` (3), `damageSource` (1), `cardFilter` (2), `targetScope` (2), `attackedBy` (1), `sourceCardCode` (1), `targetType` (3), `defeatedByAttackOf` (3), `defenderType` (2), `threatSource` (1), `isSecondaryAttack` (1) |
 | **Cost Primitives** | **9** | - | - | `exhaustSelf` (20), `spendCounters` (5), `resourceCost` (9), `heal` (1), `discardCard` (2), `discardSelf` (5), `damageHero` (1), `damageSelf` (1), `exhaustCard` (1) |
-| **Multi-Ability Cards (2+)** | **22** | - | - | [View 22 Cards](detailed_reports/multi_ability_and_multistep_cards.md) |
+| **Multi-Ability Cards (2+)** | **23** | - | - | [View 23 Cards](detailed_reports/multi_ability_and_multistep_cards.md) |
 
 ---
 
@@ -71,10 +70,10 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | Top Target Selectors | Occurrences | Cards Count | Link to Details |
 | :--- | :---: | :---: | :--- |
 | `CHOSEN_ENEMY` | **16** | 16 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-enemy) |
-| `SELF` | **11** | 11 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self) |
+| `SELF` | **12** | 12 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self) |
 | `CHOSEN_SCHEME` | **11** | 10 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-scheme) |
 | `SELF_IDENTITY` | **10** | 10 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self-identity) |
-| `VILLAIN` | **6** | 6 | [Inspect Cards](detailed_reports/target_selectors_usage.md#villain) |
+| `VILLAIN` | **7** | 7 | [Inspect Cards](detailed_reports/target_selectors_usage.md#villain) |
 | `SELF_HERO` | **5** | 5 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self-hero) |
 | `CHOSEN_PLAYER` | **4** | 4 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-player) |
 | `ALL_HEROES` | **3** | 3 | [Inspect Cards](detailed_reports/target_selectors_usage.md#all-heroes) |
@@ -103,7 +102,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | :--- | :---: | :---: | :--- |
 | `DEAL_DAMAGE` | **25 cards** | 27 steps | [View Cards](detailed_reports/effects_usage.md#deal-damage) |
 | `DISCARD` | **17 cards** | 19 steps | [View Cards](detailed_reports/effects_usage.md#discard) |
-| `ADD_STATUS` | **11 cards** | 13 steps | [View Cards](detailed_reports/effects_usage.md#add-status) |
+| `ADD_STATUS` | **12 cards** | 15 steps | [View Cards](detailed_reports/effects_usage.md#add-status) |
 | `DRAW` | **11 cards** | 11 steps | [View Cards](detailed_reports/effects_usage.md#draw) |
 | `MODIFY_STAT` | **11 cards** | 13 steps | [View Cards](detailed_reports/effects_usage.md#modify-stat) |
 | `PLAYER_CHOICE` | **11 cards** | 11 steps | [View Cards](detailed_reports/effects_usage.md#player-choice) |

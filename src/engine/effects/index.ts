@@ -1545,6 +1545,7 @@ function findAnyCardInstance(state?: GameState, idOrCode?: string): CardInstance
       p.discard?.find((c) => c.instanceId === idOrCode || c.card.code === idOrCode) ||
       p.deck?.find((c) => c.instanceId === idOrCode || c.card.code === idOrCode) ||
       p.allies?.find((c) => c.instanceId === idOrCode || c.card.code === idOrCode) ||
+      p.engagedMinions?.find((c) => c.instanceId === idOrCode || c.card.code === idOrCode) ||
       p.obligations?.find((c) => c.instanceId === idOrCode || c.card.code === idOrCode);
     if (found) return found;
   }

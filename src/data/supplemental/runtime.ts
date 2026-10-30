@@ -65,6 +65,7 @@ export const EFFECT_TYPES = [
   'VILLAIN_ATTACKS',
   'VILLAIN_SCHEMES',
   'REMOVE_STATUS',
+  'RESTRICT_DEFENSE',
 ] as const;
 
 export type EffectType = (typeof EFFECT_TYPES)[number];

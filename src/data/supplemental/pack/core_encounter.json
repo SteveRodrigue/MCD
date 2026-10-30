@@ -875,14 +875,40 @@
       }
     },
     "01132": {
+      "abilities": [
+        {
+          "id": "melter_defend_with_ally_restriction",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "RESTRICT_DEFENSE",
+              "effectParams": {
+                "requirement": "REQUIRE_ALLY_IF_ABLE"
+              }
+            }
+          ]
+        },
+        {
+          "id": "melter_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "EXHAUST",
+              "effectParams": {
+                "target": "ALL_CONTROLLED_ALLIES"
+              }
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-10-28T19:30",
-        "updatedAt": "2026-10-28T19:30",
-        "reviewedAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-30T07:15",
+        "reviewedAt": "2026-10-30T07:15",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 75,
-        "ambiguityFile": "docs/ambiguities/core_encounter_01132_melter.md",
+        "confidence": 100,
         "originalText": "[star] The engaged player must defend against Melter's attacks with an ally they control, if able.\n<hr />\n[star] <b>Boost</b>: Exhaust each ally you control."
       }
     },

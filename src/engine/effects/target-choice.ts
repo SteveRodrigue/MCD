@@ -472,6 +472,7 @@ export const EFFECTS_WITHOUT_AFFECT_RULE: Readonly<Record<string, readonly Effec
     'VILLAIN_AND_ENGAGED_MINIONS_ATTACK',
     'VILLAIN_ATTACKS',
     'VILLAIN_SCHEMES',
+    'RESTRICT_DEFENSE',
   ],
 };
 

@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Target Selectors In Use:** **33/46**
+> **Active Target Selectors In Use:** **34/46**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -200,6 +200,12 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
+
+### <a id="all-controlled-allies"></a>`ALL_CONTROLLED_ALLIES` (1 Cards, 1 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
 
 ### <a id="all-friendly-characters"></a>`ALL_FRIENDLY_CHARACTERS` (1 Cards, 1 Declarations)
 

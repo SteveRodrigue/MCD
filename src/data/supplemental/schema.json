@@ -468,7 +468,8 @@
                           "VILLAIN_AND_ENGAGED_MINIONS_ATTACK",
                           "VILLAIN_ATTACKS",
                           "VILLAIN_SCHEMES",
-                          "REMOVE_STATUS"
+                          "REMOVE_STATUS",
+                          "RESTRICT_DEFENSE"
                         ]
                       },
                       "gateParams": {

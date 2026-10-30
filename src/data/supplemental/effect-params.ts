@@ -775,6 +775,16 @@ export const EFFECT_PARAM_SCHEMAS = {
       target: target('Target Player', 'SELF'),
     })
     .strict(),
+  RESTRICT_DEFENSE: z
+    .object({
+      requirement: optional(z.enum(['REQUIRE_ALLY_IF_ABLE', 'CANNOT_DEFEND']), {
+        label: 'Defense Requirement',
+        defaultValue: 'REQUIRE_ALLY_IF_ABLE',
+        description: 'Defense restriction enforced during attacks by or against this card.',
+        primary: true,
+      }),
+    })
+    .strict(),
 } satisfies Record<EffectType, z.ZodObject<any>>;
 
 /** Static parameter contract per effect, derived from `EFFECT_PARAM_SCHEMAS` (Issue #127, R5). */
@@ -849,4 +859,6 @@ export const EFFECT_DESCRIPTIONS: Record<EffectType, string> = {
   DRAW: "Canonical alias for drawing cards.",
   SEARCH: "Canonical alias for searching and selecting cards.",
   REMOVE_STATUS: "Remove a status card from a target.",
+  RESTRICT_DEFENSE:
+    'CONSTANT: Enforce a defense restriction during attacks (e.g. must defend with a controlled ally, if able; or cannot defend).',
 };

@@ -47,6 +47,35 @@
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
+### <a id="constant"></a>`CONSTANT` (24 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01016` | **Captain Marvel's Helmet (upgrade)** | `core` | `captain_marvel_helmet_def` |
+| `01017` | **Cosmic Flight (upgrade)** | `core` | `cosmic_flight_aerial` |
+| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_atk` |
+| `01029a` | **Iron Man (hero)** | `core` | `iron_man_hand_size` |
+| `01036` | **Mark V Armor (upgrade)** | `core` | `mark_v_armor_hp` |
+| `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_hp` |
+| `01040a` | **Black Panther (hero)** | `core` | `black_panther_retaliate` |
+| `01057` | **Combat Training (upgrade)** | `core` | `combat_training_atk` |
+| `01059` | **Jessica Jones (ally)** | `core` | `jessica_jones_thw_bonus` |
+| `01065` | **Heroic Intuition (upgrade)** | `core` | `heroic_intuition_thw` |
+| `01073` | **The Triskelion (support)** | `core` | `triskelion_ally_limit` |
+| `01074` | **Inspired (upgrade)** | `core` | `inspired_thw_bonus`, `inspired_atk_bonus` |
+| `01081` | **Armored Vest (upgrade)** | `core` | `armored_vest_def` |
+| `01099` | **Charge (attachment)** | `core_encounter` | `charge_atk_bonus`, `charge_overkill` |
+| `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_atk_bonus` |
+| `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
+| `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
+| `01132` | **Melter (minion)** | `core_encounter` | `melter_defend_with_ally_restriction` |
+| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
+| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
+| `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
+| `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
+| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
+
 ### <a id="hero-action"></a>`HERO_ACTION` (26 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -77,34 +106,6 @@
 | `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_discard` |
-
-### <a id="constant"></a>`CONSTANT` (23 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01016` | **Captain Marvel's Helmet (upgrade)** | `core` | `captain_marvel_helmet_def` |
-| `01017` | **Cosmic Flight (upgrade)** | `core` | `cosmic_flight_aerial` |
-| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_atk` |
-| `01029a` | **Iron Man (hero)** | `core` | `iron_man_hand_size` |
-| `01036` | **Mark V Armor (upgrade)** | `core` | `mark_v_armor_hp` |
-| `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_hp` |
-| `01040a` | **Black Panther (hero)** | `core` | `black_panther_retaliate` |
-| `01057` | **Combat Training (upgrade)** | `core` | `combat_training_atk` |
-| `01059` | **Jessica Jones (ally)** | `core` | `jessica_jones_thw_bonus` |
-| `01065` | **Heroic Intuition (upgrade)** | `core` | `heroic_intuition_thw` |
-| `01073` | **The Triskelion (support)** | `core` | `triskelion_ally_limit` |
-| `01074` | **Inspired (upgrade)** | `core` | `inspired_thw_bonus`, `inspired_atk_bonus` |
-| `01081` | **Armored Vest (upgrade)** | `core` | `armored_vest_def` |
-| `01099` | **Charge (attachment)** | `core_encounter` | `charge_atk_bonus`, `charge_overkill` |
-| `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_atk_bonus` |
-| `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
-| `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
-| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
-| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
-| `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
-| `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
-| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
-| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
 
 ### <a id="action"></a>`ACTION` (19 Cards)
 
@@ -170,7 +171,7 @@
 | `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 
-### <a id="boost"></a>`BOOST` (10 Cards)
+### <a id="boost"></a>`BOOST` (11 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -178,6 +179,7 @@
 | `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_boost` |
 | `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
 | `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
+| `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
@@ -303,7 +305,7 @@
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
-### <a id="boost"></a>`BOOST` (10 Cards)
+### <a id="boost"></a>`BOOST` (11 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -311,6 +313,7 @@
 | `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_boost` |
 | `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
 | `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
+| `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |

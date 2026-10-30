@@ -70,6 +70,26 @@
 
 ---
 
+### `RESTRICT_DEFENSE`
+
+- **References:** [`legality-checker.ts`](../../../src/engine/pipeline/legality-checker.ts) (`canDeclareDefender`), [`combat-pipeline.ts`](../../../src/engine/pipeline/combat-pipeline.ts), #499
+- **Description:** CONSTANT restriction enforced during enemy attacks. With `requirement: "REQUIRE_ALLY_IF_ABLE"`, the attacked player must defend with a ready ally they control, if able; hero defense and undefended options are illegal while ready allies exist.
+
+```json
+{
+  "effect": "RESTRICT_DEFENSE",
+  "effectParams": { "requirement": "REQUIRE_ALLY_IF_ABLE" }
+}
+```
+
+| Parameter     | Type                                             | Required | Default                    | Description                                                     |
+| :------------ | :----------------------------------------------- | :------- | :------------------------- | :-------------------------------------------------------------- |
+| `requirement` | `"REQUIRE_ALLY_IF_ABLE"` \| `"CANNOT_DEFEND"`    | No       | `"REQUIRE_ALLY_IF_ABLE"`   | The defense restriction to enforce during this enemy attack.     |
+
+Example: _Melter_ `01132`.
+
+---
+
 ### `CANNOT_TAKE_DAMAGE`
 
 - **References:** [`damage-immunity.ts`](../../../src/engine/pipeline/damage-immunity.ts), [`damage-pipeline.ts`](../../../src/engine/pipeline/damage-pipeline.ts) (step 0), [`target-choice.ts`](../../../src/engine/effects/target-choice.ts), ADR-0078 addendum, #297

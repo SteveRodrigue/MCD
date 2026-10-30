@@ -280,7 +280,12 @@ export const EFFECT_PARAM_SCHEMAS = {
         placeholder: 'e.g. 01162',
         primary: true,
       }),
-      target: optional(z.enum(['SELF_HERO', 'SELF_IDENTITY', 'ALL_OTHER_HEROES']), {
+      filter: optional(UniversalCardFilterSchema, {
+        label: 'Enemy Filter',
+        description: 'Filter for enemies that initiate attacks (e.g. trait or minion type)',
+        widget: 'card-filter',
+      }),
+      target: optional(z.enum(['SELF_HERO', 'SELF_IDENTITY', 'ALL_OTHER_HEROES', 'ENGAGED_HERO']), {
         label: 'Attacked Character',
         defaultValue: 'SELF_HERO',
       }),

@@ -31,7 +31,7 @@
 | `01181` | **Madame Hydra** | `minion` | `core_encounter` | **3** | • `madame_hydra_immunity` (`CONSTANT`, **1 step**)<br/>• `madame_hydra_attacks` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**)<br/>• `madame_hydra_schemes` (`FORCED_RESPONSE` / `MINION_SCHEMED`, **1 step**) |
 | `45109` | **The Fittest** | `attachment` | `aoa_encounter` | **2** | • `the_fittest_hit_points` (`CONSTANT`, **1 step**)<br/>• `the_fittest_tough` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**) |
 
-## 2. Multi-Step Execution Pipelines (2+ Steps — 33 Pipelines Across 33 Cards)
+## 2. Multi-Step Execution Pipelines (2+ Steps — 34 Pipelines Across 34 Cards)
 
 | Card Code | Card Name | Pack | Ability ID | Timing | Steps | Pipeline Execution Sequence |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -51,6 +51,7 @@
 | `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` | `WHEN_REVEALED` | **3** | `[1] VILLAIN_ATTACKS ➔ [2] ADD_STATUS ➔ [3] SURGE` |
 | `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DISTRIBUTE_AMOUNT ➔ [2] SURGE` |
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` | `WHEN_REVEALED` | **2** | `[1] ADD_STATUS ➔ [2] SURGE` |
+| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` | `WHEN_REVEALED` | **2** | `[1] ENEMY_ATTACKS ➔ [2] SEARCH` |
 | `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` | `FORCED_RESPONSE` | **2** | `[1] CHANGE_FORM ➔ [2] PLAYER_CHOICE` |
 | `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DISCARD ➔ [2] PLAYER_CHOICE` |
 | `01160` | **Legal Work (obligation)** | `core_encounter` | `legal_work_resolve` | `FORCED_RESPONSE` | **2** | `[1] CHANGE_FORM ➔ [2] PLAYER_CHOICE` |

@@ -687,6 +687,27 @@ function resolveFriendlyAndUniversalCharacterTarget(
         }));
     }
 
+    case 'ENGAGED_HERO': {
+      const sourceCard = context?.sourceCardInstance;
+      const engagedPlayer = sourceCard
+        ? state.players.find((pl) =>
+            pl.engagedMinions?.some((m) => m.instanceId === sourceCard.instanceId),
+          )
+        : resolvingPlayer;
+      if (engagedPlayer && engagedPlayer.currentForm === 'hero') {
+        return [
+          {
+            kind: 'character',
+            entityType: 'hero',
+            entity: engagedPlayer,
+            id: engagedPlayer.id,
+            player: engagedPlayer,
+          },
+        ];
+      }
+      return [];
+    }
+
     case 'ALL_HEROES_AND_ALLIES': {
       const results: ResolvedTarget[] = [];
       for (const p of state.players) {

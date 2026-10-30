@@ -913,14 +913,60 @@
       }
     },
     "01133": {
+      "abilities": [
+        {
+          "id": "masters_of_mayhem_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "step_1_masters_of_evil_minions_attack",
+              "effect": "ENEMY_ATTACKS",
+              "effectParams": {
+                "filter": {
+                  "traits": [
+                    "Masters of Evil"
+                  ]
+                },
+                "target": "ENGAGED_HERO"
+              }
+            },
+            {
+              "id": "step_2_fallback_search_minion",
+              "effect": "SEARCH",
+              "gate": "IF_RESULT",
+              "gateParams": {
+                "result": "AMOUNT_ZERO"
+              },
+              "effectParams": {
+                "source": [
+                  "ENCOUNTER_DECK",
+                  "ENCOUNTER_DISCARD"
+                ],
+                "filter": {
+                  "traits": [
+                    "Masters of Evil"
+                  ],
+                  "types": [
+                    "minion"
+                  ]
+                },
+                "takeCount": 1,
+                "selectedDestination": "TABLEAU",
+                "shuffleAfter": true,
+                "autoSelectIfUnambiguous": true
+              }
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-10-28T19:30",
-        "updatedAt": "2026-10-28T19:30",
-        "reviewedAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-30T17:20",
+        "reviewedAt": "2026-10-30T17:20",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 75,
-        "ambiguityFile": "docs/ambiguities/core_encounter_01133_masters-of-mayhem.md",
+        "confidence": 100,
         "originalText": "<b>When Revealed</b>: Each [[Masters of Evil]] minion attacks the hero it is engaged with. If no attacks were made this way, search the encounter deck and discard pile for a [[Masters of Evil]] minion and put it into play engaged with you, then shuffle the encounter deck."
       }
     },

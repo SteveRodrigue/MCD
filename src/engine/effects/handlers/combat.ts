@@ -5,7 +5,9 @@ import {
   getVillainsInPlay,
   getMinionsInPlay,
   PendingActivation,
+  CardInstance,
 } from '@engine/models';
+import { matchesCardFilter } from '../../filters/card-filter';
 import {
   executeVillainAttackAgainstPlayer,
   executeVillainSchemeAgainstPlayer,
@@ -147,10 +149,77 @@ function handleEnemyAttacks(
   player: PlayerState,
 ): EffectResult {
   // A specific enemy (card code or SELF) attacks the resolving player's hero or identity,
-  // or with target ALL_OTHER_HEROES queues attacks against each other hero (Whirlwind 01130).
+  // with target ALL_OTHER_HEROES queues attacks against each other hero (Whirlwind 01130),
+  // or with target ENGAGED_HERO activates each matching minion against its engaged hero (Masters of Mayhem 01133).
   const params = getStepEffectParams(step);
-  const enemyCode = params.enemy;
   const targetParam = params.target || 'SELF_HERO';
+
+  if (targetParam === 'ENGAGED_HERO') {
+    const filter = params.filter;
+    const minions = getMinionsInPlay(state).filter((m) =>
+      filter ? matchesCardFilter(m, filter, { state, player }) : true,
+    );
+
+    const eligibleActivations: { minion: CardInstance; targetPlayer: PlayerState }[] = [];
+    for (const m of minions) {
+      const engagedPlayer = state.players.find((p) =>
+        p.engagedMinions.some((em) => em.instanceId === m.instanceId),
+      );
+      if (engagedPlayer && engagedPlayer.currentForm === 'hero') {
+        eligibleActivations.push({ minion: m, targetPlayer: engagedPlayer });
+      }
+    }
+
+    if (eligibleActivations.length === 0) {
+      return {
+        state,
+        success: true,
+        mutatedState: false,
+        value: 0,
+        facts: { attacksMadeCount: 0, amountZero: true },
+        onomatopoeia: 'NO ATTACKS MADE!',
+      };
+    }
+
+    let attacksMade = 0;
+    let anyStunCleared = false;
+
+    while (eligibleActivations.length > 0) {
+      const nextAct = eligibleActivations.shift()!;
+      const attacker = { type: 'MINION' as const, card: nextAct.minion };
+      const begun = beginEnemyAttack(state, attacker, nextAct.targetPlayer.id);
+      state = begun.state;
+      if (begun.attacked) {
+        attacksMade += 1;
+        break;
+      } else {
+        anyStunCleared = true;
+      }
+    }
+
+    if (eligibleActivations.length > 0) {
+      const remaining: PendingActivation[] = eligibleActivations.map((act) => ({
+        type: 'MINION' as const,
+        playerId: act.targetPlayer.id,
+        minionInstanceId: act.minion.instanceId,
+        isSecondaryAttack: true,
+      }));
+      state.pendingActivations = [...(state.pendingActivations || []), ...remaining];
+    }
+
+    const hadAnySuccess = attacksMade > 0;
+    return {
+      state,
+      success: true,
+      mutatedState: hadAnySuccess || anyStunCleared,
+      value: attacksMade,
+      facts: { attacksMadeCount: attacksMade, amountZero: attacksMade === 0 },
+      onomatopoeia: hadAnySuccess ? 'MINIONS ATTACK!' : 'ALL ATTACKS CANCELLED!',
+      ...(hadAnySuccess ? attackOutcome(state, true) : {}),
+    };
+  }
+
+  const enemyCode = params.enemy;
   const minion =
     enemyCode === 'SELF' && context.sourceCardInstance
       ? context.sourceCardInstance

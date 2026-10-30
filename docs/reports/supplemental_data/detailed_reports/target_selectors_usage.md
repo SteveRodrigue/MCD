@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Target Selectors In Use:** **34/46**
+> **Active Target Selectors In Use:** **35/47**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -242,6 +242,12 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01080` | **Med Team (support)** | `core` | `med_team_heal` |
+
+### <a id="engaged-hero"></a>`ENGAGED_HERO` (1 Cards, 1 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
 
 ### <a id="engaged-player"></a>`ENGAGED_PLAYER` (1 Cards, 1 Declarations)
 

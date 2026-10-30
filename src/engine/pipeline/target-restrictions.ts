@@ -1,5 +1,11 @@
-﻿import { Keyword, hasKeyword } from '@engine/models';
-import type { CardInstance, GameState, PlayerState } from '@engine/models';
+import { Keyword, hasKeyword, getActiveVillain } from '@engine/models';
+import type {
+  AttackExecutionContext,
+  CardAbility,
+  CardInstance,
+  GameState,
+  PlayerState,
+} from '@engine/models';
 import { hasCrisisInPlay } from './icons';
 
 /**
@@ -51,4 +57,46 @@ export function isVillainAttackBlockedByGuard(actingPlayer: PlayerState): boolea
 /** Whether a minion has the Guard keyword (RR v1.8 "Guard"). */
 export function isGuardMinion(minion: CardInstance): boolean {
   return hasKeyword(minion.card, Keyword.GUARD);
+}
+
+export type DefenderRestriction = 'REQUIRE_ALLY_IF_ABLE' | 'CANNOT_DEFEND';
+
+/**
+ * Returns any defender restriction enforced on an incoming enemy attack (e.g. Melter 01132).
+ */
+export function getDefenderRestriction(
+  state: GameState,
+  attackContext: AttackExecutionContext,
+): DefenderRestriction | undefined {
+  const abilitiesList: (CardAbility[] | undefined)[] = [];
+
+  if (attackContext.attackerType === 'MINION' && attackContext.attackerCard) {
+    abilitiesList.push(attackContext.attackerCard.card?.enrichment?.abilities);
+    for (const att of attackContext.attackerCard.attachments || []) {
+      abilitiesList.push(att.card?.enrichment?.abilities);
+    }
+  } else if (attackContext.attackerType === 'VILLAIN') {
+    const villain = getActiveVillain(state);
+    if (villain) {
+      abilitiesList.push(villain.card?.enrichment?.abilities);
+      for (const att of villain.attachments || []) {
+        abilitiesList.push(att.card?.enrichment?.abilities);
+      }
+    }
+  }
+
+  for (const abilities of abilitiesList) {
+    for (const ab of abilities || []) {
+      if (ab.timing === 'CONSTANT') {
+        for (const step of ab.steps || []) {
+          if (step.effect === 'RESTRICT_DEFENSE') {
+            const req = step.effectParams?.requirement as DefenderRestriction | undefined;
+            return req ?? 'REQUIRE_ALLY_IF_ABLE';
+          }
+        }
+      }
+    }
+  }
+
+  return undefined;
 }

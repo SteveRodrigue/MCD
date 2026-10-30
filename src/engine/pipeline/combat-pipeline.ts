@@ -37,6 +37,7 @@ import {
   consumeEntityStatusCards,
 } from './stat-calculator';
 import { appendLog } from '../state/game-log';
+import { canDeclareDefender } from './legality-checker';
 
 export type DefensePolicy =
   'TAKE_UNDEFENDED' | 'HERO_IF_READY' | 'ALLY_CHUMP_BLOCK' | 'AUTO_OPTIMAL';
@@ -307,7 +308,10 @@ function step3_openDefenderDeclarationPrompt(
   const options: DecisionPromptOption[] = [];
 
   // 1. Target Player: Basic Hero Defend option (if Hero form and ready)
-  if (player.currentForm === 'hero' && !player.exhausted) {
+  if (
+    canDeclareDefender(state, player.id, { type: 'HERO', playerId: player.id }, attackContext)
+      .allowed
+  ) {
     const heroStats = getEffectiveHeroStats(state, player);
     const heroRetaliate = getEffectiveRetaliate(player, state);
     const isTough = player.statusCards.includes(StatusCard.TOUGH);
@@ -328,7 +332,14 @@ function step3_openDefenderDeclarationPrompt(
 
   // 2. Target Player: Ready Allies Defend options
   for (const ally of player.allies) {
-    if (!ally.exhausted) {
+    if (
+      canDeclareDefender(
+        state,
+        player.id,
+        { type: 'ALLY', playerId: player.id, allyInstanceId: ally.instanceId },
+        attackContext,
+      ).allowed
+    ) {
       const allyRetaliate = getEffectiveRetaliate(ally, state);
       const isTough = (ally.statusCards || []).includes(StatusCard.TOUGH);
       const allyCard = ally.card as AllyCard;
@@ -354,7 +365,10 @@ function step3_openDefenderDeclarationPrompt(
   // 3. Other Players: Ready Heroes and Allies (Cross-Table Defense - RR v1.8 p. 209)
   const otherPlayers = (state.players || []).filter((p) => p.id !== player.id);
   for (const other of otherPlayers) {
-    if (other.currentForm === 'hero' && !other.exhausted) {
+    if (
+      canDeclareDefender(state, other.id, { type: 'HERO', playerId: other.id }, attackContext)
+        .allowed
+    ) {
       const otherStats = getEffectiveHeroStats(state, other);
       const otherRetaliate = getEffectiveRetaliate(other, state);
       const isTough = other.statusCards.includes(StatusCard.TOUGH);
@@ -374,7 +388,14 @@ function step3_openDefenderDeclarationPrompt(
     }
 
     for (const ally of other.allies) {
-      if (!ally.exhausted) {
+      if (
+        canDeclareDefender(
+          state,
+          other.id,
+          { type: 'ALLY', playerId: other.id, allyInstanceId: ally.instanceId },
+          attackContext,
+        ).allowed
+      ) {
         const allyRetaliate = getEffectiveRetaliate(ally, state);
         const isTough = (ally.statusCards || []).includes(StatusCard.TOUGH);
         const allyCard = ally.card as AllyCard;
@@ -399,14 +420,19 @@ function step3_openDefenderDeclarationPrompt(
   }
 
   // 4. Take Undefended option
-  options.push({
-    id: 'undefended',
-    label: 'Take Undefended',
-    description: `Do not exhaust any character. ${player.hero?.name || player.name} takes full attack damage.`,
-    icon: 'punch',
-    effect: 'DECLARE_DEFENDER',
-    params: { defenderType: 'UNDEFENDED', playerId: player.id },
-  });
+  if (
+    canDeclareDefender(state, player.id, { type: 'UNDEFENDED', playerId: player.id }, attackContext)
+      .allowed
+  ) {
+    options.push({
+      id: 'undefended',
+      label: 'Take Undefended',
+      description: `Do not exhaust any character. ${player.hero?.name || player.name} takes full attack damage.`,
+      icon: 'punch',
+      effect: 'DECLARE_DEFENDER',
+      params: { defenderType: 'UNDEFENDED', playerId: player.id },
+    });
+  }
 
   const attackerName =
     attackContext.attackerType === 'VILLAIN'
@@ -454,34 +480,67 @@ function step3_openDefenderDeclarationPrompt(
  * Evaluates automated defense policy for headless simulations.
  */
 function evaluateDefensePolicy(
-  _state: GameState,
+  state: GameState,
   player: PlayerState,
   policy: DefensePolicy,
   attackContext: AttackExecutionContext,
 ): DefenderDeclaration {
-  if (policy === 'HERO_IF_READY' && player.currentForm === 'hero' && !player.exhausted) {
+  const readyAlly = player.allies.find(
+    (a) =>
+      canDeclareDefender(
+        state,
+        player.id,
+        { type: 'ALLY', playerId: player.id, allyInstanceId: a.instanceId },
+        attackContext,
+      ).allowed,
+  );
+  const heroAllowed = canDeclareDefender(
+    state,
+    player.id,
+    { type: 'HERO', playerId: player.id },
+    attackContext,
+  ).allowed;
+  const undefendedAllowed = canDeclareDefender(
+    state,
+    player.id,
+    { type: 'UNDEFENDED', playerId: player.id },
+    attackContext,
+  ).allowed;
+
+  if (policy === 'HERO_IF_READY' && heroAllowed) {
     return { type: 'HERO', playerId: player.id };
   }
 
   if (policy === 'ALLY_CHUMP_BLOCK') {
-    const readyAlly = player.allies.find((a) => !a.exhausted);
     if (readyAlly) {
       return { type: 'ALLY', playerId: player.id, allyInstanceId: readyAlly.instanceId };
     }
-    if (player.currentForm === 'hero' && !player.exhausted) {
+    if (heroAllowed) {
       return { type: 'HERO', playerId: player.id };
     }
   }
 
   if (policy === 'AUTO_OPTIMAL') {
     // If incoming base attack would KO hero and ready ally exists, block with ally
-    if (attackContext.baseAttack >= player.health && player.allies.some((a) => !a.exhausted)) {
-      const ally = player.allies.find((a) => !a.exhausted)!;
-      return { type: 'ALLY', playerId: player.id, allyInstanceId: ally.instanceId };
+    if (attackContext.baseAttack >= player.health && readyAlly) {
+      return { type: 'ALLY', playerId: player.id, allyInstanceId: readyAlly.instanceId };
     }
-    if (player.currentForm === 'hero' && !player.exhausted) {
+    if (heroAllowed) {
       return { type: 'HERO', playerId: player.id };
     }
+    if (readyAlly) {
+      return { type: 'ALLY', playerId: player.id, allyInstanceId: readyAlly.instanceId };
+    }
+  }
+
+  if (undefendedAllowed) {
+    return { type: 'UNDEFENDED', playerId: player.id };
+  }
+  if (readyAlly) {
+    return { type: 'ALLY', playerId: player.id, allyInstanceId: readyAlly.instanceId };
+  }
+  if (heroAllowed) {
+    return { type: 'HERO', playerId: player.id };
   }
 
   return { type: 'UNDEFENDED', playerId: player.id };

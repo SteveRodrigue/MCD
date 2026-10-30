@@ -179,4 +179,5 @@ export const RESOURCES_HANDLERS = {
   MODIFY_MAX_HEALTH: handleModifyRestrictedLimit,
   CANNOT_TAKE_DAMAGE: handleModifyRestrictedLimit,
   DOUBLE_RESOURCE_FOR_ASPECT: handleModifyRestrictedLimit,
+  RESTRICT_DEFENSE: handleModifyRestrictedLimit,
 } satisfies Partial<StepHandlerMap>;

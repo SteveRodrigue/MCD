@@ -30,6 +30,7 @@ import {
 import type { UniversalCardFilter } from '../../data/supplemental/schema';
 import { attachStepOf } from '../../data/supplemental/runtime';
 import { isImmuneToDamage } from '../pipeline/damage-immunity';
+import { getDefenderRestriction } from '../pipeline/target-restrictions';
 import { applyThreatPlacement } from '../pipeline/threat-pipeline';
 import { namedSchemeCode } from '../effects/step-selection';
 import { matchesCardFilter } from '../filters/card-filter';
@@ -125,12 +126,14 @@ function pickFixtures(cards: readonly NormalizedCard[]): Fixtures {
   if (!filler) throw new Error('[StageSetter] no ability-free filler card in the catalog.');
   return {
     filler,
-    // Toughness would absorb the one hit that has to defeat it
+    // Toughness would absorb the one hit that has to defeat it; Guard stops attacks against the villain
     minion: cards.find(
       (c) =>
         c.type === CardType.MINION &&
         bare(c) &&
-        !(c.keywords ?? []).some((k) => String(k) === 'Toughness'),
+        !(c.keywords ?? []).some(
+          (k) => String(k).toLowerCase() === 'toughness' || String(k).toLowerCase() === 'guard',
+        ),
     ),
     ally: firstBare(CardType.ALLY),
     discardAlly: cards.filter((c) => c.type === CardType.ALLY)[1],
@@ -1274,7 +1277,22 @@ function exerciseConstant(
             : null;
         }),
     );
-  const withAbility = digestDerivedStats(state) + immunityProbe();
+  const defenseRestrictionProbe = (): string => {
+    const hasRestriction = target.ability.steps.some((step) => step.effect === 'RESTRICT_DEFENSE');
+    if (!hasRestriction || !placedEntity) return '';
+    return JSON.stringify(
+      getDefenderRestriction(state, {
+        attackId: 'probe',
+        attackerType: 'MINION',
+        attackerCard: placedEntity as CardInstance,
+        targetPlayerId: PLAYER_ID,
+        baseAttack: 1,
+        totalBoostIcons: 0,
+        phase: 'DECLARE_DEFENDER',
+      }),
+    );
+  };
+  const withAbility = digestDerivedStats(state) + immunityProbe() + defenseRestrictionProbe();
   const keywords = target.ability.steps.every((step) => step.effect === 'GRANT_KEYWORD');
   if (keywords && grantedKeywordsEffective(stage, target)) {
     // The printed card can state the same keyword, so removing the ability changes nothing: the
@@ -1282,7 +1300,7 @@ function exerciseConstant(
     return { ok: true, variant, evidence: 'digest-delta' };
   }
   swap(stripped);
-  const withoutIt = digestDerivedStats(state) + immunityProbe();
+  const withoutIt = digestDerivedStats(state) + immunityProbe() + defenseRestrictionProbe();
   swap(card);
   if (withAbility === withoutIt) {
     return { ok: false, variant, reason: 'derived stats do not change with the ability' };

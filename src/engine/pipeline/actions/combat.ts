@@ -1,5 +1,11 @@
-import { AllyCard, StatusCard } from '../../models';
-import { getPlayer, canAttack, canThwart, HERO_ACTOR } from '../legality-checker';
+import { AllyCard, StatusCard, DefenderDeclaration } from '../../models';
+import {
+  getPlayer,
+  canAttack,
+  canThwart,
+  canDeclareDefender,
+  HERO_ACTOR,
+} from '../legality-checker';
 import {
   getEffectiveHeroStats,
   getEffectiveAllyStats,
@@ -331,15 +337,25 @@ export const handleDeclareDefender: ActionHandler<'DECLARE_DEFENDER'> = (
   const player = getPlayer(nextState, action.playerId);
   if (!player) return { state, result: { success: false, error: 'Player not found' } };
 
+  const declaration: DefenderDeclaration = {
+    type: action.defenderType,
+    playerId: action.playerId,
+    allyInstanceId: action.allyInstanceId,
+  };
+
+  const legality = canDeclareDefender(nextState, action.playerId, declaration);
+  if (!legality.allowed) {
+    return {
+      state,
+      result: { success: false, error: legality.reason ?? 'Defense declaration is illegal' },
+    };
+  }
+
   if (action.defenderType === 'HERO') {
     recordBasicAction(nextState, 'heroDefense', player.activeFormCard?.code);
   }
 
-  const updatedState = resolveDefenderDeclaration(nextState, {
-    type: action.defenderType,
-    playerId: action.playerId,
-    allyInstanceId: action.allyInstanceId,
-  });
+  const updatedState = resolveDefenderDeclaration(nextState, declaration);
 
   return {
     state: updatedState,

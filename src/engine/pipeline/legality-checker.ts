@@ -13,6 +13,8 @@ import {
   hasDashPower,
   CharacterPower,
   getVillainsInPlay,
+  DefenderDeclaration,
+  AttackExecutionContext,
 } from '@engine/models';
 import { kernel } from '../kernel';
 import { isStep, type TypedStep } from '../effects/handlers/types';
@@ -38,6 +40,7 @@ import { findInPlayCardInstance } from '../state/state-validator';
 import {
   GUARD_BLOCK_REASON,
   MAIN_SCHEME_BLOCK_REASON,
+  getDefenderRestriction,
   getMainSchemeThreatBlock,
   isVillainAttackBlockedByGuard,
 } from './target-restrictions';
@@ -246,6 +249,75 @@ export function canThwart(
   }
   const block = getMainSchemeThreatBlock(state, player);
   if (block) return { allowed: false, reason: MAIN_SCHEME_BLOCK_REASON[block] };
+
+  return { allowed: true };
+}
+
+/**
+ * Checks whether a defender declaration is legal against an enemy attack (RR v1.8 p. 143 "Defend, Defense").
+ * Evaluates attacker restrictions (e.g. Melter 01132 requiring ally defense if able), character readiness,
+ * form, and ownership.
+ */
+export function canDeclareDefender(
+  state: GameState,
+  playerId: string,
+  declaration: DefenderDeclaration,
+  attackContext?: AttackExecutionContext,
+): Check {
+  const defendingPlayer = getPlayer(state, playerId);
+  if (!defendingPlayer) return { allowed: false, reason: 'Player not found' };
+
+  const context = attackContext ?? state.activeAttackContext;
+  if (context) {
+    const targetPlayer = getPlayer(state, context.targetPlayerId);
+    if (targetPlayer) {
+      // 1. Attacker restrictions (e.g. Melter 01132)
+      const restriction = getDefenderRestriction(state, context);
+      if (restriction === 'REQUIRE_ALLY_IF_ABLE') {
+        const hasReadyControlledAlly = (targetPlayer.allies || []).some((a) => !a.exhausted);
+        if (hasReadyControlledAlly) {
+          if (declaration.type === 'HERO') {
+            return { allowed: false, reason: 'Must defend with a controlled ally, if able.' };
+          }
+          if (declaration.type === 'UNDEFENDED') {
+            return { allowed: false, reason: 'Must defend with a controlled ally, if able.' };
+          }
+          if (declaration.playerId !== context.targetPlayerId) {
+            return { allowed: false, reason: 'Must defend with an ally you control, if able.' };
+          }
+        }
+      } else if (restriction === 'CANNOT_DEFEND') {
+        if (declaration.type !== 'UNDEFENDED') {
+          return { allowed: false, reason: 'Characters cannot defend against this attack.' };
+        }
+      }
+    }
+  }
+
+  // 2. Character readiness, form, and ownership
+  if (declaration.type === 'HERO') {
+    if (defendingPlayer.currentForm !== 'hero') {
+      return { allowed: false, reason: 'Cannot defend in Alter-Ego form.' };
+    }
+    if (defendingPlayer.exhausted) {
+      return { allowed: false, reason: 'Hero is exhausted and cannot defend.' };
+    }
+  } else if (declaration.type === 'ALLY') {
+    if (!declaration.allyInstanceId) {
+      return { allowed: false, reason: 'Ally instance ID must be specified.' };
+    }
+    const ally = defendingPlayer.allies.find((a) => a.instanceId === declaration.allyInstanceId);
+    if (!ally) {
+      return { allowed: false, reason: 'Ally not found under defending player control.' };
+    }
+    if (ally.exhausted) {
+      return { allowed: false, reason: 'Ally is exhausted and cannot defend.' };
+    }
+  } else if (declaration.type === 'UNDEFENDED') {
+    if (context && declaration.playerId !== context.targetPlayerId) {
+      return { allowed: false, reason: 'Only the targeted player can take the attack undefended.' };
+    }
+  }
 
   return { allowed: true };
 }

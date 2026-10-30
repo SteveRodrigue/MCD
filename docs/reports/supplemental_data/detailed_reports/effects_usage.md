@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Effects In Use:** **49/57**
+> **Active Effects In Use:** **50/58**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
@@ -319,6 +319,13 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 
+### <a id="exhaust"></a>`EXHAUST` (2 Cards, 2 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
+| `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
+
 ### <a id="prevent-damage"></a>`PREVENT_DAMAGE` (2 Cards, 2 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -375,12 +382,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | :--- | :--- | :--- | :--- |
 | `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
 
-### <a id="exhaust"></a>`EXHAUST` (1 Cards, 1 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
-
 ### <a id="flip-form"></a>`FLIP_FORM` (1 Cards, 1 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -428,6 +429,12 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
+
+### <a id="restrict-defense"></a>`RESTRICT_DEFENSE` (1 Cards, 1 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01132` | **Melter (minion)** | `core_encounter` | `melter_defend_with_ally_restriction` |
 
 ### <a id="reveal-encounter-card"></a>`REVEAL_ENCOUNTER_CARD` (1 Cards, 1 Step Occurrences)
 

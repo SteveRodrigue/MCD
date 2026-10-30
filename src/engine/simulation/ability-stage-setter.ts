@@ -321,6 +321,25 @@ function primeForEffects(stage: Stage, target: AbilityTarget, source?: CardInsta
       }
     }
   }
+  // Adding status needs the target to not already carry that status
+  if (effects.has('ADD_STATUS')) {
+    const statusesToAdd = target.ability.steps
+      .map((s) => (s.effectParams?.status as string | undefined)?.toUpperCase())
+      .filter((s): s is string => Boolean(s));
+    if (source?.statusCards) {
+      source.statusCards = source.statusCards.filter(
+        (s) => !statusesToAdd.includes(s.toUpperCase()),
+      );
+    }
+    for (const v of stage.state.villains) {
+      if (v.statusCards) {
+        v.statusCards = v.statusCards.filter((s) => !statusesToAdd.includes(s.toUpperCase()));
+      }
+    }
+    if (p.statusCards) {
+      p.statusCards = p.statusCards.filter((s) => !statusesToAdd.includes(s.toUpperCase()));
+    }
+  }
   // Healing the card itself needs it to carry damage
   if (effects.has('HEAL_DAMAGE') && source) source.tokens = { ...source.tokens, damage: 1 };
   if (effects.has('HEAL_DAMAGE') || target.ability.cost?.heal || effects.has('MODIFY_MAX_HEALTH')) {
@@ -910,9 +929,9 @@ const SCENARIOS: Record<string, Scenario> = {
   FORM_CHANGED: (stage) =>
     dispatchOrThrow(stage.state, { type: 'CHANGE_FORM', playerId: PLAYER_ID }),
   ROUND_ENDED: endRound,
-  MINION_ATTACKED: (stage) => {
+  MINION_ATTACKED: (stage, ctx) => {
     setForm(player1(stage), 'hero');
-    return endRound(stage);
+    return executeMinionAttackAgainstPlayer(stage.state, ctx.source, player1(stage));
   },
   MINION_SCHEMED: (stage) => {
     setForm(player1(stage), 'alter_ego');

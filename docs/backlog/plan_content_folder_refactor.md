@@ -43,6 +43,12 @@ the Core pack is a future milestone, **M12**); Open Questions 1 and 2 are parked
 | Q10 | Raw card format | **Keep zzorba/MarvelCDB JSON** as the pack card format (2026-10-31) |
 | Q12 | Naming/branding | **Keep "Marvel Champions Digital"; add a clearer unofficial-fan-project disclaimer** on the welcome screen and in the README (added to M7) (2026-10-31) |
 | Q9 | Folder name and shape | **`content/` root with `packs/<id>/`, `decks/` and `.cache/`** (2026-10-31) |
+| Q13 | Purpose of Tier 2 | **Stepping stone to M12.** The empty shell is the goal; Tier 2 makes dropping the Core pack a small mechanical step. Consequence: Q1 (where official supplemental/scenario content lives) and Q2 (git history) are **M0 blockers**, because they shape the M4 pack layout (2026-10-31) |
+| Q14 | Tests in Tier 2 | **Tests load content through the `ContentLoader`**, not by importing upstream/supplemental paths, so M12 only swaps the content source (2026-10-31) |
+| Q15 | When M8 runs | **After M7, as ordered** (2026-10-31) |
+| Q16 | Code hooks and packs | **Code is tied to the pack** (`packs/<id>/scripts/`), so a scenario or pack never needs an engine patch. Official packs bundle hooks at build time; user packs stay JSON-only until the sandbox ADR, then use the same hook API. Until then new mechanics need a generic engine primitive, and the creator docs say so. The **hook API and `apiVersion` are fixed in M2**, next to `pack.json` (2026-10-31) |
+| Q17 | M3 merge gate | **Seeded Rhino game plus the 100-game simulation must be identical** before and after the loader change; Klaw and Ultron seeds join the gate once M5 lands (2026-10-31) |
+| Q18 | Pack ID collisions | **Reserved official namespace**: `pack:validate` rejects user pack IDs matching official code patterns; the loader rejects duplicate pack IDs and card codes across packs (2026-10-31) |
 | Q9b | Official precon decks | **Inside each pack** (`packs/<id>/decks/`, read-only). User decks in `content/decks/`, MarvelCDB imports in `content/decks/imported/` (read-only cache, cloneable; replaces ADR-0015's `marvelcdb/`). Deck picker shows Official / Mine / Imported together (2026-10-31) |
 
 ---
@@ -165,8 +171,12 @@ The repo then ships **zero** upstream data and **zero** pack supplemental/scenar
 | Trusted code hooks | `scripts/*.ts` for unique mechanics (Wakanda Forever, Ultron drones…) | Build-time bundled for **official** packs only, or loaded from a signed/allow-listed location. |
 | Untrusted code | user-supplied `plugin.ts` | **Not supported initially.** User packs are declarative only; if a mechanic needs code, add a generic primitive to the engine. Revisit with a sandbox ADR (Worker/iframe/WASM) later. |
 
-Recommendation: ship declarative-only for user packs. It keeps the community story simple and avoids executing
-downloaded code. The cost is that some official-only code hooks stay unavailable to creators until a sandbox exists.
+**Decided (Q16):** code belongs to the pack that needs it, so no scenario or pack requires patching the engine. That
+includes today's card-specific code in `src/engine/specials/` (e.g. Wakanda Forever), which moves into the owning pack's
+`scripts/`; the engine keeps only the generic hook API. Official packs bundle their hooks at build time. User packs stay
+declarative-only until the sandbox ADR, then use the same hook API. The hook API and `apiVersion` are defined in M2, so
+the contract exists before M3 to M5 build on it. Cost until the sandbox exists: creators who need a new mechanic request a
+generic engine primitive, and `docs/creators/` must state this limit.
 
 ### 3.5 Engine boots as an empty shell
 
@@ -177,7 +187,7 @@ downloaded code. The cost is that some official-only code hooks stay unavailable
 - New **empty-state screen** (comic style): "Welcome to MCD — there's no content yet" with *Add content folder*, *Import
   pack (zip)*, *Sync official data*, and a link to the community docs. Scenario selector, deck builder and editor each get
   an empty state instead of assuming `'rhino'`.
-- **Tests** keep using the tracked Core pack in tier 2. Fixture content is deferred to M12 (see section 0).
+- **Tests** keep using the tracked Core pack in tier 2, but load it **through the `ContentLoader`** (Q14). Fixture content is deferred to M12 (see section 0).
 - **Leak guard**: a CI check that fails if the tracked tree contains forbidden paths/patterns (upstream JSON, pack
   supplemental, official art, rules PDFs), so the shell stays clean.
 
@@ -225,10 +235,10 @@ Order is chosen so the app keeps working at every step and the risky decisions c
 
 | # | Milestone | Outcome | Notes / risk |
 | --- | --- | --- | --- |
-| **M0** | **Decisions + ADRs** | Answers to the open questions; new ADR "Content Packs & Runtime Loading" superseding ADR-0015's layout and plugins backlog Q3/Q4/Q5/Q9; decide repo/legal strategy. | Blocking. No code. |
+| **M0** | **Decisions + ADRs** | Answers to the open questions (Q1 and Q2 are blockers, see Q13); new ADR "Content Packs & Runtime Loading" superseding ADR-0015's layout and plugins backlog Q3/Q4/Q5/Q9; decide repo/legal strategy. | Blocking. No code. |
 | **M1** | **Copyright & coupling audit** | Inventory of every tracked file/line that embeds official content or hard-codes card codes (engine specials, UI, tests, locales, `references/`). Output: a checklist feeding the leak guard. | Read-only, cheap, de-risks M7. |
-| **M2** | **Pack format + manifest schema + validator** | `pack.json` zod schema (generated JSON schema like supplemental), folder conventions, validator CLI (`npm run pack:validate`). | Pure additions. |
-| **M3** | **Runtime `ContentLoader` + stores** | `cardCatalog`, supplemental registry, `ScenarioRegistry`, modular sets, starter decks fed by the loader; Node and dev-server drivers; app still loads Core from `content/packs/core`. | Largest engine/data change; golden-parity gate (seeded Rhino + 100-game simulation) must match. |
+| **M2** | **Pack format + manifest schema + validator** | `pack.json` zod schema (generated JSON schema like supplemental), folder conventions, validator CLI (`npm run pack:validate`) incl. the reserved-ID rule (Q18), plus the **hook API and `apiVersion` contract** (Q16). | Pure additions. |
+| **M3** | **Runtime `ContentLoader` + stores** | `cardCatalog`, supplemental registry, `ScenarioRegistry`, modular sets, starter decks fed by the loader; Node and dev-server drivers; app still loads Core from `content/packs/core`. | Largest engine/data change; golden-parity gate (Q17) must match. Tests move onto the loader (Q14). |
 | **M4** | **Relocate official content into a Core pack** | Move `data/upstream` → pack `cards/`, supplemental, scenarios, decks, modular sets, Core `scripts/`. Update scripts (`simulate`, `card:*`, `cache:cards`), tsconfig/eslint/vitest, agent skills, AGENTS.md. | Mechanical but wide; one atomic change, no dual paths (AGENTS.md rule). |
 | **M5** | **Scenario code → pack** | Scenarios loaded from packs; push Klaw/Ultron overrides into supplemental data or Core-pack scripts; `defineScenarioPlugin`/`@plugin-api` barrel per plugins backlog Phase A. | Resolves the `plugin.ts` policy (3.4). |
 | **M6** | **Image cache per pack** | Move `cache/` → `content/.cache/images/<pack>`, pack-level image-name rules (kill the `01` special case), user pack art resolution order (user asset → cache → MarvelCDB), production asset serving. | Small; independent of M5. |
@@ -245,6 +255,8 @@ Suggested first three threads: **M0** (decisions, with you), **M1** (audit), **M
 ---
 
 ## 5. Open questions for Steve
+
+Q1 and Q2 below are **M0 blockers** (Q13). Q3 to Q11 are answered in the decision log in section 0.
 
 Recommendations are in bold.
 
@@ -270,7 +282,7 @@ Recommendations are in bold.
    per-type folders. **`content/packs/<id>/`.**
 10. **Pack card format.** Keep zzorba/marvelsdb JSON as the raw card format (interop with MarvelCDB tooling, minimal
     mapping) or define an MCD-native one. **Keep zzorba's format.**
-11. **Test strategy.** Parked: fixtures are planned only if the Core pack is dropped (M12), per Steve (2026-10-31).
+11. **Test strategy.** Answered by Q14: tests go through the loader. Fixtures are planned only if the Core pack is dropped (M12).
 12. **Naming and branding in the shell.** Does the shell still call itself "Marvel Champions Digital", or something
     neutral, given the trademark? Affects README, window title, locale strings, and fonts/art direction text.
 

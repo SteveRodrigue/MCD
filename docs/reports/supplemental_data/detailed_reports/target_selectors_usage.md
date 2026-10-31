@@ -182,6 +182,13 @@
 | `01046` | **Energy Daggers (upgrade)** | `core` | `energy_daggers_special` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed` |
 
+### <a id="host"></a>`HOST` (2 Cards, 2 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_tough` |
+| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
+
 ### <a id="triggering-enemy"></a>`TRIGGERING_ENEMY` (2 Cards, 2 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -260,12 +267,6 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
-
-### <a id="host"></a>`HOST` (1 Cards, 1 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
 ### <a id="host-enemy"></a>`HOST_ENEMY` (1 Cards, 1 Declarations)
 

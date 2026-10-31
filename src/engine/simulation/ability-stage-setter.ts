@@ -950,6 +950,10 @@ const SCENARIOS: Record<string, Scenario> = {
     isPlayerCard(ctx.target.card.type) || ctx.target.card.type === CardType.HERO
       ? villainAttack(stage, ctx)
       : basicAttack(stage, 'villain'),
+  DAMAGE_TAKEN: (stage, ctx) =>
+    isPlayerCard(ctx.target.card.type) || ctx.target.card.type === CardType.HERO
+      ? villainAttack(stage, ctx)
+      : basicAttack(stage, 'villain'),
   ENEMY_INITIATES_ATTACK: (stage, ctx) => {
     setForm(player1(stage), 'hero');
     if (stage.state.players[1]) setForm(stage.state.players[1], 'hero');

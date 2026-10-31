@@ -910,6 +910,15 @@ function placeDamage(
       damageAmount: damageTaken,
       triggerChain: request.triggerChain,
     });
+  } else if (target.type === 'villain' && damageTaken > 0) {
+    const villain = target.entity as VillainState;
+    kernel.dispatchTrigger(state, 'DAMAGE_TAKEN', {
+      targetPlayerId: request.sourcePlayerId || state.players[0]?.id || '',
+      targetType: 'villain',
+      targetInstanceId: villain.instanceId,
+      damageAmount: damageTaken,
+      triggerChain: request.triggerChain,
+    });
   }
 
   // ---------------------------------------------------------------------------

@@ -2455,14 +2455,50 @@
       }
     },
     "01185": {
+      "attachTo": {
+        "host": {
+          "type": "MINION",
+          "superlative": {
+            "stat": "PRINTED_HIT_POINTS",
+            "extreme": "HIGHEST"
+          },
+          "withoutCopyAttached": true
+        }
+      },
+      "abilities": [
+        {
+          "id": "biomechanical_upgrades_defeat_replacement",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "CHARACTER_WOULD_BE_DEFEATED",
+          "triggerFilter": {
+            "targetScope": "HOST"
+          },
+          "steps": [
+            {
+              "id": "step_1_heal_damage",
+              "effect": "HEAL_DAMAGE",
+              "effectParams": {
+                "amount": "ALL",
+                "target": "HOST"
+              }
+            },
+            {
+              "id": "step_2_discard_self",
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "SELF"
+              }
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-10-28T19:30",
-        "updatedAt": "2026-10-28T19:30",
+        "updatedAt": "2026-10-31T13:00",
         "reviewedAt": "2026-10-28T19:30",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 75,
-        "ambiguityFile": "docs/ambiguities/core_encounter_01185_biomechanical-upgrades.md",
+        "confidence": 100,
         "originalText": "Surge.\nAttach to the minion with the highest printed hit points and without another Biomechanical Upgrades attached.\n<b>Forced Interrupt</b>: When attached minion would be defeated, heal all damage from it instead, then discard this card."
       }
     },

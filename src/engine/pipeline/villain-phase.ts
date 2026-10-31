@@ -580,6 +580,13 @@ function resolveRevealedAttachment(
       onomatopoeia: 'NO HOST!',
     });
     dealSurgeCard(state, player, card.name);
+  } else if (resolution.kind === 'discard') {
+    state.encounterDiscard.push(cardInstance);
+    appendLog(state, {
+      key: 'encounter.reveal.attachmentNoHost',
+      params: { card: card.name },
+      onomatopoeia: 'NO HOST!',
+    });
   } else {
     const firstPlayer = getFirstPlayer(state);
     kernel.enqueueDecisionPrompt(state, {

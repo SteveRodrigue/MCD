@@ -157,6 +157,23 @@ export function defeatMinionsBeyondHitPoints(state: GameState): void {
   for (const player of state.players) {
     for (const minion of [...player.engagedMinions]) {
       if ((minion.tokens?.damage || 0) < getEffectiveMinionHitPoints(state, minion)) continue;
+
+      const dispatchRes = kernel.dispatchTrigger(state, 'CHARACTER_WOULD_BE_DEFEATED', {
+        targetPlayerId: player.id,
+        targetInstanceId: minion.instanceId,
+        targetType: 'MINION',
+        targetCardCode: minion.card.code,
+        targetName: minion.card.name,
+        defeatSource: { kind: 'EFFECT', byAttack: false },
+      });
+
+      if (
+        dispatchRes.cancelled ||
+        (minion.tokens?.damage || 0) < getEffectiveMinionHitPoints(state, minion)
+      ) {
+        continue;
+      }
+
       const idx = player.engagedMinions.findIndex((m) => m.instanceId === minion.instanceId);
       if (idx === -1) continue;
       player.engagedMinions.splice(idx, 1);
@@ -414,13 +431,29 @@ function applyDamageAndCheckDefeat(
 
         // STEPS 6-8: Minion Defeat
         if (newDmg >= minionHealth) {
-          targetDefeated = true;
           excessDamage = newDmg - minionHealth;
           const targetPlayer =
             state.players.find((p) =>
               p.engagedMinions.some((m) => m.instanceId === minion.instanceId),
             ) || state.players.find((p) => p.id === target.targetPlayerId);
 
+          const dispatchRes = kernel.dispatchTrigger(state, 'CHARACTER_WOULD_BE_DEFEATED', {
+            targetPlayerId: targetPlayer?.id || state.players[0]?.id || '',
+            targetInstanceId: minion.instanceId,
+            targetType: 'MINION',
+            targetCardCode: minion.card.code,
+            targetName: minion.card.name,
+            defeatSource,
+          });
+
+          const currentDmgAfter = minion.tokens?.damage || 0;
+          const currentHpAfter = getEffectiveMinionHitPoints(state, minion);
+          if (dispatchRes.cancelled || currentDmgAfter < currentHpAfter) {
+            excessDamage = 0;
+            break;
+          }
+
+          targetDefeated = true;
           if (targetPlayer) {
             const idx = targetPlayer.engagedMinions.findIndex(
               (m) => m.instanceId === minion.instanceId,

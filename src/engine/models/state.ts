@@ -306,6 +306,9 @@ export interface AttackExecutionContext {
   hasPiercing?: boolean;
   acceptOptionalTriggers?: boolean;
   synchronousPolicy?: 'HERO_IF_READY' | 'ALLY_CHUMP_BLOCK' | 'AUTO_OPTIMAL' | 'TAKE_UNDEFENDED';
+  stepping?: boolean;
+  boostQueue?: CardInstance[];
+  currentBoostCard?: CardInstance;
   finalDamage?: number;
   /** Boost abilities gated on the activation's damage; resolved after step 6 (#221). */
   deferredBoostAbilities?: DeferredBoostAbility[];
@@ -366,7 +369,8 @@ export type DecisionPromptKind =
   | 'DISTRIBUTE_POINTS'
   | 'MULTI_SELECT_TARGETS'
   | 'ORDER_SIMULTANEOUS_ABILITIES'
-  | 'PLAYER_CLEANUP';
+  | 'PLAYER_CLEANUP'
+  | 'BOOST_ABILITY_REVEAL';
 
 export interface TargetAllocationItem {
   instanceId: string;

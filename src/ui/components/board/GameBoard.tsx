@@ -21,6 +21,7 @@ import { PlayerHandTray } from './PlayerHandTray';
 import { DevStepErrorBanner } from './DevStepErrorBanner';
 import { GameOverScreen } from './GameOverScreen';
 import { DecisionPromptModal } from './DecisionPromptModal';
+import { BoostEffectModal } from './BoostEffectModal';
 import { DailyBugleActionNewspaper } from './DailyBugleActionNewspaper';
 import { EndTurnConfirmationModal } from './EndTurnConfirmationModal';
 import { CardPaymentModal } from './CardPaymentModal';
@@ -658,7 +659,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
         <GameOverScreen onReset={onReset} />
 
         {/* 8. Interactive Decision Prompt Modal (ADR-0020 / ADR-0032 / ADR-0038) */}
-        {!isBoostModalOpen && (
+        {!isBoostModalOpen && decisionPrompt?.kind !== 'BOOST_ABILITY_REVEAL' && (
           <DecisionPromptModal
             prompt={decisionPrompt}
             players={gameState.players}
@@ -740,6 +741,27 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
             }}
           />
         )}
+
+        {/* 8b. Boost Ability Reveal Modal (Issue #503) */}
+        <BoostEffectModal
+          isOpen={
+            !gameState.winner &&
+            !isBoostModalOpen &&
+            decisionPrompt?.kind === 'BOOST_ABILITY_REVEAL'
+          }
+          prompt={decisionPrompt}
+          pacing={villainPhasePacing}
+          isAutoPlaying={isAutoPlaying}
+          onContinue={() => {
+            if (decisionPrompt && onDispatchAction) {
+              onDispatchAction({
+                type: 'RESOLVE_DECISION_PROMPT',
+                playerId: decisionPrompt.playerId,
+                selectedOptionId: decisionPrompt.options?.[0]?.id || 'resolve_boost',
+              });
+            }
+          }}
+        />
 
         {/* 9. Combat Boost & Damage Resolution Modal (Issue #140) */}
         <CombatBoostModal

@@ -118,6 +118,17 @@ function handleDealDamage(
     return { state, success: true, mutatedState: amount > 0, value: amount, onomatopoeia };
   }
 
+  if (targetParam === 'ALL_CONTROLLED_CHARACTERS') {
+    state = applyAbilityDamage(state, playerTargetRef(player), amount, damageOpts).state;
+    for (const ally of [...player.allies].reverse()) {
+      state = applyAbilityDamage(state, allyTargetRef(ally, player.id), amount, damageOpts).state;
+    }
+
+    const onomatopoeia = `OUCH! ${amount} DAMAGE TO ALL CONTROLLED CHARACTERS!`;
+
+    return { state, success: true, mutatedState: amount > 0, value: amount, onomatopoeia };
+  }
+
   if (targetParam === 'ALL_ENEMIES') {
     state = dealDamageToEnemies(state, amount, state.players, damageOpts);
 

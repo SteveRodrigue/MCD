@@ -24,6 +24,7 @@ import type {
 import type { resolveActiveEncounterCardAfterInterrupt } from './pipeline/villain-phase';
 import type {
   continueAttackAfterInitiation,
+  continueAttackAfterBoost,
   getAttackOutcomeFacts,
   finishPendingDamagePlacements,
 } from './pipeline/combat-pipeline';
@@ -49,6 +50,7 @@ export interface Kernel {
   refreshPromptOptionAvailability: typeof refreshPromptOptionAvailability;
   resolveActiveEncounterCardAfterInterrupt: typeof resolveActiveEncounterCardAfterInterrupt;
   continueAttackAfterInitiation: typeof continueAttackAfterInitiation;
+  continueAttackAfterBoost: typeof continueAttackAfterBoost;
   getAttackOutcomeFacts: typeof getAttackOutcomeFacts;
   finishPendingDamagePlacements: typeof finishPendingDamagePlacements;
   finishPendingThreatPlacements: typeof finishPendingThreatPlacements;
@@ -78,6 +80,7 @@ export const KERNEL_ENTRIES: readonly KernelEntry[] = [
   'refreshPromptOptionAvailability',
   'resolveActiveEncounterCardAfterInterrupt',
   'continueAttackAfterInitiation',
+  'continueAttackAfterBoost',
   'getAttackOutcomeFacts',
   'finishPendingDamagePlacements',
   'finishPendingThreatPlacements',

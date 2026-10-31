@@ -120,15 +120,12 @@ golden-parity gate is not required here because no runtime behavior changes.
 
 None at runtime. The Card Supplemental Editor is untouched in M2. Editor tooling benefits from the new JSON schema mappings in VS Code.
 
-## 9. Open decisions
+## 9. Decisions (2026-10-31)
 
-1. **Where the validator lives.** `scripts/` (user-facing CLI, matches `card:validate`) vs `tools/`. **Recommend `scripts/`.**
-2. **Reserved-ID source before M4.** Read `data/upstream/packs.json`. After M4 it moves to the Core pack; the predicate takes
-   the list as a parameter so only the caller changes. **Recommend the parameterised predicate.**
-3. **`apiVersion` semantics.** Integer, loader rejects greater than the engine's, accepts lower until a break is declared.
-   **Recommend this** over semver ranges for the first version.
-4. **Card schema reuse.** Validate pack `cards/` with the upstream JSON schema plus the user-code rule, rather than a new
-   zod card schema. **Recommend reuse**, to honour Q10.
+1. **Validator lives in `scripts/`** (Q37), matching `card:validate`.
+2. **Reserved-ID predicate takes the official list as a parameter** (Q38). Before M4 the caller reads `data/upstream/packs.json`; after M4 it reads the Core pack.
+3. **`apiVersion` is an integer** (Q39). The loader rejects a pack greater than the engine's version and accepts lower until a break is declared.
+4. **Pack `cards/` are validated with the upstream JSON schema plus the user-code rule** (Q40), not a new zod card schema (honours Q10).
 
 ## 10. Done when
 

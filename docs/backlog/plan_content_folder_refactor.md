@@ -67,6 +67,10 @@ the Core pack is a future milestone, **M12**); Open Questions 1 and 2 are parked
 | Q34 | ADR title | **"Content Packs & Runtime Loading"** (ADR-0092), noting it fulfils the plugins spec's reserved "Content Plugin Architecture" ADR (2026-10-31) |
 | Q35 | Vocabulary | **"Pack" for content, "hook" for code**; "plugin" retired in prose except the existing `ScenarioPlugin` interface (2026-10-31) |
 | Q36 | ADR-0011 | **Partially superseded by ADR-0092** for the image-cache location (2026-10-31) |
+| Q37 | Validator location | **`scripts/pack-validate.ts`**, matching `card:validate` (2026-10-31) |
+| Q38 | Reserved-ID source | **Parameterised predicate**; official list read from `data/upstream/packs.json` before M4, from the Core pack after (2026-10-31) |
+| Q39 | `apiVersion` | **Integer**; loader rejects greater than the engine's, accepts lower until a break is declared (2026-10-31) |
+| Q40 | Card validation | **Upstream JSON schema plus the user-code rule**, no new zod card schema (2026-10-31) |
 | Q9b | Official precon decks | **Inside each pack** (`packs/<id>/decks/`, read-only). User decks in `content/decks/`, MarvelCDB imports in `content/decks/imported/` (read-only cache, cloneable; replaces ADR-0015's `marvelcdb/`). Deck picker shows Official / Mine / Imported together (2026-10-31) |
 
 ---

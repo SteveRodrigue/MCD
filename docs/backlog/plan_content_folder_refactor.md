@@ -31,6 +31,12 @@ Consequences for the rest of this document: milestone **M8** becomes "Tier 1 lea
 the Core pack is a future milestone, **M12**); Open Questions 1 and 2 are parked until tier 3; Question 8 is answered (untrack
 `references/` PDFs).
 
+### Decision log
+
+| # | Question | Decision (date) |
+| --- | --- | --- |
+| Q3 | Runtime vs build-time loading | **Runtime for data, build-time for trusted code hooks** (2026-10-31) |
+
 ---
 
 ## 1. The key finding: the existing plugins design assumes the opposite of an empty shell

@@ -40,6 +40,7 @@ the Core pack is a future milestone, **M12**); Open Questions 1 and 2 are parked
 | Q5 | Platforms | **Dev server + Tauri desktop first**; browser zip-import later. Note: Tauri is advertised in the README but `src-tauri/` does not exist yet, so its setup becomes its own milestone (2026-10-31) |
 | Q6 | Timing vs gates | **Plan now, build after Gate 1**: M0 to M2 run now (no behavior change); loader work (M3+) starts after the Rhino release (2026-10-31) |
 | Q7 | Scenario Editor | **Postponed**; scenarios are hand-written JSON for now, so scenario-authoring docs and schema validation are mandatory. Official scenarios (Rhino, Klaw, Ultron) must be integrated through the same plugin/pack format. M9 keeps only the Card Supplemental Editor refactor (2026-10-31) |
+| Q10 | Raw card format | **Keep zzorba/MarvelCDB JSON** as the pack card format (2026-10-31) |
 | Q9 | Folder name and shape | **`content/` root with `packs/<id>/`, `decks/` and `.cache/`** (2026-10-31) |
 | Q9b | Official precon decks | **Inside each pack** (`packs/<id>/decks/`, read-only). User decks in `content/decks/`, MarvelCDB imports in `content/decks/imported/` (read-only cache, cloneable; replaces ADR-0015's `marvelcdb/`). Deck picker shows Official / Mine / Imported together (2026-10-31) |
 

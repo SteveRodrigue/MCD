@@ -10,6 +10,7 @@ import {
   VillainState,
   getActiveVillain,
   getVillainById,
+  getVillainsInPlay,
 } from '@engine/models';
 import type { TriggerFilter } from '../../data/supplemental/schema';
 import { getStepEffectParams } from '../../data/supplemental/runtime';
@@ -929,6 +930,11 @@ function scanInPlayTriggerAbilities(
     ) {
       break;
     }
+    const isFirstPlayer =
+      controller.id === (state.players[state.firstPlayerIndex]?.id || state.players[0]?.id);
+    const villainAttachments = isFirstPlayer
+      ? getVillainsInPlay(state).flatMap((v) => v.attachments || [])
+      : [];
     const inPlayCards: CardInstance[] = [
       ...(playerAbilitiesSuspended ? [] : controller.tableau || []),
       ...(playerAbilitiesSuspended ? [] : controller.allies || []),
@@ -939,6 +945,7 @@ function scanInPlayTriggerAbilities(
         : (controller.allies || []).flatMap((a) => a.attachments || [])),
       ...(controller.engagedMinions || []),
       ...(controller.engagedMinions || []).flatMap((m) => m.attachments || []),
+      ...villainAttachments,
     ];
     for (const cardInst of inPlayCards) {
       const abilities = cardInst.card.enrichment?.abilities || [];

@@ -48,6 +48,38 @@
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
+### <a id="hero-action"></a>`HERO_ACTION` (27 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01005` | **Swinging Web Kick (event)** | `core` | `swinging_web_kick` |
+| `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_attach` |
+| `01012` | **Crisis Interdiction (event)** | `core` | `crisis_interdiction` |
+| `01013` | **Photonic Blast (event)** | `core` | `photonic_blast` |
+| `01018` | **Energy Channel (upgrade)** | `core` | `energy_channel_blast` |
+| `01021` | **Gamma Slam (event)** | `core` | `gamma_slam_action` |
+| `01022` | **Ground Stomp (event)** | `core` | `ground_stomp_action` |
+| `01027` | **Focused Rage (upgrade)** | `core` | `focused_rage` |
+| `01031` | **Repulsor Blast (event)** | `core` | `repulsor_blast` |
+| `01032` | **Supersonic Punch (event)** | `core` | `supersonic_punch` |
+| `01035` | **Arc Reactor (upgrade)** | `core` | `arc_reactor_ready` |
+| `01037` | **Mark V Helmet (upgrade)** | `core` | `mark_v_helmet` |
+| `01038` | **Powered Gauntlets (upgrade)** | `core` | `powered_gauntlets` |
+| `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_aerial` |
+| `01043a` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_a` |
+| `01043b` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_b` |
+| `01043c` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_c` |
+| `01043d` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_d` |
+| `01053` | **Relentless Assault (event)** | `core` | `relentless_assault` |
+| `01054` | **Uppercut (event)** | `core` | `uppercut` |
+| `01060` | **For Justice! (event)** | `core` | `for_justice` |
+| `01070` | **Lead from the Front (event)** | `core` | `lead_from_the_front_action` |
+| `01087` | **Haymaker (event)** | `core` | `haymaker` |
+| `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
+| `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
+| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_discard` |
+| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_discard` |
+
 ### <a id="constant"></a>`CONSTANT` (24 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -77,36 +109,28 @@
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
 
-### <a id="hero-action"></a>`HERO_ACTION` (26 Cards)
+### <a id="forced-response"></a>`FORCED_RESPONSE` (18 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01005` | **Swinging Web Kick (event)** | `core` | `swinging_web_kick` |
-| `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_attach` |
-| `01012` | **Crisis Interdiction (event)** | `core` | `crisis_interdiction` |
-| `01013` | **Photonic Blast (event)** | `core` | `photonic_blast` |
-| `01018` | **Energy Channel (upgrade)** | `core` | `energy_channel_blast` |
-| `01021` | **Gamma Slam (event)** | `core` | `gamma_slam_action` |
-| `01022` | **Ground Stomp (event)** | `core` | `ground_stomp_action` |
-| `01027` | **Focused Rage (upgrade)** | `core` | `focused_rage` |
-| `01031` | **Repulsor Blast (event)** | `core` | `repulsor_blast` |
-| `01032` | **Supersonic Punch (event)** | `core` | `supersonic_punch` |
-| `01035` | **Arc Reactor (upgrade)** | `core` | `arc_reactor_ready` |
-| `01037` | **Mark V Helmet (upgrade)** | `core` | `mark_v_helmet` |
-| `01038` | **Powered Gauntlets (upgrade)** | `core` | `powered_gauntlets` |
-| `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_aerial` |
-| `01043a` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_a` |
-| `01043b` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_b` |
-| `01043c` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_c` |
-| `01043d` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_d` |
-| `01053` | **Relentless Assault (event)** | `core` | `relentless_assault` |
-| `01054` | **Uppercut (event)** | `core` | `uppercut` |
-| `01060` | **For Justice! (event)** | `core` | `for_justice` |
-| `01070` | **Lead from the Front (event)** | `core` | `lead_from_the_front_action` |
-| `01087` | **Haymaker (event)** | `core` | `haymaker` |
-| `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
-| `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
-| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_discard` |
+| `01002` | **Black Cat (ally)** | `core` | `black_cat_when_played` |
+| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
+| `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
+| `01084` | **Nick Fury (ally)** | `core` | `nick_fury_enters_play`, `nick_fury_round_end_discard` |
+| `01099` | **Charge (attachment)** | `core_encounter` | `charge_discard` |
+| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response` |
+| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response` |
+| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_tough` |
+| `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` |
+| `01160` | **Legal Work (obligation)** | `core_encounter` | `legal_work_resolve` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
+| `01165` | **Eviction Notice (obligation)** | `core_encounter` | `eviction_notice_resolve` |
+| `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
+| `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
+| `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
+| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks`, `madame_hydra_schemes` |
+| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
 ### <a id="action"></a>`ACTION` (19 Cards)
 
@@ -131,28 +155,6 @@
 | `01086` | **First Aid (event)** | `core` | `first_aid` |
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
-
-### <a id="forced-response"></a>`FORCED_RESPONSE` (17 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01002` | **Black Cat (ally)** | `core` | `black_cat_when_played` |
-| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
-| `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
-| `01084` | **Nick Fury (ally)** | `core` | `nick_fury_enters_play`, `nick_fury_round_end_discard` |
-| `01099` | **Charge (attachment)** | `core_encounter` | `charge_discard` |
-| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response` |
-| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response` |
-| `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` |
-| `01160` | **Legal Work (obligation)** | `core_encounter` | `legal_work_resolve` |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
-| `01165` | **Eviction Notice (obligation)** | `core_encounter` | `eviction_notice_resolve` |
-| `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
-| `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
-| `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
-| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
-| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks`, `madame_hydra_schemes` |
-| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
 ### <a id="response"></a>`RESPONSE` (13 Cards)
 
@@ -260,7 +262,7 @@
 | :--- | :--- | :--- | :--- |
 | `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
 
-## 2. Trigger Windows (`TriggerTypeSchema` — 21/32 In Use)
+## 2. Trigger Windows (`TriggerTypeSchema` — 22/32 In Use)
 
 ### <a id="when-revealed"></a>`WHEN_REVEALED` (40 Cards)
 
@@ -419,6 +421,12 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01002` | **Black Cat (ally)** | `core` | `black_cat_when_played` |
+
+### <a id="damage-taken"></a>`DAMAGE_TAKEN` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_tough` |
 
 ### <a id="form-changed"></a>`FORM_CHANGED` (1 Cards)
 

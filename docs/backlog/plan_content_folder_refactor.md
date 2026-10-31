@@ -36,6 +36,7 @@ the Core pack is a future milestone, **M12**); Open Questions 1 and 2 are parked
 | # | Question | Decision (date) |
 | --- | --- | --- |
 | Q3 | Runtime vs build-time loading | **Runtime for data, build-time for trusted code hooks** (2026-10-31) |
+| Q4 | Code in user packs | **JSON only now; sandboxed code later** via a future ADR (2026-10-31) |
 
 ---
 

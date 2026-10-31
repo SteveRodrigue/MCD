@@ -150,8 +150,8 @@ content/
 
 Why per-pack folders rather than ADR-0015's `fan_made_heroes/` and `fan_made_scenarios/`: a hero, its signature
 modular set and a scenario that uses them are routinely released together. The pack is the unit of distribution
-(zip/folder), dependency (`dependsOn: ["core"]`) and ownership of scenario code. ADR-0015 would need a short
-superseding ADR (see M0).
+(zip/folder), dependency (`dependsOn: ["core"]`) and ownership of scenario code. ADR-0015's layout is superseded in part by
+[ADR-0092](../decisions/0092-content-packs-and-runtime-loading.md).
 
 ### 3.2 Official content: sync target design (applies fully at M12)
 

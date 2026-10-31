@@ -32,7 +32,7 @@
 | `01181` | **Madame Hydra** | `minion` | `core_encounter` | **3** | • `madame_hydra_immunity` (`CONSTANT`, **1 step**)<br/>• `madame_hydra_attacks` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**)<br/>• `madame_hydra_schemes` (`FORCED_RESPONSE` / `MINION_SCHEMED`, **1 step**) |
 | `45109` | **The Fittest** | `attachment` | `aoa_encounter` | **2** | • `the_fittest_hit_points` (`CONSTANT`, **1 step**)<br/>• `the_fittest_tough` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**) |
 
-## 2. Multi-Step Execution Pipelines (2+ Steps — 34 Pipelines Across 34 Cards)
+## 2. Multi-Step Execution Pipelines (2+ Steps — 35 Pipelines Across 35 Cards)
 
 | Card Code | Card Name | Pack | Ability ID | Timing | Steps | Pipeline Execution Sequence |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -65,6 +65,7 @@
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` | `FORCED_RESPONSE` | **2** | `[1] CHANGE_FORM ➔ [2] PLAYER_CHOICE` |
 | `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DISCARD ➔ [2] SURGE` |
 | `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` | `WHEN_REVEALED` | **2** | `[1] SEARCH ➔ [2] ADD_THREAT` |
+| `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` | `FORCED_INTERRUPT` | **2** | `[1] HEAL_DAMAGE ➔ [2] DISCARD` |
 | `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` | `WHEN_REVEALED` | **2** | `[1] VILLAIN_ATTACKS ➔ [2] SURGE` |
 | `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` | `WHEN_REVEALED` | **2** | `[1] VILLAIN_AND_ENGAGED_MINIONS_ATTACK ➔ [2] SURGE` |
 | `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` | `WHEN_REVEALED` | **4** | `[1] PUT_INTO_PLAY ➔ [2] PUT_INTO_PLAY ➔ [3] SHUFFLE_INTO_DECK ➔ [4] SURGE` |

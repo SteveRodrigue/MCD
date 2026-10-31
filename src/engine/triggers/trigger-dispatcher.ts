@@ -32,7 +32,11 @@ import { appendLog } from '../state/game-log';
 export const MAX_TRIGGER_DEPTH = 15;
 
 function isDefeatTrigger(trigger: TriggerType): boolean {
-  return trigger === 'DEFEATED' || trigger === 'CHARACTER_DEFEATED';
+  return (
+    trigger === 'DEFEATED' ||
+    trigger === 'CHARACTER_DEFEATED' ||
+    trigger === 'CHARACTER_WOULD_BE_DEFEATED'
+  );
 }
 
 /** A Forced Interrupt / Forced Response resolves at once; every other timing is the player's choice. */
@@ -104,13 +108,20 @@ export function matchesTriggerFilter(
   const hostId = cardInst?.hostInstanceId;
   const targetId =
     context.targetInstanceId ||
-    (trigger === 'CHARACTER_DEFEATED' || trigger === 'DEFEATED'
+    (trigger === 'CHARACTER_DEFEATED' ||
+    trigger === 'DEFEATED' ||
+    trigger === 'CHARACTER_WOULD_BE_DEFEATED'
       ? context.sourceInstanceId
       : undefined);
 
   // Universal attachment defeat guard:
   // Attachments in play must only trigger when their attached host is defeated
-  if (hostId && (trigger === 'CHARACTER_DEFEATED' || trigger === 'DEFEATED')) {
+  if (
+    hostId &&
+    (trigger === 'CHARACTER_DEFEATED' ||
+      trigger === 'DEFEATED' ||
+      trigger === 'CHARACTER_WOULD_BE_DEFEATED')
+  ) {
     if (targetId && targetId !== hostId) {
       return false;
     }

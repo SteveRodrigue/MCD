@@ -36,7 +36,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed`, `concussive_blast_boost` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
 
-### <a id="discard"></a>`DISCARD` (18 Cards, 20 Step Occurrences)
+### <a id="discard"></a>`DISCARD` (19 Cards, 21 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -56,6 +56,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
 | `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
+| `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
 | `01188` | **Caught Off Guard (treachery)** | `core_encounter` | `caught_off_guard_when_revealed` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 
@@ -187,7 +188,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
 | `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
 
-### <a id="heal-damage"></a>`HEAL_DAMAGE` (6 Cards, 6 Step Occurrences)
+### <a id="heal-damage"></a>`HEAL_DAMAGE` (7 Cards, 7 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -197,6 +198,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01086` | **First Aid (event)** | `core` | `first_aid` |
 | `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
+| `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
 
 ### <a id="change-form"></a>`CHANGE_FORM` (5 Cards, 5 Step Occurrences)
 

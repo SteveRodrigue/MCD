@@ -406,7 +406,11 @@ export const RULE_OBSERVATIONS: Record<RuleSlug, RuleObservation> = {
   villainous: unobservable,
   vulnerable: unobservable,
   'when-completed-abilities': unobservable,
-  'when-defeated-abilities': triggers('DEFEATED', 'CHARACTER_DEFEATED'),
+  'when-defeated-abilities': triggers(
+    'DEFEATED',
+    'CHARACTER_DEFEATED',
+    'CHARACTER_WOULD_BE_DEFEATED',
+  ),
   'when-revealed-abilities': timings('WHEN_REVEALED'),
   'wild-resource': unobservable,
   'winning-the-game': logs('scenario.victory'),

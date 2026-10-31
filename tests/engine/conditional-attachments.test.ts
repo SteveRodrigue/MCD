@@ -349,6 +349,13 @@ describe('Conditional encounter attachments (#209)', () => {
     });
   });
 
+  it('minion host with no minions in play and no otherwise is discarded', () => {
+    state.players[0].engagedMinions = [];
+    const card = reveal('p1', synthetic('SYN-NO-HOST', { host: { type: 'MINION' } }));
+    expect(attachedTo(card)).toBeUndefined();
+    expect(state.encounterDiscard.some((c) => c.instanceId === card.instanceId)).toBe(true);
+  });
+
   describe('regressions', () => {
     it('the three Rhino attachments still attach to Rhino (#175)', () => {
       for (const code of ['01098', '01099', '01100']) {

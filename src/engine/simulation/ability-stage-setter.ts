@@ -849,11 +849,18 @@ function defeatEnemy(stage: Stage, ctx: ScenarioContext): GameState {
   }
   const minion = stage.fixtures.minion;
   if (!minion) throw new Error('no minion fixture');
-  const inst = p.engagedMinions[0] ?? createCardInstance(minion, PLAYER_ID);
-  inst.tokens = {
-    ...inst.tokens,
-    damage: Math.max(0, getEffectiveMinionHitPoints(stage.state, inst) - 1),
-  };
+  const inst =
+    p.engagedMinions.find((m) =>
+      m.attachments?.some((a) => a.instanceId === ctx.source.instanceId),
+    ) ??
+    p.engagedMinions[0] ??
+    createCardInstance(minion, PLAYER_ID);
+  if (!inst.tokens?.damage) {
+    inst.tokens = {
+      ...inst.tokens,
+      damage: Math.max(1, getEffectiveMinionHitPoints(stage.state, inst) - 1),
+    };
+  }
   if (!p.engagedMinions.includes(inst)) p.engagedMinions.push(inst);
   const filter = ctx.target.ability.triggerFilter as { defeatedByAttackOf?: string } | undefined;
   if (filter?.defeatedByAttackOf === 'THIS_CARD') {
@@ -907,6 +914,7 @@ const SCENARIOS: Record<string, Scenario> = {
   BASIC_ATTACK_PERFORMED: (stage) => basicAttack(stage, 'villain'),
   DEFEATED: defeatEnemy,
   CHARACTER_DEFEATED: defeatEnemy,
+  CHARACTER_WOULD_BE_DEFEATED: defeatEnemy,
   THWART_RESOLVED: (stage, ctx) => {
     setForm(player1(stage), 'hero');
     // Threat reaches the scheme only through the threat pipeline (Crisis and Patrol apply)
@@ -992,9 +1000,25 @@ export function installInPlay(stage: Stage, inst: CardInstance, type: CardType):
     case CardType.MINION:
       p.engagedMinions.push(inst);
       break;
-    case CardType.ATTACHMENT:
+    case CardType.ATTACHMENT: {
+      if (inst.card.enrichment?.attachTo?.host?.type === 'MINION') {
+        const minion = stage.fixtures.minion;
+        const hostMinion =
+          p.engagedMinions[0] ?? (minion ? createCardInstance(minion, PLAYER_ID) : undefined);
+        if (hostMinion) {
+          hostMinion.tokens = {
+            ...hostMinion.tokens,
+            damage: Math.max(1, getEffectiveMinionHitPoints(stage.state, hostMinion) - 1),
+          };
+          if (!p.engagedMinions.includes(hostMinion)) p.engagedMinions.push(hostMinion);
+          if (!hostMinion.attachments) hostMinion.attachments = [];
+          hostMinion.attachments.push({ ...inst, hostInstanceId: hostMinion.instanceId });
+          break;
+        }
+      }
       villain.attachments.push({ ...inst, hostInstanceId: villain.instanceId });
       break;
+    }
     case CardType.SIDE_SCHEME:
       stage.state.sideSchemes.push({
         instanceId: inst.instanceId,
@@ -1250,9 +1274,14 @@ function exerciseConstant(
     const inst = createCardInstance(card, PLAYER_ID);
     installInPlay(stage, inst, card.type);
     const placed =
-      [...state.villains[0].attachments, ...p.tableau, ...p.allies, ...p.engagedMinions].find(
-        (c) => c.instanceId === inst.instanceId,
-      ) ?? state.sideSchemes.find((s) => s.instanceId === inst.instanceId);
+      [
+        ...state.villains[0].attachments,
+        ...p.tableau,
+        ...p.allies,
+        ...p.engagedMinions,
+        ...p.engagedMinions.flatMap((m) => m.attachments ?? []),
+      ].find((c) => c.instanceId === inst.instanceId) ??
+      state.sideSchemes.find((s) => s.instanceId === inst.instanceId);
     if (!placed) return { ok: false, variant, reason: `a ${card.type} cannot be staged in play` };
     placedEntity = placed;
     swap = (to) => {

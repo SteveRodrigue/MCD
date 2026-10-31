@@ -18,7 +18,8 @@ export interface AttachCandidate {
 export type AttachmentResolution =
   | { kind: 'attach'; host: AttachCandidate }
   | { kind: 'choose'; candidates: AttachCandidate[] }
-  | { kind: 'surge' };
+  | { kind: 'surge' }
+  | { kind: 'discard' };
 
 function candidatesOf(state: GameState): AttachCandidate[] {
   const result: AttachCandidate[] = getVillainsInPlay(state).map((villain) => ({
@@ -114,5 +115,9 @@ export function resolveAttachmentHost(
     if (fallback) return fallback;
   }
 
-  return fromCandidates(findAttachCandidates(state, attachment, { type: 'VILLAIN' }))!;
+  if (declared.host.type === 'VILLAIN') {
+    return fromCandidates(findAttachCandidates(state, attachment, { type: 'VILLAIN' }))!;
+  }
+
+  return { kind: 'discard' };
 }

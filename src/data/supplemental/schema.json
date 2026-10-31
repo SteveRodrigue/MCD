@@ -58,6 +58,7 @@
                     "ENTERS_PLAY",
                     "MINION_ENTERS_PLAY",
                     "ENCOUNTER_CARD_REVEALED",
+                    "CHARACTER_WOULD_BE_DEFEATED",
                     "CHARACTER_DEFEATED",
                     "SCHEME_DEFEATED",
                     "SCHEME_THREAT_REDUCED_TO_ZERO",

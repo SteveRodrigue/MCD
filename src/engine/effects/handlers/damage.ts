@@ -100,6 +100,19 @@ function handleDealDamage(
     return { state, success: true, mutatedState: amount > 0, value: amount, onomatopoeia };
   }
 
+  if (targetParam === 'ALL_FRIENDLY_CHARACTERS') {
+    for (const p of state.players) {
+      state = applyAbilityDamage(state, playerTargetRef(p), amount, damageOpts).state;
+      for (const ally of [...p.allies].reverse()) {
+        state = applyAbilityDamage(state, allyTargetRef(ally, p.id), amount, damageOpts).state;
+      }
+    }
+
+    const onomatopoeia = `BOOM! ${amount} DAMAGE TO ALL FRIENDLY CHARACTERS!`;
+
+    return { state, success: true, mutatedState: amount > 0, value: amount, onomatopoeia };
+  }
+
   if (targetParam === 'ALL_HEROES_AND_ALLIES') {
     // The amount to each hero (alter-ego players are not heroes) and each ally. A snapshot: a
     // hero eliminated by this damage leaves state.players (#246). Splitting an amount among

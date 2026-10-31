@@ -36,7 +36,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed`, `concussive_blast_boost` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
 
-### <a id="discard"></a>`DISCARD` (17 Cards, 19 Step Occurrences)
+### <a id="discard"></a>`DISCARD` (18 Cards, 20 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -49,6 +49,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
 | `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response`, `radioactive_man_boost` |
+| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_discard` |
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_discard` |
 | `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` |
 | `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
@@ -58,7 +59,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01188` | **Caught Off Guard (treachery)** | `core_encounter` | `caught_off_guard_when_revealed` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 
-### <a id="add-status"></a>`ADD_STATUS` (12 Cards, 15 Step Occurrences)
+### <a id="add-status"></a>`ADD_STATUS` (13 Cards, 16 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -71,6 +72,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
 | `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response`, `tiger_shark_boost` |
+| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_tough` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed`, `heart_shaped_herb_boost` |
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed`, `sweeping_swoop_boost` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |

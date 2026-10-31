@@ -39,6 +39,7 @@ the Core pack is a future milestone, **M12**); Open Questions 1 and 2 are parked
 | Q4 | Code in user packs | **JSON only now; sandboxed code later** via a future ADR (2026-10-31) |
 | Q5 | Platforms | **Dev server + Tauri desktop first**; browser zip-import later. Note: Tauri is advertised in the README but `src-tauri/` does not exist yet, so its setup becomes its own milestone (2026-10-31) |
 | Q6 | Timing vs gates | **Plan now, build after Gate 1**: M0 to M2 run now (no behavior change); loader work (M3+) starts after the Rhino release (2026-10-31) |
+| Q7 | Scenario Editor | **Postponed**; scenarios are hand-written JSON for now, so scenario-authoring docs and schema validation are mandatory. Official scenarios (Rhino, Klaw, Ultron) must be integrated through the same plugin/pack format. M9 keeps only the Card Supplemental Editor refactor (2026-10-31) |
 
 ---
 
@@ -228,7 +229,7 @@ Order is chosen so the app keeps working at every step and the risky decisions c
 | **M6** | **Image cache per pack** | Move `cache/` → `content/.cache/images/<pack>`, pack-level image-name rules (kill the `01` special case), user pack art resolution order (user asset → cache → MarvelCDB), production asset serving. | Small; independent of M5. |
 | **M7** | **Empty-shell boot + onboarding UI** | Zero-pack boot, welcome screen, folder/zip import, sync command in UI, per-screen empty states, pack list with errors. | The visible payoff; needs M3 + M2. |
 | **M8** | **Tier 1 leak guard + reference untracking** | Untrack `references/` PDFs and rules Markdown copies (keep local lookup tooling), CI guard against committed art/PDFs. **Contributor setup:** a `references/SETUP.md` plus a `npm run setup:references` command that tells the contributor where to download the Rules Reference PDF (FFG's official support page, already in `references/links.md`), verifies the file name/checksum, and regenerates `references/rules/` locally with `tools/build_rules_markdown.py`; CONTRIBUTING.md, README and AGENTS.md (Rules Reference Inspection Policy) point to it, and `npm run rule` fails with a clear "run setup:references" message when the files are missing. | Small. Docs-check must tolerate the untracked paths. |
-| **M9** | **Editor refactor** | Card Supplemental Editor pack-scoped on the storage driver (works in Tauri/browser, not just dev server); Scenario Editor design + first version. | Separate track after M7. |
+| **M9** | **Editor refactor** | Card Supplemental Editor pack-scoped on the storage driver (works in Tauri/browser, not just dev server). Scenario Editor postponed (Q7); scenario docs come from M10. | Separate track after M7. |
 | **M10** | **Docs reorganization** | `docs/creators/` + `docs/engine/` split, link and doc-check updates, "make your first pack" tutorial using a small example pack. | Can start at M2 and finish after M9; link redirects handled in the same PR. |
 | **M11** | **Browser/Tauri drivers & distribution** | File System Access / IndexedDB driver, Tauri folder driver, pack zip import/export, pack versioning and `apiVersion` checks. | Depends on the platform decision (Q5). |
 

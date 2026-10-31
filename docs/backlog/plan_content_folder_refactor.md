@@ -37,6 +37,7 @@ the Core pack is a future milestone, **M12**); Open Questions 1 and 2 are parked
 | --- | --- | --- |
 | Q3 | Runtime vs build-time loading | **Runtime for data, build-time for trusted code hooks** (2026-10-31) |
 | Q4 | Code in user packs | **JSON only now; sandboxed code later** via a future ADR (2026-10-31) |
+| Q5 | Platforms | **Dev server + Tauri desktop first**; browser zip-import later. Note: Tauri is advertised in the README but `src-tauri/` does not exist yet, so its setup becomes its own milestone (2026-10-31) |
 
 ---
 

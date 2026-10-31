@@ -43,7 +43,13 @@ the Core pack is a future milestone, **M12**); Open Questions 1 and 2 are parked
 | Q10 | Raw card format | **Keep zzorba/MarvelCDB JSON** as the pack card format (2026-10-31) |
 | Q12 | Naming/branding | **Keep "Marvel Champions Digital"; add a clearer unofficial-fan-project disclaimer** on the welcome screen and in the README (added to M7) (2026-10-31) |
 | Q9 | Folder name and shape | **`content/` root with `packs/<id>/`, `decks/` and `.cache/`** (2026-10-31) |
-| Q13 | Purpose of Tier 2 | **Stepping stone to M12.** The empty shell is the goal; Tier 2 makes dropping the Core pack a small mechanical step. Consequence: Q1 (where official supplemental/scenario content lives) and Q2 (git history) are **M0 blockers**, because they shape the M4 pack layout (2026-10-31) |
+| Q13 | Purpose of Tier 2 | **Shell-ready by design, not a literal empty shell yet.** The Core pack and MCD's official supplemental data stay in this repo, in one repo, with history left as is (Q19, Q20). The refactor makes the engine boot with zero packs and makes M12 a small mechanical step if it is ever wanted. M12 is optional and parked, so Q1 and Q2 are no longer M0 blockers (2026-10-31) |
+| Q19 | Official content location | **Stays in this repo for now**; no second repository to manage. A separate content repo is only reconsidered if M12 is taken up (2026-10-31) |
+| Q20 | Git history | **Left as is.** Revisit only with M12 (2026-10-31) |
+| Q21 | Tauri sequencing | **New milestone M6b, "Tauri scaffold + folder driver", between M3 and M7** so M7's *Add content folder* works in a packaged app. Browser driver and zip import stay in M11 (2026-10-31) |
+| Q22 | Missing packs | **Disable only the scenario or deck that needs an absent pack, with a visible reason naming the pack.** Applies to `dependsOn`, modular sets and deck validation, so partial collections work (2026-10-31) |
+| Q23 | Official art | **Permanent rule: fetched on demand into `content/.cache/images/`, never bundled or committed, including in a shipped Tauri build.** User pack art takes priority; the M8 leak guard enforces it (2026-10-31) |
+| Q24 | Editor write path | **Storage driver only; user packs writable, official packs read-only; the Vite dev middleware is deleted, not kept alongside.** Official supplemental edits happen through git in this repo (2026-10-31) |
 | Q14 | Tests in Tier 2 | **Tests load content through the `ContentLoader`**, not by importing upstream/supplemental paths, so M12 only swaps the content source (2026-10-31) |
 | Q15 | When M8 runs | **After M7, as ordered** (2026-10-31) |
 | Q16 | Code hooks and packs | **Code is tied to the pack** (`packs/<id>/scripts/`), so a scenario or pack never needs an engine patch. Official packs bundle hooks at build time; user packs stay JSON-only until the sandbox ADR, then use the same hook API. Until then new mechanics need a generic engine primitive, and the creator docs say so. The **hook API and `apiVersion` are fixed in M2**, next to `pack.json` (2026-10-31) |
@@ -138,19 +144,20 @@ modular set and a scenario that uses them are routinely released together. The p
 (zip/folder), dependency (`dependsOn: ["core"]`) and ownership of scenario code. ADR-0015 would need a short
 superseding ADR (see M0).
 
-### 3.2 Official content: sync, never commit
+### 3.2 Official content: sync target design (applies fully at M12)
 
 "Official" packs are built on the user's machine by a **content sync** (CLI first, in-app later):
 
 1. Download the zzorba dataset into `content/.cache/upstream/` (replaces `scripts/sync_data.ps1`).
 2. Materialize `content/packs/<code>/cards/` from it (a pristine pack per upstream pack).
-3. Fetch the MCD **supplemental + scenarios + decks** for each pack from a separate source (see Open Question 1),
-   because these are MCD's own work and must be versioned and reviewable even though they are derived from card text.
+3. Take the MCD **supplemental + scenarios + decks** for each pack from the Core pack in this repo (Q19). At M12 they
+   would come from a separate source instead; they are MCD's own work and must stay versioned and reviewable.
 4. Images are fetched lazily from MarvelCDB into `content/.cache/images/` exactly as today (on first display, deduped,
    atomic temp-file rename). The pack manifest, not `'01'` string checks in UI code, carries the image-naming quirk.
 
-The repo then ships **zero** upstream data and **zero** pack supplemental/scenario content. `content/` is gitignored
-(except a `README.md` and `.gitkeep` once the Core pack is decoupled in M12; until then the Core pack stays tracked).
+For now (Q13, Q19) the Core pack and its supplemental data stay tracked in this repo; only `content/.cache/` is gitignored.
+If M12 is ever taken up, the repo would ship zero upstream data and zero pack supplemental/scenario content, and `content/`
+would be gitignored except a `README.md` and `.gitkeep`.
 
 ### 3.3 Scenarios live with their packs
 
@@ -235,20 +242,21 @@ Order is chosen so the app keeps working at every step and the risky decisions c
 
 | # | Milestone | Outcome | Notes / risk |
 | --- | --- | --- | --- |
-| **M0** | **Decisions + ADRs** | Answers to the open questions (Q1 and Q2 are blockers, see Q13); new ADR "Content Packs & Runtime Loading" superseding ADR-0015's layout and plugins backlog Q3/Q4/Q5/Q9; decide repo/legal strategy. | Blocking. No code. |
+| **M0** | **Decisions + ADRs** | Answers to the remaining open questions (Q1 and Q2 are answered, see Q19/Q20); new ADR "Content Packs & Runtime Loading" superseding ADR-0015's layout and plugins backlog Q3/Q4/Q5/Q9; legal check is parked with M12. | Blocking. No code. |
 | **M1** | **Copyright & coupling audit** | Inventory of every tracked file/line that embeds official content or hard-codes card codes (engine specials, UI, tests, locales, `references/`). Output: a checklist feeding the leak guard. | Read-only, cheap, de-risks M7. |
 | **M2** | **Pack format + manifest schema + validator** | `pack.json` zod schema (generated JSON schema like supplemental), folder conventions, validator CLI (`npm run pack:validate`) incl. the reserved-ID rule (Q18), plus the **hook API and `apiVersion` contract** (Q16). | Pure additions. |
 | **M3** | **Runtime `ContentLoader` + stores** | `cardCatalog`, supplemental registry, `ScenarioRegistry`, modular sets, starter decks fed by the loader; Node and dev-server drivers; app still loads Core from `content/packs/core`. | Largest engine/data change; golden-parity gate (Q17) must match. Tests move onto the loader (Q14). |
 | **M4** | **Relocate official content into a Core pack** | Move `data/upstream` → pack `cards/`, supplemental, scenarios, decks, modular sets, Core `scripts/`. Update scripts (`simulate`, `card:*`, `cache:cards`), tsconfig/eslint/vitest, agent skills, AGENTS.md. | Mechanical but wide; one atomic change, no dual paths (AGENTS.md rule). |
 | **M5** | **Scenario code → pack** | Scenarios loaded from packs; push Klaw/Ultron overrides into supplemental data or Core-pack scripts; `defineScenarioPlugin`/`@plugin-api` barrel per plugins backlog Phase A. | Resolves the `plugin.ts` policy (3.4). |
-| **M6** | **Image cache per pack** | Move `cache/` → `content/.cache/images/<pack>`, pack-level image-name rules (kill the `01` special case), user pack art resolution order (user asset → cache → MarvelCDB), production asset serving. | Small; independent of M5. |
-| **M7** | **Empty-shell boot + onboarding UI** | Zero-pack boot, welcome screen, folder/zip import, sync command in UI, per-screen empty states, pack list with errors. Unofficial-fan-project disclaimer on the welcome screen and README (Q12). | The visible payoff; needs M3 + M2. |
+| **M6** | **Image cache per pack** | Move `cache/` → `content/.cache/images/<pack>`, pack-level image-name rules (kill the `01` special case), user pack art resolution order (user asset → cache → MarvelCDB), production asset serving. | Small; independent of M5. Official art is never bundled (Q23). |
+| **M6b** | **Tauri scaffold + folder driver** | Create `src-tauri/`, Tauri folder driver for `content/`, dev-server driver parity (Q21). | Tauri is advertised but absent today; its own milestone (Q5). |
+| **M7** | **Empty-shell boot + onboarding UI** | Zero-pack boot, welcome screen, folder/zip import, sync command in UI, per-screen empty states, pack list with errors. Unofficial-fan-project disclaimer on the welcome screen and README (Q12). | The visible payoff; needs M3 + M2 + M6b. Missing-pack scenarios and decks are disabled with a reason (Q22). |
 | **M8** | **Tier 1 leak guard + reference untracking** | Untrack `references/` PDFs and rules Markdown copies (keep local lookup tooling), CI guard against committed art/PDFs. **Contributor setup:** a `references/SETUP.md` plus a `npm run setup:references` command that tells the contributor where to download the Rules Reference PDF (FFG's official support page, already in `references/links.md`), verifies the file name/checksum, and regenerates `references/rules/` locally with `tools/build_rules_markdown.py`; CONTRIBUTING.md, README and AGENTS.md (Rules Reference Inspection Policy) point to it, and `npm run rule` fails with a clear "run setup:references" message when the files are missing. | Small. Docs-check must tolerate the untracked paths. |
-| **M9** | **Editor refactor** | Card Supplemental Editor pack-scoped on the storage driver (works in Tauri/browser, not just dev server). Scenario Editor postponed (Q7); scenario docs come from M10. | Separate track after M7. |
+| **M9** | **Editor refactor** | Card Supplemental Editor pack-scoped on the storage driver (Q24: user packs only, official read-only, Vite dev middleware deleted). Scenario Editor postponed (Q7); scenario docs come from M10. | Separate track after M7. |
 | **M10** | **Docs reorganization** | `docs/creators/` + `docs/engine/` split, link and doc-check updates, "make your first pack" tutorial using a small example pack. | Can start at M2 and finish after M9; link redirects handled in the same PR. |
 | **M11** | **Browser/Tauri drivers & distribution** | File System Access / IndexedDB driver, Tauri folder driver, pack zip import/export, pack versioning and `apiVersion` checks. | Depends on the platform decision (Q5). |
 
-| **M12** | **(Tier 3, deferred) Decouple the Core pack** | Untrack and ignore `content/packs/core`, add the sync command or content repo, optionally rewrite history. Plan fixtures and the test split here, not before. | Only if/when wanted; Q1 and Q2 apply here. |
+| **M12** | **(Tier 3, deferred) Decouple the Core pack** | Untrack and ignore `content/packs/core`, add the sync command or content repo, optionally rewrite history. Plan fixtures and the test split here, not before. | Optional and parked (Q13). Needs a second repo and a history decision first (Q19, Q20 reopen). |
 
 Suggested first three threads: **M0** (decisions, with you), **M1** (audit), **M2** (pack format + schema).
 
@@ -256,16 +264,15 @@ Suggested first three threads: **M0** (decisions, with you), **M1** (audit), **M
 
 ## 5. Open questions for Steve
 
-Q1 and Q2 below are **M0 blockers** (Q13). Q3 to Q11 are answered in the decision log in section 0.
+Q1 and Q2 are answered for now (Q19, Q20) and reopen only with M12. Q3 to Q11 are answered in the decision log in section 0.
 
 Recommendations are in bold.
 
 1. **Where does the official supplemental/scenario content live once it leaves the shell?** It is MCD's own work but is
    derived from copyrighted card text. Options: a separate repo (public or private) that the sync tool pulls;
-   a user-local only convention; or keep it in this repo and only drop upstream data/images. **Separate repo, with the
-   shell repo holding none of it.** (Not legal advice; worth a quick check with someone who can give it.)
+   a user-local only convention; or keep it in this repo and only drop upstream data/images. **Answered (Q19): stays in this repo for now.** A separate repo is reconsidered with M12. (Not legal advice; worth a quick check with someone who can give it.)
 2. **Git history.** The upstream JSON and card text are already in history. Removing them means a history rewrite or a fresh
-   repo. **Decide before M8; a fresh public repo with a clean initial commit is the only way to be fully clean.**
+   repo. **Answered (Q20): left as is.** A fresh public repo is the only fully clean option and is reconsidered with M12.
 3. **Runtime vs build-time loading.** The shell needs runtime loading; the plugins backlog said build-time only.
    **Runtime for data, build-time for trusted code hooks (3.4).**
 4. **Untrusted user code.** **No user `plugin.ts` initially, declarative only**; sandbox is a later ADR. Acceptable for

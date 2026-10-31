@@ -424,9 +424,22 @@ describe('Empirical Verification: Multiplayer Combat & Defense Scenarios', () =>
 
     expect(dispatchRes.result.success).toBe(true);
 
-    const finalP1 = dispatchRes.state.players[0];
-    const finalP2 = dispatchRes.state.players[1];
-    const finalP3 = dispatchRes.state.players[2];
+    // Resolve boost ability reveal prompt (Issue #503)
+    let finalState = dispatchRes.state;
+    const boostPrompt = peekDecisionPrompt(finalState);
+    if (boostPrompt?.kind === 'BOOST_ABILITY_REVEAL') {
+      const boostRes = dispatchAction(finalState, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: boostPrompt.playerId,
+        selectedOptionId: boostPrompt.options[0].id,
+      });
+      expect(boostRes.result.success).toBe(true);
+      finalState = boostRes.state;
+    }
+
+    const finalP1 = finalState.players[0];
+    const finalP2 = finalState.players[1];
+    const finalP3 = finalState.players[2];
 
     // Player 3 took 6 - 3 = 3 damage
     expect(finalP3.exhausted).toBe(true);
@@ -496,9 +509,22 @@ describe('Empirical Verification: Multiplayer Combat & Defense Scenarios', () =>
 
     expect(dispatchRes.result.success).toBe(true);
 
-    const finalP1 = dispatchRes.state.players[0];
-    const finalP2 = dispatchRes.state.players[1];
-    const finalP3 = dispatchRes.state.players[2];
+    // Resolve boost ability reveal prompt (Issue #503)
+    let finalState = dispatchRes.state;
+    const boostPrompt = peekDecisionPrompt(finalState);
+    if (boostPrompt?.kind === 'BOOST_ABILITY_REVEAL') {
+      const boostRes = dispatchAction(finalState, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: boostPrompt.playerId,
+        selectedOptionId: boostPrompt.options[0].id,
+      });
+      expect(boostRes.result.success).toBe(true);
+      finalState = boostRes.state;
+    }
+
+    const finalP1 = finalState.players[0];
+    const finalP2 = finalState.players[1];
+    const finalP3 = finalState.players[2];
 
     // Player 3 defended: total attack = 3 + 2 + 1 = 6; 6 - 3 DEF = 3 damage
     expect(finalP3.exhausted).toBe(true);

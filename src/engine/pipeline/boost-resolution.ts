@@ -49,7 +49,12 @@ function getAdditionalBoostCardCount(
   entity: BoostActivator,
   attachments: CardInstance[] = [],
 ): number {
-  let count = (entity.card as MayAddBoostCards).additionalBoostCards ?? 0;
+  let count =
+    ('additionalBoostCards' in entity && typeof entity.additionalBoostCards === 'number'
+      ? entity.additionalBoostCards
+      : undefined) ??
+    (entity.card as MayAddBoostCards).additionalBoostCards ??
+    0;
   for (const attachment of attachments) {
     count += (attachment.card as MayAddBoostCards).additionalBoostCards ?? 0;
   }

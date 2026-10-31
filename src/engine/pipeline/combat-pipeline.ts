@@ -18,6 +18,8 @@ import {
   PendingDamagePlacement,
   AllyCard,
   VillainPhaseStep,
+  CardAbility,
+  PendingDecisionPrompt,
 } from '../models';
 import { popDecisionPrompt } from './prompt-queue';
 import { dealBoostCards, resolveBoostCards, type BoostLogContext } from './boost-resolution';
@@ -259,6 +261,7 @@ export function beginEnemyAttack(
     hasPiercing,
     acceptOptionalTriggers: options?.acceptOptionalTriggers,
     synchronousPolicy: options?.synchronousPolicy,
+    stepping: options?.stepping ?? state.options?.villainPhaseStepping,
   };
 
   if (initResult.hasPendingPrompt) {
@@ -631,14 +634,68 @@ export function resolveDefenderDeclaration(
     });
   }
 
-  // Step 4 & 5: Deal & Resolve Boost Cards
+  // Clear defender decision prompt from queue if present so it doesn't mask boost prompts
+  if (kernel.peekDecisionPrompt(state)?.options.some((o) => o.effect === 'DECLARE_DEFENDER')) {
+    popDecisionPrompt(state);
+  }
+
+  // Step 4 -> 7: Deal & Resolve Boost Cards, Damage, and Reactions
+  const isInteractiveStepping =
+    !attackContext.synchronousPolicy &&
+    Boolean(attackContext.stepping || state.options?.villainPhaseStepping);
+
+  if (isInteractiveStepping) {
+    return continueBoostResolution(state, attackContext);
+  }
+
   step4_and_5_dealAndResolveBoostCards(state, attackContext);
+  return finishAttackAfterBoosts(state, attackContext);
+}
+
+function cleanupAttackOnAbort(state: GameState, attackContext: AttackExecutionContext): void {
+  if (attackContext.boostQueue && attackContext.boostQueue.length > 0) {
+    state.encounterDiscard.push(...attackContext.boostQueue);
+    attackContext.boostQueue = undefined;
+  }
+  if (attackContext.currentBoostCard) {
+    state.encounterDiscard.push(attackContext.currentBoostCard);
+    attackContext.currentBoostCard = undefined;
+  }
+  delete state.activeBoostResolution;
+  state.activeAttackContext = undefined;
+}
+
+function finishAttackAfterBoosts(
+  state: GameState,
+  attackContext: AttackExecutionContext,
+): GameState {
+  delete state.activeBoostResolution;
+  attackContext.boostQueue = undefined;
+
+  // Re-check guards before Step 6
+  if (state.winner || !state.players.some((p) => p.id === attackContext.targetPlayerId)) {
+    cleanupAttackOnAbort(state, attackContext);
+    return state;
+  }
+
+  const attacker =
+    attackContext.attackerType === 'VILLAIN'
+      ? attackingVillain(state, attackContext)
+      : attackContext.attackerCard
+        ? getMinionById(state, attackContext.attackerCard.instanceId)
+        : undefined;
+  if (!attacker) {
+    cleanupAttackOnAbort(state, attackContext);
+    return state;
+  }
 
   // Step 6: Damage Calculation, Prevention & Overkill
   step6_calculateAndApplyAttackDamage(state, attackContext);
 
-  // The game ended during the damage (RR v1.8): no reaction, Retaliate or clean-up follows.
-  if (state.winner) return state;
+  if (state.winner) {
+    cleanupAttackOnAbort(state, attackContext);
+    return state;
+  }
 
   if (state.pendingDamagePlacements?.some((p) => p.attackId === attackContext.attackId)) {
     state.activeAttackContext = attackContext;
@@ -648,7 +705,10 @@ export function resolveDefenderDeclaration(
   // Step 7: Post-Attack Reactions, Retaliate & Cleanup
   state = step7_resolvePostAttackAndRetaliate(state, attackContext);
 
-  recordOutcomeOnStepEvent(state, player, attackContext);
+  const player = state.players.find((p) => p.id === attackContext.targetPlayerId);
+  if (player) {
+    recordOutcomeOnStepEvent(state, player, attackContext);
+  }
 
   state.activeAttackContext = undefined;
 
@@ -686,9 +746,269 @@ export function resolveDefenderDeclaration(
   return state;
 }
 
-/**
- * Step 4 & 5: Deal & 1-by-1 Boost Cards Resolution Loop (shared with schemes, see boost-resolution).
- */
+function getBoostAbilityText(boostCard: CardInstance, _boostAbilities: CardAbility[]): string {
+  const rawAudit =
+    'audit' in boostCard.card
+      ? (boostCard.card.audit as Record<string, unknown> | undefined)
+      : undefined;
+  const originalText = typeof rawAudit?.originalText === 'string' ? rawAudit.originalText : '';
+  const cardText = boostCard.card.text || originalText || '';
+  if (cardText.includes('Boost:')) {
+    const parts = cardText.split(/Boost:?/i);
+    const raw = parts[1]
+      .split(/<hr|\n\n/)[0]
+      .replace(/<[^>]+>/g, '')
+      .trim();
+    if (raw) return raw;
+  }
+  return cardText.replace(/<[^>]+>/g, '').trim();
+}
+
+export function continueBoostResolution(
+  state: GameState,
+  attackContext: AttackExecutionContext,
+): GameState {
+  attackContext.phase = 'REVEAL_BOOST';
+
+  if (state.winner) {
+    cleanupAttackOnAbort(state, attackContext);
+    return state;
+  }
+
+  const targetPlayer = state.players.find((p) => p.id === attackContext.targetPlayerId);
+  if (!targetPlayer) {
+    cleanupAttackOnAbort(state, attackContext);
+    return state;
+  }
+
+  const attacker =
+    attackContext.attackerType === 'VILLAIN'
+      ? attackingVillain(state, attackContext)
+      : attackContext.attackerCard
+        ? getMinionById(state, attackContext.attackerCard.instanceId)
+        : undefined;
+  if (!attacker) {
+    cleanupAttackOnAbort(state, attackContext);
+    return state;
+  }
+
+  if (!attackContext.boostQueue) {
+    const log: BoostLogContext = {
+      category: 'combat',
+      actor: {
+        name: attacker.card.name,
+        type: attackContext.attackerType === 'VILLAIN' ? 'villain' : 'minion',
+      },
+    };
+    attackContext.boostQueue = dealBoostCards(state, attacker, log);
+  }
+
+  state.activeBoostResolution = {
+    queue: attackContext.boostQueue,
+    activatorInstanceId: attacker.instanceId ?? attackContext.attackerVillainId ?? 'villain',
+    targetPlayerId: attackContext.targetPlayerId,
+  };
+
+  while (attackContext.boostQueue.length > 0) {
+    const boostCard = attackContext.boostQueue.shift()!;
+    state.activeBoostCard = boostCard;
+    (attackContext.revealedBoostCards ??= []).push(boostCard);
+
+    const boostAbilities = boostCard.card.boostStar
+      ? (boostCard.card.enrichment?.abilities || []).filter(
+          (a) => a.timing === 'BOOST' || a.trigger === 'BOOST',
+        )
+      : [];
+
+    const executableAbilities = boostAbilities.filter((ability) => {
+      if (ability.steps?.some((s) => s.gate === 'IF_ACTIVATION_DEALT_DAMAGE')) {
+        (attackContext.deferredBoostAbilities ??= []).push({
+          ability,
+          sourceCardInstance: boostCard,
+        });
+        return false;
+      }
+      return true;
+    });
+
+    if (executableAbilities.length > 0) {
+      const isInteractiveStepping =
+        !attackContext.synchronousPolicy &&
+        Boolean(attackContext.stepping || state.options?.villainPhaseStepping);
+      if (isInteractiveStepping) {
+        // Interactive UI mode: pause and prompt!
+        attackContext.currentBoostCard = boostCard;
+        state.activeAttackContext = attackContext;
+
+        const boostText = getBoostAbilityText(boostCard, executableAbilities);
+
+        const prompt: PendingDecisionPrompt = {
+          promptId: nextEngineId(state, 'prompt'),
+          playerId: attackContext.targetPlayerId,
+          kind: 'BOOST_ABILITY_REVEAL',
+          title: boostCard.card.name,
+          description: boostText,
+          sourceCardName: boostCard.card.name,
+          sourceCardCode: boostCard.card.code,
+          sourceCardInstance: boostCard,
+          attackerName: attacker.card.name,
+          options: [
+            {
+              id: 'resolve_boost',
+              label: 'Continue',
+              effect: 'CONTINUE_COMBAT_AFTER_BOOST',
+            },
+          ],
+        };
+
+        return kernel.enqueueDecisionPrompt(state, prompt);
+      } else {
+        // Synchronous / headless mode: execute immediately
+        for (const boostAbility of executableAbilities) {
+          kernel.executeEffect(state, boostAbility, {
+            playerId: attackContext.targetPlayerId,
+            sourceCardInstance: boostCard,
+            attackerType: attackContext.attackerType,
+            defenderType: attackContext.defender?.type ?? 'UNDEFENDED',
+          });
+          appendLog(state, {
+            category: 'combat',
+            actor: {
+              name: attacker.card.name,
+              type: attackContext.attackerType === 'VILLAIN' ? 'villain' : 'minion',
+            },
+            key: 'villain.boost.starResolved',
+            params: {
+              card: boostCard.card.name,
+              source: boostAbility.id,
+              abilityId: boostAbility.id,
+            },
+            onomatopoeia: 'STAR BOOST ACTIVATED!',
+          });
+
+          if (state.winner || !state.players.some((p) => p.id === attackContext.targetPlayerId)) {
+            cleanupAttackOnAbort(state, attackContext);
+            return state;
+          }
+        }
+      }
+    }
+
+    const icons = boostCard.card.boostIcons ?? 0;
+    attackContext.totalBoostIcons += icons;
+    appendLog(state, {
+      category: 'combat',
+      actor: {
+        name: attacker.card.name,
+        type: attackContext.attackerType === 'VILLAIN' ? 'villain' : 'minion',
+      },
+      key: 'villain.boost.revealed',
+      params: {
+        actor: attacker.card.name,
+        card: boostCard.card.name,
+        amount: icons,
+        boostIcons: icons,
+      },
+      onomatopoeia: 'BOOST REVEALED!',
+    });
+
+    const playerAfterBoost = state.players.find((p) => p.id === attackContext.targetPlayerId);
+    if (!playerAfterBoost?.engagedMinions.some((m) => m.instanceId === boostCard.instanceId)) {
+      state.encounterDiscard.push(boostCard);
+    }
+    state.activeBoostCard = undefined;
+  }
+
+  return finishAttackAfterBoosts(state, attackContext);
+}
+
+export function continueAttackAfterBoost(
+  state: GameState,
+  attackContext: AttackExecutionContext,
+): GameState {
+  const boostCard = attackContext.currentBoostCard;
+  attackContext.currentBoostCard = undefined;
+
+  if (boostCard) {
+    const attacker =
+      attackContext.attackerType === 'VILLAIN'
+        ? attackingVillain(state, attackContext)
+        : attackContext.attackerCard
+          ? getMinionById(state, attackContext.attackerCard.instanceId)
+          : undefined;
+
+    const boostAbilities = (boostCard.card.enrichment?.abilities || []).filter(
+      (a) => a.timing === 'BOOST' || a.trigger === 'BOOST',
+    );
+
+    for (const boostAbility of boostAbilities) {
+      if (boostAbility.steps?.some((s) => s.gate === 'IF_ACTIVATION_DEALT_DAMAGE')) {
+        continue;
+      }
+      kernel.executeEffect(state, boostAbility, {
+        playerId: attackContext.targetPlayerId,
+        sourceCardInstance: boostCard,
+        attackerType: attackContext.attackerType,
+        defenderType: attackContext.defender?.type ?? 'UNDEFENDED',
+      });
+      if (attacker) {
+        appendLog(state, {
+          category: 'combat',
+          actor: {
+            name: attacker.card.name,
+            type: attackContext.attackerType === 'VILLAIN' ? 'villain' : 'minion',
+          },
+          key: 'villain.boost.starResolved',
+          params: {
+            card: boostCard.card.name,
+            source: boostAbility.id,
+            abilityId: boostAbility.id,
+          },
+          onomatopoeia: 'STAR BOOST ACTIVATED!',
+        });
+      }
+
+      if (state.winner || !state.players.some((p) => p.id === attackContext.targetPlayerId)) {
+        cleanupAttackOnAbort(state, attackContext);
+        return state;
+      }
+    }
+
+    const icons = boostCard.card.boostIcons ?? 0;
+    attackContext.totalBoostIcons += icons;
+    if (attacker) {
+      appendLog(state, {
+        category: 'combat',
+        actor: {
+          name: attacker.card.name,
+          type: attackContext.attackerType === 'VILLAIN' ? 'villain' : 'minion',
+        },
+        key: 'villain.boost.revealed',
+        params: {
+          actor: attacker.card.name,
+          card: boostCard.card.name,
+          amount: icons,
+          boostIcons: icons,
+        },
+        onomatopoeia: 'BOOST REVEALED!',
+      });
+    }
+
+    const playerAfterBoost = state.players.find((p) => p.id === attackContext.targetPlayerId);
+    if (!playerAfterBoost?.engagedMinions.some((m) => m.instanceId === boostCard.instanceId)) {
+      state.encounterDiscard.push(boostCard);
+    }
+    state.activeBoostCard = undefined;
+  }
+
+  // If a secondary prompt was enqueued by the boost effect (e.g. choice), wait for it!
+  if (kernel.peekDecisionPrompt(state)) {
+    return state;
+  }
+
+  return continueBoostResolution(state, attackContext);
+}
+
 export function step4_and_5_dealAndResolveBoostCards(
   state: GameState,
   attackContext: AttackExecutionContext,
@@ -722,8 +1042,6 @@ export function step4_and_5_dealAndResolveBoostCards(
     onRevealed: (boostCard) => {
       (attackContext.revealedBoostCards ??= []).push(boostCard);
     },
-    // "If this activation deals damage ...": the outcome is unknown until step 6, so the
-    // ability waits and resolves after damage (applyCalculatedAttackDamage, #221).
     onDeferred: (ability, boostCard) => {
       if (!ability.steps?.some((s) => s.gate === 'IF_ACTIVATION_DEALT_DAMAGE')) return false;
       (attackContext.deferredBoostAbilities ??= []).push({
@@ -1279,4 +1597,9 @@ export function executeEnemyAttackSynchronously(
   });
 }
 
-bindKernel({ continueAttackAfterInitiation, getAttackOutcomeFacts, finishPendingDamagePlacements });
+bindKernel({
+  continueAttackAfterInitiation,
+  continueAttackAfterBoost,
+  getAttackOutcomeFacts,
+  finishPendingDamagePlacements,
+});

@@ -1,6 +1,6 @@
 # Plan — M7: The game explains itself when there is no content
 
-**Status:** approved by Steve 2026-11-01 (all recommendations accepted); implement after M8.
+**Status:** approved by Steve 2026-11-01 (all recommendations accepted); implemented after M8. **Deviation:** the new strings are English only. The UI has no translation layer (`src/locales` only serves the combat log), so French strings (decision 4) would need one first; that is a separate change.
 **Parent:** [`plan_content_folder_refactor.md`](plan_content_folder_refactor.md) (Q12, Q22, Q28, Q45, Q55; roadmap row M7, section 3.5) and [ADR-0092](../decisions/0092-content-packs-and-runtime-loading.md).
 **Depends on:** M2, M3 (merged). **Not** on the desktop app: Q55 parked it (issue #548), so M7 runs on the dev-server driver only.
 **Gate note:** Gate 1 (Rhino) is active. M7 touches no engine file. Proof: seeded Rhino game and `simulate --no-stats` stay byte-identical, and the browser check in section 7.

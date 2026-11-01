@@ -14,9 +14,16 @@ import { isGameStage } from './theme/game-stage';
 import { ThemeProvider } from './theme/ThemeProvider';
 import { useGameTheme } from './theme/useGameTheme';
 import { GameSessionProvider } from './context/GameStateContext';
+import { ScenarioRegistry } from '../engine/scenarios';
 
 const ScenarioSelector = React.lazy(() =>
   import('./components/setup/ScenarioSelector').then((m) => ({ default: m.ScenarioSelector })),
+);
+const WelcomeScreen = React.lazy(() =>
+  import('./components/setup/WelcomeScreen').then((m) => ({ default: m.WelcomeScreen })),
+);
+const ContentScreen = React.lazy(() =>
+  import('./components/setup/ContentScreen').then((m) => ({ default: m.ContentScreen })),
 );
 const MulliganScreen = React.lazy(() =>
   import('./components/setup/MulliganScreen').then((m) => ({ default: m.MulliganScreen })),
@@ -45,21 +52,21 @@ const isTemplatesUrl = (pathname: string, search: string): boolean =>
 const AppContent: React.FC = () => {
   const { settings } = useGameSettings();
   const { rollGameTheme } = useGameTheme();
-  const [stage, setStage] = useState<'SETUP' | 'MULLIGAN' | 'IN_GAME' | 'EDITOR' | 'TEMPLATES'>(
-    () => {
-      if (typeof window !== 'undefined') {
-        const pathname = window.location.pathname;
-        const search = window.location.search;
-        if (isTemplatesUrl(pathname, search)) {
-          return 'TEMPLATES';
-        }
-        if (pathname.startsWith('/editor') || search.includes('view=editor')) {
-          return 'EDITOR';
-        }
+  const [stage, setStage] = useState<
+    'SETUP' | 'CONTENT' | 'MULLIGAN' | 'IN_GAME' | 'EDITOR' | 'TEMPLATES'
+  >(() => {
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
+      const search = window.location.search;
+      if (isTemplatesUrl(pathname, search)) {
+        return 'TEMPLATES';
       }
-      return 'SETUP';
-    },
-  );
+      if (pathname.startsWith('/editor') || search.includes('view=editor')) {
+        return 'EDITOR';
+      }
+    }
+    return 'SETUP';
+  });
   const [rawGameState, setGameState] = useState<GameState | null>(null);
   const [loopError, setLoopError] = useState<InfiniteLoopError | null>(null);
 
@@ -224,7 +231,17 @@ const AppContent: React.FC = () => {
             </div>
           }
         >
-          {stage === 'SETUP' && <ScenarioSelector onStartSetup={handleStartSetup} />}
+          {stage === 'SETUP' &&
+            (ScenarioRegistry.getAll().length === 0 ? (
+              <WelcomeScreen onOpenContent={() => setStage('CONTENT')} />
+            ) : (
+              <ScenarioSelector
+                onStartSetup={handleStartSetup}
+                onOpenContent={() => setStage('CONTENT')}
+              />
+            ))}
+
+          {stage === 'CONTENT' && <ContentScreen onBack={() => setStage('SETUP')} />}
 
           {stage === 'MULLIGAN' && gameState && (
             <MulliganScreen

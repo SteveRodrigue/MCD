@@ -25,6 +25,7 @@ const manifest = {
 
 const content: LoadedContent = {
   failures: [],
+  descriptions: [],
   packs: [
     {
       id: 'tmp',
@@ -73,7 +74,7 @@ describe('applyContent', () => {
 
   it('replaces earlier content instead of adding to it', () => {
     applyContent(content);
-    applyContent({ packs: [], failures: [] });
+    applyContent({ packs: [], failures: [], descriptions: [] });
     expect(cardCatalog.getAllCards()).toEqual([]);
     expect(getCardEnrichment('99001')).toBeUndefined();
     expect(listStarterDecks()).toEqual([]);
@@ -120,14 +121,14 @@ describe('resetContent', () => {
     expect(cardCatalog.getAllCards()).toEqual([]);
     expect(listStarterDecks()).toEqual([]);
     expect(listModularEncounterSets(cardCatalog)).toEqual([]);
-    expect(getLoadedContent()).toEqual({ packs: [], failures: [] });
+    expect(getLoadedContent()).toEqual({ packs: [], failures: [], descriptions: [] });
   });
 
   it('is what an empty content root boots into', async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'mcd-content-empty-'));
     try {
       const booted = await bootContent(new NodeFsDriver(root));
-      expect(booted).toEqual({ packs: [], failures: [] });
+      expect(booted).toEqual({ packs: [], failures: [], descriptions: [] });
       expect(cardCatalog.getAllCards()).toEqual([]);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });

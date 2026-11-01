@@ -31,12 +31,33 @@ export interface LoadedPack {
 export interface PackLoadFailure {
   packId: string;
   reason: string;
+  /** The dependency that disabled this pack, when that is the reason. */
+  blockedBy?: string;
+}
+
+/** What a player sees for a pack on disk (Q45). `data-only`: cards but no supplemental data, or not enabled. */
+export type PackState = 'playable' | 'data-only' | 'needs-pack' | 'failed';
+
+export interface PackDescription {
+  id: string;
+  name: string;
+  origin?: PackManifest['origin'];
+  /** Listed in `config.json` (or requested), whether or not it loaded. */
+  enabled: boolean;
+  state: PackState;
+  reason?: string;
+  cardCount: number;
+  supplementalCount: number;
+  /** Scenarios of a pack that is not loaded, so the setup screen can list them as locked. */
+  lockedScenarios: { id: string; name: string }[];
 }
 
 export interface LoadedContent {
   /** Packs in dependency order (dependencies first). */
   packs: LoadedPack[];
   failures: PackLoadFailure[];
+  /** Every pack folder on disk, loaded or not. */
+  descriptions: PackDescription[];
 }
 
 export interface LoadContentOptions {

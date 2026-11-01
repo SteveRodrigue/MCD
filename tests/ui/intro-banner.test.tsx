@@ -22,7 +22,7 @@ const bannerClasses = (styleId: string): string[] => {
     <GameSettingsProvider>
       <ModalStyleProvider style={style}>
         <GameThemeRoot active>
-          <ScenarioSelector onStartSetup={() => {}} />
+          <ScenarioSelector onStartSetup={() => {}} onOpenContent={() => {}} />
         </GameThemeRoot>
       </ModalStyleProvider>
     </GameSettingsProvider>,

@@ -14,6 +14,8 @@ export const ScenarioDefinitionSchema = z
     author: z.string().optional(),
     version: z.string().optional(),
     description: z.string().optional(),
+    /** Comic sound effect shown with the setup log entry. */
+    setupOnomatopoeia: z.string().min(1).optional(),
     supportedDifficulties: z.array(DifficultySchema).min(1),
     villainSetup: z
       .object({

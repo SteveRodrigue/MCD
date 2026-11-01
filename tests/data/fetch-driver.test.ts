@@ -29,6 +29,13 @@ describe('FetchDriver', () => {
     expect(await driver.listFiles('packs/missing')).toEqual([]);
   });
 
+  it('lists the sub-directories directly inside a directory from the index', async () => {
+    const driver = new FetchDriver('/content', stubFetch() as never);
+    expect(await driver.listDirs('packs')).toEqual(['core']);
+    expect(await driver.listDirs('packs/core')).toEqual(['cards', 'decks']);
+    expect(await driver.listDirs('packs/missing')).toEqual([]);
+  });
+
   it('answers exists from the index and reads files over HTTP', async () => {
     const driver = new FetchDriver('/content', stubFetch() as never);
     expect(await driver.exists('config.json')).toBe(true);

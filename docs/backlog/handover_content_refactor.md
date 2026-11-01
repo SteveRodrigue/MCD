@@ -1,4 +1,4 @@
-# Handover — content folder refactor (next: M5c)
+# Handover — content folder refactor (next: M5d)
 
 **Written:** 2026-11-01, at the end of M5b; updated the same day for the agent policy of PR #541 (autonomy and stop policy, game-first plans, delivery authorization). For the next session or agent that continues the work. Nothing here is a decision; the decisions live in the documents it points to.
 
@@ -11,8 +11,8 @@
 | M5a hooks and Wakanda Forever | merged | #538 |
 | M5b main scheme abilities, Klaw as data, environments | merged | #540 |
 | Plans, as-built notes, Klaw review, first handover | merged | #539 |
-| **M5c** scenarios from packs, Ultron as the one script, delete `built-in/` | **next** (approved, not started) | |
-| **M5d** defaults and literals (`'rhino'`, `'core'`) | after M5c (approved) | |
+| M5c scenarios from packs, Ultron as the one script, `built-in/` deleted | merged (see plan section 13) | this PR |
+| **M5d** defaults and literals (`'rhino'`, `'core'`) | **next** (approved, not started) | |
 | M6 image cache per pack, M6b Tauri scaffold, M7 empty-shell UI, M8 leak guard and untracking `references/`, M9 editor on the storage driver, M10 docs split, M11 browser driver and distribution, M12 optional Core removal | roadmap only, see `plan_content_folder_refactor.md` | |
 
 `main` (at `c28230fb` or later) has everything above except M5c and M5d. PR #541 changed the agent rules (see section 4); read them in `AGENTS.md` and `.agents/rules/shared-quality-gates.md` (Stop policy, Plan and approval gate, In-Game Scenario, Delivery authorization), because they replace what earlier sessions did.
@@ -83,38 +83,19 @@ npm run simulate -- --no-stats   # compare with a clean `main` run, byte for byt
 
 ```text
 You are continuing the "content folder refactor" of Marvel Champions Digital (repository
-SteveRodrigue/MCD). Your task is milestone M5c, then M5d. The approved plan is in the repository;
-do not redesign it.
+SteveRodrigue/MCD). Your task is milestone M5d. The approved plan is in the repository; do not
+redesign it.
 
 1. Read, in order: AGENTS.md (and the rules it links), docs/backlog/handover_content_refactor.md
-   (the whole file, including sections 3 to 6), docs/decisions/0092-content-packs-and-runtime-loading.md,
-   docs/backlog/plan_content_m5_scenarios_and_hooks.md (sections 3.2, 3.3, 3.5, 13 and 14),
-   docs/backlog/klaw_setup_as_data_review.md.
-2. Check the state: `git fetch`, `gh pr list --state open`, and that main contains M5b (PR #540,
-   commit c28230fb or later). Read the autonomy, plan and delivery rules in AGENTS.md as they are
-   today (they changed in PR #541). Then ask the user once to confirm the approved M5c/M5d plan.
-3. Create a worktree from the up-to-date main (node_modules as a junction), capture the parity
-   baseline (`npm run simulate -- --no-stats` on a clean main, save replay_catalog.json and
-   simulation_summary.md, then `git checkout -- logs/simulations`).
-4. Implement M5c exactly as section 14 of the plan says: listDirs, scenario loading in the
-   content loader, setupOnomatopoeia in the definition schema and the three definition.json
-   files, PackHooks.scenarioHooks with ScenarioHooks.resolveStage1BReveal, a single
-   DeclarativeScenarioPlugin(definition, hooks?), the Ultron script in
-   content/packs/core/scripts/scenarios/ultron.ts, applyContent/resetContent registering and
-   clearing scenarios, deletion of src/engine/scenarios/built-in/ and the import-time
-   registration, tests, and the rewrite of docs/guidelines/scenario_creation_guide.md.
-   The 12 digests in tests/engine/scenario-setup-digests.test.ts must not change, and
-   `simulate --no-stats` must be byte-identical to main.
-5. Verify with the recipe in section 5 of the handover, including a browser check that the
-   scenario selector lists Rhino, Klaw and Ultron in that order and a game starts for each.
-6. Deliver through the commit-and-push skill once the work is verified and no plan deviation is
-   open (stage files by name, PR from the PR template, wait for CI, squash-merge); otherwise stop
-   and report. Stop earlier only for the cases in AGENTS.md's Stop policy. In the recap list
+   (sections 3 to 6), docs/backlog/plan_content_m5_scenarios_and_hooks.md (sections 3.5, 13 and 14).
+2. Check the state: `git fetch`, open PRs, and that main contains M5c. Ask the user once to
+   confirm the approved M5d plan.
+3. Capture the parity baseline (`npm run simulate -- --no-stats` on clean main, keep
+   replay_catalog.json and simulation_summary.md, then `git checkout -- logs/simulations`).
+4. Implement M5d exactly as section 14 says (defaultScenarioId(), no 'rhino' / '01094' / '01097b'
+   fallbacks, explicit scenario in ability-stage-setter, gauntlet and simulate-games, first
+   registry scenario as the ScenarioSelector default, 'core' literals in deck-utils and the
+   simulation). Digests unchanged, simulate --no-stats byte-identical, zero-pack smoke test passes.
+5. Verify with the recipe in section 5, then deliver through commit-and-push. In the recap list
    "Decisions I made" and "Try it in game".
-7. M5d (section 3.5 and 14 of the plan) is a separate PR after M5c is merged.
-
-Working rules that matter: evidence over opinion (count the upstream cards before calling
-something unique), no card created from nothing, no tech debt or dual paths, rules questions via
-`npm run rule -- <term>`, short answers that lead with the next action. Record deviations from the
-plan in section 13 of the plan in the same PR, and keep the handover current.
 ```

@@ -6,6 +6,7 @@
   "author": "Fantasy Flight Games",
   "version": "1.0.0",
   "description": "Rhino is attacking the S.I.T. facility to steal Vibranium. Stop him before he breaches the facility!",
+  "setupOnomatopoeia": "THE BREAK-IN BEGINS!",
   "supportedDifficulties": ["SKIRMISH", "STANDARD", "EXPERT"],
 
   "villainSetup": {

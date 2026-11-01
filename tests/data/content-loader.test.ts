@@ -145,6 +145,86 @@ describe('loadContent', () => {
     expect(content.failures[0].reason).toContain('00001');
   });
 
+  describe('scenarios', () => {
+    const definition = (id: string, extra: Record<string, unknown> = {}) => ({
+      id,
+      name: id,
+      scenarioCardCode: '00100',
+      supportedDifficulties: ['SKIRMISH', 'STANDARD', 'EXPERT'],
+      villainSetup: {
+        villainName: 'V',
+        stages: { SKIRMISH: ['00100'], STANDARD: ['00100'], EXPERT: ['00100'] },
+      },
+      mainSchemeSetup: {
+        stages: ['00101a', '00101b'],
+        startingThreat: 0,
+        targetThreatPerPlayer: 1,
+        escalationThreatPerPlayer: 1,
+      },
+      modularEncounterSets: { mandatory: [], defaults: { SKIRMISH: [], STANDARD: [], EXPERT: [] } },
+      ...extra,
+    });
+
+    it('loads the definition of every scenario folder, in folder order', async () => {
+      fresh();
+      config(['core']);
+      write('packs/core/pack.json', manifest('core'));
+      write('packs/core/scenarios/zeta/definition.json', definition('zeta'));
+      write(
+        'packs/core/scenarios/alpha/definition.json',
+        definition('alpha', { setupOnomatopoeia: 'BOOM!' }),
+      );
+      const content = await loadContent(driver());
+      expect(content.failures).toEqual([]);
+      const scenarios = content.packs[0].scenarios;
+      expect(scenarios.map((s) => s.id)).toEqual(['alpha', 'zeta']);
+      expect(scenarios[0].setupOnomatopoeia).toBe('BOOM!');
+    });
+
+    it('loads a pack without scenarios', async () => {
+      fresh();
+      config(['core']);
+      write('packs/core/pack.json', manifest('core'));
+      expect((await loadContent(driver())).packs[0].scenarios).toEqual([]);
+    });
+
+    it('disables only the pack whose scenario definition is invalid', async () => {
+      fresh();
+      config(['good', 'bad']);
+      write('packs/good/pack.json', manifest('good'));
+      write('packs/good/scenarios/a/definition.json', definition('a'));
+      write('packs/bad/pack.json', manifest('bad'));
+      write('packs/bad/scenarios/b/definition.json', { id: 'b' });
+      const content = await loadContent(driver());
+      expect(ids(content)).toEqual(['good']);
+      expect(content.failures).toHaveLength(1);
+      expect(content.failures[0].packId).toBe('bad');
+      expect(content.failures[0].reason).toContain('scenarios/b/definition.json');
+    });
+
+    it('disables a pack whose scenario folder has no definition.json', async () => {
+      fresh();
+      config(['core']);
+      write('packs/core/pack.json', manifest('core'));
+      write('packs/core/scenarios/a/README.md', 'x');
+      const content = await loadContent(driver());
+      expect(content.packs).toEqual([]);
+      expect(content.failures[0].reason).toContain('missing definition.json');
+    });
+
+    it('disables a pack that duplicates a scenario id of an earlier pack', async () => {
+      fresh();
+      config(['first', 'second']);
+      write('packs/first/pack.json', manifest('first'));
+      write('packs/first/scenarios/a/definition.json', definition('same'));
+      write('packs/second/pack.json', manifest('second'));
+      write('packs/second/scenarios/b/definition.json', definition('same'));
+      const content = await loadContent(driver());
+      expect(ids(content)).toEqual(['first']);
+      expect(content.failures[0].reason).toContain('same');
+    });
+  });
+
   it('reports an invalid config.json and still boots empty', async () => {
     fresh();
     write('config.json', { enabledPacks: 'core' });

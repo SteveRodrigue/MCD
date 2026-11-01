@@ -2,7 +2,7 @@ import { ScenarioPlugin } from './types';
 
 /**
  * Universal Scenario Registry.
- * Discovers, registers, and resolves both Built-In and Fan-Made Custom Scenario Plugins.
+ * Holds the scenarios of the loaded packs (filled by `applyContent`, emptied by `resetContent`).
  */
 export class ScenarioRegistry {
   private static plugins: Map<string, ScenarioPlugin> = new Map();
@@ -39,11 +39,13 @@ export class ScenarioRegistry {
   }
 
   /**
-   * Returns all registered scenario plugins.
+   * Returns all registered scenario plugins in ascending scenario card code order.
    */
   static getAll(): ScenarioPlugin[] {
     const unique = new Set(this.plugins.values());
-    return Array.from(unique);
+    return Array.from(unique).sort((a, b) =>
+      a.definition.scenarioCardCode.localeCompare(b.definition.scenarioCardCode),
+    );
   }
 
   /**

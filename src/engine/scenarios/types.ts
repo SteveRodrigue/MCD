@@ -14,6 +14,19 @@ export interface ScenarioGameSetupOptions {
 export type { ScenarioDefinition } from '../../data/packs/scenario-definition';
 
 /**
+ * What a scenario does that its cards and definition cannot express as data yet. A pack's script
+ * exports these per scenario id (`PackHooks.scenarioHooks`); the engine runs them at the matching
+ * point of the scenario setup.
+ */
+export interface ScenarioHooks {
+  /**
+   * Stage 1B reveal: runs after the main scheme's own B-side When Revealed abilities and before
+   * the villain's reveal (RR v1.8 Appendix II step 12).
+   */
+  resolveStage1BReveal?(state: GameState, options?: ScenarioGameSetupOptions): GameState;
+}
+
+/**
  * Public Lifecycle Contract for Scenario Plugins.
  * Used identically for built-in and fan-made community scenarios.
  */

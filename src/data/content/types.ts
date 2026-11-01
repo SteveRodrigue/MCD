@@ -1,5 +1,5 @@
 import type { CardEnrichment, MarvelCDBDeck, RawUpstreamCard } from '@engine/models';
-import type { ModularSets } from '../packs/scenario-definition';
+import type { ModularSets, ScenarioDefinition } from '../packs/scenario-definition';
 import type { PackManifest } from '../packs/pack-manifest';
 
 /**
@@ -10,6 +10,8 @@ import type { PackManifest } from '../packs/pack-manifest';
 export interface ContentDriver {
   /** Names of the entries (files) directly inside `dir`; empty when the directory is missing. */
   listFiles(dir: string): Promise<string[]>;
+  /** Names of the sub-directories directly inside `dir`; empty when the directory is missing. */
+  listDirs(dir: string): Promise<string[]>;
   exists(path: string): Promise<boolean>;
   readJson(path: string): Promise<unknown>;
 }
@@ -20,6 +22,7 @@ export interface LoadedPack {
   cards: RawUpstreamCard[];
   supplemental: Record<string, CardEnrichment>;
   modularSets: ModularSets;
+  scenarios: ScenarioDefinition[];
   decks: MarvelCDBDeck[];
   cardCount: number;
   supplementalCount: number;

@@ -6,6 +6,7 @@
   "author": "Fantasy Flight Games",
   "version": "1.0.0",
   "description": "The sentient artificial intelligence Ultron is manufacturing an army of drones to exterminate humanity!",
+  "setupOnomatopoeia": "ULTRON ONLINE! DRONES INITIALIZED!",
   "supportedDifficulties": ["SKIRMISH", "STANDARD", "EXPERT"],
 
   "villainSetup": {

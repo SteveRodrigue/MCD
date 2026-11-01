@@ -63,6 +63,30 @@ describe('validatePackSet', () => {
     expect(checks(run())).toContain('user-code');
   });
 
+  it('requires an official pack with scripts to have an index.ts and a generated hook map entry', () => {
+    write('pack-a/pack.json', manifest('pack-a', { origin: 'official-bundled' }));
+    write('pack-a/scripts/helper.ts', 'export {};');
+    write('pack-b/pack.json', manifest('pack-b', { origin: 'official-bundled' }));
+    write('pack-b/scripts/index.ts', 'export default {};');
+    write('pack-c/pack.json', manifest('pack-c', { origin: 'official-bundled' }));
+    write('pack-c/scripts/index.ts', 'export default {};');
+    const found = validatePackSet(root, {
+      officialPackCodes: official,
+      cardSchema,
+      hookPackIds: ['pack-c'],
+    });
+    const byPack = (pack: string) => found.filter((f) => f.pack === pack).map((f) => f.check);
+    expect(byPack('pack-a')).toEqual(['hooks-index']);
+    expect(byPack('pack-b')).toEqual(['hooks-map']);
+    expect(byPack('pack-c')).toEqual([]);
+  });
+
+  it('skips the hook map check when no map is given', () => {
+    write('pack-b/pack.json', manifest('pack-b', { origin: 'official-bundled' }));
+    write('pack-b/scripts/index.ts', 'export default {};');
+    expect(checks(run())).toEqual([]);
+  });
+
   it('rejects a user pack that reuses an official pack code', () => {
     write('gob/pack.json', manifest('gob'));
     expect(checks(run())).toContain('reserved-id');

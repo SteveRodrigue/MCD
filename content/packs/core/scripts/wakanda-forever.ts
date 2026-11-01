@@ -1,11 +1,8 @@
-import { kernel } from '../kernel';
-import { GameState, CardInstance, AbilityStep, CardAbility, getCatalog } from '../models';
-import { EffectExecutionContext, EffectResult, executeSequence } from '../effects';
-import { SpecialAbilityHandler, registerSpecialHandler } from './special-registry';
-
-import { nextEngineId } from '../state/rng';
-
-const BLACK_PANTHER_UPGRADE_CODES = ['01046', '01047', '01048', '01049'];
+import { kernel } from '@engine/kernel';
+import { GameState, CardInstance, AbilityStep, CardAbility, getCatalog } from '@engine/models';
+import { EffectExecutionContext, EffectResult, executeSequence } from '@engine/effects';
+import type { SpecialAbilityHandler } from '@engine/specials/special-registry';
+import { nextEngineId } from '@engine/state/rng';
 
 /**
  * Returns all in-play Black Panther upgrades controlled by the specified player in their tableau (ADR-0038).
@@ -14,7 +11,6 @@ function getPlayerBlackPantherUpgrades(playerState: { tableau: CardInstance[] })
   return (playerState.tableau || []).filter(
     (t) =>
       t.card.traits?.includes('Black Panther') ||
-      BLACK_PANTHER_UPGRADE_CODES.includes(t.card.code) ||
       t.card.enrichment?.abilities?.some((a) => a.timing === 'SPECIAL'),
   );
 }
@@ -29,7 +25,7 @@ function getSpecialAbility(state: GameState, upgrade: CardInstance): CardAbility
   );
 }
 
-const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
+export const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
   id: 'WAKANDA_FOREVER',
   validatePlayCondition: (state: GameState, context: EffectExecutionContext): boolean => {
     const player = state.players.find((p) => p.id === context.playerId) || state.players[0];
@@ -147,6 +143,3 @@ const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
     };
   },
 };
-
-// Register default handler
-registerSpecialHandler(wakandaForeverSpecialHandler);

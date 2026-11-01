@@ -3,7 +3,6 @@ import { PACK_API_VERSION, type PackHooks } from '../../src/engine/plugin-api';
 import { PACK_API_VERSION as MANIFEST_API_VERSION } from '../../src/data/packs/pack-manifest';
 import { rhinoPlugin } from '../../src/engine/scenarios';
 import { getSpecialHandler } from '../../src/engine/specials/special-registry';
-import '../../src/engine/specials/wakanda-forever';
 
 describe('plugin-api hook contract', () => {
   it('accepts the existing scenario plugin and special handler as pack hooks', () => {

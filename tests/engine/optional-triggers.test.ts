@@ -13,12 +13,13 @@ import {
   peekDecisionPrompt,
 } from '@engine/index';
 
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import { loadedRawCards } from '../helpers/content';
 
 import { getActiveMainScheme, getActiveVillain } from '@engine/models';
+
+const corePack = loadedRawCards('core');
 describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () => {
-  const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+  const catalog = new CardCatalog([...corePack]);
   let gameState: ReturnType<typeof setupGame>;
 
   beforeEach(() => {

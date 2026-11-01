@@ -6,8 +6,12 @@ import {
 } from '../../src/data/importer/card-loader';
 import { CardType, Keyword, VillainCard, AllyCard, HeroCard } from '../../src/engine/models';
 import { hasKeyword, getKeywordValue } from '../../src/engine/models';
-import coreCards from '../../content/packs/core/cards/core.json';
-import frenchCoreCards from '../../content/packs/core/translations/fr/core.json';
+import { loadedRawCards } from '../helpers/content';
+import fs from 'node:fs';
+import { translationFile } from '../../src/tools/content-paths';
+
+const coreCards = loadedRawCards('core');
+const frenchCoreCards: any[] = JSON.parse(fs.readFileSync(translationFile('fr', 'core'), 'utf-8'));
 
 describe('i18n Normalization and Canonical Ingestion Protocol', () => {
   it('preserves canonical English rules traits and keywords while displaying French translated text', () => {

@@ -1,5 +1,4 @@
 import type { CardRepository } from '@engine/models';
-import modularSetData from '../../../content/packs/core/modular-sets.json';
 
 export interface ModularEncounterSetInfo {
   code: string;
@@ -8,12 +7,25 @@ export interface ModularEncounterSetInfo {
   cardCount: number;
 }
 
+interface ModularSetEntry {
+  code: string;
+  name: string;
+  description: string;
+}
+
+let modularSets: ModularSetEntry[] = [];
+
+/** Replaces the modular sets offered at setup. Called by the content loader. */
+export function setModularSets(sets: ModularSetEntry[]): void {
+  modularSets = sets;
+}
+
 /**
  * Modular encounter sets offered at scenario setup. Names and descriptions are not in the
  * upstream card data; card counts are read from the catalog.
  */
 export function listModularEncounterSets(catalog: CardRepository): ModularEncounterSetInfo[] {
-  return modularSetData.map((set) => ({
+  return modularSets.map((set) => ({
     ...set,
     cardCount: catalog.getExpandedCardsBySet(set.code).length,
   }));

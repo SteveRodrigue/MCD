@@ -10,8 +10,10 @@ import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { executeEffect } from '../../src/engine/effects';
 import { cardCatalog, normalizeRawCard } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AllyCard, NormalizedCard } from '../../src/engine/models';
-import trorsPack from '../../content/packs/trors/cards/trors.json';
-import warmPack from '../../content/packs/warm/cards/warm.json';
+import { rawCardsOf } from '../helpers/content';
+
+const trorsPack = await rawCardsOf('trors');
+const warmPack = await rawCardsOf('warm');
 
 describe('Cross-Player Global Unicity Enforcement (RR v1.8 pp. 28-29, Issue #187)', () => {
   let state: GameState;

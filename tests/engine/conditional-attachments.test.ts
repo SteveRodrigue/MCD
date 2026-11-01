@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog, CardCatalog } from '@data/importer/card-loader';
-import aoaEncounterPack from '../../content/packs/aoa/cards/aoa_encounter.json';
+import { bootPacks, loadedRawCards } from '../helpers/content';
 import {
   GameState,
   HeroCard,
@@ -20,6 +20,9 @@ import {
   applyDamageToTarget,
 } from '@engine/index';
 import type { AttachTo } from '../../src/data/supplemental/schema';
+
+await bootPacks('core', 'aoa');
+const aoaEncounterPack = loadedRawCards('aoa');
 
 const GENETICALLY_ENHANCED = '01163';
 const SANDMAN = '01102'; // 4 hit points, 3 attack

@@ -11,13 +11,14 @@ import {
   createCardInstance,
 } from '@engine/index';
 
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import { loadedRawCards } from '../helpers/content';
 import { thaw } from '../support/thaw-state';
 
 import { getActiveVillain } from '@engine/models';
+
+const corePack = loadedRawCards('core');
 describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)', () => {
-  const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+  const catalog = new CardCatalog([...corePack]);
 
   let gameState: ReturnType<typeof setupGame>;
 

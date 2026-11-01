@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog, CardCatalog } from '@data/importer/card-loader';
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
-import mtsPack from '../../content/packs/mts/cards/mts.json';
+import { bootPacks, loadedRawCards } from '../helpers/content';
 import {
   GameState,
   HeroCard,
@@ -18,6 +16,10 @@ import {
 } from '@engine/index';
 import { canCancelEncounterReveal } from '@engine/pipeline/encounter-cancel';
 
+await bootPacks('core', 'mts');
+const corePack = loadedRawCards('core');
+const mtsPack = loadedRawCards('mts');
+
 const BLACK_WIDOW = '01075';
 const ETERNITY = '21054'; // "This effect cannot be canceled" (Mutant Genesis)
 const HYDRA_MERCENARY = '01101'; // minion without When Revealed
@@ -31,7 +33,7 @@ const DECK_FILLER = '01005';
 
 // Ad-hoc catalog: core + ONLY the proof card 21054 (the live loader does not load mts).
 const eternityRaw = (mtsPack as any[]).find((c) => c.code === ETERNITY);
-const adHocCatalog = new CardCatalog([...corePack, ...coreEncounterPack, eternityRaw] as any);
+const adHocCatalog = new CardCatalog([...corePack, eternityRaw] as any);
 
 describe('Black Widow 01075 cancels any revealed encounter card (#255)', () => {
   let state: GameState;

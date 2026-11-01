@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import https from 'https';
 import { cardSupplementalEditorPlugin } from './src/tools/editor/api-middleware.ts';
+import { contentPlugin } from './src/tools/content-middleware.ts';
 import { buildDefines } from './src/tools/build-define.ts';
 import { saveProblemReport } from './src/tools/problem-report-store.ts';
 import {
@@ -368,6 +369,7 @@ export default defineConfig(({ command }) => ({
     problemReportPlugin(),
     labFontChoicesPlugin(),
     cardSupplementalEditorPlugin(),
+    contentPlugin(),
   ],
   resolve: {
     alias: {

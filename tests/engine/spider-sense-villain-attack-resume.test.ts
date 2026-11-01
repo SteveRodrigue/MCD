@@ -15,12 +15,13 @@ import {
   resolveDecisionPrompt,
 } from '@engine/index';
 
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import { loadedRawCards } from '../helpers/content';
 import { thaw } from '../support/thaw-state';
 
+const corePack = loadedRawCards('core');
+
 describe('Issue #264: Villain attack resumes after declining/accepting Spider-Sense (01001a)', () => {
-  const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+  const catalog = new CardCatalog([...corePack]);
   let gameState: ReturnType<typeof setupGame>;
 
   beforeEach(() => {

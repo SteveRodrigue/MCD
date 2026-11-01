@@ -21,8 +21,9 @@ import {
 } from '@engine/pipeline/legality-checker';
 import { CardCatalog } from '@data/importer/card-loader';
 import { getStarterDeck } from '@engine/decks/starter-decks';
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import { loadedRawCards } from '../helpers/content';
+
+const corePack = loadedRawCards('core');
 
 describe('Zero Card Text Parsing Contract (ADR-0019)', () => {
   function makeMockCard(overrides: Partial<NormalizedCard> = {}): NormalizedCard {
@@ -290,7 +291,7 @@ describe('Zero Card Text Parsing Contract (ADR-0019)', () => {
 
   describe('Starter Decks Obligation Resolution without card.text', () => {
     it('resolves Spider-Man obligation via setCode metadata with empty text', () => {
-      const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+      const catalog = new CardCatalog([...corePack]);
       const starter = getStarterDeck('spider_man_justice')!;
       const deck = starter.loadDeck(catalog);
 

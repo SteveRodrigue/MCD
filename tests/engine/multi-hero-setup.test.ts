@@ -10,15 +10,16 @@ import {
   getActiveVillain,
 } from '../../src/engine';
 
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import { loadedRawCards } from '../helpers/content';
+
+const corePack = loadedRawCards('core');
 
 describe('Multi-Hero Solo Mode & Scenario Setup', () => {
   let catalog: CardCatalog;
 
   beforeEach(() => {
     resetInstanceCounter();
-    catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+    catalog = new CardCatalog([...corePack]);
   });
 
   it('correctly scales 1-Player Solo Setup (Rhino 14 HP, Scheme 7 Threat)', () => {

@@ -10,8 +10,9 @@ import {
   SideSchemeState,
   getActiveMainScheme,
 } from '../../src/engine/models';
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import { loadedRawCards } from '../helpers/content';
+
+const corePack = loadedRawCards('core');
 
 describe('Yon-Rogg (01177) Scheme Targeting and ADD_THREAT Primitive (Issue #106)', () => {
   let catalog: CardCatalog;
@@ -19,7 +20,7 @@ describe('Yon-Rogg (01177) Scheme Targeting and ADD_THREAT Primitive (Issue #106
   let player: PlayerState;
 
   beforeEach(() => {
-    catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+    catalog = new CardCatalog([...corePack]);
     player = {
       id: 'p1',
       name: 'Hero',

@@ -4,12 +4,13 @@ import { CardCatalog } from '../../src/data/importer/card-loader';
 import { getStarterDeck, listStarterDecks } from '../../src/engine/decks/starter-decks';
 import { slugify, generateDeckFilename } from '../../src/engine/decks/deck-utils';
 import { setupGame } from '../../src/engine/state/game-setup';
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import { loadedRawCards } from '../helpers/content';
 
 import { getActiveMainScheme, getActiveVillain } from '@engine/models';
+
+const corePack = loadedRawCards('core');
 describe('Data-Driven Starter Deck Registry & Multi-Hero Integration (ADR-0016)', () => {
-  const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+  const catalog = new CardCatalog([...corePack]);
 
   it('lists all 5 individual Core Set starter decks from data/prebuilt_decks/', () => {
     const decks = listStarterDecks();
@@ -93,7 +94,7 @@ describe('Data-Driven Starter Deck Registry & Multi-Hero Integration (ADR-0016)'
 
     // MarvelCDB import naming
     const mcdbName = generateDeckFilename(spideyDeck, 'marvelcdb');
-    expect(mcdbName).toBe('mcdb_5_spider-man-justice-starter-deck.json');
+    expect(mcdbName).toBe(`mcdb_${spideyDeck.id}_spider-man-justice-starter-deck.json`);
 
     // User custom deck naming with suffix
     const userName = generateDeckFilename(spideyDeck, 'user', 'a7f9');

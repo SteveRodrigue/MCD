@@ -10,12 +10,13 @@ import {
 } from '@engine/index';
 import { dispatchTrigger } from '@engine/triggers/trigger-dispatcher';
 import { resolveNumericAmount } from '@engine/effects';
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import { loadedRawCards } from '../helpers/content';
 
 import { getActiveMainScheme } from '@engine/models';
+
+const corePack = loadedRawCards('core');
 describe('Universal Event Interception and Scalar Value Binding (ADR-0049 & Issue #90)', () => {
-  const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+  const catalog = new CardCatalog([...corePack]);
   let gameState: ReturnType<typeof setupGame>;
 
   beforeEach(() => {

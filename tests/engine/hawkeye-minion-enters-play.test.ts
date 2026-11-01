@@ -4,8 +4,9 @@ import { createCardInstance } from '../../src/engine/state/card-instance';
 import { step4_revealEncounterCards } from '../../src/engine/pipeline/villain-phase';
 import { resolveDecisionPrompt, peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 import { GamePhase, GameState, PlayerState, SideSchemeState } from '../../src/engine/models';
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import { loadedRawCards } from '../helpers/content';
+
+const corePack = loadedRawCards('core');
 
 describe('Hawkeye (01066) Ally Response Trigger When Minion Enters Play (Issue #105)', () => {
   let catalog: CardCatalog;
@@ -14,7 +15,7 @@ describe('Hawkeye (01066) Ally Response Trigger When Minion Enters Play (Issue #
   let player2: PlayerState;
 
   beforeEach(() => {
-    catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+    catalog = new CardCatalog([...corePack]);
 
     player1 = {
       id: 'p1',

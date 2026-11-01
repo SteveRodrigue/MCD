@@ -37,7 +37,7 @@ the Core pack is a future milestone, **M12**); Open Questions 1 and 2 are parked
 | --- | --- | --- |
 | Q3 | Runtime vs build-time loading | **Runtime for data, build-time for trusted code hooks** (2026-10-31) |
 | Q4 | Code in user packs | **JSON only now; sandboxed code later** via a future ADR (2026-10-31) |
-| Q5 | Platforms | **Dev server + Tauri desktop first**; browser zip-import later. Note: Tauri is advertised in the README but `src-tauri/` does not exist yet, so its setup becomes its own milestone (2026-10-31) |
+| Q5 | Platforms | **Dev server first**; browser zip-import later; the Tauri desktop app is parked (Q55). Originally "dev server + Tauri desktop first" (2026-10-31, revised 2026-11-01) |
 | Q6 | Timing vs gates | **Plan now, build after Gate 1**: M0 to M2 run now (no behavior change); loader work (M3+) starts after the Rhino release (2026-10-31) |
 | Q7 | Scenario Editor | **Postponed**; scenarios are hand-written JSON for now, so scenario-authoring docs and schema validation are mandatory. Official scenarios (Rhino, Klaw, Ultron) must be integrated through the same plugin/pack format. M9 keeps only the Card Supplemental Editor refactor (2026-10-31) |
 | Q10 | Raw card format | **Keep zzorba/MarvelCDB JSON** as the pack card format (2026-10-31) |
@@ -46,7 +46,7 @@ the Core pack is a future milestone, **M12**); Open Questions 1 and 2 are parked
 | Q13 | Purpose of Tier 2 | **Shell-ready by design, not a literal empty shell yet.** The Core pack and MCD's official supplemental data stay in this repo, in one repo, with history left as is (Q19, Q20). The refactor makes the engine boot with zero packs and makes M12 a small mechanical step if it is ever wanted. M12 is optional and parked, so Q1 and Q2 are no longer M0 blockers (2026-10-31) |
 | Q19 | Official content location | **Stays in this repo for now**; no second repository to manage. A separate content repo is only reconsidered if M12 is taken up (2026-10-31) |
 | Q20 | Git history | **Left as is.** Revisit only with M12 (2026-10-31) |
-| Q21 | Tauri sequencing | **New milestone M6b, "Tauri scaffold + folder driver", between M3 and M7** so M7's *Add content folder* works in a packaged app. Browser driver and zip import stay in M11 (2026-10-31) |
+| Q21 | Tauri sequencing | **Superseded by Q55.** It put a milestone M6b, "Tauri scaffold + folder driver", between M3 and M7 so M7's *Add content folder* works in a packaged app (2026-10-31) |
 | Q22 | Missing packs | **Disable only the scenario or deck that needs an absent pack, with a visible reason naming the pack.** Applies to `dependsOn`, modular sets and deck validation, so partial collections work (2026-10-31) |
 | Q23 | Official art | **Permanent rule: fetched on demand into `content/.cache/images/`, never bundled or committed, including in a shipped Tauri build.** User pack art takes priority; the M8 leak guard enforces it (2026-10-31) |
 | Q24 | Editor write path | **Storage driver only; user packs writable, official packs read-only; the Vite dev middleware is deleted, not kept alongside.** Official supplemental edits happen through git in this repo (2026-10-31) |
@@ -73,7 +73,7 @@ the Core pack is a future milestone, **M12**); Open Questions 1 and 2 are parked
 | Q40 | Card validation | **Upstream JSON schema plus the user-code rule**, no new zod card schema (2026-10-31) |
 | Q41 | M3 / M4 order | **M4 (pure move) runs before M3 (loader)**: the loader reads the pack layout, so the layout must exist first; each step is atomic and parity-checkable (2026-10-31) |
 | Q42 | Loader supplies content | **Loader fills the existing singletons** (`cardCatalog`, supplemental registry, modular sets, starter decks) at boot; tests load through a vitest setup file; no catalog injection (2026-10-31) |
-| Q43 | Browser content access | **Dev-server endpoint serving `content/`** behind a fetch driver; Tauri's folder driver (M6b) implements the same interface (2026-10-31) |
+| Q43 | Browser content access | **Dev-server endpoint serving `content/`** behind a fetch driver; a future desktop folder driver implements the same interface (2026-10-31) |
 | Q44 | Translations | **Each pack owns its translations**: `packs/<code>/translations/<locale>/<stem>.json`, so a pack is never scattered across folders. Catalog-level translations (factions, pack names, pack types, sets, subtypes, types) live in `content/meta/translations/<locale>/` (2026-10-31) |
 | Q45 | Which packs are integrated | **Derived, not written down.** `npm run pack:status` (agents) prints per pack: cards, cards with supplemental data, enabled or not. The loader computes the same facts per pack and M7's pack list shows **Playable** (listed in `content/config.json`), **Data only** (cards, no supplemental) or **Needs <pack>** (missing dependency). No hand-kept status field in `pack.json`; listing a pack in `enabledPacks` is the human sign-off (2026-10-31) |
 | Q46 | Pack folders in M4 | **All 63 upstream packs get a tracked folder** (the editor lists every upstream pack and needs the cards present); reconsider at M12 (2026-10-31) |
@@ -85,6 +85,7 @@ the Core pack is a future milestone, **M12**); Open Questions 1 and 2 are parked
 | Q52 | Pack art scope | **A pack's `assets/cards/` art applies only to that pack's own cards**; a user pack cannot re-skin official cards (2026-11-01) |
 | Q53 | Main scheme art sides | **Optional manifest field `art.swapMainSchemeSides`**, set in the Core `pack.json` only; the `'01'` prefix check is deleted (2026-11-01) |
 | Q54 | M6 delivery | **One PR** (the URL and the cache folder change together) (2026-11-01) |
+| Q55 | Desktop app | **Parked, not on this roadmap.** The Tauri scaffold, folder driver, packaged content root (Q26) and installer are tracked in [issue #547](https://github.com/SteveRodrigue/MCD/issues/547) for a future gate. Nothing in M7 to M12 depends on it; M7 uses the dev-server driver (2026-11-01) |
 | Q9b | Official precon decks | **Inside each pack** (`packs/<id>/decks/`, read-only). User decks in `content/decks/`, MarvelCDB imports in `content/decks/imported/` (read-only cache, cloneable; replaces ADR-0015's `marvelcdb/`). Deck picker shows Official / Mine / Imported together (2026-10-31) |
 
 ---
@@ -228,10 +229,10 @@ generic engine primitive, and `docs/creators/` must state this limit.
 - **Leak guard**: a CI check that fails if the tracked tree contains forbidden paths/patterns (upstream JSON, pack
   supplemental, official art, rules PDFs), so the shell stays clean.
 
-### 3.6 Platform reality (browser vs. Tauri)
+### 3.6 Platform reality (browser vs. desktop)
 
 A pure web build cannot read an arbitrary folder. Per ADR-0015 the loader sits behind a **storage driver** with two
-implementations: Tauri/dev uses the real `content/` folder; the browser uses the File System Access API (pick a folder) or
+implementations: the dev server reads the real `content/` folder (a desktop app would too; it is parked, Q55); the browser uses the File System Access API (pick a folder) or
 IndexedDB (import a zip). The pack format is identical; only the driver differs. Today's editor writes via a Vite dev
 middleware, so it must move onto the same driver before it can work in a shipped build.
 
@@ -279,12 +280,11 @@ Order is chosen so the app keeps working at every step and the risky decisions c
 | **M4** | **Relocate official content into a Core pack** ([detail](plan_content_m4_core_pack_move.md); runs before M3) | Move `data/upstream` → pack `cards/`, supplemental, scenarios, decks, modular sets, Core `scripts/`. Update scripts (`simulate`, `card:*`, `cache:cards`) via the shared content-path helper (Q30), replace `sync_data.ps1` with the TS sync CLI (Q31), tsconfig/eslint/vitest, agent skills, AGENTS.md. | Mechanical but wide; one atomic change, no dual paths (AGENTS.md rule). |
 | **M5** | **Scenario code → pack** ([detail](plan_content_m5_scenarios_and_hooks.md); M5a #538 and M5b #540 done, M5c and M5d next) | Scenarios loaded from packs; push Klaw/Ultron overrides into supplemental data or Core-pack scripts; `defineScenarioPlugin`/`@plugin-api` barrel per plugins backlog Phase A. Hooks are discovered through the generated import map (Q33). | Resolves the `plugin.ts` policy (3.4). |
 | **M6** | **Image cache per pack** ([plan](plan_content_m6_image_cache.md)) | Move `cache/` → `content/.cache/images/<pack>`, pack-level image-name rules (kill the `01` special case), user pack art resolution order (user asset → cache → MarvelCDB), production asset serving. | Small; independent of M5. Official art is never bundled (Q23). |
-| **M6b** | **Tauri scaffold + folder driver** | Create `src-tauri/`, Tauri folder driver for `content/`, dev-server driver parity (Q21). | Tauri is advertised but absent today; its own milestone (Q5). |
-| **M7** | **Empty-shell boot + onboarding UI** | Zero-pack boot, welcome screen, folder/zip import, sync command in UI, per-screen empty states, pack list with errors. Unofficial-fan-project disclaimer on the welcome screen and README (Q12). | The visible payoff; needs M3 + M2 + M6b. Missing-pack scenarios and decks are disabled with a reason (Q22). Proof of the empty shell is an empty-dir loader test plus a zero-pack UI smoke test (Q28). |
+| **M7** | **Empty-shell boot + onboarding UI** | Zero-pack boot, welcome screen, sync command in UI, per-screen empty states, pack list with errors. Unofficial-fan-project disclaimer on the welcome screen and README (Q12). | The visible payoff; needs M3 + M2. *Add content folder* and zip import need a platform driver (the M11 browser driver, or the parked desktop app, Q55); until then a pack is added by copying it into `content/packs/` and listing it in `content/config.json`. Missing-pack scenarios and decks are disabled with a reason (Q22). Proof of the empty shell is an empty-dir loader test plus a zero-pack UI smoke test (Q28). |
 | **M8** | **Tier 1 leak guard + reference untracking** | Untrack `references/` PDFs and rules Markdown copies (keep local lookup tooling), CI guard against committed art/PDFs. **Contributor setup:** a `references/SETUP.md` plus a `npm run setup:references` command that tells the contributor where to download the Rules Reference PDF (FFG's official support page, already in `references/links.md`), verifies the file name/checksum, and regenerates `references/rules/` locally with `tools/build_rules_markdown.py`; CONTRIBUTING.md, README and AGENTS.md (Rules Reference Inspection Policy) point to it, and `npm run rule` fails with a clear "run setup:references" message when the files are missing. | Small. Docs-check must tolerate the untracked paths. |
 | **M9** | **Editor refactor** | Card Supplemental Editor pack-scoped on the storage driver (Q24: user packs only, official read-only, Vite dev middleware deleted). Scenario Editor postponed (Q7); scenario docs come from M10. | Separate track after M7. |
 | **M10** | **Docs reorganization** | `docs/creators/` + `docs/engine/` split, link and doc-check updates, "make your first pack" tutorial using a small example pack. | Can start at M2 and finish after M9; link redirects handled in the same PR. Supplemental spec suite moves to `docs/creators/supplemental-reference/` (Q32). |
-| **M11** | **Browser/Tauri drivers & distribution** | File System Access / IndexedDB driver, pack zip import/export, pack versioning and `apiVersion` checks. | Tauri folder driver moved to M6b (Q21). Public releases wait for a content source (Q25). Release root is the OS app-data folder (Q26). |
+| **M11** | **Browser driver & distribution** | File System Access / IndexedDB driver, pack zip import/export (and M7's *Add content folder*), pack versioning and `apiVersion` checks. | The desktop app is parked in [issue #547](https://github.com/SteveRodrigue/MCD/issues/547) (Q55). Public releases wait for a content source (Q25). |
 
 | **M12** | **(Tier 3, deferred) Decouple the Core pack** | Untrack and ignore `content/packs/core`, add the sync command or content repo, optionally rewrite history. Plan fixtures and the test split here, not before. | Optional and parked (Q13). Needs a second repo and a history decision first (Q19, Q20 reopen). |
 
@@ -308,7 +308,7 @@ Recommendations are in bold.
 4. **Untrusted user code.** **No user `plugin.ts` initially, declarative only**; sandbox is a later ADR. Acceptable for
    your community goals?
 5. **Targets.** Tauri desktop only for the shell, or browser as well? Browser needs the File System Access/IndexedDB
-   driver and has weaker folder semantics. **Tauri + dev first, browser import-by-zip later.**
+   driver and has weaker folder semantics. **Dev server first, browser import-by-zip later; the desktop app is parked (Q55).**
 6. **Timing vs roadmap gates.** Gate 1 (Rhino) is active and Gate 2 is Klaw & Ultron. **Do M0–M2 in parallel (no behavior
    change), start M3 after Gate 1, and fold Klaw/Ultron work into M5.**
 7. **"Scenario Editor".** Only the Card Supplemental Editor exists today. Do you mean a new tool, or the supplemental

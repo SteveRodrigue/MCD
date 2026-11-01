@@ -42,7 +42,7 @@ relative to the content root (`packs/core/pack.json`).
 | Driver | File | Used by |
 | --- | --- | --- |
 | `NodeFsDriver` | `src/data/content/drivers/node-fs.ts` (imports `node:fs`; **never imported by browser code**) | tests, `scripts/*`, tools |
-| `FetchDriver` | `src/data/content/drivers/fetch.ts` | browser (Vite dev/preview); Tauri's folder driver (M6b) implements the same interface |
+| `FetchDriver` | `src/data/content/drivers/fetch.ts` | browser (Vite dev/preview); a future desktop folder driver (parked, issue #547) would implement the same interface |
 
 ### 3.2 Loader
 

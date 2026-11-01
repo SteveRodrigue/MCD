@@ -352,7 +352,7 @@ _Objective: Scale to 2–4 players cooperative tabletop with collaborative trigg
 - [ ] **[Issue #109](https://github.com/SteveRodrigue/MCD/issues/109):** Observer-scoped minion & enemy reaction triggers (`MINION_SCHEMED`, `ENEMY_ATTACKED`).
 - [ ] **Cross-Player Cooperative Actions:** "Action: Ask another player to..." resolution stack prompts.
 - [ ] **1-Click MarvelCDB Community Deck Import:** Direct deck loading via REST API.
-- [ ] **Native Desktop Packaging (Tauri):** Standalone lightweight binaries for Windows, Mac, and Linux.
+- [ ] **[Issue #547](https://github.com/SteveRodrigue/MCD/issues/547) Native Desktop Packaging (Tauri):** Standalone lightweight binaries for Windows, Mac, and Linux.
 
 ---
 

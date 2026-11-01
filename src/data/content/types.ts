@@ -5,7 +5,7 @@ import type { PackManifest } from '../packs/pack-manifest';
 /**
  * Read-only access to a content root (ADR-0092). Paths are relative to the content root and use
  * forward slashes, for example `packs/core/pack.json`. Implementations: Node file system (tests,
- * scripts), fetch against the dev server (browser), and later the Tauri folder driver.
+ * scripts) and fetch against the dev server (browser).
  */
 export interface ContentDriver {
   /** Names of the entries (files) directly inside `dir`; empty when the directory is missing. */

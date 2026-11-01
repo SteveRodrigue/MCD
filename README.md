@@ -21,7 +21,7 @@ An open-source, faithful digital adaptation of **Marvel Champions: The Card Game
 
 - **Developer Tooling & Inspectors:** Integrated Dev Mode with search, scrying, and multi-tier sorting for Player and Encounter decks.
 
-- **Cross-Platform:** Runs seamlessly in modern web browsers and packages into lightweight native desktop executables via **Tauri**.
+- **Browser-based:** Runs in modern web browsers; a native desktop app is planned for a later gate ([issue #547](https://github.com/SteveRodrigue/MCD/issues/547)).
 
 ---
 

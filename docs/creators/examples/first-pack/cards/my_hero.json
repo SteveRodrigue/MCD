@@ -1,0 +1,40 @@
+[
+  {
+    "code": "first-pack-0001a",
+    "back_link": "first-pack-0001b",
+    "name": "Pocket Hero",
+    "pack_code": "first-pack",
+    "position": 1,
+    "quantity": 1,
+    "type_code": "hero",
+    "faction_code": "hero",
+    "set_code": "pocket_hero",
+    "is_unique": true,
+    "traits": "Avenger.",
+    "hand_size": 5,
+    "health": 10,
+    "thwart": 1,
+    "attack": 1,
+    "defense": 1,
+    "deck_limit": 1,
+    "text": "<b>Pocket Trick</b> — <b>Action</b>: Draw 1 card."
+  },
+  {
+    "code": "first-pack-0001b",
+    "back_link": "first-pack-0001a",
+    "name": "Pocket Alter-Ego",
+    "pack_code": "first-pack",
+    "position": 1,
+    "quantity": 1,
+    "type_code": "alter_ego",
+    "faction_code": "hero",
+    "set_code": "pocket_hero",
+    "is_unique": true,
+    "traits": "Human.",
+    "hand_size": 6,
+    "health": 10,
+    "recover": 3,
+    "deck_limit": 1,
+    "text": "<b>Resource</b> — <b>Action</b>: Heal 1 damage from yourself."
+  }
+]

@@ -2,9 +2,9 @@
 
 > [!IMPORTANT]
 > **Universal Hero Package Standard (ADR-0022 / Mandate #16):**  
-> All built-in heroes and community fan-made heroes share the **exact same 22-card package anatomy, supplemental schema, and engine capabilities**.
+> All heroes in the Core pack and in user packs share the **exact same 22-card package anatomy, supplemental schema, and engine capabilities**.
 
-This guide explains how to design, write, and integrate a custom **Hero Package** into **Marvel Champions Digital**.
+This guide explains how to design, write, and integrate a custom **Hero Package** into **Marvel Champions Digital** as a content pack. Read [Your first pack](README.md) first: it shows the folder layout and the tested example; this guide covers the cards.
 
 ---
 
@@ -26,20 +26,20 @@ graph TD
 
 > [!IMPORTANT]
 > **Strict zzorba / MarvelCDB Schema Compliance:**  
-> All base card definitions in `content/` **must strictly comply with the upstream zzorba format** ([`zzorba/marvelsdb-json-data`](https://github.com/zzorba/marvelsdb-json-data)), which is the canonical standard used by [MarvelCDB](https://marvelcdb.com).
+> All base card definitions in a pack's `cards/` folder **must strictly comply with the upstream zzorba format** ([`zzorba/marvelsdb-json-data`](https://github.com/zzorba/marvelsdb-json-data)), which is the canonical standard used by [MarvelCDB](https://marvelcdb.com).
 >
 > **Separation of Concerns:**
 >
-> 1. **Upstream zzorba JSON (`content/`):** Contains static presentation, card text, traits, costs, printed stats, and deckbuilding metadata.
-> 2. **Supplemental Rules JSON (`src/data/supplemental/`):** Contains pure engine-executable `abilities` with `steps: AbilityStep[]`, costs, timings, triggers, and audit proofs.
+> 1. **Upstream zzorba JSON (`content/packs/<id>/cards/`):** Contains static presentation, card text, traits, costs, printed stats, and deckbuilding metadata.
+> 2. **Supplemental Rules JSON (`content/packs/<id>/supplemental/`):** Contains pure engine-executable `abilities` with `steps: AbilityStep[]`, costs, timings, triggers, and audit proofs.
 
 ### Standard zzorba Card Fields:
 
-- `code` _(string, required)_: Unique identifier (e.g. `"custom_001a"`).
+- `code` _(string, required)_: Unique identifier (e.g. `"mypack-0001a"`, which is `<packId>-NNNN` plus a side letter).
 - `name` _(string, required)_: Card title (e.g. `"Daredevil"`).
 - `type_code` _(string, required)_: Canonical type (`"hero"`, `"alter_ego"`, `"ally"`, `"event"`, `"resource"`, `"support"`, `"upgrade"`, `"obligation"`, `"minion"`, `"side_scheme"`, `"treachery"`, `"attachment"`).
 - `faction_code` _(string, required)_: Faction (`"hero"`, `"aggression"`, `"justice"`, `"leadership"`, `"protection"`, `"basic"`, `"encounter"`).
-- `pack_code` _(string, required)_: Pack identifier (e.g. `"custom"`).
+- `pack_code` _(string, required)_: Your pack id, at most 10 characters (e.g. `"mypack"`).
 - `set_code` _(string, optional)_: Set grouping (e.g. `"daredevil"`, `"daredevil_nemesis"`).
 - `is_unique` _(boolean, optional)_: Whether unique diamond (`◆`) is printed.
 - `cost` _(number, optional)_: Resource play cost for player cards.
@@ -53,15 +53,15 @@ graph TD
 
 The identity consists of two card entries sharing the same base code (`<code>a` for Hero, `<code>b` for Alter-Ego):
 
-### Hero Card (`custom_001a`)
+### Hero Card (`mypack-0001a`)
 
 ```json
 {
-  "code": "custom_001a",
+  "code": "mypack-0001a",
   "name": "Daredevil",
   "type_code": "hero",
   "faction_code": "hero",
-  "pack_code": "custom",
+  "pack_code": "mypack",
   "set_code": "daredevil",
   "is_unique": true,
   "health": 11,
@@ -74,15 +74,15 @@ The identity consists of two card entries sharing the same base code (`<code>a` 
 }
 ```
 
-### Alter-Ego Card (`custom_001b`)
+### Alter-Ego Card (`mypack-0001b`)
 
 ```json
 {
-  "code": "custom_001b",
+  "code": "mypack-0001b",
   "name": "Matt Murdock",
   "type_code": "alter_ego",
   "faction_code": "hero",
-  "pack_code": "custom",
+  "pack_code": "mypack",
   "set_code": "daredevil",
   "is_unique": true,
   "health": 11,
@@ -93,66 +93,68 @@ The identity consists of two card entries sharing the same base code (`<code>a` 
 }
 ```
 
-### Declarative Supplemental Enrichment (`src/data/supplemental/`)
+### Declarative Supplemental Enrichment (`content/packs/<id>/supplemental/`)
 
 ```json
 {
-  "custom_001a": {
-    "comment": "HERO: Daredevil. Retaliate/Defense trigger.",
-    "abilities": [
-      {
-        "id": "daredevil_defense_interrupt",
-        "timing": "INTERRUPT",
-        "trigger": "ATTACK",
-        "steps": [
-          {
-            "effect": "DEAL_DAMAGE",
-            "params": {
-              "amount": 1,
-              "target": "CHOSEN_ENEMY"
+  "cards": {
+    "mypack-0001a": {
+      "comment": "HERO: Daredevil. Retaliate/Defense trigger.",
+      "abilities": [
+        {
+          "id": "daredevil_defense_interrupt",
+          "timing": "INTERRUPT",
+          "trigger": "ATTACK",
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 1,
+                "target": "CHOSEN_ENEMY"
+              }
             }
-          }
-        ]
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-08-30T15:00",
+        "updatedAt": "2026-08-30T15:00",
+        "reviewedAt": "2026-08-30T15:00",
+        "reviewedBy": "creator",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "Interrupt: When Daredevil defends against an attack, deal 1 damage to the attacker."
       }
-    ],
-    "audit": {
-      "createdAt": "2026-08-30T15:00",
-      "updatedAt": "2026-08-30T15:00",
-      "reviewedAt": "2026-08-30T15:00",
-      "reviewedBy": "creator",
-      "rulesVersion": "v1.8",
-      "confidence": 98,
-      "originalText": "Interrupt: When Daredevil defends against an attack, deal 1 damage to the attacker."
-    }
-  },
-  "custom_001b": {
-    "comment": "ALTER-EGO: Matt Murdock. Exhaust to remove 1 threat.",
-    "abilities": [
-      {
-        "id": "matt_murdock_action",
-        "timing": "ALTER_EGO_ACTION",
-        "cost": {
-          "exhaustSelf": true
-        },
-        "steps": [
-          {
-            "effect": "REMOVE_THREAT",
-            "params": {
-              "amount": 1,
-              "target": "CHOSEN_SCHEME"
+    },
+    "mypack-0001b": {
+      "comment": "ALTER-EGO: Matt Murdock. Exhaust to remove 1 threat.",
+      "abilities": [
+        {
+          "id": "matt_murdock_action",
+          "timing": "ALTER_EGO_ACTION",
+          "cost": {
+            "exhaustSelf": true
+          },
+          "steps": [
+            {
+              "effect": "REMOVE_THREAT",
+              "params": {
+                "amount": 1,
+                "target": "CHOSEN_SCHEME"
+              }
             }
-          }
-        ]
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-08-30T15:00",
+        "updatedAt": "2026-08-30T15:00",
+        "reviewedAt": "2026-08-30T15:00",
+        "reviewedBy": "creator",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "Action: Exhaust Matt Murdock -> remove 1 threat from a scheme."
       }
-    ],
-    "audit": {
-      "createdAt": "2026-08-30T15:00",
-      "updatedAt": "2026-08-30T15:00",
-      "reviewedAt": "2026-08-30T15:00",
-      "reviewedBy": "creator",
-      "rulesVersion": "v1.8",
-      "confidence": 98,
-      "originalText": "Action: Exhaust Matt Murdock -> remove 1 threat from a scheme."
     }
   }
 }
@@ -176,7 +178,7 @@ A hero's 15 signature cards must all have `set_code` matching the hero (`"darede
 
 ```json
 {
-  "code": "custom_002",
+  "code": "mypack-0002",
   "name": "Billy Club",
   "type_code": "upgrade",
   "cost": 2,
@@ -194,7 +196,7 @@ Every hero requires exactly 1 obligation card shuffled into the encounter deck d
 
 ```json
 {
-  "code": "custom_016",
+  "code": "mypack-0016",
   "name": "Pro Bono Case",
   "type_code": "obligation",
   "set_code": "daredevil",
@@ -216,7 +218,7 @@ The Nemesis encounter set provides the nemesis cards set aside at the start of t
 
 ```json
 {
-  "code": "custom_017",
+  "code": "mypack-0017",
   "name": "Bullseye",
   "type_code": "minion",
   "faction_code": "encounter",
@@ -244,8 +246,8 @@ import { dispatchAction } from '@engine/pipeline';
 
 describe('Custom Hero: Daredevil', () => {
   it('Initializes Daredevil with full 15-card deck and set-aside nemesis cards', () => {
-    const hero = cardCatalog.getCard('custom_001a') as any;
-    const alterEgo = cardCatalog.getCard('custom_001b') as any;
+    const hero = cardCatalog.getCard('mypack-0001a') as any;
+    const alterEgo = cardCatalog.getCard('mypack-0001b') as any;
 
     const state = setupGame({
       scenarioId: 'rhino',
@@ -255,7 +257,7 @@ describe('Custom Hero: Daredevil', () => {
           name: 'Player 1',
           hero,
           alterEgo,
-          deckCards: Array(15).fill(cardCatalog.getCard('custom_002')!),
+          deckCards: Array(15).fill(cardCatalog.getCard('mypack-0002')!),
         },
       ],
       villain: cardCatalog.getCard('01094') as any,

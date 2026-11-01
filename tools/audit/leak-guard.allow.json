@@ -8,5 +8,10 @@
     "check": "text",
     "value": "content/meta/schema/card_schema.json",
     "reason": "Card JSON schema; describes the fields, holds no card text"
+  },
+  {
+    "check": "text",
+    "value": "docs/creators/examples/first-pack/cards/my_hero.json",
+    "reason": "Tutorial example pack; every card is invented, no official card text"
   }
 ]

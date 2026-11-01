@@ -4,7 +4,6 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { CardType, Keyword, GameState, SideSchemeCard, getActiveMainScheme } from '@engine/models';
 import { executeEffect, defeatSideScheme } from '@engine/effects';
 import { getSpecialHandler } from '@engine/specials/special-registry';
-import '@engine/specials/wakanda-forever';
 
 describe('Canonical Side Scheme Defeat & Zero-Threat Scheme Pipeline (Issue #149, RR v1.8 p. 9, 25, 30)', () => {
   let spiderManHero: any;

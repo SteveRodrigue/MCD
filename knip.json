@@ -1,7 +1,13 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "entry": ["src/main.tsx", "scripts/**/*.ts", "tools/**/*.ts", "tests/**/*.{ts,tsx}"],
-  "project": ["src/**/*.{ts,tsx}", "scripts/**/*.ts", "tools/**/*.ts", "tests/**/*.{ts,tsx}"],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "scripts/**/*.ts",
+    "tools/**/*.ts",
+    "tests/**/*.{ts,tsx}",
+    "content/**/*.ts"
+  ],
   "ignore": ["src/data/index.ts", "src/data/card-loader.ts"],
   "ignoreExportsUsedInFile": true,
   "ignoreIssues": {

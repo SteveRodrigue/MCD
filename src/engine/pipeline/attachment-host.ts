@@ -90,7 +90,7 @@ function findAttachCandidates(
 
 /**
  * Where a revealed encounter attachment goes. No declaration = the active villain. No candidate
- * for the host = the `otherwise` branch (surge, or a second host); with none left the villain.
+ * for the host = the `otherwise` branch (surge, or a second host); with none left it is discarded.
  * Several candidates are a tie the first player settles (RR v1.8: the first player decides when
  * the rules leave the choice open).
  */
@@ -113,10 +113,6 @@ export function resolveAttachmentHost(
   if (declared.otherwise) {
     const fallback = fromCandidates(findAttachCandidates(state, attachment, declared.otherwise));
     if (fallback) return fallback;
-  }
-
-  if (declared.host.type === 'VILLAIN') {
-    return fromCandidates(findAttachCandidates(state, attachment, { type: 'VILLAIN' }))!;
   }
 
   return { kind: 'discard' };

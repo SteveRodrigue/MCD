@@ -18,7 +18,7 @@ This file is the canonical source for policies shared by MCD agent workflows. Sk
 - Follow Marvel Champions Rules Reference v1.8 for gameplay behavior.
 - Use the structured Markdown reference in `references/rules/` (or `npm run rule -- <term>`) for rules research. Agents must not open or view the raw PDF (`references/mc_rulesreference_v18_compressed.pdf`) unless confidence on an ambiguous reading is low (<95%) or explicitly requested by the user. Always follow `See also:` links and consult `references/rules/TOPIC_MAP.md` for cross-cutting interactions.
 - Keep `src/engine/` headless and decoupled from React, DOM, and CSS.
-- Keep card-specific behavior in `src/data/supplemental/`; engine primitives must remain generic.
+- Keep card-specific behavior in `content/packs/*/supplemental/`; engine primitives must remain generic.
 - Align implementation work with the currently active roadmap and milestone gates unless the user
   explicitly changes scope. Read-only audits may inspect any user-selected scope.
 - Do not introduce permanent shims, aliases, deprecated names, duplicate paths, or temporary shortcuts without explicit approval.
@@ -52,17 +52,81 @@ Supplemental card entries carry `audit.createdAt`, `audit.updatedAt`, `audit.rev
 - `reviewedBy` is the current agent identity (for example `claude`), not a fixed value.
 - New card: set `createdAt`, `updatedAt`, `reviewedAt`. Logic change or bug fix: bump `updatedAt` and `reviewedAt`. Re-confirming an unchanged card: bump `reviewedAt` only.
 
+## Stop policy
+
+An agent stops and asks the user **only** for these five reasons. For anything else it decides, lists the choice under **Decisions I made** in the recap, and continues.
+
+1. **Plan approval:** before the first edit to source, tests, supplemental data, dependencies, or configuration ([Plan and approval gate](#plan-and-approval-gate)).
+2. **Confidence below 95%:** a rules reading, a card wording, or a design choice with more than one valid in-game result.
+3. **Plan deviation:** the code cannot follow the approved plan ([Plan deviation](#plan-deviation)).
+4. **Destructive or irreversible action:** force push, deleting user data or files the agent did not create, closing or relabeling issues outside the task, changing branch protection or repository settings.
+5. **Circuit breaker:** the same failure survives two fix attempts. Stop with a diagnosis (cause, evidence, options).
+
+When several questions are open, ask them **all in one message**: numbered, each with the recommended answer first and the in-game effect of each option. Never one question per turn. Look up facts yourself; ask the user only for decisions.
+
 ## Plan and approval gate
 
-Before modifying source, tests, supplemental data, dependencies, or configuration:
+Before modifying source, tests, supplemental data, dependencies, or configuration, write one reviewable plan and stop for approval. Skills add their own sections; they link here instead of restating the gate.
 
-1. Create or update a reviewable implementation plan with rules/spec analysis, a **Simplification & Refactor Check** (explicitly identifying existing functions/types to reuse, parameterize, merge, or delete instead of adding parallel code), a **Debt Removed** list ([No Tech Debt Mandate](#no-tech-debt-mandate)), file changes, tests, and open decisions.
-2. State the UI/Card Editor impact explicitly when the task could affect those surfaces.
-3. Stop for user review and approval before implementation.
+The plan contains, in this order:
 
-If rules confidence is below the required threshold, record the ambiguity in the plan and block implementation until it is resolved. Do not bypass the plan gate.
+1. **In-Game Scenario** (first, before any code): see [In-Game Scenario](#in-game-scenario).
+2. **Rules and spec analysis:** RR v1.8 terms, controlling ADRs, confidence. Below 95%, ask the question in the plan's open decisions; implementation waits for the answer.
+3. **Simplification & Refactor Check:** existing functions/types reused, parameterized, merged, or deleted instead of adding parallel code.
+4. **Debt Removed** ([No Tech Debt Mandate](#no-tech-debt-mandate)).
+5. **File changes** (`[NEW]`, `[MODIFY]`, `[DELETE]`), each pointing to the scenario it serves.
+6. **UI and Card Editor:** affected files and tests, or `No change required.` with the evidence.
+7. **Tests:** each behavior-change test named after its scenario.
+8. **Open decisions:** numbered, recommendation first.
+
+When posting the plan, create `temp/.plan-pending`; delete it once the user approves. While it exists, a hook blocks edits under `src/`, `tests/`, `data/`, `tools/` and `scripts/`. If the user asks for changes, revise the plan and stop again.
 
 The plan may live in the host's user-facing artifact location or a repository-relative plan file. Do not overwrite an unrelated existing plan.
+
+### In-Game Scenario
+
+This is a game. Every plan explains the change at the table before it explains the code. Write in table language: hero and form, villain and stage, phase, card names, what the player clicks and sees. No function names.
+
+```markdown
+## In-Game Scenario
+
+**Setup:** Spider-Man (Peter Parker) in hero form, Web-Shooter in play with 2 counters. Rhino, stage I. Player phase.
+**Player does:** Uses Web-Shooter to pay for Swinging Web Kick.
+**Today:** <what goes wrong at the table>
+**After this change:** <what the player sees and can do now>
+**Why (rules):** <RR v1.8 term and the reading that decides it>
+**Also covers:** <other cards or situations that resolve the same way, one line each>
+```
+
+- One scenario per behavior change, plus one for its edge case (empty deck, defeated ally, multi-player seat 2) when one exists.
+- A new feature uses **Before** (not possible / how it plays today) and **After**.
+- Tooling-only plans (dependencies, CI, agent docs) write `In-Game Scenario: none (<one-line reason>)`.
+- The recap repeats **After this change** as **Try it in game**.
+
+### Plan deviation
+
+After approval, the agent self-resolves a gap when confidence is at least 95% and the in-game result stays the one the plan's scenario describes (naming, helper placement, an extra test, a provable `No change required.`). It lists each under **Decisions I made**.
+
+It stops when any of these is true:
+
+- the in-game behavior would differ from the plan's scenario;
+- a card's supplemental data must change and the plan does not list that card;
+- the change needs a file in a subsystem the plan does not name, or moves to a higher blast-radius tier;
+- two valid designs give different player-visible results.
+
+Stop message:
+
+```markdown
+### Plan said
+<one line>
+### Code reality
+<one line, file:line>
+### In-game effect
+<what the player would see under each option>
+### Options
+1. <recommended>: <trade-off>
+2. <alternative>: <trade-off>
+```
 
 ## Blast-radius tiers
 
@@ -88,7 +152,12 @@ Coverage thresholds in `vitest.config.ts` are a ratchet; raise them when coverag
 
 ## Delivery authorization
 
-Delivery (commit, push, pull request, merge) only happens in response to the user's explicit request in the current message (e.g. "commit and push", "deliver"); the agent never initiates it on its own. `main` is protected: work goes on a branch, never straight to `main`. Once requested, the `commit-and-push` workflow stages the reviewed file set, states the commit message, proceeds through `git commit` (which runs `pre-commit`: `format:check`, `lint`, `typecheck`) and `git push` (which runs `pre-push`: `npm test`) without manually duplicating those checks beforehand, opens a pull request, waits for CI, squash-merges it and verifies the issue state. It never bypasses the branch protection (no `--admin`, no force push, no `--no-verify`); a red or blocked pull request is reported, not worked around. A request that names only part of the chain stops after that part.
+Delivery (branch, commit, push, pull request, squash-merge) follows `commit-and-push`. It is authorized when either holds:
+
+1. **The user asked** in the current message ("commit and push", "deliver"). A request that names only part of the chain ("just commit", "open a PR") stops after that part.
+2. **An approved plan is done:** the work implements a plan the user approved in this session, targeted verification passed, no [plan deviation](#plan-deviation) is open, and every self-made decision is listed in the recap. The agent then delivers without asking.
+
+Otherwise (no plan, an ad-hoc edit, an open deviation) the agent offers delivery and waits. `main` is protected: work goes on a branch. The workflow relies on the hooks (`pre-commit`: `format:check`, `lint`, `typecheck`; `pre-push`: `npm test`) instead of running them twice. It never bypasses the branch protection (no `--admin`, no force push, no `--no-verify`); a red or blocked pull request is reported, not worked around.
 
 ## Documentation invariants
 

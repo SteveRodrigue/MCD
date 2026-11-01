@@ -29,7 +29,7 @@ or RR v1.8, in which case flag it as a defect instead of documenting the bug as 
 
 - Code is never edited here; only `*.md` (hook-enforced). Code defects become GitHub issues.
 - Every finding carries a confidence score and a file:line citation; nothing below 80% is written.
-- Critical findings (D1, D7) always stop for approval, even at 100%.
+- Critical findings (D1, D7) always need approval, even at 100%; they go in the single question round at the end.
 - Auto-apply only for Minor/Major findings at 95% or higher.
 - Never delete an ADR; never invent primitives; docs are never evidence for themselves.
 
@@ -90,8 +90,8 @@ points for evidence you have actually read in this session.
 
 | Score      | Action                                                                                                                                                                                                            |
 | :--------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **≥ 95%**  | Auto-apply (subject to the Step 5 severity gate — Critical findings still stop regardless of confidence).                                                                                                         |
-| **80–94%** | Draft the correction, present it, and **ask the user to confirm** before writing. Do not apply on your own initiative.                                                                                            |
+| **≥ 95%**  | Auto-apply (subject to the Step 5 severity gate — Critical findings go to the question round regardless of confidence).                                                                                           |
+| **80–94%** | Draft the correction and put it in the end-of-audit **question round**; write it once confirmed. Do not apply on your own initiative.                                                                             |
 | **< 80%**  | **Do not write anything.** Raise it as an explicit open question with your reasoning, the evidence you do have, the evidence you lack, and 2–3 concrete options with a recommendation. Wait for a second opinion. |
 
 ### Mandatory downgrades
@@ -118,8 +118,9 @@ Never round up. If you hesitate between two bands, take the lower one.
 
 ### Circuit breaker
 
-If **three or more** findings in the same file land below 80%, stop auditing that file, report that
-its drift exceeds safe automated correction, and ask the user how to proceed. Do not grind.
+If **three or more** findings in the same file land below 80%, stop auditing that file, mark it
+"drift exceeds safe automated correction", and continue with the next file. Report it in the
+end-of-audit question round. Do not grind.
 
 ---
 
@@ -269,14 +270,14 @@ evidence cell is not a finding — it is a question, and belongs in the "❓ Ope
 
 |                               | ≥ 95% confidence       | 80–94% confidence      | < 80% confidence   |
 | :---------------------------- | :--------------------- | :--------------------- | :----------------- |
-| **Minor / Major** (D2–D6, D8) | Auto-apply             | Ask, then apply        | Open question only |
-| **Critical** (D1, D7)         | HARD STOP for approval | HARD STOP for approval | Open question only |
+| **Minor / Major** (D2–D6, D8) | Auto-apply             | Question round         | Open question only |
+| **Critical** (D1, D7)         | Question round         | Question round         | Open question only |
 
-- Auto-apply is permitted **only** in the single top-left cell. Anything else waits for the user.
-- **Critical findings always stop**, even at 100% confidence: "is this ADR superseded or merely
+- Auto-apply is permitted **only** in the single top-left cell. Apply those first, finish the whole audit, then ask everything else in **one question round** (numbered, recommendation first). Never stop per finding.
+- **Critical findings always need approval**, even at 100% confidence: "is this ADR superseded or merely
   extended?", removing an ADR lineage edge, changing an Accepted status, or rewriting a rules
-  interpretation. Flag each with `> [!WARNING]`, present options plus your recommendation, then
-  **stop calling tools and wait**.
+  interpretation. Flag each with `> [!WARNING]` in the question round, with options plus your
+  recommendation.
 - If every finding is Minor/Major at ≥ 95%, no stop is required — report and fix in the same turn.
 
 **❓ Open Questions section (< 80% confidence).** For each, state:
@@ -288,7 +289,7 @@ evidence cell is not a finding — it is a question, and belongs in the "❓ Ope
    recommendation — not a decision.
 5. What you will write once the user answers.
 
-Then stop. Never resolve an open question by picking the most plausible reading.
+Ask them in the same single question round, then stop. Never resolve an open question by picking the most plausible reading.
 
 **Code defects → issue, never an edit.** If the audit uncovers a defect where the _code_ is wrong
 (D7: `src/` violates an Accepted ADR or RR v1.8), list it under "🐞 Code Defects" and file a tracked

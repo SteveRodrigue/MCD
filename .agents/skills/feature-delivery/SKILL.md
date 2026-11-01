@@ -23,7 +23,7 @@ Before writing any implementation code or tests for a new feature, verify the fo
 
 1. **📖 Rules Reference Audit (RR v1.8):**
    - Research rules using structured Markdown in `references/rules/` (or `npm run rule -- <term>`). Follow `See also:` links and consult `references/rules/TOPIC_MAP.md`. Do not open the raw PDF unless confidence is $< 95\%$.
-   - **Strict Confidence Threshold ($\ge 95\%$):** If confidence in how the rules operate is $< 95\%$, **STOP IMMEDIATELY** and trigger the **Ambiguity RFC Circuit Breaker** below. Never implement speculative heuristics.
+   - **Strict Confidence Threshold ($\ge 95\%$):** If confidence in how the rules operate is $< 95\%$, **STOP** and run the **Rules Confidence Check** below. Never implement speculative heuristics.
 2. **Approved Architecture Decision Record (ADR):**
    - Check [`docs/decisions/`](../../../docs/decisions/) to identify the controlling ADR.
    - If introducing a new paradigm, draft a **Proposed ADR** first using [`docs/decisions/template.md`](../../../docs/decisions/template.md) and register it in `docs/decisions/README.md`.
@@ -33,27 +33,21 @@ Before writing any implementation code or tests for a new feature, verify the fo
    - Keep the Card Supplemental Editor aligned per [`docs/specifications/tooling/card_supplemental_editor.md`](../../../docs/specifications/tooling/card_supplemental_editor.md).
 4. **Core Invariants (from `shared-quality-gates.md`):**
    - Headless & decoupled engine (`src/engine/` contains no UI/DOM/CSS dependencies).
-   - Declarative data-first (generic primitives in `src/engine/effects/`, card-specific parameters in `src/data/supplemental/`).
+   - Declarative data-first (generic primitives in `src/engine/effects/`, card-specific parameters in `content/packs/*/supplemental/`).
     - Rhino release scope boundary (Core set player cards & Rhino encounters for Gate 1).
    - **Refactor-First & Zero Tech Debt:** Follow `coding-and-testing-rules.md` and the [No Tech Debt Mandate](../../rules/shared-quality-gates.md#no-tech-debt-mandate). The plan must list what is merged, parameterized, or deleted (**Debt Removed**), and may not offer "defer" or "separately" for debt in the path.
 
 
 ---
 
-## 🛑 Ambiguity RFC / Peer Review Circuit Breaker (When Confidence $< 95\%$)
+## 🛑 Rules Confidence Check (When Confidence $< 95\%$)
 
 If the rules interpretation, timing trigger sequence, or card interactions are ambiguous or disputed (confidence $< 95\%$):
 
-1. **Halt Execution:** Do NOT proceed to writing acceptance tests or modifying code.
-2. **Post RFC Peer Review Comment on GitHub Issue:**
-   Use the template in [`rfc-template.md`](rfc-template.md) (strict: keep every heading), posted with `gh issue comment <NUM> --body-file <file>`.
-
-3. **Tag GitHub Issue:**
-   ```bash
-   gh issue edit <NUM> --add-label "needs-review,status:blocked-by-rfc"
-   ```
-4. **Log Ambiguity:** If card-specific, create or update a 1-file report in `docs/ambiguities/`.
-5. **End Turn Safely:** Report the RFC link to the user and pause until alignment is reached.
+1. **Halt before tests or code.**
+2. **Ask in chat, in one message:** each open question numbered, with the RR v1.8 entries you read, 2–3 readings each shown as an in-game example ("Rhino attacks, the player plays Spider-Sense: under reading A …, under reading B …"), and your recommendation first.
+3. **Record the answer:** card-specific answers go in `docs/ambiguities/`; engine-wide ones in the plan's rules analysis (and an ADR when they set a new paradigm).
+4. **GitHub RFC only on request:** when the user wants a wider review, post [`rfc-template.md`](rfc-template.md) (keep every heading) with `gh issue comment <NUM> --body-file <file>` and add the labels `needs-review,status:blocked-by-rfc`.
 
 ---
 
@@ -62,13 +56,13 @@ If the rules interpretation, timing trigger sequence, or card interactions are a
 Copy this checklist and tick each step as you go:
 
 - [ ] Step 1: Scope and link the GitHub issue
-- [ ] Step 2: Rules Reference audit and ADR alignment (confidence below 95%: trigger the RFC circuit breaker and stop)
+- [ ] Step 2: Rules Reference audit and ADR alignment (confidence below 95%: run the Rules Confidence Check and stop)
 - [ ] Step 3: Author the implementation plan, wait for approval
 - [ ] Step 4: Write acceptance and contract tests (Red)
 - [ ] Step 5: Implement (Green)
 - [ ] Step 6: Supplemental wiring and card promotion
 - [ ] Step 7: Targeted verification
-- [ ] Step 8: Post-task hygiene, recap, and proposed commit
+- [ ] Step 8: Post-task hygiene, recap, and delivery
 
 If a check fails in Step 4, 5 or 7, go back to the step named on that check line.
 
@@ -103,7 +97,7 @@ If a check fails in Step 4, 5 or 7, go back to the step named on that check line
 ### Step 2: Rules Reference Audit (RR v1.8) & ADR Alignment
 
 1. **Audit Rules Reference:** Use `npm run rule -- <term>` and `references/rules/` for all timing, cost, and trigger definitions. Open the raw PDF only if confidence stays below 95%.
-2. **Evaluate Confidence:** Assess confidence level ($0–100\%$). If $< 95\%$, trigger the **Ambiguity RFC Circuit Breaker** and stop.
+2. **Evaluate Confidence:** Assess confidence level ($0–100\%$). If $< 95\%$, run the **Rules Confidence Check** and stop.
 3. **Audit ADR, Schemas & Refactor Opportunities:**
    - Read the controlling ADR in `docs/decisions/`.
    - Search existing primitives and helpers first: can an existing primitive/function be parameterized or two similar functions merged instead of adding a new one?
@@ -116,23 +110,14 @@ If a check fails in Step 4, 5 or 7, go back to the step named on that check line
 
 ### Step 3: Author Implementation Plan & Wait for User Approval 🛑
 
-- **MANDATORY REVIEW GATE:** Because of the complexity of Marvel Champions rules and state invariants, you MUST always create an `implementation_plan.md` artifact detailing (strict structure: all five sections, in this order):
-  1. **Rules Reference & Spec Analysis:** Exact citations from RR v1.8, timing priority, and active ADRs.
-  2. **Proposed Changes (with Simplification & Refactor Check):** Explicitly state what existing functions/primitives are being reused, parameterized, merged, or cleaned up (never propose "supporting both" or duplicating functions), followed by the file-by-file breakdown (`[NEW]`, `[MODIFY]`, `[DELETE]`).
-  3. **UI and Card Editor Impact:** Explicitly state the impact and required files. If neither surface is affected, include exactly:
-
-     ```markdown
-     ## UI and Card Editor
-
-     No change required.
-     ```
-
-     If either surface is affected, list the affected components, specifications, validation/persistence paths, and required UI/Card Editor tests. Never leave this section implied or omit it because the change appears engine-only.
-
-  4. **Verification Plan:** Complete targeted test inventory covering engine/data behavior, integration contracts, boundary conditions, and UI/Card Editor behavior whenever affected. Prefer extending existing test files or `it.each` tables over duplicating test setup boilerplate.
-  5. **Open Questions & Design Decisions:** Any trade-offs or design choices highlighted for user review.
-- **STOP AND WAIT:** Set `request_feedback: true` in the artifact metadata. Create `temp/.plan-pending` when you post the plan and delete it once the user approves. While it exists, a hook blocks edits under `src/`, `tests/`, `data/`, `tools/` and `scripts/`; implementing before approval skips the review gate.
-- **Execution Handoff:** Before approval, feature-delivery must stop and must not delegate implementation. After explicit approval, hand the approved plan to `/execute-plan`; `/execute-plan` performs its own ambiguity gate and implements only the plan's unambiguous, explicitly authorized work. Feature-delivery must not interpret missing requirements or bypass that handoff.
+- **Review gate:** Write the plan per the [Plan and approval gate](../../rules/shared-quality-gates.md#plan-and-approval-gate) and stop for approval. This is the only planned stop. Feature specifics:
+  1. **In-Game Scenario** (first): **Before** (what the player cannot do today, or how it plays) and **After** (what the player now sees and does), one scenario per new behavior plus its edge case.
+  2. **Rules Reference & Spec Analysis:** exact RR v1.8 entries, timing priority, active ADRs.
+  3. **Proposed Changes with Simplification & Refactor Check:** what is reused, parameterized, merged or deleted, then `[NEW]` / `[MODIFY]` / `[DELETE]`, each tied to a scenario.
+  4. **UI and Card Editor Impact:** affected components, specifications, validation/persistence paths and editor tests, or exactly `## UI and Card Editor` / `No change required.` with the evidence.
+  5. **Verification Plan:** scenario-named tests covering engine/data behavior, contracts, boundaries, and UI/Card Editor when affected. Prefer extending existing files or `it.each` tables.
+  6. **Open Questions & Design Decisions:** numbered, recommendation first.
+- **Execution Handoff:** after approval, hand the plan to `/execute-plan`, which implements, verifies and delivers it, stopping only on a [plan deviation](../../rules/shared-quality-gates.md#plan-deviation).
 
 ---
 
@@ -142,7 +127,7 @@ If a check fails in Step 4, 5 or 7, go back to the step named on that check line
 - Create or extend a test file in `tests/engine/`, `tests/ui/`, or `tests/cards/` (e.g. `tests/engine/feature-name.test.ts`).
 - The implementation plan must identify every required test file and case before implementation. This includes Card Editor tests whenever the UI or editor is affected: schema/form round-trips, control visibility and choices, validation diagnostics, persistence payloads, and reload behavior as applicable.
 - If the UI and Card Editor are unaffected, preserve the explicit plan statement `UI and Card Editor / No change required.` and add the focused evidence supporting that conclusion (for example, engine/data-only file scope and unchanged editor contract).
-- Write unit and integration tests covering:
+- Name each test after its scenario. Write unit and integration tests covering:
   - **Happy Path:** Standard execution and expected state transitions.
   - **Edge Cases:** Boundary conditions, 0-amount scenarios, empty decks, defeated characters.
   - **Rules Invariants:** Unicity checks, form restrictions, timing priorities.
@@ -196,13 +181,7 @@ rtk npx prettier --check <changed-files> && rtk npm run lint && rtk npm run type
 
 1. **Execute Post-Task Protocol:**
    Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to Tier 2/3: add a CHANGELOG fragment in `changes/unreleased/`, synchronize specs and docs (run `rtk npm run docs:check` and search `docs/` and `.agents/` for every changed name), verify Card Editor alignment, and check off roadmap tasks in `docs/roadmap_and_milestones.md`.
-2. **Present Verification & Solution Recap:**
-   Present the completed feature, verification logs, and proposed diff to the user.
-3. **Delivery Authorization:**
-   Per `AGENTS.md`, delivery (commit, push, pull request, merge) occurs only upon explicit user request in the current message. When authorized, follow `commit-and-push`:
-   - Branch off `main` (protected) and stage reviewed files (`rtk git add <files>`).
-   - Commit with auto-closing syntax: `rtk git commit -m "feat(<scope>): <description> (Closes #<NUM>)"` (letting `.githooks/pre-commit` run `format:check`, `lint`, `typecheck`).
-   - Push the branch (`rtk git push -u origin <branch>`, letting `.githooks/pre-push` run the full `npm test` suite once), open the pull request, wait for CI, squash-merge it, and confirm issue closure.
+2. **Recap and deliver:** Present the recap per [`post-task-checklist.md`](../../rules/post-task-checklist.md) (**Try it in game**, **Decisions I made**, **Debt removed**, verification logs), then deliver through `commit-and-push` with `Closes #<NUM>`. The approved plan authorizes delivery ([Delivery authorization](../../rules/shared-quality-gates.md#delivery-authorization)).
 
 
 ---

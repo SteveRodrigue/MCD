@@ -25,11 +25,11 @@ Copy this checklist and tick each step as you go:
 - [ ] Step 1: Triage and scope the subsystem (1B for card defects, 1C for roadmap impact)
 - [ ] Step 2: Open the tracked GitHub issue
 - [ ] Step 3: Write the failing regression test (Red)
-- [ ] Step 4: Diagnose the root cause, post the plan, wait for approval
+- [ ] Step 4: Diagnose the root cause, post the plan, wait for approval (the only planned stop)
 - [ ] Step 5: Apply the fix (Green); 5B if card data or a shared primitive changed
 - [ ] Step 6: Targeted verification
 - [ ] Step 7: Post-task hygiene
-- [ ] Step 8: Present the recap; commit and push only when asked
+- [ ] Step 8: Present the recap and deliver
 
 If a check fails in Step 3, 5 or 6, go back to the step named on that check line.
 
@@ -103,7 +103,7 @@ Use the command and body in [`issue-template.md`](issue-template.md) (strict: ke
 - **Seed from Snapshots:** When applicable, use the saved snapshot data from `logs/gamestates/latest_gamestate.json` to construct a minimal reproduction state in your test fixture.
 - For Engine / Rules / Data bugs:
   - Create a new test case in `tests/engine/` or `tests/data/` recreating the exact game state sequence where the bug occurs.
-  - Assert the expected behavior according to official RR v1.8 rules.
+  - Assert the expected behavior according to official RR v1.8 rules. Name the test after the table situation (`it('Web-Shooter pays a physical resource for Swinging Web Kick')`), not after the function.
   - Run the single test file (`npx vitest run tests/<file>.test.ts`) to confirm it **fails** for the exact bug reported (**Red**). If it passes or fails for a different reason, go back and rewrite the test.
 - For UI / Visual bugs:
   - Inspect the component props, state transitions, or CSS utility classes. If visual/unit testable (e.g. formatters, hooks, layouts), write a unit test in `tests/ui/`.
@@ -117,13 +117,12 @@ Use the command and body in [`issue-template.md`](issue-template.md) (strict: ke
 - **Refactor-First Check:** Inspect surrounding functions and callers; if the bug comes from duplicated or tangled logic, plan the merge/parameterize fix per `coding-and-testing-rules.md`.
 - **Debt sweep (mandatory):** List every piece of debt the investigation touched or exposed: orphan or dead data, duplicate paths, stale allow-list entries, tracked gaps for the touched effect, tangled code. All of it goes into the plan as work (**Debt Removed**), with a guard test when the class can recur. Do not offer "leave it", "close as invalid" or "report separately" as options.
 - **Wrong issue premise:** If the issue is wrong in part (wrong card code, no live repro), comment the corrected facts on the issue and fix the real defect and debt found. Do not close it and stop. Reproduce with the closest real or synthetic case.
-- **MANDATORY REVIEW GATE:** Create an `implementation_plan.md` artifact detailing:
-  1. **Root-Cause Analysis:** Why the defect occurs with reference to game state snapshots in `logs/gamestates/` and RR v1.8 rules.
-  2. **Simplification & Refactor Check and Debt Removed:** What existing functions/helpers are being merged, parameterized, or cleaned up so minimal net-new code is added, and the full list of debt deleted in this change ("none found" must say where you looked).
+- **Review gate:** Write the plan per the [Plan and approval gate](../../rules/shared-quality-gates.md#plan-and-approval-gate) and stop for approval. Bug-fix specifics:
+  1. **In-Game Scenario** (first): the table situation from the report, **Today** (the wrong behavior the player sees) and **After this change** (the correct behavior), and why by RR v1.8.
+  2. **Root-Cause Analysis:** why the defect occurs, with reference to game state snapshots in `logs/gamestates/`.
   3. **Blast-Radius Classification:** Tier 1, 2, or 3.
-  4. **Proposed Code Fix:** Exact lines and files to modify.
-  5. **Regression Verification Strategy:** Specific targeted test files to run (prefer extending an existing test file over creating duplicate test setup).
-- **STOP AND WAIT:** Set `request_feedback: true` in artifact metadata. Create `temp/.plan-pending` when you post the plan and delete it once the user approves. While it exists, a hook blocks edits under `src/`, `tests/`, `data/`, `tools/` and `scripts/`; fixing before approval skips the review gate.
+  4. **Proposed Code Fix:** exact files and lines, each tied to the scenario.
+  5. **Regression Verification Strategy:** targeted test files (prefer extending an existing file over duplicating setup).
 
 ---
 
@@ -133,7 +132,7 @@ Use the command and body in [`issue-template.md`](issue-template.md) (strict: ke
 - Respect all project architectural principles:
   1. **Strict Engine Decoupling:** Never import React, DOM, `window`, `document`, or CSS into `src/engine/`.
   2. **Official Rules Fidelity:** Strictly adhere to Marvel Champions Rules Reference v1.8.
-  3. **Declarative Enrichment:** Fix card mechanics in `src/data/supplemental/` rather than hardcoding card codes into the engine.
+  3. **Declarative Enrichment:** Fix card mechanics in `content/packs/*/supplemental/` rather than hardcoding card codes into the engine.
   4. **Local-First Reliability:** Never add external runtime network dependencies.
 - Run the targeted reproduction test (`rtk npx vitest run <test-file>`) to verify it now **passes** (**Green**). If it still fails, go back to Step 4 and re-diagnose.
 
@@ -171,11 +170,7 @@ Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist
 
 ### Step 8: Present Fix & Verification Recap
 
-Present the solution, verification results, and diff summary to the user. Per `AGENTS.md`, delivery (commit, push, pull request, merge) is only executed upon the user's explicit request in the conversation. When requested, follow the `commit-and-push` protocol:
-1. Branch off `main` (protected) and stage the intentionally changed files (e.g. `rtk git add <files>`).
-2. Commit with Conventional Commits syntax (e.g. `rtk git commit -m "fix(<scope>): <description> (Fixes #<NUM>)"`), letting `.githooks/pre-commit` verify `format:check`, `lint`, and `typecheck`.
-3. Push the branch (`rtk git push -u origin <branch>`), letting `.githooks/pre-push` run the full `npm test` suite once.
-4. Open the pull request, wait for CI, squash-merge it, and verify issue closure.
+Present the recap per [`post-task-checklist.md`](../../rules/post-task-checklist.md) (**Try it in game**, **Decisions I made**, **Debt removed**, verification results), then deliver through `commit-and-push` with `Fixes #<NUM>`. The approved plan authorizes delivery ([Delivery authorization](../../rules/shared-quality-gates.md#delivery-authorization)).
 
 
 ---

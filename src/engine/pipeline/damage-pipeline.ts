@@ -261,6 +261,7 @@ function resolveDamageShieldForHost(
   damageAmount: number,
   hostName: string,
   stepTiming: 'DAMAGE_WOULD_BE_DEALT' | 'DAMAGE_WOULD_BE_TAKEN',
+  actor: GameLogEntry['actor'],
 ): { remainingDamage: number; shieldAbsorption?: ShieldAbsorptionInfo } {
   if (!hostAttachments || hostAttachments.length === 0 || damageAmount <= 0) {
     return { remainingDamage: damageAmount };
@@ -322,6 +323,7 @@ function resolveDamageShieldForHost(
   appendLog(state, {
     category: 'combat',
     key: discarded ? 'attachment.damageShield.broken' : 'attachment.damageShield.absorbed',
+    ...(actor && { actor }),
     params: {
       target: hostName,
       card: shieldCard.card.name,
@@ -739,6 +741,7 @@ export function applyDamageToTarget(
 
 function resolveDamage(state: GameState, request: DamageRequest): ResolvedDamage {
   const { target, amount, hasPiercing } = request;
+  const origin = damageLogOrigin(state, request);
 
   let currentDamage = amount;
   let toughRemoved = false;
@@ -756,6 +759,7 @@ function resolveDamage(state: GameState, request: DamageRequest): ResolvedDamage
     appendLog(state, {
       category: 'combat',
       key: 'damage.prevented.immune',
+      ...(origin.actor && { actor: origin.actor }),
       params: { target: target.name },
       onomatopoeia: 'IMMUNE!',
     });
@@ -784,6 +788,7 @@ function resolveDamage(state: GameState, request: DamageRequest): ResolvedDamage
       currentDamage,
       target.name,
       'DAMAGE_WOULD_BE_DEALT',
+      origin.actor,
     );
     if (shieldRes.shieldAbsorption) {
       currentDamage = shieldRes.remainingDamage;
@@ -811,6 +816,7 @@ function resolveDamage(state: GameState, request: DamageRequest): ResolvedDamage
         appendLog(state, {
           category: 'combat',
           key: 'damage.tough.pierced',
+          ...(origin.actor && { actor: origin.actor }),
           params: { target: target.name },
           onomatopoeia: 'PIERCING SHRED! (TOUGH LOST)',
         });
@@ -820,6 +826,7 @@ function resolveDamage(state: GameState, request: DamageRequest): ResolvedDamage
         appendLog(state, {
           category: 'combat',
           key: 'damage.prevented.tough',
+          ...(origin.actor && { actor: origin.actor }),
           params: { target: target.name },
           onomatopoeia,
         });
@@ -837,6 +844,7 @@ function resolveDamage(state: GameState, request: DamageRequest): ResolvedDamage
       currentDamage,
       target.name,
       'DAMAGE_WOULD_BE_TAKEN',
+      origin.actor,
     );
     if (shieldRes.shieldAbsorption) {
       currentDamage = shieldRes.remainingDamage;

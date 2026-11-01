@@ -1,3 +1,4 @@
+import { GamePhase } from '@engine/models';
 import type { GameLogEntry, GameState, LogEvents, TypedGameLogEntry } from '@engine/models';
 import { nextEngineId } from './rng';
 
@@ -17,7 +18,7 @@ export type LogEntryInput<K extends keyof LogEvents = keyof LogEvents> = {
 /**
  * Appends an entry to the game log (ADR-0081). The id and the timestamp come from the engine id
  * counter, so the same seed always produces the same log; round and phase default to the
- * state's current ones.
+ * state's current ones, and a player-phase entry records whose turn it is (`turnPlayerId`).
  */
 export function appendLog<K extends keyof LogEvents>(
   state: GameState,
@@ -29,6 +30,10 @@ export function appendLog<K extends keyof LogEvents>(
     timestamp: state.idCounter ?? 0,
     round: state.roundNumber,
     phase: state.phase,
+    ...(state.phase === GamePhase.PLAYER_PHASE &&
+      state.players[state.activePlayerIndex] && {
+        turnPlayerId: state.players[state.activePlayerIndex].id,
+      }),
     ...entry,
   };
   state.log.push(logEntry);

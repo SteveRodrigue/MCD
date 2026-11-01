@@ -194,6 +194,8 @@ export interface GameLogEntry {
   timestamp: number;
   round?: number;
   phase?: GamePhase;
+  /** The player whose turn it was when the line was written (player phase only), else unset. */
+  turnPlayerId?: string;
   category?: 'combat' | 'scheme' | 'card_play' | 'status' | 'phase' | 'ability';
   actor?: {
     name: string;

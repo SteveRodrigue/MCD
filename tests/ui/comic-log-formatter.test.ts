@@ -780,14 +780,41 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
       mainSchemes: [],
     } as unknown as GameState;
 
-    it('names the active player, not the first seat, when an entry has no actor', () => {
+    it('names the player whose turn it was, not the first seat, when an entry has no actor', () => {
       const entry: GameLogEntry = {
         id: 'log-398-1',
         timestamp: 1,
+        turnPlayerId: 'p2',
         key: 'damage.applied.villain',
         params: { target: 'Rhino', source: 'Panther Claws', amount: 4 },
       };
       expect(formatComicLogEntry(entry, 'en', twoPlayers).speakerName).toBe('Black Panther');
+    });
+
+    it('keeps naming that player after the turn has passed (#515)', () => {
+      const entry: GameLogEntry = {
+        id: 'log-515-2',
+        timestamp: 2,
+        turnPlayerId: 'p1',
+        key: 'damage.applied.villain',
+        params: { target: 'Rhino', source: 'Smash', amount: 4 },
+      };
+      // twoPlayers.activePlayerIndex is 1 (Black Panther): the line is still She-Hulk's
+      expect(formatComicLogEntry(entry, 'en', twoPlayers).speakerName).toBe('She-Hulk');
+    });
+
+    it('names no hero for a villain-phase line nobody acted on (#515)', () => {
+      const villainPhase = { ...twoPlayers, activePlayerIndex: 0, phase: GamePhase.VILLAIN_PHASE };
+      const entry: GameLogEntry = {
+        id: 'log-515-1',
+        timestamp: 3,
+        phase: GamePhase.VILLAIN_PHASE,
+        key: 'scheme.threat.added',
+        params: { target: 'Legions of Hydra', amount: 2, currentThreat: 4 },
+      };
+      const formatted = formatComicLogEntry(entry, 'en', villainPhase as unknown as GameState);
+      expect(formatted.speakerName).toBeFalsy();
+      expect(formatted.narrativeAction).toBe('2 threat is placed on Legions of Hydra.');
     });
 
     it('renders the damage a hero moves to an enemy, in English and French', () => {

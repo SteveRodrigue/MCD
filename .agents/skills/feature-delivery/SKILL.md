@@ -28,7 +28,7 @@ Before writing any implementation code or tests for a new feature, verify the fo
    - Check [`docs/decisions/`](../../../docs/decisions/) to identify the controlling ADR.
    - If introducing a new paradigm, draft a **Proposed ADR** first using [`docs/decisions/template.md`](../../../docs/decisions/template.md) and register it in `docs/decisions/README.md`.
 3. **Schema & Model Design Alignment:**
-   - If introducing effect primitives or supplemental fields, update [`src/data/supplemental/schema.ts`](../../../src/data/supplemental/schema.ts) with strict Zod types and update [`docs/specifications/`](../../../docs/specifications/).
+   - If introducing effect primitives or supplemental fields, update [`src/data/supplemental/schema.ts`](../../../src/data/supplemental/schema.ts) with strict Zod types and update [`docs/creators/supplemental-reference/`](../../../docs/creators/supplemental-reference/README.md).
    - If extending game state, update [`src/engine/models/state.ts`](../../../src/engine/models/state.ts).
    - Keep the Card Supplemental Editor aligned per [`docs/engine/editor-architecture.md`](../../../docs/engine/editor-architecture.md).
 4. **Core Invariants (from `shared-quality-gates.md`):**

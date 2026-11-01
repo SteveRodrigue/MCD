@@ -96,7 +96,7 @@ If Step 5 confidence is below 95%, go back to Step 3 (max 3 attempts, then the c
     - `09_dynamic_formulas.md` (Formulas & Math tokens)
     - `10_sequences_and_prompts.md` (Multi-action sequences & Decision prompts)
     - `11_play_requirements.md` (Play requirements)
-- **Specification Evolution Awareness:** If `docs/specifications/` has evolved or received updates, existing supplemental data may be outdated or could be refactored into cleaner, more canonical forms. Map the card directly against current specifications without assuming existing card JSON is up to date.
+- **Specification Evolution Awareness:** If `docs/creators/supplemental-reference/` has evolved or received updates, existing supplemental data may be outdated or could be refactored into cleaner, more canonical forms. Map the card directly against current specifications without assuming existing card JSON is up to date.
 - Before drafting schema, answer the **8-Point Deconstruction Checklist** and record the eight answers as a table in the review artifact:
   1. **Q1 (Trigger & Timing):** What exact event triggers this? Is it optional (`ACTION`/`INTERRUPT`/`RESPONSE`) or mandatory (`FORCED_`/`WHEN_REVEALED`)?
   2. **Q2 (Costs & Prerequisites):** What must be paid before execution (`exhaustSelf`, `discardSelf`, `removeCounter`, `resourceCost`, form requirement)?
@@ -116,7 +116,7 @@ If Step 5 confidence is below 95%, go back to Step 3 (max 3 attempts, then the c
   - After drafting the proposed supplemental schema independently, contrast it directly against the existing supplemental data (if present).
   - Comparing existing vs. newly drafted schema highlights:
     - Outdated structures or legacy representations in existing data that can be refactored.
-    - Missing engine primitives or specification gaps not yet captured in `docs/specifications/`.
+    - Missing engine primitives or specification gaps not yet captured in `docs/creators/supplemental-reference/`.
     - Card-specific ambiguities or subtle rule edge cases that were previously missed or oversimplified.
 - **`audit.comment` (ADR-0067):** Do not add or update it; a hook blocks it. Policy and exception are in [`shared-quality-gates.md`](../../rules/shared-quality-gates.md). Log card ambiguities in `docs/ambiguities/`.
 - **MANDATORY EXECUTABLE ABILITIES REQUIREMENT:** Every card with printed rules text (Actions, When Revealed, Interrupts, Responses, Keywords, Passives, Scheme Icons) **MUST** have its logic fully encoded in `abilities: [...]` (or explicit schema properties).
@@ -199,7 +199,7 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
   2. **Original Supplemental Data:** The existing JSON entry in `content/packs/<code>/supplemental/<stem>.json` (or `None` if brand new).
   3. **Proposed Supplemental Data:** The newly drafted/refactored supplemental JSON entry conforming to current specifications.
   4. **In-Game Scenario:** the card played at the table (hero, villain, phase, what the player clicks and sees), **Today** with the original data and **After this change** with the proposed data. Use the [template](../../rules/shared-quality-gates.md#in-game-scenario).
-  5. **The "Why?":** Explicit rationale explaining the motivation for the change (e.g. specification updates in `docs/specifications/`, gaps or ambiguities identified during differential comparison, rule corrections, or primitive refactoring).
+  5. **The "Why?":** Explicit rationale explaining the motivation for the change (e.g. specification updates in `docs/creators/supplemental-reference/`, gaps or ambiguities identified during differential comparison, rule corrections, or primitive refactoring).
 - **Execution modes and blast-radius tiers:** Single-Card Mode stops here for approval. Batch Mode collates one consolidated review and stops once. Tier handling is defined in the guardrails and Step 6C.
 
 

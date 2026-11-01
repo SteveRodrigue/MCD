@@ -38,7 +38,7 @@ Then deliver per [Delivery authorization](shared-quality-gates.md#delivery-autho
 ### 3. Specifications Documentation Updates
 
 - Check if mechanics, effect primitives, state interfaces, data structures, or schemas were altered.
-- Update relevant specification documents in `docs/specifications/`, `docs/creators/` or `docs/engine/` (e.g. `docs/creators/supplemental-reference/` modular specs 01–11).
+- Update relevant specification documents in `docs/creators/` or `docs/engine/` (e.g. `docs/creators/supplemental-reference/` modular specs 01–11).
 
 ### 4. Guidelines Documentation Updates
 

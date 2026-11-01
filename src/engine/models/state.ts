@@ -604,7 +604,7 @@ export interface GameState {
   pendingConsequentialDamage?: PendingConsequentialDamage[];
   /** Ordered player queue for End of Player Phase voluntary cleanup (RR v1.8 p. 23) */
   pendingCleanUpPlayerIds?: string[];
-  scenarioId?: string;
+  scenarioId: string;
   scenarioCardCode?: string;
   difficulty?: DifficultyMode;
   heroicLevel?: number;

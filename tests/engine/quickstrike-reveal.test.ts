@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { defaultScenarioId } from '@engine/scenarios';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { CardType, type HeroCard } from '@engine/models';
 import { drainPrompts } from '@engine/simulation/match-simulator';
@@ -13,7 +14,7 @@ import {
 // Quickstrike (RR v1.8): a revealed minion attacks a hero-form player after it engages
 describe('Quickstrike on a revealed minion', () => {
   const allCards = cardCatalog.getAllCards();
-  const options = { catalog: cardCatalog, allCards };
+  const options = { catalog: cardCatalog, allCards, scenarioId: defaultScenarioId() };
   const quickstrike = allCards.find(
     (c) =>
       c.type === CardType.MINION && (c.keywords ?? []).some((k) => String(k) === 'Quickstrike'),

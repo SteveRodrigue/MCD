@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { defaultScenarioId } from '@engine/scenarios';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { EFFECT_TYPES } from '../../src/data/supplemental/runtime';
 import {
@@ -26,7 +27,7 @@ import type { AbilityStep } from '@engine/models';
 
 const allCards = cardCatalog.getAllCards();
 const inventory = buildAbilityInventory(allCards);
-const options = { catalog: cardCatalog, allCards };
+const options = { catalog: cardCatalog, allCards, scenarioId: defaultScenarioId() };
 const find = (cardCode: string, abilityId: string) => {
   const target = inventory.find((t) => t.cardCode === cardCode && t.abilityId === abilityId);
   if (!target) throw new Error(`no ability ${cardCode}#${abilityId}`);

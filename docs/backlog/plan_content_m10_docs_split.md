@@ -1,6 +1,6 @@
 # Plan — M10: Documentation is split by audience, and a creator can build a first pack from it
 
-**Status:** draft 2026-11-01, waiting for review (open decisions in section 9).
+**Status:** draft 2026-11-01, revised after Steve's rule that deprecated and historical documents are not kept (decision 4: delete). Waiting for review (open decisions in section 9).
 **Parent:** [`plan_content_folder_refactor.md`](plan_content_folder_refactor.md) (Q7, Q32, Q35; section 3.8; roadmap row M10) and [ADR-0092](../decisions/0092-content-packs-and-runtime-loading.md).
 **Depends on:** M2 to M9 (the pack format, loader, scenarios as data and the editor are all merged). Independent of M11 and the parked desktop app (#548).
 **Gate note:** Gate 1 (Rhino) is active. M10 touches documentation, one test and `tools/audit/docs-check.ts`. The one `src/` change is a line of text on the welcome screen (section 3.5).
@@ -24,7 +24,7 @@ After M10 there are two doors into the documentation: `docs/creators/` for someo
 
 - **158 Markdown files under `docs/`.** Audience split of the current ones:
   - Creator material: `docs/guidelines/hero_creation_guide.md` (397 lines), `docs/guidelines/scenario_creation_guide.md` (187), the supplemental suite `docs/specifications/supplemental/` (README, 11 modules, QUICK_REFERENCE; about 2,800 lines), `docs/specifications/supplemental_data_schema.md` (23-line pointer to the suite), `docs/specifications/tooling/card_supplemental_editor.md`.
-  - Engine material: `docs/architecture.md` (358), `docs/algorithmic_rules_reference.md` (488), `docs/coding_guidelines.md` (381), `docs/tools/*.md` (2), `docs/specifications/content_plugins_scenarios_and_campaigns.md` (262, partly superseded by ADR-0092).
+  - Engine material: `docs/architecture.md` (358), `docs/algorithmic_rules_reference.md` (488), `docs/coding_guidelines.md` (381), `docs/tools/*.md` (2), `docs/specifications/content_plugins_scenarios_and_campaigns.md` (262 lines; most of its decision table and sections are marked superseded by ADR-0092, and M9 added two more "superseded" notes to it).
   - Project and history, unchanged: `docs/decisions/` (94 ADRs), `docs/backlog/`, `docs/reports/`, `docs/ambiguities/`, `docs/templates/`, `docs/roadmap_and_milestones.md`.
 - **Who points at the old paths** (files mentioning them, `main`): `docs/specifications/supplemental` 17, `docs/guidelines` 10, `docs/specifications/tooling` 5, `docs/coding_guidelines` 17, `docs/algorithmic_rules_reference` 10, `docs/architecture.md` 2, `docs/tools/` 5. They include `README.md`, `AGENTS.md`-linked rules, five skills, three ADRs, `tests/data/quick-reference-sync.test.ts` (reads `QUICK_REFERENCE.md` by path) and `tools/audit/docs-check.ts` (`isCurrent` lists `docs/specifications/`, `docs/guidelines/`, `docs/tools/` and three files by path). `docs/reports/`, `docs/backlog/` and `CHANGELOG.md` are history and keep the paths they were written with (`docs-check` skips them).
 - **`docs:check` today** checks links, paths, scripts, symbols, ADR index, orphans, tombstones, volatile numbers and the roadmap; "current" documents are the ones in `isCurrent`. There is no check that a schema field is documented, except `quick-reference-sync` for the supplemental suite.
@@ -52,11 +52,10 @@ docs/
     architecture.md  algorithmic_rules_reference.md  coding_guidelines.md
     tools/  (card_text_parser.md, supplemental_schema_validation.md)
     editor-architecture.md     # was specifications/tooling/card_supplemental_editor.md (data flow, write rule)
-    content-plugins-design.md  # was specifications/content_plugins_scenarios_and_campaigns.md (historical design, marked as such)
   decisions/  backlog/  reports/  ambiguities/  templates/  roadmap_and_milestones.md   # unchanged
 ```
 
-`docs/specifications/` and `docs/guidelines/` are emptied and removed. `supplemental_data_schema.md` (a pointer page) is deleted; its readers go to `creators/supplemental-reference/README.md`.
+`docs/specifications/` and `docs/guidelines/` are emptied and removed. `supplemental_data_schema.md` (a pointer page) is deleted; its readers go to `creators/supplemental-reference/README.md`. `content_plugins_scenarios_and_campaigns.md` is deleted, not moved (Steve: deprecated and historical documents are not kept). Anything in it that is still true already lives in ADR-0092, `content/README.md`, `creators/pack-format.md` and `creators/scenarios.md`; the implementation checks each remaining section against those before deleting, and moves a still-true fact into the right document instead of keeping the file. Its inbound links (README, ADR-0092) are removed or pointed at ADR-0092.
 
 ### 3.2 Moves are moves
 
@@ -85,13 +84,13 @@ New schema documentation for things that do not exist (zip import, sandboxed pac
 ## 4. Simplification & Refactor Check
 
 - The tree has one place per audience instead of three overlapping folders (`guidelines`, `specifications`, `tools`).
-- The 23-line pointer page and the superseded design-doc sections that contradict ADR-0092 are removed or marked, not carried over.
+- The 23-line pointer page and the superseded plugins design document are deleted, not carried over or marked historical.
 - `docs-check`'s hard-coded `isCurrent` list becomes two prefixes (`docs/creators/`, `docs/engine/`) plus the two files that stay.
 - The tutorial is executable (tested), so there is one example instead of prose that drifts.
 
 ## 5. Debt Removed
 
-- `docs/guidelines/`, `docs/specifications/`, and the pointer page `supplemental_data_schema.md`.
+- `docs/guidelines/`, `docs/specifications/`, the pointer page `supplemental_data_schema.md` and the superseded `content_plugins_scenarios_and_campaigns.md` (with the "superseded by M9" notes M9 left in it).
 - Pre-pack paths and "built-in hero" wording in the hero guide; the editor description that M9 made false.
 - `docs-check`'s per-folder `isCurrent` list.
 - The welcome screen's missing pointer to creator docs.
@@ -103,12 +102,12 @@ New schema documentation for things that do not exist (zip import, sandboxed pac
 | `docs/guidelines/*.md` to `docs/creators/cards-and-heroes.md`, `scenarios.md` | [MOVE] and update paths | Creator scenario |
 | `docs/specifications/supplemental/**` to `docs/creators/supplemental-reference/` | [MOVE] | Creator scenario |
 | `docs/specifications/tooling/card_supplemental_editor.md` to `docs/engine/editor-architecture.md` | [MOVE] | Engine docs |
-| `docs/specifications/content_plugins_scenarios_and_campaigns.md` to `docs/engine/content-plugins-design.md` | [MOVE], status line marks it historical | Engine docs |
+| `docs/specifications/content_plugins_scenarios_and_campaigns.md` | [DELETE] after moving any still-true fact into the creator or engine docs | Debt Removed |
 | `docs/architecture.md`, `algorithmic_rules_reference.md`, `coding_guidelines.md`, `tools/*.md` | [MOVE] to `docs/engine/` | Engine docs |
 | `docs/specifications/supplemental_data_schema.md` | [DELETE] | Debt Removed |
 | `docs/creators/README.md`, `pack-format.md`, `editor.md`, `sharing-and-installing.md` | [NEW] | Creator scenario |
 | `docs/creators/examples/my-first-pack/**` | [NEW] | Creator scenario |
-| `README.md`, `AGENTS.md`-linked rules, 5 skills, 3 ADRs, other inbound links | [MODIFY] link targets | Debt Removed |
+| `README.md`, `AGENTS.md`-linked rules, 5 skills, 3 ADRs (ADR-0092 also drops its citation of the deleted plugins document), other inbound links | [MODIFY] link targets | Debt Removed |
 | `tools/audit/docs-check.ts`, `tests/tools/docs-check.test.ts` | [MODIFY] `isCurrent`, `creator-field` check | Completeness |
 | `tests/data/quick-reference-sync.test.ts` | [MODIFY] path | Completeness |
 | `tests/data/creators-example-pack.test.ts` | [NEW] | Creator scenario |
@@ -130,5 +129,5 @@ UI: one line on the welcome screen (3.5). Card Supplemental Editor: no code chan
 1. **Two PRs** (recommended): 10a is the mechanical move plus link and `docs-check` fixes (reviewable by rename detection); 10b is the new creator documents, the tested example pack, the new check and the welcome screen line. One PR would bury the new text in a 100-file rename.
 2. **Move the three big engine documents** (`architecture`, `algorithmic_rules_reference`, `coding_guidelines`) **into `docs/engine/`** (recommended, matches section 3.8 of the parent plan). Cost: about 30 inbound links, mostly in skills and rules. Alternative: leave them at the top of `docs/` and move only the creator material.
 3. **The example pack lives in `docs/creators/examples/`, not in `content/packs/`** (recommended: it must not ship in the game's content folder or appear in a fresh install). The tutorial has the reader copy it.
-4. **Keep the content-plugins design document**, moved to `docs/engine/` and marked historical (recommended: ADR-0092 cites it), rather than deleting it.
+4. **Answered (Steve, 2026-11-01): deprecated and historical documents are not kept.** The plugins design document is deleted, not moved, and nothing in the new tree is labelled "historical" or "superseded".
 5. **English only**; no translation of the documentation.

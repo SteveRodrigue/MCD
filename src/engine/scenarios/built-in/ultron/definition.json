@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "../../../../data/packs/scenario.schema.json",
   "id": "ultron",
   "name": "Ultron",
   "scenarioCardCode": "01134",

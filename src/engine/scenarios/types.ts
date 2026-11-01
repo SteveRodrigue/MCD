@@ -1,4 +1,5 @@
 import { GameState, DifficultyMode } from '@engine/models';
+import type { ScenarioDefinition } from '../../data/packs/scenario-definition';
 
 export interface ScenarioGameSetupOptions {
   scenarioId: string;
@@ -10,39 +11,7 @@ export interface ScenarioGameSetupOptions {
   skipMulligan?: boolean;
 }
 
-/**
- * Declarative Scenario Manifest Schema (definition.json).
- * Shared identically between Built-In and Fan-Made Custom Scenarios.
- */
-export interface ScenarioDefinition {
-  $schema?: string;
-  id: string;
-  name: string;
-  scenarioCardCode: string;
-  author?: string;
-  version?: string;
-  description?: string;
-  supportedDifficulties: DifficultyMode[];
-
-  villainSetup: {
-    villainName: string;
-    stages: Record<DifficultyMode, string[]>;
-  };
-
-  mainSchemeSetup: {
-    stages: string[];
-    startingThreat: number;
-    targetThreatPerPlayer: number;
-    escalationThreatPerPlayer: number;
-  };
-
-  modularEncounterSets: {
-    mandatory: string[];
-    defaults: Record<DifficultyMode, string[]>;
-    slotCount?: number;
-    recommendedModularSets?: string[];
-  };
-}
+export type { ScenarioDefinition } from '../../data/packs/scenario-definition';
 
 /**
  * Public Lifecycle Contract for Scenario Plugins.

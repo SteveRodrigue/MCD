@@ -18,6 +18,18 @@
         "**/src/data/supplemental/pack/*.json"
       ],
       "url": "./src/data/supplemental/schema.json"
+    },
+    {
+      "fileMatch": ["**/packs/*/pack.json"],
+      "url": "./src/data/packs/pack.schema.json"
+    },
+    {
+      "fileMatch": ["**/scenarios/*/definition.json"],
+      "url": "./src/data/packs/scenario.schema.json"
+    },
+    {
+      "fileMatch": ["**/modular-sets.json"],
+      "url": "./src/data/packs/modular-sets.schema.json"
     }
   ],
   "chat.tools.terminal.autoApprove": {

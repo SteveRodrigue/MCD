@@ -1,4 +1,4 @@
-# Handover — content folder refactor (next: review the M7 and M8 plans)
+# Handover — content folder refactor (next: implement M7)
 
 **Written:** 2026-11-01, at the end of M5b; updated the same day for the agent policy of PR #541 (autonomy and stop policy, game-first plans, delivery authorization). For the next session or agent that continues the work. Nothing here is a decision; the decisions live in the documents it points to.
 
@@ -14,7 +14,7 @@
 | M5c scenarios from packs, Ultron as the one script, `built-in/` deleted | merged (see plan section 13) | #544 |
 | M5d defaults and literals (`'rhino'`, `'core'`) | merged (see plan section 13) | this PR |
 | M6 image cache per pack ([plan](plan_content_m6_image_cache.md)) | merged | #546 |
-| M7 empty-shell UI ([plan](plan_content_m7_empty_shell_ui.md)) and M8 leak guard ([plan](plan_content_m8_leak_guard.md)): **plans drafted, waiting for review** | plans only | |
+| M7 empty-shell UI ([plan](plan_content_m7_empty_shell_ui.md)) and M8 leak guard ([plan](plan_content_m8_leak_guard.md)): M8 approved and implemented, M7 approved and next | plans only | |
 | M9 editor on the storage driver, M10 docs split, M11 browser driver and distribution, M12 optional Core removal | roadmap only, see `plan_content_folder_refactor.md`. M6b (Tauri desktop app) is parked: issue #548, Q55. | |
 
 `main` has everything above up to M6. PR #541 changed the agent rules (see section 4); read them in `AGENTS.md` and `.agents/rules/shared-quality-gates.md` (Stop policy, Plan and approval gate, In-Game Scenario, Delivery authorization), because they replace what earlier sessions did.

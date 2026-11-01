@@ -71,19 +71,20 @@ npm run dev        # http://localhost:3000/ (strictPort; override with: npm run 
 
 `npm run dev` also mirrors Vite output to the newest 10 logs in `logs/dev-server/`. Cards are read from `content/` (official data), `content/packs/*/supplemental/*.json` (declarative rules) and `src/engine/` (rules engine).
 
-| Task                | Command                                             | Notes                                                                                             |
-| :------------------ | :-------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
-| Run all tests       | `npm test`                                          | `npm run test:watch` for watch mode, `npm run test:coverage`                                      |
-| Run one test file   | `npx vitest run tests/engine/villain-phase.test.ts` | Prefer targeted runs while implementing                                                           |
-| Type check / lint   | `npm run typecheck`, `npm run lint`                 | Lint must report 0 warnings                                                                       |
-| Format              | `npm run format`, `npm run format:check`            |                                                                                                   |
-| Build / preview     | `npm run build`, `npm run preview`                  | `preview` serves a build and has no editor write endpoints                                        |
-| Headless simulation | `npm run simulate`                                  | 100-game gate for the release                                                                     |
-| Parse card text     | `npm run parse:card -- --code 01001b`               | Options: [docs/tools/card_text_parser.md](docs/tools/card_text_parser.md)                         |
-| Declarations report | `npm run report:declarations`                       | Schema usage and parity report; the pre-commit hook regenerates `docs/reports/supplemental_data/` |
-| Export schema       | `npm run schema:generate`                           | Writes `src/data/supplemental/schema.json`                                                        |
-| Look up a rule      | `npm run rule -- <term>`                            | Reads `references/rules/`                                                                         |
-| Full check          | `npm run verify`                                    | Format, lint, typecheck, tests, coverage, build                                                   |
+| Task                   | Command                                             | Notes                                                                                             |
+| :--------------------- | :-------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| Run all tests          | `npm test`                                          | `npm run test:watch` for watch mode, `npm run test:coverage`                                      |
+| Run one test file      | `npx vitest run tests/engine/villain-phase.test.ts` | Prefer targeted runs while implementing                                                           |
+| Type check / lint      | `npm run typecheck`, `npm run lint`                 | Lint must report 0 warnings                                                                       |
+| Format                 | `npm run format`, `npm run format:check`            |                                                                                                   |
+| Build / preview        | `npm run build`, `npm run preview`                  | `preview` serves a build and has no editor write endpoints                                        |
+| Headless simulation    | `npm run simulate`                                  | 100-game gate for the release                                                                     |
+| Parse card text        | `npm run parse:card -- --code 01001b`               | Options: [docs/tools/card_text_parser.md](docs/tools/card_text_parser.md)                         |
+| Declarations report    | `npm run report:declarations`                       | Schema usage and parity report; the pre-commit hook regenerates `docs/reports/supplemental_data/` |
+| Export schema          | `npm run schema:generate`                           | Writes `src/data/supplemental/schema.json`                                                        |
+| Look up a rule         | `npm run rule -- <term>`                            | Reads `references/rules/`                                                                         |
+| Check for leaked files | `npm run leak:check`                                | Fails on tracked PDFs, images, caches, files over 5 MB (pre-commit, `verify`, CI)                 |
+| Full check             | `npm run verify`                                    | Format, lint, typecheck, tests, coverage, build                                                   |
 
 ### Windows troubleshooting
 

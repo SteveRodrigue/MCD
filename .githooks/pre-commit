@@ -44,6 +44,14 @@ if git diff --cached --name-only | grep -Eq '^(docs/|\.agents/|[^/]+\.md$)'; the
   }
 fi
 
+# 0c. Leak guard: no PDFs, images, caches or oversized files may be tracked
+echo "  ↳ Checking for forbidden official material (leak:check)..."
+"$NPM" run --silent leak:check || {
+  echo "❌ leak:check failed!"
+  echo "💡 Untrack the files above (git rm --cached) or add a reasoned entry to tools/audit/leak-guard.allow.json."
+  exit 1
+}
+
 # 1. Format check
 echo "  ↳ Checking code formatting (Prettier)..."
 "$NPM" run format:check || {

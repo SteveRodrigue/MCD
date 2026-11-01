@@ -1,6 +1,6 @@
 # Plan — M8: Official PDFs and art can no longer be committed
 
-**Status:** draft 2026-11-01, revised after Steve's answer to Q1 (untrack the PDFs only; keep the scripts and the generated Markdown). Waiting for review together with [M7](plan_content_m7_empty_shell_ui.md) (open decisions in section 9).
+**Status:** approved by Steve 2026-11-01 (Q1 narrowed to PDFs only, every other recommendation accepted); implemented in PR #551 together with this plan. Next: [M7](plan_content_m7_empty_shell_ui.md).
 **Parent:** [`plan_content_folder_refactor.md`](plan_content_folder_refactor.md) (section 0 Tier 1, Q15, Q20, Q23; roadmap row M8) and the rule spec in [`content_coupling_audit.md`](content_coupling_audit.md) section 6.
 **Depends on:** M1 (audit), M4 (content layout), M6 (art cache), all merged. Independent of M7: no common file.
 **Gate note:** Gate 1 (Rhino) is active. M8 touches no gameplay code. Proof: seeded Rhino game and `simulate --no-stats` byte-identical, full suite green after the untracking. Decision (Steve, 2026-11-01): untrack the PDFs only; keep the scripts and the generated Markdown tracked.

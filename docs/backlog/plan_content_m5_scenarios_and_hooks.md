@@ -45,7 +45,7 @@ Klaw then becomes data (supplemental abilities on `01116a`, `01116b`, `01117a`),
 
 **Intentional behavior changes (rules corrections), each covered by a test:**
 
-- **Klaw:** the encounter deck is shuffled after the Defense Network search (printed text); stage 2A's "discard until a minion" is resolved when the scheme advances (today nothing runs it); a missing Defense Network is no longer created; its starting threat comes from the normal reveal path (verify against the card when implemented).
+- **Klaw:** the encounter deck is shuffled after the Defense Network search (printed text); stage 2A's "discard until a minion" is resolved when the scheme advances (today nothing runs it); its starting threat comes from the normal reveal path (verify against the card when implemented). **Bug fix, not a rules change:** today's code creates Defense Network from the catalog when the deck lacks it, and a card cannot be created out of thin air. Defense Network is part of the Klaw set, so it is always among the cards; if the search does not find it (for example it was dealt as a facedown boost or encounter card), the search simply finds nothing, which the engine already handles. The created-card fallback is deleted.
 - **Ultron:** the environment is found in the encounter deck and the deck is shuffled afterwards (today it is filtered out of the deck without a shuffle), so seeded Ultron games change.
 - **All scenarios:** a revealed environment card now stays in play instead of being discarded.
 
@@ -147,7 +147,7 @@ Decided (2026-11-01):
 
 Open, each with a recommendation:
 
-5. **The behavior changes** (Klaw: shuffle, stage 2A, no created Defense Network; Ultron: environment found in the deck then shuffle; revealed environments stay in play). **Recommend accepting them**: they are what the printed cards and the rules say.
+5. **The behavior changes** (Klaw: shuffle, stage 2A; Ultron: environment found in the deck then shuffle; revealed environments stay in play). The created-from-nothing Defense Network is removed as a bug, not offered as a choice. **Recommend accepting them**: they are what the printed cards and the rules say.
 6. **What may official hook scripts import?** **Recommend any `@engine` module** (build-time, trusted); a stricter barrel comes with the sandbox ADR.
 7. **Default scenario.** **Recommend the lowest `scenarioCardCode`**, with a clear error when none is registered.
 8. **`'core'` literals** go into M5d (section 3.5). **Recommend yes.**

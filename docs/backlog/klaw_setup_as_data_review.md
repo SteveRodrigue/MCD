@@ -12,7 +12,7 @@ Klaw's setup is printed text on its main scheme cards, and **every effect in it 
 
 `KlawScenarioPlugin.resolveStage1ASetup` (`src/engine/scenarios/built-in/klaw/plugin.ts`, about 50 lines):
 
-1. Finds side scheme `01124` (Defense Network) in the encounter deck, or creates it from the catalog if it is missing, and puts it into `state.sideSchemes` with threat = base threat x players. **It does not shuffle the deck.**
+1. Finds side scheme `01124` (Defense Network) in the encounter deck, or (a bug) creates it from the catalog if it is not there, and puts it into `state.sideSchemes` with threat = base threat x players. **It does not shuffle the deck.**
 2. Discards encounter cards until a minion comes up and engages it with the first player.
 
 It runs from `DeclarativeScenarioPlugin.onGameSetup`, which sets the main scheme **directly to stage 1B** and ignores its text. A villain's When Revealed is data (`revealVillainStage` runs the card's abilities through the effect engine); a main scheme's is not.
@@ -54,7 +54,7 @@ Then Klaw's three cards get supplemental abilities (data) and `KlawScenarioPlugi
 
 - **Shuffle.** The printed Setup shuffles the encounter deck; today's code does not. Seeded Klaw games change.
 - **Stage 2A.** Today the 2A "discard until a minion" never happens in a game (nothing runs it on advance); the data version resolves it.
-- **Missing Defense Network.** Today's code creates it if the deck lacks it; the printed text just finds nothing.
+- **Defense Network can never be missing; creating it was a bug.** It belongs to the Klaw set, so it is always among the cards; if the search does not find it (dealt as a facedown boost or encounter card, say) the search finds nothing, which the engine already handles. A card cannot be created out of thin air, so the fallback is deleted, not preserved.
 - **Starting threat** for Defense Network will come from the normal reveal path rather than base threat x players; to be checked against the card when implemented.
 
 Ultron's 1A (put the Ultron Drones environment into play) is also data once the engine supports environments (see the M5 plan). Only its 1B, which puts a facedown Drone minion into play, stays a script for now: facedown minions are a concept shared by Ultron's villain stages and other packs (Gate 2, #275).

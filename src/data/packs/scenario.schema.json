@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Marvel Champions Digital - Scenario Definition",
+  "description": "Declarative scenario definition (definition.json) shared by official and user scenarios.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scenarioCardCode": {
+      "type": "string",
+      "minLength": 1
+    },
+    "author": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "supportedDifficulties": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "SKIRMISH",
+          "STANDARD",
+          "EXPERT"
+        ]
+      }
+    },
+    "villainSetup": {
+      "type": "object",
+      "properties": {
+        "villainName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stages": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "enum": [
+              "SKIRMISH",
+              "STANDARD",
+              "EXPERT"
+            ]
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "SKIRMISH",
+            "STANDARD",
+            "EXPERT"
+          ]
+        }
+      },
+      "required": [
+        "villainName",
+        "stages"
+      ],
+      "additionalProperties": false
+    },
+    "mainSchemeSetup": {
+      "type": "object",
+      "properties": {
+        "stages": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "startingThreat": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "targetThreatPerPlayer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "escalationThreatPerPlayer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "stages",
+        "startingThreat",
+        "targetThreatPerPlayer",
+        "escalationThreatPerPlayer"
+      ],
+      "additionalProperties": false
+    },
+    "modularEncounterSets": {
+      "type": "object",
+      "properties": {
+        "mandatory": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "defaults": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "enum": [
+              "SKIRMISH",
+              "STANDARD",
+              "EXPERT"
+            ]
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "SKIRMISH",
+            "STANDARD",
+            "EXPERT"
+          ]
+        },
+        "slotCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "recommendedModularSets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "mandatory",
+        "defaults"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "scenarioCardCode",
+    "supportedDifficulties",
+    "villainSetup",
+    "mainSchemeSetup",
+    "modularEncounterSets"
+  ],
+  "additionalProperties": false
+}

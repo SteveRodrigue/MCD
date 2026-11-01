@@ -75,6 +75,6 @@ npx vitest run tests/tools/card-text-parser.test.ts
 
 ## 🔗 Architecture & Invariants
 
-- **Controlling ADR:** [ADR-0044](../decisions/0044-card-text-parsing-and-declarative-mapping-analyzer.md)
+- **Controlling ADR:** [ADR-0044](../../decisions/0044-card-text-parsing-and-declarative-mapping-analyzer.md)
 - **Declarative Supplemental Schema:** `src/data/supplemental/schema.ts`
 - **Zero Runtime Engine Coupling:** The parser lives in `src/tools/card-text-parser/` and `tools/audit/` and is never imported by the headless engine (`src/engine/`).

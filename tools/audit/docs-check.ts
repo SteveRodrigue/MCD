@@ -83,11 +83,8 @@ const isHistory = (f: string) =>
   f === 'CHANGELOG.md' || f.startsWith('docs/reports/') || f.startsWith('docs/backlog/');
 const isCurrent = (f: string) =>
   f.startsWith('docs/specifications/') ||
-  f.startsWith('docs/guidelines/') ||
-  f.startsWith('docs/tools/') ||
-  f === 'docs/algorithmic_rules_reference.md' ||
-  f === 'docs/architecture.md' ||
-  f === 'docs/coding_guidelines.md';
+  f.startsWith('docs/creators/') ||
+  f.startsWith('docs/engine/');
 
 function inlineCode(line: string): string[] {
   return [...line.matchAll(/`([^`\n]+)`/g)].map((m) => m[1]);

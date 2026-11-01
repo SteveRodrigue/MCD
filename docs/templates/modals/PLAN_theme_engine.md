@@ -129,7 +129,7 @@ Phases 4 and 5 can each be split by modal if you prefer smaller reviews.
 
 - New **ADR-0091 "Themeable modal system"**: amends ADR-0056 (one pop-art style becomes a registry of themes; the 3 tiers stay;
   verb colours fixed; Card Anchoring Rule; the Daily Bugle was planned exempt and later followed the theme). Registered in `docs/decisions/README.md`.
-- `docs/coding_guidelines.md`: pointer to the scaffold and Card Anchoring Rule for new modals.
+- `docs/engine/coding_guidelines.md`: pointer to the scaffold and Card Anchoring Rule for new modals.
 - `docs/templates/modals/`: README and styles.md updated for the `theme/` move; this plan marked done as phases land.
 
 ## 10. Simplification & Refactor Check

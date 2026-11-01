@@ -186,5 +186,5 @@ Under this model:
 ### Negative Consequences / Risks & Mitigations
 * **Migration Overhead:** Existing supplemental JSON files will need normalization.
   * *Mitigation:* Zod `.transform()` normalizer ensures that unmigrated JSON files load and validate seamlessly while files are updated.
-* **Schema Documentation Updates:** `docs/specifications/` and `docs/guidelines/` must document `AbilityStep` and `steps: []`.
+* **Schema Documentation Updates:** `docs/creators/` must document `AbilityStep` and `steps: []`.
   * *Mitigation:* Enforce through Mandatory Post-Task Protocol and Card Integration Protocol.

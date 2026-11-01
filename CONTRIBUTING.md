@@ -6,7 +6,7 @@ Thank you for your interest in contributing to **Marvel Champions Digital**! As 
 
 ## 📜 Principles & Standards
 
-Before writing any code, please review our comprehensive **[Coding Guidelines & Best Practices](docs/coding_guidelines.md)**.
+Before writing any code, please review our comprehensive **[Coding Guidelines & Best Practices](docs/engine/coding_guidelines.md)**.
 
 1. **Decoupled Architecture ([ADR-0002](docs/decisions/0002-decoupled-headless-rules-engine.md)):**
    - All game rules, card abilities, and trigger logic must reside strictly in `src/engine/` without any dependency on React, DOM, or browser APIs.
@@ -79,7 +79,7 @@ npm run dev        # http://localhost:3000/ (strictPort; override with: npm run 
 | Format                 | `npm run format`, `npm run format:check`            |                                                                                                   |
 | Build / preview        | `npm run build`, `npm run preview`                  | `preview` serves a build and has no editor write endpoints                                        |
 | Headless simulation    | `npm run simulate`                                  | 100-game gate for the release                                                                     |
-| Parse card text        | `npm run parse:card -- --code 01001b`               | Options: [docs/tools/card_text_parser.md](docs/tools/card_text_parser.md)                         |
+| Parse card text        | `npm run parse:card -- --code 01001b`               | Options: [docs/engine/tools/card_text_parser.md](docs/engine/tools/card_text_parser.md)                         |
 | Declarations report    | `npm run report:declarations`                       | Schema usage and parity report; the pre-commit hook regenerates `docs/reports/supplemental_data/` |
 | Export schema          | `npm run schema:generate`                           | Writes `src/data/supplemental/schema.json`                                                        |
 | Look up a rule         | `npm run rule -- <term>`                            | Reads `references/rules/`                                                                         |

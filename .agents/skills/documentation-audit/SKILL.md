@@ -112,7 +112,7 @@ Cap confidence at **≤ 79%** — i.e. ask, never assume — whenever any of the
 
 Carry the score into the Step 5 findings table and the audit log. State it explicitly:
 
-`[92%] docs/specifications/supplemental/04_effects_combat_threat.md — DEAL_DAMAGE params table omits `overkill` (src/engine/effects/index.ts:812; schema.ts:false). → confirm before applying.`
+`[92%] docs/creators/supplemental-reference/04_effects_combat_threat.md — DEAL_DAMAGE params table omits `overkill` (src/engine/effects/index.ts:812; schema.ts:false). → confirm before applying.`
 
 Never round up. If you hesitate between two bands, take the lower one.
 
@@ -158,8 +158,8 @@ file you discover via the glob above to the right code-truth check in Step 2:
 | ADRs           | `docs/decisions/*.md`, `docs/decisions/README.md`                                                      | `src/` implementation reality                                               |
 | Specifications | `docs/specifications/**/*.md`                                                                          | `src/data/supplemental/schema.ts`, `src/engine/effects/index.ts`            |
 | Visual guides  | `docs/visual-guides/*.md`                                                                              | `src/engine/pipeline/*.ts`, `src/engine/triggers/*.ts`, linked spec modules |
-| Guidelines     | `docs/coding_guidelines.md`, `docs/guidelines/*.md`                                                    | `src/` patterns, `eslint.config.js`, `tsconfig.json`                        |
-| Rules mapping  | `docs/algorithmic_rules_reference.md`                                                                  | `references/mc_rulesreference_v18_compressed.pdf` + `src/engine/`           |
+| Guidelines     | `docs/engine/coding_guidelines.md`, `docs/guidelines/*.md`                                                    | `src/` patterns, `eslint.config.js`, `tsconfig.json`                        |
+| Rules mapping  | `docs/engine/algorithmic_rules_reference.md`                                                                  | `references/mc_rulesreference_v18_compressed.pdf` + `src/engine/`           |
 | Planning       | `docs/roadmap_and_milestones.md`, `CHANGELOG.md`                                                       | GitHub issues/milestones, git history                                       |
 | Reports        | `docs/reports/*.md`                                                                                    | regenerated, never hand-edited                                              |
 | Ambiguities    | `docs/ambiguities/*.md`                                                                                | `content/packs/*/supplemental/*.json`                                         |
@@ -318,8 +318,8 @@ Apply fixes in this order so later edits build on corrected facts:
    exact schema shape from `schema.ts`, correct badges (D5), remove/downgrade phantoms (D4).
 4. `docs/visual-guides/*.md`: keep diagram labels, function/trigger names, and step numbering in
    sync with the linked specification module and the actual pipeline source it illustrates.
-5. Guidelines and `docs/coding_guidelines.md`: commands, conventions, lint/test invocations.
-6. `docs/algorithmic_rules_reference.md`: RR citations and engine mapping.
+5. Guidelines and `docs/engine/coding_guidelines.md`: commands, conventions, lint/test invocations.
+6. `docs/engine/algorithmic_rules_reference.md`: RR citations and engine mapping.
 7. Remaining `docs/**/*.md` files not covered above.
 8. Root-level `*.md` files (`README.md`, `AGENTS.md`, `CONTRIBUTING.md`,
    `SECURITY.md`, `CODE_OF_CONDUCT.md`): paths, scripts, counts.

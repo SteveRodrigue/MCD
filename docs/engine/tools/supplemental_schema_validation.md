@@ -67,7 +67,7 @@ Additionally, each supplemental pack JSON file declares a relative schema refere
 
 ## 🧪 CI/CD Parity & Quality Gates
 
-The test suite [`tests/data/supplemental-schema.test.ts`](../../tests/data/supplemental-schema.test.ts) enforces four automated guarantees on every commit:
+The test suite [`tests/data/supplemental-schema.test.ts`](../../../tests/data/supplemental-schema.test.ts) enforces four automated guarantees on every commit:
 1. **Pack File Conformance:** 100% of card declarations across all supplemental packs validate against `SupplementalPackSchema` with zero errors.
 2. **Duplicate Key Prevention:** Raw JSON files are scanned to ensure no duplicate card codes or JSON keys exist.
 3. **Speculative Primitive Rejection:** Contract tests assert that `AbilityStepSchema` strictly rejects ungrounded effect names.
@@ -76,6 +76,6 @@ The test suite [`tests/data/supplemental-schema.test.ts`](../../tests/data/suppl
 ---
 
 ## 📚 Related Documentation & Specs
-- [`docs/specifications/supplemental/01_metadata_and_audit.md`](../specifications/supplemental/01_metadata_and_audit.md): Metadata and audit schema specifications.
-- [`docs/reports/supplemental_declarations_usage_report.md`](../reports/supplemental_declarations_usage_report.md): Declarative primitives audit report.
-- [`AGENTS.md`](../../AGENTS.md): Authoritative agent protocols and data-first invariants.
+- [`docs/creators/supplemental-reference/01_metadata_and_audit.md`](../../creators/supplemental-reference/01_metadata_and_audit.md): Metadata and audit schema specifications.
+- [`docs/reports/supplemental_declarations_usage_report.md`](../../reports/supplemental_declarations_usage_report.md): Declarative primitives audit report.
+- [`AGENTS.md`](../../../AGENTS.md): Authoritative agent protocols and data-first invariants.

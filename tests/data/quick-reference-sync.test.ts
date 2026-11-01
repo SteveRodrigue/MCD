@@ -16,7 +16,7 @@ import {
 
 const QUICK_REFERENCE_PATH = path.resolve(
   __dirname,
-  '../../docs/specifications/supplemental/QUICK_REFERENCE.md',
+  '../../docs/creators/supplemental-reference/QUICK_REFERENCE.md',
 );
 
 describe('Supplemental Specification Quick Reference Sync Guard', () => {

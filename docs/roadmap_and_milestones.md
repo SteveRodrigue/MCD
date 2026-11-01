@@ -63,7 +63,7 @@ graph TD
 - [x] **Card Data Models & MarvelsDB Ingestion:** Ingest all Core Set cards with normalized schemas.
 - [x] **Authoritative Zod Supplemental Schema (`schema.ts`):** Complete validation for `CardEnrichment`, `CardAbility`, `AbilityCost`, `FilterSchema`, `ConditionGate`, and `CardAuditRecord`.
 - [x] **Automated Schema CI/CD Tests:** `tests/data/supplemental-schema.test.ts` validating 100% of supplemental packs.
-- [x] **Modular Documentation Hub:** 10-part specification suite in `docs/specifications/supplemental/` with 🟢 `IMPLEMENTED` vs 🟡 `ROADMAP` status badges.
+- [x] **Modular Documentation Hub:** 10-part specification suite in `docs/creators/supplemental-reference/` with 🟢 `IMPLEMENTED` vs 🟡 `ROADMAP` status badges.
 - [x] **Declarative Sequencing & Generic Zone Primitives (ADR-0028 & ADR-0029):** Atomic multi-step sequences (`steps: []`, renamed from `sequence: []` by ADR-0030), conditional gates (`gate: "ALWAYS" | "THEN" | "IF_AMOUNT_ZERO" | "IF_ALREADY_HAS_STATUS" | "IF_FAILED"`), and generic zone transfer primitives (`PUT_INTO_PLAY`, `SHUFFLE_INTO_DECK`).
 - [x] **100% Core Set Encounter Pool Parity:** Multi-Stage Villain transitions (I $\rightarrow$ II $\rightarrow$ III), Option 3 Extra Activations (_Advance_, _Assault_, _Gang-Up_, _Explosion_, _Masterplan_, _Under Fire_), and Nemesis Spawning pipeline (_Shadow of the Past_ `01190`).
 - [x] **Mulligan Rules Alignment (RR v1.8 p. 51):** Discard pile placement with top replacement draws.
@@ -176,7 +176,7 @@ _Objective: Build an industrial-grade, capability-driven rules engine with compl
 
 ## 📍 Phase 2.5: Developer Ergonomics & Supplemental Reviewer GUI ✅ (Completed Pre-Rhino Tooling)
 
-_Objective: Equip developers and card authors with an integrated visual editor and live reviewer GUI to accelerate Core Set card audits, verify declarative rules, and hot-reload supplemental JSON directly from the running application ([ADR-0045](decisions/0045-card-supplemental-editor-and-live-reviewer-gui.md), [Specification](specifications/tooling/card_supplemental_editor.md))._
+_Objective: Equip developers and card authors with an integrated visual editor and live reviewer GUI to accelerate Core Set card audits, verify declarative rules, and hot-reload supplemental JSON directly from the running application ([ADR-0045](decisions/0045-card-supplemental-editor-and-live-reviewer-gui.md), [Specification](engine/editor-architecture.md))._
 
 ### Milestones & Tasks:
 

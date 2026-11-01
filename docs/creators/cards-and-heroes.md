@@ -283,8 +283,8 @@ npm run typecheck             # Verifies TypeScript types
 
 ## 7. Related References
 
-- [Supplemental Data Schema Specification](../specifications/supplemental/README.md)
-- [Scenario Creation Guide](./scenario_creation_guide.md)
+- [Supplemental Data Schema Specification](supplemental-reference/README.md)
+- [Scenario Creation Guide](./scenarios.md)
 - [Card Integration Protocol (SKILL.md)](../../.agents/skills/card-integration-protocol/SKILL.md)
 
 ---
@@ -320,7 +320,7 @@ flowchart TD
     Q1 -->|"passive aura, always active<br/>while face-up in play"| CONST["CONSTANT"]
 ```
 
-Full enum reference: [02. Timings & Triggers §1](../specifications/supplemental/02_timings_and_triggers.md#1-ability-timing-types-timing).
+Full enum reference: [02. Timings & Triggers §1](supplemental-reference/02_timings_and_triggers.md#1-ability-timing-types-timing).
 
 ---
 
@@ -374,10 +374,10 @@ flowchart TD
 ```
 
 Worked examples (additive `IF_PLAYER_HAS_TRAIT` on Crisis Interdiction `01012`, exclusive `IF_PLAYER_HAS_TRAIT` with `negate` on Mark V Helmet `01037`, `THEN` fallback with `negate`) and when each applies:
-[10. Sequences & Modals, Gating Patterns](../specifications/supplemental/10_sequences_and_prompts.md#gating-patterns-then-if_result-and-if_player_has_trait).
+[10. Sequences & Modals, Gating Patterns](supplemental-reference/10_sequences_and_prompts.md#gating-patterns-then-if_result-and-if_player_has_trait).
 
 Full gate catalog:
-[10. Sequences & Modals §1](../specifications/supplemental/10_sequences_and_prompts.md#conditional-gates-adr-0080).
+[10. Sequences & Modals §1](supplemental-reference/10_sequences_and_prompts.md#conditional-gates-adr-0080).
 
 ---
 
@@ -386,11 +386,11 @@ Full gate catalog:
 1. Pick `timing` → §1 above.
 2. Pick `trigger` (if reactive) → §2 above.
 3. Pick effect primitive(s) from
-   [05](../specifications/supplemental/05_effects_combat_threat.md)–[08](../specifications/supplemental/08_effects_villain_nemesis.md)
+   [05](supplemental-reference/05_effects_combat_threat.md)–[08](supplemental-reference/08_effects_villain_nemesis.md)
    by category (combat, zones, status/economy, villain/nemesis).
 4. Sequence multi-effect abilities with `steps: []`, `gate`/`condition` → §3 above.
-5. Add `cost` ([03. Costs & Targeting](../specifications/supplemental/03_costs_and_targeting.md))
-   and `playRequirements` ([11. Play Requirements](../specifications/supplemental/11_play_requirements.md))
+5. Add `cost` ([03. Costs & Targeting](supplemental-reference/03_costs_and_targeting.md))
+   and `playRequirements` ([11. Play Requirements](supplemental-reference/11_play_requirements.md))
    if the card restricts who/when it can be used.
 6. Validate against [`tests/data/supplemental-schema.test.ts`](../../tests/data/supplemental-schema.test.ts)
    and follow the [Card Integration Protocol](../../.agents/skills/card-integration-protocol/SKILL.md)

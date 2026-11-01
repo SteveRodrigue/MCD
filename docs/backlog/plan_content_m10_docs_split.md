@@ -1,6 +1,7 @@
 # Plan — M10: Documentation is split by audience, and a creator can build a first pack from it
 
 **Status:** draft 2026-11-01, revised after Steve's rule that deprecated and historical documents are not kept (decision 4: delete). Waiting for review (open decisions in section 9).
+**M10a:** implemented on this branch (mechanical move, link fixes, docs-check prefixes).
 **Parent:** [`plan_content_folder_refactor.md`](plan_content_folder_refactor.md) (Q7, Q32, Q35; section 3.8; roadmap row M10) and [ADR-0092](../decisions/0092-content-packs-and-runtime-loading.md).
 **Depends on:** M2 to M9 (the pack format, loader, scenarios as data and the editor are all merged). Independent of M11 and the parked desktop app (#548).
 **Gate note:** Gate 1 (Rhino) is active. M10 touches documentation, one test and `tools/audit/docs-check.ts`. The one `src/` change is a line of text on the welcome screen (section 3.5).

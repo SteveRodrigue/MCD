@@ -77,16 +77,21 @@ We need a robust, local-first data architecture that keeps all data locally vers
 
 ### How to sync / re-sync
 
-Run the sync script from the repository root:
+Run the content sync command from the repository root:
 
-```powershell
-pwsh scripts/sync_data.ps1
+```bash
+npm run content:sync              # download upstream and write content/
+npm run content:sync -- --check   # write nothing, exit 1 if anything differs
+npm run content:sync -- --from <dir>  # use an already-extracted upstream folder (offline)
 ```
 
-The script (`scripts/sync_data.ps1`, replaced by the content sync command of ADR-0092) downloads
-`https://github.com/zzorba/marvelsdb-json-data/archive/refs/heads/master.zip`, extracts it to a temp
-folder, and copies the contents over `data/upstream/`. It **overwrites** that directory in place and
-does not delete files that upstream has removed — inspect `git status` after every run.
+The command (`scripts/content-sync.ts`, which replaced the former `scripts/sync_data.ps1` per
+ADR-0092) downloads the `zzorba/marvelsdb-json-data` master tarball into `content/.cache/upstream/`,
+extracts it, and copies cards, catalog metadata, schemas and translations byte for byte into the
+`content/` pack layout. It never touches a pack's `pack.json`, `supplemental/`, `scenarios/`,
+`decks/` or `modular-sets.json`, and generates a `pack.json` for a pack that is new upstream. Files
+that upstream has removed are reported and only deleted with `--prune`; inspect `git status` after
+every run.
 
 ### Mandatory post-sync verification
 

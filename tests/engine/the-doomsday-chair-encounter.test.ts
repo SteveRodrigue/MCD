@@ -119,6 +119,9 @@ describe('The Doomsday Chair modular set (#356, #262)', () => {
 
   describe('01185 Biomechanical Upgrades', () => {
     it('attaches to the minion with the highest printed hit points without a copy attached', () => {
+      // Clear encounter deck so surge does not draw unexpected encounter cards mid-test
+      state.encounterDeck = [];
+
       const bomber = createCardInstance(cardCatalog.getCard(HYDRA_BOMBER)!);
       const modok = createCardInstance(cardCatalog.getCard(MODOK)!);
       p1().engagedMinions.push(

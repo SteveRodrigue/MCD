@@ -7,7 +7,7 @@ the RTK token reduction policy is in
 [`.agents/rules/antigravity-rtk-rules.md`](.agents/rules/antigravity-rtk-rules.md),
 the coding and testing rules are in
 [`.agents/rules/coding-and-testing-rules.md`](.agents/rules/coding-and-testing-rules.md)
-(full guidelines with examples: [`docs/coding_guidelines.md`](docs/coding_guidelines.md), including
+(full guidelines with examples: [`docs/engine/coding_guidelines.md`](docs/engine/coding_guidelines.md), including
 §15 Recurring-Error Guardrails),
 and the post-task procedure is in
 [`.agents/rules/post-task-checklist.md`](.agents/rules/post-task-checklist.md).
@@ -28,7 +28,7 @@ and the post-task procedure is in
   explicitly changes scope. Read-only audits may inspect any user-selected scope.
 - Preserve the project's comic pop-art visual direction in user-facing UI work.
 - Do not introduce unapproved legacy shims, aliases, deprecated names, duplicate paths, or temporary shortcuts.
-- **One Legality Gate:** Whether a card or ability can be played, used or offered is decided in `src/engine/pipeline/legality-checker.ts` and the target-validity gate `checkAbilityTargets` (ADR-0090). Extend them; never add a parallel check in a caller (trigger scan, prompt queue, action handler, UI). Rule: `.agents/rules/coding-and-testing-rules.md`, `docs/coding_guidelines.md` §15.11.
+- **One Legality Gate:** Whether a card or ability can be played, used or offered is decided in `src/engine/pipeline/legality-checker.ts` and the target-validity gate `checkAbilityTargets` (ADR-0090). Extend them; never add a parallel check in a caller (trigger scan, prompt queue, action handler, UI). Rule: `.agents/rules/coding-and-testing-rules.md`, `docs/engine/coding_guidelines.md` §15.11.
 - **No Tech Debt (hard rule, overrides skill steps):** Fix debt in the path of the change in the same change. Never offer "leave it", "defer", "report separately", "close as invalid" or "tracked gap" as an option for it; the recommended plan is always the cleanest complete one, and every plan lists **Debt Removed**. A wrong issue premise is corrected and the real defect fixed, not closed. Full rules: [No Tech Debt Mandate](.agents/rules/shared-quality-gates.md#no-tech-debt-mandate).
 - **Refactor-First & Zero-Bloat Policy:** We are early in development: refactor now. Never propose "we'll support both", parallel functions, or copy-pasted logic with minor variations. Before adding a new function, primitive, or branch, search for similar existing code and prefer **merging similar functions**, **adding a parameter to an existing function**, or **simplifying tangled/spaghetti code in the path of the change** and updating all callers/data in scope.
 - **Lean Testing Policy (No Redundant Runs):** Run only targeted tests (`rtk npx vitest run <target>` or `rtk npx vitest related <files> --run`) during implementation. Never re-run a test, `typecheck`, or `lint` command if zero files changed since it last passed. Leave the full test suite (`npm test`) to the `git push` hook (`.githooks/pre-push`).

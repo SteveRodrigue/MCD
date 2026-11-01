@@ -5,7 +5,7 @@ description: 'Short, enforceable coding, testing, formatting and commit rules fo
 
 # Coding and Testing Rules
 
-Enforceable summary. Explanations, examples, naming tables and architecture live in [`docs/coding_guidelines.md`](../../docs/coding_guidelines.md); do not copy them here.
+Enforceable summary. Explanations, examples, naming tables and architecture live in [`docs/engine/coding_guidelines.md`](../../docs/engine/coding_guidelines.md); do not copy them here.
 
 ## TypeScript
 
@@ -14,7 +14,7 @@ Enforceable summary. Explanations, examples, naming tables and architecture live
 - `GameState` stays 100% JSON-serializable (no class instances, closures, DOM nodes, cycles) and is updated immutably.
 - Annotate object literals passed across boundaries (`const ctx: EffectExecutionContext = ...`). `tsc` does not flag a renamed field inside an untyped literal; also `grep` for the old name.
 
-## Recurring-Error Guardrails (examples in `docs/coding_guidelines.md` §15)
+## Recurring-Error Guardrails (examples in `docs/engine/coding_guidelines.md` §15)
 
 - Validators fail closed: a check that could not run is an error; no empty `catch`.
 - Identify cards by code or enum, never by name substring or regex over free-form input.
@@ -43,7 +43,7 @@ Enforceable summary. Explanations, examples, naming tables and architecture live
 - **Targeted & non-redundant execution:** During development and task verification, run only targeted test files (`rtk npx vitest run <file>` or `rtk npx vitest related <files> --run`). Never re-run tests, `typecheck`, or `lint` if zero files changed since the last pass. The full test suite (`npm test`) runs once via `.githooks/pre-push`.
 - **Consolidate test boilerplate:** Extend existing test files or use `it.each` for related variations rather than duplicating full game-setup boilerplate across multiple nearly identical tests.
 - **Shared game fixtures:** Build games with `newRhinoGame` (and `dispatchOk`, `heroCard`, `abilityOf`) from `tests/support/game-fixtures.ts`. A new or touched test file does not add a local `buildGame` / `newGame` / `createMockState` that wraps `setupGame`; migrate the file's existing builders when you touch it. Tests of setup itself may call `setupGame` directly.
-- **Frozen catalog cards:** Tests run with the card catalog frozen (`tests/setup/freeze-card-catalog.ts`). Never write to a catalog card; to change a card in a test state use `overrideCard(state, card, { ... })` from `tests/support/card-overrides.ts`. See [`docs/coding_guidelines.md`](../../docs/coding_guidelines.md).
+- **Frozen catalog cards:** Tests run with the card catalog frozen (`tests/setup/freeze-card-catalog.ts`). Never write to a catalog card; to change a card in a test state use `overrideCard(state, card, { ... })` from `tests/support/card-overrides.ts`. See [`docs/engine/coding_guidelines.md`](../../docs/engine/coding_guidelines.md).
 - Real path, real state: effects act on the zone entity that lives in `GameState` (for example the `SideSchemeState` in `state.sideSchemes`), never on a reveal-time copy. Drive the real reveal, defeat, attack or ability path (see `tests/engine/highway-robbery.test.ts`); do not call an effect with a card instance that is not in state.
 - Whenever targeting changes, cover a minion as well as the villain.
 

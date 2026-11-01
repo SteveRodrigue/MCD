@@ -53,7 +53,7 @@ _Take note of the extracted JSON: `code`, `name`, `type_code`, `traits`, `cost`,
 Consult the quick reference cheat sheet and modular specifications to ensure exact parameter and variable compliance:
 
 1. **Primary Quick-Start Reference (Inspect First):**
-   - [`docs/specifications/supplemental/QUICK_REFERENCE.md`](../../../docs/specifications/supplemental/QUICK_REFERENCE.md): Single authoritative, high-density cheat sheet detailing all 56 effect primitives, allowed `effectParams` keys, 9 canonical step gates, 8 result facts, timings, triggers, and target selectors.
+   - [`docs/creators/supplemental-reference/QUICK_REFERENCE.md`](../../../docs/creators/supplemental-reference/QUICK_REFERENCE.md): Single authoritative, high-density cheat sheet detailing all 56 effect primitives, allowed `effectParams` keys, 9 canonical step gates, 8 result facts, timings, triggers, and target selectors.
 
 2. **Authoritative Source of Truth:**
    - [`src/data/supplemental/schema.ts`](../../../src/data/supplemental/schema.ts), [`effect-params.ts`](../../../src/data/supplemental/effect-params.ts), and [`gate-params.ts`](../../../src/data/supplemental/gate-params.ts) define the canonical Zod types and enums:
@@ -66,16 +66,16 @@ Consult the quick reference cheat sheet and modular specifications to ensure exa
      - **Target Selectors:** `TargetSelectorSchema` (`CHOSEN_ENEMY`, `CHOSEN_CHARACTER`, `VILLAIN`, `ALL_ENEMIES`, `SELF`, `SELF_IDENTITY`, `CHOSEN_PLAYER`, etc.)
 
 3. **Modular Documentation Guides (For In-Depth Rules/Examples):**
-   - Timing & Triggers: `docs/specifications/supplemental/02_timings_and_triggers.md`
-   - Targeting & Scopes: `docs/specifications/supplemental/03_costs_and_targeting.md`
-   - Combat & Threat: `docs/specifications/supplemental/05_effects_combat_threat.md`
-   - Zones & Search: `docs/specifications/supplemental/06_effects_zones_cards.md`
-   - Status & Economy: `docs/specifications/supplemental/07_effects_status_economy.md`
-   - Villain & Nemesis: `docs/specifications/supplemental/08_effects_villain_nemesis.md`
-   - Formulas & Math: `docs/specifications/supplemental/09_dynamic_formulas.md`
-   - Sequences & Prompts: `docs/specifications/supplemental/10_sequences_and_prompts.md`
-   - Universal Card Filter: `docs/specifications/supplemental/04_universal_card_filter.md`
-   - Play Requirements: `docs/specifications/supplemental/11_play_requirements.md`
+   - Timing & Triggers: `docs/creators/supplemental-reference/02_timings_and_triggers.md`
+   - Targeting & Scopes: `docs/creators/supplemental-reference/03_costs_and_targeting.md`
+   - Combat & Threat: `docs/creators/supplemental-reference/05_effects_combat_threat.md`
+   - Zones & Search: `docs/creators/supplemental-reference/06_effects_zones_cards.md`
+   - Status & Economy: `docs/creators/supplemental-reference/07_effects_status_economy.md`
+   - Villain & Nemesis: `docs/creators/supplemental-reference/08_effects_villain_nemesis.md`
+   - Formulas & Math: `docs/creators/supplemental-reference/09_dynamic_formulas.md`
+   - Sequences & Prompts: `docs/creators/supplemental-reference/10_sequences_and_prompts.md`
+   - Universal Card Filter: `docs/creators/supplemental-reference/04_universal_card_filter.md`
+   - Play Requirements: `docs/creators/supplemental-reference/11_play_requirements.md`
 
 4. **Drafting Invariants:**
    - **Generic Primitives Only (ADR-0021):** Never invent card-specific effect names (e.g. do not use `DANCE_OF_DEATH_ATTACK`; use generic `DEAL_DAMAGE`).

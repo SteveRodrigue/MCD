@@ -40,7 +40,7 @@ The engine decided this in five places, each hardcoded by effect name and select
 
 ### Rationale ("The Why")
 
-The rule is about the ability and its targets, not about who asks. Centralising it removes the class of defect, not one instance: the next effect with a state requirement is one table entry, and every caller gets it. The guard test and the guideline (`docs/coding_guidelines.md` Â§15, rule 11) keep the structure from sprawling again.
+The rule is about the ability and its targets, not about who asks. Centralising it removes the class of defect, not one instance: the next effect with a state requirement is one table entry, and every caller gets it. The guard test and the guideline (`docs/engine/coding_guidelines.md` Â§15, rule 11) keep the structure from sprawling again.
 
 ## Consequences
 

@@ -169,7 +169,7 @@ Also search for high-signal markers and bypasses:
 - `@deprecated`, `deprecated`, `legacy`, `compat`, `TODO remove`, and superseded ADR references.
 - `skip`, `todo`, focused tests, commented assertions, empty tests, and broad snapshots.
 - `any`, unsafe assertions, `@ts-ignore`, lint disables, swallowed exceptions, and unreachable defaults.
-- Naming vocabulary that violates `docs/coding_guidelines.md`, especially ADR-0058 taxonomy.
+- Naming vocabulary that violates `docs/engine/coding_guidelines.md`, especially ADR-0058 taxonomy.
 
 ### Step 4 - Perform the Four Required Reviews
 

@@ -42,7 +42,7 @@ content/.cache/images/
   _backs/<type>.png          # the three generic backs (an id cannot start with `_`, so no pack can collide)
 ```
 
-`src/tools/content-paths.ts` (the Q30 helper) gains `imageCacheDir(packId, base?)`; the dev root vs app-data root (Q26) stays in that one place. `cache/` and its `.gitignore` lines, the `**/cache/**` watch and search ignores and the `cache/` mention in the `code-audit` skill are deleted.
+`src/tools/content-paths.ts` (the Q30 helper) gains `imageCacheDir(packId, base?)`; the dev root vs app-data root (Q26) stays in that one place. No code reads or writes the old root `cache/` folder any more, and **nothing deletes it** (decision 2): the folder and its `.gitignore` lines stay on disk and in the repo until the new cache is proven in use. The `**/cache/**` watch and search ignores and the `code-audit` mention stay for the same reason.
 
 ### 3.2 Art file names come from the pack
 
@@ -78,7 +78,7 @@ The `closeBundle()` copy of art into `dist/` is deleted (decision 1). `vite prev
 - **Merge:** two download implementations (plugin, script) into `image-cache.ts`; the pure naming functions out of a UI service into the data layer; the two plugin routes (`cards`, `back`) into one `/card-art/<packId>/` route.
 - **Reuse, don't add:** `content-paths.ts` for the directory, `ClaimRegistry` ownership already recorded by the loader, the existing filename validation, the existing `CardView` placeholder.
 - **Delete:** the `'01'` special case, the `/cache/` URL prefix (no user found), the dist copy, the copy of the middleware inside the test, the weaker script downloader.
-- **No dual paths:** the old `/cards/` and `/back/` URLs and `cache/` are not kept beside the new ones (decision 2).
+- **No dual paths:** the old `/cards/` and `/back/` URLs are not kept beside the new ones, and no code reads the old `cache/` folder; it is only left on disk (decision 2).
 
 ## 5. Delivery: one PR
 
@@ -100,7 +100,7 @@ The URL (`/card-art/<packId>/...`) and the folder (`content/.cache/images/<packI
 | `scripts/cache-card-images.ts`                                                                                                                                                                               | `[MODIFY]` per-pack loop on `image-cache.ts`, `--pack` option                                                                                          |
 | `tests/ui/card-cache-middleware.test.ts`                                                                                                                                                                     | `[DELETE]` replaced by `tests/tools/image-cache.test.ts`                                                                                               |
 | `tests/ui/card-cache-service.test.ts`, `card-back-service.test.ts`, `setup.ts` mock                                                                                                                          | `[MODIFY]` follow the move                                                                                                                             |
-| `.gitignore`, `.vscode/settings.json`, `.agents/skills/code-audit/SKILL.md`                                                                                                                                  | `[MODIFY]` drop `cache/`; `content/.cache/` is already ignored                                                                                         |
+| `.gitignore`, `.vscode/settings.json`, `.agents/skills/code-audit/SKILL.md`                                                                                                                                  | `[MODIFY]` only `vite.config.ts`'s watch ignore gains `**/.cache/**`; the `cache/` entries stay (decision 2); `content/.cache/` is already ignored                                                                                         |
 | `docs/decisions/0011-...md`                                                                                                                                                                                  | `[MODIFY]` status line only, location of the cache and "no dist copy" stated in ADR-0092 terms; no history note in the body (Documentation invariants) |
 | `docs/decisions/0092-...md`, `docs/coding_guidelines.md` (lines 281 to 282), `docs/specifications/content_plugins_scenarios_and_campaigns.md` (line 211), `content/README.md`, `docs/guidelines/` pack guide | `[MODIFY]` current state: layout, resolution order, `assets/cards/`, the `art` manifest field                                                          |
 | `changes/unreleased/`                                                                                                                                                                                        | `[NEW]` fragment                                                                                                                                       |
@@ -122,7 +122,7 @@ The URL (`/card-art/<packId>/...`) and the folder (`content/.cache/images/<packI
 
 - The `startsWith('01')` Core special case in a UI service.
 - The second downloader in `scripts/cache-card-images.ts` and the one in `vite.config.ts` (merged), and the test that re-implemented the middleware instead of testing it.
-- The flat, pack-blind `cache/` pile, the unused `/cache/` URL prefix and the dead `**/cache/**` ignores.
+- The flat, pack-blind `cache/` pile as a place code reads or writes, and the unused `/cache/` URL prefix. The folder itself and its ignore entries are removed in a later cleanup, once Steve has seen the new cache work (decision 2); that cleanup is on the handover list.
 - The `closeBundle()` copy of official art into `dist/` and the guideline sentence that documents it.
 - The pure naming and URL code living in a React-side service although a Node script imports it.
 - The browser cache name `mcd-card-art-v1` holds entries keyed by the old URLs; the name is bumped (`v2`) and the new key set starts empty. No code deletes `v1`: those entries are unreachable and the browser evicts them; `clearCardArtCache` clears the current cache only. (A one-time delete would be a shim that stays forever.)
@@ -136,7 +136,7 @@ UI: art URLs and the placeholder for cards without art; no visual change for Cor
 For Steve to decide (recommendation first; asked as a round of questions in the thread):
 
 1. **A production build ships no official art.** Today `npm run build` copies the cached images into `dist/`. **Recommend deleting the copy** (Q23, ADR-0011): a built app fetches art on demand through `vite preview` or, in the Tauri build, through M6b's cache; the offline-play promise then rests on the on-disk cache filled during an online session, not on art inside the bundle.
-2. **Old `cache/` folder: refetch, don't migrate.** **Recommend** no migration code (the folder is disposable and a one-time mover is a shim): the changelog fragment tells contributors they may delete `cache/` or move `cache/cards/*` into `content/.cache/images/core/` for Core cards. A cold start refetches only what is shown.
+2. **Old `cache/` folder: leave it alone until the refactor is proven (Steve, 2026-11-01).** No code reads, moves or deletes it, and no migration code is written (a mover would be a shim). The new cache fills on first sight; contributors may copy `cache/cards/*` for Core cards into `content/.cache/images/core/` to skip a refetch. After Steve has run the game on the new cache and says it works, a small cleanup PR deletes the folder's `.gitignore` entries, editor ignores and the `code-audit` mention.
 3. **Does a pack's `assets/cards/` apply only to its own cards?** **Recommend yes.** A user pack cannot replace the art of an official card (its asset names must be its own codes). Letting a pack re-skin official cards would need a rule about which pack wins when two do; it can be added when someone needs it.
 4. **Where the main scheme rule is declared.** **Recommend** an optional manifest field `art.swapMainSchemeSides`, set in the Core `pack.json` only (alternatives: a per-card field in the cards data, which `sync` would overwrite). Is that the only pack with swapped sides? Every pack from `02` on follows the standard convention in the current code; I did not fetch images to prove it.
 5. **One PR or two.** **Recommend one PR** (section 5). The alternative is the naming-first split described there; it keeps both PRs shim-free but doubles the review.

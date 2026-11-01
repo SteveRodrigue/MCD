@@ -15,6 +15,7 @@ import type {
   LoadContentOptions,
   LoadedContent,
   LoadedPack,
+  PackDescription,
   PackLoadFailure,
 } from './types';
 
@@ -137,6 +138,7 @@ export async function loadContent(
   const requested = options.packs ?? (await readEnabledPacks(driver, failures));
 
   const outcome = new Map<string, LoadedPack | string>();
+  const blockedBy = new Map<string, string>();
   const order: string[] = [];
   const inProgress = new Set<string>();
   const cardClaims = new ClaimRegistry();
@@ -154,7 +156,10 @@ export async function loadContent(
       let blocked: string | undefined;
       for (const dependency of manifest.dependsOn) {
         const dep = await resolve(dependency);
-        if (typeof dep === 'string') blocked ??= `needs "${dependency}", which is disabled (${dep})`;
+        if (typeof dep === 'string' && blocked === undefined) {
+          blocked = `needs "${dependency}", which is disabled (${dep})`;
+          blockedBy.set(id, dependency);
+        }
       }
       if (blocked) {
         result = blocked;
@@ -202,9 +207,85 @@ export async function loadContent(
 
   for (const id of requested) await resolve(id);
   for (const [packId, result] of outcome) {
-    if (typeof result === 'string') failures.push({ packId, reason: result });
+    if (typeof result === 'string') failures.push({ packId, reason: result, blockedBy: blockedBy.get(packId) });
   }
 
   const packs = order.map((id) => outcome.get(id) as LoadedPack);
-  return { packs, failures };
+  const descriptions = await describePacks(driver, packs, failures);
+  return { packs, failures, descriptions };
+}
+
+async function readLockedScenarios(
+  driver: ContentDriver,
+  id: string,
+): Promise<{ id: string; name: string }[]> {
+  const found: { id: string; name: string }[] = [];
+  try {
+    for (const dir of await driver.listDirs(`packs/${id}/scenarios`)) {
+      const path = `packs/${id}/scenarios/${dir}/definition.json`;
+      if (!(await driver.exists(path))) continue;
+      const raw = (await driver.readJson(path)) as { id?: unknown; name?: unknown };
+      if (typeof raw.id === 'string' && typeof raw.name === 'string') {
+        found.push({ id: raw.id, name: raw.name });
+      }
+    }
+  } catch {
+    // An unreadable scenario is simply not listed; the pack's own state carries the reason.
+  }
+  return found;
+}
+
+/**
+ * One description per folder in `packs/`: loaded packs from the loader's result, failed ones with
+ * the loader's reason, the rest by reading only their manifest (no card files). The single place
+ * that decides what "Playable" and "Data only" mean (Q45).
+ */
+async function describePacks(
+  driver: ContentDriver,
+  loaded: LoadedPack[],
+  failures: PackLoadFailure[],
+): Promise<PackDescription[]> {
+  const loadedById = new Map(loaded.map((pack) => [pack.id, pack]));
+  const failureById = new Map(failures.map((failure) => [failure.packId, failure]));
+  const descriptions: PackDescription[] = [];
+  for (const id of (await driver.listDirs('packs')).sort()) {
+    const pack = loadedById.get(id);
+    if (pack) {
+      descriptions.push({
+        id,
+        name: pack.manifest.name,
+        origin: pack.manifest.origin,
+        enabled: true,
+        state: pack.supplementalCount > 0 ? 'playable' : 'data-only',
+        cardCount: pack.cardCount,
+        supplementalCount: pack.supplementalCount,
+        lockedScenarios: [],
+      });
+      continue;
+    }
+    const failure = failureById.get(id);
+    let name = id;
+    let origin: PackDescription['origin'];
+    let manifestError: string | undefined;
+    try {
+      const manifest = await readManifest(driver, id);
+      name = manifest.name;
+      origin = manifest.origin;
+    } catch (error) {
+      manifestError = describeError(error);
+    }
+    const reason = failure?.reason ?? manifestError;
+    descriptions.push({
+      id,
+      name,
+      origin,
+      enabled: failure !== undefined,
+      state: reason === undefined ? 'data-only' : failure?.blockedBy ? 'needs-pack' : 'failed',
+      reason,
+      cardCount: 0,
+      supplementalCount: 0,
+      lockedScenarios: await readLockedScenarios(driver, id),
+    });
+  }
+  return descriptions;
 }

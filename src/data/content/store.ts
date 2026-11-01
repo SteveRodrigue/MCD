@@ -1,6 +1,6 @@
 import type { LoadedContent } from './types';
 
-const EMPTY: LoadedContent = { packs: [], failures: [] };
+const EMPTY: LoadedContent = { packs: [], failures: [], descriptions: [] };
 let current: LoadedContent = EMPTY;
 
 /** What `applyContent` last put into the engine singletons (empty before the first boot). */

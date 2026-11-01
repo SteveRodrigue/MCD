@@ -18,11 +18,13 @@ import {
 import { ScenarioRegistry, listModularEncounterSets } from '../../../engine/scenarios';
 import { listStarterDecks } from '../../../engine/decks';
 import { cardCatalog as catalog } from '../../../data/importer/card-loader';
+import { getLoadedContent } from '../../../data/content/store';
+import { FailedPacksNotice } from './FailedPacksNotice';
 import { DifficultyMode, CardType, MainSchemeCard } from '../../../engine/models';
 import { useGameSettings } from '../../context/useGameSettings';
 import { getModalStyle } from '../../theme/modal-styles';
 import { ThemePicker } from '../../theme/ThemePicker';
-import { ToneButton } from '../../theme/kit/controls';
+import { ThemedButton, ToneButton } from '../../theme/kit/controls';
 import { useModalStyle } from '../../theme/useModalStyle';
 import { useThemeExtras } from '../../theme/useThemeExtras';
 import { CardView } from '../cards/CardView';
@@ -40,13 +42,24 @@ export interface SetupSelection {
 
 interface ScenarioSelectorProps {
   onStartSetup: (selection: SetupSelection) => void;
+  onOpenContent: () => void;
 }
 
-const ScenarioChooser: React.FC<ScenarioSelectorProps> = ({ onStartSetup }) => {
+export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
+  onStartSetup,
+  onOpenContent,
+}) => {
   const { style } = useModalStyle();
   const { field } = useThemeExtras();
   const { settings, defaultDifficulty, defaultHeroicLevel } = useGameSettings();
   const scenarios = useMemo(() => ScenarioRegistry.getAll().map((p) => p.definition), []);
+  const lockedScenarios = useMemo(
+    () =>
+      getLoadedContent().descriptions.flatMap((pack) =>
+        pack.lockedScenarios.map((scenario) => ({ ...scenario, packName: pack.name })),
+      ),
+    [],
+  );
   const starterDecks = useMemo(() => listStarterDecks(), []);
   const modularSets = useMemo(() => listModularEncounterSets(catalog), []);
 
@@ -157,6 +170,12 @@ const ScenarioChooser: React.FC<ScenarioSelectorProps> = ({ onStartSetup }) => {
         <p className="font-bangers text-lg md:text-xl text-comic-blue tracking-widest uppercase">
           Solo & Multi-Hero Comic Tabletop Setup
         </p>
+        <div className="mt-2 flex flex-col items-center gap-2">
+          <ThemedButton variant="secondary" onClick={onOpenContent}>
+            Content
+          </ThemedButton>
+          <FailedPacksNotice />
+        </div>
       </div>
 
       {/* ========================================================================= */}
@@ -326,6 +345,17 @@ const ScenarioChooser: React.FC<ScenarioSelectorProps> = ({ onStartSetup }) => {
                 }`}
               >
                 #{idx + 1} {scen.name}
+              </button>
+            ))}
+            {lockedScenarios.map((scen) => (
+              <button
+                key={scen.id}
+                type="button"
+                disabled
+                title={`Needs ${scen.packName}`}
+                className={`px-3 md:px-4 py-1.5 text-xs md:text-sm font-bold uppercase opacity-50 cursor-not-allowed ${style.tile}`}
+              >
+                🔒 {scen.name} · Needs {scen.packName}
               </button>
             ))}
           </div>
@@ -558,6 +588,11 @@ const ScenarioChooser: React.FC<ScenarioSelectorProps> = ({ onStartSetup }) => {
                 {playerCount} {playerCount === 1 ? 'HERO ASSIGNED' : 'HEROES ASSIGNED'}
               </span>
             </div>
+            {starterDecks.length === 0 && (
+              <p className={`text-sm ${style.muted}`}>
+                No heroes available: enable a hero pack on the Content screen.
+              </p>
+            )}
 
             <p className={`text-xs ${style.muted}`}>
               Assign heroes to the seat slots below.{' '}
@@ -788,21 +823,4 @@ const ScenarioChooser: React.FC<ScenarioSelectorProps> = ({ onStartSetup }) => {
       </div>
     </div>
   );
-};
-
-/** Without a loaded pack there is no scenario to choose; the polished empty state is M7. */
-export const ScenarioSelector: React.FC<ScenarioSelectorProps> = (props) => {
-  if (ScenarioRegistry.getAll().length === 0) {
-    return (
-      <div className="max-w-6xl w-full mx-auto my-4 p-6 text-center">
-        <div className="inline-block bg-comic-yellow border-comic border-comic-black px-6 py-1.5 font-bangers text-xl md:text-2xl tracking-wider text-comic-red shadow-comic mb-2">
-          MISSION CONTROL • SCENARIO SELECTION
-        </div>
-        <p className="font-bangers text-lg tracking-widest uppercase">
-          No scenario available: enable a content pack.
-        </p>
-      </div>
-    );
-  }
-  return <ScenarioChooser {...props} />;
 };

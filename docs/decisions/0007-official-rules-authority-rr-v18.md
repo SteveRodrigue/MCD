@@ -32,7 +32,7 @@ To prevent conflicting interpretations and ensure strict rules accuracy across a
 
 **Chosen Authority:** The official Fantasy Flight Games documents stored in `references/`:
 1. **Primary & Superseding Authority:**
-   * **[Rules Reference v1.8](../../references/mc_rulesreference_v18_compressed.pdf)** (`references/mc_rulesreference_v18_compressed.pdf`)
+   * **Rules Reference v1.8** (official PDF, not tracked, see `references/SETUP.md`)
    * **The Rules Reference v1.8 supersedes and corrects the Learn to Play guide in all cases.**
    * Defines: Precise timing hierarchies (*Forced Interrupts, Interrupts, Replacement Effects, Forced Responses, Responses*), Cost Payment resolution, Attack/Defense/Thwart frameworks, Keyword mechanics, and official card errata.
 2. **Project Algorithmic Mapping:**

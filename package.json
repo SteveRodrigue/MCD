@@ -17,6 +17,7 @@
     "report:declarations": "tsx tools/audit/supplemental-declarations-analyzer.ts",
     "audit:import-cycles": "tsx tools/audit/import-cycles.ts",
     "docs:check": "tsx tools/audit/docs-check.ts",
+    "leak:check": "tsx tools/audit/leak-guard.ts",
     "docs:fonts": "tsx tools/audit/fonts-record.ts",
     "audit:schema-engine": "tsx tools/audit/schema-engine-coverage.ts",
     "card:get": "tsx tools/audit/get-card-data.ts",
@@ -35,7 +36,7 @@
     "deadcode": "knip",
     "format": "prettier --write \"**/*.{ts,tsx,js}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js}\"",
-    "verify": "npm run schema:generate && npm run format:check && npm run lint && npm run typecheck && npm run docs:check && npm test && npm run test:coverage && npm run build",
+    "verify": "npm run schema:generate && npm run format:check && npm run lint && npm run typecheck && npm run docs:check && npm run leak:check && npm test && npm run test:coverage && npm run build",
     "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {

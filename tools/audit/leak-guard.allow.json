@@ -1,0 +1,12 @@
+[
+  {
+    "check": "text",
+    "value": "src/data/supplemental/schema.json",
+    "reason": "Generated JSON schema; names the originalText field, holds no card text"
+  },
+  {
+    "check": "text",
+    "value": "content/meta/schema/card_schema.json",
+    "reason": "Card JSON schema; describes the fields, holds no card text"
+  }
+]

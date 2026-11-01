@@ -64,6 +64,13 @@ the Core pack is a future milestone, **M12**); Open Questions 1 and 2 are parked
 | Q31 | Sync command | **`scripts/sync_data.ps1` is replaced in M4 by a cross-platform TypeScript sync CLI** (upstream into `content/.cache/upstream/`, then materialized into `packs/*/cards/`), reused by M7's in-app *Sync official data* (2026-10-31) |
 | Q32 | Supplemental spec docs | **The 11-file supplemental spec suite and QUICK_REFERENCE move to `docs/creators/supplemental-reference/`** in M10; engine-internal material goes to `docs/engine/` (2026-10-31) |
 | Q33 | Hook discovery | **Generated import map built from `content/packs/*/scripts/` at build and dev start, keyed by pack id**; no hand-edited engine registry. `pack:validate` fails a pack that has scripts but no map entry (2026-10-31) |
+| Q34 | ADR title | **"Content Packs & Runtime Loading"** (ADR-0092), noting it fulfils the plugins spec's reserved "Content Plugin Architecture" ADR (2026-10-31) |
+| Q35 | Vocabulary | **"Pack" for content, "hook" for code**; "plugin" retired in prose except the existing `ScenarioPlugin` interface (2026-10-31) |
+| Q36 | ADR-0011 | **Partially superseded by ADR-0092** for the image-cache location (2026-10-31) |
+| Q37 | Validator location | **`scripts/pack-validate.ts`**, matching `card:validate` (2026-10-31) |
+| Q38 | Reserved-ID source | **Parameterised predicate**; official list read from `data/upstream/packs.json` before M4, from the Core pack after (2026-10-31) |
+| Q39 | `apiVersion` | **Integer**; loader rejects greater than the engine's, accepts lower until a break is declared (2026-10-31) |
+| Q40 | Card validation | **Upstream JSON schema plus the user-code rule**, no new zod card schema (2026-10-31) |
 | Q9b | Official precon decks | **Inside each pack** (`packs/<id>/decks/`, read-only). User decks in `content/decks/`, MarvelCDB imports in `content/decks/imported/` (read-only cache, cloneable; replaces ADR-0015's `marvelcdb/`). Deck picker shows Official / Mine / Imported together (2026-10-31) |
 
 ---
@@ -251,9 +258,9 @@ Order is chosen so the app keeps working at every step and the risky decisions c
 
 | # | Milestone | Outcome | Notes / risk |
 | --- | --- | --- | --- |
-| **M0** | **Decisions + ADRs** | Answers to the remaining open questions (Q1 and Q2 are answered, see Q19/Q20); one new ADR "Content Packs & Runtime Loading" (Q29) superseding ADR-0015's layout and plugins backlog Q3/Q4/Q5/Q9; legal check is parked with M12. | Blocking. No code. |
-| **M1** | **Copyright & coupling audit** | Inventory of every tracked file/line that embeds official content or hard-codes card codes (engine specials, UI, tests, locales, `references/`). Output: a checklist feeding the leak guard. | Read-only, cheap, de-risks M7. |
-| **M2** | **Pack format + manifest schema + validator** | `pack.json` zod schema (generated JSON schema like supplemental), folder conventions, validator CLI (`npm run pack:validate`) incl. the reserved-ID rule (Q18) and the `origin` values `official-bundled` / `official-sync` / `user` (Q27), plus the **hook API and `apiVersion` contract** (Q16). | Pure additions. |
+| **M0** | **Decisions + ADRs** ([detail](plan_content_m0_adr.md)) | Answers to the remaining open questions (Q1 and Q2 are answered, see Q19/Q20); one new ADR "Content Packs & Runtime Loading" (Q29) superseding ADR-0015's layout and plugins backlog Q3/Q4/Q5/Q9; legal check is parked with M12. | Blocking. No code. |
+| **M1** | **Copyright & coupling audit** ([detail](plan_content_m1_audit.md)) | Inventory of every tracked file/line that embeds official content or hard-codes card codes (engine specials, UI, tests, locales, `references/`). Output: a checklist feeding the leak guard. | Read-only, cheap, de-risks M7. |
+| **M2** | **Pack format + manifest schema + validator** ([detail](plan_content_m2_pack_format.md)) | `pack.json` zod schema (generated JSON schema like supplemental), folder conventions, validator CLI (`npm run pack:validate`) incl. the reserved-ID rule (Q18) and the `origin` values `official-bundled` / `official-sync` / `user` (Q27), plus the **hook API and `apiVersion` contract** (Q16). | Pure additions. |
 | **M3** | **Runtime `ContentLoader` + stores** | `cardCatalog`, supplemental registry, `ScenarioRegistry`, modular sets, starter decks fed by the loader; Node and dev-server drivers; app still loads Core from `content/packs/core`. | Largest engine/data change; golden-parity gate (Q17) must match. Tests move onto the loader (Q14). |
 | **M4** | **Relocate official content into a Core pack** | Move `data/upstream` → pack `cards/`, supplemental, scenarios, decks, modular sets, Core `scripts/`. Update scripts (`simulate`, `card:*`, `cache:cards`) via the shared content-path helper (Q30), replace `sync_data.ps1` with the TS sync CLI (Q31), tsconfig/eslint/vitest, agent skills, AGENTS.md. | Mechanical but wide; one atomic change, no dual paths (AGENTS.md rule). |
 | **M5** | **Scenario code → pack** | Scenarios loaded from packs; push Klaw/Ultron overrides into supplemental data or Core-pack scripts; `defineScenarioPlugin`/`@plugin-api` barrel per plugins backlog Phase A. Hooks are discovered through the generated import map (Q33). | Resolves the `plugin.ts` policy (3.4). |

@@ -1,16 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import {
-  getCardBackUrl,
   getCardBackFallbackColor,
   getCardBackTypeForCard,
 } from '../../src/ui/services/card-cache-service';
+import { cardBackUrl } from '../../src/data/content/card-art';
 import { CardType, FactionCode, NormalizedCard } from '../../src/engine/models';
 
 describe('card-cache-service - Card Backs', () => {
   it('returns correct URLs for all 3 card back types', () => {
-    expect(getCardBackUrl('player')).toBe('/back/player.png');
-    expect(getCardBackUrl('encounter')).toBe('/back/encounter.png');
-    expect(getCardBackUrl('villain')).toBe('/back/villain.png');
+    expect(cardBackUrl('player')).toBe('/card-art/_backs/player.png');
+    expect(cardBackUrl('encounter')).toBe('/card-art/_backs/encounter.png');
+    expect(cardBackUrl('villain')).toBe('/card-art/_backs/villain.png');
   });
 
   it('returns correct fallback colors for all 3 card back types', () => {

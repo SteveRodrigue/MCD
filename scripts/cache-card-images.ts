@@ -1,100 +1,54 @@
-import fs from 'fs';
-import path from 'path';
-import https from 'https';
 import { bootContent } from '../src/data/content/apply';
 import { NodeFsDriver } from '../src/data/content/drivers/node-fs';
 import { getLoadedContent } from '../src/data/content/store';
-import { contentRoot } from '../src/tools/content-paths';
+import { artFileName } from '../src/data/content/card-art';
+import { hasCardImage, resolveCardImage } from '../src/tools/image-cache';
+import { contentRoot, imageCacheDir } from '../src/tools/content-paths';
 
-import { getCardArtFileName } from '../src/ui/services/card-cache-service';
-
-const CACHE_DIR = path.resolve(process.cwd(), 'cache', 'cards');
-const MARVELCDB_CDN_BASE = 'https://marvelcdb.com/bundles/cards';
-
-// Ensure cache directory exists
-if (!fs.existsSync(CACHE_DIR)) {
-  fs.mkdirSync(CACHE_DIR, { recursive: true });
-}
-
-function downloadImage(fileName: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const filePath = path.join(CACHE_DIR, fileName);
-
-    // If already cached on disk, skip
-    if (fs.existsSync(filePath)) {
-      return resolve(true);
-    }
-
-    const url = `${MARVELCDB_CDN_BASE}/${fileName}`;
-    const fileStream = fs.createWriteStream(filePath);
-
-    https
-      .get(url, (response) => {
-        if (response.statusCode === 200) {
-          response.pipe(fileStream);
-          fileStream.on('finish', () => {
-            fileStream.close();
-            resolve(true);
-          });
-        } else {
-          fileStream.close();
-          if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-          resolve(false);
-        }
-      })
-      .on('error', () => {
-        fileStream.close();
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-        resolve(false);
-      });
-  });
+/** `--pack <id>` limits the run to one pack; by default every enabled pack is cached. */
+function requestedPack(argv: string[]): string | undefined {
+  const at = argv.indexOf('--pack');
+  return at >= 0 ? argv[at + 1] : undefined;
 }
 
 async function runCache(): Promise<void> {
   console.log('🃏 Starting Marvel Champions Local Card Image Cache...');
-  console.log(`📁 Target Directory: ${CACHE_DIR}\n`);
 
   await bootContent(new NodeFsDriver(contentRoot()));
-  const allCards = getLoadedContent().packs.flatMap((pack) => pack.cards);
-  const uniqueFileNames = new Set<string>();
-
-  for (const card of allCards) {
-    if (card.code) {
-      const fileName = getCardArtFileName({
-        code: card.code,
-        type: (card as any).type_code,
-        stage: (card as any).stage,
-      });
-      if (fileName) uniqueFileNames.add(fileName);
-    }
-    if ((card as any).back_link) {
-      uniqueFileNames.add(`${(card as any).back_link}.png`);
-    }
+  const only = requestedPack(process.argv.slice(2));
+  const packs = getLoadedContent().packs.filter((pack) => !only || pack.id === only);
+  if (only && packs.length === 0) {
+    console.error(`Pack "${only}" is not loaded (see content/config.json).`);
+    process.exitCode = 1;
+    return;
   }
-
-  const fileNames = Array.from(uniqueFileNames);
-  console.log(`🔍 Found ${fileNames.length} unique card image files to cache.\n`);
 
   let downloadedCount = 0;
   let cachedCount = 0;
   let failedCount = 0;
 
-  for (let i = 0; i < fileNames.length; i++) {
-    const fileName = fileNames[i];
-    const filePath = path.join(CACHE_DIR, fileName);
-    const alreadyExists = fs.existsSync(filePath);
+  for (const pack of packs) {
+    const swap = pack.manifest.art?.swapMainSchemeSides;
+    const fileNames = new Set<string>();
+    for (const card of pack.cards) {
+      const fileName = artFileName(
+        { code: card.code, type: card.type_code, stage: card.stage },
+        swap,
+      );
+      if (fileName) fileNames.add(fileName);
+      if (card.back_link) fileNames.add(`${card.back_link}.png`);
+    }
+    console.log(`\n📁 ${pack.id}: ${fileNames.size} images -> ${imageCacheDir(pack.id)}`);
 
-    const success = await downloadImage(fileName);
-    if (success) {
-      if (alreadyExists) {
+    for (const fileName of fileNames) {
+      if (hasCardImage(pack.id, fileName)) {
         cachedCount++;
-      } else {
+      } else if (await resolveCardImage(pack.id, fileName)) {
         downloadedCount++;
-        console.log(`  [${i + 1}/${fileNames.length}] ✅ Downloaded & Cached: ${fileName}`);
+      } else {
+        failedCount++;
+        console.warn(`  ⚠️ Failed to download: ${pack.id}/${fileName}`);
       }
-    } else {
-      failedCount++;
-      console.warn(`  [${i + 1}/${fileNames.length}] ⚠️ Failed to download: ${fileName}`);
     }
   }
 
@@ -103,7 +57,6 @@ async function runCache(): Promise<void> {
   console.log(`  ✅ Newly Downloaded: ${downloadedCount}`);
   console.log(`  📦 Already in Cache: ${cachedCount}`);
   console.log(`  ⚠️ Failed / Not Found: ${failedCount}`);
-  console.log(`  📂 Total in ${CACHE_DIR}: ${fs.readdirSync(CACHE_DIR).length} images`);
   console.log('========================================\n');
 }
 

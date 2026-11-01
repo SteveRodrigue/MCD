@@ -206,11 +206,11 @@ type Hook<A extends unknown[], R> = (
 
 ### B5. Assets
 
-- Dev middleware `/cards/:fileName` lookup order:
-  1. `plugins/custom/*/assets/cards/` (no collisions possible thanks to the Q7 prefixes);
-  2. `cache/cards/`;
-  3. on-demand MarvelCDB download.
-- Production: a Vite plugin copies `plugins/custom/*/assets/cards/*` into `dist/cards/`.
+- Dev middleware `/card-art/:packId/:fileName` lookup order:
+  1. `content/packs/<packId>/assets/cards/` (the pack's own art; a user pack card code is prefixed with the pack id, so there are no collisions);
+  2. `content/.cache/images/<packId>/`;
+  3. on-demand MarvelCDB download, for official packs only.
+- Production: nothing copies art into `dist/`; the preview server uses the same route.
 
 ### B6. Phase B tests
 

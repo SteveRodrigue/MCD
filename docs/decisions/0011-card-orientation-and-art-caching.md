@@ -1,6 +1,6 @@
 # [ADR-0011] Card Orientation Metadata & Cache-First Art Resolution Architecture
 
-* **Status:** Accepted (Superseded in part by [ADR-0083](0083-schema-driven-card-editor-and-upstream-derived-fields.md) regarding the supplemental `isLandscape` override (orientation is derived from upstream))
+* **Status:** Accepted (Superseded in part by [ADR-0083](0083-schema-driven-card-editor-and-upstream-derived-fields.md) regarding the supplemental `isLandscape` override (orientation is derived from upstream); superseded in part by [ADR-0092](0092-content-packs-and-runtime-loading.md) regarding the image cache location (now the content cache))
 * **Date:** 2026-08-27
 * **Authors:** MCD Core Team
 * **Deciders:** Core Architecture Team

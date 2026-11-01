@@ -1,99 +1,19 @@
 /**
- * Marvel Champions Digital - Card Art Caching & Multi-Sided Asset Service
- * Implements a local-first CacheStorage & in-memory Blob caching mechanism.
+ * Marvel Champions Digital - Card Art Caching Service
+ * Implements a local-first CacheStorage & in-memory Blob caching mechanism. Names and URLs of the
+ * art come from `src/data/content/card-art.ts`.
  */
 
-const CACHE_NAME = 'mcd-card-art-v1';
-const MARVELCDB_CDN_BASE = 'https://marvelcdb.com/bundles/cards';
+import { NormalizedCard } from '../../engine/models';
+import { CardArtIdentifier, CardBackType, localArtUrl } from '../../data/content/card-art';
+
+const CACHE_NAME = 'mcd-card-art-v2';
 
 // In-memory runtime Object URL cache to avoid re-generating blob URLs
 const objectUrlMemoryCache = new Map<string, string>();
 
 // In-flight download promises map to deduplicate concurrent requests for the same card art
 const inFlightCardArtRequests = new Map<string, Promise<string>>();
-
-import { CardType, NormalizedCard } from '../../engine/models';
-
-export interface CardArtIdentifier {
-  code: string;
-  type?: CardType | string;
-  stage?: string;
-}
-
-/**
- * Resolves the image asset file name for Main Scheme cards, handling
- * the inverted naming quirk in the upstream Core Set (01xxx) encounter data:
- *
- * - Core Set Main Schemes (pack "01", e.g. Rhino 01097, Klaw 01116/01117, Ultron 01137/01138/01139):
- *   - Stage 'A' (Setup face): maps to `${baseCode}b.png` (e.g. "01097b.png")
- *   - Stage 'B' (Active threat face): maps to `${baseCode}.png` (e.g. "01097.png")
- *
- * - All other expansion sets (Green Goblin, The Hood, Galaxy's Most Wanted, Mutant Genesis, etc.):
- *   - Stage 'A' (Setup face): maps to `${baseCode}.png` (e.g. "02004.png", "24004.png", "16061.png")
- *   - Stage 'B' (Active threat face): maps to `${baseCode}b.png` (e.g. "02004b.png", "24004b.png", "16061b.png")
- */
-function resolveMainSchemeArtFileName(code: string, stage?: string): string {
-  const trimmedCode = (code || '').trim().toLowerCase();
-  if (!trimmedCode) return '';
-
-  const baseCode = trimmedCode.replace(/[ab]$/i, '');
-  const isCoreSet = baseCode.startsWith('01');
-
-  const normalizedStage = (stage || '').toUpperCase();
-  const isSideA = normalizedStage.endsWith('A') || (!normalizedStage && trimmedCode.endsWith('a'));
-
-  if (isCoreSet) {
-    // Core set inverted image asset quirk
-    return isSideA ? `${baseCode}b.png` : `${baseCode}.png`;
-  }
-
-  // Standard expansion set convention
-  return isSideA ? `${baseCode}.png` : `${baseCode}b.png`;
-}
-
-/**
- * Returns the exact image asset filename for any card based on its code, type, and stage.
- */
-export function getCardArtFileName(card: CardArtIdentifier | string): string {
-  if (!card) return '';
-  if (typeof card === 'string') {
-    const trimmed = card.trim().toLowerCase();
-    return `${trimmed}.png`;
-  }
-
-  const { code, type, stage } = card;
-  const trimmedCode = (code || '').trim().toLowerCase();
-  if (!trimmedCode) return '';
-
-  const isMainScheme =
-    type === CardType.MAIN_SCHEME ||
-    type === 'main_scheme' ||
-    (stage !== undefined && /^[0-9]+[ab]$/i.test(stage));
-
-  if (isMainScheme) {
-    return resolveMainSchemeArtFileName(trimmedCode, stage);
-  }
-
-  return `${trimmedCode}.png`;
-}
-
-/**
- * Returns the local static URL for a cached card image (e.g. "/cards/01097.png").
- */
-export function getLocalCardArtUrl(card: CardArtIdentifier | string): string {
-  const fileName = getCardArtFileName(card);
-  if (!fileName) return '';
-  return `/cards/${fileName}`;
-}
-
-/**
- * Returns the remote MarvelCDB image CDN URL for a given card object or code.
- */
-export function getRemoteMarvelCdbUrl(card: CardArtIdentifier | string): string {
-  const fileName = getCardArtFileName(card);
-  if (!fileName) return '';
-  return `${MARVELCDB_CDN_BASE}/${fileName}`;
-}
 
 /**
  * Checks if the browser supports the CacheStorage API.
@@ -106,14 +26,13 @@ function isCacheStorageAvailable(): boolean {
  * Checks if a specific card's art is currently present in the cache (memory or CacheStorage).
  */
 export async function isCardArtCached(card: CardArtIdentifier | string): Promise<boolean> {
-  const fileName = getCardArtFileName(card);
-  if (!fileName) return false;
-  if (objectUrlMemoryCache.has(fileName)) return true;
+  const requestUrl = localArtUrl(card);
+  if (!requestUrl) return false;
+  if (objectUrlMemoryCache.has(requestUrl)) return true;
 
   if (isCacheStorageAvailable()) {
     try {
       const cache = await caches.open(CACHE_NAME);
-      const requestUrl = getLocalCardArtUrl(card);
       const match = await cache.match(requestUrl);
       return Boolean(match);
     } catch {
@@ -127,27 +46,25 @@ export async function isCardArtCached(card: CardArtIdentifier | string): Promise
 /**
  * Retrieves card art with a Read-Through On-Demand Caching strategy:
  * 1. Checks if the image is in cache (memory or CacheStorage).
- * 2. If not in cache, downloads the image (via local endpoint or MarvelCDB CDN) and saves it into CacheStorage.
+ * 2. If not in cache, downloads the image through the server route and saves it into CacheStorage.
  * 3. Returns the image directly from the cache.
  */
 export async function getCardArtUrl(card: CardArtIdentifier | string): Promise<string> {
-  const fileName = getCardArtFileName(card);
-  if (!fileName) return '';
+  const localUrl = localArtUrl(card);
+  if (!localUrl) return '';
 
   // 1. Check in-memory object URL cache (fastest, 0ms)
-  if (objectUrlMemoryCache.has(fileName)) {
-    return objectUrlMemoryCache.get(fileName)!;
+  if (objectUrlMemoryCache.has(localUrl)) {
+    return objectUrlMemoryCache.get(localUrl)!;
   }
 
   // Deduplicate concurrent in-flight requests for the exact same card art
-  const existingRequest = inFlightCardArtRequests.get(fileName);
+  const existingRequest = inFlightCardArtRequests.get(localUrl);
   if (existingRequest) {
     return existingRequest;
   }
 
   const artPromise = (async () => {
-    const localUrl = getLocalCardArtUrl(card);
-
     // If CacheStorage is unavailable (e.g. Node/test environment without mock), return local URL
     if (!isCacheStorageAvailable()) {
       return localUrl;
@@ -161,7 +78,7 @@ export async function getCardArtUrl(card: CardArtIdentifier | string): Promise<s
       if (cachedResponse && cachedResponse.ok) {
         const blob = await cachedResponse.blob();
         const objectUrl = URL.createObjectURL(blob);
-        objectUrlMemoryCache.set(fileName, objectUrl);
+        objectUrlMemoryCache.set(localUrl, objectUrl);
         return objectUrl;
       }
 
@@ -181,7 +98,7 @@ export async function getCardArtUrl(card: CardArtIdentifier | string): Promise<s
         await cache.put(localUrl, response.clone());
         const blob = await response.blob();
         const objectUrl = URL.createObjectURL(blob);
-        objectUrlMemoryCache.set(fileName, objectUrl);
+        objectUrlMemoryCache.set(localUrl, objectUrl);
         // 3. Display the image from the cache
         return objectUrl;
       }
@@ -191,10 +108,10 @@ export async function getCardArtUrl(card: CardArtIdentifier | string): Promise<s
 
     return localUrl;
   })().finally(() => {
-    inFlightCardArtRequests.delete(fileName);
+    inFlightCardArtRequests.delete(localUrl);
   });
 
-  inFlightCardArtRequests.set(fileName, artPromise);
+  inFlightCardArtRequests.set(localUrl, artPromise);
   return artPromise;
 }
 
@@ -219,15 +136,6 @@ export async function clearCardArtCache(): Promise<void> {
       // Ignore cache deletion failure in restricted environments
     }
   }
-}
-
-export type CardBackType = 'player' | 'encounter' | 'villain';
-
-/**
- * Returns the local URL for a card back (e.g. "/back/player.png").
- */
-export function getCardBackUrl(type: CardBackType): string {
-  return `/back/${type}.png`;
 }
 
 /**

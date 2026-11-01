@@ -6,7 +6,8 @@ import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider'
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
-import { getCardBackUrl, getCardBackFallbackColor } from '../../src/ui/services/card-cache-service';
+import { getCardBackFallbackColor } from '../../src/ui/services/card-cache-service';
+import { cardBackUrl } from '../../src/data/content/card-art';
 import { TestSession } from '../support/render-with-session';
 
 describe('Facedown Encounter Card Display in Hero Zone (Issue #138)', () => {
@@ -80,7 +81,7 @@ describe('Facedown Encounter Card Display in Hero Zone (Issue #138)', () => {
 
       const img = screen.getByTestId('facedown-card-back-image') as HTMLImageElement;
       expect(img).toBeDefined();
-      expect(img.getAttribute('src')).toBe(getCardBackUrl('encounter'));
+      expect(img.getAttribute('src')).toBe(cardBackUrl('encounter'));
     });
 
     it('falls back to encounter theme color when card back image fails to load', () => {

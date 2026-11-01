@@ -51,6 +51,19 @@
     },
     "source": {
       "type": "string"
+    },
+    "art": {
+      "type": "object",
+      "properties": {
+        "swapMainSchemeSides": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "swapMainSchemeSides"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [

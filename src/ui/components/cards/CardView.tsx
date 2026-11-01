@@ -4,12 +4,10 @@ import { getEffectiveCardTraitsDetails } from '../../../engine/pipeline/stat-cal
 import { useCardArt } from '../../hooks/useCardArt';
 import { useOnChange } from '../../hooks/useOnChange';
 import {
-  getRemoteMarvelCdbUrl,
-  getCardBackUrl,
   getCardBackFallbackColor,
   getCardBackTypeForCard,
-  CardBackType,
 } from '../../services/card-cache-service';
+import { CardBackType, cardBackUrl, remoteArtUrl } from '../../../data/content/card-art';
 import { FormattedCardText } from './FormattedCardText';
 import { useGameSettings } from '../../context/useGameSettings';
 import { CardContextMenu } from './CardContextMenu';
@@ -93,9 +91,10 @@ const CardViewImpl: React.FC<CardViewProps> = ({
   });
 
   const handleImageError = () => {
-    if (imageSrc && !imageSrc.startsWith('http')) {
-      // Local image failed, attempt remote MarvelCDB CDN fallback
-      setImageSrc(getRemoteMarvelCdbUrl(card));
+    const remoteUrl = remoteArtUrl(card);
+    if (imageSrc && !imageSrc.startsWith('http') && remoteUrl) {
+      // Local image failed, attempt remote MarvelCDB CDN fallback (official packs only)
+      setImageSrc(remoteUrl);
     } else {
       setImageFailed(true);
     }
@@ -315,7 +314,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
           >
             {!cardBackError ? (
               <img
-                src={getCardBackUrl(resolvedBackType)}
+                src={cardBackUrl(resolvedBackType)}
                 alt={`${resolvedBackType} card back`}
                 onError={() => setCardBackError(true)}
                 className="w-full h-full object-cover"

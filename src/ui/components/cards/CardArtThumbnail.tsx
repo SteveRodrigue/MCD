@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Newspaper } from 'lucide-react';
 import { useCardArt } from '../../hooks/useCardArt';
-import { getRemoteMarvelCdbUrl } from '../../services/card-cache-service';
+import { remoteArtUrl } from '../../../data/content/card-art';
 
 export interface CardArtThumbnailProps {
   cardCode?: string;
@@ -21,8 +21,8 @@ const CardArtThumbnailImpl: React.FC<CardArtThumbnailProps> = ({
   const { artUrl } = useCardArt(cardCode);
   const [imgFailed, setImgFailed] = useState(false);
 
-  const src =
-    !imgFailed && artUrl ? artUrl : cardCode && !imgFailed ? getRemoteMarvelCdbUrl(cardCode) : null;
+  const remoteUrl = cardCode ? remoteArtUrl(cardCode) : '';
+  const src = !imgFailed && artUrl ? artUrl : remoteUrl && !imgFailed ? remoteUrl : null;
 
   const sizeClasses = {
     xs: 'w-6 h-6',

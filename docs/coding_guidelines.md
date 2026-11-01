@@ -276,10 +276,10 @@ We use [Conventional Commits](https://www.conventionalcommits.org/). Scopes: `en
 
 ## 13. Local-First Card Art & Static Asset Pipeline (ADR-0011)
 
-1. **Local Static Art Resolution (`/cards/:fileName`):**
-   - The primary resolution route for all card artwork is the local static endpoint `/cards/${code}${side}.png`.
-   - In development mode, the Vite server plugin intercepts `/cards/:fileName` and streams assets from `cache/cards/`.
-   - In production builds, `cache/cards/` is bundled directly to `dist/cards/` to ensure offline desktop/web play without internet access.
+1. **Per-Pack Art Resolution (`/card-art/:packId/:fileName`):**
+   - The primary resolution route for all card artwork is `/card-art/<packId>/<file>.png`. Names and URLs come from `src/data/content/card-art.ts`; the owning pack of a card decides the file name (a pack declares `art.swapMainSchemeSides` in `pack.json` when its main scheme sides are swapped upstream), never a card-code prefix.
+   - The dev and preview servers resolve a request in `src/tools/image-cache.ts`: the art the pack ships (`content/packs/<id>/assets/cards/`), then `content/.cache/images/<id>/`, then (official packs only) a download from MarvelCDB into that cache. The three card backs live in `content/.cache/images/_backs/`.
+   - Official art is never part of a build output: nothing copies the image cache into `dist/`.
 2. **Dual-Tier CDN & Vector Fallback (`CardView.tsx`):**
    - If a card image is missing from the local disk cache (404), the `CardView` component catches `onError` and falls back dynamically to the remote MarvelCDB CDN.
    - If offline and without cached images, it falls back to the stylized Comic Pop-Art vector card.

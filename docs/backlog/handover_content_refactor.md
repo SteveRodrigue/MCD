@@ -1,4 +1,4 @@
-# Handover — content folder refactor (next: M6)
+# Handover — content folder refactor (next: M6, plan approved)
 
 **Written:** 2026-11-01, at the end of M5b; updated the same day for the agent policy of PR #541 (autonomy and stop policy, game-first plans, delivery authorization). For the next session or agent that continues the work. Nothing here is a decision; the decisions live in the documents it points to.
 
@@ -13,9 +13,10 @@
 | Plans, as-built notes, Klaw review, first handover | merged | #539 |
 | M5c scenarios from packs, Ultron as the one script, `built-in/` deleted | merged (see plan section 13) | #544 |
 | M5d defaults and literals (`'rhino'`, `'core'`) | merged (see plan section 13) | this PR |
-| M6 image cache per pack, M6b Tauri scaffold, M7 empty-shell UI, M8 leak guard and untracking `references/`, M9 editor on the storage driver, M10 docs split, M11 browser driver and distribution, M12 optional Core removal | roadmap only, see `plan_content_folder_refactor.md` | |
+| M6 image cache per pack: **plan approved, in implementation** ([plan](plan_content_m6_image_cache.md)) | plan only | |
+| M6b Tauri scaffold, M7 empty-shell UI, M8 leak guard and untracking `references/`, M9 editor on the storage driver, M10 docs split, M11 browser driver and distribution, M12 optional Core removal | roadmap only, see `plan_content_folder_refactor.md` | |
 
-`main` has everything above except M6 and later (M5d lands with the PR that updates this line). PR #541 changed the agent rules (see section 4); read them in `AGENTS.md` and `.agents/rules/shared-quality-gates.md` (Stop policy, Plan and approval gate, In-Game Scenario, Delivery authorization), because they replace what earlier sessions did.
+`main` has everything above except M6 and later. PR #541 changed the agent rules (see section 4); read them in `AGENTS.md` and `.agents/rules/shared-quality-gates.md` (Stop policy, Plan and approval gate, In-Game Scenario, Delivery authorization), because they replace what earlier sessions did.
 
 ## 2. Read first, in this order
 
@@ -81,4 +82,4 @@ npm run simulate -- --no-stats   # compare with a clean `main` run, byte for byt
 
 ## 8. Next session
 
-M5 is done. The next milestones on the roadmap are M6 (image cache per pack) and M6b (Tauri scaffold); see `plan_content_folder_refactor.md`. There is no M5 prompt left to run; write a plan for M6 first (AGENTS.md plan gate), with an In-Game Scenario.
+M5 is done and the M6 plan is written: [`plan_content_m6_image_cache.md`](plan_content_m6_image_cache.md). It is not approved yet; its section 11 lists five open decisions for the user (no official art in `dist/`, the old `cache/` folder stays untouched until the new cache is proven, then a cleanup PR removes its ignore entries, pack assets only for the pack's own cards, where the swapped Core main scheme sides are declared, one PR or two). Once the user answers, record them as Q50 and on in the decision log of `plan_content_folder_refactor.md`, update the plan, then implement it (delivery is authorized once the plan is approved, implemented and verified). M6b (Tauri scaffold) comes after, and needs its own plan first (AGENTS.md plan gate).

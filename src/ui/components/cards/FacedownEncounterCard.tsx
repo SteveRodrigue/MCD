@@ -3,7 +3,8 @@ import { Skull, AlertTriangle, Eye } from 'lucide-react';
 import { CardInstance } from '../../../engine/models';
 import { useOptionalGameSettings } from '../../context/useGameSettings';
 import { PileCardTile, PileGrid, PileViewerModal } from '../board/PileViewerModal';
-import { getCardBackUrl, getCardBackFallbackColor } from '../../services/card-cache-service';
+import { getCardBackFallbackColor } from '../../services/card-cache-service';
+import { cardBackUrl } from '../../../data/content/card-art';
 
 export interface FacedownEncounterCardProps {
   cards: CardInstance[];
@@ -73,7 +74,7 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
           {/* Card Back Image or Fallback Background */}
           {!imageError ? (
             <img
-              src={getCardBackUrl('encounter')}
+              src={cardBackUrl('encounter')}
               alt="Encounter Card Back"
               onError={() => setImageError(true)}
               className="absolute inset-0 w-full h-full object-cover"

@@ -3,9 +3,9 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 import fs from 'fs';
-import https from 'https';
 import { cardSupplementalEditorPlugin } from './src/tools/editor/api-middleware.ts';
 import { contentPlugin } from './src/tools/content-middleware.ts';
+import { cardArtPlugin } from './src/tools/card-art-middleware.ts';
 import { buildDefines } from './src/tools/build-define.ts';
 import { saveProblemReport } from './src/tools/problem-report-store.ts';
 import {
@@ -59,152 +59,6 @@ function handleJsonPost(req: Req, res: Res, handle: (payload: any) => unknown): 
   readJsonBody(req)
     .then((payload) => sendJson(res, handle(payload)))
     .catch((err: Error) => sendJson(res, { success: false, error: err.message }, 500));
-}
-
-function removeQuietly(filePath: string): void {
-  try {
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-  } catch {
-    // ignore cleanup error
-  }
-}
-
-const inFlightDownloads = new Map<string, Promise<boolean>>();
-
-/**
- * Downloads `url` to `filePath` through a temporary file, following up to 5 redirects; one
- * download per target file at a time.
- */
-function downloadFile(url: string, filePath: string): Promise<boolean> {
-  const existing = inFlightDownloads.get(filePath);
-  if (existing) return existing;
-
-  const download = new Promise<boolean>((resolve) => {
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    const tempPath = `${filePath}.tmp.${Date.now()}`;
-    const fileStream = fs.createWriteStream(tempPath);
-    const fail = () =>
-      fileStream.close(() => {
-        removeQuietly(tempPath);
-        resolve(false);
-      });
-
-    const get = (targetUrl: string, redirectsLeft: number) => {
-      https
-        .get(targetUrl, { headers: { 'User-Agent': USER_AGENT } }, (response) => {
-          const { statusCode, headers } = response;
-          if (statusCode && statusCode >= 300 && statusCode < 400 && headers.location) {
-            if (redirectsLeft <= 0) return fail();
-            return get(new URL(headers.location, targetUrl).toString(), redirectsLeft - 1);
-          }
-          if (statusCode !== 200) return fail();
-          response.pipe(fileStream);
-          fileStream.on('finish', () =>
-            fileStream.close(() => {
-              try {
-                fs.renameSync(tempPath, filePath);
-                resolve(true);
-              } catch {
-                removeQuietly(tempPath);
-                resolve(false);
-              }
-            }),
-          );
-        })
-        .on('error', fail);
-    };
-    get(url, 5);
-  }).finally(() => inFlightDownloads.delete(filePath));
-
-  inFlightDownloads.set(filePath, download);
-  return download;
-}
-
-const USER_AGENT =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 MCD/1.0';
-
-/** A card image route: `/<prefix>/<file>.png`, served from a cache folder filled on demand. */
-interface CachedImageRoute {
-  pattern: RegExp;
-  dir: string;
-  remoteUrl: (fileName: string) => string | undefined;
-  label: string;
-}
-
-function cardCachePlugin(): Plugin {
-  const cacheDir = path.resolve(import.meta.dirname, 'cache', 'cards');
-  const cacheBackDir = path.resolve(import.meta.dirname, 'cache', 'back');
-
-  const cardBackRemoteUrls: Record<string, string> = {
-    'player.png': 'https://hallofheroeslcg.com/wp-content/uploads/2021/02/marvel-player-back.png',
-    'encounter.png':
-      'https://hallofheroeslcg.com/wp-content/uploads/2021/02/marvel-encounter-back.png',
-    'villain.png': 'https://hallofheroeslcg.com/wp-content/uploads/2021/02/marvel-villain-back.png',
-  };
-
-  const routes: CachedImageRoute[] = [
-    {
-      pattern: /^\/(?:cache\/)?back\//,
-      dir: cacheBackDir,
-      remoteUrl: (fileName) => cardBackRemoteUrls[fileName],
-      label: 'Card back image',
-    },
-    {
-      pattern: /^\/(?:cache\/)?cards\//,
-      dir: cacheDir,
-      remoteUrl: (fileName) => `https://marvelcdb.com/bundles/cards/${fileName}`,
-      label: 'Card image',
-    },
-  ];
-
-  const serveCardMiddleware = async (req: any, res: any, next: any) => {
-    const route = req.url ? routes.find((r) => r.pattern.test(req.url)) : undefined;
-    if (!route) return next();
-
-    const fileName = req.url.replace(route.pattern, '').split('?')[0];
-    // Validate filename to prevent directory traversal
-    if (!/^[a-zA-Z0-9_-]+\.png$/i.test(fileName)) {
-      res.statusCode = 400;
-      res.setHeader('Content-Type', 'text/plain');
-      res.end(`Invalid ${route.label.toLowerCase()} filename`);
-      return;
-    }
-
-    const filePath = path.join(route.dir, fileName);
-    const remoteUrl = route.remoteUrl(fileName);
-    if (fs.existsSync(filePath) || (remoteUrl && (await downloadFile(remoteUrl, filePath)))) {
-      res.setHeader('Content-Type', 'image/png');
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-      return fs.createReadStream(filePath).pipe(res);
-    }
-
-    res.statusCode = 404;
-    res.setHeader('Content-Type', 'text/plain');
-    res.end(`${route.label} not found`);
-  };
-
-  return {
-    name: 'mcd-card-cache-plugin',
-    configureServer(server) {
-      server.middlewares.use(serveCardMiddleware);
-    },
-    configurePreviewServer(server) {
-      server.middlewares.use(serveCardMiddleware);
-    },
-    closeBundle() {
-      // Copy local cached cards and card backs to dist for production offline play
-      for (const [from, to] of [
-        [cacheDir, path.resolve(import.meta.dirname, 'dist', 'cards')],
-        [cacheBackDir, path.resolve(import.meta.dirname, 'dist', 'back')],
-      ]) {
-        if (!fs.existsSync(from)) continue;
-        fs.mkdirSync(to, { recursive: true });
-        for (const file of fs.readdirSync(from)) {
-          if (file.endsWith('.png')) fs.copyFileSync(path.join(from, file), path.join(to, file));
-        }
-      }
-    },
-  };
 }
 
 // The plugins below write to disk: they run on the dev server only, never on `vite preview`.
@@ -363,7 +217,7 @@ export default defineConfig(({ command }) => ({
   plugins: [
     react(),
     tailwindcss(),
-    cardCachePlugin(),
+    cardArtPlugin(),
     cardStatsPlugin(),
     gameStateSnapshotPlugin(),
     problemReportPlugin(),
@@ -384,7 +238,7 @@ export default defineConfig(({ command }) => ({
     strictPort: true,
     open: false,
     watch: {
-      ignored: ['**/logs/**', '**/cache/**', '**/stats/**'],
+      ignored: ['**/logs/**', '**/cache/**', '**/.cache/**', '**/stats/**'],
     },
   },
 }));

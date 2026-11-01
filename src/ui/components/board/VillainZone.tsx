@@ -32,7 +32,8 @@ import {
 } from './PileViewerModal';
 import { getEncounterSetName } from './villain-zone-utils';
 import { getEffectiveVillainStats } from '../../../engine/pipeline/stat-calculator';
-import { getCardBackUrl, getCardBackFallbackColor } from '../../services/card-cache-service';
+import { getCardBackFallbackColor } from '../../services/card-cache-service';
+import { cardBackUrl } from '../../../data/content/card-art';
 import { useModalStyle } from '../../theme/useModalStyle';
 import { ZonePanel } from '../../theme/kit/surfaces';
 import { StatBox } from '../../theme/kit/meters';
@@ -231,7 +232,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               >
                 {!deckImageError ? (
                   <img
-                    src={getCardBackUrl('encounter')}
+                    src={cardBackUrl('encounter')}
                     alt="Encounter Deck"
                     onError={() => setDeckImageError(true)}
                     className="absolute inset-0 w-full h-full object-cover"

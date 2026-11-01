@@ -25,6 +25,14 @@ export const PackManifestSchema = z
     version: z.string().min(1),
     dependsOn: z.array(z.string()).default([]),
     source: z.string().optional(),
+    /** How the pack's card art is named when it differs from the standard `<code>.png`. */
+    art: z
+      .object({
+        /** Main scheme side A is the second image of the pair (the Core Set upstream art). */
+        swapMainSchemeSides: z.boolean().default(false),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 

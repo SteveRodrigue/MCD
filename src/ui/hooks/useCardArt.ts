@@ -1,4 +1,5 @@
-import { getCardArtUrl, CardArtIdentifier } from '../services/card-cache-service';
+import { getCardArtUrl } from '../services/card-cache-service';
+import { CardArtIdentifier } from '../../data/content/card-art';
 import { useAsyncData } from './useAsyncData';
 
 export interface UseCardArtResult {

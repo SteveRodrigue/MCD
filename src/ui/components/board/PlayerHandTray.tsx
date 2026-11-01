@@ -21,7 +21,8 @@ import { getHeroColorPalette } from '../../utils/hero-theme';
 import { formatSeatPrefix } from '../../utils/player-seat';
 import { useModalStyle } from '../../theme/useModalStyle';
 import { ToneButton } from '../../theme/kit/controls';
-import { getCardBackUrl, getCardBackFallbackColor } from '../../services/card-cache-service';
+import { getCardBackFallbackColor } from '../../services/card-cache-service';
+import { cardBackUrl } from '../../../data/content/card-art';
 import { getFanZIndex } from '../cards/fan-z';
 
 interface PlayerHandTrayProps {
@@ -412,7 +413,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               >
                 {!deckImageError ? (
                   <img
-                    src={getCardBackUrl('player')}
+                    src={cardBackUrl('player')}
                     alt="Player Card Back"
                     onError={() => setDeckImageError(true)}
                     className="absolute inset-0 w-full h-full object-cover"

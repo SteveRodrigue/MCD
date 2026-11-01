@@ -8,6 +8,8 @@
  *   content/packs/<code>/supplemental/<stem>.json
  *   content/packs/<code>/translations/<locale>/<stem>.json
  *   content/packs/<code>/{scenarios,decks,modular-sets.json,pack.json}
+ *   content/packs/<code>/assets/cards/<file>.png   art shipped by the pack
+ *   content/.cache/images/<code>/<file>.png        art fetched on demand (disposable)
  *
  * A "stem" is an upstream file name without extension: `core`, `core_encounter`, `aoa_encounter`.
  * Scripts, tools, tests and the editor middleware use this module instead of spelling paths.
@@ -32,6 +34,16 @@ export function packsRoot(base?: string): string {
 
 export function packDir(code: string, base?: string): string {
   return path.join(packsRoot(base), code);
+}
+
+/** Art a pack ships itself. */
+export function packAssetDir(code: string, base?: string): string {
+  return path.join(packDir(code, base), 'assets', 'cards');
+}
+
+/** Disposable folder of the art fetched for a pack; `_backs` holds the generic card backs. */
+export function imageCacheDir(code: string, base?: string): string {
+  return path.join(contentRoot(base), '.cache', 'images', code);
 }
 
 export function metaFile(name: string, base?: string): string {

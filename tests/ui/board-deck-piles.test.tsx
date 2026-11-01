@@ -6,7 +6,8 @@ import { CardView } from '../../src/ui/components/cards/CardView';
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { createCardInstance } from '../../src/engine/state/game-setup';
-import { getCardBackUrl, getCardBackFallbackColor } from '../../src/ui/services/card-cache-service';
+import { getCardBackFallbackColor } from '../../src/ui/services/card-cache-service';
+import { cardBackUrl } from '../../src/data/content/card-art';
 import {
   VillainState,
   MainSchemeState,
@@ -84,7 +85,7 @@ describe('Board Deck Piles & Facedown Card Backs (Issue #141)', () => {
 
       const img = screen.getByTestId('player-deck-image') as HTMLImageElement;
       expect(img).toBeDefined();
-      expect(img.getAttribute('src')).toBe(getCardBackUrl('player'));
+      expect(img.getAttribute('src')).toBe(cardBackUrl('player'));
       expect(img.getAttribute('alt')).toBe('Player Card Back');
     });
 
@@ -160,7 +161,7 @@ describe('Board Deck Piles & Facedown Card Backs (Issue #141)', () => {
 
       const img = screen.getByTestId('encounter-deck-image') as HTMLImageElement;
       expect(img).toBeDefined();
-      expect(img.getAttribute('src')).toBe(getCardBackUrl('encounter'));
+      expect(img.getAttribute('src')).toBe(cardBackUrl('encounter'));
     });
 
     it('falls back to solid orange placeholder color when encounter deck image fails to load', () => {
@@ -199,7 +200,7 @@ describe('Board Deck Piles & Facedown Card Backs (Issue #141)', () => {
       expect(facedownContainer).toBeDefined();
 
       const img = screen.getByTestId('card-back-image') as HTMLImageElement;
-      expect(img.getAttribute('src')).toBe(getCardBackUrl('player'));
+      expect(img.getAttribute('src')).toBe(cardBackUrl('player'));
     });
 
     it('renders encounter card back when isFacedown is true for encounter card', () => {
@@ -207,7 +208,7 @@ describe('Board Deck Piles & Facedown Card Backs (Issue #141)', () => {
       render(<CardView card={encounterCard} isFacedown={true} />);
 
       const img = screen.getByTestId('card-back-image') as HTMLImageElement;
-      expect(img.getAttribute('src')).toBe(getCardBackUrl('encounter'));
+      expect(img.getAttribute('src')).toBe(cardBackUrl('encounter'));
     });
 
     it('falls back to solid placeholder color when facedown image fails to load', () => {

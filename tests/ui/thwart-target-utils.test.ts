@@ -3,12 +3,13 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { setupGame, resetInstanceCounter, createCardInstance } from '@engine/index';
 import { CardCatalog } from '@data/importer/card-loader';
 import { getValidThwartTargets } from '../../src/ui/components/board/thwart-target-utils';
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import { loadedRawCards } from '../helpers/content';
 import { Keyword, getActiveMainScheme } from '@engine/models';
 
+const corePack = loadedRawCards('core');
+
 describe('Thwart Target Selection & Legality Utils (RR v1.8 p. 3, 11, 20, 29)', () => {
-  const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+  const catalog = new CardCatalog([...corePack]);
   let gameState: ReturnType<typeof setupGame>;
 
   beforeEach(() => {

@@ -5,13 +5,16 @@ import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { step4_revealEncounterCards } from '@engine/pipeline/villain-phase';
 import { assertCardConservation } from '@engine/state/state-validator';
 import { CardEnrichmentSchema } from '../../src/data/supplemental/schema';
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
-import cwEncounterPack from '../../content/packs/cw/cards/cw_encounter.json';
+import { bootPacks, loadedRawCards } from '../helpers/content';
+
+await bootPacks('core', 'cw');
+const corePack = loadedRawCards('core');
+const cwEncounterPack = loadedRawCards('cw');
+const coreEncounterPack = corePack.filter((c) => c.faction_code === 'encounter');
 
 // Ad-hoc catalog: core + ONLY the proof card 56128b (the live loader never loads cw_encounter).
 const proofRaw = (cwEncounterPack as any[]).find((c) => c.code === '56128b');
-const adHocCatalog = new CardCatalog([...corePack, ...coreEncounterPack, proofRaw] as any);
+const adHocCatalog = new CardCatalog([...corePack, proofRaw] as any);
 
 describe('Obligation recipient resolution (Issue #158, RR v1.8 Obligation)', () => {
   let state: GameState;

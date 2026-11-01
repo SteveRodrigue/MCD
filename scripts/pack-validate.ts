@@ -20,6 +20,7 @@ import {
   userCardCodePattern,
   type PackManifest,
 } from '../src/data/packs/pack-manifest';
+import { ClaimRegistry } from '../src/data/packs/identity';
 import { PackDeckSchema } from '../src/data/packs/pack-deck';
 import { ModularSetsSchema, ScenarioDefinitionSchema } from '../src/data/packs/scenario-definition';
 import { SupplementalPackSchema } from '../src/data/supplemental/schema';
@@ -170,9 +171,9 @@ export function validatePackSet(packsRoot: string, options: ValidatePackOptions)
 
   // Pass 2: per-file schemas, dependencies and cross-pack identity.
   const byId = new Map<string, LoadedPack>();
-  const cardOwner = new Map<string, string>();
-  const scenarioOwner = new Map<string, string>();
-  const setOwner = new Map<string, string>();
+  const cardClaims = new ClaimRegistry();
+  const scenarioClaims = new ClaimRegistry();
+  const setClaims = new ClaimRegistry();
   for (const pack of packs) {
     const manifest = pack.manifest;
     if (!manifest) continue;
@@ -180,10 +181,9 @@ export function validatePackSet(packsRoot: string, options: ValidatePackOptions)
       add(pack.name, pack.dir, 'duplicate-pack', `Pack id "${manifest.id}" is used twice`);
     byId.set(manifest.id, pack);
     for (const code of pack.cardCodes) {
-      const owner = cardOwner.get(code);
+      const owner = cardClaims.claim(code, manifest.id);
       if (owner)
         add(pack.name, pack.dir, 'duplicate-card', `Card ${code} is also defined by "${owner}"`);
-      else cardOwner.set(code, manifest.id);
     }
   }
   for (const pack of packs) {
@@ -222,7 +222,7 @@ export function validatePackSet(packsRoot: string, options: ValidatePackOptions)
         }
         const def = parse(pack.name, file, ScenarioDefinitionSchema) as { id: string } | undefined;
         if (!def) continue;
-        const owner = scenarioOwner.get(def.id);
+        const owner = scenarioClaims.claim(def.id, manifest.id);
         if (owner)
           add(
             pack.name,
@@ -230,14 +230,13 @@ export function validatePackSet(packsRoot: string, options: ValidatePackOptions)
             'duplicate-scenario',
             `Scenario id "${def.id}" is also defined by "${owner}"`,
           );
-        else scenarioOwner.set(def.id, manifest.id);
       }
     }
     const setsFile = path.join(pack.dir, 'modular-sets.json');
     if (fs.existsSync(setsFile)) {
       const sets = parse(pack.name, setsFile, ModularSetsSchema) as { code: string }[] | undefined;
       for (const set of sets ?? []) {
-        const owner = setOwner.get(set.code);
+        const owner = setClaims.claim(set.code, manifest.id);
         if (owner)
           add(
             pack.name,
@@ -245,7 +244,6 @@ export function validatePackSet(packsRoot: string, options: ValidatePackOptions)
             'duplicate-modular-set',
             `Modular set "${set.code}" is also defined by "${owner}"`,
           );
-        else setOwner.set(set.code, manifest.id);
       }
     }
     for (const file of listJson(path.join(pack.dir, 'decks')))

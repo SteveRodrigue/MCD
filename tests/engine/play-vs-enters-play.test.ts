@@ -23,13 +23,14 @@ import {
   createCardInstance,
   peekDecisionPrompt,
 } from '@engine/index';
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import { loadedRawCards } from '../helpers/content';
 import { thaw } from '../support/thaw-state';
 
 import { getActiveVillain } from '@engine/models';
+
+const corePack = loadedRawCards('core');
 describe('ADR-0048: CARD_PLAYED vs ENTERS_PLAY trigger contract (RR v1.8 pp.11,21)', () => {
-  const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+  const catalog = new CardCatalog([...corePack]);
   let gameState: ReturnType<typeof setupGame>;
 
   beforeEach(() => {

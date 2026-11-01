@@ -1,0 +1,4 @@
+{
+  "$schema": "../src/data/packs/content-config.schema.json",
+  "enabledPacks": ["core"]
+}

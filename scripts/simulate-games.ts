@@ -2,6 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { cardCatalog } from '../src/data/importer/card-loader';
+import { bootContent } from '../src/data/content/apply';
+import { NodeFsDriver } from '../src/data/content/drivers/node-fs';
+import { contentRoot } from '../src/tools/content-paths';
 import {
   setupGame,
   resetInstanceCounter,
@@ -691,6 +694,7 @@ function runReplay(id: string): boolean {
 }
 
 async function main() {
+  await bootContent(new NodeFsDriver(contentRoot()));
   const args = parseArgs(process.argv.slice(2));
   if (args.balance) return runBalanceReport();
   if (args.replay) {

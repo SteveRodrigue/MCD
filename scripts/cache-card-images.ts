@@ -1,8 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 import https from 'https';
-import corePack from '../content/packs/core/cards/core.json';
-import coreEncounterPack from '../content/packs/core/cards/core_encounter.json';
+import { bootContent } from '../src/data/content/apply';
+import { NodeFsDriver } from '../src/data/content/drivers/node-fs';
+import { getLoadedContent } from '../src/data/content/store';
+import { contentRoot } from '../src/tools/content-paths';
 
 import { getCardArtFileName } from '../src/ui/services/card-cache-service';
 
@@ -52,7 +54,8 @@ async function runCache(): Promise<void> {
   console.log('🃏 Starting Marvel Champions Local Card Image Cache...');
   console.log(`📁 Target Directory: ${CACHE_DIR}\n`);
 
-  const allCards = [...corePack, ...coreEncounterPack];
+  await bootContent(new NodeFsDriver(contentRoot()));
+  const allCards = getLoadedContent().packs.flatMap((pack) => pack.cards);
   const uniqueFileNames = new Set<string>();
 
   for (const card of allCards) {

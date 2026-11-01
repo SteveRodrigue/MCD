@@ -9,12 +9,13 @@ import {
   MainSchemeCard,
 } from '@engine/index';
 
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import { loadedRawCards } from '../helpers/content';
 
 import { getActiveMainScheme, getActiveVillain } from '@engine/models';
+
+const corePack = loadedRawCards('core');
 describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
-  const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+  const catalog = new CardCatalog([...corePack]);
 
   beforeEach(() => {
     resetInstanceCounter();

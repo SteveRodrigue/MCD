@@ -17,13 +17,14 @@ import {
   HERO_ACTOR,
 } from '@engine/index';
 
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import { loadedRawCards } from '../helpers/content';
 import { thaw } from '../support/thaw-state';
 
 import { getActiveMainScheme, getActiveVillain } from '@engine/models';
+
+const corePack = loadedRawCards('core');
 describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
-  const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+  const catalog = new CardCatalog([...corePack]);
 
   let gameState: ReturnType<typeof setupGame>;
 

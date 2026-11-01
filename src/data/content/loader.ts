@@ -3,7 +3,12 @@ import { ContentConfigSchema } from '../packs/content-config';
 import { ClaimRegistry } from '../packs/identity';
 import { PackDeckSchema } from '../packs/pack-deck';
 import { PACK_API_VERSION, PackManifestSchema, type PackManifest } from '../packs/pack-manifest';
-import { ModularSetsSchema, type ModularSets } from '../packs/scenario-definition';
+import {
+  ModularSetsSchema,
+  ScenarioDefinitionSchema,
+  type ModularSets,
+  type ScenarioDefinition,
+} from '../packs/scenario-definition';
 import { SupplementalPackSchema } from '../supplemental/schema';
 import type {
   ContentDriver,
@@ -93,6 +98,18 @@ async function readModularSets(driver: ContentDriver, id: string): Promise<Modul
   return raw as ModularSets;
 }
 
+async function readScenarios(driver: ContentDriver, id: string): Promise<ScenarioDefinition[]> {
+  const scenarios: ScenarioDefinition[] = [];
+  for (const dir of await driver.listDirs(`packs/${id}/scenarios`)) {
+    const path = `packs/${id}/scenarios/${dir}/definition.json`;
+    if (!(await driver.exists(path))) throw new Error(`scenarios/${dir}: missing definition.json`);
+    const parsed = ScenarioDefinitionSchema.safeParse(await driver.readJson(path));
+    if (!parsed.success) throw new Error(`scenarios/${dir}/definition.json: ${parsed.error.message}`);
+    scenarios.push(parsed.data);
+  }
+  return scenarios;
+}
+
 async function readDecks(driver: ContentDriver, id: string): Promise<MarvelCDBDeck[]> {
   const decks: MarvelCDBDeck[] = [];
   for (const name of jsonFiles(await driver.listFiles(`packs/${id}/decks`))) {
@@ -124,6 +141,7 @@ export async function loadContent(
   const inProgress = new Set<string>();
   const cardClaims = new ClaimRegistry();
   const setClaims = new ClaimRegistry();
+  const scenarioClaims = new ClaimRegistry();
 
   async function resolve(id: string): Promise<LoadedPack | string> {
     const known = outcome.get(id);
@@ -144,6 +162,7 @@ export async function loadContent(
         const cards = await readCards(driver, id);
         const supplemental = await readSupplemental(driver, id);
         const modularSets = await readModularSets(driver, id);
+        const scenarios = await readScenarios(driver, id);
         const decks = await readDecks(driver, id);
         for (const card of cards) {
           const owner = cardClaims.ownerOf(card.code);
@@ -153,14 +172,20 @@ export async function loadContent(
           const owner = setClaims.ownerOf(set.code);
           if (owner) throw new Error(`modular set "${set.code}" is also defined by "${owner}"`);
         }
+        for (const scenario of scenarios) {
+          const owner = scenarioClaims.ownerOf(scenario.id);
+          if (owner) throw new Error(`scenario "${scenario.id}" is also defined by "${owner}"`);
+        }
         for (const card of cards) cardClaims.claim(card.code, id);
         for (const set of modularSets) setClaims.claim(set.code, id);
+        for (const scenario of scenarios) scenarioClaims.claim(scenario.id, id);
         result = {
           id,
           manifest,
           cards,
           supplemental,
           modularSets,
+          scenarios,
           decks,
           cardCount: cards.length,
           supplementalCount: Object.keys(supplemental).length,

@@ -15,5 +15,6 @@ describe('zero-pack boot', () => {
     resetContent();
     render(<App />);
     expect(await screen.findByText(/SCENARIO SELECTION/, {}, { timeout: 10000 })).toBeTruthy();
+    expect(screen.getByText(/No scenario available/)).toBeTruthy();
   });
 });

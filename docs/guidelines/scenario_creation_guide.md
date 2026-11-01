@@ -2,11 +2,11 @@
 
 > [!IMPORTANT]
 > **Synchronous Documentation Mandate (ADR-0022 / Mandate #16):**  
-> Any new lifecycle hook, parameter, manifest property, or capability added to `src/engine/scenarios/` **must immediately be documented in this guide** with copy-pasteable TypeScript and JSON examples. Official scenarios and community custom scenarios share 100% architectural symmetry.
+> Any new scenario hook, manifest property, or capability added to `src/engine/scenarios/` or to the pack hook contract (`src/engine/plugin-api/`) **must immediately be documented in this guide**.
 
-This guide explains how to author custom scenarios for **Marvel Champions Digital**. 
+This guide explains how to author scenarios for **Marvel Champions Digital**.
 
-The engine uses a **universal scenario package format** where official built-in scenarios (`rhino`, `klaw`, `ultron`) and custom community fan-made scenarios share the **exact same public API, manifest schema, folder structure, and lifecycle hooks**.
+A scenario is a folder inside a content pack (ADR-0092). The content loader reads it at runtime and the engine builds every scenario the same way, from its `definition.json` and, when a rule cannot be data yet, a hook from the same pack's script. The official scenarios (`rhino`, `klaw`, `ultron`) are loaded from the Core pack exactly like a scenario from any other pack.
 
 ---
 
@@ -17,10 +17,12 @@ Every scenario lives in its own directory inside the pack that owns it, `content
 ```text
 content/packs/<pack>/scenarios/my_custom_scenario/
 ├── definition.json      # Declarative Manifest: stages, threat targets, modular sets
-└── README.md            # Scenario rules breakdown & creator notes
+└── README.md            # Optional: scenario rules breakdown & creator notes
 ```
 
-The Setup and When Revealed abilities printed on the scenario's main scheme cards are supplemental data of those cards (see below), so most scenarios need no code at all. Only a rule that cannot be expressed with the existing effects needs a script (`plugin.ts`, Step 2); Ultron's facedown Drone setup is the one example today.
+The Setup and When Revealed abilities printed on the scenario's main scheme cards are supplemental data of those cards (see below), so most scenarios need no code at all. Only a rule that cannot be expressed with the existing effects needs a script (Step 2); Ultron's facedown Drone setup is the one example today.
+
+The loader validates `definition.json` against `ScenarioDefinitionSchema`. A pack with an invalid definition, or whose scenario id is already used by an earlier pack, is disabled with a reason. A scenario whose pack is not loaded is not offered. The selector lists scenarios in ascending `scenarioCardCode` order.
 
 ---
 
@@ -30,13 +32,14 @@ The manifest defines the static properties, stages, and modular sets:
 
 ```json
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "../../../../../src/data/packs/scenario.schema.json",
   "id": "my_custom_scenario",
   "name": "The Crimson Syndicate",
   "scenarioCardCode": "custom_001",
   "author": "Community Creator",
   "version": "1.0.0",
   "description": "Stop the Syndicate before they assemble the Omega Device!",
+  "setupOnomatopoeia": "THE SYNDICATE STRIKES!",
   "supportedDifficulties": ["SKIRMISH", "STANDARD", "EXPERT"],
   
   "villainSetup": {
@@ -65,6 +68,8 @@ The manifest defines the static properties, stages, and modular sets:
   }
 }
 ```
+
+`setupOnomatopoeia` (optional) is the comic sound effect shown with the setup log entry.
 
 Villain hit points are not declared here: each stage's hit points are the printed `health` of its villain card (per player when the card says so) times the number of players, set by `advanceVillainStage` (`src/engine/scenarios/advance-villain-stage.ts`).
 
@@ -121,57 +126,55 @@ Searching a deck shuffles it afterwards (Search rule), so a `SEARCH` step needs 
 
 ---
 
-## 💻 Step 2: Implement Lifecycle Hooks (`plugin.ts`)
+## 💻 Step 2: Scenario script (only when a rule cannot be data)
 
-Implement the `ScenarioPlugin` interface:
+An official pack can ship a script that gives a scenario code for what its cards and `definition.json` cannot express yet. The script exports `ScenarioHooks` (`src/engine/scenarios/types.ts`), and the pack's `a pack's script index` lists them by scenario id in `PackHooks.scenarioHooks`:
 
 ```typescript
-import { GameState, VillainState, MainSchemeState } from '@engine/models';
-import { cardCatalog } from '@data/card-loader';
-import { ScenarioPlugin, ScenarioDefinition, GameSetupOptions } from '../../types';
-import definitionData from './definition.json';
+// content/packs/<pack>/scripts/scenarios/my_custom_scenario.ts
+import type { ScenarioHooks } from '@engine/plugin-api';
 
-export class CustomScenarioPlugin implements ScenarioPlugin {
-  definition = definitionData as ScenarioDefinition;
-
-  onGameSetup(state: GameState, options: GameSetupOptions): GameState {
-    // Custom setup logic...
+export const myCustomScenarioHooks: ScenarioHooks = {
+  // Runs after the main scheme's own B-side When Revealed abilities and before the villain's reveal.
+  resolveStage1BReveal(state) {
+    // ...change the state...
     return state;
-  }
-
-  onVillainDefeated(state: GameState, defeatedVillainInstanceId: string) {
-    // Stage transition or victory declaration...
-    return { state, victory: true };
-  }
-
-  onMainSchemeCompleted(state: GameState, completedSchemeInstanceId: string) {
-    // Main scheme defeat or advancement...
-    return { state, defeat: true };
-  }
-}
+  },
+};
 ```
+
+```typescript
+// content/packs/<pack>/scripts/index.ts
+const hooks: PackHooks = {
+  scenarioHooks: { my_custom_scenario: myCustomScenarioHooks },
+};
+```
+
+After adding a script, run `npm run schema:generate`: it rebuilds the hook map (`src/data/content/pack-hooks.generated.ts`) that lets the build find the pack's hooks. `npm run pack:validate -- content/packs` fails an official pack that has `scripts/` but no map entry.
+
+**How the Ultron script works.** Ultron's stage 1B says each player puts the top card of their deck into play facedown, engaged, as a Drone minion. The engine has no facedown-minion concept yet, so `content/packs/core/scripts/scenarios/ultron.ts` does it in code: it takes each player's top deck card, builds a 1/1/1 Drone minion from it and engages it with that player. Everything else about Ultron (his stages, the Ultron Drones environment, the sound effect) is data. When a second scenario needs the same concept (Vision), the script can be revisited.
+
+> [!NOTE]
+> **User packs cannot ship scripts.** They are JSON-only until a sandbox ADR exists (`pack:validate` rejects a user pack with `scripts/`). A scenario in a user pack uses `definition.json` and supplemental data only.
 
 ---
 
-## 🔌 Step 3: Register in `ScenarioRegistry`
+## 🔌 Step 3: Loading and registration
 
-Register your scenario in `ScenarioRegistry`:
-
-```typescript
-import { ScenarioRegistry } from '@engine/scenarios';
-import { customPlugin } from './plugin';
-
-ScenarioRegistry.register(customPlugin);
-```
+There is nothing to register by hand. When the app starts, the content loader reads every enabled pack, `applyContent` builds one `DeclarativeScenarioPlugin(definition, hooks?)` per scenario (with the hooks of the same pack when its script lists the scenario id) and puts it into `ScenarioRegistry`. `resetContent` empties the registry. In tests, the shared setup loads the real content; use `ScenarioRegistry.get('rhino')` to reach a plugin.
 
 ---
 
 ## 🧪 Step 4: Verify & Run Declarations Audit
 
-After authoring and registering scenario cards:
+After authoring the scenario and its cards:
+```bash
+npm run schema:generate       # schemas and the pack hook map
+npm run pack:validate -- content/packs
+```
 ```bash
 npm run report:declarations   # Regenerates docs/reports/supplemental_declarations_usage_report.md
-npm test                      # Runs full test suite
+npx vitest run                # Runs full test suite
 npm run typecheck             # Verifies TypeScript types
 ```
 

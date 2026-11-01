@@ -73,7 +73,9 @@ const fakeDefinition: ScenarioDefinition = {
 
 describe('Card catalog injection (ADR-0087)', () => {
   const catalog = new FakeRepository();
-  ScenarioRegistry.register(new DeclarativeScenarioPlugin(fakeDefinition, 'FAKE ONLINE!'));
+  ScenarioRegistry.register(
+    new DeclarativeScenarioPlugin({ ...fakeDefinition, setupOnomatopoeia: 'FAKE ONLINE!' }),
+  );
 
   const newGame = () =>
     setupGame({

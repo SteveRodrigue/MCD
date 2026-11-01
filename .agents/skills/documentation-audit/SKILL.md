@@ -22,7 +22,6 @@ authoritative truth is (1) the code in `src/`, (2) the accepted ADRs in `docs/de
 Whenever prose disagrees with code, **the code wins** — unless the code violates an Accepted ADR
 or RR v1.8, in which case flag it as a defect instead of documenting the bug as intended behavior.
 
-
 ---
 
 ## ⚡ Gate summary
@@ -151,18 +150,18 @@ entry, a new specification module) are automatically in scope without updating t
 The table below is a **truth-source lookup guide**, not a path allow-list — use it to route each
 file you discover via the glob above to the right code-truth check in Step 2:
 
-| Surface        | Path (illustrative, not exhaustive)                                                                    | Primary Truth Source                                                        |
-| :------------- | :----------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
-| Agent contract | `AGENTS.md`                                                                                            | repo conventions, `package.json` scripts                                    |
+| Surface        | Path (illustrative, not exhaustive)                                 | Primary Truth Source                                                        |
+| :------------- | :------------------------------------------------------------------ | :-------------------------------------------------------------------------- |
+| Agent contract | `AGENTS.md`                                                         | repo conventions, `package.json` scripts                                    |
 | Entry docs     | `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md` | `package.json`, folder structure                                            |
-| ADRs           | `docs/decisions/*.md`, `docs/decisions/README.md`                                                      | `src/` implementation reality                                               |
-| Specifications | `docs/specifications/**/*.md`                                                                          | `src/data/supplemental/schema.ts`, `src/engine/effects/index.ts`            |
-| Visual guides  | `docs/visual-guides/*.md`                                                                              | `src/engine/pipeline/*.ts`, `src/engine/triggers/*.ts`, linked spec modules |
-| Guidelines     | `docs/engine/coding_guidelines.md`, `docs/guidelines/*.md`                                                    | `src/` patterns, `eslint.config.js`, `tsconfig.json`                        |
-| Rules mapping  | `docs/engine/algorithmic_rules_reference.md`                                                                  | `references/mc_rulesreference_v18_compressed.pdf` + `src/engine/`           |
-| Planning       | `docs/roadmap_and_milestones.md`, `CHANGELOG.md`                                                       | GitHub issues/milestones, git history                                       |
-| Reports        | `docs/reports/*.md`                                                                                    | regenerated, never hand-edited                                              |
-| Ambiguities    | `docs/ambiguities/*.md`                                                                                | `content/packs/*/supplemental/*.json`                                         |
+| ADRs           | `docs/decisions/*.md`, `docs/decisions/README.md`                   | `src/` implementation reality                                               |
+| Specifications | `docs/creators/supplemental-reference/**/*.md`                      | `src/data/supplemental/schema.ts`, `src/engine/effects/index.ts`            |
+| Visual guides  | `docs/visual-guides/*.md`                                           | `src/engine/pipeline/*.ts`, `src/engine/triggers/*.ts`, linked spec modules |
+| Guidelines     | `docs/engine/coding_guidelines.md`, `docs/guidelines/*.md`          | `src/` patterns, `eslint.config.js`, `tsconfig.json`                        |
+| Rules mapping  | `docs/engine/algorithmic_rules_reference.md`                        | `references/mc_rulesreference_v18_compressed.pdf` + `src/engine/`           |
+| Planning       | `docs/roadmap_and_milestones.md`, `CHANGELOG.md`                    | GitHub issues/milestones, git history                                       |
+| Reports        | `docs/reports/*.md`                                                 | regenerated, never hand-edited                                              |
+| Ambiguities    | `docs/ambiguities/*.md`                                             | `content/packs/*/supplemental/*.json`                                       |
 
 If the user narrowed the scope (argument hint), audit only that subset — but **always** include
 Step 4 when any ADR, engine primitive, or architectural concept is touched.
@@ -268,10 +267,10 @@ evidence cell is not a finding — it is a question, and belongs in the "❓ Ope
 
 **Gating rule — severity AND confidence must both clear:**
 
-|                               | ≥ 95% confidence       | 80–94% confidence      | < 80% confidence   |
-| :---------------------------- | :--------------------- | :--------------------- | :----------------- |
-| **Minor / Major** (D2–D6, D8) | Auto-apply             | Question round         | Open question only |
-| **Critical** (D1, D7)         | Question round         | Question round         | Open question only |
+|                               | ≥ 95% confidence | 80–94% confidence | < 80% confidence   |
+| :---------------------------- | :--------------- | :---------------- | :----------------- |
+| **Minor / Major** (D2–D6, D8) | Auto-apply       | Question round    | Open question only |
+| **Critical** (D1, D7)         | Question round   | Question round    | Open question only |
 
 - Auto-apply is permitted **only** in the single top-left cell. Apply those first, finish the whole audit, then ask everything else in **one question round** (numbered, recommendation first). Never stop per finding.
 - **Critical findings always need approval**, even at 100% confidence: "is this ADR superseded or merely
@@ -314,7 +313,7 @@ Apply fixes in this order so later edits build on corrected facts:
 
 1. ADR files' own Status lines and superseding links.
 2. `docs/decisions/README.md`: table completeness → ordering → statuses → Mermaid graph.
-3. Specification suite (`docs/specifications/**/*.md`): add missing primitives (D3) with the
+3. Specification suite (`docs/creators/supplemental-reference/**/*.md`): add missing primitives (D3) with the
    exact schema shape from `schema.ts`, correct badges (D5), remove/downgrade phantoms (D4).
 4. `docs/visual-guides/*.md`: keep diagram labels, function/trigger names, and step numbering in
    sync with the linked specification module and the actual pipeline source it illustrates.

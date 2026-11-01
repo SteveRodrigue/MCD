@@ -1,7 +1,7 @@
 # MCD Architecture Atlas: Engine Flow Diagrams
 
 > [!NOTE]
-> Companion, diagram-first guide to the specifications in [`docs/specifications/`](../specifications/). It does not redefine any contract: each diagram links to the spec section, ADR or source file that governs it. Where a diagram and a specification disagree, the specification (and ultimately the source code) wins.
+> Companion, diagram-first guide to the specifications in [`docs/creators/supplemental-reference/`](../creators/supplemental-reference/README.md). It does not redefine any contract: each diagram links to the spec section, ADR or source file that governs it. Where a diagram and a specification disagree, the specification (and ultimately the source code) wins.
 >
 > Conventions: diagrams use [Mermaid](https://mermaid.js.org/). Rectangles are engine steps or functions, diamonds are decision gates, rounded nodes are card-author-facing schema fields (`timing`, `trigger`, `gate`). File paths in labels are starting points for search, not pinned references.
 

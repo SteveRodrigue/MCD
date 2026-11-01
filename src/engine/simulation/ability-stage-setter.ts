@@ -1490,12 +1490,54 @@ function exerciseResource(
   return { ok: false, variant, reason: 'no card could be played with only this resource source' };
 }
 
+/**
+ * A main scheme's Setup (Appendix II step 12a) runs inside `setupGame` for its own scenario; the
+ * encounter deck holds the card it searches for, so the card must end up in play.
+ */
+function exerciseMainSchemeSetup(
+  target: AbilityTarget,
+  options: StageOptions,
+  variant: string,
+): StageOutcome {
+  const witness = declaredFilters(target)
+    .map((filter) =>
+      options.allCards.find(
+        (c) => c.packCode === 'core' && matchesCardFilter(c, filter) && c.code !== target.card.code,
+      ),
+    )
+    .find(Boolean);
+  const { state } = createStage({ ...subjectOf(target), scenarioId: target.card.setCode }, options);
+  const inPlay = [
+    ...state.sideSchemes.map((s) => s.card.code),
+    ...state.environments.map((e) => e.card.code),
+  ];
+  if (witness && !inPlay.includes(witness.code)) {
+    return { ok: false, variant, reason: `setup did not put ${witness.code} into play` };
+  }
+  const verification = verifyAbilityExecution(target.ability, digestState(state), state, {
+    checkDeltas: false,
+  });
+  if (!verification.ok) {
+    return { ok: false, variant, reason: verification.failures.join('; '), verification };
+  }
+  return {
+    ok: true,
+    variant,
+    evidence: 'setup',
+    verification,
+    fingerprint: fingerprintOf(state),
+    logKeys: logKeysOf(state),
+  };
+}
+
 /** A SETUP ability runs inside `setupGame`; a matching card is hidden at the deck's bottom for its search. */
 function exerciseSetup(
   target: AbilityTarget,
   options: StageOptions,
   variant: string,
 ): StageOutcome {
+  if (target.card.type === CardType.MAIN_SCHEME)
+    return exerciseMainSchemeSetup(target, options, variant);
   const filters = declaredFilters(target);
   const witness = filters
     .map((filter) =>

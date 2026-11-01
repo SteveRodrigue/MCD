@@ -8,7 +8,7 @@ import {
   getActiveVillain,
 } from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
-import { ScenarioRegistry, KlawScenarioPlugin } from '@engine/scenarios';
+import { ScenarioRegistry } from '@engine/scenarios';
 import { defeatSideScheme } from '@engine/effects';
 
 describe('Plan R9: Klaw II setup reveal and The "Immortal" Klaw side scheme', () => {
@@ -67,7 +67,7 @@ describe('Plan R9: Klaw II setup reveal and The "Immortal" Klaw side scheme', ()
     expect(state.sideSchemes.some((s) => s.card.code === '01127')).toBe(false);
 
     // Defeating Klaw I advances to Klaw II
-    const plugin = ScenarioRegistry.get('klaw') as KlawScenarioPlugin;
+    const plugin = ScenarioRegistry.get('klaw');
     const result = plugin.onVillainDefeated(state, getActiveVillain(state).instanceId!);
     expect(result.advancedStage).toBe(true);
 

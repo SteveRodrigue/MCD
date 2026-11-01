@@ -5,6 +5,7 @@ import { shuffleArray } from '../state/rng';
 import { attachCardToHost } from '../state/state-validator';
 import { appendLog } from '../state/game-log';
 import { placeSideScheme } from '../state/side-scheme';
+import { putEnvironmentIntoPlay } from '../state/environment';
 import { applyToughnessOnEntry } from '../state/card-instance';
 
 /** Zone the cards came from: one for all of them, or looked up per card (multi-zone search). */
@@ -87,6 +88,8 @@ export function routeCardInstances(
           targetInstanceId: card.instanceId,
           encounterCardInstance: card,
         });
+      } else if (card.card.type === CardType.ENVIRONMENT) {
+        putEnvironmentIntoPlay(state, card);
       } else if (card.card.type === CardType.ALLY) {
         applyToughnessOnEntry(card);
         player.allies.push(card);

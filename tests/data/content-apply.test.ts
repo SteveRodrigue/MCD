@@ -10,7 +10,7 @@ import { NodeFsDriver } from '../../src/data/content/drivers/node-fs';
 import type { LoadedContent } from '../../src/data/content/types';
 import { listStarterDecks } from '../../src/engine/decks';
 import { getSpecialHandler } from '../../src/engine/specials/special-registry';
-import { listModularEncounterSets } from '../../src/engine/scenarios';
+import { ScenarioRegistry, listModularEncounterSets } from '../../src/engine/scenarios';
 import { contentDriver } from '../helpers/content';
 
 const manifest = {
@@ -42,6 +42,7 @@ const content: LoadedContent = {
         },
       ] as never,
       supplemental: { '99001': { noSupplementalNeeded: true } } as never,
+      scenarios: [],
       modularSets: [{ code: 'tmp_set', name: 'Tmp Set', description: 'x' }],
       decks: [{ id: 1, name: 'Tmp deck', hero_code: '99001', hero_name: 'Tester', slots: {} }] as never,
       cardCount: 1,
@@ -90,6 +91,25 @@ describe('pack hooks', () => {
   it('does not register the hooks of a pack that is not loaded', () => {
     applyContent(content);
     expect(getSpecialHandler('WAKANDA_FOREVER')).toBeUndefined();
+  });
+});
+
+describe('scenarios', () => {
+  it('registers the scenarios of the loaded packs in scenario card code order', async () => {
+    await bootContent(contentDriver);
+    expect(ScenarioRegistry.getAll().map((p) => p.definition.id)).toEqual([
+      'rhino',
+      'klaw',
+      'ultron',
+    ]);
+  });
+
+  it('registers no scenario for a pack that is not loaded, and clears them on reset', async () => {
+    await bootContent(contentDriver);
+    resetContent();
+    expect(ScenarioRegistry.getAll()).toEqual([]);
+    applyContent(content);
+    expect(ScenarioRegistry.has('rhino')).toBe(false);
   });
 });
 

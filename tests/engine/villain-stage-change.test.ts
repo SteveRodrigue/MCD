@@ -18,12 +18,7 @@ import {
   resolveDefenderDeclaration,
 } from '@engine/pipeline';
 import { applyDamageToTarget } from '@engine/pipeline/damage-pipeline';
-import {
-  ScenarioRegistry,
-  advanceVillainStage,
-  rhinoPlugin,
-  UltronScenarioPlugin,
-} from '@engine/scenarios';
+import { ScenarioRegistry, advanceVillainStage } from '@engine/scenarios';
 
 /**
  * #303: a villain stage change (RR v1.8 glossary "Villain"). Same title: the new stage is the same
@@ -254,7 +249,7 @@ describe('Villain stage change (#303)', () => {
     getActiveVillain(state).statusCards = [StatusCard.TOUGH];
     getActiveVillain(state).health = 0;
 
-    rhinoPlugin.onVillainDefeated(state, getActiveVillain(state).instanceId!);
+    ScenarioRegistry.get('rhino').onVillainDefeated(state, getActiveVillain(state).instanceId!);
     const after = state;
 
     expect(getActiveVillain(after).card.code).toBe(RHINO_III);
@@ -268,8 +263,9 @@ describe('Villain stage change (#303)', () => {
   });
 
   it('6c. the plugin no longer re-implements the When Revealed text in code', () => {
-    expect('resolveStageIIWhenRevealed' in rhinoPlugin).toBe(false);
-    expect('resolveStageIIIWhenRevealed' in rhinoPlugin).toBe(false);
+    const rhino = ScenarioRegistry.get('rhino');
+    expect('resolveStageIIWhenRevealed' in rhino).toBe(false);
+    expect('resolveStageIIIWhenRevealed' in rhino).toBe(false);
   });
 
   it('7a. Klaw: the stage change goes through the same helper and keeps the attachments', () => {
@@ -324,7 +320,7 @@ describe('Villain stage change (#303)', () => {
   });
 
   it('7b. Ultron: the stage change goes through the same helper and keeps the attachments', () => {
-    const plugin = ScenarioRegistry.get('ultron') as UltronScenarioPlugin;
+    const plugin = ScenarioRegistry.get('ultron');
     const state = build(1, 'STANDARD', 'ultron');
     const ultron = getActiveVillain(state);
     expect(ultron.card.code).toBe('01134');

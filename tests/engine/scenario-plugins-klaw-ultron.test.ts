@@ -9,7 +9,7 @@ import {
   getActiveVillain,
 } from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
-import { ScenarioRegistry, UltronScenarioPlugin } from '@engine/scenarios';
+import { ScenarioRegistry } from '@engine/scenarios';
 
 describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
   const spiderManHero = cardCatalog.getCard('01001a') as HeroCard;
@@ -133,7 +133,7 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
     });
 
     it('advances Ultron through 3-stage main scheme progression (1B -> 2B -> 3B -> Defeat)', () => {
-      const ultronPlugin = ScenarioRegistry.get('ultron') as UltronScenarioPlugin;
+      const ultronPlugin = ScenarioRegistry.get('ultron');
       const villainCard = cardCatalog.getCard('01134') as VillainCard;
       const mainSchemeCard = cardCatalog.getCard('01137b') as MainSchemeCard;
 

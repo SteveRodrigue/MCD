@@ -144,7 +144,7 @@ type Hook<A extends unknown[], R> = (
 
 - **Rhino:** no `plugin.ts`. Delete `RhinoScenarioPlugin`. Verify that the 01095/01096 supplemental data fully covers the stage reveal effects and fill any primitive gaps generically.
 - **Klaw / Ultron:** move card-specific logic into supplemental data, or into `registerSpecialHandler` scripts when no primitive fits. Any remaining scenario-rule logic becomes thin `defineScenarioPlugin` hook overrides that call `next()`.
-- Phase A keeps the current file locations (`src/engine/scenarios/built-in/`). Relocation is Phase B.
+- Phase A keeps the current file locations. Relocation is Phase B. (Scenario files are in `content/packs/*/scenarios/` since M5c.)
 
 ### A5. Phase A tests
 

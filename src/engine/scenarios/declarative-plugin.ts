@@ -21,28 +21,25 @@ import { nextEngineId, shuffleArray } from '../state/rng';
 import { kernel } from '../kernel';
 import { advanceVillainStage, revealVillainStage } from './advance-villain-stage';
 import { villainStageHitPoints } from '../pipeline/stat-calculator';
-import type { ScenarioDefinition, ScenarioGameSetupOptions, ScenarioPlugin } from './types';
+import type {
+  ScenarioDefinition,
+  ScenarioGameSetupOptions,
+  ScenarioHooks,
+  ScenarioPlugin,
+} from './types';
 
 /**
  * A scenario driven by its `definition.json` (AUD-20261017-232534 F011-A): villain stages per
  * difficulty, main scheme stages, mandatory and modular encounter sets. The Setup and When
  * Revealed abilities printed on its main scheme cards are supplemental data, resolved here at
- * setup and when the main scheme advances (RR v1.8 Appendix II step 12, main scheme). A scenario
- * subclass adds only what cannot be data yet.
+ * setup and when the main scheme advances (RR v1.8 Appendix II step 12, main scheme). What cannot
+ * be data yet comes from the pack's `ScenarioHooks`.
  */
 export class DeclarativeScenarioPlugin implements ScenarioPlugin {
   constructor(
     readonly definition: ScenarioDefinition,
-    private readonly setupOnomatopoeia: string,
+    private readonly hooks?: ScenarioHooks,
   ) {}
-
-  /**
-   * What a scenario does at stage 1B that its cards cannot express as data yet. Runs after the
-   * main scheme's own When Revealed abilities.
-   */
-  resolveStage1BReveal(state: GameState, _options?: ScenarioGameSetupOptions): GameState {
-    return state;
-  }
 
   /** The A and B sides of each main scheme stage, in order. */
   private mainSchemeStagePairs(state: GameState): { a?: NormalizedCard; b: MainSchemeCard }[] {
@@ -171,7 +168,8 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     this.buildEncounterDeck(state, options);
     this.resolveMainSchemeAbilities(state, firstStage.a, 'SETUP');
     this.resolveMainSchemeAbilities(state, firstScheme, 'WHEN_REVEALED');
-    this.resolveStage1BReveal(state, options);
+    // (b') what the pack's script adds at stage 1B (the hook mutates the state in place)
+    this.hooks?.resolveStage1BReveal?.(state, options);
     revealVillainStage(state, villain);
 
     appendLog(state, {
@@ -184,7 +182,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
         health: villain.health,
         threatTarget: mainScheme.targetThreat,
       },
-      onomatopoeia: this.setupOnomatopoeia,
+      onomatopoeia: this.definition.setupOnomatopoeia,
     });
     return state;
   }

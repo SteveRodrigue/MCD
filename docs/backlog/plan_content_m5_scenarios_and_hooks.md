@@ -155,7 +155,7 @@ Decided as recommended (the plan was approved "as recommended" on 2026-11-01, an
 
 No file under `src/engine` names a Core card code or `'rhino'`, `built-in/` is gone, scenarios and hooks register through the loader, the zero-pack boot still works, and the setup digests and `npm run simulate` output match `main` (Klaw's digests changed only for the three stated reasons).
 
-## 13. As built (M5a: PR #538, M5b: PR #540)
+## 13. As built (M5a: PR #538, M5b: PR #540, M5c)
 
 Where the merged code differs from the plan above, or what the next implementer must know:
 
@@ -175,6 +175,13 @@ Where the merged code differs from the plan above, or what the next implementer 
 7. **Parity numbers (reference for M5c and M5d).** `npm run simulate -- --no-stats` after M5b: 189 abilities in scope (was 185: +2 `SETUP`, +2 `WHEN_REVEALED`), card data hash `1c9bff57` (was `362be14e`), Gauntlet 20/20 clean with 100 abilities seen, rule coverage 143/257 observed, replay catalog 307 entries (the 301 earlier recipes unchanged except their hash, plus 6 new). Re-measure the baseline on `main` after M5b is merged, with `--no-stats` on both sides (a local `stats/` file steers the Gauntlet and makes runs incomparable).
 8. **Digests.** `tests/engine/scenario-setup-digests.test.ts` holds 12 golden digests (3 scenarios x 1 and 2 players x Standard and Expert). Rhino's were recorded on `main` before M5b and did not change; Klaw's and Ultron's were re-recorded with their reasons in the file. M5c must leave all 12 unchanged.
 9. **Docs updated:** `02_timings_and_triggers.md` (SETUP row) and `scenario_creation_guide.md` (new Step 1b: main scheme abilities and environments as data). The rest of that guide (folder layout under `src/`, the `plugin.ts` lifecycle section) is still the pre-pack description and is rewritten in M5c.
+
+**M5c (scenarios from packs, Ultron script, `built-in/` deleted)**
+
+1. **Built as planned**: `listDirs` (Node and fetch drivers), `setupOnomatopoeia` in the definition schema and the three definitions, scenarios in `LoadedPack` with the loader's duplicate-id and invalid-definition rules (a scenario folder without `definition.json` also disables its pack), `PackHooks.scenarioHooks` and `ScenarioHooks.resolveStage1BReveal`, a single `DeclarativeScenarioPlugin(definition, hooks?)`, `content/packs/core/scripts/scenarios/ultron.ts`, `applyContent`/`resetContent`, `ScenarioRegistry.getAll()` in scenario card code order, `built-in/` deleted, guide rewritten. `src/engine/boot.ts` still imports `./scenarios` (the registry and plugin class); nothing there registers scenarios any more.
+2. **Small addition (not a deviation of the design):** with no pack loaded the registry is now empty, which the `ScenarioSelector` could not render (it read `scenarios[0]`). M5c adds a text-only "No scenario available" state in `ScenarioSelector`; the polished empty state stays M7, and the preselected-scenario change stays M5d. The zero-pack smoke test asserts it.
+3. **Parity:** 12 digests unchanged; `simulate --no-stats` replay catalog and summary byte-identical to `main` at `df880be`. Browser check: selector lists Rhino, Klaw, Ultron in that order and a game starts for each; Ultron's board shows the Drone text and no console errors (card images 404 only because the sandbox has no image cache).
+4. `pack-validate.ts` already validated scenario definitions and duplicate ids with the same `ClaimRegistry`; nothing to change there.
 
 ## 14. Checklist for M5c and M5d
 

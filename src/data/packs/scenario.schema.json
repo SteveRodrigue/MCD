@@ -28,6 +28,10 @@
     "description": {
       "type": "string"
     },
+    "setupOnomatopoeia": {
+      "type": "string",
+      "minLength": 1
+    },
     "supportedDifficulties": {
       "minItems": 1,
       "type": "array",

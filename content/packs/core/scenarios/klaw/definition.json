@@ -6,6 +6,7 @@
   "author": "Fantasy Flight Games",
   "version": "1.0.0",
   "description": "Klaw is operating an illegal underground weapons network. Intercept him before his sonic converter destroys the city!",
+  "setupOnomatopoeia": "UNDERGROUND DISTRIBUTION COMMENCES!",
   "supportedDifficulties": ["SKIRMISH", "STANDARD", "EXPERT"],
 
   "villainSetup": {

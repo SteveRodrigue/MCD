@@ -1,4 +1,4 @@
-# Handover — content folder refactor (next: M5d)
+# Handover — content folder refactor (next: M6)
 
 **Written:** 2026-11-01, at the end of M5b; updated the same day for the agent policy of PR #541 (autonomy and stop policy, game-first plans, delivery authorization). For the next session or agent that continues the work. Nothing here is a decision; the decisions live in the documents it points to.
 
@@ -11,11 +11,11 @@
 | M5a hooks and Wakanda Forever | merged | #538 |
 | M5b main scheme abilities, Klaw as data, environments | merged | #540 |
 | Plans, as-built notes, Klaw review, first handover | merged | #539 |
-| M5c scenarios from packs, Ultron as the one script, `built-in/` deleted | merged (see plan section 13) | this PR |
-| **M5d** defaults and literals (`'rhino'`, `'core'`) | **next** (approved, not started) | |
+| M5c scenarios from packs, Ultron as the one script, `built-in/` deleted | merged (see plan section 13) | #544 |
+| M5d defaults and literals (`'rhino'`, `'core'`) | merged (see plan section 13) | this PR |
 | M6 image cache per pack, M6b Tauri scaffold, M7 empty-shell UI, M8 leak guard and untracking `references/`, M9 editor on the storage driver, M10 docs split, M11 browser driver and distribution, M12 optional Core removal | roadmap only, see `plan_content_folder_refactor.md` | |
 
-`main` (at `c28230fb` or later) has everything above except M5c and M5d. PR #541 changed the agent rules (see section 4); read them in `AGENTS.md` and `.agents/rules/shared-quality-gates.md` (Stop policy, Plan and approval gate, In-Game Scenario, Delivery authorization), because they replace what earlier sessions did.
+`main` has everything above except M6 and later (M5d lands with the PR that updates this line). PR #541 changed the agent rules (see section 4); read them in `AGENTS.md` and `.agents/rules/shared-quality-gates.md` (Stop policy, Plan and approval gate, In-Game Scenario, Delivery authorization), because they replace what earlier sessions did.
 
 ## 2. Read first, in this order
 
@@ -79,23 +79,6 @@ npm run simulate -- --no-stats   # compare with a clean `main` run, byte for byt
 - M3 leftovers: the two `knip` ignore entries (`src/data/index.ts`, `src/data/card-loader.ts`) were not reviewed; the test suite is about 10% slower because the supplemental schema is imported into each test file.
 - M12 (removing the Core pack from the repository) stays optional and parked; Q1 and Q2 of the roadmap (where official supplemental data would live, git history) reopen only with it.
 
-## 8. Prompt for the next session
+## 8. Next session
 
-```text
-You are continuing the "content folder refactor" of Marvel Champions Digital (repository
-SteveRodrigue/MCD). Your task is milestone M5d. The approved plan is in the repository; do not
-redesign it.
-
-1. Read, in order: AGENTS.md (and the rules it links), docs/backlog/handover_content_refactor.md
-   (sections 3 to 6), docs/backlog/plan_content_m5_scenarios_and_hooks.md (sections 3.5, 13 and 14).
-2. Check the state: `git fetch`, open PRs, and that main contains M5c. Ask the user once to
-   confirm the approved M5d plan.
-3. Capture the parity baseline (`npm run simulate -- --no-stats` on clean main, keep
-   replay_catalog.json and simulation_summary.md, then `git checkout -- logs/simulations`).
-4. Implement M5d exactly as section 14 says (defaultScenarioId(), no 'rhino' / '01094' / '01097b'
-   fallbacks, explicit scenario in ability-stage-setter, gauntlet and simulate-games, first
-   registry scenario as the ScenarioSelector default, 'core' literals in deck-utils and the
-   simulation). Digests unchanged, simulate --no-stats byte-identical, zero-pack smoke test passes.
-5. Verify with the recipe in section 5, then deliver through commit-and-push. In the recap list
-   "Decisions I made" and "Try it in game".
-```
+M5 is done. The next milestones on the roadmap are M6 (image cache per pack) and M6b (Tauri scaffold); see `plan_content_folder_refactor.md`. There is no M5 prompt left to run; write a plan for M6 first (AGENTS.md plan gate), with an In-Game Scenario.

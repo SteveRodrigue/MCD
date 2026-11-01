@@ -9,6 +9,7 @@ import { GameState, GamePhase } from '../../src/engine/models';
 
 describe('Problem Report Service', () => {
   const mockGameState: GameState = {
+    scenarioId: 'rhino',
     id: 'test_game_1',
     roundNumber: 3,
     phase: GamePhase.PLAYER_PHASE,

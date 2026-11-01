@@ -47,7 +47,7 @@ export interface AbilityTarget {
 }
 
 export interface AbilityInventoryFilter {
-  /** Restrict to these pack codes (default: `core`). */
+  /** Restrict to these pack codes (default: every card given, that is the enabled packs). */
   packCodes?: readonly string[];
   /** Restrict to these card codes (e.g. the `--card` CLI target). */
   cardCodes?: readonly string[];
@@ -58,10 +58,9 @@ export function buildAbilityInventory(
   cards: readonly NormalizedCard[],
   filter: AbilityInventoryFilter = {},
 ): AbilityTarget[] {
-  const packCodes = filter.packCodes ?? ['core'];
   const targets: AbilityTarget[] = [];
   for (const card of cards) {
-    if (!packCodes.includes(card.packCode)) continue;
+    if (filter.packCodes && !filter.packCodes.includes(card.packCode)) continue;
     if (filter.cardCodes && !filter.cardCodes.includes(card.code)) continue;
     for (const ability of card.enrichment?.abilities ?? []) {
       targets.push({

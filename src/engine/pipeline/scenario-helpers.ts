@@ -8,7 +8,7 @@ import { endGame } from '../state/victory';
  * When Revealed triggers, or victory evaluation to the registered ScenarioPlugin.
  */
 export function handleVillainDefeat(state: GameState, villainInstanceId?: string): GameState {
-  const scenarioId = state.scenarioId || 'rhino';
+  const scenarioId = state.scenarioId;
   if (ScenarioRegistry.has(scenarioId)) {
     const plugin = ScenarioRegistry.get(scenarioId);
     const targetId = villainInstanceId || getActiveVillain(state)?.instanceId || '';
@@ -28,7 +28,7 @@ export function handleMainSchemeCompletion(
   state: GameState,
   mainSchemeInstanceId?: string,
 ): GameState {
-  const scenarioId = state.scenarioId || 'rhino';
+  const scenarioId = state.scenarioId;
   if (ScenarioRegistry.has(scenarioId)) {
     const plugin = ScenarioRegistry.get(scenarioId);
     const targetId =

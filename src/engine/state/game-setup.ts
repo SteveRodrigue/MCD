@@ -17,7 +17,7 @@ import {
   createInitialGameStats,
   CardRepository,
 } from '@engine/models';
-import { ScenarioRegistry } from '../scenarios';
+import { ScenarioRegistry, defaultScenarioId } from '../scenarios';
 import { executeEffect, hasPendingSequence } from '../effects';
 import { peekDecisionPrompt } from '../pipeline/prompt-queue';
 import { createCardInstance, resetInstanceCounter } from './card-instance';
@@ -162,11 +162,13 @@ export function setupGame(options: GameSetupOptions): GameState {
     };
   });
 
-  // 2. Setup Default / Fallback Villain
+  // 2. Setup the villain: given, else stage I of the scenario (a scenario without one cannot start)
+  const scenarioId = options.scenarioId ?? defaultScenarioId();
   const rawVillain =
-    options.villain ||
-    (catalog.getVillainByStage(options.scenarioId || 'rhino', 'I') as VillainCard) ||
-    (catalog.getCard('01094') as VillainCard);
+    options.villain || (catalog.getVillainByStage(scenarioId, 'I') as VillainCard | undefined);
+  if (!rawVillain) {
+    throw new Error(`Scenario '${scenarioId}' has no villain stage I in the card catalog.`);
+  }
   const villainHealth = rawVillain.healthPerHero
     ? rawVillain.health * playerCount
     : rawVillain.health;
@@ -181,11 +183,13 @@ export function setupGame(options: GameSetupOptions): GameState {
     attachments: [],
   };
 
-  // 3. Setup Default / Fallback Main Scheme
+  // 3. Setup the main scheme: given, else stage 1B of the scenario
   const rawMainScheme =
     options.mainScheme ||
-    (catalog.getMainSchemeByStage(options.scenarioId || 'rhino', '1B') as MainSchemeCard) ||
-    (catalog.getCard('01097b') as MainSchemeCard);
+    (catalog.getMainSchemeByStage(scenarioId, '1B') as MainSchemeCard | undefined);
+  if (!rawMainScheme) {
+    throw new Error(`Scenario '${scenarioId}' has no main scheme stage 1B in the card catalog.`);
+  }
 
   const mainScheme: MainSchemeState = {
     instanceId: `main_scheme_${nextEngineId(tempRngState, 'id')}_${rawMainScheme.code}`,
@@ -208,7 +212,7 @@ export function setupGame(options: GameSetupOptions): GameState {
   const rawEncounterCards =
     options.encounterCards ||
     catalog
-      .getExpandedCardsBySet(options.scenarioId || 'rhino')
+      .getExpandedCardsBySet(scenarioId)
       .filter((c: NormalizedCard) => c.type !== 'villain' && c.type !== 'main_scheme');
   const allEncounterCards = [...rawEncounterCards, ...playerObligations];
   const encounterInstances = allEncounterCards.map((c) => createCardInstance(c));
@@ -228,7 +232,7 @@ export function setupGame(options: GameSetupOptions): GameState {
       catalog,
     },
     setupState: { stage: 'SCENARIO_SETUP', mulliganCompleted: {} },
-    scenarioId: options.scenarioId || 'rhino',
+    scenarioId,
     difficulty,
     heroicLevel: options.heroicLevel || 0,
     firstPlayerIndex: 0,
@@ -267,14 +271,10 @@ export function setupGame(options: GameSetupOptions): GameState {
   state.idCounter = tempRngState.idCounter;
 
   // 7. Invoke Scenario Plugin Lifecycle Setup if registered (Enforces official 15-step scenario setup)
-  if (
-    !options.skipScenarioPlugin &&
-    options.scenarioId &&
-    ScenarioRegistry.has(options.scenarioId)
-  ) {
-    const plugin = ScenarioRegistry.get(options.scenarioId);
+  if (!options.skipScenarioPlugin && ScenarioRegistry.has(scenarioId)) {
+    const plugin = ScenarioRegistry.get(scenarioId);
     state = plugin.onGameSetup(state, {
-      scenarioId: options.scenarioId,
+      scenarioId,
       difficulty,
       heroicLevel: options.heroicLevel,
       modularSetCodes: options.modularSetCodes,

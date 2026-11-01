@@ -55,3 +55,15 @@ export class ScenarioRegistry {
     this.plugins.clear();
   }
 }
+
+/**
+ * The scenario used when a caller names none: the registered scenario with the lowest scenario
+ * card code. Throws when no pack provides a scenario.
+ */
+export function defaultScenarioId(): string {
+  const [first] = ScenarioRegistry.getAll();
+  if (!first) {
+    throw new Error('No scenario is available: enable a content pack that provides one.');
+  }
+  return first.definition.id;
+}

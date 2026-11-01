@@ -7,3 +7,5 @@ Everything the game loads at runtime lives here, organised in packs (see ADR-009
 - `.cache/` is disposable and git-ignored.
 
 Check the tree with `npm run pack:validate -- content/packs` and see which packs have supplemental data with `npm run pack:status`.
+
+Refresh `cards/`, `meta/` and `translations/` from upstream with `npm run content:sync` (`-- --check` to preview); it never touches `pack.json` or `supplemental/`.

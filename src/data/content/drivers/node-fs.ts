@@ -18,6 +18,18 @@ export class NodeFsDriver implements ContentDriver {
     }
   }
 
+  async listDirs(dir: string): Promise<string[]> {
+    try {
+      const entries = await readdir(this.resolve(dir), { withFileTypes: true });
+      return entries
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => entry.name)
+        .sort();
+    } catch {
+      return [];
+    }
+  }
+
   async exists(rel: string): Promise<boolean> {
     try {
       await stat(this.resolve(rel));

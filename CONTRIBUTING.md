@@ -27,7 +27,7 @@ Here is the recommended workflow to implement any Hero, Ally, Event, Upgrade, or
 
 ### Step 1: Verify the Card in Upstream JSON (`content/`)
 
-All official card metadata (stats, traits, cost, text, resource icons) lives in `content/packs/*/cards/*.json`. Ensure the card is loaded in [`src/engine/decks/starter-decks.ts`](src/engine/decks/starter-decks.ts) or in a scenario `definition.json` under [`src/engine/scenarios/built-in/`](src/engine/scenarios/built-in/).
+All official card metadata (stats, traits, cost, text, resource icons) lives in `content/packs/*/cards/*.json`. Ensure the card is loaded in [`src/engine/decks/starter-decks.ts`](src/engine/decks/starter-decks.ts) or in a scenario `definition.json` under `content/packs/*/scenarios/`.
 
 ### Step 2: Write a Failing Unit Test in `tests/engine/`
 

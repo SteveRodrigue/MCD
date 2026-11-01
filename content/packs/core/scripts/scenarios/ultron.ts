@@ -1,8 +1,6 @@
 import { CardInstance, CardType, GameState, MinionCard } from '@engine/models';
-import { appendLog } from '../../../state/game-log';
-import { DeclarativeScenarioPlugin } from '../../declarative-plugin';
-import type { ScenarioDefinition, ScenarioGameSetupOptions } from '../../types';
-import definitionData from '../../../../../content/packs/core/scenarios/ultron/definition.json';
+import type { ScenarioHooks } from '@engine/plugin-api';
+import { appendLog } from '@engine/state/game-log';
 
 /**
  * Creates a standard Ultron Drone minion instance (RR v1.8 / Ultron Drones Environment).
@@ -55,12 +53,8 @@ function createDroneMinionInstance(sourceCard: CardInstance): CardInstance {
  * player puts the top card of their deck into play facedown as a Drone minion, a concept the
  * engine does not have yet (the Vision pack reproduces it; see the M5 plan, decision 4).
  */
-export class UltronScenarioPlugin extends DeclarativeScenarioPlugin {
-  constructor() {
-    super(definitionData as ScenarioDefinition, 'ULTRON ONLINE! DRONES INITIALIZED!');
-  }
-
-  resolveStage1BReveal(state: GameState, _options?: ScenarioGameSetupOptions): GameState {
+export const ultronScenarioHooks: ScenarioHooks = {
+  resolveStage1BReveal(state: GameState): GameState {
     // 1B When Revealed: Each player puts the top card of their deck into play facedown engaged as a Drone minion
     for (const player of state.players) {
       if (player.deck.length > 0) {
@@ -78,7 +72,5 @@ export class UltronScenarioPlugin extends DeclarativeScenarioPlugin {
     }
 
     return state;
-  }
-}
-
-export const ultronPlugin = new UltronScenarioPlugin();
+  },
+};

@@ -42,7 +42,7 @@ interface ScenarioSelectorProps {
   onStartSetup: (selection: SetupSelection) => void;
 }
 
-export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup }) => {
+const ScenarioChooser: React.FC<ScenarioSelectorProps> = ({ onStartSetup }) => {
   const { style } = useModalStyle();
   const { field } = useThemeExtras();
   const { settings, defaultDifficulty, defaultHeroicLevel } = useGameSettings();
@@ -788,4 +788,21 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
       </div>
     </div>
   );
+};
+
+/** Without a loaded pack there is no scenario to choose; the polished empty state is M7. */
+export const ScenarioSelector: React.FC<ScenarioSelectorProps> = (props) => {
+  if (ScenarioRegistry.getAll().length === 0) {
+    return (
+      <div className="max-w-6xl w-full mx-auto my-4 p-6 text-center">
+        <div className="inline-block bg-comic-yellow border-comic border-comic-black px-6 py-1.5 font-bangers text-xl md:text-2xl tracking-wider text-comic-red shadow-comic mb-2">
+          MISSION CONTROL • SCENARIO SELECTION
+        </div>
+        <p className="font-bangers text-lg tracking-widest uppercase">
+          No scenario available: enable a content pack.
+        </p>
+      </div>
+    );
+  }
+  return <ScenarioChooser {...props} />;
 };

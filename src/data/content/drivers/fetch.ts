@@ -37,6 +37,17 @@ export class FetchDriver implements ContentDriver {
     return names.sort();
   }
 
+  async listDirs(dir: string): Promise<string[]> {
+    const prefix = `${dir}/`;
+    const names = new Set<string>();
+    for (const file of await this.loadIndex()) {
+      if (!file.startsWith(prefix)) continue;
+      const [first, ...rest] = file.slice(prefix.length).split('/');
+      if (rest.length > 0) names.add(first);
+    }
+    return [...names].sort();
+  }
+
   async exists(path: string): Promise<boolean> {
     return (await this.loadIndex()).has(path);
   }

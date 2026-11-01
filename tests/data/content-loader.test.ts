@@ -37,14 +37,16 @@ afterEach(() => {
 describe('loadContent', () => {
   it('boots with zero packs from an empty content root', async () => {
     fresh();
-    expect(await loadContent(driver())).toEqual({ packs: [], failures: [] });
+    expect(await loadContent(driver())).toEqual({ packs: [], failures: [], descriptions: [] });
   });
 
   it('boots with zero packs when none is enabled', async () => {
     fresh();
     config([]);
     write('packs/core/pack.json', manifest('core'));
-    expect(await loadContent(driver())).toEqual({ packs: [], failures: [] });
+    const content = await loadContent(driver());
+    expect({ packs: content.packs, failures: content.failures }).toEqual({ packs: [], failures: [] });
+    expect(content.descriptions).toMatchObject([{ id: 'core', enabled: false, state: 'data-only' }]);
   });
 
   it('loads the enabled packs with cards, supplemental data, modular sets and decks', async () => {
@@ -231,5 +233,51 @@ describe('loadContent', () => {
     const content = await loadContent(driver());
     expect(content.packs).toEqual([]);
     expect(content.failures[0].reason).toContain('config.json');
+  });
+});
+
+describe('pack descriptions (what the Content screen shows)', () => {
+  it('marks an enabled pack with supplemental data Playable and one without it Data only', async () => {
+    fresh();
+    config(['core', 'aoa']);
+    write('packs/core/pack.json', manifest('core', { kind: 'core', name: 'Core Set' }));
+    write('packs/core/cards/core.json', [card('00001')]);
+    write('packs/core/supplemental/core.json', { cards: { '00001': {} } });
+    write('packs/aoa/pack.json', manifest('aoa', { dependsOn: ['core'] }));
+    write('packs/aoa/cards/aoa.json', [card('45001')]);
+    const { descriptions } = await loadContent(driver());
+    expect(descriptions).toMatchObject([
+      { id: 'aoa', enabled: true, state: 'data-only', cardCount: 1 },
+      { id: 'core', name: 'Core Set', enabled: true, state: 'playable', supplementalCount: 1 },
+    ]);
+  });
+
+  it('marks a pack Needs pack when its dependency is disabled, and lists its scenarios as locked', async () => {
+    fresh();
+    config(['aoa']);
+    write('packs/aoa/pack.json', manifest('aoa', { name: 'Age of Apocalypse', dependsOn: ['core'] }));
+    write('packs/aoa/scenarios/apoc/definition.json', { id: 'apoc', name: 'Apocalypse' });
+    const { descriptions } = await loadContent(driver());
+    expect(descriptions).toMatchObject([
+      {
+        id: 'aoa',
+        enabled: true,
+        state: 'needs-pack',
+        lockedScenarios: [{ id: 'apoc', name: 'Apocalypse' }],
+      },
+    ]);
+    expect(descriptions[0].reason).toContain('core');
+  });
+
+  it('marks a pack with a broken pack.json Failed with the reason, and the others still load', async () => {
+    fresh();
+    config(['core', 'bad']);
+    write('packs/core/pack.json', manifest('core', { kind: 'core' }));
+    write('packs/bad/pack.json', '{ not json');
+    const content = await loadContent(driver());
+    expect(content.packs.map((p) => p.id)).toEqual(['core']);
+    const bad = content.descriptions.find((d) => d.id === 'bad');
+    expect(bad).toMatchObject({ enabled: true, state: 'failed' });
+    expect(bad?.reason).toBeTruthy();
   });
 });

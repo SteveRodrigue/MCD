@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import {
   ScenarioSelector,
@@ -9,6 +9,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { getStarterDeck } from '../../src/engine/decks/starter-decks';
 import { getActiveVillain, VillainCard } from '../../src/engine/models';
+import { getLoadedContent, setLoadedContent } from '../../src/data/content/store';
 import type { SetupSelection } from '../../src/ui/components/setup/ScenarioSelector';
 
 // The setup screen reads scenarios from the ScenarioRegistry and modular sets from the catalog;
@@ -17,7 +18,7 @@ describe('ScenarioSelector', () => {
   const renderSelector = (onStartSetup = vi.fn()) => {
     render(
       <GameSettingsProvider>
-        <ScenarioSelector onStartSetup={onStartSetup} />
+        <ScenarioSelector onStartSetup={onStartSetup} onOpenContent={vi.fn()} />
       </GameSettingsProvider>,
     );
     return onStartSetup;
@@ -28,6 +29,33 @@ describe('ScenarioSelector', () => {
     expect(screen.getByText('Rhino: The Break-In!')).toBeTruthy();
     expect(screen.getByRole('button', { name: '#2 Klaw' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '#3 Ultron' })).toBeTruthy();
+  });
+
+  describe('with a scenario of a pack that is not loaded', () => {
+    const loaded = getLoadedContent();
+    afterEach(() => setLoadedContent(loaded));
+
+    it('lists it disabled with the pack name', () => {
+      setLoadedContent({
+        ...loaded,
+        descriptions: [
+          {
+            id: 'gg',
+            name: 'Green Goblin',
+            enabled: false,
+            state: 'data-only',
+            cardCount: 0,
+            supplementalCount: 0,
+            lockedScenarios: [{ id: 'goblin', name: 'Goblin Raid' }],
+          },
+        ],
+      });
+      renderSelector();
+      const locked = screen.getByRole('button', {
+        name: /Goblin Raid · Needs Green Goblin/,
+      }) as HTMLButtonElement;
+      expect(locked.disabled).toBe(true);
+    });
   });
 
   it('flips through the scenarios with the page buttons and wraps around', () => {

@@ -1,6 +1,6 @@
 ﻿# [ADR-0015] User Content & Deck Storage Architecture (Prebuilt, Custom, MarvelCDB, Fan-Made)
 
-* **Status:** Accepted
+* **Status:** Accepted (Superseded in part by [ADR-0092](0092-content-packs-and-runtime-loading.md) regarding the folder layout; the storage-driver concept is kept)
 * **Date:** 2026-08-27
 * **Authors:** MCD Core Team
 * **Deciders:** Core Engineering Team & Project Maintainer

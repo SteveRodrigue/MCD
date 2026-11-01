@@ -11,7 +11,7 @@
 
 ## Context & Problem Statement
 
-In [ADR-0014](0014-marvelcdb-deck-schema-and-metadata-decks.md) and [ADR-0015](0015-user-content-and-deck-storage-architecture.md), we standardized on the official **MarvelCDB JSON deck schema** and established segmented content directories (`prebuilt_decks/`, `decks/`, `marvelcdb/`).
+In [ADR-0014](0014-marvelcdb-deck-schema-and-metadata-decks.md) and [ADR-0015](0015-user-content-and-deck-storage-architecture.md), we standardized on the official **MarvelCDB JSON deck schema** and established segmented content directories (`prebuilt_decks/`, `decks/`, `marvelcdb/`). The folder layout has since been replaced by [ADR-0092](0092-content-packs-and-runtime-loading.md); the one-file-per-deck rule below still applies inside the new layout.
 
 However, storing multiple decks inside a single monolithic file (e.g. `data/prebuilt_decks/starter_decks.json` containing an array of 5 decks) presents significant friction:
 1. **Version Control & Merge Conflicts:** Multiple contributors adding new hero decks to a single JSON array causes Git merge conflicts.

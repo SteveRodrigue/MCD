@@ -52,7 +52,7 @@ Then Klaw's three cards get supplemental abilities (data) and `KlawScenarioPlugi
 
 **Behavior changes, all rules corrections and all intentional:**
 
-- **Shuffle.** The printed Setup shuffles the encounter deck; today's code does not. Seeded Klaw games change.
+- **Shuffle.** The printed Setup says to shuffle the encounter deck, and the Search rule requires it anyway ("if any portion of a deck is searched, upon completion of that game step, game function, or card ability, shuffle that entire deck"). The engine's `SEARCH` already shuffles a full search by default; today's Klaw code bypasses `SEARCH` and does not. Seeded Klaw games change. The Find rule also confirms the "dealt as a facedown card" case below: facedown encounter cards in in-play areas (dealt cards, boost cards) are not found.
 - **Stage 2A.** Today the 2A "discard until a minion" never happens in a game (nothing runs it on advance); the data version resolves it.
 - **Defense Network can never be missing; creating it was a bug.** It belongs to the Klaw set, so it is always among the cards; if the search does not find it (dealt as a facedown boost or encounter card, say) the search finds nothing, which the engine already handles. A card cannot be created out of thin air, so the fallback is deleted, not preserved.
 - **Starting threat** for Defense Network will come from the normal reveal path rather than base threat x players; to be checked against the card when implemented.

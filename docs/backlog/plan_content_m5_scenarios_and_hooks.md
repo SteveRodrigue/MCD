@@ -178,6 +178,26 @@ Where the merged code differs from the plan above, or what the next implementer 
 
 ## 14. Checklist for M5c and M5d
 
+### In-Game Scenarios for M5c and M5d
+
+**M5c**
+
+**Setup:** Spider-Man (Peter Parker, alter-ego form), one player, Standard difficulty, on the scenario screen; Core is the only enabled pack.
+**Player does:** Picks Ultron in the selector, starts the mission, confirms the opening hand and looks at the board. Then does the same for Klaw and for Rhino.
+**Today:** The three scenarios exist because the engine is built with them; the board shows Ultron at stage I, the Ultron Drones environment in play and one facedown Drone minion engaged with Spider-Man.
+**After this change:** The same boards, in the same order in the selector (Rhino, Klaw, Ultron). The scenarios now come from the Core pack's files, so a scenario whose pack is not loaded is not offered.
+**Why (rules):** RR v1.8 Appendix II step 12: Ultron's stage 1B When Revealed puts the top card of each player's deck into play facedown, engaged, as a Drone minion; nothing about the rules changes.
+**Also covers:** Klaw and Rhino games start exactly as before (the 12 setup digests are unchanged); a scenario that needs a missing pack is disabled with a reason.
+
+**M5d**
+
+**Setup:** The app opens with Core enabled, then with no pack enabled at all.
+**Player does:** Opens the scenario screen and starts a mission.
+**Today:** The screen preselects Rhino and game setup assumes Rhino, even falling back to card `01094` when Rhino is not there.
+**After this change:** The preselected scenario is the first one available (Rhino with Core enabled). With no pack enabled there is no scenario to preselect, and starting a mission says no scenario is available instead of silently using Rhino.
+**Why (rules):** None: the player always chooses the scenario; this is about not hiding a missing one.
+**Also covers:** Simulations and tests that never named a scenario still run Rhino through the default.
+
 **M5c: scenarios from packs, Ultron as the one script, delete `built-in/`**
 
 1. `ContentDriver.listDirs(dir)`: Node (`readdir` with dirents), fetch (derived from `index.json`), update any test that stubs a `ContentDriver`.

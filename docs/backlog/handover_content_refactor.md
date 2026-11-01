@@ -1,6 +1,6 @@
 # Handover — content folder refactor (next: M5c)
 
-**Written:** 2026-11-01, at the end of M5b. For the next session or agent that continues the work. Nothing here is a decision; the decisions live in the documents it points to.
+**Written:** 2026-11-01, at the end of M5b; updated the same day for the agent policy of PR #541 (autonomy and stop policy, game-first plans, delivery authorization). For the next session or agent that continues the work. Nothing here is a decision; the decisions live in the documents it points to.
 
 ## 1. Where things stand
 
@@ -9,13 +9,13 @@
 | M0 ADR-0092, M1 audit, M2 pack format | merged | #518, #521, #522 |
 | M4 content move, M4b sync CLI, M3 runtime loader | merged | #531, #535, #536 |
 | M5a hooks and Wakanda Forever | merged | #538 |
-| M5b main scheme abilities, Klaw as data, environments | **open, CI green** | #540 |
-| Plans, as-built notes, Klaw review, this handover | **open, CI green** | #539 |
+| M5b main scheme abilities, Klaw as data, environments | merged | #540 |
+| Plans, as-built notes, Klaw review, first handover | merged | #539 |
 | **M5c** scenarios from packs, Ultron as the one script, delete `built-in/` | **next** (approved, not started) | |
 | **M5d** defaults and literals (`'rhino'`, `'core'`) | after M5c (approved) | |
 | M6 image cache per pack, M6b Tauri scaffold, M7 empty-shell UI, M8 leak guard and untracking `references/`, M9 editor on the storage driver, M10 docs split, M11 browser driver and distribution, M12 optional Core removal | roadmap only, see `plan_content_folder_refactor.md` | |
 
-If #539 and #540 are merged when you start, `main` has everything below; if not, M5c needs #540's code, so branch from `feat/main-scheme-abilities` or wait for the merge.
+`main` (at `c28230fb` or later) has everything above except M5c and M5d. PR #541 changed the agent rules (see section 4); read them in `AGENTS.md` and `.agents/rules/shared-quality-gates.md` (Stop policy, Plan and approval gate, In-Game Scenario, Delivery authorization), because they replace what earlier sessions did.
 
 ## 2. Read first, in this order
 
@@ -39,8 +39,9 @@ If #539 and #540 are merged when you start, `main` has everything below; if not,
 
 ## 4. How the user wants to work
 
-- **Plan first, then stop for approval** before changing source (AGENTS.md). M5c and M5d are approved; anything new needs a plan.
-- **Delivery only on an explicit request** in the current message ("commit and push", "merge"). `main` is protected: work on a branch, open a PR, wait for CI, squash-merge only when asked. Check `gh pr list --state open` before pushing and before merging.
+- **Follow the current policy in `AGENTS.md`, not the habits of earlier sessions.** Stop and ask only for plan approval, confidence below 95%, a plan deviation, a destructive action, or a failure that survives two fix attempts; decide everything else, list it under **Decisions I made** in the recap, and continue. Approval is per session: the M5 plan (M5c and M5d included) was approved "as recommended" in the previous session, so ask the user **once** to confirm it before implementing.
+- **Delivery runs through `commit-and-push`** and is authorized when the user asks, or automatically once an approved plan is implemented, verified (targeted checks, parity) and has no open plan deviation. Otherwise offer and wait. `main` is protected; never bypass hooks or branch protection; check `gh pr list --state open` before pushing and before merging, and report a red or blocked PR instead of working around it.
+- **Plans open with an In-Game Scenario** (setup, what the player does, today, after, the rule that decides it, in table language), and the recap repeats it as **Try it in game**. Section 14 of the M5 plan has the scenarios for M5c and M5d.
 - **One worktree per task** (`git worktree add -b <branch> ../MCD-<name> origin/main`), with `node_modules` as a directory junction to the main checkout. **Remove the junction first** (PowerShell: `[System.IO.Directory]::Delete(path)`) before removing a worktree, or the delete can follow the link. Stop any dev server you started (find it by port).
 - Stage files **by name**; a hook blocks `git add -A`/`.`. Commit and pre-push hooks run typecheck, lint, `docs:check` and the full test suite, and regenerate `docs/reports/supplemental_data`. Never bypass them.
 - Short answers, lead with the action, numbered steps, one concrete next step. Ask only for decisions that are the user's.
@@ -89,9 +90,9 @@ do not redesign it.
    (the whole file, including sections 3 to 6), docs/decisions/0092-content-packs-and-runtime-loading.md,
    docs/backlog/plan_content_m5_scenarios_and_hooks.md (sections 3.2, 3.3, 3.5, 13 and 14),
    docs/backlog/klaw_setup_as_data_review.md.
-2. Check the state: `git fetch`, `gh pr list --state open`, and whether PRs #539 and #540 are
-   merged. If #540 is not merged, say so before doing anything and ask whether to wait or to
-   branch from feat/main-scheme-abilities.
+2. Check the state: `git fetch`, `gh pr list --state open`, and that main contains M5b (PR #540,
+   commit c28230fb or later). Read the autonomy, plan and delivery rules in AGENTS.md as they are
+   today (they changed in PR #541). Then ask the user once to confirm the approved M5c/M5d plan.
 3. Create a worktree from the up-to-date main (node_modules as a junction), capture the parity
    baseline (`npm run simulate -- --no-stats` on a clean main, save replay_catalog.json and
    simulation_summary.md, then `git checkout -- logs/simulations`).
@@ -106,8 +107,10 @@ do not redesign it.
    `simulate --no-stats` must be byte-identical to main.
 5. Verify with the recipe in section 5 of the handover, including a browser check that the
    scenario selector lists Rhino, Klaw and Ultron in that order and a game starts for each.
-6. Stop and report. Do not commit, push, open a PR or merge until the user says so in a message.
-   When asked, stage files by name, open the PR from the PR template, and wait for CI.
+6. Deliver through the commit-and-push skill once the work is verified and no plan deviation is
+   open (stage files by name, PR from the PR template, wait for CI, squash-merge); otherwise stop
+   and report. Stop earlier only for the cases in AGENTS.md's Stop policy. In the recap list
+   "Decisions I made" and "Try it in game".
 7. M5d (section 3.5 and 14 of the plan) is a separate PR after M5c is merged.
 
 Working rules that matter: evidence over opinion (count the upstream cards before calling

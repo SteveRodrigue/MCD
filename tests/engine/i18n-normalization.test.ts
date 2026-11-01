@@ -6,8 +6,8 @@ import {
 } from '../../src/data/importer/card-loader';
 import { CardType, Keyword, VillainCard, AllyCard, HeroCard } from '../../src/engine/models';
 import { hasKeyword, getKeywordValue } from '../../src/engine/models';
-import coreCards from '../../data/upstream/pack/core.json';
-import frenchCoreCards from '../../data/upstream/translations/fr/pack/core.json';
+import coreCards from '../../content/packs/core/cards/core.json';
+import frenchCoreCards from '../../content/packs/core/translations/fr/core.json';
 
 describe('i18n Normalization and Canonical Ingestion Protocol', () => {
   it('preserves canonical English rules traits and keywords while displaying French translated text', () => {

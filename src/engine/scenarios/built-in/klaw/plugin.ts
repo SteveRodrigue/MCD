@@ -3,7 +3,7 @@ import { createCardInstance } from '../../../state/card-instance';
 import { appendLog } from '../../../state/game-log';
 import { DeclarativeScenarioPlugin } from '../../declarative-plugin';
 import type { ScenarioDefinition, ScenarioGameSetupOptions } from '../../types';
-import definitionData from './definition.json';
+import definitionData from '../../../../../content/packs/core/scenarios/klaw/definition.json';
 
 /**
  * Klaw (Underground Distribution). Stage 1A setup is scenario code; Klaw II When Revealed

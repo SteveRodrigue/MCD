@@ -2,7 +2,7 @@
 
 ## 🏛️ Overview
 
-In **Marvel Champions Digital (MCD)**, all card-specific enrichment data resides exclusively in `src/data/supplemental/pack/*.json`. To preserve the **Declarative Data-First Invariant** and prevent speculative or unhandled mechanics from entering the game engine, supplemental card declarations are strictly validated against **codebase-grounded** schemas.
+In **Marvel Champions Digital (MCD)**, all card-specific enrichment data resides exclusively in `content/packs/*/supplemental/*.json`. To preserve the **Declarative Data-First Invariant** and prevent speculative or unhandled mechanics from entering the game engine, supplemental card declarations are strictly validated against **codebase-grounded** schemas.
 
 This architecture achieves two vital goals:
 1. **Zero Drift / No Speculative Data:** Any ability step effect, trigger, timing, cost, target, or keyword declared in supplemental JSON must have an active handler in the engine (`src/engine/effects/handlers/`, `src/engine/pipeline/stat-calculator.ts`, `src/engine/pipeline/legality-checker.ts`). Unknown or unsupported variants are immediately rejected at build, test, and edit time.
@@ -43,7 +43,7 @@ Live JSON schema validation is configured in `.vscode/settings.json`:
 {
   "json.schemas": [
     {
-      "fileMatch": ["/src/data/supplemental/pack/*.json"],
+      "fileMatch": ["/content/packs/*/supplemental/*.json"],
       "url": "./src/data/supplemental/schema.json"
     }
   ]

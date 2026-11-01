@@ -51,7 +51,7 @@ npm run parse:card -- --code 01005 --json
 ```
 
 ### 4. Safely Update or Add Card to Supplemental Data (`--write`)
-To write the parsed declarative JSON directly into `src/data/supplemental/pack/<pack>.json`:
+To write the parsed declarative JSON directly into `content/packs/<code>/supplemental/<stem>.json`:
 ```bash
 npm run parse:card -- --pack core --code 01001b --write
 ```

@@ -2,6 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import {
+  cardFileNames,
+  cardPath,
+  supplementalFileNames,
+  supplementalPath,
+} from '../../src/tools/content-paths';
+import {
   TimingTypeSchema,
   TriggerTypeSchema,
   TargetSelectorSchema,
@@ -17,8 +23,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '../../');
 
-const SUPPLEMENTAL_DIR = path.join(ROOT_DIR, 'src/data/supplemental/pack');
-const UPSTREAM_DIR = path.join(ROOT_DIR, 'data/upstream/pack');
 const AMBIGUITIES_DIR = path.join(ROOT_DIR, 'docs/ambiguities');
 
 // Output paths, relative to the output root (the repo root unless a test passes a temp dir)
@@ -170,12 +174,10 @@ function hasActiveRulesText(text?: string): boolean {
 
 function loadAllUpstreamCards(): Map<string, UpstreamCard> {
   const map = new Map<string, UpstreamCard>();
-  if (!fs.existsSync(UPSTREAM_DIR)) return map;
-
-  const files = fs.readdirSync(UPSTREAM_DIR).filter((f) => f.endsWith('.json'));
+  const files = cardFileNames(ROOT_DIR);
   for (const file of files) {
     try {
-      const content = JSON.parse(fs.readFileSync(path.join(UPSTREAM_DIR, file), 'utf-8'));
+      const content = JSON.parse(fs.readFileSync(cardPath(file, ROOT_DIR), 'utf-8'));
       if (Array.isArray(content)) {
         for (const card of content) {
           if (card && card.code) {
@@ -192,12 +194,10 @@ function loadAllUpstreamCards(): Map<string, UpstreamCard> {
 
 function loadAllSupplementalPacks(): Map<string, Record<string, SupplementalEntry>> {
   const packs = new Map<string, Record<string, SupplementalEntry>>();
-  if (!fs.existsSync(SUPPLEMENTAL_DIR)) return packs;
-
-  const files = fs.readdirSync(SUPPLEMENTAL_DIR).filter((f) => f.endsWith('.json'));
+  const files = supplementalFileNames(ROOT_DIR);
   for (const file of files) {
     const packName = file.replace('.json', '');
-    const fullPath = path.join(SUPPLEMENTAL_DIR, file);
+    const fullPath = supplementalPath(file, ROOT_DIR);
     const rawContent = fs.readFileSync(fullPath, 'utf-8');
 
     // Enforce raw JSON duplicate key check

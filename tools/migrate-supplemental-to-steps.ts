@@ -1,11 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { supplementalFileNames, supplementalPath } from '../src/tools/content-paths';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '../');
-const SUPPLEMENTAL_DIR = path.join(ROOT_DIR, 'src/data/supplemental/pack');
 
 function transformStep(rawStep: any): any {
   const step: any = {};
@@ -51,10 +51,10 @@ function transformAbility(rawAbility: any): any {
 }
 
 export function migrateSupplementalFiles() {
-  const files = fs.readdirSync(SUPPLEMENTAL_DIR).filter((f) => f.endsWith('.json'));
+  const files = supplementalFileNames(ROOT_DIR);
 
   for (const file of files) {
-    const filePath = path.join(SUPPLEMENTAL_DIR, file);
+    const filePath = supplementalPath(file, ROOT_DIR);
     const content = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
     const cards = content.cards || content;
 

@@ -1,23 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
-import path from 'node:path';
+import { cardFileNames, cardPath, supplementalFileNames, supplementalPath } from '../../src/tools/content-paths';
 
 type Json = Record<string, any>;
 
-const PACK_DIR = path.resolve(__dirname, '../../src/data/supplemental/pack');
-const UPSTREAM_DIR = path.resolve(__dirname, '../../data/upstream/pack');
-
-const packs: { file: string; cards: Record<string, Json> }[] = fs
-  .readdirSync(PACK_DIR)
-  .filter((f) => f.endsWith('.json'))
+const packs: { file: string; cards: Record<string, Json> }[] = supplementalFileNames()
   .map((file) => ({
     file,
-    cards: JSON.parse(fs.readFileSync(path.join(PACK_DIR, file), 'utf-8')).cards,
+    cards: JSON.parse(fs.readFileSync(supplementalPath(file), 'utf-8')).cards,
   }));
 
 const upstream: Record<string, Json> = {};
-for (const file of fs.readdirSync(UPSTREAM_DIR).filter((f) => f.endsWith('.json'))) {
-  for (const card of JSON.parse(fs.readFileSync(path.join(UPSTREAM_DIR, file), 'utf-8'))) {
+for (const file of cardFileNames()) {
+  for (const card of JSON.parse(fs.readFileSync(cardPath(file), 'utf-8'))) {
     upstream[card.code] = card;
   }
 }

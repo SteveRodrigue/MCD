@@ -1,0 +1,12 @@
+{
+  "id": "ron",
+  "name": "Ronan Modular Set",
+  "kind": "scenario",
+  "origin": "official-bundled",
+  "apiVersion": 1,
+  "version": "1.0.0",
+  "dependsOn": [
+    "core"
+  ],
+  "source": "zzorba/marvelsdb-json-data"
+}

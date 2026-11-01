@@ -2,13 +2,11 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { cardFileNames, cardPath, supplementalPath } from '../../src/tools/content-paths';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '../../');
-
-const UPSTREAM_DIR = path.join(ROOT_DIR, 'data/upstream/pack');
-const SUPPLEMENTAL_DIR = path.join(ROOT_DIR, 'src/data/supplemental/pack');
 
 function main() {
   const query = process.argv[2]?.trim();
@@ -20,7 +18,7 @@ function main() {
   const queryLower = query.toLowerCase();
 
   // Load all upstream cards
-  const upstreamFiles = fs.readdirSync(UPSTREAM_DIR).filter((f) => f.endsWith('.json'));
+  const upstreamFiles = cardFileNames(ROOT_DIR);
   const matches: Array<{
     pack: string;
     upstream: Record<string, unknown>;
@@ -32,7 +30,7 @@ function main() {
 
   for (const file of upstreamFiles) {
     const packCode = path.basename(file, '.json');
-    const upstreamPath = path.join(UPSTREAM_DIR, file);
+    const upstreamPath = cardPath(file, ROOT_DIR);
     const cards: Array<Record<string, unknown>> = JSON.parse(fs.readFileSync(upstreamPath, 'utf8'));
 
     for (const card of cards) {
@@ -42,7 +40,7 @@ function main() {
       if (code === queryLower || name === queryLower || name.includes(queryLower)) {
         // Load supplemental if not cached
         if (!supplementalCache[packCode]) {
-          const suppPath = path.join(SUPPLEMENTAL_DIR, file);
+          const suppPath = supplementalPath(file, ROOT_DIR);
           if (fs.existsSync(suppPath)) {
             const suppData = JSON.parse(fs.readFileSync(suppPath, 'utf8'));
             supplementalCache[packCode] = suppData.cards || {};

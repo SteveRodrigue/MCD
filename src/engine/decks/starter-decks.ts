@@ -8,12 +8,12 @@ import {
   CardRepository,
 } from '../models';
 
-// 1-File-Per-Deck prebuilt imports from data/prebuilt_decks/
-import spiderManDeck from '../../../data/prebuilt_decks/core_spider_man_justice.json';
-import captainMarvelDeck from '../../../data/prebuilt_decks/core_captain_marvel_leadership.json';
-import sheHulkDeck from '../../../data/prebuilt_decks/core_she_hulk_aggression.json';
-import ironManDeck from '../../../data/prebuilt_decks/core_iron_man_aggression.json';
-import blackPantherDeck from '../../../data/prebuilt_decks/core_black_panther_protection.json';
+// 1-File-Per-Deck prebuilt imports from content/packs/core/decks/
+import spiderManDeck from '../../../content/packs/core/decks/core_spider_man_justice.json';
+import captainMarvelDeck from '../../../content/packs/core/decks/core_captain_marvel_leadership.json';
+import sheHulkDeck from '../../../content/packs/core/decks/core_she_hulk_aggression.json';
+import ironManDeck from '../../../content/packs/core/decks/core_iron_man_aggression.json';
+import blackPantherDeck from '../../../content/packs/core/decks/core_black_panther_protection.json';
 
 export interface StarterDeckDefinition {
   id: string;

@@ -15,7 +15,7 @@ This skill defines the canonical methodology to analyze a single Marvel Champion
 >
 > - **DO NOT** modify, create, or touch files in `src/`, `data/`, `docs/`, or `scripts/`.
 > - **DO NOT** create scratch or temporary files in the repository root.
-> - **DO NOT** edit or append to supplemental pack files in `src/data/supplemental/pack/`.
+> - **DO NOT** edit or append to supplemental pack files in `content/packs/<code>/supplemental/`.
 >   Any files written outside `temp/` violate this skill and risk breaking active quality gates.
 
 ---
@@ -88,7 +88,7 @@ Consult the quick reference cheat sheet and modular specifications to ensure exa
 
 ### Step 4: Write Minimal Output File to `temp/supp_<card-id>.md`
 
-Write the resulting translation strictly to `temp/supp_<card-id>.md` (e.g. `temp/supp_08004.md`). **Never write to `src/data/supplemental/pack/` or the repository root.**
+Write the resulting translation strictly to `temp/supp_<card-id>.md` (e.g. `temp/supp_08004.md`). **Never write to `content/packs/<code>/supplemental/` or the repository root.**
 
 **The output file must be minimal.** Follow this exact format:
 

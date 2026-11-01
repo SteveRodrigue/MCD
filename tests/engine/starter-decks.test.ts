@@ -4,8 +4,8 @@ import { CardCatalog } from '../../src/data/importer/card-loader';
 import { getStarterDeck, listStarterDecks } from '../../src/engine/decks/starter-decks';
 import { slugify, generateDeckFilename } from '../../src/engine/decks/deck-utils';
 import { setupGame } from '../../src/engine/state/game-setup';
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
 
 import { getActiveMainScheme, getActiveVillain } from '@engine/models';
 describe('Data-Driven Starter Deck Registry & Multi-Hero Integration (ADR-0016)', () => {

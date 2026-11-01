@@ -5,9 +5,9 @@ import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { step4_revealEncounterCards } from '@engine/pipeline/villain-phase';
 import { assertCardConservation } from '@engine/state/state-validator';
 import { CardEnrichmentSchema } from '../../src/data/supplemental/schema';
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
-import cwEncounterPack from '../../data/upstream/pack/cw_encounter.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import cwEncounterPack from '../../content/packs/cw/cards/cw_encounter.json';
 
 // Ad-hoc catalog: core + ONLY the proof card 56128b (the live loader never loads cw_encounter).
 const proofRaw = (cwEncounterPack as any[]).find((c) => c.code === '56128b');

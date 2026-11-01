@@ -17,10 +17,10 @@ import {
 import { matchesCardFilter } from '@engine/effects';
 
 // Import real upstream JSON datasets directly
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
-import ttEncounterPack from '../../data/upstream/pack/tt_encounter.json';
-import aosEncounterPack from '../../data/upstream/pack/aos_encounter.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import ttEncounterPack from '../../content/packs/tt/cards/tt_encounter.json';
+import aosEncounterPack from '../../content/packs/aos/cards/aos_encounter.json';
 
 describe('Card Loader & Normalizer Unit Tests', () => {
   describe('Helper Parsers', () => {

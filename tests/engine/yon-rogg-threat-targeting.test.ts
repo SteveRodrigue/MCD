@@ -10,8 +10,8 @@ import {
   SideSchemeState,
   getActiveMainScheme,
 } from '../../src/engine/models';
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
 
 describe('Yon-Rogg (01177) Scheme Targeting and ADD_THREAT Primitive (Issue #106)', () => {
   let catalog: CardCatalog;

@@ -26,7 +26,7 @@ describe('PackManifestSchema', () => {
 
   it.each([
     ['id with uppercase', { id: 'MyPack' }],
-    ['id too short', { id: 'ab' }],
+    ['id too short', { id: 'a' }],
     ['id starting with a digit', { id: '1pack' }],
     ['unknown origin', { origin: 'official-sync-ish' }],
     ['unknown kind', { kind: 'expansion' }],
@@ -34,6 +34,12 @@ describe('PackManifestSchema', () => {
     ['unknown property', { extra: true }],
   ])('rejects %s', (_label, patch) => {
     expect(PackManifestSchema.safeParse({ ...valid, ...patch }).success).toBe(false);
+  });
+
+  it('accepts the official pack codes that contain underscores or two letters', () => {
+    for (const id of ['cw', 'bp', 'mut_gen', 'wonder_man']) {
+      expect(PackManifestSchema.safeParse({ ...valid, id }).success).toBe(true);
+    }
   });
 
   it('accepts all three origins', () => {

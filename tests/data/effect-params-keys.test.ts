@@ -1,11 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
-import path from 'path';
 import { EffectTypeSchema } from '../../src/data/supplemental/schema';
 import { EFFECT_PARAM_KEYS, EFFECT_PARAM_SCHEMAS } from '../../src/data/supplemental/effect-params';
 import { introspectObjectSchema } from '../../src/data/supplemental/schema-introspector';
+import { supplementalPath } from '../../src/tools/content-paths';
 
-const PACK_DIR = path.resolve(__dirname, '../../src/data/supplemental/pack');
 const PACK_FILES = ['aoa_encounter.json', 'core.json', 'core_encounter.json', 'cw_encounter.json', 'mts.json'];
 
 interface Violation {
@@ -49,7 +48,7 @@ const format = (v: Violation[]) =>
   v.map((x) => `card ${x.card}: effect ${x.effect} has unknown effectParams key "${x.key}"`).join('\n');
 
 function loadPack(file: string): Record<string, unknown>[] {
-  const raw = JSON.parse(fs.readFileSync(path.join(PACK_DIR, file), 'utf8'));
+  const raw = JSON.parse(fs.readFileSync(supplementalPath(file), 'utf8'));
   return Object.entries(raw.cards as Record<string, object>).map(([code, card]) => ({
     ...card,
     code,

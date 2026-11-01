@@ -3,8 +3,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { setupGame, resetInstanceCounter, createCardInstance } from '@engine/index';
 import { CardCatalog } from '@data/importer/card-loader';
 import { getValidThwartTargets } from '../../src/ui/components/board/thwart-target-utils';
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
 import { Keyword, getActiveMainScheme } from '@engine/models';
 
 describe('Thwart Target Selection & Legality Utils (RR v1.8 p. 3, 11, 20, 29)', () => {

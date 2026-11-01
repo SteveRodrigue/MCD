@@ -1,5 +1,5 @@
 import type { CardRepository } from '@engine/models';
-import modularSetData from './modular-sets.json';
+import modularSetData from '../../../content/packs/core/modular-sets.json';
 
 export interface ModularEncounterSetInfo {
   code: string;

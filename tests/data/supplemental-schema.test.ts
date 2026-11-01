@@ -20,18 +20,18 @@ import {
   SearchAndSelectParamsSchema,
 } from '../../src/data/supplemental/schema';
 import { detectDuplicateJsonKeys } from '../../src/data/supplemental/duplicate-key-detector';
+import { cardFileNames, cardPath, supplementalFileNames, supplementalPath } from '../../src/tools/content-paths';
 
 describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
-  const packDir = path.resolve('src/data/supplemental/pack');
-  const packFiles = fs.readdirSync(packDir).filter((f) => f.endsWith('.json'));
+  const packFiles = supplementalFileNames();
 
-  it('Discovers supplemental pack files in src/data/supplemental/pack/', () => {
+  it('Discovers supplemental pack files under content/packs', () => {
     expect(packFiles.length).toBeGreaterThan(0);
   });
 
   for (const file of packFiles) {
     it(`Validates ${file} against SupplementalPackSchema and enforces zero duplicate JSON keys`, () => {
-      const filePath = path.join(packDir, file);
+      const filePath = supplementalPath(file);
       const rawContent = fs.readFileSync(filePath, 'utf8');
 
       // 1. Raw JSON duplicate key check
@@ -58,7 +58,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
     const violations: string[] = [];
 
     for (const file of packFiles) {
-      const filePath = path.join(packDir, file);
+      const filePath = supplementalPath(file);
       const rawContent = fs.readFileSync(filePath, 'utf8');
       const pack = JSON.parse(rawContent);
 
@@ -183,21 +183,18 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
     });
 
     it('Enforces that no card marked noSupplementalNeeded has active rules text in upstream data', () => {
-      const upstreamDir = path.resolve('data/upstream/pack');
       const upstreamCards = new Map<string, any>();
-      if (fs.existsSync(upstreamDir)) {
-        for (const file of fs.readdirSync(upstreamDir).filter((f) => f.endsWith('.json'))) {
-          const list = JSON.parse(fs.readFileSync(path.join(upstreamDir, file), 'utf8'));
-          if (Array.isArray(list)) {
-            for (const c of list) {
-              if (c && c.code) upstreamCards.set(c.code, c);
-            }
+      for (const file of cardFileNames()) {
+        const list = JSON.parse(fs.readFileSync(cardPath(file), 'utf8'));
+        if (Array.isArray(list)) {
+          for (const c of list) {
+            if (c && c.code) upstreamCards.set(c.code, c);
           }
         }
       }
 
       for (const file of packFiles) {
-        const filePath = path.join(packDir, file);
+        const filePath = supplementalPath(file);
         const json = JSON.parse(fs.readFileSync(filePath, 'utf8'));
         const cards = json.cards || json;
 
@@ -296,7 +293,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
     it('Verifies that all audited cards across supplemental pack files include originalText', () => {
       for (const file of packFiles) {
-        const filePath = path.join(packDir, file);
+        const filePath = supplementalPath(file);
         const json = JSON.parse(fs.readFileSync(filePath, 'utf8'));
         const cards = json.cards || json;
 
@@ -313,7 +310,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
     it('Every supplemental entry records audit.confidence', () => {
       for (const file of packFiles) {
-        const filePath = path.join(packDir, file);
+        const filePath = supplementalPath(file);
         const json = JSON.parse(fs.readFileSync(filePath, 'utf8'));
         const cards = json.cards || json;
 
@@ -473,7 +470,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       const allowedEffects = new Set(EffectTypeSchema.options);
 
       for (const file of packFiles) {
-        const filePath = path.join(packDir, file);
+        const filePath = supplementalPath(file);
         const json = JSON.parse(fs.readFileSync(filePath, 'utf8'));
         const cards = json.cards || json;
 
@@ -678,7 +675,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       const undeclared = [];
 
       for (const file of packFiles) {
-        const filePath = path.join(packDir, file);
+        const filePath = supplementalPath(file);
         const json = JSON.parse(fs.readFileSync(filePath, 'utf8'));
         const cards = json.cards || json;
 
@@ -958,7 +955,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         expect(StepGateSchema.safeParse('IF_UNDEFENDED_ATTACK').success).toBe(true);
 
         const pack = JSON.parse(
-          fs.readFileSync(path.join(packDir, 'core_encounter.json'), 'utf8'),
+          fs.readFileSync(supplementalPath('core_encounter.json'), 'utf8'),
         ) as Record<string, any>;
         const cards = pack.cards ?? pack;
         const boost = cards['01178'].abilities.find((a: any) => a.id === 'kree_manipulator_boost');
@@ -985,7 +982,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           }
         };
         for (const file of packFiles) {
-          const pack = JSON.parse(fs.readFileSync(path.join(packDir, file), 'utf8')) as Record<
+          const pack = JSON.parse(fs.readFileSync(supplementalPath(file), 'utf8')) as Record<
             string,
             any
           >;
@@ -1006,7 +1003,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
       it('Iron Man (01029a) hand size is a dynamic amount with a +6 clamp and the official errata text', () => {
         const pack = JSON.parse(
-          fs.readFileSync(path.join(packDir, 'core.json'), 'utf8'),
+          fs.readFileSync(supplementalPath('core.json'), 'utf8'),
         ) as Record<string, any>;
         const cards = pack.cards ?? pack;
         const ability = cards['01029a'].abilities[0];
@@ -1021,7 +1018,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
       it('No pack uses the retired MODIFY_HAND_SIZE keys (maxHandSize, applicableForm, PER_MATCHING_CARD)', () => {
         for (const file of packFiles) {
-          const raw = fs.readFileSync(path.join(packDir, file), 'utf8');
+          const raw = fs.readFileSync(supplementalPath(file), 'utf8');
           expect(raw).not.toMatch(/"maxHandSize"|"applicableForm"|"PER_MATCHING_CARD"/);
         }
       });

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
-import path from 'path';
+import { supplementalFileNames, supplementalPath } from '../../src/tools/content-paths';
 
 /**
  * ADD_TRAIT outside CONSTANT abilities lasts while its source card is in play unless the step
@@ -8,7 +8,6 @@ import path from 'path';
  * encoded explicitly, otherwise the trait would silently outlast the card text.
  */
 const DURATIONS = ['PHASE', 'ROUND', 'TURN'];
-const packDir = path.resolve('src/data/supplemental/pack');
 
 interface Step {
   effect?: string;
@@ -21,8 +20,8 @@ describe('ADD_TRAIT duration matches the printed text', () => {
   const invalid: string[] = [];
   let checked = 0;
 
-  for (const file of fs.readdirSync(packDir).filter((f) => f.endsWith('.json'))) {
-    const cards = JSON.parse(fs.readFileSync(path.join(packDir, file), 'utf-8')).cards ?? {};
+  for (const file of supplementalFileNames()) {
+    const cards = JSON.parse(fs.readFileSync(supplementalPath(file), 'utf-8')).cards ?? {};
     for (const [code, card] of Object.entries<any>(cards)) {
       const printed: string = card.audit?.originalText ?? '';
       for (const ability of card.abilities ?? []) {

@@ -168,7 +168,7 @@ If a check fails in Step 4, 5 or 7, go back to the step named on that check line
 ### Step 6: Declarative Supplemental Retrofit, Wiring & Audit Metadata Update 🃏
 
 - Whenever a feature, primitive, keyword, or mechanic is implemented or modified:
-  1. **Search Supplemental Data:** Search all pack files in `src/data/supplemental/pack/*.json` for every card that utilizes or is affected by the new capability.
+  1. **Search Supplemental Data:** Search all pack files in `content/packs/*/supplemental/*.json` for every card that utilizes or is affected by the new capability.
   2. **Retrofit Card Definitions:** Apply the new declarative schema and primitives to all affected card entries.
   3. **Update Audit Metadata:** For every modified card entry, update:
      - `updatedAt`, `reviewedAt`, `reviewedBy`: per the [audit stamp rules](../../rules/shared-quality-gates.md#audit-stamp).

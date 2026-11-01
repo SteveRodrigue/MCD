@@ -47,7 +47,7 @@ If a check fails in Step 3, 5 or 6, go back to the step named on that check line
 
 - If the defect pertains to a specific card (Player card, Encounter card, Villain stage, Attachment, or Ally):
   1. **Do NOT inspect or modify `src/engine/` code yet.**
-  2. Open the card's definition in `src/data/supplemental/pack/<pack_code>.json`.
+  2. Open the card's definition in `content/packs/<code>/supplemental/<stem>.json`.
   3. Compare the printed card text against the supplemental JSON declaration:
      - Is the `timing` accurate (`ACTION`, `HERO_ACTION`, `FORCED_RESPONSE`, `INTERRUPT`)?
      - Are all `costs` present (`exhaustSelf`, `resourceCost`, `damageSelf`)?
@@ -142,7 +142,7 @@ Use the command and body in [`issue-template.md`](issue-template.md) (strict: ke
 ### Step 5B: Declarative Supplemental Retrofit & Audit Metadata Update 🃏
 
 - If the fix touched any card data or modified an engine primitive/keyword used by other cards:
-  1. **Search Supplemental Data:** Search all pack files in `src/data/supplemental/pack/*.json` for any cards that share the affected mechanic.
+  1. **Search Supplemental Data:** Search all pack files in `content/packs/*/supplemental/*.json` for any cards that share the affected mechanic.
   2. **Retrofit Card Definitions:** Apply the corrected declarations across all affected card entries.
   3. **Update Audit Metadata:** For every modified card entry, update:
      - `updatedAt`, `reviewedAt`, `reviewedBy`: per the [audit stamp rules](../../rules/shared-quality-gates.md#audit-stamp).

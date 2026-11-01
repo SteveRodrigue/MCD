@@ -34,7 +34,7 @@ small number of actionable findings over a large speculative inventory.
    separate domain rules. Recommend abstraction only when it removes meaningful duplication
    without obscuring rules or coupling unrelated modules.
 5. **Do not count generated or vendored content.** Exclude `node_modules/`, `dist/`, `coverage/`,
-   `cache/`, `data/upstream/`, logs, snapshots, generated reports, and explicitly generated files
+   `cache/`, `content/`, logs, snapshots, generated reports, and explicitly generated files
    unless the user asks to audit them.
 6. **Respect architectural ownership and delivery priorities.** Keep `src/engine/` headless and
    card-specific behavior in `src/data/supplemental/`. Audit the full user-selected scope; use

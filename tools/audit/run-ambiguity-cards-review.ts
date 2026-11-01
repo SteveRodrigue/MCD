@@ -1,16 +1,14 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { supplementalFile } from '../../src/tools/content-paths';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '../../');
 
-const SUPPLEMENTAL_CORE = path.join(ROOT_DIR, 'src/data/supplemental/pack/core.json');
-const SUPPLEMENTAL_ENCOUNTER = path.join(
-  ROOT_DIR,
-  'src/data/supplemental/pack/core_encounter.json',
-);
+const SUPPLEMENTAL_CORE = supplementalFile('core', ROOT_DIR);
+const SUPPLEMENTAL_ENCOUNTER = supplementalFile('core_encounter', ROOT_DIR);
 const AMBIGUITIES_DIR = path.join(ROOT_DIR, 'docs/ambiguities');
 
 function appendLog(level: 'INFO' | 'WARN', message: string) {

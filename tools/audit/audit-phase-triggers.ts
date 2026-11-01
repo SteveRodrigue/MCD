@@ -1,5 +1,5 @@
 import fs from 'fs';
-import path from 'path';
+import { cardFileNames, cardPath } from '../../src/tools/content-paths';
 
 interface UpstreamCard {
   code: string;
@@ -9,8 +9,7 @@ interface UpstreamCard {
   text?: string;
 }
 
-const UPSTREAM_PACK_DIR = './data/upstream/pack';
-const files = fs.readdirSync(UPSTREAM_PACK_DIR).filter((f) => f.endsWith('.json'));
+const files = cardFileNames();
 
 interface MatchRecord {
   code: string;
@@ -27,7 +26,7 @@ const durationMatches: MatchRecord[] = [];
 const otherMatches: MatchRecord[] = [];
 
 for (const file of files) {
-  const filePath = path.join(UPSTREAM_PACK_DIR, file);
+  const filePath = cardPath(file);
   try {
     const cards: UpstreamCard[] = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     for (const card of cards) {

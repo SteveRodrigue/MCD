@@ -7,6 +7,7 @@ import {
   GameLogEntry,
   GamePhase,
   GameState,
+  PlayerState,
   getActiveVillain,
   getActiveMainScheme,
 } from '../../engine/models';
@@ -67,6 +68,16 @@ function cleanCharacterName(name?: string, player?: any): string {
     }
   }
   return name;
+}
+
+/**
+ * The player whose turn it was when the entry was written. Entries outside the player phase have
+ * none, so a villain-phase line is never named after the first player.
+ */
+function turnPlayerOf(entry: GameLogEntry, gameState?: GameState): PlayerState | undefined {
+  return entry.turnPlayerId
+    ? gameState?.players?.find((pl) => pl.id === entry.turnPlayerId)
+    : undefined;
 }
 
 /**
@@ -480,7 +491,7 @@ function normalizeLogParams(
         pl.hero?.name === actorName ||
         cleanCharacterName(pl.name) === actorName ||
         ownerNames.some((n) => pl.name === n || pl.hero?.name === n),
-    ) || gameState?.players?.[gameState.activePlayerIndex];
+    ) || turnPlayerOf(entry, gameState);
 
   const defaultHeroName =
     cleanCharacterName(matchedPlayer?.hero?.name || matchedPlayer?.name, matchedPlayer) || 'Hero';
@@ -695,7 +706,7 @@ function resolveComicColors(
         p.name === whoName ||
         p.hero?.name === whoName ||
         p.name === playerName,
-    ) ?? gameState?.players?.[gameState.activePlayerIndex];
+    ) ?? turnPlayerOf(entry, gameState);
 
   const palette = getHeroColorPalette(matchedPlayer);
   return {
@@ -718,14 +729,13 @@ export function formatComicLogEntry(
   const normalizedParams = normalizeLogParams(entry, gameState);
   const colors = resolveComicColors(dialogueType, entry, normalizedParams, gameState);
 
+  const turnPlayer = turnPlayerOf(entry, gameState);
   const rawSpeakerName =
     entry.actor?.name ||
-    (normalizedParams.who ? String(normalizedParams.who) : undefined) ||
-    (normalizedParams.actor ? String(normalizedParams.actor) : undefined) ||
-    (normalizedParams.villain ? String(normalizedParams.villain) : undefined) ||
-    (normalizedParams.minion ? String(normalizedParams.minion) : undefined) ||
-    (normalizedParams.player ? String(normalizedParams.player) : undefined) ||
-    (normalizedParams.card ? String(normalizedParams.card) : undefined);
+    (entry.params?.who ? String(entry.params.who) : undefined) ||
+    (entry.params?.actor ? String(entry.params.actor) : undefined) ||
+    (entry.params?.player ? String(entry.params.player) : undefined) ||
+    turnPlayer?.name;
 
   const matchedPlayer =
     gameState?.players?.find(
@@ -733,7 +743,7 @@ export function formatComicLogEntry(
         pl.name === rawSpeakerName ||
         pl.hero?.name === rawSpeakerName ||
         cleanCharacterName(pl.name) === rawSpeakerName,
-    ) || gameState?.players?.[gameState.activePlayerIndex];
+    ) || turnPlayer;
 
   const speakerName = cleanCharacterName(rawSpeakerName, matchedPlayer);
 

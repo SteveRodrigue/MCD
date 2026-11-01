@@ -11,13 +11,13 @@ export const PACK_KINDS = ['core', 'hero', 'scenario', 'campaign', 'mixed'] as c
  */
 export const PACK_ORIGINS = ['official-bundled', 'official-sync', 'user'] as const;
 
-export const PACK_ID_PATTERN = /^[a-z][a-z0-9-]{2,31}$/;
+export const PACK_ID_PATTERN = /^[a-z][a-z0-9_-]{1,31}$/;
 export const OFFICIAL_CARD_CODE_PATTERN = /^\d{5}[a-f]?$/;
 
 export const PackManifestSchema = z
   .object({
     $schema: z.string().optional(),
-    id: z.string().regex(PACK_ID_PATTERN, 'must match ^[a-z][a-z0-9-]{2,31}$'),
+    id: z.string().regex(PACK_ID_PATTERN, 'must match ^[a-z][a-z0-9_-]{1,31}$'),
     name: z.string().min(1),
     kind: z.enum(PACK_KINDS),
     origin: z.enum(PACK_ORIGINS),

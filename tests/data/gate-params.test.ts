@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
-import path from 'path';
 import {
   GATE_REGISTRY,
   StepGateSchema,
@@ -16,6 +15,7 @@ import {
   hasRequiredFields,
   introspectObjectSchema,
 } from '../../src/data/supplemental/schema-introspector';
+import { supplementalFileNames, supplementalPath } from '../../src/tools/content-paths';
 
 const NEGATE = { key: 'negate', label: 'Negate (NOT)', type: 'boolean', required: false };
 const STEP = { key: 'step', label: 'Step ID', type: 'step', required: false };
@@ -387,8 +387,7 @@ describe('Step Gate Registry and Param Schemas (ADR-0080, Issues #289, #290)', (
   });
 
   describe('Old-Name & Obsolete Field Guard across Supplemental Pack Files', () => {
-    const packDir = path.resolve('src/data/supplemental/pack');
-    const packFiles = fs.readdirSync(packDir).filter((f) => f.endsWith('.json'));
+    const packFiles = supplementalFileNames();
 
     const forbiddenGateNames = [
       'ALWAYS',
@@ -404,7 +403,7 @@ describe('Step Gate Registry and Param Schemas (ADR-0080, Issues #289, #290)', (
 
     for (const file of packFiles) {
       it(`Ensures ${file} contains zero legacy gate names and zero "condition" step fields`, () => {
-        const rawContent = fs.readFileSync(path.join(packDir, file), 'utf8');
+        const rawContent = fs.readFileSync(supplementalPath(file), 'utf8');
         const json = JSON.parse(rawContent);
 
         for (const [cardId, cardData] of Object.entries<any>(json)) {

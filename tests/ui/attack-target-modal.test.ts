@@ -4,8 +4,8 @@ import { setupGame, resetInstanceCounter, createCardInstance } from '@engine/ind
 import { CardCatalog } from '@data/importer/card-loader';
 import { getActiveVillain } from '@engine/models';
 import { getValidAttackTargets } from '../../src/ui/components/board/attack-target-utils';
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
 
 describe('Attack Target Selection & Guard Invariants (RR v1.8 p. 5-6, 15)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);

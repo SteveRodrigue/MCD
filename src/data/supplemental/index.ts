@@ -1,10 +1,10 @@
 import { CardEnrichment } from '@engine/models';
 
-import aoaEncounterPackSupplemental from './pack/aoa_encounter.json';
-import corePackSupplemental from './pack/core.json';
-import coreEncounterPackSupplemental from './pack/core_encounter.json';
-import cwEncounterPackSupplemental from './pack/cw_encounter.json';
-import mtsPackSupplemental from './pack/mts.json';
+import aoaEncounterPackSupplemental from '../../../content/packs/aoa/supplemental/aoa_encounter.json';
+import corePackSupplemental from '../../../content/packs/core/supplemental/core.json';
+import coreEncounterPackSupplemental from '../../../content/packs/core/supplemental/core_encounter.json';
+import cwEncounterPackSupplemental from '../../../content/packs/cw/supplemental/cw_encounter.json';
+import mtsPackSupplemental from '../../../content/packs/mts/supplemental/mts.json';
 
 /**
  * Supplemental Registry: Maps upstream card code to rules enrichment data.

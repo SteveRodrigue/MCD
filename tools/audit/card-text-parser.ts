@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { parseCardText } from '../../src/tools/card-text-parser';
+import { cardFile, supplementalFile } from '../../src/tools/content-paths';
 import {
   CardEnrichment,
   SupplementalPackSchema,
@@ -50,7 +51,7 @@ function loadUpstreamCard(
   cardCode: string,
   packCode = 'core',
 ): { text?: string; name: string } | null {
-  const packFile = path.join(ROOT_DIR, `data/upstream/pack/${packCode}.json`);
+  const packFile = cardFile(packCode, ROOT_DIR);
   if (!fs.existsSync(packFile)) return null;
 
   try {
@@ -63,7 +64,7 @@ function loadUpstreamCard(
 }
 
 function loadSupplementalPack(packCode: string): any | null {
-  const packFile = path.join(ROOT_DIR, `src/data/supplemental/pack/${packCode}.json`);
+  const packFile = supplementalFile(packCode, ROOT_DIR);
   if (!fs.existsSync(packFile)) return null;
 
   try {
@@ -91,12 +92,12 @@ export function writeSupplementalCard(
   originalText: string,
   confidence: number,
 ): { success: boolean; message: string } {
-  const packFilePath = path.join(ROOT_DIR, `src/data/supplemental/pack/${packCode}.json`);
+  const packFilePath = supplementalFile(packCode, ROOT_DIR);
   let packData: any = loadSupplementalPack(packCode);
 
   if (!packData) {
     packData = {
-      $schema: '../schema.json',
+      $schema: '../../../../src/data/supplemental/schema.json',
       cards: {},
     };
   }
@@ -139,6 +140,7 @@ export function writeSupplementalCard(
 
   // Atomic write back to disk with 2 spaces
   try {
+    fs.mkdirSync(path.dirname(packFilePath), { recursive: true });
     fs.writeFileSync(packFilePath, JSON.stringify(packData, null, 2) + '\n', 'utf-8');
     return {
       success: true,
@@ -167,7 +169,7 @@ Options:
   --pack <pack>       Pack to load card from (default: 'core')
   --text "<text>"     Raw card text to parse directly
   --interactive       Interactive verification step-by-step display
-  --write             Safely write or update card in src/data/supplemental/pack/<pack>.json
+  --write             Safely write or update card in the pack's supplemental/<pack>.json
   --force             Allow write even if confidence < 100% or warnings exist
   --json              Output pure parsed JSON to stdout
 `);
@@ -269,7 +271,7 @@ Options:
       process.exit(1);
     }
 
-    console.log(`\n💾 Writing card ${args.code} to src/data/supplemental/pack/${packCode}.json...`);
+    console.log(`\n💾 Writing card ${args.code} to the ${packCode} supplemental file...`);
     const writeResult = writeSupplementalCard(
       packCode,
       args.code,

@@ -5,7 +5,7 @@ import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
 import { endPlayerPhase } from '@engine/pipeline/player-phase';
 import fs from 'fs';
-import path from 'path';
+import { supplementalFileNames, supplementalPath } from '../../src/tools/content-paths';
 
 describe('State Lifecycle Duration & Zone Cleanup', () => {
   const spiderManHero = cardCatalog.getCard('01001a') as HeroCard;
@@ -45,13 +45,12 @@ describe('State Lifecycle Duration & Zone Cleanup', () => {
   });
 
   it('Contract: All supplemental card files strictly use canonical durations (PHASE | ROUND | TURN)', () => {
-    const packsDir = path.resolve(process.cwd(), 'src/data/supplemental/pack');
-    const packFiles = fs.readdirSync(packsDir).filter((f) => f.endsWith('.json'));
+    const packFiles = supplementalFileNames();
 
     const invalidDurations: { file: string; cardCode: string; duration: string }[] = [];
 
     for (const file of packFiles) {
-      const content = JSON.parse(fs.readFileSync(path.join(packsDir, file), 'utf-8'));
+      const content = JSON.parse(fs.readFileSync(supplementalPath(file), 'utf-8'));
       const cards = content.cards || content;
       for (const [cardCode, cardDef] of Object.entries<any>(cards)) {
         const abilities = cardDef?.abilities || cardDef?.enrichment?.abilities || [];

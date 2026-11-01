@@ -3,7 +3,7 @@ import { createCardInstance } from '../../../state/card-instance';
 import { appendLog } from '../../../state/game-log';
 import { DeclarativeScenarioPlugin } from '../../declarative-plugin';
 import type { ScenarioDefinition, ScenarioGameSetupOptions } from '../../types';
-import definitionData from './definition.json';
+import definitionData from '../../../../../content/packs/core/scenarios/ultron/definition.json';
 
 /**
  * Creates a standard Ultron Drone minion instance (RR v1.8 / Ultron Drones Environment).

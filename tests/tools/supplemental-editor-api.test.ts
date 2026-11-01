@@ -154,8 +154,8 @@ describe('CardSupplementalService & Editor API Middleware', () => {
     beforeEach(() => {
       // Create isolated temporary sandbox mirroring repo structure
       tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mcd-editor-test-'));
-      const upstreamPackDir = path.join(tempDir, 'data', 'upstream', 'pack');
-      const supplementalPackDir = path.join(tempDir, 'src', 'data', 'supplemental', 'pack');
+      const upstreamPackDir = path.join(tempDir, 'content', 'packs', 'core', 'cards');
+      const supplementalPackDir = path.join(tempDir, 'content', 'packs', 'core', 'supplemental');
       fs.mkdirSync(upstreamPackDir, { recursive: true });
       fs.mkdirSync(supplementalPackDir, { recursive: true });
 
@@ -234,7 +234,14 @@ describe('CardSupplementalService & Editor API Middleware', () => {
       expect(result.updatedAt).toBeDefined();
 
       // Read back from disk
-      const savedPackPath = path.join(tempDir, 'src', 'data', 'supplemental', 'pack', 'core.json');
+      const savedPackPath = path.join(
+        tempDir,
+        'content',
+        'packs',
+        'core',
+        'supplemental',
+        'core.json',
+      );
       expect(fs.existsSync(savedPackPath)).toBe(true);
 
       const savedPack = JSON.parse(fs.readFileSync(savedPackPath, 'utf8'));

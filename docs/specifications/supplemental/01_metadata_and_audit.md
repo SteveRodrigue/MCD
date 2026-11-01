@@ -7,7 +7,7 @@
 
 ## 1. Supplemental Root Structure
 
-Each supplemental pack file under `src/data/supplemental/pack/*.json` maps 5-to-6 character card codes to a `CardEnrichment` object:
+Each supplemental pack file under `content/packs/*/supplemental/*.json` maps 5-to-6 character card codes to a `CardEnrichment` object:
 
 ```json
 {

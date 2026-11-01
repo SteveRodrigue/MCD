@@ -5,6 +5,11 @@ import { StatusCard } from '../../src/engine/models/enums';
 import type { GameState, PlayerState, CardInstance } from '../../src/engine/models';
 
 import { getActiveMainScheme, getActiveVillain } from '@engine/models';
+import {
+  supplementalFile,
+  supplementalFileNames,
+  supplementalPath,
+} from '../../src/tools/content-paths';
 function createMockPlayer(overrides?: Partial<PlayerState>): PlayerState {
   return {
     id: 'player-1',
@@ -474,30 +479,25 @@ describe('Condition-Based Modifiers & Ad-Hoc Param Elimination (Bug #67)', () =>
   describe('T10, T11, T12: Zero-tolerance elimination of ad-hoc params', () => {
     it('T10: carolBonus is absent from supplemental data and engine effects', async () => {
       const fs = await import('fs');
-      const path = await import('path');
-      const coreJsonPath = path.resolve(__dirname, '../../src/data/supplemental/pack/core.json');
+      const coreJsonPath = supplementalFile('core');
       const coreContent = fs.readFileSync(coreJsonPath, 'utf-8');
       expect(coreContent).not.toContain('"carolBonus"');
     });
 
     it('T11: aerialBonus is absent from all supplemental pack JSONs', async () => {
       const fs = await import('fs');
-      const path = await import('path');
-      const packDir = path.resolve(__dirname, '../../src/data/supplemental/pack');
-      const files = fs.readdirSync(packDir).filter((f: string) => f.endsWith('.json'));
+      const files = supplementalFileNames();
       for (const file of files) {
-        const content = fs.readFileSync(path.join(packDir, file), 'utf-8');
+        const content = fs.readFileSync(supplementalPath(file), 'utf-8');
         expect(content).not.toContain('"aerialBonus"');
       }
     });
 
     it('T12: bonusEnergyThwart is absent from all supplemental pack JSONs and engine', async () => {
       const fs = await import('fs');
-      const path = await import('path');
-      const packDir = path.resolve(__dirname, '../../src/data/supplemental/pack');
-      const files = fs.readdirSync(packDir).filter((f: string) => f.endsWith('.json'));
+      const files = supplementalFileNames();
       for (const file of files) {
-        const content = fs.readFileSync(path.join(packDir, file), 'utf-8');
+        const content = fs.readFileSync(supplementalPath(file), 'utf-8');
         expect(content).not.toContain('"bonusEnergyThwart"');
       }
     });

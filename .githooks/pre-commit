@@ -13,7 +13,7 @@ fi
 echo "🔍 Running pre-commit verification..."
 
 # 0. Regenerate the declaration reports when source, upstream data, ambiguity or audit files are staged (they must always match the code)
-if git diff --cached --name-only | grep -Eq '^(src|data/upstream|docs/ambiguities|tools/audit)/'; then
+if git diff --cached --name-only | grep -Eq '^(src|content|docs/ambiguities|tools/audit)/'; then
   echo "  ↳ Regenerating declaration reports..."
   "$NPM" run --silent report:declarations >/dev/null || {
     echo "❌ report:declarations failed!"

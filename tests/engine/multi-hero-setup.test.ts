@@ -10,8 +10,8 @@ import {
   getActiveVillain,
 } from '../../src/engine';
 
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
 
 describe('Multi-Hero Solo Mode & Scenario Setup', () => {
   let catalog: CardCatalog;

@@ -8,7 +8,7 @@
 
 ## 1. Root Card Enrichment Anatomy
 
-A card entry in `src/data/supplemental/pack/<pack>.json`:
+A card entry in `content/packs/<code>/supplemental/<stem>.json`:
 
 ```json
 {

@@ -108,7 +108,7 @@ Full field-level detail: [`algorithmic_rules_reference.md §3`](./algorithmic_ru
 
 ```mermaid
 flowchart TD
-    A["Card ability declared in<br/>src/data/supplemental/pack/*.json"] --> B{"timing matches an<br/>available window?<br/>(ACTION, RESOURCE, INTERRUPT, ...)"}
+    A["Card ability declared in<br/>content/packs/*/supplemental/*.json"] --> B{"timing matches an<br/>available window?<br/>(ACTION, RESOURCE, INTERRUPT, ...)"}
     B -->|no| Blocked(["Not offered / does not fire"])
     B -->|yes| C{"Legality check<br/>(legality-checker.ts)"}
     C -->|"e.g. no valid target,<br/>form mismatch, playRequirements fail"| Blocked

@@ -4,6 +4,7 @@ import {
   CardEnrichmentSchema,
   findEventDiscardSelfViolations,
 } from '../../data/supplemental/schema.ts';
+import { listCardFiles, metaFile, supplementalFile } from '../content-paths.ts';
 
 export interface CardSummary {
   code: string;
@@ -56,20 +57,17 @@ export function isPackFileName(name: string): boolean {
 }
 
 export class CardSupplementalService {
-  private upstreamDir: string;
-  private supplementalPackDir: string;
+  private baseDir: string;
   private cachedUpstreamCards: Map<string, { card: any; packFile: string }> | null = null;
 
   constructor(baseDir: string = process.cwd()) {
-    this.upstreamDir = path.resolve(baseDir, 'data', 'upstream');
-    this.supplementalPackDir = path.resolve(baseDir, 'src', 'data', 'supplemental', 'pack');
+    this.baseDir = baseDir;
   }
 
   public getPacksMetadata(): PackMetadataResponse {
-    const packsPath = path.join(this.upstreamDir, 'packs.json');
-    const setsPath = path.join(this.upstreamDir, 'sets.json');
-    const factionsPath = path.join(this.upstreamDir, 'factions.json');
-    const upstreamPackDir = path.join(this.upstreamDir, 'pack');
+    const packsPath = metaFile('packs', this.baseDir);
+    const setsPath = metaFile('sets', this.baseDir);
+    const factionsPath = metaFile('factions', this.baseDir);
 
     const packs = fs.existsSync(packsPath) ? JSON.parse(fs.readFileSync(packsPath, 'utf8')) : [];
     const sets = fs.existsSync(setsPath) ? JSON.parse(fs.readFileSync(setsPath, 'utf8')) : [];
@@ -77,9 +75,7 @@ export class CardSupplementalService {
       ? JSON.parse(fs.readFileSync(factionsPath, 'utf8'))
       : [];
 
-    const packFiles = fs.existsSync(upstreamPackDir)
-      ? fs.readdirSync(upstreamPackDir).filter((f) => f.endsWith('.json'))
-      : [];
+    const packFiles = listCardFiles(this.baseDir).map((f) => `${f.stem}.json`);
 
     const cardsMap = this.loadAllUpstreamCards();
     const setPackMap = new Map<string, Set<string>>();
@@ -114,24 +110,18 @@ export class CardSupplementalService {
     }
 
     const cardsMap = new Map<string, { card: any; packFile: string }>();
-    const upstreamPackDir = path.join(this.upstreamDir, 'pack');
-
-    if (fs.existsSync(upstreamPackDir)) {
-      const files = fs.readdirSync(upstreamPackDir).filter((f) => f.endsWith('.json'));
-      for (const file of files) {
-        try {
-          const content = fs.readFileSync(path.join(upstreamPackDir, file), 'utf8');
-          const list = JSON.parse(content);
-          if (Array.isArray(list)) {
-            for (const item of list) {
-              if (item && item.code) {
-                cardsMap.set(item.code, { card: item, packFile: file });
-              }
+    for (const { stem, file } of listCardFiles(this.baseDir)) {
+      try {
+        const list = JSON.parse(fs.readFileSync(file, 'utf8'));
+        if (Array.isArray(list)) {
+          for (const item of list) {
+            if (item && item.code) {
+              cardsMap.set(item.code, { card: item, packFile: `${stem}.json` });
             }
           }
-        } catch {
-          // ignore corrupted files
         }
+      } catch {
+        // ignore corrupted files
       }
     }
 
@@ -141,7 +131,7 @@ export class CardSupplementalService {
 
   public readSupplementalPack(packFile: string): Record<string, any> | null {
     if (!isPackFileName(packFile)) return null;
-    const filePath = path.join(this.supplementalPackDir, packFile);
+    const filePath = supplementalFile(packFile.slice(0, -'.json'.length), this.baseDir);
     if (!fs.existsSync(filePath)) {
       return null;
     }
@@ -402,14 +392,10 @@ export class CardSupplementalService {
     }
     validatedData.audit = audit;
 
-    // Ensure directory exists
-    if (!fs.existsSync(this.supplementalPackDir)) {
-      fs.mkdirSync(this.supplementalPackDir, { recursive: true });
-    }
-
-    const targetPath = path.join(this.supplementalPackDir, targetPackFile);
+    const targetPath = supplementalFile(targetPackFile.slice(0, -'.json'.length), this.baseDir);
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
     let packJson: { $schema?: string; cards: Record<string, any> } = {
-      $schema: '../schema.json',
+      $schema: '../../../../src/data/supplemental/schema.json',
       cards: {},
     };
 

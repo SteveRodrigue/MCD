@@ -21,8 +21,8 @@ import {
 import * as villainPhase from '../../src/engine/pipeline/villain-phase';
 import * as roundUpkeep from '../../src/engine/pipeline/round-upkeep';
 
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
 
 describe('Villain Phase End Ordering & RR v1.8 Step Alignment (Issue #145)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);

@@ -7,10 +7,11 @@ import {
 import { introspectObjectSchema } from '../../src/data/supplemental/schema-introspector';
 import * as fs from 'fs';
 import * as path from 'path';
+import { supplementalFile } from '../../src/tools/content-paths';
 
 describe('Ability Limits, Activation Zone & maxPerRound Deprecation (Contract Tests)', () => {
   it('loads 01001b (Peter Parker Scientist) with limit: "ONCE_PER_ROUND"', () => {
-    const corePackPath = path.resolve(__dirname, '../../src/data/supplemental/pack/core.json');
+    const corePackPath = supplementalFile('core');
     const corePack = JSON.parse(fs.readFileSync(corePackPath, 'utf8'));
     const card01001b = corePack.cards['01001b'];
 
@@ -181,7 +182,7 @@ describe('Ability Limits, Activation Zone & maxPerRound Deprecation (Contract Te
     });
 
     it('ensures card 01006 (Aunt May) defines canonical exhaustSelf and no deprecated exhaust', () => {
-      const corePackPath = path.resolve(__dirname, '../../src/data/supplemental/pack/core.json');
+      const corePackPath = supplementalFile('core');
       const corePack = JSON.parse(fs.readFileSync(corePackPath, 'utf8'));
       const card01006 = corePack.cards['01006'];
 

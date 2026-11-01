@@ -575,8 +575,8 @@ export class CardCatalog implements CardRepository {
   }
 }
 
-import coreCards from '../../../data/upstream/pack/core.json';
-import coreEncounterCards from '../../../data/upstream/pack/core_encounter.json';
+import coreCards from '../../../content/packs/core/cards/core.json';
+import coreEncounterCards from '../../../content/packs/core/cards/core_encounter.json';
 
 export const cardCatalog = new CardCatalog([...coreCards, ...coreEncounterCards] as any);
 

@@ -2,13 +2,11 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { cardFileNames, cardPath, supplementalPath } from '../src/tools/content-paths';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '../');
-
-const UPSTREAM_DIR = path.join(ROOT_DIR, 'data/upstream/pack');
-const SUPPLEMENTAL_DIR = path.join(ROOT_DIR, 'src/data/supplemental/pack');
 
 export interface ExtractedCard {
   code: string;
@@ -39,11 +37,10 @@ export function extractCard(cardCode: string, packHint?: string): ExtractedCard 
   const codeLower = cardCode.trim().toLowerCase();
   const packHintLower = packHint?.trim().toLowerCase();
 
-  if (!fs.existsSync(UPSTREAM_DIR)) {
-    throw new Error(`Upstream directory not found: ${UPSTREAM_DIR}`);
+  const files = cardFileNames(ROOT_DIR);
+  if (files.length === 0) {
+    throw new Error(`No card files found under ${path.join(ROOT_DIR, 'content', 'packs')}`);
   }
-
-  const files = fs.readdirSync(UPSTREAM_DIR).filter((f) => f.endsWith('.json'));
 
   for (const file of files) {
     const packCode = path.basename(file, '.json').toLowerCase();
@@ -51,7 +48,7 @@ export function extractCard(cardCode: string, packHint?: string): ExtractedCard 
       continue;
     }
 
-    const filePath = path.join(UPSTREAM_DIR, file);
+    const filePath = cardPath(file, ROOT_DIR);
     let cards: Array<Record<string, unknown>>;
     try {
       cards = JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -64,7 +61,7 @@ export function extractCard(cardCode: string, packHint?: string): ExtractedCard 
 
     // Check for existing supplemental data
     let existingSupp: Record<string, unknown> | null = null;
-    const suppPath = path.join(SUPPLEMENTAL_DIR, file);
+    const suppPath = supplementalPath(file, ROOT_DIR);
     if (fs.existsSync(suppPath)) {
       try {
         const suppContent = JSON.parse(fs.readFileSync(suppPath, 'utf8'));

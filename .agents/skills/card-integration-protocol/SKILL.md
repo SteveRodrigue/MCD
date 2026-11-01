@@ -129,7 +129,7 @@ If Step 5 confidence is below 95%, go back to Step 3 (max 3 attempts, then the c
 - **Costs (ADR-0083):** declare ability resource costs only as the typed map `cost.resourceCost` (`{ "energy": 1 }`, `{ "mental": 1 }`; `wild` only for a printed "Spend a [wild] resource"). The `cost.resources` array and an untyped numeric `resourceCost` no longer exist. **Never copy a printed event cost into an ability `cost`**: the engine reads the event cost from upstream `raw.cost`; declare a resource cost on an event only for an extra cost the card prints. Variable "Spend X" costs are not expressible yet (#318).
 - **Never declare upstream-derived fields (ADR-0083):** `traits`, `keywords` (incl. `Victory X`), `maxPerPlayer`, `isLandscape`, `restrictedSlots`, `additionalBoostCards`, `attackCost`, `thwartCost`, `victoryPoints` and ability `labels` are derived by the loader and rejected by the strict schema. Step `target`, `filter` and `distinctFrom` go inside `effectParams`, which `EFFECT_PARAM_SCHEMAS` validates per effect.
 - `noSupplementalNeeded: true` is **ONLY** valid for pure vanilla cards with zero rules text (e.g. double resources, basic allies without abilities, or villain stages without abilities). Any card with rules text marked `noSupplementalNeeded: true` is an invalid schema error.
-- Compose the JSON entry in `src/data/supplemental/pack/{pack_code}.json` (strict template, must match the schema exactly):
+- Compose the JSON entry in `content/packs/<code>/supplemental/<stem>.json` (strict template, must match the schema exactly):
 
 Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-template.md).
 
@@ -145,7 +145,7 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
 
 - **The Decompiler Feedback Loop:** Read **strictly** the drafted `abilities: [...]` array (and its `timing`, `trigger`, `cost`, and `steps: [{ effect, params, gate }]` pipeline) and decompile it into natural card text.
   - **Strict Rule:** Do **NOT** read `audit.comment` during this step. The decompiled text must be derived 100% from the machine-executable attributes.
-- **Fidelity Evaluation:** Compare the decompiled text against the original printed card text from `data/upstream/`:
+- **Fidelity Evaluation:** Compare the decompiled text against the original printed card text from `content/`:
   - Does the executable schema reproduce the exact same timing, triggers, costs, targets, search zones, shuffle side-effects, constraints, and consequences?
   - Can the schema express every clause of the printed card text without semantic loss?
   - If the decompiled text is missing key elements answered in the 8-Point Q&A Checklist (e.g. search zones or shuffle rules), **iterate and refine the schema**.
@@ -164,7 +164,7 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
   - **$\le$ 50% (Missing Implementation):** If a card has rules text but `abilities: [...]` is empty, missing, or marked `noSupplementalNeeded`.
 - **Refinement Iteration Limit:** Max **3 refinement iterations** between Steps 2 $\rightarrow$ 3 $\rightarrow$ 4 $\rightarrow$ 5.
 - **🚨 CIRCUIT-BREAKER PROTOCOL (If Confidence Remains $< 95\%$ after Attempt 3 or Tier 3 Gate):**
-  1. **DO NOT COMMIT ACTIVE ABILITIES FOR BLOCKED CARDS:** If a card is ambiguous, incomplete, or blocked by a Tier 3 refactor, the **`abilities: [...]` array MUST BE STRIPPED / OMITTED** from `src/data/supplemental/pack/{pack_code}.json`. The supplemental entry retains ONLY the `audit` block (with `ambiguityFile` path). This prevents the engine from attempting to execute unsupported logic.
+  1. **DO NOT COMMIT ACTIVE ABILITIES FOR BLOCKED CARDS:** If a card is ambiguous, incomplete, or blocked by a Tier 3 refactor, the **`abilities: [...]` array MUST BE STRIPPED / OMITTED** from `content/packs/<code>/supplemental/<stem>.json`. The supplemental entry retains ONLY the `audit` block (with `ambiguityFile` path). This prevents the engine from attempting to execute unsupported logic.
   2. Create a dedicated ambiguity report file in `docs/ambiguities/{pack}_{card_code}_{slug}.md` with clear, exhaustive reasoning detailing:
      - Exact printed text and intended mechanics.
      - Specific lines of code in `src/engine/effects/` or `src/engine/pipeline/` that are missing or incomplete.
@@ -195,8 +195,8 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
 
 - **Mandatory User Peer Review for Supplemental Changes:** Create `temp/.plan-pending` when you post the review and delete it once the user approves; while it exists a hook blocks edits under `src/`, `tests/`, `data/`, `tools/` and `scripts/`.
   Any addition, refinement, or refactoring of a card's supplemental data **MUST** be peer-reviewed and approved by the user before writing changes to `src/data/supplemental/` or proceeding to delivery. When presenting the change for user review (in an implementation plan, prompt response, or review recap), always present:
-  1. **Printed Card Text (`card.text`):** The exact printed rules text from `data/upstream/pack/{pack_code}.json`.
-  2. **Original Supplemental Data:** The existing JSON entry in `src/data/supplemental/pack/{pack_code}.json` (or `None` if brand new).
+  1. **Printed Card Text (`card.text`):** The exact printed rules text from `content/packs/<code>/cards/<stem>.json`.
+  2. **Original Supplemental Data:** The existing JSON entry in `content/packs/<code>/supplemental/<stem>.json` (or `None` if brand new).
   3. **Proposed Supplemental Data:** The newly drafted/refactored supplemental JSON entry conforming to current specifications.
   4. **The "Why?":** Explicit rationale explaining the motivation for the change (e.g. specification updates in `docs/specifications/`, gaps or ambiguities identified during differential comparison, rule corrections, or primitive refactoring).
 - **Execution modes and blast-radius tiers:** Single-Card Mode stops here for approval. Batch Mode collates one consolidated review and stops once. Tier handling is defined in the guardrails and Step 6C.
@@ -211,7 +211,7 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
      1. Immediately update the corresponding specification file in [`docs/specifications/supplemental/`](../../../docs/specifications/supplemental/README.md) to mark it 🟢 `IMPLEMENTED (v1.0)` with code links.
      2. Run `rtk npx vitest run tests/data/supplemental-schema.test.ts` to ensure schema conformance.
 3. **Inbox Zero Pruning:** If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it**.
-4. **Canonical Card ID Sorting:** Keep `src/data/supplemental/pack/*.json` in ascending card ID order (`01001a` -> `01001b` -> `01002`); a hook reports any out-of-order key after each edit. Insert new entries in place, not at the bottom.
+4. **Canonical Card ID Sorting:** Keep `content/packs/*/supplemental/*.json` in ascending card ID order (`01001a` -> `01001b` -> `01002`); a hook reports any out-of-order key after each edit. Insert new entries in place, not at the bottom.
 5. **Regenerate Usage Audit & Targeted Verification:**
    - **In Single-Card Mode:** Run `rtk npm run report:declarations` once to regenerate [`docs/reports/supplemental_data/usage_report.md`](../../../docs/reports/supplemental_data/usage_report.md). Run targeted verification: `rtk npx vitest run <card-test-file> tests/data/supplemental-validation.test.ts` and `rtk npm run typecheck` (confirming **0 failed and 0 skipped tests**).
    - **In Batch Mode:** Do **not** run verification repeatedly per card. Execute Step 8 authoring and sorting across all approved cards in the batch first, then execute `rtk npm run report:declarations`, `rtk npx vitest run <batch-test-files> tests/data/supplemental-validation.test.ts`, and `rtk npm run typecheck` **once as a single consolidated check** at the end of the batch.
@@ -224,7 +224,7 @@ When an agent or user requests a supplemental data mockup for card text without 
 
 1. **Phase A: Text & Upstream Discovery:**
    - Ingest the exact printed rules text verbatim (do not paraphrase or guess).
-   - If the card exists in `data/upstream/pack/`, retrieve its card code, traits (e.g. `Attack.`, `Thwart.`), card type, cost, and faction.
+   - If the card exists in `content/packs/*/cards/`, retrieve its card code, traits (e.g. `Attack.`, `Thwart.`), card type, cost, and faction.
 
 2. **Phase B: Rules Reference & Cross-Cutting Lookup:**
    - Query the structured rules via `npm run rule -- <term>` or search `references/rules/glossary/`.

@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import https from 'https';
-import corePack from '../data/upstream/pack/core.json';
-import coreEncounterPack from '../data/upstream/pack/core_encounter.json';
+import corePack from '../content/packs/core/cards/core.json';
+import coreEncounterPack from '../content/packs/core/cards/core_encounter.json';
 
 import { getCardArtFileName } from '../src/ui/services/card-cache-service';
 

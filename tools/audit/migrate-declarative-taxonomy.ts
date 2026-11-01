@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { supplementalFileNames, supplementalPath } from '../../src/tools/content-paths';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '../..');
-const PACK_DIR = path.join(ROOT_DIR, 'src/data/supplemental/pack');
 
 const TRIGGER_RENAMES: Record<string, string> = {
   VILLAIN_INITIATES_ATTACK: 'ENEMY_INITIATES_ATTACK',
@@ -347,14 +347,11 @@ function parseArgs() {
 function selectedFiles(fileName?: string): string[] {
   if (fileName) {
     if (!fileName.endsWith('.json')) throw new Error(`Expected a JSON pack filename: ${fileName}`);
-    const target = path.join(PACK_DIR, fileName);
+    const target = supplementalPath(fileName, ROOT_DIR);
     if (!fs.existsSync(target)) throw new Error(`Pack not found: ${fileName}`);
     return [fileName];
   }
-  return fs
-    .readdirSync(PACK_DIR)
-    .filter((file) => file.endsWith('.json'))
-    .sort();
+  return supplementalFileNames(ROOT_DIR);
 }
 
 function main() {
@@ -362,7 +359,7 @@ function main() {
   let hasBlockers = false;
 
   for (const file of selectedFiles(fileName)) {
-    const filePath = path.join(PACK_DIR, file);
+    const filePath = supplementalPath(file, ROOT_DIR);
     const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     const result = transformPack(content, file);
     console.log(`\n${file}: ${result.changes.length} proposed changes`);

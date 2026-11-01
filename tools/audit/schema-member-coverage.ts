@@ -13,6 +13,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { ZodType } from 'zod';
+import { supplementalPath } from '../../src/tools/content-paths';
 import { SupplementalPackSchema } from '../../src/data/supplemental/schema';
 import { EFFECT_PARAM_KEYS } from '../../src/data/supplemental/effect-params';
 import { defOf } from '../../src/data/supplemental/schema-introspector';
@@ -233,9 +234,9 @@ export function shippedCardsUsing(member: SchemaMember, root: string): string[] 
     );
   };
   for (const file of PACK_FILES) {
-    const raw = JSON.parse(
-      fs.readFileSync(path.join(root, 'src/data/supplemental/pack', file), 'utf8'),
-    ) as { cards: Record<string, unknown> };
+    const raw = JSON.parse(fs.readFileSync(supplementalPath(file, root), 'utf8')) as {
+      cards: Record<string, unknown>;
+    };
     for (const [code, card] of Object.entries(raw.cards)) if (matches(card)) codes.push(code);
   }
   return codes;

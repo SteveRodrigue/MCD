@@ -1,0 +1,12 @@
+{
+  "id": "mts",
+  "name": "The Mad Titan's Shadow",
+  "kind": "mixed",
+  "origin": "official-bundled",
+  "apiVersion": 1,
+  "version": "1.0.0",
+  "dependsOn": [
+    "core"
+  ],
+  "source": "zzorba/marvelsdb-json-data"
+}

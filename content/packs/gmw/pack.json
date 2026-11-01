@@ -1,0 +1,12 @@
+{
+  "id": "gmw",
+  "name": "The Galaxy's Most Wanted",
+  "kind": "mixed",
+  "origin": "official-bundled",
+  "apiVersion": 1,
+  "version": "1.0.0",
+  "dependsOn": [
+    "core"
+  ],
+  "source": "zzorba/marvelsdb-json-data"
+}

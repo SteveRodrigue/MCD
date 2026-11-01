@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog, CardCatalog } from '@data/importer/card-loader';
-import aoaEncounterPack from '../../data/upstream/pack/aoa_encounter.json';
+import aoaEncounterPack from '../../content/packs/aoa/cards/aoa_encounter.json';
 import {
   GameState,
   HeroCard,

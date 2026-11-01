@@ -15,8 +15,8 @@ import {
   peekDecisionPrompt,
 } from '@engine/index';
 
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
 
 import { getActiveMainScheme } from '@engine/models';
 describe('Villain Phase Stepping & Pacing Engine (ADR-0068 / Issue #140)', () => {

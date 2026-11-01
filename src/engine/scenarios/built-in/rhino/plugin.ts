@@ -1,6 +1,6 @@
 import { DeclarativeScenarioPlugin } from '../../declarative-plugin';
 import type { ScenarioDefinition } from '../../types';
-import definitionData from './definition.json';
+import definitionData from '../../../../../content/packs/core/scenarios/rhino/definition.json';
 
 /**
  * Rhino (The Break-In!): everything comes from `definition.json` and supplemental data; Rhino II

@@ -32,7 +32,7 @@ To maintain high code quality, rules accuracy, and architectural integrity acros
 +-------------------------------------------------------------------------+
 |                             src/data/                                   |
 |   (MarvelsDB card schemas, static JSON definitions, card loaders)       |
-|   ❌ NEVER mutates or writes to data/upstream/ (zzorba raw files).      |
+|   ❌ NEVER mutates or writes to content/ (zzorba raw files).      |
 |   ✅ ONLY reads upstream data and applies overrides in src/data/supplemental|
 +-------------------------------------------------------------------------+
 ```
@@ -40,12 +40,12 @@ To maintain high code quality, rules accuracy, and architectural integrity acros
 ### Golden Rules:
 
 1. **`src/engine/` must be 100% headless.** You should be able to run the entire game from a Node.js CLI script or a Vitest test runner without loading a browser.
-2. **`data/upstream/` is strictly READ-ONLY.** MCD application code, importers, and scripts must NEVER write to, modify, or delete raw upstream files. Any corrections, errata, or engine hooks must be declared in `src/data/supplemental/`.
+2. **`content/` is strictly READ-ONLY.** MCD application code, importers, and scripts must NEVER write to, modify, or delete raw upstream files. Any corrections, errata, or engine hooks must be declared in `src/data/supplemental/`.
 
 3. **Dependency Direction (Strict Invariant):**
 
 ```
-src/ui/ ──> src/engine/ ──> src/data/ (supplemental + importer) ──> data/upstream/ (read-only)
+src/ui/ ──> src/engine/ ──> src/data/ (supplemental + importer) ──> content/ (read-only)
 ```
 
 - `src/data/` may import only `@engine/models` (types and enums). It never imports engine pipeline or effects code, or `src/ui/`.
@@ -79,7 +79,7 @@ Whenever an architectural subsystem, engine pipeline, or effect primitive is imp
 
 ### 2. Standardized 4-Step Resolution Workflow:
 
-1. **Supplemental Translation:** Update the card's entry in `src/data/supplemental/pack/*.json` using the newly implemented primitive, ensuring it passes `SupplementalPackSchema` validation (`npm test`).
+1. **Supplemental Translation:** Update the card's entry in `content/packs/*/supplemental/*.json` using the newly implemented primitive, ensuring it passes `SupplementalPackSchema` validation (`npm test`).
 2. **Automated Unit Tests:** Add regression unit tests in `tests/engine/` verifying the card's mechanics end-to-end.
 3. **Inbox Zero Pruning:** Elevate the card's audit confidence to $\ge 95\%$ and delete the corresponding file in `docs/ambiguities/` (Inbox Zero).
 4. **GitHub Issue Closure:** Close the tracking GitHub Issue via `gh issue close <id>` referencing the commit and test file.

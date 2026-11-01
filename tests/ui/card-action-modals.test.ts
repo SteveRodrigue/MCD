@@ -4,8 +4,8 @@ import { setupGame, resetInstanceCounter, createCardInstance } from '@engine/ind
 import { CardCatalog } from '@data/importer/card-loader';
 import { getValidAttackTargets } from '../../src/ui/components/board/attack-target-utils';
 import { getValidThwartTargets } from '../../src/ui/components/board/thwart-target-utils';
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
 
 import { getActiveMainScheme } from '@engine/models';
 describe('Card Action Selection & 2-Stage Interaction Invariants (Issue #98)', () => {

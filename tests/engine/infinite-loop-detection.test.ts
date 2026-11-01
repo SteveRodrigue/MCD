@@ -15,8 +15,8 @@ import {
 import { dispatchTrigger } from '../../src/engine/triggers/trigger-dispatcher';
 import { InfiniteLoopError } from '../../src/engine/errors/infinite-loop-error';
 
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
 
 function makeMockCard(
   partial: Partial<NormalizedCard> & { code: string; name: string },

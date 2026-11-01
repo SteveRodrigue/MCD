@@ -43,8 +43,8 @@ Every primitive, trigger, timing, cost, and parameter documented in this specifi
 
 ```mermaid
 flowchart TD
-    A["Upstream Raw Card<br/>(data/upstream/pack/*.json)"] --> B["Normalized Card Catalog<br/>(src/data/importer/card-loader.ts)"]
-    C["Supplemental JSON<br/>(src/data/supplemental/pack/*.json)"] -->|Enriches card| B
+    A["Upstream Raw Card<br/>(content/packs/*/cards/*.json)"] --> B["Normalized Card Catalog<br/>(src/data/importer/card-loader.ts)"]
+    C["Supplemental JSON<br/>(content/packs/*/supplemental/*.json)"] -->|Enriches card| B
     B --> D["Automated Schema Validator<br/>(src/data/supplemental/schema.ts)"]
     D --> E["Rules Engine Execution<br/>(src/engine/effects/handlers/)"]
 ```

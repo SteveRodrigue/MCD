@@ -1,0 +1,10 @@
+{
+  "id": "core",
+  "name": "Core Set",
+  "kind": "core",
+  "origin": "official-bundled",
+  "apiVersion": 1,
+  "version": "1.0.0",
+  "dependsOn": [],
+  "source": "zzorba/marvelsdb-json-data"
+}

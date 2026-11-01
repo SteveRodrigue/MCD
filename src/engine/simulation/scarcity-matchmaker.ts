@@ -89,10 +89,7 @@ interface Candidate {
 /** The legal cards of one aspect plus the basic cards, one entry per card (copies come later). */
 function aspectPool(allCards: readonly NormalizedCard[], aspect: FactionCode): NormalizedCard[] {
   return allCards.filter(
-    (c) =>
-      c.packCode === 'core' &&
-      DECK_TYPES.has(c.type) &&
-      (c.faction === aspect || c.faction === FactionCode.BASIC),
+    (c) => DECK_TYPES.has(c.type) && (c.faction === aspect || c.faction === FactionCode.BASIC),
   );
 }
 
@@ -103,7 +100,7 @@ export function chooseAspect(
 ): FactionCode {
   const total = (aspect: FactionCode) =>
     allCards
-      .filter((c) => c.packCode === 'core' && DECK_TYPES.has(c.type) && c.faction === aspect)
+      .filter((c) => DECK_TYPES.has(c.type) && c.faction === aspect)
       .reduce((sum, c) => sum + untestedWeight(ledger, c), 0);
   return [...ASPECTS].sort((a, b) => total(b) - total(a))[0];
 }
@@ -114,7 +111,7 @@ export function rankHeroSets(
   allCards: readonly NormalizedCard[],
   ledger: ScarcityLedger,
 ): string[] {
-  const heroes = allCards.filter((c) => c.packCode === 'core' && c.type === CardType.HERO);
+  const heroes = allCards.filter((c) => c.type === CardType.HERO);
   const untested = (hero: NormalizedCard) =>
     catalog
       .getCardsBySet(hero.setCode ?? '')

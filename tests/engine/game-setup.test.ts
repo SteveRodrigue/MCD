@@ -91,6 +91,8 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
       villain,
       mainScheme,
       encounterCards,
+      // The given encounter cards are the deck under test, not the default scenario's own setup
+      skipScenarioPlugin: true,
       // Pass no-op shuffle for deterministic testing
       shuffleFn: (arr) => arr,
     });

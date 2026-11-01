@@ -30,6 +30,7 @@ import {
   type AllTimeStats,
 } from '../src/engine/models/stats';
 import { getStarterDeck } from '../src/engine/decks/starter-decks';
+import { ScenarioRegistry, defaultScenarioId } from '../src/engine/scenarios';
 import { STAGED_TRIGGERS } from '../src/engine/simulation/ability-stage-setter';
 import { RULE_SCENARIOS, sweepRuleScenarios } from '../src/engine/simulation/rule-scenarios';
 import { COVERAGE_RULE_BY_TIMING } from '../src/engine/simulation/ability-coverage';
@@ -141,7 +142,10 @@ async function runBalanceReport() {
   console.log(`🎮 Marvel Champions Digital: 100-Game Balance Report`);
   console.log(`   50 Solo Games (5 Heroes x 2 Difficulties x 5 Runs)`);
   console.log(`   50 2-Player Games (5 Pairs x 2 Difficulties x 5 Runs)`);
-  console.log(`   Target Scenario: Rhino (Standard / Expert)`);
+  const scenarioId = defaultScenarioId();
+  console.log(
+    `   Target Scenario: ${ScenarioRegistry.get(scenarioId).definition.name} (Standard / Expert)`,
+  );
   console.log(`======================================================\n`);
 
   const results: CompletedGameRecord[] = [];
@@ -166,7 +170,7 @@ async function runBalanceReport() {
     try {
       const initialState = setupGame({
         catalog: cardCatalog,
-        scenarioId: 'rhino',
+        scenarioId,
         difficulty: config.difficulty,
         seed: config.seed,
         players,
@@ -402,7 +406,12 @@ function warnIfCardDataChanged(recordedHash: string): void {
 }
 
 function stageOptions(seed: string) {
-  return { catalog: cardCatalog, allCards: cardCatalog.getAllCards(), seed };
+  return {
+    catalog: cardCatalog,
+    allCards: cardCatalog.getAllCards(),
+    seed,
+    scenarioId: defaultScenarioId(),
+  };
 }
 
 /** How many abilities the Gauntlet matches used at least once, beyond the ledger they started from. */
@@ -426,6 +435,7 @@ function playGauntlet(args: CliArgs, ledger: ScarcityLedger): GauntletMatch[] {
     catalog: cardCatalog,
     allCards,
     seed: args.seed,
+    scenarioId: defaultScenarioId(),
     ledger,
     cardDataHash: hash,
   });

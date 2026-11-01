@@ -155,7 +155,7 @@ Decided as recommended (the plan was approved "as recommended" on 2026-11-01, an
 
 No file under `src/engine` names a Core card code or `'rhino'`, `built-in/` is gone, scenarios and hooks register through the loader, the zero-pack boot still works, and the setup digests and `npm run simulate` output match `main` (Klaw's digests changed only for the three stated reasons).
 
-## 13. As built (M5a: PR #538, M5b: PR #540, M5c)
+## 13. As built (M5a: PR #538, M5b: PR #540, M5c: PR #544, M5d)
 
 Where the merged code differs from the plan above, or what the next implementer must know:
 
@@ -182,6 +182,15 @@ Where the merged code differs from the plan above, or what the next implementer 
 2. **Small addition (not a deviation of the design):** with no pack loaded the registry is now empty, which the `ScenarioSelector` could not render (it read `scenarios[0]`). M5c adds a text-only "No scenario available" state in `ScenarioSelector`; the polished empty state stays M7, and the preselected-scenario change stays M5d. The zero-pack smoke test asserts it.
 3. **Parity:** 12 digests unchanged; `simulate --no-stats` replay catalog and summary byte-identical to `main` at `df880be`. Browser check: selector lists Rhino, Klaw, Ultron in that order and a game starts for each; Ultron's board shows the Drone text and no console errors (card images 404 only because the sandbox has no image cache).
 4. `pack-validate.ts` already validated scenario definitions and duplicate ids with the same `ClaimRegistry`; nothing to change there.
+
+**M5d (defaults and literals)**
+
+1. **Built as planned**: `defaultScenarioId()` in `src/engine/scenarios/registry.ts` (lowest `scenarioCardCode`, throws "No scenario is available" with no scenario registered); `game-setup.ts` resolves the scenario once and throws when its villain stage I or main scheme 1B is not in the catalog (the `01094` and `01097b` fallbacks are gone); `GameState.scenarioId` is now required and `scenario-helpers.ts` uses it without a default; `ScenarioSelector` preselects the first scenario of the registry.
+2. **Scenario plugin runs for the default too.** `setupGame` used to run the scenario plugin only when `scenarioId` was named. It now runs it for the resolved scenario, named or default. One test that asserted the raw encounter list without naming a scenario passes `skipScenarioPlugin: true`; every other caller already named its scenario or was unaffected.
+3. **Explicit scenario in the simulation.** `StageOptions.scenarioId` and `GauntletOptions.scenarioId` are required; `simulate-games.ts` passes `defaultScenarioId()` (the Gate 1 scope, Rhino with Core); the balance run uses it as well.
+4. **`'core'` literals.** `generateDeckFilename(deck, { prebuiltPack })` names a prebuilt deck after its pack. The `packCode === 'core'` filters in the simulation (stage setter, matchmaker) are gone: `allCards` is already the loaded packs. `buildAbilityInventory` has no default pack filter; callers pass `packCodes` when they want one. With Core as the only pack the numbers are unchanged.
+5. **Left alone on purpose:** the `'rhino'` and `01094` strings in the UI Style Lab fixtures (`templates/`) and the cosmetic Rhino branches (`villain-zone-utils.ts`, `comic-log-formatter.ts`, M7).
+6. **Parity:** 12 digests unchanged; `simulate --no-stats` replay catalog and summary byte-identical to `main` after M5c; full suite 5795 tests; browser check: the selector opens on Rhino, all three games start.
 
 ## 14. Checklist for M5c and M5d
 

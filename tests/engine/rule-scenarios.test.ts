@@ -1,9 +1,14 @@
 import { describe, it, expect } from 'vitest';
+import { defaultScenarioId } from '@engine/scenarios';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { RULE_SCENARIOS, sweepRuleScenarios } from '@engine/simulation/rule-scenarios';
 
 describe('rule scenarios', () => {
-  const options = { catalog: cardCatalog, allCards: cardCatalog.getAllCards() };
+  const options = {
+    catalog: cardCatalog,
+    allCards: cardCatalog.getAllCards(),
+    scenarioId: defaultScenarioId(),
+  };
   const results = sweepRuleScenarios(options);
 
   it('runs every scenario, in a fixed order', () => {

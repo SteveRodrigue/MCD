@@ -7,6 +7,7 @@ import { GameState, GamePhase } from '../../src/engine/models';
 
 describe('GameState Logger Service', () => {
   const mockGameState: GameState = {
+    scenarioId: 'rhino',
     id: 'test_game_1',
     roundNumber: 2,
     phase: GamePhase.PLAYER_PHASE,

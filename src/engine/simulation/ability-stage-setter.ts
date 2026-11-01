@@ -69,6 +69,8 @@ export interface StageOptions {
   catalog: CardRepository;
   /** Every card the stage may pick fixtures from (payers, minions, allies, side schemes). */
   allCards: readonly NormalizedCard[];
+  /** The scenario the stage plays in (the Gate 1 scope passes `defaultScenarioId()`). */
+  scenarioId: string;
   seed?: string;
   playerCount?: 1 | 2;
   /** Which `PLAYER_CHOICE` option index to take first (each branch is its own run). */
@@ -121,8 +123,7 @@ const bare = (card: NormalizedCard) => (card.enrichment?.abilities ?? []).length
 
 function pickFixtures(cards: readonly NormalizedCard[]): Fixtures {
   const firstBare = (type: CardType) => cards.find((c) => c.type === type && bare(c));
-  const filler =
-    firstBare(CardType.RESOURCE) ?? cards.find((c) => c.packCode === 'core' && bare(c));
+  const filler = firstBare(CardType.RESOURCE) ?? cards.find(bare);
   if (!filler) throw new Error('[StageSetter] no ability-free filler card in the catalog.');
   return {
     filler,
@@ -189,7 +190,7 @@ export function createStage(
   // Instance ids are part of the state digest, so each stage starts the counter from zero
   resetInstanceCounter();
   const fixtures = pickFixtures(allCards);
-  const scenarioId = subject.scenarioId ?? 'rhino';
+  const scenarioId = subject.scenarioId ?? options.scenarioId;
   const setCode = heroSetFor(subject.card, catalog);
   const setCards = catalog.getCardsBySet(setCode);
   const hero = setCards.find((c) => c.type === CardType.HERO) as HeroCard;
@@ -454,7 +455,7 @@ function buildRepairs(target: AbilityTarget): Repair[] {
         name: `witness in ${zone}`,
         apply: (stage) => {
           const witness = stage.options.allCards.find(
-            (c) => c.code !== card.code && c.packCode === 'core' && matchesCardFilter(c, filter),
+            (c) => c.code !== card.code && matchesCardFilter(c, filter),
           );
           if (witness) placeWitness(stage, witness, zone);
         },
@@ -1256,7 +1257,7 @@ function exerciseConstant(
   }
   for (const filter of declaredFilters(target)) {
     const witness = options.allCards.find(
-      (c) => c.code !== card.code && c.packCode === 'core' && matchesCardFilter(c, filter),
+      (c) => c.code !== card.code && matchesCardFilter(c, filter),
     );
     if (witness) installInPlay(stage, createCardInstance(witness, PLAYER_ID), witness.type);
   }
@@ -1294,7 +1295,6 @@ function exerciseConstant(
           };
           const probe = options.allCards.find(
             (c) =>
-              c.packCode === 'core' &&
               (!params.sourceCardType || c.type === params.sourceCardType.toLowerCase()) &&
               (!params.sourceTrait || (c.traits ?? []).includes(params.sourceTrait)),
           );
@@ -1501,9 +1501,7 @@ function exerciseMainSchemeSetup(
 ): StageOutcome {
   const witness = declaredFilters(target)
     .map((filter) =>
-      options.allCards.find(
-        (c) => c.packCode === 'core' && matchesCardFilter(c, filter) && c.code !== target.card.code,
-      ),
+      options.allCards.find((c) => matchesCardFilter(c, filter) && c.code !== target.card.code),
     )
     .find(Boolean);
   const { state } = createStage({ ...subjectOf(target), scenarioId: target.card.setCode }, options);
@@ -1541,9 +1539,7 @@ function exerciseSetup(
   const filters = declaredFilters(target);
   const witness = filters
     .map((filter) =>
-      options.allCards.find(
-        (c) => c.packCode === 'core' && matchesCardFilter(c, filter) && c.code !== target.card.code,
-      ),
+      options.allCards.find((c) => matchesCardFilter(c, filter) && c.code !== target.card.code),
     )
     .find(Boolean);
   const deckExtras = witness ? [witness] : [];

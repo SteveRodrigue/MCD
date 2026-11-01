@@ -25,6 +25,8 @@ export interface GauntletOptions {
   catalog: CardRepository;
   allCards: readonly NormalizedCard[];
   seed: string;
+  /** The scenario every match plays (the Gate 1 scope passes `defaultScenarioId()`). */
+  scenarioId: string;
   /** What is already tested; each match adds to it, so later decks lean toward what is left. */
   ledger: ScarcityLedger;
   matches?: number;
@@ -98,7 +100,7 @@ export function playRecipe(recipe: SimulationRecipe, catalog: CardRepository): G
  * decides whether coverage is met, which is the Stage-Setter's job.
  */
 export function runGauntlet(options: GauntletOptions): GauntletMatch[] {
-  const { catalog, allCards, seed, cardDataHash } = options;
+  const { catalog, allCards, seed, cardDataHash, scenarioId } = options;
   const total = options.matches ?? GAUNTLET_MATCHES;
   let ledger = { ...options.ledger };
   const matches: GauntletMatch[] = [];
@@ -124,7 +126,7 @@ export function runGauntlet(options: GauntletOptions): GauntletMatch[] {
         heroSetCode: d.heroSetCode,
         deckCardCodes: d.deckCards.map((c) => c.code),
       })),
-      scenarioId: 'rhino',
+      scenarioId,
       difficulty: i % 2 === 0 ? 'STANDARD' : 'EXPERT',
       playerCount,
       ledgerSnapshot: ledger,

@@ -3,8 +3,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { setupGame, resetInstanceCounter, createCardInstance } from '@engine/index';
 import { CardCatalog } from '@data/importer/card-loader';
 import { getIdentityAttackState } from '../../src/ui/components/board/identity-action-utils';
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
 
 describe('Identity Action Modal Attack Target Resolution & Guard Invariants (Issue #102)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);

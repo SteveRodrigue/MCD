@@ -50,7 +50,7 @@ Enforceable summary. Explanations, examples, naming tables and architecture live
 ## Formatting and files
 
 - Run Prettier only on the files you changed (`npx prettier --write <files>`). On a folder it rewrites unrelated JSON and README files.
-- Pack JSON under `src/data/supplemental/pack/` uses CRLF. Edit textually and check that `git diff --stat` stays small.
+- Pack JSON under `content/packs/<code>/supplemental/` uses CRLF. Edit textually and check that `git diff --stat` stays small.
 
 ## Commits
 

@@ -161,7 +161,7 @@ file you discover via the glob above to the right code-truth check in Step 2:
 | Rules mapping  | `docs/algorithmic_rules_reference.md`                                                                  | `references/mc_rulesreference_v18_compressed.pdf` + `src/engine/`           |
 | Planning       | `docs/roadmap_and_milestones.md`, `CHANGELOG.md`                                                       | GitHub issues/milestones, git history                                       |
 | Reports        | `docs/reports/*.md`                                                                                    | regenerated, never hand-edited                                              |
-| Ambiguities    | `docs/ambiguities/*.md`                                                                                | `src/data/supplemental/pack/*.json`                                         |
+| Ambiguities    | `docs/ambiguities/*.md`                                                                                | `content/packs/*/supplemental/*.json`                                         |
 
 If the user narrowed the scope (argument hint), audit only that subset — but **always** include
 Step 4 when any ADR, engine primitive, or architectural concept is touched.
@@ -181,7 +181,7 @@ with regex over `src/` and record exact symbol lists:
 - **Scenario/plugin registries:** `ScenarioPlugin` steps and special-ability plugin IDs.
 - **UI contracts:** exported components/hooks referenced by name in docs.
 - **Scripts:** the `scripts` block of `package.json` (docs frequently cite removed or renamed scripts).
-- **Data reality:** counts of packs/cards under `src/data/supplemental/pack/*.json`.
+- **Data reality:** counts of packs/cards under `content/packs/*/supplemental/*.json`.
 
 Keep this index in working memory — it is the diff baseline for Step 3.
 

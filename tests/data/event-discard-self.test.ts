@@ -9,6 +9,7 @@ import {
 } from '../../src/data/supplemental/schema';
 import { CardSupplementalService } from '../../src/tools/editor/api-middleware';
 import { validateCardInput } from '../../scripts/validate-card';
+import { supplementalFileNames, supplementalPath } from '../../src/tools/content-paths';
 
 describe('Event Discard Invariant (Issue #271 / RR v1.8 Event)', () => {
   describe('findEventDiscardSelfViolations helper', () => {
@@ -58,12 +59,11 @@ describe('Event Discard Invariant (Issue #271 / RR v1.8 Event)', () => {
   });
 
   it('enforces that no event card in any supplemental pack declares cost.discardSelf', () => {
-    const packDir = path.resolve('src/data/supplemental/pack');
-    const packFiles = fs.readdirSync(packDir).filter((f) => f.endsWith('.json'));
+    const packFiles = supplementalFileNames();
     const violations: string[] = [];
 
     for (const file of packFiles) {
-      const filePath = path.join(packDir, file);
+      const filePath = supplementalPath(file);
       const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
       if (!content.cards) continue;
 

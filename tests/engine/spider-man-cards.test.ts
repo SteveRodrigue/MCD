@@ -11,8 +11,8 @@ import {
   createCardInstance,
 } from '@engine/index';
 
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
 import { thaw } from '../support/thaw-state';
 
 import { getActiveVillain } from '@engine/models';

@@ -83,7 +83,7 @@ Run the sync script from the repository root:
 pwsh scripts/sync_data.ps1
 ```
 
-The script ([`scripts/sync_data.ps1`](../../scripts/sync_data.ps1)) downloads
+The script (`scripts/sync_data.ps1`, replaced by the content sync command of ADR-0092) downloads
 `https://github.com/zzorba/marvelsdb-json-data/archive/refs/heads/master.zip`, extracts it to a temp
 folder, and copies the contents over `data/upstream/`. It **overwrites** that directory in place and
 does not delete files that upstream has removed — inspect `git status` after every run.

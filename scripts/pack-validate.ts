@@ -23,6 +23,7 @@ import {
 import { PackDeckSchema } from '../src/data/packs/pack-deck';
 import { ModularSetsSchema, ScenarioDefinitionSchema } from '../src/data/packs/scenario-definition';
 import { SupplementalPackSchema } from '../src/data/supplemental/schema';
+import { metaFile, metaSchemaFile } from '../src/tools/content-paths';
 
 const PLACEHOLDER_CODE = '00000';
 
@@ -273,12 +274,11 @@ export function validatePackSet(packsRoot: string, options: ValidatePackOptions)
 }
 
 export function readCardSchema(repoRoot: string): object {
-  return readJson(path.join(repoRoot, 'data', 'upstream', 'schema', 'card_schema.json')) as object;
+  return readJson(metaSchemaFile('card_schema', repoRoot)) as object;
 }
 
 export function readOfficialPackCodes(repoRoot: string): string[] {
-  const file = path.join(repoRoot, 'data', 'upstream', 'packs.json');
-  return (readJson(file) as { code: string }[]).map((p) => p.code);
+  return (readJson(metaFile('packs', repoRoot)) as { code: string }[]).map((p) => p.code);
 }
 
 function main(): void {

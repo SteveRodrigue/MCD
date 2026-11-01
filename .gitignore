@@ -69,3 +69,6 @@ __pycache__/
 # Local link to .agents/skills (see AGENTS.md "Claude Code setup")
 .claude/skills
 .claude/worktrees
+
+# Disposable content cache (images, raw sync downloads)
+content/.cache/

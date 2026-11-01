@@ -4,8 +4,8 @@ import { createCardInstance } from '../../src/engine/state/card-instance';
 import { step4_revealEncounterCards } from '../../src/engine/pipeline/villain-phase';
 import { resolveDecisionPrompt, peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 import { GamePhase, GameState, PlayerState, SideSchemeState } from '../../src/engine/models';
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
 
 describe('Hawkeye (01066) Ally Response Trigger When Minion Enters Play (Issue #105)', () => {
   let catalog: CardCatalog;

@@ -1,6 +1,6 @@
 /**
  * Marvel Champions Digital - Core Enums
- * Aligned 1-to-1 with data/upstream schemas (types.json, factions.json, card_schema.json).
+ * Aligned 1-to-1 with upstream schemas (content/meta/schema) (types.json, factions.json, card_schema.json).
  */
 
 export enum CardType {

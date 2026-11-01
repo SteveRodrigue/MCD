@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog, CardCatalog } from '@data/importer/card-loader';
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
-import mtsPack from '../../data/upstream/pack/mts.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import mtsPack from '../../content/packs/mts/cards/mts.json';
 import {
   GameState,
   HeroCard,

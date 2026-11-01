@@ -1,19 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+import { packDir, scenarioDefinitionFile } from '../../src/tools/content-paths';
 import {
   ModularSetsSchema,
   ScenarioDefinitionSchema,
 } from '../../src/data/packs/scenario-definition';
 
-const builtInDir = path.resolve('src/engine/scenarios/built-in');
-const definitions: [string, any][] = fs
-  .readdirSync(builtInDir, { withFileTypes: true })
-  .filter((d) => d.isDirectory())
-  .map((d) => [
-    d.name,
-    JSON.parse(fs.readFileSync(path.join(builtInDir, d.name, 'definition.json'), 'utf8')),
-  ]);
+const definitions: [string, any][] = ['rhino', 'klaw', 'ultron'].map((id) => [
+  id,
+  JSON.parse(fs.readFileSync(scenarioDefinitionFile(id), 'utf8')),
+]);
 
 describe('ScenarioDefinitionSchema', () => {
   it.each(definitions)('accepts the real %s definition.json', (_name, json) => {
@@ -40,7 +37,7 @@ describe('ScenarioDefinitionSchema', () => {
 
 describe('ModularSetsSchema', () => {
   const sets = JSON.parse(
-    fs.readFileSync(path.resolve('src/engine/scenarios/modular-sets.json'), 'utf8'),
+    fs.readFileSync(path.join(packDir('core'), 'modular-sets.json'), 'utf8'),
   );
 
   it('accepts the real modular-sets.json', () => {

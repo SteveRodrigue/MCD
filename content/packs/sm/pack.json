@@ -1,0 +1,12 @@
+{
+  "id": "sm",
+  "name": "Sinister Motives",
+  "kind": "mixed",
+  "origin": "official-bundled",
+  "apiVersion": 1,
+  "version": "1.0.0",
+  "dependsOn": [
+    "core"
+  ],
+  "source": "zzorba/marvelsdb-json-data"
+}

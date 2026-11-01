@@ -25,6 +25,7 @@
     "parse:card": "tsx tools/audit/card-text-parser.ts",
     "schema:generate": "tsx tools/generate-supplemental-schema.ts",
     "pack:validate": "tsx scripts/pack-validate.ts",
+    "pack:status": "tsx scripts/pack-status.ts",
     "rule": "tsx scripts/lookup-rule.ts",
     "changelog:release": "tsx scripts/changelog-release.ts",
     "changelog:check": "tsx scripts/changelog-release.ts --check",

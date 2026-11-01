@@ -33,5 +33,5 @@ date_logged: "2026-10-03"
 
 1. Model teams and the leader in `GameState` (Civil War scenario plugin) and add selectors for "each player on your team" and "your leader's set-aside cards".
 2. Reuse the generic `REMOVE_FROM_GAME` primitive added for Issue #158 as the ability cost.
-3. Add the `ACTION` ability to `src/data/supplemental/pack/cw_encounter.json` (keep `recipient`), raise confidence, and delete this file.
+3. Add the `ACTION` ability to `content/packs/cw/supplemental/cw_encounter.json` (keep `recipient`), raise confidence, and delete this file.
 4. Related data note: the sibling print `56206b` carries identical text and the same `recipient` need; add it at the same time.

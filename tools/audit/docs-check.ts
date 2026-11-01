@@ -34,7 +34,16 @@ export interface DocsCheckOptions {
 /** Skipped at any depth. */
 const SKIP_ANYWHERE = new Set(['node_modules', '.git', '.claude']);
 /** Skipped at the repository root only (`src/data` must stay in scope). */
-const SKIP_AT_ROOT = new Set(['logs', 'references', 'changes', 'temp', 'dist', 'coverage', 'data']);
+const SKIP_AT_ROOT = new Set([
+  'logs',
+  'references',
+  'changes',
+  'temp',
+  'dist',
+  'coverage',
+  'data',
+  'content',
+]);
 const PATH_PREFIX = /^(src|tests|docs|tools|scripts|\.agents|\.githooks)\//;
 
 function walk(root: string, dir: string, out: string[], exts: RegExp): void {

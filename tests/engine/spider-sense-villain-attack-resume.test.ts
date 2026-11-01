@@ -15,8 +15,8 @@ import {
   resolveDecisionPrompt,
 } from '@engine/index';
 
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
 import { thaw } from '../support/thaw-state';
 
 describe('Issue #264: Villain attack resumes after declining/accepting Spider-Sense (01001a)', () => {

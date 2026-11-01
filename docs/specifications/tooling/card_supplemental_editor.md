@@ -9,7 +9,7 @@
 
 ## 1. Overview & Objectives
 
-The **Card Supplemental Editor & Live Reviewer GUI** is an integrated developer tool that streamlines reviewing, verifying, and enriching card supplemental data (`src/data/supplemental/pack/*.json`) directly within the Marvel Champions Digital web application.
+The **Card Supplemental Editor & Live Reviewer GUI** is an integrated developer tool that streamlines reviewing, verifying, and enriching card supplemental data (`content/packs/*/supplemental/*.json`) directly within the Marvel Champions Digital web application.
 
 ### Key Objectives
 
@@ -36,7 +36,7 @@ graph TD
     subgraph Vite Dev Server
         ViteMiddleware["cardSupplementalEditorPlugin<br/>(/api/supplemental/*)"]
         AuditAutoStamper["Audit Trail Stamper<br/>(updatedAt, reviewedBy)"]
-        FS["Node.js FileSystem<br/>(src/data/supplemental/pack/*.json)"]
+        FS["Node.js FileSystem<br/>(content/packs/*/supplemental/*.json)"]
         HMR["Vite HMR Module Reloader"]
     end
 
@@ -176,7 +176,7 @@ Validates and persists changes to the card's supplemental definition:
   ```
 - **Server Behavior:**
   1. Validates payload using `CardEnrichmentSchema.safeParse(supplemental)`. Returns HTTP 400 with structured Zod errors if invalid.
-  2. Resolves the target pack file: `payload.packFile`, else the pack file of the card in the upstream data, else `${packCode}.json`, inside `src/data/supplemental/pack/`. The name must match `^[a-z0-9_-]+\.json$` (`isPackFileName`); anything else returns HTTP 400 with `Invalid pack file name '<name>'`.
+  2. Resolves the target pack file: `payload.packFile`, else the pack file of the card in the upstream data, else `${packCode}.json`, inside `content/packs/<code>/supplemental/`. The name must match `^[a-z0-9_-]+\.json$` (`isPackFileName`); anything else returns HTTP 400 with `Invalid pack file name '<name>'`.
   3. Reads existing pack JSON, merges/updates `cards[code]`, stamps `audit.updatedAt` with the current ISO timestamp (`YYYY-MM-DDTHH:MM:SSZ`), preserves existing fields, and formats JSON with 2-space indentation.
   4. Writes atomically to disk.
   5. Returns HTTP 200: `{ "success": true, "code": "01001a", "updatedAt": "..." }`.
@@ -253,7 +253,7 @@ Every card rendered on the active game board attaches a custom `onContextMenu` h
 
 ## 6. Acceptance & Contract Criteria
 
-1. **Catalog Completeness:** Filter controls can discover and list all cards across upstream `data/upstream/pack/*.json`.
+1. **Catalog Completeness:** Filter controls can discover and list all cards across upstream `content/packs/*/cards/*.json`.
 2. **Dual-View Fidelity:** The center inspector accurately renders card artwork via `CardView` and displays raw upstream text matching the physical card.
 3. **Live Zod Validation:** Attempting to save invalid effect primitives (e.g. `INVALID_PRIMITIVE`) or malformed parameters is blocked in the UI with red error markers.
 4. **Atomic Disk Persistence:** Clicking "Save" updates the corresponding pack JSON file with clean 2-space indentation and auto-stamped audit metadata (`updatedAt`, `reviewedBy`).

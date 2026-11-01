@@ -26,11 +26,11 @@ graph TD
 
 > [!IMPORTANT]
 > **Strict zzorba / MarvelCDB Schema Compliance:**  
-> All base card definitions in `data/upstream/` **must strictly comply with the upstream zzorba format** ([`zzorba/marvelsdb-json-data`](https://github.com/zzorba/marvelsdb-json-data)), which is the canonical standard used by [MarvelCDB](https://marvelcdb.com).
+> All base card definitions in `content/` **must strictly comply with the upstream zzorba format** ([`zzorba/marvelsdb-json-data`](https://github.com/zzorba/marvelsdb-json-data)), which is the canonical standard used by [MarvelCDB](https://marvelcdb.com).
 >
 > **Separation of Concerns:**
 >
-> 1. **Upstream zzorba JSON (`data/upstream/`):** Contains static presentation, card text, traits, costs, printed stats, and deckbuilding metadata.
+> 1. **Upstream zzorba JSON (`content/`):** Contains static presentation, card text, traits, costs, printed stats, and deckbuilding metadata.
 > 2. **Supplemental Rules JSON (`src/data/supplemental/`):** Contains pure engine-executable `abilities` with `steps: AbilityStep[]`, costs, timings, triggers, and audit proofs.
 
 ### Standard zzorba Card Fields:

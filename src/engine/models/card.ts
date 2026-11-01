@@ -1,7 +1,7 @@
 import { CardType, FactionCode } from './enums';
 
 /**
- * Raw upstream card structure matching data/upstream/schema/card_schema.json
+ * Raw upstream card structure matching content/meta/schema/card_schema.json
  */
 export interface RawUpstreamCard {
   code: string;

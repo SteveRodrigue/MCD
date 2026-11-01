@@ -25,9 +25,9 @@ Before writing any code, please review our comprehensive **[Coding Guidelines & 
 
 Here is the recommended workflow to implement any Hero, Ally, Event, Upgrade, or Encounter Card ability:
 
-### Step 1: Verify the Card in Upstream JSON (`data/upstream/`)
+### Step 1: Verify the Card in Upstream JSON (`content/`)
 
-All official card metadata (stats, traits, cost, text, resource icons) lives in `data/upstream/pack/*.json`. Ensure the card is loaded in [`src/engine/decks/starter-decks.ts`](src/engine/decks/starter-decks.ts) or in a scenario `definition.json` under [`src/engine/scenarios/built-in/`](src/engine/scenarios/built-in/).
+All official card metadata (stats, traits, cost, text, resource icons) lives in `content/packs/*/cards/*.json`. Ensure the card is loaded in [`src/engine/decks/starter-decks.ts`](src/engine/decks/starter-decks.ts) or in a scenario `definition.json` under [`src/engine/scenarios/built-in/`](src/engine/scenarios/built-in/).
 
 ### Step 2: Write a Failing Unit Test in `tests/engine/`
 
@@ -69,7 +69,7 @@ npm install
 npm run dev        # http://localhost:3000/ (strictPort; override with: npm run dev -- --port 3001)
 ```
 
-`npm run dev` also mirrors Vite output to the newest 10 logs in `logs/dev-server/`. Cards are read from `data/upstream/` (official data), `src/data/supplemental/pack/*.json` (declarative rules) and `src/engine/` (rules engine).
+`npm run dev` also mirrors Vite output to the newest 10 logs in `logs/dev-server/`. Cards are read from `content/` (official data), `content/packs/*/supplemental/*.json` (declarative rules) and `src/engine/` (rules engine).
 
 | Task                | Command                                             | Notes                                                                                             |
 | :------------------ | :-------------------------------------------------- | :------------------------------------------------------------------------------------------------ |

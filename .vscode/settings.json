@@ -13,9 +13,9 @@
   "json.schemas": [
     {
       "fileMatch": [
-        "src/data/supplemental/pack/*.json",
-        "/src/data/supplemental/pack/*.json",
-        "**/src/data/supplemental/pack/*.json"
+        "content/packs/*/supplemental/*.json",
+        "/content/packs/*/supplemental/*.json",
+        "**/content/packs/*/supplemental/*.json"
       ],
       "url": "./src/data/supplemental/schema.json"
     },

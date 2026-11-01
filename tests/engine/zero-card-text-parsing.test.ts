@@ -21,8 +21,8 @@ import {
 } from '@engine/pipeline/legality-checker';
 import { CardCatalog } from '@data/importer/card-loader';
 import { getStarterDeck } from '@engine/decks/starter-decks';
-import corePack from '../../data/upstream/pack/core.json';
-import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+import corePack from '../../content/packs/core/cards/core.json';
+import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
 
 describe('Zero Card Text Parsing Contract (ADR-0019)', () => {
   function makeMockCard(overrides: Partial<NormalizedCard> = {}): NormalizedCard {

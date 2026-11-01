@@ -1,7 +1,7 @@
 # Plan — M10: Documentation is split by audience, and a creator can build a first pack from it
 
 **Status:** draft 2026-11-01, revised after Steve's rule that deprecated and historical documents are not kept (decision 4: delete). Waiting for review (open decisions in section 9).
-**M10a:** implemented on this branch (mechanical move, link fixes, docs-check prefixes).
+**M10a:** merged (#555). **M10b:** implemented (creator docs, tested example pack `first-pack`, `creator-field` check, welcome pointer). The pack id is `first-pack` (the card schema limits `pack_code` to 10 characters, so `my-first-pack` was too long).
 **Parent:** [`plan_content_folder_refactor.md`](plan_content_folder_refactor.md) (Q7, Q32, Q35; section 3.8; roadmap row M10) and [ADR-0092](../decisions/0092-content-packs-and-runtime-loading.md).
 **Depends on:** M2 to M9 (the pack format, loader, scenarios as data and the editor are all merged). Independent of M11 and the parked desktop app (#548).
 **Gate note:** Gate 1 (Rhino) is active. M10 touches documentation, one test and `tools/audit/docs-check.ts`. The one `src/` change is a line of text on the welcome screen (section 3.5).
@@ -12,7 +12,7 @@ In-Game Scenario: none (documentation; the game plays the same).
 
 **Creator scenario (stands in for it):**
 **Setup:** A fan with a fresh clone wants to make a hero pack. They know JSON, not this codebase.
-**Does:** Opens the welcome screen, reads "see `docs/creators/README.md`", follows the first-pack tutorial: copies `docs/creators/examples/my-first-pack/` into `content/packs/`, adds its id to `enabledPacks`, reloads.
+**Does:** Opens the welcome screen, reads "see `docs/creators/README.md`", follows the first-pack tutorial: copies `docs/creators/examples/first-pack/` into `content/packs/`, adds its id to `enabledPacks`, reloads.
 **Today:** The material exists but is scattered by author, not by reader: the hero guide and scenario guide sit in `docs/guidelines/` and still describe pre-pack paths (`src/data/supplemental/`, "built-in heroes"); the supplemental reference is under `docs/specifications/`; the editor spec describes an API that M9 deleted; nothing explains what a pack is, `pack.json`, `dependsOn`, or how to install one. The welcome screen points nowhere.
 **After this change:** `docs/creators/` starts with "what is a pack" and a tutorial whose example pack is tested: a test loads it through the real loader and `pack:validate`, so the tutorial cannot rot. The Content screen then lists the pack as **Data only** (it ships cards without supplemental data) and a second step of the tutorial adds one supplemental entry through the editor, turning it **Playable**. Engine-facing material lives in `docs/engine/`.
 **Why (rules):** None. This is about who the documents are for (Q32).
@@ -48,7 +48,7 @@ docs/
     supplemental-reference/    # was specifications/supplemental/ (README, 01..11, QUICK_REFERENCE)
     editor.md                  # how to use /editor (new, short, task oriented)
     sharing-and-installing.md  # folders and zip today; what is not built yet
-    examples/my-first-pack/    # the tested example (3.3)
+    examples/first-pack/    # the tested example (3.3)
   engine/
     architecture.md  algorithmic_rules_reference.md  coding_guidelines.md
     tools/  (card_text_parser.md, supplemental_schema_validation.md)
@@ -64,7 +64,7 @@ Every relocation is a `git mv` so history follows. All inbound links (the 21 or 
 
 ### 3.3 The example pack and its test
 
-`docs/creators/examples/my-first-pack/` holds a real pack: `pack.json` (origin `user`), one hero with the standard card fields in `cards/`, nothing else, so it shows up **Data only**. A test (`tests/data/creators-example-pack.test.ts`) copies it into a temp content root, loads it with the real loader (zero failures, the card is in the catalog, state **Data only**) and runs `pack:validate` on it. The tutorial's second part adds a supplemental entry for the hero and the same test proves the pack becomes **Playable** with that file (the file is shipped as `supplemental.sample.json` beside the pack, copied in by the test).
+`docs/creators/examples/first-pack/` holds a real pack: `pack.json` (origin `user`), one hero with the standard card fields in `cards/`, nothing else, so it shows up **Data only**. A test (`tests/data/creators-example-pack.test.ts`) copies it into a temp content root, loads it with the real loader (zero failures, the card is in the catalog, state **Data only**) and runs `pack:validate` on it. The tutorial's second part adds a supplemental entry for the hero and the same test proves the pack becomes **Playable** with that file (the file is shipped as `supplemental.sample.json` beside the pack, copied in by the test).
 
 ### 3.4 Documentation completeness check
 
@@ -107,7 +107,7 @@ New schema documentation for things that do not exist (zip import, sandboxed pac
 | `docs/architecture.md`, `algorithmic_rules_reference.md`, `coding_guidelines.md`, `tools/*.md` | [MOVE] to `docs/engine/` | Engine docs |
 | `docs/specifications/supplemental_data_schema.md` | [DELETE] | Debt Removed |
 | `docs/creators/README.md`, `pack-format.md`, `editor.md`, `sharing-and-installing.md` | [NEW] | Creator scenario |
-| `docs/creators/examples/my-first-pack/**` | [NEW] | Creator scenario |
+| `docs/creators/examples/first-pack/**` | [NEW] | Creator scenario |
 | `README.md`, `AGENTS.md`-linked rules, 5 skills, 3 ADRs (ADR-0092 also drops its citation of the deleted plugins document), other inbound links | [MODIFY] link targets | Debt Removed |
 | `tools/audit/docs-check.ts`, `tests/tools/docs-check.test.ts` | [MODIFY] `isCurrent`, `creator-field` check | Completeness |
 | `tests/data/quick-reference-sync.test.ts` | [MODIFY] path | Completeness |

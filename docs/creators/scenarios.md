@@ -28,7 +28,24 @@ The loader validates `definition.json` against `ScenarioDefinitionSchema`. A pac
 
 ## 📄 Step 1: Create the Manifest (`definition.json`)
 
-The manifest defines the static properties, stages, and modular sets:
+The manifest defines the static properties, stages, and modular sets. Properties at the top level of `definition.json`:
+
+| Property                | Required | Meaning                                                                                                 |
+| ----------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
+| `$schema`               | no       | Editor hint for JSON completion.                                                                        |
+| `id`                    | yes      | Scenario id, unique across enabled packs.                                                               |
+| `name`                  | yes      | Display name.                                                                                           |
+| `scenarioCardCode`      | yes      | Code of the scenario card; also the sort key in the selector.                                           |
+| `author`                | no       | Credit.                                                                                                 |
+| `version`               | no       | Your version string.                                                                                    |
+| `description`           | no       | One line shown in the selector.                                                                         |
+| `setupOnomatopoeia`     | no       | Comic sound effect shown with the setup log entry.                                                      |
+| `supportedDifficulties` | yes      | One or more of `SKIRMISH`, `STANDARD`, `EXPERT`.                                                        |
+| `villainSetup`          | yes      | `villainName` and `stages`: villain card codes per difficulty.                                          |
+| `mainSchemeSetup`       | yes      | Main scheme `stages` plus `startingThreat`, `targetThreatPerPlayer`, `escalationThreatPerPlayer`.       |
+| `modularEncounterSets`  | yes      | `mandatory` and per-difficulty `defaults` set codes; optional `slotCount` and `recommendedModularSets`. |
+
+Unknown properties are rejected. Example:
 
 ```json
 {
@@ -41,7 +58,7 @@ The manifest defines the static properties, stages, and modular sets:
   "description": "Stop the Syndicate before they assemble the Omega Device!",
   "setupOnomatopoeia": "THE SYNDICATE STRIKES!",
   "supportedDifficulties": ["SKIRMISH", "STANDARD", "EXPERT"],
-  
+
   "villainSetup": {
     "villainName": "Crimson Leader",
     "stages": {
@@ -168,10 +185,12 @@ There is nothing to register by hand. When the app starts, the content loader re
 ## 🧪 Step 4: Verify & Run Declarations Audit
 
 After authoring the scenario and its cards:
+
 ```bash
 npm run schema:generate       # schemas and the pack hook map
 npm run pack:validate -- content/packs
 ```
+
 ```bash
 npm run report:declarations   # Regenerates docs/reports/supplemental_declarations_usage_report.md
 npx vitest run                # Runs full test suite
@@ -181,7 +200,7 @@ npm run typecheck             # Verifies TypeScript types
 ---
 
 ## 📚 Related References
-* [Supplemental Data Schema Specification](supplemental-reference/README.md)
-* [Hero & Identity Creation Guide](./cards-and-heroes.md)
-* [Card Integration Protocol (SKILL.md)](../../.agents/skills/card-integration-protocol/SKILL.md)
 
+- [Supplemental Data Schema Specification](supplemental-reference/README.md)
+- [Hero & Identity Creation Guide](./cards-and-heroes.md)
+- [Card Integration Protocol (SKILL.md)](../../.agents/skills/card-integration-protocol/SKILL.md)

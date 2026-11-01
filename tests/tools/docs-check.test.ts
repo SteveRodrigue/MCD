@@ -52,8 +52,8 @@ describe('docs:check rules (fixture tree)', () => {
   });
 
   it('flags a missing path', () => {
-    write('docs/specifications/s.md', '# S\n\n`src/engine/gone.ts`\n');
-    write('README.md', '# T\n\n[g](docs/guide.md) [s](docs/specifications/s.md)\n');
+    write('docs/creators/s.md', '# S\n\n`src/engine/gone.ts`\n');
+    write('README.md', '# T\n\n[g](docs/guide.md) [s](docs/creators/s.md)\n');
     expect(checks()).toEqual(['path']);
   });
 
@@ -63,10 +63,10 @@ describe('docs:check rules (fixture tree)', () => {
   });
 
   it('flags a symbol that is not in src/ in a current-state doc only', () => {
-    write('docs/specifications/s.md', '# S\n\n`PHANTOM_SYMBOL` and `REAL_SYMBOL`\n');
-    write('README.md', '# T\n\n[g](docs/guide.md) [s](docs/specifications/s.md)\n');
+    write('docs/creators/s.md', '# S\n\n`PHANTOM_SYMBOL` and `REAL_SYMBOL`\n');
+    write('README.md', '# T\n\n[g](docs/guide.md) [s](docs/creators/s.md)\n');
     expect(checks()).toEqual(['symbol']);
-    write('docs/specifications/s.md', '# Status\n\n- **Status:** Backlogged\n\n`PHANTOM_SYMBOL`\n');
+    write('docs/creators/s.md', '# Status\n\n- **Status:** Backlogged\n\n`PHANTOM_SYMBOL`\n');
     expect(checks()).toEqual([]);
   });
 
@@ -76,8 +76,8 @@ describe('docs:check rules (fixture tree)', () => {
   });
 
   it('flags removed-feature wording and hard-coded counts', () => {
-    write('docs/specifications/s.md', '# S\n\nThis was removed in #12. Now 3,497 tests pass.\n');
-    write('README.md', '# T\n\n[g](docs/guide.md) [s](docs/specifications/s.md)\n');
+    write('docs/creators/s.md', '# S\n\nThis was removed in #12. Now 3,497 tests pass.\n');
+    write('README.md', '# T\n\n[g](docs/guide.md) [s](docs/creators/s.md)\n');
     expect(checks().sort()).toEqual(['tombstone', 'volatile']);
   });
 
@@ -111,8 +111,17 @@ describe('docs:check rules (fixture tree)', () => {
   });
 
   it('honours an allowlist entry', () => {
-    write('docs/specifications/s.md', '# S\n\n`PHANTOM_SYMBOL`\n');
-    write('README.md', '# T\n\n[g](docs/guide.md) [s](docs/specifications/s.md)\n');
+    write('docs/creators/s.md', '# S\n\n`PHANTOM_SYMBOL`\n');
+    write('README.md', '# T\n\n[g](docs/guide.md) [s](docs/creators/s.md)\n');
     expect(checks([{ check: 'symbol', value: 'PHANTOM_SYMBOL', reason: 'example' }])).toEqual([]);
+  });
+
+  it('flags a pack.json property that pack-format.md does not mention', () => {
+    write('docs/creators/pack-format.md', '# Pack format\n\n`id` `name` `kind` `origin`\n');
+    write('README.md', '# T\n\n[g](docs/guide.md) [p](docs/creators/pack-format.md)\n');
+    const findings = runDocsCheck(root).filter((f) => f.check === 'creator-field');
+    const messages = findings.map((f) => f.message);
+    expect(messages).toContain('schema property not documented: apiVersion');
+    expect(messages).not.toContain('schema property not documented: id');
   });
 });

@@ -8,8 +8,8 @@
 
 | Metric | Count | Health / Coverage | Description |
 | :--- | :---: | :---: | :--- |
-| **Total Cards Registered** | **176** | 100% | Total cards present in `src/data/supplemental/` |
-| **Active Declared Cards** | **160** | - | Cards with executable `abilities: [...]` |
+| **Total Cards Registered** | **180** | 100% | Total cards present in `src/data/supplemental/` |
+| **Active Declared Cards** | **164** | - | Cards with executable `abilities: [...]` |
 | **No Supplemental Needed** | [15](detailed_reports/vanilla_and_passive_cards.md) | Verified | Vanilla / passive cards explicitly requiring no supplemental hooks |
 | **Open Ambiguity Reports** | **2** | Blocked | Cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🟢 0 | Cards marked `noSupplementalNeeded` that have printed rules text |
@@ -20,7 +20,7 @@
 | **Step Conditions Code Path Coverage** | **100.0%** | **0/0** | [0 In Use](detailed_reports/condition_gates_usage.md) |
 | **Trigger Types Code Path Coverage** | **100.0%** | **33/33** | [23 In Use](detailed_reports/timing_and_triggers_usage.md) |
 | **Timing Types Code Path Coverage** | **100.0%** | **19/19** | [15 In Use](detailed_reports/timing_and_triggers_usage.md) |
-| **Total Abilities Declared** | **188** | - | Total individual ability definitions declared |
+| **Total Abilities Declared** | **192** | - | Total individual ability definitions declared |
 | **Multi-Step Pipelines (2+ Steps)** | [35](detailed_reports/multi_ability_and_multistep_cards.md) | - | Abilities decomposed into sequenced execution pipelines |
 | **Cards with Multiple Abilities (2+)** | [25](detailed_reports/multi_ability_and_multistep_cards.md) | - | Cards declaring more than 1 distinct ability header |
 
@@ -97,15 +97,15 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | Effect Primitive | Declaring Cards | Occurrences | Detailed Card List |
 | :--- | :---: | :---: | :--- |
 | `DEAL_DAMAGE` | **25 cards** | 27 steps | [View Cards](detailed_reports/effects_usage.md#deal-damage) |
-| `DISCARD` | **19 cards** | 21 steps | [View Cards](detailed_reports/effects_usage.md#discard) |
+| `DISCARD` | **21 cards** | 23 steps | [View Cards](detailed_reports/effects_usage.md#discard) |
 | `ADD_STATUS` | **13 cards** | 16 steps | [View Cards](detailed_reports/effects_usage.md#add-status) |
+| `SEARCH` | **12 cards** | 12 steps | [View Cards](detailed_reports/effects_usage.md#search) |
 | `DRAW` | **11 cards** | 11 steps | [View Cards](detailed_reports/effects_usage.md#draw) |
 | `MODIFY_STAT` | **11 cards** | 13 steps | [View Cards](detailed_reports/effects_usage.md#modify-stat) |
 | `PLAYER_CHOICE` | **11 cards** | 11 steps | [View Cards](detailed_reports/effects_usage.md#player-choice) |
 | `SURGE` | **11 cards** | 11 steps | [View Cards](detailed_reports/effects_usage.md#surge) |
 | `ADD_THREAT` | **11 cards** | 13 steps | [View Cards](detailed_reports/effects_usage.md#add-threat) |
 | `REMOVE_THREAT` | **10 cards** | 12 steps | [View Cards](detailed_reports/effects_usage.md#remove-threat) |
-| `SEARCH` | **10 cards** | 10 steps | [View Cards](detailed_reports/effects_usage.md#search) |
 | `HEAL_DAMAGE` | **7 cards** | 7 steps | [View Cards](detailed_reports/effects_usage.md#heal-damage) |
 | `MODIFY_MAX_HEALTH` | **5 cards** | 5 steps | [View Cards](detailed_reports/effects_usage.md#modify-max-health) |
 | `READY` | **5 cards** | 5 steps | [View Cards](detailed_reports/effects_usage.md#ready) |
@@ -120,7 +120,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | Feature | In Use | Declared Keys / Resolvers |
 | :--- | :---: | :--- |
 | **Dynamic Value Sources** | **14** | `HAS_IDENTITY`, `RESOURCES_SPENT`, `COUNTERS (counter: energy)`, `STAT_VALUE (stat: SUFFERED_DAMAGE)`, `DISCARDED_CARDS (attr: COUNT)`, `ENTITY_COUNT` *(+8 more)* |
-| **Filter Criteria Keys** | **5** | `resourceIcons` (2), `codes` (5), `types` (19), `traits` (15), `sets` (3) |
+| **Filter Criteria Keys** | **5** | `resourceIcons` (2), `codes` (7), `types` (21), `traits` (15), `sets` (3) |
 | **Filter Compositions** | **0** | *(None declared)* |
 
 ---

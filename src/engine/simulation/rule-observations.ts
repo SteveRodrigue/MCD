@@ -181,7 +181,7 @@ export const RULE_OBSERVATIONS: Record<RuleSlug, RuleObservation> = {
     { log: 'card.putIntoPlay' },
     { log: 'encounter.reveal.minion' },
   ),
-  environment: logs('scenario.setup.environment'),
+  environment: logs('environment.entersPlay'),
   event: unobservable,
   'excess-damage': logs('overkill.hit'),
   exhausted: mixed({ effect: 'EXHAUST' }, { log: 'card.state.exhausted' }),

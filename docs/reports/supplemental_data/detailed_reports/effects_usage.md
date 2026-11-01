@@ -36,7 +36,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed`, `concussive_blast_boost` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
 
-### <a id="discard"></a>`DISCARD` (19 Cards, 21 Step Occurrences)
+### <a id="discard"></a>`DISCARD` (21 Cards, 23 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -47,6 +47,8 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01084` | **Nick Fury (ally)** | `core` | `nick_fury_round_end_discard` |
 | `01099` | **Charge (attachment)** | `core_encounter` | `charge_discard` |
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
+| `01116b` | **Underground Distribution (main_scheme)** | `core_encounter` | `klaw_underground_distribution_when_revealed` |
+| `01117a` | **Secret Rendezvous (main_scheme)** | `core_encounter` | `klaw_secret_rendezvous_when_revealed` |
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
 | `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response`, `radioactive_man_boost` |
 | `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_discard` |
@@ -125,6 +127,23 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
 | `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
 
+### <a id="search"></a>`SEARCH` (12 Cards, 12 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01029b` | **Tony Stark (alter_ego)** | `core` | `futurist` |
+| `01034` | **Stark Tower (support)** | `core` | `stark_tower_retrieve` |
+| `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
+| `01041` | **Shuri (ally)** | `core` | `shuri_enters_play` |
+| `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
+| `01095` | **Rhino (villain)** | `core_encounter` | `rhino_stage_ii_when_revealed` |
+| `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_when_revealed` |
+| `01116a` | **Underground Distribution (main_scheme)** | `core_encounter` | `klaw_underground_distribution_setup` |
+| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
+| `01137a` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_setup` |
+| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
+| `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
+
 ### <a id="draw"></a>`DRAW` (11 Cards, 11 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -172,21 +191,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
 | `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
 | `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
-
-### <a id="search"></a>`SEARCH` (10 Cards, 10 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01029b` | **Tony Stark (alter_ego)** | `core` | `futurist` |
-| `01034` | **Stark Tower (support)** | `core` | `stark_tower_retrieve` |
-| `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
-| `01041` | **Shuri (ally)** | `core` | `shuri_enters_play` |
-| `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
-| `01095` | **Rhino (villain)** | `core_encounter` | `rhino_stage_ii_when_revealed` |
-| `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_when_revealed` |
-| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
-| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
-| `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
 
 ### <a id="heal-damage"></a>`HEAL_DAMAGE` (7 Cards, 7 Step Occurrences)
 

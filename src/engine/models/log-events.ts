@@ -20,7 +20,7 @@ export interface LogEvents {
     threatTarget?: number;
   };
   'scenario.setup.drone': { actor: string };
-  'scenario.setup.environment': { card: string };
+  'environment.entersPlay': { card: string };
   'scenario.setup.minion': { actor: string; card: string };
   'scenario.setup.sideScheme': { card: string; amount?: number };
   'scenario.victory': { mode?: string; actor: string };
@@ -451,7 +451,7 @@ export interface LogEvents {
 export const ALL_LOG_EVENT_KEYS = [
   'scenario.setup',
   'scenario.setup.drone',
-  'scenario.setup.environment',
+  'environment.entersPlay',
   'scenario.setup.minion',
   'scenario.setup.sideScheme',
   'scenario.victory',

@@ -18,38 +18,66 @@ import { createCardInstance } from '../state/card-instance';
 import { appendLog } from '../state/game-log';
 import { endGame } from '../state/victory';
 import { nextEngineId, shuffleArray } from '../state/rng';
+import { kernel } from '../kernel';
 import { advanceVillainStage, revealVillainStage } from './advance-villain-stage';
 import { villainStageHitPoints } from '../pipeline/stat-calculator';
 import type { ScenarioDefinition, ScenarioGameSetupOptions, ScenarioPlugin } from './types';
 
 /**
  * A scenario driven by its `definition.json` (AUD-20261017-232534 F011-A): villain stages per
- * difficulty, main scheme stages, mandatory and modular encounter sets. A scenario subclass adds
- * only what its cards do that is not supplemental data yet (stage 1A setup, stage reveals).
+ * difficulty, main scheme stages, mandatory and modular encounter sets. The Setup and When
+ * Revealed abilities printed on its main scheme cards are supplemental data, resolved here at
+ * setup and when the main scheme advances (RR v1.8 Appendix II step 12, main scheme). A scenario
+ * subclass adds only what cannot be data yet.
  */
 export class DeclarativeScenarioPlugin implements ScenarioPlugin {
-  /** Card types kept out of the encounter deck besides villains and main schemes. */
-  protected excludedEncounterTypes: string[] = [];
-
   constructor(
     readonly definition: ScenarioDefinition,
     private readonly setupOnomatopoeia: string,
   ) {}
 
-  /** Stage 1A setup: side schemes, environments or minions the scenario puts into play. */
-  resolveStage1ASetup(state: GameState, _options?: ScenarioGameSetupOptions): GameState {
+  /**
+   * What a scenario does at stage 1B that its cards cannot express as data yet. Runs after the
+   * main scheme's own When Revealed abilities.
+   */
+  resolveStage1BReveal(state: GameState, _options?: ScenarioGameSetupOptions): GameState {
     return state;
   }
 
-  /** The B sides of the main scheme stages, in order. */
-  private mainSchemeStages(state: GameState): MainSchemeCard[] {
-    return this.definition.mainSchemeSetup.stages
-      .map((code) => getCatalog(state).getCard(code))
-      .filter(
-        (card): card is MainSchemeCard =>
-          card?.type === CardType.MAIN_SCHEME &&
-          Boolean((card as MainSchemeCard).stage?.toUpperCase().endsWith('B')),
-      );
+  /** The A and B sides of each main scheme stage, in order. */
+  private mainSchemeStagePairs(state: GameState): { a?: NormalizedCard; b: MainSchemeCard }[] {
+    const pairs = new Map<string, { a?: NormalizedCard; b?: MainSchemeCard }>();
+    for (const code of this.definition.mainSchemeSetup.stages) {
+      const card = getCatalog(state).getCard(code);
+      const stage = (card as MainSchemeCard | undefined)?.stage?.toUpperCase();
+      if (card?.type !== CardType.MAIN_SCHEME || !stage) continue;
+      const key = stage.slice(0, -1);
+      const entry = pairs.get(key) ?? {};
+      if (stage.endsWith('A')) entry.a = card;
+      else if (stage.endsWith('B')) entry.b = card as MainSchemeCard;
+      pairs.set(key, entry);
+    }
+    return [...pairs.values()].filter(
+      (entry): entry is { a?: NormalizedCard; b: MainSchemeCard } => entry.b !== undefined,
+    );
+  }
+
+  /**
+   * Resolves the abilities a main scheme card declares for a timing, through the effect engine a
+   * villain's When Revealed uses. A card without such abilities (Rhino's) does nothing.
+   */
+  private resolveMainSchemeAbilities(
+    state: GameState,
+    card: NormalizedCard | undefined,
+    timing: 'SETUP' | 'WHEN_REVEALED',
+  ): void {
+    if (!card) return;
+    const playerId = state.players[state.firstPlayerIndex ?? 0]?.id ?? state.players[0]?.id ?? '';
+    for (const ability of card.enrichment?.abilities ?? []) {
+      if (ability.timing === timing || ability.trigger === timing) {
+        kernel.executeEffect(state, ability, { playerId, sourceCardId: card.code });
+      }
+    }
   }
 
   private toMainScheme(
@@ -86,11 +114,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
       ...Object.values(this.definition.villainSetup.stages).flat(),
       ...this.definition.mainSchemeSetup.stages,
     ]);
-    const excludedTypes = new Set<string>([
-      'villain',
-      'main_scheme',
-      ...this.excludedEncounterTypes,
-    ]);
+    const excludedTypes = new Set<string>(['villain', 'main_scheme']);
     const deckCards = setCodes
       .flatMap((code) => getCatalog(state).getExpandedCardsBySet(code))
       .filter((c: NormalizedCard) => !excludedTypes.has(c.type) && !stageCodes.has(c.code));
@@ -130,7 +154,8 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     setActiveVillain(state, villain.instanceId!);
 
     // 2. The first main scheme stage (1B)
-    const [firstScheme] = this.mainSchemeStages(state);
+    const [firstStage] = this.mainSchemeStagePairs(state);
+    const firstScheme = firstStage?.b;
     if (!firstScheme) {
       throw new Error(`Main scheme stage '1B' not found for scenario '${this.definition.id}'.`);
     }
@@ -141,9 +166,12 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     );
     replaceActiveMainScheme(state, mainScheme);
 
-    // 3. Encounter deck, 4. stage 1A setup, 5. the starting villain stage is revealed
+    // 3. Encounter deck, then Appendix II step 12: (a) the Setup abilities of main scheme 1A,
+    // (b) 1B's When Revealed abilities, (c) the starting villain stage is revealed
     this.buildEncounterDeck(state, options);
-    this.resolveStage1ASetup(state, options);
+    this.resolveMainSchemeAbilities(state, firstStage.a, 'SETUP');
+    this.resolveMainSchemeAbilities(state, firstScheme, 'WHEN_REVEALED');
+    this.resolveStage1BReveal(state, options);
     revealVillainStage(state, villain);
 
     appendLog(state, {
@@ -191,23 +219,28 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     _completedSchemeInstanceId: string,
   ): { state: GameState; advancedStage?: boolean; defeat?: boolean } {
     const current = getActiveMainScheme(state);
-    const stages = this.mainSchemeStages(state);
-    const next = stages[stages.findIndex((card) => card.code === current.card.code) + 1];
+    const stages = this.mainSchemeStagePairs(state);
+    const currentIndex = stages.findIndex((stage) => stage.b.code === current.card.code);
+    const next = currentIndex >= 0 ? stages[currentIndex + 1] : undefined;
 
-    // The next main scheme stage, or the players lose with the last one
-    if (next && stages.some((card) => card.code === current.card.code)) {
-      const nextScheme = this.toMainScheme(state, next, 0);
+    // The next main scheme stage, or the players lose with the last one. RR v1.8 main scheme:
+    // resolve When Revealed on the new top card's A side, flip it to B with its starting threat,
+    // then resolve When Revealed on the B side.
+    if (next) {
+      this.resolveMainSchemeAbilities(state, next.a, 'WHEN_REVEALED');
+      const nextScheme = this.toMainScheme(state, next.b, 0);
       replaceActiveMainScheme(state, nextScheme);
       appendLog(state, {
         category: 'scheme',
         key: 'scenario.mainSchemeAdvance',
         params: {
           stage: nextScheme.stage,
-          card: next.name,
+          card: next.b.name,
           targetThreat: nextScheme.targetThreat,
         },
-        onomatopoeia: `SCHEME ADVANCES TO ${next.name.toUpperCase()}!`,
+        onomatopoeia: `SCHEME ADVANCES TO ${next.b.name.toUpperCase()}!`,
       });
+      this.resolveMainSchemeAbilities(state, next.b, 'WHEN_REVEALED');
       return { state, advancedStage: true };
     }
 

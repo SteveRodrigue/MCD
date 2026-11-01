@@ -557,7 +557,7 @@ const consequentialDamage: RuleScenario = {
 };
 
 const environmentSetup: RuleScenario = {
-  expects: ['scenario.setup.environment'],
+  expects: ['environment.entersPlay'],
   stage: (options) => newStage(options, 'ultron').state,
 };
 

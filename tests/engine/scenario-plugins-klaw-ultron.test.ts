@@ -9,7 +9,7 @@ import {
   getActiveVillain,
 } from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
-import { ScenarioRegistry, KlawScenarioPlugin, UltronScenarioPlugin } from '@engine/scenarios';
+import { ScenarioRegistry, UltronScenarioPlugin } from '@engine/scenarios';
 
 describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
   const spiderManHero = cardCatalog.getCard('01001a') as HeroCard;
@@ -43,9 +43,9 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
       expect(getActiveVillain(state).card.code).toBe('01113');
       expect(getActiveVillain(state).health).toBe(12);
 
-      // Defense Network (01124) side scheme put into play with 2 threat
-      expect(state.sideSchemes.some((s) => s.card.code === '01124')).toBe(true);
-      const defenseNetwork = state.sideSchemes.find((s) => s.card.code === '01124')!;
+      // Defense Network (01125) side scheme put into play with 2 threat
+      expect(state.sideSchemes.some((s) => s.card.code === '01125')).toBe(true);
+      const defenseNetwork = state.sideSchemes.find((s) => s.card.code === '01125')!;
       expect(defenseNetwork.threat).toBe(2);
 
       // Starting minion engaged with Player 1
@@ -54,7 +54,7 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
     });
 
     it('advances Klaw from Stage I to Stage II and reveals Immortal Klaw as a side scheme with bonus HP', () => {
-      const klawPlugin = ScenarioRegistry.get('klaw') as KlawScenarioPlugin;
+      const klawPlugin = ScenarioRegistry.get('klaw');
       const villainCard = cardCatalog.getCard('01113') as VillainCard;
       const mainSchemeCard = cardCatalog.getCard('01116b') as MainSchemeCard;
 

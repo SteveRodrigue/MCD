@@ -42,6 +42,7 @@ export { drawEncounterCard };
 import { resolveAttachmentHost } from './attachment-host';
 import { attachCardToHost } from '../state/state-validator';
 import { placeSideScheme } from '../state/side-scheme';
+import { putEnvironmentIntoPlay } from '../state/environment';
 import {
   step5_passFirstPlayerToken,
   step6_endVillainPhaseAndRound,
@@ -674,6 +675,9 @@ export function resolveActiveEncounterCardAfterInterrupt(
       params: { card: card.name, amount: baseThreat },
       onomatopoeia: 'SIDE SCHEME!',
     });
+    resolveWhenRevealedAbilities(state, cardInstance, player, isCancelled);
+  } else if (card.type === CardType.ENVIRONMENT) {
+    putEnvironmentIntoPlay(state, cardInstance);
     resolveWhenRevealedAbilities(state, cardInstance, player, isCancelled);
   } else if (card.type === CardType.OBLIGATION) {
     resolveRevealedObligation(state, cardInstance, player);

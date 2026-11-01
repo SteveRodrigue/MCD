@@ -1,83 +1,72 @@
-# Review — Does Klaw need a setup script?
+# Review — Can Klaw's setup be data?
 
-**Status:** For decision (2026-11-01). Written for [the M5 plan](plan_content_m5_scenarios_and_hooks.md), which proposes moving Klaw's and Ultron's setup into Core pack scripts.
-**Related:** Gate 2 scenario plug-in work (#275), [ADR-0092](../decisions/0092-content-packs-and-runtime-loading.md), Rules Reference v1.8 (Appendix II step 12 and the main scheme entry).
+**Status:** Conclusion reached (2026-11-01). **Yes, Klaw's setup can be data.** This replaces an earlier version of this document that concluded Klaw needed a script; that version was wrong (see section 6).
+**Used by:** [the M5 plan](plan_content_m5_scenarios_and_hooks.md).
+**Related:** [ADR-0092](../decisions/0092-content-packs-and-runtime-loading.md), Rules Reference v1.8 (Appendix II step 12 and the main scheme entry), Gate 2 scenario plug-in work (#275).
 
 ## 1. Short answer
 
-**Today, yes. But not because Klaw is special.** Klaw's setup is printed on its main scheme cards, and the engine does not resolve a main scheme's Setup or When Revealed abilities from card data at all. The two scenario subclasses hard-code those steps in TypeScript. Klaw could be pure data once the engine resolves main scheme abilities generically (a rules requirement anyway), plus one small primitive. Until then the honest options are a script that keeps today's behavior, or building the generic features first.
+Klaw's setup is printed text on its main scheme cards, and **every effect in it already exists as data**. The only thing missing is that the engine never *runs* a main scheme's Setup and When Revealed abilities (Appendix II step 12 and the main scheme advance rules). That is one generic engine feature, and it serves **62 main schemes in 17 packs**, not just Klaw. Once it exists, Klaw needs no script.
 
 ## 2. What Klaw does today
 
-`KlawScenarioPlugin.resolveStage1ASetup` (about 50 lines, `src/engine/scenarios/built-in/klaw/plugin.ts`):
+`KlawScenarioPlugin.resolveStage1ASetup` (`src/engine/scenarios/built-in/klaw/plugin.ts`, about 50 lines):
 
-1. **Defense Network.** Looks for side scheme `01124` in the encounter deck and removes it; if it is not there, creates it from the catalog. Puts it into `state.sideSchemes` with threat = base threat (2 when missing) x player count. Logs it. **It does not shuffle the deck.**
-2. **First minion.** Discards encounter cards one by one until a minion comes up, then puts that minion into the first player's engaged minions. Logs it.
+1. Finds side scheme `01124` (Defense Network) in the encounter deck, or creates it from the catalog if it is missing, and puts it into `state.sideSchemes` with threat = base threat x players. **It does not shuffle the deck.**
+2. Discards encounter cards until a minion comes up and engages it with the first player.
 
-Where it runs, in `DeclarativeScenarioPlugin.onGameSetup`: the villain is created, the main scheme is set **directly to stage 1B**, the encounter deck is built, then `resolveStage1ASetup`, then the villain's When Revealed abilities (these are data: `revealVillainStage` runs the villain card's `WHEN_REVEALED` abilities through the effect engine, which is how Klaw II's search already works).
+It runs from `DeclarativeScenarioPlugin.onGameSetup`, which sets the main scheme **directly to stage 1B** and ignores its text. A villain's When Revealed is data (`revealVillainStage` runs the card's abilities through the effect engine); a main scheme's is not.
 
 ## 3. What the cards and the rules say
 
-Paraphrased from the card data:
+| Card | Text (paraphrased) | Existing data primitive |
+| --- | --- | --- |
+| `01116a` (1A) | Setup: search the encounter deck for the Defense Network side scheme and reveal it, shuffle, advance to 1B. | `SEARCH` with `source: ENCOUNTER_DECK`, `selectedDestination: REVEAL`, `shuffleAfter: true`. Klaw II (`01114`) already does this for the "Immortal" Klaw side scheme. |
+| `01116b` (1B) | When Revealed: discard from the encounter deck until a minion is discarded; put it into play engaged with the first player. | `DISCARD` with `mode: UNTIL_MATCH`, `untilFilter: { types: ["minion"] }`, `matchingDestination: PLAY`, `target: FIRST_PLAYER`. Core card `01128` (The Masters of Evil) uses this exact shape. |
+| `01117a` (2A) | The same When Revealed, then advance to 2B. | Same `DISCARD` step. |
+| `01117b` (2B) | If completed, the players lose. | Already handled by the plugin. |
 
-| Card | Text |
-| --- | --- |
-| `01116a` (stage 1A) | Setup: search the encounter deck for the Defense Network side scheme and reveal it, shuffle the encounter deck, advance to stage 1B. |
-| `01116b` (stage 1B) | When Revealed: discard from the encounter deck until a minion is discarded; put that minion into play engaged with the first player. |
-| `01117a` (stage 2A) | The same When Revealed (discard until a minion, engage it), then advance to stage 2B. |
-| `01117b` (stage 2B) | If this stage is completed, the players lose. |
+Rules Reference v1.8: **Appendix II step 12** (a) resolve Setup abilities on main scheme 1A, (b) flip to 1B and resolve its When Revealed, (c) resolve the villain's Setup and When Revealed. **Main scheme, when the deck advances:** resolve When Revealed on the A side of the new top card, flip to B, place starting threat, resolve When Revealed on the B side.
 
-Rules Reference v1.8:
+## 4. Evidence that this is not a one-of
 
-- **Appendix II step 12:** (a) resolve any Setup abilities on main scheme 1A; (b) flip it to 1B and resolve its When Revealed abilities; (c) resolve the villain's Setup and When Revealed abilities.
-- **Main scheme, when the deck advances:** remove the old card; resolve any When Revealed on the **A** side of the new top card; flip it to **B**, place its starting threat, and resolve any When Revealed on that side.
+Counted over all 4,379 upstream cards (`content/packs/*/cards`):
 
-## 4. Why data does not fit today
+| Pattern | Cards | Packs |
+| --- | --- | --- |
+| "Discard from the encounter deck until a minion is discarded" | 15 | core, cw, hercules, mts, mut_gen, ncrawler, synthezoid, toafk, trors, x23 |
+| "Discard ... until a [type] is discarded" (any type) | 19 | ant, aoa, core, cw, magneto, mut_gen, and others |
+| Main scheme A side with a `Setup:` line | 62 | 17 packs (aoa, aos, core, cw, gmw, gob, hood, mojo, mts, mut_gen, ...) |
+| Search the encounter deck for a side scheme and reveal or put it into play | 14 | core, gmw, mts, mut_gen, ncrawler, sm, trors, tt, wonder_man |
 
-| # | What a data version needs | Status in the engine | Evidence |
-| --- | --- | --- | --- |
-| 1 | Resolve main scheme **1A Setup** and **1B When Revealed** from card data at setup (RR step 12a and 12b) | **Missing.** Only the villain's reveal runs abilities. The main scheme is placed on 1B directly and its text is ignored. | `declarative-plugin.ts`, `onGameSetup` |
-| 2 | Resolve **A-side and B-side When Revealed** when the main scheme advances (RR main scheme, steps 2 and 3) | **Missing, and a rules gap today.** `onMainSchemeCompleted` swaps the card and logs; nothing runs. So Klaw's stage 2A "discard until a minion" never happens in a real game, scripted or not. | `declarative-plugin.ts`, `onMainSchemeCompleted`; no code path resolves a main scheme `WHEN_REVEALED` |
-| 3 | A primitive for "discard from the encounter deck until a minion, put it into play engaged with the first player" | **Missing.** `SEARCH`, `DISCARD` and `PUT_INTO_PLAY` (from set aside, discard, hand or deck, to tableau, engaged or side schemes) exist; none loops until a type is found. | `effect-params.ts` |
-| 4 | "Search for Defense Network, reveal it, shuffle" | **Exists.** `SEARCH` with `selectedDestination: REVEAL` and `shuffleAfter` is what Klaw II uses. | `core_encounter.json`, card `01114` |
+Many of those Setup lines are as simple as Klaw's, for example "Put the Criminal Enterprise environment into play. Shuffle the encounter deck. Advance to stage 1B." (`02004a`) and "Put a Goblin Thrall minion into play engaged with each player..." (`02017a`). For comparison, Wakanda Forever exists in only two packs (the core Black Panther hero set and one other), and its handler resolves other cards' Special abilities with its own ordering prompt, which is why it is a pack script and Klaw is not.
 
-So the real gaps are 1 to 3. They are generic engine features, not Klaw code.
+## 5. What has to be built, and what changes on purpose
 
-## 5. How today's script differs from the printed text
+**One generic engine feature:** resolve a main scheme's abilities from card data at the two points the rules name.
 
-If Klaw became data, these would change, so each needs a decision and a test:
+1. At setup (step 12a and 12b): run the `SETUP` abilities of main scheme side A, then place stage B and run its `WHEN_REVEALED` abilities, through the same effect engine `revealVillainStage` uses.
+2. When the main scheme advances: run the A-side `WHEN_REVEALED`, flip, place threat, run the B-side `WHEN_REVEALED`.
 
-- **Shuffle.** The printed Setup shuffles the encounter deck; today's code does not. A data version shuffles, which changes the random numbers drawn and therefore every seeded Klaw game.
-- **Missing side scheme.** Today's code creates Defense Network when it is not in the deck; the printed search would simply find nothing. (Only matters if the encounter set is missing.)
-- **Starting threat.** Today's code uses base threat x players with a default of 2; going through the normal reveal path for a side scheme may compute it differently. To verify before relying on it.
-- **Stage 2A.** A data version would (correctly) resolve the stage 2A reveal; today it does not.
+Then Klaw's three cards get supplemental abilities (data) and `KlawScenarioPlugin` is deleted. Rhino is unaffected (its main scheme cards are `noSupplementalNeeded`; its Setup is "advance to 1B").
 
-Rhino is unaffected by all of this: its main scheme cards are `noSupplementalNeeded` and it has no setup text.
+**Behavior changes, all rules corrections and all intentional:**
 
-## 6. Options
+- **Shuffle.** The printed Setup shuffles the encounter deck; today's code does not. Seeded Klaw games change.
+- **Stage 2A.** Today the 2A "discard until a minion" never happens in a game (nothing runs it on advance); the data version resolves it.
+- **Missing Defense Network.** Today's code creates it if the deck lacks it; the printed text just finds nothing.
+- **Starting threat** for Defense Network will come from the normal reveal path rather than base threat x players; to be checked against the card when implemented.
 
-| | **A. Script now (unchanged behavior)** | **B. Build the generic features first** | **C. A now, B tracked** |
-| --- | --- | --- | --- |
-| What | Move Klaw's setup (and Ultron's) into Core pack scripts exactly as is. | Implement 1, 2 and 3 above, write Klaw's setup as data, accept the intended behavior changes (shuffle, 2A reveal). Ultron stays a script (it also needs the facedown Drone concept). | A for M5, plus an issue for B in Gate 2. |
-| Behavior change | None. Parity gate: setup digests and `simulate` byte-identical. | Klaw games change on purpose; needs dedicated tests and a decision on section 5. | None now. |
-| Size | About half a day inside M5b. | Several days; it touches the setup path every scenario uses. | A, plus writing the issue. |
-| Risk to Gate 1 (Rhino) | Low. | Medium: shared setup code, mitigated by Rhino digests and `simulate`. | Low. |
-| Leaves | Two scripts that exist only because of 1 to 3. | No Klaw script; one Ultron script. | Same as A until Gate 2. |
+Ultron stays a script for now, by decision: its 1B puts a facedown Drone minion into play and its environment card supplies the Drone's stats, which is a new concept shared by Ultron's villain stages (Gate 2, #275).
 
-## 7. Recommendation
+## 6. What was wrong with the first version of this review
 
-**Option C.** M5 is a refactor with a byte-for-byte parity gate; mixing in new engine features and intended behavior changes would defeat that gate. The generic features are real, rules-required work, so they get their own issue, with the stage 2A gap as the concrete bug that proves it, in the Gate 2 milestone next to #275. When that lands, `klaw.ts` is deleted and Klaw becomes data. This is a deferral of a different piece of work, not of debt in M5's path: M5 itself moves the code out of the engine and leaves the engine with no Klaw knowledge.
+- It said **no primitive loops until a type is found**. `DISCARD` `UNTIL_MATCH` exists, and `01128` already uses it for exactly Klaw's step.
+- It treated "Klaw needs a script" as the cost of missing primitives, when the only missing piece is the generic main scheme ability resolution.
+- It recommended scripting Klaw to keep M5 a pure refactor. The rules fix is small, generic and needed by 62 cards, so it belongs in M5.
 
-If you would rather not carry two scripts that exist only for a missing engine feature, option B is the clean alternative; say so and I will plan it as its own milestone before M5b.
+## 7. Verification
 
-## 8. Decisions needed
-
-1. Option A/C (scripts now) or B (features first)?
-2. If A/C: file the "resolve main scheme Setup and When Revealed from data" issue now, in Gate 2 (#275)?
-3. For the later data version: accept the shuffle and the stage 2A reveal as intended fixes?
-
-## 9. How either option is verified
-
-- Setup digests for Rhino, Klaw and Ultron (1 and 2 players, Standard and Expert, fixed seed), recorded on current `main` before any change.
-- `npm run simulate -- --no-stats` byte-identical to `main` (Gate 1 scope is Rhino).
-- For option B, new tests for each primitive and for the stage 2A reveal, with the Klaw digests re-recorded in the same PR and the reason stated.
+- Characterization digests of Rhino, Klaw and Ultron setup (1 and 2 players, Standard and Expert, fixed seed) recorded on `main` before the change. Rhino and Ultron digests must stay identical; Klaw digests are re-recorded in the same PR with the three reasons above.
+- `npm run simulate -- --no-stats` byte-identical to `main` (the Gauntlet is Rhino only).
+- New tests: main scheme Setup and When Revealed at setup and on advance (including stage 2A), `UNTIL_MATCH` for a minion engaging the first player, the Defense Network search with shuffle.

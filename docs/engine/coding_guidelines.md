@@ -1,6 +1,6 @@
 # Marvel Champions Digital (MCD) — Coding Guidelines & Best Practices
 
-> **Agents:** the short, enforceable subset of these guidelines (types, tests, formatting, commits) is in [`.agents/rules/coding-and-testing-rules.md`](../.agents/rules/coding-and-testing-rules.md), which is always loaded. Keep the two consistent; put new enforceable rules there and explanations here.
+> **Agents:** the short, enforceable subset of these guidelines (types, tests, formatting, commits) is in [`.agents/rules/coding-and-testing-rules.md`](../../.agents/rules/coding-and-testing-rules.md), which is always loaded. Keep the two consistent; put new enforceable rules there and explanations here.
 
 To maintain high code quality, rules accuracy, and architectural integrity across all contributors (human and AI), all code written for **Marvel Champions Digital** must strictly adhere to these guidelines.
 
@@ -55,7 +55,7 @@ src/ui/ ──> src/engine/ ──> src/data/ (supplemental + importer) ──> 
 4. **Official Rules Fidelity & Errata Enforcement:**
 
 - **The Golden Rule:** Card text overrides general rules; when card text is ambiguous, RR v1.8 governs.
-- **Official Errata Enforcement:** Any card with an official FFG errata in RR v1.8 must have its corrected text and behavior declared via `errata: "..."` in `src/data/supplemental/`. This automatically renders an **[ERRATA]** indicator in the UI. Whenever engine rules or card mechanics are added or modified, developers must ensure `docs/algorithmic_rules_reference.md` is updated in lockstep to keep the algorithmic specification 100% synchronized.
+- **Official Errata Enforcement:** Any card with an official FFG errata in RR v1.8 must have its corrected text and behavior declared via `errata: "..."` in `src/data/supplemental/`. This automatically renders an **[ERRATA]** indicator in the UI. Whenever engine rules or card mechanics are added or modified, developers must ensure `docs/engine/algorithmic_rules_reference.md` is updated in lockstep to keep the algorithmic specification 100% synchronized.
 
 5. **Documentation-First Rule Search:** Before implementing any game rule, action, or card interaction, developers and AI agents must thoroughly search and cross-reference the official rulebooks for exact keyword definitions, edge cases, and rulings. Never rely on generic assumptions or mechanics from other card games.
 6. **Proactive User Consultation:** Whenever a rule, card interaction, or design choice has ambiguity or multiple possible interpretations, stop and consult the user for clarification before making assumptions.
@@ -252,7 +252,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/). Scopes: `en
    - Every modal, drawer or banner renders through `ModalLayer` (portal to `document.body`), never inline.
    - Fans are `isolate`d, raise themselves with `hover:z-zoom focus-within:z-zoom`, and compute card z with `getFanZIndex` (`src/ui/components/cards/fan-z.ts`). Never derive fan z from a fixed constant.
    - Do not put `overflow-x-hidden` / `overflow-*-auto` on the App or GameBoard roots (they would become scroll containers); use `overflow-x-clip`.
-   - Full ladder and fan rules: [ADR-0082, Appendix A](decisions/0082-ui-z-index-scale-and-fan-pattern.md#appendix-a-layer-map).
+   - Full ladder and fan rules: [ADR-0082, Appendix A](../decisions/0082-ui-z-index-scale-and-fan-pattern.md#appendix-a-layer-map).
 
 ---
 

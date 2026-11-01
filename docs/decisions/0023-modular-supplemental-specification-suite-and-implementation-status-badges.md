@@ -9,7 +9,7 @@
 
 ## Context and Problem Statement
 
-Early in the project, declarative ability schemas and effect primitives were documented in a single monolithic markdown file (`docs/specifications/supplemental_data_schema.md`). As more effect types, dynamic formulas, trigger windows, and prompt options were added, this document grew to over 1,000 lines.
+Early in the project, declarative ability schemas and effect primitives were documented in a single monolithic markdown file (`supplemental_data_schema.md`, since replaced by this suite). As more effect types, dynamic formulas, trigger windows, and prompt options were added, this document grew to over 1,000 lines.
 
 This monolithic approach caused two major problems:
 
@@ -35,7 +35,7 @@ This monolithic approach caused two major problems:
 
 ## Decision Outcome
 
-**Chosen Option:** **Modular 10-Part Specification Suite in `docs/specifications/supplemental/` + Central Index (`README.md`).**
+**Chosen Option:** **Modular 10-Part Specification Suite in `docs/creators/supplemental-reference/` + Central Index (`README.md`).**
 
 ### Structure:
 

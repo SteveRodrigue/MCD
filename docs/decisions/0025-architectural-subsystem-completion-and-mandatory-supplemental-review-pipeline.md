@@ -33,7 +33,7 @@ Without a formalized protocol, developers and AI agents could implement an engin
 
 ## Decision Outcome
 
-**Chosen Option:** **Codify a Mandatory 4-Step Review Trigger in `docs/coding_guidelines.md` (Section 3).**
+**Chosen Option:** **Codify a Mandatory 4-Step Review Trigger in `docs/engine/coding_guidelines.md` (Section 3).**
 
 ### Protocol Rules:
 Whenever an architectural subsystem or effect primitive is implemented or refactored:

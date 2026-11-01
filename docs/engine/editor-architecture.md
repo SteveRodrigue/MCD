@@ -1,7 +1,7 @@
 # Specification: Card Supplemental Editor & Live Reviewer GUI
 
 - **Status:** 🟢 IMPLEMENTED / SPECIFIED
-- **Related ADR:** [ADR-0045](../../decisions/0045-card-supplemental-editor-and-live-reviewer-gui.md)
+- **Related ADR:** [ADR-0045](../decisions/0045-card-supplemental-editor-and-live-reviewer-gui.md)
 - **Author:** MCD Core Team
 - **Date:** 2026-09-05
 
@@ -15,7 +15,7 @@ The **Card Supplemental Editor & Live Reviewer GUI** is an integrated developer 
 
 1. **Multi-Criteria Discovery:** Filter and search cards across all 170+ official Zzorba packs, encounter sets, hero identities, and aspect affinities.
 2. **Dual-Inspector Reviewer:** Compare printed card art and text alongside raw upstream attributes and declarative supplemental rules in real time.
-3. **Live Schema Validation:** Enforce strict adherence to `CardEnrichmentSchema` ([ADR-0043](../../decisions/0043-codebase-grounded-supplemental-schema-validation-and-live-vscode-integration.md)), reporting line-level errors for invalid effect primitives, parameters, or timings.
+3. **Live Schema Validation:** Enforce strict adherence to `CardEnrichmentSchema` ([ADR-0043](../decisions/0043-codebase-grounded-supplemental-schema-validation-and-live-vscode-integration.md)), reporting line-level errors for invalid effect primitives, parameters, or timings.
 4. **Local REST Persistence:** Save modifications directly to disk via Vite dev middleware, updating pack JSON files and stamping audit records automatically.
 5. **In-Game Tabletop Inspection:** Right-click any card on the tabletop during gameplay to jump directly to its supplemental definition in a new tab.
 6. **Live Reloading:** Hot-reload card rules in the application upon saving.
@@ -80,7 +80,7 @@ The service then re-reads the target file, sets `cards[code]` and writes the who
 
 ## 4. User Interface & Layout Specifications
 
-The Supplemental Editor UI adheres strictly to the **1960s Comic Pop-Art Theme** ([ADR-0004](../../decisions/0004-visual-art-direction-comic-pop-art.md)):
+The Supplemental Editor UI adheres strictly to the **1960s Comic Pop-Art Theme** ([ADR-0004](../decisions/0004-visual-art-direction-comic-pop-art.md)):
 
 - Bold heavy black comic borders (`border-3 border-black shadow-comic-pop`).
 - Dynamic Ben-Day halftone dot backgrounds.
@@ -121,7 +121,7 @@ The Editor is organized into a 3-column split view with responsive real estate c
 
 1. **Form Builder Mode:**
    - Dropdown selectors for `timing` (`TimingTypeSchema`), `trigger` (`TriggerTypeSchema`), and `effect` primitives.
-   - Dynamic parameter fields based on selected effect primitive (e.g. `amount`, `target`, `gate`, `duration`). Includes specialized controls for domain-separated interception primitives: `PREVENT_DAMAGE` for combat/effect damage to characters, `PREVENT_THREAT` ([ADR-0063](../../decisions/0063-deconflate-damage-and-threat-interception-primitives.md)) for scheme threat prevention with dynamic scalar binding and default `MAIN_SCHEME` targeting, and `DISTRIBUTE_AMOUNT` ([ADR-0064](../../decisions/0064-canonical-target-scopes-and-interactive-distribution-modal.md)) for multi-target pool allocation across damage, threat removal, healing, counters, and exhaustion with interactive distribution modal delegation.
+   - Dynamic parameter fields based on selected effect primitive (e.g. `amount`, `target`, `gate`, `duration`). Includes specialized controls for domain-separated interception primitives: `PREVENT_DAMAGE` for combat/effect damage to characters, `PREVENT_THREAT` ([ADR-0063](../decisions/0063-deconflate-damage-and-threat-interception-primitives.md)) for scheme threat prevention with dynamic scalar binding and default `MAIN_SCHEME` targeting, and `DISTRIBUTE_AMOUNT` ([ADR-0064](../decisions/0064-canonical-target-scopes-and-interactive-distribution-modal.md)) for multi-target pool allocation across damage, threat removal, healing, counters, and exhaustion with interactive distribution modal delegation.
    - Trigger Filter Builder (`TriggerFilterSection`) with interactive sub-forms for `attackerCardFilter` and `cardFilter` (`UniversalCardFilterBuilder`, Issue #287), allowing visual configuration of triggering card criteria (types, traits, keywords) on any trigger event.
    - Audit trail metadata fields (`confidence`, `reviewedBy`, `originalText`, `comment`).
 2. **Raw JSON Mode:**

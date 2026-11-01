@@ -30,7 +30,7 @@ Before writing any implementation code or tests for a new feature, verify the fo
 3. **Schema & Model Design Alignment:**
    - If introducing effect primitives or supplemental fields, update [`src/data/supplemental/schema.ts`](../../../src/data/supplemental/schema.ts) with strict Zod types and update [`docs/specifications/`](../../../docs/specifications/).
    - If extending game state, update [`src/engine/models/state.ts`](../../../src/engine/models/state.ts).
-   - Keep the Card Supplemental Editor aligned per [`docs/specifications/tooling/card_supplemental_editor.md`](../../../docs/specifications/tooling/card_supplemental_editor.md).
+   - Keep the Card Supplemental Editor aligned per [`docs/engine/editor-architecture.md`](../../../docs/engine/editor-architecture.md).
 4. **Core Invariants (from `shared-quality-gates.md`):**
    - Headless & decoupled engine (`src/engine/` contains no UI/DOM/CSS dependencies).
    - Declarative data-first (generic primitives in `src/engine/effects/`, card-specific parameters in `content/packs/*/supplemental/`).

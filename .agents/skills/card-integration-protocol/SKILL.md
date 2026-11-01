@@ -30,7 +30,7 @@ hooks:
   - **In Single-Card Mode:** If Tier 3 (structural refactor required), stop immediately, log to `docs/ambiguities/`, create `implementation_plan.md`, and wait for user approval.
   - **In Batch-Mode (Scanning multiple cards/sets):** Do not halt the batch. Log a dedicated ambiguity file to `docs/ambiguities/{pack}_{code}_{slug}.md` with `blocker_category: "TIER_3_STRUCTURAL_REFACTOR"`, skip the blocked card, continue scanning, and present a consolidated report at the end.
 - **Zero Tech Debt Invariant:** Never introduce temporary shims or backwards-compatibility aliases; prefer direct refactoring of schemas and supplemental data.
-- **Zero Assumption of Existing Supplemental Correctness:** Existing data in `content/packs/*/supplemental/` may be outdated as `docs/specifications/supplemental/` evolves. Always translate the card independently from printed text and the specs, then contrast against the existing baseline to surface gaps or drift.
+- **Zero Assumption of Existing Supplemental Correctness:** Existing data in `content/packs/*/supplemental/` may be outdated as `docs/creators/supplemental-reference/` evolves. Always translate the card independently from printed text and the specs, then contrast against the existing baseline to surface gaps or drift.
 - **Mandatory User Peer Review Gate:** Any change to a card's supplemental data needs user approval first. The required 5-part review content is defined in Step 7.
 
 ---
@@ -86,8 +86,8 @@ If Step 5 confidence is below 95%, go back to Step 3 (max 3 attempts, then the c
 - **Vanilla fork:** If the card has no printed rules text, skip the 8-point checklist and the Step 5-6 audits. Draft the `noSupplementalNeeded: true` entry and continue at Step 7 (peer review still applies).
 - Per **ADR-0018** & **ADR-0019**, never interpret or guess unstated card rules.
 - **MANDATORY SPECIFICATION CONSULTATION & EVOLUTION CHECK:** Before drafting schema, you **MUST** consult the supplemental specification suite:
-  - **Quick Reference (Inspect First):** [`docs/specifications/supplemental/QUICK_REFERENCE.md`](../../../docs/specifications/supplemental/QUICK_REFERENCE.md) (single high-density cheat sheet for all 55 effects, allowed `effectParams` keys, 9 canonical step gates, 8 result facts, timings, triggers, and target selectors).
-  - **Modular Guides (For In-Depth Rules/Examples):** [`docs/specifications/supplemental/`](../../../docs/specifications/supplemental/README.md) and [`docs/guidelines/`](../../../docs/guidelines/hero_creation_guide.md):
+  - **Quick Reference (Inspect First):** [`docs/creators/supplemental-reference/QUICK_REFERENCE.md`](../../../docs/creators/supplemental-reference/QUICK_REFERENCE.md) (single high-density cheat sheet for all 55 effects, allowed `effectParams` keys, 9 canonical step gates, 8 result facts, timings, triggers, and target selectors).
+  - **Modular Guides (For In-Depth Rules/Examples):** [`docs/creators/supplemental-reference/`](../../../docs/creators/supplemental-reference/README.md) and [`docs/creators/cards-and-heroes.md`](../../../docs/creators/cards-and-heroes.md):
     - `01_metadata_and_audit.md` (Metadata & Audit standards)
     - `02_timings_and_triggers.md` (Timings & Triggers matrix)
     - `03_costs_and_targeting.md` (Costs, TargetSelectors, exhaustive FilterSchema)
@@ -111,7 +111,7 @@ If Step 5 confidence is below 95%, go back to Step 3 (max 3 attempts, then the c
 
 ### Step 3: Draft Structured Supplemental Schema & Audit Block
 
-- **AUTHORITATIVE SCHEMA STANDARD:** All drafted supplemental entries MUST conform 100% to the [Supplemental Data Schema Specification](../../../docs/specifications/supplemental/README.md), [Hero Creation Guide](../../../docs/guidelines/hero_creation_guide.md), and [Scenario Creation Guide](../../../docs/guidelines/scenario_creation_guide.md).
+- **AUTHORITATIVE SCHEMA STANDARD:** All drafted supplemental entries MUST conform 100% to the [Supplemental Data Schema Specification](../../../docs/creators/supplemental-reference/README.md), [Hero Creation Guide](../../../docs/creators/cards-and-heroes.md), and [Scenario Creation Guide](../../../docs/creators/scenarios.md).
 - **DIFFERENTIAL COMPARISON FOR GAP & AMBIGUITY IDENTIFICATION:**
   - After drafting the proposed supplemental schema independently, contrast it directly against the existing supplemental data (if present).
   - Comparing existing vs. newly drafted schema highlights:
@@ -135,7 +135,7 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
 
 ### Step 4: Consult Ground Truth References (`references/`)
 
-- Use `npm run rule -- <term>` and `references/rules/` for official timing rules (ask the user for the official PDF only if confidence stays below 95%; it is not tracked, see `references/SETUP.md`), and [`docs/algorithmic_rules_reference.md`](../../../docs/algorithmic_rules_reference.md) for the project algorithmic mapping.
+- Use `npm run rule -- <term>` and `references/rules/` for official timing rules (ask the user for the official PDF only if confidence stays below 95%; it is not tracked, see `references/SETUP.md`), and [`docs/engine/algorithmic_rules_reference.md`](../../../docs/engine/algorithmic_rules_reference.md) for the project algorithmic mapping.
 - Consult [`references/links.md`](../../../references/links.md) for:
   - Official FAQ & Errata: `https://marvelcdb.com/faqs`
   - Card-specific discussion: `https://marvelcdb.com/card/{card_code}`
@@ -152,11 +152,11 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
 - **Specification & Implementation Maturity Rubric:**
   - **🟢 100% (Vanilla Parity):** Pure vanilla card (zero rules text) marked `noSupplementalNeeded: true`.
   - **🟢 95–98% (Fully Implemented & Verified Parity):**
-    - Every required timing, trigger, cost, and effect primitive is marked 🟢 `IMPLEMENTED (v1.0)` in `docs/specifications/supplemental/`.
+    - Every required timing, trigger, cost, and effect primitive is marked 🟢 `IMPLEMENTED (v1.0)` in `docs/creators/supplemental-reference/`.
     - Inspected source code exists in `src/engine/effects/` and verified trigger dispatch paths exist in `src/engine/pipeline/`.
     - Regression unit tests in `tests/engine/` pass 100% and schema test `tests/data/supplemental-schema.test.ts` passes.
   - **🟡 < 95% (🚨 Hard Rejection / Roadmap / Specification Gap):**
-    - If any required effect or parameter is marked 🟡 `ROADMAP / SPECIFIED` or is not yet defined in `docs/specifications/supplemental/`.
+    - If any required effect or parameter is marked 🟡 `ROADMAP / SPECIFIED` or is not yet defined in `docs/creators/supplemental-reference/`.
     - If the trigger dispatch window is unverified or missing for that card type (e.g. `WHEN_REVEALED` on Minions, Attachments, or Side Schemes).
     - If the underlying engine code has gaps, missing clauses, or requires UI state machines that do not yet exist.
     - **Action on < 95%:** Trigger Circuit-Breaker, strip `abilities: [...]`, set confidence (70–80%), and log/update `docs/ambiguities/{pack}_{code}_{slug}.md` linking the relevant GitHub Issue or proposing the specification addition.
@@ -209,7 +209,7 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
    - Apply the [audit stamp rules](../../rules/shared-quality-gates.md#audit-stamp): new card sets `createdAt`, `updatedAt`, `reviewedAt`; logic change or bug fix bumps `updatedAt` and `reviewedAt`; confirming an unchanged card bumps `reviewedAt` only.
 2. **Synchronous Specification Feedback Loop:**
    - Whenever an engine primitive, trigger, or parameter is implemented or refactored:
-     1. Immediately update the corresponding specification file in [`docs/specifications/supplemental/`](../../../docs/specifications/supplemental/README.md) to mark it 🟢 `IMPLEMENTED (v1.0)` with code links.
+     1. Immediately update the corresponding specification file in [`docs/creators/supplemental-reference/`](../../../docs/creators/supplemental-reference/README.md) to mark it 🟢 `IMPLEMENTED (v1.0)` with code links.
      2. Run `rtk npx vitest run tests/data/supplemental-schema.test.ts` to ensure schema conformance.
 3. **Inbox Zero Pruning:** If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it**.
 4. **Canonical Card ID Sorting:** Keep `content/packs/*/supplemental/*.json` in ascending card ID order (`01001a` -> `01001b` -> `01002`); a hook reports any out-of-order key after each edit. Insert new entries in place, not at the bottom.
@@ -236,7 +236,7 @@ When an agent or user requests a supplemental data mockup for card text without 
    - Deconstruct the ability into the canonical 8 points: Trigger/Timing (Q1), Costs (Q2), Target Scope (Q3), Fully Qualified Zones (Q4), State Mutation (Q5), Post-Resolution Side-Effects (Q6), Source Destination (Q7), and Branching/Contingencies (Q8).
 
 4. **Phase D: Declarative Composable Assembly:**
-   - Assemble the JSON conforming strictly to `CardEnrichmentSchema` in `src/data/supplemental/schema.ts` and `docs/specifications/supplemental/`.
+   - Assemble the JSON conforming strictly to `CardEnrichmentSchema` in `src/data/supplemental/schema.ts` and `docs/creators/supplemental-reference/`.
    - Use generic, composable effect primitives (`DEAL_DAMAGE`, `REMOVE_THREAT`, `DISCARD`, etc.) and canonical `TargetSelector` scopes (`CHOSEN_ENEMY`, `CHOSEN_CHARACTER`, etc.).
    - Strictly prohibit card-specific effect names (ADR-0021).
 
@@ -254,6 +254,6 @@ When an agent or user requests a supplemental data mockup for card text without 
 
 ## 📚 Related Documentation & Authoritative Standards
 
-- [Supplemental Data Schema Specification (Modular Hub)](../../../docs/specifications/supplemental/README.md)
-- [Hero & Identity Creation Guide](../../../docs/guidelines/hero_creation_guide.md)
-- [Scenario Creation Guide](../../../docs/guidelines/scenario_creation_guide.md)
+- [Supplemental Data Schema Specification (Modular Hub)](../../../docs/creators/supplemental-reference/README.md)
+- [Hero & Identity Creation Guide](../../../docs/creators/cards-and-heroes.md)
+- [Scenario Creation Guide](../../../docs/creators/scenarios.md)

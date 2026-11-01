@@ -181,7 +181,7 @@ npm run typecheck             # Verifies TypeScript types
 ---
 
 ## 📚 Related References
-* [Supplemental Data Schema Specification](../specifications/supplemental/README.md)
-* [Hero & Identity Creation Guide](./hero_creation_guide.md)
+* [Supplemental Data Schema Specification](supplemental-reference/README.md)
+* [Hero & Identity Creation Guide](./cards-and-heroes.md)
 * [Card Integration Protocol (SKILL.md)](../../.agents/skills/card-integration-protocol/SKILL.md)
 

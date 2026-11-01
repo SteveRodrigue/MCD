@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useAsyncData } from '../../hooks/useAsyncData';
 import {
-  CardFilters,
   fetchPacksMetadata,
   fetchCards,
   fetchCardDetails,
   saveCardSupplemental,
 } from '../../services/supplemental-editor-service';
-import {
+import type {
+  CardFilters,
   CardSummary,
   PackMetadataResponse,
   CardDetailsResponse,
-} from '../../../tools/editor/api-middleware';
+} from '../../../data/content/editor-model';
 import { CardFilterToolbar } from './CardFilterToolbar';
 import { CardGalleryList } from './CardGalleryList';
 import { DualCardInspector } from './DualCardInspector';
@@ -31,6 +31,7 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
     // Read initial filters or code from window location search
     const params = new URLSearchParams(window.location.search);
     return {
+      packId: params.get('packId') || undefined,
       pack: params.get('pack') || undefined,
       set: params.get('set') || undefined,
       faction: params.get('faction') || undefined,
@@ -181,7 +182,7 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
               reloadDetails();
             }}
             className="flex items-center gap-1.5 text-xs font-bold bg-white hover:bg-gray-100 text-black px-2.5 py-1.5 border-2 border-black shadow-comic-xs cursor-pointer active:scale-95 transition-transform"
-            title="Refresh catalog from disk"
+            title="Refresh the list from the loaded content"
           >
             <RefreshCw
               className={`w-3.5 h-3.5 ${loadingList || loadingDetails ? 'animate-spin' : ''}`}

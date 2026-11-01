@@ -201,7 +201,7 @@ type Hook<A extends unknown[], R> = (
 
 ### B4. Card Supplemental Editor (UI impact)
 
-- `src/tools/editor/api-middleware.ts`: the pack list spans `plugins/official/*` and `plugins/custom/*`. Reads come from `data/upstream/` (official) or `cards/raw.json` (custom). Writes go to the matching `plugins/<scope>/<pack>/cards/<file>.json`.
+- (Superseded by M9: the editor API was removed; see `docs/specifications/tooling/card_supplemental_editor.md`.) Formerly `src/tools/editor/api-middleware.ts`: the pack list spans `plugins/official/*` and `plugins/custom/*`. Reads come from `data/upstream/` (official) or `cards/raw.json` (custom). Writes go to the matching `plugins/<scope>/<pack>/cards/<file>.json`.
 - Pack picker UI: group by Official / Custom and keep the pop-art styling. Custom raw-card authoring and art upload are **out of scope** (separate backlog item, Q14).
 
 ### B5. Assets
@@ -218,7 +218,7 @@ type Hook<A extends unknown[], R> = (
 - `loadContentForGame` loads only the selected packs (assert untouched loaders).
 - `custom-scenario.test.ts`: a fixture mod in `tests/fixtures/plugins/custom/` (not in the real `plugins/custom/`) with raw cards, supplemental, a scenario and a script hook, played through setup and one stage transition.
 - Lint test: a fixture plugin importing `@engine/effects` fails ESLint.
-- Editor API: `/api/supplemental/packs`, `/card/:code` GET/POST round-trip for an official and a custom pack.
+- Editor (superseded by M9): save round-trip for a bundled and a user pack through the content endpoint.
 - Assets: custom art resolves before the cache.
 - `npm run simulate` still passes the 100-game gate.
 

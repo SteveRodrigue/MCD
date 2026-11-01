@@ -1,6 +1,6 @@
 # Plan — M9: The Card Supplemental Editor edits packs, not the repository
 
-**Status:** draft 2026-11-01, revised after Steve's answer to decision 1 (supplemental data must stay editable during development of the game and engine, so tracked packs are writable in dev; Q57). Waiting for review (open decisions in section 9).
+**Status:** approved by Steve 2026-11-01 (all recommendations accepted, decision 1 answered as Q57); implemented in the same PR as this plan.
 **Parent:** [`plan_content_folder_refactor.md`](plan_content_folder_refactor.md) (Q7, Q24, Q27, Q55; roadmap row M9) and [ADR-0092](../decisions/0092-content-packs-and-runtime-loading.md) (decision 9).
 **Depends on:** M3, M4, M7 (merged or in review). Independent of M10 (docs) and of the parked desktop app (#548).
 **Gate note:** Gate 1 (Rhino) is active. M9 touches no engine file. Proof: seeded Rhino game and `simulate --no-stats` byte-identical, full suite green, and the browser check in section 7.

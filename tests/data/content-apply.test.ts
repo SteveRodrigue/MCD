@@ -30,6 +30,7 @@ const content: LoadedContent = {
     {
       id: 'tmp',
       manifest,
+      cardStems: {},
       cards: [
         {
           code: '99001',

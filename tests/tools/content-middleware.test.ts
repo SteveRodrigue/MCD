@@ -2,7 +2,12 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { buildContentIndex, handleContentRequest } from '../../src/tools/content-middleware';
+import {
+  buildContentIndex,
+  contentMiddleware,
+  handleContentRequest,
+  handleContentWrite,
+} from '../../src/tools/content-middleware';
 
 let base: string;
 const write = (rel: string, data: string) => {
@@ -61,5 +66,74 @@ describe('content endpoint', () => {
 
   it('answers 400 for an undecodable path', () => {
     expect(handleContentRequest('/__content/%E0%A4%A', base)?.status).toBe(400);
+  });
+});
+
+describe('content endpoint writes (editor Save, M9)', () => {
+  const supplemental = JSON.stringify({ cards: {} });
+  const manifest = (origin: string) => JSON.stringify({ id: 'x', origin });
+  const put = (relative: string, body = supplemental) =>
+    handleContentWrite(`/__content/${relative}`, body, base);
+
+  it('writes the supplemental file of a user or bundled pack', () => {
+    write('packs/mine/pack.json', manifest('user'));
+    write('packs/bundled/pack.json', manifest('official-bundled'));
+    expect(put('packs/mine/supplemental/mine.json')?.status).toBe(200);
+    expect(put('packs/bundled/supplemental/b.json')?.status).toBe(200);
+    expect(
+      fs.readFileSync(path.join(base, 'content/packs/mine/supplemental/mine.json'), 'utf-8'),
+    ).toContain('"cards"');
+  });
+
+  it('refuses a synced pack, a pack without pack.json and any other path', () => {
+    write('packs/synced/pack.json', manifest('official-sync'));
+    expect(put('packs/synced/supplemental/s.json')?.status).toBe(403);
+    expect(put('packs/ghost/supplemental/g.json')?.status).toBe(403);
+    expect(put('packs/mine/pack.json')?.status).toBe(403);
+    expect(put('packs/mine/cards/c.json')?.status).toBe(403);
+    expect(put('config.json')?.status).toBe(403);
+    expect(put('packs/mine/supplemental/%2e%2e%2fpack.json')?.status).toBe(403);
+    expect(put('packs/../supplemental/x.json')?.status).toBe(403);
+  });
+
+  it('refuses a body that is not valid supplemental data and leaves no file behind', () => {
+    expect(put('packs/mine/supplemental/bad.json', '{ nope')?.status).toBe(400);
+    expect(
+      put('packs/mine/supplemental/bad.json', JSON.stringify({ cards: { c: { abilities: 5 } } }))
+        ?.status,
+    ).toBe(400);
+    expect(fs.existsSync(path.join(base, 'content/packs/mine/supplemental/bad.json'))).toBe(false);
+  });
+
+  it('ignores requests outside /__content/', () => {
+    expect(handleContentWrite('/api/stats', supplemental, base)).toBeNull();
+  });
+
+  it('only the dev server middleware accepts PUT; preview does not', () => {
+    const run = (allowWrite: boolean) => {
+      let status = 0;
+      let nextCalled = false;
+      const handlers: Record<string, (c?: unknown) => void> = {};
+      contentMiddleware(base, { allowWrite })(
+        {
+          url: '/__content/packs/mine/supplemental/viaput.json',
+          method: 'PUT',
+          on: (e, cb) => (handlers[e] = cb),
+        },
+        {
+          statusCode: 0,
+          setHeader: () => {},
+          end() {
+            status = this.statusCode;
+          },
+        },
+        () => (nextCalled = true),
+      );
+      handlers.data?.(supplemental);
+      handlers.end?.();
+      return { status, nextCalled };
+    };
+    expect(run(true)).toEqual({ status: 200, nextCalled: false });
+    expect(run(false)).toEqual({ status: 0, nextCalled: true });
   });
 });

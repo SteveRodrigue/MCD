@@ -1,8 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { CardSupplementalService } from '../../src/tools/editor/api-middleware';
+import { cardDetails, listCards } from '../../src/data/content/editor-model';
+import { getLoadedContent } from '../../src/data/content/store';
 
 describe('Vanilla Card Support (noSupplementalNeeded) Contract Tests', () => {
-  const service = new CardSupplementalService();
+  const service = {
+    getCards: (filters: Parameters<typeof listCards>[1]) => listCards(getLoadedContent(), filters),
+    getCardDetails: (code: string) => cardDetails(getLoadedContent(), code),
+  };
 
   it('populates noSupplementalNeeded: true on Rhino I (01094) in getCards', () => {
     const res = service.getCards({ search: '01094' });

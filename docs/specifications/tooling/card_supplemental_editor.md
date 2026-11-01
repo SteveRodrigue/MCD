@@ -24,162 +24,57 @@ The **Card Supplemental Editor & Live Reviewer GUI** is an integrated developer 
 
 ## 2. Architecture & Data Flow
 
+The editor has no API of its own (M9, Q24 as amended by Q57). It reads the content the game already loaded, and writes through the storage side of the content endpoint.
+
 ```mermaid
 graph TD
     subgraph Browser Client
         Game["Tabletop Game View<br/>(Hero/Villain/Hand/Schemes)"]
         ContextMenu["Right-Click Context Menu<br/>'Open in Supplemental Editor'"]
         Editor["Supplemental Reviewer & Editor<br/>(/editor?code=01001)"]
-        ZodValidator["Live Client Zod Validator<br/>(CardEnrichmentSchema)"]
+        Loaded["Loaded content<br/>(getLoadedContent: packs, cards, supplemental)"]
+        Model["Editor model<br/>(src/data/content/editor-model.ts)"]
+        ZodValidator["Zod validation<br/>(CardEnrichmentSchema, prepareSave)"]
     end
 
     subgraph Vite Dev Server
-        ViteMiddleware["cardSupplementalEditorPlugin<br/>(/api/supplemental/*)"]
-        AuditAutoStamper["Audit Trail Stamper<br/>(updatedAt, reviewedBy)"]
-        FS["Node.js FileSystem<br/>(content/packs/*/supplemental/*.json)"]
-        HMR["Vite HMR Module Reloader"]
+        Endpoint["Content endpoint<br/>(PUT /__content/packs/&lt;id&gt;/supplemental/&lt;file&gt;.json)"]
+        FS["File system<br/>(content/packs/*/supplemental/*.json)"]
     end
 
     Game -->|Right-Click Card| ContextMenu
     ContextMenu -->|Open Editor| Editor
-    Editor -->|Live Schema Diagnostics| ZodValidator
-    Editor -->|GET /api/supplemental/packs| ViteMiddleware
-    Editor -->|GET /api/supplemental/card/:code| ViteMiddleware
-    Editor -->|POST /api/supplemental/card/:code| ViteMiddleware
-    ViteMiddleware -->|Validate Zod Payload| AuditAutoStamper
-    AuditAutoStamper -->|Write Formatted JSON| FS
-    FS -->|File Change Detected| HMR
-    HMR -->|Hot-Reload Modules| Game
+    Editor -->|Lists, filters, details| Model
+    Model --> Loaded
+    Editor -->|Save| ZodValidator
+    ZodValidator -->|ContentWriter.writeJson| Endpoint
+    Endpoint -->|Atomic write| FS
 ```
+
+Saved data reaches the running game after a page reload; the editor's own list and inspector update at once because the loaded pack is updated in memory.
 
 ---
 
-## 3. Local Vite REST API Middleware Specification
+## 3. Reading, Saving and the Write Rule
 
-The API is served directly by the local Vite development server via a custom plugin (`cardSupplementalEditorPlugin` in `src/tools/editor/api-middleware.ts`, registered in `vite.config.ts`). It attaches through `configureServer`, so it runs on the dev server only: `vite preview` serves a build and exposes no write endpoint.
+### 3.1. Reading
 
-### 3.1. `GET /api/supplemental/packs`
+`src/data/content/editor-model.ts` builds everything the screens show from `LoadedContent` plus `content/meta/{packs,sets,factions}.json`: the pack selector (`editorPacks`: id, name, origin, `writable`), card summaries with filters (`packId`, `packFile`, `pack`, `set`, `faction`, `hero`, `status`, `search`) and paging, and card details with validation. Only enabled packs are loaded, so only they appear; enable a pack in `content/config.json` to edit it.
 
-Returns catalog categorization metadata for populating multi-select filter menus:
+### 3.2. Saving
 
-```json
-{
-  "packs": [
-    { "code": "core", "name": "Core Set", "pack_type_code": "core", "size": 355 },
-    { "code": "cap", "name": "Captain America", "pack_type_code": "hero", "size": 56 }
-  ],
-  "sets": [
-    {
-      "code": "rhino",
-      "name": "Rhino",
-      "card_set_type_code": "villain",
-      "pack_code": "core",
-      "pack_codes": ["core"]
-    },
-    {
-      "code": "spider_man",
-      "name": "Spider-Man",
-      "card_set_type_code": "hero",
-      "pack_code": "core",
-      "pack_codes": ["core"]
-    },
-    {
-      "code": "bomb_scare",
-      "name": "Bomb Scare",
-      "card_set_type_code": "modular",
-      "pack_code": "core",
-      "pack_codes": ["core"]
-    }
-  ],
-  "factions": [
-    { "code": "aggression", "name": "Aggression" },
-    { "code": "justice", "name": "Justice" },
-    { "code": "leadership", "name": "Leadership" },
-    { "code": "protection", "name": "Protection" },
-    { "code": "basic", "name": "Basic" },
-    { "code": "encounter", "name": "Encounter" },
-    { "code": "hero", "name": "Hero" }
-  ]
-}
-```
+`saveCardSupplemental` (`src/ui/services/supplemental-editor-service.ts`) runs `prepareSave`, which:
 
-### 3.2. `GET /api/supplemental/cards?pack=:pack&set=:set&faction=:faction&search=:query`
+1. refuses a card of a pack that is not writable;
+2. resolves the target file: `payload.packFile`, else `<stem>.json` of the card file the card comes from, inside `packs/<id>/supplemental/`. The name must match `^[a-z0-9_-]+\.json$` (`isPackFileName`);
+3. applies the event invariant (`findEventDiscardSelfViolations`) and `CardEnrichmentSchema.safeParse`, returning the Zod errors when invalid;
+4. stamps `audit.updatedAt`/`reviewedAt` (`YYYY-MM-DDTHH:MM:SSZ`), `reviewedBy` and `rulesVersion`.
 
-Returns filtered cards across the catalog with enrichment status flags:
+The service then re-reads the target file, sets `cards[code]` and writes the whole file with `ContentWriter.writeJson` (`FetchDriver` sends `PUT /__content/<path>`).
 
-```json
-{
-  "total": 101,
-  "cards": [
-    {
-      "code": "01001a",
-      "name": "Spider-Man",
-      "packCode": "core",
-      "setCode": "spider_man",
-      "factionCode": "hero",
-      "typeCode": "hero",
-      "hasSupplemental": true,
-      "isValid": true,
-      "confidence": 100
-    }
-  ]
-}
-```
+### 3.3. The one write route
 
-### 3.3. `GET /api/supplemental/card/:code`
-
-Fetches the complete card definition, including raw upstream data and supplemental definition:
-
-```json
-{
-  "code": "01001a",
-  "packCode": "core",
-  "upstream": {
-    "code": "01001a",
-    "name": "Spider-Man",
-    "text": "<b>Interrupt</b>: When the villain initiates an attack...",
-    "traits": "Avenger.",
-    "type_code": "hero"
-  },
-  "supplemental": {
-    "abilities": [ ... ],
-    "audit": {
-      "reviewedBy": "antigravity",
-      "confidence": 100,
-      "updatedAt": "2026-09-01T15:00:00Z"
-    }
-  },
-  "validation": {
-    "valid": true,
-    "errors": []
-  }
-}
-```
-
-### 3.4. `POST /api/supplemental/card/:code`
-
-Validates and persists changes to the card's supplemental definition:
-
-- **Request Body:**
-  ```json
-  {
-    "packCode": "core",
-    "supplemental": {
-      "abilities": [ ... ],
-      "audit": {
-        "reviewedBy": "developer_name",
-        "confidence": 100,
-        "rulesVersion": "1.8"
-      }
-    }
-  }
-  ```
-- **Server Behavior:**
-  1. Validates payload using `CardEnrichmentSchema.safeParse(supplemental)`. Returns HTTP 400 with structured Zod errors if invalid.
-  2. Resolves the target pack file: `payload.packFile`, else the pack file of the card in the upstream data, else `${packCode}.json`, inside `content/packs/<code>/supplemental/`. The name must match `^[a-z0-9_-]+\.json$` (`isPackFileName`); anything else returns HTTP 400 with `Invalid pack file name '<name>'`.
-  3. Reads existing pack JSON, merges/updates `cards[code]`, stamps `audit.updatedAt` with the current ISO timestamp (`YYYY-MM-DDTHH:MM:SSZ`), preserves existing fields, and formats JSON with 2-space indentation.
-  4. Writes atomically to disk.
-  5. Returns HTTP 200: `{ "success": true, "code": "01001a", "updatedAt": "..." }`.
+`PUT /__content/packs/<id>/supplemental/<file>.json` in `src/tools/content-middleware.ts` (`handleContentWrite`). It exists on the dev server only (`vite preview` registers the read-only endpoint). It refuses with HTTP 403 any other path, and a pack whose `pack.json` origin is not `user` or `official-bundled` (`official-sync` packs are re-downloaded, so edits would be lost). It answers 400 for a body that is not valid JSON or fails `SupplementalPackSchema`, and writes through a temp file and a rename. Editing Core therefore changes tracked files in the working tree, visible in `git status`.
 
 ---
 

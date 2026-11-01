@@ -649,6 +649,109 @@
         "originalText": "<b>When Revealed</b>: Search the encounter deck and discard pile for The \"Immortal\" Klaw and reveal it. Shuffle the encounter deck.\n[star] <b>Forced Interrupt</b>: When Klaw attacks, give him 1 additional boost card for this activation."
       }
     },
+    "01116a": {
+      "abilities": [
+        {
+          "id": "klaw_underground_distribution_setup",
+          "timing": "SETUP",
+          "steps": [
+            {
+              "effect": "SEARCH",
+              "effectParams": {
+                "source": [
+                  "ENCOUNTER_DECK"
+                ],
+                "filter": {
+                  "codes": [
+                    "01125"
+                  ]
+                },
+                "takeCount": 1,
+                "selectedDestination": "REVEAL",
+                "autoSelectIfUnambiguous": true
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-01T12:00",
+        "updatedAt": "2026-11-01T12:00",
+        "reviewedAt": "2026-11-01T12:00",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>Contents</b>: Klaw (I) and Klaw (II). <i>(Klaw (II) and Klaw (III) instead for expert mode.)</i> Klaw and Standard encounter sets. One modular encounter set <i>(recommended: Masters of Evil)</i>\n<b>Setup</b>: Search the encounter deck for the Defense Network side scheme and reveal it. Shuffle the encounter deck. Advance to stage 1B."
+      }
+    },
+    "01116b": {
+      "abilities": [
+        {
+          "id": "klaw_underground_distribution_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "mode": "UNTIL_MATCH",
+                "untilFilter": {
+                  "types": [
+                    "minion"
+                  ]
+                },
+                "matchingDestination": "PLAY",
+                "target": "FIRST_PLAYER"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-01T12:00",
+        "updatedAt": "2026-11-01T12:00",
+        "reviewedAt": "2026-11-01T12:00",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Discard cards from the encounter deck until a minion is discarded. Put that minion into play engaged with the first player."
+      }
+    },
+    "01117a": {
+      "abilities": [
+        {
+          "id": "klaw_secret_rendezvous_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "mode": "UNTIL_MATCH",
+                "untilFilter": {
+                  "types": [
+                    "minion"
+                  ]
+                },
+                "matchingDestination": "PLAY",
+                "target": "FIRST_PLAYER"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-01T12:00",
+        "updatedAt": "2026-11-01T12:00",
+        "reviewedAt": "2026-11-01T12:00",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Discard cards from the encounter deck until a minion is discarded. Put that minion into play engaged with the first player. Advance to stage 2B"
+      }
+    },
     "01121": {
       "abilities": [
         {
@@ -968,6 +1071,41 @@
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>When Revealed</b>: Each [[Masters of Evil]] minion attacks the hero it is engaged with. If no attacks were made this way, search the encounter deck and discard pile for a [[Masters of Evil]] minion and put it into play engaged with you, then shuffle the encounter deck."
+      }
+    },
+    "01137a": {
+      "abilities": [
+        {
+          "id": "ultron_crimson_cowl_setup",
+          "timing": "SETUP",
+          "steps": [
+            {
+              "effect": "SEARCH",
+              "effectParams": {
+                "source": [
+                  "ENCOUNTER_DECK"
+                ],
+                "filter": {
+                  "codes": [
+                    "01140"
+                  ]
+                },
+                "takeCount": 1,
+                "selectedDestination": "TABLEAU",
+                "autoSelectIfUnambiguous": true
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-01T12:00",
+        "updatedAt": "2026-11-01T12:00",
+        "reviewedAt": "2026-11-01T12:00",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>Contents</b>: Ultron (I) and Ultron (II). <i>(Ultron (II) and Ultron (III) instead for expert mode.)</i> Ultron and Standard encounter sets. One modular encounter set <i>(recommended: Under Attack).</i>\n<b>Setup</b>: Put the Ultron Drones environment into play. Shuffle the encounter deck. Advanced to stage 1B."
       }
     },
     "01151": {

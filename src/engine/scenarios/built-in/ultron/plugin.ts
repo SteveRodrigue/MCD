@@ -1,5 +1,4 @@
-import { CardInstance, CardType, GameState, MinionCard, getCatalog } from '@engine/models';
-import { createCardInstance } from '../../../state/card-instance';
+import { CardInstance, CardType, GameState, MinionCard } from '@engine/models';
 import { appendLog } from '../../../state/game-log';
 import { DeclarativeScenarioPlugin } from '../../declarative-plugin';
 import type { ScenarioDefinition, ScenarioGameSetupOptions } from '../../types';
@@ -51,30 +50,17 @@ function createDroneMinionInstance(sourceCard: CardInstance): CardInstance {
 }
 
 /**
- * Ultron (The Crimson Cowl). The Ultron Drones environment stays out of the encounter deck; stage
- * 1A puts it into play and deals each player a drone (still code, Gate 2 card integration).
+ * Ultron (The Crimson Cowl). Stage 1A's Setup (put the Ultron Drones environment into play) is an
+ * ability of the main scheme card, resolved by the engine. What stays code is stage 1B: each
+ * player puts the top card of their deck into play facedown as a Drone minion, a concept the
+ * engine does not have yet (the Vision pack reproduces it; see the M5 plan, decision 4).
  */
 export class UltronScenarioPlugin extends DeclarativeScenarioPlugin {
-  protected excludedEncounterTypes = ['environment'];
-
   constructor() {
     super(definitionData as ScenarioDefinition, 'ULTRON ONLINE! DRONES INITIALIZED!');
   }
 
-  resolveStage1ASetup(state: GameState, _options?: ScenarioGameSetupOptions): GameState {
-    // 1A Setup: Put Ultron Drones (01140) environment into play
-    const ultronDronesCard = getCatalog(state).getCard('01140');
-    if (ultronDronesCard) {
-      const envInstance = createCardInstance(ultronDronesCard);
-      state.environments.push(envInstance);
-      appendLog(state, {
-        category: 'phase',
-        key: 'scenario.setup.environment',
-        params: { card: ultronDronesCard.name },
-        onomatopoeia: 'ULTRON DRONES ENVIRONMENT ONLINE!',
-      });
-    }
-
+  resolveStage1BReveal(state: GameState, _options?: ScenarioGameSetupOptions): GameState {
     // 1B When Revealed: Each player puts the top card of their deck into play facedown engaged as a Drone minion
     for (const player of state.players) {
       if (player.deck.length > 0) {

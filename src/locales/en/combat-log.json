@@ -88,7 +88,7 @@
     "RETALIATE_DAMAGE": "{{actor}} retaliated for {{amount}} damage.",
     "scenario.setup": "Scenario {{scenario}} is set up by {{actor}}.",
     "scenario.setup.drone": "{{actor}} puts a Drone into play.",
-    "scenario.setup.environment": "Environment {{card}} enters play.",
+    "environment.entersPlay": "Environment {{card}} enters play.",
     "scenario.setup.minion": "{{card}} is set up engaged with {{actor}}.",
     "scenario.setup.sideScheme": "Side Scheme {{card}} enters play.",
     "scenario.victory": "VICTORY! {{actor}} wins the scenario!",

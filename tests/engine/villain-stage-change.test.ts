@@ -22,7 +22,6 @@ import {
   ScenarioRegistry,
   advanceVillainStage,
   rhinoPlugin,
-  KlawScenarioPlugin,
   UltronScenarioPlugin,
 } from '@engine/scenarios';
 
@@ -274,7 +273,7 @@ describe('Villain stage change (#303)', () => {
   });
 
   it('7a. Klaw: the stage change goes through the same helper and keeps the attachments', () => {
-    const plugin = ScenarioRegistry.get('klaw') as KlawScenarioPlugin;
+    const plugin = ScenarioRegistry.get('klaw');
     const state = build(1, 'STANDARD', 'klaw');
     const klaw = getActiveVillain(state);
     expect(klaw.card.code).toBe(KLAW_I);
@@ -301,7 +300,7 @@ describe('Villain stage change (#303)', () => {
   });
 
   it('7c. Klaw III enters with a tough status card from its printed Toughness, never two', () => {
-    const plugin = ScenarioRegistry.get('klaw') as KlawScenarioPlugin;
+    const plugin = ScenarioRegistry.get('klaw');
     const state = build(1, 'EXPERT', 'klaw');
     expect(getActiveVillain(state).card.code).toBe('01114');
     expect(getActiveVillain(state).statusCards).not.toContain(StatusCard.TOUGH);

@@ -366,7 +366,16 @@ describe('Card Loader & Normalizer Unit Tests', () => {
       ]);
 
       // Single cards modelled ahead of their set's scan (#244: Weapons Runner; Plan R9: Klaw II, Immortal Klaw)
-      const scannedEncounterCards = new Set(['01114', '01121', '01127']);
+      const scannedEncounterCards = new Set([
+        '01114',
+        '01121',
+        '01127',
+        // main scheme Setup and When Revealed abilities (Klaw, Ultron)
+        '01116a',
+        '01116b',
+        '01117a',
+        '01137a',
+      ]);
 
       coreEncounterPack.forEach((card) => {
         const enrichment = supplementalRegistry[card.code];

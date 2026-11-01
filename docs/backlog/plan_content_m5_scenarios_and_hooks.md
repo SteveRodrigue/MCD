@@ -10,7 +10,8 @@
 After M5 no scenario or card-specific code lives in the engine. A scenario is a `definition.json` in its pack and is registered when the pack loads. **Uniqueness decides where code lives (Q49):**
 
 - What the existing effect primitives can express is **data**. Klaw's setup is printed text on its main scheme cards and every effect in it already exists, so Klaw is data.
-- What only one scenario or card needs, and cannot be expressed generically, is a **script** in its pack, found through the generated hook map: Wakanda Forever (done in M5a) and Ultron's setup (it needs a facedown Drone minion concept that belongs to the Gate 2 plug-in work, #275). Ultron is the worked example of a scenario script.
+- **Environments are an engine concept, not scenario code.** An environment card enters the villain's play area and stays in play; the engine must do that for every environment card (91 cards in 16 packs), and a setup line like "put the Ultron Drones environment into play" is data.
+- What only one scenario or card needs, and cannot be expressed generically, is a **script** in its pack, found through the generated hook map: Wakanda Forever (done in M5a) and, until the engine has a facedown-minion concept (open decision 8), the one Ultron step that turns each player's top card into a facedown Drone. Ultron is the worked example of a scenario script.
 - The engine keeps only generic behavior, and nothing in `src/engine` names a Core card code or defaults to `'rhino'`.
 
 ## 2. Facts (verified 2026-11-01 on `main`)
@@ -18,7 +19,8 @@ After M5 no scenario or card-specific code lives in the engine. A scenario is a 
 - `src/engine/scenarios/built-in/{rhino,klaw,ultron}/plugin.ts` are the only scenario code: Rhino is a bare `DeclarativeScenarioPlugin`; Klaw and Ultron subclass it for stage 1A setup only. They are registered by side effect in `scenarios/index.ts`; `definition.json` is already loaded from `content/packs/core/scenarios/<id>/`.
 - `DeclarativeScenarioPlugin.onGameSetup` sets the main scheme directly to stage 1B and never resolves a main scheme's Setup or When Revealed; `onMainSchemeCompleted` swaps the card and logs, also without resolving anything. Only a villain's When Revealed runs from data (`revealVillainStage` through `kernel.executeEffect`).
 - Klaw's printed setup is `SEARCH` (Defense Network, reveal, shuffle) and `DISCARD ... UNTIL_MATCH` (minion, into play, first player); both already exist as data (Klaw II `01114` and The Masters of Evil `01128`). **62 main scheme A sides in 17 packs have a `Setup:` line**; 15 cards use "discard until a minion". See the [Klaw review](klaw_setup_as_data_review.md).
-- Ultron's setup: put the Ultron Drones environment (`01140`) into play; each player's top deck card becomes a facedown Drone minion (1 HP, 1 ATK, 1 SCH) engaged with that player; environments stay out of the encounter deck (`excludedEncounterTypes`). `PUT_INTO_PLAY` has no environment destination and no facedown-minion option.
+- **Environment support is missing in the engine.** The zone exists (`state.environments` is read by legal actions, icons, the state validator and the card inspector), but **the only code that puts an environment into play is one line in Ultron's plugin**. A revealed environment card takes the treachery branch of the reveal code (`villain-phase.ts`): its When Revealed resolves and the card goes to the discard pile, which contradicts the Rules Reference (an environment enters play and stays until an effect removes it). 91 upstream cards are environments (16 packs), and 14 main scheme Setup lines put one into play (core, aoa, gob, gmw x4, mojo x2, mut_gen, next_evol, sm x2, trors). `PUT_INTO_PLAY` has no environment destination and cannot take a card from the encounter deck.
+- Ultron's setup today: put the Ultron Drones environment (`01140`) into play, with environments kept out of the encounter deck through a scenario-specific `excludedEncounterTypes` field; each player's top deck card becomes a facedown Drone minion (1 HP, 1 ATK, 1 SCH, from the environment card's text) engaged with that player. Facedown minions are used by 37 cards in 10 packs; "Drone" appears on 21 cards in core and vision.
 - `setupOnomatopoeia` (a log string) is a constructor argument of each plugin.
 - Hard-coded `'rhino'`: `game-setup.ts` (four places, plus fallbacks to cards `01094` and `01097b`), `scenario-helpers.ts` (two), `simulation/ability-stage-setter.ts`, `simulation/gauntlet.ts`, `scripts/simulate-games.ts`, and the initial selection in `ScenarioSelector.tsx`.
 - `ScenarioRegistry.getAll()` feeds the selector; registration order is import order (Rhino, Klaw, Ultron).
@@ -35,13 +37,26 @@ The Rules Reference names two moments (Appendix II step 12, and the main scheme 
 
 Klaw then becomes data (supplemental abilities on `01116a`, `01116b`, `01117a`), and `KlawScenarioPlugin` is deleted; Klaw registers as a plain `DeclarativeScenarioPlugin`, like Rhino. Rhino is unchanged (its main scheme cards need no supplemental data).
 
-**Intentional behavior changes for Klaw (rules corrections), each covered by a test:** the encounter deck is shuffled after the Defense Network search (printed text); stage 2A's "discard until a minion" is resolved when the scheme advances (today nothing runs it); a missing Defense Network is no longer created; its starting threat comes from the normal reveal path (verify against the card when implemented). The Klaw digests are re-recorded in the same PR with these reasons.
+**Environment support is built into the engine in the same PR (decided 2026-11-01):**
 
-### 3.2 Scenario scripts: only Ultron stays code (M5c)
+1. **Reveal:** an environment card revealed from the encounter deck enters the villain's play area (`state.environments`), resolves its When Revealed, and stays in play; it is no longer discarded as if it were a treachery.
+2. **Put into play from data:** `PUT_INTO_PLAY` gains `to: ENVIRONMENT` and can take the card from `ENCOUNTER_DECK` or `ENCOUNTER_DISCARD` (with an optional shuffle afterwards, as the printed Setup lines say "Shuffle the encounter deck").
+3. **Ultron's 1A becomes data:** `01137a` Setup puts `01140` into play from the encounter deck and shuffles. The scenario-specific `excludedEncounterTypes` field is not needed and is not added.
 
-- `ScenarioDefinitionSchema` gains two optional fields: `setupOnomatopoeia` (the log text now passed to the plugin constructor) and `excludedEncounterTypes` (Ultron: `["environment"]`).
+**Intentional behavior changes (rules corrections), each covered by a test:**
+
+- **Klaw:** the encounter deck is shuffled after the Defense Network search (printed text); stage 2A's "discard until a minion" is resolved when the scheme advances (today nothing runs it); a missing Defense Network is no longer created; its starting threat comes from the normal reveal path (verify against the card when implemented).
+- **Ultron:** the environment is found in the encounter deck and the deck is shuffled afterwards (today it is filtered out of the deck without a shuffle), so seeded Ultron games change.
+- **All scenarios:** a revealed environment card now stays in play instead of being discarded.
+
+The Klaw and Ultron digests are re-recorded in the same PR with these reasons.
+
+### 3.2 Scenario scripts: one Ultron step stays code for now (M5c)
+
+- `ScenarioDefinitionSchema` gains one optional field, `setupOnomatopoeia` (the log text now passed to the plugin constructor).
 - A scenario script exports `ScenarioHooks` with one optional member, `resolveStage1ASetup(state, options)`. `PackHooks` (the M2 contract) gains `scenarioHooks?: Record<scenarioId, ScenarioHooks>`, replacing the unused `scenarioPlugins` member.
-- Every scenario is built as `DeclarativeScenarioPlugin(definition, hooks?)`: the definition from the pack's JSON, the hooks from the same pack's script. `content/packs/core/scripts/scenarios/ultron.ts` holds today's Ultron setup unchanged in behavior (the Drone's name, traits and stats are built inside it). It is the reference example in the creator guide ("how a scenario script works"), with the note that user packs cannot ship scripts until the sandbox ADR (Q4). `built-in/` is deleted.
+- Every scenario is built as `DeclarativeScenarioPlugin(definition, hooks?)`: the definition from the pack's JSON, the hooks from the same pack's script. `built-in/` is deleted.
+- **What is left in `content/packs/core/scripts/scenarios/ultron.ts`** (open decision 8): the 1B step only, "each player puts the top card of their deck into play facedown, engaged with them as a Drone minion" with the Drone's 1/1/1 stats. It is the reference example in the creator guide ("how a scenario script works"), with the note that user packs cannot ship scripts until the sandbox ADR (Q4). If decision 8 goes the other way, the script and the example disappear and Ultron is fully data.
 
 ### 3.3 Scenarios are loaded from packs (M5c)
 
@@ -78,30 +93,31 @@ The cosmetic Rhino branches in `villain-zone-utils.ts` and `comic-log-formatter.
 | PR | Content | Gate |
 | --- | --- | --- |
 | **M5a** (done, #538) | Hook infrastructure and Wakanda Forever. | Byte-identical `simulate`. |
-| **M5b** | Characterization digests first (recorded on `main`), then resolve main scheme Setup and When Revealed from data (setup and advance), Klaw's supplemental abilities, delete `KlawScenarioPlugin` (Klaw registers as a plain declarative plugin). | Rhino and Ultron digests identical; **Klaw digests re-recorded on purpose** (shuffle, stage 2A, Defense Network); `simulate` byte-identical; full suite. |
-| **M5c** | `PackHooks.scenarioHooks`, `setupOnomatopoeia`/`excludedEncounterTypes`, `listDirs`, scenario loading and registration, Ultron script, registry order, delete `built-in/`. | Digests for all three scenarios identical to M5b's; `simulate` byte-identical; full suite. |
+| **M5b** | Characterization digests first (recorded on `main`), then resolve main scheme Setup and When Revealed from data (setup and advance), **environment support in the engine** (reveal keeps the card in play, `PUT_INTO_PLAY` to `ENVIRONMENT` from the encounter deck), Klaw's and Ultron's 1A supplemental abilities, delete `KlawScenarioPlugin`. | Rhino digests identical; **Klaw and Ultron digests re-recorded on purpose** (shuffles, stage 2A, Defense Network); `simulate` byte-identical; full suite. |
+| **M5c** | `PackHooks.scenarioHooks`, `setupOnomatopoeia`, `listDirs`, scenario loading and registration, the Ultron 1B script (decision 8), registry order, delete `built-in/`. | Digests for all three scenarios identical to M5b's; `simulate` byte-identical; full suite. |
 | **M5d** | `defaultScenarioId()`, removal of the `'rhino'` literals and fallback cards, selector default, the `'core'` literals, zero-pack tests. | Full suite; `simulate` byte-identical; zero-pack smoke test still renders. |
 
 ## 6. File changes (summary)
 
 | Area | M5b | M5c | M5d |
 | --- | --- | --- | --- |
-| `src/engine/scenarios/` | `declarative-plugin.ts` (resolve main scheme abilities), `index.ts` (Klaw plain), delete `built-in/klaw/` | `declarative-plugin.ts` (hooks), `registry.ts`, `index.ts`; delete `built-in/` | `default-scenario.ts` |
-| `content/packs/core/supplemental/core_encounter.json` | abilities on `01116a`, `01116b`, `01117a` | | |
-| `src/data/packs/scenario-definition.ts` (+ generated schema) | | new optional fields | |
+| `src/engine/scenarios/`, `src/engine/pipeline/villain-phase.ts`, `src/engine/effects/handlers/` (put into play) | `declarative-plugin.ts` (resolve main scheme abilities), environment reveal and `PUT_INTO_PLAY` to `ENVIRONMENT`, `index.ts` (Klaw plain), delete `built-in/klaw/` | `declarative-plugin.ts` (hooks), `registry.ts`, `index.ts`; delete `built-in/` | `default-scenario.ts` |
+| `src/data/supplemental/effect-params.ts` (+ generated schema) | `PUT_INTO_PLAY` `to: ENVIRONMENT`, `from: ENCOUNTER_DECK`/`ENCOUNTER_DISCARD`, shuffle option | | |
+| `content/packs/core/supplemental/core_encounter.json` | abilities on `01116a`, `01116b`, `01117a`, `01137a` | | |
+| `src/data/packs/scenario-definition.ts` (+ generated schema) | | `setupOnomatopoeia` | |
 | `src/engine/plugin-api/index.ts` | | `scenarioHooks`, `ScenarioHooks` | |
 | `src/data/content/` | | `loader.ts` (+ `scenarios`), `apply.ts`, `types.ts`, drivers (`listDirs`) | |
-| `content/packs/core/scenarios/*/definition.json` | | new fields | |
+| `content/packs/core/scenarios/*/definition.json` | | `setupOnomatopoeia` | |
 | `content/packs/core/scripts/` | | `scenarios/ultron.ts`, `index.ts` | |
 | `src/engine/state/game-setup.ts`, `pipeline/scenario-helpers.ts`, `simulation/*`, `scripts/simulate-games.ts`, `ScenarioSelector.tsx`, `engine/decks/deck-utils.ts` | | | edits |
-| `docs/guidelines/scenario_creation_guide.md`, hero guide | main scheme Setup / When Revealed in data | "how a scenario script works" (Ultron) | |
+| `docs/guidelines/scenario_creation_guide.md`, hero guide | main scheme Setup / When Revealed and environments in data | "how a scenario script works" (Ultron) | |
 | `changes/unreleased/` | fragment | fragment | fragment |
 
 ## 7. Tests
 
 - **Characterization first (start of M5b):** `tests/engine/scenario-setup-digests.test.ts` runs `onGameSetup` for Rhino, Klaw and Ultron (1 and 2 players, Standard and Expert, fixed seed) and compares a digest of the resulting state with golden values recorded from current `main`. Its first commit passes against unchanged code.
-- **M5b:** main scheme Setup and When Revealed at setup and on advance (including Klaw's stage 2A); `DISCARD UNTIL_MATCH` for a minion engaging the first player; the Defense Network search with shuffle; a main scheme without abilities (Rhino) is a no-op.
-- **M5c:** `tests/engine/scenario-scripts.test.ts` (Ultron keeps its behavior), scenario schema fields, loader scenarios (loaded, validated, bad definition disables its pack, duplicate id), `applyContent`/`resetContent` registration and clearing.
+- **M5b:** main scheme Setup and When Revealed at setup and on advance (including Klaw's stage 2A); `DISCARD UNTIL_MATCH` for a minion engaging the first player; the Defense Network search with shuffle; a main scheme without abilities (Rhino) is a no-op; **environments:** a revealed environment stays in `state.environments` and is not discarded, `PUT_INTO_PLAY` to `ENVIRONMENT` from the encounter deck with and without a shuffle, Ultron's 1A puts `01140` into play.
+- **M5c:** `tests/engine/scenario-scripts.test.ts` (Ultron's 1B keeps its behavior), scenario schema fields, loader scenarios (loaded, validated, bad definition disables its pack, duplicate id), `applyContent`/`resetContent` registration and clearing.
 - **M5d:** `defaultScenarioId()` ordering and zero-scenario error; the zero-pack smoke test renders with no selection.
 
 ## 8. Verification (once per PR, after the last edit)
@@ -110,7 +126,7 @@ The cosmetic Rhino branches in `villain-zone-utils.ts` and `comic-log-formatter.
 
 ## 9. Debt Removed
 
-- Three scenario classes (subclassing for two hooks) and a Drone literal built inside engine code.
+- Three scenario classes (subclassing for two hooks), a scenario-specific `excludedEncounterTypes` hack, an environment zone that only Ultron's plugin could fill, and (unless decision 8 keeps it) a Drone literal built inside engine code.
 - The engine ignoring main scheme Setup and When Revealed text, which also left Klaw's stage 2A reveal unimplemented.
 - Hard-coded Core card codes in the engine (`01094`, `01097b`, `01124`, `01140`).
 - About a dozen `'rhino'` defaults that made the engine unable to start without Rhino.
@@ -124,16 +140,17 @@ The scenario selector reads the same registry and shows the same three scenarios
 
 Decided (2026-11-01):
 
-1. **Uniqueness decides where code lives (Q49).** Wakanda Forever and Ultron are scripts; everything the existing primitives can express is data.
+1. **Uniqueness decides where code lives (Q49).** Wakanda Forever is a script, and so is Ultron's one facedown-Drone step until decision 8; everything the existing primitives and the engine's built-in concepts can express is data.
 2. **Klaw is data.** Evidence in the [Klaw review](klaw_setup_as_data_review.md): every step exists as data, and the one missing piece is generic.
+3. **Environment support is built into the engine, not scenario code** (91 cards, 16 packs). Revealed environments stay in play, and `PUT_INTO_PLAY` can put one into play from data.
 
 Open, each with a recommendation:
 
-3. **Klaw's behavior changes** (shuffle, stage 2A reveal, no created Defense Network). **Recommend accepting them**: they are what the printed cards and the rules say.
-4. **What may official hook scripts import?** **Recommend any `@engine` module** (build-time, trusted); a stricter barrel comes with the sandbox ADR.
-5. **Default scenario.** **Recommend the lowest `scenarioCardCode`**, with a clear error when none is registered.
-6. **`'core'` literals** go into M5d (section 3.5). **Recommend yes.**
-7. **Ultron's 1A environment and 1B facedown Drone** stay script code until the Gate 2 plug-in work (#275) adds an environment destination and a facedown-minion concept. **Recommend this.**
+4. **The behavior changes** (Klaw: shuffle, stage 2A, no created Defense Network; Ultron: environment found in the deck then shuffle; revealed environments stay in play). **Recommend accepting them**: they are what the printed cards and the rules say.
+5. **What may official hook scripts import?** **Recommend any `@engine` module** (build-time, trusted); a stricter barrel comes with the sandbox ADR.
+6. **Default scenario.** **Recommend the lowest `scenarioCardCode`**, with a clear error when none is registered.
+7. **`'core'` literals** go into M5d (section 3.5). **Recommend yes.**
+8. **Ultron's facedown Drone (1B).** Facedown minions are used by 37 cards in 10 packs and "Drone" by 21 cards in core and vision, so it is not a pure one-of. Building a generic facedown-minion concept (a facedown card entering play as a minion, stats from the environment's rule text, the card going to its owner's discard when defeated) is real engine work that Ultron's villain stages need anyway (Gate 2, #275). **Recommend keeping the one-step Ultron script in M5 and building the concept in #275**, where the script is then deleted; the alternative is to build it inside M5b and have no scenario script at all.
 
 ## 12. Done when
 

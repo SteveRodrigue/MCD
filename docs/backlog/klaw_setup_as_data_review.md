@@ -57,7 +57,7 @@ Then Klaw's three cards get supplemental abilities (data) and `KlawScenarioPlugi
 - **Missing Defense Network.** Today's code creates it if the deck lacks it; the printed text just finds nothing.
 - **Starting threat** for Defense Network will come from the normal reveal path rather than base threat x players; to be checked against the card when implemented.
 
-Ultron stays a script for now, by decision: its 1B puts a facedown Drone minion into play and its environment card supplies the Drone's stats, which is a new concept shared by Ultron's villain stages (Gate 2, #275).
+Ultron's 1A (put the Ultron Drones environment into play) is also data once the engine supports environments (see the M5 plan). Only its 1B, which puts a facedown Drone minion into play, stays a script for now: facedown minions are a concept shared by Ultron's villain stages and other packs (Gate 2, #275).
 
 ## 6. What was wrong with the first version of this review
 

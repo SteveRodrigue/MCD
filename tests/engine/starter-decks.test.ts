@@ -89,7 +89,7 @@ describe('Data-Driven Starter Deck Registry & Multi-Hero Integration (ADR-0016)'
     const spideyDeck = getStarterDeck('spider_man_justice')!.rawDeck;
 
     // Prebuilt naming
-    const prebuiltName = generateDeckFilename(spideyDeck, 'prebuilt');
+    const prebuiltName = generateDeckFilename(spideyDeck, { prebuiltPack: 'core' });
     expect(prebuiltName).toBe('core_spider_man_justice.json');
 
     // MarvelCDB import naming

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { defaultScenarioId } from '@engine/scenarios';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { EFFECT_TYPES } from '../../src/data/supplemental/runtime';
 import {
@@ -115,7 +116,7 @@ describe('Stage-Setter rule evidence', () => {
   const allCards = cardCatalog.getAllCards();
   const inventory = buildAbilityInventory(allCards);
   const ledger = new CoverageLedger(inventory);
-  const options = { catalog: cardCatalog, allCards };
+  const options = { catalog: cardCatalog, allCards, scenarioId: defaultScenarioId() };
   const sweep = sweepAbilities(ledger, options);
   const windows = sweepTriggerWindows(inventory, options);
   const scenarios = sweepRuleScenarios(options);
@@ -157,7 +158,11 @@ describe('Stage-Setter rule evidence', () => {
 });
 
 describe('rule scenario evidence', () => {
-  const options = { catalog: cardCatalog, allCards: cardCatalog.getAllCards() };
+  const options = {
+    catalog: cardCatalog,
+    allCards: cardCatalog.getAllCards(),
+    scenarioId: defaultScenarioId(),
+  };
   const scenarios = sweepRuleScenarios(options);
   const evidence = collectEvidence({
     ledger: new CoverageLedger([]),

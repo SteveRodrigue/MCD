@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { defaultScenarioId } from '@engine/scenarios';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { buildAbilityInventory, hashCardData } from '@engine/simulation/ability-coverage';
 import { playRecipe, runGauntlet } from '@engine/simulation/gauntlet';
@@ -11,11 +12,12 @@ import type { AbilityTarget } from '@engine/simulation/ability-coverage';
 
 const allCards = cardCatalog.getAllCards();
 const inventory = buildAbilityInventory(allCards);
-const options = { catalog: cardCatalog, allCards };
+const options = { catalog: cardCatalog, allCards, scenarioId: defaultScenarioId() };
 const play = (matches: number, ledger = {}) =>
   runGauntlet({
     catalog: cardCatalog,
     allCards,
+    scenarioId: defaultScenarioId(),
     seed: 'ci',
     ledger,
     matches,

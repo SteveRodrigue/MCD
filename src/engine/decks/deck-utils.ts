@@ -15,13 +15,14 @@ export function slugify(text: string): string {
 }
 
 /**
- * Generates a collision-resistant, domain-namespaced filename according to ADR-0016.
+ * Generates a collision-resistant, domain-namespaced filename according to ADR-0016. A prebuilt
+ * deck is named after the pack that ships it.
  */
 let deckFileCounter = 0;
 
 export function generateDeckFilename(
   deck: MarvelCDBDeck,
-  domain: 'prebuilt' | 'marvelcdb' | 'user' = 'user',
+  domain: { prebuiltPack: string } | 'marvelcdb' | 'user' = 'user',
   uniqueIdSuffix?: string,
 ): string {
   const meta = parseMarvelCDBDeckMeta(deck.meta);
@@ -29,11 +30,11 @@ export function generateDeckFilename(
   const heroSlug = slugify(deck.hero_name);
   const titleSlug = slugify(deck.name);
 
+  if (typeof domain === 'object') {
+    return `${domain.prebuiltPack}_${heroSlug.replace(/-/g, '_')}_${aspect}.json`;
+  }
+
   switch (domain) {
-    case 'prebuilt': {
-      const pack = 'core';
-      return `${pack}_${heroSlug.replace(/-/g, '_')}_${aspect}.json`;
-    }
     case 'marvelcdb': {
       const deckId = deck.id;
       return `mcdb_${deckId}_${titleSlug}.json`;

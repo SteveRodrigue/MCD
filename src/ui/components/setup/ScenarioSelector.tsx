@@ -50,7 +50,7 @@ const ScenarioChooser: React.FC<ScenarioSelectorProps> = ({ onStartSetup }) => {
   const starterDecks = useMemo(() => listStarterDecks(), []);
   const modularSets = useMemo(() => listModularEncounterSets(catalog), []);
 
-  const [selectedScenarioId, setSelectedScenarioId] = useState<string>('rhino');
+  const [selectedScenarioId, setSelectedScenarioId] = useState<string>(() => scenarios[0].id);
   const [difficulty, setDifficulty] = useState<DifficultyMode>(
     () => defaultDifficulty || 'STANDARD',
   );

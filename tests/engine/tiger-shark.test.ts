@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { defaultScenarioId } from '@engine/scenarios';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, StatusCard, getActiveVillain } from '@engine/models';
 import { setupGame, createCardInstance, resetInstanceCounter } from '@engine/state/game-setup';
@@ -160,12 +161,14 @@ describe('Tiger Shark (01131)', () => {
       const forcedOutcome = exerciseAbility(forcedTarget!, {
         catalog: cardCatalog,
         allCards,
+        scenarioId: defaultScenarioId(),
       });
       expect(forcedOutcome.ok, forcedOutcome.reason).toBe(true);
 
       const boostOutcome = exerciseAbility(boostTarget!, {
         catalog: cardCatalog,
         allCards,
+        scenarioId: defaultScenarioId(),
       });
       expect(boostOutcome.ok, boostOutcome.reason).toBe(true);
     });

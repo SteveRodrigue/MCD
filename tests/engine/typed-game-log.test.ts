@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { appendLog } from '../../src/engine/state/game-log';
-import { GameState, TypedGameLogEntry } from '../../src/engine/models';
+import { GamePhase, GameState, TypedGameLogEntry } from '../../src/engine/models';
 
 function createMockState(): GameState {
   return {
@@ -110,5 +110,19 @@ describe('Typed Game Log (Plan R7: Typed log catalog)', () => {
         amount: 'two',
       },
     });
+  });
+
+  it('records whose turn it is on a player-phase entry only (#515)', () => {
+    const state = createMockState();
+    state.players = [{ id: 'p1' }, { id: 'p2' }] as unknown as GameState['players'];
+    state.activePlayerIndex = 1;
+
+    state.phase = GamePhase.PLAYER_PHASE;
+    appendLog(state, { key: 'phase.player_phase.start', params: { round: 1 } });
+    state.phase = GamePhase.VILLAIN_PHASE;
+    appendLog(state, { key: 'phase.villain_phase.start', params: { round: 1 } });
+
+    expect(state.log[0].turnPlayerId).toBe('p2');
+    expect(state.log[1].turnPlayerId).toBeUndefined();
   });
 });

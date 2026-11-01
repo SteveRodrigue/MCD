@@ -458,6 +458,9 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
 
       expect(getActiveVillain(state).statusCards).not.toContain(StatusCard.TOUGH);
       expect(getActiveVillain(state).health).toBe(initialVillainHp);
+      // #515: the prevention line names the retaliating hero, so the log does not blame the active player
+      const toughLog = state.log.find((l) => l.key === 'damage.prevented.tough');
+      expect(toughLog?.actor).toEqual({ name: state.players[0].name, type: 'hero' });
     });
 
     it('17. Retaliate against damage shield', () => {
@@ -496,6 +499,8 @@ describe('Issue #306: Retaliate damage routes through damage pipeline', () => {
       const immuneLog = state.log.find((l) => l.key === 'damage.prevented.immune');
       expect(immuneLog).toBeDefined();
       expect(immuneLog?.onomatopoeia).toBe('IMMUNE!');
+      // #515: the immune line names the retaliating hero, so the log does not blame the active player
+      expect(immuneLog?.actor).toEqual({ name: state.players[0].name, type: 'hero' });
     });
   });
 

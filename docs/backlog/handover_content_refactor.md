@@ -14,7 +14,7 @@
 | M5c scenarios from packs, Ultron as the one script, `built-in/` deleted | merged (see plan section 13) | #544 |
 | M5d defaults and literals (`'rhino'`, `'core'`) | merged (see plan section 13) | this PR |
 | M6 image cache per pack: **plan approved, in implementation** ([plan](plan_content_m6_image_cache.md)) | plan only | |
-| M6b Tauri scaffold, M7 empty-shell UI, M8 leak guard and untracking `references/`, M9 editor on the storage driver, M10 docs split, M11 browser driver and distribution, M12 optional Core removal | roadmap only, see `plan_content_folder_refactor.md` | |
+| M7 empty-shell UI, M8 leak guard and untracking `references/`, M9 editor on the storage driver, M10 docs split, M11 browser driver and distribution, M12 optional Core removal | roadmap only, see `plan_content_folder_refactor.md`. M6b (Tauri desktop app) is parked: issue #548, Q55. | |
 
 `main` has everything above except M6 and later. PR #541 changed the agent rules (see section 4); read them in `AGENTS.md` and `.agents/rules/shared-quality-gates.md` (Stop policy, Plan and approval gate, In-Game Scenario, Delivery authorization), because they replace what earlier sessions did.
 

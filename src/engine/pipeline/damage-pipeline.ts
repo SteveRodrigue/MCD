@@ -10,6 +10,7 @@ import {
   AllyCard,
   CardAbility,
   getActiveVillain,
+  getFirstPlayer,
 } from '@engine/models';
 import { getEffectiveMinionHitPoints, getEffectiveRetaliate } from './stat-calculator';
 import { isImmuneToDamage } from './damage-immunity';
@@ -150,6 +151,30 @@ export function resolveMinionDefeat(
 }
 
 /**
+ * Opens the "would be defeated" interrupt window for a minion. True when an interrupt cancelled
+ * the defeat or raised its hit points above its damage.
+ */
+function minionDefeatIsAverted(
+  state: GameState,
+  minion: CardInstance,
+  playerId: string,
+  defeatSource: DefeatSource | undefined,
+): boolean {
+  const dispatchRes = kernel.dispatchTrigger(state, 'CHARACTER_WOULD_BE_DEFEATED', {
+    targetPlayerId: playerId,
+    targetInstanceId: minion.instanceId,
+    targetType: 'MINION',
+    targetCardCode: minion.card.code,
+    targetName: minion.card.name,
+    defeatSource,
+  });
+  return (
+    dispatchRes.cancelled ||
+    (minion.tokens?.damage || 0) < getEffectiveMinionHitPoints(state, minion)
+  );
+}
+
+/**
  * Defeats every engaged minion whose damage reached its hit points. A lost hit point bonus (the
  * attachment leaves play) lowers only the ceiling; the damage stays (RR v1.8 hit points).
  */
@@ -157,31 +182,13 @@ export function defeatMinionsBeyondHitPoints(state: GameState): void {
   for (const player of state.players) {
     for (const minion of [...player.engagedMinions]) {
       if ((minion.tokens?.damage || 0) < getEffectiveMinionHitPoints(state, minion)) continue;
-
-      const dispatchRes = kernel.dispatchTrigger(state, 'CHARACTER_WOULD_BE_DEFEATED', {
-        targetPlayerId: player.id,
-        targetInstanceId: minion.instanceId,
-        targetType: 'MINION',
-        targetCardCode: minion.card.code,
-        targetName: minion.card.name,
-        defeatSource: { kind: 'EFFECT', byAttack: false },
-      });
-
-      if (
-        dispatchRes.cancelled ||
-        (minion.tokens?.damage || 0) < getEffectiveMinionHitPoints(state, minion)
-      ) {
-        continue;
-      }
+      const defeatSource: DefeatSource = { kind: 'EFFECT', byAttack: false };
+      if (minionDefeatIsAverted(state, minion, player.id, defeatSource)) continue;
 
       const idx = player.engagedMinions.findIndex((m) => m.instanceId === minion.instanceId);
       if (idx === -1) continue;
       player.engagedMinions.splice(idx, 1);
-      const defeat = resolveMinionDefeat(state, minion, player, {
-        kind: 'EFFECT',
-        byAttack: false,
-      });
-      dispatchDefeat(state, defeat);
+      dispatchDefeat(state, resolveMinionDefeat(state, minion, player, defeatSource));
     }
   }
 }
@@ -439,18 +446,14 @@ function applyDamageAndCheckDefeat(
               p.engagedMinions.some((m) => m.instanceId === minion.instanceId),
             ) || state.players.find((p) => p.id === target.targetPlayerId);
 
-          const dispatchRes = kernel.dispatchTrigger(state, 'CHARACTER_WOULD_BE_DEFEATED', {
-            targetPlayerId: targetPlayer?.id || state.players[0]?.id || '',
-            targetInstanceId: minion.instanceId,
-            targetType: 'MINION',
-            targetCardCode: minion.card.code,
-            targetName: minion.card.name,
-            defeatSource,
-          });
-
-          const currentDmgAfter = minion.tokens?.damage || 0;
-          const currentHpAfter = getEffectiveMinionHitPoints(state, minion);
-          if (dispatchRes.cancelled || currentDmgAfter < currentHpAfter) {
+          if (
+            minionDefeatIsAverted(
+              state,
+              minion,
+              targetPlayer?.id || state.players[0]?.id || '',
+              defeatSource,
+            )
+          ) {
             excessDamage = 0;
             break;
           }
@@ -944,19 +947,14 @@ function placeDamage(
   };
   const defeats: DefeatDispatch[] = defeatRes.pendingDefeat ? [defeatRes.pendingDefeat] : [];
 
-  if (target.type === 'player' && damageTaken > 0) {
+  if (damageTaken > 0 && (target.type === 'player' || target.type === 'villain')) {
+    const isPlayer = target.type === 'player';
     kernel.dispatchTrigger(state, 'DAMAGE_TAKEN', {
-      targetPlayerId: (target.entity as PlayerState).id,
-      targetType: 'player',
-      damageAmount: damageTaken,
-      triggerChain: request.triggerChain,
-    });
-  } else if (target.type === 'villain' && damageTaken > 0) {
-    const villain = target.entity as VillainState;
-    kernel.dispatchTrigger(state, 'DAMAGE_TAKEN', {
-      targetPlayerId: request.sourcePlayerId || state.players[0]?.id || '',
-      targetType: 'villain',
-      targetInstanceId: villain.instanceId,
+      targetPlayerId: isPlayer
+        ? (target.entity as PlayerState).id
+        : request.sourcePlayerId || getFirstPlayer(state).id,
+      targetType: target.type,
+      targetInstanceId: isPlayer ? undefined : (target.entity as VillainState).instanceId,
       damageAmount: damageTaken,
       triggerChain: request.triggerChain,
     });

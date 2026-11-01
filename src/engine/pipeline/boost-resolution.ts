@@ -40,7 +40,16 @@ export interface ResolveBoostCardsOptions extends BoostLogContext {
   onDeferred?: (ability: CardAbility, boostCard: CardInstance) => boolean;
   /** Called with each boost card as it is turned up, before its reveal trigger. */
   onRevealed?: (boostCard: CardInstance) => void;
+  /**
+   * Lets the caller pause before a card's star abilities resolve (interactive stepping). Returning
+   * true stops the loop with the card as `state.activeBoostCard` and the rest of the queue in
+   * `state.activeBoostResolution`; `resumeBoostCards` continues from there.
+   */
+  pauseBefore?: (boostCard: CardInstance) => boolean;
 }
+
+/** The options a paused resolution resumes with: everything but the queue, which it already holds. */
+export type ResumeBoostCardsOptions = Omit<ResolveBoostCardsOptions, 'queue'>;
 
 type MayAddBoostCards = VillainCard | MinionCard;
 
@@ -49,12 +58,7 @@ function getAdditionalBoostCardCount(
   entity: BoostActivator,
   attachments: CardInstance[] = [],
 ): number {
-  let count =
-    ('additionalBoostCards' in entity && typeof entity.additionalBoostCards === 'number'
-      ? entity.additionalBoostCards
-      : undefined) ??
-    (entity.card as MayAddBoostCards).additionalBoostCards ??
-    0;
+  let count = (entity.card as MayAddBoostCards).additionalBoostCards ?? 0;
   for (const attachment of attachments) {
     count += (attachment.card as MayAddBoostCards).additionalBoostCards ?? 0;
   }
@@ -98,21 +102,72 @@ export function dealBoostCards(
   return queue;
 }
 
-/**
- * Turns the boost cards up one at a time, first in first out (RR v1.8 Boost): reveal trigger, star
- * ability, boost icons, then discard. A boost card an ability adds meanwhile
- * (`GIVE_ADDITIONAL_BOOST_CARD`) joins the end of `state.activeBoostResolution.queue`.
- * Returns the total boost icons.
- */
-export function resolveBoostCards(state: GameState, options: ResolveBoostCardsOptions): number {
-  const { queue, playerId, category, actor } = options;
-  const outer = state.activeBoostResolution;
-  state.activeBoostResolution = {
-    queue,
-    activatorInstanceId: options.activatorInstanceId,
-    targetPlayerId: playerId,
-  };
+/** The star boost abilities of a card that resolve now (the caller may defer some). */
+function starAbilities(boostCard: CardInstance, options: ResumeBoostCardsOptions): CardAbility[] {
+  if (!boostCard.card.boostStar) return [];
+  return (boostCard.card.enrichment?.abilities || []).filter(
+    (a) => (a.timing === 'BOOST' || a.trigger === 'BOOST') && !options.onDeferred?.(a, boostCard),
+  );
+}
 
+/** Star abilities, boost icons, then discard of one turned-up card. Returns its boost icons. */
+function finishBoostCard(
+  state: GameState,
+  boostCard: CardInstance,
+  abilities: CardAbility[],
+  options: ResumeBoostCardsOptions,
+): number {
+  const { playerId, category, actor } = options;
+  for (const boostAbility of abilities) {
+    kernel.executeEffect(state, boostAbility, {
+      playerId,
+      sourceCardInstance: boostCard,
+      ...options.abilityContext,
+    });
+    appendLog(state, {
+      category,
+      actor,
+      key: 'villain.boost.starResolved',
+      params: {
+        card: boostCard.card.name,
+        source: boostAbility.id,
+        abilityId: boostAbility.id,
+      },
+      onomatopoeia: 'STAR BOOST ACTIVATED!',
+    });
+  }
+
+  const icons = boostCard.card.boostIcons ?? 0;
+  appendLog(state, {
+    category,
+    actor,
+    key: 'villain.boost.revealed',
+    params: {
+      actor: actor.name,
+      card: boostCard.card.name,
+      amount: icons,
+      boostIcons: icons,
+    },
+    onomatopoeia: 'BOOST REVEALED!',
+  });
+
+  // Discard unless its own Boost put it into play engaged with the player the activation is against
+  // (e.g. Weapons Runner).
+  const targetPlayer = state.players.find((p) => p.id === playerId);
+  if (!targetPlayer?.engagedMinions.some((m) => m.instanceId === boostCard.instanceId)) {
+    state.encounterDiscard.push(boostCard);
+  }
+  state.activeBoostCard = undefined;
+  return icons;
+}
+
+/** Turns up the cards left in `state.activeBoostResolution.queue`; see `resolveBoostCards`. */
+function runBoostQueue(
+  state: GameState,
+  options: ResumeBoostCardsOptions,
+  outer: GameState['activeBoostResolution'],
+): number {
+  const queue = state.activeBoostResolution!.queue;
   let totalIcons = 0;
   // The loop runs for any enemy whose queue is not empty, not only a villain or a Villainous minion:
   // a non-Villainous minion can hold or be given a facedown boost card. The one known card in the
@@ -122,56 +177,45 @@ export function resolveBoostCards(state: GameState, options: ResolveBoostCardsOp
     const boostCard = queue.shift()!;
     state.activeBoostCard = boostCard;
     options.onRevealed?.(boostCard);
-
-    if (boostCard.card.boostStar) {
-      const boostAbilities = (boostCard.card.enrichment?.abilities || []).filter(
-        (a) => a.timing === 'BOOST' || a.trigger === 'BOOST',
-      );
-      for (const boostAbility of boostAbilities) {
-        if (options.onDeferred?.(boostAbility, boostCard)) continue;
-        kernel.executeEffect(state, boostAbility, {
-          playerId,
-          sourceCardInstance: boostCard,
-          ...options.abilityContext,
-        });
-        appendLog(state, {
-          category,
-          actor,
-          key: 'villain.boost.starResolved',
-          params: {
-            card: boostCard.card.name,
-            source: boostAbility.id,
-            abilityId: boostAbility.id,
-          },
-          onomatopoeia: 'STAR BOOST ACTIVATED!',
-        });
-      }
-    }
-
-    const icons = boostCard.card.boostIcons ?? 0;
-    totalIcons += icons;
-    appendLog(state, {
-      category,
-      actor,
-      key: 'villain.boost.revealed',
-      params: {
-        actor: actor.name,
-        card: boostCard.card.name,
-        amount: icons,
-        boostIcons: icons,
-      },
-      onomatopoeia: 'BOOST REVEALED!',
-    });
-
-    // Discard unless its own Boost put it into play engaged with the player the activation is against
-    // (e.g. Weapons Runner).
-    const targetPlayer = state.players.find((p) => p.id === playerId);
-    if (!targetPlayer?.engagedMinions.some((m) => m.instanceId === boostCard.instanceId)) {
-      state.encounterDiscard.push(boostCard);
-    }
-    state.activeBoostCard = undefined;
+    const abilities = starAbilities(boostCard, options);
+    // Paused: the card and the queue stay on the state until finishPausedBoostCard.
+    if (abilities.length > 0 && options.pauseBefore?.(boostCard)) return totalIcons;
+    totalIcons += finishBoostCard(state, boostCard, abilities, options);
   }
-
   state.activeBoostResolution = outer;
   return totalIcons;
+}
+
+/**
+ * Turns the boost cards up one at a time, first in first out (RR v1.8 Boost): reveal trigger, star
+ * ability, boost icons, then discard. A boost card an ability adds meanwhile
+ * (`GIVE_ADDITIONAL_BOOST_CARD`) joins the end of `state.activeBoostResolution.queue`.
+ * Returns the boost icons of the cards resolved (all of them, unless `pauseBefore` paused it).
+ */
+export function resolveBoostCards(state: GameState, options: ResolveBoostCardsOptions): number {
+  const outer = state.activeBoostResolution;
+  state.activeBoostResolution = {
+    queue: options.queue,
+    activatorInstanceId: options.activatorInstanceId,
+    targetPlayerId: options.playerId,
+  };
+  return runBoostQueue(state, options, outer);
+}
+
+/**
+ * Finishes the card a paused resolution stopped on. Returns its boost icons. `onDeferred` is asked
+ * again for this card, so it must not record an ability twice.
+ */
+export function finishPausedBoostCard(state: GameState, options: ResumeBoostCardsOptions): number {
+  const boostCard = state.activeBoostCard;
+  if (!boostCard) return 0;
+  return finishBoostCard(state, boostCard, starAbilities(boostCard, options), options);
+}
+
+/**
+ * Continues a paused resolution with the rest of its queue. A paused resolution does not restore an
+ * outer one: the activation that paused owns the boost state until it finishes.
+ */
+export function resumeBoostCards(state: GameState, options: ResumeBoostCardsOptions): number {
+  return state.activeBoostResolution ? runBoostQueue(state, options, undefined) : 0;
 }

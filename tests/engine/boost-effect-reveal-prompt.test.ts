@@ -114,7 +114,7 @@ describe('Boost Effect Reveal Prompt & Combat Resumption (Issue #503)', () => {
     state.encounterDeck = [tigerShark, whirlwind];
 
     // Give villain 1 additional boost card so 2 are dealt
-    (getActiveVillain(state) as any).additionalBoostCards = 1;
+    getActiveVillain(state).card = { ...getActiveVillain(state).card, additionalBoostCards: 1 };
 
     const s1 = initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1', {
       acceptOptionalTriggers: false,

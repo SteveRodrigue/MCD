@@ -888,6 +888,13 @@ const villainAttack: Scenario = (stage) =>
   executeVillainAttackAgainstPlayer(stage.state, player1(stage));
 
 /** The engine action that opens each trigger window (generic, never card-named). */
+/** A villain attack on a player-side target; otherwise a basic attack on the villain. */
+function damageTarget(stage: Stage, ctx: ScenarioContext): GameState {
+  return isPlayerCard(ctx.target.card.type) || ctx.target.card.type === CardType.HERO
+    ? villainAttack(stage, ctx)
+    : basicAttack(stage, 'villain');
+}
+
 const SCENARIOS: Record<string, Scenario> = {
   CARD_PLAYED: (stage) => {
     const ally = createCardInstance(stage.fixtures.ally ?? stage.fixtures.filler, PLAYER_ID);
@@ -954,14 +961,8 @@ const SCENARIOS: Record<string, Scenario> = {
     executeVillainSchemeAgainstPlayer(stage.state, player1(stage));
     return stage.state;
   },
-  DAMAGE_WOULD_BE_TAKEN: (stage, ctx) =>
-    isPlayerCard(ctx.target.card.type) || ctx.target.card.type === CardType.HERO
-      ? villainAttack(stage, ctx)
-      : basicAttack(stage, 'villain'),
-  DAMAGE_TAKEN: (stage, ctx) =>
-    isPlayerCard(ctx.target.card.type) || ctx.target.card.type === CardType.HERO
-      ? villainAttack(stage, ctx)
-      : basicAttack(stage, 'villain'),
+  DAMAGE_WOULD_BE_TAKEN: damageTarget,
+  DAMAGE_TAKEN: damageTarget,
   ENEMY_INITIATES_ATTACK: (stage, ctx) => {
     setForm(player1(stage), 'hero');
     if (stage.state.players[1]) setForm(stage.state.players[1], 'hero');
@@ -1273,15 +1274,7 @@ function exerciseConstant(
   } else {
     const inst = createCardInstance(card, PLAYER_ID);
     installInPlay(stage, inst, card.type);
-    const placed =
-      [
-        ...state.villains[0].attachments,
-        ...p.tableau,
-        ...p.allies,
-        ...p.engagedMinions,
-        ...p.engagedMinions.flatMap((m) => m.attachments ?? []),
-      ].find((c) => c.instanceId === inst.instanceId) ??
-      state.sideSchemes.find((s) => s.instanceId === inst.instanceId);
+    const placed = findInPlayCardInstance(state, inst.instanceId);
     if (!placed) return { ok: false, variant, reason: `a ${card.type} cannot be staged in play` };
     placedEntity = placed;
     swap = (to) => {

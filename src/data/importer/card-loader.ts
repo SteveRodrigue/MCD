@@ -456,6 +456,10 @@ export class CardCatalog implements CardRepository {
     this.registerCards(initialCards);
   }
 
+  public clear(): void {
+    this.cards.clear();
+  }
+
   public registerCards(rawCards: RawUpstreamCard[]): void {
     for (const raw of rawCards) {
       const normalized = normalizeRawCard(raw);
@@ -575,9 +579,7 @@ export class CardCatalog implements CardRepository {
   }
 }
 
-import coreCards from '../../../content/packs/core/cards/core.json';
-import coreEncounterCards from '../../../content/packs/core/cards/core_encounter.json';
-
-export const cardCatalog = new CardCatalog([...coreCards, ...coreEncounterCards] as any);
+/** The shared catalog. Empty until the content loader fills it (see `bootContent`). */
+export const cardCatalog = new CardCatalog();
 
 

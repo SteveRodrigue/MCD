@@ -17,10 +17,14 @@ import {
 import { matchesCardFilter } from '@engine/effects';
 
 // Import real upstream JSON datasets directly
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
-import ttEncounterPack from '../../content/packs/tt/cards/tt_encounter.json';
-import aosEncounterPack from '../../content/packs/aos/cards/aos_encounter.json';
+import { loadedRawCards, rawCardsOf } from '../helpers/content';
+
+const allCoreCards = loadedRawCards('core');
+// core.json holds the player and hero cards; core_encounter.json holds the encounter-faction cards.
+const corePack = allCoreCards.filter((c) => c.faction_code !== 'encounter');
+const coreEncounterPack = allCoreCards.filter((c) => c.faction_code === 'encounter');
+const ttEncounterPack = (await rawCardsOf('tt')).filter((c) => c.faction_code === 'encounter');
+const aosEncounterPack = (await rawCardsOf('aos')).filter((c) => c.faction_code === 'encounter');
 
 describe('Card Loader & Normalizer Unit Tests', () => {
   describe('Helper Parsers', () => {
@@ -366,7 +370,7 @@ describe('Card Loader & Normalizer Unit Tests', () => {
 
       coreEncounterPack.forEach((card) => {
         const enrichment = supplementalRegistry[card.code];
-        if (scannedEncounterSets.has(card.set_code) || scannedEncounterCards.has(card.code)) {
+        if (scannedEncounterSets.has(card.set_code as string) || scannedEncounterCards.has(card.code)) {
           expect(enrichment, `Scanned Encounter Card ${card.code} (${card.name}) must have a supplemental entry`).toBeDefined();
           const hasAbilities = enrichment.abilities && enrichment.abilities.length > 0;
           const isMarkedNoSupplemental = enrichment.noSupplementalNeeded === true;

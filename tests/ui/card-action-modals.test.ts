@@ -4,12 +4,13 @@ import { setupGame, resetInstanceCounter, createCardInstance } from '@engine/ind
 import { CardCatalog } from '@data/importer/card-loader';
 import { getValidAttackTargets } from '../../src/ui/components/board/attack-target-utils';
 import { getValidThwartTargets } from '../../src/ui/components/board/thwart-target-utils';
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import { loadedRawCards } from '../helpers/content';
 
 import { getActiveMainScheme } from '@engine/models';
+
+const corePack = loadedRawCards('core');
 describe('Card Action Selection & 2-Stage Interaction Invariants (Issue #98)', () => {
-  const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+  const catalog = new CardCatalog([...corePack]);
   let gameState: ReturnType<typeof setupGame>;
 
   beforeEach(() => {

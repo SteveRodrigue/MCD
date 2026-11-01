@@ -2,18 +2,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { CardCatalog } from '../../src/data/importer/card-loader';
 import { createCardInstance } from '../../src/engine/index';
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import { loadedRawCards } from '../helpers/content';
 import { evaluateTableauCardLegality } from '../../src/ui/components/board/tableau-card-legality';
 import { CardView } from '../../src/ui/components/cards/CardView';
 import * as cardArtHook from '../../src/ui/hooks/useCardArt';
+
+const corePack = loadedRawCards('core');
 
 vi.mock('../../src/ui/hooks/useCardArt', () => ({
   useCardArt: vi.fn(),
 }));
 
 describe('Tableau Card Form Legality & Grayscale Invariants (Issue #159)', () => {
-  const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+  const catalog = new CardCatalog([...corePack]);
 
   beforeEach(() => {
     vi.clearAllMocks();

@@ -15,8 +15,9 @@ import {
 import { dispatchTrigger } from '../../src/engine/triggers/trigger-dispatcher';
 import { InfiniteLoopError } from '../../src/engine/errors/infinite-loop-error';
 
-import corePack from '../../content/packs/core/cards/core.json';
-import coreEncounterPack from '../../content/packs/core/cards/core_encounter.json';
+import { loadedRawCards } from '../helpers/content';
+
+const corePack = loadedRawCards('core');
 
 function makeMockCard(
   partial: Partial<NormalizedCard> & { code: string; name: string },
@@ -33,7 +34,7 @@ function makeMockCard(
 }
 
 describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Issue #48)', () => {
-  const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+  const catalog = new CardCatalog([...corePack]);
   let gameState: GameState;
 
   beforeEach(() => {

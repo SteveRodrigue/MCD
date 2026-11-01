@@ -9,6 +9,8 @@ import fs from 'fs';
 import path from 'path';
 import { execFileSync } from 'child_process';
 import { fileURLToPath } from 'url';
+import { PackManifestSchema } from '../../src/data/packs/pack-manifest';
+import { ScenarioDefinitionSchema } from '../../src/data/packs/scenario-definition';
 
 export interface Finding {
   file: string;
@@ -81,10 +83,7 @@ const isDesign = (doc: Doc) =>
 const isAdr = (f: string) => /^docs\/decisions\/\d{4}-/.test(f);
 const isHistory = (f: string) =>
   f === 'CHANGELOG.md' || f.startsWith('docs/reports/') || f.startsWith('docs/backlog/');
-const isCurrent = (f: string) =>
-  f.startsWith('docs/specifications/') ||
-  f.startsWith('docs/creators/') ||
-  f.startsWith('docs/engine/');
+const isCurrent = (f: string) => f.startsWith('docs/creators/') || f.startsWith('docs/engine/');
 
 function inlineCode(line: string): string[] {
   return [...line.matchAll(/`([^`\n]+)`/g)].map((m) => m[1]);
@@ -289,6 +288,22 @@ export function runDocsCheck(root: string, options: DocsCheckOptions = {}): Find
             'adr-index',
             `ADR-${sup[1]} does not mention the ADR-${r.id} it supersedes`,
           );
+      }
+    }
+  }
+
+  // 10. Creator fields: every schema property is documented where creators look
+  const creatorFields: [string, string[]][] = [
+    ['docs/creators/pack-format.md', Object.keys(PackManifestSchema.shape)],
+    ['docs/creators/scenarios.md', Object.keys(ScenarioDefinitionSchema.shape)],
+  ];
+  for (const [file, keys] of creatorFields) {
+    const doc = docs.get(file);
+    if (!doc) continue;
+    const text = doc.lines.join('\n');
+    for (const key of keys) {
+      if (!text.includes(`\`${key}\``)) {
+        add(file, 1, 'creator-field', `schema property not documented: ${key}`, key);
       }
     }
   }

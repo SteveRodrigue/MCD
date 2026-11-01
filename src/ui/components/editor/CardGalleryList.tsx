@@ -1,5 +1,5 @@
 import React from 'react';
-import { CardSummary } from '../../../tools/editor/api-middleware';
+import { CardSummary } from '../../../data/content/editor-model';
 import {
   CheckCircle,
   AlertTriangle,

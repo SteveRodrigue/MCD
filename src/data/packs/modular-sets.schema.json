@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Marvel Champions Digital - Modular Encounter Sets",
+  "description": "Catalog of modular encounter sets (modular-sets.json) provided by a pack.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "code": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*$"
+      },
+      "name": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "code",
+      "name",
+      "description"
+    ],
+    "additionalProperties": false
+  }
+}

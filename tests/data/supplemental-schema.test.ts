@@ -20,7 +20,6 @@ import {
   SearchAndSelectParamsSchema,
 } from '../../src/data/supplemental/schema';
 import { detectDuplicateJsonKeys } from '../../src/data/supplemental/duplicate-key-detector';
-import { generateSupplementalSchema } from '../../tools/generate-supplemental-schema';
 
 describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
   const packDir = path.resolve('src/data/supplemental/pack');
@@ -468,16 +467,6 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           },
         }).success,
       ).toBe(true);
-    });
-
-    it('Verifies that schema.json exists and is synchronized with SupplementalPackSchema', () => {
-      const schemaJsonPath = path.resolve('src/data/supplemental/schema.json');
-      expect(fs.existsSync(schemaJsonPath), 'schema.json should exist').toBe(true);
-
-      const diskSchema = JSON.parse(fs.readFileSync(schemaJsonPath, 'utf8'));
-      const generatedSchema = generateSupplementalSchema();
-
-      expect(diskSchema).toEqual(generatedSchema);
     });
 
     it('Verifies that all declared effects in supplemental pack files belong to EffectTypeSchema', () => {

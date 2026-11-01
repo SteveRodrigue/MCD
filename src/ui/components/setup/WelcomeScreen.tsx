@@ -70,6 +70,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onOpenContent }) =
           </ThemedButton>
           <p className={`text-xs ${style.muted}`}>{DISABLED_REASON}</p>
         </section>
+
+        <p className={`text-sm ${style.muted}`}>
+          To make your own pack, read <code>docs/creators/README.md</code>.
+        </p>
       </div>
 
       <div className="text-center">

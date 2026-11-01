@@ -129,7 +129,8 @@ Create a reviewable plan before changing dependencies or source. The plan must i
 5. **Compatibility and Risk:** Semver changes, Node/CI compatibility, migration concerns, and rollback considerations.
 6. **Acceptance Tests:** Exact commands and test files covering install, lint, format, typecheck, unit tests, build, and any advisory-specific behavior.
 7. **Open Questions:** Unknown patch availability, transitive dependency constraints, or decisions requiring user input.
-8. **Approval Gate:** State clearly that implementation must not begin until the user approves the plan.
+8. **In-Game Scenario:** `none (dependency change)`, unless the upgrade changes player-visible behavior; then describe it per the [template](../../rules/shared-quality-gates.md#in-game-scenario).
+9. **Approval Gate:** per the [Plan and approval gate](../../rules/shared-quality-gates.md#plan-and-approval-gate). After approval, implementation, verification and delivery run without further stops unless a [plan deviation](../../rules/shared-quality-gates.md#plan-deviation) appears.
 
 Use a repository-relative plan path such as `docs/plans/dependabot-<date>-<scope>.md` when a durable plan is requested. If the host environment provides a user-facing implementation-plan artifact, use that artifact and request feedback instead. Do not create a new plan directory solely for this skill without user approval.
 
@@ -143,7 +144,7 @@ Approval examples:
 - `Proceed with the Vite and Vitest upgrades only.`
 - `Revise the plan to avoid major-version upgrades.`
 
-If the user rejects or narrows the plan, update the impact analysis and request approval again.
+If the user narrows the plan, update the impact analysis and continue with the narrowed scope; if they reject it, revise and present it again.
 
 ### 8. Implement Only After Approval
 

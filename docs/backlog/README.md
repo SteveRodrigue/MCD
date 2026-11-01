@@ -12,11 +12,11 @@ Open work lives in the GitHub milestones (one per gate). Long-lived designs go t
 
 ## Starting a session
 
-Prompt: `next-task`. The skill checks the baseline, takes the first open row of section 3 of the status file (or, when the queue is empty, the top issue of the active gate milestone), writes the plan and stops for approval.
+Prompt: `next-task`. The skill checks the baseline, takes the oldest open bug of the active gate milestone (or, when the gate has no open bug, the first open row of section 3 of the status file, then the top-ranked gate issue), writes the plan and stops for approval. Once approved, the agent implements, verifies and delivers without further stops unless the code cannot follow the plan.
 
 ## Plan anatomy
 
-Status line at the top, then: printed card text; original and proposed data (fenced `json` blocks from `npm run card:get -- <code>`, changed lines shown before/after); why (rules analysis, evidence with file references); engine and schema changes; Card Editor and documentation impact; tests (written first); files; open decisions. Example: `git show 8f20d39:docs/backlog/plan_issue_238_highway_robbery.md`.
+Status line at the top, then the **In-Game Scenario** (setup, what the player does, today, after the change, why by the rules; template in [shared-quality-gates.md](../../.agents/rules/shared-quality-gates.md#in-game-scenario)); printed card text; original and proposed data (fenced `json` blocks from `npm run card:get -- <code>`, changed lines shown before/after); why (rules analysis, evidence with file references); engine and schema changes; Card Editor and documentation impact; tests (written first); files; open decisions. Example: `git show 8f20d39:docs/backlog/plan_issue_238_highway_robbery.md`.
 
 ## Owner preferences (not in AGENTS.md)
 

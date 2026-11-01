@@ -1,13 +1,13 @@
 ---
 name: commit-and-push
-description: 'Deliver a reviewed change end to end: branch (main is protected), commit with a Conventional Commit message, push, open a pull request, wait for CI, squash-merge, and verify issue closure. Only when explicitly requested by the user. Trigger on "commit and push", "deliver", "open a PR" or prefixed with "commit-and-push:".'
+description: 'Deliver a reviewed change end to end: branch (main is protected), commit with a Conventional Commit message, push, open a pull request, wait for CI, squash-merge, and verify issue closure. Runs when the user asks, or automatically after an approved plan is implemented and verified. Trigger on "commit and push", "deliver", "open a PR" or prefixed with "commit-and-push:".'
 ---
 
 # 🚀 Commit-Push-PR-Merge Protocol (Clean Delivery & Quality Gate Workflow)
 
 **Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, command, verification, and delivery authorization policies.
 
-Delivery only ever happens in response to the user's explicit request in the current message (e.g. "commit and push", "commit this", "deliver", or the skill's trigger prefix); the agent never initiates delivery on its own. `main` is protected: nothing is committed or pushed to it directly. A request to deliver covers the whole chain below (branch, commit, push, pull request, merge once CI is green). A request that names only part of it ("commit this", "just push", "open a PR but don't merge") stops after that part.
+Delivery is authorized per [Delivery authorization](../../rules/shared-quality-gates.md#delivery-authorization): the user asked in the current message, or an approved plan is implemented, verified and has no open [plan deviation](../../rules/shared-quality-gates.md#plan-deviation). An authorized delivery covers the whole chain below (branch, commit, push, pull request, merge once CI is green) without asking again. A user request that names only part of it ("commit this", "just push", "open a PR but don't merge") stops after that part. `main` is protected: nothing is committed or pushed to it directly.
 
 **Needs:** `rtk` (see [`antigravity-rtk-rules.md`](../../rules/antigravity-rtk-rules.md)), Node.js with `npm ci`, and the GitHub CLI authenticated via `gh auth login` (check with `gh auth status`).
 
@@ -87,7 +87,7 @@ Select the appropriate Conventional Commits category and scope based on the modi
 | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------ |
 | `src/engine/` (State, actions, combat, triggers, phases)                                                                                                                      | `(engine)`                            |
 | `src/ui/` (Components, views, modals, layouts, styles)                                                                                                                        | `(ui)`                                |
-| `src/data/supplemental/` (Pack JSONs, card declarations)                                                                                                                      | `(data)`                              |
+| `content/packs/` and `src/data/supplemental/` (pack JSONs, card declarations, schema)                                                                                         | `(data)`                              |
 | `src/data/importer/` (Card loader, normalization, i18n)                                                                                                                       | `(importer)`                          |
 | `src/tools/` or `tools/` (Analyzers, CLI tools, scripts)                                                                                                                      | `(tooling)`                           |
 | `changes/` (changelog fragments), `docs/` (all files, any depth) and root-level `.md` files (`README.md`, `CHANGELOG.md`, `AGENTS.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`) | `(docs)`                              |
@@ -141,9 +141,9 @@ Before committing, inspect issue references in the staged diff and commit messag
 5. Before commit, enforce these conditions:
    - `Fixes` and `Closes` references point to an existing **open** issue.
    - `Refs` and informational references point to an existing issue; either state is valid.
-   - A closed issue must not receive a new `Fixes` or `Closes` trailer. Change it to `Refs`, or stop and ask the user only for this specific conflict.
+   - A closed issue must not receive a new `Fixes` or `Closes` trailer. Change it to `Refs` and say so in the recap.
 6. If GitHub is unavailable or unauthenticated, stop before committing when issue references require validation. Report the exact limitation; do not claim validation succeeded.
-7. Once quality gates (Step 3) and issue validation pass, commit directly without a separate approval round-trip:
+7. Once issue validation passes, commit directly without a separate approval round-trip:
 
 ```sh
 rtk git commit -m "<category>(<scope>): <description>"

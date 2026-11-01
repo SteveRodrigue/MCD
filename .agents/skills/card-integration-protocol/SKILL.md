@@ -24,14 +24,14 @@ hooks:
   - **Single-Card Mode:** Focused, interactive 8-step pipeline for an individual card. Stop at Step 7 for user peer review before making any file modifications.
   - **Batch Mode:** 3-phase structured pipeline across multiple cards, sets, or hero packs:
     - **Phase 1 (Batch Evaluation & Drafting Loop):** Iterate through all cards (Steps 1–6) without mid-flight user stops. Automatically route <95% confidence and Tier 3 cards to `docs/ambiguities/` and strip their active abilities.
-    - **Phase 2 (Consolidated Peer Review Gate):** Consolidate all drafted/refactored supplemental changes into a single review artifact/plan containing the 4-point review format. Stop **once** for user approval before writing to disk.
+    - **Phase 2 (Consolidated Peer Review Gate):** Consolidate all drafted/refactored supplemental changes into a single review artifact/plan containing the 5-point review format. Stop **once** for user approval before writing to disk.
     - **Phase 3 (Batch Authoring & Verification):** Write approved cards into supplemental JSON, update audit stamps and specifications, prune resolved ambiguities, and execute the verification suite once at the conclusion of the batch.
 - **Blast-Radius Handling:** Apply the 3-Tier blast radius from `shared-quality-gates.md`.
   - **In Single-Card Mode:** If Tier 3 (structural refactor required), stop immediately, log to `docs/ambiguities/`, create `implementation_plan.md`, and wait for user approval.
   - **In Batch-Mode (Scanning multiple cards/sets):** Do not halt the batch. Log a dedicated ambiguity file to `docs/ambiguities/{pack}_{code}_{slug}.md` with `blocker_category: "TIER_3_STRUCTURAL_REFACTOR"`, skip the blocked card, continue scanning, and present a consolidated report at the end.
 - **Zero Tech Debt Invariant:** Never introduce temporary shims or backwards-compatibility aliases; prefer direct refactoring of schemas and supplemental data.
-- **Zero Assumption of Existing Supplemental Correctness:** Existing data in `src/data/supplemental/` may be outdated as `docs/specifications/supplemental/` evolves. Always translate the card independently from printed text and the specs, then contrast against the existing baseline to surface gaps or drift.
-- **Mandatory User Peer Review Gate:** Any change to a card's supplemental data needs user approval first. The required 4-part review content is defined in Step 7.
+- **Zero Assumption of Existing Supplemental Correctness:** Existing data in `content/packs/*/supplemental/` may be outdated as `docs/specifications/supplemental/` evolves. Always translate the card independently from printed text and the specs, then contrast against the existing baseline to surface gaps or drift.
+- **Mandatory User Peer Review Gate:** Any change to a card's supplemental data needs user approval first. The required 5-part review content is defined in Step 7.
 
 ---
 
@@ -193,12 +193,13 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
 
 ### Step 7: Differential Comparison, Blast-Radius Gate & Mandatory User Peer Review
 
-- **Mandatory User Peer Review for Supplemental Changes:** Create `temp/.plan-pending` when you post the review and delete it once the user approves; while it exists a hook blocks edits under `src/`, `tests/`, `data/`, `tools/` and `scripts/`.
-  Any addition, refinement, or refactoring of a card's supplemental data **MUST** be peer-reviewed and approved by the user before writing changes to `src/data/supplemental/` or proceeding to delivery. When presenting the change for user review (in an implementation plan, prompt response, or review recap), always present:
+- **Mandatory User Peer Review for Supplemental Changes:** This review is the plan of the [Plan and approval gate](../../rules/shared-quality-gates.md#plan-and-approval-gate) (including `temp/.plan-pending`). After approval, author, verify and deliver without further stops unless a [plan deviation](../../rules/shared-quality-gates.md#plan-deviation) appears.
+  Any addition, refinement, or refactoring of a card's supplemental data **MUST** be peer-reviewed and approved by the user before writing changes to `content/packs/*/supplemental/`. When presenting the change for user review (in an implementation plan, prompt response, or review recap), always present:
   1. **Printed Card Text (`card.text`):** The exact printed rules text from `content/packs/<code>/cards/<stem>.json`.
   2. **Original Supplemental Data:** The existing JSON entry in `content/packs/<code>/supplemental/<stem>.json` (or `None` if brand new).
   3. **Proposed Supplemental Data:** The newly drafted/refactored supplemental JSON entry conforming to current specifications.
-  4. **The "Why?":** Explicit rationale explaining the motivation for the change (e.g. specification updates in `docs/specifications/`, gaps or ambiguities identified during differential comparison, rule corrections, or primitive refactoring).
+  4. **In-Game Scenario:** the card played at the table (hero, villain, phase, what the player clicks and sees), **Today** with the original data and **After this change** with the proposed data. Use the [template](../../rules/shared-quality-gates.md#in-game-scenario).
+  5. **The "Why?":** Explicit rationale explaining the motivation for the change (e.g. specification updates in `docs/specifications/`, gaps or ambiguities identified during differential comparison, rule corrections, or primitive refactoring).
 - **Execution modes and blast-radius tiers:** Single-Card Mode stops here for approval. Batch Mode collates one consolidated review and stops once. Tier handling is defined in the guardrails and Step 6C.
 
 

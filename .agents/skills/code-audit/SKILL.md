@@ -37,7 +37,7 @@ small number of actionable findings over a large speculative inventory.
    `cache/`, `content/`, logs, snapshots, generated reports, and explicitly generated files
    unless the user asks to audit them.
 6. **Respect architectural ownership and delivery priorities.** Keep `src/engine/` headless and
-   card-specific behavior in `src/data/supplemental/`. Audit the full user-selected scope; use
+   card-specific behavior in `content/packs/*/supplemental/`. Audit the full user-selected scope; use
    current roadmap and milestone gates to prioritize remediation, not to suppress findings.
 7. **No drive-by fixes.** Security defects, gameplay bugs, documentation drift, card defects,
    and dependency vulnerabilities are findings to route to their owning skill, not silently fix.
@@ -305,16 +305,16 @@ In the final chat response, link the report and summarize its highest-priority f
 ### Step 8 - Approval-Gated Remediation Handoff
 
 Do not modify audited code in the same pass. Use the persisted report and stable finding IDs as the
-handoff contract. Ask the user which findings to address. For selected items:
+handoff contract. Recommend a selection (Confirmed findings first, ranked by player-visible impact) and ask once which findings to address. For selected items:
 
-1. Create or update a reviewable implementation plan without overwriting unrelated plan content.
+1. Create or update a plan per the [Plan and approval gate](../../rules/shared-quality-gates.md#plan-and-approval-gate) without overwriting unrelated plan content. Behavior-changing findings get an **In-Game Scenario**; pure refactors state the scenario that must stay unchanged.
 2. State behavior preservation, exact files, migration/rename risks, tests, UI/Card Editor impact,
    blast-radius tier, and rollback approach.
 3. Route defects to `bug-fix`, card-specific changes to `card-integration-protocol`, generic new
    capabilities to `feature-delivery`, docs drift to `documentation-audit`, dependency alerts to
    `dependabot`, and approved work to `execute-plan`.
 4. Reference the report path and selected finding IDs in implementation plans, issues, and tickets.
-5. Stop for explicit approval before implementation. Commit and push remain separately authorized.
+5. Stop for approval before implementation. The approved plan authorizes delivery ([Delivery authorization](../../rules/shared-quality-gates.md#delivery-authorization)).
 
 ## Tooling Policy
 

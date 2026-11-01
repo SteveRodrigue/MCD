@@ -11,6 +11,14 @@ After implementation and verification, execute this checklist before concluding.
 - **Tier 2 (Shared Subsystems, generic primitives, schemas):** Check Items 1 (CHANGELOG fragment), 2 (Docs), 3 (Specs), 6 (Ambiguities/Issues), and 8 (Declarations).
 - **Tier 3 (Core Architecture, state model, new paradigms):** Execute the full 8-point protocol including Items 4 (Guidelines), 5 (ADRs), and 7 (Roadmap).
 
+Every recap, at any tier, ends with:
+
+- **Try it in game:** the plan's **After this change**, as steps a player can follow in the app.
+- **Decisions I made:** each gap resolved without asking ([Stop policy](shared-quality-gates.md#stop-policy)), or `none`.
+- **Debt removed:** what was deleted, merged or parameterized.
+
+Then deliver per [Delivery authorization](shared-quality-gates.md#delivery-authorization).
+
 ---
 
 ## The 8 Checklist Items
@@ -55,7 +63,7 @@ After implementation and verification, execute this checklist before concluding.
 
 ### 8. Card Integration and Declarations
 
-- If any card definitions, abilities, or rules implementations (e.g. in `src/data/supplemental/` or `src/engine/effects/`) were added or modified:
+- If any card definitions, abilities, or rules implementations (e.g. in `content/packs/*/supplemental/` or `src/engine/effects/`) were added or modified:
   - Verify supplemental data conformance (`rtk npx vitest run tests/data` and `rtk npm run schema:generate`).
   - Ensure ambiguity docs in `docs/ambiguities/` follow the 8-step Card Integration Protocol.
   - Run `npm run report:declarations` and review the generated report.

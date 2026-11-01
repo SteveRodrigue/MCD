@@ -25,6 +25,7 @@ import { PackDeckSchema } from '../src/data/packs/pack-deck';
 import { ModularSetsSchema, ScenarioDefinitionSchema } from '../src/data/packs/scenario-definition';
 import { SupplementalPackSchema } from '../src/data/supplemental/schema';
 import { metaFile, metaSchemaFile } from '../src/tools/content-paths';
+import { packHooks } from '../src/data/content/pack-hooks.generated';
 
 const PLACEHOLDER_CODE = '00000';
 
@@ -40,6 +41,8 @@ export interface ValidatePackOptions {
   officialPackCodes: readonly string[];
   /** Upstream (zzorba/MarvelCDB) card JSON schema every pack card must satisfy. */
   cardSchema: object;
+  /** Ids of the packs in the generated hook map; when given, an official pack with scripts must be listed. */
+  hookPackIds?: readonly string[];
   /** Report findings for this pack only (set-level checks still see every pack). */
   onlyPack?: string;
 }
@@ -131,6 +134,23 @@ export function validatePackSet(packsRoot: string, options: ValidatePackOptions)
           path.join(pack.dir, 'scripts'),
           'user-code',
           'User packs are JSON-only; scripts/ is not allowed',
+        );
+      }
+    } else if (fs.existsSync(path.join(pack.dir, 'scripts'))) {
+      const scriptsDir = path.join(pack.dir, 'scripts');
+      if (!fs.existsSync(path.join(scriptsDir, 'index.ts'))) {
+        add(
+          pack.name,
+          scriptsDir,
+          'hooks-index',
+          'scripts/ needs an index.ts that exports the hooks',
+        );
+      } else if (options.hookPackIds && !options.hookPackIds.includes(manifest.id)) {
+        add(
+          pack.name,
+          scriptsDir,
+          'hooks-map',
+          `"${manifest.id}" is missing from the generated hook map (run npm run schema:generate)`,
         );
       }
     }
@@ -291,6 +311,7 @@ function main(): void {
   const findings = validatePackSet(isPackDir ? path.dirname(target) : target, {
     officialPackCodes: readOfficialPackCodes(repoRoot),
     cardSchema: readCardSchema(repoRoot),
+    hookPackIds: Object.keys(packHooks),
     onlyPack: isPackDir ? path.basename(target) : undefined,
   });
   for (const f of findings) console.error(`${f.file} [${f.check}] ${f.message}`);

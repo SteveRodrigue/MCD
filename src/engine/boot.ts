@@ -20,5 +20,4 @@ import './pipeline/scenario-helpers';
 import './pipeline/damage-pipeline';
 import './pipeline/action-dispatcher';
 import './pipeline/step-gate-evaluator';
-import './specials/wakanda-forever';
 import './scenarios';

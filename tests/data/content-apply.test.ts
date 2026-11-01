@@ -9,6 +9,7 @@ import { getLoadedContent } from '../../src/data/content/store';
 import { NodeFsDriver } from '../../src/data/content/drivers/node-fs';
 import type { LoadedContent } from '../../src/data/content/types';
 import { listStarterDecks } from '../../src/engine/decks';
+import { getSpecialHandler } from '../../src/engine/specials/special-registry';
 import { listModularEncounterSets } from '../../src/engine/scenarios';
 import { contentDriver } from '../helpers/content';
 
@@ -75,6 +76,20 @@ describe('applyContent', () => {
     expect(cardCatalog.getAllCards()).toEqual([]);
     expect(getCardEnrichment('99001')).toBeUndefined();
     expect(listStarterDecks()).toEqual([]);
+  });
+});
+
+describe('pack hooks', () => {
+  it('registers the special handlers of the loaded packs and clears them on reset', async () => {
+    await bootContent(contentDriver);
+    expect(getSpecialHandler('WAKANDA_FOREVER')).toBeDefined();
+    resetContent();
+    expect(getSpecialHandler('WAKANDA_FOREVER')).toBeUndefined();
+  });
+
+  it('does not register the hooks of a pack that is not loaded', () => {
+    applyContent(content);
+    expect(getSpecialHandler('WAKANDA_FOREVER')).toBeUndefined();
   });
 });
 

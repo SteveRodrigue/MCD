@@ -1,8 +1,10 @@
 import type { CardEnrichment } from '@engine/models';
 import { clearStarterDecks, registerStarterDecks } from '@engine/decks/starter-decks';
+import { clearSpecialHandlers, registerSpecialHandler } from '@engine/specials/special-registry';
 import { setModularSets } from '@engine/scenarios/modular-sets';
 import { cardCatalog } from '../importer/card-loader';
 import { replaceSupplementalRegistry } from '../supplemental';
+import { packHooks } from './pack-hooks.generated';
 import { clearLoadedContent, setLoadedContent } from './store';
 import type { ContentDriver, LoadContentOptions, LoadedContent } from './types';
 import { loadContent } from './loader';
@@ -13,6 +15,7 @@ export function resetContent(): void {
   cardCatalog.clear();
   setModularSets([]);
   clearStarterDecks();
+  clearSpecialHandlers();
   clearLoadedContent();
 }
 
@@ -28,6 +31,10 @@ export function applyContent(content: LoadedContent): void {
   cardCatalog.registerCards(content.packs.flatMap((pack) => pack.cards));
   setModularSets(content.packs.flatMap((pack) => pack.modularSets));
   registerStarterDecks(content.packs.flatMap((pack) => pack.decks));
+  // Official packs bundle their code at build time; only the loaded packs' hooks are registered.
+  for (const pack of content.packs) {
+    for (const handler of packHooks[pack.id]?.specialHandlers ?? []) registerSpecialHandler(handler);
+  }
   setLoadedContent(content);
 }
 

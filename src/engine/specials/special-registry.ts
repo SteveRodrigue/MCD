@@ -20,3 +20,8 @@ export function registerSpecialHandler(handler: SpecialAbilityHandler): void {
 export function getSpecialHandler(id: string): SpecialAbilityHandler | undefined {
   return specialHandlers.get(id.toUpperCase());
 }
+
+/** Removes every registered handler (the content loader re-registers the loaded packs' handlers). */
+export function clearSpecialHandlers(): void {
+  specialHandlers.clear();
+}

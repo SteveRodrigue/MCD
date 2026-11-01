@@ -1,10 +1,14 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CardFilterToolbar } from '../../src/ui/components/editor/CardFilterToolbar';
-import type { PackMetadataResponse } from '../../src/tools/editor/api-middleware';
+import type { PackMetadataResponse } from '../../src/data/content/editor-model';
 
 const mockMetadata: PackMetadataResponse = {
+  editorPacks: [
+    { id: 'core', name: 'Core Set', origin: 'official-bundled', writable: true },
+    { id: 'synced', name: 'Synced Pack', origin: 'official-sync', writable: false },
+  ],
   packs: [
     { code: 'core', name: 'Core Set', size: 355 },
     { code: 'gob', name: 'The Green Goblin', size: 78 },
@@ -155,5 +159,40 @@ describe('CardFilterToolbar Encounter Set filtering by pack (Issue #478)', () =>
         set: 'standard_pvp',
       }),
     );
+  });
+});
+
+describe('CardFilterToolbar content pack selector (M9)', () => {
+  it('lists the enabled packs with their origin and marks read-only ones', () => {
+    render(
+      <CardFilterToolbar
+        filters={{}}
+        onFiltersChange={vi.fn()}
+        metadata={mockMetadata}
+        totalCards={10}
+        filteredCards={10}
+        loading={false}
+      />,
+    );
+    expect(screen.getByRole('option', { name: /Core Set \[official-bundled\]/ })).toBeDefined();
+    expect(
+      screen.getByRole('option', { name: /Synced Pack \[official-sync\].*read-only/ }),
+    ).toBeDefined();
+  });
+
+  it('filters by pack id and resets the file filter', () => {
+    const onFiltersChange = vi.fn();
+    render(
+      <CardFilterToolbar
+        filters={{ packFile: 'core.json' }}
+        onFiltersChange={onFiltersChange}
+        metadata={mockMetadata}
+        totalCards={10}
+        filteredCards={10}
+        loading={false}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText('Content Pack'), { target: { value: 'core' } });
+    expect(onFiltersChange).toHaveBeenCalledWith({ packId: 'core', packFile: undefined });
   });
 });

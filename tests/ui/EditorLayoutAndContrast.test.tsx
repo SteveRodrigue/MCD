@@ -7,7 +7,7 @@ import { DynamicValueBuilder } from '../../src/ui/components/editor/DynamicValue
 import { SupplementalEditorScreen } from '../../src/ui/components/editor/SupplementalEditorScreen';
 import { DualCardInspector } from '../../src/ui/components/editor/DualCardInspector';
 import { CardGalleryList } from '../../src/ui/components/editor/CardGalleryList';
-import type { CardDetailsResponse } from '../../src/tools/editor/api-middleware';
+import type { CardDetailsResponse } from '../../src/data/content/editor-model';
 import { fetchCards } from '../../src/ui/services/supplemental-editor-service';
 
 // Mock API service for SupplementalEditorScreen
@@ -17,6 +17,7 @@ vi.mock('../../src/ui/services/supplemental-editor-service', () => ({
     sets: [],
     factions: [],
     packFiles: ['core.json'],
+    editorPacks: [{ id: 'core', name: 'Core Set', origin: 'official-bundled', writable: true }],
   }),
   fetchCards: vi.fn().mockResolvedValue({
     total: 1,
@@ -25,6 +26,8 @@ vi.mock('../../src/ui/services/supplemental-editor-service', () => ({
         code: '01001a',
         name: 'Spider-Man',
         packCode: 'core',
+        packId: 'core',
+        writable: true,
         packFile: 'core.json',
         factionCode: 'hero',
         typeCode: 'hero',
@@ -103,6 +106,8 @@ describe('Editor UI Contrast & Layout Ergonomics (Issue #116)', () => {
     const mockDetails: CardDetailsResponse = {
       code: '01001a',
       packCode: 'core',
+      packId: 'core',
+      writable: true,
       packFile: 'core.json',
       upstream: {
         code: '01001a',
@@ -168,6 +173,8 @@ describe('Editor UI Contrast & Layout Ergonomics (Issue #116)', () => {
         code: '01001a',
         name: 'Spider-Man',
         packCode: 'core',
+        packId: 'core',
+        writable: true,
         packFile: 'core.json',
         factionCode: 'hero',
         typeCode: 'hero',
@@ -225,6 +232,7 @@ describe('Editor UI Contrast & Layout Ergonomics (Issue #116)', () => {
     // Exactly 1 fetchCards call for initial load, not an infinite loop
     expect(vi.mocked(fetchCards)).toHaveBeenCalledTimes(1);
     expect(vi.mocked(fetchCards)).toHaveBeenCalledWith({
+      packId: undefined,
       pack: undefined,
       set: undefined,
       faction: undefined,
@@ -240,6 +248,8 @@ describe('Editor UI Contrast & Layout Ergonomics (Issue #116)', () => {
     const mockDetails: CardDetailsResponse = {
       code: '01001a',
       packCode: 'core',
+      packId: 'core',
+      writable: true,
       packFile: 'core.json',
       upstream: {
         code: '01001a',

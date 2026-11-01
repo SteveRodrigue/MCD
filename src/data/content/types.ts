@@ -16,10 +16,18 @@ export interface ContentDriver {
   readJson(path: string): Promise<unknown>;
 }
 
+/** Write access to a content root. Separate from `ContentDriver` so loading stays read-only. */
+export interface ContentWriter {
+  /** Writes one JSON file, creating folders as needed. Rejects when the root refuses the write. */
+  writeJson(path: string, data: unknown): Promise<void>;
+}
+
 export interface LoadedPack {
   id: string;
   manifest: PackManifest;
   cards: RawUpstreamCard[];
+  /** Card code to the stem of the `cards/<stem>.json` file that defines it (the editor saves beside it). */
+  cardStems: Record<string, string>;
   supplemental: Record<string, CardEnrichment>;
   modularSets: ModularSets;
   scenarios: ScenarioDefinition[];

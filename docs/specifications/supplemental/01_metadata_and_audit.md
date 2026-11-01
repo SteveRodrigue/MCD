@@ -54,7 +54,7 @@ Each supplemental pack file under `content/packs/*/supplemental/*.json` maps 5-t
 > The Card Editor shows these values as read-only badges.
 
 > [!NOTE]
-> Save-time metadata: the editor never stamps `audit.updatedAt` or `audit.reviewedAt`; the save endpoint (`src/tools/editor/api-middleware.ts`) stamps both when a card is written.
+> Save-time metadata: the editor never stamps `audit.updatedAt` or `audit.reviewedAt`; the save step (`prepareSave` in `src/data/content/editor-model.ts`) stamps both when a card is written.
 
 ### Encounter attachment host (`attachTo`)
 

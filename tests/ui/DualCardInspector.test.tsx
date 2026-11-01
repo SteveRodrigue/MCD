@@ -3,13 +3,15 @@ import { render, screen, fireEvent, act, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import { DualCardInspector } from '../../src/ui/components/editor/DualCardInspector';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import type { CardDetailsResponse } from '../../src/tools/editor/api-middleware';
+import type { CardDetailsResponse } from '../../src/data/content/editor-model';
 
 const STAMP = '2026-01-02T03:04:05Z';
 
 const detailsFor = (code: string, supplemental: any): CardDetailsResponse => ({
   code,
   packCode: 'core',
+  packId: 'core',
+  writable: true,
   packFile: 'core.json',
   upstream: cardCatalog.getCard(code)!.raw,
   supplemental,
@@ -133,5 +135,39 @@ describe('DualCardInspector audit stamping', () => {
     expect(payload.supplemental.audit.updatedAt).toBe(STAMP);
     expect(payload.supplemental.errata).toBe('');
     expect(payload.supplemental.audit.comment).toBe('keep me');
+  });
+});
+
+describe('DualCardInspector read-only packs (Q24 as amended by Q57)', () => {
+  it('disables Save and says why for a card of a synced pack', () => {
+    const onSave = vi.fn();
+    render(
+      <DualCardInspector
+        cardDetails={{
+          ...detailsFor('01018', { abilities: [] }),
+          packId: 'synced',
+          writable: false,
+        }}
+        loading={false}
+        onSaveSupplemental={onSave}
+      />,
+    );
+    expect(screen.getByTestId('read-only-note').textContent).toContain('re-downloaded');
+    const save = screen.getByRole('button', { name: /save/i }) as HTMLButtonElement;
+    expect(save.disabled).toBe(true);
+  });
+
+  it('keeps Save available for a card of a user or bundled pack', () => {
+    render(
+      <DualCardInspector
+        cardDetails={detailsFor('01018', { abilities: [] })}
+        loading={false}
+        onSaveSupplemental={vi.fn()}
+      />,
+    );
+    expect(screen.queryByTestId('read-only-note')).toBeNull();
+    expect((screen.getByRole('button', { name: /save/i }) as HTMLButtonElement).disabled).toBe(
+      false,
+    );
   });
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search, Filter, RotateCcw } from 'lucide-react';
-import { PackMetadataResponse } from '../../../tools/editor/api-middleware';
+import { PackMetadataResponse } from '../../../data/content/editor-model';
 import { CardFilters } from '../../services/supplemental-editor-service';
 
 interface CardFilterToolbarProps {
@@ -61,6 +61,10 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
     });
   };
 
+  const handlePackIdChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    onFiltersChange({ ...filters, packId: e.target.value || undefined, packFile: undefined });
+  };
+
   const handleSetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     onFiltersChange({
@@ -98,6 +102,7 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
   };
 
   const hasActiveFilters = Boolean(
+    filters.packId ||
     filters.pack ||
     filters.set ||
     filters.faction ||
@@ -134,7 +139,30 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
       </div>
 
       {/* Filter Selectors Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5 mt-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 mt-3">
+        {/* 0. Content pack (the folder the card and its supplemental file live in) */}
+        <div>
+          <label
+            htmlFor="filter-pack-id"
+            className="block text-[11px] font-bold uppercase tracking-wider text-comic-dark mb-1"
+          >
+            Content Pack
+          </label>
+          <select
+            id="filter-pack-id"
+            value={filters.packId || ''}
+            onChange={handlePackIdChange}
+            className="w-full bg-white text-black text-xs font-medium border-2 border-black px-2 py-1.5 focus:outline-hidden focus:ring-2 focus:ring-comic-red shadow-comic-xs"
+          >
+            <option value="">All enabled packs ({metadata?.editorPacks.length || 0})</option>
+            {metadata?.editorPacks.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} [{p.origin}]{p.writable ? '' : ' (read-only)'}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* 1. Pack Filter */}
         <div>
           <label

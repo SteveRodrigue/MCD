@@ -1,11 +1,11 @@
 # MCD Architecture Atlas: Engine Flow Diagrams
 
 > [!NOTE]
-> Companion, diagram-first guide to the specifications in [`docs/specifications/`](./specifications/). It does not redefine any contract: each diagram links to the spec section, ADR or source file that governs it. Where a diagram and a specification disagree, the specification (and ultimately the source code) wins.
+> Companion, diagram-first guide to the specifications in [`docs/creators/supplemental-reference/`](../creators/supplemental-reference/README.md). It does not redefine any contract: each diagram links to the spec section, ADR or source file that governs it. Where a diagram and a specification disagree, the specification (and ultimately the source code) wins.
 >
 > Conventions: diagrams use [Mermaid](https://mermaid.js.org/). Rectangles are engine steps or functions, diamonds are decision gates, rounded nodes are card-author-facing schema fields (`timing`, `trigger`, `gate`). File paths in labels are starting points for search, not pinned references.
 
-Related: [Supplemental schema specifications](./specifications/supplemental/README.md), [Algorithmic Rules Reference](./algorithmic_rules_reference.md), [Card Integration Protocol](../.agents/skills/card-integration-protocol/SKILL.md).
+Related: [Supplemental schema specifications](../creators/supplemental-reference/README.md), [Algorithmic Rules Reference](./algorithmic_rules_reference.md), [Card Integration Protocol](../../.agents/skills/card-integration-protocol/SKILL.md).
 
 ---
 
@@ -34,7 +34,7 @@ flowchart LR
   where `WHEN_REVEALED`, `BOOST`, and villain/minion activation triggers fire.
 - Round-boundary triggers (`ROUND_BEGAN`, `ROUND_ENDED`, `PLAYER_PHASE_BEGAN/ENDED`,
   `VILLAIN_PHASE_BEGAN/ENDED`) are dispatched at the transitions above — see
-  [`src/engine/pipeline/round-upkeep.ts`](../src/engine/pipeline/round-upkeep.ts).
+  [`src/engine/pipeline/round-upkeep.ts`](../../src/engine/pipeline/round-upkeep.ts).
 
 ---
 
@@ -97,8 +97,8 @@ Full field-level detail: [`algorithmic_rules_reference.md §3`](./algorithmic_ru
 
 ## Ability Lifecycle
 
-> Companion to [03. Costs & Targeting](./specifications/supplemental/03_costs_and_targeting.md)
-> and [10. Sequences & Modals](./specifications/supplemental/10_sequences_and_prompts.md).
+> Companion to [03. Costs & Targeting](../creators/supplemental-reference/03_costs_and_targeting.md)
+> and [10. Sequences & Modals](../creators/supplemental-reference/10_sequences_and_prompts.md).
 > This is the diagram to open whenever you're wondering _"in what order does my ability's
 > JSON actually get evaluated?"_
 
@@ -142,8 +142,8 @@ flowchart TD
 > [!NOTE]
 > `gateParams` configures the _gate_ (whether the step runs); `effectParams` configures the
 > _effect_ (what the step does) — they are never merged. See
-> [ADR-0060](./decisions/0060-gate-and-effect-params-separation.md), or
-> [10. Sequences & Modals §1](./specifications/supplemental/10_sequences_and_prompts.md#1-unified-action-step-sequencing-steps---conditional-gates).
+> [ADR-0060](../decisions/0060-gate-and-effect-params-separation.md), or
+> [10. Sequences & Modals §1](../creators/supplemental-reference/10_sequences_and_prompts.md#1-unified-action-step-sequencing-steps---conditional-gates).
 
 ---
 
@@ -172,7 +172,7 @@ sequenceDiagram
 
 ## Trigger Resolution Stack
 
-> Companion to [02. Timings & Triggers](./specifications/supplemental/02_timings_and_triggers.md)
+> Companion to [02. Timings & Triggers](../creators/supplemental-reference/02_timings_and_triggers.md)
 > and [`algorithmic_rules_reference.md §4`](./algorithmic_rules_reference.md#4-the-7-stage-timing-pipeline--nested-resolution-stack).
 > Read this whenever two or more cards could react to the same in-game event.
 
@@ -182,7 +182,7 @@ sequenceDiagram
 
 Every dispatched event (an attack, damage, a card entering play, threat placement, etc.)
 passes through this fixed pipeline, implemented conceptually in
-[`src/engine/triggers/trigger-dispatcher.ts`](../src/engine/triggers/trigger-dispatcher.ts):
+[`src/engine/triggers/trigger-dispatcher.ts`](../../src/engine/triggers/trigger-dispatcher.ts):
 
 ```mermaid
 flowchart TD
@@ -221,8 +221,8 @@ flowchart LR
 ```
 
 - Full `trigger` catalog and source pipeline mapping:
-  [02. Timings & Triggers §2](./specifications/supplemental/02_timings_and_triggers.md#2-event-trigger-windows-trigger).
-- When a character is defeated, [`trigger-dispatcher.ts`](../src/engine/triggers/trigger-dispatcher.ts)
+  [02. Timings & Triggers §2](../creators/supplemental-reference/02_timings_and_triggers.md#2-event-trigger-windows-trigger).
+- When a character is defeated, [`trigger-dispatcher.ts`](../../src/engine/triggers/trigger-dispatcher.ts)
   also offers in-hand `CHARACTER_DEFEATED` responses (for example _Chase Them Down_ `01052`);
   an attachment reacts only when its own host is defeated.
 
@@ -249,10 +249,10 @@ sequenceDiagram
 
 ## Combat & Villain Phase Sequences
 
-> Companion to [05. Combat & Threat](./specifications/supplemental/05_effects_combat_threat.md)
-> and [08. Villain & Nemesis](./specifications/supplemental/08_effects_villain_nemesis.md).
-> Ground truth: [`src/engine/pipeline/combat-pipeline.ts`](../src/engine/pipeline/combat-pipeline.ts)
-> and [`src/engine/pipeline/villain-phase.ts`](../src/engine/pipeline/villain-phase.ts).
+> Companion to [05. Combat & Threat](../creators/supplemental-reference/05_effects_combat_threat.md)
+> and [08. Villain & Nemesis](../creators/supplemental-reference/08_effects_villain_nemesis.md).
+> Ground truth: [`src/engine/pipeline/combat-pipeline.ts`](../../src/engine/pipeline/combat-pipeline.ts)
+> and [`src/engine/pipeline/villain-phase.ts`](../../src/engine/pipeline/villain-phase.ts).
 
 ---
 

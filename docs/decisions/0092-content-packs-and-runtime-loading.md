@@ -104,4 +104,3 @@ points keeps the hook contract small and testable.
 * [ADR-0011: Card Orientation & Cache-First Art Resolution](0011-card-orientation-and-art-caching.md)
 * [ADR-0015: User Content & Deck Storage Architecture](0015-user-content-and-deck-storage-architecture.md)
 * [ADR-0033: Official 15-Step Scenario Setup Engine & Modular Plugin Pipeline](0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md)
-* [Content plugins specification (backlogged, partly superseded)](../specifications/content_plugins_scenarios_and_campaigns.md)

@@ -1,7 +1,7 @@
 # Supplemental Specification Quick Reference
 
 > **High-Density Single Source of Truth Cheat Sheet**  
-> For full details, see the modular guides in [`docs/specifications/supplemental/`](./README.md).  
+> For full details, see the modular guides in [`docs/creators/supplemental-reference/`](./README.md).  
 > Validated against `schema.ts`, `effect-params.ts`, and `gate-params.ts` via `tests/data/quick-reference-sync.test.ts`.
 
 ---

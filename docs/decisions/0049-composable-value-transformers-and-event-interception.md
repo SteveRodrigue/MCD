@@ -30,8 +30,8 @@ How can the MCD architecture generically model event replacement, trigger interc
 
 - **Driver 1: Zero Primitive Explosion:** Keep Section 6 ("Single-Use Primitives") of `supplemental_declarations_usage_report.md` minimal and eliminate bespoke effect verbs.
 - **Driver 2: Official Rules Reference (RR v1.8 p. 37) Replacement Effect Authority:** Adhere strictly to the official rules for Replacement Effects (*"A replacement effect is an effect (usually an interrupt) that replaces the handling of one event with the handling of another event. A replacement effect is indicated by the word 'instead'"*).
-- **Driver 3: Declarative Composability ([ADR-0021](../decisions/0021-card-integration-workflow-and-composable-primitives.md), [ADR-0030](../decisions/0030-unified-ability-step-sequence-architecture.md)):** Any complex card should resolve as an ordered sequence of standard atomic primitives (`CANCEL_INTERCEPTED_EVENT`, `DEAL_DAMAGE`, `REMOVE_THREAT`, `ADD_STATUS`) parameterized by dynamic value references.
-- **Driver 4: Zero Raw-Text Parsing & Strict Typings ([ADR-0019](../decisions/0019-strict-metadata-driven-rules-execution-and-zero-raw-text-parsing.md), [ADR-0022](../decisions/0022-authoritative-zod-supplemental-schema-and-cicd-quality-gate.md)):** Parameter bindings must be strongly typed with Zod in `schema.ts`, eliminating ad-hoc string evaluations.
+- **Driver 3: Declarative Composability ([ADR-0021](0021-card-integration-workflow-and-composable-primitives.md), [ADR-0030](0030-unified-ability-step-sequence-architecture.md)):** Any complex card should resolve as an ordered sequence of standard atomic primitives (`CANCEL_INTERCEPTED_EVENT`, `DEAL_DAMAGE`, `REMOVE_THREAT`, `ADD_STATUS`) parameterized by dynamic value references.
+- **Driver 4: Zero Raw-Text Parsing & Strict Typings ([ADR-0019](0019-strict-metadata-driven-rules-execution-and-zero-raw-text-parsing.md), [ADR-0022](0022-authoritative-zod-supplemental-schema-and-cicd-quality-gate.md)):** Parameter bindings must be strongly typed with Zod in `schema.ts`, eliminating ad-hoc string evaluations.
 
 ---
 
@@ -186,7 +186,7 @@ Embed micro-expressions or mini-scripts directly in supplemental JSON (e.g. `amo
 3. **Strict Compliance with Engine Invariants:**
    - Preserves headless engine decoupling: `trigger-dispatcher.ts` and `effects/index.ts` remain card-agnostic state machines.
    - Eliminates hardcoded card checks in trigger handlers (such as lines 295–317 in `trigger-dispatcher.ts` checking for `TAKE_THREAT_AS_DAMAGE` vs `REMOVE_THREAT`).
-   - Strong compile-time Zod validation in `schema.ts` without runtime string evaluations ([ADR-0019](../decisions/0019-strict-metadata-driven-rules-execution-and-zero-raw-text-parsing.md), [ADR-0022](../decisions/0022-authoritative-zod-supplemental-schema-and-cicd-quality-gate.md)).
+   - Strong compile-time Zod validation in `schema.ts` without runtime string evaluations ([ADR-0019](0019-strict-metadata-driven-rules-execution-and-zero-raw-text-parsing.md), [ADR-0022](0022-authoritative-zod-supplemental-schema-and-cicd-quality-gate.md)).
 
 ---
 
@@ -213,7 +213,7 @@ Embed micro-expressions or mini-scripts directly in supplemental JSON (e.g. `amo
 - **Pros:**
   - High arbitrary flexibility in JSON.
 - **Cons:**
-  - Violates [ADR-0019](../decisions/0019-strict-metadata-driven-rules-execution-and-zero-raw-text-parsing.md) (Strict metadata execution, zero text parsing/evaluation).
+  - Violates [ADR-0019](0019-strict-metadata-driven-rules-execution-and-zero-raw-text-parsing.md) (Strict metadata execution, zero text parsing/evaluation).
   - Cannot be statically checked or validated by Zod at build time.
 
 ---

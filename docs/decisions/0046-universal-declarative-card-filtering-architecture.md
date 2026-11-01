@@ -168,7 +168,7 @@ Implement a query string parser (e.g. `"type:(upgrade OR support) AND trait:Tech
   - `PUT_INTO_PLAY`: Validates target cards in discard/setAside using `filter`.
   - `READY` / `EXHAUST`: Validates eligible targets on the board using `filter`.
   - Dynamic formulas / counters: Dynamic counters (e.g. counting cards in play) reuse `filter`.
-- **Dedicated Documentation:** A new comprehensive documentation module (`docs/specifications/supplemental/04_universal_card_filter.md` or dedicated targeting guide) will detail every available filter criterion, syntax, and examples, cross-linked from all effect documentation.
+- **Dedicated Documentation:** A new comprehensive documentation module (`docs/creators/supplemental-reference/04_universal_card_filter.md` or dedicated targeting guide) will detail every available filter criterion, syntax, and examples, cross-linked from all effect documentation.
 - **Zero Future Effect Refactoring:** Future filter extensions will be 100% localized to `src/engine/filters/` and `src/data/supplemental/schema.ts`.
 
 ### Negative Consequences / Risks & Mitigations

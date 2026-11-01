@@ -1,6 +1,6 @@
 # Plan — M4: Relocate official content into the `content/` pack layout
 
-**Status:** Draft for review (2026-10-31). Source, test, data and configuration changes; stop for approval before implementation.
+**Status:** Implemented (PRs #531 and #535, 2026-11-01). The plan below is kept as written; section 12 lists where the build differs.
 **Parent:** [`plan_content_folder_refactor.md`](plan_content_folder_refactor.md) (Q9, Q9b, Q19, Q27, Q30, Q31).
 **Order:** runs **before** [M3](plan_content_m3_loader.md) (decided 2026-10-31): M4 is a pure move with static imports pointing at the new paths and zero behavior change. M3 then replaces those static imports with the runtime loader.
 **Gate note:** Gate 1 (Rhino) is still active (Q6). The move renames files that Gate 1 card work edits (`supplemental/pack/*.json`, tests). Land M4 as one fast PR when the open PR queue is quiet, and rebase open branches onto it (git follows the renames).
@@ -141,3 +141,14 @@ No visible change. The Card Supplemental Editor reads the same data from the new
 
 `data/` and `src/data/supplemental/pack/` are gone, every path user goes through the helper, `npm test`, `pack:validate` and `docs:check`
 pass, and `npm run simulate` reports the same card data hash and results as before.
+
+## 12. As built (PRs #531 and #535)
+
+Where the merged code differs from the plan above:
+
+1. **The path helper uses `fs`.** `src/tools/content-paths.ts` is described above as "pure path arithmetic"; it also lists pack folders and card or supplemental files (`listPackCodes`, `listCardFiles`, `cardFileNames` and so on), so it is Node only.
+2. **`sync_data.ps1` was deleted in M4, not M4b.** Keeping it would have recreated the old `data/upstream` layout. Its replacement, `npm run content:sync`, landed separately in #535 with `--check`, `--from <dir>` and `--prune` (stale files are reported by default). A real run found that GNU `tar` on Windows reads `C:\...` as a remote host; `tar` now runs from inside the cache folder with relative names.
+3. **One upstream typo file was dropped.** `translations/it/pack/nrawler_encounter.json` was a byte-identical duplicate of `ncrawler_encounter.json` and belongs to no pack.
+4. **Pack ids.** Nine official codes (`sm`, `bp`, `tt`, `cw`, `jj`, `mut_gen`, `next_evol`, `wonder_man`, `luke_cage`) failed the M2 pattern, so `PACK_ID_PATTERN` became `^[a-z][a-z0-9_-]{1,31}$` (Q47). `pack.json` kinds: `core`, `hero`, `scenario` (also for the one `encounter` pack), `mixed` (for `story`).
+5. **Also added:** `npm run pack:status` (with a test), `content/README.md`, a `docs-check` skip for the `content` folder, and `content/.cache/` in `.gitignore`.
+6. **Parity.** `npm run simulate` output was byte-identical to `main` before and after the move (card data hash `362be14e`), and the full suite passed (447 files, 5,705 tests at the time).

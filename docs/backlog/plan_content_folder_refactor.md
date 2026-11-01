@@ -79,6 +79,7 @@ the Core pack is a future milestone, **M12**); Open Questions 1 and 2 are parked
 | Q46 | Pack folders in M4 | **All 63 upstream packs get a tracked folder** (the editor lists every upstream pack and needs the cards present); reconsider at M12 (2026-10-31) |
 | Q47 | Pack id pattern | **Loosen `PACK_ID_PATTERN` to `^[a-z][a-z0-9_-]{1,31}$` in the M4 PR**, because nine official codes (`sm`, `bp`, `tt`, `cw`, `jj`, `mut_gen`, `next_evol`, `wonder_man`, `luke_cage`) fail the M2 pattern; user ids stay protected by the reserved-ID rule (2026-10-31) |
 | Q48 | Which packs load | **`content/config.json`, tracked**: `{ "enabledPacks": ["core"] }`; keeps the catalog identical to today so seeded parity holds; user packs are enabled by adding them (UI in M7) (2026-10-31) |
+| Q49 | Where code lives | **Uniqueness decides.** One-off scenario or card logic (Ultron's setup, Wakanda Forever) is a script in its pack, found through a generated import map; only generic behavior is engine code, and Ultron is the reference example of a scenario script. Whether Klaw is also a script until the Gate 2 plug-in work is open: [review](klaw_setup_script_review.md) (2026-11-01) |
 | Q9b | Official precon decks | **Inside each pack** (`packs/<id>/decks/`, read-only). User decks in `content/decks/`, MarvelCDB imports in `content/decks/imported/` (read-only cache, cloneable; replaces ADR-0015's `marvelcdb/`). Deck picker shows Official / Mine / Imported together (2026-10-31) |
 
 ---

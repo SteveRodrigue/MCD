@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTimeout } from '../../hooks/useTimeout';
 import { useOnChange } from '../../hooks/useOnChange';
-import { CardDetailsResponse } from '../../../tools/editor/api-middleware';
+import { CardDetailsResponse } from '../../../data/content/editor-model';
 import { CardView } from '../cards/CardView';
 import { FormattedCardText } from '../cards/FormattedCardText';
 import { normalizeRawCard } from '../../../data/importer/card-loader';
@@ -132,7 +132,7 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
 
   // Save Action
   const handleSave = useCallback(async () => {
-    if (!cardDetails || !liveValidation.valid || jsonSyntaxError) return;
+    if (!cardDetails || !cardDetails.writable || !liveValidation.valid || jsonSyntaxError) return;
 
     setIsSaving(true);
     try {
@@ -145,12 +145,12 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
         if (success) {
           setSaveToast({
             type: 'success',
-            message: `Saved ${cardDetails.code} to ${cardDetails.packFile}! Active game sessions may reload or reset.`,
+            message: `Saved ${cardDetails.code} to ${cardDetails.packFile}! Reload the game page to play with the change.`,
           });
         } else {
           setSaveToast({
             type: 'error',
-            message: `Failed to save ${cardDetails.code}. Check server logs.`,
+            message: `Failed to save ${cardDetails.code}. The dev server refused it or is not running.`,
           });
         }
       }
@@ -389,8 +389,13 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
               )}
             </div>
             <span className="text-[11px] font-mono text-gray-600 mt-0.5 block">
-              Pack: {packFile}
+              Pack: {cardDetails.packId} / {packFile}
             </span>
+            {!cardDetails.writable && (
+              <span className="text-[11px] font-bold text-comic-red" data-testid="read-only-note">
+                Read-only: synced packs are re-downloaded; edit a copy.
+              </span>
+            )}
           </div>
 
           {/* Action & Save Controls */}
@@ -399,16 +404,23 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
             <button
               type="button"
               onClick={handleSave}
-              disabled={isSaving || !liveValidation.valid || Boolean(jsonSyntaxError)}
+              disabled={
+                isSaving ||
+                !cardDetails.writable ||
+                !liveValidation.valid ||
+                Boolean(jsonSyntaxError)
+              }
               className={`flex items-center gap-1.5 font-bangers text-sm tracking-wide px-3.5 py-1.5 border-2 border-black rounded shadow-comic-sm transition-transform active:scale-95 cursor-pointer ${
-                liveValidation.valid && !jsonSyntaxError
+                cardDetails.writable && liveValidation.valid && !jsonSyntaxError
                   ? 'bg-green-600 hover:bg-green-500 text-white'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed border-gray-400'
               }`}
               title={
-                !liveValidation.valid
-                  ? 'Cannot save: Fix schema validation errors'
-                  : 'Save changes to disk (Ctrl+S)'
+                !cardDetails.writable
+                  ? 'Synced packs are re-downloaded; edit a copy'
+                  : !liveValidation.valid
+                    ? 'Cannot save: Fix schema validation errors'
+                    : 'Save changes to disk (Ctrl+S)'
               }
             >
               <Save className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />

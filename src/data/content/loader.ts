@@ -60,8 +60,12 @@ async function readManifest(driver: ContentDriver, id: string): Promise<PackMani
   return manifest;
 }
 
-async function readCards(driver: ContentDriver, id: string): Promise<RawUpstreamCard[]> {
+async function readCards(
+  driver: ContentDriver,
+  id: string,
+): Promise<{ cards: RawUpstreamCard[]; cardStems: Record<string, string> }> {
   const cards: RawUpstreamCard[] = [];
+  const cardStems: Record<string, string> = {};
   for (const name of jsonFiles(await driver.listFiles(`packs/${id}/cards`))) {
     const list = await driver.readJson(`packs/${id}/cards/${name}`);
     if (!Array.isArray(list)) throw new Error(`cards/${name}: expected an array of cards`);
@@ -70,9 +74,10 @@ async function readCards(driver: ContentDriver, id: string): Promise<RawUpstream
         throw new Error(`cards/${name}: every card needs a string "code"`);
       }
       cards.push(card as RawUpstreamCard);
+      cardStems[card.code] = name.slice(0, -'.json'.length);
     }
   }
-  return cards;
+  return { cards, cardStems };
 }
 
 async function readSupplemental(
@@ -164,7 +169,7 @@ export async function loadContent(
       if (blocked) {
         result = blocked;
       } else {
-        const cards = await readCards(driver, id);
+        const { cards, cardStems } = await readCards(driver, id);
         const supplemental = await readSupplemental(driver, id);
         const modularSets = await readModularSets(driver, id);
         const scenarios = await readScenarios(driver, id);
@@ -188,6 +193,7 @@ export async function loadContent(
           id,
           manifest,
           cards,
+          cardStems,
           supplemental,
           modularSets,
           scenarios,

@@ -7,7 +7,8 @@ import {
   CardAbilitySchema,
   findEventDiscardSelfViolations,
 } from '../../src/data/supplemental/schema';
-import { CardSupplementalService } from '../../src/tools/editor/api-middleware';
+import { prepareSave } from '../../src/data/content/editor-model';
+import { getLoadedContent } from '../../src/data/content/store';
 import { validateCardInput } from '../../scripts/validate-card';
 import { supplementalFileNames, supplementalPath } from '../../src/tools/content-paths';
 
@@ -108,10 +109,9 @@ describe('Event Discard Invariant (Issue #271 / RR v1.8 Event)', () => {
     }
   });
 
-  it('rejects saving an event card with cost.discardSelf in CardSupplementalService.saveCardSupplemental', () => {
-    const service = new CardSupplementalService();
+  it('rejects saving an event card with cost.discardSelf in prepareSave', () => {
     // 01003 is Backflip (type_code: event)
-    const res = service.saveCardSupplemental('01003', {
+    const res = prepareSave(getLoadedContent(), '01003', {
       supplemental: {
         abilities: [
           {
@@ -128,8 +128,8 @@ describe('Event Discard Invariant (Issue #271 / RR v1.8 Event)', () => {
       },
     });
 
-    expect(res.success).toBe(false);
-    expect(res.error).toContain("Event cards cannot declare 'cost.discardSelf'");
+    expect(res.ok).toBe(false);
+    expect(!res.ok && res.error).toContain("Event cards cannot declare 'cost.discardSelf'");
   });
 
   it('rejects validating an event card with cost.discardSelf via validateCardInput', () => {

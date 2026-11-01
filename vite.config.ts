@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 import fs from 'fs';
-import { cardSupplementalEditorPlugin } from './src/tools/editor/api-middleware.ts';
 import { contentPlugin } from './src/tools/content-middleware.ts';
 import { cardArtPlugin } from './src/tools/card-art-middleware.ts';
 import { buildDefines } from './src/tools/build-define.ts';
@@ -222,7 +221,6 @@ export default defineConfig(({ command }) => ({
     gameStateSnapshotPlugin(),
     problemReportPlugin(),
     labFontChoicesPlugin(),
-    cardSupplementalEditorPlugin(),
     contentPlugin(),
   ],
   resolve: {

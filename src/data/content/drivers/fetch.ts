@@ -1,4 +1,4 @@
-import type { ContentDriver } from '../types';
+import type { ContentDriver, ContentWriter } from '../types';
 
 /** Shape of `<base>/index.json`, which the dev server builds from the content folder. */
 export interface ContentIndex {
@@ -9,7 +9,7 @@ export interface ContentIndex {
  * Reads a content root over HTTP (the Vite dev and preview server). Directory listings come from
  * the index file because HTTP cannot list a folder.
  */
-export class FetchDriver implements ContentDriver {
+export class FetchDriver implements ContentDriver, ContentWriter {
   private index: Promise<Set<string>> | undefined;
 
   constructor(
@@ -56,5 +56,18 @@ export class FetchDriver implements ContentDriver {
     const res = await this.fetchImpl(`${this.baseUrl}/${path}`);
     if (!res.ok) throw new Error(`Cannot read ${path} (HTTP ${res.status})`);
     return res.json();
+  }
+
+  /** Dev server only: the content endpoint refuses anything but supplemental files of writable packs. */
+  async writeJson(path: string, data: unknown): Promise<void> {
+    const res = await this.fetchImpl(`${this.baseUrl}/${path}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const detail = (await res.json().catch(() => ({}))) as { error?: string };
+      throw new Error(detail.error ?? `Cannot write ${path} (HTTP ${res.status})`);
+    }
   }
 }

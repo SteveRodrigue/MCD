@@ -1,9 +1,9 @@
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { ContentDriver } from '../types';
+import type { ContentDriver, ContentWriter } from '../types';
 
-/** Reads a content root from disk. Node only: tests, scripts and tools, never browser code. */
-export class NodeFsDriver implements ContentDriver {
+/** Reads and writes a content root on disk. Node only: tests, scripts and tools, never browser code. */
+export class NodeFsDriver implements ContentDriver, ContentWriter {
   constructor(private readonly root: string) {}
 
   private resolve(rel: string): string {
@@ -41,5 +41,14 @@ export class NodeFsDriver implements ContentDriver {
 
   async readJson(rel: string): Promise<unknown> {
     return JSON.parse(await readFile(this.resolve(rel), 'utf-8'));
+  }
+
+  /** Writes through a temp file and a rename, so a reader never sees half a file. */
+  async writeJson(rel: string, data: unknown): Promise<void> {
+    const target = this.resolve(rel);
+    await mkdir(path.dirname(target), { recursive: true });
+    const temp = `${target}.${process.pid}.tmp`;
+    await writeFile(temp, JSON.stringify(data, null, 2) + '\n', 'utf-8');
+    await rename(temp, target);
   }
 }

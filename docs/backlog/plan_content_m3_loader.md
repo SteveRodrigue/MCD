@@ -1,6 +1,6 @@
 # Plan — M3: Runtime `ContentLoader` filling the engine singletons
 
-**Status:** Draft for review (2026-10-31). Source, test and configuration changes; stop for approval before implementation.
+**Status:** Implemented (PR #536, 2026-11-01). The plan below is kept as written; section 12 lists where the build differs.
 **Parent:** [`plan_content_folder_refactor.md`](plan_content_folder_refactor.md) (Q3, Q14, Q17, Q18, Q22, Q28, Q39).
 **Depends on:** [M4](plan_content_m4_core_pack_move.md) (content already in `content/packs/<code>/`) and M2 (schemas, `PACK_API_VERSION`, `pack:validate`).
 **Decisions taken 2026-10-31:** M4 runs first; the loader fills the existing singletons; the dev app reads content through a dev-server endpoint.
@@ -158,3 +158,17 @@ selector and deck builder render empty; their empty states are M7. The Card Supp
 ## 11. Done when
 
 No static content import remains in `src/`, the tests pass through the loader, zero-pack boot is proven, and the seeded parity gate is identical.
+
+## 12. As built (PR #536)
+
+Where the merged code differs from the plan above:
+
+1. **Endpoint prefix.** The dev and preview servers serve content at `/__content/`, not `/content/`. Vite itself serves the JSON files that the code imports from the `content/` folder at `/content/...` URLs, and the first version of the endpoint intercepted those module requests (wrong MIME type). Found in the browser check.
+2. **Validate, but keep the data as written.** The loader runs zod over supplemental data, modular sets and decks, but hands the engine the original JSON, not zod's parsed copy. zod re-orders object keys, and the simulation's card data hash is a `JSON.stringify` of those objects (`362be14e` became `f843f4c8`). `tests/data/content-parity.test.ts` guards key order.
+3. **Cards need only a string `code`.** The upstream card schema requires `code`, `pack_code`, `position` and `quantity`; some real cards have no `name`, so the loader's stricter check failed real packs.
+4. **Starter decks are listed by deck id.** File-name order would have made Black Panther the default hero. The five core deck ids were renumbered (Spider-Man 1, Captain Marvel 2, She-Hulk 3, Iron Man 4, Black Panther 5) to keep the old order; one test now reads the id from the deck instead of hard-coding it.
+5. **Driver interface.** `ContentDriver` has `listFiles`, `exists` and `readJson` (no `listPacks`); `FetchDriver` derives directory listings from `index.json`. `listDirs` arrives with scenario loading in M5b.
+6. **Test helpers.** `tests/helpers/content.ts` provides `loadedRawCards`, `rawCardsOf` and `bootPacks` (the plan named `loadedPackCatalog`). Core pack tests split `core.json` and `core_encounter.json` cards by `faction_code === 'encounter'`.
+7. **Suite time** went from about 34 s to 37 to 40 s (about 10%), over the plan's 5% mark. No cache was added: the cost is importing the supplemental schema into every test file for runtime validation. Dropping runtime validation of trusted official packs (they are already covered by `pack:validate`) would recover it; not done.
+8. **Not done:** the two `knip` ignore entries (`src/data/index.ts`, `src/data/card-loader.ts`) are still there; whether they are obsolete was not checked. A missing `/__content/index.json` is reported as a load failure and a console warning, not a dedicated error screen (empty states are M7).
+9. **Parity.** `npm run simulate` output is byte-identical to `main` (card data hash `362be14e`); `--balance` could not be compared because it crashes on `main` too (#534).

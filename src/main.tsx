@@ -10,11 +10,8 @@ import { FetchDriver } from './data/content/drivers/fetch';
 
 async function start(): Promise<void> {
   // Content (cards, supplemental data, decks, modular sets) is loaded at runtime before the first
-  // render. Failures disable a pack and are reported, never thrown (ADR-0092).
-  const content = await bootContent(new FetchDriver('/__content'));
-  for (const failure of content.failures) {
-    console.warn(`Content: ${failure.packId} was not loaded: ${failure.reason}`);
-  }
+  // render. A failure disables the pack; the Content screen shows it with the reason (ADR-0092).
+  await bootContent(new FetchDriver('/__content'));
 
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>

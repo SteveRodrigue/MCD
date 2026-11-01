@@ -161,4 +161,5 @@ We welcome community contributions! Please read our **[Contributing Guide](CONTR
 ## ⚖️ Legal Disclaimer
 
 _Marvel Champions: The Card Game_ is © Fantasy Flight Games and © MARVEL.
+Marvel Champions Digital is an unofficial fan project. It is not affiliated with, endorsed by or sponsored by Fantasy Flight Games or Marvel, and it ships no official card text or art.
 This project is an unofficial, open-source, non-commercial fan-made software intended purely for personal enjoyment. All card text, mechanics, and trademarks are the intellectual property of their respective owners. No monetization or commercial use is permitted.

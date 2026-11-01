@@ -1,4 +1,4 @@
-# Handover — content folder refactor (next: M8 or M7)
+# Handover — content folder refactor (next: review the M7 and M8 plans)
 
 **Written:** 2026-11-01, at the end of M5b; updated the same day for the agent policy of PR #541 (autonomy and stop policy, game-first plans, delivery authorization). For the next session or agent that continues the work. Nothing here is a decision; the decisions live in the documents it points to.
 
@@ -14,7 +14,8 @@
 | M5c scenarios from packs, Ultron as the one script, `built-in/` deleted | merged (see plan section 13) | #544 |
 | M5d defaults and literals (`'rhino'`, `'core'`) | merged (see plan section 13) | this PR |
 | M6 image cache per pack ([plan](plan_content_m6_image_cache.md)) | merged | #546 |
-| M7 empty-shell UI, M8 leak guard and untracking `references/`, M9 editor on the storage driver, M10 docs split, M11 browser driver and distribution, M12 optional Core removal | roadmap only, see `plan_content_folder_refactor.md`. M6b (Tauri desktop app) is parked: issue #548, Q55. | |
+| M7 empty-shell UI ([plan](plan_content_m7_empty_shell_ui.md)) and M8 leak guard ([plan](plan_content_m8_leak_guard.md)): **plans drafted, waiting for review** | plans only | |
+| M9 editor on the storage driver, M10 docs split, M11 browser driver and distribution, M12 optional Core removal | roadmap only, see `plan_content_folder_refactor.md`. M6b (Tauri desktop app) is parked: issue #548, Q55. | |
 
 `main` has everything above up to M6. PR #541 changed the agent rules (see section 4); read them in `AGENTS.md` and `.agents/rules/shared-quality-gates.md` (Stop policy, Plan and approval gate, In-Game Scenario, Delivery authorization), because they replace what earlier sessions did.
 
@@ -82,4 +83,4 @@ npm run simulate -- --no-stats   # compare with a clean `main` run, byte for byt
 
 ## 8. Next session
 
-M5 and M6 are done and the desktop app is parked (Q55, [issue #548](https://github.com/SteveRodrigue/MCD/issues/548)). The next milestones are M8 (leak guard and untracking `references/`, the copyright goal) and M7 (empty-shell UI on the dev-server driver); write the plan for the one the user picks first (AGENTS.md plan gate, with an In-Game Scenario). The old root `cache/` folder still exists on purpose (Q51): a small cleanup PR removes its ignore entries (`.gitignore`, `.vscode/settings.json`, the `code-audit` skill, the `**/cache/**` watch ignore in `vite.config.ts`) once the user asks for it.
+M5 and M6 are done and the desktop app is parked (Q55, [issue #548](https://github.com/SteveRodrigue/MCD/issues/548)). The M7 and M8 plans are drafted and wait for the user's review (their last sections list the open decisions): [M7](plan_content_m7_empty_shell_ui.md) (empty-shell welcome screen and pack list) and [M8](plan_content_m8_leak_guard.md) (untrack the rules PDFs and Markdown, leak guard). Once the user answers, log the decisions in `plan_content_folder_refactor.md` and implement. The old root `cache/` folder still exists on purpose (Q51): a small cleanup PR removes its ignore entries (`.gitignore`, `.vscode/settings.json`, the `code-audit` skill, the `**/cache/**` watch ignore in `vite.config.ts`) once the user asks for it.

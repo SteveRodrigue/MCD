@@ -49,6 +49,9 @@ jobs:
             fi
           fi
 
+      - name: Leak guard
+        run: npm run leak:check
+
       - name: Check formatting
         run: npm run format:check
 

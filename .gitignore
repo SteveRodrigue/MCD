@@ -72,3 +72,7 @@ __pycache__/
 
 # Disposable content cache (images, raw sync downloads)
 content/.cache/
+
+# Official PDFs are never tracked (leak:check); download them yourself, see references/SETUP.md
+references/**/*.pdf
+references/*.pdf

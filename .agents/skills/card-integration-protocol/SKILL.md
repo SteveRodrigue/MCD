@@ -135,7 +135,7 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
 
 ### Step 4: Consult Ground Truth References (`references/`)
 
-- Use `npm run rule -- <term>` and `references/rules/` for official timing rules (open [the raw PDF](../../../references/mc_rulesreference_v18_compressed.pdf) only if confidence stays below 95%), and [`docs/algorithmic_rules_reference.md`](../../../docs/algorithmic_rules_reference.md) for the project algorithmic mapping.
+- Use `npm run rule -- <term>` and `references/rules/` for official timing rules (ask the user for the official PDF only if confidence stays below 95%; it is not tracked, see `references/SETUP.md`), and [`docs/algorithmic_rules_reference.md`](../../../docs/algorithmic_rules_reference.md) for the project algorithmic mapping.
 - Consult [`references/links.md`](../../../references/links.md) for:
   - Official FAQ & Errata: `https://marvelcdb.com/faqs`
   - Card-specific discussion: `https://marvelcdb.com/card/{card_code}`

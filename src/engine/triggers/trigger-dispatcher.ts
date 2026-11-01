@@ -11,6 +11,7 @@ import {
   getActiveVillain,
   getVillainById,
   getVillainsInPlay,
+  getFirstPlayer,
 } from '@engine/models';
 import type { TriggerFilter } from '../../data/supplemental/schema';
 import { getStepEffectParams } from '../../data/supplemental/runtime';
@@ -106,22 +107,12 @@ export function matchesTriggerFilter(
   trigger?: TriggerType | string,
 ): boolean {
   const hostId = cardInst?.hostInstanceId;
-  const targetId =
-    context.targetInstanceId ||
-    (trigger === 'CHARACTER_DEFEATED' ||
-    trigger === 'DEFEATED' ||
-    trigger === 'CHARACTER_WOULD_BE_DEFEATED'
-      ? context.sourceInstanceId
-      : undefined);
+  const isDefeat = trigger !== undefined && isDefeatTrigger(trigger as TriggerType);
+  const targetId = context.targetInstanceId || (isDefeat ? context.sourceInstanceId : undefined);
 
   // Universal attachment defeat guard:
   // Attachments in play must only trigger when their attached host is defeated
-  if (
-    hostId &&
-    (trigger === 'CHARACTER_DEFEATED' ||
-      trigger === 'DEFEATED' ||
-      trigger === 'CHARACTER_WOULD_BE_DEFEATED')
-  ) {
+  if (hostId && isDefeat) {
     if (targetId && targetId !== hostId) {
       return false;
     }
@@ -932,6 +923,9 @@ function scanInPlayTriggerAbilities(
   scanState: TriggerScanState,
 ): void {
   const playerAbilitiesSuspended = arePlayerAbilitiesSuspended(state);
+  // Villain attachments are encounter cards: the first player scans them.
+  const firstPlayerId = getFirstPlayer(state)?.id;
+  const villainAttachments = getVillainsInPlay(state).flatMap((v) => v.attachments || []);
   for (const controller of playersToScan) {
     if (
       scanState.hasPendingPrompt &&
@@ -941,11 +935,6 @@ function scanInPlayTriggerAbilities(
     ) {
       break;
     }
-    const isFirstPlayer =
-      controller.id === (state.players[state.firstPlayerIndex]?.id || state.players[0]?.id);
-    const villainAttachments = isFirstPlayer
-      ? getVillainsInPlay(state).flatMap((v) => v.attachments || [])
-      : [];
     const inPlayCards: CardInstance[] = [
       ...(playerAbilitiesSuspended ? [] : controller.tableau || []),
       ...(playerAbilitiesSuspended ? [] : controller.allies || []),
@@ -956,7 +945,7 @@ function scanInPlayTriggerAbilities(
         : (controller.allies || []).flatMap((a) => a.attachments || [])),
       ...(controller.engagedMinions || []),
       ...(controller.engagedMinions || []).flatMap((m) => m.attachments || []),
-      ...villainAttachments,
+      ...(controller.id === firstPlayerId ? villainAttachments : []),
     ];
     for (const cardInst of inPlayCards) {
       const abilities = cardInst.card.enrichment?.abilities || [];

@@ -79,67 +79,42 @@ function handleDealDamage(
     triggerChain: context.triggerChain,
   };
 
+  // The amount to each identity, then each ally, of the given players. Identities from a
+  // snapshot: a hero eliminated by this damage leaves state.players (#246), and so do its allies.
+  // Splitting an amount among them is DISTRIBUTE_AMOUNT, not these selectors.
+  const damageCharacters = (players: PlayerState[], heroesOnly: boolean, onomatopoeia: string) => {
+    const ids = new Set(players.map((p) => p.id));
+    for (const p of [...players].filter((pl) => !heroesOnly || pl.currentForm === 'hero')) {
+      state = applyAbilityDamage(state, playerTargetRef(p), amount, damageOpts).state;
+    }
+    for (const p of state.players.filter((pl) => ids.has(pl.id))) {
+      for (const ally of [...p.allies].reverse()) {
+        state = applyAbilityDamage(state, allyTargetRef(ally, p.id), amount, damageOpts).state;
+      }
+    }
+    return { state, success: true, mutatedState: amount > 0, value: amount, onomatopoeia };
+  };
+
   if (targetParam === 'ALL_CHARACTERS') {
-    // 1. Villain and minions
     state = dealDamageToEnemies(state, amount, state.players, damageOpts);
-
-    // 2. Heroes. A snapshot: a hero eliminated by this damage leaves state.players (#246).
-    for (const p of [...state.players]) {
-      state = applyAbilityDamage(state, playerTargetRef(p), amount, damageOpts).state;
-    }
-
-    // 3. Allies
-    for (const p of state.players) {
-      for (const ally of [...p.allies].reverse()) {
-        state = applyAbilityDamage(state, allyTargetRef(ally, p.id), amount, damageOpts).state;
-      }
-    }
-
-    const onomatopoeia = `WHAM! ${amount} DAMAGE TO ALL CHARACTERS!`;
-
-    return { state, success: true, mutatedState: amount > 0, value: amount, onomatopoeia };
+    return damageCharacters(state.players, false, `WHAM! ${amount} DAMAGE TO ALL CHARACTERS!`);
   }
-
   if (targetParam === 'ALL_FRIENDLY_CHARACTERS') {
-    for (const p of state.players) {
-      state = applyAbilityDamage(state, playerTargetRef(p), amount, damageOpts).state;
-      for (const ally of [...p.allies].reverse()) {
-        state = applyAbilityDamage(state, allyTargetRef(ally, p.id), amount, damageOpts).state;
-      }
-    }
-
-    const onomatopoeia = `BOOM! ${amount} DAMAGE TO ALL FRIENDLY CHARACTERS!`;
-
-    return { state, success: true, mutatedState: amount > 0, value: amount, onomatopoeia };
+    return damageCharacters(
+      state.players,
+      false,
+      `BOOM! ${amount} DAMAGE TO ALL FRIENDLY CHARACTERS!`,
+    );
   }
-
   if (targetParam === 'ALL_HEROES_AND_ALLIES') {
-    // The amount to each hero (alter-ego players are not heroes) and each ally. A snapshot: a
-    // hero eliminated by this damage leaves state.players (#246). Splitting an amount among
-    // them is DISTRIBUTE_AMOUNT, not this selector.
-    for (const p of [...state.players].filter((pl) => pl.currentForm === 'hero')) {
-      state = applyAbilityDamage(state, playerTargetRef(p), amount, damageOpts).state;
-    }
-    for (const p of state.players) {
-      for (const ally of [...p.allies].reverse()) {
-        state = applyAbilityDamage(state, allyTargetRef(ally, p.id), amount, damageOpts).state;
-      }
-    }
-
-    const onomatopoeia = `BOOM! ${amount} DAMAGE TO HEROES AND ALLIES!`;
-
-    return { state, success: true, mutatedState: amount > 0, value: amount, onomatopoeia };
+    return damageCharacters(state.players, true, `BOOM! ${amount} DAMAGE TO HEROES AND ALLIES!`);
   }
-
   if (targetParam === 'ALL_CONTROLLED_CHARACTERS') {
-    state = applyAbilityDamage(state, playerTargetRef(player), amount, damageOpts).state;
-    for (const ally of [...player.allies].reverse()) {
-      state = applyAbilityDamage(state, allyTargetRef(ally, player.id), amount, damageOpts).state;
-    }
-
-    const onomatopoeia = `OUCH! ${amount} DAMAGE TO ALL CONTROLLED CHARACTERS!`;
-
-    return { state, success: true, mutatedState: amount > 0, value: amount, onomatopoeia };
+    return damageCharacters(
+      [player],
+      false,
+      `OUCH! ${amount} DAMAGE TO ALL CONTROLLED CHARACTERS!`,
+    );
   }
 
   if (targetParam === 'ALL_ENEMIES') {

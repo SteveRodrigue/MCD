@@ -10,6 +10,20 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
   const { edgeThreshold = 90, maxSpeed = 45, enabled = true } = options;
 
   const containerRef = useRef<T | null>(null);
+  // The track can be unmounted and mounted again (a seat leaves, the board re-renders around it):
+  // the scroll and size listeners must follow the element that is in the page, not the first one.
+  const [canScrollLeft, setCanScrollLeft] = useState<boolean>(false);
+  const [canScrollRight, setCanScrollRight] = useState<boolean>(false);
+  const [trackElement, setTrackElement] = useState<T | null>(null);
+  const trackRef = useCallback((element: T | null) => {
+    containerRef.current = element;
+    setTrackElement(element);
+    if (!element) {
+      // No track on screen: nothing scrolls, so no jump button may stay up from the last one.
+      setCanScrollLeft(false);
+      setCanScrollRight(false);
+    }
+  }, []);
   const animationFrameId = useRef<number | null>(null);
   const scrollVelocity = useRef<number>(0);
   const maxSpeedRef = useRef<number>(maxSpeed);
@@ -22,9 +36,6 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
   useEffect(() => {
     edgeThresholdRef.current = edgeThreshold;
   }, [edgeThreshold]);
-
-  const [canScrollLeft, setCanScrollLeft] = useState<boolean>(false);
-  const [canScrollRight, setCanScrollRight] = useState<boolean>(false);
 
   // Check scroll boundary state
   const updateScrollBounds = useCallback(() => {
@@ -138,7 +149,7 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
 
   // Monitor scroll and resize events on container
   useEffect(() => {
-    const el = containerRef.current;
+    const el = trackElement;
     if (!el) return;
 
     updateScrollBounds();
@@ -158,7 +169,7 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
       el.removeEventListener('scroll', updateScrollBounds);
       window.removeEventListener('resize', updateScrollBounds);
     };
-  }, [updateScrollBounds]);
+  }, [trackElement, updateScrollBounds]);
 
   // Quick manual jump to a specific child element (e.g. Hero Seat)
   const scrollToChild = useCallback((targetElement: HTMLElement | null) => {
@@ -196,6 +207,7 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
 
   return {
     containerRef,
+    trackRef,
     canScrollLeft,
     canScrollRight,
     scrollToChild,

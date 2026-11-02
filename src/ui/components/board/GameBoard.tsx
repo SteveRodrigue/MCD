@@ -223,7 +223,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
   }
 
   // Horizontal Panoramic Track Edge-Scroll Hook (ADR-0017)
-  const { containerRef, canScrollLeft, canScrollRight, scrollToChild, scrollToEdge } =
+  const { trackRef, canScrollLeft, canScrollRight, scrollToChild, scrollToEdge } =
     useEdgeScroll<HTMLDivElement>({
       edgeThreshold: 95,
       maxSpeed: SPEED_MAP[edgeScrollSpeed] || 45,
@@ -433,7 +433,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
               <div className="relative w-full overflow-hidden px-2 py-1">
                 {/* Scrollable Panoramic Track */}
                 <div
-                  ref={containerRef}
+                  ref={trackRef}
                   className="w-full overflow-x-auto no-scrollbar scroll-smooth px-4 pt-4 pb-2"
                 >
                   <div className="flex items-start justify-center min-w-full w-max gap-6">

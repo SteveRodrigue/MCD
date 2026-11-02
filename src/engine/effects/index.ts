@@ -54,6 +54,7 @@ import {
   type DamageResult,
   type TargetEntityRef,
 } from '../pipeline/damage-pipeline';
+export type { TargetEntityRef };
 import { recordAbilityUsage } from '../pipeline/stats';
 import {
   getEffectiveMinionHitPoints,
@@ -471,7 +472,10 @@ export function compileDistributionTargets(
 ): TargetAllocationItem[] {
   const targets: TargetAllocationItem[] = [];
 
+  const isControlledScope = targetScope === 'ALL_CONTROLLED_CHARACTERS';
+
   const includeHeroes =
+    isControlledScope ||
     targetScope === 'ALL_HEROES_AND_ALLIES' ||
     targetScope === 'ALL_HEROES' ||
     targetScope === 'ALL_PLAYERS' ||
@@ -482,10 +486,10 @@ export function compileDistributionTargets(
     targetScope === 'CHOSEN_HERO';
 
   const includeAllies =
+    isControlledScope ||
     targetScope === 'ALL_HEROES_AND_ALLIES' ||
     targetScope === 'ALL_ALLIES' ||
     targetScope === 'ALL_FRIENDLY_CHARACTERS' ||
-    targetScope === 'ALL_CONTROLLED_CHARACTERS' ||
     targetScope === 'ALL_CHARACTERS' ||
     targetScope === 'CHOSEN_CHARACTER' ||
     targetScope === 'CHOSEN_FRIENDLY_CHARACTER' ||
@@ -506,6 +510,9 @@ export function compileDistributionTargets(
 
   // 1. Players / Identities & Allies
   for (const p of state.players) {
+    if (isControlledScope && source?.actor && p.id !== source.actor.id) {
+      continue;
+    }
     if (includeHeroes) {
       const isHero = p.currentForm === 'hero';
       const isFormRestricted =
@@ -772,15 +779,15 @@ export function playerTargetRef(player: PlayerState): TargetEntityRef {
   };
 }
 
-/** Ability damage to one character: always through the damage pipeline. */
-export function applyAbilityDamage(
+/** Ability damage to multiple characters simultaneously: always through the damage pipeline. */
+export function applyAbilityDamageToTargets(
   state: GameState,
-  target: TargetEntityRef,
+  targets: TargetEntityRef[],
   amount: number,
   opts: AbilityDamageOptions,
   extra: Partial<DamageRequest> = {},
-): { state: GameState; result: DamageResult } {
-  return kernel.applyDamageToTarget(state, {
+): { state: GameState; results: DamageResult[] } {
+  const requests: DamageRequest[] = targets.map((target) => ({
     target,
     amount,
     sourceType: opts.sourceType ?? 'CARD_EFFECT',
@@ -790,7 +797,26 @@ export function applyAbilityDamage(
     hasPiercing: opts.hasPiercing,
     triggerChain: opts.triggerChain,
     ...extra,
-  });
+  }));
+  return kernel.applyDamageToTargets(state, requests);
+}
+
+/** Ability damage to one character: always through the damage pipeline. */
+export function applyAbilityDamage(
+  state: GameState,
+  target: TargetEntityRef,
+  amount: number,
+  opts: AbilityDamageOptions,
+  extra: Partial<DamageRequest> = {},
+): { state: GameState; result: DamageResult } {
+  const { state: nextState, results } = applyAbilityDamageToTargets(
+    state,
+    [target],
+    amount,
+    opts,
+    extra,
+  );
+  return { state: nextState, result: results[0] };
 }
 
 /**
@@ -882,24 +908,25 @@ export function validateDistributionAssignments(
   return undefined;
 }
 
-/** Damage to every minion engaged with the given players, last engaged first. */
-function dealDamageToMinions(
+/** Damage to every minion engaged with the given players simultaneously. */
+export function dealDamageToMinions(
   state: GameState,
   amount: number,
   minionOwners: PlayerState[],
   opts: AbilityDamageOptions,
 ): GameState {
+  const targets: TargetEntityRef[] = [];
   for (const owner of minionOwners) {
     for (const minion of [...owner.engagedMinions].reverse()) {
-      state = applyAbilityDamage(state, minionTargetRef(minion, owner.id), amount, opts).state;
+      targets.push(minionTargetRef(minion, owner.id));
     }
   }
-  return state;
+  return applyAbilityDamageToTargets(state, targets, amount, opts).state;
 }
 
 /**
- * Deals damage to the villain and to every minion engaged with the given players, each through the
- * pipeline (Tough, shields, defeat and Overkill rules are the pipeline's).
+ * Deals damage to the villain and to every minion engaged with the given players simultaneously,
+ * each through the pipeline (Tough, shields, defeat and Overkill rules are the pipeline's).
  */
 export function dealDamageToEnemies(
   state: GameState,
@@ -907,8 +934,13 @@ export function dealDamageToEnemies(
   minionOwners: PlayerState[],
   opts: AbilityDamageOptions,
 ): GameState {
-  state = applyAbilityDamage(state, villainTargetRef(getActiveVillain(state)), amount, opts).state;
-  return dealDamageToMinions(state, amount, minionOwners, opts);
+  const targets: TargetEntityRef[] = [villainTargetRef(getActiveVillain(state))];
+  for (const owner of minionOwners) {
+    for (const minion of [...owner.engagedMinions].reverse()) {
+      targets.push(minionTargetRef(minion, owner.id));
+    }
+  }
+  return applyAbilityDamageToTargets(state, targets, amount, opts).state;
 }
 
 function pushPendingSequence(state: GameState, sequence: PendingSequence): void {

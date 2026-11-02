@@ -25,8 +25,10 @@ import {
   AbilityDamageOptions,
   EffectExecutionContext,
   EffectResult,
+  TargetEntityRef,
   allyTargetRef,
   applyAbilityDamage,
+  applyAbilityDamageToTargets,
   compileDistributionTargets,
   dealDamageToEnemies,
   isEncounterCard,
@@ -79,25 +81,45 @@ function handleDealDamage(
     triggerChain: context.triggerChain,
   };
 
-  // The amount to each identity, then each ally, of the given players. Identities from a
-  // snapshot: a hero eliminated by this damage leaves state.players (#246), and so do its allies.
-  // Splitting an amount among them is DISTRIBUTE_AMOUNT, not these selectors.
+  // The amount to each identity, then each ally, of the given players simultaneously.
+  // Identities from a snapshot: a hero eliminated by this damage leaves state.players (#246),
+  // and so do its allies. Splitting an amount among them is DISTRIBUTE_AMOUNT, not these selectors.
   const damageCharacters = (players: PlayerState[], heroesOnly: boolean, onomatopoeia: string) => {
+    const targets: TargetEntityRef[] = [];
     const ids = new Set(players.map((p) => p.id));
     for (const p of [...players].filter((pl) => !heroesOnly || pl.currentForm === 'hero')) {
-      state = applyAbilityDamage(state, playerTargetRef(p), amount, damageOpts).state;
+      targets.push(playerTargetRef(p));
     }
     for (const p of state.players.filter((pl) => ids.has(pl.id))) {
-      for (const ally of [...p.allies].reverse()) {
-        state = applyAbilityDamage(state, allyTargetRef(ally, p.id), amount, damageOpts).state;
+      for (const ally of p.allies) {
+        targets.push(allyTargetRef(ally, p.id));
       }
     }
+    const res = applyAbilityDamageToTargets(state, targets, amount, damageOpts);
+    state = res.state;
     return { state, success: true, mutatedState: amount > 0, value: amount, onomatopoeia };
   };
 
   if (targetParam === 'ALL_CHARACTERS') {
-    state = dealDamageToEnemies(state, amount, state.players, damageOpts);
-    return damageCharacters(state.players, false, `WHAM! ${amount} DAMAGE TO ALL CHARACTERS!`);
+    const targets: TargetEntityRef[] = [villainTargetRef(getActiveVillain(state))];
+    for (const p of state.players) {
+      for (const minion of p.engagedMinions) {
+        targets.push(minionTargetRef(minion, p.id));
+      }
+      targets.push(playerTargetRef(p));
+      for (const ally of p.allies) {
+        targets.push(allyTargetRef(ally, p.id));
+      }
+    }
+    const res = applyAbilityDamageToTargets(state, targets, amount, damageOpts);
+    state = res.state;
+    return {
+      state,
+      success: true,
+      mutatedState: amount > 0,
+      value: amount,
+      onomatopoeia: `WHAM! ${amount} DAMAGE TO ALL CHARACTERS!`,
+    };
   }
   if (targetParam === 'ALL_FRIENDLY_CHARACTERS') {
     return damageCharacters(

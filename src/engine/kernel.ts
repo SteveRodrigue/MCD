@@ -31,7 +31,11 @@ import type {
 import type { finishPendingThreatPlacements } from './pipeline/threat-pipeline';
 import type { discardResolvedObligation } from './pipeline/obligations';
 import type { handleVillainDefeat } from './pipeline/scenario-helpers';
-import type { applyDamageToTarget, defeatMinionsBeyondHitPoints } from './pipeline/damage-pipeline';
+import type {
+  applyDamageToTarget,
+  applyDamageToTargets,
+  defeatMinionsBeyondHitPoints,
+} from './pipeline/damage-pipeline';
 import type { dispatchAction } from './pipeline/action-dispatcher';
 import type { evaluateDynamicAmount } from './effects/dynamic-formula-evaluator';
 import type { evaluateStepGate } from './pipeline/step-gate-evaluator';
@@ -57,6 +61,7 @@ export interface Kernel {
   discardResolvedObligation: typeof discardResolvedObligation;
   handleVillainDefeat: typeof handleVillainDefeat;
   applyDamageToTarget: typeof applyDamageToTarget;
+  applyDamageToTargets: typeof applyDamageToTargets;
   defeatMinionsBeyondHitPoints: typeof defeatMinionsBeyondHitPoints;
   dispatchAction: typeof dispatchAction;
   evaluateDynamicAmount: typeof evaluateDynamicAmount;
@@ -87,6 +92,7 @@ export const KERNEL_ENTRIES: readonly KernelEntry[] = [
   'discardResolvedObligation',
   'handleVillainDefeat',
   'applyDamageToTarget',
+  'applyDamageToTargets',
   'defeatMinionsBeyondHitPoints',
   'dispatchAction',
   'evaluateDynamicAmount',

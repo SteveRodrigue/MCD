@@ -21,7 +21,10 @@ import type {
   peekDecisionPrompt,
   refreshPromptOptionAvailability,
 } from './pipeline/prompt-queue';
-import type { resolveActiveEncounterCardAfterInterrupt } from './pipeline/villain-phase';
+import type {
+  resolveActiveEncounterCardAfterInterrupt,
+  continueSchemeAfterBoost,
+} from './pipeline/villain-phase';
 import type {
   continueAttackAfterInitiation,
   continueAttackAfterBoost,
@@ -55,6 +58,7 @@ export interface Kernel {
   resolveActiveEncounterCardAfterInterrupt: typeof resolveActiveEncounterCardAfterInterrupt;
   continueAttackAfterInitiation: typeof continueAttackAfterInitiation;
   continueAttackAfterBoost: typeof continueAttackAfterBoost;
+  continueSchemeAfterBoost: typeof continueSchemeAfterBoost;
   getAttackOutcomeFacts: typeof getAttackOutcomeFacts;
   finishPendingDamagePlacements: typeof finishPendingDamagePlacements;
   finishPendingThreatPlacements: typeof finishPendingThreatPlacements;
@@ -86,6 +90,7 @@ export const KERNEL_ENTRIES: readonly KernelEntry[] = [
   'resolveActiveEncounterCardAfterInterrupt',
   'continueAttackAfterInitiation',
   'continueAttackAfterBoost',
+  'continueSchemeAfterBoost',
   'getAttackOutcomeFacts',
   'finishPendingDamagePlacements',
   'finishPendingThreatPlacements',

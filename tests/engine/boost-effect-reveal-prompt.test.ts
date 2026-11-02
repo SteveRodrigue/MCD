@@ -107,15 +107,16 @@ describe('Boost Effect Reveal Prompt & Combat Resumption (Issue #503)', () => {
     expect(s3.encounterDiscard.some((c) => c.card.code === TIGER_SHARK)).toBe(true);
   });
 
-  it('prompts sequentially for multiple star boost cards in the same activation', () => {
+  it('prompts sequentially for multiple star boost cards in the same activation (Klaw additional boost cards)', () => {
     const tigerShark = createCardInstance(cardCatalog.getCard(TIGER_SHARK)!, 'encounter');
     const whirlwind = createCardInstance(cardCatalog.getCard(WHIRLWIND)!, 'encounter');
     // Top of encounter deck is Tiger Shark, then Whirlwind
     state.encounterDeck = [tigerShark, whirlwind];
 
-    // Give villain 1 additional boost card so 2 are dealt
+    // Give villain 1 additional boost card so 2 are dealt (like Klaw 01113)
     getActiveVillain(state).card = { ...getActiveVillain(state).card, additionalBoostCards: 1 };
 
+    const initialHp = state.players[0].health;
     const s1 = initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1', {
       acceptOptionalTriggers: false,
     });
@@ -147,7 +148,11 @@ describe('Boost Effect Reveal Prompt & Combat Resumption (Issue #503)', () => {
 
     // Both resolved: villain has Tough, Whirlwind dealt 1 damage to each hero, attack finished
     expect(getActiveVillain(s4).statusCards).toContain(StatusCard.TOUGH);
+    // Damage resolved: 1 (Whirlwind boost) + Rhino ATK (2) + Tiger Shark boost icon (0) + Whirlwind boost icon (0) = 3 total damage
+    expect(s4.players[0].health).toBe(initialHp - 3);
     expect(peekDecisionPrompt(s4)).toBeUndefined();
+    expect(s4.encounterDiscard.some((c) => c.card.code === TIGER_SHARK)).toBe(true);
+    expect(s4.encounterDiscard.some((c) => c.card.code === WHIRLWIND)).toBe(true);
   });
 
   it('resolves non-star boost cards immediately without opening a prompt', () => {

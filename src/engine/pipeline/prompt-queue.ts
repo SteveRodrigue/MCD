@@ -479,6 +479,9 @@ function resumeAfterPromptResolved(state: GameState): GameState {
   if (!peekDecisionPrompt(current) && current.activeAttackContext?.phase === 'REVEAL_BOOST') {
     current = kernel.continueAttackAfterBoost(current, current.activeAttackContext);
   }
+  if (!peekDecisionPrompt(current) && current.activeSchemeContext) {
+    current = kernel.continueSchemeAfterBoost(current, current.activeSchemeContext);
+  }
   if (!peekDecisionPrompt(current) && kernel.hasPendingSequence(current)) {
     current = kernel.resumePendingSequence(current);
   }

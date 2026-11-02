@@ -14,11 +14,13 @@ import {
   PendingActivation,
   updateGameState,
   getActiveVillain,
+  getVillainById,
   getActiveMainScheme,
   getFirstPlayer,
   getPerPlayerCount,
   getMinionById,
   VillainPhaseStepEvent,
+  SchemeExecutionContext,
 } from '@engine/models';
 
 import { applyThreatPlacement } from './threat-pipeline';
@@ -32,7 +34,16 @@ import { recordCardPlay, recordBasicAction } from './stats';
 import { initiateEnemyAttack, CombatOptions } from './combat-pipeline';
 export type { CombatOptions };
 import { drawEncounterCard } from './deck-exhaustion';
-import { dealBoostCards, resolveBoostCards, type BoostLogContext } from './boost-resolution';
+import {
+  dealBoostCards,
+  resolveBoostCards,
+  finishPausedBoostCard,
+  resumeBoostCards,
+  enqueueBoostRevealPrompt,
+  type BoostActivator,
+  type ResumeBoostCardsOptions,
+} from './boost-resolution';
+import { nextEngineId } from '../state/rng';
 import { dealSurgeCard } from './surge';
 import { collectIconsInPlay, countHazardIconsInPlay, getHazardIconCount } from './icons';
 import { getResolvingRevealAbilities } from './encounter-cancel';
@@ -97,10 +108,144 @@ export function executeVillainAttackAgainstPlayer(
   return initiateEnemyAttack(state, { type: 'VILLAIN' }, player.id, options);
 }
 
+function currentSchemer(
+  state: GameState,
+  schemeContext: SchemeExecutionContext,
+): BoostActivator | undefined {
+  if (schemeContext.schemerType === 'VILLAIN') {
+    return (
+      (schemeContext.schemerVillainId
+        ? getVillainById(state, schemeContext.schemerVillainId)
+        : undefined) ?? getActiveVillain(state)
+    );
+  }
+  return schemeContext.schemerCard
+    ? getMinionById(state, schemeContext.schemerCard.instanceId)
+    : undefined;
+}
+
+function schemeBoostOptions(
+  schemeContext: SchemeExecutionContext,
+  schemer: BoostActivator,
+): ResumeBoostCardsOptions {
+  const stepping = Boolean(schemeContext.stepping);
+  return {
+    category: 'scheme',
+    actor: {
+      name: schemer.card.name,
+      type: schemeContext.schemerType === 'VILLAIN' ? 'villain' : 'minion',
+    },
+    activatorInstanceId: schemer.instanceId ?? schemeContext.schemerVillainId ?? 'villain',
+    playerId: schemeContext.targetPlayerId,
+    pauseBefore: stepping
+      ? (boostCard) => {
+          schemeContext.currentBoostCard = boostCard;
+          return true;
+        }
+      : undefined,
+  };
+}
+
+function schemeAborted(state: GameState, schemeContext: SchemeExecutionContext): boolean {
+  return Boolean(state.winner) || !state.players.some((p) => p.id === schemeContext.targetPlayerId);
+}
+
+function finishSchemeAfterBoosts(
+  state: GameState,
+  schemeContext: SchemeExecutionContext,
+): GameState {
+  const schemer = currentSchemer(state, schemeContext);
+  const schemerName =
+    schemer?.card.name || (schemeContext.schemerType === 'VILLAIN' ? 'Villain' : 'Minion');
+  const totalScheme = schemeContext.baseScheme + schemeContext.totalBoostIcons;
+
+  applyThreatPlacement(state, {
+    targetType: 'main_scheme',
+    amount: totalScheme,
+    sourceType: schemeContext.schemerType === 'VILLAIN' ? 'VILLAIN_SCHEME' : 'MINION_SCHEME',
+    sourceEntityName: schemerName,
+    sourcePlayerId: schemeContext.targetPlayerId,
+    boostIcons: schemeContext.totalBoostIcons,
+  });
+
+  // Forced Responses on minion scheme (e.g. Madame Hydra 01181)
+  if (schemeContext.schemerType === 'MINION' && schemeContext.schemerCard) {
+    const minion = getMinionById(state, schemeContext.schemerCard.instanceId);
+    const player = state.players.find((p) => p.id === schemeContext.targetPlayerId);
+    if (minion && player) {
+      const isMinionEngaged =
+        player.engagedMinions.some((m) => m.instanceId === minion.instanceId) ||
+        state.players.some((p) => p.engagedMinions.some((m) => m.instanceId === minion.instanceId));
+      if (isMinionEngaged) {
+        const abilities = minion.card.enrichment?.abilities || [];
+        for (const ability of abilities) {
+          if (ability.trigger === 'MINION_SCHEMED') {
+            kernel.executeEffect(state, ability, {
+              playerId: player.id,
+              sourceCardInstance: minion,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  state.activeSchemeContext = undefined;
+  return state;
+}
+
+function afterSchemeBoosts(state: GameState, schemeContext: SchemeExecutionContext): GameState {
+  const boostCard = schemeContext.currentBoostCard;
+  const schemer = currentSchemer(state, schemeContext);
+  if (!boostCard || !schemer) return finishSchemeAfterBoosts(state, schemeContext);
+
+  state.activeSchemeContext = schemeContext;
+  return enqueueBoostRevealPrompt(
+    state,
+    schemeContext.targetPlayerId,
+    boostCard,
+    schemer.card.name,
+  );
+}
+
+/** Resumes a scheme paused on a BOOST_ABILITY_REVEAL prompt: that card, then the rest of the queue. */
+export function continueSchemeAfterBoost(
+  state: GameState,
+  schemeContext: SchemeExecutionContext,
+): GameState {
+  const schemer = currentSchemer(state, schemeContext);
+  if (schemeAborted(state, schemeContext) || !schemer) {
+    state.activeSchemeContext = undefined;
+    return state;
+  }
+  const options = schemeBoostOptions(schemeContext, schemer);
+
+  if (schemeContext.currentBoostCard) {
+    schemeContext.currentBoostCard = undefined;
+    schemeContext.totalBoostIcons += finishPausedBoostCard(state, options);
+    if (schemeAborted(state, schemeContext)) {
+      state.activeSchemeContext = undefined;
+      return state;
+    }
+  }
+
+  // A choice the boost ability enqueued resolves first; its resolution resumes the scheme here.
+  if (kernel.peekDecisionPrompt(state)) {
+    return state;
+  }
+
+  schemeContext.totalBoostIcons += resumeBoostCards(state, options);
+  return afterSchemeBoosts(state, schemeContext);
+}
+
 /**
  * Executes a single villain scheme against a target alter-ego or on-demand (Advance 01186).
  */
-export function executeVillainSchemeAgainstPlayer(state: GameState, player: PlayerState): void {
+export function executeVillainSchemeAgainstPlayer(
+  state: GameState,
+  player: PlayerState,
+  options?: CombatOptions,
+): GameState {
   // The scheming villain is fixed now: moving the active counter mid-scheme must not change it.
   const villain = getActiveVillain(state);
   // Check Confused status on Villain (taking into account Steady - RR v1.8 p. 28)
@@ -112,35 +257,32 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
       params: { actor: villain.card?.name || 'Villain' },
       onomatopoeia: 'CONFUSION CLEARED!',
     });
-    return;
+    return state;
   }
   recordBasicAction(state, 'villainScheme', villain.card?.code);
 
-  // Deal and resolve the boost cards (RR v1.8 p. 25), shared with every other activation.
-  const boostLog: BoostLogContext = {
-    category: 'scheme',
-    actor: { name: villain.card?.name || 'Villain', type: 'villain' },
-  };
-  const totalBoostIcons = resolveBoostCards(state, {
-    ...boostLog,
-    queue: dealBoostCards(state, villain, boostLog),
-    activatorInstanceId: villain.instanceId ?? 'villain',
-    playerId: player.id,
-  });
-
-  // Calculate modified SCH stat & place threat
+  const stepping =
+    !options?.synchronousPolicy &&
+    Boolean(options?.stepping ?? state.options?.villainPhaseStepping);
   const villainStats = getEffectiveVillainStats(state, villain);
-  const baseScheme = villainStats.scheme;
-  const totalScheme = baseScheme + totalBoostIcons;
+  const schemeContext: SchemeExecutionContext = {
+    schemeId: nextEngineId(state, 'scheme'),
+    schemerType: 'VILLAIN',
+    schemerVillainId: villain.instanceId,
+    targetPlayerId: player.id,
+    baseScheme: villainStats.scheme,
+    totalBoostIcons: 0,
+    stepping,
+  };
 
-  applyThreatPlacement(state, {
-    targetType: 'main_scheme',
-    amount: totalScheme,
-    sourceType: 'VILLAIN_SCHEME',
-    sourceEntityName: villain.card?.name || 'Villain',
-    sourcePlayerId: player.id,
-    boostIcons: totalBoostIcons,
+  const boostOptions = schemeBoostOptions(schemeContext, villain);
+  const queue = dealBoostCards(state, villain, boostOptions);
+  schemeContext.totalBoostIcons += resolveBoostCards(state, {
+    ...boostOptions,
+    queue,
   });
+
+  return afterSchemeBoosts(state, schemeContext);
 }
 
 /**
@@ -184,7 +326,8 @@ export function executeMinionSchemeAgainstPlayer(
   state: GameState,
   minion: CardInstance,
   player: PlayerState,
-): void {
+  options?: CombatOptions,
+): GameState {
   // Check Confused status on Minion (taking into account Steady - RR v1.8 p. 28)
   if (consumeEntityStatusCards(minion, StatusCard.CONFUSED)) {
     appendLog(state, {
@@ -194,48 +337,32 @@ export function executeMinionSchemeAgainstPlayer(
       params: { actor: minion.card.name },
       onomatopoeia: 'CONFUSION CLEARED!',
     });
-    return;
+    return state;
   }
   recordBasicAction(state, 'minionScheme', minion.card.code);
 
+  const stepping =
+    !options?.synchronousPolicy &&
+    Boolean(options?.stepping ?? state.options?.villainPhaseStepping);
   const baseScheme = getEffectiveMinionScheme(state, minion);
-
-  // A Villainous minion deals a base boost card (RR v1.8 p. 30); any minion resolves the ones it holds.
-  const boostLog: BoostLogContext = {
-    category: 'scheme',
-    actor: { name: minion.card.name, type: 'minion' },
+  const schemeContext: SchemeExecutionContext = {
+    schemeId: nextEngineId(state, 'scheme'),
+    schemerType: 'MINION',
+    schemerCard: minion,
+    targetPlayerId: player.id,
+    baseScheme,
+    totalBoostIcons: 0,
+    stepping,
   };
-  const totalBoostIcons = resolveBoostCards(state, {
-    ...boostLog,
-    queue: dealBoostCards(state, minion, boostLog),
-    activatorInstanceId: minion.instanceId,
-    playerId: player.id,
+
+  const boostOptions = schemeBoostOptions(schemeContext, minion);
+  const queue = dealBoostCards(state, minion, boostOptions);
+  schemeContext.totalBoostIcons += resolveBoostCards(state, {
+    ...boostOptions,
+    queue,
   });
 
-  applyThreatPlacement(state, {
-    targetType: 'main_scheme',
-    amount: baseScheme + totalBoostIcons,
-    sourceType: 'MINION_SCHEME',
-    sourceEntityName: minion.card?.name || 'Minion',
-    sourcePlayerId: player.id,
-    boostIcons: totalBoostIcons,
-  });
-
-  // Forced Responses on minion scheme (e.g. Madame Hydra 01181)
-  const isMinionEngaged =
-    (player?.engagedMinions.some((m) => m.instanceId === minion.instanceId) ?? false) ||
-    state.players.some((p) => p.engagedMinions.some((m) => m.instanceId === minion.instanceId));
-  if (player && isMinionEngaged) {
-    const abilities = minion.card.enrichment?.abilities || [];
-    for (const ability of abilities) {
-      if (ability.trigger === 'MINION_SCHEMED') {
-        kernel.executeEffect(state, ability, {
-          playerId: player.id,
-          sourceCardInstance: minion,
-        });
-      }
-    }
-  }
+  return afterSchemeBoosts(state, schemeContext);
 }
 
 /**
@@ -250,8 +377,7 @@ export function executeMinionActivationAgainstPlayer(
   if (player.currentForm === 'hero') {
     return executeMinionAttackAgainstPlayer(state, minion, player, options);
   } else {
-    executeMinionSchemeAgainstPlayer(state, minion, player);
-    return state;
+    return executeMinionSchemeAgainstPlayer(state, minion, player, options);
   }
 }
 
@@ -339,7 +465,7 @@ export function step2_villainAndMinionActivations(
       if (player.currentForm === 'hero') {
         state = executeVillainAttackAgainstPlayer(state, player, resolvedOptions);
       } else {
-        executeVillainSchemeAgainstPlayer(state, player);
+        state = executeVillainSchemeAgainstPlayer(state, player, resolvedOptions);
       }
     } else if (act.type === 'MINION') {
       const minion = getMinionById(state, act.minionInstanceId!);
@@ -846,7 +972,20 @@ function advanceStepOnDraft(nextState: GameState, options?: CombatOptions): Game
           return mutatedState;
         } else {
           const threatBefore = getActiveMainScheme(nextState).threat;
-          executeVillainSchemeAgainstPlayer(nextState, player);
+          nextState = executeVillainSchemeAgainstPlayer(nextState, player, resolvedOptions);
+          if (kernel.peekDecisionPrompt(nextState)) {
+            nextState.villainPhaseStepEvent = {
+              type: 'VILLAIN_SCHEME',
+              step: VillainPhaseStep.VILLAIN_ACTIVATIONS,
+              sourceName: activatingVillain.card.name,
+              targetPlayerId: player.id,
+              targetName: player.name,
+              amount: undefined,
+              description: `${activatingVillain.card.name} is scheming against ${player.name}!`,
+              onomatopoeia: 'SCHEME!',
+            };
+            return nextState;
+          }
           const threatAdded = Math.max(0, getActiveMainScheme(nextState).threat - threatBefore);
           nextState.villainPhaseStepEvent = {
             type: 'VILLAIN_SCHEME',
@@ -858,7 +997,7 @@ function advanceStepOnDraft(nextState: GameState, options?: CombatOptions): Game
             description: `${activatingVillain.card.name} schemed against ${player.name} (+${threatAdded} threat).`,
             onomatopoeia: 'SCHEME!',
           };
-          if (kernel.peekDecisionPrompt(nextState) || nextState.winner) {
+          if (nextState.winner) {
             return nextState;
           }
           if (!hasPendingActivation(nextState)) {
@@ -911,7 +1050,25 @@ function advanceStepOnDraft(nextState: GameState, options?: CombatOptions): Game
             return mutatedState;
           } else {
             const threatBefore = getActiveMainScheme(nextState).threat;
-            executeMinionActivationAgainstPlayer(nextState, minion, player, resolvedOptions);
+            nextState = executeMinionActivationAgainstPlayer(
+              nextState,
+              minion,
+              player,
+              resolvedOptions,
+            );
+            if (kernel.peekDecisionPrompt(nextState)) {
+              nextState.villainPhaseStepEvent = {
+                type: 'MINION_SCHEME',
+                step: VillainPhaseStep.VILLAIN_ACTIVATIONS,
+                sourceName: minion.card.name,
+                targetPlayerId: player.id,
+                targetName: player.name,
+                amount: undefined,
+                description: `${minion.card.name} is scheming against ${player.name}!`,
+                onomatopoeia: 'MINION SCHEMES!',
+              };
+              return nextState;
+            }
             const threatAdded = Math.max(0, getActiveMainScheme(nextState).threat - threatBefore);
             nextState.villainPhaseStepEvent = {
               type: 'MINION_SCHEME',
@@ -923,7 +1080,7 @@ function advanceStepOnDraft(nextState: GameState, options?: CombatOptions): Game
               description: `${minion.card.name} schemed against ${player.name} (+${threatAdded} threat).`,
               onomatopoeia: 'MINION SCHEMES!',
             };
-            if (kernel.peekDecisionPrompt(nextState) || nextState.winner) {
+            if (nextState.winner) {
               return nextState;
             }
             if (!hasPendingActivation(nextState)) {
@@ -1100,4 +1257,4 @@ function runVillainPhaseOnDraft(nextState: GameState, options?: CombatOptions): 
   return continueVillainPhase(nextState, options);
 }
 
-bindKernel({ resolveActiveEncounterCardAfterInterrupt });
+bindKernel({ resolveActiveEncounterCardAfterInterrupt, continueSchemeAfterBoost });

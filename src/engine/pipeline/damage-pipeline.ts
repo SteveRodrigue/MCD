@@ -174,6 +174,40 @@ function minionDefeatIsAverted(
   );
 }
 
+function allyDefeatIsAverted(
+  state: GameState,
+  ally: CardInstance,
+  playerId: string,
+  defeatSource: DefeatSource | undefined,
+): boolean {
+  const dispatchRes = kernel.dispatchTrigger(state, 'CHARACTER_WOULD_BE_DEFEATED', {
+    targetPlayerId: playerId,
+    targetInstanceId: ally.instanceId,
+    targetType: 'ALLY',
+    targetCardCode: ally.card.code,
+    targetName: ally.card.name,
+    defeatSource,
+  });
+  const allyMaxHp = (ally.card as AllyCard)?.health || 2;
+  return Boolean(dispatchRes.cancelled || (ally.tokens?.damage || 0) < allyMaxHp);
+}
+
+function playerDefeatIsAverted(
+  state: GameState,
+  player: PlayerState,
+  defeatSource: DefeatSource | undefined,
+): boolean {
+  const dispatchRes = kernel.dispatchTrigger(state, 'CHARACTER_WOULD_BE_DEFEATED', {
+    targetPlayerId: player.id,
+    targetInstanceId: player.id,
+    targetType: 'HERO',
+    targetCardCode: player.activeFormCard?.code || player.hero?.code,
+    targetName: player.name,
+    defeatSource,
+  });
+  return Boolean(dispatchRes.cancelled || player.health > 0);
+}
+
 /**
  * Defeats every engaged minion whose damage reached its hit points. A lost hit point bonus (the
  * attachment leaves play) lowers only the ceiling; the damage stays (RR v1.8 hit points).
@@ -500,6 +534,10 @@ function applyDamageAndCheckDefeat(
 
         // STEPS 6-8: Player Defeat
         if (player.health <= 0) {
+          if (playerDefeatIsAverted(state, player, defeatSource)) {
+            excessDamage = 0;
+            break;
+          }
           targetDefeated = true;
           excessDamage = Math.max(0, damageTaken - healthBefore);
           eliminatePlayer(state, player.id);
@@ -537,6 +575,22 @@ function applyDamageAndCheckDefeat(
 
         // STEPS 6-8: Ally Defeat
         if (newDmg >= allyMaxHp) {
+          const ownerPlayer =
+            state.players.find((p) => p.allies.some((a) => a.instanceId === ally.instanceId)) ||
+            state.players.find((p) => p.id === target.targetPlayerId);
+
+          if (
+            allyDefeatIsAverted(
+              state,
+              ally,
+              ownerPlayer?.id || state.players[0]?.id || '',
+              defeatSource,
+            )
+          ) {
+            excessDamage = 0;
+            break;
+          }
+
           targetDefeated = true;
           excessDamage = newDmg - allyMaxHp;
           appendLog(state, {
@@ -545,9 +599,6 @@ function applyDamageAndCheckDefeat(
             params: { target: ally.card?.name || 'Ally' },
             onomatopoeia: 'DEFEATED!',
           });
-          const ownerPlayer =
-            state.players.find((p) => p.allies.some((a) => a.instanceId === ally.instanceId)) ||
-            state.players.find((p) => p.id === target.targetPlayerId);
 
           if (ownerPlayer) {
             const idx = ownerPlayer.allies.findIndex((a) => a.instanceId === ally.instanceId);
@@ -710,6 +761,617 @@ function playerTarget(player: PlayerState): TargetEntityRef {
   };
 }
 
+interface TargetContext {
+  request: DamageRequest;
+  origin: DamageLogOrigin;
+  currentDamage: number;
+  damageDealt: number;
+  damageTaken: number;
+  toughRemoved: boolean;
+  absorbedByShield?: ShieldAbsorptionInfo;
+  onomatopoeia?: string;
+  isImmune: boolean;
+  isDefeated: boolean;
+  excessDamage: number;
+  pendingDefeat?: DefeatDispatch;
+  retaliateDamageDealt?: number;
+  pausedPlacement?: PendingDamagePlacement;
+}
+
+interface ResolvedTargets {
+  state: GameState;
+  contexts: TargetContext[];
+  defeats: DefeatDispatch[];
+  paused?: PendingDamagePlacement[];
+}
+
+function resolveDamageForTargets(state: GameState, requests: DamageRequest[]): ResolvedTargets {
+  if (requests.length === 0) {
+    return { state, contexts: [], defeats: [] };
+  }
+
+  const contexts: TargetContext[] = requests.map((req) => ({
+    request: req,
+    origin: damageLogOrigin(state, req),
+    currentDamage: req.amount,
+    damageDealt: req.amount,
+    damageTaken: 0,
+    toughRemoved: false,
+    isImmune: false,
+    isDefeated: false,
+    excessDamage: 0,
+  }));
+
+  // ---------------------------------------------------------------------------
+  // STEP 0: a character that cannot take damage from this source ignores it (#297).
+  // ---------------------------------------------------------------------------
+  for (const ctx of contexts) {
+    const { target, amount } = ctx.request;
+    if (
+      amount > 0 &&
+      target.type !== 'player' &&
+      isImmuneToDamage(state, target.entity, ctx.request.sourceCardInstance)
+    ) {
+      ctx.isImmune = true;
+      ctx.currentDamage = 0;
+      ctx.damageDealt = 0;
+      ctx.onomatopoeia = 'IMMUNE!';
+      appendLog(state, {
+        category: 'combat',
+        key: 'damage.prevented.immune',
+        ...(ctx.origin.actor && { actor: ctx.origin.actor }),
+        params: { target: target.name },
+        onomatopoeia: 'IMMUNE!',
+      });
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // STEP 1: "When would deal / be dealt any amount of damage..." (RR v1.8 Step 1)
+  // ---------------------------------------------------------------------------
+  for (const ctx of contexts) {
+    if (ctx.isImmune || ctx.currentDamage <= 0) continue;
+    const shieldRes = resolveDamageShieldForHost(
+      state,
+      ctx.request.target.attachments,
+      ctx.currentDamage,
+      ctx.request.target.name,
+      'DAMAGE_WOULD_BE_DEALT',
+      ctx.origin.actor,
+    );
+    if (shieldRes.shieldAbsorption) {
+      ctx.currentDamage = shieldRes.remainingDamage;
+      ctx.absorbedByShield = shieldRes.shieldAbsorption;
+      ctx.onomatopoeia = ctx.absorbedByShield.discarded
+        ? 'ARMORED SUIT SHATTERED!'
+        : 'ARMORED SUIT ABSORBS DAMAGE!';
+    }
+    ctx.damageDealt = ctx.currentDamage;
+  }
+
+  // ---------------------------------------------------------------------------
+  // STEP 2: Tough Status Cards (RR v1.8 Step 2)
+  // ---------------------------------------------------------------------------
+  for (const ctx of contexts) {
+    if (ctx.isImmune || ctx.currentDamage <= 0) continue;
+    const { target, hasPiercing } = ctx.request;
+    const statusCards =
+      target.statusCards ||
+      ('statusCards' in target.entity ? target.entity.statusCards : undefined) ||
+      [];
+    const toughIndex = statusCards.indexOf(StatusCard.TOUGH);
+    if (toughIndex !== -1) {
+      statusCards.splice(toughIndex, 1);
+      ctx.toughRemoved = true;
+      if (hasPiercing) {
+        appendLog(state, {
+          category: 'combat',
+          key: 'damage.tough.pierced',
+          ...(ctx.origin.actor && { actor: ctx.origin.actor }),
+          params: { target: target.name },
+          onomatopoeia: 'PIERCING SHRED! (TOUGH LOST)',
+        });
+      } else {
+        ctx.currentDamage = 0;
+        ctx.onomatopoeia = 'CLANG! (TOUGH)';
+        appendLog(state, {
+          category: 'combat',
+          key: 'damage.prevented.tough',
+          ...(ctx.origin.actor && { actor: ctx.origin.actor }),
+          params: { target: target.name },
+          onomatopoeia: ctx.onomatopoeia,
+        });
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // STEP 3: "When would take any amount of damage..." (RR v1.8 Step 3)
+  // ---------------------------------------------------------------------------
+  for (const ctx of contexts) {
+    if (ctx.isImmune || ctx.currentDamage <= 0) continue;
+    if (!ctx.absorbedByShield) {
+      const shieldRes = resolveDamageShieldForHost(
+        state,
+        ctx.request.target.attachments,
+        ctx.currentDamage,
+        ctx.request.target.name,
+        'DAMAGE_WOULD_BE_TAKEN',
+        ctx.origin.actor,
+      );
+      if (shieldRes.shieldAbsorption) {
+        ctx.currentDamage = shieldRes.remainingDamage;
+        ctx.absorbedByShield = shieldRes.shieldAbsorption;
+        ctx.onomatopoeia = ctx.absorbedByShield.discarded
+          ? 'DAMAGE SHIELD SHATTERED!'
+          : 'DAMAGE SHIELD ABSORBS DAMAGE!';
+      }
+    }
+
+    if (ctx.request.target.type === 'player' && ctx.currentDamage > 0) {
+      const player = ctx.request.target.entity as PlayerState;
+      const opened = openWouldTakeWindow(state, ctx.request, player, ctx.currentDamage);
+      ctx.currentDamage = opened.amount;
+      if (opened.placementId) {
+        ctx.pausedPlacement = {
+          id: opened.placementId,
+          targetPlayerId: player.id,
+          sourceType: ctx.request.wouldTakeWindow
+            ? 'ATTACK'
+            : (ctx.request.sourceType ?? 'CARD_EFFECT'),
+          amount: ctx.currentDamage,
+          initialAmount: ctx.currentDamage,
+          ...(ctx.request.wouldTakeWindow
+            ? { attackId: ctx.request.wouldTakeWindow.attackId }
+            : {}),
+          resume: {
+            request: resumableRequest(ctx.request),
+            damageDealt: ctx.damageDealt,
+            toughRemoved: ctx.toughRemoved,
+            absorbedByShield: ctx.absorbedByShield,
+            onomatopoeia: ctx.onomatopoeia,
+          },
+        };
+      }
+    }
+  }
+
+  const pausedContexts = contexts.filter((c) => c.pausedPlacement);
+  if (pausedContexts.length > 0) {
+    return {
+      state,
+      contexts,
+      defeats: [],
+      paused: pausedContexts.map((c) => c.pausedPlacement!),
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // STEP 4: "takes" abilities
+  // ---------------------------------------------------------------------------
+  for (const ctx of contexts) {
+    ctx.damageTaken = ctx.currentDamage;
+  }
+
+  // ---------------------------------------------------------------------------
+  // STEP 5: Placing damage on characters (health / tokens)
+  // ---------------------------------------------------------------------------
+  applyDamagePlacementStep(state, contexts);
+
+  // ---------------------------------------------------------------------------
+  // STEP 6: "would be defeated" abilities (CHARACTER_WOULD_BE_DEFEATED)
+  // ---------------------------------------------------------------------------
+  checkDefeatAvertedStep(state, contexts);
+
+  // ---------------------------------------------------------------------------
+  // STEP 7 & 8: Defeat resolution and discard
+  // ---------------------------------------------------------------------------
+  const defeats = resolveDefeatDiscardsStep(state, contexts);
+
+  // ---------------------------------------------------------------------------
+  // Overkill: excess damage dealt simultaneously (RR v1.8 glossary O)
+  // ---------------------------------------------------------------------------
+  const overkill = resolveOverkillStep(state, contexts, defeats);
+  state = overkill.state;
+  if (overkill.paused && overkill.paused.length > 0) {
+    return { state, contexts, defeats: [], paused: overkill.paused };
+  }
+
+  return { state, contexts, defeats };
+}
+
+function applyDamagePlacementStep(state: GameState, contexts: TargetContext[]): void {
+  for (const ctx of contexts) {
+    if (ctx.damageTaken <= 0) continue;
+    const { target } = ctx.request;
+    const damageTaken = ctx.damageTaken;
+    ctx.onomatopoeia = ctx.onomatopoeia || 'POW!';
+
+    switch (target.type) {
+      case 'villain': {
+        const villain = target.entity as VillainState;
+        villain.health = Math.max(0, villain.health - damageTaken);
+        appendLog(state, {
+          category: 'combat',
+          actor: ctx.origin.actor,
+          key: 'damage.applied.villain',
+          params: {
+            target: villain.card?.name || (villain as { name?: string }).name || 'Villain',
+            ...sourceParam(ctx.origin),
+            amount: damageTaken,
+            remainingHealth: villain.health,
+          },
+          onomatopoeia: ctx.onomatopoeia,
+        });
+        break;
+      }
+      case 'minion': {
+        const minion = target.entity as CardInstance;
+        if (!minion.tokens) minion.tokens = {};
+        const newDmg = (minion.tokens.damage || 0) + damageTaken;
+        minion.tokens.damage = newDmg;
+        const minionHealth = getEffectiveMinionHitPoints(state, minion);
+        appendLog(state, {
+          category: 'combat',
+          actor: ctx.origin.actor,
+          key: 'damage.applied.minion',
+          params: {
+            target: minion.card.name,
+            ...sourceParam(ctx.origin),
+            amount: damageTaken,
+            totalDamage: newDmg,
+            health: minionHealth,
+          },
+          onomatopoeia: ctx.onomatopoeia,
+        });
+        break;
+      }
+      case 'player': {
+        const player = target.entity as PlayerState;
+        player.health = Math.max(0, player.health - damageTaken);
+        if (ctx.request.logPlayerHit) {
+          ctx.request.logPlayerHit({ amount: damageTaken, remainingHealth: player.health });
+        } else {
+          appendLog(state, {
+            category: 'combat',
+            actor: ctx.origin.actor,
+            key: 'damage.applied.player',
+            params: {
+              target: player.name,
+              ...sourceParam(ctx.origin),
+              amount: damageTaken,
+              remainingHealth: player.health,
+            },
+            onomatopoeia: ctx.onomatopoeia,
+          });
+        }
+        break;
+      }
+      case 'ally': {
+        const ally = target.entity as CardInstance;
+        if (!ally.tokens) ally.tokens = {};
+        const newDmg = (ally.tokens.damage || 0) + damageTaken;
+        ally.tokens.damage = newDmg;
+        const allyMaxHp = (ally.card as AllyCard)?.health || 2;
+        appendLog(state, {
+          category: 'combat',
+          actor: ctx.origin.actor,
+          key: 'damage.applied.ally',
+          params: {
+            target: ally.card?.name || 'Ally',
+            ...sourceParam(ctx.origin),
+            amount: damageTaken,
+            totalDamage: newDmg,
+            health: allyMaxHp,
+          },
+          onomatopoeia: ctx.onomatopoeia,
+        });
+        break;
+      }
+    }
+  }
+}
+
+function checkDefeatAvertedStep(state: GameState, contexts: TargetContext[]): void {
+  for (const ctx of contexts) {
+    if (ctx.damageTaken <= 0) continue;
+    const { target } = ctx.request;
+    const defeatSource = defeatSourceOf(ctx.request);
+
+    switch (target.type) {
+      case 'villain': {
+        const villain = target.entity as VillainState;
+        if (villain.health <= 0) {
+          ctx.isDefeated = true;
+          ctx.excessDamage = Math.max(0, ctx.damageTaken - (villain.health + ctx.damageTaken));
+        }
+        break;
+      }
+      case 'minion': {
+        const minion = target.entity as CardInstance;
+        const minionHealth = getEffectiveMinionHitPoints(state, minion);
+        const currentDmg = minion.tokens?.damage || 0;
+        if (currentDmg >= minionHealth) {
+          const targetPlayer =
+            state.players.find((p) =>
+              p.engagedMinions.some((m) => m.instanceId === minion.instanceId),
+            ) || state.players.find((p) => p.id === target.targetPlayerId);
+          const playerId = targetPlayer?.id || state.players[0]?.id || '';
+          if (minionDefeatIsAverted(state, minion, playerId, defeatSource)) {
+            ctx.excessDamage = 0;
+          } else {
+            ctx.isDefeated = true;
+            ctx.excessDamage = currentDmg - minionHealth;
+          }
+        }
+        break;
+      }
+      case 'player': {
+        const player = target.entity as PlayerState;
+        if (player.health <= 0) {
+          if (playerDefeatIsAverted(state, player, defeatSource)) {
+            ctx.excessDamage = 0;
+          } else {
+            ctx.isDefeated = true;
+            ctx.excessDamage = Math.max(0, ctx.damageTaken - (player.health + ctx.damageTaken));
+          }
+        }
+        break;
+      }
+      case 'ally': {
+        const ally = target.entity as CardInstance;
+        const allyMaxHp = (ally.card as AllyCard)?.health || 2;
+        const currentDmg = ally.tokens?.damage || 0;
+        if (currentDmg >= allyMaxHp) {
+          const ownerPlayer =
+            state.players.find((p) => p.allies.some((a) => a.instanceId === ally.instanceId)) ||
+            state.players.find((p) => p.id === target.targetPlayerId);
+          const playerId = ownerPlayer?.id || state.players[0]?.id || '';
+          if (allyDefeatIsAverted(state, ally, playerId, defeatSource)) {
+            ctx.excessDamage = 0;
+          } else {
+            ctx.isDefeated = true;
+            ctx.excessDamage = currentDmg - allyMaxHp;
+          }
+        }
+        break;
+      }
+    }
+  }
+}
+
+function resolveDefeatDiscardsStep(state: GameState, contexts: TargetContext[]): DefeatDispatch[] {
+  const defeats: DefeatDispatch[] = [];
+  for (const ctx of contexts) {
+    if (!ctx.isDefeated) continue;
+    const { target } = ctx.request;
+    const defeatSource = defeatSourceOf(ctx.request);
+
+    switch (target.type) {
+      case 'villain': {
+        const villain = target.entity as VillainState;
+        const instId = villain.instanceId || 'villain';
+        const activePlayerId =
+          state.players[state.activePlayerIndex]?.id || state.players[0]?.id || '';
+        state = kernel.handleVillainDefeat(state, instId);
+        ctx.pendingDefeat = {
+          targetPlayerId: ctx.request.sourcePlayerId || activePlayerId,
+          targetInstanceId: instId,
+          targetType: 'VILLAIN',
+          defeatSource,
+        };
+        defeats.push(ctx.pendingDefeat);
+        break;
+      }
+      case 'minion': {
+        const minion = target.entity as CardInstance;
+        const targetPlayer =
+          state.players.find((p) =>
+            p.engagedMinions.some((m) => m.instanceId === minion.instanceId),
+          ) || state.players.find((p) => p.id === target.targetPlayerId);
+        if (targetPlayer) {
+          const idx = targetPlayer.engagedMinions.findIndex(
+            (m) => m.instanceId === minion.instanceId,
+          );
+          if (idx !== -1) {
+            const [defeatedMinion] = targetPlayer.engagedMinions.splice(idx, 1);
+            ctx.pendingDefeat = resolveMinionDefeat(
+              state,
+              defeatedMinion,
+              targetPlayer,
+              defeatSource,
+            );
+            defeats.push(ctx.pendingDefeat);
+          }
+        }
+        break;
+      }
+      case 'player': {
+        const player = target.entity as PlayerState;
+        eliminatePlayer(state, player.id);
+        ctx.pendingDefeat = {
+          targetPlayerId: player.id,
+          targetInstanceId: player.id,
+          targetType: 'HERO',
+          defeatSource,
+        };
+        defeats.push(ctx.pendingDefeat);
+        break;
+      }
+      case 'ally': {
+        const ally = target.entity as CardInstance;
+        appendLog(state, {
+          category: 'combat',
+          key: 'ally.defeated',
+          params: { target: ally.card?.name || 'Ally' },
+          onomatopoeia: 'DEFEATED!',
+        });
+        const ownerPlayer =
+          state.players.find((p) => p.allies.some((a) => a.instanceId === ally.instanceId)) ||
+          state.players.find((p) => p.id === target.targetPlayerId);
+        if (ownerPlayer) {
+          const idx = ownerPlayer.allies.findIndex((a) => a.instanceId === ally.instanceId);
+          if (idx !== -1) {
+            const [defeatedAlly] = ownerPlayer.allies.splice(idx, 1);
+            processHostDefeated(state, defeatedAlly);
+            ctx.pendingDefeat = {
+              targetPlayerId: ownerPlayer.id,
+              targetInstanceId: defeatedAlly.instanceId,
+              targetType: 'ALLY',
+              defeatSource,
+            };
+            defeats.push(ctx.pendingDefeat);
+            const discardOwner =
+              (defeatedAlly.ownerId
+                ? state.players.find((p) => p.id === defeatedAlly.ownerId)
+                : undefined) || ownerPlayer;
+            moveDefeatedCardToPile(state, defeatedAlly, discardOwner.discard);
+          }
+        }
+        break;
+      }
+    }
+  }
+  return defeats;
+}
+
+function resolveOverkillStep(
+  state: GameState,
+  contexts: TargetContext[],
+  defeats: DefeatDispatch[],
+): { state: GameState; paused?: PendingDamagePlacement[] } {
+  for (const ctx of contexts) {
+    const overkillTarget =
+      ctx.request.hasOverkill && ctx.isDefeated && ctx.excessDamage > 0
+        ? overkillTargetOf(state, ctx.request.target, ctx.pendingDefeat)
+        : undefined;
+    if (overkillTarget) {
+      const overkillResolved = resolveDamageForTargets(state, [
+        {
+          target: overkillTarget,
+          amount: ctx.excessDamage,
+          sourceType: 'OVERKILL',
+          sourceCardInstance: ctx.request.sourceCardInstance,
+          sourceInstanceId: ctx.request.sourceInstanceId,
+          sourcePlayerId: ctx.request.sourcePlayerId,
+          isAttack: ctx.request.isAttack,
+          hasPiercing: ctx.request.hasPiercing,
+          skipRetaliate: true,
+          wouldTakeWindow: ctx.request.wouldTakeWindow && {
+            attackId: ctx.request.wouldTakeWindow.attackId,
+            context: ctx.request.wouldTakeWindow.context,
+          },
+        },
+      ]);
+      state = overkillResolved.state;
+      if (overkillResolved.paused && overkillResolved.paused.length > 0) {
+        for (const p of overkillResolved.paused) {
+          p.resume.earlier = {
+            result: {
+              initialAmount: ctx.request.amount,
+              damageDealt: ctx.damageDealt,
+              damageTaken: ctx.damageTaken,
+              toughRemoved: ctx.toughRemoved,
+              absorbedByShield: ctx.absorbedByShield,
+              targetDefeated: ctx.isDefeated,
+              excessDamage: ctx.excessDamage,
+              onomatopoeia: ctx.onomatopoeia,
+            },
+            defeats: [...defeats],
+          };
+        }
+        return { state, paused: overkillResolved.paused };
+      }
+      defeats.push(...overkillResolved.defeats);
+      const overkillCtx = overkillResolved.contexts[0];
+      if (overkillCtx) {
+        logOverkillHit(state, overkillTarget, overkillCtx.damageTaken);
+      }
+    }
+  }
+  return { state };
+}
+
+/**
+ * Universal RR v1.8 9-Step Damage Pipeline for multiple targets simultaneously.
+ * Single source of truth for all multi-target and single-target damage across MCD.
+ */
+export function applyDamageToTargets(
+  state: GameState,
+  requests: DamageRequest[],
+): { state: GameState; results: DamageResult[]; paused?: true } {
+  const resolved = resolveDamageForTargets(state, requests);
+  state = resolved.state;
+
+  if (resolved.paused && resolved.paused.length > 0) {
+    state.pendingDamagePlacements = [...(state.pendingDamagePlacements ?? []), ...resolved.paused];
+    const results: DamageResult[] = resolved.contexts.map((c) => ({
+      initialAmount: c.request.amount,
+      damageDealt: c.damageDealt,
+      damageTaken: 0,
+      toughRemoved: c.toughRemoved,
+      absorbedByShield: c.absorbedByShield,
+      targetDefeated: false,
+      excessDamage: 0,
+      onomatopoeia: c.onomatopoeia,
+    }));
+    return { state, results, paused: true };
+  }
+
+  // One occurrence, one window (RR v1.8 Triggering Condition): every defeat is announced once its
+  // state changes (stage advance, elimination, discard), Overkill included, have all been applied.
+  for (const defeat of resolved.defeats) {
+    dispatchDefeat(state, defeat);
+  }
+
+  // ---------------------------------------------------------------------------
+  // STEP 9: "after takes damage" triggers & Retaliate (RR v1.8 Step 9)
+  // ---------------------------------------------------------------------------
+  for (const ctx of resolved.contexts) {
+    if (
+      ctx.damageTaken > 0 &&
+      (ctx.request.target.type === 'player' || ctx.request.target.type === 'villain')
+    ) {
+      const isPlayer = ctx.request.target.type === 'player';
+      kernel.dispatchTrigger(state, 'DAMAGE_TAKEN', {
+        targetPlayerId: isPlayer
+          ? (ctx.request.target.entity as PlayerState).id
+          : ctx.request.sourcePlayerId || getFirstPlayer(state).id,
+        targetType: ctx.request.target.type,
+        targetInstanceId: isPlayer
+          ? undefined
+          : (ctx.request.target.entity as VillainState).instanceId,
+        damageAmount: ctx.damageTaken,
+        triggerChain: ctx.request.triggerChain,
+      });
+    }
+  }
+
+  for (const ctx of resolved.contexts) {
+    ctx.retaliateDamageDealt = applyRetaliateDamage(
+      state,
+      ctx.request,
+      ctx.request.target,
+      ctx.isDefeated,
+      ctx.damageDealt,
+    );
+  }
+
+  const results: DamageResult[] = resolved.contexts.map((c) => ({
+    initialAmount: c.request.amount,
+    damageDealt: c.damageDealt,
+    damageTaken: c.damageTaken,
+    toughRemoved: c.toughRemoved,
+    absorbedByShield: c.absorbedByShield,
+    targetDefeated: c.isDefeated,
+    excessDamage: c.excessDamage,
+    retaliateDamageDealt: c.retaliateDamageDealt,
+    onomatopoeia: c.onomatopoeia,
+  }));
+
+  return { state, results };
+}
+
 /**
  * Universal RR v1.8 9-Step Damage Pipeline.
  * Single source of truth for all damage application across MCD.
@@ -718,28 +1380,8 @@ export function applyDamageToTarget(
   state: GameState,
   request: DamageRequest,
 ): { state: GameState; result: DamageResult; paused?: true } {
-  const resolved = resolveDamage(state, request);
-  state = resolved.state;
-
-  if (resolved.paused) {
-    state.pendingDamagePlacements = [...(state.pendingDamagePlacements ?? []), resolved.paused];
-    return { state, result: resolved.result, paused: true };
-  }
-
-  // One occurrence, one window (RR v1.8 Triggering Condition): every defeat is announced once its
-  // state changes (stage advance, elimination, discard), Overkill included, have all been applied.
-  for (const defeat of resolved.defeats) dispatchDefeat(state, defeat);
-
-  // STEP 9: Retaliate X & Post-Resolution Triggers (RR v1.8 Step 9)
-  const retaliateDamageDealt = applyRetaliateDamage(
-    state,
-    request,
-    request.target,
-    resolved.result.targetDefeated,
-    resolved.result.damageDealt,
-  );
-
-  return { state, result: { ...resolved.result, retaliateDamageDealt } };
+  const { state: nextState, results, paused } = applyDamageToTargets(state, [request]);
+  return { state: nextState, result: results[0], paused };
 }
 
 function resolveDamage(state: GameState, request: DamageRequest): ResolvedDamage {
@@ -1128,4 +1770,4 @@ export function resumeDamage(
   return { state, result: earlier?.result ?? placed.result };
 }
 
-bindKernel({ applyDamageToTarget, defeatMinionsBeyondHitPoints });
+bindKernel({ applyDamageToTarget, applyDamageToTargets, defeatMinionsBeyondHitPoints });

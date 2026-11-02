@@ -47,6 +47,28 @@ export type SchemeTarget = Extract<ResolvedTarget, { kind: 'scheme' }>;
 export type PlayerTarget = Extract<ResolvedTarget, { kind: 'player' }>;
 export type CardTarget = Extract<ResolvedTarget, { kind: 'card' }>;
 
+export function resolveControlledCharacters(player: PlayerState): ResolvedTarget[] {
+  const results: ResolvedTarget[] = [
+    {
+      kind: 'character',
+      entityType: player.currentForm === 'hero' ? 'hero' : 'alter_ego',
+      entity: player,
+      id: player.id,
+      player,
+    },
+  ];
+  for (const a of player.allies || []) {
+    results.push({
+      kind: 'character',
+      entityType: 'ally',
+      entity: a,
+      id: a.instanceId,
+      player,
+    });
+  }
+  return results;
+}
+
 /**
  * Resolves a live entity by its instance ID from active game zones only (RR v1.8 p. 28).
  * Defeated or discarded cards in discard piles or victory display are never returned.
@@ -542,27 +564,8 @@ function resolveFriendlyAndUniversalCharacterTarget(
       ];
     }
 
-    case 'ALL_CONTROLLED_CHARACTERS': {
-      const results: ResolvedTarget[] = [
-        {
-          kind: 'character',
-          entityType: resolvingPlayer.currentForm === 'hero' ? 'hero' : 'alter_ego',
-          entity: resolvingPlayer,
-          id: resolvingPlayer.id,
-          player: resolvingPlayer,
-        },
-      ];
-      for (const a of resolvingPlayer.allies || []) {
-        results.push({
-          kind: 'character',
-          entityType: 'ally',
-          entity: a,
-          id: a.instanceId,
-          player: resolvingPlayer,
-        });
-      }
-      return results;
-    }
+    case 'ALL_CONTROLLED_CHARACTERS':
+      return resolveControlledCharacters(resolvingPlayer);
 
     // 4. FRIENDLY ENTITIES (Across Table)
     case 'CHOSEN_ALLY': {

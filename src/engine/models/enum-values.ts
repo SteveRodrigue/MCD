@@ -25,12 +25,7 @@ export const CARD_TYPE_VALUES = [
   'environment',
 ] as const;
 
-export const RESOURCE_TYPE_VALUES = [
-  'physical',
-  'energy',
-  'mental',
-  'wild',
-] as const;
+export const RESOURCE_TYPE_VALUES = ['physical', 'energy', 'mental', 'wild'] as const;
 
 export const KEYWORD_VALUES = [
   'Guard',

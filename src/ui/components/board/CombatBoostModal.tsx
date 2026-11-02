@@ -100,7 +100,7 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
             {outcome.boostCards.map((boost, idx) => {
               const icons = boost.card.boostIcons || 0;
               const hasStar = Boolean(boost.card.boostStar);
-              const boostStarText = (boost.card as any).boostStarText || boost.card.text;
+              const boostStarText = boost.card.boostText || boost.card.text;
 
               return (
                 <div

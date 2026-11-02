@@ -220,6 +220,63 @@ function parseAbilityLabelsFromText(
   return results;
 }
 
+export interface CardTextSplit {
+  /** The text above the divider line (e.g. When Revealed, Forced Interrupt, or full text if no boost) */
+  abilityText: string;
+  /** The clean boost ability text beneath the divider line (e.g. "Give the villain a tough status card.") */
+  boostText?: string;
+}
+
+/**
+ * Splits card text into primary ability text and boost ability text (RR v1.8 Boost).
+ * In Marvel Champions, encounter cards place the Boost ability beneath a divider line.
+ */
+export function splitCardText(rawText?: string): CardTextSplit {
+  if (!rawText) {
+    return { abilityText: '', boostText: undefined };
+  }
+
+  // 1. Standard divider: <hr /> or <hr>
+  if (/<hr\s*\/?>/i.test(rawText)) {
+    const parts = rawText.split(/<hr\s*\/?>/i);
+    const top = parts[0].trim();
+    const bottom = parts.slice(1).join('\n').trim();
+
+    // Verify if bottom is a boost ability (e.g. [star] <b>Boost</b>: ...)
+    if (/<b>boost<\/b>|\[star\]|\[boost\]/i.test(bottom)) {
+      const cleanBoost = bottom.replace(/^(\[star\]\s*)?<b>boost<\/b>:?\s*/i, '').trim();
+      return {
+        abilityText: top,
+        boostText: cleanBoost,
+      };
+    }
+
+    // Other divider line usage (e.g. Preparation in Black Widow AOS cards)
+    return {
+      abilityText: top,
+      boostText: undefined,
+    };
+  }
+
+  // 2. Cards without <hr /> where Boost is on a new line or at the beginning
+  const boostMatch = rawText.match(/(\r?\n)?(\[star\]\s*)?<b>boost<\/b>:?/i);
+  if (boostMatch && boostMatch.index !== undefined) {
+    const idx = boostMatch.index;
+    const top = rawText.slice(0, idx).trim();
+    const bottom = rawText.slice(idx).trim();
+    const cleanBoost = bottom.replace(/^(\r?\n)?(\[star\]\s*)?<b>boost<\/b>:?\s*/i, '').trim();
+    return {
+      abilityText: top,
+      boostText: cleanBoost,
+    };
+  }
+
+  return {
+    abilityText: rawText.trim(),
+    boostText: undefined,
+  };
+}
+
 /**
  * Powers upstream prints as a dash (–), which MarvelCDB encodes as `null`. An omitted (`undefined`)
  * field is not a dash (RR v1.8 "Dash (Value)").
@@ -277,6 +334,8 @@ export function normalizeRawCard(
     raw.type_code === 'side_scheme' ||
     raw.type_code === 'player_side_scheme';
 
+  const textSplit = splitCardText(raw.text);
+
   const base: NormalizedCard = {
     code: raw.code,
     name: raw.name,
@@ -297,6 +356,8 @@ export function normalizeRawCard(
         ? 2
         : undefined,
     text: raw.text || '',
+    abilityText: textSplit.abilityText,
+    boostText: textSplit.boostText,
     flavor: raw.flavor,
     traits: parseTraits(raw.traits),
     printedTraits: raw.traits,

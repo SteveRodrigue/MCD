@@ -75,7 +75,10 @@ describe('Boost Effect Reveal Prompt & Combat Resumption (Issue #503)', () => {
     expect(prompt).toBeDefined();
     expect(prompt?.kind).toBe('BOOST_ABILITY_REVEAL');
     expect(prompt?.sourceCardCode).toBe(TIGER_SHARK);
-    expect(prompt?.description).toContain('Give the villain a tough status card');
+    expect(prompt?.description).toBe('Rhino revealed boost card: Tiger Shark');
+    expect(prompt?.sourceCardInstance?.card.boostText).toBe(
+      'Give the villain a tough status card.',
+    );
 
     // Crucial: Effect must NOT have resolved yet
     expect(getActiveVillain(s2).statusCards ?? []).not.toContain(StatusCard.TOUGH);

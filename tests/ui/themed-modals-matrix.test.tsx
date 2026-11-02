@@ -11,6 +11,7 @@ import type {
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
 import { AllyActionModal } from '../../src/ui/components/board/AllyActionModal';
 import { CardPaymentModal } from '../../src/ui/components/board/CardPaymentModal';
+import { BoostEffectModal } from '../../src/ui/components/board/BoostEffectModal';
 import { CombatBoostModal } from '../../src/ui/components/board/CombatBoostModal';
 import { DistributeAmountModal } from '../../src/ui/components/board/DistributeAmountModal';
 import { DevStepErrorBanner } from '../../src/ui/components/board/DevStepErrorBanner';
@@ -326,6 +327,31 @@ const CASES: Case[] = [
           } as PendingDecisionPrompt
         }
         onConfirmOrder={vi.fn()}
+      />
+    ),
+  },
+  {
+    label: 'BoostEffectModal',
+    cards: named('01094', '01131'),
+    render: () => (
+      <BoostEffectModal
+        isOpen
+        onContinue={vi.fn()}
+        prompt={{
+          promptId: 'prompt_boost_matrix',
+          playerId: 'p1',
+          kind: 'BOOST_ABILITY_REVEAL',
+          title: 'Tiger Shark',
+          description: 'Rhino revealed boost card: Tiger Shark',
+          sourceCardName: 'Tiger Shark',
+          sourceCardCode: '01131',
+          sourceCardInstance: instance('01131'),
+          attackerName: 'Rhino',
+          attackerCardCode: '01094',
+          options: [
+            { id: 'resolve_boost', label: 'Continue', effect: 'CONTINUE_COMBAT_AFTER_BOOST' },
+          ],
+        }}
       />
     ),
   },

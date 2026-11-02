@@ -497,4 +497,31 @@ describe('Card Loader & Normalizer Unit Tests', () => {
       expect(blackCat.thwartCost).toBe(1);
     });
   });
+
+  describe('Ability and Boost Text Derivation (Issue #528)', () => {
+    it('populates abilityText and boostText on Tiger Shark (01131)', () => {
+      const raw = (coreEncounterPack as any[]).find((c) => c.code === '01131');
+      const tigerShark = normalizeRawCard(raw, {});
+      expect(tigerShark.abilityText).toBe(
+        '[star] <b>Forced Response</b>: After Tiger Shark attacks, give him a tough status card.',
+      );
+      expect(tigerShark.boostText).toBe('Give the villain a tough status card.');
+    });
+
+    it('populates abilityText and boostText on Whirlwind (01130)', () => {
+      const raw = (coreEncounterPack as any[]).find((c) => c.code === '01130');
+      const whirlwind = normalizeRawCard(raw, {});
+      expect(whirlwind.abilityText).toBe(
+        '[star] <b>Forced Interrupt</b>: When Whirlwind attacks you, also resolve his attack against each other hero.',
+      );
+      expect(whirlwind.boostText).toBe('Deal 1 damage to each hero.');
+    });
+
+    it('populates abilityText and undefined boostText on Backflip (01003)', () => {
+      const raw = (corePack as any[]).find((c) => c.code === '01003');
+      const backflip = normalizeRawCard(raw, {});
+      expect(backflip.abilityText).toBe(backflip.text);
+      expect(backflip.boostText).toBeUndefined();
+    });
+  });
 });

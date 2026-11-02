@@ -205,6 +205,7 @@ function afterSchemeBoosts(state: GameState, schemeContext: SchemeExecutionConte
     schemeContext.targetPlayerId,
     boostCard,
     schemer.card.name,
+    schemer.card.code,
   );
 }
 

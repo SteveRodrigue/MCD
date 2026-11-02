@@ -719,6 +719,7 @@ function afterAttackBoosts(state: GameState, attackContext: AttackExecutionConte
     attackContext.targetPlayerId,
     boostCard,
     attacker.card.name,
+    attacker.card.code,
   );
 }
 

@@ -18,7 +18,7 @@ describe('BoostEffectModal Component (Issue #503)', () => {
     playerId: 'p1',
     kind: 'BOOST_ABILITY_REVEAL',
     title: 'Tiger Shark',
-    description: 'Give the villain a tough status card.',
+    description: 'Rhino revealed boost card: Tiger Shark',
     sourceCardName: 'Tiger Shark',
     sourceCardCode: '01131',
     sourceCardInstance: tigerSharkInst,

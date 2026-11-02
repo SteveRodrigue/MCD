@@ -340,3 +340,30 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
     });
   });
 });
+
+describe('VillainPhaseStepper panel variant', () => {
+  const state = {
+    phase: GamePhase.VILLAIN_PHASE,
+    villainPhaseStep: VillainPhaseStep.DEAL_ENCOUNTER_CARDS,
+  } as Partial<GameState> as GameState;
+
+  it('fills its slot instead of flowing, and keeps the same controls', () => {
+    const onNextStep = vi.fn();
+    render(
+      <TestSession state={state}>
+        <VillainPhaseStepper
+          variant="panel"
+          pacing="manual"
+          onNextStep={onNextStep}
+          onSkip={vi.fn()}
+        />
+      </TestSession>,
+    );
+    const panel = screen.getByTestId('villain-phase-stepper');
+    expect(panel.className).toContain('absolute');
+    expect(panel.className).toContain('inset-0');
+    expect(screen.getByText('3. DEAL CARDS')).toBeDefined();
+    fireEvent.click(screen.getByText('Next Step'));
+    expect(onNextStep).toHaveBeenCalledTimes(1);
+  });
+});

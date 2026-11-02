@@ -147,6 +147,11 @@ const HEROIC_OPTIONS = [0, 1, 2, 3].map((lvl) => ({
   label: lvl === 0 ? 'Off (0)' : `Heroic ${lvl} (+${lvl})`,
 }));
 
+const STEPPER_SIDE_OPTIONS = [
+  { value: 'left', label: 'Left' },
+  { value: 'right', label: 'Right' },
+] as const;
+
 const PACING_OPTIONS = [
   { value: 'auto_normal', label: 'Auto (Normal)' },
   { value: 'auto_fast', label: 'Auto (Fast)' },
@@ -177,6 +182,8 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
     setDefaultHeroicLevel,
     villainPhasePacing,
     setVillainPhasePacing,
+    phaseStepperSide,
+    setPhaseStepperSide,
   } = useGameSettings();
 
   if (!isOpen) return null;
@@ -316,6 +323,20 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
             />
           }
           description="How fast the villain phase plays. Manual waits for Next Step or Spacebar."
+        />
+
+        <SettingPanel
+          icon={<Clock className="w-5 h-5 text-comic-red" />}
+          title="Villain Phase Panel Side"
+          wrapControl
+          control={
+            <Segmented
+              options={STEPPER_SIDE_OPTIONS}
+              value={phaseStepperSide}
+              onChange={setPhaseStepperSide}
+            />
+          }
+          description="Which side of the villain zone shows the villain phase steps, when there is room. On narrow screens the steps appear in a bar above the table."
         />
 
         <SettingPanel

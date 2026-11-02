@@ -3,6 +3,7 @@ import {
   DEFAULT_SETTINGS,
   GameSettings,
   GameSettingsContext,
+  type PhaseStepperSide,
   STORAGE_KEY,
 } from './game-settings-context';
 import { sanitizeThemeSettings } from '../theme/theme-settings';
@@ -62,6 +63,10 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setSettings((previous) => ({ ...previous, villainPhasePacing: pacing }));
     };
 
+    const setPhaseStepperSide = (side: 'left' | 'right') => {
+      setSettings((previous) => ({ ...previous, phaseStepperSide: side }));
+    };
+
     const setDefaultDifficulty = (difficulty: typeof DEFAULT_SETTINGS.defaultDifficulty) => {
       setSettings((previous) => ({ ...previous, defaultDifficulty: difficulty }));
     };
@@ -82,6 +87,7 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setEdgeScrollSpeed,
       setCardZoomLevel,
       setVillainPhasePacing,
+      setPhaseStepperSide,
       setDefaultDifficulty,
       setDefaultHeroicLevel,
       updateSettings,
@@ -96,6 +102,9 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
       edgeScrollSpeed: settings.edgeScrollSpeed || 'normal',
       cardZoomLevel: settings.cardZoomLevel || 'normal',
       villainPhasePacing: settings.villainPhasePacing || 'auto_normal',
+      phaseStepperSide: (settings.phaseStepperSide === 'right'
+        ? 'right'
+        : 'left') as PhaseStepperSide,
       defaultDifficulty: settings.defaultDifficulty || 'STANDARD',
       defaultHeroicLevel: settings.defaultHeroicLevel || 0,
       ...actions,

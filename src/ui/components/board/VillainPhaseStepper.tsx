@@ -13,6 +13,8 @@ export interface VillainPhaseStepperProps {
   onToggleAutoPlay?: () => void;
   onSkip?: () => void;
   isAutoPlaying?: boolean;
+  /** `ribbon` is the compact bar above the table; `panel` fills the side slot beside the villain zone. */
+  variant?: 'ribbon' | 'panel';
 }
 
 export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
@@ -21,6 +23,7 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
   onToggleAutoPlay,
   onSkip,
   isAutoPlaying = true,
+  variant = 'ribbon',
 }) => {
   const { style } = useModalStyle();
   const { state: gameState } = useGameSession();
@@ -95,6 +98,89 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
             : 'Pass first player token and round upkeep.');
 
   const isPromptOpen = Boolean(peekDecisionPrompt(gameState));
+  const isPanel = variant === 'panel';
+
+  const controls = (
+    <div
+      className={
+        isPanel
+          ? 'flex flex-wrap items-center gap-2'
+          : 'flex items-center gap-2 w-full sm:w-auto justify-end shrink-0'
+      }
+    >
+      {/* Auto-Play Toggle Button (If not in manual/instant) */}
+      {pacing !== 'instant' && onToggleAutoPlay && (
+        <button
+          onClick={onToggleAutoPlay}
+          className={`px-2.5 py-1.5 font-bold text-xs uppercase flex items-center gap-1.5 transition-all cursor-pointer ${style.buttonShape} ${
+            isAutoPlaying
+              ? 'bg-amber-300 hover:bg-amber-400 text-comic-black'
+              : 'bg-slate-200 hover:bg-slate-300 text-slate-800'
+          }`}
+          title={isAutoPlaying ? 'Pause Auto-Play' : 'Resume Auto-Play'}
+        >
+          {isAutoPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+          <span className="hidden md:inline">{isAutoPlaying ? 'Pause' : 'Auto'}</span>
+        </button>
+      )}
+
+      {/* Next Step Button */}
+      <ToneButton
+        tone="yellow"
+        onClick={onNextStep}
+        disabled={isPromptOpen}
+        className="px-3 py-1.5 font-black text-xs uppercase gap-1.5 hover:scale-105"
+      >
+        <span>Next Step</span>
+        <ChevronRight className="w-4 h-4" />
+      </ToneButton>
+
+      {/* Skip All Pacing Button */}
+      {onSkip && (
+        <button
+          onClick={onSkip}
+          disabled={isPromptOpen}
+          className={`p-1.5 font-bold transition-all cursor-pointer hover:scale-105 ${style.btnMove}`}
+          title="Skip remaining steps (Auto-Resolve Phase)"
+        >
+          <FastForward className="w-4 h-4" />
+        </button>
+      )}
+    </div>
+  );
+
+  const promptNotice = isPromptOpen && (
+    <span className="text-micro text-comic-red font-black flex items-center gap-1 animate-pulse">
+      <AlertTriangle className="w-3 h-3" />
+      Awaiting player decision prompt...
+    </span>
+  );
+
+  if (isPanel) {
+    return (
+      <div data-testid="villain-phase-stepper" className="absolute inset-0 z-raised">
+        <div
+          className={`h-full flex flex-col gap-3 p-3 overflow-y-auto ${style.panel} ${style.text}`}
+        >
+          <span
+            className={`self-start px-2.5 py-1 font-black text-xs uppercase ${style.buttonShape} ${categoryColor}`}
+          >
+            {categoryLabel}
+          </span>
+          <span
+            className={`self-start bg-comic-yellow text-comic-black font-black text-micro px-1.5 py-0.2 -rotate-2 ${style.badge}`}
+          >
+            {onomatopoeia}
+          </span>
+          <p className="font-black text-sm flex-1" title={description}>
+            {description}
+          </p>
+          {promptNotice}
+          {controls}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -132,47 +218,7 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
           </div>
         </div>
 
-        {/* Right: Interactive Stepping Controls */}
-        <div className="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0">
-          {/* Auto-Play Toggle Button (If not in manual/instant) */}
-          {pacing !== 'instant' && onToggleAutoPlay && (
-            <button
-              onClick={onToggleAutoPlay}
-              className={`px-2.5 py-1.5 font-bold text-xs uppercase flex items-center gap-1.5 transition-all cursor-pointer ${style.buttonShape} ${
-                isAutoPlaying
-                  ? 'bg-amber-300 hover:bg-amber-400 text-comic-black'
-                  : 'bg-slate-200 hover:bg-slate-300 text-slate-800'
-              }`}
-              title={isAutoPlaying ? 'Pause Auto-Play' : 'Resume Auto-Play'}
-            >
-              {isAutoPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-              <span className="hidden md:inline">{isAutoPlaying ? 'Pause' : 'Auto'}</span>
-            </button>
-          )}
-
-          {/* Next Step Button */}
-          <ToneButton
-            tone="yellow"
-            onClick={onNextStep}
-            disabled={isPromptOpen}
-            className="px-3 py-1.5 font-black text-xs uppercase gap-1.5 hover:scale-105"
-          >
-            <span>Next Step</span>
-            <ChevronRight className="w-4 h-4" />
-          </ToneButton>
-
-          {/* Skip All Pacing Button */}
-          {onSkip && (
-            <button
-              onClick={onSkip}
-              disabled={isPromptOpen}
-              className={`p-1.5 font-bold transition-all cursor-pointer hover:scale-105 ${style.btnMove}`}
-              title="Skip remaining steps (Auto-Resolve Phase)"
-            >
-              <FastForward className="w-4 h-4" />
-            </button>
-          )}
-        </div>
+        {controls}
       </div>
     </div>
   );

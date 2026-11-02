@@ -91,10 +91,15 @@ This is a game. Every plan explains the change at the table before it explains t
 ## In-Game Scenario
 
 **Setup:** Spider-Man (Peter Parker) in hero form, Web-Shooter in play with 2 counters. Rhino, stage I. Player phase.
+
 **Player does:** Uses Web-Shooter to pay for Swinging Web Kick.
+
 **Today:** <what goes wrong at the table>
+
 **After this change:** <what the player sees and can do now>
+
 **Why (rules):** <RR v1.8 term and the reading that decides it>
+
 **Also covers:** <other cards or situations that resolve the same way, one line each>
 ```
 

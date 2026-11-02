@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, renderHook } from '@testing-library/react';
+import { act, fireEvent, renderHook } from '@testing-library/react';
 import { useEdgeScroll } from '../../src/ui/hooks/useEdgeScroll';
 
 /**
@@ -139,5 +139,34 @@ describe('useEdgeScroll', () => {
       flushFrame();
       expect(scrollLeft()).toBe(500);
     });
+  });
+});
+
+describe('useEdgeScroll jump-button state', () => {
+  const makeTrack = (scrollWidth: number, clientWidth: number) => {
+    const track = document.createElement('div');
+    Object.defineProperties(track, {
+      scrollWidth: { value: scrollWidth, configurable: true },
+      clientWidth: { value: clientWidth, configurable: true },
+    });
+    return track;
+  };
+
+  it('offers a jump to the right only while the track overflows', () => {
+    const hook = renderHook(() => useEdgeScroll<HTMLDivElement>());
+    act(() => hook.result.current.trackRef(makeTrack(2728, 1112)));
+    expect(hook.result.current.canScrollRight).toBe(true);
+
+    // The track is rebuilt with content that fits: the first element's listeners must not decide.
+    act(() => hook.result.current.trackRef(null));
+    act(() => hook.result.current.trackRef(makeTrack(1112, 1112)));
+    expect(hook.result.current.canScrollRight).toBe(false);
+  });
+
+  it('drops the buttons when the track leaves the page', () => {
+    const hook = renderHook(() => useEdgeScroll<HTMLDivElement>());
+    act(() => hook.result.current.trackRef(makeTrack(2728, 1112)));
+    act(() => hook.result.current.trackRef(null));
+    expect(hook.result.current.canScrollRight).toBe(false);
   });
 });

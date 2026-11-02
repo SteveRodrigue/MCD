@@ -256,6 +256,45 @@ describe('Under Attack modular set (#354)', () => {
       expect(currentVillain.statusCards).toContain(StatusCard.TOUGH);
     });
 
+    it('gives villain Tough when player 2 (not first player) damages the villain with Vibranium Armor attached', () => {
+      revealFor('p1', VIBRANIUM_ARMOR);
+
+      const villain = getActiveVillain(state);
+      expect(villain.attachments?.some((a) => a.card.code === VIBRANIUM_ARMOR)).toBe(true);
+      expect(villain.statusCards).not.toContain(StatusCard.TOUGH);
+
+      // Player 2 takes their turn (p1 is first player) and deals basic attack damage to villain
+      state.activePlayerIndex = 1;
+      const attackRes = dispatchAction(state, {
+        type: 'BASIC_ATTACK',
+        playerId: 'p2',
+        targetType: 'villain',
+      });
+      state = attackRes.state;
+
+      const currentVillain = getActiveVillain(state);
+      expect(currentVillain.statusCards).toContain(StatusCard.TOUGH);
+    });
+
+    it('gives villain Tough exactly once when player 1 damages the villain with Vibranium Armor attached', () => {
+      revealFor('p1', VIBRANIUM_ARMOR);
+
+      const villain = getActiveVillain(state);
+      expect(villain.statusCards).not.toContain(StatusCard.TOUGH);
+
+      // Player 1 (Spider-Man, first player) deals basic attack damage to villain
+      const attackRes = dispatchAction(state, {
+        type: 'BASIC_ATTACK',
+        playerId: 'p1',
+        targetType: 'villain',
+      });
+      state = attackRes.state;
+
+      const currentVillain = getActiveVillain(state);
+      const toughCount = currentVillain.statusCards.filter((s) => s === StatusCard.TOUGH).length;
+      expect(toughCount).toBe(1);
+    });
+
     it('does not give multiple Tough status cards when villain already has Tough', () => {
       revealFor('p1', VIBRANIUM_ARMOR);
       const villain = getActiveVillain(state);

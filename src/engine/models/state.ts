@@ -322,6 +322,18 @@ export interface AttackExecutionContext {
   cancellationReason?: string;
 }
 
+export interface SchemeExecutionContext {
+  schemeId: string;
+  schemerType: 'VILLAIN' | 'MINION';
+  schemerCard?: CardInstance;
+  schemerVillainId?: string;
+  targetPlayerId: string;
+  baseScheme: number;
+  totalBoostIcons: number;
+  currentBoostCard?: CardInstance;
+  stepping?: boolean;
+}
+
 export interface CombatResolutionSummary {
   id?: string;
   attackerName: string;
@@ -642,6 +654,7 @@ export interface GameState {
   /** Set while an activation turns up its boost cards; cleared when the last one resolved. */
   activeBoostResolution?: BoostResolution;
   activeAttackContext?: AttackExecutionContext;
+  activeSchemeContext?: SchemeExecutionContext;
   activeEncounterContext?: EncounterExecutionContext;
   lastCombatOutcome?: CombatResolutionSummary;
   villainPhaseStepEvent?: VillainPhaseStepEvent;

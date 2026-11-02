@@ -22,6 +22,7 @@ import {
 import { popDecisionPrompt } from './prompt-queue';
 import {
   dealBoostCards,
+  enqueueBoostRevealPrompt,
   finishPausedBoostCard,
   resolveBoostCards,
   resumeBoostCards,
@@ -713,24 +714,12 @@ function afterAttackBoosts(state: GameState, attackContext: AttackExecutionConte
   if (!boostCard || !attacker) return finishAttackAfterBoosts(state, attackContext);
 
   state.activeAttackContext = attackContext;
-  return kernel.enqueueDecisionPrompt(state, {
-    promptId: nextEngineId(state, 'prompt'),
-    playerId: attackContext.targetPlayerId,
-    kind: 'BOOST_ABILITY_REVEAL',
-    title: boostCard.card.name,
-    description: getBoostAbilityText(boostCard),
-    sourceCardName: boostCard.card.name,
-    sourceCardCode: boostCard.card.code,
-    sourceCardInstance: boostCard,
-    attackerName: attacker.card.name,
-    options: [
-      {
-        id: 'resolve_boost',
-        label: 'Continue',
-        effect: 'CONTINUE_COMBAT_AFTER_BOOST',
-      },
-    ],
-  });
+  return enqueueBoostRevealPrompt(
+    state,
+    attackContext.targetPlayerId,
+    boostCard,
+    attacker.card.name,
+  );
 }
 
 function cleanupAttackOnAbort(state: GameState, attackContext: AttackExecutionContext): void {
@@ -815,24 +804,6 @@ function finishAttackAfterBoosts(
   }
 
   return state;
-}
-
-function getBoostAbilityText(boostCard: CardInstance): string {
-  const rawAudit =
-    'audit' in boostCard.card
-      ? (boostCard.card.audit as Record<string, unknown> | undefined)
-      : undefined;
-  const originalText = typeof rawAudit?.originalText === 'string' ? rawAudit.originalText : '';
-  const cardText = boostCard.card.text || originalText || '';
-  if (cardText.includes('Boost:')) {
-    const parts = cardText.split(/Boost:?/i);
-    const raw = parts[1]
-      .split(/<hr|\n\n/)[0]
-      .replace(/<[^>]+>/g, '')
-      .trim();
-    if (raw) return raw;
-  }
-  return cardText.replace(/<[^>]+>/g, '').trim();
 }
 
 /** Resumes an attack paused on a BOOST_ABILITY_REVEAL prompt: that card, then the rest of the queue. */

@@ -299,6 +299,31 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
     expect(screen.getByTestId(`card-hover-preview-${webShooter.code}`)).toBeDefined();
   });
 
+  it('play-from-zone options without cardCode fall back to params.cardInstance for the thumbnail', async () => {
+    const widow = cardCatalog.getCard('01070') ?? cardCatalog.getCard('01067')!;
+    const prompt: PendingDecisionPrompt = {
+      promptId: 'prompt_play_from_zone_thumb',
+      playerId: 'p1',
+      title: 'Make the Call',
+      description: 'Choose a card to pay for and play:',
+      sourceCardName: 'Make the Call',
+      isVoluntary: true,
+      options: [
+        {
+          id: 'inst_ally_1',
+          label: `${widow.name} (Cost: ${widow.cost ?? 0})`,
+          description: widow.text ?? '',
+          effect: 'PLAY_CARD_FROM_ZONE_RESOLUTION',
+          params: { cardInstance: { instanceId: 'inst_ally_1', card: widow } },
+        },
+      ],
+    };
+    await act(async () => {
+      render(<DecisionPromptModal prompt={prompt} onSelectOption={vi.fn()} />);
+    });
+    expect(screen.getByTestId('option-card-thumbnail-inst_ally_1')).toBeDefined();
+  });
+
   it("setup choice options (e.g. T'Challa Foresight upgrade search) display card thumbnail, name, and formatted printed text without raw markup", async () => {
     const energyDaggers = cardCatalog.getCard('01047')!;
     const prompt: PendingDecisionPrompt = {

@@ -1142,6 +1142,7 @@ function handlePlayFromZone(
       label: `${c.instance.card.name} (Cost: ${cost}${c.owner.id !== player.id ? `, Owner: ${c.owner.name}` : ''})`,
       description:
         c.instance.card.text || `Play ${c.instance.card.name} from ${c.owner.name}'s discard`,
+      cardCode: c.instance.card.code,
       effect: 'PLAY_CARD_FROM_ZONE_RESOLUTION',
       requiresPayment: cost > 0,
       params: {

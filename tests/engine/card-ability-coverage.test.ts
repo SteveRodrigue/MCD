@@ -16,13 +16,18 @@ import {
   verifyAbilityExecution,
 } from '@engine/simulation/effect-delta-verifier';
 import {
+  createStage,
   exerciseAbility,
+  installInPlay,
+  player1,
+  subjectOf,
   sweepAbilities,
   variantsFor,
 } from '@engine/simulation/ability-stage-setter';
 import { runMatch } from '@engine/simulation/match-simulator';
 import { setupGame } from '@engine/state/game-setup';
 import { appendLog } from '@engine/state/game-log';
+import { createCardInstance } from '@engine/state/card-instance';
 import type { AbilityStep } from '@engine/models';
 
 const allCards = cardCatalog.getAllCards();
@@ -226,6 +231,53 @@ describe('Stage-Setter drivers', () => {
     expect(branches.length).toBeGreaterThanOrEqual(2);
     expect(branches.every((o) => o.ok)).toBe(true);
     expect(ledger.coveredCount).toBe(1);
+  });
+
+  it('installInPlay attaches to the candidate matching attachTo without damaging the host', () => {
+    const target = find('01185', 'biomechanical_upgrades_defeat_replacement');
+    const stage = createStage(subjectOf(target), options);
+    const p = player1(stage);
+
+    const inst = createCardInstance(target.card, 'p1');
+    installInPlay(stage, inst, target.card.type);
+
+    const hostMinion = p.engagedMinions.find((m) =>
+      m.attachments?.some((a) => a.instanceId === inst.instanceId),
+    );
+    expect(hostMinion).toBeDefined();
+    expect(hostMinion?.tokens?.damage ?? 0).toBe(0);
+  });
+
+  it('installInPlay chooses the superlative candidate when multiple minions are engaged', () => {
+    const target = find('01185', 'biomechanical_upgrades_defeat_replacement');
+    const stage = createStage(subjectOf(target), options);
+    const p = player1(stage);
+
+    const bomber = createCardInstance(cardCatalog.getCard('01111')!, 'p1'); // 2 HP
+    const modok = createCardInstance(cardCatalog.getCard('01184')!, 'p1'); // 8 HP
+    p.engagedMinions = [bomber, modok];
+
+    const inst = createCardInstance(target.card, 'p1');
+    installInPlay(stage, inst, target.card.type);
+
+    expect(modok.attachments?.some((a) => a.instanceId === inst.instanceId)).toBe(true);
+    expect(bomber.attachments?.length ?? 0).toBe(0);
+    expect(modok.tokens?.damage ?? 0).toBe(0);
+    expect(bomber.tokens?.damage ?? 0).toBe(0);
+  });
+
+  it('installInPlay discards an attachment if no valid host candidate exists', () => {
+    const target = find('01185', 'biomechanical_upgrades_defeat_replacement');
+    const stage = createStage(subjectOf(target), options);
+    const p = player1(stage);
+
+    p.engagedMinions = [];
+    stage.fixtures.minion = undefined;
+
+    const inst = createCardInstance(target.card, 'p1');
+    installInPlay(stage, inst, target.card.type);
+
+    expect(stage.state.encounterDiscard.some((c) => c.instanceId === inst.instanceId)).toBe(true);
   });
 });
 

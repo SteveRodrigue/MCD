@@ -34,7 +34,8 @@ import { getDefenderRestriction } from '../pipeline/target-restrictions';
 import { applyThreatPlacement } from '../pipeline/threat-pipeline';
 import { namedSchemeCode } from '../effects/step-selection';
 import { matchesCardFilter } from '../filters/card-filter';
-import { findInPlayCardInstance } from '../state/state-validator';
+import { resolveAttachmentHost } from '../pipeline/attachment-host';
+import { attachCardToHost, findInPlayCardInstance } from '../state/state-validator';
 import {
   getEffectiveAllyLimit,
   getEffectiveAllyStats,
@@ -987,7 +988,6 @@ const isPlayerCard = (type: CardType) =>
 /** Sculpts the source card into the zone its type lives in (events wait in hand). */
 export function installInPlay(stage: Stage, inst: CardInstance, type: CardType): void {
   const p = player1(stage);
-  const villain = stage.state.villains[0];
   switch (type) {
     case CardType.ALLY:
       p.allies.push(inst);
@@ -1003,22 +1003,33 @@ export function installInPlay(stage: Stage, inst: CardInstance, type: CardType):
       p.engagedMinions.push(inst);
       break;
     case CardType.ATTACHMENT: {
-      if (inst.card.enrichment?.attachTo?.host?.type === 'MINION') {
-        const minion = stage.fixtures.minion;
-        const hostMinion =
-          p.engagedMinions[0] ?? (minion ? createCardInstance(minion, PLAYER_ID) : undefined);
-        if (hostMinion) {
-          hostMinion.tokens = {
-            ...hostMinion.tokens,
-            damage: Math.max(1, getEffectiveMinionHitPoints(stage.state, hostMinion) - 1),
-          };
-          if (!p.engagedMinions.includes(hostMinion)) p.engagedMinions.push(hostMinion);
-          if (!hostMinion.attachments) hostMinion.attachments = [];
-          hostMinion.attachments.push({ ...inst, hostInstanceId: hostMinion.instanceId });
-          break;
-        }
+      const attachTo = inst.card.enrichment?.attachTo;
+      if (
+        attachTo?.host?.type === 'MINION' &&
+        p.engagedMinions.length === 0 &&
+        stage.fixtures.minion
+      ) {
+        p.engagedMinions.push(createCardInstance(stage.fixtures.minion, PLAYER_ID));
       }
-      villain.attachments.push({ ...inst, hostInstanceId: villain.instanceId });
+      const resolution = resolveAttachmentHost(stage.state, inst, attachTo);
+      if (resolution.kind === 'attach') {
+        attachCardToHost(
+          stage.state,
+          inst,
+          resolution.host.kind === 'villain' ? 'VILLAIN' : 'ENEMY',
+          resolution.host.instanceId,
+        );
+      } else if (resolution.kind === 'choose') {
+        const host = resolution.candidates[0];
+        attachCardToHost(
+          stage.state,
+          inst,
+          host.kind === 'villain' ? 'VILLAIN' : 'ENEMY',
+          host.instanceId,
+        );
+      } else {
+        stage.state.encounterDiscard.push(inst);
+      }
       break;
     }
     case CardType.SIDE_SCHEME:

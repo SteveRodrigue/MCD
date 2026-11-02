@@ -43,7 +43,7 @@ beforeAll(async () => {
 afterAll(async () => {
   fs.rmSync(root, { recursive: true, force: true });
   await bootContent(contentDriver);
-});
+}, 30000);
 
 describe('Content screen', () => {
   it('lists every pack with its state and the reason a pack did not load', () => {

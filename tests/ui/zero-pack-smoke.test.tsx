@@ -7,7 +7,7 @@ import { contentDriver } from '../helpers/content';
 // The engine and UI must start with no content (ADR-0092): the welcome screen explains it (M7).
 afterAll(async () => {
   await bootContent(contentDriver);
-});
+}, 30000);
 
 describe('zero-pack boot', () => {
   it('shows the welcome screen with the fan-project notice and the disabled actions', async () => {

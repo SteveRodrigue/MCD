@@ -98,11 +98,16 @@ export function refreshPromptOptionAvailability(
   if (!prompt) return;
   const player = state.players.find((p) => p.id === prompt.playerId);
   if (!player) return;
-  const source = prompt.sourceCardInstanceId
-    ? [...(player.obligations || []), ...player.tableau, ...player.allies].find(
-        (c) => c.instanceId === prompt.sourceCardInstanceId,
-      )
-    : undefined;
+  const source =
+    prompt.sourceCardInstance ??
+    (prompt.sourceCardInstanceId
+      ? [
+          ...(player.obligations || []),
+          ...player.tableau,
+          ...player.allies,
+          ...(state.sideSchemes || []),
+        ].find((c) => c.instanceId === prompt.sourceCardInstanceId)
+      : undefined);
 
   const reasons = new Map(
     prompt.options.map((o) => [o.id, gateOrCostReason(state, player, prompt, o, source)]),
@@ -682,7 +687,7 @@ export function resolveDecisionPrompt(
   }
 
   refreshPromptOptionAvailability(state, prompt);
-  if (selectedOption?.disabled && (selectedOption.gate || selectedOption.cost)) {
+  if (selectedOption?.disabled) {
     return {
       state,
       result: { success: false, error: selectedOption.disabledReason || 'Option is disabled' },

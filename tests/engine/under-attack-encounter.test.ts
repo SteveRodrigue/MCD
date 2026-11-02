@@ -126,17 +126,64 @@ describe('Under Attack modular set (#354)', () => {
       expect(underAttackScheme?.threat).toBe(5);
     });
 
-    it('deals 0 damage if alter-ego chooses to deal 3 damage to their hero', () => {
+    it('disables deal_damage option when player is in alter-ego form with No valid target', () => {
       state.players = [state.players[0]];
       p1().currentForm = 'alter_ego';
       p1().activeFormCard = p1().alterEgo;
 
       revealFor('p1', UNDER_ATTACK);
+
+      const prompt = peekDecisionPrompt(state);
+      expect(prompt).toBeDefined();
+      const dealDamageOpt = prompt?.options.find((o) => o.id === 'deal_damage');
+      expect(dealDamageOpt?.disabled).toBe(true);
+      expect(dealDamageOpt?.disabledReason).toBe('No valid target');
+
+      // Attempting to resolve the disabled option fails
+      const failedRes = choosePromptOption('p1', 'deal_damage');
+      expect(failedRes.result.success).toBe(false);
+      expect(failedRes.result.error).toBe('No valid target');
+
+      // Threat option remains valid and resolvable
       const initialHealth = p1().health;
+      const successRes = choosePromptOption('p1', 'place_threat');
+      expect(successRes.result.success).toBe(true);
 
-      choosePromptOption('p1', 'deal_damage');
-
+      const underAttackScheme = state.sideSchemes.find((s) => s.card.code === UNDER_ATTACK);
+      expect(underAttackScheme?.threat).toBe(5);
       expect(p1().health).toBe(initialHealth);
+    });
+
+    it('prompts each player sequentially in 2-player with form-dependent option legality', () => {
+      // p1 is Hero, p2 is Alter-Ego
+      p1().currentForm = 'hero';
+      p1().activeFormCard = p1().hero;
+      p2().currentForm = 'alter_ego';
+      p2().activeFormCard = p2().alterEgo;
+
+      revealFor('p1', UNDER_ATTACK);
+
+      // First prompt is for p1 (Hero): both options enabled
+      const prompt1 = peekDecisionPrompt(state);
+      expect(prompt1?.playerId).toBe('p1');
+      expect(prompt1?.options.every((o) => !o.disabled)).toBe(true);
+
+      const initialP1Health = p1().health;
+      choosePromptOption('p1', 'deal_damage');
+      expect(p1().health).toBe(initialP1Health - 3);
+
+      // Second prompt is for p2 (Alter-Ego): deal_damage disabled
+      const prompt2 = peekDecisionPrompt(state);
+      expect(prompt2?.playerId).toBe('p2');
+      const p2DamageOpt = prompt2?.options.find((o) => o.id === 'deal_damage');
+      expect(p2DamageOpt?.disabled).toBe(true);
+      expect(p2DamageOpt?.disabledReason).toBe('No valid target');
+
+      choosePromptOption('p2', 'place_threat');
+
+      const underAttackScheme = state.sideSchemes.find((s) => s.card.code === UNDER_ATTACK);
+      // Base threat 3 + 2 placed from p2 = 5
+      expect(underAttackScheme?.threat).toBe(5);
     });
   });
 

@@ -1,3 +1,4 @@
+import { CardZoomLayerContext } from '../context/card-zoom-layer';
 import React, { useEffect, useId, useRef } from 'react';
 import { X } from 'lucide-react';
 import { ModalLayer } from '../components/layout/ModalLayer';
@@ -335,8 +336,10 @@ export const ModalScaffold: React.FC<ModalScaffoldProps> = ({
         <ActionBurst burst={burst} />
 
         <div className={`relative min-h-0 flex-1 overflow-y-auto ${style.body}`}>
-          {flavor.intro}
-          {children}
+          <CardZoomLayerContext.Provider value={true}>
+            {flavor.intro}
+            {children}
+          </CardZoomLayerContext.Provider>
         </div>
 
         {footer && (

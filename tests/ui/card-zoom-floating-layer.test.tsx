@@ -39,6 +39,7 @@ describe('Card hover zoom floats above clipping panels (ADR-0012)', () => {
       promptId: 'p',
       playerId: 'p1',
       title: 'Use ability?',
+      description: 'Use the ability?',
       sourceCardName: 'Enhanced Spider-Sense',
       sourceCardCode: '01004',
       options: [{ id: 'pass', label: 'No', effect: 'PASS' }],

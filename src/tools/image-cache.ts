@@ -11,9 +11,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import http from 'http';
 import https from 'https';
-import { CARD_ART_FILE_PATTERN, CARD_BACKS_DIR, marvelCdbImageUrl } from '../data/content/card-art';
-import { PACK_ID_PATTERN, PackManifestSchema } from '../data/packs/pack-manifest';
-import { imageCacheDir, packAssetDir, packDir } from './content-paths';
+import {
+  CARD_ART_FILE_PATTERN,
+  CARD_BACKS_DIR,
+  marvelCdbImageUrl,
+} from '../data/content/card-art.ts';
+import { PACK_ID_PATTERN, PackManifestSchema } from '../data/packs/pack-manifest.ts';
+import { imageCacheDir, packAssetDir, packDir } from './content-paths.ts';
 
 const USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 MCD/1.0';

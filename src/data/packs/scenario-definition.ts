@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DIFFICULTY_MODES } from '../../engine/models/state';
+import { DIFFICULTY_MODES } from '../../engine/models/difficulty.ts';
 
 const DifficultySchema = z.enum(DIFFICULTY_MODES);
 const CardCodeList = z.array(z.string().min(1));

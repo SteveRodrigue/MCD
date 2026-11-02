@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { NormalizedCard, CardInstance, StatusCard, CardType } from '../../../engine/models';
 import { getEffectiveCardTraitsDetails } from '../../../engine/pipeline/stat-calculator';
 import { useCardArt } from '../../hooks/useCardArt';
@@ -11,6 +12,8 @@ import { CardBackType, cardBackUrl, remoteArtUrl } from '../../../data/content/c
 import { FormattedCardText } from './FormattedCardText';
 import { useGameSettings } from '../../context/useGameSettings';
 import { CardContextMenu } from './CardContextMenu';
+import { useFloatingCardZoom } from '../../context/card-zoom-layer';
+import { Z_CLASS } from '../../styles/z-layers';
 
 export interface CardViewProps {
   card: NormalizedCard;
@@ -75,6 +78,8 @@ const CardViewImpl: React.FC<CardViewProps> = ({
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [dynamicOrigin, setDynamicOrigin] = useState<string | null>(null);
+  const floatZoom = useFloatingCardZoom() && enableHoverZoom;
+  const [floatRect, setFloatRect] = useState<DOMRect | null>(null);
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
 
   const isFacedown = Boolean(isFacedownProp);
@@ -169,6 +174,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
   const handleMouseEnter = () => {
     if (!enableHoverZoom || !cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
+    if (floatZoom) setFloatRect(rect);
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
@@ -231,6 +237,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
       data-card-view={card.code}
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
+      onMouseLeave={floatZoom ? () => setFloatRect(null) : undefined}
       onContextMenu={handleContextMenu}
       className={`relative inline-block transition-all duration-200 select-none group cursor-pointer z-table hover:z-zoom ${
         exhaustedState
@@ -246,7 +253,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
           } as React.CSSProperties
         }
         className={`relative rounded-xl overflow-hidden border-comic border-comic-black shadow-comic transition-all duration-200 ease-out transform ${originClass} ${
-          enableHoverZoom
+          enableHoverZoom && !floatZoom
             ? 'group-hover:scale-(--card-zoom-scale) group-hover:-translate-y-4 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.85)] group-hover:border-4'
             : enableHoverLift
               ? 'group-hover:-translate-y-1'
@@ -482,6 +489,41 @@ const CardViewImpl: React.FC<CardViewProps> = ({
           </>
         )}
       </div>
+
+      {/* Floating hover zoom: a copy of the card in a body-level portal, so no panel can clip it */}
+      {floatZoom &&
+        floatRect &&
+        createPortal(
+          <div
+            aria-hidden="true"
+            data-card-zoom-layer={card.code}
+            className={`fixed pointer-events-none ${Z_CLASS.menu}`}
+            style={{
+              left: floatRect.left,
+              top: floatRect.top,
+              width: floatRect.width,
+              height: floatRect.height,
+              transformOrigin: activeOrigin.replace('-', ' '),
+              transform: `translateY(-1rem) scale(${effectiveZoomScale})`,
+            }}
+          >
+            <CardViewImpl
+              card={card}
+              instance={instance}
+              isFacedown={isFacedownProp}
+              cardBackType={cardBackType}
+              dynamicTraits={dynamicTraits}
+              isExhausted={false}
+              size={size}
+              showTokens={showTokens}
+              enableHoverZoom={false}
+              enableHoverLift={false}
+              enableContextMenu={false}
+              className="shadow-[0_25px_50px_-12px_rgba(0,0,0,0.85)]"
+            />
+          </div>,
+          document.body,
+        )}
 
       {/* Tabletop Right-Click Context Menu */}
       {contextMenuPos && (

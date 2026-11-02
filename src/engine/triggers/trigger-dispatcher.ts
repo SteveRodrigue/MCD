@@ -914,6 +914,217 @@ function scanIdentityTriggerAbilities(
   }
 }
 
+function scanCardInstanceTriggerAbilities(
+  state: GameState,
+  cardInst: CardInstance,
+  controller: PlayerState,
+  trigger: TriggerType,
+  context: TriggerContext,
+  currentChain: TriggerCallNode[],
+  scanState: TriggerScanState,
+): void {
+  if (!cardInst?.card) return;
+  const abilities = cardInst.card.enrichment?.abilities || [];
+  for (const ability of abilities) {
+    if (triggersAreEquivalent(ability.trigger, trigger)) {
+      if (revealCannotBeCanceledBy(state, ability, context)) continue;
+      if (
+        (ability.timing === 'HERO_INTERRUPT' || ability.timing === 'HERO_RESPONSE') &&
+        controller.currentForm !== 'hero'
+      ) {
+        continue;
+      }
+      if (
+        (ability.timing === 'ALTER_EGO_INTERRUPT' || ability.timing === 'ALTER_EGO_RESPONSE') &&
+        controller.currentForm !== 'alter_ego'
+      ) {
+        continue;
+      }
+      if (!matchesTriggerFilter(ability.triggerFilter, context, controller, cardInst, trigger)) {
+        continue;
+      }
+      // Universal guard for self-referential in-play play/entry triggers (ADR-0050):
+      if (trigger === 'ENTERS_PLAY' || trigger === 'CARD_PLAYED') {
+        if (context.sourceInstanceId && context.sourceInstanceId !== cardInst.instanceId) {
+          continue;
+        }
+        if (!context.sourceInstanceId) {
+          continue;
+        }
+      }
+
+      // Ally action-resolution guard:
+      if (
+        cardInst.card.type === 'ally' &&
+        (trigger === 'THWART_RESOLVED' || trigger === 'ATTACK_RESOLVED')
+      ) {
+        if (context.sourceInstanceId && context.sourceInstanceId !== cardInst.instanceId) {
+          continue;
+        }
+        if (!context.sourceInstanceId) {
+          continue;
+        }
+      }
+
+      const isForced = isForcedTiming(ability.timing);
+      if (isForced !== (scanState.pass === 'FORCED')) continue;
+      if (isForced || context.acceptOptionalTriggers === true) {
+        // RR v1.8 Forced: a forced ability that requires a target and has no valid one does not initiate
+        if (
+          !kernel.checkAbilityTargets(state, controller, ability, cardInst, {
+            targetType: context.targetType,
+            targetInstanceId: context.targetInstanceId,
+          }).allowed
+        ) {
+          continue;
+        }
+        if (ability.cost && !canPayAbilityCost(state, controller, ability, cardInst).allowed) {
+          continue;
+        }
+        const run = (): void => {
+          const node: TriggerCallNode = {
+            trigger,
+            abilityId: ability.id,
+            sourceInstanceId: cardInst.instanceId,
+            cardCode: cardInst.card.code,
+            cardName: cardInst.card.name,
+          };
+          const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
+          if (ability.cost) executeAbilityCost(state, controller, ability, cardInst);
+          const effCtx: EffectExecutionContext = {
+            playerId: controller.id,
+            sourceCardInstance: cardInst,
+            eventTargetType: context.targetType,
+            eventTargetInstanceId: context.targetInstanceId,
+            resourcesSpent: context.resourcesSpent,
+            threatAmount: scanState.currentThreat,
+            damageAmount: scanState.currentDamage,
+            interceptedValue: scanState.currentThreat || scanState.currentDamage,
+            triggerChain: nextChain,
+          };
+          kernel.executeEffect(state, ability, effCtx);
+          if (trigger === 'THREAT_WOULD_BE_PLACED' && effCtx.threatAmount !== undefined) {
+            scanState.currentThreat = effCtx.threatAmount;
+          }
+          if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && effCtx.damageAmount !== undefined) {
+            scanState.currentDamage = effCtx.damageAmount;
+            if (scanState.currentDamage === 0) scanState.isPrevented = true;
+          }
+          // Logged like the identity and optional paths, so the order of a window can be read
+          appendLog(state, {
+            key: `ability.${ability.id}.triggered`,
+            params: { actor: controller.name },
+            onomatopoeia: 'ABILITY TRIGGERED!',
+          });
+        };
+        if (isForced) {
+          scanState.forcedCandidates.push({
+            controller,
+            run,
+            prompt: () =>
+              forcedAbilityPrompt(state, scanState, trigger, context, controller, ability, {
+                name: cardInst.card.name,
+                code: cardInst.card.code,
+                instanceId: cardInst.instanceId,
+              }),
+          });
+        } else {
+          run();
+        }
+      } else {
+        // Optional In-Play Ability: Check cost & limits before prompting
+        if (
+          triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN') &&
+          scanState.currentDamage <= 0
+        ) {
+          continue;
+        }
+        const costCheck = canPayAbilityCost(state, controller, ability, cardInst);
+        if (!costCheck.allowed) continue;
+        // RR v1.8 "Target": an ability that requires a target needs at least one valid target.
+        if (
+          !kernel.checkAbilityTargets(state, controller, ability, cardInst, {
+            targetType: context.targetType,
+            targetInstanceId: context.targetInstanceId,
+          }).allowed
+        ) {
+          continue;
+        }
+
+        if (ability.limit === 'ONCE_PER_ROUND' && controller.usedAbilitiesThisRound?.[ability.id]) {
+          continue;
+        }
+        if (ability.limit === 'ONCE_PER_PHASE' && controller.usedAbilitiesThisPhase?.[ability.id]) {
+          continue;
+        }
+
+        const preventAmount = getAbilityPreventAmount(ability);
+        const cardName = cardInst.card.name;
+        const isDamageTrigger = triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN');
+        const damageSuffix =
+          isDamageTrigger && scanState.currentDamage > 0
+            ? ` (Incoming Damage: ${scanState.currentDamage})`
+            : '';
+        const damageDescSuffix =
+          isDamageTrigger && scanState.currentDamage > 0
+            ? ` [Incoming Damage: ${scanState.currentDamage}]`
+            : '';
+        const sourceFields = getTriggerSourceFields(state, context);
+        kernel.enqueueDecisionPrompt(state, {
+          promptId: nextEngineId(state, `prompt_trigger_${ability.id}`),
+          playerId: controller.id,
+          title: `Do you want to use the following ability from ${cardName}?${damageSuffix}`,
+          description: `${formatAbilityStepsSummary(trigger, ability.steps || [])}${damageDescSuffix}`,
+          incomingDamage: isDamageTrigger ? scanState.currentDamage : undefined,
+          attackerCardCode: context.attackerCardCode as string | undefined,
+          attackerName: context.attackerName as string | undefined,
+          defenderCardCode: context.defenderCardCode as string | undefined,
+          defenderName: context.defenderName as string | undefined,
+          defenderType: context.defenderType,
+          targetCardCode:
+            (context.targetCardCode as string | undefined) || controller.activeFormCard?.code,
+          targetName:
+            (context.targetName as string | undefined) ||
+            controller.activeFormCard?.name ||
+            controller.name,
+          targetCurrentHp: (context.targetCurrentHp as number | undefined) ?? controller.health,
+          targetMaxHp: (context.targetMaxHp as number | undefined) ?? controller.maxHealth,
+          preventAmount,
+          sourceCardName: cardName,
+          sourceCardCode: cardInst.card.code,
+          ...sourceFields,
+          triggerType: ability.timing,
+          isVoluntary: true,
+          options: [
+            {
+              id: `trigger_${ability.id}`,
+              label: 'Yes',
+              effect: 'EXECUTE_OPTIONAL_TRIGGER',
+              params: {
+                ability,
+                context: {
+                  ...context,
+                  damageAmount: scanState.currentDamage,
+                },
+                sourceCardInstanceId: cardInst.instanceId,
+              },
+            },
+            {
+              id: 'pass',
+              label: 'No',
+              effect: 'PASS',
+            },
+          ],
+        });
+        scanState.hasPendingPrompt = true;
+        if (trigger !== 'THREAT_WOULD_BE_PLACED' && trigger !== 'DAMAGE_WOULD_BE_TAKEN') {
+          break;
+        }
+      }
+    }
+  }
+}
+
 function scanInPlayTriggerAbilities(
   state: GameState,
   trigger: TriggerType,
@@ -923,9 +1134,6 @@ function scanInPlayTriggerAbilities(
   scanState: TriggerScanState,
 ): void {
   const playerAbilitiesSuspended = arePlayerAbilitiesSuspended(state);
-  // Villain attachments are encounter cards: the first player scans them.
-  const firstPlayerId = getFirstPlayer(state)?.id;
-  const villainAttachments = getVillainsInPlay(state).flatMap((v) => v.attachments || []);
   for (const controller of playersToScan) {
     if (
       scanState.hasPendingPrompt &&
@@ -945,216 +1153,17 @@ function scanInPlayTriggerAbilities(
         : (controller.allies || []).flatMap((a) => a.attachments || [])),
       ...(controller.engagedMinions || []),
       ...(controller.engagedMinions || []).flatMap((m) => m.attachments || []),
-      ...(controller.id === firstPlayerId ? villainAttachments : []),
     ];
     for (const cardInst of inPlayCards) {
-      const abilities = cardInst.card.enrichment?.abilities || [];
-      for (const ability of abilities) {
-        if (triggersAreEquivalent(ability.trigger, trigger)) {
-          if (revealCannotBeCanceledBy(state, ability, context)) continue;
-          if (
-            (ability.timing === 'HERO_INTERRUPT' || ability.timing === 'HERO_RESPONSE') &&
-            controller.currentForm !== 'hero'
-          ) {
-            continue;
-          }
-          if (
-            (ability.timing === 'ALTER_EGO_INTERRUPT' || ability.timing === 'ALTER_EGO_RESPONSE') &&
-            controller.currentForm !== 'alter_ego'
-          ) {
-            continue;
-          }
-          if (
-            !matchesTriggerFilter(ability.triggerFilter, context, controller, cardInst, trigger)
-          ) {
-            continue;
-          }
-          // Universal guard for self-referential in-play play/entry triggers (ADR-0050):
-          if (trigger === 'ENTERS_PLAY' || trigger === 'CARD_PLAYED') {
-            if (context.sourceInstanceId && context.sourceInstanceId !== cardInst.instanceId) {
-              continue;
-            }
-            if (!context.sourceInstanceId) {
-              continue;
-            }
-          }
-
-          // Ally action-resolution guard:
-          if (
-            cardInst.card.type === 'ally' &&
-            (trigger === 'THWART_RESOLVED' || trigger === 'ATTACK_RESOLVED')
-          ) {
-            if (context.sourceInstanceId && context.sourceInstanceId !== cardInst.instanceId) {
-              continue;
-            }
-            if (!context.sourceInstanceId) {
-              continue;
-            }
-          }
-
-          const isForced = isForcedTiming(ability.timing);
-          if (isForced !== (scanState.pass === 'FORCED')) continue;
-          if (isForced || context.acceptOptionalTriggers === true) {
-            // RR v1.8 Forced: a forced ability that requires a target and has no valid one does not initiate
-            if (
-              !kernel.checkAbilityTargets(state, controller, ability, cardInst, {
-                targetType: context.targetType,
-                targetInstanceId: context.targetInstanceId,
-              }).allowed
-            ) {
-              continue;
-            }
-            if (ability.cost && !canPayAbilityCost(state, controller, ability, cardInst).allowed) {
-              continue;
-            }
-            const run = (): void => {
-              const node: TriggerCallNode = {
-                trigger,
-                abilityId: ability.id,
-                sourceInstanceId: cardInst.instanceId,
-                cardCode: cardInst.card.code,
-                cardName: cardInst.card.name,
-              };
-              const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
-              if (ability.cost) executeAbilityCost(state, controller, ability, cardInst);
-              const effCtx: EffectExecutionContext = {
-                playerId: controller.id,
-                sourceCardInstance: cardInst,
-                eventTargetType: context.targetType,
-                eventTargetInstanceId: context.targetInstanceId,
-                resourcesSpent: context.resourcesSpent,
-                threatAmount: scanState.currentThreat,
-                damageAmount: scanState.currentDamage,
-                interceptedValue: scanState.currentThreat || scanState.currentDamage,
-                triggerChain: nextChain,
-              };
-              kernel.executeEffect(state, ability, effCtx);
-              if (trigger === 'THREAT_WOULD_BE_PLACED' && effCtx.threatAmount !== undefined) {
-                scanState.currentThreat = effCtx.threatAmount;
-              }
-              if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && effCtx.damageAmount !== undefined) {
-                scanState.currentDamage = effCtx.damageAmount;
-                if (scanState.currentDamage === 0) scanState.isPrevented = true;
-              }
-              // Logged like the identity and optional paths, so the order of a window can be read
-              appendLog(state, {
-                key: `ability.${ability.id}.triggered`,
-                params: { actor: controller.name },
-                onomatopoeia: 'ABILITY TRIGGERED!',
-              });
-            };
-            if (isForced) {
-              scanState.forcedCandidates.push({
-                controller,
-                run,
-                prompt: () =>
-                  forcedAbilityPrompt(state, scanState, trigger, context, controller, ability, {
-                    name: cardInst.card.name,
-                    code: cardInst.card.code,
-                    instanceId: cardInst.instanceId,
-                  }),
-              });
-            } else {
-              run();
-            }
-          } else {
-            // Optional In-Play Ability: Check cost & limits before prompting
-            if (
-              triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN') &&
-              scanState.currentDamage <= 0
-            ) {
-              continue;
-            }
-            const costCheck = canPayAbilityCost(state, controller, ability, cardInst);
-            if (!costCheck.allowed) continue;
-            // RR v1.8 "Target": an ability that requires a target needs at least one valid target.
-            if (
-              !kernel.checkAbilityTargets(state, controller, ability, cardInst, {
-                targetType: context.targetType,
-                targetInstanceId: context.targetInstanceId,
-              }).allowed
-            ) {
-              continue;
-            }
-
-            if (
-              ability.limit === 'ONCE_PER_ROUND' &&
-              controller.usedAbilitiesThisRound?.[ability.id]
-            ) {
-              continue;
-            }
-            if (
-              ability.limit === 'ONCE_PER_PHASE' &&
-              controller.usedAbilitiesThisPhase?.[ability.id]
-            ) {
-              continue;
-            }
-
-            const preventAmount = getAbilityPreventAmount(ability);
-            const cardName = cardInst.card.name;
-            const isDamageTrigger = triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN');
-            const damageSuffix =
-              isDamageTrigger && scanState.currentDamage > 0
-                ? ` (Incoming Damage: ${scanState.currentDamage})`
-                : '';
-            const damageDescSuffix =
-              isDamageTrigger && scanState.currentDamage > 0
-                ? ` [Incoming Damage: ${scanState.currentDamage}]`
-                : '';
-            const sourceFields = getTriggerSourceFields(state, context);
-            kernel.enqueueDecisionPrompt(state, {
-              promptId: nextEngineId(state, `prompt_trigger_${ability.id}`),
-              playerId: controller.id,
-              title: `Do you want to use the following ability from ${cardName}?${damageSuffix}`,
-              description: `${formatAbilityStepsSummary(trigger, ability.steps || [])}${damageDescSuffix}`,
-              incomingDamage: isDamageTrigger ? scanState.currentDamage : undefined,
-              attackerCardCode: context.attackerCardCode as string | undefined,
-              attackerName: context.attackerName as string | undefined,
-              defenderCardCode: context.defenderCardCode as string | undefined,
-              defenderName: context.defenderName as string | undefined,
-              defenderType: context.defenderType,
-              targetCardCode:
-                (context.targetCardCode as string | undefined) || controller.activeFormCard?.code,
-              targetName:
-                (context.targetName as string | undefined) ||
-                controller.activeFormCard?.name ||
-                controller.name,
-              targetCurrentHp: (context.targetCurrentHp as number | undefined) ?? controller.health,
-              targetMaxHp: (context.targetMaxHp as number | undefined) ?? controller.maxHealth,
-              preventAmount,
-              sourceCardName: cardName,
-              sourceCardCode: cardInst.card.code,
-              ...sourceFields,
-              triggerType: ability.timing,
-              isVoluntary: true,
-              options: [
-                {
-                  id: `trigger_${ability.id}`,
-                  label: 'Yes',
-                  effect: 'EXECUTE_OPTIONAL_TRIGGER',
-                  params: {
-                    ability,
-                    context: {
-                      ...context,
-                      damageAmount: scanState.currentDamage,
-                    },
-                    sourceCardInstanceId: cardInst.instanceId,
-                  },
-                },
-                {
-                  id: 'pass',
-                  label: 'No',
-                  effect: 'PASS',
-                },
-              ],
-            });
-            scanState.hasPendingPrompt = true;
-            if (trigger !== 'THREAT_WOULD_BE_PLACED' && trigger !== 'DAMAGE_WOULD_BE_TAKEN') {
-              break;
-            }
-          }
-        }
-      }
+      scanCardInstanceTriggerAbilities(
+        state,
+        cardInst,
+        controller,
+        trigger,
+        context,
+        currentChain,
+        scanState,
+      );
       if (
         scanState.hasPendingPrompt &&
         trigger !== 'THREAT_WOULD_BE_PLACED' &&
@@ -1162,6 +1171,61 @@ function scanInPlayTriggerAbilities(
       ) {
         break;
       }
+    }
+  }
+}
+
+function scanEncounterTriggerAbilities(
+  state: GameState,
+  trigger: TriggerType,
+  context: TriggerContext,
+  currentChain: TriggerCallNode[],
+  scanState: TriggerScanState,
+): void {
+  const firstPlayer = getFirstPlayer(state);
+  if (!firstPlayer) return;
+
+  const encounterCards: CardInstance[] = [
+    ...getVillainsInPlay(state)
+      .filter((v) => Boolean(v?.card))
+      .map((v) => ({ instanceId: v.instanceId || 'villain', card: v.card })),
+    ...getVillainsInPlay(state).flatMap((v) => v.attachments || []),
+    ...(state.sideSchemes || [])
+      .filter((s) => Boolean(s?.card))
+      .map((s) => ({ instanceId: s.instanceId, card: s.card })),
+    ...(state.sideSchemes || []).flatMap((s) => s.attachments || []),
+    ...(state.mainSchemes || [])
+      .filter((m) => Boolean(m?.card))
+      .map((m) => ({ instanceId: m.instanceId || 'main_scheme', card: m.card })),
+    ...(state.mainSchemes || []).flatMap((m) => m.attachments || []),
+    ...(state.environments || []),
+    ...(state.environments || []).flatMap((e) => e.attachments || []),
+  ].filter((c): c is CardInstance => Boolean(c && c.card));
+
+  for (const cardInst of encounterCards) {
+    if (
+      scanState.hasPendingPrompt &&
+      trigger !== 'THREAT_WOULD_BE_PLACED' &&
+      trigger !== 'DAMAGE_WOULD_BE_TAKEN' &&
+      !isDefeatTrigger(trigger)
+    ) {
+      break;
+    }
+    scanCardInstanceTriggerAbilities(
+      state,
+      cardInst,
+      firstPlayer,
+      trigger,
+      context,
+      currentChain,
+      scanState,
+    );
+    if (
+      scanState.hasPendingPrompt &&
+      trigger !== 'THREAT_WOULD_BE_PLACED' &&
+      trigger !== 'DAMAGE_WOULD_BE_TAKEN'
+    ) {
+      break;
     }
   }
 }
@@ -1584,12 +1648,14 @@ export function dispatchTrigger(
   // Forced abilities initiate first (RR v1.8 "Forced"): identity, then tableau, allies & in-play cards.
   scanIdentityTriggerAbilities(state, trigger, context, currentChain, playersToScan, scanState);
   scanInPlayTriggerAbilities(state, trigger, context, currentChain, playersToScan, scanState);
+  scanEncounterTriggerAbilities(state, trigger, context, currentChain, scanState);
   resolveForcedCandidates(state, scanState);
 
   // Then the optional ones: identity (e.g. Spider-Sense on Spider-Man 01001a), in play, in hand.
   scanState.pass = 'OPTIONAL';
   scanIdentityTriggerAbilities(state, trigger, context, currentChain, playersToScan, scanState);
   scanInPlayTriggerAbilities(state, trigger, context, currentChain, playersToScan, scanState);
+  scanEncounterTriggerAbilities(state, trigger, context, currentChain, scanState);
   scanAllHandTriggerReactions(state, trigger, context, currentChain, player, scanState);
 
   // 4. Finalize queued prompts

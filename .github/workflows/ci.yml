@@ -61,7 +61,7 @@ jobs:
       - name: Lint
         run: npm run lint
 
-  # Four shards run a quarter of the test files each; test-merge combines their reports.
+  # Four shards of about equal run time (tools/test-shards.ts); test-merge combines their reports.
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -114,7 +114,11 @@ jobs:
           merge-multiple: true
 
       - name: Merge reports and check coverage
-        run: npx vitest run --merge-reports --coverage
+        run: npx vitest run --merge-reports --coverage --reporter=default --reporter=json --outputFile=.vitest/timings.json
+
+      # The shard count matches the test matrix above
+      - name: Check shard balance
+        run: npx tsx tools/test-shards.ts check .vitest/timings.json 4
 
   build:
     runs-on: ubuntu-latest

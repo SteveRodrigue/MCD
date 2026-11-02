@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config';
 import path from 'path';
 import { buildDefines } from './src/tools/build-define.ts';
+import { ShardSequencer } from './tools/test-shards.ts';
 
 const alias = {
   '@engine': path.resolve(import.meta.dirname, './src/engine'),
@@ -19,6 +20,8 @@ const sharded = process.argv.some((arg) => arg.startsWith('--shard'));
 
 export default defineConfig({
   test: {
+    // --shard splits by recorded run time (tests/shard-timings.json, `npm run test:timings`)
+    sequence: { sequencer: ShardSequencer },
     // Files no test imports still count, at 0 %, instead of disappearing from the report
     coverage: {
       include: ['src/**/*.{ts,tsx}'],

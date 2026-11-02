@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:timings": "vitest run --reporter=default --reporter=json --outputFile=.vitest/timings.json && tsx tools/test-shards.ts write .vitest/timings.json",
     "simulate": "tsx scripts/simulate-games.ts",
     "cache:cards": "tsx scripts/cache-card-images.ts",
     "report:declarations": "tsx tools/audit/supplemental-declarations-analyzer.ts",

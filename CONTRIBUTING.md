@@ -75,6 +75,7 @@ npm run dev        # http://localhost:3000/ (strictPort; override with: npm run 
 | :--------------------- | :-------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
 | Run all tests          | `npm test`                                          | `npm run test:watch` for watch mode, `npm run test:coverage`                                      |
 | Run one test file      | `npx vitest run tests/engine/villain-phase.test.ts` | Prefer targeted runs while implementing                                                           |
+| Refresh shard timings  | `npm run test:timings`                              | When CI warns "Unbalanced test shards": commit the updated `tests/shard-timings.json`             |
 | Type check / lint      | `npm run typecheck`, `npm run lint`                 | Lint must report 0 warnings                                                                       |
 | Format                 | `npm run format`, `npm run format:check`            |                                                                                                   |
 | Build / preview        | `npm run build`, `npm run preview`                  | `preview` serves a build and has no editor write endpoints                                        |

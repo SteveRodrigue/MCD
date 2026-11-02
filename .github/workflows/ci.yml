@@ -61,7 +61,38 @@ jobs:
       - name: Lint
         run: npm run lint
 
+  # Four shards run a quarter of the test files each; test-merge combines their reports.
   test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage (shard ${{ matrix.shard }}/4)
+        run: npx vitest run --coverage --shard=${{ matrix.shard }}/4 --reporter=default --reporter=blob
+
+      - name: Upload shard report
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-blob-${{ matrix.shard }}
+          path: .vitest/blob/
+          include-hidden-files: true
+          retention-days: 1
+
+  # Coverage thresholds apply to the whole suite, so they are checked on the merged shard reports.
+  test-merge:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -75,9 +106,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Coverage runs the whole suite, so a separate `npm test` step only ran it twice.
-      - name: Run tests with coverage
-        run: npm run test:coverage
+      - name: Download shard reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: vitest-blob-*
+          path: .vitest/blob
+          merge-multiple: true
+
+      - name: Merge reports and check coverage
+        run: npx vitest run --merge-reports --coverage
 
   build:
     runs-on: ubuntu-latest
@@ -99,11 +136,11 @@ jobs:
   # Stable required-check name (branch protection) that gates on the parallel jobs above.
   build-and-test:
     if: ${{ always() }}
-    needs: [static-checks, test, build]
+    needs: [static-checks, test-merge, build]
     runs-on: ubuntu-latest
     steps:
       - name: Verify all jobs passed
         run: |
           [ "${{ needs.static-checks.result }}" = "success" ] &&
-          [ "${{ needs.test.result }}" = "success" ] &&
+          [ "${{ needs.test-merge.result }}" = "success" ] &&
           [ "${{ needs.build.result }}" = "success" ]

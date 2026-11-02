@@ -5,6 +5,7 @@ node_modules/
 
 # Testing and Coverage
 coverage/
+.vitest/
 .nyc_output/
 
 # Production Builds

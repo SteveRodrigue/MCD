@@ -11,26 +11,34 @@ const alias = {
 
 const define = buildDefines(import.meta.dirname, false);
 
+// Loads content once per run; each test file applies it through tests/setup/load-content.ts
+const globalSetup = ['tests/setup/global-content.ts'];
+
+// A shard covers part of the suite, so thresholds are checked only on the merged reports (CI test-merge)
+const sharded = process.argv.some((arg) => arg.startsWith('--shard'));
+
 export default defineConfig({
   test: {
     // Files no test imports still count, at 0 %, instead of disappearing from the report
     coverage: {
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['src/**/*.d.ts'],
-      thresholds: {
-        'src/engine/**': {
-          statements: 85,
-          branches: 71,
-          functions: 89,
-          lines: 87,
-        },
-        'src/ui/**': {
-          statements: 74,
-          branches: 67,
-          functions: 66,
-          lines: 76,
-        },
-      },
+      thresholds: sharded
+        ? undefined
+        : {
+            'src/engine/**': {
+              statements: 85,
+              branches: 71,
+              functions: 89,
+              lines: 87,
+            },
+            'src/ui/**': {
+              statements: 74,
+              branches: 67,
+              functions: 66,
+              lines: 76,
+            },
+          },
     },
     projects: [
       {
@@ -39,6 +47,7 @@ export default defineConfig({
           name: 'engine',
           globals: true,
           environment: 'node',
+          globalSetup,
           setupFiles: [
             'tests/setup/boot-kernel.ts',
             'tests/setup/load-content.ts',
@@ -64,6 +73,7 @@ export default defineConfig({
           environment: 'happy-dom',
           // A non-resolving origin, so UI tests never reach the dev server on port 3000 (#324)
           environmentOptions: { happyDOM: { url: 'http://mcd-ui-tests.invalid' } },
+          globalSetup,
           setupFiles: [
             'tests/ui/setup/offline-dev-api.ts',
             'tests/setup/boot-kernel.ts',

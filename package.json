@@ -36,7 +36,7 @@
     "deadcode": "knip",
     "format": "prettier --write \"**/*.{ts,tsx,js}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js}\"",
-    "verify": "npm run schema:generate && npm run format:check && npm run lint && npm run typecheck && npm run docs:check && npm run leak:check && npm test && npm run test:coverage && npm run build",
+    "verify": "npm run schema:generate && npm run format:check && npm run lint && npm run typecheck && npm run docs:check && npm run leak:check && npm run test:coverage && npm run build",
     "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {

@@ -123,8 +123,8 @@ export interface ActiveCostReduction {
   appliesTo: 'NEXT_CARD';
 }
 
-export const DIFFICULTY_MODES = ['SKIRMISH', 'STANDARD', 'EXPERT'] as const;
-export type DifficultyMode = (typeof DIFFICULTY_MODES)[number];
+export { DIFFICULTY_MODES, type DifficultyMode } from './difficulty';
+import type { DifficultyMode } from './difficulty';
 
 export interface VillainState {
   instanceId?: string;

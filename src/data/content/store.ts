@@ -1,4 +1,4 @@
-import type { LoadedContent } from './types';
+import type { LoadedContent } from './types.ts';
 
 const EMPTY: LoadedContent = { packs: [], failures: [], descriptions: [] };
 let current: LoadedContent = EMPTY;

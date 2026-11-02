@@ -1,4 +1,4 @@
-import { defineConfig, Plugin } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
@@ -13,11 +13,11 @@ import {
   mergeFontChoices,
 } from './src/ui/components/templates/font-save.ts';
 import {
-  AllTimeStats,
   applyStatsReset,
   createInitialAllTimeStats,
   mergeDeltaIntoAllTime,
 } from './src/engine/models/stats.ts';
+import type { AllTimeStats } from './src/engine/models/stats.ts';
 
 type Req = {
   url?: string;

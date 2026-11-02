@@ -7,6 +7,7 @@ import { ModalScaffold } from '../../theme/ModalScaffold';
 import { useModalStyle } from '../../theme/useModalStyle';
 import { BoostIconsPill } from '../cards/BoostIconsPill';
 import { CardView } from '../cards/CardView';
+import { FormattedCardText } from '../cards/FormattedCardText';
 
 export interface BoostEffectModalProps {
   isOpen: boolean;
@@ -59,13 +60,14 @@ export const BoostEffectModal: React.FC<BoostEffectModalProps> = ({
   const hasStar = Boolean(cardInstance?.card?.boostStar);
   const cardCode = prompt.sourceCardCode || cardInstance?.card?.code || '';
   const cardName = prompt.sourceCardName || cardInstance?.card?.name || 'Boost Card';
+  const boostAbilityText = cardInstance?.card?.boostText || prompt.description;
 
   return (
     <ModalScaffold
       title={cardName}
       kicker="BOOST ABILITY REVEALED"
       verb="red"
-      trigger={{ name: prompt.attackerName || 'Enemy' }}
+      trigger={{ name: prompt.attackerName || 'Enemy', code: prompt.attackerCardCode }}
       icon={<span className="font-comic text-xl leading-none">★</span>}
       maxWidthClass="max-w-xl"
       testId="boost-effect-modal"
@@ -95,6 +97,7 @@ export const BoostEffectModal: React.FC<BoostEffectModalProps> = ({
           {cardInstance ? (
             <div
               data-card-anchor={cardCode}
+              data-card-ref={cardCode}
               className={`relative p-3 pl-4 flex flex-col items-center justify-between gap-2 w-fit max-w-full ${style.panel}`}
             >
               <AccentStripe code={cardCode} />
@@ -119,9 +122,9 @@ export const BoostEffectModal: React.FC<BoostEffectModalProps> = ({
               <Sparkles className="w-4 h-4" />
               <span>Upcoming Boost Effect</span>
             </div>
-            <p className="font-bold text-sm leading-relaxed text-comic-black">
-              ★ {prompt.description}
-            </p>
+            <div className="font-bold text-sm leading-relaxed text-comic-black">
+              ★ <FormattedCardText text={boostAbilityText} />
+            </div>
           </div>
         </div>
       </div>

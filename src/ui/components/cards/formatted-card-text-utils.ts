@@ -35,6 +35,7 @@ export function formatCardTextHtml(rawText?: string): string {
         '<span class="font-bold text-slate-700 text-micro mx-0.5 font-sans">(per hero)</span>',
       )
       .replace(/\[boost\]/gi, '💥')
+      .replace(/\[star\]/gi, '★')
       .replace(/\[hazard\]/gi, '⚠️')
       .replace(/\[acceleration\]/gi, '⏩')
       .replace(/\[crisis\]/gi, '🔴')

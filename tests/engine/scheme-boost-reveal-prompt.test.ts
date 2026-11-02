@@ -78,7 +78,10 @@ describe('Scheme Boost Reveal Prompt & Stepping Resumption (Issue #527)', () => 
     expect(prompt).toBeDefined();
     expect(prompt?.kind).toBe('BOOST_ABILITY_REVEAL');
     expect(prompt?.sourceCardCode).toBe(TIGER_SHARK);
-    expect(prompt?.description).toContain('Give the villain a tough status card');
+    expect(prompt?.description).toBe('Rhino revealed boost card: Tiger Shark');
+    expect(prompt?.sourceCardInstance?.card.boostText).toBe(
+      'Give the villain a tough status card.',
+    );
 
     // Crucial: Effect must NOT have resolved yet, and threat must NOT be placed yet
     expect(getActiveVillain(state).statusCards ?? []).not.toContain(StatusCard.TOUGH);

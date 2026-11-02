@@ -112,6 +112,10 @@ export interface NormalizedCard {
   costPerHero?: boolean;
   restrictedSlots?: number;
   text: string;
+  /** Primary printed ability text above the divider line (RR v1.8 Boost). */
+  abilityText?: string;
+  /** Boost ability text beneath the divider line (RR v1.8 Boost). */
+  boostText?: string;
   flavor?: string;
   traits: string[];
   printedTraits?: string;

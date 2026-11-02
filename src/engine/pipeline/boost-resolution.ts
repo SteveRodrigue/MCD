@@ -221,42 +221,25 @@ export function resumeBoostCards(state: GameState, options: ResumeBoostCardsOpti
   return state.activeBoostResolution ? runBoostQueue(state, options, undefined) : 0;
 }
 
-/** Extracts the plain-text description of a card's boost ability for display in a reveal prompt. */
-export function getBoostAbilityText(boostCard: CardInstance): string {
-  const rawAudit =
-    'audit' in boostCard.card
-      ? (boostCard.card.audit as Record<string, unknown> | undefined)
-      : undefined;
-  const originalText = typeof rawAudit?.originalText === 'string' ? rawAudit.originalText : '';
-  const cardText = boostCard.card.text || originalText || '';
-  if (cardText.includes('Boost:')) {
-    const parts = cardText.split(/Boost:?/i);
-    const raw = parts[1]
-      .split(/<hr|\n\n/)[0]
-      .replace(/<[^>]+>/g, '')
-      .trim();
-    if (raw) return raw;
-  }
-  return cardText.replace(/<[^>]+>/g, '').trim();
-}
-
 /** Enqueues the BOOST_ABILITY_REVEAL decision prompt before resolving a star boost ability. */
 export function enqueueBoostRevealPrompt(
   state: GameState,
   playerId: string,
   boostCard: CardInstance,
   actorName: string,
+  actorCode?: string,
 ): GameState {
   return kernel.enqueueDecisionPrompt(state, {
     promptId: nextEngineId(state, 'prompt'),
     playerId,
     kind: 'BOOST_ABILITY_REVEAL',
     title: boostCard.card.name,
-    description: getBoostAbilityText(boostCard),
+    description: `${actorName} revealed boost card: ${boostCard.card.name}`,
     sourceCardName: boostCard.card.name,
     sourceCardCode: boostCard.card.code,
     sourceCardInstance: boostCard,
     attackerName: actorName,
+    attackerCardCode: actorCode,
     options: [
       {
         id: 'resolve_boost',

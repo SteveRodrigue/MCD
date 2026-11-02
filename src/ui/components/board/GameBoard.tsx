@@ -44,6 +44,9 @@ interface GameBoardProps {
   onReset: () => void;
 }
 
+/** Narrowest side slot (px) that still fits the villain phase panel; below it the bar is used. */
+const STEPPER_PANEL_MIN_WIDTH = 240;
+
 const SPEED_MAP: Record<string, number> = {
   slow: 18, // Slower baseline
   normal: 45, // Responsive default
@@ -90,7 +93,21 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
     };
   } | null>(null);
 
-  const { edgeScrollSpeed, villainPhasePacing, setVillainPhasePacing, devMode } = useGameSettings();
+  const { edgeScrollSpeed, villainPhasePacing, setVillainPhasePacing, phaseStepperSide, devMode } =
+    useGameSettings();
+  // The villain phase steps fill the free space beside the villain zone when it is wide enough;
+  // otherwise they stay a bar above the table. Measuring the slot keeps the choice stable.
+  const stepperSlotRef = useRef<HTMLDivElement>(null);
+  const [stepperSlotWidth, setStepperSlotWidth] = useState(0);
+  useEffect(() => {
+    const slot = stepperSlotRef.current;
+    if (!slot || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => setStepperSlotWidth(slot.clientWidth));
+    observer.observe(slot);
+    setStepperSlotWidth(slot.clientWidth);
+    return () => observer.disconnect();
+  }, [phaseStepperSide]);
+  const stepperAsPanel = stepperSlotWidth >= STEPPER_PANEL_MIN_WIDTH;
   const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(true);
   const [activeCombatOutcome, setActiveCombatOutcome] = useState<CombatResolutionSummary | null>(
     null,
@@ -377,8 +394,8 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
 
           {/* 1. Panoramic Tabletop Main Stage */}
           <main className="flex-1 flex flex-col items-center justify-start p-2 md:p-4 gap-4 max-w-full">
-            {/* Villain Phase Stepper Ribbon (Issue #140) */}
-            {gameState.phase === 'VILLAIN_PHASE' && (
+            {/* Villain Phase Stepper Ribbon (Issue #140): the compact bar when the side slot is too narrow */}
+            {gameState.phase === 'VILLAIN_PHASE' && !stepperAsPanel && (
               <VillainPhaseStepper
                 pacing={villainPhasePacing}
                 onNextStep={handleNextVillainStep}
@@ -390,42 +407,72 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
 
             {/* Scenario Main Villain & Out of Play Console */}
             <div
-              data-testid="villain-row"
-              className="w-full flex flex-nowrap items-start justify-center gap-4"
+              data-testid="villain-stage"
+              className="w-full grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-4"
             >
-              {extraActionCount > 0 && (
-                <ExtraActionsPill
-                  teamActionCount={teamActionCount}
-                  villainActionCount={villainActionCount}
-                  isNewspaperOpen={isNewspaperOpen}
-                  onOpen={() => setIsNewspaperOpen(true)}
+              {(['left', 'right'] as const).map((side) => (
+                <div
+                  key={side}
+                  ref={side === phaseStepperSide ? stepperSlotRef : undefined}
+                  data-testid={`stepper-slot-${side}`}
+                  className={`relative min-w-0 ${side === 'left' ? 'order-first' : 'order-last'}`}
+                >
+                  {side === phaseStepperSide &&
+                    gameState.phase === 'VILLAIN_PHASE' &&
+                    stepperAsPanel && (
+                      <div
+                        className={`absolute inset-y-0 w-60 max-w-full ${side === 'left' ? 'right-0' : 'left-0'}`}
+                      >
+                        <VillainPhaseStepper
+                          variant="panel"
+                          pacing={villainPhasePacing}
+                          onNextStep={handleNextVillainStep}
+                          onToggleAutoPlay={() => setIsAutoPlaying((prev) => !prev)}
+                          onSkip={handleSkipVillainPacing}
+                          isAutoPlaying={isAutoPlaying}
+                        />
+                      </div>
+                    )}
+                </div>
+              ))}
+              <div
+                data-testid="villain-row"
+                className="flex flex-nowrap items-start justify-center gap-4"
+              >
+                {extraActionCount > 0 && (
+                  <ExtraActionsPill
+                    teamActionCount={teamActionCount}
+                    villainActionCount={villainActionCount}
+                    isNewspaperOpen={isNewspaperOpen}
+                    onOpen={() => setIsNewspaperOpen(true)}
+                  />
+                )}
+                {!isOutOfPlayEmpty && (
+                  <RemovedFromGameBox
+                    cards={gameState.removedFromGame || []}
+                    eliminatedPlayers={gameState.eliminatedPlayers}
+                  />
+                )}
+                <VillainZone
+                  villain={getActiveVillain(gameState)}
+                  mainScheme={getActiveMainScheme(gameState)}
+                  sideSchemes={gameState.sideSchemes}
+                  outOfPlayEmpty={isOutOfPlayEmpty}
+                  encounterDeck={gameState.encounterDeck}
+                  encounterDiscard={gameState.encounterDiscard}
+                  accelerationTokens={gameState.accelerationTokens}
+                  onSelectAttachment={(att) => {
+                    const matchAction = legalReport.boardActions.find(
+                      (a) =>
+                        a.targetCardInstance?.instanceId === att.instanceId ||
+                        (a.action as any)?.cardInstanceId === att.instanceId,
+                    );
+                    if (matchAction) {
+                      handleSelectNewspaperAction(matchAction);
+                    }
+                  }}
                 />
-              )}
-              {!isOutOfPlayEmpty && (
-                <RemovedFromGameBox
-                  cards={gameState.removedFromGame || []}
-                  eliminatedPlayers={gameState.eliminatedPlayers}
-                />
-              )}
-              <VillainZone
-                villain={getActiveVillain(gameState)}
-                mainScheme={getActiveMainScheme(gameState)}
-                sideSchemes={gameState.sideSchemes}
-                outOfPlayEmpty={isOutOfPlayEmpty}
-                encounterDeck={gameState.encounterDeck}
-                encounterDiscard={gameState.encounterDiscard}
-                accelerationTokens={gameState.accelerationTokens}
-                onSelectAttachment={(att) => {
-                  const matchAction = legalReport.boardActions.find(
-                    (a) =>
-                      a.targetCardInstance?.instanceId === att.instanceId ||
-                      (a.action as any)?.cardInstanceId === att.instanceId,
-                  );
-                  if (matchAction) {
-                    handleSelectNewspaperAction(matchAction);
-                  }
-                }}
-              />
+              </div>
             </div>
 
             {/* Multi-Hero Panoramic Track (or Solo Play Area) */}

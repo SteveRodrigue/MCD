@@ -4,6 +4,7 @@ import { DEFAULT_THEME_SETTINGS, type ThemeSettings } from '../theme/theme-setti
 
 export type EdgeScrollSpeed = 'slow' | 'normal' | 'fast';
 export type CardZoomLevel = 'small' | 'normal' | 'larger';
+export type PhaseStepperSide = 'left' | 'right';
 export type VillainPhasePacing = 'auto_normal' | 'auto_fast' | 'manual' | 'instant';
 
 export interface GameSettings extends ThemeSettings {
@@ -14,6 +15,7 @@ export interface GameSettings extends ThemeSettings {
   edgeScrollSpeed: EdgeScrollSpeed;
   cardZoomLevel: CardZoomLevel;
   villainPhasePacing: VillainPhasePacing;
+  phaseStepperSide: PhaseStepperSide;
   defaultDifficulty: DifficultyMode;
   defaultHeroicLevel: number;
 }
@@ -25,6 +27,7 @@ export interface GameSettingsContextType {
   edgeScrollSpeed: EdgeScrollSpeed;
   cardZoomLevel: CardZoomLevel;
   villainPhasePacing: VillainPhasePacing;
+  phaseStepperSide: PhaseStepperSide;
   defaultDifficulty: DifficultyMode;
   defaultHeroicLevel: number;
   setDevMode: (enabled: boolean) => void;
@@ -34,6 +37,7 @@ export interface GameSettingsContextType {
   setEdgeScrollSpeed: (speed: EdgeScrollSpeed) => void;
   setCardZoomLevel: (level: CardZoomLevel) => void;
   setVillainPhasePacing: (pacing: VillainPhasePacing) => void;
+  setPhaseStepperSide: (side: PhaseStepperSide) => void;
   setDefaultDifficulty: (difficulty: DifficultyMode) => void;
   setDefaultHeroicLevel: (level: number) => void;
   updateSettings: (partial: Partial<GameSettings>) => void;
@@ -47,6 +51,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   edgeScrollSpeed: 'normal',
   cardZoomLevel: 'normal',
   villainPhasePacing: 'auto_normal',
+  phaseStepperSide: 'left',
   defaultDifficulty: 'STANDARD',
   defaultHeroicLevel: 0,
   ...DEFAULT_THEME_SETTINGS,

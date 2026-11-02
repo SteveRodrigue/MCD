@@ -6,9 +6,9 @@
  * follows the pack's own declared convention, never a card-code prefix.
  */
 
-import { CardType } from '../../engine/models';
-import { getLoadedContent } from './store';
-import type { LoadedContent, LoadedPack } from './types';
+import type { CardType } from '../../engine/models/enums.ts';
+import { getLoadedContent } from './store.ts';
+import type { LoadedContent, LoadedPack } from './types.ts';
 
 /** Route served by the dev and preview servers: `/card-art/<packId>/<file>.png`. */
 export const CARD_ART_ROUTE = '/card-art';
@@ -31,7 +31,6 @@ export interface CardArtIdentifier {
 
 function isMainScheme(type: string | undefined, stage: string | undefined): boolean {
   return (
-    type === CardType.MAIN_SCHEME ||
     type === 'main_scheme' ||
     (stage !== undefined && /^[0-9]+[ab]$/i.test(stage))
   );

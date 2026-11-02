@@ -7,10 +7,10 @@ import cycle. Import from './schema', which re-exports everything here; only sch
 import { z } from 'zod';
 import { EFFECT_TYPES } from './runtime.ts';
 import {
-  CardType as CardTypeEnum,
-  Keyword as KeywordEnum,
-  ResourceType as ResourceTypeEnum,
-} from '../../engine/models/enums.ts';
+  CARD_TYPE_VALUES,
+  KEYWORD_VALUES,
+  RESOURCE_TYPE_VALUES,
+} from '../../engine/models/enum-values.ts';
 import { IdentityFormSchema } from './gate-params.ts';
 
 /**
@@ -212,13 +212,9 @@ export type EffectType = z.infer<typeof EffectTypeSchema>;
 /**
  * Resource Types
  */
-/** The schema enums take the engine enums' string values, so data stays plain string literals. */
-const enumValues = <E extends Record<string, string>>(e: E) =>
-  Object.values(e) as [`${E[keyof E]}`, ...`${E[keyof E]}`[]];
+export const ResourceTypeSchema = z.enum(RESOURCE_TYPE_VALUES);
 
-export const ResourceTypeSchema = z.enum(enumValues(ResourceTypeEnum));
-
-export const CardTypeSchema = z.enum(enumValues(CardTypeEnum));
+export const CardTypeSchema = z.enum(CARD_TYPE_VALUES);
 
 export const AspectSchema = z.enum([
   'aggression',
@@ -230,7 +226,7 @@ export const AspectSchema = z.enum([
 ]);
 export type Aspect = z.infer<typeof AspectSchema>;
 
-export const KeywordSchema = z.enum(KeywordEnum);
+export const KeywordSchema = z.enum(KEYWORD_VALUES);
 export type Keyword = z.infer<typeof KeywordSchema>;
 
 export const CharacterStatusSchema = z.enum(['STUNNED', 'CONFUSED', 'TOUGH']);

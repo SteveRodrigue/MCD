@@ -39,7 +39,7 @@ export const handleEndPlayerTurn: ActionHandler<'END_PLAYER_TURN'> = (nextState,
   });
 
   // Effects lasting until the end of the turn end (RR v1.8 Lasting Effects)
-  expireLastingEffects([currentPlayer], ['TURN']);
+  expireLastingEffects(nextState, [currentPlayer], ['TURN']);
 
   // If all players have taken their turns in this round -> proceed to End of Player Phase Clean-Up (RR v1.8 p. 23)
   if (nextIndex === nextState.firstPlayerIndex) {

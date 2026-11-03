@@ -1,5 +1,6 @@
 import React from 'react';
 import { GATE_REGISTRY, GateFieldMeta, StepGate } from '../../../data/supplemental/gate-params';
+import { UniversalCardFilterBuilder } from './UniversalCardFilterBuilder';
 
 export interface GateParamsPanelProps {
   gate: StepGate;
@@ -17,6 +18,7 @@ const GATE_TITLES: Partial<Record<StepGate, string>> = {
   IF_PLAYER_HAS_TRAIT: 'Trait Gate Parameters',
   IF_ZONE_EMPTY: 'Zone Empty Parameters',
   IF_CARD_IN_PLAY: 'Card Gate Parameters',
+  IF_ALL_ALLIES_MATCH: 'All Allies Gate Parameters',
   IF_RESOURCE_MATCH: 'Resource Match Gate Parameters',
   IF_UNDEFENDED_ATTACK: 'Undefended Attack Parameters',
   IF_ACTIVATION_DEALT_DAMAGE: 'Activation Dealt Damage Parameters',
@@ -176,6 +178,18 @@ export const GateParamsPanel: React.FC<GateParamsPanelProps> = ({
                 <option value={value}>{value} (invalid)</option>
               )}
             </select>
+          </div>
+        );
+
+      case 'card-filter':
+        return (
+          <div key={field.key} data-testid={testId} className="sm:col-span-2">
+            <UniversalCardFilterBuilder
+              label={field.label}
+              filter={value}
+              onChange={(next) => onChange(field.key, next)}
+              isSubBranch={true}
+            />
           </div>
         );
 

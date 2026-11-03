@@ -10,6 +10,7 @@ import {
 } from '@engine/models';
 import { continueVillainPhase } from './villain-phase';
 import { checkDeckExhaustionInvariants } from './deck-exhaustion';
+import { enforceAllyLimits } from './ally-limit';
 import { advancePlayerSetup } from '../state/game-setup';
 // Import `./actions` after all other imports so module-load hook registrations stay unchanged (ADR-0085/ADR-0086)
 import { runActionHandler } from './actions';
@@ -52,6 +53,8 @@ export function dispatchAction(
       result = outcome.result;
 
       let next = outcome.state;
+      // State rule checked before anything resumes, so its discard prompt comes first
+      enforceAllyLimits(next);
       if (kernel.hasPendingSequence(next) && !kernel.peekDecisionPrompt(next)) {
         next = kernel.resumePendingSequence(next);
       }
@@ -62,6 +65,8 @@ export function dispatchAction(
       if (next.setupState?.stage === 'PLAYER_SETUP') {
         next = advancePlayerSetup(next);
       }
+      // Again after a resumed phase or setup, which may have changed the board
+      enforceAllyLimits(next);
       checkDeckExhaustionInvariants(next);
       return next;
     });

@@ -72,16 +72,16 @@ describe('State Lifecycle Duration & Zone Cleanup', () => {
     const p1 = gameState.players[0];
 
     // Add TURN-scoped cost reduction and stat modifier to P1
-    p1.activeCostReductions = [
+    gameState.activeCostReductions = [
       {
         id: 'turn_reduction',
         sourceCardName: 'Test Turn Ability',
+        sourcePlayerId: p1.id,
         amount: 1,
         duration: 'TURN',
         appliesTo: 'NEXT_CARD',
       },
     ];
-    p1.costReductions = 1;
 
     p1.activeStatModifiers = [
       {
@@ -101,8 +101,7 @@ describe('State Lifecycle Duration & Zone Cleanup', () => {
 
     // TURN duration modifiers must be cleared for P1
     const p1After = endTurnRes.state.players[0];
-    expect(p1After.activeCostReductions?.some((r) => r.duration === 'TURN')).toBe(false);
-    expect(p1After.costReductions || 0).toBe(0);
+    expect(endTurnRes.state.activeCostReductions?.some((r) => r.duration === 'TURN')).toBe(false);
     expect(p1After.activeStatModifiers?.some((m) => m.duration === 'TURN')).toBe(false);
   });
 

@@ -45,10 +45,10 @@ No file in `src/engine/` (except test suites or starter deck definitions) may co
 
 All player limits and board parameters are derived dynamically from state queries scanning active `CONSTANT` abilities:
 
-- **Ally Limit (`getPlayerAllyLimit`):**
+- **Ally Limit (`getEffectiveAllyLimit`):**
   - Base: $3$ allies.
-  - Queries in-play cards for `timing: "CONSTANT"`, `effect: "MODIFY_ALLY_LIMIT"`.
-  - When a card granting an ally limit bonus leaves play (e.g. _The Triskelion_ is discarded), if the player exceeds their new limit, the engine enforces immediate discard down to legal capacity.
+  - Queries in-play cards for `timing: "CONSTANT"`, `effect: "MODIFY_ALLY_LIMIT"`, honoring the step's state gate for the card's controller (_Avengers Tower_ `03024`: `IF_ALL_ALLIES_MATCH`).
+  - The limit never blocks a play (RR v1.8 Ally Limit: allies may be played beyond it). After every action, `enforceAllyLimits` (`src/engine/pipeline/ally-limit.ts`) puts an "Ally Limit Exceeded" discard prompt at the front of the queue, ahead of enters-play responses, until the player is at the limit. This covers a limit that drops (_The Triskelion_ discarded, a non-Avenger ally joining _Avengers Tower_'s Avengers).
 - **Hand Size Limit (`getPlayerHandSizeLimit`):**
   - Base: active identity printed `handSize`.
   - Queries in-play cards for `HAND_SIZE_BONUS` (e.g. _Symbiote Suit_).

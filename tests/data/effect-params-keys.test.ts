@@ -3,9 +3,9 @@ import fs from 'fs';
 import { EffectTypeSchema } from '../../src/data/supplemental/schema';
 import { EFFECT_PARAM_KEYS, EFFECT_PARAM_SCHEMAS } from '../../src/data/supplemental/effect-params';
 import { introspectObjectSchema } from '../../src/data/supplemental/schema-introspector';
-import { supplementalPath } from '../../src/tools/content-paths';
+import { supplementalFileNames, supplementalPath } from '../../src/tools/content-paths';
 
-const PACK_FILES = ['aoa_encounter.json', 'core.json', 'core_encounter.json', 'cw_encounter.json', 'mts.json'];
+const PACK_FILES = supplementalFileNames();
 
 interface Violation {
   card: string;

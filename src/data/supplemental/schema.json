@@ -496,6 +496,7 @@
                           "IF_PLAYER_HAS_TRAIT",
                           "IF_ZONE_EMPTY",
                           "IF_CARD_IN_PLAY",
+                          "IF_ALL_ALLIES_MATCH",
                           "IF_RESOURCE_MATCH",
                           "IF_UNDEFENDED_ATTACK",
                           "IF_ACTIVATION_DEALT_DAMAGE"

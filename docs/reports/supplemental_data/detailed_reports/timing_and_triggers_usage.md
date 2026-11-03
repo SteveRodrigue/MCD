@@ -50,6 +50,36 @@
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
+### <a id="constant"></a>`CONSTANT` (25 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01016` | **Captain Marvel's Helmet (upgrade)** | `core` | `captain_marvel_helmet_def` |
+| `01017` | **Cosmic Flight (upgrade)** | `core` | `cosmic_flight_aerial` |
+| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_atk` |
+| `01029a` | **Iron Man (hero)** | `core` | `iron_man_hand_size` |
+| `01036` | **Mark V Armor (upgrade)** | `core` | `mark_v_armor_hp` |
+| `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_hp` |
+| `01040a` | **Black Panther (hero)** | `core` | `black_panther_retaliate` |
+| `01057` | **Combat Training (upgrade)** | `core` | `combat_training_atk` |
+| `01059` | **Jessica Jones (ally)** | `core` | `jessica_jones_thw_bonus` |
+| `01065` | **Heroic Intuition (upgrade)** | `core` | `heroic_intuition_thw` |
+| `01073` | **The Triskelion (support)** | `core` | `triskelion_ally_limit` |
+| `01074` | **Inspired (upgrade)** | `core` | `inspired_thw_bonus`, `inspired_atk_bonus` |
+| `01081` | **Armored Vest (upgrade)** | `core` | `armored_vest_def` |
+| `01099` | **Charge (attachment)** | `core_encounter` | `charge_atk_bonus`, `charge_overkill` |
+| `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_atk_bonus` |
+| `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
+| `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
+| `01132` | **Melter (minion)** | `core_encounter` | `melter_defend_with_ally_restriction` |
+| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
+| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
+| `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
+| `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
+| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_ally_limit` |
+| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
+
 ### <a id="hero-action"></a>`HERO_ACTION` (27 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -82,34 +112,30 @@
 | `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_discard` |
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_discard` |
 
-### <a id="constant"></a>`CONSTANT` (24 Cards)
+### <a id="action"></a>`ACTION` (20 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01016` | **Captain Marvel's Helmet (upgrade)** | `core` | `captain_marvel_helmet_def` |
-| `01017` | **Cosmic Flight (upgrade)** | `core` | `cosmic_flight_aerial` |
-| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_atk` |
-| `01029a` | **Iron Man (hero)** | `core` | `iron_man_hand_size` |
-| `01036` | **Mark V Armor (upgrade)** | `core` | `mark_v_armor_hp` |
-| `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_hp` |
-| `01040a` | **Black Panther (hero)** | `core` | `black_panther_retaliate` |
-| `01057` | **Combat Training (upgrade)** | `core` | `combat_training_atk` |
-| `01059` | **Jessica Jones (ally)** | `core` | `jessica_jones_thw_bonus` |
-| `01065` | **Heroic Intuition (upgrade)** | `core` | `heroic_intuition_thw` |
-| `01073` | **The Triskelion (support)** | `core` | `triskelion_ally_limit` |
-| `01074` | **Inspired (upgrade)** | `core` | `inspired_thw_bonus`, `inspired_atk_bonus` |
-| `01081` | **Armored Vest (upgrade)** | `core` | `armored_vest_def` |
-| `01099` | **Charge (attachment)** | `core_encounter` | `charge_atk_bonus`, `charge_overkill` |
-| `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_atk_bonus` |
-| `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
-| `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
-| `01132` | **Melter (minion)** | `core_encounter` | `melter_defend_with_ally_restriction` |
-| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
-| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
-| `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
-| `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
-| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
-| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
+| `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_attach` |
+| `01010a` | **Captain Marvel (hero)** | `core` | `rechannel` |
+| `01010b` | **Carol Danvers (alter_ego)** | `core` | `commander` |
+| `01015` | **Alpha Flight Station (support)** | `core` | `alpha_flight_station` |
+| `01018` | **Energy Channel (upgrade)** | `core` | `energy_channel_add` |
+| `01020` | **Hellcat (ally)** | `core` | `hellcat_return` |
+| `01025` | **Split Personality (event)** | `core` | `split_personality` |
+| `01029b` | **Tony Stark (alter_ego)** | `core` | `futurist` |
+| `01030` | **War Machine (ally)** | `core` | `war_machine_action` |
+| `01056` | **Tac Team (support)** | `core` | `tac_team_action` |
+| `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
+| `01068` | **Vision (ally)** | `core` | `vision_boost` |
+| `01069` | **Get Ready (event)** | `core` | `get_ready_action` |
+| `01071` | **Make the Call (event)** | `core` | `make_the_call` |
+| `01074` | **Inspired (upgrade)** | `core` | `inspired_attach` |
+| `01080` | **Med Team (support)** | `core` | `med_team_heal` |
+| `01086` | **First Aid (event)** | `core` | `first_aid` |
+| `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
+| `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
+| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
 
 ### <a id="forced-response"></a>`FORCED_RESPONSE` (18 Cards)
 
@@ -133,30 +159,6 @@
 | `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks`, `madame_hydra_schemes` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
-
-### <a id="action"></a>`ACTION` (19 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_attach` |
-| `01010a` | **Captain Marvel (hero)** | `core` | `rechannel` |
-| `01010b` | **Carol Danvers (alter_ego)** | `core` | `commander` |
-| `01015` | **Alpha Flight Station (support)** | `core` | `alpha_flight_station` |
-| `01018` | **Energy Channel (upgrade)** | `core` | `energy_channel_add` |
-| `01020` | **Hellcat (ally)** | `core` | `hellcat_return` |
-| `01025` | **Split Personality (event)** | `core` | `split_personality` |
-| `01029b` | **Tony Stark (alter_ego)** | `core` | `futurist` |
-| `01030` | **War Machine (ally)** | `core` | `war_machine_action` |
-| `01056` | **Tac Team (support)** | `core` | `tac_team_action` |
-| `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
-| `01068` | **Vision (ally)** | `core` | `vision_boost` |
-| `01069` | **Get Ready (event)** | `core` | `get_ready_action` |
-| `01071` | **Make the Call (event)** | `core` | `make_the_call` |
-| `01074` | **Inspired (upgrade)** | `core` | `inspired_attach` |
-| `01080` | **Med Team (support)** | `core` | `med_team_heal` |
-| `01086` | **First Aid (event)** | `core` | `first_aid` |
-| `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
-| `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 
 ### <a id="response"></a>`RESPONSE` (13 Cards)
 

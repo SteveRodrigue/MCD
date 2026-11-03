@@ -715,35 +715,18 @@ export function getEffectiveAllyLimit(player: PlayerState, state?: GameState): n
   const BASE_ALLY_LIMIT = 3;
   let bonus = 0;
 
-  // 1. Scan player's own tableau (for CONTROLLER / SELF_IDENTITY auras, e.g. The Triskelion 01073)
-  for (const item of player.tableau || []) {
-    const abilities = item.card.enrichment?.abilities || [];
-    for (const ab of abilities) {
-      if (ab.timing === 'CONSTANT') {
+  // A controller's card raises their own limit (The Triskelion 01073) or, with target ALL_PLAYERS,
+  // everyone's. Its gate reads the controller's board ("each of your allies", Avengers Tower 03024).
+  for (const controller of state?.players ?? [player]) {
+    for (const item of controller.tableau || []) {
+      for (const ab of item.card.enrichment?.abilities || []) {
+        if (ab.timing !== 'CONSTANT') continue;
         for (const step of ab.steps || []) {
+          if (step.effect !== 'MODIFY_ALLY_LIMIT') continue;
           const stepParams = getStepEffectParams(step);
-          if (step.effect === 'MODIFY_ALLY_LIMIT') {
+          const reachesPlayer = controller.id === player.id || stepParams.target === 'ALL_PLAYERS';
+          if (reachesPlayer && evaluateConstantStepGate(step, controller, state)) {
             bonus += Number(stepParams.amount) || 1;
-          }
-        }
-      }
-    }
-  }
-
-  // 2. Scan other players' tableaus for tablewide aura effects (target: 'ALL_PLAYERS')
-  if (state) {
-    for (const p of state.players) {
-      if (p.id === player.id) continue;
-      for (const item of p.tableau || []) {
-        const abilities = item.card.enrichment?.abilities || [];
-        for (const ab of abilities) {
-          if (ab.timing === 'CONSTANT') {
-            for (const step of ab.steps || []) {
-              const stepParams = getStepEffectParams(step);
-              if (step.effect === 'MODIFY_ALLY_LIMIT' && stepParams.target === 'ALL_PLAYERS') {
-                bonus += Number(stepParams.amount) || 1;
-              }
-            }
           }
         }
       }

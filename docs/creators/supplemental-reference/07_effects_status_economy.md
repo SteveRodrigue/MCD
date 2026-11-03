@@ -155,10 +155,12 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 ### `REDUCE_NEXT_CARD_COST`
 
 - **References:** Issue [#46](https://github.com/SteveRodrigue/MCD/issues/46), [ADR-0061](../../decisions/0061-declarative-next-card-cost-reduction-aura.md) / _Helicarrier_ `01092`
-- **Description:** Applies a temporary cost reduction aura to the next qualifying card played by the targeted player during the specified `duration` (`"PHASE"` or `"ROUND"`). Under RR v1.8, applies to the next card played (including 0-cost cards, which consume the reduction), and stacks additively with other cost modifiers.
+- **Filtered and shared:** _Avengers Tower_ `03024` ("reduce the cost of the next [[Avenger]] ally played this phase by 1")
+- **Description:** Puts a cost reduction in effect for the next qualifying card played during the specified `duration`. Under RR v1.8, applies to the next card played (including 0-cost cards, which consume the reduction), and stacks additively with other cost modifiers. The reductions in effect are one list on the game state (`GameState.activeCostReductions`): the first card that qualifies uses the reduction up, and a card that does not match `cardFilter` leaves it in place.
 - **Parameters:**
   - `amount`: number (default: 1) — Resource cost reduction.
-  - `duration`: `"PHASE" | "ROUND"` (default: `"PHASE"`) — Lifecycle expiration window.
+  - `duration`: `"TURN" | "PHASE" | "ROUND"` (default: `"PHASE"`) — Lifecycle expiration window. A `TURN` reduction ends with the turn of the player who created it.
+  - `target`: who may use it. `SELF` or `CHOSEN_PLAYER` (_Helicarrier_, "the next card that player plays"): only that player's next qualifying card. `ALL_PLAYERS` (_Avengers Tower_, "the next ... ally played", not "you play"): the next qualifying card any player plays.
   - `cardFilter`: optional `UniversalCardFilter` — Predicate filter for qualifying cards.
 
 ```json
@@ -166,7 +168,9 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
   "effect": "REDUCE_NEXT_CARD_COST",
   "effectParams": {
     "amount": 1,
-    "duration": "PHASE"
+    "duration": "PHASE",
+    "target": "ALL_PLAYERS",
+    "cardFilter": { "types": ["ally"], "traits": ["Avenger"] }
   }
 }
 ```

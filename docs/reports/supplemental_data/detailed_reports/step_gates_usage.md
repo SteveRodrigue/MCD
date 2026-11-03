@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-## Step Gates (`StepGateSchema` — 9/9 In Use)
+## Step Gates (`StepGateSchema` — 10/10 In Use)
 
 ### <a id="if-form"></a>`IF_FORM` (4 Cards)
 
@@ -70,6 +70,12 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
+
+### <a id="if-all-allies-match"></a>`IF_ALL_ALLIES_MATCH` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_ally_limit` |
 
 ### <a id="if-zone-empty"></a>`IF_ZONE_EMPTY` (1 Cards)
 

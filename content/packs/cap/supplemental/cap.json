@@ -1,0 +1,58 @@
+{
+  "$schema": "../../../../src/data/supplemental/schema.json",
+  "cards": {
+    "03024": {
+      "audit": {
+        "createdAt": "2026-11-03T04:17:13Z",
+        "updatedAt": "2026-11-03T04:17:13Z",
+        "reviewedAt": "2026-11-03T04:17:13Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 97,
+        "originalText": "If each of your allies has the [[Avenger]] trait, increase your ally limit by 1.\n<b>Action:</b> Exhaust Avengers Tower → reduce the cost of the next [[Avenger]] ally played this phase by 1."
+      },
+      "abilities": [
+        {
+          "id": "avengers_tower_ally_limit",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "MODIFY_ALLY_LIMIT",
+              "gate": "IF_ALL_ALLIES_MATCH",
+              "gateParams": {
+                "filter": {
+                  "traits": ["Avenger"]
+                }
+              },
+              "effectParams": {
+                "amount": 1,
+                "target": "SELF"
+              }
+            }
+          ]
+        },
+        {
+          "id": "avengers_tower_action",
+          "timing": "ACTION",
+          "cost": {
+            "exhaustSelf": true
+          },
+          "steps": [
+            {
+              "effect": "REDUCE_NEXT_CARD_COST",
+              "effectParams": {
+                "amount": 1,
+                "target": "ALL_PLAYERS",
+                "duration": "PHASE",
+                "cardFilter": {
+                  "types": ["ally"],
+                  "traits": ["Avenger"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

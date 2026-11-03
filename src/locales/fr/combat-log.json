@@ -158,6 +158,7 @@
     "decision.prompt.resolved": "{{actor}} choisit {{option}}.",
     "deck.shuffled": "{{actor}} mélange une pioche.",
     "cost.reduced": "{{actor}} obtient une réduction de coût.",
+    "cost.reduction.expired": "La réduction de coût de {{source}} prend fin sans avoir servi.",
     "encounter.card.revealed": "{{actor}} révèle une carte de rencontre.",
     "encounter.deck.empty": "La pioche de rencontre est vide.",
     "encounter.obligation.discarded": "{{actor}} défausse l'obligation {{card}}.",

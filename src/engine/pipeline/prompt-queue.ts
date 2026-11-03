@@ -134,19 +134,21 @@ export function refreshPromptOptionAvailability(
 }
 
 /**
- * Enqueue a decision prompt into the structured FIFO prompt queue (ADR-0032).
+ * Enqueue a decision prompt into the structured FIFO prompt queue (ADR-0032). `front` puts it
+ * ahead of the queue, for a rule that resolves immediately (Ally Limit, RR v1.8).
  */
-export function enqueueDecisionPrompt(state: GameState, prompt: PendingDecisionPrompt): GameState {
+export function enqueueDecisionPrompt(
+  state: GameState,
+  prompt: PendingDecisionPrompt,
+  options: { front?: boolean } = {},
+): GameState {
   if (!state.pendingDecisionQueue) {
     state.pendingDecisionQueue = [];
   }
   const queue = state.pendingDecisionQueue;
 
-  queue.push({
-    ...prompt,
-    queuePosition: queue.length + 1,
-    totalQueued: queue.length + 1,
-  });
+  if (options.front) queue.unshift({ ...prompt });
+  else queue.push({ ...prompt });
 
   // Re-index total queued count for all elements in queue
   const total = queue.length;
@@ -155,7 +157,7 @@ export function enqueueDecisionPrompt(state: GameState, prompt: PendingDecisionP
     queue[i].totalQueued = total;
   }
 
-  if (queue.length === 1) refreshPromptOptionAvailability(state, queue[0]);
+  if (queue.length === 1 || options.front) refreshPromptOptionAvailability(state, queue[0]);
 
   return state;
 }

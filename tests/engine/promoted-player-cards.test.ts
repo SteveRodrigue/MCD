@@ -9,7 +9,7 @@ import {
 } from '../../src/engine/models';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { executeEffect } from '../../src/engine/effects/index';
-import { canPlayCard } from '../../src/engine/pipeline/legality-checker';
+import { getEffectiveAllyLimit } from '../../src/engine/pipeline/stat-calculator';
 
 describe('Promoted Core Player Cards', () => {
   let state: GameState;
@@ -132,12 +132,7 @@ describe('Promoted Core Player Cards', () => {
       });
     }
 
-    p1.hand = [{ instanceId: 'hand_ally', card: allyCard, exhausted: false }];
-
-    // 4th ally cannot be played without Triskelion
-    const check1 = canPlayCard(state, p1.id, 'hand_ally', []);
-    expect(check1.allowed).toBe(false);
-    expect(check1.reason).toContain('Ally limit');
+    expect(getEffectiveAllyLimit(p1, state)).toBe(3);
 
     // Add Triskelion to tableau
     p1.tableau.push({
@@ -166,8 +161,7 @@ describe('Promoted Core Player Cards', () => {
       exhausted: false,
     });
 
-    // Now 4th ally is allowed
-    const check2 = canPlayCard(state, p1.id, 'hand_ally', []);
-    expect(check2.allowed).toBe(true);
+    // A 4th ally now fits without a discard
+    expect(getEffectiveAllyLimit(p1, state)).toBe(4);
   });
 });

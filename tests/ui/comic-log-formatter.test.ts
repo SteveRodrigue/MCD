@@ -33,7 +33,7 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
     const villainAttackEntry: GameLogEntry = {
       id: 'log-3',
       timestamp: Date.now(),
-      key: 'VILLAIN_ATTACK',
+      key: 'VILLAIN_ATTACK_HIT',
       actor: { name: 'Rhino', type: 'villain' },
       params: { villain: 'Rhino', target: 'Spider-Man', totalDamage: 4 },
     };
@@ -115,9 +115,9 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
       timestamp: 2000,
       round: 1,
       phase: GamePhase.VILLAIN_PHASE,
-      key: 'VILLAIN_ATTACK',
+      key: 'VILLAIN_ATTACK_HIT',
       actor: { name: 'Rhino', type: 'villain' },
-      params: { villain: 'Rhino', target: 'Spider-Man', baseAtk: 2, boost: 1, totalDamage: 3 },
+      params: { actor: 'Rhino', target: 'Spider-Man', amount: 3 },
     };
 
     const formatted = formatComicLogEntry(entry, 'en');
@@ -125,7 +125,7 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
     expect(formatted.speakerName).toBe('Rhino');
     expect(formatted.speakerAvatar).toBe('🦏');
     expect(formatted.dialogueQuote).toBe("I'M GONNA CRUSH YOU FLAT, BUG!");
-    expect(formatted.narrativeAction).toContain('Rhino attacks Spider-Man!');
+    expect(formatted.narrativeAction).toContain('Rhino attacked Spider-Man for 3 damage!');
   });
 
   it('formats Narrator phase transitions and deck exhaustion', () => {
@@ -377,7 +377,7 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
       const villainEntry: GameLogEntry = {
         id: 'log-villain-color',
         timestamp: Date.now(),
-        key: 'VILLAIN_ATTACK',
+        key: 'VILLAIN_ATTACK_HIT',
         actor: { name: 'Rhino', type: 'villain' },
         params: { villain: 'Rhino' },
       };

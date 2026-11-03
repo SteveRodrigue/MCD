@@ -70,8 +70,6 @@
     "DAMAGE_PREVENTED": "La barrière Tenace tient bon ! {{target}} prévient {{amount}} dégâts reçus.",
     "THREAT_PLACED": "{{amount}} menace placée sur {{target}} (Total : {{totalThreat}} / {{targetThreat}}).",
     "THREAT_REMOVED": "{{amount}} menace retirée de {{target}} (Menace restante : {{remainingThreat}}).",
-    "VILLAIN_ATTACK": "{{actor}} attaque {{target}} ! (ATQ de base: {{baseAtk}} + Boost: {{boost}} = {{totalDamage}} DÉG).",
-    "VILLAIN_SCHEME": "{{actor}} manigance sur {{target}} ! (MAN de base: {{baseSch}} + Boost: {{boost}} = {{totalThreat}} Menace).",
     "MINION_ATTACK": "{{actor}} attaque {{target}} et inflige {{amount}} dégâts !",
     "MINION_SCHEME": "{{actor}} manigance sur {{target}} et place {{amount}} menace !",
     "ENCOUNTER_REVEALED": "Rencontre révélée : {{card}} ({{type}}).",

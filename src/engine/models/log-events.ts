@@ -354,20 +354,6 @@ export interface LogEvents {
   };
   BASIC_THWART: { actor: string; target: string; amount: number };
   BASIC_RECOVER: { actor: string; amount: number };
-  VILLAIN_ATTACK: {
-    actor: string;
-    target: string;
-    baseAtk?: number;
-    amount?: number;
-    totalDamage?: number;
-  };
-  VILLAIN_SCHEME: {
-    actor: string;
-    target: string;
-    baseSch?: number;
-    amount?: number;
-    totalThreat?: number;
-  };
   MINION_ATTACK: { actor: string; target: string; amount: number };
   MINION_SCHEME: { actor: string; target: string; amount: number };
   ROUND_STARTED: { round: number };
@@ -588,8 +574,6 @@ export const ALL_LOG_EVENT_KEYS = [
   'BASIC_ATTACK',
   'BASIC_THWART',
   'BASIC_RECOVER',
-  'VILLAIN_ATTACK',
-  'VILLAIN_SCHEME',
   'MINION_ATTACK',
   'MINION_SCHEME',
   'ROUND_STARTED',

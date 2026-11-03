@@ -1,9 +1,12 @@
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   buildRuntimeImportGraph,
+  findEngineCycles,
   findStronglyConnectedComponents,
+  readAliasMap,
   type ImportGraph,
 } from '../../tools/audit/import-cycles';
 
@@ -34,6 +37,46 @@ describe('findStronglyConnectedComponents', () => {
   });
 });
 
+describe('alias-aware graph (#339)', () => {
+  let root: string;
+  const write = (file: string, content: string): void => {
+    fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+    fs.writeFileSync(path.join(root, file), content);
+  };
+
+  beforeAll(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), 'import-cycles-'));
+    write(
+      'tsconfig.json',
+      '{ // comments are allowed\n "compilerOptions": { "paths": { "@engine/*": ["./src/engine/*"], "@data/*": ["./src/data/*"], "@ui/*": ["./src/ui/*"] } } }',
+    );
+    // engine -> @data -> @engine: a cycle that leaves the engine through an alias.
+    write('src/engine/a.ts', "import { b } from '@data/b';\nexport const a = () => b;\n");
+    write('src/data/b.ts', "import { a } from '@engine/a';\nexport const b = () => a;\n");
+    // ui <-> ui cycle that never touches the engine, and a type-only import that is elided.
+    write('src/ui/x.tsx', "import { y } from '@ui/y';\nexport const x = () => y;\n");
+    write('src/ui/y.tsx', "import { x } from './x';\nexport const y = () => x;\n");
+    write('src/engine/t.ts', "import type { b } from '@data/b';\nexport type T = typeof b;\n");
+  }, GRAPH_BUILD_TIMEOUT_MS);
+
+  it('reads the aliases from tsconfig.json paths', () => {
+    expect([...readAliasMap(root)]).toEqual([
+      ['@engine/', 'src/engine/'],
+      ['@data/', 'src/data/'],
+      ['@ui/', 'src/ui/'],
+    ]);
+  });
+
+  it('finds an engine to data to engine cycle and ignores cycles outside the engine', () => {
+    const graph = buildRuntimeImportGraph(root);
+    expect(findStronglyConnectedComponents(graph)).toEqual([
+      ['src/data/b.ts', 'src/engine/a.ts'],
+      ['src/ui/x.tsx', 'src/ui/y.tsx'],
+    ]);
+    expect(findEngineCycles(graph)).toEqual([['src/data/b.ts', 'src/engine/a.ts']]);
+  });
+});
+
 /** Sizes of the allowed cycles. Only ever shrinks; the target is []. */
 const CYCLE_RATCHET: number[] = [];
 
@@ -45,9 +88,9 @@ beforeAll(() => {
   engineGraph = buildRuntimeImportGraph();
 }, GRAPH_BUILD_TIMEOUT_MS);
 
-describe('src/engine runtime import graph', () => {
+describe('src runtime import graph, cycles through src/engine', () => {
   it('has no more import cycles than the ratchet (target 0, ADR-0088)', () => {
-    const cycles = findStronglyConnectedComponents(engineGraph);
+    const cycles = findEngineCycles(engineGraph);
     expect(cycles.map((c) => c.length)).toEqual(CYCLE_RATCHET);
   });
 });
@@ -63,6 +106,7 @@ describe('engine boot reachability (ADR-0088)', () => {
     );
     const missing: string[] = [];
     for (const file of engineGraph.keys()) {
+      if (!file.startsWith('src/engine/')) continue;
       if (file === 'src/engine/kernel.ts' || file.endsWith('special-registry.ts')) continue;
       const source = fs.readFileSync(path.join(root, file), 'utf8');
       if (!/\b(bindKernel|registerSpecialHandler)\(/.test(source)) continue;

@@ -22,8 +22,7 @@ We take the security and integrity of our codebase and user data seriously. If y
    * Steps to reproduce or proof-of-concept payload.
    * Potential impact on user sessions, local storage, or network security.
 3. **Response Timeline:**
-   * We will acknowledge receipt of your report within **48 hours**.
-   * We will provide a status update or fix timeline within **7 days**.
+   * MCD is maintained by a single volunteer in their spare time, so we cannot promise fixed response times. We aim to acknowledge reports and give updates on a best-effort basis.
    * Once a patch is released, we will publicly credit the reporter (unless you prefer to remain anonymous).
 
 ---

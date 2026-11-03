@@ -70,8 +70,6 @@
     "DAMAGE_PREVENTED": "Tough barrier holds! {{target}} prevents {{amount}} incoming damage.",
     "THREAT_PLACED": "{{amount}} threat placed on {{target}} (Total: {{totalThreat}} / {{targetThreat}}).",
     "THREAT_REMOVED": "{{amount}} threat cleared from {{target}} (Threat remaining: {{remainingThreat}}).",
-    "VILLAIN_ATTACK": "{{actor}} attacks {{target}}! (Base ATK: {{baseAtk}} + Boost: {{boost}} = {{totalDamage}} DMG).",
-    "VILLAIN_SCHEME": "{{actor}} executes scheme on {{target}}! (Base SCH: {{baseSch}} + Boost: {{boost}} = {{totalThreat}} Threat).",
     "MINION_ATTACK": "{{actor}} attacks {{target}} for {{amount}} damage!",
     "MINION_SCHEME": "{{actor}} schemes on {{target}}, placing {{amount}} threat!",
     "ENCOUNTER_REVEALED": "Encounter revealed: {{card}} ({{type}}).",

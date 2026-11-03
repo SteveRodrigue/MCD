@@ -24,12 +24,12 @@ describe('CombatLogPanel Component (Issue #142)', () => {
       timestamp: 2000,
       round: 1,
       phase: GamePhase.VILLAIN_PHASE,
-      key: 'VILLAIN_ATTACK',
+      key: 'VILLAIN_ATTACK_HIT',
       actor: { name: 'Rhino', type: 'villain' },
       params: {
-        villain: 'Rhino',
+        actor: 'Rhino',
         target: 'Spider-Man',
-        totalDamage: 3,
+        amount: 3,
       },
     },
     {
@@ -116,13 +116,13 @@ describe('CombatLogPanel Component (Issue #142)', () => {
     // Iron-Man attack should now be filtered out
     expect(screen.queryByText('Iron-Man dealt 2 damage to Rhino.')).toBeNull();
     // Rhino attack should still be present
-    expect(screen.getByText(/Rhino attacks Spider-Man/i)).toBeDefined();
+    expect(screen.getByText(/Rhino attacked Spider-Man/i)).toBeDefined();
 
     // Click HEROES filter button
     const heroesBtn = screen.getByRole('button', { name: /HEROES/i });
     fireEvent.click(heroesBtn);
     expect(screen.getByText('Iron-Man dealt 2 damage to Rhino.')).toBeDefined();
-    expect(screen.queryByText(/Rhino attacks Spider-Man/i)).toBeNull();
+    expect(screen.queryByText(/Rhino attacked Spider-Man/i)).toBeNull();
   });
 
   it('keeps the language toggle in the footer beside Show Debug, not above the masthead (Issue #381)', () => {

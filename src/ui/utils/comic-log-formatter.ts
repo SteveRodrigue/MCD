@@ -909,8 +909,7 @@ export function formatComicLogEntry(
       canonicalKey === 'DEAL_DAMAGE' ||
       canonicalKey === 'VILLAIN_ATTACK_HIT' ||
       canonicalKey === 'MINION_ATTACK_HIT' ||
-      entry.key === 'BASIC_ATTACK' ||
-      entry.key === 'VILLAIN_ATTACK'
+      entry.key === 'BASIC_ATTACK'
     )
       onomatopoeia = dict.onomatopoeia.POW;
     else if (canonicalKey === 'CARD_PLAYED' || canonicalKey === 'BLACK_CAT_FETCH')
@@ -947,15 +946,11 @@ export function formatComicLogEntry(
   } else if (dialogueType === 'villain_shout') {
     if (
       canonicalKey === 'DEAL_DAMAGE' ||
-      entry.key === 'VILLAIN_ATTACK' ||
+      canonicalKey === 'VILLAIN_ATTACK_HIT' ||
       entry.key === 'MINION_ATTACK'
     ) {
       dialogueQuote = getCharacterQuote(dict, speakerKey, 'attack');
-    } else if (
-      canonicalKey === 'VILLAIN_SCHEME_THREAT' ||
-      entry.key === 'VILLAIN_SCHEME' ||
-      entry.key === 'MINION_SCHEME'
-    ) {
+    } else if (canonicalKey === 'VILLAIN_SCHEME_THREAT' || entry.key === 'MINION_SCHEME') {
       dialogueQuote = getCharacterQuote(dict, speakerKey, 'scheme');
     } else if (canonicalKey === 'BOOST_REVEALED') {
       dialogueQuote = getCharacterQuote(dict, speakerKey, 'boost');

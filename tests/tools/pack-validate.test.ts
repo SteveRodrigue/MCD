@@ -2,7 +2,11 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { readCardSchema, validatePackSet } from '../../scripts/pack-validate';
+import {
+  fixUpstreamSchemaKeywords,
+  readCardSchema,
+  validatePackSet,
+} from '../../scripts/pack-validate';
 
 const official = ['core', 'gob'];
 const cardSchema = readCardSchema(path.resolve('.'));
@@ -137,5 +141,15 @@ describe('validatePackSet', () => {
     write('pack-a/pack.json', manifest('pack-a', { apiVersion: 99 }));
     write('pack-b/pack.json', manifest('pack-b', { apiVersion: 99 }));
     expect(new Set(run('pack-a').map((f) => f.pack))).toEqual(new Set(['pack-a']));
+  });
+});
+
+describe('fixUpstreamSchemaKeywords', () => {
+  it('corrects misspelled keywords at any depth', () => {
+    expect(
+      fixUpstreamSchemaKeywords({
+        a: { oneof: [{ minlength: 1, type: 'string' }, { type: 'null' }] },
+      }),
+    ).toEqual({ a: { oneOf: [{ minLength: 1, type: 'string' }, { type: 'null' }] } });
   });
 });

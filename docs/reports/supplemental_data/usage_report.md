@@ -16,8 +16,7 @@
 | **Overall Schema Engine Coverage** | **100.0%** | [Matrix](detailed_reports/schema_code_path_audit.md) | Percentage of all schema primitives with active engine code paths |
 | **Effect Types Code Path Coverage** | **100.0%** | **58/58** | [50 In Use](detailed_reports/effects_usage.md) |
 | **Target Selectors Code Path Coverage** | **100.0%** | **47/47** | [35 In Use](detailed_reports/target_selectors_usage.md) |
-| **Condition Gates Code Path Coverage** | **100.0%** | **9/9** | [9 In Use](detailed_reports/condition_gates_usage.md) |
-| **Step Conditions Code Path Coverage** | **100.0%** | **0/0** | [0 In Use](detailed_reports/condition_gates_usage.md) |
+| **Step Gates Code Path Coverage** | **100.0%** | **9/9** | [9 In Use](detailed_reports/step_gates_usage.md) |
 | **Trigger Types Code Path Coverage** | **100.0%** | **33/33** | [23 In Use](detailed_reports/timing_and_triggers_usage.md) |
 | **Timing Types Code Path Coverage** | **100.0%** | **19/19** | [15 In Use](detailed_reports/timing_and_triggers_usage.md) |
 | **Total Abilities Declared** | **192** | - | Total individual ability definitions declared |
@@ -80,12 +79,11 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 
 ---
 
-## 🚦 6. Condition Gates & Step Conditions Summary
+## 🚦 6. Step Gates Summary
 
 | Mechanism | In Use | Schema Total | Coverage | Detailed Breakdown |
 | :--- | :---: | :---: | :---: | :--- |
-| **Condition Gates** | **9** | 9 | 100.0% | [View Gates Breakdown](detailed_reports/condition_gates_usage.md#1-condition-gates-conditiongateschema) |
-| **Step Conditions** | **0** | 0 | 100.0% | [View Step Conditions](detailed_reports/condition_gates_usage.md#2-step-conditions-stepconditionschema) |
+| **Step Gates** | **9** | 9 | 100.0% | [View Gates Breakdown](detailed_reports/step_gates_usage.md) |
 | **Gate Parameters** | **10** | - | - | `trait` (4), `resource` (5), `count` (2), `form` (7), `negate` (7), `result` (6), `cardCode` (6), `step` (3), `attackerKind` (2), `zone` (1) |
 
 ---
@@ -135,6 +133,5 @@ Every schema primitive is verified for a matching engine handler. Check the comp
 | **Effects** | 58 | 8 | 🟢 0 |
 | **Targets** | 47 | 12 | 🟢 0 |
 | **Gates** | 9 | 0 | 🟢 0 |
-| **Step Conditions** | 0 | 0 | 🟢 0 |
 | **Triggers** | 33 | 10 | 🟢 0 |
 | **Timings** | 19 | 4 | 🟢 0 |

@@ -25,7 +25,7 @@ function makeResources(type: 'physical' | 'energy' | 'mental' | 'wild', count = 
 }
 
 describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060)', () => {
-  describe('Direct Ability Execution with ConditionGate IF_RESOURCE_MATCH', () => {
+  describe('Direct Ability Execution with step gate IF_RESOURCE_MATCH', () => {
     let state: GameState;
 
     beforeEach(() => {

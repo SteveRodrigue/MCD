@@ -62,7 +62,7 @@ export function extractTargetResolverCases(targetResolverPath: string): Set<stri
   return cases;
 }
 
-export function extractConditionGateEvaluatorCases(evaluatorPath: string): Set<string> {
+export function extractStepGateEvaluatorCases(evaluatorPath: string): Set<string> {
   const content = fs.readFileSync(evaluatorPath, 'utf8');
   const gates = new Set<string>();
 
@@ -71,24 +71,6 @@ export function extractConditionGateEvaluatorCases(evaluatorPath: string): Set<s
     gates.add(m[1]);
   }
   return gates;
-}
-
-export function extractStepConditionEvaluatorCases(
-  effectsPath: string,
-  gateEvaluatorPath: string,
-): Set<string> {
-  const conditions = new Set<string>();
-  const effectsContent = fs.readFileSync(effectsPath, 'utf8');
-  const gateContent = fs.readFileSync(gateEvaluatorPath, 'utf8');
-
-  for (const content of [effectsContent, gateContent]) {
-    const matches = content.matchAll(/step\.condition\s*===?\s*'([A-Z0-9_]+)'/g);
-    for (const m of matches) {
-      conditions.add(m[1]);
-    }
-  }
-
-  return conditions;
 }
 
 export function getAllTsFiles(dir: string): string[] {
@@ -114,18 +96,15 @@ export interface DetailedCoverageResult {
   unhandledTimings: string[];
   unhandledTargets: string[];
   unhandledGates: string[];
-  unhandledStepConditions: string[];
   effectsCoverageRate: number;
   targetsCoverageRate: number;
   gatesCoverageRate: number;
-  stepConditionsCoverageRate: number;
   triggersCoverageRate: number;
   timingsCoverageRate: number;
   overallCoverageRate: number;
   effectsHandledSet: Set<string>;
   targetsHandledSet: Set<string>;
   gatesHandledSet: Set<string>;
-  stepConditionsHandledSet: Set<string>;
   triggersHandledSet: Set<string>;
   timingsHandledSet: Set<string>;
 }
@@ -167,7 +146,7 @@ export function auditSchemaEngineCoverage(): DetailedCoverageResult {
   const unhandledTargets = schemaTargets.filter((tgt) => !targetsHandledSet.has(tgt));
 
   // 3. Step Gates
-  const gateEvaluatorCases = extractConditionGateEvaluatorCases(gateEvaluatorPath);
+  const gateEvaluatorCases = extractStepGateEvaluatorCases(gateEvaluatorPath);
   const schemaGates = StepGateSchema.options;
   const gatesHandledSet = new Set<string>();
 
@@ -178,12 +157,7 @@ export function auditSchemaEngineCoverage(): DetailedCoverageResult {
   }
   const unhandledGates = schemaGates.filter((g: string) => !gatesHandledSet.has(g));
 
-  // 4. Step Conditions (Retired in ADR-0080)
-  const schemaStepConditions: string[] = [];
-  const stepConditionsHandledSet = new Set<string>();
-  const unhandledStepConditions: string[] = [];
-
-  // 5. Triggers & Timings
+  // 4. Triggers & Timings
   // The TypeScript copy of the schema enums is not a dispatcher: exclude it (#276).
   const engineFiles = getAllTsFiles(engineDir).filter(
     (f) => !f.split(path.sep).join('/').endsWith('src/engine/models/abilities.ts'),
@@ -215,7 +189,6 @@ export function auditSchemaEngineCoverage(): DetailedCoverageResult {
     schemaEffects.length +
     schemaTargets.length +
     schemaGates.length +
-    schemaStepConditions.length +
     schemaTriggers.length +
     schemaTimings.length;
 
@@ -223,17 +196,12 @@ export function auditSchemaEngineCoverage(): DetailedCoverageResult {
     effectsHandledSet.size +
     targetsHandledSet.size +
     gatesHandledSet.size +
-    stepConditionsHandledSet.size +
     triggersHandledSet.size +
     timingsHandledSet.size;
 
   const effectsCoverageRate = (effectsHandledSet.size / schemaEffects.length) * 100;
   const targetsCoverageRate = (targetsHandledSet.size / schemaTargets.length) * 100;
   const gatesCoverageRate = (gatesHandledSet.size / schemaGates.length) * 100;
-  const stepConditionsCoverageRate =
-    schemaStepConditions.length > 0
-      ? (stepConditionsHandledSet.size / schemaStepConditions.length) * 100
-      : 100;
   const triggersCoverageRate = (triggersHandledSet.size / schemaTriggers.length) * 100;
   const timingsCoverageRate = (timingsHandledSet.size / schemaTimings.length) * 100;
   const overallCoverageRate = (totalHandledItems / totalSchemaItems) * 100;
@@ -254,18 +222,15 @@ export function auditSchemaEngineCoverage(): DetailedCoverageResult {
     unhandledTimings,
     unhandledTargets,
     unhandledGates,
-    unhandledStepConditions,
     effectsCoverageRate,
     targetsCoverageRate,
     gatesCoverageRate,
-    stepConditionsCoverageRate,
     triggersCoverageRate,
     timingsCoverageRate,
     overallCoverageRate,
     effectsHandledSet,
     targetsHandledSet,
     gatesHandledSet,
-    stepConditionsHandledSet,
     triggersHandledSet,
     timingsHandledSet,
   };
@@ -302,15 +267,12 @@ if (process.argv[1] && process.argv[1].endsWith('schema-engine-coverage.ts')) {
     console.log('   Unhandled:', result.unhandledGates);
   }
 
-  console.log(`\n4. Step Conditions (Retired in ADR-0080):`);
-  console.log(`   ✅ Retired (consolidated into StepGateSchema + gateParams)`);
-
-  console.log(`\n5. Trigger Types (${TriggerTypeSchema.options.length} in schema):`);
+  console.log(`\n4. Trigger Types (${TriggerTypeSchema.options.length} in schema):`);
   console.log(
     `   ${result.unhandledTriggers.length === 0 ? '✅' : '❌'} Coverage: ${result.triggersCoverageRate.toFixed(1)}% (${result.triggersHandledSet.size}/${TriggerTypeSchema.options.length})`,
   );
 
-  console.log(`\n6. Timing Types (${TimingTypeSchema.options.length} in schema):`);
+  console.log(`\n5. Timing Types (${TimingTypeSchema.options.length} in schema):`);
   console.log(
     `   ${result.unhandledTimings.length === 0 ? '✅' : '❌'} Coverage: ${result.timingsCoverageRate.toFixed(1)}% (${result.timingsHandledSet.size}/${TimingTypeSchema.options.length})`,
   );

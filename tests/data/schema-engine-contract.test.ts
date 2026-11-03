@@ -72,11 +72,11 @@ describe('Supplemental Schema <-> Engine Contract Tests', () => {
     });
   });
 
-  describe('ConditionGateSchema Coverage', () => {
-    it('verifies 100% of ConditionGateSchema gates have active evaluator branches in step-gate-evaluator', () => {
+  describe('StepGateSchema Coverage', () => {
+    it('verifies 100% of StepGateSchema gates have active evaluator branches in step-gate-evaluator', () => {
       expect(
         result.unhandledGates,
-        `Found condition gates defined in ConditionGateSchema without evaluator branches: ${result.unhandledGates.join(', ')}`,
+        `Found step gates defined in StepGateSchema without evaluator branches: ${result.unhandledGates.join(', ')}`,
       ).toEqual([]);
     });
   });

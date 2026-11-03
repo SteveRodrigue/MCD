@@ -1,8 +1,8 @@
-# 🚦 Condition Gates & Step Conditions Usage Inventory
+# 🚦 Step Gates Usage Inventory
 
 [← Back to Main Usage Report](../usage_report.md)
 
-## 1. Condition Gates (`StepGateSchema` — 9/9 In Use)
+## Step Gates (`StepGateSchema` — 9/9 In Use)
 
 ### <a id="if-form"></a>`IF_FORM` (4 Cards)
 
@@ -76,7 +76,5 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
-
-## 2. Step Conditions (`StepConditionSchema` — 0/0 In Use)
 
 [← Back to Main Usage Report](../usage_report.md)

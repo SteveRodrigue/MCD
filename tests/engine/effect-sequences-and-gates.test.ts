@@ -210,7 +210,7 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
             id: 'surge_step',
             effect: 'SURGE',
             gate: 'IF_RESULT' as const,
-            gateParams: { fact: 'amountZero' as const },
+            gateParams: { result: 'AMOUNT_ZERO' as const },
           },
         ],
       };
@@ -239,7 +239,7 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
             id: 'surge_step',
             effect: 'SURGE',
             gate: 'IF_RESULT' as const,
-            gateParams: { fact: 'amountZero' as const },
+            gateParams: { result: 'AMOUNT_ZERO' as const },
           },
         ],
       };
@@ -251,7 +251,7 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
     });
   });
 
-  describe('IF_RESULT statusAdded Gate (*"I\'m Tough"* 01105)', () => {
+  describe('IF_RESULT statusApplied Gate (*"I\'m Tough"* 01105)', () => {
     it('Adds Tough status to villain when not tough (no surge)', () => {
       getActiveVillain(state).statusCards = [];
       const initialDealtCount = state.players[0].dealtEncounterCards.length;
@@ -269,7 +269,7 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
             id: 'surge_step',
             effect: 'SURGE',
             gate: 'IF_RESULT' as const,
-            gateParams: { fact: 'statusAdded' as const, negate: true },
+            gateParams: { result: 'STATUS_APPLIED' as const, negate: true },
           },
         ],
       };
@@ -297,7 +297,7 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
             id: 'surge_step',
             effect: 'SURGE',
             gate: 'IF_RESULT' as const,
-            gateParams: { fact: 'statusAdded' as const, negate: true },
+            gateParams: { result: 'STATUS_APPLIED' as const, negate: true },
           },
         ],
       };

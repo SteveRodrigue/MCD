@@ -244,7 +244,7 @@ Not covered yet: a whole card that cannot be canceled (#286) and the global "Tre
 - **References:** #218; [`pipeline/surge.ts`](../../../src/engine/pipeline/surge.ts), [`resolveActiveEncounterCardAfterInterrupt`](../../../src/engine/pipeline/villain-phase.ts)
 - **Rule (RR v1.8 "Surge"):** Surge is equivalent to _When Revealed: deal yourself 1 facedown encounter card_. The player resolving the card is dealt the top card of the encounter deck (deck exhaustion applies: reshuffle and acceleration). The extra card is revealed only after the original card, including any pending choice, has fully resolved.
 - **Printed Surge** is detected by the importer, not declared in supplemental data: a card prints the keyword when a whole sentence of a text line is `Surge` (`Surge.`, `Surge <i>(reminder)</i>`, `Surge .`, bare `Surge`). Text that only mentions the word ("this card gains surge.") does not (`hasPrintedKeyword`, `card-loader.ts`). Do **not** add a `SURGE` step to a card that prints the keyword: the engine already surges it.
-- **Conditional surge** ("If ..., this card gains surge") is the `SURGE` effect (or `DISCARD` with `fallback: "SURGE"`), usually behind a gate (`THEN` with `negate: true`, `IF_RESULT` with `amountZero`, `IF_CARD_IN_PLAY`):
+- **Conditional surge** ("If ..., this card gains surge") is the `SURGE` effect (or `DISCARD` with `fallback: "SURGE"`), usually behind a gate (`THEN` with `negate: true`, `IF_RESULT` with `AMOUNT_ZERO`, `IF_CARD_IN_PLAY`):
 
 ```json
 { "effect": "SURGE", "gate": "IF_CARD_IN_PLAY", "gateParams": { "cardId": "01167" } }

@@ -175,7 +175,6 @@ function handleAddStatus(
     value: mutatedState ? 1 : 0,
     facts: {
       statusApplied: mutatedState,
-      statusAdded: mutatedState,
       alreadyHadStatus,
     },
     onomatopoeia,

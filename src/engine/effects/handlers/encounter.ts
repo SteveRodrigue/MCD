@@ -178,7 +178,6 @@ function handleRemoveThreat(
     value: removed,
     facts: {
       schemeEmpty: remainingThreat === 0,
-      threatZero: remainingThreat === 0,
     },
     onomatopoeia,
     targetId: targetSchemes[0]?.id || targetSchemes[0]?.entity?.instanceId || 'main_scheme',

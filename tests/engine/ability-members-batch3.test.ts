@@ -205,7 +205,7 @@ describe('ability members (#276, batch 3)', () => {
     const step = {
       effect: 'DRAW',
       gate: 'IF_RESULT',
-      gateParams: { fact: 'amountZero' },
+      gateParams: { result: 'AMOUNT_ZERO' },
     } as AbilityStep;
     const ctx = { playerId: 'p1' } as never;
 
@@ -226,18 +226,18 @@ describe('ability members (#276, batch 3)', () => {
       expect(evaluateStepGate(step, healedTwo, state, ctx)).toBe(false);
     });
 
-    it('ADD_STATUS facts report statusAdded only when newly applied', () => {
+    it('ADD_STATUS facts report statusApplied only when newly applied', () => {
       const addStun = {
         effect: 'ADD_STATUS',
         effectParams: { status: 'STUNNED', target: 'SELF_IDENTITY' },
       } as never;
 
       const first = executeEffect(state, addStun, { playerId: 'p1' });
-      expect(first.facts?.statusAdded).toBe(true);
+      expect(first.facts?.statusApplied).toBe(true);
       expect(player().statusCards).toContain(StatusCard.STUNNED);
 
       const second = executeEffect(state, addStun, { playerId: 'p1' });
-      expect(second.facts?.statusAdded).toBe(false);
+      expect(second.facts?.statusApplied).toBe(false);
     });
   });
 

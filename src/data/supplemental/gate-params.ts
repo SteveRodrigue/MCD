@@ -22,17 +22,13 @@ export type ResultFact = z.infer<typeof ResultFactSchema>;
 
 export interface StepFacts {
   targetDefeated?: boolean;
-  defeated?: boolean;
   excessDamage?: number;
   fullyHealed?: boolean;
   schemeEmpty?: boolean;
-  threatZero?: boolean;
   statusApplied?: boolean;
-  statusAdded?: boolean;
   alreadyHadStatus?: boolean;
   statusRemoved?: boolean;
   amountZero?: boolean;
-  villainDefeated?: boolean;
   /** Number of enemy attacks successfully initiated/resolved (Masters of Mayhem 01133). */
   attacksMadeCount?: number;
   /** Damage an enemy attack dealt after step 6; the fact DAMAGE_DEALT is true when above 0. */

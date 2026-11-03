@@ -119,7 +119,7 @@ describe('Result Fact Milestone Evaluation & IF_RESULT Sequential Gating (ADR-00
           effect: 'DRAW' as const,
           gate: 'IF_RESULT' as const,
           gateParams: {
-            fact: 'threatZero' as const,
+            result: 'SCHEME_EMPTY' as const,
             step: 'remove_threat_step',
           },
           effectParams: {
@@ -151,7 +151,7 @@ describe('Result Fact Milestone Evaluation & IF_RESULT Sequential Gating (ADR-00
       expect(state.players[0].hand.length).toBe(0); // Did not draw because scheme still had 2 threat!
     });
 
-    it('Dispatches SCHEME_THREAT_REDUCED_TO_ZERO trigger and records threatZero fact when threat reaches 0', () => {
+    it('Dispatches SCHEME_THREAT_REDUCED_TO_ZERO trigger and records schemeEmpty fact when threat reaches 0', () => {
       const sideScheme: SideSchemeCard = {
         code: '01109',
         name: 'Bomb Scare',
@@ -183,7 +183,7 @@ describe('Result Fact Milestone Evaluation & IF_RESULT Sequential Gating (ADR-00
 
       const res = executeEffect(state, removeSideThreat as any, { playerId: 'p1' });
       expect(res.success).toBe(true);
-      expect(res.facts?.threatZero).toBe(true);
+      expect(res.facts?.schemeEmpty).toBe(true);
       // Side scheme with 0 threat is defeated and discarded (RR v1.8 p. 9, 25)
       expect(state.sideSchemes.length).toBe(0);
       expect(state.encounterDiscard.some((c) => c.instanceId === 'ss1')).toBe(true);
@@ -232,7 +232,7 @@ describe('Result Fact Milestone Evaluation & IF_RESULT Sequential Gating (ADR-00
             effect: 'DRAW' as const,
             gate: 'IF_RESULT' as const,
             gateParams: {
-              fact: 'excessDamage' as const,
+              result: 'EXCESS_DAMAGE_DEALT' as const,
               step: 'deal_dmg',
             },
             effectParams: {
@@ -272,7 +272,7 @@ describe('Result Fact Milestone Evaluation & IF_RESULT Sequential Gating (ADR-00
             effect: 'DRAW' as const,
             gate: 'IF_RESULT' as const,
             gateParams: {
-              fact: 'excessDamage' as const,
+              result: 'EXCESS_DAMAGE_DEALT' as const,
               step: 'deal_dmg',
             },
             effectParams: {
@@ -295,8 +295,8 @@ describe('Result Fact Milestone Evaluation & IF_RESULT Sequential Gating (ADR-00
     });
   });
 
-  describe('defeated & fullyHealed Facts', () => {
-    it('Evaluates facts.defeated as true when target is defeated', () => {
+  describe('TARGET_DEFEATED & fullyHealed Facts', () => {
+    it('Evaluates TARGET_DEFEATED as true when target is defeated', () => {
       const minionCard: MinionCard = {
         code: '01110',
         name: 'Hydra Soldier',
@@ -324,7 +324,7 @@ describe('Result Fact Milestone Evaluation & IF_RESULT Sequential Gating (ADR-00
             id: 'remove_threat_step',
             effect: 'REMOVE_THREAT' as const,
             gate: 'IF_RESULT' as const,
-            gateParams: { fact: 'defeated' as const },
+            gateParams: { result: 'TARGET_DEFEATED' as const },
             effectParams: { amount: 1, target: 'MAIN_SCHEME' },
           },
         ],
@@ -358,7 +358,7 @@ describe('Result Fact Milestone Evaluation & IF_RESULT Sequential Gating (ADR-00
             id: 'draw_if_full',
             effect: 'DRAW' as const,
             gate: 'IF_RESULT' as const,
-            gateParams: { fact: 'fullyHealed' as const },
+            gateParams: { result: 'FULLY_HEALED' as const },
             effectParams: { count: 1 },
           },
         ],
@@ -371,8 +371,8 @@ describe('Result Fact Milestone Evaluation & IF_RESULT Sequential Gating (ADR-00
     });
   });
 
-  describe('statusAdded Fact', () => {
-    it('statusAdded is true when status placed; false when already possessed', () => {
+  describe('statusApplied Fact', () => {
+    it('statusApplied is true when status placed; false when already possessed', () => {
       getActiveVillain(state).statusCards = [];
 
       const statusAbility = {
@@ -388,7 +388,7 @@ describe('Result Fact Milestone Evaluation & IF_RESULT Sequential Gating (ADR-00
             id: 'draw_on_applied',
             effect: 'DRAW' as const,
             gate: 'IF_RESULT' as const,
-            gateParams: { fact: 'statusAdded' as const },
+            gateParams: { result: 'STATUS_APPLIED' as const },
             effectParams: { count: 1 },
           },
         ],

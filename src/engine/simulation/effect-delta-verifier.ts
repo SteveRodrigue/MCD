@@ -1,5 +1,5 @@
 import type { AbilityStep, CardAbility, CardInstance, GameState } from '../models';
-import { EFFECT_TYPES, type EffectType } from '../../data/supplemental/runtime';
+import type { EffectType } from '../../data/supplemental/runtime';
 import { assertGameStateInvariants, getAllCardInstances } from '../state/state-validator';
 import { peekDecisionPrompt } from '../pipeline';
 
@@ -93,11 +93,6 @@ export const EFFECT_DELTA_CONTRACTS: Record<EffectType, readonly DeltaDomain[]> 
     'LOG',
   ],
 };
-
-/** Effects in the registry that the supplemental effect list no longer declares (guards drift). */
-export function effectsMissingContract(): EffectType[] {
-  return EFFECT_TYPES.filter((e) => !(e in EFFECT_DELTA_CONTRACTS));
-}
 
 function zoneIds(cards: readonly CardInstance[] | undefined): string {
   return (cards ?? []).map((c) => c.instanceId).join(',');

@@ -410,4 +410,104 @@ describe('Villain Phase Stepping & Pacing Engine (ADR-0068 / Issue #140)', () =>
     // lastCombatOutcome must be cleared
     expect(state.lastCombatOutcome).toBeUndefined();
   });
+
+  it('explains prior facedown cards from deck exhaustion in the deal step event breakdown (#567)', () => {
+    const identity2 = catalog.getHeroIdentity('black_panther')!;
+    const deck2 = catalog.getCardsBySet('black_panther').flatMap((c) => {
+      if (c.type === 'hero' || c.type === 'alter_ego') return [];
+      return Array(c.quantity).fill(c);
+    });
+
+    let state = setupGame({
+      catalog: cardCatalog,
+      players: [
+        {
+          id: 'p1',
+          name: 'Hero Seat 1 (Iron Man)',
+          hero: catalog.getHeroIdentity('iron_man')!.hero,
+          alterEgo: catalog.getHeroIdentity('iron_man')!.alterEgo,
+          deckCards: deck2,
+        },
+        {
+          id: 'p2',
+          name: 'Hero Seat 2 (Black Panther)',
+          hero: identity2.hero,
+          alterEgo: identity2.alterEgo,
+          deckCards: deck2,
+        },
+      ],
+      villain: catalog.getCard('01094') as VillainCard,
+      mainScheme: catalog.getCard('01097b') as MainSchemeCard,
+      encounterCards: catalog.getCardsBySet('standard'),
+      shuffleFn: (arr) => arr,
+    });
+
+    // Simulate p1 having 1 encounter card already dealt from player deck exhaustion in Player Phase
+    const priorEncounter = state.encounterDeck.shift()!;
+    state.players[0].dealtEncounterCards.push(priorEncounter);
+
+    state.phase = GamePhase.VILLAIN_PHASE;
+    state.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
+
+    state = advanceVillainPhaseStep(state, { synchronousPolicy: 'TAKE_UNDEFENDED' });
+
+    expect(state.villainPhaseStepEvent?.type).toBe('DEAL_ENCOUNTER_CARD');
+    expect(state.villainPhaseStepEvent?.amount).toBe(3);
+    expect(state.villainPhaseStepEvent?.description).toBe(
+      '2 encounter card(s) dealt to player threat zone(s) (2 base) + 1 previously dealt (player deck exhaustion); 3 total in threat zone(s).',
+    );
+    expect(state.players[0].dealtEncounterCards.length).toBe(2);
+    expect(state.players[1].dealtEncounterCards.length).toBe(1);
+    expect(state.villainPhaseStep).toBe(VillainPhaseStep.REVEAL_ENCOUNTER_CARDS);
+  });
+
+  it('updates villainPhaseStepEvent to REVEAL_ENCOUNTER_CARD before pausing for reveal interrupt prompt (#567)', () => {
+    let state = setupGame({
+      catalog: cardCatalog,
+      players: [
+        {
+          id: 'p1',
+          name: 'Peter Parker',
+          hero: catalog.getHeroIdentity('spider_man')!.hero,
+          alterEgo: catalog.getHeroIdentity('spider_man')!.alterEgo,
+          deckCards: catalog.getCardsBySet('spider_man').flatMap((c) => {
+            if (c.type === 'hero' || c.type === 'alter_ego') return [];
+            return Array(c.quantity).fill(c);
+          }),
+        },
+      ],
+      villain: catalog.getCard('01094') as VillainCard,
+      mainScheme: catalog.getCard('01097b') as MainSchemeCard,
+      encounterCards: catalog.getCardsBySet('standard'),
+      shuffleFn: (arr) => arr,
+    });
+
+    // Put Black Widow ally into play for p1 and give p1 a mental resource card in hand to pay the cost
+    const blackWidowCard = catalog.getCard('01075');
+    if (blackWidowCard) {
+      const blackWidowAlly = createCardInstance(blackWidowCard);
+      state.players[0].allies.push(blackWidowAlly);
+    }
+    const geniusCard = catalog.getCard('01089'); // Genius (2 mental resources)
+    if (geniusCard) {
+      state.players[0].hand.push(createCardInstance(geniusCard));
+    }
+
+    // Put a Treachery into p1's dealtEncounterCards (Shadow of the Past 01190)
+    const shadowCard = catalog.getCard('01190')!;
+    const shadowInstance = createCardInstance(shadowCard);
+    state.players[0].dealtEncounterCards.push(shadowInstance);
+
+    state.phase = GamePhase.VILLAIN_PHASE;
+    state.villainPhaseStep = VillainPhaseStep.REVEAL_ENCOUNTER_CARDS;
+
+    // Advance to reveal encounter card -> Black Widow's cancel prompt is triggered
+    state = advanceVillainPhaseStep(state);
+
+    const prompt = peekDecisionPrompt(state);
+    expect(prompt).toBeDefined();
+    // Stepper event must NOT be stuck on DEAL_ENCOUNTER_CARD or undefined
+    expect(state.villainPhaseStepEvent?.type).toBe('REVEAL_ENCOUNTER_CARD');
+    expect(state.villainPhaseStepEvent?.sourceName).toBe('Shadow of the Past');
+  });
 });

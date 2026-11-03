@@ -551,20 +551,36 @@ function hazardSourceNames(state: GameState): string {
  * when it differs from one card per player (#345): extra cards come from Heroic Mode or from Hazard
  * icons, and the icons' cards are named.
  */
-function buildDealStepEvent(state: GameState): VillainPhaseStepEvent {
-  const totalDealt = state.players.reduce((sum, p) => sum + p.dealtEncounterCards.length, 0);
+function buildDealStepEvent(
+  state: GameState,
+  previouslyDealtCount: number = 0,
+): VillainPhaseStepEvent {
+  const totalInThreatZones = state.players.reduce(
+    (sum, p) => sum + p.dealtEncounterCards.length,
+    0,
+  );
+  const cardsDealtThisStep = Math.max(0, totalInThreatZones - previouslyDealtCount);
   const base = state.players.length * (1 + Math.max(0, state.heroicLevel || 0));
   const hazardCount = countHazardIconsInPlay(state);
   const parts = [`${base} base`];
   if (hazardCount > 0) {
     parts.push(`${hazardCount} for Hazard (${hazardSourceNames(state)})`);
   }
-  const breakdown = totalDealt === base ? '' : ` (${parts.join(' + ')})`;
+
+  let description: string;
+  if (previouslyDealtCount > 0) {
+    const stepBreakdown = ` (${parts.join(' + ')})`;
+    description = `${cardsDealtThisStep} encounter card(s) dealt to player threat zone(s)${stepBreakdown} + ${previouslyDealtCount} previously dealt (player deck exhaustion); ${totalInThreatZones} total in threat zone(s).`;
+  } else {
+    const breakdown = totalInThreatZones === base ? '' : ` (${parts.join(' + ')})`;
+    description = `${totalInThreatZones} encounter card(s) dealt to player threat zone(s)${breakdown}.`;
+  }
+
   return {
     type: 'DEAL_ENCOUNTER_CARD',
     step: VillainPhaseStep.DEAL_ENCOUNTER_CARDS,
-    amount: totalDealt,
-    description: `${totalDealt} encounter card(s) dealt to player threat zone(s)${breakdown}.`,
+    amount: totalInThreatZones,
+    description,
     onomatopoeia: 'ENCOUNTER DEALT!',
   };
 }
@@ -1109,8 +1125,12 @@ function advanceStepOnDraft(nextState: GameState, options?: CombatOptions): Game
 
     delete nextState.pendingActivations;
     delete nextState.lastCombatOutcome;
+    const previouslyDealtCount = nextState.players.reduce(
+      (sum, p) => sum + p.dealtEncounterCards.length,
+      0,
+    );
     step3_dealEncounterCards(nextState);
-    nextState.villainPhaseStepEvent = buildDealStepEvent(nextState);
+    nextState.villainPhaseStepEvent = buildDealStepEvent(nextState, previouslyDealtCount);
     nextState.villainPhaseStep = VillainPhaseStep.REVEAL_ENCOUNTER_CARDS;
     return nextState;
   }
@@ -1118,8 +1138,12 @@ function advanceStepOnDraft(nextState: GameState, options?: CombatOptions): Game
   // Case 3: DEAL_ENCOUNTER_CARDS
   if (nextState.villainPhaseStep === VillainPhaseStep.DEAL_ENCOUNTER_CARDS) {
     delete nextState.lastCombatOutcome;
+    const previouslyDealtCount = nextState.players.reduce(
+      (sum, p) => sum + p.dealtEncounterCards.length,
+      0,
+    );
     step3_dealEncounterCards(nextState);
-    nextState.villainPhaseStepEvent = buildDealStepEvent(nextState);
+    nextState.villainPhaseStepEvent = buildDealStepEvent(nextState, previouslyDealtCount);
     nextState.villainPhaseStep = VillainPhaseStep.REVEAL_ENCOUNTER_CARDS;
     return nextState;
   }
@@ -1144,6 +1168,17 @@ function advanceStepOnDraft(nextState: GameState, options?: CombatOptions): Game
         targetPlayerId: targetPlayer.id,
       };
 
+      nextState.villainPhaseStepEvent = {
+        type: 'REVEAL_ENCOUNTER_CARD',
+        step: VillainPhaseStep.REVEAL_ENCOUNTER_CARDS,
+        sourceName: cardInstance.card.name,
+        targetPlayerId: targetPlayer.id,
+        targetName: targetPlayer.name,
+        description: `${targetPlayer.name} revealed ${cardInstance.card.name}.`,
+        onomatopoeia: 'HAZARD!',
+        card: cardInstance,
+      };
+
       const isCancelled = dispatchRevealInterrupts(
         nextState,
         cardInstance,
@@ -1157,16 +1192,10 @@ function advanceStepOnDraft(nextState: GameState, options?: CombatOptions): Game
 
       resolveActiveEncounterCardAfterInterrupt(nextState, cardInstance, targetPlayer, isCancelled);
 
-      nextState.villainPhaseStepEvent = {
-        type: 'REVEAL_ENCOUNTER_CARD',
-        step: VillainPhaseStep.REVEAL_ENCOUNTER_CARDS,
-        sourceName: cardInstance.card.name,
-        targetPlayerId: targetPlayer.id,
-        targetName: targetPlayer.name,
-        description: `${targetPlayer.name} revealed ${cardInstance.card.name}.`,
-        onomatopoeia: 'HAZARD!',
-        card: cardInstance,
-      };
+      if (isCancelled && nextState.villainPhaseStepEvent) {
+        nextState.villainPhaseStepEvent.description = `${targetPlayer.name} revealed ${cardInstance.card.name} (cancelled).`;
+        nextState.villainPhaseStepEvent.onomatopoeia = 'CANCELLED!';
+      }
 
       if (kernel.peekDecisionPrompt(nextState) || nextState.winner) {
         return nextState;

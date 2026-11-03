@@ -41,3 +41,11 @@ updates:
       # the runtime lacks. Raise it together with `node-version` in .github/workflows/ci.yml.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+
+  # Keeps the action pins in .github/workflows/ on a supported runtime (actions/* majors track Node)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7

@@ -214,7 +214,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
               <span className="truncate">{playerSeatLabel}</span>
             </div>
             <span
-              className="text-nano font-black px-1.5 py-0.2 rounded-sm border border-comic-black shadow-comic-xs shrink-0"
+              className="text-nano font-black px-1.5 py-px rounded-sm border border-comic-black shadow-comic-xs shrink-0"
               style={{
                 backgroundColor: playerPalette.accent || playerPalette.secondary,
                 color: getContrastTextColor(playerPalette.accent || playerPalette.secondary),
@@ -275,12 +275,12 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                     </div>
                     <div className="flex items-center gap-1 flex-wrap mt-0.5">
                       {prompt.hasOverkill && (
-                        <span className="bg-comic-red text-white text-nano font-black uppercase px-1 py-0.2 rounded-sm border border-comic-black shadow-comic-xs">
+                        <span className="bg-comic-red text-white text-nano font-black uppercase px-1 py-px rounded-sm border border-comic-black shadow-comic-xs">
                           OVERKILL
                         </span>
                       )}
                       {prompt.hasPiercing && (
-                        <span className="bg-purple-600 text-white text-nano font-black uppercase px-1 py-0.2 rounded-sm border border-comic-black shadow-comic-xs">
+                        <span className="bg-purple-600 text-white text-nano font-black uppercase px-1 py-px rounded-sm border border-comic-black shadow-comic-xs">
                           PIERCING
                         </span>
                       )}
@@ -324,12 +324,12 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                     </div>
                     <div className="flex items-center gap-1 flex-wrap mt-0.5">
                       {prompt.targetHasTough && (
-                        <span className="bg-amber-400 text-slate-950 text-nano font-black uppercase px-1 py-0.2 rounded-sm border border-comic-black shadow-comic-xs">
+                        <span className="bg-amber-400 text-slate-950 text-nano font-black uppercase px-1 py-px rounded-sm border border-comic-black shadow-comic-xs">
                           TOUGH
                         </span>
                       )}
                       {prompt.targetRetaliate !== undefined && prompt.targetRetaliate > 0 && (
-                        <span className="bg-orange-500 text-white text-nano font-black uppercase px-1 py-0.2 rounded-sm border border-comic-black shadow-comic-xs">
+                        <span className="bg-orange-500 text-white text-nano font-black uppercase px-1 py-px rounded-sm border border-comic-black shadow-comic-xs">
                           RETALIATE {prompt.targetRetaliate}
                         </span>
                       )}
@@ -463,13 +463,13 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                     <div className="min-w-0 flex-1">
                       <div className="font-black text-xs truncate">{card.name}</div>
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="text-nano font-mono font-bold uppercase bg-slate-200 text-slate-800 px-1 py-0.2 rounded-sm border border-comic-black/40">
+                        <span className="text-nano font-mono font-bold uppercase bg-slate-200 text-slate-800 px-1 py-px rounded-sm border border-comic-black/40">
                           {card.type}
                         </span>
                         {boostCount > 0 && (
                           <span
                             data-testid="discarded-card-boost-badge"
-                            className="text-nano font-black uppercase bg-amber-400 text-comic-black px-1.5 py-0.2 rounded-sm border border-comic-black shadow-comic-xs"
+                            className="text-nano font-black uppercase bg-amber-400 text-comic-black px-1.5 py-px rounded-sm border border-comic-black shadow-comic-xs"
                           >
                             ⚡ {boostCount} {boostCount === 1 ? 'BOOST ICON' : 'BOOST ICONS'}
                           </span>
@@ -571,13 +571,13 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                     ) : null}
                     <span className="font-comic">{option.label}</span>
                     {option.statusBadges?.isTough && (
-                      <span className="bg-amber-400 text-slate-950 text-nano font-black uppercase px-1.5 py-0.2 rounded-sm border border-comic-black shadow-comic-xs">
+                      <span className="bg-amber-400 text-slate-950 text-nano font-black uppercase px-1.5 py-px rounded-sm border border-comic-black shadow-comic-xs">
                         TOUGH
                       </span>
                     )}
                     {option.statusBadges?.retaliate !== undefined &&
                       option.statusBadges.retaliate > 0 && (
-                        <span className="bg-orange-500 text-white text-nano font-black uppercase px-1.5 py-0.2 rounded-sm border border-comic-black shadow-comic-xs">
+                        <span className="bg-orange-500 text-white text-nano font-black uppercase px-1.5 py-px rounded-sm border border-comic-black shadow-comic-xs">
                           RETALIATE {option.statusBadges.retaliate}
                         </span>
                       )}
@@ -589,7 +589,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                     {!requiresPayment &&
                       !option.label.toLowerCase().includes('cost') &&
                       optionCard?.cost !== undefined && (
-                        <span className="inline-flex items-center gap-1 text-micro font-black uppercase tracking-wider px-1.5 py-0.2 rounded-sm bg-amber-200 border border-comic-black text-slate-950 shadow-2xs">
+                        <span className="inline-flex items-center gap-1 text-micro font-black uppercase tracking-wider px-1.5 py-px rounded-sm bg-amber-200 border border-comic-black text-slate-950 shadow-2xs">
                           Cost: {optionCard.cost}
                         </span>
                       )}

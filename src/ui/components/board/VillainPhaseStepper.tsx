@@ -168,7 +168,7 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
             {categoryLabel}
           </span>
           <span
-            className={`self-start bg-comic-yellow text-comic-black font-black text-micro px-1.5 py-0.2 -rotate-2 ${style.badge}`}
+            className={`self-start bg-comic-yellow text-comic-black font-black text-micro px-1.5 py-px -rotate-2 ${style.badge}`}
           >
             {onomatopoeia}
           </span>
@@ -204,7 +204,7 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
                 {description}
               </span>
               <span
-                className={`bg-comic-yellow text-comic-black font-black text-micro px-1.5 py-0.2 -rotate-2 shrink-0 ${style.badge}`}
+                className={`bg-comic-yellow text-comic-black font-black text-micro px-1.5 py-px -rotate-2 shrink-0 ${style.badge}`}
               >
                 {onomatopoeia}
               </span>

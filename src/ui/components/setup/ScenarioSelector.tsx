@@ -422,7 +422,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                   Modular Encounter Slot (1 Required):
                 </div>
                 <span
-                  className={`text-micro bg-amber-100 text-slate-800 px-1.5 py-0.2 font-bold ${style.badge}`}
+                  className={`text-micro bg-amber-100 text-slate-800 px-1.5 py-px font-bold ${style.badge}`}
                 >
                   {selectedModularSetCode === RANDOM_MODULAR_SET_CODE
                     ? 'Random Modular Set'

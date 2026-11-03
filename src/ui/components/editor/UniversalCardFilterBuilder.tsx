@@ -179,7 +179,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
             {label || 'Universal Card Filter'}
           </span>
           {criteriaCount > 0 && (
-            <span className="rounded-sm bg-comic-yellow border border-black px-1.5 py-0.2 text-[10px] font-bold">
+            <span className="rounded-sm bg-comic-yellow border border-black px-1.5 py-px text-[10px] font-bold">
               {criteriaCount} {criteriaCount === 1 ? 'criterion' : 'criteria'}
             </span>
           )}

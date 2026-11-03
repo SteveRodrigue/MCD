@@ -132,7 +132,7 @@ export const CardGalleryList: React.FC<CardGalleryListProps> = ({
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-mono text-[11px] font-bold bg-black text-white px-1.5 py-0.2 rounded-sm">
+                  <span className="font-mono text-[11px] font-bold bg-black text-white px-1.5 py-px rounded-sm">
                     {card.code}
                   </span>
                   <span className="font-bangers tracking-wide text-sm truncate text-black">

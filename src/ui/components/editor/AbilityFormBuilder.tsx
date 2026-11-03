@@ -322,25 +322,25 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                   ) : (
                     <ChevronRight className="w-4 h-4 text-gray-600" />
                   )}
-                  <span className="font-mono font-bold bg-black text-white px-1.5 py-0.2 rounded-sm text-[11px]">
+                  <span className="font-mono font-bold bg-black text-white px-1.5 py-px rounded-sm text-[11px]">
                     #{aIdx + 1}
                   </span>
                   <span className="font-bold text-xs">{ability.id || 'unnamed_ability'}</span>
-                  <span className="bg-comic-yellow text-black px-1.5 py-0.2 border border-black rounded-sm text-[10px] font-bold">
+                  <span className="bg-comic-yellow text-black px-1.5 py-px border border-black rounded-sm text-[10px] font-bold">
                     {ability.timing}
                   </span>
                   {ability.trigger && (
-                    <span className="bg-gray-200 text-gray-700 px-1.5 py-0.2 rounded-sm text-[10px] font-mono">
+                    <span className="bg-gray-200 text-gray-700 px-1.5 py-px rounded-sm text-[10px] font-mono">
                       {ability.trigger}
                     </span>
                   )}
                   {ability.limit && (
-                    <span className="bg-amber-100 text-amber-900 border border-amber-400 px-1.5 py-0.2 rounded-sm text-[10px] font-bold">
+                    <span className="bg-amber-100 text-amber-900 border border-amber-400 px-1.5 py-px rounded-sm text-[10px] font-bold">
                       ⏳ {ability.limit}
                     </span>
                   )}
                   {ability.zone && (
-                    <span className="bg-blue-100 text-blue-900 border border-blue-400 px-1.5 py-0.2 rounded-sm text-[10px] font-mono">
+                    <span className="bg-blue-100 text-blue-900 border border-blue-400 px-1.5 py-px rounded-sm text-[10px] font-mono">
                       📍 {ability.zone}
                     </span>
                   )}
@@ -349,7 +349,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                       key={label}
                       data-testid={`ability-label-badge-${aIdx}-${label}`}
                       title="Printed ability label, derived from the card text (read-only)"
-                      className="bg-sky-100 text-sky-900 border border-sky-500 px-1.5 py-0.2 rounded-sm text-[10px] font-bold"
+                      className="bg-sky-100 text-sky-900 border border-sky-500 px-1.5 py-px rounded-sm text-[10px] font-bold"
                     >
                       AUTO: {label}
                     </span>
@@ -357,7 +357,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                   {isInvalid && (
                     <span
                       data-testid={`ability-invalid-badge-${aIdx}`}
-                      className="bg-comic-red text-white px-1.5 py-0.2 rounded-sm text-[10px] font-bold"
+                      className="bg-comic-red text-white px-1.5 py-px rounded-sm text-[10px] font-bold"
                     >
                       ⚠️ INVALID
                     </span>

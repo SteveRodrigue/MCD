@@ -277,7 +277,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                   {villain.statusCards.map((st, i) => (
                     <span
                       key={i}
-                      className={`text-nano px-1 py-0.2 uppercase font-bold ${style.badge} ${
+                      className={`text-nano px-1 py-px uppercase font-bold ${style.badge} ${
                         st === StatusCard.TOUGH
                           ? 'bg-sky-400 text-slate-950'
                           : st === StatusCard.STUNNED

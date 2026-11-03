@@ -390,7 +390,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
                     <span
                       key={idx}
                       data-testid={`fallback-dynamic-trait-${trait.toLowerCase()}`}
-                      className="bg-cyan-300 text-slate-950 text-nano not-italic px-1.5 py-0.2 rounded-full border border-comic-black font-black uppercase tracking-wide"
+                      className="bg-cyan-300 text-slate-950 text-nano not-italic px-1.5 py-px rounded-full border border-comic-black font-black uppercase tracking-wide"
                     >
                       +{trait}
                     </span>

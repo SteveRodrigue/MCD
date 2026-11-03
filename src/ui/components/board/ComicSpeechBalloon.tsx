@@ -72,7 +72,7 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({ dialogue
           <span className="whitespace-nowrap font-bold">{speakerName || defaultTitle}</span>
           {speakerRole && (
             <span
-              className={`px-1.5 py-0.2 text-nano font-black uppercase tracking-wider shrink-0 opacity-90 ${style.badge}`}
+              className={`px-1.5 py-px text-nano font-black uppercase tracking-wider shrink-0 opacity-90 ${style.badge}`}
               style={{
                 borderColor: bannerText,
                 color: bannerText,
@@ -83,7 +83,7 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({ dialogue
           )}
           {sourceCard && (
             <span
-              className={`px-1.5 py-0.2 text-nano font-black uppercase tracking-wider shrink-0 text-white ${style.badge}`}
+              className={`px-1.5 py-px text-nano font-black uppercase tracking-wider shrink-0 text-white ${style.badge}`}
               style={{
                 backgroundColor: 'rgba(255,255,255,0.2)',
                 borderColor: 'rgba(255,255,255,0.4)',
@@ -93,7 +93,7 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({ dialogue
             </span>
           )}
           {round !== undefined && type === 'narrator_caption' && (
-            <span className={`px-1.5 py-0.2 text-nano font-black shrink-0 ${style.chip}`}>
+            <span className={`px-1.5 py-px text-nano font-black shrink-0 ${style.chip}`}>
               R{round}
             </span>
           )}

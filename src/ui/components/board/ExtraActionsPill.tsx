@@ -53,7 +53,7 @@ export const ExtraActionsPill: React.FC<ExtraActionsPillProps> = ({
           {teamActionCount > 0 && (
             <span
               data-testid="extra-call-count"
-              className={`text-micro px-1.5 py-0.2 font-mono font-bold bg-comic-yellow text-comic-black ${style.badge}`}
+              className={`text-micro px-1.5 py-px font-mono font-bold bg-comic-yellow text-comic-black ${style.badge}`}
               title={`${teamActionCount} Teammate Action${plural(teamActionCount)}`}
             >
               {teamActionCount} TEAM
@@ -62,7 +62,7 @@ export const ExtraActionsPill: React.FC<ExtraActionsPillProps> = ({
           {villainActionCount > 0 && (
             <span
               data-testid="extra-villain-count"
-              className={`text-micro px-1.5 py-0.2 font-mono font-bold bg-comic-red text-white ${style.badge}`}
+              className={`text-micro px-1.5 py-px font-mono font-bold bg-comic-red text-white ${style.badge}`}
               title={`${villainActionCount} Villain/Scheme Action${plural(villainActionCount)}`}
             >
               {villainActionCount} VILLAIN

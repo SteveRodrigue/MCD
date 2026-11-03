@@ -115,14 +115,14 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
                 <span className="text-micro opacity-75 uppercase">({p.hero.name})</span>
                 {isStartingPlayer && (
                   <span
-                    className={`text-micro bg-amber-400 text-slate-950 px-1.5 py-0.2 font-bold flex items-center gap-0.5 ${style.badge}`}
+                    className={`text-micro bg-amber-400 text-slate-950 px-1.5 py-px font-bold flex items-center gap-0.5 ${style.badge}`}
                   >
                     👑 STARTING
                   </span>
                 )}
                 {isDone && (
                   <span
-                    className={`text-micro bg-emerald-600 text-white px-1.5 py-0.2 font-bold ${style.badge}`}
+                    className={`text-micro bg-emerald-600 text-white px-1.5 py-px font-bold ${style.badge}`}
                   >
                     READY
                   </span>

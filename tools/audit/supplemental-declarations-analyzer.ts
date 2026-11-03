@@ -15,7 +15,6 @@ import {
   EffectTypeSchema,
 } from '../../src/data/supplemental/schema';
 
-const StepConditionSchema = { options: [] as string[] };
 import { detectDuplicateJsonKeys } from '../../src/data/supplemental/duplicate-key-detector';
 import { auditSchemaEngineCoverage } from './schema-engine-coverage';
 
@@ -57,7 +56,6 @@ interface AbilityStep {
   effect?: string;
   gate?: string;
   gateParams?: Record<string, unknown>;
-  condition?: string;
   effectParams?: Record<string, unknown>;
   params?: Record<string, unknown>;
 }
@@ -291,7 +289,6 @@ export function runDeclarationsAudit(options: { outDir?: string } = {}) {
   const targetsUsage = new Map<string, UsageOccurrence[]>();
   const gatesUsage = new Map<string, UsageOccurrence[]>();
   const gateParamsUsage = new Map<string, UsageOccurrence[]>();
-  const stepConditionsUsage = new Map<string, UsageOccurrence[]>();
 
   const effectParamsUsage = new Map<string, UsageOccurrence[]>();
   const dynamicValuesUsage = new Map<string, UsageOccurrence[]>();
@@ -441,9 +438,8 @@ export function runDeclarationsAudit(options: { outDir?: string } = {}) {
           recordUsage(targetsUsage, target, occ);
         }
 
-        // Gates & Step Conditions
+        // Step Gates
         if (step.gate) recordUsage(gatesUsage, step.gate, occ);
-        if (step.condition) recordUsage(stepConditionsUsage, step.condition, occ);
 
         if (step.gateParams && typeof step.gateParams === 'object') {
           for (const gpKey of Object.keys(step.gateParams)) {
@@ -798,47 +794,31 @@ export function runDeclarationsAudit(options: { outDir?: string } = {}) {
   );
 
   // =========================================================================
-  // DETAILED REPORT 6: Condition Gates & Step Conditions Usage
+  // DETAILED REPORT 6: Step Gates Usage
   // =========================================================================
-  const conditionsReportLines: string[] = [];
-  conditionsReportLines.push(`# 🚦 Condition Gates & Step Conditions Usage Inventory`);
-  conditionsReportLines.push(``);
-  conditionsReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
-  conditionsReportLines.push(``);
-  conditionsReportLines.push(
-    `## 1. Condition Gates (\`StepGateSchema\` — ${gatesUsage.size}/${StepGateSchema.options.length} In Use)`,
+  const gatesReportLines: string[] = [];
+  gatesReportLines.push(`# 🚦 Step Gates Usage Inventory`);
+  gatesReportLines.push(``);
+  gatesReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
+  gatesReportLines.push(``);
+  gatesReportLines.push(
+    `## Step Gates (\`StepGateSchema\` — ${gatesUsage.size}/${StepGateSchema.options.length} In Use)`,
   );
-  conditionsReportLines.push(``);
+  gatesReportLines.push(``);
 
   const sortedGates = Array.from(gatesUsage.entries()).sort(
     (a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]),
   );
   for (const [gate, occs] of sortedGates) {
     const uniqueCards = new Set(occs.map((o) => o.code)).size;
-    conditionsReportLines.push(
-      `### <a id="${anchorId(gate)}"></a>\`${gate}\` (${uniqueCards} Cards)`,
-    );
-    conditionsReportLines.push(``);
-    conditionsReportLines.push(formatCardListTable(occs));
-    conditionsReportLines.push(``);
+    gatesReportLines.push(`### <a id="${anchorId(gate)}"></a>\`${gate}\` (${uniqueCards} Cards)`);
+    gatesReportLines.push(``);
+    gatesReportLines.push(formatCardListTable(occs));
+    gatesReportLines.push(``);
   }
 
-  conditionsReportLines.push(
-    `## 2. Step Conditions (\`StepConditionSchema\` — ${stepConditionsUsage.size}/${StepConditionSchema.options.length} In Use)`,
-  );
-  conditionsReportLines.push(``);
-  const sortedStepConds = Array.from(stepConditionsUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]),
-  );
-  for (const [sc, occs] of sortedStepConds) {
-    const uniqueCards = new Set(occs.map((o) => o.code)).size;
-    conditionsReportLines.push(`### <a id="${anchorId(sc)}"></a>\`${sc}\` (${uniqueCards} Cards)`);
-    conditionsReportLines.push(``);
-    conditionsReportLines.push(formatCardListTable(occs));
-    conditionsReportLines.push(``);
-  }
-  conditionsReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
-  writeReport(path.join(detailedDir, 'condition_gates_usage.md'), conditionsReportLines.join('\n'));
+  gatesReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
+  writeReport(path.join(detailedDir, 'step_gates_usage.md'), gatesReportLines.join('\n'));
 
   // =========================================================================
   // DETAILED REPORT 7: Full Schema <-> Engine Code Path Audit
@@ -941,7 +921,7 @@ export function runDeclarationsAudit(options: { outDir?: string } = {}) {
 
   schemaAuditLines.push(
     ...generateAuditTable(
-      `3. Condition Gates (\`StepGateSchema\` — ${coverageAudit.gatesCoverageRate.toFixed(1)}% Engine Coverage)`,
+      `3. Step Gates (\`StepGateSchema\` — ${coverageAudit.gatesCoverageRate.toFixed(1)}% Engine Coverage)`,
       StepGateSchema.options,
       gatesUsage,
       coverageAudit.gatesHandledSet,
@@ -951,17 +931,7 @@ export function runDeclarationsAudit(options: { outDir?: string } = {}) {
 
   schemaAuditLines.push(
     ...generateAuditTable(
-      `4. Step Conditions (\`StepConditionSchema\` — ${coverageAudit.stepConditionsCoverageRate.toFixed(1)}% Engine Coverage)`,
-      StepConditionSchema.options,
-      stepConditionsUsage,
-      coverageAudit.stepConditionsHandledSet,
-      '`src/engine/effects/index.ts` / `step-gate-evaluator.ts`',
-    ),
-  );
-
-  schemaAuditLines.push(
-    ...generateAuditTable(
-      `5. Trigger Windows (\`TriggerTypeSchema\` — ${coverageAudit.triggersCoverageRate.toFixed(1)}% Engine Coverage)`,
+      `4. Trigger Windows (\`TriggerTypeSchema\` — ${coverageAudit.triggersCoverageRate.toFixed(1)}% Engine Coverage)`,
       TriggerTypeSchema.options,
       triggersUsage,
       coverageAudit.triggersHandledSet,
@@ -971,7 +941,7 @@ export function runDeclarationsAudit(options: { outDir?: string } = {}) {
 
   schemaAuditLines.push(
     ...generateAuditTable(
-      `6. Ability Timings (\`TimingTypeSchema\` — ${coverageAudit.timingsCoverageRate.toFixed(1)}% Engine Coverage)`,
+      `5. Ability Timings (\`TimingTypeSchema\` — ${coverageAudit.timingsCoverageRate.toFixed(1)}% Engine Coverage)`,
       TimingTypeSchema.options,
       timingsUsage,
       coverageAudit.timingsHandledSet,
@@ -1023,10 +993,7 @@ export function runDeclarationsAudit(options: { outDir?: string } = {}) {
     `| **Target Selectors Code Path Coverage** | **${coverageAudit.targetsCoverageRate.toFixed(1)}%** | **${coverageAudit.targetsHandledSet.size}/${TargetSelectorSchema.options.length}** | [${targetsUsage.size} In Use](detailed_reports/target_selectors_usage.md) |`,
   );
   mainReportLines.push(
-    `| **Condition Gates Code Path Coverage** | **${coverageAudit.gatesCoverageRate.toFixed(1)}%** | **${coverageAudit.gatesHandledSet.size}/${StepGateSchema.options.length}** | [${gatesUsage.size} In Use](detailed_reports/condition_gates_usage.md) |`,
-  );
-  mainReportLines.push(
-    `| **Step Conditions Code Path Coverage** | **${coverageAudit.stepConditionsCoverageRate.toFixed(1)}%** | **${coverageAudit.stepConditionsHandledSet.size}/${StepConditionSchema.options.length}** | [${stepConditionsUsage.size} In Use](detailed_reports/condition_gates_usage.md) |`,
+    `| **Step Gates Code Path Coverage** | **${coverageAudit.gatesCoverageRate.toFixed(1)}%** | **${coverageAudit.gatesHandledSet.size}/${StepGateSchema.options.length}** | [${gatesUsage.size} In Use](detailed_reports/step_gates_usage.md) |`,
   );
   mainReportLines.push(
     `| **Trigger Types Code Path Coverage** | **${coverageAudit.triggersCoverageRate.toFixed(1)}%** | **${coverageAudit.triggersHandledSet.size}/${TriggerTypeSchema.options.length}** | [${triggersUsage.size} In Use](detailed_reports/timing_and_triggers_usage.md) |`,
@@ -1173,15 +1140,12 @@ export function runDeclarationsAudit(options: { outDir?: string } = {}) {
   mainReportLines.push(``);
   mainReportLines.push(`---`);
   mainReportLines.push(``);
-  mainReportLines.push(`## 🚦 6. Condition Gates & Step Conditions Summary`);
+  mainReportLines.push(`## 🚦 6. Step Gates Summary`);
   mainReportLines.push(``);
   mainReportLines.push(`| Mechanism | In Use | Schema Total | Coverage | Detailed Breakdown |`);
   mainReportLines.push(`| :--- | :---: | :---: | :---: | :--- |`);
   mainReportLines.push(
-    `| **Condition Gates** | **${gatesUsage.size}** | ${StepGateSchema.options.length} | ${coverageAudit.gatesCoverageRate.toFixed(1)}% | [View Gates Breakdown](detailed_reports/condition_gates_usage.md#1-condition-gates-conditiongateschema) |`,
-  );
-  mainReportLines.push(
-    `| **Step Conditions** | **${stepConditionsUsage.size}** | ${StepConditionSchema.options.length} | ${coverageAudit.stepConditionsCoverageRate.toFixed(1)}% | [View Step Conditions](detailed_reports/condition_gates_usage.md#2-step-conditions-stepconditionschema) |`,
+    `| **Step Gates** | **${gatesUsage.size}** | ${StepGateSchema.options.length} | ${coverageAudit.gatesCoverageRate.toFixed(1)}% | [View Gates Breakdown](detailed_reports/step_gates_usage.md) |`,
   );
   mainReportLines.push(
     `| **Gate Parameters** | **${gateParamsUsage.size}** | - | - | ${Array.from(
@@ -1259,7 +1223,7 @@ export function runDeclarationsAudit(options: { outDir?: string } = {}) {
   mainReportLines.push(`## ⚠️ 9. Code Path Verification & Zero-Usage Detection`);
   mainReportLines.push(``);
   mainReportLines.push(
-    `Every schema primitive is verified for a matching engine handler. Check the complete **[Schema Primitives Code Path Matrix](detailed_reports/schema_code_path_audit.md)** for status on all ${EffectTypeSchema.options.length + TargetSelectorSchema.options.length + StepGateSchema.options.length + StepConditionSchema.options.length + TriggerTypeSchema.options.length + TimingTypeSchema.options.length} schema definitions.`,
+    `Every schema primitive is verified for a matching engine handler. Check the complete **[Schema Primitives Code Path Matrix](detailed_reports/schema_code_path_audit.md)** for status on all ${EffectTypeSchema.options.length + TargetSelectorSchema.options.length + StepGateSchema.options.length + TriggerTypeSchema.options.length + TimingTypeSchema.options.length} schema definitions.`,
   );
   mainReportLines.push(``);
   mainReportLines.push(`### Summary of Unhandled or Zero-Usage Primitives:`);
@@ -1275,9 +1239,6 @@ export function runDeclarationsAudit(options: { outDir?: string } = {}) {
   );
   mainReportLines.push(
     `| **Gates** | ${StepGateSchema.options.length} | ${StepGateSchema.options.length - gatesUsage.size} | ${coverageAudit.unhandledGates.length === 0 ? '🟢 0' : `🔴 ${coverageAudit.unhandledGates.length}`} |`,
-  );
-  mainReportLines.push(
-    `| **Step Conditions** | ${StepConditionSchema.options.length} | ${StepConditionSchema.options.length - stepConditionsUsage.size} | ${coverageAudit.unhandledStepConditions.length === 0 ? '🟢 0' : `⚠️ ${coverageAudit.unhandledStepConditions.length} (${coverageAudit.unhandledStepConditions.join(', ')})`} |`,
   );
   mainReportLines.push(
     `| **Triggers** | ${TriggerTypeSchema.options.length} | ${TriggerTypeSchema.options.length - triggersUsage.size} | ${coverageAudit.unhandledTriggers.length === 0 ? '🟢 0' : `🔴 ${coverageAudit.unhandledTriggers.length}`} |`,
@@ -1303,7 +1264,7 @@ export function runDeclarationsAudit(options: { outDir?: string } = {}) {
     `- [Effects Usage Inventory](supplemental_data/detailed_reports/effects_usage.md)`,
     `- [Target Selectors Usage Inventory](supplemental_data/detailed_reports/target_selectors_usage.md)`,
     `- [Timing & Triggers Inventory](supplemental_data/detailed_reports/timing_and_triggers_usage.md)`,
-    `- [Condition Gates & Step Conditions Inventory](supplemental_data/detailed_reports/condition_gates_usage.md)`,
+    `- [Step Gates Usage Inventory](supplemental_data/detailed_reports/step_gates_usage.md)`,
     `- [Schema Primitives Code Path Verification Matrix](supplemental_data/detailed_reports/schema_code_path_audit.md)`,
     ``,
   ].join('\n');

@@ -9,5 +9,5 @@
 - [Effects Usage Inventory](supplemental_data/detailed_reports/effects_usage.md)
 - [Target Selectors Usage Inventory](supplemental_data/detailed_reports/target_selectors_usage.md)
 - [Timing & Triggers Inventory](supplemental_data/detailed_reports/timing_and_triggers_usage.md)
-- [Condition Gates & Step Conditions Inventory](supplemental_data/detailed_reports/condition_gates_usage.md)
+- [Step Gates Usage Inventory](supplemental_data/detailed_reports/step_gates_usage.md)
 - [Schema Primitives Code Path Verification Matrix](supplemental_data/detailed_reports/schema_code_path_audit.md)

@@ -130,7 +130,7 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 | `HOST` | ✅ Yes | **3** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 3 card(s). |
 | `HOST_ENEMY` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 1 card(s). |
 
-### 3. Condition Gates (`StepGateSchema` — 100.0% Engine Coverage)
+### 3. Step Gates (`StepGateSchema` — 100.0% Engine Coverage)
 
 | Primitive Value | In Engine Code Path? | Cards Declaring | Status | Health Rationale / Code Location |
 | :--- | :---: | :---: | :---: | :--- |
@@ -145,12 +145,7 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 | `IF_UNDEFENDED_ATTACK` | ✅ Yes | **2** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 2 card(s). |
 | `IF_ACTIVATION_DEALT_DAMAGE` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 1 card(s). |
 
-### 4. Step Conditions (`StepConditionSchema` — 100.0% Engine Coverage)
-
-| Primitive Value | In Engine Code Path? | Cards Declaring | Status | Health Rationale / Code Location |
-| :--- | :---: | :---: | :---: | :--- |
-
-### 5. Trigger Windows (`TriggerTypeSchema` — 100.0% Engine Coverage)
+### 4. Trigger Windows (`TriggerTypeSchema` — 100.0% Engine Coverage)
 
 | Primitive Value | In Engine Code Path? | Cards Declaring | Status | Health Rationale / Code Location |
 | :--- | :---: | :---: | :---: | :--- |
@@ -188,7 +183,7 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 | `STATUS_REMOVED` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/triggers/` & scenario pipelines; 0 cards currently declare this. |
 | `BOOST` | ✅ Yes | **11** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 11 card(s). |
 
-### 6. Ability Timings (`TimingTypeSchema` — 100.0% Engine Coverage)
+### 5. Ability Timings (`TimingTypeSchema` — 100.0% Engine Coverage)
 
 | Primitive Value | In Engine Code Path? | Cards Declaring | Status | Health Rationale / Code Location |
 | :--- | :---: | :---: | :---: | :--- |

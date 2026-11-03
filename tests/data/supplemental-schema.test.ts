@@ -863,7 +863,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       expect(dups).toEqual([]);
     });
 
-    describe('DynamicValueSourceSchema & StepConditionSchema (ADR-0049 Contracts)', () => {
+    describe('DynamicValueSourceSchema & StepGateSchema (ADR-0049 Contracts)', () => {
       it('Validates all 5 DynamicValueSource types with multipliers and offsets', () => {
         const sources = [
           'INTERCEPTED_VALUE',

@@ -1182,6 +1182,7 @@ function scanEncounterTriggerAbilities(
   currentChain: TriggerCallNode[],
   scanState: TriggerScanState,
 ): void {
+  if (state.winner || !state.players || state.players.length === 0) return;
   const firstPlayer = getFirstPlayer(state);
   if (!firstPlayer) return;
 
@@ -1650,6 +1651,16 @@ export function dispatchTrigger(
   scanInPlayTriggerAbilities(state, trigger, context, currentChain, playersToScan, scanState);
   scanEncounterTriggerAbilities(state, trigger, context, currentChain, scanState);
   resolveForcedCandidates(state, scanState);
+  if (state.winner || !state.players || state.players.length === 0) {
+    return {
+      state,
+      damageAmount: scanState.currentDamage,
+      preventedDamage: scanState.isPrevented,
+      threatAmount: scanState.currentThreat,
+      cancelled: scanState.isCancelled,
+      hasPendingPrompt: false,
+    };
+  }
 
   // Then the optional ones: identity (e.g. Spider-Sense on Spider-Man 01001a), in play, in hand.
   scanState.pass = 'OPTIONAL';

@@ -236,6 +236,10 @@ export const handleAllyAttack: ActionHandler<'ALLY_ATTACK'> = (nextState, state,
     attackSource: { kind: 'ALLY', playerId: player.id, instanceId: ally.instanceId },
   });
 
+  if (nextState.winner) {
+    return { state: nextState, result: { success: true, onomatopoeia: 'ALLY ATTACK!' } };
+  }
+
   // Consequential damage to ally per RR v1.8 (after resolving abilities triggered by the ally attacking)
   const consequential = allyCard.attackCost ?? 1;
   applyConsequentialDamage(nextState, player.id, ally.instanceId, consequential);

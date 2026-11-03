@@ -45,14 +45,18 @@ export const SelectCardsModal: React.FC<SelectCardsModalProps> = ({
   } = resolvePlayerSeatInfo(effectivePlayers, prompt.playerId);
   const playerPalette = useMemo(() => getHeroColorPalette(promptPlayer), [promptPlayer]);
 
-  const infoOf = (optionId: string): CardOptionParams =>
-    (prompt.options.find((o) => o.id === optionId)?.params as CardOptionParams) ?? {};
-  const chosenNames = new Set(chosen.map((id) => infoOf(id).cardName));
+  const optionOf = (optionId: string) => prompt.options.find((o) => o.id === optionId);
+  const cardNameOf = (optionId: string): string | undefined => {
+    const opt = optionOf(optionId);
+    return opt?.cardName ?? (opt?.params as CardOptionParams | undefined)?.cardName ?? opt?.label;
+  };
+  const chosenNames = new Set(chosen.map(cardNameOf));
 
   const isDisabled = (optionId: string): boolean => {
     if (chosen.includes(optionId)) return false;
     if (chosen.length >= selection.max) return true;
-    return selection.distinctBy === 'NAME' && chosenNames.has(infoOf(optionId).cardName);
+    const name = cardNameOf(optionId);
+    return Boolean(selection.distinctBy === 'NAME' && name && chosenNames.has(name));
   };
 
   const toggle = (optionId: string) => {
@@ -121,15 +125,16 @@ export const SelectCardsModal: React.FC<SelectCardsModalProps> = ({
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {prompt.options.map((option) => {
-          const info = option.params as CardOptionParams | undefined;
+          const cardCode = option.cardCode;
+          const cardName = option.cardName ?? option.label;
           const isChosen = chosen.includes(option.id);
           return (
             <button
               key={option.id}
               type="button"
               data-testid={`select-card-${option.id}`}
-              data-card-anchor={info?.cardCode ?? ''}
-              aria-label={info?.cardName ?? option.label}
+              data-card-anchor={cardCode ?? ''}
+              aria-label={cardName}
               disabled={isDisabled(option.id)}
               aria-pressed={isChosen}
               onClick={() => toggle(option.id)}
@@ -137,10 +142,10 @@ export const SelectCardsModal: React.FC<SelectCardsModalProps> = ({
                 isChosen ? style.tileSelected : style.tile
               }`}
             >
-              <AccentStripe code={info?.cardCode ?? ''} />
+              <AccentStripe code={cardCode ?? ''} />
               <CardRef
-                code={info?.cardCode}
-                name={info?.cardName ?? option.label}
+                code={cardCode}
+                name={cardName}
                 size="lg"
                 stacked
                 className="text-xs uppercase"

@@ -171,6 +171,8 @@ function handleDealDamage(
         options: state.players.map((p) => ({
           id: `engaged_enemies_${p.id}`,
           label: `${p.name} (${p.hero?.name || 'Hero'})`,
+          cardCode: p.activeFormCard?.code || p.hero?.code,
+          cardName: p.hero?.name,
           description: `Deal ${amount} damage to the villain and to each enemy engaged with ${p.name} (${(p.engagedMinions || []).length} minion${(p.engagedMinions || []).length === 1 ? '' : 's'})`,
           effect: 'DEAL_DAMAGE',
           params: { amount, target: 'ENGAGED_ENEMIES', targetPlayerId: p.id },

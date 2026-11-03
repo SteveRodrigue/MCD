@@ -299,9 +299,9 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
     expect(screen.getByTestId(`card-hover-preview-${webShooter.code}`)).toBeDefined();
   });
 
-  it('play-from-zone options without cardCode fall back to params.cardInstance for the thumbnail', async () => {
+  it('card-based decision options render a thumbnail via option.cardCode only (no param/instance fallbacks)', async () => {
     const widow = cardCatalog.getCard('01070') ?? cardCatalog.getCard('01067')!;
-    const prompt: PendingDecisionPrompt = {
+    const promptWithCardCode: PendingDecisionPrompt = {
       promptId: 'prompt_play_from_zone_thumb',
       playerId: 'p1',
       title: 'Make the Call',
@@ -311,6 +311,7 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
       options: [
         {
           id: 'inst_ally_1',
+          cardCode: widow.code,
           label: `${widow.name} (Cost: ${widow.cost ?? 0})`,
           description: widow.text ?? '',
           effect: 'PLAY_CARD_FROM_ZONE_RESOLUTION',
@@ -318,10 +319,29 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
         },
       ],
     };
-    await act(async () => {
-      render(<DecisionPromptModal prompt={prompt} onSelectOption={vi.fn()} />);
-    });
+    const { unmount } = render(
+      <DecisionPromptModal prompt={promptWithCardCode} onSelectOption={vi.fn()} />,
+    );
     expect(screen.getByTestId('option-card-thumbnail-inst_ally_1')).toBeDefined();
+    unmount();
+
+    // Without option.cardCode, legacy params.cardInstance/params.cardCode are ignored (Issue #573)
+    const promptWithoutCardCode: PendingDecisionPrompt = {
+      ...promptWithCardCode,
+      options: [
+        {
+          id: 'inst_ally_no_code',
+          label: widow.name,
+          effect: 'PLAY_CARD_FROM_ZONE_RESOLUTION',
+          params: {
+            cardCode: widow.code,
+            cardInstance: { instanceId: 'inst_ally_1', card: widow },
+          },
+        },
+      ],
+    };
+    render(<DecisionPromptModal prompt={promptWithoutCardCode} onSelectOption={vi.fn()} />);
+    expect(screen.queryByTestId('option-card-thumbnail-inst_ally_no_code')).toBeNull();
   });
 
   it("setup choice options (e.g. T'Challa Foresight upgrade search) display card thumbnail, name, and formatted printed text without raw markup", async () => {
@@ -336,6 +356,8 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
       options: [
         {
           id: 'inst_upgrade_1',
+          cardCode: energyDaggers.code,
+          cardName: energyDaggers.name,
           label: `${energyDaggers.name} (${energyDaggers.type}, Cost: ${energyDaggers.cost})`,
           description:
             'Black Panther. <i>Upgrade</i>. <b>Hero Action</b>: Spend a [mental] resource -> deal 2 damage.',

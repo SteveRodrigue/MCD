@@ -118,6 +118,7 @@ export const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
         return {
           id: u.instanceId,
           cardCode: u.card.code,
+          cardName: u.card.name,
           label: u.card.name,
           description: u.card.text || 'Black Panther Upgrade Special',
           effect: 'SELECT_WAKANDA_UPGRADE',

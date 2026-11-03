@@ -295,7 +295,6 @@ function handleDealDamage(
         value: res.damageTaken,
         facts: {
           targetDefeated: Boolean(res.targetDefeated),
-          defeated: Boolean(res.targetDefeated),
           excessDamage: res.excessDamage || 0,
         },
         onomatopoeia,
@@ -321,7 +320,6 @@ function handleDealDamage(
     value: damageRes.result.damageTaken,
     facts: {
       targetDefeated: Boolean(damageRes.result.targetDefeated),
-      defeated: Boolean(damageRes.result.targetDefeated),
       excessDamage: damageRes.result.excessDamage || 0,
     },
     onomatopoeia,

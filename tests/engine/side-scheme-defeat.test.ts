@@ -229,7 +229,7 @@ describe('Canonical Side Scheme Defeat & Zero-Threat Scheme Pipeline (Issue #149
       const result = executeEffect(state, removeThreatAbility as any, { playerId: player.id });
 
       expect(result.success).toBe(true);
-      expect(result.facts?.threatZero).toBe(true);
+      expect(result.facts?.schemeEmpty).toBe(true);
       expect(getActiveMainScheme(state).threat).toBe(0);
 
       // Main scheme must remain in play (NOT defeated)

@@ -110,33 +110,41 @@ describe('Shared step-gate evaluator (ADR-0080, Issues #289, #290)', () => {
       const stepDefeated: AbilityStep = {
         effect: 'DRAW',
         gate: 'IF_RESULT',
-        gateParams: { fact: 'defeated' },
+        gateParams: { result: 'TARGET_DEFEATED' },
       };
       expect(
-        evalGate(stepDefeated, { success: true, mutatedState: true, facts: { defeated: true } }),
+        evalGate(stepDefeated, {
+          success: true,
+          mutatedState: true,
+          facts: { targetDefeated: true },
+        }),
       ).toBe(true);
       expect(
-        evalGate(stepDefeated, { success: true, mutatedState: true, facts: { defeated: false } }),
+        evalGate(stepDefeated, {
+          success: true,
+          mutatedState: true,
+          facts: { targetDefeated: false },
+        }),
       ).toBe(false);
       expect(evalGate(stepDefeated, { success: true, mutatedState: true })).toBe(false);
 
-      const stepThreatZero: AbilityStep = {
+      const stepSchemeEmpty: AbilityStep = {
         effect: 'DRAW',
         gate: 'IF_RESULT',
-        gateParams: { fact: 'threatZero' },
+        gateParams: { result: 'SCHEME_EMPTY' },
       };
       expect(
-        evalGate(stepThreatZero, {
+        evalGate(stepSchemeEmpty, {
           success: true,
           mutatedState: true,
-          facts: { threatZero: true },
+          facts: { schemeEmpty: true },
         }),
       ).toBe(true);
 
       const stepAmountZero: AbilityStep = {
         effect: 'SURGE',
         gate: 'IF_RESULT',
-        gateParams: { fact: 'amountZero' },
+        gateParams: { result: 'AMOUNT_ZERO' },
       };
       expect(
         evalGate(stepAmountZero, {
@@ -147,17 +155,126 @@ describe('Shared step-gate evaluator (ADR-0080, Issues #289, #290)', () => {
       ).toBe(true);
     });
 
+    it('evaluates all canonical ResultFact variants', () => {
+      const cases: Array<{
+        result: string;
+        matchingFacts: Record<string, any>;
+        nonMatchingFacts: Record<string, any>;
+      }> = [
+        {
+          result: 'TARGET_DEFEATED',
+          matchingFacts: { targetDefeated: true },
+          nonMatchingFacts: { targetDefeated: false },
+        },
+        {
+          result: 'EXCESS_DAMAGE_DEALT',
+          matchingFacts: { excessDamage: 2 },
+          nonMatchingFacts: { excessDamage: 0 },
+        },
+        {
+          result: 'FULLY_HEALED',
+          matchingFacts: { fullyHealed: true },
+          nonMatchingFacts: { fullyHealed: false },
+        },
+        {
+          result: 'SCHEME_EMPTY',
+          matchingFacts: { schemeEmpty: true },
+          nonMatchingFacts: { schemeEmpty: false },
+        },
+        {
+          result: 'STATUS_APPLIED',
+          matchingFacts: { statusApplied: true },
+          nonMatchingFacts: { statusApplied: false },
+        },
+        {
+          result: 'ALREADY_HAD_STATUS',
+          matchingFacts: { alreadyHadStatus: true },
+          nonMatchingFacts: { alreadyHadStatus: false },
+        },
+        {
+          result: 'STATUS_REMOVED',
+          matchingFacts: { statusRemoved: true },
+          nonMatchingFacts: { statusRemoved: false },
+        },
+        {
+          result: 'AMOUNT_ZERO',
+          matchingFacts: { amountZero: true },
+          nonMatchingFacts: { amountZero: false },
+        },
+        {
+          result: 'DAMAGE_DEALT',
+          matchingFacts: { damageDealt: 3 },
+          nonMatchingFacts: { damageDealt: 0 },
+        },
+      ];
+
+      for (const { result, matchingFacts, nonMatchingFacts } of cases) {
+        const step: AbilityStep = {
+          effect: 'DRAW',
+          gate: 'IF_RESULT',
+          gateParams: { result },
+        };
+        expect(evalGate(step, { success: true, mutatedState: true, facts: matchingFacts })).toBe(
+          true,
+        );
+        expect(evalGate(step, { success: true, mutatedState: true, facts: nonMatchingFacts })).toBe(
+          false,
+        );
+      }
+    });
+
+    it('rejects legacy gateParams.fact and camelCase aliases (Issue #349)', () => {
+      const stepLegacyFact: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_RESULT',
+        gateParams: { fact: 'targetDefeated' },
+      };
+      expect(
+        evalGate(stepLegacyFact, {
+          success: true,
+          mutatedState: true,
+          facts: { targetDefeated: true },
+        }),
+      ).toBe(false);
+
+      const stepCamelCase: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_RESULT',
+        gateParams: { result: 'amountZero' },
+      };
+      expect(
+        evalGate(stepCamelCase, {
+          success: true,
+          mutatedState: true,
+          facts: { amountZero: true },
+        }),
+      ).toBe(false);
+
+      const stepUnknown: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_RESULT',
+        gateParams: { result: 'DEFEATED' },
+      };
+      expect(
+        evalGate(stepUnknown, {
+          success: true,
+          mutatedState: true,
+          facts: { targetDefeated: true },
+        }),
+      ).toBe(false);
+    });
+
     it('honors negate: true on IF_RESULT', () => {
       const step: AbilityStep = {
         effect: 'DRAW',
         gate: 'IF_RESULT',
-        gateParams: { fact: 'defeated', negate: true },
+        gateParams: { result: 'TARGET_DEFEATED', negate: true },
       };
-      expect(evalGate(step, { success: true, mutatedState: true, facts: { defeated: true } })).toBe(
-        false,
-      );
       expect(
-        evalGate(step, { success: true, mutatedState: true, facts: { defeated: false } }),
+        evalGate(step, { success: true, mutatedState: true, facts: { targetDefeated: true } }),
+      ).toBe(false);
+      expect(
+        evalGate(step, { success: true, mutatedState: true, facts: { targetDefeated: false } }),
       ).toBe(true);
       expect(evalGate(step, undefined)).toBe(true);
     });
@@ -169,7 +286,7 @@ describe('Shared step-gate evaluator (ADR-0080, Issues #289, #290)', () => {
       const step: AbilityStep = {
         effect: 'DRAW',
         gate: 'IF_RESULT',
-        gateParams: { fact: 'excessDamage', step: 'step_strike' },
+        gateParams: { result: 'EXCESS_DAMAGE_DEALT', step: 'step_strike' },
       };
       expect(evalGate(step, undefined, {}, map)).toBe(true);
     });

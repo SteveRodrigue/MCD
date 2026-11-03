@@ -146,7 +146,6 @@ describe('Threat removal is always logged with its source (#343)', () => {
 
     expect(getActiveMainScheme(res.state).threat).toBe(5);
     expect(res.facts?.schemeEmpty).toBe(true);
-    expect(res.facts?.threatZero).toBe(true);
   });
 
   it('a Confused thwarter removes nothing and does not report the scheme as empty', () => {
@@ -165,7 +164,6 @@ describe('Threat removal is always logged with its source (#343)', () => {
     expect(getActiveMainScheme(res.state).threat).toBe(5);
     expect(removals(res.state)).toEqual([]);
     expect(res.facts?.schemeEmpty).toBe(false);
-    expect(res.facts?.threatZero).toBe(false);
   });
 
   describe('distributed removal', () => {

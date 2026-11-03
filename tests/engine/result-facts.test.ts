@@ -104,7 +104,6 @@ describe('Result Facts and Milestones Engine (ADR-0080, Issues #289, #290)', () 
       expect(res.success).toBe(true);
       expect(res.facts).toBeDefined();
       expect(res.facts?.targetDefeated).toBe(true);
-      expect(res.facts?.defeated).toBe(true);
       expect(res.facts?.excessDamage).toBe(3);
       expect(res.facts?.amountZero).toBe(false);
       expect(state.players[0].engagedMinions.length).toBe(0);
@@ -193,7 +192,6 @@ describe('Result Facts and Milestones Engine (ADR-0080, Issues #289, #290)', () 
       expect(res.success).toBe(true);
       expect(getActiveMainScheme(res.state).threat).toBe(0);
       expect(res.facts?.schemeEmpty).toBe(true);
-      expect(res.facts?.threatZero).toBe(true);
     });
 
     it('produces schemeEmpty: false when scheme still has threat', () => {
@@ -213,7 +211,6 @@ describe('Result Facts and Milestones Engine (ADR-0080, Issues #289, #290)', () 
       expect(res.success).toBe(true);
       expect(getActiveMainScheme(res.state).threat).toBe(2);
       expect(res.facts?.schemeEmpty).toBe(false);
-      expect(res.facts?.threatZero).toBe(false);
     });
   });
 
@@ -234,7 +231,6 @@ describe('Result Facts and Milestones Engine (ADR-0080, Issues #289, #290)', () 
       const res = executeEffect(state, ability as any, { playerId: 'p1' });
       expect(res.success).toBe(true);
       expect(res.facts?.statusApplied).toBe(true);
-      expect(res.facts?.statusAdded).toBe(true);
       expect(res.facts?.alreadyHadStatus).toBe(false);
     });
 
@@ -406,7 +402,6 @@ describe('Result Facts and Milestones Engine (ADR-0080, Issues #289, #290)', () 
       const res = executeEffect(state, ability as any, { playerId: 'p1' });
       expect(res.success).toBe(true);
       expect(res.facts?.schemeEmpty).toBe(true);
-      expect(res.facts?.threatZero).toBe(true);
       expect(res.facts?.targetDefeated).toBe(false);
       expect(res.facts?.amountZero).toBe(false);
     });

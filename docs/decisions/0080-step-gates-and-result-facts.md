@@ -9,7 +9,8 @@
 
 ## Context and Problem Statement
 
-In Marvel Champions Digital, multi-step card abilities (e.g. *Relentless Assault*, *Clear the Area*, *Shadow of the Past*, *Chase Them Down*) execute sequentially through `executeSequence` in `src/engine/effects/index.ts`. Previously, conditional step execution was governed by two disparate, loosely typed mechanisms introduced across earlier iterations (notably ADR-0030 and ADR-0049):
+In Marvel Champions Digital, multi-step card abilities (e.g. _Relentless Assault_, _Clear the Area_, _Shadow of the Past_, _Chase Them Down_) execute sequentially through `executeSequence` in `src/engine/effects/index.ts`. Previously, conditional step execution was governed by two disparate, loosely typed mechanisms introduced across earlier iterations (notably ADR-0030 and ADR-0049):
+
 1. **Ad-Hoc Gate Taxonomy**: Seventeen disparate gate values in `ConditionGate` (e.g., `THEN`, `IF_PREVIOUS_SUCCESS`, `IF_AMOUNT_ZERO`, `IF_ZERO_HEALED`, `IF_FAILED`, `IF_ALREADY_HAS_STATUS`, `IF_CONDITION_MET`, `IF_CONDITION_NOT_MET`, `IF_CARD_IN_PLAY`, `IF_CARD_NOT_IN_PLAY`, etc.).
 2. **Dual-Condition Redundancy**: Steps frequently declared both a `condition` string (e.g. `SCHEME_EMPTY`, `ZONE_EMPTY`) and a gate (e.g. `IF_CONDITION_MET`), splitting intent across two properties.
 3. **Lossy Binary Result Representation**: Step resolution outcomes were reduced to a boolean `conditionMet?: boolean` and a numeric `value?: number`. If an effect dealt damage, caused defeat, and generated excess damage simultaneously, this multifaceted outcome could not be represented without loss or ad-hoc overrides (such as overwriting `value` with excess damage).
@@ -42,24 +43,27 @@ How do we unify step gating into a minimal, canonical taxonomy with strictly val
 **Adopt a unified 9-gate taxonomy with typed `gateParams`, replace `conditionMet` with `StepFacts`, and enforce sequential context preservation:**
 
 ### 1. Canonical Step Gate Taxonomy (`StepGateSchema`)
+
 Reduce all gating to 9 canonical values categorized by evaluation context:
 
-| Category | Gate | Parameter Schema | Description |
-| :--- | :--- | :--- | :--- |
-| **RESULT** | `THEN` | `{ step?: string; negate?: boolean }` | Evaluates whether the referenced step (or previous step) completed successfully (not skipped and not failed). Replaces `IF_PREVIOUS_SUCCESS` and `IF_FAILED` (via `negate: true`). |
-| **RESULT** | `IF_RESULT` | `{ fact: ResultFact; step?: string; negate?: boolean }` | Evaluates whether a specific fact occurred in the referenced step (or previous step). Supports facts: `defeated`, `excessDamage`, `amountZero`, `threatZero`, `fullyHealed`, `statusAdded`, `statusRemoved`, `villainDefeated`. |
-| **STATE** | `IF_FORM` | `{ form?: 'HERO' \| 'ALTER_EGO'; target?: 'INITIATOR' \| 'TARGET'; negate?: boolean }` | Evaluates the hero/alter-ego identity form of the player or target. |
-| **STATE** | `IF_PLAYER_HAS_TRAIT` | `{ trait: Trait; negate?: boolean }` | Evaluates whether the player possesses a specific trait. |
-| **STATE** | `IF_ZONE_EMPTY` | `{ zone: Zone; negate?: boolean }` | Evaluates whether a designated zone is empty. Replaces `condition: ZONE_EMPTY`. |
-| **STATE** | `IF_CARD_IN_PLAY` | `{ cardId: string; negate?: boolean }` | Evaluates whether a specific card is currently in play. Replaces `IF_CARD_NOT_IN_PLAY` (via `negate: true`). |
-| **CONTEXT** | `IF_RESOURCE_MATCH` | `{ resource: ResourceType; count?: number; negate?: boolean }` | Evaluates resources spent to pay for the ability. |
-| **CONTEXT** | `IF_UNDEFENDED_ATTACK` | `{ negate?: boolean }` | Evaluates whether the incoming attack was undefended. |
-| **CONTEXT** | `IF_ACTIVATION_DEALT_DAMAGE` | `{ negate?: boolean }` | Evaluates whether the triggering enemy activation dealt damage. |
+| Category    | Gate                         | Parameter Schema                                                                       | Description                                                                                                                                                                                                                     |
+| :---------- | :--------------------------- | :------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **RESULT**  | `THEN`                       | `{ step?: string; negate?: boolean }`                                                  | Evaluates whether the referenced step (or previous step) completed successfully (not skipped and not failed). Replaces `IF_PREVIOUS_SUCCESS` and `IF_FAILED` (via `negate: true`).                                              |
+| **RESULT**  | `IF_RESULT`                  | `{ fact: ResultFact; step?: string; negate?: boolean }`                                | Evaluates whether a specific fact occurred in the referenced step (or previous step). Supports facts: `defeated`, `excessDamage`, `amountZero`, `threatZero`, `fullyHealed`, `statusAdded`, `statusRemoved`, `villainDefeated`. |
+| **STATE**   | `IF_FORM`                    | `{ form?: 'HERO' \| 'ALTER_EGO'; target?: 'INITIATOR' \| 'TARGET'; negate?: boolean }` | Evaluates the hero/alter-ego identity form of the player or target.                                                                                                                                                             |
+| **STATE**   | `IF_PLAYER_HAS_TRAIT`        | `{ trait: Trait; negate?: boolean }`                                                   | Evaluates whether the player possesses a specific trait.                                                                                                                                                                        |
+| **STATE**   | `IF_ZONE_EMPTY`              | `{ zone: Zone; negate?: boolean }`                                                     | Evaluates whether a designated zone is empty. Replaces `condition: ZONE_EMPTY`.                                                                                                                                                 |
+| **STATE**   | `IF_CARD_IN_PLAY`            | `{ cardId: string; negate?: boolean }`                                                 | Evaluates whether a specific card is currently in play. Replaces `IF_CARD_NOT_IN_PLAY` (via `negate: true`).                                                                                                                    |
+| **CONTEXT** | `IF_RESOURCE_MATCH`          | `{ resource: ResourceType; count?: number; negate?: boolean }`                         | Evaluates resources spent to pay for the ability.                                                                                                                                                                               |
+| **CONTEXT** | `IF_UNDEFENDED_ATTACK`       | `{ negate?: boolean }`                                                                 | Evaluates whether the incoming attack was undefended.                                                                                                                                                                           |
+| **CONTEXT** | `IF_ACTIVATION_DEALT_DAMAGE` | `{ negate?: boolean }`                                                                 | Evaluates whether the triggering enemy activation dealt damage.                                                                                                                                                                 |
 
 All legacy gates (`IF_PREVIOUS_SUCCESS`, `IF_AMOUNT_ZERO`, `IF_ZERO_HEALED`, `IF_FAILED`, `IF_ALREADY_HAS_STATUS`, `IF_CONDITION_MET`, `IF_CONDITION_NOT_MET`, `IF_CARD_NOT_IN_PLAY`, `ALWAYS`) and the `step.condition` property are completely removed.
 
 ### 2. Producer-Agnostic Milestone Facts (`StepFacts`)
+
 Effect handlers now populate typed facts on `EffectResult` and `StepResolutionResult`:
+
 ```ts
 export interface StepFacts {
   defeated?: boolean;
@@ -72,7 +76,9 @@ export interface StepFacts {
   villainDefeated?: boolean;
 }
 ```
+
 Effects populate facts naturally:
+
 - `DEAL_DAMAGE`: sets `facts.defeated`, `facts.excessDamage`, `facts.villainDefeated`, and preserves `value` as the actual damage dealt to the target.
 - `HEAL_DAMAGE`: sets `facts.fullyHealed`.
 - `REMOVE_THREAT`: sets `facts.threatZero`.
@@ -80,18 +86,23 @@ Effects populate facts naturally:
 - `executeSequence`: sets `facts.amountZero = true` if `result.value === 0`.
 
 ### 3. Step References and D12 Explicit Step Targeting
-Gates with a `step?: string` parameter can target an earlier step by its `id` (e.g. `step: "step_1_spawn_nemesis_minion"` on *Shadow of the Past*). If omitted, the gate targets the immediately preceding step in `ability.steps`.
+
+Gates with a `step?: string` parameter can target an earlier step by its `id` (e.g. `step: "step_1_spawn_nemesis_minion"` on _Shadow of the Past_). If omitted, the gate targets the immediately preceding step in `ability.steps`.
 
 ### 4. D18 Context Continuity Across Skipped Steps
+
 In `executeSequence`:
+
 - Skipped steps are recorded in `stepResults` as `{ skipped: true }` and inserted into `stepResultsMap`.
 - When evaluating the next step's gate, the immediate previous result `lastStepResult` reflects `{ skipped: true }`, ensuring a subsequent `THEN` gate is closed.
 - However, entity targeting context (`lastExecutedResult`) is maintained across skipped steps so that subsequent steps using `PREVIOUS_TARGET`, `distinctFrom`, or `PREVIOUS_RESULT` resolve to the last executed step rather than undefined.
 
 ### 5. Dynamic Excess Damage Support
+
 `DynamicValueSourceSchema.from` is expanded to include `'PREVIOUS_EXCESS_DAMAGE'`, allowing effects (such as Overkill damage distribution) to read `context.previousResult?.facts?.excessDamage ?? 0` directly.
 
 ### 6. Strict Zod Schema & superRefine Quality Gates
+
 - Per-step `superRefine` validates that `gateParams` satisfies the exact schema registered in `GATE_REGISTRY`.
 - Ability-level `superRefine` enforces:
   - Constant abilities cannot use RESULT or CONTEXT gates.
@@ -111,18 +122,21 @@ In `executeSequence`:
 ## Consequences
 
 ### Positive Consequences
+
 - **Cleaner supplemental cards**: Eliminates confusion between `gate` and `condition`, reducing boilerplate and human authoring errors.
 - **Accurate damage modeling**: `value` always represents actual damage dealt; excess damage is tracked separately as a typed fact.
 - **Robust testability**: Step gate evaluation and fact emission are decoupled, deterministic, and unit-tested in isolation.
 - **Future-proof extensibility**: Adding a new gate requires only registering it in `GATE_REGISTRY` with its parameter schema and kind, which automatically flows into validation and editor tooling.
 
 ### Negative / Migration Consequences
+
 - Existing cards in supplemental pack data using deprecated gate names or `condition` required migration to the new schema.
 - Existing tests asserting `conditionMet` required updating to assert `facts` or `skipped`.
 
 ---
 
 ## References
+
 - Issues: #289 (Step Gates / gateParams), #290 (Result Facts / Milestones)
 - Supersedes: Section 3 of [ADR-0049](0049-composable-value-transformers-and-event-interception.md)
 - Related: [ADR-0030](0030-unified-ability-step-sequence-architecture.md), [ADR-0078](0078-one-damage-pipeline-and-the-attack-label.md)
@@ -138,3 +152,11 @@ The engine needs only each gate's kind, the effect list and the two step-param g
 ## Addendum (2026-11-03, Issue #284): `IF_ALL_ALLIES_MATCH`
 
 A tenth gate, kind `STATE`: `{ filter: UniversalCardFilter; negate?: boolean }`, true when every ally the player controls matches the filter (and when they control none). It reads "If each of your allies has the [[Avenger]] trait" (_Avengers Tower_ `03024`) on a `CONSTANT` `MODIFY_ALLY_LIMIT` step, evaluated for the card's controller. `IdentityFormSchema` moved to `schema-primitives.ts` so `gate-params.ts` can use `UniversalCardFilterSchema` without an import cycle; `schema.ts` re-exports both modules.
+
+---
+
+## Addendum (2026-11-03, Issue #349): Strict IF_RESULT Gate Evaluation and Removal of Legacy Aliases
+
+The `IF_RESULT` gate evaluator in `src/engine/pipeline/step-gate-evaluator.ts` was aligned strictly to `IfResultGateParamsSchema`. The runtime evaluator previously supported a fallback key `gateParams.fact`, camelCase regex normalization, and duplicate alias cases (`DEFEATED`, `EXCESS_DAMAGE`, `THREAT_ZERO`, `STATUS_ADDED`), while `StepFacts` and effect handlers populated duplicate properties (`defeated`, `threatZero`, `statusAdded`, and dead `villainDefeated`).
+
+All legacy fallback paths, camelCase normalization, and duplicate alias properties have been removed. The evaluator evaluates strictly `gateParams.result` against the 9 canonical uppercase `ResultFact` enum values (`TARGET_DEFEATED`, `EXCESS_DAMAGE_DEALT`, `FULLY_HEALED`, `SCHEME_EMPTY`, `STATUS_APPLIED`, `ALREADY_HAD_STATUS`, `STATUS_REMOVED`, `AMOUNT_ZERO`, `DAMAGE_DEALT`).

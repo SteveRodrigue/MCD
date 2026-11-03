@@ -119,7 +119,7 @@ Raises (or lowers) the maximum hit points of the character carrying the card, wh
 
 The hand source applies `filter` (every hand card is a candidate when there is none), so `count: "ALL"` with `filter: { "resourceIcons": ["energy"] }` discards each energy resource (a printed wild icon counts) and keeps the rest (_Yon-Rogg's Treason_ `01179`). `mode: "RANDOM"` picks the N cards at random among the filtered candidates; any other mode takes the first N. The step acts on every player the `target` resolves to (`ALL_PLAYERS`: first player first), one selection per hand; a player with no candidate discards nothing and does not stop the others (_The Vulture's Plans_ `01169`).
 
-The step always returns `discardedCards` (all players, in seat order) and `value` (their total), so `DISCARDED_CARDS` (`DIFFERENT_RESOURCES`) and the `IF_RESULT` gate with `fact: "amountZero"` ("if you discarded no cards this way") work after a hand discard in any mode. One `card.discarded.fromHand` log entry is written per player.
+The step always returns `discardedCards` (all players, in seat order) and `value` (their total), so `DISCARDED_CARDS` (`DIFFERENT_RESOURCES`) and the `IF_RESULT` gate with `result: "AMOUNT_ZERO"` ("if you discarded no cards this way") work after a hand discard in any mode. One `card.discarded.fromHand` log entry is written per player.
 
 #### `ENCOUNTER_DECK` with `mode: "UNTIL_MATCH"` (_Masterplan_ `01192`)
 

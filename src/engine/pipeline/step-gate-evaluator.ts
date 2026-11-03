@@ -7,7 +7,7 @@ import {
 } from '../models';
 import { AbilityStep } from '../models/abilities';
 import { getStepGateParams, GATE_KINDS } from '../../data/supplemental/runtime';
-import type { AttackerKind, UniversalCardFilter } from '../../data/supplemental/schema';
+import type { AttackerKind, ResultFact, UniversalCardFilter } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
 import { hasPlayerTrait } from './stat-calculator';
 import { bindKernel } from '../kernel';
@@ -68,35 +68,22 @@ export function evaluateStepGate(
         gateSatisfied = false;
         break;
       }
-      const rawFact = (gateParams.result ?? gateParams.fact) as string | undefined;
-      const normalizedFact = rawFact?.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase();
-      switch (normalizedFact) {
+      const resultFact = gateParams.result as ResultFact | undefined;
+      switch (resultFact) {
         case 'TARGET_DEFEATED':
-        case 'DEFEATED':
-          gateSatisfied = Boolean(
-            evaluatedResult.facts.targetDefeated ??
-            evaluatedResult.facts.defeated ??
-            evaluatedResult.facts.villainDefeated,
-          );
+          gateSatisfied = Boolean(evaluatedResult.facts.targetDefeated);
           break;
         case 'EXCESS_DAMAGE_DEALT':
-        case 'EXCESS_DAMAGE':
           gateSatisfied = (evaluatedResult.facts.excessDamage ?? 0) > 0;
           break;
         case 'FULLY_HEALED':
           gateSatisfied = Boolean(evaluatedResult.facts.fullyHealed);
           break;
         case 'SCHEME_EMPTY':
-        case 'THREAT_ZERO':
-          gateSatisfied = Boolean(
-            evaluatedResult.facts.schemeEmpty ?? evaluatedResult.facts.threatZero,
-          );
+          gateSatisfied = Boolean(evaluatedResult.facts.schemeEmpty);
           break;
         case 'STATUS_APPLIED':
-        case 'STATUS_ADDED':
-          gateSatisfied = Boolean(
-            evaluatedResult.facts.statusApplied ?? evaluatedResult.facts.statusAdded,
-          );
+          gateSatisfied = Boolean(evaluatedResult.facts.statusApplied);
           break;
         case 'ALREADY_HAD_STATUS':
           gateSatisfied = Boolean(evaluatedResult.facts.alreadyHadStatus);

@@ -365,7 +365,7 @@ flowchart TD
     Q1 -->|no| Q2{"Does effect #2 depend on how<br/>the cost was paid?<br/>(e.g. spent an [energy] resource)"}
     Q2 -->|yes| ResGate["Step 2: gate: IF_RESOURCE_MATCH<br/>+ gateParams"]
     Q2 -->|no| Q3{"Does effect #2 depend on a<br/>milestone from step #1?<br/>(scheme cleared, target defeated...)"}
-    Q3 -->|yes| ResultGate["Step 2: gate: IF_RESULT<br/>gateParams: { fact: 'threatZero', ... }"]
+    Q3 -->|yes| ResultGate["Step 2: gate: IF_RESULT<br/>gateParams: { result: 'SCHEME_EMPTY', ... }"]
     Q3 -->|no| Q3b{"Does effect #2 depend on a fact about<br/>the player or board? (trait, form)<br/>e.g. if you have Aerial"}
     Q3b -->|"yes, extra effect"| TraitMet["Step 2: gate: IF_PLAYER_HAS_TRAIT<br/>gateParams: { trait: 'Aerial' }"]
     Q3b -->|"yes, instead of effect #1"| TraitNot["Step 1: gate: IF_PLAYER_HAS_TRAIT<br/>gateParams: { trait: 'Aerial', negate: true }<br/>Step 2: gate: IF_PLAYER_HAS_TRAIT<br/>gateParams: { trait: 'Aerial' }"]

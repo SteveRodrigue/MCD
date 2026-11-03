@@ -813,6 +813,21 @@ export function resolveActiveEncounterCardAfterInterrupt(
   } else {
     // Treachery generic resolution: execute declarative WHEN_REVEALED unless cancelled
     resolveWhenRevealedAbilities(state, cardInstance, player, isCancelled);
+
+    // Surge keyword: a keyword outside the "When Revealed" text. Cancelling the When Revealed
+    // effects does not cancel it; only a card that was cancelled and discarded does not surge. A card
+    // that already surged by effect does not surge twice. The extra card is only dealt here; it is
+    // revealed after this card has resolved.
+    // Dealt before discarding the treachery so the surging card itself is not part of an immediate
+    // deck reshuffle if the deck empties during surge dealing (RR v1.8 p. 11, 26).
+    if (
+      !state.activeEncounterContext?.discardCard &&
+      hasKeyword(card, Keyword.SURGE) &&
+      !state.activeEncounterContext?.surged
+    ) {
+      dealSurgeCard(state, player, card.name);
+    }
+
     // A card that removed itself from the game (Eternity) does not go to the discard pile.
     if (!state.removedFromGame.some((c) => c.instanceId === cardInstance.instanceId)) {
       state.encounterDiscard.push(cardInstance);
@@ -824,11 +839,9 @@ export function resolveActiveEncounterCardAfterInterrupt(
     });
   }
 
-  // Surge keyword: a keyword outside the "When Revealed" text. Cancelling the When Revealed
-  // effects does not cancel it; only a card that was cancelled and discarded does not surge. A card
-  // that already surged by effect does not surge twice. The extra card is only dealt here; it is
-  // revealed after this card has resolved.
+  // Surge keyword on non-treachery encounter cards (minions, attachments, etc. that entered play)
   if (
+    card.type !== CardType.TREACHERY &&
     !state.activeEncounterContext?.discardCard &&
     hasKeyword(card, Keyword.SURGE) &&
     !state.activeEncounterContext?.surged

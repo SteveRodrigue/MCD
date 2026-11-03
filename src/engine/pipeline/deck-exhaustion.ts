@@ -30,12 +30,30 @@ export function exhaustEncounterDeck(state: GameState): boolean {
 /**
  * Draws the top card from the encounter deck.
  * If the encounter deck is empty, triggers Encounter Deck Exhaustion before drawing (RR v1.8 p. 11).
+ * If drawing empties the encounter deck, triggers immediate deck reset if discard pile has cards.
  */
 export function drawEncounterCard(state: GameState): CardInstance | undefined {
-  if (state.encounterDeck.length === 0) {
+  if (state.encounterDeck && state.encounterDeck.length === 0) {
     exhaustEncounterDeck(state);
   }
-  return state.encounterDeck.shift();
+  const card = state.encounterDeck?.shift();
+  if (state.encounterDeck && state.encounterDeck.length === 0) {
+    checkAndResetEncounterDeck(state);
+  }
+  return card;
+}
+
+/**
+ * Checks if the encounter deck is empty and resets it if the discard pile has cards (RR v1.8 p. 11).
+ * Returns true if the deck was reset, false otherwise.
+ */
+export function checkAndResetEncounterDeck(state: GameState): boolean {
+  if (state.encounterDeck && state.encounterDeck.length === 0) {
+    if (state.encounterDiscard && state.encounterDiscard.length > 0) {
+      return exhaustEncounterDeck(state);
+    }
+  }
+  return false;
 }
 
 /**

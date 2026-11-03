@@ -18,6 +18,7 @@ import {
   discardFromEncounterDeckUntil,
   discardFromPlayerDeckUntil,
   drawPlayerCard,
+  checkAndResetEncounterDeck,
 } from '@engine/pipeline';
 import { step4_revealEncounterCards } from '../../src/engine/pipeline/villain-phase';
 import { executeEffect, discardCardInstance } from '@engine/effects';
@@ -269,6 +270,43 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       // Transition to Villain Phase Step 4: Reveal and Resolve Encounter Cards
       const postRevealState = step4_revealEncounterCards(state);
       expect(postRevealState.players[0].dealtEncounterCards).toHaveLength(0);
+    });
+
+    it('10. Issue #578: drawing final card from encounter deck immediately resets encounter deck from discard and adds acceleration token', () => {
+      const enc1 = createCardInstance(cardCatalog.getCard('01098')!);
+      const disc1 = createCardInstance(cardCatalog.getCard('01099')!);
+      const disc2 = createCardInstance(cardCatalog.getCard('01100')!);
+
+      state.encounterDeck = [enc1];
+      state.encounterDiscard = [disc1, disc2];
+      state.accelerationTokens = 0;
+
+      const drawn = drawEncounterCard(state);
+
+      expect(drawn?.instanceId).toBe(enc1.instanceId);
+      // Immediately reset: discard pile of 2 cards shuffled into new deck
+      expect(state.encounterDeck.length).toBe(2);
+      expect(state.encounterDiscard.length).toBe(0);
+      expect(state.accelerationTokens).toBe(1);
+
+      const logEntry = state.log.find((l) => l.key === 'encounter.deck.empty');
+      expect(logEntry).toBeDefined();
+      expect(logEntry?.onomatopoeia).toBe('ACCELERATION!');
+    });
+
+    it('11. Issue #578: checkAndResetEncounterDeck resets encounter deck when discard receives cards', () => {
+      const disc1 = createCardInstance(cardCatalog.getCard('01099')!);
+
+      state.encounterDeck = [];
+      state.encounterDiscard = [disc1];
+      state.accelerationTokens = 0;
+
+      const reset = checkAndResetEncounterDeck(state);
+
+      expect(reset).toBe(true);
+      expect(state.encounterDeck.length).toBe(1);
+      expect(state.encounterDiscard.length).toBe(0);
+      expect(state.accelerationTokens).toBe(1);
     });
   });
 

@@ -154,6 +154,8 @@ export const SELECT_PROMPT: PendingDecisionPrompt = {
   options: SELECT_POOL.map((c) => ({
     id: c.id,
     label: c.name,
+    cardCode: c.code,
+    cardName: c.name,
     effect: 'SEARCH_AND_SELECT_RESOLUTION',
     params: { cardName: c.name, cardCode: c.code },
   })),

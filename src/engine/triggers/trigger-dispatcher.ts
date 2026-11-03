@@ -685,6 +685,8 @@ function forcedAbilityPrompt(
       {
         id: `trigger_${ability.id}`,
         label: source.name,
+        cardCode: source.code,
+        cardName: source.name,
         effect: 'EXECUTE_OPTIONAL_TRIGGER',
         params: {
           ability,

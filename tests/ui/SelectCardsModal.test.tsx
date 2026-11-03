@@ -9,6 +9,8 @@ function makePrompt(
   const card = (id: string, name: string, code: string) => ({
     id,
     label: `${name} (event)`,
+    cardCode: code,
+    cardName: name,
     description: '',
     effect: 'SEARCH_AND_SELECT_RESOLUTION',
     params: { cardName: name, cardCode: code },

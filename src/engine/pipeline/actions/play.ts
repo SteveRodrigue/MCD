@@ -235,6 +235,8 @@ export function playUpgradeOrSupport(
             c.card.code === playedCardInstance.card.code ||
             c.card.name.toLowerCase().trim() === playedCardInstance.card.name.toLowerCase().trim(),
         ).length;
+        const cardCode = p.activeFormCard?.code || p.hero?.code;
+        const cardName = p.hero?.name;
         if (
           playedCardInstance.card.maxPerPlayer !== undefined &&
           count >= playedCardInstance.card.maxPerPlayer
@@ -242,6 +244,8 @@ export function playUpgradeOrSupport(
           return {
             id: p.id,
             label: p.name,
+            cardCode,
+            cardName,
             effect: 'PLAY_UNDER_PLAYER_CONTROL',
             params: {
               targetPlayerId: p.id,
@@ -255,6 +259,8 @@ export function playUpgradeOrSupport(
         return {
           id: p.id,
           label: p.name,
+          cardCode,
+          cardName,
           effect: 'PLAY_UNDER_PLAYER_CONTROL',
           params: {
             targetPlayerId: p.id,
@@ -556,6 +562,8 @@ export const handlePlayCard: ActionHandler<'PLAY_CARD'> = (nextState, state, act
         .map((c) => ({
           id: c.instanceId,
           label: `Discard ${c.card.name}`,
+          cardCode: c.card.code,
+          cardName: c.card.name,
           description: `Discard ${c.card.name} from tableau to make room for ${targetCard.card.name}`,
           effect: 'DISCARD_RESTRICTED_REPLACEMENT',
           params: {

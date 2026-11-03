@@ -163,6 +163,8 @@ function handleDraw(
       options: state.players.map((p) => ({
         id: `draw_${p.id}`,
         label: `${p.name} (${p.hero?.name || 'Hero'})`,
+        cardCode: p.activeFormCard?.code || p.hero?.code,
+        cardName: p.hero?.name,
         description: `Give ${effectiveCount} card draw to ${p.name} (Cards in hand: ${p.hand.length})`,
         effect: 'DRAW',
         params: {
@@ -739,6 +741,8 @@ function handleSearch(
           return {
             id: `choose_player_${p.id}`,
             label: `${p.name} (${p.hero?.name || 'Hero'})`,
+            cardCode: p.activeFormCard?.code || p.hero?.code,
+            cardName: p.hero?.name,
             description: `Choose ${p.name}`,
             effect: 'SEARCH',
             disabled: !isEligible,
@@ -907,6 +911,8 @@ function handleSearch(
   const options: DecisionPromptOption[] = matchingCandidates.map((c) => ({
     id: c.instanceId,
     label: `${c.card.name} (${c.card.type}${c.card.cost !== undefined ? `, Cost: ${c.card.cost}` : ''})`,
+    cardCode: c.card.code,
+    cardName: c.card.name,
     description: c.card.text || `Select ${c.card.name}`,
     effect: 'SEARCH_AND_SELECT_RESOLUTION',
     params: {
@@ -1137,6 +1143,7 @@ function handlePlayFromZone(
       description:
         c.instance.card.text || `Play ${c.instance.card.name} from ${c.owner.name}'s discard`,
       cardCode: c.instance.card.code,
+      cardName: c.instance.card.name,
       effect: 'PLAY_CARD_FROM_ZONE_RESOLUTION',
       requiresPayment: cost > 0,
       params: {

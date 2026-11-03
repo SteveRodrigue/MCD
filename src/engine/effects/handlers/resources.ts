@@ -86,6 +86,8 @@ function handleReduceNextCardCost(
       options: state.players.map((p) => ({
         id: `reduce_cost_${p.id}`,
         label: `${p.name} (${p.hero?.name || 'Hero'})`,
+        cardCode: p.activeFormCard?.code || p.hero?.code,
+        cardName: p.hero?.name,
         description: `Give -${amount} cost reduction to ${p.name}`,
         effect: 'REDUCE_NEXT_CARD_COST',
         params: {

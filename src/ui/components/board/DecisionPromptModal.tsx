@@ -503,10 +503,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                   ? Object.values(optParams.ability.cost.resourceCost)[0]
                   : 1);
 
-            const optionCardCode =
-              option.cardCode ||
-              (optParams?.cardCode as string | undefined) ||
-              (optParams?.cardInstance?.card?.code as string | undefined);
+            const optionCardCode = option.cardCode;
             const optionCard = optionCardCode ? cardCatalog.getCard(optionCardCode) : undefined;
 
             return (

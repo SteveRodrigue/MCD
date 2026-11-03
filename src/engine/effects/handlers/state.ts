@@ -333,6 +333,8 @@ function handleModifyStat(
         options: state.players.map((p) => ({
           id: `modify_stat_${p.id}`,
           label: `${p.name} (${p.hero?.name || 'Hero'})`,
+          cardCode: p.activeFormCard?.code || p.hero?.code,
+          cardName: p.hero?.name,
           description: `+${atkBonus} ATK / +${thwBonus} THW to ${p.name}'s hero and ${p.allies.length} ally(ies)`,
           effect: 'MODIFY_STAT',
           params: { ...stepParams, targetPlayerId: p.id },
@@ -590,6 +592,8 @@ function handleFlipForm(
         {
           id: 'flip',
           label: `Flip to ${nextFormCard.name}`,
+          cardCode: nextFormCard.code,
+          cardName: nextFormCard.name,
           description: `Change to ${nextFormCard.name}.`,
           effect: 'CHANGE_FORM',
           params: { form: requestedForm },

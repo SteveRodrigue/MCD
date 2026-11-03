@@ -3,6 +3,7 @@ import { getPlayer } from './legality-checker';
 import { processHostDefeated, resetCardState } from '../effects';
 import { dispatchDefeat } from '../triggers/defeat-dispatch';
 import { kernel } from '../kernel';
+import { appendLog } from '../state/game-log';
 
 /**
  * Executes consequential damage to an ally and handles ally defeat.
@@ -24,10 +25,25 @@ export function executeConsequentialDamage(
   const ally = player.allies[allyIdx];
   const allyCard = ally.card as AllyCard;
 
-  ally.tokens = { ...ally.tokens, damage: (ally.tokens?.damage || 0) + amount };
+  const newDamage = (ally.tokens?.damage || 0) + amount;
+  ally.tokens = { ...ally.tokens, damage: newDamage };
 
   const allyHp = allyCard.health || 2;
-  if ((ally.tokens?.damage || 0) >= allyHp) {
+
+  appendLog(state, {
+    category: 'combat',
+    key: 'damage.applied.ally',
+    params: {
+      target: allyCard.name,
+      source: 'Consequential Damage',
+      amount,
+      totalDamage: newDamage,
+      health: allyHp,
+    },
+    onomatopoeia: 'CONSEQUENTIAL DAMAGE',
+  });
+
+  if (newDamage >= allyHp) {
     player.allies.splice(allyIdx, 1);
     processHostDefeated(state, ally, { player });
     const owner = (ally.ownerId ? getPlayer(state, ally.ownerId) : undefined) || player;

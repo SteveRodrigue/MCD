@@ -635,6 +635,14 @@ function resolveEncounterCardOnceRevealPromptsAnswered(state: GameState): void {
       targetPlayer,
       Boolean(activeCtx.cancelled),
     );
+    if (
+      state.villainPhaseStepEvent &&
+      state.villainPhaseStepEvent.type === 'REVEAL_ENCOUNTER_CARD' &&
+      activeCtx.cancelled
+    ) {
+      state.villainPhaseStepEvent.description = `${targetPlayer.name} revealed ${activeCtx.encounterCard.card.name} (cancelled).`;
+      state.villainPhaseStepEvent.onomatopoeia = 'CANCELLED!';
+    }
   }
 }
 

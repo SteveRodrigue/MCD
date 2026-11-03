@@ -26,7 +26,7 @@ Under **ADR-0060**, parameters configuring conditional step gates and parameters
 
 ### Conditional Gates (ADR-0080):
 
-Steps execute conditionally by specifying `gate` from the 9 canonical `StepGate` values, parameterized by typed `gateParams`:
+Steps execute conditionally by specifying `gate` from the 10 canonical `StepGate` values, parameterized by typed `gateParams`:
 
 - `"THEN"`: Executes Step $N$ only if the referenced step (or Step $N-1$) completed successfully (not skipped and not failed; RR v1.8 p. 44 "Then"). Use `gateParams: { "negate": true }` for fallbacks ("if Step failed").
   - `gateParams`: `{ step?: string, negate?: boolean }`.
@@ -41,6 +41,8 @@ Steps execute conditionally by specifying `gate` from the 9 canonical `StepGate`
   - `gateParams`: `{ zone: Zone, negate?: boolean }`.
 - `"IF_CARD_IN_PLAY"`: Executes Step $N$ if the specified card is in play. Use `negate: true` for "if not in play".
   - `gateParams`: `{ cardId: string, negate?: boolean }`.
+- `"IF_ALL_ALLIES_MATCH"`: Executes Step $N$ if every ally the player controls matches the card filter ("If each of your allies has the [[Avenger]] trait", _Avengers Tower_ `03024`). True when the player controls no allies.
+  - `gateParams`: `{ filter: UniversalCardFilter, negate?: boolean }`.
 - `"IF_RESOURCE_MATCH"`: Evaluates whether resources spent during action payment match required criteria:
   - `gateParams`: `{ resource: ResourceType, count?: number, negate?: boolean }`.
 - `"IF_UNDEFENDED_ATTACK"`: True when the attack being resolved has no defender.
@@ -48,7 +50,7 @@ Steps execute conditionally by specifying `gate` from the 9 canonical `StepGate`
 - `"IF_ACTIVATION_DEALT_DAMAGE"` ([Issue #221](https://github.com/SteveRodrigue/MCD/issues/221)): True when the enemy activation dealt final damage greater than 0.
   - `gateParams`: `{ negate?: boolean }`.
 
-> **Shared evaluator (Issue #122, ADR-0080):** every gate is evaluated by `evaluateStepGate` in `src/engine/pipeline/step-gate-evaluator.ts`, used by both the effect pipeline (`shouldExecuteStep`) and the `CONSTANT` stat-calculator loop. State gates (`IF_FORM`, `IF_PLAYER_HAS_TRAIT`, `IF_ZONE_EMPTY`, `IF_CARD_IN_PLAY`) work on `CONSTANT` steps. Result-based gates (`THEN`, `IF_RESULT`) and context-based gates (`IF_RESOURCE_MATCH`, `IF_UNDEFENDED_ATTACK`, `IF_ACTIVATION_DEALT_DAMAGE`) require execution context or preceding steps, so they never apply to `CONSTANT` steps.
+> **Shared evaluator (Issue #122, ADR-0080):** every gate is evaluated by `evaluateStepGate` in `src/engine/pipeline/step-gate-evaluator.ts`, used by both the effect pipeline (`shouldExecuteStep`) and the `CONSTANT` stat-calculator loop. State gates (`IF_FORM`, `IF_PLAYER_HAS_TRAIT`, `IF_ZONE_EMPTY`, `IF_CARD_IN_PLAY`, `IF_ALL_ALLIES_MATCH`) work on `CONSTANT` steps; a `CONSTANT` step reads them for the card's controller (e.g. the ally-limit bonus of _Avengers Tower_ `03024`). Result-based gates (`THEN`, `IF_RESULT`) and context-based gates (`IF_RESOURCE_MATCH`, `IF_UNDEFENDED_ATTACK`, `IF_ACTIVATION_DEALT_DAMAGE`) require execution context or preceding steps, so they never apply to `CONSTANT` steps.
 > Gates on `CONSTANT` `ADD_TRAIT` steps are honored by the trait calculators too (e.g. _Cosmic Flight_ `01017` uses `"gate": "IF_FORM", "gateParams": { "form": "HERO" }`); state gates (other than `IF_FORM`) need the optional `state` argument and are skipped without it (Issue #154).
 
 ### Gating Patterns: THEN, IF_RESULT, and IF_PLAYER_HAS_TRAIT

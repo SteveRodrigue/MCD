@@ -14,6 +14,7 @@ import { dispatchAction } from '@engine/pipeline/action-dispatcher';
 import { canPlayCard, evaluateCardPlayability } from '@engine/pipeline/legality-checker';
 import { getEffectiveCardCost } from '@engine/pipeline/cost-engine';
 import { endPlayerPhase } from '@engine/pipeline/player-phase';
+import { thaw } from '../support/thaw-state';
 
 describe('Feature Delivery: Universal Cost Reduction Aura & Helicarrier (Issue #46 / RR v1.8)', () => {
   const spiderManHero = cardCatalog.getCard('01001a') as HeroCard;
@@ -105,7 +106,7 @@ describe('Feature Delivery: Universal Cost Reduction Aura & Helicarrier (Issue #
     p1.tableau.push(helicarrierInst);
 
     expect(helicarrierInst.exhausted).toBe(false);
-    expect(p1.activeCostReductions?.length || 0).toBe(0);
+    expect(gameState.activeCostReductions?.length || 0).toBe(0);
 
     const res = dispatchAction(gameState, {
       type: 'USE_CARD_ABILITY',
@@ -117,14 +118,14 @@ describe('Feature Delivery: Universal Cost Reduction Aura & Helicarrier (Issue #
     expect(res.result.success).toBe(true);
     expect(res.state.players[0].tableau[0].exhausted).toBe(true);
 
-    const updatedP1 = res.state.players[0];
-    expect(updatedP1.activeCostReductions?.length).toBe(1);
-    const reduction = updatedP1.activeCostReductions![0];
+    expect(res.state.activeCostReductions?.length).toBe(1);
+    const reduction = res.state.activeCostReductions![0];
+    expect(reduction.playerId).toBe(p1.id);
+    expect(reduction.sourcePlayerId).toBe(p1.id);
     expect(reduction.amount).toBe(1);
     expect(reduction.sourceCardName).toBe('Helicarrier');
     expect(reduction.duration).toBe('PHASE');
     expect(reduction.appliesTo).toBe('NEXT_CARD');
-    expect(updatedP1.costReductions).toBe(1);
   });
 
   it('2. Playing a card with cost > 1 applies reduction and requires fewer resources', () => {
@@ -141,17 +142,18 @@ describe('Feature Delivery: Universal Cost Reduction Aura & Helicarrier (Issue #
     expect(checkBefore.reason).toContain('Need 2, but selected payment provides 1');
 
     // Add Helicarrier discount aura
-    p1.activeCostReductions = [
+    gameState.activeCostReductions = [
       {
         id: 'red_test_1',
         sourceCardName: 'Helicarrier',
+        sourcePlayerId: 'p1',
+        playerId: 'p1',
         sourceCardCode: '01092',
         amount: 1,
         duration: 'PHASE',
         appliesTo: 'NEXT_CARD',
       },
     ];
-    p1.costReductions = 1;
 
     // With 1 discount, effective cost is 1: 1 payment card is now enough!
     const effective = getEffectiveCardCost(gameState, p1, cardToPlay);
@@ -179,8 +181,7 @@ describe('Feature Delivery: Universal Cost Reduction Aura & Helicarrier (Issue #
     // Payment card is in discard
     expect(postP1.discard.some((c) => c.instanceId === paymentCard.instanceId)).toBe(true);
     // Discount was consumed!
-    expect(postP1.activeCostReductions?.length || 0).toBe(0);
-    expect(postP1.costReductions).toBe(0);
+    expect(playRes.state.activeCostReductions?.length || 0).toBe(0);
   });
 
   it('3. Playing a 1-cost card with 1 reduction reduces cost to 0 (free play)', () => {
@@ -188,17 +189,18 @@ describe('Feature Delivery: Universal Cost Reduction Aura & Helicarrier (Issue #
     const cardToPlay = createCardInstance(sampleCardCost1);
     p1.hand = [cardToPlay]; // No payment cards in hand
 
-    p1.activeCostReductions = [
+    gameState.activeCostReductions = [
       {
         id: 'red_test_free',
         sourceCardName: 'Helicarrier',
+        sourcePlayerId: 'p1',
+        playerId: 'p1',
         sourceCardCode: '01092',
         amount: 1,
         duration: 'PHASE',
         appliesTo: 'NEXT_CARD',
       },
     ];
-    p1.costReductions = 1;
 
     const effective = getEffectiveCardCost(gameState, p1, cardToPlay);
     expect(effective.effectiveCost).toBe(0);
@@ -219,8 +221,7 @@ describe('Feature Delivery: Universal Cost Reduction Aura & Helicarrier (Issue #
     expect(playRes.result.success).toBe(true);
     const postP1 = playRes.state.players[0];
     expect(postP1.tableau.some((c) => c.instanceId === cardToPlay.instanceId)).toBe(true);
-    expect(postP1.activeCostReductions?.length || 0).toBe(0);
-    expect(postP1.costReductions).toBe(0);
+    expect(playRes.state.activeCostReductions?.length || 0).toBe(0);
   });
 
   it('4. Playing a 0-cost card consumes the general next card reduction (RR v1.8)', () => {
@@ -228,17 +229,18 @@ describe('Feature Delivery: Universal Cost Reduction Aura & Helicarrier (Issue #
     const freeCard = createCardInstance(sampleCardCost0);
     p1.hand = [freeCard];
 
-    p1.activeCostReductions = [
+    gameState.activeCostReductions = [
       {
         id: 'red_test_zero',
         sourceCardName: 'Helicarrier',
+        sourcePlayerId: 'p1',
+        playerId: 'p1',
         sourceCardCode: '01092',
         amount: 1,
         duration: 'PHASE',
         appliesTo: 'NEXT_CARD',
       },
     ];
-    p1.costReductions = 1;
 
     // Playing 0 cost card
     const playRes = dispatchAction(gameState, {
@@ -249,32 +251,26 @@ describe('Feature Delivery: Universal Cost Reduction Aura & Helicarrier (Issue #
     });
 
     expect(playRes.result.success).toBe(true);
-    const postP1 = playRes.state.players[0];
     // Reduction is consumed!
-    expect(postP1.activeCostReductions?.length || 0).toBe(0);
-    expect(postP1.costReductions).toBe(0);
+    expect(playRes.state.activeCostReductions?.length || 0).toBe(0);
   });
 
-  it('5. Phase transition prunes unconsumed PHASE cost reductions', () => {
+  it('5. An unused Helicarrier discount ends with the player phase, with a log entry', () => {
     const p1 = gameState.players[0];
-    p1.activeCostReductions = [
-      {
-        id: 'red_test_phase',
-        sourceCardName: 'Helicarrier',
-        sourceCardCode: '01092',
-        amount: 1,
-        duration: 'PHASE',
-        appliesTo: 'NEXT_CARD',
-      },
-    ];
-    p1.costReductions = 1;
+    const helicarrierInst = createCardInstance(cardCatalog.getCard('01092')!);
+    p1.tableau.push(helicarrierInst);
+    const res = dispatchAction(gameState, {
+      type: 'USE_CARD_ABILITY',
+      playerId: p1.id,
+      cardInstanceId: helicarrierInst.instanceId,
+      abilityId: 'helicarrier_action',
+    });
+    expect(res.state.activeCostReductions?.length).toBe(1);
 
-    // Transition to villain phase
-    const villainState = endPlayerPhase(gameState);
-    const postP1 = villainState.players[0];
+    const villainState = endPlayerPhase(thaw(res.state));
 
-    expect(postP1.activeCostReductions?.length || 0).toBe(0);
-    expect(postP1.costReductions).toBe(0);
+    expect(villainState.activeCostReductions).toEqual([]);
+    expect(villainState.log.some((e) => e.key === 'cost.reduction.expired')).toBe(true);
   });
 
   it('6. Multiple cost reductions stack additively', () => {
@@ -287,10 +283,12 @@ describe('Feature Delivery: Universal Cost Reduction Aura & Helicarrier (Issue #
     };
     const cardInst = createCardInstance(cardCost3);
 
-    p1.activeCostReductions = [
+    gameState.activeCostReductions = [
       {
         id: 'red_1',
         sourceCardName: 'Helicarrier 1',
+        sourcePlayerId: 'p1',
+        playerId: 'p1',
         amount: 1,
         duration: 'PHASE',
         appliesTo: 'NEXT_CARD',
@@ -298,12 +296,13 @@ describe('Feature Delivery: Universal Cost Reduction Aura & Helicarrier (Issue #
       {
         id: 'red_2',
         sourceCardName: 'Helicarrier 2',
+        sourcePlayerId: 'p1',
+        playerId: 'p1',
         amount: 1,
         duration: 'PHASE',
         appliesTo: 'NEXT_CARD',
       },
     ];
-    p1.costReductions = 2;
 
     const effective = getEffectiveCardCost(gameState, p1, cardInst);
     expect(effective.baseCost).toBe(3);
@@ -366,13 +365,14 @@ describe('Feature Delivery: Universal Cost Reduction Aura & Helicarrier (Issue #
     });
 
     expect(resolveRes.result.success).toBe(true);
-    const postP1 = resolveRes.state.players[0];
-    const postP2 = resolveRes.state.players[1];
 
-    // P1 did NOT receive the discount; P2 received the discount!
-    expect(postP1.activeCostReductions?.length || 0).toBe(0);
-    expect(postP2.activeCostReductions?.length).toBe(1);
-    expect(postP2.activeCostReductions![0].sourceCardName).toBe('Helicarrier');
-    expect(postP2.costReductions).toBe(1);
+    // Only P2 may use the discount
+    const reductions = resolveRes.state.activeCostReductions ?? [];
+    expect(reductions.map((r) => r.playerId)).toEqual(['p2']);
+    expect(reductions[0].sourceCardName).toBe('Helicarrier');
+    const p1Card = createCardInstance(sampleCardCost2);
+    expect(
+      getEffectiveCardCost(resolveRes.state, resolveRes.state.players[0], p1Card).effectiveCost,
+    ).toBe(2);
   });
 });

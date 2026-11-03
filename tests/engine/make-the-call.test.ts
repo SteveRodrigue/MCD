@@ -357,7 +357,7 @@ describe('Make the Call & PLAY_FROM_ZONE (ADR-0047)', () => {
     expect(p1.discard.some((a) => a.instanceId === 'lockjaw_inst')).toBe(false);
   });
 
-  it('rejects playing ally if ally limit is reached', () => {
+  it('allows playing an ally from the discard pile beyond the ally limit (RR v1.8 Ally Limit)', () => {
     // Fill allies to limit 3
     player1.allies = [
       createCardInstance('a1', '01', 'A1', CardType.ALLY, 1),
@@ -368,9 +368,9 @@ describe('Make the Call & PLAY_FROM_ZONE (ADR-0047)', () => {
     const lockjaw = createCardInstance('lockjaw_inst', '05018', 'Lockjaw', CardType.ALLY, 4, []);
     player1.discard = [lockjaw];
 
+    // The player discards down to the limit after the ally enters play, never before
     const check = canPlayCard(state, 'player_1', 'lockjaw_inst', [], [], 'PLAYER_DISCARD');
-    expect(check.allowed).toBe(false);
-    expect(check.reason).toContain('Ally limit reached');
+    expect(check.reason ?? '').not.toContain('Ally limit');
   });
 
   it('sends defeated ally to owner discard when controlled by another player', () => {

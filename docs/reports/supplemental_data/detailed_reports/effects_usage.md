@@ -336,12 +336,26 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
 | `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
 
+### <a id="modify-ally-limit"></a>`MODIFY_ALLY_LIMIT` (2 Cards, 2 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01073` | **The Triskelion (support)** | `core` | `triskelion_ally_limit` |
+| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_ally_limit` |
+
 ### <a id="prevent-damage"></a>`PREVENT_DAMAGE` (2 Cards, 2 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01003` | **Backflip (event)** | `core` | `backflip` |
 | `01017` | **Cosmic Flight (upgrade)** | `core` | `cosmic_flight_prevent` |
+
+### <a id="reduce-next-card-cost"></a>`REDUCE_NEXT_CARD_COST` (2 Cards, 2 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
+| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
 
 ### <a id="return-to-hand"></a>`RETURN_TO_HAND` (2 Cards, 2 Step Occurrences)
 
@@ -410,12 +424,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | :--- | :--- | :--- | :--- |
 | `01053` | **Relentless Assault (event)** | `core` | `relentless_assault` |
 
-### <a id="modify-ally-limit"></a>`MODIFY_ALLY_LIMIT` (1 Cards, 1 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01073` | **The Triskelion (support)** | `core` | `triskelion_ally_limit` |
-
 ### <a id="modify-hand-size"></a>`MODIFY_HAND_SIZE` (1 Cards, 1 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -427,12 +435,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01071` | **Make the Call (event)** | `core` | `make_the_call` |
-
-### <a id="reduce-next-card-cost"></a>`REDUCE_NEXT_CARD_COST` (1 Cards, 1 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 
 ### <a id="remove-from-game"></a>`REMOVE_FROM_GAME` (1 Cards, 1 Step Occurrences)
 

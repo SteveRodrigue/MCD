@@ -1082,22 +1082,24 @@ export function checkAndDiscardZeroCounterCard(
 }
 
 /**
- * Returns all active cost reduction auras currently on the player that apply to the specified card.
+ * The cost reductions in effect that apply to this card when this player plays it: the ones
+ * open to this player whose card filter the card matches (RR v1.8 Cost, ADR-0061).
  */
 export function getApplicableCostReductions(
+  state: GameState,
   player: PlayerState,
   cardOrInstance: CardInstance | NormalizedCard,
-  state?: GameState,
 ): ActiveCostReduction[] {
-  const reductions = player.activeCostReductions || [];
+  const reductions = state.activeCostReductions || [];
   if (reductions.length === 0) return [];
 
   const rawCard = 'card' in cardOrInstance ? cardOrInstance.card : cardOrInstance;
 
-  return reductions.filter((r) => {
-    if (!r.cardFilter) return true;
-    return matchesCardFilter(rawCard, r.cardFilter, { player, state });
-  });
+  return reductions.filter(
+    (r) =>
+      (!r.playerId || r.playerId === player.id) &&
+      (!r.cardFilter || matchesCardFilter(rawCard, r.cardFilter, { player, state })),
+  );
 }
 
 /**
@@ -1115,7 +1117,7 @@ export function getEffectiveCardCost(
 } {
   const rawCard = 'card' in cardOrInstance ? cardOrInstance.card : cardOrInstance;
   const baseCost = rawCard.cost ?? 0;
-  const reductions = getApplicableCostReductions(player, cardOrInstance, state);
+  const reductions = getApplicableCostReductions(state, player, cardOrInstance);
   const totalReduction = reductions.reduce((sum, r) => sum + r.amount, 0);
   const effectiveCost = Math.max(0, baseCost - totalReduction);
 

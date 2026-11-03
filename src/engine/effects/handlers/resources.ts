@@ -70,11 +70,10 @@ function handleReduceNextCardCost(
   const cardFilter = stepParams.cardFilter;
   const targetPlayerId =
     context.targetPlayerId || context.chosenTargetInstanceId || runtime.targetPlayerId;
+  const sourceCardName = context.sourceCardInstance?.card.name || player.activeFormCard.name;
 
   // In multiplayer mode, if targeting CHOSEN_PLAYER and no target player specified yet, prompt player to choose
   if (targetParam === 'CHOSEN_PLAYER' && state.players.length > 1 && !targetPlayerId) {
-    const sourceCardName =
-      context.sourceCardInstance?.card.name || player.activeFormCard?.name || 'Helicarrier';
     const promptId = `prompt_${nextEngineId(state, 'id')}_choose_cost_reduction_player`;
     state = kernel.enqueueDecisionPrompt(state, {
       promptId,
@@ -82,6 +81,8 @@ function handleReduceNextCardCost(
       title: 'Choose a Player',
       description: `Choose a player to reduce the resource cost of the next card they play this phase by ${amount}:`,
       sourceCardName,
+      sourceCardInstanceId: context.sourceCardInstance?.instanceId,
+      sourceCardCode: context.sourceCardInstance?.card.code,
       options: state.players.map((p) => ({
         id: `reduce_cost_${p.id}`,
         label: `${p.name} (${p.hero?.name || 'Hero'})`,
@@ -111,40 +112,30 @@ function handleReduceNextCardCost(
     };
   }
 
-  // Determine recipient player
-  let targetPlayer = player;
-  if (targetPlayerId) {
-    const found = state.players.find((p) => p.id === targetPlayerId);
-    if (found) targetPlayer = found;
-  }
-
-  const sourceCardName = context.sourceCardInstance?.card.name || 'Helicarrier';
-  const sourceCardCode = context.sourceCardInstance?.card.code;
+  // ALL_PLAYERS: "the next card played" by anyone uses it up; otherwise one player's next card
+  const targetPlayer =
+    targetParam === 'ALL_PLAYERS'
+      ? undefined
+      : (targetPlayerId && state.players.find((p) => p.id === targetPlayerId)) || player;
 
   const reduction: ActiveCostReduction = {
     id: nextEngineId(state, 'cost_red'),
     sourceCardName,
-    sourceCardCode,
+    sourceCardCode: context.sourceCardInstance?.card.code,
+    sourcePlayerId: player.id,
+    playerId: targetPlayer?.id,
     amount,
     duration,
     cardFilter,
     appliesTo: 'NEXT_CARD',
   };
-
-  if (!targetPlayer.activeCostReductions) {
-    targetPlayer.activeCostReductions = [];
-  }
-  targetPlayer.activeCostReductions.push(reduction);
-  targetPlayer.costReductions = targetPlayer.activeCostReductions.reduce(
-    (sum, r) => sum + r.amount,
-    0,
-  );
+  state.activeCostReductions = [...(state.activeCostReductions || []), reduction];
 
   appendLog(state, {
     category: 'ability',
     key: 'cost.reduced',
     params: {
-      actor: targetPlayer.name,
+      actor: (targetPlayer ?? player).name,
       source: sourceCardName,
       amount,
     },

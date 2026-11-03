@@ -1969,7 +1969,10 @@ function discardFromTableau(
   const targetInstanceId = ((params as { targetInstanceId?: string }).targetInstanceId ||
     context.chosenTargetInstanceId) as string | undefined;
   if (targetInstanceId) {
-    const targetCard = player.tableau.find((c) => c.instanceId === targetInstanceId);
+    // A named card may be any card in the player's play area, an ally included (Ally Limit)
+    const targetCard = [...player.tableau, ...player.allies].find(
+      (c) => c.instanceId === targetInstanceId,
+    );
     if (targetCard) {
       discardCardInstance(state, targetCard, player.id);
       appendLog(state, {

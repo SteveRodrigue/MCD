@@ -5,7 +5,6 @@ import {
   type StepGate,
   type ResultFact,
   canEffectProduceFact,
-  IdentityFormSchema,
 } from './gate-params.ts';
 import { EFFECT_PARAM_SCHEMAS } from './effect-params.ts';
 import {
@@ -19,9 +18,11 @@ import {
   AbilityCostSchema,
   UniversalCardFilterSchema,
   CardAuditRecordSchema,
+  IdentityFormSchema,
 } from './schema-primitives.ts';
 
 export * from './schema-primitives.ts';
+export * from './gate-params.ts';
 
 /**
  * Ability Execution Step Interface (Operational Primitive)

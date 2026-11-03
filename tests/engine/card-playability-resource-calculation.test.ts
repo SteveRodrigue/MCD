@@ -79,7 +79,7 @@ describe('Card Playability Potential Resource Calculation (Issue #153, RR v1.8 p
 
     // Helicarrier is now exhausted and player has active cost reduction
     expect(updatedPlayer.tableau[0].exhausted).toBe(true);
-    expect(updatedPlayer.activeCostReductions?.length).toBe(1);
+    expect(updatedState.activeCostReductions?.length).toBe(1);
 
     // Effective cost is reduced from 2 to 1
     const costInfo = getEffectiveCardCost(updatedState, updatedPlayer, surveillanceTeam);

@@ -141,10 +141,11 @@ describe('Villain Phase End Ordering & RR v1.8 Step Alignment (Issue #145)', () 
         sourceCardName: 'test_round_buff',
       },
     ];
-    gameState.players[0].activeCostReductions = [
+    gameState.activeCostReductions = [
       {
         id: 'red_phase',
         sourceCardName: 'test_phase_cost',
+        sourcePlayerId: 'p1',
         amount: 1,
         duration: 'PHASE',
         appliesTo: 'NEXT_CARD',
@@ -152,18 +153,17 @@ describe('Villain Phase End Ordering & RR v1.8 Step Alignment (Issue #145)', () 
       {
         id: 'red_round',
         sourceCardName: 'test_round_cost',
+        sourcePlayerId: 'p1',
         amount: 1,
         duration: 'ROUND',
         appliesTo: 'NEXT_CARD',
       },
     ];
-    gameState.players[0].costReductions = 2;
     gameState.players[0].usedAbilitiesThisPhase = { ability_1: 1 };
 
     const capturedStatesAtTrigger: Array<{
       activeStatModifiers: any[];
       activeCostReductions: any[];
-      costReductions: number;
       usedAbilitiesThisPhase: Record<string, number>;
     }> = [];
 
@@ -172,8 +172,7 @@ describe('Villain Phase End Ordering & RR v1.8 Step Alignment (Issue #145)', () 
         const p1 = state.players.find((p) => p.id === 'p1')!;
         capturedStatesAtTrigger.push({
           activeStatModifiers: [...(p1.activeStatModifiers || [])],
-          activeCostReductions: [...(p1.activeCostReductions || [])],
-          costReductions: p1.costReductions ?? 0,
+          activeCostReductions: [...(state.activeCostReductions || [])],
           usedAbilitiesThisPhase: { ...(p1.usedAbilitiesThisPhase || {}) },
         });
       }

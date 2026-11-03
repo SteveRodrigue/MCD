@@ -38,7 +38,7 @@ export function step6_endVillainPhaseAndRound(state: GameState): GameState {
     player.usedAbilitiesThisRound = {};
     player.usedAbilitiesThisPhase = {};
   }
-  expireLastingEffects(state.players, ['PHASE', 'ROUND']);
+  expireLastingEffects(state, state.players, ['PHASE', 'ROUND']);
 
   // Step 6b: Dispatch VILLAIN_PHASE_ENDED triggers in player turn order starting from firstPlayerIndex
   for (let i = 0; i < state.players.length; i++) {

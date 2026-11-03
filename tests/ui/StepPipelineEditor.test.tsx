@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { StepPipelineEditor } from '../../src/ui/components/editor/StepPipelineEditor';
 import { ResultFactSchema } from '../../src/data/supplemental/gate-params';
@@ -353,6 +353,36 @@ describe('StepPipelineEditor', () => {
     await user.type(screen.getByTestId('gate-param-trait-0-0'), 'Avenger');
     expect(handleChange).toHaveBeenLastCalledWith([
       expect.objectContaining({ gateParams: { trait: 'Avenger' } }),
+    ]);
+  });
+  it('edits the IF_ALL_ALLIES_MATCH card filter (Avengers Tower 03024)', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(
+      <StatefulStepPipelineEditor
+        initial={[
+          {
+            effect: 'MODIFY_ALLY_LIMIT',
+            gate: 'IF_ALL_ALLIES_MATCH',
+            gateParams: { filter: { traits: ['Avenger'] } },
+            effectParams: { amount: 1, target: 'SELF' },
+          },
+        ]}
+        onChange={handleChange}
+      />,
+    );
+
+    expect(screen.getByText('All Allies Gate Parameters')).toBeDefined();
+    const traits = within(screen.getByTestId('gate-param-filter-0-0')).getByTestId(
+      'filter-traits-input',
+    ) as HTMLInputElement;
+    expect(traits.value).toBe('Avenger');
+
+    await user.clear(traits);
+    await user.type(traits, 'Defender');
+    expect(handleChange).toHaveBeenLastCalledWith([
+      expect.objectContaining({ gateParams: { filter: { traits: ['Defender'] } } }),
     ]);
   });
   it('edits MODIFY_HAND_SIZE amount as a dynamic formula (Iron Man 01029a) with no legacy scaling fields', () => {

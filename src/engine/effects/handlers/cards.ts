@@ -28,7 +28,7 @@ import {
   removeCardFromAllZones,
   initializeCardUses,
 } from '../../state/state-validator';
-import { getPlayerAllyLimit, checkUniqueCardPlayable } from '../../pipeline/legality-checker';
+import { checkUniqueCardPlayable } from '../../pipeline/legality-checker';
 import { nextEngineId, randomInt, shuffleArray } from '../../state/rng';
 import { resolvePlayerTargets } from '../target-resolver';
 import { getAvailableResources } from '../../pipeline/cost-engine';
@@ -1105,16 +1105,10 @@ function handlePlayFromZone(
 
   // Option A: If only 1 candidate or no pre-supplied target, enqueue a Decision Prompt
   const available = getAvailableResources(player, state).total;
-  const allyLimit = getPlayerAllyLimit(state, player.id);
-  const isAllyLimitReached = player.allies.length >= allyLimit;
 
   const filteredCandidates = candidates.filter((c) => {
     const cost = c.instance.card.cost ?? 0;
     if (cost > available) return false;
-
-    if (c.instance.card.type === CardType.ALLY && isAllyLimitReached) {
-      return false;
-    }
 
     if (c.instance.card.isUnique) {
       for (const p of state.players || []) {

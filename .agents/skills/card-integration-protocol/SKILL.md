@@ -86,7 +86,7 @@ If Step 5 confidence is below 95%, go back to Step 3 (max 3 attempts, then the c
 - **Vanilla fork:** If the card has no printed rules text, skip the 8-point checklist and the Step 5-6 audits. Draft the `noSupplementalNeeded: true` entry and continue at Step 7 (peer review still applies).
 - Per **ADR-0018** & **ADR-0019**, never interpret or guess unstated card rules.
 - **MANDATORY SPECIFICATION CONSULTATION & EVOLUTION CHECK:** Before drafting schema, you **MUST** consult the supplemental specification suite:
-  - **Quick Reference (Inspect First):** [`docs/creators/supplemental-reference/QUICK_REFERENCE.md`](../../../docs/creators/supplemental-reference/QUICK_REFERENCE.md) (single high-density cheat sheet for all 55 effects, allowed `effectParams` keys, 9 canonical step gates, 8 result facts, timings, triggers, and target selectors).
+  - **Quick Reference (Inspect First):** [`docs/creators/supplemental-reference/QUICK_REFERENCE.md`](../../../docs/creators/supplemental-reference/QUICK_REFERENCE.md) (single high-density cheat sheet for all 55 effects, allowed `effectParams` keys, 10 canonical step gates, 8 result facts, timings, triggers, and target selectors).
   - **Modular Guides (For In-Depth Rules/Examples):** [`docs/creators/supplemental-reference/`](../../../docs/creators/supplemental-reference/README.md) and [`docs/creators/cards-and-heroes.md`](../../../docs/creators/cards-and-heroes.md):
     - `01_metadata_and_audit.md` (Metadata & Audit standards)
     - `02_timings_and_triggers.md` (Timings & Triggers matrix)

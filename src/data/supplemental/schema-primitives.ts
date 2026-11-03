@@ -11,7 +11,6 @@ import {
   KEYWORD_VALUES,
   RESOURCE_TYPE_VALUES,
 } from '../../engine/models/enum-values.ts';
-import { IdentityFormSchema } from './gate-params.ts';
 
 /**
  * ISO-8601 Timestamp regex matching YYYY-MM-DDTHH:MM(:SS)?
@@ -172,35 +171,8 @@ export const TargetSelectorSchema = z.enum([
 
 export type TargetSelector = z.infer<typeof TargetSelectorSchema>;
 
-export {
-  IdentityFormSchema,
-  type IdentityForm,
-  ResultFactSchema,
-  type ResultFact,
-  type StepFacts,
-  FACT_PRODUCERS,
-  canEffectProduceFact,
-  StepGateSchema,
-  type StepGate,
-  type GateKind,
-  type GateFieldType,
-  type GateFieldMeta,
-  type GateDefinition,
-  GATE_REGISTRY,
-  ZoneEmptyTargetSchema,
-  type ZoneEmptyTarget,
-  AttackerKindSchema,
-  type AttackerKind,
-  ThenGateParamsSchema,
-  IfResultGateParamsSchema,
-  IfFormGateParamsSchema,
-  IfPlayerHasTraitGateParamsSchema,
-  IfZoneEmptyGateParamsSchema,
-  IfCardInPlayGateParamsSchema,
-  IfResourceMatchGateParamsSchema,
-  IfUndefendedAttackGateParamsSchema,
-  IfActivationDealtDamageGateParamsSchema,
-} from './gate-params.ts';
+export const IdentityFormSchema = z.enum(['HERO', 'ALTER_EGO']);
+export type IdentityForm = z.infer<typeof IdentityFormSchema>;
 
 /**
  * Ability Effect Primitives (Codebase-Grounded to active handlers in src/engine/)

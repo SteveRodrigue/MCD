@@ -88,3 +88,11 @@ Option 3 maintains complete engine-data decoupling and satisfies all RR v1.8 tim
   *Mitigation:* `action-dispatcher.ts` consumes all applied reductions upon successful play and clamps effective cost to minimum 0.
 - *Risk:* Forgotten phase expiration leaving stale reductions across rounds.
   *Mitigation:* Expiration hooks installed in all phase end / cleanup pipelines.
+
+---
+
+## Addendum (2026-11-03, Issue #284): shared list and first filtered user
+
+- **First `cardFilter` user:** _Avengers Tower_ `03024` ("reduce the cost of the next [[Avenger]] ally played this phase by 1") keeps `cardFilter` (`{ "types": ["ally"], "traits": ["Avenger"] }`). #284 proposed removing it while no card used it.
+- **One list on the game state:** the reductions in effect moved from `PlayerState.activeCostReductions` (and the cached sum `PlayerState.costReductions`, now deleted) to `GameState.activeCostReductions`. Each `ActiveCostReduction` records `sourcePlayerId` (who created it) and `playerId` (who may use it; unset for `target: "ALL_PLAYERS"`). Owner ruling: the Tower says "played", not "you play", so any player's next Avenger ally this phase uses it up. _Helicarrier_ sets `playerId` to the chosen player and plays as before.
+- **Expiry:** `expireLastingEffects(state, players, durations)` prunes the list. `PHASE` and `ROUND` reductions end with the phase or round whoever created them, `TURN` reductions end with their creator's turn, and each unused one logs `cost.reduction.expired`.

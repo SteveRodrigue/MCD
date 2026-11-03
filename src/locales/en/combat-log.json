@@ -158,6 +158,7 @@
     "decision.prompt.resolved": "{{actor}} chooses {{option}}.",
     "deck.shuffled": "{{actor}} shuffles a deck.",
     "cost.reduced": "{{actor}} gets a cost reduction.",
+    "cost.reduction.expired": "The {{source}} cost reduction ends unused.",
     "encounter.card.revealed": "{{actor}} reveals an encounter card.",
     "encounter.deck.empty": "The encounter deck is empty.",
     "encounter.obligation.discarded": "{{actor}} discards the obligation {{card}}.",

@@ -77,10 +77,9 @@ describe('Helicarrier Multiplayer Lifecycle & Prompt Clearance (#165)', () => {
     expect(resolveRes.result.success).toBe(true);
 
     const stateAfterPrompt = resolveRes.state;
-    expect(stateAfterPrompt.players[0].costReductions || 0).toBe(0);
-    expect(stateAfterPrompt.players[1].costReductions).toBe(1);
-    expect(stateAfterPrompt.players[1].activeCostReductions?.length).toBe(1);
-    expect(stateAfterPrompt.players[1].activeCostReductions![0].duration).toBe('PHASE');
+    expect(stateAfterPrompt.activeCostReductions?.length).toBe(1);
+    expect(stateAfterPrompt.activeCostReductions![0].playerId).toBe(p2.id);
+    expect(stateAfterPrompt.activeCostReductions![0].duration).toBe('PHASE');
 
     // 3. Player 1 ends turn -> Player 2's turn begins
     const endTurnRes = dispatchAction(stateAfterPrompt, {
@@ -92,8 +91,7 @@ describe('Helicarrier Multiplayer Lifecycle & Prompt Clearance (#165)', () => {
 
     // Discount must persist across P1 turn end because duration is PHASE
     const stateP2Turn = thaw(endTurnRes.state);
-    expect(stateP2Turn.players[1].costReductions).toBe(1);
-    expect(stateP2Turn.players[1].activeCostReductions?.length).toBe(1);
+    expect(stateP2Turn.activeCostReductions?.length).toBe(1);
 
     // 4. Setup card for Player 2 to play (Cost 2 card with 1 payment card in hand)
     const cost2Card = createCardInstance(cardCatalog.getCard('01087')!); // Haymaker (Cost 2)
@@ -115,8 +113,7 @@ describe('Helicarrier Multiplayer Lifecycle & Prompt Clearance (#165)', () => {
 
     // Discount MUST be cleared immediately after playing the card!
     const stateAfterPlay = playRes.state;
-    expect(stateAfterPlay.players[1].activeCostReductions?.length || 0).toBe(0);
-    expect(stateAfterPlay.players[1].costReductions || 0).toBe(0);
+    expect(stateAfterPlay.activeCostReductions?.length || 0).toBe(0);
 
     // 6. Player 2 ends turn -> player phase ends
     const endP2TurnRes = dispatchAction(stateAfterPlay, {
@@ -132,17 +129,18 @@ describe('Helicarrier Multiplayer Lifecycle & Prompt Clearance (#165)', () => {
     const p1 = gameState.players[0];
 
     // Give P1 a Helicarrier discount directly
-    p1.activeCostReductions = [
+    gameState.activeCostReductions = [
       {
         id: 'red_test_prompt',
         sourceCardName: 'Helicarrier',
         sourceCardCode: '01092',
+        sourcePlayerId: p1.id,
+        playerId: p1.id,
         amount: 1,
         duration: 'PHASE',
         appliesTo: 'NEXT_CARD',
       },
     ];
-    p1.costReductions = 1;
 
     // Create an event that requires target selection: Haymaker (01087, 2 cost) with 2 eligible targets
     const haymakerCard = cardCatalog.getCard('01087')!;
@@ -167,7 +165,6 @@ describe('Helicarrier Multiplayer Lifecycle & Prompt Clearance (#165)', () => {
 
     // Discount MUST already be consumed upon payment / play, NOT left active!
     const stateDuringPrompt = playRes.state;
-    expect(stateDuringPrompt.players[0].activeCostReductions?.length || 0).toBe(0);
-    expect(stateDuringPrompt.players[0].costReductions || 0).toBe(0);
+    expect(stateDuringPrompt.activeCostReductions?.length || 0).toBe(0);
   });
 });

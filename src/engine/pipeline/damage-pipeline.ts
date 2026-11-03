@@ -1330,7 +1330,8 @@ export function applyDamageToTargets(
   for (const ctx of resolved.contexts) {
     if (
       ctx.damageTaken > 0 &&
-      (ctx.request.target.type === 'player' || ctx.request.target.type === 'villain')
+      (ctx.request.target.type === 'player' || ctx.request.target.type === 'villain') &&
+      state.players.length > 0
     ) {
       const isPlayer = ctx.request.target.type === 'player';
       kernel.dispatchTrigger(state, 'DAMAGE_TAKEN', {
@@ -1589,7 +1590,11 @@ function placeDamage(
   };
   const defeats: DefeatDispatch[] = defeatRes.pendingDefeat ? [defeatRes.pendingDefeat] : [];
 
-  if (damageTaken > 0 && (target.type === 'player' || target.type === 'villain')) {
+  if (
+    damageTaken > 0 &&
+    (target.type === 'player' || target.type === 'villain') &&
+    state.players.length > 0
+  ) {
     const isPlayer = target.type === 'player';
     kernel.dispatchTrigger(state, 'DAMAGE_TAKEN', {
       targetPlayerId: isPlayer

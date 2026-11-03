@@ -65,7 +65,7 @@ function describeOutcome(result: MatchSimulationResult): string {
 }
 
 /** Informational win-rate report over 100 games; never a gate (roadmap 1.4 gates ability coverage). */
-async function runBalanceReport() {
+async function runBalanceReport(args?: CliArgs) {
   const startTime = Date.now();
   const logsDir = LOGS_DIR;
   if (!fs.existsSync(logsDir)) {
@@ -138,10 +138,21 @@ async function runBalanceReport() {
     }
   }
 
+  const isFiltered = Boolean(args?.seed && args.seed !== 'coverage');
+  const targetMatrix = isFiltered ? matrix.filter((c) => c.seed === args!.seed) : matrix;
+
+  if (targetMatrix.length === 0 && isFiltered) {
+    throw new Error(`No game matching seed '${args!.seed}' found in balance matrix.`);
+  }
+
   console.log(`\n======================================================`);
   console.log(`🎮 Marvel Champions Digital: 100-Game Balance Report`);
-  console.log(`   50 Solo Games (5 Heroes x 2 Difficulties x 5 Runs)`);
-  console.log(`   50 2-Player Games (5 Pairs x 2 Difficulties x 5 Runs)`);
+  if (isFiltered) {
+    console.log(`   Replaying single game: ${args!.seed}`);
+  } else {
+    console.log(`   50 Solo Games (5 Heroes x 2 Difficulties x 5 Runs)`);
+    console.log(`   50 2-Player Games (5 Pairs x 2 Difficulties x 5 Runs)`);
+  }
   const scenarioId = defaultScenarioId();
   console.log(
     `   Target Scenario: ${ScenarioRegistry.get(scenarioId).definition.name} (Standard / Expert)`,
@@ -150,7 +161,7 @@ async function runBalanceReport() {
 
   const results: CompletedGameRecord[] = [];
 
-  for (const config of matrix) {
+  for (const config of targetMatrix) {
     const gameStart = Date.now();
     resetInstanceCounter();
 
@@ -201,7 +212,7 @@ async function runBalanceReport() {
         `\n❌ SIMULATION CRASH at Game #${config.gameNumber} [Seed: ${config.seed}]:\n${err?.stack || err?.message || err}\n`,
       );
       console.error(
-        `Replay instructions: npx tsx scripts/simulate-games.ts --seed ${config.seed}\n`,
+        `Replay instructions: npx tsx scripts/simulate-games.ts --balance --seed ${config.seed}\n`,
       );
       throw err;
     }
@@ -706,7 +717,7 @@ function runReplay(id: string): boolean {
 async function main() {
   await bootContent(new NodeFsDriver(contentRoot()));
   const args = parseArgs(process.argv.slice(2));
-  if (args.balance) return runBalanceReport();
+  if (args.balance) return runBalanceReport(args);
   if (args.replay) {
     if (!runReplay(args.replay)) process.exitCode = 1;
     return;

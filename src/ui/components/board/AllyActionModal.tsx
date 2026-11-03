@@ -1,13 +1,19 @@
 import React from 'react';
 import { Swords, Target, Zap, Skull } from 'lucide-react';
-import { CardInstance, PlayerState, AllyCard, hasDashPower } from '../../../engine/models';
+import {
+  CardInstance,
+  PlayerState,
+  AllyCard,
+  hasDashPower,
+  CardAbility,
+} from '../../../engine/models';
 import {
   getEffectiveAllyStats,
   getEffectiveCardTraitsDetails,
 } from '../../../engine/pipeline/stat-calculator';
 import { getValidAttackTargets } from './attack-target-utils';
 import { getValidThwartTargets } from './thwart-target-utils';
-import { canPayAbilityCost } from '../../../engine/pipeline/cost-engine';
+import { canInitiateAbility } from '../../../engine/pipeline/legality-checker';
 import { useGameSession } from '../../context/GameStateContext';
 import { useModalStyle } from '../../theme/useModalStyle';
 import { ActionRow } from './ActionRow';
@@ -20,6 +26,7 @@ interface AllyActionModalProps {
   onClose: () => void;
   onInitiateAllyAttack: (allyInstanceId: string) => void;
   onInitiateAllyThwart: (allyInstanceId: string) => void;
+  onSelectAbility?: (ability: CardAbility, cardInstance: CardInstance) => void;
 }
 
 export const AllyActionModal: React.FC<AllyActionModalProps> = ({
@@ -29,6 +36,7 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
   onClose,
   onInitiateAllyAttack,
   onInitiateAllyThwart,
+  onSelectAbility,
 }) => {
   const { state: gameState, dispatch: onDispatchAction } = useGameSession();
   const { style } = useModalStyle();
@@ -197,9 +205,8 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
       </ActionRow>
 
       {actionableAbilities.map((ab) => {
-        const alreadyUsed = (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
-        const costCheck = canPayAbilityCost(gameState, player, ab, ally, {});
-        const canTrigger = isPlayerTurn && !alreadyUsed && costCheck.allowed;
+        const abilityCheck = canInitiateAbility(gameState, player.id, ab, ally, {});
+        const canTrigger = isPlayerTurn && abilityCheck.allowed;
 
         return (
           <ActionRow
@@ -208,12 +215,16 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
             tone="warn"
             disabled={!canTrigger}
             onClick={() => {
-              onDispatchAction?.({
-                type: 'USE_CARD_ABILITY',
-                playerId: player.id,
-                cardInstanceId: ally.instanceId,
-                abilityId: ab.id,
-              });
+              if (onSelectAbility) {
+                onSelectAbility(ab, ally);
+              } else {
+                onDispatchAction?.({
+                  type: 'USE_CARD_ABILITY',
+                  playerId: player.id,
+                  cardInstanceId: ally.instanceId,
+                  abilityId: ab.id,
+                });
+              }
               onClose();
             }}
           >
@@ -221,8 +232,8 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
               {ab.id.replace(/_/g, ' ').toUpperCase()}
             </span>
             <span className={`text-xs block mt-0.5 ${style.muted}`}>
-              {alreadyUsed
-                ? 'Already used this round'
+              {!abilityCheck.allowed && abilityCheck.reason
+                ? abilityCheck.reason
                 : ab.steps?.[0]?.effectParams?.description
                   ? String(ab.steps[0].effectParams.description)
                   : `Trigger ${ally.card.name}'s special ability`}

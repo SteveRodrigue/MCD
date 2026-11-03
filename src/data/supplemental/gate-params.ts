@@ -3,9 +3,9 @@ import { GATE_KINDS, STEP_GATES, type GateKind } from './runtime.ts';
 export type { GateKind };
 import { z } from 'zod';
 import { hasRequiredFields, introspectObjectSchema } from './schema-introspector.ts';
+import { IdentityFormSchema, UniversalCardFilterSchema } from './schema-primitives.ts';
 
-export const IdentityFormSchema = z.enum(['HERO', 'ALTER_EGO']);
-export type IdentityForm = z.infer<typeof IdentityFormSchema>;
+export { IdentityFormSchema, type IdentityForm } from './schema-primitives.ts';
 
 export const ResultFactSchema = z.enum([
   'TARGET_DEFEATED',
@@ -126,6 +126,13 @@ export const IfCardInPlayGateParamsSchema = z
   })
   .strict();
 
+export const IfAllAlliesMatchGateParamsSchema = z
+  .object({
+    filter: UniversalCardFilterSchema.meta({ label: 'Ally Criteria', widget: 'card-filter' }),
+    negate: negateParam,
+  })
+  .strict();
+
 export const IfResourceMatchGateParamsSchema = z
   .object({
     resource: z.string().min(1).meta({ label: 'Resource' }),
@@ -150,7 +157,7 @@ export const IfActivationDealtDamageGateParamsSchema = z
   })
   .strict();
 
-export type GateFieldType = 'string' | 'number' | 'boolean' | 'enum' | 'step';
+export type GateFieldType = 'string' | 'number' | 'boolean' | 'enum' | 'step' | 'card-filter';
 
 export interface GateFieldMeta {
   key: string;
@@ -192,6 +199,7 @@ export const GATE_REGISTRY: Record<StepGate, GateDefinition> = {
   IF_PLAYER_HAS_TRAIT: defineGate('IF_PLAYER_HAS_TRAIT', IfPlayerHasTraitGateParamsSchema),
   IF_ZONE_EMPTY: defineGate('IF_ZONE_EMPTY', IfZoneEmptyGateParamsSchema),
   IF_CARD_IN_PLAY: defineGate('IF_CARD_IN_PLAY', IfCardInPlayGateParamsSchema),
+  IF_ALL_ALLIES_MATCH: defineGate('IF_ALL_ALLIES_MATCH', IfAllAlliesMatchGateParamsSchema),
   IF_RESOURCE_MATCH: defineGate('IF_RESOURCE_MATCH', IfResourceMatchGateParamsSchema),
   IF_UNDEFENDED_ATTACK: defineGate('IF_UNDEFENDED_ATTACK', IfUndefendedAttackGateParamsSchema,
   ),

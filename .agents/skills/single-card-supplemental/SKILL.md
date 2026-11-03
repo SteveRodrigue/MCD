@@ -53,7 +53,7 @@ _Take note of the extracted JSON: `code`, `name`, `type_code`, `traits`, `cost`,
 Consult the quick reference cheat sheet and modular specifications to ensure exact parameter and variable compliance:
 
 1. **Primary Quick-Start Reference (Inspect First):**
-   - [`docs/creators/supplemental-reference/QUICK_REFERENCE.md`](../../../docs/creators/supplemental-reference/QUICK_REFERENCE.md): Single authoritative, high-density cheat sheet detailing all 56 effect primitives, allowed `effectParams` keys, 9 canonical step gates, 8 result facts, timings, triggers, and target selectors.
+   - [`docs/creators/supplemental-reference/QUICK_REFERENCE.md`](../../../docs/creators/supplemental-reference/QUICK_REFERENCE.md): Single authoritative, high-density cheat sheet detailing all 56 effect primitives, allowed `effectParams` keys, 10 canonical step gates, 8 result facts, timings, triggers, and target selectors.
 
 2. **Authoritative Source of Truth:**
    - [`src/data/supplemental/schema.ts`](../../../src/data/supplemental/schema.ts), [`effect-params.ts`](../../../src/data/supplemental/effect-params.ts), and [`gate-params.ts`](../../../src/data/supplemental/gate-params.ts) define the canonical Zod types and enums:
@@ -62,7 +62,7 @@ Consult the quick reference cheat sheet and modular specifications to ensure exa
      - **Effects:** `EffectTypeSchema` (`DEAL_DAMAGE`, `REMOVE_THREAT`, `DRAW`, `DISCARD`, `SEARCH`, `PUT_INTO_PLAY`, `ADD_STATUS`, `GENERATE_RESOURCE`, etc.)
      - **Effect Parameters:** `EFFECT_PARAM_SCHEMAS` in `effect-params.ts` holds one strict Zod schema per effect (it replaces the hand-written `EFFECT_PARAM_KEYS` table, which is now derived from it). `AbilityStepSchema` rejects unknown keys and wrongly typed values in `effectParams`.
      - **Never declare upstream-derived fields** (`traits`, `keywords`, `maxPerPlayer`, `isLandscape`, `restrictedSlots`, `additionalBoostCards`, `attackCost`, `thwartCost`, `victoryPoints`) or ability `labels`; the loader derives them from the upstream card (ADR-0083).
-     - **Step Gates & Result Facts (ADR-0080):** `StepGateSchema` (`THEN`, `IF_RESULT`, `IF_FORM`, `IF_PLAYER_HAS_TRAIT`, `IF_ZONE_EMPTY`, `IF_CARD_IN_PLAY`, `IF_RESOURCE_MATCH`, `IF_UNDEFENDED_ATTACK`, `IF_ACTIVATION_DEALT_DAMAGE`) and `ResultFactSchema` (`TARGET_DEFEATED`, `EXCESS_DAMAGE_DEALT`, `FULLY_HEALED`, `SCHEME_EMPTY`, `STATUS_APPLIED`, `ALREADY_HAD_STATUS`, `STATUS_REMOVED`, `AMOUNT_ZERO`).
+     - **Step Gates & Result Facts (ADR-0080):** `StepGateSchema` (`THEN`, `IF_RESULT`, `IF_FORM`, `IF_PLAYER_HAS_TRAIT`, `IF_ZONE_EMPTY`, `IF_CARD_IN_PLAY`, `IF_ALL_ALLIES_MATCH`, `IF_RESOURCE_MATCH`, `IF_UNDEFENDED_ATTACK`, `IF_ACTIVATION_DEALT_DAMAGE`) and `ResultFactSchema` (`TARGET_DEFEATED`, `EXCESS_DAMAGE_DEALT`, `FULLY_HEALED`, `SCHEME_EMPTY`, `STATUS_APPLIED`, `ALREADY_HAD_STATUS`, `STATUS_REMOVED`, `AMOUNT_ZERO`).
      - **Target Selectors:** `TargetSelectorSchema` (`CHOSEN_ENEMY`, `CHOSEN_CHARACTER`, `VILLAIN`, `ALL_ENEMIES`, `SELF`, `SELF_IDENTITY`, `CHOSEN_PLAYER`, etc.)
 
 3. **Modular Documentation Guides (For In-Depth Rules/Examples):**

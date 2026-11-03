@@ -613,13 +613,12 @@ export const handlePlayCard: ActionHandler<'PLAY_CARD'> = (nextState, state, act
   const resourcesSpent = paymentRes.resourcesSpent;
 
   // Consume applicable active cost reductions immediately upon payment (RR v1.8 p. 7, 17, 23, Issue #46, Issue #165)
-  const applicableReductions = getApplicableCostReductions(player, targetCard, nextState);
+  const applicableReductions = getApplicableCostReductions(nextState, player, targetCard);
   if (applicableReductions.length > 0) {
     const consumedIds = new Set(applicableReductions.map((r) => r.id));
-    player.activeCostReductions = (player.activeCostReductions || []).filter(
+    nextState.activeCostReductions = (nextState.activeCostReductions || []).filter(
       (r) => !consumedIds.has(r.id),
     );
-    player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
 
     for (const r of applicableReductions) {
       appendLog(nextState, {

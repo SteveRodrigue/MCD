@@ -149,13 +149,8 @@ export function digestState(state: GameState): StateDigest {
       all.map((c) => [c.counters, c.tokens?.counters ?? 0]),
     ]),
     MODIFIERS: JSON.stringify([
-      players.map((p) => [
-        p.activeStatModifiers,
-        p.activeTraitModifiers,
-        p.costReductions,
-        p.activeCostReductions,
-        p.maxHealth,
-      ]),
+      players.map((p) => [p.activeStatModifiers, p.activeTraitModifiers, p.maxHealth]),
+      state.activeCostReductions,
       all.map((c) => c.activeStatModifiers),
     ]),
     READINESS: JSON.stringify([

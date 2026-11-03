@@ -42,14 +42,30 @@ export function startPlayerPhase(state: GameState): GameState {
 
 /**
  * Ends the lasting effects of the given durations on these players and the cards they control
- * (RR v1.8 "Lasting Effects"): cost reductions, stat modifiers and granted traits.
+ * (RR v1.8 "Lasting Effects"): stat modifiers and granted traits, and the cost reductions these
+ * players created (a `TURN` one ends with its creator's turn, a shared one included).
  */
-export function expireLastingEffects(players: PlayerState[], durations: readonly Duration[]): void {
+export function expireLastingEffects(
+  state: GameState,
+  players: PlayerState[],
+  durations: readonly Duration[],
+): void {
   const lasts = (effect: { duration?: Duration }) =>
     !effect.duration || !durations.includes(effect.duration);
+  const playerIds = new Set(players.map((p) => p.id));
+  const reductions = state.activeCostReductions || [];
+  state.activeCostReductions = reductions.filter(
+    (r) => lasts(r) || (r.duration === 'TURN' && !playerIds.has(r.sourcePlayerId)),
+  );
+  for (const expired of reductions.filter((r) => !state.activeCostReductions!.includes(r))) {
+    appendLog(state, {
+      category: 'ability',
+      key: 'cost.reduction.expired',
+      params: { source: expired.sourceCardName, amount: expired.amount },
+      onomatopoeia: `${expired.sourceCardName.toUpperCase()} DISCOUNT EXPIRED`,
+    });
+  }
   for (const player of players) {
-    player.activeCostReductions = (player.activeCostReductions || []).filter(lasts);
-    player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
     player.activeStatModifiers = (player.activeStatModifiers || []).filter(lasts);
     player.activeTraitModifiers = (player.activeTraitModifiers || []).filter(lasts);
     for (const card of [...player.allies, ...player.tableau, ...(player.attachments || [])]) {
@@ -64,7 +80,7 @@ export function expireLastingEffects(players: PlayerState[], durations: readonly
  * phase ends" abilities resolve in player order. The villain phase starts from here.
  */
 export function endPlayerPhase(state: GameState): GameState {
-  expireLastingEffects(state.players, ['PHASE']);
+  expireLastingEffects(state, state.players, ['PHASE']);
   for (const player of state.players) {
     player.usedAbilitiesThisPhase = {};
   }

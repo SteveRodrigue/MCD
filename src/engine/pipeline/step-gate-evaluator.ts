@@ -7,7 +7,8 @@ import {
 } from '../models';
 import { AbilityStep } from '../models/abilities';
 import { getStepGateParams, GATE_KINDS } from '../../data/supplemental/runtime';
-import type { AttackerKind } from '../../data/supplemental/schema';
+import type { AttackerKind, UniversalCardFilter } from '../../data/supplemental/schema';
+import { matchesCardFilter } from '../filters/card-filter';
 import { hasPlayerTrait } from './stat-calculator';
 import { bindKernel } from '../kernel';
 
@@ -163,6 +164,18 @@ export function evaluateStepGate(
         ].some(matchesCard),
       );
       gateSatisfied = Boolean(inSideSchemes || inVillainAttachments || inPlayerZones);
+      break;
+    }
+
+    case 'IF_ALL_ALLIES_MATCH': {
+      // "If each of your allies ...": true with no allies (Avengers Tower 03024)
+      const player = context.player || state?.players?.find((p) => p.id === context.playerId);
+      const filter = gateParams.filter as UniversalCardFilter | undefined;
+      gateSatisfied = Boolean(
+        player &&
+        filter &&
+        player.allies.every((ally) => matchesCardFilter(ally, filter, { player, state })),
+      );
       break;
     }
 

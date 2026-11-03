@@ -25,7 +25,7 @@
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 | `01087` | **Haymaker (event)** | `core` | `haymaker` |
 
-### <a id="self"></a>`SELF` (12 Cards, 12 Declarations)
+### <a id="self"></a>`SELF` (13 Cards, 13 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -40,6 +40,7 @@
 | `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
 | `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
+| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_ally_limit` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
 ### <a id="chosen-scheme"></a>`CHOSEN_SCHEME` (10 Cards, 11 Declarations)
@@ -111,6 +112,14 @@
 | `01103` | **Shocker (minion)** | `core_encounter` | `shocker_when_revealed` |
 | `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
 
+### <a id="all-players"></a>`ALL_PLAYERS` (3 Cards, 3 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01067` | **Maria Hill (ally)** | `core` | `maria_hill_enters_play` |
+| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
+| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
+
 ### <a id="defending-player"></a>`DEFENDING_PLAYER` (2 Cards, 3 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -162,13 +171,6 @@
 | :--- | :--- | :--- | :--- |
 | `01022` | **Ground Stomp (event)** | `core` | `ground_stomp_action` |
 | `01030` | **War Machine (ally)** | `core` | `war_machine_action` |
-
-### <a id="all-players"></a>`ALL_PLAYERS` (2 Cards, 2 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01067` | **Maria Hill (ally)** | `core` | `maria_hill_enters_play` |
-| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
 
 ### <a id="chosen-ally"></a>`CHOSEN_ALLY` (2 Cards, 2 Declarations)
 

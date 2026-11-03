@@ -373,8 +373,7 @@ describe('Systemic CHOSEN_* Entity Targeting Pipeline (Fixes #146)', () => {
       });
 
       expect(actionResult.result.success).toBe(true);
-      expect(actionResult.state.players[1].costReductions).toBe(1);
-      expect(actionResult.state.players[0].costReductions || 0).toBe(0);
+      expect(actionResult.state.activeCostReductions?.map((r) => r.playerId)).toEqual(['p2']);
     });
 
     it('Helicarrier enqueues decision prompt in multiplayer when target is omitted', () => {

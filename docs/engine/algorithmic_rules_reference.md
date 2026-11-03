@@ -431,8 +431,8 @@ For each card, mechanics are broken down using the following standard schema:
 - **Ability Timing & Trigger:** `CONSTANT` ➔ `MODIFY_ALLY_LIMIT` (+1)
 - **Step-by-Step Resolution:**
   1. **Play Requirement:** Controller must possess the `Avenger` trait.
-  2. **Active State:** While in play, dynamically increases controller's ally limit from 3 to 4 (`getPlayerAllyLimit`).
-  3. **Leaves Play:** When _The Triskelion_ is discarded, ally limit reverts to 3. If controller controls 4 allies, they must immediately choose and discard 1 ally to satisfy board limit (RR v1.8 p. 3).
+  2. **Active State:** While in play, dynamically increases controller's ally limit from 3 to 4 (`getEffectiveAllyLimit`).
+  3. **Leaves Play:** When _The Triskelion_ is discarded, ally limit reverts to 3. If controller controls 4 allies, the "Ally Limit Exceeded" prompt has them choose and discard 1 ally (`enforceAllyLimits`, RR v1.8 p. 3).
 
 ---
 

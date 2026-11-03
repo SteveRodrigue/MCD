@@ -78,9 +78,6 @@ export interface PlayerState {
   usedAbilitiesThisRound?: Record<string, number>;
   /** Tracks ability IDs used during the current phase (e.g. limit: ONCE_PER_PHASE) */
   usedAbilitiesThisPhase?: Record<string, number>;
-  /** Tracks active cost reductions applied to the next played card (e.g. Helicarrier) */
-  costReductions?: number;
-  activeCostReductions?: ActiveCostReduction[];
   /** Active temporary stat modifier auras (e.g. Lead from the Front 01070) */
   activeStatModifiers?: ActiveStatModifier[];
   activeTraitModifiers?: ActiveTraitModifier[];
@@ -113,10 +110,18 @@ export interface ActiveTraitModifier {
   sourceCardCode?: string;
 }
 
+/**
+ * A "the next card played costs N less" lasting effect (RR v1.8 Cost, ADR-0061). The first card
+ * that matches it uses it up, whoever may play it.
+ */
 export interface ActiveCostReduction {
   id: string;
   sourceCardName: string;
   sourceCardCode?: string;
+  /** Who created it: a `TURN` reduction ends with this player's turn. */
+  sourcePlayerId: string;
+  /** Only this player's card may use it; unset means the next matching card any player plays. */
+  playerId?: string;
   amount: number;
   cardFilter?: UniversalCardFilter;
   duration: Duration;
@@ -641,6 +646,8 @@ export interface GameState {
   activeMainSchemeIndex: number;
 
   sideSchemes: SideSchemeState[];
+  /** Next-card cost reductions in effect, shared by the table (e.g. Helicarrier, Avengers Tower) */
+  activeCostReductions?: ActiveCostReduction[];
   environments: CardInstance[];
   encounterDeck: CardInstance[];
   encounterDiscard: CardInstance[];

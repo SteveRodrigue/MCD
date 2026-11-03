@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-## 1. Cards with Multiple Abilities (2+ Declared Abilities — 25 Cards)
+## 1. Cards with Multiple Abilities (2+ Declared Abilities — 26 Cards)
 
 | Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -30,6 +30,7 @@
 | `01173` | **Electric Whip Attack** | `treachery` | `core_encounter` | **2** | • `electric_whip_attack_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `electric_whip_attack_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01178` | **Kree Manipulator** | `treachery` | `core_encounter` | **2** | • `kree_manipulator_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `kree_manipulator_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01181` | **Madame Hydra** | `minion` | `core_encounter` | **3** | • `madame_hydra_immunity` (`CONSTANT`, **1 step**)<br/>• `madame_hydra_attacks` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**)<br/>• `madame_hydra_schemes` (`FORCED_RESPONSE` / `MINION_SCHEMED`, **1 step**) |
+| `03024` | **Avengers Tower** | `support` | `cap` | **2** | • `avengers_tower_ally_limit` (`CONSTANT`, **1 step**)<br/>• `avengers_tower_action` (`ACTION`, **1 step**) |
 | `45109` | **The Fittest** | `attachment` | `aoa_encounter` | **2** | • `the_fittest_hit_points` (`CONSTANT`, **1 step**)<br/>• `the_fittest_tough` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**) |
 
 ## 2. Multi-Step Execution Pipelines (2+ Steps — 35 Pipelines Across 35 Cards)

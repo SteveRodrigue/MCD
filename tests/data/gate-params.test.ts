@@ -55,6 +55,10 @@ const EXPECTED_GATE_FIELDS = {
     NEGATE,
   ],
   IF_CARD_IN_PLAY: [{ key: 'cardCode', label: 'Card Code', type: 'string', required: true }, NEGATE],
+  IF_ALL_ALLIES_MATCH: [
+    { key: 'filter', label: 'Ally Criteria', type: 'card-filter', required: true },
+    NEGATE,
+  ],
   IF_RESOURCE_MATCH: [
     { key: 'resource', label: 'Resource', type: 'string', required: true },
     { key: 'count', label: 'Count', type: 'number', required: false, defaultValue: 1 },
@@ -83,13 +87,14 @@ const EXPECTED_HAS_REQUIRED = {
   IF_PLAYER_HAS_TRAIT: true,
   IF_ZONE_EMPTY: true,
   IF_CARD_IN_PLAY: true,
+  IF_ALL_ALLIES_MATCH: true,
   IF_RESOURCE_MATCH: true,
   IF_UNDEFENDED_ATTACK: false,
   IF_ACTIVATION_DEALT_DAMAGE: false,
 } as const;
 
 describe('Step Gate Registry and Param Schemas (ADR-0080, Issues #289, #290)', () => {
-  it('defines the 9 canonical StepGateSchema values', () => {
+  it('defines the 10 canonical StepGateSchema values', () => {
     const canonicalGates = [
       'THEN',
       'IF_RESULT',
@@ -97,6 +102,7 @@ describe('Step Gate Registry and Param Schemas (ADR-0080, Issues #289, #290)', (
       'IF_PLAYER_HAS_TRAIT',
       'IF_ZONE_EMPTY',
       'IF_CARD_IN_PLAY',
+      'IF_ALL_ALLIES_MATCH',
       'IF_RESOURCE_MATCH',
       'IF_UNDEFENDED_ATTACK',
       'IF_ACTIVATION_DEALT_DAMAGE',

@@ -23,6 +23,11 @@ function formatGatePrefix(step: any): string | null {
     case 'IF_CARD_IN_PLAY':
       base = gateParams.cardCode ? `IF_CARD_IN_PLAY (${gateParams.cardCode})` : 'IF_CARD_IN_PLAY';
       break;
+    case 'IF_ALL_ALLIES_MATCH': {
+      const traits: string[] = gateParams.filter?.traits ?? [];
+      base = traits.length ? `IF_ALL_ALLIES_MATCH (${traits.join(', ')})` : 'IF_ALL_ALLIES_MATCH';
+      break;
+    }
     case 'IF_RESOURCE_MATCH':
       base = gateParams.resource
         ? `IF_RESOURCE_MATCH (${gateParams.resource})`

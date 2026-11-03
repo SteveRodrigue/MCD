@@ -89,10 +89,17 @@ describe('card playability parity: canPlayCard vs evaluateCardPlayability', () =
     const legalPractice: CardInstance = createCardInstance(cardCatalog.getCard('01023')!);
     player.hand = [legalPractice];
     getActiveMainScheme(state).threat = 3;
-    player.activeCostReductions = [
-      { id: 'free', amount: legalPractice.card.cost ?? 0, duration: 'TURN' } as never,
+    state.activeCostReductions = [
+      {
+        id: 'free',
+        sourceCardName: 'Test Discount',
+        sourcePlayerId: 'p1',
+        playerId: 'p1',
+        amount: legalPractice.card.cost ?? 0,
+        duration: 'TURN',
+        appliesTo: 'NEXT_CARD',
+      },
     ];
-    player.costReductions = legalPractice.card.cost ?? 0;
 
     expect(canPlayCard(state, 'p1', legalPractice).reason).toBe(
       'No cards in hand to discard as cost.',

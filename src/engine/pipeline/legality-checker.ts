@@ -29,7 +29,7 @@ import {
   getHandCardResourceValue,
 } from './cost-engine';
 import { matchesCardFilter } from '../filters/card-filter';
-import { getEffectiveAllyLimit, hasPlayerTrait } from './stat-calculator';
+import { hasPlayerTrait } from './stat-calculator';
 import {
   abilitiesRunOnPlay,
   attachStepOf,
@@ -531,17 +531,6 @@ export function checkUniqueCardPlayable(
 }
 
 /**
- * Computes the active maximum ally limit for a player dynamically (ADR-0018).
- * Base: 3 allies (RR v1.8 p. 3).
- * Modifiers: Scans in-play cards for CONSTANT abilities with MODIFY_ALLY_LIMIT.
- */
-export function getPlayerAllyLimit(state: GameState, playerId: string): number {
-  const player = getPlayer(state, playerId);
-  if (!player) return 3;
-  return getEffectiveAllyLimit(player, state);
-}
-
-/**
  * Evaluates play requirements for cards with PLAY_FROM_ZONE effects (e.g. Make the Call)
  * (Issue #173, ADR-0047, RR v1.8 p. 16, 21).
  */
@@ -585,10 +574,6 @@ function evaluatePlayFromZoneRequirement(
 
   if (candidates.length === 0) {
     return { allowed: false, reason: 'No eligible allies in any discard pile.' };
-  }
-
-  if (player.allies.length >= getPlayerAllyLimit(state, player.id)) {
-    return { allowed: false, reason: 'Ally limit reached.' };
   }
 
   // Filter out candidates that violate unicity (if c.card.isUnique, verify no card with matching code or name is in play across all players' allies or tableaus).
@@ -940,14 +925,6 @@ function collectPlayRestrictions(
   // Resource Card Restriction (RR v1.8 p. 24): resource cards are discarded to pay costs.
   if (card.type === CardType.RESOURCE && !abilities.some(isActionTiming)) {
     reasons.push('Resource cards cannot be played directly; they are discarded to pay costs.');
-  }
-
-  // Dynamic Ally Limit Check (RR v1.8 p. 3, ADR-0018)
-  if (card.type === CardType.ALLY) {
-    const maxAllies = getPlayerAllyLimit(state, player.id);
-    if (player.allies.length >= maxAllies) {
-      reasons.push(`Ally limit reached (${maxAllies} allies max).`);
-    }
   }
 
   // Restricted Keyword Limit Check (RR v1.8 p. 25, ADR-0018): a player at the limit can still

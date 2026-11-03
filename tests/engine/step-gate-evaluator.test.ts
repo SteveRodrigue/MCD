@@ -262,6 +262,31 @@ describe('Shared step-gate evaluator (ADR-0080, Issues #289, #290)', () => {
     });
   });
 
+  describe('IF_ALL_ALLIES_MATCH gate', () => {
+    it('is true when every ally matches, including with no allies, and honours negate', () => {
+      const allAvengers: AbilityStep = {
+        effect: 'DRAW',
+        gate: 'IF_ALL_ALLIES_MATCH',
+        gateParams: { filter: { traits: ['Avenger'] } },
+      };
+      const notAllAvengers: AbilityStep = {
+        ...allAvengers,
+        gateParams: { filter: { traits: ['Avenger'] }, negate: true },
+      };
+      const allies = state.players[0].allies;
+
+      expect(evalGate(allAvengers)).toBe(true);
+
+      allies.push(createCardInstance(cardCatalog.getCard('01066')!)); // Hawkeye, Avenger
+      expect(evalGate(allAvengers)).toBe(true);
+      expect(evalGate(notAllAvengers)).toBe(false);
+
+      allies.push(createCardInstance(cardCatalog.getCard('01083')!)); // Mockingbird, S.H.I.E.L.D.
+      expect(evalGate(allAvengers)).toBe(false);
+      expect(evalGate(notAllAvengers)).toBe(true);
+    });
+  });
+
   describe('IF_ZONE_EMPTY gate', () => {
     it('evaluates whether a zone has 0 cards', () => {
       const emptySides: AbilityStep = {

@@ -263,6 +263,7 @@ export interface LogEvents {
     card: string;
     amount?: number;
   };
+  'cost.reduction.expired': { source: string; amount?: number };
 
   // Encounter & Schemes
   'encounter.card.revealed': { actor: string };
@@ -545,6 +546,7 @@ export const ALL_LOG_EVENT_KEYS = [
   'deck.shuffled',
   'cost.reduced',
   'cost.reduction.consumed',
+  'cost.reduction.expired',
   'encounter.card.revealed',
   'encounter.deck.empty',
   'encounter.obligation.discarded',

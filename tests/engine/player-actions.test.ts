@@ -515,7 +515,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       expect(res.result.error).toContain('unique copy');
     });
 
-    it('enforces default ally limit of 3 (RR v1.8 p. 3)', () => {
+    it('a 4th ally can be played, then the player discards down to 3 (RR v1.8 Ally Limit)', () => {
       const player = gameState.players[0];
       // Put 3 allies in play
       player.allies = [
@@ -538,8 +538,11 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         paymentCardInstanceIds: [energyCard.instanceId, energyCard2.instanceId],
       });
 
-      expect(res.result.success).toBe(false);
-      expect(res.result.error).toContain('Ally limit reached');
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[0].allies).toHaveLength(4);
+      const prompt = res.state.pendingDecisionQueue[0];
+      expect(prompt.title).toBe('Ally Limit Exceeded');
+      expect(prompt.options).toHaveLength(4);
     });
 
     it('uses Alter-Ego identity resource ability (Peter Parker: Scientist) to pay for a 1-cost card', () => {

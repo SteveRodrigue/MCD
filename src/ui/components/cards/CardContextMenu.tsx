@@ -148,7 +148,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
           {/* Header Strip */}
           <div className={`px-3 py-2 flex items-center justify-between ${style.panelHead}`}>
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className={`font-mono text-micro font-bold px-1.5 py-0.2 ${style.chip}`}>
+              <span className={`font-mono text-micro font-bold px-1.5 py-px ${style.chip}`}>
                 {card.code}
               </span>
               <span className="font-bold text-sm truncate tracking-wide">{card.name}</span>

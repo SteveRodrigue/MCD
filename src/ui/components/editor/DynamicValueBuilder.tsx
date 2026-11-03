@@ -288,7 +288,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                       Discarded Card Match Filter
                     </span>
                   </div>
-                  <span className="bg-comic-yellow border border-black px-1.5 py-0.2 rounded-sm text-[9px] font-bold text-black">
+                  <span className="bg-comic-yellow border border-black px-1.5 py-px rounded-sm text-[9px] font-bold text-black">
                     {filterCriteriaCount > 0
                       ? `${filterCriteriaCount} ${filterCriteriaCount === 1 ? 'criterion' : 'criteria'}`
                       : 'No criteria configured'}
@@ -500,7 +500,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                     Entity Match Criteria Filter
                   </span>
                 </div>
-                <span className="bg-comic-yellow border border-black px-1.5 py-0.2 rounded-sm text-[9px] font-bold text-black">
+                <span className="bg-comic-yellow border border-black px-1.5 py-px rounded-sm text-[9px] font-bold text-black">
                   {filterCriteriaCount > 0
                     ? `${filterCriteriaCount} ${filterCriteriaCount === 1 ? 'criterion' : 'criteria'}`
                     : 'No criteria configured'}

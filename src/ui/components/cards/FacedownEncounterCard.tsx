@@ -98,7 +98,7 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
             </div>
             {isDevMode ? (
               <span
-                className="bg-amber-400 text-slate-950 text-nano px-1 py-0.2 rounded-sm border border-comic-black font-bold flex items-center gap-0.5"
+                className="bg-amber-400 text-slate-950 text-nano px-1 py-px rounded-sm border border-comic-black font-bold flex items-center gap-0.5"
                 title="Dev Mode Peek Available"
               >
                 <Eye className="w-2.5 h-2.5" />

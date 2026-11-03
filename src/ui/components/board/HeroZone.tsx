@@ -337,7 +337,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           </span>
           {isFocused && (
             <span
-              className={`text-micro px-1.5 py-0.2 font-black ml-1 ${style.badge}`}
+              className={`text-micro px-1.5 py-px font-black ml-1 ${style.badge}`}
               style={{
                 backgroundColor: palette.accent || palette.secondary,
                 color: getContrastTextColor(palette.accent || palette.secondary),
@@ -350,14 +350,14 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
             <span
               data-testid="first-player-badge"
               title="This seat holds the First Player token"
-              className={`text-micro px-1.5 py-0.2 font-black ml-1 bg-comic-yellow text-comic-black ${style.badge}`}
+              className={`text-micro px-1.5 py-px font-black ml-1 bg-comic-yellow text-comic-black ${style.badge}`}
             >
               👑 FIRST PLAYER
             </span>
           )}
           {isTargetOfIncomingAttack && (
             <span
-              className={`text-micro px-1.5 py-0.2 font-black ml-1 bg-comic-red text-white animate-pulse ${style.badge}`}
+              className={`text-micro px-1.5 py-px font-black ml-1 bg-comic-red text-white animate-pulse ${style.badge}`}
             >
               💥 UNDER ATTACK
             </span>
@@ -477,13 +477,13 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                         </CardAttachmentFan>
                         <div className="flex items-center gap-1 flex-wrap justify-center z-raised">
                           <span
-                            className={`bg-sky-50 text-comic-blue text-nano px-1 py-0.2 font-bold ${style.badge}`}
+                            className={`bg-sky-50 text-comic-blue text-nano px-1 py-px font-bold ${style.badge}`}
                             title={`Scheme: ${schDisplay}`}
                           >
                             SCH {schDisplay}
                           </span>
                           <span
-                            className={`bg-rose-50 text-comic-red text-nano px-1 py-0.2 font-bold ${style.badge}`}
+                            className={`bg-rose-50 text-comic-red text-nano px-1 py-px font-bold ${style.badge}`}
                             title={`Attack: ${atkDisplay}`}
                           >
                             ATK {atkDisplay}
@@ -566,7 +566,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   {player.statusCards.map((st, i) => (
                     <span
                       key={i}
-                      className={`text-nano px-1 py-0.2 uppercase font-bold ${style.badge} ${
+                      className={`text-nano px-1 py-px uppercase font-bold ${style.badge} ${
                         st === StatusCard.TOUGH
                           ? 'bg-sky-400 text-slate-950'
                           : st === StatusCard.STUNNED

@@ -182,7 +182,7 @@ export function validatePackSet(packsRoot: string, options: ValidatePackOptions)
             pack.name,
             file,
             'cards',
-            `${code}: ${err?.dataPath ?? ''} ${err?.message ?? 'invalid card'}`.trim(),
+            `${code}: ${err?.instancePath ?? ''} ${err?.message ?? 'invalid card'}`.trim(),
           );
         } else pack.cardCodes.add(code);
       }
@@ -291,8 +291,28 @@ export function validatePackSet(packsRoot: string, options: ValidatePackOptions)
   return options.onlyPack ? findings.filter((f) => f.pack === options.onlyPack) : findings;
 }
 
+const UPSTREAM_KEYWORD_FIXES: Record<string, string> = { oneof: 'oneOf', minlength: 'minLength' };
+
+/**
+ * The upstream card schema misspells the `oneOf` and `minLength` keywords in a few places. Ajv 6 silently
+ * ignored them; Ajv 8 rejects unknown keywords. The schema file is synced byte for byte from
+ * upstream, so the spelling is corrected here, when it is read, and the constraints are enforced.
+ */
+export function fixUpstreamSchemaKeywords(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map(fixUpstreamSchemaKeywords);
+  if (node && typeof node === 'object') {
+    return Object.fromEntries(
+      Object.entries(node).map(([key, value]) => [
+        UPSTREAM_KEYWORD_FIXES[key] ?? key,
+        fixUpstreamSchemaKeywords(value),
+      ]),
+    );
+  }
+  return node;
+}
+
 export function readCardSchema(repoRoot: string): object {
-  return readJson(metaSchemaFile('card_schema', repoRoot)) as object;
+  return fixUpstreamSchemaKeywords(readJson(metaSchemaFile('card_schema', repoRoot))) as object;
 }
 
 export function readOfficialPackCodes(repoRoot: string): string[] {

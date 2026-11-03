@@ -90,7 +90,7 @@ Option 1 would fix today's symptoms but leave the causes (no scale, constant-bas
 ### Negative Consequences / Risks & Mitigations
 
 - Hover zooms inside a focused multi-hero station stay capped at the station (`content`). Accepted; revisit with Option 3 if it causes a visible bug.
-- The scale lives in Tailwind 3 `theme.extend`. [Issue #305](https://github.com/SteveRodrigue/MCD/issues/305) (Tailwind 4) must re-wire `Z` into `@theme`; the TS module stays the single source.
+- The scale reaches Tailwind 4 through `theme.extend.zIndex` in `tailwind.config.js`, loaded with `@config` ([Issue #305](https://github.com/SteveRodrigue/MCD/issues/305)); the TS module stays the single source.
 
 ## Appendix A: Layer map
 
@@ -98,7 +98,7 @@ Reference map of every z-index layer in the UI (`src/ui/`), ordered from the sky
 virtual table. Use it to place a new layer, size fan-outs (§5), and check consistency against the
 scale (Appendix C).
 
-> State: after [Issue #312](https://github.com/SteveRodrigue/MCD/issues/312) (2026-10-14). Tailwind CSS 3.4. The scale lives in
+> State: after [Issue #312](https://github.com/SteveRodrigue/MCD/issues/312) (2026-10-14). Tailwind CSS 4 (via `@config`, since PR #417). The scale lives in
 > [z-layers.ts](../../src/ui/styles/z-layers.ts) and reaches Tailwind through `theme.extend.zIndex` in
 > [tailwind.config.js](../../tailwind.config.js). The guard test
 > [z-literal-guard.test.ts](../../tests/ui/z-literal-guard.test.ts) rejects raw z literals in `src/ui/`.

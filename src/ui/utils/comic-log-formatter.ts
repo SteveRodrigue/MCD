@@ -89,6 +89,7 @@ export function getSpeakerAvatar(speakerName?: string, speakerRole?: string): st
     if (speakerRole === 'minion') return '👿';
     if (speakerRole === 'hero') return '🦸';
     if (speakerRole === 'alter_ego') return '🧑';
+    if (speakerRole === 'ally') return '🤝';
     return '📜';
   }
 
@@ -118,6 +119,7 @@ export function getSpeakerAvatar(speakerName?: string, speakerRole?: string): st
   if (speakerRole === 'minion') return '👿';
   if (speakerRole === 'alter_ego') return '🧑';
   if (speakerRole === 'hero') return '🦸';
+  if (speakerRole === 'ally') return '🤝';
   return '💬';
 }
 
@@ -162,7 +164,23 @@ export function classifyDialogueType(entry: GameLogEntry): ComicDialogueType {
   const actorType = entry.actor?.type;
   const key = entry.key || '';
 
-  // 1. Villain & Minions -> villain_shout
+  // 1. Omniscient Narrator / Game engine flow
+  if (
+    key.startsWith('phase.') ||
+    key.startsWith('round.') ||
+    key.startsWith('game.setup') ||
+    key.startsWith('scenario.setup') ||
+    key.startsWith('villainPhase.step1') ||
+    key.startsWith('villainPhase.step3') ||
+    key === 'first_player.passed' ||
+    key === 'ROUND_STARTED' ||
+    key === 'deck_exhausted' ||
+    key.startsWith('scheme.threat.')
+  ) {
+    return 'narrator_caption';
+  }
+
+  // 2. Villain & Minions -> villain_shout
   if (
     actorType === 'villain' ||
     actorType === 'minion' ||
@@ -170,32 +188,59 @@ export function classifyDialogueType(entry: GameLogEntry): ComicDialogueType {
     key.startsWith('MINION_') ||
     key.startsWith('villain.') ||
     key.startsWith('minion.') ||
+    key.startsWith('encounter.') ||
     key === 'BOOST_REVEALED' ||
-    key === 'TREACHERY_SURGED'
+    key === 'TREACHERY_SURGED' ||
+    key === 'combat.attack.undefended' ||
+    key === 'ATTACK_UNDEFENDED' ||
+    key === 'SIDE_SCHEME_REVEALED' ||
+    key === 'SIDE_SCHEME_DEFEATED' ||
+    key.startsWith('side_scheme.') ||
+    key.startsWith('attachment.')
   ) {
     return 'villain_shout';
   }
 
-  // 2. Alter-Ego / Planning / Recovery -> hero_thought
-  if (actorType === 'alter_ego' || key === 'BASIC_RECOVER' || key === 'RESOURCE_GENERATED') {
+  // 3. Alter-Ego / Planning / Recovery -> hero_thought
+  if (
+    actorType === 'alter_ego' ||
+    key === 'BASIC_RECOVER' ||
+    key === 'RESOURCE_GENERATED' ||
+    key === 'player.action.recover'
+  ) {
     return 'hero_thought';
   }
 
-  // 3. Hero & Allies -> hero_speech
+  // 4. Hero & Allies -> hero_speech
   if (
     actorType === 'hero' ||
     actorType === 'ally' ||
+    key.startsWith('player.') ||
+    key.startsWith('combat.hero.') ||
+    key.startsWith('combat.ally.') ||
+    key.startsWith('ability.') ||
+    key.startsWith('decision.prompt.') ||
+    key.startsWith('damage.applied.') ||
+    key.startsWith('damage.prevented.') ||
+    key.startsWith('cost.') ||
+    key.startsWith('card.effect') ||
     key === 'BASIC_ATTACK' ||
     key === 'BASIC_THWART' ||
     key === 'CARD_PLAYED' ||
     key === 'HERO_ABILITY_TRIGGERED' ||
     key === 'ALLY_ENTERED' ||
-    key.startsWith('card.effect')
+    key === 'RETALIATE_DAMAGE' ||
+    key === 'card.state.exhausted' ||
+    key === 'card.discarded.fromDeck' ||
+    key === 'card.discarded.fromHand' ||
+    key === 'card.searched.selected' ||
+    key === 'ally.defeated' ||
+    key === 'damage.transferred'
   ) {
     return 'hero_speech';
   }
 
-  // 4. Omniscient Game Narrator -> narrator_caption
+  // 5. Omniscient Game Narrator fallback
   return 'narrator_caption';
 }
 
@@ -472,6 +517,138 @@ function mapToCanonicalTemplateKey(key?: string, entry?: GameLogEntry): string |
 }
 
 /**
+ * Locates the player associated with a speaker, character, card, or log entry.
+ */
+export function findPlayerForSpeakerOrEntry(
+  speakerName: string | undefined,
+  entry: GameLogEntry,
+  gameState?: GameState,
+): PlayerState | undefined {
+  if (!gameState?.players?.length) return undefined;
+
+  const params = (entry.params || {}) as Record<string, any>;
+  const cleanSpeaker = cleanCharacterName(speakerName);
+  const cleanActor = cleanCharacterName(
+    entry.actor?.name || (params.actor !== undefined ? String(params.actor) : undefined),
+  );
+  const cleanPlayerParam = cleanCharacterName(
+    params.player !== undefined ? String(params.player) : undefined,
+  );
+  const cardName = params.card !== undefined ? String(params.card) : undefined;
+  const candidates = [cleanSpeaker, cleanActor, cleanPlayerParam, cardName].filter(
+    Boolean,
+  ) as string[];
+
+  // 1. Direct match on player name, hero name, alter-ego name
+  for (const candidate of candidates) {
+    const matched = gameState.players.find(
+      (p) =>
+        p.name === candidate ||
+        p.hero?.name === candidate ||
+        p.alterEgo?.name === candidate ||
+        cleanCharacterName(p.name) === candidate,
+    );
+    if (matched) return matched;
+  }
+
+  // 2. Controlled card match: ally, tableau, discard, hand, or deck
+  for (const candidate of candidates) {
+    const matched = gameState.players.find(
+      (p) =>
+        p.allies?.some((a) => a.card?.name === candidate) ||
+        p.tableau?.some((t) => t.card?.name === candidate) ||
+        p.discard?.some((d) => d.card?.name === candidate) ||
+        p.hand?.some((h) => h.card?.name === candidate) ||
+        p.deck?.some((d) => d.card?.name === candidate),
+    );
+    if (matched) return matched;
+  }
+
+  // 3. Fallback to turn player
+  return turnPlayerOf(entry, gameState);
+}
+
+/**
+ * Resolves the speaker name, speaker role, and matched player for a dialogue entry.
+ */
+export function resolveSpeakerInfo(
+  dialogueType: ComicDialogueType,
+  entry: GameLogEntry,
+  gameState?: GameState,
+): {
+  speakerName?: string;
+  speakerRole?: FormattedComicDialogue['speakerRole'];
+  matchedPlayer?: PlayerState;
+} {
+  // Pure narrator captions do not have a character speaker unless explicitly given in entry.actor
+  if (dialogueType === 'narrator_caption') {
+    if (entry.actor?.name) {
+      const matchedPlayer = findPlayerForSpeakerOrEntry(entry.actor.name, entry, gameState);
+      return {
+        speakerName: cleanCharacterName(entry.actor.name, matchedPlayer),
+        speakerRole: entry.actor.type,
+        matchedPlayer,
+      };
+    }
+    return {
+      speakerName: undefined,
+      speakerRole: undefined,
+      matchedPlayer: undefined,
+    };
+  }
+
+  const params = (entry.params || {}) as Record<string, any>;
+  const turnPlayer = turnPlayerOf(entry, gameState);
+
+  let rawSpeakerName: string | undefined;
+  if (entry.actor?.name) {
+    rawSpeakerName = entry.actor.name;
+  } else if (params.actor !== undefined) {
+    rawSpeakerName = String(params.actor);
+  } else if (params.who !== undefined) {
+    rawSpeakerName = String(params.who);
+  } else if (
+    (entry.key === 'card.state.exhausted' ||
+      entry.key === 'ally.defeated' ||
+      entry.key === 'damage.applied.ally') &&
+    (params.card !== undefined || params.target !== undefined)
+  ) {
+    rawSpeakerName = params.card !== undefined ? String(params.card) : String(params.target);
+  } else if (params.player !== undefined) {
+    rawSpeakerName = String(params.player);
+  } else if (dialogueType === 'hero_speech' || dialogueType === 'hero_thought') {
+    rawSpeakerName = turnPlayer?.name;
+  }
+
+  const matchedPlayer = findPlayerForSpeakerOrEntry(rawSpeakerName, entry, gameState);
+  const speakerName = cleanCharacterName(rawSpeakerName, matchedPlayer);
+
+  let speakerRole: FormattedComicDialogue['speakerRole'] = entry.actor?.type;
+  if (!speakerRole) {
+    if (dialogueType === 'villain_shout') {
+      const isMinion =
+        params.minion !== undefined ||
+        (gameState?.villains?.every((v) => v.card?.name !== speakerName) &&
+          gameState?.players?.some((p) =>
+            p.engagedMinions?.some((m) => m.card?.name === speakerName),
+          ));
+      speakerRole = isMinion ? 'minion' : 'villain';
+    } else if (dialogueType === 'hero_thought') {
+      speakerRole = 'alter_ego';
+    } else if (dialogueType === 'hero_speech') {
+      const isAlly =
+        entry.key?.startsWith('combat.ally.') ||
+        entry.key === 'ally.defeated' ||
+        params.ally !== undefined ||
+        gameState?.players?.some((p) => p.allies?.some((a) => a.card?.name === speakerName));
+      speakerRole = isAlly ? 'ally' : 'hero';
+    }
+  }
+
+  return { speakerName, speakerRole, matchedPlayer };
+}
+
+/**
  * Normalizes log entry parameters into canonical placeholder tokens:
  * actor, target, amount, card, scheme, status, source, form.
  * Uses gameState as fallback when parameters are omitted.
@@ -479,19 +656,12 @@ function mapToCanonicalTemplateKey(key?: string, entry?: GameLogEntry): string |
 function normalizeLogParams(
   entry: GameLogEntry,
   gameState?: GameState,
+  matchedPlayerParam?: PlayerState,
 ): Record<string, string | number | boolean> {
   const p = (entry.params || {}) as Record<string, any>;
 
-  const actorName = cleanCharacterName(entry.actor?.name);
-  const ownerNames = [p.player, p.actor].filter((n) => n !== undefined).map(String);
   const matchedPlayer =
-    gameState?.players?.find(
-      (pl) =>
-        pl.name === actorName ||
-        pl.hero?.name === actorName ||
-        cleanCharacterName(pl.name) === actorName ||
-        ownerNames.some((n) => pl.name === n || pl.hero?.name === n),
-    ) || turnPlayerOf(entry, gameState);
+    matchedPlayerParam || findPlayerForSpeakerOrEntry(undefined, entry, gameState);
 
   const defaultHeroName =
     cleanCharacterName(matchedPlayer?.hero?.name || matchedPlayer?.name, matchedPlayer) || 'Hero';
@@ -639,9 +809,8 @@ function normalizeLogParams(
  */
 function resolveComicColors(
   dialogueType: ComicDialogueType,
-  entry: GameLogEntry,
-  normalizedParams: Record<string, string | number | boolean>,
   gameState?: GameState,
+  matchedPlayer?: PlayerState,
 ): {
   speakerColor: string;
   speakerContrastColor: string;
@@ -694,20 +863,6 @@ function resolveComicColors(
   }
 
   // 3. Hero & Alter-Ego / Player Actions
-  const actorName = entry.actor?.name;
-  const whoName = normalizedParams.who ? String(normalizedParams.who) : undefined;
-  const playerName = normalizedParams.player ? String(normalizedParams.player) : undefined;
-
-  const matchedPlayer =
-    gameState?.players?.find(
-      (p) =>
-        p.name === actorName ||
-        p.hero?.name === actorName ||
-        p.name === whoName ||
-        p.hero?.name === whoName ||
-        p.name === playerName,
-    ) ?? turnPlayerOf(entry, gameState);
-
   const palette = getHeroColorPalette(matchedPlayer);
   return {
     speakerColor: palette.primary,
@@ -726,34 +881,14 @@ export function formatComicLogEntry(
 ): FormattedComicDialogue {
   const dict = LOCALE_DICTIONARIES[locale] || enCombatLog;
   const dialogueType = classifyDialogueType(entry);
-  const normalizedParams = normalizeLogParams(entry, gameState);
-  const colors = resolveComicColors(dialogueType, entry, normalizedParams, gameState);
+  const { speakerName, speakerRole, matchedPlayer } = resolveSpeakerInfo(
+    dialogueType,
+    entry,
+    gameState,
+  );
+  const normalizedParams = normalizeLogParams(entry, gameState, matchedPlayer);
+  const colors = resolveComicColors(dialogueType, gameState, matchedPlayer);
 
-  const turnPlayer = turnPlayerOf(entry, gameState);
-  const rawSpeakerName =
-    entry.actor?.name ||
-    (entry.params?.who ? String(entry.params.who) : undefined) ||
-    (entry.params?.actor ? String(entry.params.actor) : undefined) ||
-    (entry.params?.player ? String(entry.params.player) : undefined) ||
-    turnPlayer?.name;
-
-  const matchedPlayer =
-    gameState?.players?.find(
-      (pl) =>
-        pl.name === rawSpeakerName ||
-        pl.hero?.name === rawSpeakerName ||
-        cleanCharacterName(pl.name) === rawSpeakerName,
-    ) || turnPlayer;
-
-  const speakerName = cleanCharacterName(rawSpeakerName, matchedPlayer);
-
-  const speakerRole =
-    entry.actor?.type ||
-    (dialogueType === 'villain_shout'
-      ? normalizedParams.minion
-        ? 'minion'
-        : 'villain'
-      : undefined);
   const speakerAvatar = getSpeakerAvatar(speakerName, speakerRole);
   const speakerKey = getSpeakerDialogueKey(speakerName);
 

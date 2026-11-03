@@ -833,4 +833,120 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
       );
     });
   });
+
+  describe('Combat log card coloring and entry titles (Issue #576)', () => {
+    const gameState = {
+      activePlayerIndex: 0,
+      phase: GamePhase.PLAYER_PHASE,
+      players: [
+        {
+          id: 'p1',
+          name: 'Hero Seat 1 (Iron Man)',
+          hero: {
+            name: 'Iron Man',
+            meta: { colors: ['#8f2928', '#8c2d23', '#f5eb29', '#fffffd'] },
+          },
+          currentForm: 'hero',
+          allies: [{ card: { name: 'Tigra' } }],
+          tableau: [],
+        },
+        {
+          id: 'p2',
+          name: 'Hero Seat 2 (Black Panther)',
+          hero: {
+            name: 'Black Panther',
+            meta: { colors: ['#492b5f', '#492b5f', '#f1f017', '#fffffd'] },
+          },
+          currentForm: 'hero',
+          allies: [{ card: { name: 'Nick Fury' } }],
+          tableau: [],
+        },
+      ],
+      villains: [{ id: 'v1', card: { name: 'Rhino' } }],
+      mainSchemes: [],
+    } as unknown as GameState;
+
+    it('classifies player.action.allyAttack as hero_speech and uses hero colors', () => {
+      const entry: GameLogEntry = {
+        id: 'log-576-1',
+        timestamp: 10,
+        turnPlayerId: 'p1',
+        key: 'player.action.allyAttack',
+        params: { player: 'Hero Seat 1 (Iron Man)', ally: 'Tigra', target: 'Rhino', damage: 2 },
+      };
+      const formatted = formatComicLogEntry(entry, 'en', gameState);
+      expect(formatted.type).toBe('hero_speech');
+      expect(formatted.speakerColor).toBe('#8f2928');
+    });
+
+    it('classifies combat.attack.undefended as villain_shout with villain burgundy color', () => {
+      const entry: GameLogEntry = {
+        id: 'log-576-2',
+        timestamp: 20,
+        key: 'combat.attack.undefended',
+        params: { actor: 'Rhino', target: 'Iron Man', player: 'Hero Seat 1 (Iron Man)' },
+      };
+      const formatted = formatComicLogEntry(entry, 'en', gameState);
+      expect(formatted.type).toBe('villain_shout');
+      expect(formatted.speakerName).toBe('Rhino');
+      expect(formatted.speakerRole).toBe('villain');
+      expect(formatted.speakerColor).toBe('#701a75');
+    });
+
+    it('does not attribute phase.player_phase.end to turnPlayer; keeps narrator gold', () => {
+      const entry: GameLogEntry = {
+        id: 'log-576-3',
+        timestamp: 30,
+        round: 4,
+        turnPlayerId: 'p2',
+        key: 'phase.player_phase.end',
+      };
+      const formatted = formatComicLogEntry(entry, 'en', gameState);
+      expect(formatted.type).toBe('narrator_caption');
+      expect(formatted.speakerName).toBeFalsy();
+      expect(formatted.speakerColor).toBe('#d97706');
+    });
+
+    it('titles card.state.exhausted with the exhausting card name and hero color', () => {
+      const entry: GameLogEntry = {
+        id: 'log-576-4',
+        timestamp: 40,
+        turnPlayerId: 'p1',
+        key: 'card.state.exhausted',
+        params: { card: 'Tigra' },
+      };
+      const formatted = formatComicLogEntry(entry, 'en', gameState);
+      expect(formatted.type).toBe('hero_speech');
+      expect(formatted.speakerName).toBe('Tigra');
+      expect(formatted.speakerRole).toBe('ally');
+      expect(formatted.speakerColor).toBe('#8f2928');
+    });
+
+    it('classifies decision.prompt.resolved as hero_speech with choosing hero color', () => {
+      const entry: GameLogEntry = {
+        id: 'log-576-5',
+        timestamp: 50,
+        key: 'decision.prompt.resolved',
+        params: { actor: 'Hero Seat 1 (Iron Man)', option: 'Take Undefended' },
+      };
+      const formatted = formatComicLogEntry(entry, 'en', gameState);
+      expect(formatted.type).toBe('hero_speech');
+      expect(formatted.speakerName).toBe('Iron Man');
+      expect(formatted.speakerColor).toBe('#8f2928');
+    });
+
+    it('classifies combat.ally.defended as hero_speech with ally role and hero color', () => {
+      const entry: GameLogEntry = {
+        id: 'log-576-6',
+        timestamp: 60,
+        key: 'combat.ally.defended',
+        params: { actor: 'Nick Fury', source: 'Rhino', target: 'Iron Man' },
+      };
+      const formatted = formatComicLogEntry(entry, 'en', gameState);
+      expect(formatted.type).toBe('hero_speech');
+      expect(formatted.speakerName).toBe('Nick Fury');
+      expect(formatted.speakerRole).toBe('ally');
+      expect(formatted.speakerColor).toBe('#492b5f'); // Nick Fury controlled by p2 (Black Panther)
+    });
+  });
 });

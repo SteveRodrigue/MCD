@@ -32,7 +32,7 @@ The runtime imports of `src/engine` (type-only imports ignored) formed one stron
 - The module that owns an entry binds it with `bindKernel({...})` at the end of its file. `src/engine/boot.ts` loads every owner (and registers the Wakanda Forever special and the scenario plugins); `engine/index.ts` imports it, and `tests/setup/boot-kernel.ts` loads it for tests that import a single module.
 - Calls that close a cycle use `kernel.<entry>(...)`; direct calls stay for everything else. `registerFinishDamagePlacementsHook` is replaced by `kernel.finishPendingDamagePlacements`.
 - The Crisis queries (`getCrisisIconCount`, `countCrisisIconsInPlay`, `hasCrisisInPlay`) moved from `legality-checker.ts` to the leaf `pipeline/icons.ts`, which ended the `target-resolver` â†” `legality-checker` cycle.
-- `tools/audit/import-cycles.ts` (`npm run audit:import-cycles`) builds the runtime import graph and finds the strongly connected components; `tests/tools/import-cycles.test.ts` fails when `src/engine` has any (ratchet 0).
+- `tools/audit/import-cycles.ts` (`npm run audit:import-cycles`) builds the runtime import graph of all of `src` (relative imports plus every alias in the `tsconfig.json` `paths`) and finds the strongly connected components; `tests/tools/import-cycles.test.ts` fails when one includes an engine module (ratchet 0), including a cycle that leaves the engine through `@data` or `@ui`.
 - Tests wrap an entry with `spyKernel` / `recordDispatchedTriggers` (`tests/helpers/kernel-spy.ts`); the setup file restores them after every test. The six `vi.mock` of `trigger-dispatcher` and the `vi.spyOn` in `villain-phase-order.test.ts` use them.
 
 ## Consequences
@@ -44,5 +44,4 @@ The runtime imports of `src/engine` (type-only imports ignored) formed one stron
 
 ## Known limits
 
-- **Audit coverage.** `audit:import-cycles` scans `src/engine` and follows relative and `@engine/â€¦` imports only. A cycle that leaves the engine through `@data`, `@ui` or `@assets` and re-enters it is not detected. Tracked in [#339](https://github.com/SteveRodrigue/MCD/issues/339).
 - **Double binding.** `bindKernel` does not reject a second binding of an entry; the later one wins. A strict throw would break dev-server hot reload, which re-evaluates an owner module and binds its entries again. Each entry has one owner file, so a duplicate means a copy-pasted `bindKernel` call. A guard, if ever needed, must allow re-binding from the same module.

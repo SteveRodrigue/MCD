@@ -1,9 +1,11 @@
 /**
- * Runtime import cycle check for `src/engine` (R11, ADR-0088).
+ * Runtime import cycle check for `src` (R11, ADR-0088, #339).
  *
- * Builds the graph of runtime imports (type-only imports and unused specifiers are elided, as
- * vitest and esbuild elide them) and reports its strongly connected components (Tarjan). A
- * component with more than one module is a load-order hazard.
+ * Builds the graph of runtime imports of all of `src` (type-only imports and unused specifiers
+ * are elided, as vitest and esbuild elide them). Relative imports and every alias in the
+ * `tsconfig.json` `paths` map are followed. Reports the strongly connected components (Tarjan)
+ * that include an engine module: a component with more than one module is a load-order hazard,
+ * including a cycle that leaves the engine through `@data` or `@ui` and re-enters it.
  */
 import fs from 'fs';
 import path from 'path';
@@ -20,26 +22,61 @@ export interface ImportEdge {
 export type ImportGraph = Map<string, ImportEdge[]>;
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const SOURCE_DIR = 'src';
 const ENGINE_DIR = 'src/engine';
+const SOURCE_EXTENSIONS = ['.ts', '.tsx'];
+
+/** Alias prefix (`@data/`) to its target directory (`src/data/`), from the tsconfig `paths`. */
+export type AliasMap = Map<string, string>;
 
 function listTsFiles(dir: string, out: string[] = []): string[] {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = `${dir}/${entry.name}`;
     if (entry.isDirectory()) listTsFiles(full, out);
-    else if (full.endsWith('.ts')) out.push(full);
+    else if (!full.endsWith('.d.ts') && SOURCE_EXTENSIONS.some((ext) => full.endsWith(ext)))
+      out.push(full);
   }
   return out;
 }
 
-function resolveSpecifier(from: string, spec: string, files: Set<string>): string | null {
-  let base: string;
-  if (spec.startsWith('.')) base = path.posix.join(path.posix.dirname(from), spec);
-  else if (spec.startsWith('@engine/')) base = `${ENGINE_DIR}/${spec.slice('@engine/'.length)}`;
-  else return null;
-  for (const candidate of [`${base}.ts`, `${base}/index.ts`, base]) {
-    if (files.has(candidate)) return candidate;
+/** Read the `paths` aliases of `<root>/tsconfig.json` (patterns of the form `@x/*`). */
+export function readAliasMap(root = REPO_ROOT): AliasMap {
+  const configPath = path.join(root, 'tsconfig.json');
+  const { config, error } = ts.readConfigFile(configPath, ts.sys.readFile);
+  if (error) throw new Error(`Cannot read ${configPath}`);
+  const paths = (config?.compilerOptions?.paths ?? {}) as Record<string, string[]>;
+  const aliases: AliasMap = new Map();
+  for (const [pattern, targets] of Object.entries(paths)) {
+    const target = targets[0];
+    if (!pattern.endsWith('/*') || !target?.endsWith('/*')) {
+      throw new Error(`Unsupported tsconfig path alias "${pattern}"; expected "@x/*" patterns`);
+    }
+    const dir = path.posix.normalize(target.slice(0, -1));
+    aliases.set(pattern.slice(0, -1), dir.endsWith('/') ? dir : `${dir}/`);
   }
-  return null;
+  return aliases;
+}
+
+function resolveSpecifier(
+  from: string,
+  spec: string,
+  files: Set<string>,
+  aliases: AliasMap,
+): string | null {
+  let base: string | null = null;
+  if (spec.startsWith('.')) base = path.posix.join(path.posix.dirname(from), spec);
+  else {
+    for (const [prefix, dir] of aliases) {
+      if (spec.startsWith(prefix)) base = `${dir}${spec.slice(prefix.length)}`;
+    }
+  }
+  if (base === null) return null;
+  for (const ext of SOURCE_EXTENSIONS) {
+    for (const candidate of [`${base}${ext}`, `${base}/index${ext}`]) {
+      if (files.has(candidate)) return candidate;
+    }
+  }
+  return files.has(base) ? base : null;
 }
 
 function importedNames(node: ts.Node): string[] {
@@ -61,8 +98,9 @@ function importedNames(node: ts.Node): string[] {
   return ['*'];
 }
 
-/** Build the runtime import graph of every `.ts` file under `dir` (default `src/engine`). */
-export function buildRuntimeImportGraph(root = REPO_ROOT, dir = ENGINE_DIR): ImportGraph {
+/** Build the runtime import graph of every `.ts` and `.tsx` file under `dir` (default `src`). */
+export function buildRuntimeImportGraph(root = REPO_ROOT, dir = SOURCE_DIR): ImportGraph {
+  const aliases = readAliasMap(root);
   const files = listTsFiles(path.join(root, dir)).map((f) =>
     path.relative(root, f).split(path.sep).join('/'),
   );
@@ -71,9 +109,11 @@ export function buildRuntimeImportGraph(root = REPO_ROOT, dir = ENGINE_DIR): Imp
   for (const file of files) {
     const source = fs.readFileSync(path.join(root, file), 'utf8');
     const emitted = ts.transpileModule(source, {
+      fileName: file,
       compilerOptions: {
         target: ts.ScriptTarget.ESNext,
         module: ts.ModuleKind.ESNext,
+        jsx: ts.JsxEmit.ReactJSX,
         isolatedModules: true,
       },
     }).outputText;
@@ -98,7 +138,7 @@ export function buildRuntimeImportGraph(root = REPO_ROOT, dir = ENGINE_DIR): Imp
       const isReExport = ts.isExportDeclaration(node) && node.moduleSpecifier !== undefined;
       if (!isImport && !isReExport) return;
       const spec = (node.moduleSpecifier as ts.StringLiteral).text;
-      const to = resolveSpecifier(file, spec, known);
+      const to = resolveSpecifier(file, spec, known, aliases);
       if (!to) return;
       const line = linesBySpec.get(spec)?.shift() ?? 0;
       edges.push({ to, line, names: importedNames(node) });
@@ -148,22 +188,27 @@ export function findStronglyConnectedComponents(graph: ImportGraph): string[][] 
   return components.sort((a, b) => b.length - a.length);
 }
 
+/** The cycles that include at least one `src/engine` module (what the ratchet guards). */
+export function findEngineCycles(graph: ImportGraph): string[][] {
+  return findStronglyConnectedComponents(graph).filter((component) =>
+    component.some((file) => file.startsWith(`${ENGINE_DIR}/`)),
+  );
+}
+
 function main(): void {
   const graph = buildRuntimeImportGraph();
-  const components = findStronglyConnectedComponents(graph);
+  const components = findEngineCycles(graph);
   console.log(
-    `Import cycles in ${ENGINE_DIR}: ${components.length} (sizes: ${components.map((c) => c.length).join(', ') || 'none'})`,
+    `Import cycles through ${ENGINE_DIR}: ${components.length} (sizes: ${components.map((c) => c.length).join(', ') || 'none'})`,
   );
   for (const component of components) {
     const members = new Set(component);
     console.log(`\n== cycle of ${component.length} modules`);
     for (const file of component) {
-      console.log(file.replace(`${ENGINE_DIR}/`, ''));
+      console.log(file);
       for (const edge of graph.get(file) ?? []) {
         if (members.has(edge.to)) {
-          console.log(
-            `   -> ${edge.to.replace(`${ENGINE_DIR}/`, '')}:${edge.line} {${edge.names.join(', ')}}`,
-          );
+          console.log(`   -> ${edge.to}:${edge.line} {${edge.names.join(', ')}}`);
         }
       }
     }

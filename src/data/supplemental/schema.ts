@@ -319,6 +319,8 @@ export const CardEnrichmentSchema = z
     playRequirements: PlayRequirementsSchema.optional(),
     audit: CardAuditRecordSchema.optional(),
     noSupplementalNeeded: z.boolean().optional(),
+    /** The "Standard Mode Only" or "Expert Mode Only" side of a double-sided card. */
+    modeOnly: z.enum(['STANDARD', 'EXPERT']).optional(),
     recipient: PlayerRecipientSchema.optional(),
     attachTo: AttachToSchema.optional(),
     playUnderAnyPlayerControl: z.boolean().optional(),

@@ -877,6 +877,7 @@ export function getEffectiveRetaliate(
 export function hasEntityKeyword(
   entity: StatEntity | undefined | null,
   targetKeyword: string,
+  state: GameState,
 ): boolean {
   if (!entity) return false;
   const kw = targetKeyword.toLowerCase().trim();
@@ -965,6 +966,34 @@ export function hasEntityKeyword(
     }
   }
 
+  // 5. Environments granting keyword to a scope ("The villain gains steady", "Each minion gains guard")
+  const entityType = (ent.card as NormalizedCard | undefined)?.type;
+  const inScope = (target: unknown): boolean => {
+    if (target === 'ALL_CHARACTERS') return true;
+    if (target === 'VILLAIN') return entityType === CardType.VILLAIN;
+    if (target === 'ALL_MINIONS') return entityType === CardType.MINION;
+    if (target === 'ALL_ENEMIES') {
+      return entityType === CardType.VILLAIN || entityType === CardType.MINION;
+    }
+    return false;
+  };
+  for (const environment of state.environments ?? []) {
+    for (const ab of environment.card?.enrichment?.abilities ?? []) {
+      if (ab.timing !== 'CONSTANT') continue;
+      for (const step of ab.steps ?? []) {
+        if (!isStep(step, 'GRANT_KEYWORD')) continue;
+        const stepParams = getStepEffectParams(step);
+        if (!inScope(stepParams.target)) continue;
+        if (
+          String(stepParams.keyword ?? '')
+            .toLowerCase()
+            .trim() === kw
+        )
+          return true;
+      }
+    }
+  }
+
   return false;
 }
 
@@ -974,10 +1003,11 @@ export function hasEntityKeyword(
 export function isEntityIncapacitatedByStatus(
   entity: EntityWithStatusCards | undefined | null,
   status: StatusCard | string,
+  state: GameState,
 ): boolean {
   if (!entity || !entity.statusCards) return false;
   const count = entity.statusCards.filter((s) => s === status).length;
-  const isSteady = hasEntityKeyword(entity, 'Steady');
+  const isSteady = hasEntityKeyword(entity, 'Steady', state);
   if (isSteady) {
     return count >= 2;
   }
@@ -991,10 +1021,11 @@ export function isEntityIncapacitatedByStatus(
 export function consumeEntityStatusCards(
   entity: EntityWithStatusCards | undefined | null,
   status: StatusCard | string,
+  state: GameState,
 ): boolean {
   if (!entity || !entity.statusCards) return false;
-  if (!isEntityIncapacitatedByStatus(entity, status)) return false;
-  const isSteady = hasEntityKeyword(entity, 'Steady');
+  if (!isEntityIncapacitatedByStatus(entity, status, state)) return false;
+  const isSteady = hasEntityKeyword(entity, 'Steady', state);
   const discardCount = isSteady ? 2 : 1;
 
   let discarded = 0;

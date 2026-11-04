@@ -6,7 +6,7 @@
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
-### <a id="discard"></a>`DISCARD` (28 Cards, 31 Step Occurrences)
+### <a id="discard"></a>`DISCARD` (31 Cards, 34 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -38,8 +38,11 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
 | `01188` | **Caught Off Guard (treachery)** | `core_encounter` | `caught_off_guard_when_revealed` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
+| `24030` | **Ruination (treachery)** | `hood_encounter` | `ruination_when_revealed` |
+| `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` |
+| `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_when_revealed` |
 
-### <a id="deal-damage"></a>`DEAL_DAMAGE` (26 Cards, 28 Step Occurrences)
+### <a id="deal-damage"></a>`DEAL_DAMAGE` (27 Cards, 30 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -69,8 +72,9 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed`, `concussive_blast_boost` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
+| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_when_revealed`, `slug_it_out_boost` |
 
-### <a id="add-threat"></a>`ADD_THREAT` (16 Cards, 18 Step Occurrences)
+### <a id="add-threat"></a>`ADD_THREAT` (17 Cards, 19 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -90,6 +94,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks`, `madame_hydra_schemes` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
+| `24030` | **Ruination (treachery)** | `hood_encounter` | `ruination_when_revealed` |
 
 ### <a id="modify-stat"></a>`MODIFY_STAT` (16 Cards, 18 Step Occurrences)
 
@@ -173,25 +178,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
 | `01150` | **Ultron's Imperative (side_scheme)** | `core_encounter` | `ultrons_imperative_when_revealed` |
 
-### <a id="search"></a>`SEARCH` (13 Cards, 13 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01029b` | **Tony Stark (alter_ego)** | `core` | `futurist` |
-| `01034` | **Stark Tower (support)** | `core` | `stark_tower_retrieve` |
-| `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
-| `01041` | **Shuri (ally)** | `core` | `shuri_enters_play` |
-| `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
-| `01095` | **Rhino (villain)** | `core_encounter` | `rhino_stage_ii_when_revealed` |
-| `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_when_revealed` |
-| `01116a` | **Underground Distribution (main_scheme)** | `core_encounter` | `klaw_underground_distribution_setup` |
-| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
-| `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_when_revealed` |
-| `01137a` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_setup` |
-| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
-| `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
-
-### <a id="surge"></a>`SURGE` (13 Cards, 13 Step Occurrences)
+### <a id="surge"></a>`SURGE` (15 Cards, 15 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -208,6 +195,27 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
 | `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
 | `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
+| `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` |
+| `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
+
+### <a id="search"></a>`SEARCH` (14 Cards, 14 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01029b` | **Tony Stark (alter_ego)** | `core` | `futurist` |
+| `01034` | **Stark Tower (support)** | `core` | `stark_tower_retrieve` |
+| `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
+| `01041` | **Shuri (ally)** | `core` | `shuri_enters_play` |
+| `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
+| `01095` | **Rhino (villain)** | `core_encounter` | `rhino_stage_ii_when_revealed` |
+| `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_when_revealed` |
+| `01116a` | **Underground Distribution (main_scheme)** | `core_encounter` | `klaw_underground_distribution_setup` |
+| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
+| `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_when_revealed` |
+| `01137a` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_setup` |
+| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
+| `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
+| `24031` | **Seek and Destroy (treachery)** | `hood_encounter` | `seek_and_destroy_when_revealed` |
 
 ### <a id="remove-threat"></a>`REMOVE_THREAT` (10 Cards, 12 Step Occurrences)
 
@@ -254,6 +262,18 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 | `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
 
+### <a id="grant-keyword"></a>`GRANT_KEYWORD` (7 Cards, 7 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01040a` | **Black Panther (hero)** | `core` | `black_panther_retaliate` |
+| `01099` | **Charge (attachment)** | `core_encounter` | `charge_overkill` |
+| `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
+| `01119` | **Solid-Sound Body (attachment)** | `core_encounter` | `solid_sound_body_retaliate` |
+| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
+| `24049a` | **Formidable Foe (environment)** | `hood_encounter` | `formidable_foe_steady` |
+| `24049b` | **Formidable Foe (environment)** | `hood_encounter` | `formidable_foe_steady` |
+
 ### <a id="modify-max-health"></a>`MODIFY_MAX_HEALTH` (7 Cards, 7 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -266,6 +286,17 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
 
+### <a id="villain-attacks"></a>`VILLAIN_ATTACKS` (6 Cards, 6 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
+| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
+| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
+| `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
+| `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
+| `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_when_revealed` |
+
 ### <a id="change-form"></a>`CHANGE_FORM` (5 Cards, 5 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -276,15 +307,13 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 
-### <a id="grant-keyword"></a>`GRANT_KEYWORD` (5 Cards, 5 Step Occurrences)
+### <a id="put-into-play"></a>`PUT_INTO_PLAY` (3 Cards, 5 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01040a` | **Black Panther (hero)** | `core` | `black_panther_retaliate` |
-| `01099` | **Charge (attachment)** | `core_encounter` | `charge_overkill` |
-| `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
-| `01119` | **Solid-Sound Body (attachment)** | `core_encounter` | `solid_sound_body_retaliate` |
-| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
+| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
+| `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
+| `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
 
 ### <a id="ready"></a>`READY` (5 Cards, 5 Step Occurrences)
 
@@ -296,15 +325,12 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
 | `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
 
-### <a id="villain-attacks"></a>`VILLAIN_ATTACKS` (5 Cards, 5 Step Occurrences)
+### <a id="deal-facedown-encounter-card"></a>`DEAL_FACEDOWN_ENCOUNTER_CARD` (2 Cards, 4 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
-| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
-| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
-| `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
-| `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
+| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
+| `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_when_revealed`, `cruel_intentions_boost` |
 
 ### <a id="double-resource-for-aspect"></a>`DOUBLE_RESOURCE_FOR_ASPECT` (4 Cards, 4 Step Occurrences)
 
@@ -324,6 +350,24 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 
+### <a id="exhaust"></a>`EXHAUST` (4 Cards, 4 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_boost` |
+| `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
+| `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
+| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_when_revealed` |
+
+### <a id="give-additional-boost-card"></a>`GIVE_ADDITIONAL_BOOST_CARD` (4 Cards, 4 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
+| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_boost` |
+| `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_boost` |
+| `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_boost` |
+
 ### <a id="attach-to-host"></a>`ATTACH_TO_HOST` (3 Cards, 3 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -340,14 +384,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
 
-### <a id="exhaust"></a>`EXHAUST` (3 Cards, 3 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_boost` |
-| `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
-| `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
-
 ### <a id="generate-resource"></a>`GENERATE_RESOURCE` (3 Cards, 3 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -355,6 +391,13 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01001b` | **Peter Parker (alter_ego)** | `core` | `scientist` |
 | `01008` | **Web-Shooter (upgrade)** | `core` | `web_shooter_resource` |
 | `01033` | **Pepper Potts (support)** | `core` | `pepper_potts_res` |
+
+### <a id="grant-attack-keyword"></a>`GRANT_ATTACK_KEYWORD` (2 Cards, 3 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01053` | **Relentless Assault (event)** | `core` | `relentless_assault` |
+| `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_when_revealed`, `total_annihilation_boost` |
 
 ### <a id="prevent-threat"></a>`PREVENT_THREAT` (3 Cards, 3 Step Occurrences)
 
@@ -364,12 +407,13 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01061` | **Great Responsibility (event)** | `core` | `great_responsibility_interrupt` |
 | `01085` | **Emergency (event)** | `core` | `emergency_interrupt` |
 
-### <a id="put-into-play"></a>`PUT_INTO_PLAY` (2 Cards, 3 Step Occurrences)
+### <a id="villain-schemes"></a>`VILLAIN_SCHEMES` (3 Cards, 3 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
-| `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
+| `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
+| `01186` | **Advance (treachery)** | `core_encounter` | `advance_when_revealed` |
+| `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_when_revealed` |
 
 ### <a id="add-trait"></a>`ADD_TRAIT` (2 Cards, 2 Step Occurrences)
 
@@ -413,12 +457,19 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01020` | **Hellcat (ally)** | `core` | `hellcat_return` |
 | `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
 
-### <a id="villain-schemes"></a>`VILLAIN_SCHEMES` (2 Cards, 2 Step Occurrences)
+### <a id="shuffle-into-deck"></a>`SHUFFLE_INTO_DECK` (2 Cards, 2 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
-| `01186` | **Advance (treachery)** | `core_encounter` | `advance_when_revealed` |
+| `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
+| `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
+
+### <a id="villain-and-engaged-minions-attack"></a>`VILLAIN_AND_ENGAGED_MINIONS_ATTACK` (2 Cards, 2 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
+| `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` |
 
 ### <a id="add-counters"></a>`ADD_COUNTERS` (1 Cards, 1 Step Occurrences)
 
@@ -450,12 +501,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | :--- | :--- | :--- | :--- |
 | `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
 
-### <a id="deal-facedown-encounter-card"></a>`DEAL_FACEDOWN_ENCOUNTER_CARD` (1 Cards, 1 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
-
 ### <a id="distribute-amount"></a>`DISTRIBUTE_AMOUNT` (1 Cards, 1 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -467,18 +512,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01025` | **Split Personality (event)** | `core` | `split_personality` |
-
-### <a id="give-additional-boost-card"></a>`GIVE_ADDITIONAL_BOOST_CARD` (1 Cards, 1 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
-
-### <a id="grant-attack-keyword"></a>`GRANT_ATTACK_KEYWORD` (1 Cards, 1 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01053` | **Relentless Assault (event)** | `core` | `relentless_assault` |
 
 ### <a id="modify-hand-size"></a>`MODIFY_HAND_SIZE` (1 Cards, 1 Step Occurrences)
 
@@ -510,12 +543,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | :--- | :--- | :--- | :--- |
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
 
-### <a id="shuffle-into-deck"></a>`SHUFFLE_INTO_DECK` (1 Cards, 1 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
-
 ### <a id="threat-cannot-be-removed"></a>`THREAT_CANNOT_BE_REMOVED` (1 Cards, 1 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -527,11 +554,5 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01049` | **Vibranium Suit (upgrade)** | `core` | `vibranium_suit_special` |
-
-### <a id="villain-and-engaged-minions-attack"></a>`VILLAIN_AND_ENGAGED_MINIONS_ATTACK` (1 Cards, 1 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
 
 [← Back to Main Usage Report](../usage_report.md)

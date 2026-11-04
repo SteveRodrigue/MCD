@@ -147,6 +147,8 @@ function parseKeywords(raw: RawUpstreamCard): Keyword[] {
 
   if (printed('restricted')) keywords.add(Keyword.RESTRICTED);
   if (printed('permanent') || raw.permanent) keywords.add(Keyword.PERMANENT);
+  if (printed('setup')) keywords.add(Keyword.SETUP);
+  if (printed('peril')) keywords.add(Keyword.PERIL);
   if (printed('guard')) keywords.add(Keyword.GUARD);
   if (printed('patrol')) keywords.add(Keyword.PATROL);
   if (printed('overkill')) keywords.add(Keyword.OVERKILL);
@@ -166,7 +168,6 @@ function parseKeywords(raw: RawUpstreamCard): Keyword[] {
   const incite = getPrintedKeywordValue(raw.text, 'incite');
   if (incite !== undefined) {
     keywords.add(`Incite ${incite}` as any);
-    keywords.add(Keyword.INCITE);
   }
   // Victory X is signed: `Victory 0` and `Victory -1` are printed (RR v1.8 Victory X).
   const victory = getPrintedKeywordValue(raw.text, 'victory');
@@ -362,6 +363,7 @@ export function normalizeRawCard(
     traits: parseTraits(raw.traits),
     printedTraits: raw.traits,
     keywords: parseKeywords(raw),
+    scheme_acceleration: raw.scheme_acceleration ?? undefined,
     scheme_crisis: raw.scheme_crisis ?? undefined,
     scheme_hazard: raw.scheme_hazard ?? undefined,
     resources: parseResources(raw),
@@ -446,8 +448,6 @@ export function normalizeRawCard(
         type: CardType.SIDE_SCHEME,
         baseThreat: raw.base_threat ?? 0,
         baseThreatFixed: !!raw.base_threat_fixed,
-        hasAcceleration: (raw.scheme_acceleration || 0) > 0,
-        hasAmplify: (raw.scheme_amplify || 0) > 0,
       } as SideSchemeCard;
     }
     case CardType.PLAYER_SIDE_SCHEME: {

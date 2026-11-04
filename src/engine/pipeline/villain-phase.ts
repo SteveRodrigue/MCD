@@ -7,10 +7,10 @@ import {
   StatusCard,
   CardType,
   CardInstance,
-  SideSchemeCard,
   PlayerState,
   Keyword,
   hasKeyword,
+  getKeywordValue,
   PendingActivation,
   updateGameState,
   getActiveVillain,
@@ -45,7 +45,12 @@ import {
 } from './boost-resolution';
 import { nextEngineId } from '../state/rng';
 import { dealSurgeCard } from './surge';
-import { collectIconsInPlay, countHazardIconsInPlay, getHazardIconCount } from './icons';
+import {
+  collectIconsInPlay,
+  countAccelerationIconsInPlay,
+  countHazardIconsInPlay,
+  getHazardIconCount,
+} from './icons';
 import { getResolvingRevealAbilities } from './encounter-cancel';
 import { resolveRevealedObligation } from './obligations';
 export { drawEncounterCard };
@@ -69,16 +74,14 @@ export {
 
 /**
  * The threat step 1 puts on the main scheme: escalation threat per player, acceleration tokens and
- * one per side scheme with an acceleration icon.
+ * one per acceleration icon in play.
  */
 export function getVillainPhaseThreatToAdd(state: GameState): number {
-  let total =
+  return (
     getActiveMainScheme(state).card.escalationThreat * getPerPlayerCount(state) +
-    state.accelerationTokens;
-  for (const sideScheme of state.sideSchemes) {
-    if ((sideScheme.card as SideSchemeCard).hasAcceleration) total += 1;
-  }
-  return total;
+    state.accelerationTokens +
+    countAccelerationIconsInPlay(state)
+  );
 }
 
 /**
@@ -257,7 +260,7 @@ export function executeVillainSchemeAgainstPlayer(
   // The scheming villain is fixed now: moving the active counter mid-scheme must not change it.
   const villain = getActiveVillain(state);
   // Check Confused status on Villain (taking into account Steady - RR v1.8 p. 28)
-  if (consumeEntityStatusCards(villain, StatusCard.CONFUSED)) {
+  if (consumeEntityStatusCards(villain, StatusCard.CONFUSED, state)) {
     appendLog(state, {
       category: 'status',
       actor: { name: villain.card?.name || 'Villain', type: 'villain' },
@@ -278,7 +281,7 @@ export function executeVillainSchemeAgainstPlayer(
     schemerType: 'VILLAIN',
     schemerVillainId: villain.instanceId,
     targetPlayerId: player.id,
-    baseScheme: villainStats.scheme,
+    baseScheme: villainStats.scheme + (options?.schemeBonus ?? 0),
     totalBoostIcons: 0,
     stepping,
   };
@@ -323,7 +326,8 @@ export function resolveQuickstrike(
   player: PlayerState,
   options?: CombatOptions,
 ): GameState | undefined {
-  if (player.currentForm !== 'hero' || !hasEntityKeyword(minion, 'Quickstrike')) return undefined;
+  if (player.currentForm !== 'hero' || !hasEntityKeyword(minion, 'Quickstrike', state))
+    return undefined;
   return executeMinionAttackAgainstPlayer(state, minion, player, options);
 }
 
@@ -337,7 +341,7 @@ export function executeMinionSchemeAgainstPlayer(
   options?: CombatOptions,
 ): GameState {
   // Check Confused status on Minion (taking into account Steady - RR v1.8 p. 28)
-  if (consumeEntityStatusCards(minion, StatusCard.CONFUSED)) {
+  if (consumeEntityStatusCards(minion, StatusCard.CONFUSED, state)) {
     appendLog(state, {
       category: 'status',
       actor: { name: minion.card.name, type: 'minion' },
@@ -664,6 +668,26 @@ function dispatchRevealInterrupts(
 }
 
 /**
+ * RR v1.8 Incite X: equivalent to "When Revealed: Place X threat on the main scheme" (ADR-0019), so
+ * cancelling the When Revealed effects cancels it too.
+ */
+export function placeInciteThreat(
+  state: GameState,
+  cardInstance: CardInstance,
+  player: PlayerState,
+): void {
+  const amount = getKeywordValue(cardInstance.card, Keyword.INCITE) ?? 0;
+  if (amount <= 0) return;
+  applyThreatPlacement(state, {
+    targetType: 'main_scheme',
+    amount,
+    sourceType: 'INCITE',
+    sourceEntityName: cardInstance.card.name,
+    sourcePlayerId: player.id,
+  });
+}
+
+/**
  * Resolves the When Revealed abilities of a card: all of them, or only the effects that cannot be
  * canceled when the reveal was cancelled.
  */
@@ -673,6 +697,7 @@ function resolveWhenRevealedAbilities(
   player: PlayerState,
   isCancelled: boolean,
 ): void {
+  if (!isCancelled) placeInciteThreat(state, cardInstance, player);
   for (const ability of getResolvingRevealAbilities(cardInstance, isCancelled)) {
     kernel.executeEffect(state, ability, { playerId: player.id, sourceCardInstance: cardInstance });
   }

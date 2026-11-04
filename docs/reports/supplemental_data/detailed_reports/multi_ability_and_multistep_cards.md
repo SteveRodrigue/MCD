@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-## 1. Cards with Multiple Abilities (2+ Declared Abilities — 36 Cards)
+## 1. Cards with Multiple Abilities (2+ Declared Abilities — 41 Cards)
 
 | Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -41,9 +41,14 @@
 | `01178` | **Kree Manipulator** | `treachery` | `core_encounter` | **2** | • `kree_manipulator_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `kree_manipulator_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01181` | **Madame Hydra** | `minion` | `core_encounter` | **3** | • `madame_hydra_immunity` (`CONSTANT`, **1 step**)<br/>• `madame_hydra_attacks` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**)<br/>• `madame_hydra_schemes` (`FORCED_RESPONSE` / `MINION_SCHEMED`, **1 step**) |
 | `03024` | **Avengers Tower** | `support` | `cap` | **2** | • `avengers_tower_ally_limit` (`CONSTANT`, **1 step**)<br/>• `avengers_tower_action` (`ACTION`, **1 step**) |
+| `24029` | **Cruel Intentions** | `treachery` | `hood_encounter` | **2** | • `cruel_intentions_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `cruel_intentions_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `24032` | **Slug It Out** | `treachery` | `hood_encounter` | **2** | • `slug_it_out_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `slug_it_out_boost` (`BOOST` / `BOOST`, **2 steps**) |
+| `24050` | **Dark Dealings** | `treachery` | `hood_encounter` | **2** | • `dark_dealings_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `dark_dealings_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `24052` | **Overwhelming Force** | `treachery` | `hood_encounter` | **2** | • `overwhelming_force_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `overwhelming_force_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `24054` | **Total Annihilation** | `treachery` | `hood_encounter` | **2** | • `total_annihilation_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `total_annihilation_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `45109` | **The Fittest** | `attachment` | `aoa_encounter` | **2** | • `the_fittest_hit_points` (`CONSTANT`, **1 step**)<br/>• `the_fittest_tough` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**) |
 
-## 2. Multi-Step Execution Pipelines (2+ Steps — 44 Pipelines Across 44 Cards)
+## 2. Multi-Step Execution Pipelines (2+ Steps — 51 Pipelines Across 50 Cards)
 
 | Card Code | Card Name | Pack | Ability ID | Timing | Steps | Pipeline Execution Sequence |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -91,5 +96,12 @@
 | `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` | `WHEN_REVEALED` | **4** | `[1] PUT_INTO_PLAY ➔ [2] PUT_INTO_PLAY ➔ [3] SHUFFLE_INTO_DECK ➔ [4] SURGE` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` | `WHEN_REVEALED` | **2** | `[1] ADD_THREAT ➔ [2] DISCARD` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DRAW ➔ [2] REMOVE_FROM_GAME` |
+| `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DEAL_FACEDOWN_ENCOUNTER_CARD ➔ [2] DEAL_FACEDOWN_ENCOUNTER_CARD` |
+| `24030` | **Ruination (treachery)** | `hood_encounter` | `ruination_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DISCARD ➔ [2] ADD_THREAT` |
+| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_when_revealed` | `WHEN_REVEALED` | **2** | `[1] EXHAUST ➔ [2] DEAL_DAMAGE` |
+| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_boost` | `BOOST` | **2** | `[1] DEAL_DAMAGE ➔ [2] GIVE_ADDITIONAL_BOOST_CARD` |
+| `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` | `WHEN_REVEALED` | **3** | `[1] DISCARD ➔ [2] VILLAIN_AND_ENGAGED_MINIONS_ATTACK ➔ [3] SURGE` |
+| `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` | `WHEN_REVEALED` | **4** | `[1] PUT_INTO_PLAY ➔ [2] PUT_INTO_PLAY ➔ [3] SHUFFLE_INTO_DECK ➔ [4] SURGE` |
+| `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_when_revealed` | `WHEN_REVEALED` | **2** | `[1] GRANT_ATTACK_KEYWORD ➔ [2] VILLAIN_ATTACKS` |
 
 [← Back to Main Usage Report](../usage_report.md)

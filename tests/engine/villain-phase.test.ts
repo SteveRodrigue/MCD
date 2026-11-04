@@ -86,7 +86,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       const bombScareCard = catalog.getCard('01109') as SideSchemeCard;
       gameState.sideSchemes.push({
         instanceId: 'side_acc',
-        card: { ...bombScareCard, hasAcceleration: true },
+        card: { ...bombScareCard, scheme_acceleration: 1 },
         threat: 2,
       });
 

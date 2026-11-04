@@ -4,9 +4,12 @@ import {
   StatusCard,
   getActiveMainScheme,
   getActiveVillain,
+  hasKeyword,
+  Keyword,
   type AbilityStep,
   type CardInstance,
   type GameState,
+  type NormalizedCard,
   type PlayerState,
 } from '../models';
 import { matchesCardFilter } from '../filters/card-filter';
@@ -173,8 +176,21 @@ export const discardableTableauCards = (
   state: GameState,
   player: PlayerState,
   filter: UniversalCardFilter | undefined,
-): CardInstance[] =>
-  player.tableau.filter((c) => !filter || matchesCardFilter(c, filter, { player, state }));
+  sourceCard?: NormalizedCard,
+  selection?: 'HIGHEST_COST' | 'LOWEST_COST',
+): CardInstance[] => {
+  // RR v1.8 Permanent: only an effect of the same set can make a permanent card leave play; any
+  // other effect targets a non-permanent card instead.
+  const eligible = player.tableau.filter(
+    (c) =>
+      (!filter || matchesCardFilter(c, filter, { player, state })) &&
+      (!hasKeyword(c, Keyword.PERMANENT) || c.card.setCode === sourceCard?.setCode),
+  );
+  if (!selection || eligible.length === 0) return eligible;
+  const costs = eligible.map((c) => c.card.cost ?? 0);
+  const wanted = selection === 'HIGHEST_COST' ? Math.max(...costs) : Math.min(...costs);
+  return eligible.filter((c) => (c.card.cost ?? 0) === wanted);
+};
 
 /** The host whose cards underneath a DISCARD from CARDS_UNDER_HOST takes: the villain or the main scheme. */
 export function cardsUnderneathHost(

@@ -1,12 +1,10 @@
-﻿import {
-  GameState,
-  Keyword,
-  SideSchemeCard,
-  hasKeyword,
-  getActiveMainScheme,
-} from '../../../engine/models';
+﻿import { GameState, getActiveMainScheme } from '../../../engine/models';
 import { canThwart, HERO_ACTOR } from '../../../engine/pipeline/legality-checker';
-import { getCrisisIconCount, getHazardIconCount } from '../../../engine/pipeline/icons';
+import {
+  getAccelerationIconCount,
+  getCrisisIconCount,
+  getHazardIconCount,
+} from '../../../engine/pipeline/icons';
 
 export interface SchemeTarget {
   id: string;
@@ -74,12 +72,9 @@ export function getValidThwartTargets(
             )
           : { allowed: false, reason: 'Ally not specified' };
 
-    const sideCard = sideScheme.card as SideSchemeCard;
     const hasCrisis = getCrisisIconCount(sideScheme.card) > 0;
     const hasHazard = getHazardIconCount(sideScheme.card) > 0;
-    const hasAcceleration = !!(
-      sideCard?.hasAcceleration || hasKeyword(sideScheme.card, Keyword.ACCELERATION)
-    );
+    const hasAcceleration = getAccelerationIconCount(sideScheme.card) > 0;
 
     targets.push({
       id: sideScheme.instanceId,

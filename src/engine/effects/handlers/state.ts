@@ -70,14 +70,14 @@ function handleAddStatus(
     // Stalwart check (RR v1.8 p. 28)
     if (
       (status === StatusCard.STUNNED || status === StatusCard.CONFUSED) &&
-      hasEntityKeyword(entity, 'Stalwart')
+      hasEntityKeyword(entity, 'Stalwart', state)
     ) {
       isImmune = true;
       return;
     }
 
     // Steady check (RR v1.8 p. 28)
-    const isSteady = hasEntityKeyword(entity, 'Steady');
+    const isSteady = hasEntityKeyword(entity, 'Steady', state);
     const maxLimit =
       isSteady && (status === StatusCard.STUNNED || status === StatusCard.CONFUSED) ? 2 : 1;
     const currentCount = entity.statusCards.filter((s: StatusCard) => s === status).length;

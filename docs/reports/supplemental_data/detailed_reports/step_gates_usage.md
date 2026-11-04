@@ -4,7 +4,7 @@
 
 ## Step Gates (`StepGateSchema` — 10/10 In Use)
 
-### <a id="if-form"></a>`IF_FORM` (7 Cards)
+### <a id="if-form"></a>`IF_FORM` (9 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -15,6 +15,8 @@
 | `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
 | `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
 | `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
+| `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` |
+| `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_when_revealed` |
 
 ### <a id="if-result"></a>`IF_RESULT` (10 Cards)
 
@@ -31,6 +33,16 @@
 | `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
 | `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
 
+### <a id="then"></a>`THEN` (5 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01025` | **Split Personality (event)** | `core` | `split_personality` |
+| `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
+| `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
+| `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
+
 ### <a id="if-card-in-play"></a>`IF_CARD_IN_PLAY` (6 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -41,15 +53,6 @@
 | `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
 | `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
-
-### <a id="then"></a>`THEN` (4 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01025` | **Split Personality (event)** | `core` | `split_personality` |
-| `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
-| `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
 
 ### <a id="if-resource-match"></a>`IF_RESOURCE_MATCH` (3 Cards)
 

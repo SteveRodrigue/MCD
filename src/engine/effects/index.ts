@@ -260,7 +260,7 @@ export function moveDefeatedCardToPile(
   discardPile: CardInstance[],
 ): void {
   resetCardState(cardInstance);
-  if (hasEntityKeyword(cardInstance, 'Victory')) {
+  if (hasEntityKeyword(cardInstance, 'Victory', state)) {
     state.victoryDisplay.push(cardInstance);
   } else {
     placeOnPile(cardInstance, discardPile);
@@ -1435,15 +1435,16 @@ function executeEffectInternal(
   if (abilityLabels && abilityLabels.length > 0) {
     const player = state.players.find((p) => p.id === context.playerId) || state.players[0];
     const willCancelAttack =
-      abilityLabels.includes('ATTACK') && isEntityIncapacitatedByStatus(player, StatusCard.STUNNED);
+      abilityLabels.includes('ATTACK') &&
+      isEntityIncapacitatedByStatus(player, StatusCard.STUNNED, state);
     const willCancelThwart =
       abilityLabels.includes('THWART') &&
-      isEntityIncapacitatedByStatus(player, StatusCard.CONFUSED);
+      isEntityIncapacitatedByStatus(player, StatusCard.CONFUSED, state);
 
     if (willCancelAttack || willCancelThwart) {
       let onom = 'STATUS CLEARED!';
       if (willCancelAttack) {
-        consumeEntityStatusCards(player, StatusCard.STUNNED);
+        consumeEntityStatusCards(player, StatusCard.STUNNED, state);
         onom = 'STUN CLEARED!';
         appendLog(state, {
           key: 'status.stunned.cleared',
@@ -1452,7 +1453,7 @@ function executeEffectInternal(
         });
       }
       if (willCancelThwart) {
-        consumeEntityStatusCards(player, StatusCard.CONFUSED);
+        consumeEntityStatusCards(player, StatusCard.CONFUSED, state);
         onom = 'CONFUSION CLEARED!';
         appendLog(state, {
           key: 'status.confused.cleared',
@@ -1846,6 +1847,29 @@ function discardFromPlayerDeck(
   };
 }
 
+function putDiscardedEncounterCardIntoPlay(
+  state: GameState,
+  player: PlayerState,
+  params: { target?: unknown },
+  card: CardInstance,
+): void {
+  const targetPlayer =
+    (params.target
+      ? resolvePlayerTargets(state, params.target as never, { playerId: player.id })[0]
+      : undefined) ?? player;
+  if (card.card.type === CardType.MINION) {
+    targetPlayer.engagedMinions.push(card as MinionCard & CardInstance);
+    kernel.dispatchTrigger(state, 'MINION_ENTERS_PLAY', {
+      targetPlayerId: targetPlayer.id,
+      sourceInstanceId: card.instanceId,
+      targetInstanceId: card.instanceId,
+      encounterCardInstance: card,
+    });
+  } else {
+    routeCardInstances(state, targetPlayer, [card], 'TABLEAU', 'ENCOUNTER_DECK');
+  }
+}
+
 function discardFromEncounterDeck(
   state: GameState,
   player: PlayerState,
@@ -1893,21 +1917,7 @@ function discardFromEncounterDeck(
       kernel.resolveActiveEncounterCardAfterInterrupt(state, found, player, false);
     }
     if (found && matchingDestination === 'PLAY') {
-      const targetPlayer =
-        (params.target
-          ? resolvePlayerTargets(state, params.target, { playerId: player.id })[0]
-          : undefined) ?? player;
-      if (found.card.type === CardType.MINION) {
-        targetPlayer.engagedMinions.push(found as MinionCard & CardInstance);
-        kernel.dispatchTrigger(state, 'MINION_ENTERS_PLAY', {
-          targetPlayerId: targetPlayer.id,
-          sourceInstanceId: found.instanceId,
-          targetInstanceId: found.instanceId,
-          encounterCardInstance: found,
-        });
-      } else {
-        routeCardInstances(state, targetPlayer, [found], 'TABLEAU', 'ENCOUNTER_DECK');
-      }
+      putDiscardedEncounterCardIntoPlay(state, player, params, found);
     }
     return {
       state,
@@ -1943,6 +1953,16 @@ function discardFromEncounterDeck(
         break;
       }
     }
+  }
+  // "Put the first minion discarded this way into play": it leaves wherever the discard left it.
+  const firstMatch =
+    params.matchingDestination === 'PLAY' && params.filter
+      ? discardedCards.find((c) => matchesCardFilter(c, params.filter, { player, state }))
+      : undefined;
+  if (firstMatch) {
+    state.encounterDiscard = state.encounterDiscard.filter((c) => c !== firstMatch);
+    state.encounterDeck = state.encounterDeck.filter((c) => c !== firstMatch);
+    putDiscardedEncounterCardIntoPlay(state, player, params, firstMatch);
   }
   if (discardedCount > 0) {
     appendLog(state, {
@@ -2004,7 +2024,13 @@ function discardFromTableau(
     return { state, success: false, error: 'Target card not found in tableau' };
   }
 
-  const matchingCards = discardableTableauCards(state, player, filter);
+  const matchingCards = discardableTableauCards(
+    state,
+    player,
+    filter,
+    context.sourceCardInstance?.card,
+    params.selection,
+  );
 
   if (matchingCards.length === 0) {
     if (fallback === 'SURGE') {

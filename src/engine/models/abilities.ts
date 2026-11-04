@@ -91,6 +91,8 @@ export type PlayerRecipient =
 
 export interface CardEnrichment {
   noSupplementalNeeded?: boolean;
+  /** The "Standard Mode Only" or "Expert Mode Only" side of a double-sided card. */
+  modeOnly?: 'STANDARD' | 'EXPERT';
   cardName?: string;
   playRequirements?: PlayRequirements;
   audit?: CardAuditMetadata;

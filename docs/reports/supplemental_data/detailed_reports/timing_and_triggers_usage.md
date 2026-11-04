@@ -4,7 +4,7 @@
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (59 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (68 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -67,8 +67,17 @@
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
+| `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_when_revealed` |
+| `24030` | **Ruination (treachery)** | `hood_encounter` | `ruination_when_revealed` |
+| `24031` | **Seek and Destroy (treachery)** | `hood_encounter` | `seek_and_destroy_when_revealed` |
+| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_when_revealed` |
+| `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_when_revealed` |
+| `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` |
+| `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_when_revealed` |
+| `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
+| `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_when_revealed` |
 
-### <a id="constant"></a>`CONSTANT` (31 Cards)
+### <a id="constant"></a>`CONSTANT` (33 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -102,6 +111,8 @@
 | `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
 | `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_ally_limit` |
+| `24049a` | **Formidable Foe (environment)** | `hood_encounter` | `formidable_foe_steady` |
+| `24049b` | **Formidable Foe (environment)** | `hood_encounter` | `formidable_foe_steady` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
 
 ### <a id="hero-action"></a>`HERO_ACTION` (31 Cards)
@@ -167,6 +178,32 @@
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks`, `madame_hydra_schemes` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
+### <a id="boost"></a>`BOOST` (21 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
+| `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_boost` |
+| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_boost` |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
+| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
+| `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
+| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_boost` |
+| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_boost` |
+| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_boost` |
+| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_boost` |
+| `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
+| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
+| `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
+| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
+| `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_boost` |
+| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_boost` |
+| `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_boost` |
+| `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_boost` |
+| `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_boost` |
+
 ### <a id="action"></a>`ACTION` (20 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -191,27 +228,6 @@
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 | `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
-
-### <a id="boost"></a>`BOOST` (16 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
-| `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_boost` |
-| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_boost` |
-| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
-| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
-| `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
-| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_boost` |
-| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_boost` |
-| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_boost` |
-| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_boost` |
-| `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
-| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
-| `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
-| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
 
 ### <a id="response"></a>`RESPONSE` (13 Cards)
 
@@ -310,7 +326,7 @@
 
 ## 2. Trigger Windows (`TriggerTypeSchema` — 25/34 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (60 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (69 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -373,9 +389,18 @@
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
+| `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_when_revealed` |
+| `24030` | **Ruination (treachery)** | `hood_encounter` | `ruination_when_revealed` |
+| `24031` | **Seek and Destroy (treachery)** | `hood_encounter` | `seek_and_destroy_when_revealed` |
+| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_when_revealed` |
+| `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_when_revealed` |
+| `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` |
+| `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_when_revealed` |
+| `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
+| `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_when_revealed` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
-### <a id="boost"></a>`BOOST` (16 Cards)
+### <a id="boost"></a>`BOOST` (21 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -395,6 +420,11 @@
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
 | `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
+| `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_boost` |
+| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_boost` |
+| `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_boost` |
+| `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_boost` |
+| `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_boost` |
 
 ### <a id="enters-play"></a>`ENTERS_PLAY` (10 Cards)
 

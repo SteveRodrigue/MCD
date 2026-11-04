@@ -53,6 +53,10 @@ export type DefensePolicy =
   'TAKE_UNDEFENDED' | 'HERO_IF_READY' | 'ALLY_CHUMP_BLOCK' | 'AUTO_OPTIMAL';
 
 export interface CombatOptions {
+  /** Keywords this attack gains from the effect that started it ("that attack gains overkill"). */
+  grantedKeywords?: string[];
+  /** The villain schemes with +X SCH. */
+  schemeBonus?: number;
   synchronousPolicy?: DefensePolicy;
   acceptOptionalTriggers?: boolean;
   stepping?: boolean;
@@ -89,7 +93,7 @@ function step1_preAttackAndStunCheck(
   if (!attackerEntity) return false;
 
   // Priority 1: Check Stun status on attacking entity (taking into account Steady - RR v1.8 p. 28)
-  if (consumeEntityStatusCards(attackerEntity, StatusCard.STUNNED)) {
+  if (consumeEntityStatusCards(attackerEntity, StatusCard.STUNNED, state)) {
     if (attackerType === 'VILLAIN') {
       appendLog(state, {
         category: 'combat',
@@ -201,6 +205,17 @@ export function initiateEnemyAttack(
  * Starts an enemy attack and reports whether it happened. An attack that Stun or a
  * `HOST_WOULD_ATTACK` interrupt cancels in step 1 did not happen ("if X did not attack").
  */
+/** "This attack gains overkill": a keyword the running enemy attack did not start with. */
+export function grantKeywordToAttack(
+  attack: Pick<AttackExecutionContext, 'hasOverkill' | 'hasPiercing'> | undefined,
+  keyword: string,
+): void {
+  if (!attack) return;
+  const name = keyword.toLowerCase();
+  if (name === 'overkill') attack.hasOverkill = true;
+  if (name === 'piercing') attack.hasPiercing = true;
+}
+
 export function beginEnemyAttack(
   state: GameState,
   attacker: { type: 'VILLAIN' | 'MINION'; card?: CardInstance; villainId?: string },
@@ -275,6 +290,8 @@ export function beginEnemyAttack(
     synchronousPolicy: options?.synchronousPolicy,
     stepping: options?.stepping ?? state.options?.villainPhaseStepping,
   };
+  for (const keyword of options?.grantedKeywords ?? [])
+    grantKeywordToAttack(attackContext, keyword);
 
   if (initResult.hasPendingPrompt) {
     state.activeAttackContext = attackContext;

@@ -56,6 +56,8 @@ export interface RawUpstreamCard {
   scheme_hazard?: number;
   scheme_amplify?: number;
   permanent?: boolean;
+  /** The back of a double-sided card: the same physical card as its front. */
+  hidden?: boolean;
   double_sided?: boolean;
   illustrator?: string;
   octgn_id?: string | null;
@@ -131,6 +133,7 @@ export interface NormalizedCard {
   errata?: string;
   isLandscape: boolean;
   orientation: 'portrait' | 'landscape';
+  scheme_acceleration?: number;
   scheme_crisis?: number;
   scheme_hazard?: number;
   scheme_amplify?: number;
@@ -225,8 +228,6 @@ export interface SideSchemeCard extends NormalizedCard {
   type: CardType.SIDE_SCHEME;
   baseThreat: number;
   baseThreatFixed?: boolean;
-  hasAcceleration: boolean;
-  hasAmplify: boolean;
 }
 
 /**

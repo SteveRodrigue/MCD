@@ -31,6 +31,19 @@ export const MAIN_SCHEME_BLOCK_REASON: Record<MainSchemeThreatBlock, string> = {
   PATROL: 'Cannot thwart the main scheme while an engaged minion with Patrol is in play.',
 };
 
+export const PERIL_BLOCK_REASON = 'Another player is resolving a card with peril.';
+
+/**
+ * RR v1.8 Peril: while a player resolves a card with peril, other players cannot play cards or
+ * trigger abilities. Forced abilities are not triggered by a player, so they still resolve.
+ */
+export function isBlockedByPeril(state: GameState, playerId: string, timing?: string): boolean {
+  const encounter = state.activeEncounterContext;
+  if (!encounter || encounter.targetPlayerId === playerId) return false;
+  if (timing?.startsWith('FORCED')) return false;
+  return hasKeyword(encounter.encounterCard, Keyword.PERIL);
+}
+
 export const GUARD_BLOCK_REASON =
   'Cannot attack the villain while an engaged minion with Guard is in play.';
 

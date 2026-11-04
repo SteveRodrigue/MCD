@@ -46,7 +46,7 @@
 | `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_ally_limit` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
-### <a id="villain"></a>`VILLAIN` (10 Cards, 12 Declarations)
+### <a id="villain"></a>`VILLAIN` (12 Cards, 14 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -60,6 +60,40 @@
 | `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed`, `repair_sequence_boost` |
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
+| `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_when_revealed` |
+| `24049a` | **Formidable Foe (environment)** | `hood_encounter` | `formidable_foe_steady` |
+
+### <a id="self-identity"></a>`SELF_IDENTITY` (11 Cards, 12 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01006` | **Aunt May (support)** | `core` | `aunt_may` |
+| `01010a` | **Captain Marvel (hero)** | `core` | `rechannel` |
+| `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_aerial` |
+| `01061` | **Great Responsibility (event)** | `core` | `great_responsibility_interrupt` |
+| `01073` | **The Triskelion (support)** | `core` | `triskelion_ally_limit` |
+| `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
+| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
+| `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
+| `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
+| `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
+| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_when_revealed` |
+
+### <a id="all-players"></a>`ALL_PLAYERS` (11 Cards, 11 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01067` | **Maria Hill (ally)** | `core` | `maria_hill_enters_play` |
+| `01137b` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_when_revealed` |
+| `01138a` | **Assault on NORAD (main_scheme)** | `core_encounter` | `ultron_assault_norad_when_revealed` |
+| `01139a` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `ultron_countdown_when_revealed` |
+| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_when_revealed` |
+| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_when_revealed` |
+| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_when_revealed` |
+| `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
+| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
+| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
+| `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_when_revealed` |
 
 ### <a id="chosen-scheme"></a>`CHOSEN_SCHEME` (10 Cards, 11 Declarations)
 
@@ -75,36 +109,6 @@
 | `01060` | **For Justice! (event)** | `core` | `for_justice` |
 | `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
 | `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
-
-### <a id="all-players"></a>`ALL_PLAYERS` (10 Cards, 10 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01067` | **Maria Hill (ally)** | `core` | `maria_hill_enters_play` |
-| `01137b` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_when_revealed` |
-| `01138a` | **Assault on NORAD (main_scheme)** | `core_encounter` | `ultron_assault_norad_when_revealed` |
-| `01139a` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `ultron_countdown_when_revealed` |
-| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_when_revealed` |
-| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_when_revealed` |
-| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_when_revealed` |
-| `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
-| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
-| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
-
-### <a id="self-identity"></a>`SELF_IDENTITY` (10 Cards, 10 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01006` | **Aunt May (support)** | `core` | `aunt_may` |
-| `01010a` | **Captain Marvel (hero)** | `core` | `rechannel` |
-| `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_aerial` |
-| `01061` | **Great Responsibility (event)** | `core` | `great_responsibility_interrupt` |
-| `01073` | **The Triskelion (support)** | `core` | `triskelion_ally_limit` |
-| `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
-| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
-| `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
-| `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
-| `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
 
 ### <a id="self-hero"></a>`SELF_HERO` (7 Cards, 7 Declarations)
 
@@ -171,6 +175,30 @@
 | `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
 | `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
 
+### <a id="active-player"></a>`ACTIVE_PLAYER` (3 Cards, 3 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01188` | **Caught Off Guard (treachery)** | `core_encounter` | `caught_off_guard_when_revealed` |
+| `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_boost` |
+| `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_when_revealed` |
+
+### <a id="all-controlled-characters"></a>`ALL_CONTROLLED_CHARACTERS` (3 Cards, 3 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01070` | **Lead from the Front (event)** | `core` | `lead_from_the_front_action` |
+| `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
+| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_boost` |
+
+### <a id="all-enemies"></a>`ALL_ENEMIES` (3 Cards, 3 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01022` | **Ground Stomp (event)** | `core` | `ground_stomp_action` |
+| `01030` | **War Machine (ally)** | `core` | `war_machine_action` |
+| `24049b` | **Formidable Foe (environment)** | `hood_encounter` | `formidable_foe_steady` |
+
 ### <a id="all-heroes"></a>`ALL_HEROES` (3 Cards, 3 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -194,19 +222,12 @@
 | `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response`, `radioactive_man_boost` |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
 
-### <a id="all-controlled-characters"></a>`ALL_CONTROLLED_CHARACTERS` (2 Cards, 2 Declarations)
+### <a id="all-schemes"></a>`ALL_SCHEMES` (2 Cards, 2 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01070` | **Lead from the Front (event)** | `core` | `lead_from_the_front_action` |
-| `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
-
-### <a id="all-enemies"></a>`ALL_ENEMIES` (2 Cards, 2 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01022` | **Ground Stomp (event)** | `core` | `ground_stomp_action` |
-| `01030` | **War Machine (ally)** | `core` | `war_machine_action` |
+| `01037` | **Mark V Helmet (upgrade)** | `core` | `mark_v_helmet` |
+| `24030` | **Ruination (treachery)** | `hood_encounter` | `ruination_when_revealed` |
 
 ### <a id="all-side-schemes"></a>`ALL_SIDE_SCHEMES` (2 Cards, 2 Declarations)
 
@@ -257,12 +278,6 @@
 | `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
 | `01077` | **Counter-Punch (event)** | `core` | `counter_punch_response` |
 
-### <a id="active-player"></a>`ACTIVE_PLAYER` (1 Cards, 1 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01188` | **Caught Off Guard (treachery)** | `core_encounter` | `caught_off_guard_when_revealed` |
-
 ### <a id="all-characters"></a>`ALL_CHARACTERS` (1 Cards, 1 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -286,12 +301,6 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
-
-### <a id="all-schemes"></a>`ALL_SCHEMES` (1 Cards, 1 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01037` | **Mark V Helmet (upgrade)** | `core` | `mark_v_helmet` |
 
 ### <a id="chosen-character"></a>`CHOSEN_CHARACTER` (1 Cards, 1 Declarations)
 

@@ -1,10 +1,9 @@
-import { CardType, Keyword, getKeywordValue } from '../../models';
+import { CardType } from '../../models';
 import { getPlayer } from '../legality-checker';
 import { expireLastingEffects } from '../player-phase';
 import { initiatePlayerPhaseCleanup } from '../player-phase-cleanup';
 import { peekDecisionPrompt } from '../prompt-queue';
-import { advanceVillainPhaseStep, resolveQuickstrike } from '../villain-phase';
-import { applyThreatPlacement } from '../threat-pipeline';
+import { advanceVillainPhaseStep, placeInciteThreat, resolveQuickstrike } from '../villain-phase';
 import { appendLog } from '../../state/game-log';
 import type { ActionHandler } from './types';
 
@@ -128,20 +127,7 @@ export const handleRevealEncounterCard: ActionHandler<'REVEAL_ENCOUNTER_CARD'> =
   if (!encounterCard)
     return { state, result: { success: false, error: 'Encounter card required' } };
 
-  // Incite X Keyword check (RR v1.8 p. 16, ADR-0019)
-  const inciteAmount =
-    (encounterCard.card.enrichment as { incite?: number } | undefined)?.incite ||
-    getKeywordValue(encounterCard.card, Keyword.INCITE) ||
-    0;
-  if (inciteAmount > 0) {
-    applyThreatPlacement(nextState, {
-      targetType: 'main_scheme',
-      amount: inciteAmount,
-      sourceType: 'INCITE',
-      sourceEntityName: encounterCard.card?.name || 'Encounter Card',
-      sourcePlayerId: targetPlayer.id,
-    });
-  }
+  placeInciteThreat(nextState, encounterCard, targetPlayer);
 
   // Route card according to type
   if (encounterCard.card.type === CardType.MINION) {

@@ -1,5 +1,11 @@
 /** Encounter reveals, surge and threat (step handlers, AUD-20261017-232534 F010-A). */
-import { GameState, PlayerState, getActiveMainScheme, getPerPlayerCount } from '@engine/models';
+import {
+  GameState,
+  PlayerState,
+  getActiveMainScheme,
+  getActiveVillain,
+  getPerPlayerCount,
+} from '@engine/models';
 import { drawEncounterCard } from '../../pipeline/deck-exhaustion';
 import { dealSurgeCard } from '../../pipeline/surge';
 import { applyThreatPlacement, applyThwart } from '../../pipeline/threat-pipeline';
@@ -268,6 +274,23 @@ function handleDealFacedownEncounterCard(
       : params.count
         ? resolveNumericAmount(params.count, context, 1)
         : 1;
+
+  if (targetSelector === 'VILLAIN') {
+    const villain = getActiveVillain(state);
+    let given = 0;
+    for (let i = 0; i < count; i++) {
+      const card = drawEncounterCard(state);
+      if (!card) break;
+      villain.facedownBoostCards = [...(villain.facedownBoostCards ?? []), card];
+      given++;
+    }
+    appendLog(state, {
+      key: 'villain.boost.extra',
+      params: { actor: villain.card.name },
+      onomatopoeia: 'FACEDOWN BOOST!',
+    });
+    return { state, success: true, mutatedState: given > 0, value: given };
+  }
 
   let targetPlayers: PlayerState[] = [];
   if (targetSelector === 'ALL_PLAYERS') {

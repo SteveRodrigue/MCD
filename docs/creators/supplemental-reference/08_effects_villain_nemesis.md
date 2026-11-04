@@ -16,6 +16,8 @@
 }
 ```
 
+`schemeBonus` makes it "the villain schemes with +X SCH" (_Dark Dealings_ `24050`).
+
 ---
 
 ### `VILLAIN_ATTACKS`

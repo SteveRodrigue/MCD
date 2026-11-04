@@ -1,6 +1,7 @@
 import {
   CardType,
   GameState,
+  Keyword,
   MainSchemeCard,
   MainSchemeState,
   NormalizedCard,
@@ -11,16 +12,20 @@ import {
   getActiveVillain,
   getPerPlayerCount,
   getVillainById,
+  hasKeyword,
   replaceActiveMainScheme,
   setActiveVillain,
 } from '@engine/models';
 import { createCardInstance } from '../state/card-instance';
+import { putEnvironmentIntoPlay } from '../state/environment';
+import { placeSideScheme } from '../state/side-scheme';
 import { appendLog } from '../state/game-log';
 import { endGame } from '../state/victory';
 import { nextEngineId, shuffleArray } from '../state/rng';
 import { kernel } from '../kernel';
 import { advanceVillainStage, revealVillainStage } from './advance-villain-stage';
 import { villainStageHitPoints } from '../pipeline/stat-calculator';
+import { listEncounterDeckCards } from './encounter-sets';
 import { getVillainStages, resolveScenarioSetup } from './resolve-scenario-setup';
 import type { ScenarioDefinition, ScenarioGameSetupOptions, ScenarioPlugin } from './types';
 
@@ -85,6 +90,32 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     };
   }
 
+  /**
+   * RR v1.8 Double-Sided Card: a card with "Standard Mode Only" and "Expert Mode Only" sides is in
+   * play with its Expert side faceup in expert mode, otherwise its Standard side.
+   */
+  private sideForMode(state: GameState, card: NormalizedCard): NormalizedCard {
+    if (card.enrichment?.modeOnly !== 'STANDARD' || !state.expertMode || !card.backLink)
+      return card;
+    return getCatalog(state).getCard(card.backLink) ?? card;
+  }
+
+  /** Appendix II step 11: cards with the Setup keyword begin the game in play, not in the deck. */
+  private putSetupCardsIntoPlay(state: GameState): void {
+    const setupCards = state.encounterDeck.filter((c) => hasKeyword(c, Keyword.SETUP));
+    if (setupCards.length === 0) return;
+    state.encounterDeck = state.encounterDeck.filter((c) => !hasKeyword(c, Keyword.SETUP));
+    for (const instance of setupCards) {
+      if (instance.card.type === CardType.ENVIRONMENT) putEnvironmentIntoPlay(state, instance);
+      else if (instance.card.type === CardType.SIDE_SCHEME) placeSideScheme(state, instance);
+      else {
+        throw new Error(
+          `Setup card '${instance.card.code}' has type '${instance.card.type}', which setup cannot place.`,
+        );
+      }
+    }
+  }
+
   private buildEncounterDeck(state: GameState, options: ScenarioGameSetupOptions): void {
     const sets = this.definition.modularEncounterSets;
     const setCodes = [
@@ -102,8 +133,9 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     ]);
     const excludedTypes = new Set<string>(['villain', 'main_scheme']);
     const deckCards = setCodes
-      .flatMap((code) => getCatalog(state).getExpandedCardsBySet(code))
-      .filter((c: NormalizedCard) => !excludedTypes.has(c.type) && !stageCodes.has(c.code));
+      .flatMap((code) => listEncounterDeckCards(getCatalog(state), code))
+      .filter((c: NormalizedCard) => !excludedTypes.has(c.type) && !stageCodes.has(c.code))
+      .map((c: NormalizedCard) => this.sideForMode(state, c));
 
     state.encounterDeck = shuffleArray(state, deckCards).map((c) => createCardInstance(c));
     state.encounterDiscard = [];
@@ -157,9 +189,10 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     );
     replaceActiveMainScheme(state, mainScheme);
 
-    // 3. Encounter deck, then Appendix II step 12: (a) the Setup abilities of main scheme 1A,
-    // (b) 1B's When Revealed abilities, (c) the starting villain stage is revealed
+    // 3. Encounter deck, Appendix II step 11 (Setup cards), then step 12: (a) the Setup abilities of
+    // main scheme 1A, (b) 1B's When Revealed abilities, (c) the starting villain stage is revealed
     this.buildEncounterDeck(state, options);
+    this.putSetupCardsIntoPlay(state);
     this.resolveMainSchemeAbilities(state, firstStage.a, 'SETUP');
     this.resolveMainSchemeAbilities(state, firstScheme, 'WHEN_REVEALED');
     revealVillainStage(state, villain);

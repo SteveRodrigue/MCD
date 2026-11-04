@@ -596,6 +596,8 @@ function getSearchZonePile(
       return { pile: targetPlayer.discard, isDeck: false };
     case 'PLAYER_HAND':
       return { pile: targetPlayer.hand, isDeck: false };
+    case 'SET_ASIDE':
+      return { pile: targetPlayer.setAsideCards, isDeck: false };
     case 'ENCOUNTER_DECK':
       return { pile: state.encounterDeck, isDeck: true };
     case 'ENCOUNTER_DISCARD':

@@ -629,6 +629,13 @@
           "noSupplementalNeeded": {
             "type": "boolean"
           },
+          "modeOnly": {
+            "type": "string",
+            "enum": [
+              "STANDARD",
+              "EXPERT"
+            ]
+          },
           "recipient": {
             "oneOf": [
               {
@@ -1057,7 +1064,8 @@
             "Steady",
             "Villainous",
             "Incite",
-            "Hinder"
+            "Hinder",
+            "Peril"
           ]
         },
         "isExhausted": {

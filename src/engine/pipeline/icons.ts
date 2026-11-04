@@ -25,6 +25,14 @@ export function getAmplifyIconCount(card?: NormalizedCard): number {
 }
 
 /**
+ * The number of Acceleration icons printed on a card (RR v1.8 "Acceleration Icon"). Icons are not
+ * acceleration tokens, which the game state counts apart.
+ */
+export function getAccelerationIconCount(card?: NormalizedCard): number {
+  return card?.scheme_acceleration ?? 0;
+}
+
+/**
  * Sums `iconCount` over every in-play card (RR v1.8 p. 15 "In Play and Out of Play"). Each icon
  * counts, so a card with two icons adds 2. Returns the cards that print an icon with their count,
  * in zone order, so callers can both total them and name their sources.
@@ -32,9 +40,11 @@ export function getAmplifyIconCount(card?: NormalizedCard): number {
  * In-play zones evaluated:
  * - Side schemes and their attachments
  * - Main scheme and its attachments
- * - Environments
+ * - Environments and their attachments
  * - Villain and villain attachments
- * - Players' tableaus (supports, upgrades), allies (+ attachments), engaged minions (+ attachments), and identity attachments.
+ * - Players' faceup identity and its attachments, tableaus (supports, upgrades), allies (+ attachments), engaged minions (+ attachments), and obligations.
+ *
+ * Facedown dealt encounter cards, boost cards and tucked cards are not in play, so they do not count.
  */
 export function collectIconsInPlay(
   state: GameState,
@@ -59,22 +69,29 @@ export function collectIconsInPlay(
   }
 
   // 3. Environments
-  for (const env of state.environments || []) add(env.card);
+  for (const env of state.environments || []) addWithAttachments(env.card, env.attachments);
 
   // 4. Villain & attachments
   for (const villain of getVillainsInPlay(state)) {
     addWithAttachments(villain.card, villain.attachments);
   }
 
-  // 5. Players: tableaus, allies, engaged minions, identity attachments
+  // 5. Players: identity, tableaus, allies, engaged minions, obligations
   for (const p of state.players || []) {
+    add(p.activeFormCard);
     for (const t of p.tableau || []) add(t.card);
     for (const a of p.allies || []) addWithAttachments(a.card, a.attachments);
     for (const m of p.engagedMinions || []) addWithAttachments(m.card, m.attachments);
     for (const att of p.attachments || []) add(att.card);
+    for (const obligation of p.obligations || []) add(obligation.card);
   }
 
   return found;
+}
+
+/** Counts the Acceleration icons currently in play (RR v1.8 "Acceleration Icon"). */
+export function countAccelerationIconsInPlay(state: GameState): number {
+  return collectIconsInPlay(state, getAccelerationIconCount).reduce((sum, i) => sum + i.count, 0);
 }
 
 /** Counts the Crisis icons currently in play (RR v1.8 p. 11 "Crisis"). */

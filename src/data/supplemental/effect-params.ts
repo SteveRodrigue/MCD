@@ -166,8 +166,12 @@ export const EFFECT_PARAM_SCHEMAS = {
   DEAL_FACEDOWN_ENCOUNTER_CARD: z
     .object({
       target: optional(
-        z.enum(['ENGAGED_PLAYER', 'ACTIVE_PLAYER', 'FIRST_PLAYER', 'ALL_PLAYERS']),
-        { label: 'Target', defaultValue: 'ENGAGED_PLAYER' },
+        z.enum(['ENGAGED_PLAYER', 'ACTIVE_PLAYER', 'FIRST_PLAYER', 'ALL_PLAYERS', 'VILLAIN']),
+        {
+          label: 'Target',
+          defaultValue: 'ENGAGED_PLAYER',
+          description: 'VILLAIN gives the active villain the cards as facedown boost cards.',
+        },
       ),
       count: optional(AMOUNT, {
         label: 'Encounter Card Count',
@@ -204,6 +208,10 @@ export const EFFECT_PARAM_SCHEMAS = {
         label: 'Until Match Filter',
         widget: 'card-filter',
         description: 'Filter defining termination condition for UNTIL_MATCH discard mode',
+      }),
+      selection: annotated(DiscardParamsSchema.shape.selection, {
+        label: 'Cost Selection',
+        description: 'Only the highest-cost or lowest-cost eligible cards in the tableau qualify.',
       }),
       fallback: annotated(DiscardParamsSchema.shape.fallback, {
         label: 'Fallback Action',
@@ -803,6 +811,11 @@ export const EFFECT_PARAM_SCHEMAS = {
   VILLAIN_SCHEMES: z
     .object({
       target: target('Target Player', 'SELF'),
+      schemeBonus: optional(z.number().int(), {
+        label: 'SCH Bonus',
+        placeholder: '1',
+        description: 'The villain schemes with +X SCH.',
+      }),
     })
     .strict(),
   RESTRICT_DEFENSE: z

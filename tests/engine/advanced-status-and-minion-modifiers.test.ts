@@ -287,9 +287,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
         code: 'incite_treachery',
         name: 'Incite Riot',
         type: CardType.TREACHERY,
-        enrichment: {
-          incite: 2,
-        } as any,
+        keywords: ['Incite 2' as any],
       };
 
       const state = newRhinoGame({

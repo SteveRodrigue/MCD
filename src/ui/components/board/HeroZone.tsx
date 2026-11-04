@@ -1080,6 +1080,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           onClose={() => setSelectedAllyForModal(null)}
           onInitiateAllyAttack={(id) => handleInitiateAttack('ally', id)}
           onInitiateAllyThwart={(id) => handleInitiateThwart('ally', id)}
+          onSelectAbility={handleSelectTableauAbility}
         />
       )}
 

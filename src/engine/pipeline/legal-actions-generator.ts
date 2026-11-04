@@ -75,7 +75,9 @@ function getTableauActionItems(
   const items: LegalActionItem[] = [];
   const isHero = player.currentForm === 'hero';
 
-  for (const tableauItem of player.tableau || []) {
+  // In-play cards controlled by the player that may have action abilities (tableau cards & allies, RR v1.8 p. 5, 11)
+  const controlledInPlayCards = [...(player.tableau || []), ...(player.allies || [])];
+  for (const tableauItem of controlledInPlayCards) {
     const abilities = tableauItem.card.enrichment?.abilities || [];
     for (const ab of abilities) {
       if (

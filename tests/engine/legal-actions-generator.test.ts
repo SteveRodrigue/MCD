@@ -348,4 +348,95 @@ describe('Legal Actions Generator (The Daily Bugle Action Bulletins)', () => {
     expect(thwarters).not.toContain(hulk.instanceId);
     expect(thwarters).toContain(spiderWoman.instanceId);
   });
+
+  describe('In-play Ally Action abilities (Issue #594)', () => {
+    it('discovers Hellcat return-to-hand action even when Hellcat is exhausted', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = ironManHero;
+      p1.exhausted = true;
+      p1.formChangedThisRound = true;
+      p1.basicChangeFormUsedThisRound = true;
+      p1.hand = [];
+      p1.tableau = [];
+
+      const hellcat = createCardInstance(cardCatalog.getCard('01020')!); // Hellcat
+      hellcat.exhausted = true; // Exhausted after attacking
+      p1.allies = [hellcat];
+
+      const report = getLegalActionsForPlayer(state, p1.id);
+
+      const returnAction = report.boardActions.find(
+        (a) =>
+          a.action.type === 'USE_CARD_ABILITY' &&
+          (a.action as any).cardInstanceId === hellcat.instanceId &&
+          (a.action as any).abilityId === 'hellcat_return',
+      );
+
+      expect(returnAction).toBeDefined();
+      expect(returnAction?.headline).toBe('Activate Hellcat');
+      expect(report.activeActionCount).toBe(1);
+    });
+
+    it('discovers War Machine action only when ready', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = ironManHero;
+      p1.exhausted = true;
+      p1.formChangedThisRound = true;
+      p1.basicChangeFormUsedThisRound = true;
+      p1.hand = [];
+      p1.tableau = [];
+
+      const warMachine = createCardInstance(cardCatalog.getCard('01030')!); // War Machine
+      warMachine.exhausted = false;
+      p1.allies = [warMachine];
+
+      // Ready: War Machine action (cost: exhaustSelf, damageSelf 2) is legal
+      const readyReport = getLegalActionsForPlayer(state, p1.id);
+      const warAction = readyReport.boardActions.find(
+        (a) =>
+          a.action.type === 'USE_CARD_ABILITY' &&
+          (a.action as any).cardInstanceId === warMachine.instanceId &&
+          (a.action as any).abilityId === 'war_machine_action',
+      );
+      expect(warAction).toBeDefined();
+
+      // Exhausted: War Machine action cannot pay exhaustSelf cost
+      warMachine.exhausted = true;
+      const exhaustedReport = getLegalActionsForPlayer(state, p1.id);
+      const exhaustedWarAction = exhaustedReport.boardActions.find(
+        (a) =>
+          a.action.type === 'USE_CARD_ABILITY' &&
+          (a.action as any).cardInstanceId === warMachine.instanceId &&
+          (a.action as any).abilityId === 'war_machine_action',
+      );
+      expect(exhaustedWarAction).toBeUndefined();
+    });
+
+    it('discovers Vision action requiring resource payment modal', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = ironManHero;
+      p1.exhausted = true;
+      // Provide an energy resource card in hand to pay for Vision
+      p1.hand = [{ instanceId: 'e1', card: cardCatalog.getCard('01035')!, exhausted: false }];
+      p1.tableau = [];
+
+      const vision = createCardInstance(cardCatalog.getCard('01068')!); // Vision
+      vision.exhausted = false;
+      p1.allies = [vision];
+
+      const report = getLegalActionsForPlayer(state, p1.id);
+      const visionAction = report.boardActions.find(
+        (a) =>
+          a.action.type === 'USE_CARD_ABILITY' &&
+          (a.action as any).cardInstanceId === vision.instanceId &&
+          (a.action as any).abilityId === 'vision_boost',
+      );
+
+      expect(visionAction).toBeDefined();
+      expect(visionAction?.requiresModal).toBe('payment');
+    });
+  });
 });

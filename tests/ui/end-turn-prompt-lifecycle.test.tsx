@@ -3,7 +3,7 @@ import { render, act } from '@testing-library/react';
 import { GameBoard } from '../../src/ui/components/board/GameBoard';
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { setupGame } from '../../src/engine/state/game-setup';
+import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import {
   GameState,
   HeroCard,
@@ -439,5 +439,54 @@ describe('End Turn Confirmation Modal Lifecycle (Issue #169)', () => {
     // Modal SHOULD now appear because actions transitioned from >0 (preserved before prompt) to 0
     expect(queryByText(/PRESS RUN COMPLETE!/i)).not.toBeNull();
     expect(queryByText(/All Actions Resolved for Tony Stark/i)).not.toBeNull();
+  });
+
+  it('does NOT display End Turn confirmation modal after ally attacks if ally has a legal Action ability remaining (Issue #594)', () => {
+    const state = createTestGameState();
+    state.phase = GamePhase.PLAYER_PHASE;
+    state.roundNumber = 1;
+    state.activePlayerIndex = 0;
+
+    const p1 = state.players[0];
+    p1.currentForm = 'hero';
+    p1.activeFormCard = ironManHero;
+    p1.exhausted = true;
+    p1.formChangedThisRound = true;
+    p1.basicChangeFormUsedThisRound = true;
+    p1.hand = [];
+    p1.tableau = [];
+
+    const hellcat = createCardInstance(cardCatalog.getCard('01020')!, 'p1');
+    hellcat.exhausted = false;
+    p1.allies = [hellcat];
+
+    const { rerender, queryByText } = render(
+      <GameSettingsProvider>
+        <TestSession state={state} dispatch={vi.fn()}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
+      </GameSettingsProvider>,
+    );
+
+    // Initial render with ready Hellcat (can attack/thwart): no end turn prompt
+    expect(queryByText(/PRESS RUN COMPLETE!/i)).toBeNull();
+
+    // Hellcat attacks and exhausts
+    const stateAfterAttack: GameState = JSON.parse(JSON.stringify(state));
+    stateAfterAttack.players[0].allies[0].exhausted = true;
+
+    act(() => {
+      rerender(
+        <GameSettingsProvider>
+          <TestSession state={stateAfterAttack} dispatch={vi.fn()}>
+            <GameBoard onReset={vi.fn()} />
+          </TestSession>
+        </GameSettingsProvider>,
+      );
+    });
+
+    // Modal must NOT appear because Hellcat return-to-hand is still a legal action
+    expect(queryByText(/PRESS RUN COMPLETE!/i)).toBeNull();
+    expect(queryByText(/All Actions Resolved for Tony Stark/i)).toBeNull();
   });
 });

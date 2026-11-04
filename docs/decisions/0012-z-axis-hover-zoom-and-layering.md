@@ -65,7 +65,7 @@ However, when the parent container has `overflow-x: auto` or `overflow: hidden`,
 * **No Scrollbars:** Zero unwanted scrollbars or clipped card headers on hover.
 * **Smooth Tactile Feel:** Hovering a card smoothly projects it into the foreground over the board without layout shifts.
 * **Immediate State Clarity:** Players can visually confirm dynamic traits (e.g. Aerial form) on hover-zoom without opening modal inspection dialogs.
-* **Zero Overhead:** Accomplished purely with standard CSS3 transforms and unconstrained stacking contexts without extra portal DOM nodes.
+* **Low Overhead:** Uses standard CSS3 transforms and unconstrained stacking contexts. Only a surface that must clip (a modal's scrolling body, the multi-hero seat track) wraps its cards in `CardZoomLayerContext`, which draws the zoom in a portal on `document.body`.
 
 ### Negative / Tradeoffs:
 * On extremely small mobile viewports with large hands (>8 cards), cards must wrap or flex with minimal overlap rather than relying on native container scrollbars.

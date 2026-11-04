@@ -38,7 +38,7 @@ export const CardSelectFrame: React.FC<CardSelectFrameProps> = ({
   return (
     <div
       data-selection={selection}
-      className={`relative hover:z-zoom hover:scale-[1.7] hover:-translate-y-2 p-2 transition-transform duration-200 ${frame} ${className}`}
+      className={`relative hover:z-zoom hover:scale-[1.7] hover:-translate-y-2 p-2 transition-transform duration-0 hover:duration-200 ${frame} ${className}`}
     >
       <AccentStripe code={code} />
       {children}

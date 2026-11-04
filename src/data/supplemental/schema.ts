@@ -279,6 +279,9 @@ export const PlayerRecipientSchema = z.discriminatedUnion('type', [
 const AttachHostSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('VILLAIN') }).strict(),
   z
+    .object({ type: z.literal('ENVIRONMENT'), filter: UniversalCardFilterSchema.optional() })
+    .strict(),
+  z
     .object({
       type: z.enum(['MINION', 'ENEMY']),
       filter: UniversalCardFilterSchema.optional(),

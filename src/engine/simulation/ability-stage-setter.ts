@@ -12,11 +12,16 @@ import {
   type GameAction,
   type CardRepository,
   type SideSchemeState,
+  type MainSchemeCard,
+  type VillainCard,
+  getActiveMainScheme,
+  getActiveVillain,
 } from '../models';
 import { setupGame, resetInstanceCounter } from '../state/game-setup';
 import { createCardInstance } from '../state/card-instance';
 import { dispatchAction } from '../pipeline';
 import {
+  step1_placeThreat,
   step4_revealEncounterCards,
   executeVillainAttackAgainstPlayer,
   executeVillainSchemeAgainstPlayer,
@@ -30,7 +35,7 @@ import {
 import type { UniversalCardFilter } from '../../data/supplemental/schema';
 import { attachStepOf } from '../../data/supplemental/runtime';
 import { isImmuneToDamage } from '../pipeline/damage-immunity';
-import { getDefenderRestriction } from '../pipeline/target-restrictions';
+import { getDefenderRestriction, getMainSchemeThreatBlock } from '../pipeline/target-restrictions';
 import { applyThreatPlacement } from '../pipeline/threat-pipeline';
 import { namedSchemeCode } from '../effects/step-selection';
 import { matchesCardFilter } from '../filters/card-filter';
@@ -909,6 +914,7 @@ const SCENARIOS: Record<string, Scenario> = {
     });
   },
   ATTACK_RESOLVED: (stage, ctx) => {
+    if (ctx.target.card.type === CardType.VILLAIN) return villainAttack(stage, ctx);
     const filter = ctx.target.ability.triggerFilter as { sourceCardCode?: string } | undefined;
     if (filter?.sourceCardCode === ctx.target.cardCode && ctx.target.card.type === CardType.ALLY) {
       return dispatchOrThrow(stage.state, {
@@ -959,6 +965,15 @@ const SCENARIOS: Record<string, Scenario> = {
   },
   MINION_ENTERS_PLAY: (stage) => revealFixture(stage, stage.fixtures.minion),
   ENCOUNTER_CARD_REVEALED: (stage) => revealFixture(stage, stage.fixtures.treachery),
+  THREAT_PLACED: (stage) => step1_placeThreat(stage.state),
+  VILLAIN_SCHEMED: (stage) => {
+    // Its effect names side schemes, so one has to be in play
+    const sideScheme = stage.options.allCards.find((c) => c.type === CardType.SIDE_SCHEME);
+    if (sideScheme && stage.state.sideSchemes.length === 0) {
+      installInPlay(stage, createCardInstance(sideScheme, PLAYER_ID), CardType.SIDE_SCHEME);
+    }
+    return executeVillainSchemeAgainstPlayer(stage.state, player1(stage));
+  },
   THREAT_WOULD_BE_PLACED: (stage) => {
     executeVillainSchemeAgainstPlayer(stage.state, player1(stage));
     return stage.state;
@@ -1004,6 +1019,13 @@ export function installInPlay(stage: Stage, inst: CardInstance, type: CardType):
       break;
     case CardType.ATTACHMENT: {
       const attachTo = inst.card.enrichment?.attachTo;
+      const hostEnvironment = attachTo?.host?.type === 'ENVIRONMENT' ? attachTo.host : undefined;
+      if (hostEnvironment && stage.state.environments.length === 0) {
+        const environment = stage.options.allCards.find((c) =>
+          matchesCardFilter(c, { ...hostEnvironment.filter, types: ['environment'] }),
+        );
+        if (environment) stage.state.environments.push(createCardInstance(environment));
+      }
       if (
         attachTo?.host?.type === 'MINION' &&
         p.engagedMinions.length === 0 &&
@@ -1039,6 +1061,15 @@ export function installInPlay(stage: Stage, inst: CardInstance, type: CardType):
         threat: 3,
       });
       break;
+    case CardType.VILLAIN:
+      getActiveVillain(stage.state).card = inst.card as VillainCard;
+      break;
+    case CardType.MAIN_SCHEME: {
+      const scheme = getActiveMainScheme(stage.state);
+      scheme.card = inst.card as MainSchemeCard;
+      scheme.targetThreat = 99;
+      break;
+    }
     default:
       break; // identity cards are always in play
   }
@@ -1266,11 +1297,21 @@ function exerciseConstant(
     if (witnessScheme)
       installInPlay(stage, createCardInstance(witnessScheme, PLAYER_ID), witnessScheme.type);
   }
-  for (const filter of declaredFilters(target)) {
+  for (const { isFacedown, ...filter } of [
+    ...declaredFilters(target),
+    ...target.ability.steps.flatMap((step) => {
+      const gated = step.gateParams?.filter as UniversalCardFilter | undefined;
+      return gated ? [gated] : [];
+    }),
+  ]) {
     const witness = options.allCards.find(
       (c) => c.code !== card.code && matchesCardFilter(c, filter),
     );
-    if (witness) installInPlay(stage, createCardInstance(witness, PLAYER_ID), witness.type);
+    if (witness) {
+      const witnessInstance = createCardInstance(witness, PLAYER_ID);
+      if (isFacedown) witnessInstance.isShell = true;
+      installInPlay(stage, witnessInstance, witness.type);
+    }
   }
 
   let swap: (to: NormalizedCard) => void;
@@ -1282,6 +1323,20 @@ function exerciseConstant(
       if (isHero) p.hero = to as HeroCard;
       else p.alterEgo = to as AlterEgoCard;
       p.activeFormCard = isHero ? p.hero : p.alterEgo;
+    };
+  } else if (card.type === CardType.VILLAIN) {
+    const villain = getActiveVillain(state);
+    villain.card = card as VillainCard;
+    placedEntity = villain;
+    swap = (to) => {
+      villain.card = to as VillainCard;
+    };
+  } else if (card.type === CardType.MAIN_SCHEME) {
+    const scheme = getActiveMainScheme(state);
+    scheme.card = card as MainSchemeCard;
+    placedEntity = scheme;
+    swap = (to) => {
+      scheme.card = to as MainSchemeCard;
     };
   } else {
     const inst = createCardInstance(card, PLAYER_ID);
@@ -1329,7 +1384,9 @@ function exerciseConstant(
       }),
     );
   };
-  const withAbility = digestDerivedStats(state) + immunityProbe() + defenseRestrictionProbe();
+  const removalProbe = (): string => String(getMainSchemeThreatBlock(state, p));
+  const withAbility =
+    digestDerivedStats(state) + immunityProbe() + defenseRestrictionProbe() + removalProbe();
   const keywords = target.ability.steps.every((step) => step.effect === 'GRANT_KEYWORD');
   if (keywords && grantedKeywordsEffective(stage, target)) {
     // The printed card can state the same keyword, so removing the ability changes nothing: the
@@ -1337,7 +1394,8 @@ function exerciseConstant(
     return { ok: true, variant, evidence: 'digest-delta' };
   }
   swap(stripped);
-  const withoutIt = digestDerivedStats(state) + immunityProbe() + defenseRestrictionProbe();
+  const withoutIt =
+    digestDerivedStats(state) + immunityProbe() + defenseRestrictionProbe() + removalProbe();
   swap(card);
   if (withAbility === withoutIt) {
     return { ok: false, variant, reason: 'derived stats do not change with the ability' };

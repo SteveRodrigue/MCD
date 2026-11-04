@@ -41,6 +41,7 @@ import { recordBasicAction } from './stats';
 import {
   getEffectiveHeroStats,
   getEffectiveVillainStats,
+  getAttackValue,
   getEffectiveMinionAttack,
   getEffectiveRetaliate,
   consumeEntityStatusCards,
@@ -207,6 +208,7 @@ export function beginEnemyAttack(
   options?: CombatOptions,
 ): { state: GameState; attacked: boolean } {
   state.lastCombatOutcome = undefined;
+  delete state.lastSchemeThreatPlaced;
   // The attacking villain is fixed now: moving the active counter mid-activation must not change it.
   const attackerVillain =
     attacker.type === 'VILLAIN'
@@ -230,6 +232,7 @@ export function beginEnemyAttack(
   else if (attacker.card) recordBasicAction(state, 'minionAttack', attacker.card.card.code);
 
   // Step 2: Initiation Triggers (Spider-Sense draws card BEFORE defender is declared)
+  state.pendingAttackModifiers = [];
   const initResult = step2_dispatchInitiationTriggers(
     state,
     attacker.type,
@@ -237,6 +240,8 @@ export function beginEnemyAttack(
     attacker.card,
     options,
   );
+  const attackModifiers = state.pendingAttackModifiers;
+  delete state.pendingAttackModifiers;
 
   // Compute Base Stats & Keywords
   let baseAttack = 0;
@@ -262,6 +267,7 @@ export function beginEnemyAttack(
     targetPlayerId,
     phase: initResult.hasPendingPrompt ? 'INITIATION' : 'DECLARE_DEFENDER',
     baseAttack,
+    attackModifiers,
     totalBoostIcons: 0,
     hasOverkill,
     hasPiercing,
@@ -454,7 +460,7 @@ function step3_openDefenderDeclarationPrompt(
   state = kernel.enqueueDecisionPrompt(state, {
     promptId: `prompt_defend_${attackContext.attackId}`,
     playerId: player.id,
-    title: `Enemy Attack: ${attackerName} (Base ATK: ${attackContext.baseAttack})`,
+    title: `Enemy Attack: ${attackerName} (Base ATK: ${getAttackValue(state, attackContext)})`,
     description: 'Declare a defender before boost cards are dealt or revealed.',
     sourceCardName: attackerName,
     sourceCardCode:
@@ -532,7 +538,7 @@ function evaluateDefensePolicy(
 
   if (policy === 'AUTO_OPTIMAL') {
     // If incoming base attack would KO hero and ready ally exists, block with ally
-    if (attackContext.baseAttack >= player.health && readyAlly) {
+    if (getAttackValue(state, attackContext) >= player.health && readyAlly) {
       return { type: 'ALLY', playerId: player.id, allyInstanceId: readyAlly.instanceId };
     }
     if (heroAllowed) {
@@ -867,7 +873,7 @@ export function step6_calculateAndApplyAttackDamage(
   const player = state.players.find((p) => p.id === attackContext.targetPlayerId);
   if (!player) return;
 
-  const totalAttack = attackContext.baseAttack + attackContext.totalBoostIcons;
+  const totalAttack = getAttackValue(state, attackContext) + attackContext.totalBoostIcons;
   let rawDamage = totalAttack;
 
   // Subtract Hero DEF if Hero Defended
@@ -1094,7 +1100,7 @@ function completeAttackDamage(
           ? player.allies.find((a) => a.instanceId === attackContext.defender?.allyInstanceId)?.card
               .code
           : undefined,
-    baseAttack: attackContext.baseAttack,
+    baseAttack: getAttackValue(state, attackContext),
     boostCards: attackContext.revealedBoostCards ? [...attackContext.revealedBoostCards] : [],
     totalBoostIcons: attackContext.totalBoostIcons,
     defenseValue: attackContext.defenseValue || 0,

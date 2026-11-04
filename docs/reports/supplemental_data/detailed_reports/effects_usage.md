@@ -2,9 +2,41 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Effects In Use:** **50/58**
+> **Active Effects In Use:** **51/59**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
+
+### <a id="discard"></a>`DISCARD` (27 Cards, 30 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01002` | **Black Cat (ally)** | `core` | `black_cat_when_played` |
+| `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
+| `01031` | **Repulsor Blast (event)** | `core` | `repulsor_blast` |
+| `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
+| `01084` | **Nick Fury (ally)** | `core` | `nick_fury_round_end_discard` |
+| `01099` | **Charge (attachment)** | `core_encounter` | `charge_discard` |
+| `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
+| `01116b` | **Underground Distribution (main_scheme)** | `core_encounter` | `klaw_underground_distribution_when_revealed` |
+| `01117a` | **Secret Rendezvous (main_scheme)** | `core_encounter` | `klaw_secret_rendezvous_when_revealed` |
+| `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_discard_action` |
+| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
+| `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
+| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response`, `radioactive_man_boost` |
+| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_discard` |
+| `01142` | **Upgraded Drones (attachment)** | `core_encounter` | `upgraded_drones_discard` |
+| `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
+| `01149` | **Invasive AI (side_scheme)** | `core_encounter` | `invasive_ai_when_revealed` |
+| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_discard` |
+| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_discard` |
+| `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` |
+| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
+| `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
+| `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
+| `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
+| `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
+| `01188` | **Caught Off Guard (treachery)** | `core_encounter` | `caught_off_guard_when_revealed` |
+| `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 
 ### <a id="deal-damage"></a>`DEAL_DAMAGE` (25 Cards, 27 Step Occurrences)
 
@@ -36,33 +68,47 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed`, `concussive_blast_boost` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
 
-### <a id="discard"></a>`DISCARD` (23 Cards, 25 Step Occurrences)
+### <a id="add-threat"></a>`ADD_THREAT` (16 Cards, 18 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01002` | **Black Cat (ally)** | `core` | `black_cat_when_played` |
-| `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
-| `01031` | **Repulsor Blast (event)** | `core` | `repulsor_blast` |
-| `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
-| `01084` | **Nick Fury (ally)** | `core` | `nick_fury_round_end_discard` |
-| `01099` | **Charge (attachment)** | `core_encounter` | `charge_discard` |
-| `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
-| `01116b` | **Underground Distribution (main_scheme)** | `core_encounter` | `klaw_underground_distribution_when_revealed` |
-| `01117a` | **Secret Rendezvous (main_scheme)** | `core_encounter` | `klaw_secret_rendezvous_when_revealed` |
-| `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_discard_action` |
+| `01107` | **Breakin' & Takin' (side_scheme)** | `core_encounter` | `breakin_and_takin_when_revealed` |
+| `01109` | **Bomb Scare (side_scheme)** | `core_encounter` | `bomb_scare_when_revealed` |
 | `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
-| `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
-| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response`, `radioactive_man_boost` |
-| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_discard` |
-| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_discard` |
-| `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` |
+| `01125` | **Defense Network (side_scheme)** | `core_encounter` | `defense_network_when_revealed` |
+| `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
+| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_after_scheme` |
+| `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
+| `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
 | `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
-| `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
-| `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
-| `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
-| `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
-| `01188` | **Caught Off Guard (treachery)** | `core_encounter` | `caught_off_guard_when_revealed` |
+| `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
+| `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
+| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
+| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
+| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks`, `madame_hydra_schemes` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
+
+### <a id="modify-stat"></a>`MODIFY_STAT` (16 Cards, 18 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01016` | **Captain Marvel's Helmet (upgrade)** | `core` | `captain_marvel_helmet_def` |
+| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_atk` |
+| `01057` | **Combat Training (upgrade)** | `core` | `combat_training_atk` |
+| `01059` | **Jessica Jones (ally)** | `core` | `jessica_jones_thw_bonus` |
+| `01065` | **Heroic Intuition (upgrade)** | `core` | `heroic_intuition_thw` |
+| `01070` | **Lead from the Front (event)** | `core` | `lead_from_the_front_action` |
+| `01074` | **Inspired (upgrade)** | `core` | `inspired_thw_bonus`, `inspired_atk_bonus` |
+| `01081` | **Armored Vest (upgrade)** | `core` | `armored_vest_def` |
+| `01099` | **Charge (attachment)** | `core_encounter` | `charge_atk_bonus` |
+| `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_atk_bonus` |
+| `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_atk_bonus` |
+| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
+| `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_drones` |
+| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_scheme_bonus` |
+| `01142` | **Upgraded Drones (attachment)** | `core_encounter` | `upgraded_drones_constant` |
+| `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
 
 ### <a id="add-status"></a>`ADD_STATUS` (14 Cards, 17 Step Occurrences)
 
@@ -83,60 +129,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed`, `sweeping_swoop_boost` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
-### <a id="add-threat"></a>`ADD_THREAT` (14 Cards, 16 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01107` | **Breakin' & Takin' (side_scheme)** | `core_encounter` | `breakin_and_takin_when_revealed` |
-| `01109` | **Bomb Scare (side_scheme)** | `core_encounter` | `bomb_scare_when_revealed` |
-| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
-| `01125` | **Defense Network (side_scheme)** | `core_encounter` | `defense_network_when_revealed` |
-| `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
-| `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
-| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
-| `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
-| `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
-| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
-| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
-| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
-| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks`, `madame_hydra_schemes` |
-| `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
-
-### <a id="modify-stat"></a>`MODIFY_STAT` (12 Cards, 14 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01016` | **Captain Marvel's Helmet (upgrade)** | `core` | `captain_marvel_helmet_def` |
-| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_atk` |
-| `01057` | **Combat Training (upgrade)** | `core` | `combat_training_atk` |
-| `01059` | **Jessica Jones (ally)** | `core` | `jessica_jones_thw_bonus` |
-| `01065` | **Heroic Intuition (upgrade)** | `core` | `heroic_intuition_thw` |
-| `01070` | **Lead from the Front (event)** | `core` | `lead_from_the_front_action` |
-| `01074` | **Inspired (upgrade)** | `core` | `inspired_thw_bonus`, `inspired_atk_bonus` |
-| `01081` | **Armored Vest (upgrade)** | `core` | `armored_vest_def` |
-| `01099` | **Charge (attachment)** | `core_encounter` | `charge_atk_bonus` |
-| `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_atk_bonus` |
-| `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_atk_bonus` |
-| `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
-
-### <a id="execute-special"></a>`EXECUTE_SPECIAL` (12 Cards, 12 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01043a` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_a` |
-| `01043b` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_b` |
-| `01043c` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_c` |
-| `01043d` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_d` |
-| `01137b` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_when_revealed` |
-| `01138a` | **Assault on NORAD (main_scheme)** | `core_encounter` | `ultron_assault_norad_when_revealed` |
-| `01139a` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `ultron_countdown_when_revealed` |
-| `01143` | **Advanced Ultron Drone (minion)** | `core_encounter` | `advanced_ultron_drone_defeated` |
-| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_when_revealed` |
-| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_when_revealed` |
-| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_when_revealed` |
-| `01150` | **Ultron's Imperative (side_scheme)** | `core_encounter` | `ultrons_imperative_when_revealed` |
-
-### <a id="player-choice"></a>`PLAYER_CHOICE` (12 Cards, 12 Step Occurrences)
+### <a id="player-choice"></a>`PLAYER_CHOICE` (17 Cards, 17 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -144,6 +137,11 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01084` | **Nick Fury (ally)** | `core` | `nick_fury_enters_play` |
 | `01110` | **Hydra Bomber (minion)** | `core_encounter` | `hydra_bomber_when_revealed` |
 | `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_when_revealed` |
+| `01134` | **Ultron (villain)** | `core_encounter` | `ultron_i_after_attack` |
+| `01138b` | **Assault on NORAD (main_scheme)** | `core_encounter` | `assault_on_norad_after_threat` |
+| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_boost` |
+| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_boost` |
+| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_boost` |
 | `01151` | **Under Attack (side_scheme)** | `core_encounter` | `under_attack_when_revealed` |
 | `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` |
 | `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` |
@@ -152,6 +150,44 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_when_revealed` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
+
+### <a id="execute-special"></a>`EXECUTE_SPECIAL` (15 Cards, 15 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01043a` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_a` |
+| `01043b` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_b` |
+| `01043c` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_c` |
+| `01043d` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_d` |
+| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
+| `01137b` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_when_revealed` |
+| `01138a` | **Assault on NORAD (main_scheme)** | `core_encounter` | `ultron_assault_norad_when_revealed` |
+| `01139a` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `ultron_countdown_when_revealed` |
+| `01143` | **Advanced Ultron Drone (minion)** | `core_encounter` | `advanced_ultron_drone_defeated` |
+| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_when_revealed` |
+| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_when_revealed` |
+| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_when_revealed` |
+| `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
+| `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
+| `01150` | **Ultron's Imperative (side_scheme)** | `core_encounter` | `ultrons_imperative_when_revealed` |
+
+### <a id="search"></a>`SEARCH` (13 Cards, 13 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01029b` | **Tony Stark (alter_ego)** | `core` | `futurist` |
+| `01034` | **Stark Tower (support)** | `core` | `stark_tower_retrieve` |
+| `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
+| `01041` | **Shuri (ally)** | `core` | `shuri_enters_play` |
+| `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
+| `01095` | **Rhino (villain)** | `core_encounter` | `rhino_stage_ii_when_revealed` |
+| `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_when_revealed` |
+| `01116a` | **Underground Distribution (main_scheme)** | `core_encounter` | `klaw_underground_distribution_setup` |
+| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
+| `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_when_revealed` |
+| `01137a` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_setup` |
+| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
+| `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
 
 ### <a id="remove-threat"></a>`REMOVE_THREAT` (10 Cards, 12 Step Occurrences)
 
@@ -168,22 +204,22 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
 | `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
 
-### <a id="search"></a>`SEARCH` (12 Cards, 12 Step Occurrences)
+### <a id="surge"></a>`SURGE` (12 Cards, 12 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01029b` | **Tony Stark (alter_ego)** | `core` | `futurist` |
-| `01034` | **Stark Tower (support)** | `core` | `stark_tower_retrieve` |
-| `01040b` | **T'Challa (alter_ego)** | `core` | `t_challa_foresight` |
-| `01041` | **Shuri (ally)** | `core` | `shuri_enters_play` |
-| `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
-| `01095` | **Rhino (villain)** | `core_encounter` | `rhino_stage_ii_when_revealed` |
-| `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_when_revealed` |
-| `01116a` | **Underground Distribution (main_scheme)** | `core_encounter` | `klaw_underground_distribution_setup` |
-| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
-| `01137a` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_setup` |
-| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
-| `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
+| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
+| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
+| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
+| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
+| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
+| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
+| `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
+| `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
+| `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
+| `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
 
 ### <a id="draw"></a>`DRAW` (11 Cards, 11 Step Occurrences)
 
@@ -201,23 +237,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
-### <a id="surge"></a>`SURGE` (11 Cards, 11 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
-| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
-| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
-| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
-| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
-| `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
-| `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
-| `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
-| `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
-
-### <a id="heal-damage"></a>`HEAL_DAMAGE` (7 Cards, 7 Step Occurrences)
+### <a id="heal-damage"></a>`HEAL_DAMAGE` (8 Cards, 9 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -226,8 +246,21 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01080` | **Med Team (support)** | `core` | `med_team_heal` |
 | `01086` | **First Aid (event)** | `core` | `first_aid` |
 | `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
+| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed`, `repair_sequence_boost` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 | `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
+
+### <a id="modify-max-health"></a>`MODIFY_MAX_HEALTH` (7 Cards, 7 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01036` | **Mark V Armor (upgrade)** | `core` | `mark_v_armor_hp` |
+| `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_hp` |
+| `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
+| `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_drones` |
+| `01142` | **Upgraded Drones (attachment)** | `core_encounter` | `upgraded_drones_constant` |
+| `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
+| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
 
 ### <a id="change-form"></a>`CHANGE_FORM` (5 Cards, 5 Step Occurrences)
 
@@ -239,16 +272,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 
-### <a id="modify-max-health"></a>`MODIFY_MAX_HEALTH` (5 Cards, 5 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01036` | **Mark V Armor (upgrade)** | `core` | `mark_v_armor_hp` |
-| `01039` | **Rocket Boots (upgrade)** | `core` | `rocket_boots_hp` |
-| `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
-| `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
-| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
-
 ### <a id="ready"></a>`READY` (5 Cards, 5 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -259,6 +282,16 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
 | `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
 
+### <a id="villain-attacks"></a>`VILLAIN_ATTACKS` (5 Cards, 5 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
+| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
+| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
+| `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
+| `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
+
 ### <a id="double-resource-for-aspect"></a>`DOUBLE_RESOURCE_FOR_ASPECT` (4 Cards, 4 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -267,6 +300,15 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01062` | **The Power of Justice (resource)** | `core` | `power_of_justice` |
 | `01072` | **The Power of Leadership (resource)** | `core` | `power_of_leadership` |
 | `01079` | **The Power of Protection (resource)** | `core` | `power_of_protection` |
+
+### <a id="enemy-attacks"></a>`ENEMY_ATTACKS` (4 Cards, 4 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
+| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
+| `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 
 ### <a id="grant-keyword"></a>`GRANT_KEYWORD` (4 Cards, 4 Step Occurrences)
 
@@ -277,15 +319,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
 
-### <a id="villain-attacks"></a>`VILLAIN_ATTACKS` (4 Cards, 4 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
-| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
-| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
-| `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
-
 ### <a id="attach-to-host"></a>`ATTACH_TO_HOST` (3 Cards, 3 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -294,13 +327,13 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_attach` |
 | `01074` | **Inspired (upgrade)** | `core` | `inspired_attach` |
 
-### <a id="enemy-attacks"></a>`ENEMY_ATTACKS` (3 Cards, 3 Step Occurrences)
+### <a id="cannot-take-damage"></a>`CANNOT_TAKE_DAMAGE` (3 Cards, 3 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
-| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
+| `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_drones` |
+| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
 
 ### <a id="exhaust"></a>`EXHAUST` (3 Cards, 3 Step Occurrences)
 
@@ -347,13 +380,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01004` | **Enhanced Spider-Sense (event)** | `core` | `enhanced_spider_sense` |
 | `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
 
-### <a id="cannot-take-damage"></a>`CANNOT_TAKE_DAMAGE` (2 Cards, 2 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
-| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
-
 ### <a id="modify-ally-limit"></a>`MODIFY_ALLY_LIMIT` (2 Cards, 2 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -381,6 +407,13 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | :--- | :--- | :--- | :--- |
 | `01020` | **Hellcat (ally)** | `core` | `hellcat_return` |
 | `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
+
+### <a id="villain-schemes"></a>`VILLAIN_SCHEMES` (2 Cards, 2 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
+| `01186` | **Advance (treachery)** | `core_encounter` | `advance_when_revealed` |
 
 ### <a id="add-counters"></a>`ADD_COUNTERS` (1 Cards, 1 Step Occurrences)
 
@@ -478,6 +511,12 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | :--- | :--- | :--- | :--- |
 | `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
 
+### <a id="threat-cannot-be-removed"></a>`THREAT_CANNOT_BE_REMOVED` (1 Cards, 1 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01139b` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `countdown_to_oblivion_no_removal` |
+
 ### <a id="transfer-damage"></a>`TRANSFER_DAMAGE` (1 Cards, 1 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -489,11 +528,5 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
-
-### <a id="villain-schemes"></a>`VILLAIN_SCHEMES` (1 Cards, 1 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01186` | **Advance (treachery)** | `core_encounter` | `advance_when_revealed` |
 
 [← Back to Main Usage Report](../usage_report.md)

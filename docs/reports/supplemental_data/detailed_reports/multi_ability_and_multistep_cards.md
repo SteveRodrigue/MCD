@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-## 1. Cards with Multiple Abilities (2+ Declared Abilities — 28 Cards)
+## 1. Cards with Multiple Abilities (2+ Declared Abilities — 35 Cards)
 
 | Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -22,6 +22,13 @@
 | `01130` | **Whirlwind** | `minion` | `core_encounter` | **2** | • `whirlwind_interrupt_multi_hero_attack` (`FORCED_INTERRUPT` / `ENEMY_INITIATES_ATTACK`, **1 step**)<br/>• `whirlwind_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01131` | **Tiger Shark** | `minion` | `core_encounter` | **2** | • `tiger_shark_forced_response` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**)<br/>• `tiger_shark_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01132` | **Melter** | `minion` | `core_encounter` | **2** | • `melter_defend_with_ally_restriction` (`CONSTANT`, **1 step**)<br/>• `melter_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `01136` | **Ultron** | `villain` | `core_encounter` | **2** | • `ultron_iii_drones` (`CONSTANT`, **3 steps**)<br/>• `ultron_iii_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**) |
+| `01141` | **Program Transmitter** | `attachment` | `core_encounter` | **3** | • `program_transmitter_scheme_bonus` (`CONSTANT`, **1 step**)<br/>• `program_transmitter_after_scheme` (`FORCED_RESPONSE` / `VILLAIN_SCHEMED`, **1 step**)<br/>• `program_transmitter_discard` (`HERO_ACTION`, **1 step**) |
+| `01142` | **Upgraded Drones** | `attachment` | `core_encounter` | **2** | • `upgraded_drones_constant` (`CONSTANT`, **2 steps**)<br/>• `upgraded_drones_discard` (`HERO_ACTION`, **1 step**) |
+| `01144a` | **Android Efficiency** | `treachery` | `core_encounter` | **2** | • `android_efficiency_a_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `android_efficiency_a_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `01144b` | **Android Efficiency** | `treachery` | `core_encounter` | **2** | • `android_efficiency_b_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `android_efficiency_b_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `01144c` | **Android Efficiency** | `treachery` | `core_encounter` | **2** | • `android_efficiency_c_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `android_efficiency_c_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `01146` | **Repair Sequence** | `treachery` | `core_encounter` | **2** | • `repair_sequence_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `repair_sequence_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01152` | **Vibranium Armor** | `attachment` | `core_encounter` | **2** | • `vibranium_armor_tough` (`FORCED_RESPONSE` / `DAMAGE_TAKEN`, **1 step**)<br/>• `vibranium_armor_discard` (`HERO_ACTION`, **1 step**) |
 | `01153` | **Concussion Blasters** | `attachment` | `core_encounter` | **2** | • `concussion_blasters_retaliate` (`CONSTANT`, **1 step**)<br/>• `concussion_blasters_discard` (`HERO_ACTION`, **1 step**) |
 | `01154` | **Concussive Blast** | `treachery` | `core_encounter` | **2** | • `concussive_blast_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `concussive_blast_boost` (`BOOST` / `BOOST`, **1 step**) |
@@ -35,7 +42,7 @@
 | `03024` | **Avengers Tower** | `support` | `cap` | **2** | • `avengers_tower_ally_limit` (`CONSTANT`, **1 step**)<br/>• `avengers_tower_action` (`ACTION`, **1 step**) |
 | `45109` | **The Fittest** | `attachment` | `aoa_encounter` | **2** | • `the_fittest_hit_points` (`CONSTANT`, **1 step**)<br/>• `the_fittest_tough` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**) |
 
-## 2. Multi-Step Execution Pipelines (2+ Steps — 36 Pipelines Across 36 Cards)
+## 2. Multi-Step Execution Pipelines (2+ Steps — 43 Pipelines Across 43 Cards)
 
 | Card Code | Card Name | Pack | Ability ID | Timing | Steps | Pipeline Execution Sequence |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -57,6 +64,13 @@
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` | `WHEN_REVEALED` | **2** | `[1] ADD_STATUS ➔ [2] SURGE` |
 | `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` | `WHEN_REVEALED` | **3** | `[1] DISCARD ➔ [2] VILLAIN_ATTACKS ➔ [3] ADD_THREAT` |
 | `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` | `WHEN_REVEALED` | **2** | `[1] ENEMY_ATTACKS ➔ [2] SEARCH` |
+| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` | `FORCED_INTERRUPT` | **2** | `[1] EXECUTE_SPECIAL ➔ [2] MODIFY_STAT` |
+| `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_drones` | `CONSTANT` | **3** | `[1] MODIFY_STAT ➔ [2] MODIFY_MAX_HEALTH ➔ [3] CANNOT_TAKE_DAMAGE` |
+| `01142` | **Upgraded Drones (attachment)** | `core_encounter` | `upgraded_drones_constant` | `CONSTANT` | **2** | `[1] MODIFY_STAT ➔ [2] MODIFY_MAX_HEALTH` |
+| `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` | `WHEN_REVEALED` | **4** | `[1] VILLAIN_SCHEMES ➔ [2] DISCARD ➔ [3] VILLAIN_ATTACKS ➔ [4] DISCARD` |
+| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed` | `WHEN_REVEALED` | **2** | `[1] HEAL_DAMAGE ➔ [2] SURGE` |
+| `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` | `WHEN_REVEALED` | **2** | `[1] ENEMY_ATTACKS ➔ [2] EXECUTE_SPECIAL` |
+| `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` | `WHEN_REVEALED` | **2** | `[1] EXECUTE_SPECIAL ➔ [2] ADD_THREAT` |
 | `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` | `FORCED_RESPONSE` | **2** | `[1] CHANGE_FORM ➔ [2] PLAYER_CHOICE` |
 | `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DISCARD ➔ [2] PLAYER_CHOICE` |
 | `01160` | **Legal Work (obligation)** | `core_encounter` | `legal_work_resolve` | `FORCED_RESPONSE` | **2** | `[1] CHANGE_FORM ➔ [2] PLAYER_CHOICE` |

@@ -346,6 +346,7 @@ describe('Card Loader & Normalizer Unit Tests', () => {
       // Check Scanned Encounter Sets (Rhino, Modular Sets, Standard, Expert, All 5 Core Hero Nemesis sets)
       const scannedEncounterSets = new Set([
         'rhino',
+        'ultron',
         'bomb_scare',
         'masters_of_evil',
         'under_attack',
@@ -378,22 +379,11 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         '01125',
         '01126',
         '01127',
-        // main scheme Setup and When Revealed abilities (Klaw, Ultron)
+        // main scheme Setup and When Revealed abilities (Klaw)
         '01116a',
         '01116b',
         '01117a',
         '01117b',
-        '01137a',
-        // Issue #352, PR A: the Ultron cards that create Drones (the set scan comes with PR C)
-        '01137b',
-        '01138a',
-        '01139a',
-        '01140',
-        '01143',
-        '01144a',
-        '01144b',
-        '01144c',
-        '01150',
       ]);
 
       coreEncounterPack.forEach((card) => {
@@ -416,8 +406,8 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         }
       });
 
-      // Verify that unscanned card Ultron I (01134) returns undefined from getCardEnrichment
-      expect(getCardEnrichment('01134')).toBeUndefined();
+      // Verify that an unscanned card, Solid-Sound Body (01119), returns undefined from getCardEnrichment
+      expect(getCardEnrichment('01119')).toBeUndefined();
     });
   });
 

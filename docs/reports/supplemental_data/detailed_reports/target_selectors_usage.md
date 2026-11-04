@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Target Selectors In Use:** **35/47**
+> **Active Target Selectors In Use:** **36/47**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -25,7 +25,7 @@
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 | `01087` | **Haymaker (event)** | `core` | `haymaker` |
 
-### <a id="self"></a>`SELF` (14 Cards, 14 Declarations)
+### <a id="self"></a>`SELF` (16 Cards, 16 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -36,6 +36,8 @@
 | `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
 | `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
 | `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response` |
+| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
+| `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
 | `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
 | `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
@@ -59,6 +61,21 @@
 | `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
 | `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
 
+### <a id="all-players"></a>`ALL_PLAYERS` (10 Cards, 10 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01067` | **Maria Hill (ally)** | `core` | `maria_hill_enters_play` |
+| `01137b` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_when_revealed` |
+| `01138a` | **Assault on NORAD (main_scheme)** | `core_encounter` | `ultron_assault_norad_when_revealed` |
+| `01139a` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `ultron_countdown_when_revealed` |
+| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_when_revealed` |
+| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_when_revealed` |
+| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_when_revealed` |
+| `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
+| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
+| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
+
 ### <a id="self-identity"></a>`SELF_IDENTITY` (10 Cards, 10 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -74,21 +91,7 @@
 | `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
 | `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
 
-### <a id="all-players"></a>`ALL_PLAYERS` (9 Cards, 9 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01067` | **Maria Hill (ally)** | `core` | `maria_hill_enters_play` |
-| `01137b` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_when_revealed` |
-| `01138a` | **Assault on NORAD (main_scheme)** | `core_encounter` | `ultron_assault_norad_when_revealed` |
-| `01139a` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `ultron_countdown_when_revealed` |
-| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_when_revealed` |
-| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_when_revealed` |
-| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_when_revealed` |
-| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
-| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
-
-### <a id="villain"></a>`VILLAIN` (7 Cards, 7 Declarations)
+### <a id="villain"></a>`VILLAIN` (9 Cards, 10 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -97,6 +100,8 @@
 | `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
 | `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
 | `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
+| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
+| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed`, `repair_sequence_boost` |
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
 
@@ -111,7 +116,7 @@
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
 
-### <a id="this-side-scheme"></a>`THIS_SIDE_SCHEME` (5 Cards, 5 Declarations)
+### <a id="this-side-scheme"></a>`THIS_SIDE_SCHEME` (6 Cards, 6 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -119,7 +124,15 @@
 | `01109` | **Bomb Scare (side_scheme)** | `core_encounter` | `bomb_scare_when_revealed` |
 | `01125` | **Defense Network (side_scheme)** | `core_encounter` | `defense_network_when_revealed` |
 | `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
+| `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
 | `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
+
+### <a id="all-minions"></a>`ALL_MINIONS` (2 Cards, 4 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_drones` |
+| `01142` | **Upgraded Drones (attachment)** | `core_encounter` | `upgraded_drones_constant` |
 
 ### <a id="chosen-player"></a>`CHOSEN_PLAYER` (4 Cards, 4 Declarations)
 
@@ -192,6 +205,13 @@
 | `01022` | **Ground Stomp (event)** | `core` | `ground_stomp_action` |
 | `01030` | **War Machine (ally)** | `core` | `war_machine_action` |
 
+### <a id="all-side-schemes"></a>`ALL_SIDE_SCHEMES` (2 Cards, 2 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_after_scheme` |
+| `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
+
 ### <a id="chosen-ally"></a>`CHOSEN_ALLY` (2 Cards, 2 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -212,6 +232,13 @@
 | :--- | :--- | :--- | :--- |
 | `01046` | **Energy Daggers (upgrade)** | `core` | `energy_daggers_special` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed` |
+
+### <a id="engaged-hero"></a>`ENGAGED_HERO` (2 Cards, 2 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
+| `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
 
 ### <a id="engaged-player"></a>`ENGAGED_PLAYER` (2 Cards, 2 Declarations)
 
@@ -263,12 +290,6 @@
 | :--- | :--- | :--- | :--- |
 | `01037` | **Mark V Helmet (upgrade)** | `core` | `mark_v_helmet` |
 
-### <a id="all-side-schemes"></a>`ALL_SIDE_SCHEMES` (1 Cards, 1 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
-
 ### <a id="chosen-character"></a>`CHOSEN_CHARACTER` (1 Cards, 1 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -280,12 +301,6 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01080` | **Med Team (support)** | `core` | `med_team_heal` |
-
-### <a id="engaged-hero"></a>`ENGAGED_HERO` (1 Cards, 1 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
 
 ### <a id="host-enemy"></a>`HOST_ENEMY` (1 Cards, 1 Declarations)
 

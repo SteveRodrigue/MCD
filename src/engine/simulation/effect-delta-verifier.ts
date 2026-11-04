@@ -79,6 +79,7 @@ export const EFFECT_DELTA_CONTRACTS: Record<EffectType, readonly DeltaDomain[]> 
   MODIFY_HAND_SIZE: ['MODIFIERS'],
   MODIFY_MAX_HEALTH: ['HEALTH', 'MODIFIERS'],
   CANNOT_TAKE_DAMAGE: ['MODIFIERS', 'LOG'],
+  THREAT_CANNOT_BE_REMOVED: ['MODIFIERS', 'LOG'],
   RESTRICT_DEFENSE: ['MODIFIERS', 'PROMPT', 'LOG'],
   DOUBLE_RESOURCE_FOR_ASPECT: ['MODIFIERS'],
   PLAYER_CHOICE: ['PROMPT', 'LOG', 'HEALTH', 'THREAT', 'ZONES', 'STATUS', 'COUNTERS', 'MODIFIERS'],
@@ -185,9 +186,16 @@ export function assertNoStepErrors(state: GameState, context: string): void {
   }
 }
 
-/** A step whose resolution depends on a gate, a choice or a limit may legitimately change nothing. */
+/**
+ * A step whose resolution depends on a gate, a choice or a limit may legitimately change nothing,
+ * and an effect "until the end of the attack" is already over when the run ends.
+ */
 function mayNoOp(step: AbilityStep): boolean {
-  return Boolean(step.gate) || step.effect === 'PLAYER_CHOICE';
+  return (
+    Boolean(step.gate) ||
+    step.effect === 'PLAYER_CHOICE' ||
+    step.effectParams?.duration === 'ATTACK'
+  );
 }
 
 export interface AbilityVerification {

@@ -44,7 +44,7 @@ describe('State Lifecycle Duration & Zone Cleanup', () => {
     gameState.activePlayerIndex = 0;
   });
 
-  it('Contract: All supplemental card files strictly use canonical durations (PHASE | ROUND | TURN)', () => {
+  it('Contract: All supplemental card files strictly use canonical durations (PHASE | ROUND | TURN | ATTACK)', () => {
     const packFiles = supplementalFileNames();
 
     const invalidDurations: { file: string; cardCode: string; duration: string }[] = [];
@@ -57,7 +57,7 @@ describe('State Lifecycle Duration & Zone Cleanup', () => {
         for (const ability of abilities) {
           for (const step of ability.steps || []) {
             const d = step.effectParams?.duration;
-            if (d !== undefined && !['PHASE', 'ROUND', 'TURN'].includes(d)) {
+            if (d !== undefined && !['PHASE', 'ROUND', 'TURN', 'ATTACK'].includes(d)) {
               invalidDurations.push({ file, cardCode, duration: d });
             }
           }

@@ -10,7 +10,7 @@ import { WakandaForeverModal } from './WakandaForeverModal';
 import { DistributeAmountModal } from './DistributeAmountModal';
 import { SelectCardsModal } from './SelectCardsModal';
 import { SimultaneousAbilitiesModal } from './SimultaneousAbilitiesModal';
-import { optionRequiresPayment } from '../../utils/option-requires-payment';
+import { optionOwnResourceCost, optionRequiresPayment } from '../../utils/option-requires-payment';
 import { AccentStripe } from '../../theme/AccentStripe';
 import { ModalScaffold } from '../../theme/ModalScaffold';
 import { useModalStyle } from '../../theme/useModalStyle';
@@ -496,6 +496,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
             const costAmount =
               optParams?.resourceCost?.amount ??
               (option as any).resourceCost?.amount ??
+              optionOwnResourceCost(option)?.amount ??
               (typeof optParams?.ability?.cost?.resourceCost === 'number'
                 ? optParams.ability.cost.resourceCost
                 : typeof optParams?.ability?.cost?.resourceCost === 'object' &&

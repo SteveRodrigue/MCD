@@ -37,7 +37,7 @@ import { getEffectiveHandSize } from '../../../engine/pipeline/stat-calculator';
 import { getDiscardCostBounds } from '../../../engine/pipeline/cost-engine';
 import type { ResourceCost } from '../../../data/supplemental/schema';
 import { peekDecisionPrompt } from '../../../engine/pipeline';
-import { optionRequiresPayment } from '../../utils/option-requires-payment';
+import { optionOwnResourceCost, optionRequiresPayment } from '../../utils/option-requires-payment';
 import { useModalStyle } from '../../theme/useModalStyle';
 
 interface GameBoardProps {
@@ -457,6 +457,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                   villain={getActiveVillain(gameState)}
                   mainScheme={getActiveMainScheme(gameState)}
                   sideSchemes={gameState.sideSchemes}
+                  environments={gameState.environments}
                   outOfPlayEmpty={isOutOfPlayEmpty}
                   encounterDeck={gameState.encounterDeck}
                   encounterDiscard={gameState.encounterDiscard}
@@ -742,7 +743,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                       promptPlayer.tableau.find((c) => c.card.code === activePrompt.sourceCardCode)
                     : undefined);
 
-                const resCost = optParams?.resourceCost;
+                const resCost = optParams?.resourceCost ?? optionOwnResourceCost(selectedOption);
                 const ability = optParams?.ability;
                 const costAmount = resCost?.amount ?? inPlayCard?.card?.cost ?? 1;
                 const resourceType =

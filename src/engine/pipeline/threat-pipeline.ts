@@ -192,6 +192,7 @@ function placeThreat(
   let currentThreat = 0;
   let targetThreat: number | undefined;
   let stageCompleted = false;
+  let placedOnMainSchemeId: string | undefined;
   let onomatopoeia = 'SCHEME!';
 
   // ---------------------------------------------------------------------------
@@ -248,6 +249,7 @@ function placeThreat(
     // ---------------------------------------------------------------------------
     // STEP 3: Main Scheme Threshold Check & Stage Progression
     // ---------------------------------------------------------------------------
+    placedOnMainSchemeId = mainScheme.instanceId;
     if (mainScheme.targetThreat && mainScheme.threat >= mainScheme.targetThreat) {
       stageCompleted = true;
       state = handleMainSchemeCompletion(state, mainScheme.instanceId);
@@ -280,6 +282,8 @@ function placeThreat(
     }
   }
 
+  if (sourceType === 'VILLAIN_SCHEME') state.lastSchemeThreatPlaced = finalThreat;
+
   // ---------------------------------------------------------------------------
   // STEP 4: Post-Placement Triggers
   // ---------------------------------------------------------------------------
@@ -287,8 +291,9 @@ function placeThreat(
     targetPlayerId:
       sourcePlayerId || state.players[state.activePlayerIndex]?.id || state.players[0]?.id || '',
     targetType,
-    targetInstanceId,
+    targetInstanceId: targetInstanceId ?? placedOnMainSchemeId,
     threatAmount: finalThreat,
+    threatSource: sourceType,
   });
 
   return {
@@ -350,10 +355,14 @@ export function finishPendingThreatPlacements(state: GameState): GameState {
 const MAIN_SCHEME_BLOCK_LOG: Record<
   MainSchemeThreatBlock,
   {
-    key: 'card.effect.threatBlockedByCrisis' | 'card.effect.threatBlockedByPatrol';
+    key:
+      | 'card.effect.threatBlockedByScheme'
+      | 'card.effect.threatBlockedByCrisis'
+      | 'card.effect.threatBlockedByPatrol';
     onomatopoeia: string;
   }
 > = {
+  NO_REMOVAL: { key: 'card.effect.threatBlockedByScheme', onomatopoeia: 'NO REMOVAL!' },
   CRISIS: { key: 'card.effect.threatBlockedByCrisis', onomatopoeia: 'CRISIS BLOCKS!' },
   PATROL: { key: 'card.effect.threatBlockedByPatrol', onomatopoeia: 'PATROL BLOCKS!' },
 };

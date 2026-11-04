@@ -1342,6 +1342,177 @@
         "originalText": "<b>When Revealed</b>: Each [[Masters of Evil]] minion attacks the hero it is engaged with. If no attacks were made this way, search the encounter deck and discard pile for a [[Masters of Evil]] minion and put it into play engaged with you, then shuffle the encounter deck."
       }
     },
+    "01134": {
+      "abilities": [
+        {
+          "id": "ultron_i_after_attack",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "ATTACK_RESOLVED",
+          "triggerFilter": {
+            "attackedBy": "THIS_CARD"
+          },
+          "steps": [
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Ultron",
+                "description": "Ultron attacked you. Choose one:",
+                "options": [
+                  {
+                    "id": "place_threat",
+                    "label": "Place 1 threat on the main scheme",
+                    "description": "Place 1 threat on the main scheme.",
+                    "effect": "ADD_THREAT",
+                    "params": {
+                      "target": "MAIN_SCHEME",
+                      "amount": 1
+                    }
+                  },
+                  {
+                    "id": "create_drone",
+                    "label": "Create a Drone",
+                    "description": "Put the top card of your deck into play facedown, engaged with you as a Drone minion.",
+                    "effect": "EXECUTE_SPECIAL",
+                    "params": {
+                      "specialId": "ULTRON_DRONE",
+                      "target": "SELF"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T03:00:00Z",
+        "updatedAt": "2026-11-04T03:00:00Z",
+        "reviewedAt": "2026-11-04T03:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "[star] <b>Forced Response</b>: After Ultron attacks you, choose to either place 1 threat on the main scheme or put the top card of your deck into play facedown, engaged with you as a [[Drone]] minion."
+      }
+    },
+    "01135": {
+      "abilities": [
+        {
+          "id": "ultron_ii_when_attacks",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "ENEMY_INITIATES_ATTACK",
+          "triggerFilter": {
+            "attackerKind": "VILLAIN"
+          },
+          "steps": [
+            {
+              "effect": "EXECUTE_SPECIAL",
+              "effectParams": {
+                "specialId": "ULTRON_DRONE",
+                "target": "SELF"
+              }
+            },
+            {
+              "effect": "MODIFY_STAT",
+              "effectParams": {
+                "stat": "ATTACK",
+                "target": "VILLAIN",
+                "duration": "ATTACK",
+                "amount": {
+                  "from": "ENTITY_COUNT",
+                  "target": "ENGAGED_MINIONS",
+                  "filter": {
+                    "traits": ["Drone"],
+                    "types": ["minion"]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T03:00:00Z",
+        "updatedAt": "2026-11-04T03:00:00Z",
+        "reviewedAt": "2026-11-04T03:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "[star] <b>Forced Interrupt</b>: When Ultron attacks you, put the top card of your deck into play facedown, engaged with you as a [[Drone]] minion. Until the end of his attack, Ultron gets +1 ATK for each [[Drone]] minion engaged with you."
+      }
+    },
+    "01136": {
+      "abilities": [
+        {
+          "id": "ultron_iii_drones",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "MODIFY_STAT",
+              "effectParams": {
+                "stat": "ATTACK",
+                "amount": 1,
+                "target": "ALL_MINIONS",
+                "filter": {
+                  "traits": ["Drone"],
+                  "types": ["minion"]
+                }
+              }
+            },
+            {
+              "effect": "MODIFY_MAX_HEALTH",
+              "effectParams": {
+                "amount": 1,
+                "target": "ALL_MINIONS",
+                "filter": {
+                  "traits": ["Drone"],
+                  "types": ["minion"]
+                }
+              }
+            },
+            {
+              "effect": "CANNOT_TAKE_DAMAGE",
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "filter": {
+                  "traits": ["Drone"],
+                  "types": ["minion"]
+                }
+              },
+              "effectParams": {}
+            }
+          ]
+        },
+        {
+          "id": "ultron_iii_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "SEARCH",
+              "effectParams": {
+                "source": ["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"],
+                "filter": {
+                  "codes": ["01150"]
+                },
+                "takeCount": 1,
+                "selectedDestination": "REVEAL",
+                "shuffleAfter": true,
+                "autoSelectIfUnambiguous": true
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T04:00:00Z",
+        "updatedAt": "2026-11-04T04:00:00Z",
+        "reviewedAt": "2026-11-04T04:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Each [[Drone]] minion gets +1 ATK and +1 hit point. Ultron cannot take damage while a [[Drone]] minion is in play.\n<b>When Revealed</b>: Search the encounter deck and discard pile for the Ultron's Imperative side scheme and reveal it. Then shuffle the encounter deck."
+      }
+    },
     "01137a": {
       "abilities": [
         {
@@ -1427,6 +1598,60 @@
         "originalText": "<b>When Revealed</b>: Each player puts the top card of their deck into play facedown, engaged with them as a [[Drone]] minion. Advance to stage 2B."
       }
     },
+    "01138b": {
+      "abilities": [
+        {
+          "id": "assault_on_norad_after_threat",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "THREAT_PLACED",
+          "triggerFilter": {
+            "threatSource": "VILLAIN_PHASE_STEP_1",
+            "targetScope": "SELF"
+          },
+          "forEachPlayer": true,
+          "steps": [
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Assault on NORAD",
+                "description": "Choose one:",
+                "options": [
+                  {
+                    "id": "place_threat",
+                    "label": "Place 2 threat here",
+                    "description": "Place 2 threat on Assault on NORAD.",
+                    "effect": "ADD_THREAT",
+                    "params": {
+                      "target": "MAIN_SCHEME",
+                      "amount": 2
+                    }
+                  },
+                  {
+                    "id": "create_drone",
+                    "label": "Create a Drone",
+                    "description": "Put the top card of your deck into play facedown, engaged with you as a Drone minion.",
+                    "effect": "EXECUTE_SPECIAL",
+                    "params": {
+                      "specialId": "ULTRON_DRONE",
+                      "target": "SELF"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T03:00:00Z",
+        "updatedAt": "2026-11-04T03:00:00Z",
+        "reviewedAt": "2026-11-04T03:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>Forced Response</b>: After placing threat here during step one of the villain phase, each player must choose to either place 2 threat here or put the top card of their deck into play facedown, engaged with them as a [[Drone]] minion."
+      }
+    },
     "01139a": {
       "abilities": [
         {
@@ -1454,6 +1679,28 @@
         "originalText": "<b>When Revealed</b>: Each player puts the top card of their deck into play facedown, engaged with them as a [[Drone]] minion. Advance to stage 3B."
       }
     },
+    "01139b": {
+      "abilities": [
+        {
+          "id": "countdown_to_oblivion_no_removal",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "THREAT_CANNOT_BE_REMOVED"
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T04:00:00Z",
+        "updatedAt": "2026-11-04T04:00:00Z",
+        "reviewedAt": "2026-11-04T04:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Threat cannot be removed from this scheme.\n<b>If this stage is completed, the players lose the game</b>"
+      }
+    },
     "01140": {
       "noSupplementalNeeded": true,
       "abilities": [],
@@ -1465,6 +1712,135 @@
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Each facedown [[Drone]] minion engaged with a player has a base SCH of 1, a base ATK of 1, and a base hit points of 1.\n<b>Forced Response</b>: After a facedown [[Drone]] minion is defeated, place that card in it's owners discard pile."
+      }
+    },
+    "01141": {
+      "abilities": [
+        {
+          "id": "program_transmitter_scheme_bonus",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "MODIFY_STAT",
+              "effectParams": {
+                "stat": "SCHEME",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "program_transmitter_after_scheme",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "VILLAIN_SCHEMED",
+          "steps": [
+            {
+              "effect": "ADD_THREAT",
+              "effectParams": {
+                "target": "ALL_SIDE_SCHEMES",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "program_transmitter_discard",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "exhaustCard": "SELF_IDENTITY",
+            "resourceCost": {
+              "mental": 2
+            }
+          },
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "SELF"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T04:00:00Z",
+        "updatedAt": "2026-11-04T04:00:00Z",
+        "reviewedAt": "2026-11-04T04:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Attach to Ultron.\n[star] <b>Forced Response</b>: After Ultron schemes, place 1 threat on each side scheme.\n<b>Hero Action</b>: Exhaust your hero and spend [mental] [mental] resources → discard this card."
+      }
+    },
+    "01142": {
+      "attachTo": {
+        "host": {
+          "type": "ENVIRONMENT",
+          "filter": {
+            "codes": ["01140"]
+          }
+        }
+      },
+      "abilities": [
+        {
+          "id": "upgraded_drones_constant",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "MODIFY_STAT",
+              "effectParams": {
+                "stat": "ATTACK",
+                "amount": 1,
+                "target": "ALL_MINIONS",
+                "filter": {
+                  "traits": ["Drone"],
+                  "types": ["minion"],
+                  "isFacedown": true
+                }
+              }
+            },
+            {
+              "effect": "MODIFY_MAX_HEALTH",
+              "effectParams": {
+                "amount": 1,
+                "target": "ALL_MINIONS",
+                "filter": {
+                  "traits": ["Drone"],
+                  "types": ["minion"],
+                  "isFacedown": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "upgraded_drones_discard",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "resourceCost": {
+              "energy": 1,
+              "mental": 1,
+              "physical": 1
+            }
+          },
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "SELF"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T03:00:00Z",
+        "updatedAt": "2026-11-04T03:00:00Z",
+        "reviewedAt": "2026-11-04T03:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Attach to the Ultron Drones environment.\nEach facedown [[Drone]] minion gets +1 ATK and +1 hit point.\n<b>Hero Action</b>: Spend [energy] [mental] [physical] resources → discard this card."
       }
     },
     "01143": {
@@ -1509,15 +1885,52 @@
               }
             }
           ]
+        },
+        {
+          "id": "android_efficiency_a_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Android Efficiency",
+                "description": "Choose an option for the Boost of Android Efficiency:",
+                "options": [
+                  {
+                    "id": "spend_resource",
+                    "label": "Spend a [energy] resource",
+                    "description": "Spend a [energy] resource.",
+                    "cost": {
+                      "resourceCost": {
+                        "energy": 1
+                      }
+                    },
+                    "steps": []
+                  },
+                  {
+                    "id": "create_drone",
+                    "label": "Create a Drone",
+                    "description": "Put the top card of your deck into play facedown, engaged with you as a Drone minion.",
+                    "effect": "EXECUTE_SPECIAL",
+                    "params": {
+                      "specialId": "ULTRON_DRONE",
+                      "target": "SELF"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
         }
       ],
       "audit": {
-        "createdAt": "2026-11-03T12:00:00Z",
-        "updatedAt": "2026-11-03T12:00:00Z",
-        "reviewedAt": "2026-11-03T12:00:00Z",
+        "createdAt": "2026-11-04T03:00:00Z",
+        "updatedAt": "2026-11-04T03:00:00Z",
+        "reviewedAt": "2026-11-04T03:00:00Z",
         "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 60,
+        "confidence": 95,
         "originalText": "<b>When Revealed</b>: Each player puts the top card of their deck into play facedown, engaged with them as a [[Drone]] minion.\n<hr />\n[star] <b>Boost</b>: Choose to either spend a [energy] resource or put the top card of the deck into play facedown, engaged with you as a [[Drone]] minion."
       }
     },
@@ -1536,15 +1949,52 @@
               }
             }
           ]
+        },
+        {
+          "id": "android_efficiency_b_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Android Efficiency",
+                "description": "Choose an option for the Boost of Android Efficiency:",
+                "options": [
+                  {
+                    "id": "spend_resource",
+                    "label": "Spend a [mental] resource",
+                    "description": "Spend a [mental] resource.",
+                    "cost": {
+                      "resourceCost": {
+                        "mental": 1
+                      }
+                    },
+                    "steps": []
+                  },
+                  {
+                    "id": "create_drone",
+                    "label": "Create a Drone",
+                    "description": "Put the top card of your deck into play facedown, engaged with you as a Drone minion.",
+                    "effect": "EXECUTE_SPECIAL",
+                    "params": {
+                      "specialId": "ULTRON_DRONE",
+                      "target": "SELF"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
         }
       ],
       "audit": {
-        "createdAt": "2026-11-03T12:00:00Z",
-        "updatedAt": "2026-11-03T12:00:00Z",
-        "reviewedAt": "2026-11-03T12:00:00Z",
+        "createdAt": "2026-11-04T03:00:00Z",
+        "updatedAt": "2026-11-04T03:00:00Z",
+        "reviewedAt": "2026-11-04T03:00:00Z",
         "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 60,
+        "confidence": 95,
         "originalText": "<b>When Revealed</b>: Each player puts the top card of their deck into play facedown, engaged with them as a [[Drone]] minion.\n<hr />\n[star] <b>Boost</b>: Choose to either spend a [mental] resource or put the top card of the deck into play facedown, engaged with you as a [[Drone]] minion."
       }
     },
@@ -1563,16 +2013,301 @@
               }
             }
           ]
+        },
+        {
+          "id": "android_efficiency_c_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Android Efficiency",
+                "description": "Choose an option for the Boost of Android Efficiency:",
+                "options": [
+                  {
+                    "id": "spend_resource",
+                    "label": "Spend a [physical] resource",
+                    "description": "Spend a [physical] resource.",
+                    "cost": {
+                      "resourceCost": {
+                        "physical": 1
+                      }
+                    },
+                    "steps": []
+                  },
+                  {
+                    "id": "create_drone",
+                    "label": "Create a Drone",
+                    "description": "Put the top card of your deck into play facedown, engaged with you as a Drone minion.",
+                    "effect": "EXECUTE_SPECIAL",
+                    "params": {
+                      "specialId": "ULTRON_DRONE",
+                      "target": "SELF"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
         }
       ],
       "audit": {
-        "createdAt": "2026-11-03T12:00:00Z",
-        "updatedAt": "2026-11-03T12:00:00Z",
-        "reviewedAt": "2026-11-03T12:00:00Z",
+        "createdAt": "2026-11-04T03:00:00Z",
+        "updatedAt": "2026-11-04T03:00:00Z",
+        "reviewedAt": "2026-11-04T03:00:00Z",
         "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 60,
+        "confidence": 95,
         "originalText": "<b>When Revealed</b>: Each player puts the top card of their deck into play facedown, engaged with them as a [[Drone]] minion.\n<hr />\n[star] <b>Boost</b>: Choose to either spend a [physical] resource or put the top card of the deck into play facedown, engaged with you as a [[Drone]] minion."
+      }
+    },
+    "01145": {
+      "abilities": [
+        {
+          "id": "rage_of_ultron_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "rage_scheme",
+              "effect": "VILLAIN_SCHEMES",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "ALTER_EGO"
+              },
+              "effectParams": {}
+            },
+            {
+              "id": "rage_discard_threat",
+              "gate": "THEN",
+              "gateParams": {
+                "step": "rage_scheme"
+              },
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "DECK",
+                "mode": "TOP",
+                "count": {
+                  "from": "PREVIOUS_RESULT"
+                }
+              }
+            },
+            {
+              "id": "rage_attack",
+              "effect": "VILLAIN_ATTACKS",
+              "gate": "THEN",
+              "gateParams": {
+                "step": "rage_scheme",
+                "negate": true
+              },
+              "effectParams": {}
+            },
+            {
+              "id": "rage_discard_damage",
+              "gate": "THEN",
+              "gateParams": {
+                "step": "rage_attack"
+              },
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "DECK",
+                "mode": "TOP",
+                "count": {
+                  "from": "PREVIOUS_RESULT"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T04:00:00Z",
+        "updatedAt": "2026-11-04T04:00:00Z",
+        "reviewedAt": "2026-11-04T04:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed (Alter-Ego)</b>: Ultron schemes. Discard the top card of your deck for each threat placed this way.\n<b>When Revealed (Hero)</b>: Ultron attacks you. Discard the top card of your deck for each damage dealt by this attack."
+      }
+    },
+    "01146": {
+      "abilities": [
+        {
+          "id": "repair_sequence_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "repair_sequence_heal",
+              "effect": "HEAL_DAMAGE",
+              "effectParams": {
+                "target": "VILLAIN",
+                "amount": {
+                  "from": "ENTITY_COUNT",
+                  "target": "ENGAGED_MINIONS",
+                  "filter": {
+                    "traits": ["Drone"],
+                    "types": ["minion"]
+                  },
+                  "multiplier": 2
+                }
+              }
+            },
+            {
+              "id": "repair_sequence_surge",
+              "effect": "SURGE",
+              "gate": "IF_RESULT",
+              "gateParams": {
+                "result": "AMOUNT_ZERO"
+              }
+            }
+          ]
+        },
+        {
+          "id": "repair_sequence_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "HEAL_DAMAGE",
+              "effectParams": {
+                "target": "VILLAIN",
+                "amount": {
+                  "from": "ENTITY_COUNT",
+                  "target": "ENGAGED_MINIONS",
+                  "filter": {
+                    "traits": ["Drone"],
+                    "types": ["minion"]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T03:00:00Z",
+        "updatedAt": "2026-11-04T03:00:00Z",
+        "reviewedAt": "2026-11-04T03:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Ultron heals 2 damage for each [[Drone]] minion engaged with you. If no damage was healed this way, this card gains surge.\n<hr />\n[star] <b>Boost</b>: Ultron heals 1 damage for each [[Drone]] minion engaged with you."
+      }
+    },
+    "01147": {
+      "abilities": [
+        {
+          "id": "swarm_attack_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "swarm_attack_drones",
+              "effect": "ENEMY_ATTACKS",
+              "effectParams": {
+                "filter": {
+                  "traits": ["Drone"],
+                  "types": ["minion"]
+                },
+                "target": "ENGAGED_HERO",
+                "engagedWith": "SELF"
+              }
+            },
+            {
+              "id": "swarm_attack_fallback",
+              "effect": "EXECUTE_SPECIAL",
+              "gate": "IF_RESULT",
+              "gateParams": {
+                "result": "AMOUNT_ZERO"
+              },
+              "effectParams": {
+                "specialId": "ULTRON_DRONE",
+                "target": "SELF"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T03:00:00Z",
+        "updatedAt": "2026-11-04T03:00:00Z",
+        "reviewedAt": "2026-11-04T03:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Each [[Drone]] minion engaged with your hero attacks. If no attack was made this way, put the top card of your deck into play facedown, engaged with you as a [[Drone]] minion."
+      }
+    },
+    "01148": {
+      "abilities": [
+        {
+          "id": "drone_factory_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "EXECUTE_SPECIAL",
+              "effectParams": {
+                "specialId": "ULTRON_DRONE",
+                "target": "ALL_PLAYERS"
+              }
+            },
+            {
+              "effect": "ADD_THREAT",
+              "effectParams": {
+                "target": "THIS_SIDE_SCHEME",
+                "amount": {
+                  "from": "ENTITY_COUNT",
+                  "target": "ALL_MINIONS",
+                  "filter": {
+                    "traits": ["Drone"],
+                    "types": ["minion"]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T03:00:00Z",
+        "updatedAt": "2026-11-04T03:00:00Z",
+        "reviewedAt": "2026-11-04T03:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Each player puts the top card of their deck into play facedown, engaged with them as a [[Drone]] minion. Place 1 threat here for each [[Drone]] minion in play."
+      }
+    },
+    "01149": {
+      "abilities": [
+        {
+          "id": "invasive_ai_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "forEachPlayer": true,
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "DECK",
+                "mode": "TOP",
+                "count": 3
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T04:00:00Z",
+        "updatedAt": "2026-11-04T04:00:00Z",
+        "reviewedAt": "2026-11-04T04:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Each player discards the top 3 cards of their deck."
       }
     },
     "01150": {

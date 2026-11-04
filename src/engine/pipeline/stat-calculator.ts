@@ -15,14 +15,17 @@ import {
   Keyword,
   getActiveVillain,
   getPerPlayerCount,
+  getVillainsInPlay,
+  AttackExecutionContext,
 } from '../models';
 import { parseKeywordItem } from '../models/keyword';
 import { getStepEffectParams } from '../../data/supplemental/runtime';
-import type { DynamicValueSource } from '../../data/supplemental/schema';
+import type { DynamicValueSource, UniversalCardFilter } from '../../data/supplemental/schema';
 import { AbilityStep } from '../models/abilities';
 import { kernel } from '../kernel';
 import { findInPlayCardInstance } from '../state/state-validator';
 import { isStep } from '../effects/handlers/types';
+import { matchesCardFilter } from '../filters/card-filter';
 
 export interface EntityWithStatusCards {
   statusCards?: StatusCard[];
@@ -55,42 +58,68 @@ export interface EffectiveVillainStats {
 }
 
 /**
+ * What the CONSTANT abilities in play add to one stat of a minion: its own and its attachments'
+ * steps, plus the auras (`target: ALL_MINIONS` with an optional `filter`) of the villains, the
+ * environments and the cards attached to them ("Each Drone minion gets +1 ATK").
+ */
+function sumMinionConstantModifiers(
+  state: GameState,
+  minion: CardInstance,
+  stat: 'ATTACK' | 'SCHEME' | 'HIT_POINTS',
+): number {
+  const stepAmount = (source: CardInstance, aura: boolean): number => {
+    let total = 0;
+    for (const ab of source.card.enrichment?.abilities || []) {
+      if (ab.timing !== 'CONSTANT') continue;
+      for (const step of ab.steps || []) {
+        const modifiesStat =
+          stat === 'HIT_POINTS'
+            ? step.effect === 'MODIFY_MAX_HEALTH'
+            : isStep(step, 'MODIFY_STAT') &&
+              (getStepEffectParams(step).stat === stat ||
+                (stat === 'SCHEME' && getStepEffectParams(step).stat === 'THWART'));
+        if (!modifiesStat) continue;
+        const params = getStepEffectParams(step as AbilityStep) as {
+          amount?: number | DynamicValueSource;
+          target?: string;
+          filter?: UniversalCardFilter;
+        };
+        if ((params.target === 'ALL_MINIONS') !== aura) continue;
+        if (aura && !matchesCardFilter(minion, params.filter, { state })) continue;
+        total += kernel.evaluateDynamicAmount(
+          params.amount,
+          {},
+          { state, sourceCardInstance: source, targetCardInstance: minion },
+        );
+      }
+    }
+    return total;
+  };
+
+  const villains = getVillainsInPlay(state);
+  const environments = state.environments || [];
+  const auraSources = [
+    ...villains,
+    ...villains.flatMap((v) => v.attachments || []),
+    ...environments,
+    ...environments.flatMap((e) => e.attachments || []),
+  ] as CardInstance[];
+
+  return (
+    stepAmount(minion, false) +
+    (minion.attachments || []).reduce((sum, a) => sum + stepAmount(a, false), 0) +
+    auraSources.reduce((sum, source) => sum + stepAmount(source, true), 0)
+  );
+}
+
+/**
  * A minion's effective attack: the printed value (an X attack is stored as -1 and counts as 0)
- * plus its own CONSTANT `MODIFY_STAT` `ATTACK` steps, attachment bonuses, and active modifiers.
+ * plus CONSTANT modifiers (`sumMinionConstantModifiers`) and active modifiers.
  */
 export function getEffectiveMinionAttack(state: GameState, minion: CardInstance): number {
   const printed = (minion.card as { attack?: number }).attack;
   let attack = printed === undefined ? 1 : Math.max(0, printed);
-  for (const ab of minion.card.enrichment?.abilities || []) {
-    if (ab.timing !== 'CONSTANT') continue;
-    for (const step of ab.steps || []) {
-      if (!isStep(step, 'MODIFY_STAT')) continue;
-      const stepParams = getStepEffectParams(step);
-      if (stepParams.stat === 'ATTACK') {
-        attack += kernel.evaluateDynamicAmount(
-          stepParams.amount as number | DynamicValueSource | undefined,
-          {},
-          { state, sourceCardInstance: minion, targetCardInstance: minion },
-        );
-      }
-    }
-  }
-  for (const attachment of minion.attachments || []) {
-    for (const ab of attachment.card.enrichment?.abilities || []) {
-      if (ab.timing !== 'CONSTANT') continue;
-      for (const step of ab.steps || []) {
-        if (!isStep(step, 'MODIFY_STAT')) continue;
-        const stepParams = getStepEffectParams(step);
-        if (stepParams.stat === 'ATTACK') {
-          attack += kernel.evaluateDynamicAmount(
-            stepParams.amount as number | DynamicValueSource | undefined,
-            {},
-            { state, sourceCardInstance: attachment, targetCardInstance: minion },
-          );
-        }
-      }
-    }
-  }
+  attack += sumMinionConstantModifiers(state, minion, 'ATTACK');
   for (const mod of minion.activeStatModifiers || []) {
     if (mod.stat === 'ATTACK') {
       attack += mod.amount;
@@ -103,41 +132,12 @@ export function getEffectiveMinionAttack(state: GameState, minion: CardInstance)
 
 /**
  * A minion's effective scheme: the printed value (an X scheme is stored as -1 and counts as 0)
- * plus CONSTANT `MODIFY_STAT` `SCHEME` steps (from self or attachments) and active modifiers.
+ * plus CONSTANT modifiers (`sumMinionConstantModifiers`) and active modifiers.
  */
 export function getEffectiveMinionScheme(state: GameState, minion: CardInstance): number {
   const printed = (minion.card as { scheme?: number }).scheme;
   let scheme = printed === undefined ? 1 : Math.max(0, printed);
-  for (const ab of minion.card.enrichment?.abilities || []) {
-    if (ab.timing !== 'CONSTANT') continue;
-    for (const step of ab.steps || []) {
-      if (!isStep(step, 'MODIFY_STAT')) continue;
-      const stepParams = getStepEffectParams(step);
-      if (stepParams.stat === 'SCHEME' || (stepParams.stat as string) === 'THWART') {
-        scheme += kernel.evaluateDynamicAmount(
-          stepParams.amount as number | DynamicValueSource | undefined,
-          {},
-          { state, sourceCardInstance: minion, targetCardInstance: minion },
-        );
-      }
-    }
-  }
-  for (const attachment of minion.attachments || []) {
-    for (const ab of attachment.card.enrichment?.abilities || []) {
-      if (ab.timing !== 'CONSTANT') continue;
-      for (const step of ab.steps || []) {
-        if (!isStep(step, 'MODIFY_STAT')) continue;
-        const stepParams = getStepEffectParams(step);
-        if (stepParams.stat === 'SCHEME' || (stepParams.stat as string) === 'THWART') {
-          scheme += kernel.evaluateDynamicAmount(
-            stepParams.amount as number | DynamicValueSource | undefined,
-            {},
-            { state, sourceCardInstance: attachment, targetCardInstance: minion },
-          );
-        }
-      }
-    }
-  }
+  scheme += sumMinionConstantModifiers(state, minion, 'SCHEME');
   for (const mod of minion.activeStatModifiers || []) {
     if (mod.stat === 'THWART' || (mod.stat as string) === 'SCHEME') {
       scheme += mod.amount;
@@ -146,6 +146,25 @@ export function getEffectiveMinionScheme(state: GameState, minion: CardInstance)
   // A dash (–) power is an unmodifiable 0 (RR v1.8 "Dash (Value)")
   if (hasDashPower(minion.card, 'scheme')) return 0;
   return Math.max(0, scheme);
+}
+
+/**
+ * The attack value of an attack in progress: its base attack plus the "until the end of the attack"
+ * modifiers. These are read now, so a count they depend on follows the game (FAQ, Ultron II).
+ */
+export function getAttackValue(state: GameState, attack: AttackExecutionContext): number {
+  const bonus = (attack.attackModifiers || []).reduce((sum, modifier) => {
+    const player = state.players.find((p) => p.id === modifier.playerId);
+    return (
+      sum +
+      kernel.evaluateDynamicAmount(
+        modifier.amount,
+        { state, player, playerId: modifier.playerId },
+        { state },
+      )
+    );
+  }, 0);
+  return Math.max(0, attack.baseAttack + bonus);
 }
 
 /**
@@ -178,13 +197,13 @@ function sumConstantMaxHealthBonus(
 }
 
 /**
- * A minion's effective hit points: the printed value plus the CONSTANT `MODIFY_MAX_HEALTH` steps
- * of the cards attached to it (Genetically Enhanced: "Attached minion gets +3 hit points"). Damage
- * stays on the minion when a bonus is lost; only the ceiling changes.
+ * A minion's effective hit points: the printed value plus its CONSTANT `MODIFY_MAX_HEALTH` modifiers
+ * (Genetically Enhanced: "Attached minion gets +3 hit points"; Ultron III: "Each Drone minion gets
+ * +1 hit point"). Damage stays on the minion when a bonus is lost; only the ceiling changes.
  */
 export function getEffectiveMinionHitPoints(state: GameState, minion: CardInstance): number {
   const printed = (minion.card as { health?: number }).health || 1;
-  return Math.max(1, printed + sumConstantMaxHealthBonus(state, minion.attachments || [], minion));
+  return Math.max(1, printed + sumMinionConstantModifiers(state, minion, 'HIT_POINTS'));
 }
 
 export interface EffectiveAllyStats {

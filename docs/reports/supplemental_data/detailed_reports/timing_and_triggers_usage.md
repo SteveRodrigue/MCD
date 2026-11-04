@@ -4,7 +4,7 @@
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (52 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (58 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -28,12 +28,18 @@
 | `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
 | `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
+| `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_when_revealed` |
 | `01137b` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_when_revealed` |
 | `01138a` | **Assault on NORAD (main_scheme)** | `core_encounter` | `ultron_assault_norad_when_revealed` |
 | `01139a` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `ultron_countdown_when_revealed` |
 | `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_when_revealed` |
 | `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_when_revealed` |
 | `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_when_revealed` |
+| `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
+| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed` |
+| `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
+| `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
+| `01149` | **Invasive AI (side_scheme)** | `core_encounter` | `invasive_ai_when_revealed` |
 | `01150` | **Ultron's Imperative (side_scheme)** | `core_encounter` | `ultrons_imperative_when_revealed` |
 | `01151` | **Under Attack (side_scheme)** | `core_encounter` | `under_attack_when_revealed` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed` |
@@ -61,7 +67,7 @@
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
-### <a id="constant"></a>`CONSTANT` (26 Cards)
+### <a id="constant"></a>`CONSTANT` (30 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -84,6 +90,10 @@
 | `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_atk_bonus` |
 | `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
 | `01132` | **Melter (minion)** | `core_encounter` | `melter_defend_with_ally_restriction` |
+| `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_drones` |
+| `01139b` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `countdown_to_oblivion_no_removal` |
+| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_scheme_bonus` |
+| `01142` | **Upgraded Drones (attachment)** | `core_encounter` | `upgraded_drones_constant` |
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
 | `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
@@ -92,7 +102,7 @@
 | `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_ally_limit` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
 
-### <a id="hero-action"></a>`HERO_ACTION` (28 Cards)
+### <a id="hero-action"></a>`HERO_ACTION` (30 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -122,10 +132,12 @@
 | `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
 | `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_discard_action` |
+| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_discard` |
+| `01142` | **Upgraded Drones (attachment)** | `core_encounter` | `upgraded_drones_discard` |
 | `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_discard` |
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_discard` |
 
-### <a id="forced-response"></a>`FORCED_RESPONSE` (19 Cards)
+### <a id="forced-response"></a>`FORCED_RESPONSE` (22 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -137,6 +149,9 @@
 | `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_stun_damaged` |
 | `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response` |
 | `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response` |
+| `01134` | **Ultron (villain)** | `core_encounter` | `ultron_i_after_attack` |
+| `01138b` | **Assault on NORAD (main_scheme)** | `core_encounter` | `assault_on_norad_after_threat` |
+| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_after_scheme` |
 | `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_tough` |
 | `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` |
 | `01160` | **Legal Work (obligation)** | `core_encounter` | `legal_work_resolve` |
@@ -174,6 +189,27 @@
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 | `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
 
+### <a id="boost"></a>`BOOST` (16 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
+| `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_boost` |
+| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_boost` |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
+| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
+| `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
+| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_boost` |
+| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_boost` |
+| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_boost` |
+| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_boost` |
+| `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
+| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
+| `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
+| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
+
 ### <a id="response"></a>`RESPONSE` (13 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -192,24 +228,7 @@
 | `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 
-### <a id="boost"></a>`BOOST` (12 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
-| `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_boost` |
-| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_boost` |
-| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
-| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
-| `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
-| `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
-| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
-| `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
-| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
-
-### <a id="forced-interrupt"></a>`FORCED_INTERRUPT` (7 Cards)
+### <a id="forced-interrupt"></a>`FORCED_INTERRUPT` (8 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -217,6 +236,7 @@
 | `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
 | `01098` | **Armored Rhino Suit (attachment)** | `core_encounter` | `armored_rhino_suit_shield` |
 | `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
+| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
 | `01143` | **Advanced Ultron Drone (minion)** | `core_encounter` | `advanced_ultron_drone_defeated` |
 | `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
 | `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
@@ -285,9 +305,9 @@
 | :--- | :--- | :--- | :--- |
 | `01008` | **Web-Shooter (upgrade)** | `core` | `web_shooter_resource` |
 
-## 2. Trigger Windows (`TriggerTypeSchema` — 23/33 In Use)
+## 2. Trigger Windows (`TriggerTypeSchema` — 25/34 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (53 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (59 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -311,12 +331,18 @@
 | `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
 | `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
+| `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_when_revealed` |
 | `01137b` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_when_revealed` |
 | `01138a` | **Assault on NORAD (main_scheme)** | `core_encounter` | `ultron_assault_norad_when_revealed` |
 | `01139a` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `ultron_countdown_when_revealed` |
 | `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_when_revealed` |
 | `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_when_revealed` |
 | `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_when_revealed` |
+| `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
+| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed` |
+| `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
+| `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
+| `01149` | **Invasive AI (side_scheme)** | `core_encounter` | `invasive_ai_when_revealed` |
 | `01150` | **Ultron's Imperative (side_scheme)** | `core_encounter` | `ultrons_imperative_when_revealed` |
 | `01151` | **Under Attack (side_scheme)** | `core_encounter` | `under_attack_when_revealed` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed` |
@@ -345,7 +371,7 @@
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
-### <a id="boost"></a>`BOOST` (12 Cards)
+### <a id="boost"></a>`BOOST` (16 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -355,6 +381,10 @@
 | `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
 | `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
 | `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
+| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_boost` |
+| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_boost` |
+| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_boost` |
+| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_boost` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
@@ -395,6 +425,14 @@
 | `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks` |
 
+### <a id="attack-resolved"></a>`ATTACK_RESOLVED` (3 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
+| `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
+| `01134` | **Ultron (villain)** | `core_encounter` | `ultron_i_after_attack` |
+
 ### <a id="character-defeated"></a>`CHARACTER_DEFEATED` (3 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -419,6 +457,14 @@
 | `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
 | `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
 
+### <a id="enemy-initiates-attack"></a>`ENEMY_INITIATES_ATTACK` (3 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
+| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
+
 ### <a id="threat-would-be-placed"></a>`THREAT_WOULD_BE_PLACED` (3 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -433,20 +479,6 @@
 | :--- | :--- | :--- | :--- |
 | `01077` | **Counter-Punch (event)** | `core` | `counter_punch_response` |
 | `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
-
-### <a id="attack-resolved"></a>`ATTACK_RESOLVED` (2 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
-| `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
-
-### <a id="enemy-initiates-attack"></a>`ENEMY_INITIATES_ATTACK` (2 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
-| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
 
 ### <a id="host-attack-ended"></a>`HOST_ATTACK_ENDED` (2 Cards)
 
@@ -509,10 +541,22 @@
 | :--- | :--- | :--- | :--- |
 | `01084` | **Nick Fury (ally)** | `core` | `nick_fury_round_end_discard` |
 
+### <a id="threat-placed"></a>`THREAT_PLACED` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01138b` | **Assault on NORAD (main_scheme)** | `core_encounter` | `assault_on_norad_after_threat` |
+
 ### <a id="thwart-resolved"></a>`THWART_RESOLVED` (1 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01058` | **Daredevil (ally)** | `core` | `daredevil_after_thwart` |
+
+### <a id="villain-schemed"></a>`VILLAIN_SCHEMED` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_after_scheme` |
 
 [← Back to Main Usage Report](../usage_report.md)

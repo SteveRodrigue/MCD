@@ -57,7 +57,10 @@ export function getAllCardInstances(state: GameState): CardInstance[] {
   }
 
   // Environments (e.g. Ultron Drones)
-  cards.push(...(state.environments || []));
+  for (const environment of state.environments || []) {
+    cards.push(environment);
+    cards.push(...(environment.attachments || []));
+  }
 
   // 4. Encounter Zones & Boosts
   cards.push(...(state.encounterDeck || []));
@@ -154,6 +157,9 @@ export function removeCardFromAllZones(
     if (removeFromList(s.cardsUnderneath)) return found;
   }
   if (removeFromList(state.sideSchemes)) return found;
+  for (const e of state.environments || []) {
+    if (removeFromList(e.attachments)) return found;
+  }
   if (removeFromList(state.environments)) return found;
 
   // Encounter & Misc
@@ -211,10 +217,15 @@ export function attachCardToHost(
         if (minion) break;
       }
     }
+    const environment = state.environments?.find((e) => e.instanceId === targetHostId);
     if (minion) {
       if (!minion.attachments) minion.attachments = [];
       minion.attachments.push(cardInstance);
       cardInstance.hostInstanceId = minion.instanceId;
+    } else if (environment) {
+      if (!environment.attachments) environment.attachments = [];
+      environment.attachments.push(cardInstance);
+      cardInstance.hostInstanceId = environment.instanceId;
     } else {
       const host = resolveVillainHost(state, targetHostId);
       if (!host.attachments) host.attachments = [];

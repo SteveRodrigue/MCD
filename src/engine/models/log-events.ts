@@ -121,6 +121,7 @@ export interface LogEvents {
   };
   'card.effect.threatBlockedByCrisis': { actor: string; source: string; target: string };
   'card.effect.threatBlockedByPatrol': { actor: string; source: string; target: string };
+  'card.effect.threatBlockedByScheme': { actor: string; source: string; target: string };
   'card.play.cancelled': { actor: string; card: string };
   'card.playFromZone': { actor: string; card: string; source?: string };
   'card.playFromZone.passed': { actor: string; source?: string };
@@ -484,6 +485,7 @@ export const ALL_LOG_EVENT_KEYS = [
   'card.effect.removeThreat',
   'card.effect.threatBlockedByCrisis',
   'card.effect.threatBlockedByPatrol',
+  'card.effect.threatBlockedByScheme',
   'card.play.cancelled',
   'card.playFromZone',
   'card.playFromZone.passed',

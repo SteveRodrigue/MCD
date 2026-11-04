@@ -1289,15 +1289,35 @@
               "effectParams": {}
             }
           ]
+        },
+        {
+          "id": "ultron_iii_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "SEARCH",
+              "effectParams": {
+                "source": ["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"],
+                "filter": {
+                  "codes": ["01150"]
+                },
+                "takeCount": 1,
+                "selectedDestination": "REVEAL",
+                "shuffleAfter": true,
+                "autoSelectIfUnambiguous": true
+              }
+            }
+          ]
         }
       ],
       "audit": {
-        "createdAt": "2026-11-04T03:00:00Z",
-        "updatedAt": "2026-11-04T03:00:00Z",
-        "reviewedAt": "2026-11-04T03:00:00Z",
+        "createdAt": "2026-11-04T04:00:00Z",
+        "updatedAt": "2026-11-04T04:00:00Z",
+        "reviewedAt": "2026-11-04T04:00:00Z",
         "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 70,
+        "confidence": 100,
         "originalText": "Each [[Drone]] minion gets +1 ATK and +1 hit point. Ultron cannot take damage while a [[Drone]] minion is in play.\n<b>When Revealed</b>: Search the encounter deck and discard pile for the Ultron's Imperative side scheme and reveal it. Then shuffle the encounter deck."
       }
     },
@@ -1467,6 +1487,28 @@
         "originalText": "<b>When Revealed</b>: Each player puts the top card of their deck into play facedown, engaged with them as a [[Drone]] minion. Advance to stage 3B."
       }
     },
+    "01139b": {
+      "abilities": [
+        {
+          "id": "countdown_to_oblivion_no_removal",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "THREAT_CANNOT_BE_REMOVED"
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T04:00:00Z",
+        "updatedAt": "2026-11-04T04:00:00Z",
+        "reviewedAt": "2026-11-04T04:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Threat cannot be removed from this scheme.\n<b>If this stage is completed, the players lose the game</b>"
+      }
+    },
     "01140": {
       "noSupplementalNeeded": true,
       "abilities": [],
@@ -1478,6 +1520,64 @@
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Each facedown [[Drone]] minion engaged with a player has a base SCH of 1, a base ATK of 1, and a base hit points of 1.\n<b>Forced Response</b>: After a facedown [[Drone]] minion is defeated, place that card in it's owners discard pile."
+      }
+    },
+    "01141": {
+      "abilities": [
+        {
+          "id": "program_transmitter_scheme_bonus",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "MODIFY_STAT",
+              "effectParams": {
+                "stat": "SCHEME",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "program_transmitter_after_scheme",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "VILLAIN_SCHEMED",
+          "steps": [
+            {
+              "effect": "ADD_THREAT",
+              "effectParams": {
+                "target": "ALL_SIDE_SCHEMES",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "program_transmitter_discard",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "exhaustCard": "SELF_IDENTITY",
+            "resourceCost": {
+              "mental": 2
+            }
+          },
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "SELF"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T04:00:00Z",
+        "updatedAt": "2026-11-04T04:00:00Z",
+        "reviewedAt": "2026-11-04T04:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Attach to Ultron.\n[star] <b>Forced Response</b>: After Ultron schemes, place 1 threat on each side scheme.\n<b>Hero Action</b>: Exhaust your hero and spend [mental] [mental] resources → discard this card."
       }
     },
     "01142": {
@@ -1770,6 +1870,75 @@
         "originalText": "<b>When Revealed</b>: Each player puts the top card of their deck into play facedown, engaged with them as a [[Drone]] minion.\n<hr />\n[star] <b>Boost</b>: Choose to either spend a [physical] resource or put the top card of the deck into play facedown, engaged with you as a [[Drone]] minion."
       }
     },
+    "01145": {
+      "abilities": [
+        {
+          "id": "rage_of_ultron_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "rage_scheme",
+              "effect": "VILLAIN_SCHEMES",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "ALTER_EGO"
+              },
+              "effectParams": {}
+            },
+            {
+              "id": "rage_discard_threat",
+              "gate": "THEN",
+              "gateParams": {
+                "step": "rage_scheme"
+              },
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "DECK",
+                "mode": "TOP",
+                "count": {
+                  "from": "PREVIOUS_RESULT"
+                }
+              }
+            },
+            {
+              "id": "rage_attack",
+              "effect": "VILLAIN_ATTACKS",
+              "gate": "THEN",
+              "gateParams": {
+                "step": "rage_scheme",
+                "negate": true
+              },
+              "effectParams": {}
+            },
+            {
+              "id": "rage_discard_damage",
+              "gate": "THEN",
+              "gateParams": {
+                "step": "rage_attack"
+              },
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "DECK",
+                "mode": "TOP",
+                "count": {
+                  "from": "PREVIOUS_RESULT"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T04:00:00Z",
+        "updatedAt": "2026-11-04T04:00:00Z",
+        "reviewedAt": "2026-11-04T04:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed (Alter-Ego)</b>: Ultron schemes. Discard the top card of your deck for each threat placed this way.\n<b>When Revealed (Hero)</b>: Ultron attacks you. Discard the top card of your deck for each damage dealt by this attack."
+      }
+    },
     "01146": {
       "abilities": [
         {
@@ -1918,6 +2087,35 @@
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>When Revealed</b>: Each player puts the top card of their deck into play facedown, engaged with them as a [[Drone]] minion. Place 1 threat here for each [[Drone]] minion in play."
+      }
+    },
+    "01149": {
+      "abilities": [
+        {
+          "id": "invasive_ai_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "forEachPlayer": true,
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "DECK",
+                "mode": "TOP",
+                "count": 3
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T04:00:00Z",
+        "updatedAt": "2026-11-04T04:00:00Z",
+        "reviewedAt": "2026-11-04T04:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Each player discards the top 3 cards of their deck."
       }
     },
     "01150": {

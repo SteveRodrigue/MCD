@@ -4,7 +4,7 @@
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (53 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (56 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -26,15 +26,18 @@
 | `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
 | `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
+| `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_when_revealed` |
 | `01137b` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_when_revealed` |
 | `01138a` | **Assault on NORAD (main_scheme)** | `core_encounter` | `ultron_assault_norad_when_revealed` |
 | `01139a` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `ultron_countdown_when_revealed` |
 | `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_when_revealed` |
 | `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_when_revealed` |
 | `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_when_revealed` |
+| `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
 | `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed` |
 | `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
 | `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
+| `01149` | **Invasive AI (side_scheme)** | `core_encounter` | `invasive_ai_when_revealed` |
 | `01150` | **Ultron's Imperative (side_scheme)** | `core_encounter` | `ultrons_imperative_when_revealed` |
 | `01151` | **Under Attack (side_scheme)** | `core_encounter` | `under_attack_when_revealed` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed` |
@@ -62,7 +65,7 @@
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
-### <a id="constant"></a>`CONSTANT` (27 Cards)
+### <a id="constant"></a>`CONSTANT` (29 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -85,6 +88,8 @@
 | `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
 | `01132` | **Melter (minion)** | `core_encounter` | `melter_defend_with_ally_restriction` |
 | `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_drones` |
+| `01139b` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `countdown_to_oblivion_no_removal` |
+| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_scheme_bonus` |
 | `01142` | **Upgraded Drones (attachment)** | `core_encounter` | `upgraded_drones_constant` |
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
@@ -94,7 +99,7 @@
 | `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_ally_limit` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
 
-### <a id="hero-action"></a>`HERO_ACTION` (28 Cards)
+### <a id="hero-action"></a>`HERO_ACTION` (29 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -123,11 +128,12 @@
 | `01087` | **Haymaker (event)** | `core` | `haymaker` |
 | `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
+| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_discard` |
 | `01142` | **Upgraded Drones (attachment)** | `core_encounter` | `upgraded_drones_discard` |
 | `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_discard` |
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_discard` |
 
-### <a id="forced-response"></a>`FORCED_RESPONSE` (20 Cards)
+### <a id="forced-response"></a>`FORCED_RESPONSE` (21 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -140,6 +146,7 @@
 | `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response` |
 | `01134` | **Ultron (villain)** | `core_encounter` | `ultron_i_after_attack` |
 | `01138b` | **Assault on NORAD (main_scheme)** | `core_encounter` | `assault_on_norad_after_threat` |
+| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_after_scheme` |
 | `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_tough` |
 | `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` |
 | `01160` | **Legal Work (obligation)** | `core_encounter` | `legal_work_resolve` |
@@ -292,9 +299,9 @@
 | :--- | :--- | :--- | :--- |
 | `01008` | **Web-Shooter (upgrade)** | `core` | `web_shooter_resource` |
 
-## 2. Trigger Windows (`TriggerTypeSchema` — 24/33 In Use)
+## 2. Trigger Windows (`TriggerTypeSchema` — 25/34 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (54 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (57 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -316,15 +323,18 @@
 | `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
 | `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
+| `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_when_revealed` |
 | `01137b` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_when_revealed` |
 | `01138a` | **Assault on NORAD (main_scheme)** | `core_encounter` | `ultron_assault_norad_when_revealed` |
 | `01139a` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `ultron_countdown_when_revealed` |
 | `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_when_revealed` |
 | `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_when_revealed` |
 | `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_when_revealed` |
+| `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
 | `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed` |
 | `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
 | `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
+| `01149` | **Invasive AI (side_scheme)** | `core_encounter` | `invasive_ai_when_revealed` |
 | `01150` | **Ultron's Imperative (side_scheme)** | `core_encounter` | `ultrons_imperative_when_revealed` |
 | `01151` | **Under Attack (side_scheme)** | `core_encounter` | `under_attack_when_revealed` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed` |
@@ -532,5 +542,11 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01058` | **Daredevil (ally)** | `core` | `daredevil_after_thwart` |
+
+### <a id="villain-schemed"></a>`VILLAIN_SCHEMED` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_after_scheme` |
 
 [← Back to Main Usage Report](../usage_report.md)

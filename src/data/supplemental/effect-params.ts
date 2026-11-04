@@ -334,6 +334,7 @@ export const EFFECT_PARAM_SCHEMAS = {
     })
     .strict(),
   FLIP_FORM: effectOnly(),
+  THREAT_CANNOT_BE_REMOVED: effectOnly(),
   GENERATE_RESOURCE: z
     .object({
       resource: optional(ResourceTypeSchema, {
@@ -880,6 +881,7 @@ export const EFFECT_DESCRIPTIONS: Record<EffectType, string> = {
   GIVE_ADDITIONAL_BOOST_CARD: "Deal additional facedown boost card to activating enemy.",
   CANCEL_WHEN_REVEALED: "Cancel the \"When Revealed\" effect of an encounter card.",
   CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER: "Cancel When Revealed effect and reveal another encounter card.",
+  THREAT_CANNOT_BE_REMOVED: "CONSTANT on a main scheme: no effect can remove threat from it, whatever the source.",
   CANNOT_TAKE_DAMAGE: "CONSTANT: the host cannot take damage. Optional source filter: only damage from a card of this type and/or trait is ignored (Killmonger: Black Panther upgrades). No Tough, shield or Retaliate is used, and the host is not a valid target of a damage-only ability from such a source.",
   CANCEL_ATTACK: "Cancel incoming enemy attack before boost cards or damage are resolved.",
   DECLARE_DEFENDER: "Prompt player to declare a defender against an incoming enemy attack.",

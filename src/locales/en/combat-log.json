@@ -45,6 +45,7 @@
     "HEAL_DAMAGE": "{{actor}} healed {{amount}} damage on {{target}}.",
     "REMOVE_THREAT": "{{actor}} removed {{amount}} threat from {{scheme}}.",
     "card.effect.threatBlockedByCrisis": "CRISIS! {{source}} cannot remove threat from {{scheme}} while a Crisis icon is in play.",
+    "card.effect.threatBlockedByScheme": "{{source}} cannot remove threat from {{scheme}}: threat cannot be removed from this scheme.",
     "card.effect.threatBlockedByPatrol": "PATROL! {{source}} cannot remove threat from {{scheme}} while an engaged minion has Patrol.",
     "STATUS_IMMUNE": "{{card}}: {{status}} can't be applied because {{target}} has Stalwart.",
     "STATUS_STUNNED": "{{actor}} stunned {{target}}!",

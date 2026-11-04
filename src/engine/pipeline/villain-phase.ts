@@ -168,6 +168,13 @@ function finishSchemeAfterBoosts(
     boostIcons: schemeContext.totalBoostIcons,
   });
 
+  // "After [villain] schemes": cards attached to the villain react (e.g. Program Transmitter 01141)
+  if (schemeContext.schemerType === 'VILLAIN') {
+    kernel.dispatchTrigger(state, 'VILLAIN_SCHEMED', {
+      targetPlayerId: schemeContext.targetPlayerId,
+    });
+  }
+
   // Forced Responses on minion scheme (e.g. Madame Hydra 01181)
   if (schemeContext.schemerType === 'MINION' && schemeContext.schemerCard) {
     const minion = getMinionById(state, schemeContext.schemerCard.instanceId);

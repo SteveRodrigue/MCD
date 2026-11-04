@@ -208,6 +208,7 @@ export function beginEnemyAttack(
   options?: CombatOptions,
 ): { state: GameState; attacked: boolean } {
   state.lastCombatOutcome = undefined;
+  delete state.lastSchemeThreatPlaced;
   // The attacking villain is fixed now: moving the active counter mid-activation must not change it.
   const attackerVillain =
     attacker.type === 'VILLAIN'

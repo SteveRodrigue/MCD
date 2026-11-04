@@ -88,7 +88,7 @@ export const RULE_OBSERVATIONS: Record<RuleSlug, RuleObservation> = {
   already: definition('wording rule for the word "already"'),
   'alteration-effect': unobservable,
   'alter-ego-alter-ego-form': logs('player.action.changeForm', 'card.effect.flipForm'),
-  'amplify-icon': unobservable,
+  'amplify-icon': logs('villain.boost.revealed'),
   and: definition('wording rule for the word "and"'),
   'arrow-icon': definition('printing convention that separates a cost from its effect'),
   'aspect-card': unobservable,

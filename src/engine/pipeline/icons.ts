@@ -17,6 +17,14 @@ export function getHazardIconCount(card?: NormalizedCard): number {
 }
 
 /**
+ * The number of Amplify icons printed on a card (RR v1.8 p. 3 "Amplify Icon"). Amplify is an icon,
+ * not a keyword: the count is the card's `scheme_amplify`, and card text is never read for it (#293).
+ */
+export function getAmplifyIconCount(card?: NormalizedCard): number {
+  return card?.scheme_amplify ?? 0;
+}
+
+/**
  * Sums `iconCount` over every in-play card (RR v1.8 p. 15 "In Play and Out of Play"). Each icon
  * counts, so a card with two icons adds 2. Returns the cards that print an icon with their count,
  * in zone order, so callers can both total them and name their sources.
@@ -85,4 +93,12 @@ export function countHazardIconsInPlay(state: GameState): number {
  */
 export function hasCrisisInPlay(state: GameState): boolean {
   return countCrisisIconsInPlay(state) > 0;
+}
+
+/**
+ * Counts the Amplify icons currently in play (RR v1.8 p. 3 "Amplify Icon"). Each boost card turned
+ * faceup during an enemy activation gains one boost icon per amplify icon in play (#293).
+ */
+export function countAmplifyIconsInPlay(state: GameState): number {
+  return collectIconsInPlay(state, getAmplifyIconCount).reduce((sum, i) => sum + i.count, 0);
 }

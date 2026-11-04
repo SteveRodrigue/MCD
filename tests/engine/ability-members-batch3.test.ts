@@ -132,7 +132,6 @@ describe('ability members (#276, batch 3)', () => {
       let executed = 0;
       registerSpecialHandler({
         id: 'TEST_SPECIAL_276',
-        validatePlayCondition: () => true,
         execute: (s) => {
           executed += 1;
           return { state: s, success: true, mutatedState: false };

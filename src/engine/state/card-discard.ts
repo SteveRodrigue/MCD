@@ -38,6 +38,33 @@ export function isEncounterCard(card: NormalizedCard): boolean {
   );
 }
 
+/** Puts a card that left play on a pile. A shell has no physical card to put there: it is just gone. */
+export function placeOnPile(card: CardInstance, pile: CardInstance[]): void {
+  if (!card.isShell) pile.push(card);
+}
+
+/**
+ * Puts a card that left play in its discard pile: the encounter discard for an encounter card, its
+ * owner's for a player card (RR v1.8 Ownership and Control). A card reaching an owner whose deck
+ * ran out with an empty discard pile completes that deck's exhaustion.
+ */
+function routeToDiscardPile(state: GameState, card: CardInstance, fallbackPlayerId?: string): void {
+  if (isEncounterCard(card.card)) {
+    placeOnPile(card, state.encounterDiscard);
+    return;
+  }
+  const targetPlayer =
+    (card.ownerId ? state.players.find((p) => p.id === card.ownerId) : undefined) ||
+    (fallbackPlayerId ? state.players.find((p) => p.id === fallbackPlayerId) : undefined) ||
+    state.players[0];
+  if (!targetPlayer) return;
+  placeOnPile(card, targetPlayer.discard);
+  if (targetPlayer.deckEmptiedWithEmptyDiscard && targetPlayer.discard.length > 0) {
+    targetPlayer.deckEmptiedWithEmptyDiscard = false;
+    exhaustPlayerDeck(state, targetPlayer.id);
+  }
+}
+
 /**
  * Universal helper to cleanly discard all attachments and cards underneath when a host leaves play (RR v1.8 p. 5, 6).
  */
@@ -50,32 +77,22 @@ export function discardHostAttachmentsAndTuckedCards(
 
   // 1. Discard all active attachments to appropriate discard piles
   if (host.attachments && host.attachments.length > 0) {
-    for (const attachment of host.attachments) {
-      resetCardState(attachment);
-      if (isEncounterCard(attachment.card)) {
-        state.encounterDiscard.push(attachment);
-      } else {
-        const ownerId = attachment.ownerId || ownerPlayerId;
-        const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
-        targetP.discard.push(attachment);
-      }
-    }
+    const attachments = host.attachments;
     host.attachments = [];
+    for (const attachment of attachments) {
+      resetCardState(attachment);
+      routeToDiscardPile(state, attachment, ownerPlayerId);
+    }
   }
 
   // 2. Discard all face-down/out-of-play cards placed underneath
   if (host.cardsUnderneath && host.cardsUnderneath.length > 0) {
-    for (const tucked of host.cardsUnderneath) {
-      resetCardState(tucked);
-      if (isEncounterCard(tucked.card)) {
-        state.encounterDiscard.push(tucked);
-      } else {
-        const ownerId = tucked.ownerId || ownerPlayerId;
-        const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
-        targetP.discard.push(tucked);
-      }
-    }
+    const tuckedCards = host.cardsUnderneath;
     host.cardsUnderneath = [];
+    for (const tucked of tuckedCards) {
+      resetCardState(tucked);
+      routeToDiscardPile(state, tucked, ownerPlayerId);
+    }
   }
 }
 
@@ -102,20 +119,5 @@ export function discardCardInstance(
   kernel.defeatMinionsBeyondHitPoints(state);
 
   // 4. Proper destination routing based on encounter vs. player card ownership
-  if (isEncounterCard(card.card)) {
-    state.encounterDiscard.push(card);
-  } else {
-    const targetPlayer =
-      (card.ownerId ? state.players.find((p) => p.id === card.ownerId) : undefined) ||
-      (fallbackPlayerId ? state.players.find((p) => p.id === fallbackPlayerId) : undefined) ||
-      state.players[0];
-
-    if (targetPlayer) {
-      targetPlayer.discard.push(card);
-      if (targetPlayer.deckEmptiedWithEmptyDiscard && targetPlayer.discard.length > 0) {
-        targetPlayer.deckEmptiedWithEmptyDiscard = false;
-        exhaustPlayerDeck(state, targetPlayer.id);
-      }
-    }
-  }
+  routeToDiscardPile(state, card, fallbackPlayerId);
 }

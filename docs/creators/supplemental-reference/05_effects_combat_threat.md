@@ -82,9 +82,9 @@
 }
 ```
 
-| Parameter     | Type                                             | Required | Default                    | Description                                                     |
-| :------------ | :----------------------------------------------- | :------- | :------------------------- | :-------------------------------------------------------------- |
-| `requirement` | `"REQUIRE_ALLY_IF_ABLE"` \| `"CANNOT_DEFEND"`    | No       | `"REQUIRE_ALLY_IF_ABLE"`   | The defense restriction to enforce during this enemy attack.     |
+| Parameter     | Type                                          | Required | Default                  | Description                                                  |
+| :------------ | :-------------------------------------------- | :------- | :----------------------- | :----------------------------------------------------------- |
+| `requirement` | `"REQUIRE_ALLY_IF_ABLE"` \| `"CANNOT_DEFEND"` | No       | `"REQUIRE_ALLY_IF_ABLE"` | The defense restriction to enforce during this enemy attack. |
 
 Example: _Melter_ `01132`.
 
@@ -203,13 +203,13 @@ The destination is the chosen enemy of the ability and the source is the acting 
 }
 ```
 
-| Parameter       | Type                           | Required | Default         | Description                                                                                                                                                                                                                           |
-| :-------------- | :----------------------------- | :------- | :-------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `amount`        | `number \| DynamicValueSource` | Yes      | `1`             | Base threat amount removed.                                                                                                                                                                                                           |
-| `target`        | `TargetSelector`               | No       | `"MAIN_SCHEME"` | Target scheme (`MAIN_SCHEME`, `CHOSEN_SCHEME`, `THIS_SIDE_SCHEME`).                                                                                                                                                                   |
-| `finisherBonus` | `number`                       | No       | -               | Bonus threat removed when ability resolves as final step in a sequence (e.g. _Wakanda Forever!_).                                                                                                                                     |
-| `dynamicBonus`  | `number \| DynamicValueSource` | No       | -               | Dynamic bonus threat added to amount.                                                                                                                                                                                                 |
-| `ignoresCrisis` | `boolean`                      | No       | `false`         | Removes threat from the Main Scheme even if a Crisis icon is in play.                                                                                                                                                                 |
+| Parameter       | Type                           | Required | Default         | Description                                                                                                                                                                     |
+| :-------------- | :----------------------------- | :------- | :-------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `amount`        | `number \| DynamicValueSource` | Yes      | `1`             | Base threat amount removed.                                                                                                                                                     |
+| `target`        | `TargetSelector`               | No       | `"MAIN_SCHEME"` | Target scheme (`MAIN_SCHEME`, `CHOSEN_SCHEME`, `THIS_SIDE_SCHEME`).                                                                                                             |
+| `finisherBonus` | `number`                       | No       | -               | Bonus threat removed when ability resolves as final step in a sequence (e.g. _Wakanda Forever!_).                                                                               |
+| `dynamicBonus`  | `number \| DynamicValueSource` | No       | -               | Dynamic bonus threat added to amount.                                                                                                                                           |
+| `ignoresCrisis` | `boolean`                      | No       | `false`         | Removes threat from the Main Scheme even if a Crisis icon is in play.                                                                                                           |
 | `distinctFrom`  | `"PREVIOUS_TARGET"`            | No       | -               | With a chosen scheme: the scheme chosen by the previous step is excluded, so the player must pick a different one ("from a different scheme"). Declared only in `effectParams`. |
 
 ---
@@ -326,10 +326,14 @@ The engine supports dynamic numeric resolution via `resolveNumericAmount` for pa
 
 Delegates to a registered handler of `src/engine/specials/` (ADR-0038).
 
-| Key             | Required | Meaning                                                                     |
-| :-------------- | :------- | :-------------------------------------------------------------------------- |
-| `specialId`     | yes      | Handler id, e.g. `WAKANDA_FOREVER`. A missing or unknown id fails the step. |
-| `sequenceOrder` | no       | Instance ids in the order to resolve, skipping the ordering prompt.         |
+| Key             | Required | Meaning                                                                              |
+| :-------------- | :------- | :----------------------------------------------------------------------------------- |
+| `specialId`     | yes      | Handler id, e.g. `WAKANDA_FOREVER`. A missing or unknown id fails the step.          |
+| `sequenceOrder` | no       | Instance ids in the order to resolve, skipping the ordering prompt.                  |
+| `target`        | no       | `ULTRON_DRONE`: `SELF` (default), `ALL_PLAYERS`, `FIRST_PLAYER` or `ENGAGED_PLAYER`. |
+| `count`         | no       | `ULTRON_DRONE`: Drones per player (default 1).                                       |
+
+`ULTRON_DRONE` (Core pack script) puts the top card of each named player's deck into play facedown, engaged with them, as a Drone minion: a shell ("Drone", SCH 1 / ATK 1 / HP 1, Drone trait) with the real card tucked under it. The step's result value is the number of Drones created. When the shell leaves play it is removed, and the real card goes to its owner's discard pile.
 
 ## 4. Temporary Stat Modifier Auras (`MODIFY_STAT`)
 

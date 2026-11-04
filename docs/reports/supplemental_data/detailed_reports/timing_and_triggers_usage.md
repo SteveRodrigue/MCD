@@ -4,7 +4,7 @@
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (43 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (50 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -26,6 +26,13 @@
 | `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
 | `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
+| `01137b` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_when_revealed` |
+| `01138a` | **Assault on NORAD (main_scheme)** | `core_encounter` | `ultron_assault_norad_when_revealed` |
+| `01139a` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `ultron_countdown_when_revealed` |
+| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_when_revealed` |
+| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_when_revealed` |
+| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_when_revealed` |
+| `01150` | **Ultron's Imperative (side_scheme)** | `core_encounter` | `ultrons_imperative_when_revealed` |
 | `01151` | **Under Attack (side_scheme)** | `core_encounter` | `under_attack_when_revealed` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed` |
@@ -196,6 +203,18 @@
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
 | `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
 
+### <a id="forced-interrupt"></a>`FORCED_INTERRUPT` (7 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_defeat_trigger` |
+| `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
+| `01098` | **Armored Rhino Suit (attachment)** | `core_encounter` | `armored_rhino_suit_shield` |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
+| `01143` | **Advanced Ultron Drone (minion)** | `core_encounter` | `advanced_ultron_drone_defeated` |
+| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
+| `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
+
 ### <a id="alter-ego-action"></a>`ALTER_EGO_ACTION` (6 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -206,17 +225,6 @@
 | `01034` | **Stark Tower (support)** | `core` | `stark_tower_retrieve` |
 | `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
 | `01045` | **The Golden City (support)** | `core` | `golden_city` |
-
-### <a id="forced-interrupt"></a>`FORCED_INTERRUPT` (6 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_defeat_trigger` |
-| `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
-| `01098` | **Armored Rhino Suit (attachment)** | `core_encounter` | `armored_rhino_suit_shield` |
-| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
-| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
-| `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
 
 ### <a id="resource"></a>`RESOURCE` (6 Cards)
 
@@ -273,7 +281,7 @@
 
 ## 2. Trigger Windows (`TriggerTypeSchema` — 23/33 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (44 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (51 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -295,6 +303,13 @@
 | `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
 | `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
+| `01137b` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_when_revealed` |
+| `01138a` | **Assault on NORAD (main_scheme)** | `core_encounter` | `ultron_assault_norad_when_revealed` |
+| `01139a` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `ultron_countdown_when_revealed` |
+| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_when_revealed` |
+| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_when_revealed` |
+| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_when_revealed` |
+| `01150` | **Ultron's Imperative (side_scheme)** | `core_encounter` | `ultrons_imperative_when_revealed` |
 | `01151` | **Under Attack (side_scheme)** | `core_encounter` | `under_attack_when_revealed` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed` |
@@ -353,6 +368,15 @@
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 
+### <a id="defeated"></a>`DEFEATED` (4 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01052` | **Chase Them Down (event)** | `core` | `chase_them_down` |
+| `01143` | **Advanced Ultron Drone (minion)** | `core_encounter` | `advanced_ultron_drone_defeated` |
+| `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
+| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
+
 ### <a id="minion-attacked"></a>`MINION_ATTACKED` (4 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -377,14 +401,6 @@
 | `01003` | **Backflip (event)** | `core` | `backflip` |
 | `01017` | **Cosmic Flight (upgrade)** | `core` | `cosmic_flight_prevent` |
 | `01098` | **Armored Rhino Suit (attachment)** | `core_encounter` | `armored_rhino_suit_shield` |
-
-### <a id="defeated"></a>`DEFEATED` (3 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01052` | **Chase Them Down (event)** | `core` | `chase_them_down` |
-| `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
-| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
 
 ### <a id="encounter-card-revealed"></a>`ENCOUNTER_CARD_REVEALED` (3 Cards)
 

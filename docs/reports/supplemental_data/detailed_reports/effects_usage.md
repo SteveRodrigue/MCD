@@ -114,6 +114,23 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_atk_bonus` |
 | `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
 
+### <a id="execute-special"></a>`EXECUTE_SPECIAL` (12 Cards, 12 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01043a` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_a` |
+| `01043b` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_b` |
+| `01043c` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_c` |
+| `01043d` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_d` |
+| `01137b` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_when_revealed` |
+| `01138a` | **Assault on NORAD (main_scheme)** | `core_encounter` | `ultron_assault_norad_when_revealed` |
+| `01139a` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `ultron_countdown_when_revealed` |
+| `01143` | **Advanced Ultron Drone (minion)** | `core_encounter` | `advanced_ultron_drone_defeated` |
+| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_when_revealed` |
+| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_when_revealed` |
+| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_when_revealed` |
+| `01150` | **Ultron's Imperative (side_scheme)** | `core_encounter` | `ultrons_imperative_when_revealed` |
+
 ### <a id="remove-threat"></a>`REMOVE_THREAT` (10 Cards, 12 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -244,15 +261,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01062` | **The Power of Justice (resource)** | `core` | `power_of_justice` |
 | `01072` | **The Power of Leadership (resource)** | `core` | `power_of_leadership` |
 | `01079` | **The Power of Protection (resource)** | `core` | `power_of_protection` |
-
-### <a id="execute-special"></a>`EXECUTE_SPECIAL` (4 Cards, 4 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01043a` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_a` |
-| `01043b` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_b` |
-| `01043c` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_c` |
-| `01043d` | **Wakanda Forever! (event)** | `core` | `wakanda_forever_d` |
 
 ### <a id="grant-keyword"></a>`GRANT_KEYWORD` (4 Cards, 4 Step Occurrences)
 

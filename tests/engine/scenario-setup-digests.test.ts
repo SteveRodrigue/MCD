@@ -75,11 +75,12 @@ const GOLDEN: Record<string, string> = {
   'klaw/2/EXPERT': '6a52dbf6',
   // Ultron, re-recorded in M5b: the Ultron Drones environment is found in the encounter deck by
   // a SEARCH and the deck is shuffled afterwards (Search rule), instead of being filtered out of
-  // the deck without a shuffle.
-  'ultron/1/STANDARD': 'bd742a0b',
-  'ultron/1/EXPERT': 'a880aa82',
-  'ultron/2/STANDARD': 'd950e97c',
-  'ultron/2/EXPERT': 'a266ae5f',
+  // the deck without a shuffle. Re-recorded for #352: a Drone keeps its real card tucked under a
+  // shell with one face (`ultron_drone`) and logs `minion.drone.created`; nothing else changed.
+  'ultron/1/STANDARD': '19b94232',
+  'ultron/1/EXPERT': '18d0ba5d',
+  'ultron/2/STANDARD': '2a691d30',
+  'ultron/2/EXPERT': '3bc6616b',
 };
 
 const CASES = (['rhino', 'klaw', 'ultron'] as const).flatMap((scenario) =>

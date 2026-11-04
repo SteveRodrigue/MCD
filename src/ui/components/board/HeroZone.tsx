@@ -453,8 +453,10 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     const schDash = hasDashPower(minion.card, 'scheme');
                     const atkDisplay = atkDash ? '–' : minionAtk;
                     const schDisplay = schDash ? '–' : minionSch;
+                    // A shell's tucked card is the shell's own facedown card: one card back, not two.
+                    const tuckedCards = minion.isShell ? undefined : minion.cardsUnderneath;
                     const { extraBottomPx: verticalExtraPx, extraLeftClass: horizontalExtraClass } =
-                      getStaircaseExpansion(minion.attachments, minion.cardsUnderneath);
+                      getStaircaseExpansion(minion.attachments, tuckedCards);
 
                     return (
                       <div
@@ -466,14 +468,26 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       >
                         <CardAttachmentFan
                           attachments={minion.attachments}
-                          cardsUnderneath={minion.cardsUnderneath}
+                          cardsUnderneath={tuckedCards}
                         >
-                          <CardView
-                            card={minion.card}
-                            instance={minion}
-                            size="sm"
-                            enableHoverZoom={true}
-                          />
+                          <div className="relative">
+                            <CardView
+                              card={minion.card}
+                              instance={minion}
+                              size="sm"
+                              enableHoverZoom={true}
+                              isFacedown={minion.isShell}
+                              cardBackType={minion.isShell ? 'player' : undefined}
+                            />
+                            {minion.isShell && (
+                              <span
+                                data-testid="drone-shell-label"
+                                className={`absolute inset-x-0 top-1/2 -translate-y-1/2 mx-auto w-fit -rotate-6 bg-comic-yellow text-comic-black text-xs font-black uppercase tracking-wider px-1.5 py-0.5 pointer-events-none ${style.badge}`}
+                              >
+                                {minion.card.name}
+                              </span>
+                            )}
+                          </div>
                         </CardAttachmentFan>
                         <div className="flex items-center gap-1 flex-wrap justify-center z-raised">
                           <span

@@ -39,9 +39,7 @@ export function applyContent(content: LoadedContent): void {
     const hooks = packHooks[pack.id];
     for (const handler of hooks?.specialHandlers ?? []) registerSpecialHandler(handler);
     for (const definition of pack.scenarios) {
-      ScenarioRegistry.register(
-        new DeclarativeScenarioPlugin(definition, hooks?.scenarioHooks?.[definition.id]),
-      );
+      ScenarioRegistry.register(new DeclarativeScenarioPlugin(definition));
     }
   }
   setLoadedContent(content);

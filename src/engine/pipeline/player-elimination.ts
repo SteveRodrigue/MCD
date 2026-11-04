@@ -105,7 +105,12 @@ export function eliminatePlayer(state: GameState, playerId: string): void {
     }
     for (const minion of other.engagedMinions) {
       player.discard.push(...takeOwnedBy(minion.attachments, playerId));
+      player.discard.push(...takeOwnedBy(minion.cardsUnderneath, playerId));
     }
+    // A shell whose real card just left has nothing in play any more (a Drone of the eliminated player).
+    other.engagedMinions = other.engagedMinions.filter(
+      (m) => !m.isShell || (m.cardsUnderneath?.length ?? 0) > 0,
+    );
   }
   // Step 5: the play area leaves the game with the eliminated player (kept for the game-over screen).
 }

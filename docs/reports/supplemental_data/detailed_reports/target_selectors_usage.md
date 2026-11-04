@@ -73,6 +73,20 @@
 | `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
 | `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
 
+### <a id="all-players"></a>`ALL_PLAYERS` (9 Cards, 9 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01067` | **Maria Hill (ally)** | `core` | `maria_hill_enters_play` |
+| `01137b` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_when_revealed` |
+| `01138a` | **Assault on NORAD (main_scheme)** | `core_encounter` | `ultron_assault_norad_when_revealed` |
+| `01139a` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `ultron_countdown_when_revealed` |
+| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_when_revealed` |
+| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_when_revealed` |
+| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_when_revealed` |
+| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
+| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
+
 ### <a id="villain"></a>`VILLAIN` (7 Cards, 7 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -114,6 +128,15 @@
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 
+### <a id="first-player"></a>`FIRST_PLAYER` (4 Cards, 4 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01116b` | **Underground Distribution (main_scheme)** | `core_encounter` | `klaw_underground_distribution_when_revealed` |
+| `01117a` | **Secret Rendezvous (main_scheme)** | `core_encounter` | `klaw_secret_rendezvous_when_revealed` |
+| `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
+| `01150` | **Ultron's Imperative (side_scheme)** | `core_encounter` | `ultrons_imperative_when_revealed` |
+
 ### <a id="all-heroes"></a>`ALL_HEROES` (3 Cards, 3 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -122,28 +145,12 @@
 | `01103` | **Shocker (minion)** | `core_encounter` | `shocker_when_revealed` |
 | `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
 
-### <a id="all-players"></a>`ALL_PLAYERS` (3 Cards, 3 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01067` | **Maria Hill (ally)** | `core` | `maria_hill_enters_play` |
-| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
-| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
-
 ### <a id="defending-player"></a>`DEFENDING_PLAYER` (2 Cards, 3 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response`, `radioactive_man_boost` |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
-
-### <a id="first-player"></a>`FIRST_PLAYER` (3 Cards, 3 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01116b` | **Underground Distribution (main_scheme)** | `core_encounter` | `klaw_underground_distribution_when_revealed` |
-| `01117a` | **Secret Rendezvous (main_scheme)** | `core_encounter` | `klaw_secret_rendezvous_when_revealed` |
-| `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
 
 ### <a id="host"></a>`HOST` (3 Cards, 3 Declarations)
 
@@ -201,6 +208,13 @@
 | :--- | :--- | :--- | :--- |
 | `01046` | **Energy Daggers (upgrade)** | `core` | `energy_daggers_special` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed` |
+
+### <a id="engaged-player"></a>`ENGAGED_PLAYER` (2 Cards, 2 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01143` | **Advanced Ultron Drone (minion)** | `core_encounter` | `advanced_ultron_drone_defeated` |
+| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
 
 ### <a id="triggering-enemy"></a>`TRIGGERING_ENEMY` (2 Cards, 2 Declarations)
 
@@ -268,12 +282,6 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
-
-### <a id="engaged-player"></a>`ENGAGED_PLAYER` (1 Cards, 1 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
 
 ### <a id="host-enemy"></a>`HOST_ENEMY` (1 Cards, 1 Declarations)
 

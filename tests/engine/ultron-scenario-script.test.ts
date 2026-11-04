@@ -4,6 +4,7 @@ import { packHooks } from '../../src/data/content/pack-hooks.generated';
 import { AlterEgoCard, HeroCard, MainSchemeCard, VillainCard } from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
 import { ScenarioRegistry } from '@engine/scenarios';
+import { getSpecialHandler } from '@engine/specials/special-registry';
 
 describe('Ultron scenario script (Core pack)', () => {
   // Spider-Man and Captain Marvel: a game needs distinct heroes
@@ -29,8 +30,10 @@ describe('Ultron scenario script (Core pack)', () => {
       encounterCards: cardCatalog.getCardsBySet('ultron'),
     });
 
-  it('is the only scenario script of the Core pack', () => {
-    expect(Object.keys(packHooks.core.scenarioHooks ?? {})).toEqual(['ultron']);
+  it('registers the Drone action as a special handler; no scenario needs a setup hook', () => {
+    expect(getSpecialHandler('ULTRON_DRONE')).toBeDefined();
+    expect(packHooks.core).not.toHaveProperty('scenarioHooks');
+    expect(ScenarioRegistry.get('ultron')).toBeDefined();
     expect(ScenarioRegistry.get('rhino')).toBeDefined();
     expect(ScenarioRegistry.get('klaw')).toBeDefined();
   });
@@ -43,7 +46,7 @@ describe('Ultron scenario script (Core pack)', () => {
       expect(drone.card.traits).toContain('Drone');
       expect(drone.card).toMatchObject({ health: 1, attack: 1, scheme: 1 });
     }
-    expect(state.log.filter((e) => e.key === 'scenario.setup.drone')).toHaveLength(2);
+    expect(state.log.filter((e) => e.key === 'minion.drone.created')).toHaveLength(2);
   });
 
   it('logs the setup sound effect from the definition', () => {

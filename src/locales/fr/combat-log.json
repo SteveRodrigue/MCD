@@ -85,7 +85,7 @@
     "PLAYER_TABLEAU_DISCARDED": "{{actor}} a défaussé {{card}} de son tableau.",
     "RETALIATE_DAMAGE": "{{actor}} a riposté en infligeant {{amount}} dégât(s).",
     "scenario.setup": "Le scénario {{scenario}} est mis en place par {{actor}}.",
-    "scenario.setup.drone": "{{actor}} met un Drone en jeu.",
+    "minion.drone.created": "{{actor}} met un Drone en jeu.",
     "environment.entersPlay": "L'environnement {{card}} entre en jeu.",
     "scenario.setup.minion": "{{card}} est mis en place engagé avec {{actor}}.",
     "scenario.setup.sideScheme": "Le complot secondaire {{card}} entre en jeu.",

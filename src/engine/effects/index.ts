@@ -239,6 +239,7 @@ import {
   isEncounterCard,
   discardHostAttachmentsAndTuckedCards,
   discardCardInstance,
+  placeOnPile,
 } from '../state/card-discard';
 
 export {
@@ -262,7 +263,7 @@ export function moveDefeatedCardToPile(
   if (hasEntityKeyword(cardInstance, 'Victory')) {
     state.victoryDisplay.push(cardInstance);
   } else {
-    discardPile.push(cardInstance);
+    placeOnPile(cardInstance, discardPile);
   }
 }
 

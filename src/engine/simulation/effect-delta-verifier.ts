@@ -185,9 +185,16 @@ export function assertNoStepErrors(state: GameState, context: string): void {
   }
 }
 
-/** A step whose resolution depends on a gate, a choice or a limit may legitimately change nothing. */
+/**
+ * A step whose resolution depends on a gate, a choice or a limit may legitimately change nothing,
+ * and an effect "until the end of the attack" is already over when the run ends.
+ */
 function mayNoOp(step: AbilityStep): boolean {
-  return Boolean(step.gate) || step.effect === 'PLAYER_CHOICE';
+  return (
+    Boolean(step.gate) ||
+    step.effect === 'PLAYER_CHOICE' ||
+    step.effectParams?.duration === 'ATTACK'
+  );
 }
 
 export interface AbilityVerification {

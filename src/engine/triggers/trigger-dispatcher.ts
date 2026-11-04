@@ -1187,6 +1187,13 @@ function scanEncounterTriggerAbilities(
   if (state.winner || !state.players || state.players.length === 0) return;
   const firstPlayer = getFirstPlayer(state);
   if (!firstPlayer) return;
+  // "When/After [enemy] attacks you": the attacked player resolves it, whoever defends (RR Attack).
+  const isEnemyAttackEvent =
+    trigger === 'ENEMY_INITIATES_ATTACK' ||
+    (trigger === 'ATTACK_RESOLVED' && context.attackSource?.kind === 'ENEMY');
+  const controller =
+    (isEnemyAttackEvent ? state.players.find((p) => p.id === context.targetPlayerId) : undefined) ??
+    firstPlayer;
 
   const encounterCards: CardInstance[] = [
     ...getVillainsInPlay(state)
@@ -1217,7 +1224,7 @@ function scanEncounterTriggerAbilities(
     scanCardInstanceTriggerAbilities(
       state,
       cardInst,
-      firstPlayer,
+      controller,
       trigger,
       context,
       currentChain,

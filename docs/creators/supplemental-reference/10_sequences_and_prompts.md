@@ -39,8 +39,8 @@ Steps execute conditionally by specifying `gate` from the 10 canonical `StepGate
   - `gateParams`: `{ trait: Trait, negate?: boolean }`.
 - `"IF_ZONE_EMPTY"`: Executes Step $N$ if the specified zone has 0 cards.
   - `gateParams`: `{ zone: Zone, negate?: boolean }`.
-- `"IF_CARD_IN_PLAY"`: Executes Step $N$ if the specified card is in play. Use `negate: true` for "if not in play".
-  - `gateParams`: `{ cardId: string, negate?: boolean }`.
+- `"IF_CARD_IN_PLAY"`: Executes Step $N$ if the specified card, or any card matching the filter, is in play (Ultron III: "while a Drone minion is in play"). Use `negate: true` for "if not in play".
+  - `gateParams`: `{ cardCode?: string, filter?: UniversalCardFilter, negate?: boolean }` (one of `cardCode` and `filter` is required).
 - `"IF_ALL_ALLIES_MATCH"`: Executes Step $N$ if every ally the player controls matches the card filter ("If each of your allies has the [[Avenger]] trait", _Avengers Tower_ `03024`). True when the player controls no allies.
   - `gateParams`: `{ filter: UniversalCardFilter, negate?: boolean }`.
 - `"IF_RESOURCE_MATCH"`: Evaluates whether resources spent during action payment match required criteria:

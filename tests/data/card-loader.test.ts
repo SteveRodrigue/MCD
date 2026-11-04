@@ -391,6 +391,15 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         '01144b',
         '01144c',
         '01150',
+        // Issue #352, PR B: the Ultron cards that read Drones
+        '01134',
+        '01135',
+        '01136',
+        '01138b',
+        '01142',
+        '01146',
+        '01147',
+        '01148',
       ]);
 
       coreEncounterPack.forEach((card) => {
@@ -413,8 +422,8 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         }
       });
 
-      // Verify that unscanned card Ultron I (01134) returns undefined from getCardEnrichment
-      expect(getCardEnrichment('01134')).toBeUndefined();
+      // Verify that an unscanned card, Invasive AI (01149), returns undefined from getCardEnrichment
+      expect(getCardEnrichment('01149')).toBeUndefined();
     });
   });
 

@@ -289,6 +289,10 @@ export const EFFECT_PARAM_SCHEMAS = {
         label: 'Attacked Character',
         defaultValue: 'SELF_HERO',
       }),
+      engagedWith: optional(z.enum(['SELF']), {
+        label: 'Engaged With',
+        description: 'With target ENGAGED_HERO: only enemies engaged with the resolving player',
+      }),
     })
     .strict(),
   EXECUTE_SPECIAL: z
@@ -413,6 +417,11 @@ export const EFFECT_PARAM_SCHEMAS = {
         primary: true,
       }),
       target: target('Target', 'SELF'),
+      filter: optional(UniversalCardFilterSchema, {
+        label: 'Minion Filter',
+        widget: 'card-filter',
+        description: 'With target All Minions: the minions this bonus reaches',
+      }),
     })
     .strict(),
   MODIFY_STAT: z
@@ -430,6 +439,11 @@ export const EFFECT_PARAM_SCHEMAS = {
       }),
       duration: optional(DurationSchema, { label: 'Duration', defaultValue: 'PHASE' }),
       target: target('Target', 'SELF'),
+      filter: optional(UniversalCardFilterSchema, {
+        label: 'Minion Filter',
+        widget: 'card-filter',
+        description: 'With target All Minions: the minions this bonus reaches',
+      }),
       targetPlayer: optional(z.enum(['SELF', 'CHOSEN_PLAYER']), {
         label: 'Target Player',
         description:

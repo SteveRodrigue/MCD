@@ -2,13 +2,13 @@ import { CardInstance, GameState, getActiveVillain, getVillainsInPlay } from '..
 import type { AttachHost, AttachTo } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
 
-/** A character an encounter attachment can attach to: a villain or an engaged minion. */
+/** What an encounter attachment can attach to: a villain, an engaged minion or an environment. */
 export interface AttachCandidate {
   instanceId: string;
   name: string;
   /** The card instance (minion) or the villain's card holder. */
   attachments: CardInstance[];
-  kind: 'villain' | 'minion';
+  kind: 'villain' | 'minion' | 'environment';
   /** The player a minion is engaged with. */
   engagedPlayerId?: string;
   card: CardInstance['card'];
@@ -59,6 +59,21 @@ function findAttachCandidates(
   attachment: CardInstance,
   host: AttachHost,
 ): AttachCandidate[] {
+  if (host.type === 'ENVIRONMENT') {
+    return (state.environments || [])
+      .filter((e) => matchesCardFilter(e, host.filter, { state }))
+      .map((e) => {
+        e.attachments = e.attachments ?? [];
+        return {
+          instanceId: e.instanceId,
+          name: e.card.name,
+          attachments: e.attachments,
+          kind: 'environment' as const,
+          card: e.card,
+        };
+      });
+  }
+
   const all = candidatesOf(state);
   if (host.type === 'VILLAIN') {
     const active = getActiveVillain(state);

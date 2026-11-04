@@ -12,11 +12,16 @@ import {
   type GameAction,
   type CardRepository,
   type SideSchemeState,
+  type MainSchemeCard,
+  type VillainCard,
+  getActiveMainScheme,
+  getActiveVillain,
 } from '../models';
 import { setupGame, resetInstanceCounter } from '../state/game-setup';
 import { createCardInstance } from '../state/card-instance';
 import { dispatchAction } from '../pipeline';
 import {
+  step1_placeThreat,
   step4_revealEncounterCards,
   executeVillainAttackAgainstPlayer,
   executeVillainSchemeAgainstPlayer,
@@ -909,6 +914,7 @@ const SCENARIOS: Record<string, Scenario> = {
     });
   },
   ATTACK_RESOLVED: (stage, ctx) => {
+    if (ctx.target.card.type === CardType.VILLAIN) return villainAttack(stage, ctx);
     const filter = ctx.target.ability.triggerFilter as { sourceCardCode?: string } | undefined;
     if (filter?.sourceCardCode === ctx.target.cardCode && ctx.target.card.type === CardType.ALLY) {
       return dispatchOrThrow(stage.state, {
@@ -959,6 +965,7 @@ const SCENARIOS: Record<string, Scenario> = {
   },
   MINION_ENTERS_PLAY: (stage) => revealFixture(stage, stage.fixtures.minion),
   ENCOUNTER_CARD_REVEALED: (stage) => revealFixture(stage, stage.fixtures.treachery),
+  THREAT_PLACED: (stage) => step1_placeThreat(stage.state),
   THREAT_WOULD_BE_PLACED: (stage) => {
     executeVillainSchemeAgainstPlayer(stage.state, player1(stage));
     return stage.state;
@@ -1004,6 +1011,13 @@ export function installInPlay(stage: Stage, inst: CardInstance, type: CardType):
       break;
     case CardType.ATTACHMENT: {
       const attachTo = inst.card.enrichment?.attachTo;
+      const hostEnvironment = attachTo?.host?.type === 'ENVIRONMENT' ? attachTo.host : undefined;
+      if (hostEnvironment && stage.state.environments.length === 0) {
+        const environment = stage.options.allCards.find((c) =>
+          matchesCardFilter(c, { ...hostEnvironment.filter, types: ['environment'] }),
+        );
+        if (environment) stage.state.environments.push(createCardInstance(environment));
+      }
       if (
         attachTo?.host?.type === 'MINION' &&
         p.engagedMinions.length === 0 &&
@@ -1039,6 +1053,15 @@ export function installInPlay(stage: Stage, inst: CardInstance, type: CardType):
         threat: 3,
       });
       break;
+    case CardType.VILLAIN:
+      getActiveVillain(stage.state).card = inst.card as VillainCard;
+      break;
+    case CardType.MAIN_SCHEME: {
+      const scheme = getActiveMainScheme(stage.state);
+      scheme.card = inst.card as MainSchemeCard;
+      scheme.targetThreat = 99;
+      break;
+    }
     default:
       break; // identity cards are always in play
   }
@@ -1266,11 +1289,21 @@ function exerciseConstant(
     if (witnessScheme)
       installInPlay(stage, createCardInstance(witnessScheme, PLAYER_ID), witnessScheme.type);
   }
-  for (const filter of declaredFilters(target)) {
+  for (const { isFacedown, ...filter } of [
+    ...declaredFilters(target),
+    ...target.ability.steps.flatMap((step) => {
+      const gated = step.gateParams?.filter as UniversalCardFilter | undefined;
+      return gated ? [gated] : [];
+    }),
+  ]) {
     const witness = options.allCards.find(
       (c) => c.code !== card.code && matchesCardFilter(c, filter),
     );
-    if (witness) installInPlay(stage, createCardInstance(witness, PLAYER_ID), witness.type);
+    if (witness) {
+      const witnessInstance = createCardInstance(witness, PLAYER_ID);
+      if (isFacedown) witnessInstance.isShell = true;
+      installInPlay(stage, witnessInstance, witness.type);
+    }
   }
 
   let swap: (to: NormalizedCard) => void;
@@ -1282,6 +1315,13 @@ function exerciseConstant(
       if (isHero) p.hero = to as HeroCard;
       else p.alterEgo = to as AlterEgoCard;
       p.activeFormCard = isHero ? p.hero : p.alterEgo;
+    };
+  } else if (card.type === CardType.VILLAIN) {
+    const villain = getActiveVillain(state);
+    villain.card = card as VillainCard;
+    placedEntity = villain;
+    swap = (to) => {
+      villain.card = to as VillainCard;
     };
   } else {
     const inst = createCardInstance(card, PLAYER_ID);

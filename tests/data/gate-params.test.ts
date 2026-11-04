@@ -54,7 +54,11 @@ const EXPECTED_GATE_FIELDS = {
     },
     NEGATE,
   ],
-  IF_CARD_IN_PLAY: [{ key: 'cardCode', label: 'Card Code', type: 'string', required: true }, NEGATE],
+  IF_CARD_IN_PLAY: [
+    { key: 'cardCode', label: 'Card Code', type: 'string', required: false },
+    { key: 'filter', label: 'Card Criteria', type: 'card-filter', required: false },
+    NEGATE,
+  ],
   IF_ALL_ALLIES_MATCH: [
     { key: 'filter', label: 'Ally Criteria', type: 'card-filter', required: true },
     NEGATE,
@@ -86,7 +90,7 @@ const EXPECTED_HAS_REQUIRED = {
   IF_FORM: true,
   IF_PLAYER_HAS_TRAIT: true,
   IF_ZONE_EMPTY: true,
-  IF_CARD_IN_PLAY: true,
+  IF_CARD_IN_PLAY: false,
   IF_ALL_ALLIES_MATCH: true,
   IF_RESOURCE_MATCH: true,
   IF_UNDEFENDED_ATTACK: false,
@@ -194,6 +198,7 @@ describe('Step Gate Registry and Param Schemas (ADR-0080, Issues #289, #290)', (
     it('validates IF_CARD_IN_PLAY gate params', () => {
       const cardSchema = GATE_REGISTRY.IF_CARD_IN_PLAY.schema;
       expect(cardSchema.safeParse({ cardCode: '01064' }).success).toBe(true);
+      expect(cardSchema.safeParse({ filter: { traits: ['Drone'] } }).success).toBe(true);
       expect(cardSchema.safeParse({}).success).toBe(false);
     });
 

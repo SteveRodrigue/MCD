@@ -714,6 +714,22 @@
                     "properties": {
                       "type": {
                         "type": "string",
+                        "const": "ENVIRONMENT"
+                      },
+                      "filter": {
+                        "$ref": "#/$defs/__schema1"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
                         "enum": [
                           "MINION",
                           "ENEMY"
@@ -767,6 +783,22 @@
                           "type": {
                             "type": "string",
                             "const": "VILLAIN"
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "ENVIRONMENT"
+                          },
+                          "filter": {
+                            "$ref": "#/$defs/__schema1"
                           }
                         },
                         "required": [
@@ -1027,6 +1059,9 @@
           ]
         },
         "isExhausted": {
+          "type": "boolean"
+        },
+        "isFacedown": {
           "type": "boolean"
         },
         "hasStatus": {

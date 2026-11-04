@@ -165,6 +165,7 @@ function handleEnemyAttacks(
       const engagedPlayer = state.players.find((p) =>
         p.engagedMinions.some((em) => em.instanceId === m.instanceId),
       );
+      if (params.engagedWith === 'SELF' && engagedPlayer?.id !== player.id) continue;
       if (engagedPlayer && engagedPlayer.currentForm === 'hero') {
         eligibleActivations.push({ minion: m, targetPlayer: engagedPlayer });
       }

@@ -4,14 +4,27 @@
 
 ## Step Gates (`StepGateSchema` — 10/10 In Use)
 
-### <a id="if-form"></a>`IF_FORM` (4 Cards)
+### <a id="if-form"></a>`IF_FORM` (5 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01017` | **Cosmic Flight (upgrade)** | `core` | `cosmic_flight_aerial` |
 | `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
+| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
 | `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
 | `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
+
+### <a id="if-result"></a>`IF_RESULT` (7 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
+| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
+| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
+| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
+| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
+| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
+| `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
 
 ### <a id="if-card-in-play"></a>`IF_CARD_IN_PLAY` (5 Cards)
 
@@ -22,17 +35,6 @@
 | `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
 | `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
-
-### <a id="if-result"></a>`IF_RESULT` (6 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
-| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
-| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
-| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
-| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
-| `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
 
 ### <a id="if-resource-match"></a>`IF_RESOURCE_MATCH` (3 Cards)
 
@@ -58,18 +60,20 @@
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 | `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
 
+### <a id="if-activation-dealt-damage"></a>`IF_ACTIVATION_DEALT_DAMAGE` (3 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_stun_damaged` |
+| `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_boost` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
+
 ### <a id="if-undefended-attack"></a>`IF_UNDEFENDED_ATTACK` (2 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
 | `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
-
-### <a id="if-activation-dealt-damage"></a>`IF_ACTIVATION_DEALT_DAMAGE` (1 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
 
 ### <a id="if-all-allies-match"></a>`IF_ALL_ALLIES_MATCH` (1 Cards)
 

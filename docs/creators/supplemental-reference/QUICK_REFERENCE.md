@@ -119,7 +119,7 @@ Every step in `abilities[].steps` may define a `gate` and associated `gateParams
 | `IF_ALL_ALLIES_MATCH`        | `STATE`   | `filter` (req: `UniversalCardFilter`), `negate` (opt: boolean)                                                                                                             | Checks that every ally the player controls matches.      |
 | `IF_RESOURCE_MATCH`          | `CONTEXT` | `resource` (req: string), `count` (opt: number), `printedResource` (opt: boolean), `only` (opt: boolean), `form` (opt: `'HERO'` \| `'ALTER_EGO'`), `negate` (opt: boolean) | Checks payment resources for matching types.             |
 | `IF_UNDEFENDED_ATTACK`       | `CONTEXT` | `attackerKind` (opt: `'VILLAIN'` \| `'MINION'` \| `'ANY_ENEMY'`), `negate` (opt: boolean)                                                                                  | Checks if current incoming attack is undefended.         |
-| `IF_ACTIVATION_DEALT_DAMAGE` | `CONTEXT` | `negate` (opt: boolean)                                                                                                                                                    | Checks if villain/minion activation dealt damage.        |
+| `IF_ACTIVATION_DEALT_DAMAGE` | `CONTEXT` | `target` (opt: TargetSelector), `negate` (opt: boolean)                                                                                                                    | Checks if villain/minion activation dealt damage.        |
 
 ### Result Facts (`ResultFact`)
 

@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-## 1. Cards with Multiple Abilities (2+ Declared Abilities — 26 Cards)
+## 1. Cards with Multiple Abilities (2+ Declared Abilities — 28 Cards)
 
 | Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -16,6 +16,8 @@
 | `01084` | **Nick Fury** | `ally` | `core` | **2** | • `nick_fury_enters_play` (`FORCED_RESPONSE` / `ENTERS_PLAY`, **1 step**)<br/>• `nick_fury_round_end_discard` (`FORCED_RESPONSE` / `ROUND_ENDED`, **1 step**) |
 | `01099` | **Charge** | `attachment` | `core_encounter` | **3** | • `charge_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `charge_overkill` (`CONSTANT`, **1 step**)<br/>• `charge_discard` (`FORCED_RESPONSE` / `HOST_ATTACK_ENDED`, **1 step**) |
 | `01100` | **Enhanced Ivory Horn** | `attachment` | `core_encounter` | **2** | • `ivory_horn_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `ivory_horn_discard_action` (`HERO_ACTION`, **1 step**) |
+| `01118` | **Sonic Converter** | `attachment` | `core_encounter` | **3** | • `sonic_converter_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `sonic_converter_stun_damaged` (`FORCED_RESPONSE` / `HOST_ATTACK_ENDED`, **1 step**)<br/>• `sonic_converter_discard_action` (`HERO_ACTION`, **1 step**) |
+| `01123` | **Sonic Boom** | `treachery` | `core_encounter` | **2** | • `sonic_boom_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `sonic_boom_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01129` | **Radioactive Man** | `minion` | `core_encounter` | **2** | • `radioactive_man_forced_response` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**)<br/>• `radioactive_man_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01130` | **Whirlwind** | `minion` | `core_encounter` | **2** | • `whirlwind_interrupt_multi_hero_attack` (`FORCED_INTERRUPT` / `ENEMY_INITIATES_ATTACK`, **1 step**)<br/>• `whirlwind_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01131` | **Tiger Shark** | `minion` | `core_encounter` | **2** | • `tiger_shark_forced_response` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**)<br/>• `tiger_shark_boost` (`BOOST` / `BOOST`, **1 step**) |
@@ -33,7 +35,7 @@
 | `03024` | **Avengers Tower** | `support` | `cap` | **2** | • `avengers_tower_ally_limit` (`CONSTANT`, **1 step**)<br/>• `avengers_tower_action` (`ACTION`, **1 step**) |
 | `45109` | **The Fittest** | `attachment` | `aoa_encounter` | **2** | • `the_fittest_hit_points` (`CONSTANT`, **1 step**)<br/>• `the_fittest_tough` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**) |
 
-## 2. Multi-Step Execution Pipelines (2+ Steps — 35 Pipelines Across 35 Cards)
+## 2. Multi-Step Execution Pipelines (2+ Steps — 36 Pipelines Across 36 Cards)
 
 | Card Code | Card Name | Pack | Ability ID | Timing | Steps | Pipeline Execution Sequence |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -53,6 +55,7 @@
 | `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` | `WHEN_REVEALED` | **3** | `[1] VILLAIN_ATTACKS ➔ [2] ADD_STATUS ➔ [3] SURGE` |
 | `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DISTRIBUTE_AMOUNT ➔ [2] SURGE` |
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` | `WHEN_REVEALED` | **2** | `[1] ADD_STATUS ➔ [2] SURGE` |
+| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` | `WHEN_REVEALED` | **3** | `[1] DISCARD ➔ [2] VILLAIN_ATTACKS ➔ [3] ADD_THREAT` |
 | `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` | `WHEN_REVEALED` | **2** | `[1] ENEMY_ATTACKS ➔ [2] SEARCH` |
 | `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` | `FORCED_RESPONSE` | **2** | `[1] CHANGE_FORM ➔ [2] PLAYER_CHOICE` |
 | `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DISCARD ➔ [2] PLAYER_CHOICE` |

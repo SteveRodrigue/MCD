@@ -25,7 +25,7 @@
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 | `01087` | **Haymaker (event)** | `core` | `haymaker` |
 
-### <a id="self"></a>`SELF` (13 Cards, 13 Declarations)
+### <a id="self"></a>`SELF` (14 Cards, 14 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -34,6 +34,7 @@
 | `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
 | `01051` | **Tigra (ally)** | `core` | `tigra_defeat_heal` |
 | `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
+| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
 | `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response` |
 | `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
 | `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
@@ -99,13 +100,14 @@
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
 
-### <a id="self-hero"></a>`SELF_HERO` (5 Cards, 5 Declarations)
+### <a id="self-hero"></a>`SELF_HERO` (6 Cards, 6 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01024` | **One-Two Punch (event)** | `core` | `one_two_punch_response` |
 | `01035` | **Arc Reactor (upgrade)** | `core` | `arc_reactor_ready` |
 | `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
+| `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_boost` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
 
@@ -137,6 +139,14 @@
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
 | `01150` | **Ultron's Imperative (side_scheme)** | `core_encounter` | `ultrons_imperative_when_revealed` |
 
+### <a id="main-scheme"></a>`MAIN_SCHEME` (3 Cards, 4 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
+| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
+| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
+
 ### <a id="all-heroes"></a>`ALL_HEROES` (3 Cards, 3 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -144,6 +154,14 @@
 | `01096` | **Rhino (villain)** | `core_encounter` | `rhino_stage_iii_when_revealed` |
 | `01103` | **Shocker (minion)** | `core_encounter` | `shocker_when_revealed` |
 | `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
+
+### <a id="damaged-character"></a>`DAMAGED_CHARACTER` (3 Cards, 3 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
+| `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_stun_damaged` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
 
 ### <a id="defending-player"></a>`DEFENDING_PLAYER` (2 Cards, 3 Declarations)
 
@@ -159,13 +177,6 @@
 | `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_tough` |
 | `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
-
-### <a id="main-scheme"></a>`MAIN_SCHEME` (2 Cards, 3 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
-| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
 
 ### <a id="all-controlled-characters"></a>`ALL_CONTROLLED_CHARACTERS` (2 Cards, 2 Declarations)
 
@@ -194,13 +205,6 @@
 | :--- | :--- | :--- | :--- |
 | `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_attach` |
 | `01053` | **Relentless Assault (event)** | `core` | `relentless_assault` |
-
-### <a id="damaged-character"></a>`DAMAGED_CHARACTER` (2 Cards, 2 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
 
 ### <a id="engaged-enemies"></a>`ENGAGED_ENEMIES` (2 Cards, 2 Declarations)
 

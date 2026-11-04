@@ -10,6 +10,7 @@ import {
 import {
   CardAbilitySchema,
   AbilityStepSchema,
+  TargetSelectorSchema,
 } from '../../src/data/supplemental/schema';
 import {
   hasRequiredFields,
@@ -77,7 +78,16 @@ const EXPECTED_GATE_FIELDS = {
     },
     NEGATE,
   ],
-  IF_ACTIVATION_DEALT_DAMAGE: [NEGATE],
+  IF_ACTIVATION_DEALT_DAMAGE: [
+    {
+      key: 'target',
+      label: 'Target',
+      type: 'enum',
+      required: false,
+      options: TargetSelectorSchema.options,
+    },
+    NEGATE,
+  ],
 } as const;
 
 const EXPECTED_HAS_REQUIRED = {

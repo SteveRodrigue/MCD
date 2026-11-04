@@ -773,6 +773,71 @@
         "originalText": "<b>If this stage is completed, the players lose the game.</b>"
       }
     },
+    "01118": {
+      "attachTo": {
+        "host": {
+          "type": "VILLAIN"
+        }
+      },
+      "abilities": [
+        {
+          "id": "sonic_converter_atk_bonus",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "MODIFY_STAT",
+              "effectParams": {
+                "stat": "ATTACK",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "sonic_converter_stun_damaged",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "HOST_ATTACK_ENDED",
+          "steps": [
+            {
+              "gate": "IF_ACTIVATION_DEALT_DAMAGE",
+              "effect": "ADD_STATUS",
+              "effectParams": {
+                "status": "STUNNED",
+                "target": "DAMAGED_CHARACTER"
+              }
+            }
+          ]
+        },
+        {
+          "id": "sonic_converter_discard_action",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "resourceCost": {
+              "energy": 1,
+              "mental": 1,
+              "physical": 1
+            }
+          },
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "SELF"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T02:00:00Z",
+        "updatedAt": "2026-11-04T02:00:00Z",
+        "reviewedAt": "2026-11-04T02:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Attach to Klaw.\n[star] <b>Forced Response</b>: After Klaw attacks and damages a character, stun that character.\n<b>Hero Action</b>: Spend [energy] [mental] [physical] resources → discard this card."
+      }
+    },
     "01120": {
       "noSupplementalNeeded": true,
       "abilities": [],
@@ -812,6 +877,133 @@
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Surge. <i>(After this card is revealed, reveal 1 additional encounter card.)</i>\n<hr />\n[star] <b>Boost</b>: Put Weapons Runner into play engaged with you."
+      }
+    },
+    "01122": {
+      "abilities": [
+        {
+          "id": "klaws_vengeance_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "klaws_vengeance_alter_ego",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "ALTER_EGO"
+              },
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "HAND",
+                "count": 1,
+                "mode": "RANDOM",
+                "target": "SELF"
+              }
+            },
+            {
+              "id": "klaws_vengeance_hero_attack",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "HERO"
+              },
+              "effect": "VILLAIN_ATTACKS",
+              "effectParams": {}
+            },
+            {
+              "id": "klaws_vengeance_damage_threat",
+              "gate": "IF_RESULT",
+              "gateParams": {
+                "result": "DAMAGE_DEALT"
+              },
+              "effect": "ADD_THREAT",
+              "effectParams": {
+                "amount": 1,
+                "target": "MAIN_SCHEME"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T02:00:00Z",
+        "updatedAt": "2026-11-04T02:00:00Z",
+        "reviewedAt": "2026-11-04T02:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed (Alter-Ego)</b>: Discard 1 card at random from your hand.\n<b>When Revealed (Hero)</b>: Klaw attacks you. If this attack deals damage, place 1 threat on the main scheme."
+      }
+    },
+    "01123": {
+      "abilities": [
+        {
+          "id": "sonic_boom_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Sonic Boom",
+                "description": "Either spend [energy] [mental] [physical] resources or exhaust each character you control:",
+                "options": [
+                  {
+                    "id": "spend_resources",
+                    "label": "Spend [energy] [mental] [physical] resources",
+                    "description": "Spend 1 energy, 1 mental, and 1 physical resource.",
+                    "cost": {
+                      "resourceCost": {
+                        "energy": 1,
+                        "mental": 1,
+                        "physical": 1
+                      }
+                    },
+                    "steps": []
+                  },
+                  {
+                    "id": "exhaust_characters",
+                    "label": "Exhaust each character you control",
+                    "description": "Exhaust your identity and each ally you control.",
+                    "steps": [
+                      {
+                        "effect": "EXHAUST",
+                        "effectParams": {
+                          "target": "ALL_CONTROLLED_CHARACTERS"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "sonic_boom_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "gate": "IF_ACTIVATION_DEALT_DAMAGE",
+              "gateParams": {
+                "target": "SELF_HERO"
+              },
+              "effect": "EXHAUST",
+              "effectParams": {
+                "target": "SELF_HERO"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T02:00:00Z",
+        "updatedAt": "2026-11-04T02:00:00Z",
+        "reviewedAt": "2026-11-04T02:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Either spend [energy] [mental] [physical] resources or exhaust each character you control.\n<hr />\n[star] <b>Boost</b>: If this activation deals damage to you, exhaust your hero."
       }
     },
     "01125": {

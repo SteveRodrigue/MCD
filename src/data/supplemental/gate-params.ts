@@ -3,7 +3,7 @@ import { GATE_KINDS, STEP_GATES, type GateKind } from './runtime.ts';
 export type { GateKind };
 import { z } from 'zod';
 import { hasRequiredFields, introspectObjectSchema } from './schema-introspector.ts';
-import { IdentityFormSchema, UniversalCardFilterSchema } from './schema-primitives.ts';
+import { IdentityFormSchema, TargetSelectorSchema, UniversalCardFilterSchema } from './schema-primitives.ts';
 
 export { IdentityFormSchema, type IdentityForm } from './schema-primitives.ts';
 
@@ -149,6 +149,7 @@ export const IfUndefendedAttackGateParamsSchema = z
 
 export const IfActivationDealtDamageGateParamsSchema = z
   .object({
+    target: TargetSelectorSchema.optional().meta({ label: 'Target' }),
     negate: negateParam,
   })
   .strict();

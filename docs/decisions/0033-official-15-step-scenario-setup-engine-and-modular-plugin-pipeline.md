@@ -93,8 +93,8 @@ To strictly enforce scenario rules while supporting modular customization, encou
 
 1. **Scenario-Mandatory Encounter Sets (Fixed & Non-Replaceable):**
    * **Primary Villain Set:** The scenario's core encounter cards (e.g. *Rhino*, *Klaw*, *Ultron*).
-   * **Standard Encounter Set:** Mandatory for all games (*Standard I*, *Standard II*, or *Standard III*).
-   * **Expert Encounter Set:** Mandatory when difficulty is set to Expert (*Expert I* or *Expert II*).
+   * **Standard Encounter Set:** Chosen at setup by the player, see [ADR-0094](0094-encounter-set-selection.md).
+   * **Expert Encounter Set:** Chosen at setup by the player, see [ADR-0094](0094-encounter-set-selection.md).
    * **Scenario-Required Secondary Sets:** Specific secondary sets mandated by the scenario rules (e.g. *Prelates* in Apocalypse, *Temporal* in Kang, *Hydra Patrol* and *Hydra Assault* in Red Skull). These **cannot** be swapped out.
 2. **Customizable Modular Slots (Replaceable Defaults):**
    * Defined by the scenario as a required **slot count** (e.g., 1 modular set for Rhino/Klaw/Ultron, 2 for Crossbones, $1 + N$ for Citizen V).

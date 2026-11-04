@@ -7,6 +7,8 @@ export interface ScenarioGameSetupOptions {
   heroicLevel?: number;
   heroIds?: string[];
   deckOverrides?: Record<string, string[]>;
+  standardSetCode?: string | null;
+  expertSetCode?: string | null;
   modularSetCodes?: string[];
   skipMulligan?: boolean;
 }

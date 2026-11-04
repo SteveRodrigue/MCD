@@ -145,6 +145,8 @@ const AppContent: React.FC = () => {
       players,
       difficulty: selection.difficulty,
       heroicLevel: selection.heroicLevel,
+      standardSetCode: selection.standardSetCode,
+      expertSetCode: selection.expertSetCode,
       modularSetCodes: selection.selectedModularSetCodes,
     });
 

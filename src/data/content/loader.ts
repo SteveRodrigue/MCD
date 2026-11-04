@@ -5,9 +5,9 @@ import { ClaimRegistry } from '../packs/identity';
 import { PackDeckSchema } from '../packs/pack-deck';
 import { PACK_API_VERSION, PackManifestSchema, type PackManifest } from '../packs/pack-manifest';
 import {
-  ModularSetsSchema,
+  EncounterSetsSchema,
   ScenarioDefinitionSchema,
-  type ModularSets,
+  type EncounterSets,
   type ScenarioDefinition,
 } from '../packs/scenario-definition';
 import { SupplementalPackSchema } from '../supplemental/schema';
@@ -102,13 +102,13 @@ async function readSupplemental(
   return merged;
 }
 
-async function readModularSets(driver: ContentDriver, id: string): Promise<ModularSets> {
-  const path = `packs/${id}/modular-sets.json`;
+async function readEncounterSets(driver: ContentDriver, id: string): Promise<EncounterSets> {
+  const path = `packs/${id}/encounter-sets.json`;
   if (!(await driver.exists(path))) return [];
   const raw = await driver.readJson(path);
-  const parsed = ModularSetsSchema.safeParse(raw);
-  if (!parsed.success) throw new Error(`modular-sets.json: ${parsed.error.message}`);
-  return raw as ModularSets;
+  const parsed = EncounterSetsSchema.safeParse(raw);
+  if (!parsed.success) throw new Error(`encounter-sets.json: ${parsed.error.message}`);
+  return raw as EncounterSets;
 }
 
 async function readScenarios(driver: ContentDriver, id: string): Promise<ScenarioDefinition[]> {
@@ -178,23 +178,23 @@ export async function loadContent(
       } else {
         const { cards, cardStems } = await readCards(driver, id);
         const supplemental = await readSupplemental(driver, id);
-        const modularSets = await readModularSets(driver, id);
+        const encounterSets = await readEncounterSets(driver, id);
         const scenarios = await readScenarios(driver, id);
         const decks = await readDecks(driver, id);
         for (const card of cards) {
           const owner = cardClaims.ownerOf(card.code);
           if (owner) throw new Error(`card ${card.code} is also defined by "${owner}"`);
         }
-        for (const set of modularSets) {
+        for (const set of encounterSets) {
           const owner = setClaims.ownerOf(set.code);
-          if (owner) throw new Error(`modular set "${set.code}" is also defined by "${owner}"`);
+          if (owner) throw new Error(`encounter set "${set.code}" is also defined by "${owner}"`);
         }
         for (const scenario of scenarios) {
           const owner = scenarioClaims.ownerOf(scenario.id);
           if (owner) throw new Error(`scenario "${scenario.id}" is also defined by "${owner}"`);
         }
         for (const card of cards) cardClaims.claim(card.code, id);
-        for (const set of modularSets) setClaims.claim(set.code, id);
+        for (const set of encounterSets) setClaims.claim(set.code, id);
         for (const scenario of scenarios) scenarioClaims.claim(scenario.id, id);
         result = {
           id,
@@ -202,7 +202,7 @@ export async function loadContent(
           cards,
           cardStems,
           supplemental,
-          modularSets,
+          encounterSets,
           scenarios,
           decks,
           cardCount: cards.length,

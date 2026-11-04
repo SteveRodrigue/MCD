@@ -7,7 +7,7 @@
  *   content/packs/<code>/cards/<stem>.json
  *   content/packs/<code>/supplemental/<stem>.json
  *   content/packs/<code>/translations/<locale>/<stem>.json
- *   content/packs/<code>/{scenarios,decks,modular-sets.json,pack.json}
+ *   content/packs/<code>/{scenarios,decks,encounter-sets.json,pack.json}
  *   content/packs/<code>/assets/cards/<file>.png   art shipped by the pack
  *   content/.cache/images/<code>/<file>.png        art fetched on demand (disposable)
  *   content/art-packs/<id>/{art-pack.json,<file>.png}  optional local art, never committed

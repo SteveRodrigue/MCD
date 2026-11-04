@@ -21,6 +21,7 @@ import { nextEngineId, shuffleArray } from '../state/rng';
 import { kernel } from '../kernel';
 import { advanceVillainStage, revealVillainStage } from './advance-villain-stage';
 import { villainStageHitPoints } from '../pipeline/stat-calculator';
+import { getVillainStages, resolveScenarioSetup } from './resolve-scenario-setup';
 import type { ScenarioDefinition, ScenarioGameSetupOptions, ScenarioPlugin } from './types';
 
 /**
@@ -85,21 +86,18 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
   }
 
   private buildEncounterDeck(state: GameState, options: ScenarioGameSetupOptions): void {
-    const difficulty = state.difficulty || 'STANDARD';
     const sets = this.definition.modularEncounterSets;
-    const modularSetCodes = (options.modularSetCodes || sets.defaults[difficulty]).filter(
-      (code) => code !== 'standard' && code !== 'expert',
-    );
     const setCodes = [
       ...sets.mandatory,
-      'standard',
-      ...(difficulty === 'EXPERT' ? ['expert'] : []),
-      ...modularSetCodes,
+      ...[state.encounterSets.standard, state.encounterSets.expert].filter(
+        (code): code is string => code !== null,
+      ),
+      ...(options.modularSetCodes ?? sets.recommendedModularSets ?? []),
     ];
 
     // Villain and main scheme stages never go into the encounter deck
     const stageCodes = new Set([
-      ...Object.values(this.definition.villainSetup.stages).flat(),
+      ...Object.values(this.definition.villainSetup.stages).flatMap((stages) => stages ?? []),
       ...this.definition.mainSchemeSetup.stages,
     ]);
     const excludedTypes = new Set<string>(['villain', 'main_scheme']);
@@ -114,14 +112,19 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
   }
 
   onGameSetup(state: GameState, options: ScenarioGameSetupOptions): GameState {
-    const difficulty = options.difficulty || 'STANDARD';
+    const { difficulty, expertMode, encounterSets } = resolveScenarioSetup(
+      this.definition,
+      options,
+    );
     state.difficulty = difficulty;
+    state.expertMode = expertMode;
+    state.encounterSets = encounterSets;
     state.heroicLevel = options.heroicLevel || 0;
     state.scenarioId = this.definition.id;
     state.scenarioCardCode = this.definition.scenarioCardCode;
 
     // 1. The first villain stage of the difficulty
-    const startingStageCode = this.definition.villainSetup.stages[difficulty][0];
+    const startingStageCode = getVillainStages(this.definition, difficulty)[0];
     const villainCard = getCatalog(state).getCard(startingStageCode) as VillainCard | undefined;
     if (!villainCard) {
       throw new Error(
@@ -184,7 +187,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     const difficulty = state.difficulty || 'STANDARD';
 
     // The next stage of this difficulty enters play; the last stage defeated wins the game
-    const stages = this.definition.villainSetup.stages[difficulty];
+    const stages = getVillainStages(this.definition, difficulty);
     const stageIndex = stages.indexOf(villain.card.code);
     const nextStageCode = stageIndex >= 0 ? stages[stageIndex + 1] : undefined;
     if (nextStageCode) {

@@ -27,11 +27,6 @@
 
   "modularEncounterSets": {
     "mandatory": ["klaw"],
-    "defaults": {
-      "SKIRMISH": ["standard", "masters_of_evil"],
-      "STANDARD": ["standard", "masters_of_evil"],
-      "EXPERT": ["standard", "expert", "masters_of_evil"]
-    },
     "slotCount": 1,
     "recommendedModularSets": ["masters_of_evil"]
   }

@@ -64,8 +64,8 @@ describe('loadContent', () => {
     write('packs/core/supplemental/core.json', {
       cards: { '00001': { noSupplementalNeeded: true } },
     });
-    write('packs/core/modular-sets.json', [
-      { code: 'bomb_scare', name: 'Bomb Scare', description: '' },
+    write('packs/core/encounter-sets.json', [
+      { code: 'bomb_scare', kind: 'modular', name: 'Bomb Scare', description: '' },
     ]);
     write('packs/core/decks/a.json', {
       id: 2,
@@ -87,7 +87,7 @@ describe('loadContent', () => {
     const [pack] = content.packs;
     expect(pack.cardCount).toBe(3);
     expect(pack.supplementalCount).toBe(1);
-    expect(pack.modularSets.map((s) => s.code)).toEqual(['bomb_scare']);
+    expect(pack.encounterSets.map((s) => s.code)).toEqual(['bomb_scare']);
     expect(pack.decks.map((d) => d.name)).toEqual(['A', 'B']);
   });
 
@@ -169,7 +169,7 @@ describe('loadContent', () => {
         targetThreatPerPlayer: 1,
         escalationThreatPerPlayer: 1,
       },
-      modularEncounterSets: { mandatory: [], defaults: { SKIRMISH: [], STANDARD: [], EXPERT: [] } },
+      modularEncounterSets: { mandatory: [] },
       ...extra,
     });
 

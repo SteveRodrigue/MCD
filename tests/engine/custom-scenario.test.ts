@@ -35,11 +35,6 @@ describe('Fan-Made Custom Scenario Extensibility (Universal Scenario Package For
     },
     modularEncounterSets: {
       mandatory: ['rhino'],
-      defaults: {
-        SKIRMISH: ['standard'],
-        STANDARD: ['standard'],
-        EXPERT: ['standard', 'expert'],
-      },
     },
   };
 

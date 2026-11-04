@@ -48,6 +48,8 @@ export interface GameSetupOptions {
   villain?: VillainCard;
   mainScheme?: MainSchemeCard;
   encounterCards?: NormalizedCard[];
+  standardSetCode?: string | null;
+  expertSetCode?: string | null;
   modularSetCodes?: string[];
   shuffleFn?: <T>(array: T[]) => T[];
   seed?: number | string;
@@ -234,6 +236,8 @@ export function setupGame(options: GameSetupOptions): GameState {
     setupState: { stage: 'SCENARIO_SETUP', mulliganCompleted: {} },
     scenarioId,
     difficulty,
+    expertMode: difficulty === 'EXPERT',
+    encounterSets: { standard: null, expert: null },
     heroicLevel: options.heroicLevel || 0,
     firstPlayerIndex: 0,
     activePlayerIndex: 0,
@@ -275,8 +279,10 @@ export function setupGame(options: GameSetupOptions): GameState {
     const plugin = ScenarioRegistry.get(scenarioId);
     state = plugin.onGameSetup(state, {
       scenarioId,
-      difficulty,
+      difficulty: options.difficulty,
       heroicLevel: options.heroicLevel,
+      standardSetCode: options.standardSetCode,
+      expertSetCode: options.expertSetCode,
       modularSetCodes: options.modularSetCodes,
     });
 

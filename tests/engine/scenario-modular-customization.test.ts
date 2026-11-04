@@ -2,14 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { HeroCard, AlterEgoCard, VillainCard, MainSchemeCard } from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
-import { ScenarioRegistry, listModularEncounterSets } from '@engine/scenarios';
+import { ScenarioRegistry, listEncounterSets } from '@engine/scenarios';
 
 describe('Milestone 2C: Modular Encounter Set Hot-Swapping & Customization (ADR-0033)', () => {
   const spiderManHero = cardCatalog.getCard('01001a') as HeroCard;
   const peterParkerAlterEgo = cardCatalog.getCard('01001b') as AlterEgoCard;
 
   it('lists all 5 Core Set modular encounter sets with metadata', () => {
-    const modularSets = listModularEncounterSets(cardCatalog);
+    const modularSets = listEncounterSets(cardCatalog, 'modular');
     expect(modularSets.length).toBe(5);
     // Card counts come from the catalog, not from hand-written metadata
     expect(modularSets.find((m) => m.code === 'under_attack')?.cardCount).toBe(5);

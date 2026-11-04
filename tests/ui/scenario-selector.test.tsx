@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach, beforeAll, afterAll } from 'vitest';
+import { render, screen, fireEvent, within } from '@testing-library/react';
+import { DeclarativeScenarioPlugin, ScenarioRegistry } from '../../src/engine/scenarios';
 import {
   ScenarioSelector,
   RANDOM_MODULAR_SET_CODE,
@@ -119,7 +120,7 @@ describe('ScenarioSelector', () => {
     renderSelector();
     expect(screen.getByRole('option', { name: /Pick Randomly/ })).toBeTruthy();
 
-    const select = screen.getAllByRole('combobox')[0];
+    const select = screen.getByRole('combobox', { name: 'Modular Set' });
     fireEvent.change(select, { target: { value: RANDOM_MODULAR_SET_CODE } });
     expect(screen.getByText('Random pick exclude the recommended (house rule)')).toBeTruthy();
     expect(screen.getByText('Random Modular Set')).toBeTruthy();
@@ -127,7 +128,7 @@ describe('ScenarioSelector', () => {
 
   it('resolves random modular set excluding recommended when checkbox is checked', () => {
     const onStartSetup = renderSelector();
-    const select = screen.getAllByRole('combobox')[0];
+    const select = screen.getByRole('combobox', { name: 'Modular Set' });
     fireEvent.change(select, { target: { value: RANDOM_MODULAR_SET_CODE } });
 
     fireEvent.click(screen.getByText('START MISSION'));
@@ -139,9 +140,113 @@ describe('ScenarioSelector', () => {
     );
   });
 
+  describe('difficulty and encounter set order', () => {
+    it('offers Standard sets, no Expert dropdown on Standard, and a required one on Expert', () => {
+      renderSelector();
+      fireEvent.click(screen.getByText('STANDARD'));
+      expect(screen.getByRole('combobox', { name: 'Standard Set' })).toBeTruthy();
+      expect(screen.queryByRole('combobox', { name: 'Expert Set' })).toBeNull();
+
+      fireEvent.click(screen.getByText('EXPERT'));
+      const expert = screen.getByRole('combobox', { name: 'Expert Set' }) as HTMLSelectElement;
+      expect(expert.value).toBe('expert');
+      expect(within(expert).queryByRole('option', { name: 'None' })).toBeNull();
+    });
+
+    it('lets Skirmish add an Expert set, which goes in the selection', () => {
+      const onStartSetup = renderSelector();
+      fireEvent.click(screen.getByText('SKIRMISH'));
+      const expert = screen.getByRole('combobox', { name: 'Expert Set' }) as HTMLSelectElement;
+      expect(expert.value).toBe('');
+
+      fireEvent.click(screen.getByText('START MISSION'));
+      expect(onStartSetup.mock.calls[0][0]).toMatchObject({
+        difficulty: 'SKIRMISH',
+        standardSetCode: 'standard',
+        expertSetCode: null,
+      });
+      fireEvent.change(expert, { target: { value: 'expert' } });
+      fireEvent.click(screen.getByText('START MISSION'));
+      expect(onStartSetup.mock.calls[1][0]).toMatchObject({ expertSetCode: 'expert' });
+    });
+
+    it('shows the villain stages of each difficulty from the cards', () => {
+      renderSelector();
+      expect(screen.getByText('Stage I Only')).toBeTruthy();
+      expect(screen.getByText('Stage I ➔ II')).toBeTruthy();
+      expect(screen.getByText('Stage II ➔ III')).toBeTruthy();
+    });
+
+    it('heroic level stays selectable on every difficulty and shows no variant badge', () => {
+      renderSelector();
+      for (const mode of ['SKIRMISH', 'STANDARD', 'EXPERT']) {
+        fireEvent.click(screen.getByText(mode));
+        fireEvent.click(screen.getByText('Heroic 2 (+2)'));
+        expect(screen.queryByText(/CUSTOM VARIANT|OFFICIAL FFG MODE/)).toBeNull();
+      }
+    });
+
+    describe('with a scenario that overrides the difficulty setup', () => {
+      const registered = ScenarioRegistry.getAll();
+      beforeAll(() => {
+        const { definition } = ScenarioRegistry.get('rhino');
+        ScenarioRegistry.register(
+          new DeclarativeScenarioPlugin({
+            ...structuredClone(definition),
+            id: 'zz_override_fixture',
+            scenarioCardCode: '99999',
+            name: 'Override Fixture',
+            supportedDifficulties: ['STANDARD', 'EXPERT'],
+            modularEncounterSets: { mandatory: ['rhino'], slotCount: 0 },
+            encounterSetRules: { standard: { fixed: null }, expert: { fixed: null } },
+          }),
+        );
+      });
+      afterAll(() => {
+        ScenarioRegistry.clear();
+        registered.forEach((plugin) => ScenarioRegistry.register(plugin));
+      });
+
+      const goToFixture = () => {
+        fireEvent.click(screen.getByTitle('Previous Scenario'));
+        expect(screen.getAllByText(/Override Fixture/).length).toBeGreaterThan(0);
+      };
+
+      it('only the difficulties the scenario supports are shown', () => {
+        renderSelector();
+        goToFixture();
+        expect(screen.queryByText('SKIRMISH')).toBeNull();
+        expect(screen.getByText('STANDARD')).toBeTruthy();
+        expect(screen.getByText('EXPERT')).toBeTruthy();
+      });
+
+      it('changing scenario moves to its first supported difficulty when the current one is not offered', () => {
+        const onStartSetup = renderSelector();
+        fireEvent.click(screen.getByText('SKIRMISH'));
+        goToFixture();
+        expect(screen.getByText('MODE: STANDARD')).toBeTruthy();
+        fireEvent.click(screen.getByText('START MISSION'));
+        expect(onStartSetup.mock.calls[0][0]).toMatchObject({
+          difficulty: 'STANDARD',
+          standardSetCode: null,
+          expertSetCode: null,
+          selectedModularSetCodes: [],
+        });
+      });
+
+      it('scenario with no standard or expert set shows no set dropdowns', () => {
+        renderSelector();
+        goToFixture();
+        expect(screen.queryByRole('combobox', { name: 'Standard Set' })).toBeNull();
+        expect(screen.queryByRole('combobox', { name: 'Expert Set' })).toBeNull();
+        expect(screen.queryByRole('combobox', { name: 'Modular Set' })).toBeNull();
+      });
+    });
+  });
+
   it('resets modular set to default when Reset to Default is clicked', () => {
     renderSelector();
-    const select = screen.getAllByRole('combobox')[0];
+    const select = screen.getByRole('combobox', { name: 'Modular Set' });
     fireEvent.change(select, { target: { value: RANDOM_MODULAR_SET_CODE } });
     expect(screen.getByText('Reset to Default')).toBeTruthy();
 

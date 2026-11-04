@@ -4,7 +4,7 @@
  * Usage: npm run content:sync [-- --from <dir>] [-- --check] [-- --prune]
  * Downloads the upstream dataset (zzorba/marvelsdb-json-data) into content/.cache/upstream/ and
  * materializes it into the content/ pack layout (ADR-0092): cards, catalog metadata, schemas and
- * translations. Each pack's pack.json, supplemental/, scenarios/, decks/ and modular-sets.json are
+ * translations. Each pack's pack.json, supplemental/, scenarios/, decks/ and encounter-sets.json are
  * never touched. Files are copied byte for byte.
  *   --from <dir>  use an already-extracted upstream folder instead of downloading
  *   --check       write nothing, print what would change, exit 1 when anything differs

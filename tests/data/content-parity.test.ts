@@ -5,7 +5,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { supplementalRegistry } from '../../src/data/supplemental';
 import { getLoadedContent } from '../../src/data/content/store';
 import { listStarterDecks } from '../../src/engine/decks';
-import { listModularEncounterSets } from '../../src/engine/scenarios';
+import { listEncounterSets } from '../../src/engine/scenarios';
 import { cardFile, packDir, supplementalFile } from '../../src/tools/content-paths';
 
 // The loader must hand the engine exactly what the old static imports did: the Core Set cards
@@ -56,10 +56,10 @@ describe('content loader parity with the files on disk', () => {
   });
 
   it('lists the modular sets of the Core pack', () => {
-    const expected = read(path.join(packDir('core'), 'modular-sets.json')).map(
-      (s: { code: string }) => s.code,
-    );
-    expect(listModularEncounterSets(cardCatalog).map((s) => s.code)).toEqual(expected);
+    const expected = read(path.join(packDir('core'), 'encounter-sets.json'))
+      .filter((s: { kind: string }) => s.kind === 'modular')
+      .map((s: { code: string }) => s.code);
+    expect(listEncounterSets(cardCatalog, 'modular').map((s) => s.code)).toEqual(expected);
   });
 
   it('loads only the packs enabled in content/config.json, without failures', () => {

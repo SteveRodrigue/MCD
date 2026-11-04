@@ -145,6 +145,12 @@ export interface ActiveCostReduction {
 export type { DifficultyMode } from './difficulty';
 import type { DifficultyMode } from './difficulty';
 
+/** The Standard and Expert encounter sets of a game; null where the game has no such set. */
+export interface EncounterSetSelection {
+  standard: string | null;
+  expert: string | null;
+}
+
 export interface VillainState {
   instanceId?: string;
   card: VillainCard;
@@ -640,6 +646,10 @@ export interface GameState {
   scenarioId: string;
   scenarioCardCode?: string;
   difficulty?: DifficultyMode;
+  /** True in expert mode (RR v1.8 Modes of Play), which can have no Expert set in a scenario. */
+  expertMode: boolean;
+  /** The Standard and Expert sets this game was set up with. */
+  encounterSets: EncounterSetSelection;
   heroicLevel?: number;
   firstPlayerIndex: number;
   activePlayerIndex: number;

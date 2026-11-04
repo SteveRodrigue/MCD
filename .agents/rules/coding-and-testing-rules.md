@@ -16,6 +16,7 @@ Enforceable summary. Explanations, examples, naming tables and architecture live
 
 ## Recurring-Error Guardrails (examples in `docs/engine/coding_guidelines.md` §15)
 
+- **A script needs an upstream audit.** Before `EXECUTE_SPECIAL` or a `PackHooks` entry, decompose the ability into steps and search every upstream card for each step. Any shared step is a generic primitive.
 - Validators fail closed: a check that could not run is an error; no empty `catch`.
 - Identify cards by code or enum, never by name substring or regex over free-form input.
 - One source of truth: derive lists, schemas and tiles from engine enums or card data; share one function for legality and payment.

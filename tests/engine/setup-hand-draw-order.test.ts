@@ -192,7 +192,6 @@ describe('Setup order: opening hands drawn after the scenario setup (Issue #240)
       },
       modularEncounterSets: {
         mandatory: ['rhino'],
-        defaults: { SKIRMISH: ['standard'], STANDARD: ['standard'], EXPERT: ['standard'] },
       },
     };
 

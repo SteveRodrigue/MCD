@@ -6,7 +6,7 @@
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
-### <a id="discard"></a>`DISCARD` (27 Cards, 30 Step Occurrences)
+### <a id="discard"></a>`DISCARD` (28 Cards, 31 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -20,6 +20,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01116b` | **Underground Distribution (main_scheme)** | `core_encounter` | `klaw_underground_distribution_when_revealed` |
 | `01117a` | **Secret Rendezvous (main_scheme)** | `core_encounter` | `klaw_secret_rendezvous_when_revealed` |
 | `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_discard_action` |
+| `01119` | **Solid-Sound Body (attachment)** | `core_encounter` | `solid_sound_body_discard_action` |
 | `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
 | `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response`, `radioactive_man_boost` |
@@ -38,7 +39,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01188` | **Caught Off Guard (treachery)** | `core_encounter` | `caught_off_guard_when_revealed` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 
-### <a id="deal-damage"></a>`DEAL_DAMAGE` (25 Cards, 27 Step Occurrences)
+### <a id="deal-damage"></a>`DEAL_DAMAGE` (26 Cards, 28 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -64,6 +65,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01077` | **Counter-Punch (event)** | `core` | `counter_punch_response` |
 | `01087` | **Haymaker (event)** | `core` | `haymaker` |
 | `01103` | **Shocker (minion)** | `core_encounter` | `shocker_when_revealed` |
+| `01124` | **Sound Manipulation (treachery)** | `core_encounter` | `sound_manipulation_when_revealed` |
 | `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed`, `concussive_blast_boost` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
@@ -189,6 +191,24 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
 | `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
 
+### <a id="surge"></a>`SURGE` (13 Cards, 13 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
+| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
+| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
+| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
+| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
+| `01124` | **Sound Manipulation (treachery)** | `core_encounter` | `sound_manipulation_when_revealed` |
+| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
+| `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
+| `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
+| `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
+| `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
+
 ### <a id="remove-threat"></a>`REMOVE_THREAT` (10 Cards, 12 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -203,23 +223,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01060` | **For Justice! (event)** | `core` | `for_justice` |
 | `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
 | `01064` | **Surveillance Team (support)** | `core` | `surveillance_team_action` |
-
-### <a id="surge"></a>`SURGE` (12 Cards, 12 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
-| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
-| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
-| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
-| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
-| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed` |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
-| `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
-| `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
-| `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
-| `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
 
 ### <a id="draw"></a>`DRAW` (11 Cards, 11 Step Occurrences)
 
@@ -237,7 +240,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
-### <a id="heal-damage"></a>`HEAL_DAMAGE` (8 Cards, 9 Step Occurrences)
+### <a id="heal-damage"></a>`HEAL_DAMAGE` (9 Cards, 11 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -246,6 +249,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01080` | **Med Team (support)** | `core` | `med_team_heal` |
 | `01086` | **First Aid (event)** | `core` | `first_aid` |
 | `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
+| `01124` | **Sound Manipulation (treachery)** | `core_encounter` | `sound_manipulation_when_revealed` |
 | `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed`, `repair_sequence_boost` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 | `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
@@ -271,6 +275,16 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01165` | **Eviction Notice (obligation)** | `core_encounter` | `eviction_notice_resolve` |
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
+
+### <a id="grant-keyword"></a>`GRANT_KEYWORD` (5 Cards, 5 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01040a` | **Black Panther (hero)** | `core` | `black_panther_retaliate` |
+| `01099` | **Charge (attachment)** | `core_encounter` | `charge_overkill` |
+| `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
+| `01119` | **Solid-Sound Body (attachment)** | `core_encounter` | `solid_sound_body_retaliate` |
+| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
 
 ### <a id="ready"></a>`READY` (5 Cards, 5 Step Occurrences)
 
@@ -309,15 +323,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
 | `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
-
-### <a id="grant-keyword"></a>`GRANT_KEYWORD` (4 Cards, 4 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01040a` | **Black Panther (hero)** | `core` | `black_panther_retaliate` |
-| `01099` | **Charge (attachment)** | `core_encounter` | `charge_overkill` |
-| `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
-| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
 
 ### <a id="attach-to-host"></a>`ATTACH_TO_HOST` (3 Cards, 3 Step Occurrences)
 

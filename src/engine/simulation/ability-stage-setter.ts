@@ -144,8 +144,9 @@ function pickFixtures(cards: readonly NormalizedCard[]): Fixtures {
     ),
     ally: firstBare(CardType.ALLY),
     discardAlly: cards.filter((c) => c.type === CardType.ALLY)[1],
-    sideScheme: firstBare(CardType.SIDE_SCHEME),
-    treachery: firstBare(CardType.TREACHERY),
+    sideScheme:
+      firstBare(CardType.SIDE_SCHEME) ?? cards.find((c) => c.type === CardType.SIDE_SCHEME),
+    treachery: firstBare(CardType.TREACHERY) ?? cards.find((c) => c.type === CardType.TREACHERY),
   };
 }
 

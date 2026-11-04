@@ -838,6 +838,57 @@
         "originalText": "Attach to Klaw.\n[star] <b>Forced Response</b>: After Klaw attacks and damages a character, stun that character.\n<b>Hero Action</b>: Spend [energy] [mental] [physical] resources → discard this card."
       }
     },
+    "01119": {
+      "attachTo": {
+        "host": {
+          "type": "VILLAIN"
+        }
+      },
+      "abilities": [
+        {
+          "id": "solid_sound_body_retaliate",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "GRANT_KEYWORD",
+              "effectParams": {
+                "keyword": "Retaliate",
+                "amount": 1,
+                "target": "HOST"
+              }
+            }
+          ]
+        },
+        {
+          "id": "solid_sound_body_discard_action",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "resourceCost": {
+              "energy": 1,
+              "mental": 1,
+              "physical": 1
+            }
+          },
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "SELF"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T06:25:00Z",
+        "updatedAt": "2026-11-04T06:25:00Z",
+        "reviewedAt": "2026-11-04T06:25:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Attach to Klaw.\nKlaw gains retaliate 1. <i>(After this character is attacked, deal 1 damage to the attacking character.)</i>\n<b>Hero Action</b>: Spend [energy] [mental] [physical] resources → discard this card."
+      }
+    },
     "01120": {
       "noSupplementalNeeded": true,
       "abilities": [],
@@ -1004,6 +1055,71 @@
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>When Revealed</b>: Either spend [energy] [mental] [physical] resources or exhaust each character you control.\n<hr />\n[star] <b>Boost</b>: If this activation deals damage to you, exhaust your hero."
+      }
+    },
+    "01124": {
+      "abilities": [
+        {
+          "id": "sound_manipulation_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "sound_manipulation_ae_heal",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "ALTER_EGO"
+              },
+              "effect": "HEAL_DAMAGE",
+              "effectParams": {
+                "amount": 4,
+                "target": "VILLAIN"
+              }
+            },
+            {
+              "id": "sound_manipulation_ae_surge",
+              "gate": "IF_RESULT",
+              "gateParams": {
+                "result": "AMOUNT_ZERO",
+                "step": "sound_manipulation_ae_heal"
+              },
+              "effect": "SURGE"
+            },
+            {
+              "id": "sound_manipulation_hero_damage",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "HERO"
+              },
+              "effect": "DEAL_DAMAGE",
+              "effectParams": {
+                "amount": 2,
+                "target": "SELF_HERO"
+              }
+            },
+            {
+              "id": "sound_manipulation_hero_heal",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "HERO"
+              },
+              "effect": "HEAL_DAMAGE",
+              "effectParams": {
+                "amount": 2,
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T06:25:00Z",
+        "updatedAt": "2026-11-04T06:25:00Z",
+        "reviewedAt": "2026-11-04T06:25:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed (Alter-Ego)</b>: Klaw heals 4 damage. If no damage was healed this way, this card gains surge.\n<b>When Revealed (Hero)</b>: Take 2 damage. Klaw heals 2 damage."
       }
     },
     "01125": {

@@ -4,7 +4,7 @@
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (58 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (59 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -24,6 +24,7 @@
 | `01117a` | **Secret Rendezvous (main_scheme)** | `core_encounter` | `klaw_secret_rendezvous_when_revealed` |
 | `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
 | `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_when_revealed` |
+| `01124` | **Sound Manipulation (treachery)** | `core_encounter` | `sound_manipulation_when_revealed` |
 | `01125` | **Defense Network (side_scheme)** | `core_encounter` | `defense_network_when_revealed` |
 | `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
@@ -67,7 +68,7 @@
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
-### <a id="constant"></a>`CONSTANT` (30 Cards)
+### <a id="constant"></a>`CONSTANT` (31 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -88,6 +89,7 @@
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_atk_bonus` |
 | `01101` | **Hydra Mercenary (minion)** | `core_encounter` | `hydra_mercenary_guard` |
 | `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_atk_bonus` |
+| `01119` | **Solid-Sound Body (attachment)** | `core_encounter` | `solid_sound_body_retaliate` |
 | `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
 | `01132` | **Melter (minion)** | `core_encounter` | `melter_defend_with_ally_restriction` |
 | `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_drones` |
@@ -102,7 +104,7 @@
 | `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_ally_limit` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
 
-### <a id="hero-action"></a>`HERO_ACTION` (30 Cards)
+### <a id="hero-action"></a>`HERO_ACTION` (31 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -132,6 +134,7 @@
 | `01093` | **Tenacity (upgrade)** | `core` | `tenacity_ready` |
 | `01100` | **Enhanced Ivory Horn (attachment)** | `core_encounter` | `ivory_horn_discard_action` |
 | `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_discard_action` |
+| `01119` | **Solid-Sound Body (attachment)** | `core_encounter` | `solid_sound_body_discard_action` |
 | `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_discard` |
 | `01142` | **Upgraded Drones (attachment)** | `core_encounter` | `upgraded_drones_discard` |
 | `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_discard` |
@@ -307,7 +310,7 @@
 
 ## 2. Trigger Windows (`TriggerTypeSchema` — 25/34 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (59 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (60 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -327,6 +330,7 @@
 | `01117a` | **Secret Rendezvous (main_scheme)** | `core_encounter` | `klaw_secret_rendezvous_when_revealed` |
 | `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
 | `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_when_revealed` |
+| `01124` | **Sound Manipulation (treachery)** | `core_encounter` | `sound_manipulation_when_revealed` |
 | `01125` | **Defense Network (side_scheme)** | `core_encounter` | `defense_network_when_revealed` |
 | `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |

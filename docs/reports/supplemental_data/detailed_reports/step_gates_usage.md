@@ -4,18 +4,19 @@
 
 ## Step Gates (`StepGateSchema` — 10/10 In Use)
 
-### <a id="if-form"></a>`IF_FORM` (6 Cards)
+### <a id="if-form"></a>`IF_FORM` (7 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01017` | **Cosmic Flight (upgrade)** | `core` | `cosmic_flight_aerial` |
 | `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
 | `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
+| `01124` | **Sound Manipulation (treachery)** | `core_encounter` | `sound_manipulation_when_revealed` |
 | `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
 | `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
 | `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
 
-### <a id="if-result"></a>`IF_RESULT` (9 Cards)
+### <a id="if-result"></a>`IF_RESULT` (10 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -24,6 +25,7 @@
 | `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
 | `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
+| `01124` | **Sound Manipulation (treachery)** | `core_encounter` | `sound_manipulation_when_revealed` |
 | `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
 | `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed` |
 | `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |

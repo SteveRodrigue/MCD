@@ -4,6 +4,7 @@ import {
   PlayerState,
   StepResolutionResult,
   getVillainsInPlay,
+  DamagedCharacter,
 } from '../models';
 import { AbilityStep } from '../models/abilities';
 import { getStepGateParams, GATE_KINDS } from '../../data/supplemental/runtime';
@@ -30,6 +31,8 @@ export interface StepGateContext {
    * prevention). Set only while a deferred boost ability resolves after step 6.
    */
   activationDamage?: number;
+  /** Who took the activation's damage (hero or ally). */
+  damagedCharacter?: DamagedCharacter;
 }
 
 /**
@@ -221,7 +224,18 @@ export function evaluateStepGate(
     }
 
     case 'IF_ACTIVATION_DEALT_DAMAGE': {
-      gateSatisfied = (context.activationDamage ?? 0) > 0;
+      const damageDealt = (context.activationDamage ?? 0) > 0;
+      if (!damageDealt) {
+        gateSatisfied = false;
+      } else if (
+        gateParams?.target === 'SELF_HERO' ||
+        gateParams?.target === 'SELF' ||
+        gateParams?.target === 'SELF_IDENTITY'
+      ) {
+        gateSatisfied = context.damagedCharacter?.type === 'HERO';
+      } else {
+        gateSatisfied = true;
+      }
       break;
     }
 

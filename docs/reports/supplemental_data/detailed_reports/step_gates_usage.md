@@ -4,17 +4,18 @@
 
 ## Step Gates (`StepGateSchema` — 10/10 In Use)
 
-### <a id="if-form"></a>`IF_FORM` (5 Cards)
+### <a id="if-form"></a>`IF_FORM` (6 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01017` | **Cosmic Flight (upgrade)** | `core` | `cosmic_flight_aerial` |
 | `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
+| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
 | `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
 | `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
 | `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
 
-### <a id="if-result"></a>`IF_RESULT` (8 Cards)
+### <a id="if-result"></a>`IF_RESULT` (9 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -22,6 +23,7 @@
 | `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
 | `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
 | `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
+| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
 | `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
 | `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed` |
 | `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
@@ -63,18 +65,20 @@
 | `01016` | **Captain Marvel's Helmet (upgrade)** | `core` | `captain_marvel_helmet_def` |
 | `01037` | **Mark V Helmet (upgrade)** | `core` | `mark_v_helmet` |
 
+### <a id="if-activation-dealt-damage"></a>`IF_ACTIVATION_DEALT_DAMAGE` (3 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_stun_damaged` |
+| `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_boost` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
+
 ### <a id="if-undefended-attack"></a>`IF_UNDEFENDED_ATTACK` (2 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
 | `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
-
-### <a id="if-activation-dealt-damage"></a>`IF_ACTIVATION_DEALT_DAMAGE` (1 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
 
 ### <a id="if-all-allies-match"></a>`IF_ALL_ALLIES_MATCH` (1 Cards)
 

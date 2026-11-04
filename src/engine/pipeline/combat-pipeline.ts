@@ -1342,7 +1342,14 @@ function step7_resolvePostAttackAndRetaliate(
       '';
     for (const ability of att.card.enrichment?.abilities || []) {
       if (ability.trigger !== 'HOST_ATTACK_ENDED') continue;
-      kernel.executeEffect(state, ability, { playerId: ownerId, sourceCardInstance: att });
+      kernel.executeEffect(state, ability, {
+        playerId: ownerId,
+        sourceCardInstance: att,
+        attackerType: attackContext.attackerType,
+        defenderType: attackContext.defender?.type ?? 'UNDEFENDED',
+        activationDamage: attackContext.finalDamage ?? 0,
+        damagedCharacter: attackContext.damagedCharacter,
+      });
     }
   }
 

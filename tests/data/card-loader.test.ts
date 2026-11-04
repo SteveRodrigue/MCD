@@ -366,13 +366,16 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         'black_panther_nemesis',
       ]);
 
-      // Single cards modelled ahead of their set's scan (#244: Weapons Runner; Plan R9: Klaw II, Immortal Klaw; Issue #604: Klaw I, III, Armored Guard; Issue #605: Klaw Schemes)
+      // Single cards modelled ahead of their set's scan (#244: Weapons Runner; Plan R9: Klaw II, Immortal Klaw; Issue #604: Klaw I, III, Armored Guard; Issue #605: Klaw Schemes; Issue #606: Attack Dealt Damage)
       const scannedEncounterCards = new Set([
         '01113',
         '01114',
         '01115',
+        '01118',
         '01120',
         '01121',
+        '01122',
+        '01123',
         '01125',
         '01126',
         '01127',
@@ -403,8 +406,8 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         }
       });
 
-      // Verify that an unscanned card, Sonic Converter (01118), returns undefined from getCardEnrichment
-      expect(getCardEnrichment('01118')).toBeUndefined();
+      // Verify that an unscanned card, Solid-Sound Body (01119), returns undefined from getCardEnrichment
+      expect(getCardEnrichment('01119')).toBeUndefined();
     });
   });
 

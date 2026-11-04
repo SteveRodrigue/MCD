@@ -8,9 +8,9 @@
 
 | Metric | Count | Health / Coverage | Description |
 | :--- | :---: | :---: | :--- |
-| **Total Cards Registered** | **181** | 100% | Total cards present in `src/data/supplemental/` |
+| **Total Cards Registered** | **184** | 100% | Total cards present in `src/data/supplemental/` |
 | **Active Declared Cards** | **165** | - | Cards with executable `abilities: [...]` |
-| **No Supplemental Needed** | [15](detailed_reports/vanilla_and_passive_cards.md) | Verified | Vanilla / passive cards explicitly requiring no supplemental hooks |
+| **No Supplemental Needed** | [18](detailed_reports/vanilla_and_passive_cards.md) | Verified | Vanilla / passive cards explicitly requiring no supplemental hooks |
 | **Open Ambiguity Reports** | **2** | Blocked | Cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🟢 0 | Cards marked `noSupplementalNeeded` that have printed rules text |
 | **Overall Schema Engine Coverage** | **100.0%** | [Matrix](detailed_reports/schema_code_path_audit.md) | Percentage of all schema primitives with active engine code paths |
@@ -40,7 +40,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 
 | Category | Active Count | Detailed Breakdown |
 | :--- | :---: | :--- |
-| **Vanilla / Passive Cards** | **15** | [View Full List](detailed_reports/vanilla_and_passive_cards.md) |
+| **Vanilla / Passive Cards** | **18** | [View Full List](detailed_reports/vanilla_and_passive_cards.md) |
 | **Play Requirements** | **2** | `identityForm` (1), `controlFilter` (4) |
 | **Card Uses & Counters** | **6** | `uses (web)` (1), `uses (energy)` (1), `uses (attack)` (1), `uses (snoop)` (1), `uses (arrow)` (1), `uses (medical)` (1) |
 | **Player Recipient Overrides** | **1** | `FIRST_PLAYER` (1) |

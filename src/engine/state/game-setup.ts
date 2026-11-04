@@ -50,6 +50,7 @@ export interface GameSetupOptions {
   encounterCards?: NormalizedCard[];
   standardSetCode?: string | null;
   expertSetCode?: string | null;
+  villainVersionCode?: string;
   modularSetCodes?: string[];
   shuffleFn?: <T>(array: T[]) => T[];
   seed?: number | string;
@@ -283,6 +284,7 @@ export function setupGame(options: GameSetupOptions): GameState {
       heroicLevel: options.heroicLevel,
       standardSetCode: options.standardSetCode,
       expertSetCode: options.expertSetCode,
+      villainVersionCode: options.villainVersionCode,
       modularSetCodes: options.modularSetCodes,
     });
 

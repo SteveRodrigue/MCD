@@ -41,7 +41,7 @@ The manifest defines the static properties, stages, and modular sets. Properties
 | `description`           | no       | One line shown in the selector.                                                                                                                                                                   |
 | `setupOnomatopoeia`     | no       | Comic sound effect shown with the setup log entry.                                                                                                                                                |
 | `supportedDifficulties` | yes      | The difficulties the player can pick, in button order: `SKIRMISH`, `STANDARD`, `EXPERT`. Each needs villain stages.                                                                               |
-| `villainSetup`          | yes      | `villainName` and `stages`: villain card codes per difficulty.                                                                                                                                    |
+| `villainSetup`          | yes      | `villainName` and `stages`: villain card codes per difficulty. `SKIRMISH` lists the versions the players choose from; the game plays one, and the first is the default.                           |
 | `mainSchemeSetup`       | yes      | Main scheme `stages` plus `startingThreat`, `targetThreatPerPlayer`, `escalationThreatPerPlayer`.                                                                                                 |
 | `modularEncounterSets`  | yes      | `mandatory` set codes; optional `slotCount` (0: no modular slot) and `recommendedModularSets`.                                                                                                    |
 | `encounterSetRules`     | no       | Only for a scenario that breaks the usual Standard or Expert set rule, see below.                                                                                                                 |
@@ -64,7 +64,7 @@ Unknown properties are rejected. Example:
   "villainSetup": {
     "villainName": "Crimson Leader",
     "stages": {
-      "SKIRMISH": ["custom_v1"],
+      "SKIRMISH": ["custom_v1", "custom_v2", "custom_v3"],
       "STANDARD": ["custom_v1", "custom_v2"],
       "EXPERT": ["custom_v2", "custom_v3"]
     }

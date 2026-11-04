@@ -345,7 +345,7 @@ export const RULE_OBSERVATIONS: Record<RuleSlug, RuleObservation> = {
     'scenario.setup.sideScheme',
   ),
   'simultaneous-resolution': logs('decision.order_simultaneous.resolved'),
-  'skirmish-mode': definition('a mode of play outside the engine'),
+  'skirmish-mode': unobservable,
   special: mixed({ timing: 'SPECIAL' }, { effect: 'EXECUTE_SPECIAL' }),
   stalwart: unobservable,
   'standard-mode': unobservable,

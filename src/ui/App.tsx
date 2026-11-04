@@ -147,6 +147,7 @@ const AppContent: React.FC = () => {
       heroicLevel: selection.heroicLevel,
       standardSetCode: selection.standardSetCode,
       expertSetCode: selection.expertSetCode,
+      villainVersionCode: selection.villainVersionCode,
       modularSetCodes: selection.selectedModularSetCodes,
     });
 

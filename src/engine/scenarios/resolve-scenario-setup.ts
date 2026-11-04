@@ -18,6 +18,8 @@ export interface ScenarioSetupChoices {
   standardSetCode?: string | null;
   /** Left out: the default. `null`: no Expert set, where that is allowed. */
   expertSetCode?: string | null;
+  /** Skirmish only. Left out: the first version the scenario lists. */
+  villainVersionCode?: string;
 }
 
 export interface ResolvedScenarioSetup {
@@ -25,18 +27,41 @@ export interface ResolvedScenarioSetup {
   /** RR v1.8 Double-Sided Card reads this; a scenario can play expert mode with no Expert set. */
   expertMode: boolean;
   encounterSets: EncounterSetSelection;
+  villainStages: string[];
 }
 
-/** The villain stages of a difficulty the scenario supports. */
+/**
+ * The villain stages a game on this difficulty plays. A scenario's Skirmish list holds the versions
+ * on offer, and only one of them plays (RR v1.8 Modes of Play): the given version, or the first.
+ */
 export function getVillainStages(
   definition: ScenarioDefinition,
   difficulty: DifficultyMode,
+  villainVersionCode?: string,
 ): string[] {
   const stages = definition.villainSetup.stages[difficulty];
   if (!stages?.length) {
     throw new Error(`Scenario '${definition.id}' has no villain stages for '${difficulty}'.`);
   }
-  return stages;
+  return difficulty === 'SKIRMISH' ? [villainVersionCode ?? stages[0]] : stages;
+}
+
+/** The villain versions the players choose from. Only Skirmish offers a choice. */
+export function listVillainVersions(
+  definition: ScenarioDefinition,
+  difficulty: DifficultyMode,
+): string[] {
+  return difficulty === 'SKIRMISH' ? (definition.villainSetup.stages.SKIRMISH ?? []) : [];
+}
+
+/** The version a game plays: the choice if it is still offered, otherwise the first offered. */
+export function settleVillainVersion(
+  definition: ScenarioDefinition,
+  difficulty: DifficultyMode,
+  choice: string | undefined,
+): string | undefined {
+  const versions = listVillainVersions(definition, difficulty);
+  return choice && versions.includes(choice) ? choice : versions[0];
 }
 
 function slotFromChoices(codes: string[], required: boolean): EncounterSetSlot {
@@ -114,6 +139,16 @@ export function resolveScenarioSetup(
     throw new Error(`Scenario '${definition.id}' does not support difficulty '${difficulty}'.`);
   }
 
+  const { villainVersionCode } = choices;
+  if (
+    villainVersionCode !== undefined &&
+    !listVillainVersions(definition, difficulty).includes(villainVersionCode)
+  ) {
+    throw new Error(
+      `Scenario '${definition.id}' does not offer villain version '${villainVersionCode}' on '${difficulty}'.`,
+    );
+  }
+
   const slots = describeEncounterSetSlots(definition, difficulty);
   const encounterSets: EncounterSetSelection = {
     standard: resolveSlot(definition, 'Standard', slots.standard, choices.standardSetCode),
@@ -124,5 +159,6 @@ export function resolveScenarioSetup(
     expertMode:
       difficulty === 'EXPERT' || (difficulty === 'SKIRMISH' && encounterSets.expert !== null),
     encounterSets,
+    villainStages: getVillainStages(definition, difficulty, villainVersionCode),
   };
 }

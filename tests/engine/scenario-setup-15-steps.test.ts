@@ -102,7 +102,7 @@ describe('Milestone 2C: Official 15-Step Scenario Setup State Machine (RR v1.8 p
   it('Step 8: Sets Villain Stage cards correctly across Skirmish, Standard, and Expert modes', () => {
     const rhinoPlugin = ScenarioRegistry.get('rhino');
 
-    // Skirmish Mode (Stage I only)
+    // Skirmish Mode, default version (Stage I)
     const skirmishState = setupGame({
       catalog: cardCatalog,
       scenarioId: 'rhino',

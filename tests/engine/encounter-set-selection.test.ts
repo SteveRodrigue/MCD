@@ -115,6 +115,28 @@ describe('encounter set selection', () => {
       expect(expert.expertMode).toBe(true);
     });
 
+    it('Skirmish with an Expert set keeps the chosen villain version', () => {
+      const resolved = resolveScenarioSetup(rhino(), {
+        difficulty: 'SKIRMISH',
+        expertSetCode: 'expert',
+        villainVersionCode: '01095',
+      });
+      expect(resolved.villainStages).toEqual(['01095']);
+      expect(resolved.expertMode).toBe(true);
+    });
+
+    it('a villain version the scenario does not offer is an error', () => {
+      expect(() =>
+        resolveScenarioSetup(rhino(), { difficulty: 'SKIRMISH', villainVersionCode: '01113' }),
+      ).toThrow(/does not offer villain version '01113'/);
+    });
+
+    it('a villain version outside Skirmish is an error', () => {
+      expect(() =>
+        resolveScenarioSetup(rhino(), { difficulty: 'STANDARD', villainVersionCode: '01095' }),
+      ).toThrow(/does not offer villain version '01095'/);
+    });
+
     it('rhino expert with Standard II and Expert II resolves to those sets', () => {
       expect(
         resolveScenarioSetup(rhino(), {
@@ -126,6 +148,7 @@ describe('encounter set selection', () => {
         difficulty: 'EXPERT',
         expertMode: true,
         encounterSets: { standard: 'standard_ii', expert: 'expert_ii' },
+        villainStages: ['01095', '01096'],
       });
     });
   });

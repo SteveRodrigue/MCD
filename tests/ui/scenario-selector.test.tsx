@@ -177,6 +177,92 @@ describe('ScenarioSelector', () => {
       expect(screen.getByText('Stage II ➔ III')).toBeTruthy();
     });
 
+    describe('Skirmish villain version', () => {
+      const versions = () =>
+        within(screen.getByRole('group', { name: 'Villain Version' }))
+          .getAllByRole('button')
+          .map((button) => button.textContent);
+
+      it('Skirmish offers Stage I, II and III, and Stage II goes in the selection', () => {
+        const onStartSetup = renderSelector();
+        fireEvent.click(screen.getByText('SKIRMISH'));
+        expect(versions()).toEqual(['Stage I', 'Stage II', 'Stage III']);
+
+        fireEvent.click(screen.getByText('START MISSION'));
+        expect(onStartSetup.mock.calls[0][0]).toMatchObject({ villainVersionCode: '01094' });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Stage II' }));
+        fireEvent.click(screen.getByText('START MISSION'));
+        expect(onStartSetup.mock.calls[1][0]).toMatchObject({ villainVersionCode: '01095' });
+      });
+
+      it('choosing Stage II updates the villain page badge and the difficulty button', () => {
+        renderSelector();
+        fireEvent.click(screen.getByText('SKIRMISH'));
+        fireEvent.click(screen.getByRole('button', { name: 'Stage II' }));
+        expect(screen.getByText('STAGE II')).toBeTruthy();
+        expect(screen.getByText('Stage II Only')).toBeTruthy();
+      });
+
+      it('flipping from Rhino II to Klaw falls back to Stage I of Klaw', () => {
+        const onStartSetup = renderSelector();
+        fireEvent.click(screen.getByText('SKIRMISH'));
+        fireEvent.click(screen.getByRole('button', { name: 'Stage II' }));
+        fireEvent.click(screen.getByRole('button', { name: '#2 Klaw' }));
+        fireEvent.click(screen.getByText('START MISSION'));
+        expect(onStartSetup.mock.calls[0][0]).toMatchObject({
+          scenarioId: 'klaw',
+          villainVersionCode: '01113',
+        });
+      });
+
+      it('leaving Skirmish hides the choice and sends no version, coming back restores it', () => {
+        const onStartSetup = renderSelector();
+        fireEvent.click(screen.getByText('SKIRMISH'));
+        fireEvent.click(screen.getByRole('button', { name: 'Stage II' }));
+
+        fireEvent.click(screen.getByText('STANDARD'));
+        expect(screen.queryByRole('group', { name: 'Villain Version' })).toBeNull();
+        fireEvent.click(screen.getByText('START MISSION'));
+        expect(onStartSetup.mock.calls[0][0].villainVersionCode).toBeUndefined();
+
+        fireEvent.click(screen.getByText('SKIRMISH'));
+        expect(screen.getByText('Stage II Only')).toBeTruthy();
+      });
+
+      describe('with a scenario that lists one Skirmish version', () => {
+        const registered = ScenarioRegistry.getAll();
+        beforeAll(() => {
+          const definition = structuredClone(ScenarioRegistry.get('rhino').definition);
+          definition.villainSetup.stages.SKIRMISH = ['01094'];
+          ScenarioRegistry.register(
+            new DeclarativeScenarioPlugin({
+              ...definition,
+              id: 'zz_one_version',
+              scenarioCardCode: '99998',
+              name: 'One Version Fixture',
+            }),
+          );
+        });
+        afterAll(() => {
+          ScenarioRegistry.clear();
+          registered.forEach((plugin) => ScenarioRegistry.register(plugin));
+        });
+
+        it('shows no choice and plays that version', () => {
+          const onStartSetup = renderSelector();
+          fireEvent.click(screen.getByText('SKIRMISH'));
+          fireEvent.click(screen.getByTitle('Previous Scenario'));
+          expect(screen.queryByRole('group', { name: 'Villain Version' })).toBeNull();
+          fireEvent.click(screen.getByText('START MISSION'));
+          expect(onStartSetup.mock.calls[0][0]).toMatchObject({
+            scenarioId: 'zz_one_version',
+            villainVersionCode: '01094',
+          });
+        });
+      });
+    });
+
     it('heroic level stays selectable on every difficulty and shows no variant badge', () => {
       renderSelector();
       for (const mode of ['SKIRMISH', 'STANDARD', 'EXPERT']) {

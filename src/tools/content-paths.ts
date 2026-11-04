@@ -17,6 +17,7 @@
  */
 
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
 const ENCOUNTER_SUFFIX = '_encounter';
@@ -139,4 +140,19 @@ export function cardPath(fileName: string, base?: string): string {
 /** Path of the supplemental file named `<stem>.json`. */
 export function supplementalPath(fileName: string, base?: string): string {
   return supplementalFile(stemOfFileName(fileName), base);
+}
+
+/** Root directory for official reference documentation. */
+export function referencesDir(base?: string): string {
+  return path.resolve(base ?? process.cwd(), 'references');
+}
+
+/** Directory for downloaded official scenario/hero rulesheets. */
+export function rulesheetsDir(base?: string): string {
+  return path.join(referencesDir(base), 'rulesheets');
+}
+
+/** Canonical path to the local clone of the private assets repository. */
+export function defaultPrivateAssetsDir(): string {
+  return process.env.MCD_PRIVATE_ASSETS_DIR ?? path.join(os.homedir(), '.mcd', 'private-content');
 }

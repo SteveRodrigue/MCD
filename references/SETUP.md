@@ -2,7 +2,23 @@
 
 The official Rules Reference and rulebook PDFs are not part of this repository. Gameplay rules research uses the tracked Markdown in [`rules/`](rules/) through `npm run rule -- <term>`. A scenario's own rules are only in its rulebook, so keep a local copy to read them.
 
-## Local rulebooks
+## Automatic setup from private assets repository
+
+Maintainers with access to the private assets repository (`SteveRodrigue/mcd-private-content`) can synchronize all official reference PDFs and art packs automatically into any worktree with:
+
+```bash
+npm run assets:pull
+```
+
+This clones/updates the private assets repository locally into `~/.mcd/private-content` and creates zero-copy directory junctions (`references/rulesheets/`, `content/art-packs/`) and hardlinks in the current workspace.
+
+To inspect link status, run:
+
+```bash
+npm run assets:status
+```
+
+## Manual setup (external contributors)
 
 Download the rulebooks, rulesheets, campaign logs and print-and-play files from the official Fantasy Flight support page listed in [`links.md`](links.md) into `references/rulesheets/`. Git ignores every `*.pdf` under `references/`.
 

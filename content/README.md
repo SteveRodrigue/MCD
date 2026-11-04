@@ -7,6 +7,7 @@ Everything the game loads at runtime lives here, organised in packs (see ADR-009
 - `meta/` holds the catalog data shared by all packs (pack, set and faction lists, JSON schemas, catalog translations).
 - `config.json` lists the packs the game loads (`enabledPacks`); their dependencies are added automatically. A pack that is not listed stays on disk but is not loaded.
 - `packs/<code>/assets/cards/<file>.png` is art a pack ships for its own cards.
+- `art-packs/<id>/` is optional local art (ADR-0093, e.g. token skins); git-ignored and never committed. Maintainers sync them via `npm run assets:pull` and `npm run assets:push`.
 - `.cache/` is disposable and git-ignored: `upstream/` (sync download) and `images/<code>/` (card art fetched on demand from MarvelCDB, plus `images/_backs/`). `npm run cache:cards [-- --pack <id>]` fills it ahead of time.
 
 Check the tree with `npm run pack:validate -- content/packs` and see which packs have supplemental data with `npm run pack:status`.

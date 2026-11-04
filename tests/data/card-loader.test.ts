@@ -365,18 +365,21 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         'black_panther_nemesis',
       ]);
 
-      // Single cards modelled ahead of their set's scan (#244: Weapons Runner; Plan R9: Klaw II, Immortal Klaw; Issue #604: Klaw I, III, Armored Guard)
+      // Single cards modelled ahead of their set's scan (#244: Weapons Runner; Plan R9: Klaw II, Immortal Klaw; Issue #604: Klaw I, III, Armored Guard; Issue #605: Klaw Schemes)
       const scannedEncounterCards = new Set([
         '01113',
         '01114',
         '01115',
         '01120',
         '01121',
+        '01125',
+        '01126',
         '01127',
         // main scheme Setup and When Revealed abilities (Klaw, Ultron)
         '01116a',
         '01116b',
         '01117a',
+        '01117b',
         '01137a',
         // Issue #352, PR A: the Ultron cards that create Drones (the set scan comes with PR C)
         '01137b',

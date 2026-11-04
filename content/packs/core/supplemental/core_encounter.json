@@ -760,6 +760,19 @@
         "originalText": "<b>When Revealed</b>: Discard cards from the encounter deck until a minion is discarded. Put that minion into play engaged with the first player. Advance to stage 2B"
       }
     },
+    "01117b": {
+      "noSupplementalNeeded": true,
+      "abilities": [],
+      "audit": {
+        "createdAt": "2026-11-04T01:45:00Z",
+        "updatedAt": "2026-11-04T01:45:00Z",
+        "reviewedAt": "2026-11-04T01:45:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>If this stage is completed, the players lose the game.</b>"
+      }
+    },
     "01120": {
       "noSupplementalNeeded": true,
       "abilities": [],
@@ -799,6 +812,62 @@
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Surge. <i>(After this card is revealed, reveal 1 additional encounter card.)</i>\n<hr />\n[star] <b>Boost</b>: Put Weapons Runner into play engaged with you."
+      }
+    },
+    "01125": {
+      "abilities": [
+        {
+          "id": "defense_network_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "ADD_THREAT",
+              "effectParams": {
+                "target": "THIS_SIDE_SCHEME",
+                "amount": 1,
+                "perPlayer": true
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T01:45:00Z",
+        "updatedAt": "2026-11-04T01:45:00Z",
+        "reviewedAt": "2026-11-04T01:45:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Place an additional 1 [per_hero] threat here."
+      }
+    },
+    "01126": {
+      "abilities": [
+        {
+          "id": "illegal_arms_factory_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "ADD_THREAT",
+              "effectParams": {
+                "target": "THIS_SIDE_SCHEME",
+                "amount": 1,
+                "perPlayer": true
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T01:45:00Z",
+        "updatedAt": "2026-11-04T01:45:00Z",
+        "reviewedAt": "2026-11-04T01:45:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Place an additional 1 [per_hero] threat here."
       }
     },
     "01127": {

@@ -80,12 +80,14 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed`, `sweeping_swoop_boost` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
-### <a id="add-threat"></a>`ADD_THREAT` (11 Cards, 13 Step Occurrences)
+### <a id="add-threat"></a>`ADD_THREAT` (13 Cards, 15 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01107` | **Breakin' & Takin' (side_scheme)** | `core_encounter` | `breakin_and_takin_when_revealed` |
 | `01109` | **Bomb Scare (side_scheme)** | `core_encounter` | `bomb_scare_when_revealed` |
+| `01125` | **Defense Network (side_scheme)** | `core_encounter` | `defense_network_when_revealed` |
+| `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
 | `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
 | `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
 | `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |

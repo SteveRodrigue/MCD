@@ -67,14 +67,12 @@ const GOLDEN: Record<string, string> = {
   'rhino/1/EXPERT': '3bd84435',
   'rhino/2/STANDARD': '2ef9c369',
   'rhino/2/EXPERT': '3081f721',
-  // Klaw, re-recorded when main scheme Setup and When Revealed abilities became data (M5b):
-  // Defense Network (01125, a side scheme) is revealed by a SEARCH, so the encounter deck is
-  // shuffled afterwards (Search rule); the old code put Sound Manipulation (01124, a treachery) in
-  // play as a "side scheme" instead; the first minion comes from the shared UNTIL_MATCH discard.
-  'klaw/1/STANDARD': '300360e8',
-  'klaw/1/EXPERT': '1a053c24',
-  'klaw/2/STANDARD': '840ca340',
-  'klaw/2/EXPERT': '2380f5db',
+  // Klaw, re-recorded when Defense Network (01125) When Revealed ability was declared (Issue #605):
+  // Defense Network is revealed by 01116a Setup and now resolves its When Revealed (+1 threat per hero).
+  'klaw/1/STANDARD': '30e3b5f6',
+  'klaw/1/EXPERT': 'a8dd200a',
+  'klaw/2/STANDARD': '8bced3e9',
+  'klaw/2/EXPERT': '6a52dbf6',
   // Ultron, re-recorded in M5b: the Ultron Drones environment is found in the encounter deck by
   // a SEARCH and the deck is shuffled afterwards (Search rule), instead of being filtered out of
   // the deck without a shuffle.

@@ -4,7 +4,7 @@
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (41 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (43 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -22,6 +22,8 @@
 | `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_when_revealed` |
 | `01116b` | **Underground Distribution (main_scheme)** | `core_encounter` | `klaw_underground_distribution_when_revealed` |
 | `01117a` | **Secret Rendezvous (main_scheme)** | `core_encounter` | `klaw_secret_rendezvous_when_revealed` |
+| `01125` | **Defense Network (side_scheme)** | `core_encounter` | `defense_network_when_revealed` |
+| `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
 | `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
 | `01151` | **Under Attack (side_scheme)** | `core_encounter` | `under_attack_when_revealed` |
@@ -271,7 +273,7 @@
 
 ## 2. Trigger Windows (`TriggerTypeSchema` — 23/33 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (42 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (44 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -289,6 +291,8 @@
 | `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_when_revealed` |
 | `01116b` | **Underground Distribution (main_scheme)** | `core_encounter` | `klaw_underground_distribution_when_revealed` |
 | `01117a` | **Secret Rendezvous (main_scheme)** | `core_encounter` | `klaw_secret_rendezvous_when_revealed` |
+| `01125` | **Defense Network (side_scheme)** | `core_encounter` | `defense_network_when_revealed` |
+| `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
 | `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
 | `01151` | **Under Attack (side_scheme)** | `core_encounter` | `under_attack_when_revealed` |

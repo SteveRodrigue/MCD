@@ -8,18 +8,29 @@ import {
   getCardBackFallbackColor,
   getCardBackTypeForCard,
 } from '../../services/card-cache-service';
-import { CardBackType, cardBackUrl, remoteArtUrl } from '../../../data/content/card-art';
+import {
+  artPackArt,
+  CardArtStats,
+  CardBackType,
+  cardBackUrl,
+  remoteArtUrl,
+} from '../../../data/content/card-art';
 import { FormattedCardText } from './FormattedCardText';
-import { useGameSettings } from '../../context/useGameSettings';
+import { useOptionalGameSettings } from '../../context/useGameSettings';
 import { CardContextMenu } from './CardContextMenu';
 import { useFloatingCardZoom } from '../../context/card-zoom-layer';
 import { Z_CLASS } from '../../styles/z-layers';
+import { useModalStyle } from '../../theme/useModalStyle';
 
 export interface CardViewProps {
   card: NormalizedCard;
   instance?: CardInstance;
   isFacedown?: boolean;
   cardBackType?: CardBackType;
+  /** The card's current stats, which select among an art pack's stat images. */
+  artStats?: CardArtStats;
+  /** Always show the official art, never an art pack image (the Card Editor). */
+  officialArtOnly?: boolean;
   dynamicTraits?: string[];
   effectiveTraits?: string[];
   isExhausted?: boolean;
@@ -56,6 +67,8 @@ const CardViewImpl: React.FC<CardViewProps> = ({
   instance,
   isFacedown: isFacedownProp,
   cardBackType,
+  artStats,
+  officialArtOnly = false,
   dynamicTraits,
   effectiveTraits: _effectiveTraits,
   isExhausted,
@@ -82,11 +95,20 @@ const CardViewImpl: React.FC<CardViewProps> = ({
   const [floatRect, setFloatRect] = useState<DOMRect | null>(null);
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
 
-  const isFacedown = Boolean(isFacedownProp);
+  const { style } = useModalStyle();
+  const [failedArtPackUrl, setFailedArtPackUrl] = useState<string | null>(null);
+  const art = officialArtOnly ? undefined : artPackArt(card.code, artStats);
+  const usesArtPack = art !== undefined && art.url !== failedArtPackUrl;
+
+  // A shell's only face is its own card, so its art may show. Any other facedown card hides itself.
+  const isFacedown = Boolean(isFacedownProp) && !(instance?.isShell && usesArtPack);
   const resolvedBackType = cardBackType || getCardBackTypeForCard(card);
   const [cardBackError, setCardBackError] = useState(false);
 
-  const { artUrl, loading, error } = useCardArt(card);
+  const { artUrl, loading, error } = useCardArt(card, {
+    artStats,
+    officialArt: !usesArtPack || isFacedown,
+  });
   const [imageSrc, setImageSrc] = useState<string | null>(artUrl);
   const [imageFailed, setImageFailed] = useState(false);
 
@@ -96,6 +118,10 @@ const CardViewImpl: React.FC<CardViewProps> = ({
   });
 
   const handleImageError = () => {
+    if (usesArtPack) {
+      setFailedArtPackUrl(art.url);
+      return;
+    }
     const remoteUrl = remoteArtUrl(card);
     if (imageSrc && !imageSrc.startsWith('http') && remoteUrl) {
       // Local image failed, attempt remote MarvelCDB CDN fallback (official packs only)
@@ -105,15 +131,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
     }
   };
 
-  let cardZoomLevel: 'small' | 'normal' | 'larger' = 'normal';
-  try {
-    const settings = useGameSettings();
-    if (settings && settings.cardZoomLevel) {
-      cardZoomLevel = settings.cardZoomLevel;
-    }
-  } catch {
-    cardZoomLevel = 'normal';
-  }
+  const cardZoomLevel = useOptionalGameSettings()?.cardZoomLevel ?? 'normal';
 
   const isLandscape =
     card.isLandscape === true ||
@@ -338,6 +356,14 @@ const CardViewImpl: React.FC<CardViewProps> = ({
                 </span>
               </div>
             )}
+            {instance?.isShell && (
+              <span
+                data-testid="drone-shell-label"
+                className={`absolute inset-x-0 top-1/2 -translate-y-1/2 mx-auto w-fit -rotate-6 bg-comic-yellow text-comic-black text-xs font-black uppercase tracking-wider px-1.5 py-0.5 pointer-events-none ${style.badge}`}
+              >
+                {card.name}
+              </span>
+            )}
           </div>
         )}
 
@@ -512,6 +538,8 @@ const CardViewImpl: React.FC<CardViewProps> = ({
               instance={instance}
               isFacedown={isFacedownProp}
               cardBackType={cardBackType}
+              artStats={artStats}
+              officialArtOnly={officialArtOnly}
               dynamicTraits={dynamicTraits}
               isExhausted={false}
               size={size}

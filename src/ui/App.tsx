@@ -4,6 +4,7 @@ import { setupGame, dispatchAction, getStarterDeck, GameState, InfiniteLoopError
 import type { SetupSelection } from './components/setup/ScenarioSelector';
 import { scheduleGameStateSnapshot } from './services/gamestate-logger-service';
 import { resetSessionSyncTracking } from './services/stats-storage-service';
+import { preloadArtPackImages } from './services/card-cache-service';
 
 import { GameSettingsProvider } from './context/GameSettingsProvider';
 import { useGameSettings } from './context/useGameSettings';
@@ -146,6 +147,10 @@ const AppContent: React.FC = () => {
       heroicLevel: selection.heroicLevel,
       modularSetCodes: selection.selectedModularSetCodes,
     });
+
+    // A scenario's token art loads with it, so a token's next stat image shows at once (ADR-0093)
+    const tokens = ScenarioRegistry.get(selection.scenarioId).definition.tokens ?? [];
+    void preloadArtPackImages(tokens.map((token) => token.code));
 
     // The game's theme is decided once, here, and stays for the whole game
     rollGameTheme();

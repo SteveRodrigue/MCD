@@ -4,6 +4,7 @@
  *   GET /card-art/<packId>/<file>.png   a pack's shipped art, its cached art, or (official packs) a
  *                                       fresh download from MarvelCDB (see `image-cache.ts`)
  *   GET /card-art/_backs/<type>.png     the three generic card backs
+ *   GET /card-art/_art-<id>/<file>.png  a local art pack's image (ADR-0093)
  */
 
 import * as fs from 'fs';

@@ -334,6 +334,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                     size="sm"
                     showTokens={false}
                     enableHoverZoom={true}
+                    artStats={{ attack: effectiveStats.attack, hitPoints: villain.maxHealth }}
                   />
                 </CardAttachmentFan>
               </div>

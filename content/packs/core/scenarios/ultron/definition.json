@@ -34,5 +34,18 @@
     },
     "slotCount": 1,
     "recommendedModularSets": ["under_attack"]
-  }
+  },
+
+  "tokens": [
+    {
+      "code": "ultron_drone",
+      "name": "Drone",
+      "type": "minion",
+      "packCode": "core",
+      "traits": ["Drone"],
+      "scheme": 1,
+      "attack": 1,
+      "health": 1
+    }
+  ]
 }

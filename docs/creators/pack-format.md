@@ -44,6 +44,8 @@ User cards are coded `<packId>-NNNN` (four digits), with an optional side letter
 
 The game fetches official art on demand from MarvelCDB into a local cache. For your own cards, put `<code>.png` under `assets/cards/` in your pack (or the file name your card data names). Do not commit official art or rules PDFs to a repository; `npm run leak:check` fails if you try.
 
+To replace the art of cards you do not own, without changing any game data, use a local [art pack](art-packs.md).
+
 ## Checking a pack
 
 `npm run pack:validate -- content/packs/<id>` checks the manifest, the card codes and fields, every JSON file against its schema, dependencies and duplicate codes. Fix everything it prints; the game refuses a pack with a finding.

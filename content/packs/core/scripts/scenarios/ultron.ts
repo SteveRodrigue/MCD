@@ -1,44 +1,18 @@
-import {
-  CardInstance,
-  CardType,
-  FactionCode,
-  GameState,
-  MinionCard,
-  PlayerState,
-} from '@engine/models';
+import { CardInstance, GameState, PlayerState } from '@engine/models';
 import type { EffectExecutionContext, EffectResult } from '@engine/effects';
 import { kernel } from '@engine/kernel';
 import { drawPlayerCard } from '@engine/pipeline/deck-exhaustion';
 import type { SpecialAbilityHandler } from '@engine/plugin-api';
+import { scenarioTokenCard } from '@engine/scenarios/scenario-tokens';
 import { appendLog } from '@engine/state/game-log';
 
 /**
- * The face of every facedown Drone (01140: base SCH 1, ATK 1, hit points 1). It says nothing about
- * the real card underneath (FAQ, Steve Rogers: a card in play as a Drone is hidden from searches).
+ * The face of every facedown Drone, declared in Ultron's `definition.json` (01140: base SCH 1,
+ * ATK 1, hit points 1). It says nothing about the real card underneath (FAQ, Steve Rogers: a card
+ * in play as a Drone is hidden from searches). Named by this script's own scenario, because an
+ * Ultron card can be staged outside its scenario.
  */
-const DRONE_FACE: MinionCard = {
-  code: 'ultron_drone',
-  name: 'Drone',
-  type: CardType.MINION,
-  faction: FactionCode.ENCOUNTER,
-  packCode: 'core',
-  position: 0,
-  quantity: 1,
-  deckLimit: 1,
-  isUnique: false,
-  costPerHero: false,
-  text: '',
-  traits: ['Drone'],
-  keywords: [],
-  resources: { physical: 0, energy: 0, mental: 0, wild: 0, total: 0 },
-  isLandscape: false,
-  orientation: 'portrait',
-  health: 1,
-  attack: 1,
-  scheme: 1,
-  enrichment: { abilities: [] },
-  raw: { code: 'ultron_drone', name: 'Drone' } as MinionCard['raw'],
-};
+const droneFace = () => scenarioTokenCard('ultron', 'ultron_drone');
 
 /** The players a Drone action names, "each player" starting with the first player (RR "Each Player"). */
 function dronePlayers(
@@ -72,7 +46,7 @@ function createDrone(state: GameState, player: PlayerState): CardInstance | unde
 
   const drone: CardInstance = {
     instanceId: `drone_${realCard.instanceId}`,
-    card: DRONE_FACE,
+    card: droneFace(),
     isShell: true,
     exhausted: false,
     tokens: { damage: 0, threat: 0, counters: 0 },

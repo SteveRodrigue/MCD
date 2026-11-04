@@ -7,6 +7,7 @@
  */
 
 import type { CardType } from '../../engine/models/enums.ts';
+import type { ArtPackCredit, ArtPackImage, ArtPackManifest } from '../packs/art-pack.ts';
 import { getLoadedContent } from './store.ts';
 import type { LoadedContent, LoadedPack } from './types.ts';
 
@@ -16,6 +17,9 @@ export const CARD_ART_ROUTE = '/card-art';
 /** Pseudo pack that holds the three generic card backs; no pack id can start with `_`. */
 export const CARD_BACKS_DIR = '_backs';
 
+/** Route folder of an art pack: `/card-art/_art-<id>/<file>.png` (ADR-0093). */
+export const ART_PACK_DIR_PREFIX = '_art-';
+
 /** File names are `<code>.png` for codes made of letters, digits, `_` and `-`. */
 export const CARD_ART_FILE_PATTERN = /^[a-zA-Z0-9_-]+\.png$/;
 
@@ -23,10 +27,25 @@ const MARVELCDB_CDN_BASE = 'https://marvelcdb.com/bundles/cards';
 
 export type CardBackType = 'player' | 'encounter' | 'villain';
 
+/** A card's current values, which select among an art pack's stat images. */
+export interface CardArtStats {
+  attack: number;
+  hitPoints: number;
+}
+
 export interface CardArtIdentifier {
   code: string;
   type?: CardType | string;
   stage?: string;
+  artStats?: CardArtStats;
+  /** Ignore art packs: the Card Editor, and the fallback when an art pack image fails to load. */
+  officialArt?: boolean;
+}
+
+export interface ArtPackArt {
+  url: string;
+  packName: string;
+  credit: ArtPackCredit;
 }
 
 function isMainScheme(type: string | undefined, stage: string | undefined): boolean {
@@ -59,18 +78,76 @@ export function artFileName(
 
 let indexedContent: LoadedContent | null = null;
 let packByCode = new Map<string, LoadedPack>();
+let artPackByCode = new Map<string, ArtPackManifest>();
+
+function refreshCardArtIndex(): void {
+  const content = getLoadedContent();
+  if (content === indexedContent) return;
+  packByCode = new Map();
+  artPackByCode = new Map();
+  for (const pack of content.packs) {
+    for (const card of pack.cards) if (!packByCode.has(card.code)) packByCode.set(card.code, pack);
+  }
+  // Art packs are ordered by folder name, so the first one listing a card is the one used.
+  for (const artPack of content.artPacks) {
+    for (const code of Object.keys(artPack.cards)) {
+      if (!artPackByCode.has(code)) artPackByCode.set(code, artPack);
+    }
+  }
+  indexedContent = content;
+}
 
 /** The loaded pack that owns a card code (its cards file sits in that pack). */
 function ownerPack(code: string): LoadedPack | undefined {
-  const content = getLoadedContent();
-  if (content !== indexedContent) {
-    packByCode = new Map();
-    for (const pack of content.packs) {
-      for (const card of pack.cards) if (!packByCode.has(card.code)) packByCode.set(card.code, pack);
-    }
-    indexedContent = content;
-  }
+  refreshCardArtIndex();
   return packByCode.get(code.trim());
+}
+
+function artPackFor(code: string): ArtPackManifest | undefined {
+  refreshCardArtIndex();
+  return artPackByCode.get(code.trim());
+}
+
+function artPackImageUrl(artPack: ArtPackManifest, image: ArtPackImage): string {
+  return `${CARD_ART_ROUTE}/${ART_PACK_DIR_PREFIX}${artPack.id}/${image.file}`;
+}
+
+/**
+ * The image a card shows from its art pack, if it has one. Among stat images it is the highest one
+ * whose printed ATK and hit points are both at or below the card's current values, otherwise the
+ * lowest one. A card with no known stats shows the lowest one.
+ */
+export function artPackArt(code: string, stats?: CardArtStats): ArtPackArt | undefined {
+  const artPack = artPackFor(code);
+  if (!artPack) return undefined;
+  const lowestFirst = [...artPack.cards[code.trim()]].sort(
+    (a, b) => (a.attack ?? 0) + (a.hitPoints ?? 0) - ((b.attack ?? 0) + (b.hitPoints ?? 0)),
+  );
+  const reached = stats
+    ? lowestFirst.filter(
+        (image) =>
+          (image.attack ?? 0) <= stats.attack && (image.hitPoints ?? 0) <= stats.hitPoints,
+      )
+    : [];
+  const image = reached[reached.length - 1] ?? lowestFirst[0];
+  return {
+    url: artPackImageUrl(artPack, image),
+    packName: artPack.name,
+    credit: artPack.credit,
+  };
+}
+
+/** Whether the card's art pack image changes with its current stats. */
+export function artPackHasStatImages(code: string): boolean {
+  const artPack = artPackFor(code);
+  return artPack !== undefined && artPack.cards[code.trim()][0].attack !== undefined;
+}
+
+/** Every image a card can show from its art pack, for preloading. */
+export function artPackImageUrls(code: string): string[] {
+  const artPack = artPackFor(code);
+  if (!artPack) return [];
+  return artPack.cards[code.trim()].map((image) => artPackImageUrl(artPack, image));
 }
 
 /** Id of the pack that owns a card code, or `undefined` when no loaded pack has it. */
@@ -78,9 +155,14 @@ export function artPackId(code: string): string | undefined {
   return ownerPack(code)?.id;
 }
 
-/** `/card-art/<packId>/<file>.png` for a card of a loaded pack, otherwise an empty string. */
+/**
+ * The local URL of a card's art: its art pack image when it has one, otherwise
+ * `/card-art/<packId>/<file>.png` for a card of a loaded pack, otherwise an empty string.
+ */
 export function localArtUrl(card: CardArtIdentifier | string): string {
-  const code = typeof card === 'string' ? card : card.code;
+  const { code, artStats, officialArt } = typeof card === 'string' ? ({ code: card } as CardArtIdentifier) : card;
+  const art = officialArt ? undefined : artPackArt(code ?? '', artStats);
+  if (art) return art.url;
   const pack = ownerPack(code ?? '');
   if (!pack) return '';
   const fileName = artFileName(card, pack.manifest.art?.swapMainSchemeSides);

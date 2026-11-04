@@ -11,6 +11,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { toJSONSchema, type ZodType } from 'zod';
 import { SupplementalPackSchema } from '../src/data/supplemental/schema';
+import { ArtPackManifestSchema } from '../src/data/packs/art-pack';
 import { ContentConfigSchema } from '../src/data/packs/content-config';
 import { PackManifestSchema } from '../src/data/packs/pack-manifest';
 import { ModularSetsSchema, ScenarioDefinitionSchema } from '../src/data/packs/scenario-definition';
@@ -43,6 +44,12 @@ export const SCHEMAS: SchemaEntry[] = [
     title: 'Marvel Champions Digital - Content Config',
     description: 'Which packs the game loads (content/config.json).',
     schema: ContentConfigSchema,
+  },
+  {
+    outputPath: 'src/data/packs/art-pack.schema.json',
+    title: 'Marvel Champions Digital - Art Pack',
+    description: 'Optional local images for any card (content/art-packs/<id>/art-pack.json).',
+    schema: ArtPackManifestSchema,
   },
   {
     outputPath: 'src/data/packs/scenario.schema.json',

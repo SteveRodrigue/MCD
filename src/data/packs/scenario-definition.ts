@@ -4,6 +4,24 @@ import { DIFFICULTY_MODES } from '../../engine/models/difficulty.ts';
 const DifficultySchema = z.enum(DIFFICULTY_MODES);
 const CardCodeList = z.array(z.string().min(1));
 
+/**
+ * A minion with no printed card of its own, which a scenario's script puts into play (an Ultron
+ * Drone). Declared here so its stats are data and an art pack can target its code.
+ */
+const ScenarioTokenSchema = z
+  .object({
+    code: z.string().regex(/^[a-z][a-z0-9_]*$/, 'must be snake_case'),
+    name: z.string().min(1),
+    type: z.literal('minion'),
+    /** The pack that owns the scenario. */
+    packCode: z.string().min(1),
+    traits: z.array(z.string().min(1)),
+    scheme: z.number().int().nonnegative(),
+    attack: z.number().int().nonnegative(),
+    health: z.number().int().positive(),
+  })
+  .strict();
+
 /** Declarative scenario manifest (definition.json), shared by official and user scenarios. */
 export const ScenarioDefinitionSchema = z
   .object({
@@ -39,10 +57,12 @@ export const ScenarioDefinitionSchema = z
         recommendedModularSets: z.array(z.string()).optional(),
       })
       .strict(),
+    tokens: z.array(ScenarioTokenSchema).optional(),
   })
   .strict();
 
 export type ScenarioDefinition = z.infer<typeof ScenarioDefinitionSchema>;
+export type ScenarioToken = z.infer<typeof ScenarioTokenSchema>;
 
 export const MODULAR_SET_CODE_PATTERN = /^[a-z][a-z0-9_]*$/;
 

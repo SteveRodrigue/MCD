@@ -1,6 +1,6 @@
 import type { CardEnrichment, MarvelCDBDeck, RawUpstreamCard } from '@engine/models';
 import type { ArtPackManifest } from '../packs/art-pack';
-import type { ModularSets, ScenarioDefinition } from '../packs/scenario-definition';
+import type { EncounterSets, ScenarioDefinition } from '../packs/scenario-definition';
 import type { PackManifest } from '../packs/pack-manifest';
 
 /**
@@ -30,7 +30,7 @@ export interface LoadedPack {
   /** Card code to the stem of the `cards/<stem>.json` file that defines it (the editor saves beside it). */
   cardStems: Record<string, string>;
   supplemental: Record<string, CardEnrichment>;
-  modularSets: ModularSets;
+  encounterSets: EncounterSets;
   scenarios: ScenarioDefinition[];
   decks: MarvelCDBDeck[];
   cardCount: number;

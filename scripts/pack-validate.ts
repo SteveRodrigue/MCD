@@ -22,7 +22,10 @@ import {
 } from '../src/data/packs/pack-manifest';
 import { ClaimRegistry } from '../src/data/packs/identity';
 import { PackDeckSchema } from '../src/data/packs/pack-deck';
-import { ModularSetsSchema, ScenarioDefinitionSchema } from '../src/data/packs/scenario-definition';
+import {
+  EncounterSetsSchema,
+  ScenarioDefinitionSchema,
+} from '../src/data/packs/scenario-definition';
 import { SupplementalPackSchema } from '../src/data/supplemental/schema';
 import { metaFile, metaSchemaFile } from '../src/tools/content-paths';
 import { packHooks } from '../src/data/content/pack-hooks.generated';
@@ -252,17 +255,18 @@ export function validatePackSet(packsRoot: string, options: ValidatePackOptions)
           );
       }
     }
-    const setsFile = path.join(pack.dir, 'modular-sets.json');
+    const setsFile = path.join(pack.dir, 'encounter-sets.json');
     if (fs.existsSync(setsFile)) {
-      const sets = parse(pack.name, setsFile, ModularSetsSchema) as { code: string }[] | undefined;
+      const sets = parse(pack.name, setsFile, EncounterSetsSchema) as
+        { code: string }[] | undefined;
       for (const set of sets ?? []) {
         const owner = setClaims.claim(set.code, manifest.id);
         if (owner)
           add(
             pack.name,
             setsFile,
-            'duplicate-modular-set',
-            `Modular set "${set.code}" is also defined by "${owner}"`,
+            'duplicate-encounter-set',
+            `Encounter set "${set.code}" is also defined by "${owner}"`,
           );
       }
     }

@@ -14,7 +14,10 @@ import { SupplementalPackSchema } from '../src/data/supplemental/schema';
 import { ArtPackManifestSchema } from '../src/data/packs/art-pack';
 import { ContentConfigSchema } from '../src/data/packs/content-config';
 import { PackManifestSchema } from '../src/data/packs/pack-manifest';
-import { ModularSetsSchema, ScenarioDefinitionSchema } from '../src/data/packs/scenario-definition';
+import {
+  EncounterSetsSchema,
+  ScenarioDefinitionSchema,
+} from '../src/data/packs/scenario-definition';
 
 export interface SchemaEntry {
   /** Output path relative to the repository root. */
@@ -59,10 +62,11 @@ export const SCHEMAS: SchemaEntry[] = [
     schema: ScenarioDefinitionSchema,
   },
   {
-    outputPath: 'src/data/packs/modular-sets.schema.json',
-    title: 'Marvel Champions Digital - Modular Encounter Sets',
-    description: 'Catalog of modular encounter sets (modular-sets.json) provided by a pack.',
-    schema: ModularSetsSchema,
+    outputPath: 'src/data/packs/encounter-sets.schema.json',
+    title: 'Marvel Champions Digital - Encounter Sets',
+    description:
+      'Catalog of modular, standard and expert encounter sets (encounter-sets.json) provided by a pack.',
+    schema: EncounterSetsSchema,
   },
 ];
 

@@ -10,7 +10,7 @@ content/packs/<id>/
   cards/*.json              card data, zzorba format; one array of cards per file
   supplemental/*.json       rules data per card; see supplemental-reference/
   scenarios/<scenario>/     definition.json for each scenario (see scenarios.md)
-  modular-sets.json         modular encounter sets the pack adds
+  encounter-sets.json       modular, standard and expert encounter sets the pack offers at setup
   decks/*.json              starter decks
   translations/             localized card text
   assets/cards/<file>.png   art the pack ships for its own cards

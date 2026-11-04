@@ -10,7 +10,7 @@ import { NodeFsDriver } from '../../src/data/content/drivers/node-fs';
 import type { LoadedContent } from '../../src/data/content/types';
 import { listStarterDecks } from '../../src/engine/decks';
 import { getSpecialHandler } from '../../src/engine/specials/special-registry';
-import { ScenarioRegistry, listModularEncounterSets } from '../../src/engine/scenarios';
+import { ScenarioRegistry, listEncounterSets } from '../../src/engine/scenarios';
 import { contentDriver } from '../helpers/content';
 
 const manifest = {
@@ -47,7 +47,7 @@ const content: LoadedContent = {
       ] as never,
       supplemental: { '99001': { noSupplementalNeeded: true } } as never,
       scenarios: [],
-      modularSets: [{ code: 'tmp_set', name: 'Tmp Set', description: 'x' }],
+      encounterSets: [{ code: 'tmp_set', kind: 'modular', name: 'Tmp Set', description: 'x' }],
       decks: [{ id: 1, name: 'Tmp deck', hero_code: '99001', hero_name: 'Tester', slots: {} }] as never,
       cardCount: 1,
       supplementalCount: 1,
@@ -65,7 +65,7 @@ describe('applyContent', () => {
     applyContent(content);
     expect(cardCatalog.getAllCards().map((c) => c.code)).toEqual(['99001']);
     expect(getCardEnrichment('99001')).toBeDefined();
-    expect(listModularEncounterSets(cardCatalog).map((s) => s.code)).toEqual(['tmp_set']);
+    expect(listEncounterSets(cardCatalog, 'modular').map((s) => s.code)).toEqual(['tmp_set']);
     expect(listStarterDecks().map((d) => d.heroName)).toEqual(['Tester']);
     expect(getLoadedContent()).toBe(content);
   });
@@ -123,7 +123,7 @@ describe('resetContent', () => {
     resetContent();
     expect(cardCatalog.getAllCards()).toEqual([]);
     expect(listStarterDecks()).toEqual([]);
-    expect(listModularEncounterSets(cardCatalog)).toEqual([]);
+    expect(listEncounterSets(cardCatalog, 'modular')).toEqual([]);
     expect(getLoadedContent()).toEqual({
       packs: [],
       failures: [],

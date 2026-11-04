@@ -2,7 +2,7 @@ import type { CardEnrichment } from '@engine/models';
 import { clearStarterDecks, registerStarterDecks } from '@engine/decks/starter-decks';
 import { clearSpecialHandlers, registerSpecialHandler } from '@engine/specials/special-registry';
 import { DeclarativeScenarioPlugin } from '@engine/scenarios/declarative-plugin';
-import { setModularSets } from '@engine/scenarios/modular-sets';
+import { setEncounterSets } from '@engine/scenarios/encounter-sets';
 import { ScenarioRegistry } from '@engine/scenarios/registry';
 import { cardCatalog } from '../importer/card-loader';
 import { replaceSupplementalRegistry } from '../supplemental';
@@ -15,7 +15,7 @@ import { loadContent } from './loader';
 export function resetContent(): void {
   replaceSupplementalRegistry({});
   cardCatalog.clear();
-  setModularSets([]);
+  setEncounterSets([]);
   clearStarterDecks();
   clearSpecialHandlers();
   ScenarioRegistry.clear();
@@ -32,7 +32,7 @@ export function applyContent(content: LoadedContent): void {
   for (const pack of content.packs) Object.assign(supplemental, pack.supplemental);
   replaceSupplementalRegistry(supplemental);
   cardCatalog.registerCards(content.packs.flatMap((pack) => pack.cards));
-  setModularSets(content.packs.flatMap((pack) => pack.modularSets));
+  setEncounterSets(content.packs.flatMap((pack) => pack.encounterSets));
   registerStarterDecks(content.packs.flatMap((pack) => pack.decks));
   // Official packs bundle their code at build time; only the loaded packs' hooks are registered.
   for (const pack of content.packs) {

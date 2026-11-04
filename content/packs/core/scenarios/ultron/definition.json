@@ -27,11 +27,6 @@
 
   "modularEncounterSets": {
     "mandatory": ["ultron"],
-    "defaults": {
-      "SKIRMISH": ["standard", "under_attack"],
-      "STANDARD": ["standard", "under_attack"],
-      "EXPERT": ["standard", "expert", "under_attack"]
-    },
     "slotCount": 1,
     "recommendedModularSets": ["under_attack"]
   },

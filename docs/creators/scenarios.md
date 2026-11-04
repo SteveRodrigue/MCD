@@ -30,20 +30,21 @@ The loader validates `definition.json` against `ScenarioDefinitionSchema`. A pac
 
 The manifest defines the static properties, stages, and modular sets. Properties at the top level of `definition.json`:
 
-| Property                | Required | Meaning                                                                                                 |
-| ----------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
-| `$schema`               | no       | Editor hint for JSON completion.                                                                        |
-| `id`                    | yes      | Scenario id, unique across enabled packs.                                                               |
-| `name`                  | yes      | Display name.                                                                                           |
-| `scenarioCardCode`      | yes      | Code of the scenario card; also the sort key in the selector.                                           |
-| `author`                | no       | Credit.                                                                                                 |
-| `version`               | no       | Your version string.                                                                                    |
-| `description`           | no       | One line shown in the selector.                                                                         |
-| `setupOnomatopoeia`     | no       | Comic sound effect shown with the setup log entry.                                                      |
-| `supportedDifficulties` | yes      | One or more of `SKIRMISH`, `STANDARD`, `EXPERT`.                                                        |
-| `villainSetup`          | yes      | `villainName` and `stages`: villain card codes per difficulty.                                          |
-| `mainSchemeSetup`       | yes      | Main scheme `stages` plus `startingThreat`, `targetThreatPerPlayer`, `escalationThreatPerPlayer`.       |
-| `modularEncounterSets`  | yes      | `mandatory` and per-difficulty `defaults` set codes; optional `slotCount` and `recommendedModularSets`. |
+| Property                | Required | Meaning                                                                                                                                                                                           |
+| ----------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$schema`               | no       | Editor hint for JSON completion.                                                                                                                                                                  |
+| `id`                    | yes      | Scenario id, unique across enabled packs.                                                                                                                                                         |
+| `name`                  | yes      | Display name.                                                                                                                                                                                     |
+| `scenarioCardCode`      | yes      | Code of the scenario card; also the sort key in the selector.                                                                                                                                     |
+| `author`                | no       | Credit.                                                                                                                                                                                           |
+| `version`               | no       | Your version string.                                                                                                                                                                              |
+| `description`           | no       | One line shown in the selector.                                                                                                                                                                   |
+| `setupOnomatopoeia`     | no       | Comic sound effect shown with the setup log entry.                                                                                                                                                |
+| `supportedDifficulties` | yes      | The difficulties the player can pick, in button order: `SKIRMISH`, `STANDARD`, `EXPERT`. Each needs villain stages.                                                                               |
+| `villainSetup`          | yes      | `villainName` and `stages`: villain card codes per difficulty.                                                                                                                                    |
+| `mainSchemeSetup`       | yes      | Main scheme `stages` plus `startingThreat`, `targetThreatPerPlayer`, `escalationThreatPerPlayer`.                                                                                                 |
+| `modularEncounterSets`  | yes      | `mandatory` set codes; optional `slotCount` (0: no modular slot) and `recommendedModularSets`.                                                                                                    |
+| `encounterSetRules`     | no       | Only for a scenario that breaks the usual Standard or Expert set rule, see below.                                                                                                                 |
 | `tokens`                | no       | Minions with no printed card that a pack script puts into play (`code`, `name`, `type`, `packCode`, `traits`, `scheme`, `attack`, `health`). An [art pack](art-packs.md) can give a token images. |
 
 Unknown properties are rejected. Example:
@@ -78,14 +79,25 @@ Unknown properties are rejected. Example:
 
   "modularEncounterSets": {
     "mandatory": ["crimson_syndicate"],
-    "defaults": {
-      "SKIRMISH": ["standard", "bomb_scare"],
-      "STANDARD": ["standard", "bomb_scare"],
-      "EXPERT": ["standard", "expert", "bomb_scare"]
-    }
+    "slotCount": 1,
+    "recommendedModularSets": ["bomb_scare"]
   }
 }
 ```
+
+**Standard and Expert sets are not listed in a manifest.** The player picks them at setup from the sets of the enabled packs (`encounter-sets.json`), and a new set needs no manifest edit. Standard difficulty adds no Expert set, Expert requires one, and Skirmish may add one. Heroic mode selects no set.
+
+A scenario that breaks this rule says so in `encounterSetRules`: `fixed` is the one set it always uses, or `null` for none. It shows as a locked badge, or no choice at all:
+
+```json
+{
+  "supportedDifficulties": ["STANDARD", "EXPERT"],
+  "modularEncounterSets": { "mandatory": ["my_set"], "slotCount": 0 },
+  "encounterSetRules": { "standard": { "fixed": null }, "expert": { "fixed": null } }
+}
+```
+
+To add a set to the deck, list it in `mandatory`.
 
 `setupOnomatopoeia` (optional) is the comic sound effect shown with the setup log entry.
 

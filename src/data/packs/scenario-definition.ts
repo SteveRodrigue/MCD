@@ -22,6 +22,12 @@ const ScenarioTokenSchema = z
   })
   .strict();
 
+/**
+ * A scenario's exception to a set choice: `fixed` is the one set it always uses, or null when it
+ * uses no such set (The Wrecking Crew, Civil War competitive).
+ */
+const EncounterSetRuleSchema = z.object({ fixed: z.string().min(1).nullable() }).strict();
+
 /** Declarative scenario manifest (definition.json), shared by official and user scenarios. */
 export const ScenarioDefinitionSchema = z
   .object({
@@ -38,7 +44,7 @@ export const ScenarioDefinitionSchema = z
     villainSetup: z
       .object({
         villainName: z.string().min(1),
-        stages: z.record(DifficultySchema, CardCodeList),
+        stages: z.partialRecord(DifficultySchema, CardCodeList),
       })
       .strict(),
     mainSchemeSetup: z
@@ -52,29 +58,52 @@ export const ScenarioDefinitionSchema = z
     modularEncounterSets: z
       .object({
         mandatory: z.array(z.string()),
-        defaults: z.record(DifficultySchema, z.array(z.string())),
         slotCount: z.number().int().nonnegative().optional(),
         recommendedModularSets: z.array(z.string()).optional(),
       })
       .strict(),
+    /** Only for a scenario that breaks the usual Standard or Expert set rule. */
+    encounterSetRules: z
+      .object({ standard: EncounterSetRuleSchema, expert: EncounterSetRuleSchema })
+      .partial()
+      .strict()
+      .optional(),
     tokens: z.array(ScenarioTokenSchema).optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((definition, context) => {
+    for (const difficulty of definition.supportedDifficulties) {
+      if (definition.villainSetup.stages[difficulty]?.length) continue;
+      context.addIssue({
+        code: 'custom',
+        path: ['villainSetup', 'stages', difficulty],
+        message: `a supported difficulty needs villain stages (${difficulty})`,
+      });
+    }
+  });
 
 export type ScenarioDefinition = z.infer<typeof ScenarioDefinitionSchema>;
 export type ScenarioToken = z.infer<typeof ScenarioTokenSchema>;
 
-export const MODULAR_SET_CODE_PATTERN = /^[a-z][a-z0-9_]*$/;
+export const ENCOUNTER_SET_CODE_PATTERN = /^[a-z][a-z0-9_]*$/;
 
-/** modular-sets.json: a top-level array of modular encounter set descriptions. */
-export const ModularSetsSchema = z.array(
+/**
+ * The kind of an encounter set a player can choose at setup. RR v1.8 Standard Set and Expert Set:
+ * neither is a modular set, and neither can fill a modular slot.
+ */
+export const ENCOUNTER_SET_KINDS = ['modular', 'standard', 'expert'] as const;
+export type EncounterSetKind = (typeof ENCOUNTER_SET_KINDS)[number];
+
+/** encounter-sets.json: the encounter sets a pack offers at setup. */
+export const EncounterSetsSchema = z.array(
   z
     .object({
-      code: z.string().regex(MODULAR_SET_CODE_PATTERN, 'must be snake_case'),
+      code: z.string().regex(ENCOUNTER_SET_CODE_PATTERN, 'must be snake_case'),
+      kind: z.enum(ENCOUNTER_SET_KINDS),
       name: z.string().min(1),
       description: z.string(),
     })
     .strict(),
 );
 
-export type ModularSets = z.infer<typeof ModularSetsSchema>;
+export type EncounterSets = z.infer<typeof EncounterSetsSchema>;

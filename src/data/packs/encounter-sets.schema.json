@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Marvel Champions Digital - Modular Encounter Sets",
-  "description": "Catalog of modular encounter sets (modular-sets.json) provided by a pack.",
+  "title": "Marvel Champions Digital - Encounter Sets",
+  "description": "Catalog of modular, standard and expert encounter sets (encounter-sets.json) provided by a pack.",
   "type": "array",
   "items": {
     "type": "object",
@@ -9,6 +9,14 @@
       "code": {
         "type": "string",
         "pattern": "^[a-z][a-z0-9_]*$"
+      },
+      "kind": {
+        "type": "string",
+        "enum": [
+          "modular",
+          "standard",
+          "expert"
+        ]
       },
       "name": {
         "type": "string",
@@ -20,6 +28,7 @@
     },
     "required": [
       "code",
+      "kind",
       "name",
       "description"
     ],

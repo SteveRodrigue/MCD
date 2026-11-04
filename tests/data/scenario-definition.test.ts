@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { packDir, scenarioDefinitionFile } from '../../src/tools/content-paths';
 import {
-  ModularSetsSchema,
+  EncounterSetsSchema,
   ScenarioDefinitionSchema,
 } from '../../src/data/packs/scenario-definition';
 
@@ -35,20 +35,20 @@ describe('ScenarioDefinitionSchema', () => {
   });
 });
 
-describe('ModularSetsSchema', () => {
+describe('EncounterSetsSchema', () => {
   const sets = JSON.parse(
-    fs.readFileSync(path.join(packDir('core'), 'modular-sets.json'), 'utf8'),
+    fs.readFileSync(path.join(packDir('core'), 'encounter-sets.json'), 'utf8'),
   );
 
-  it('accepts the real modular-sets.json', () => {
-    expect(ModularSetsSchema.safeParse(sets).success).toBe(true);
+  it('accepts the real encounter-sets.json', () => {
+    expect(EncounterSetsSchema.safeParse(sets).success).toBe(true);
   });
 
   it('rejects non-snake_case codes and missing names', () => {
     expect(
-      ModularSetsSchema.safeParse([{ code: 'Bomb-Scare', name: 'x', description: '' }]).success,
+      EncounterSetsSchema.safeParse([{ code: 'Bomb-Scare', kind: 'modular', name: 'x', description: '' }]).success,
     ).toBe(false);
-    expect(ModularSetsSchema.safeParse([{ code: 'bomb_scare', description: '' }]).success).toBe(
+    expect(EncounterSetsSchema.safeParse([{ code: 'bomb_scare', kind: 'modular', description: '' }]).success).toBe(
       false,
     );
   });

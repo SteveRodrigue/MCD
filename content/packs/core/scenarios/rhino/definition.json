@@ -27,11 +27,6 @@
 
   "modularEncounterSets": {
     "mandatory": ["rhino"],
-    "defaults": {
-      "SKIRMISH": ["standard", "bomb_scare"],
-      "STANDARD": ["standard", "bomb_scare"],
-      "EXPERT": ["standard", "expert", "bomb_scare"]
-    },
     "recommendedModularSets": ["bomb_scare"]
   }
 }

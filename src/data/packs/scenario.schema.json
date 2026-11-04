@@ -67,12 +67,7 @@
               "type": "string",
               "minLength": 1
             }
-          },
-          "required": [
-            "SKIRMISH",
-            "STANDARD",
-            "EXPERT"
-          ]
+          }
         }
       },
       "required": [
@@ -124,28 +119,6 @@
             "type": "string"
           }
         },
-        "defaults": {
-          "type": "object",
-          "propertyNames": {
-            "type": "string",
-            "enum": [
-              "SKIRMISH",
-              "STANDARD",
-              "EXPERT"
-            ]
-          },
-          "additionalProperties": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "SKIRMISH",
-            "STANDARD",
-            "EXPERT"
-          ]
-        },
         "slotCount": {
           "type": "integer",
           "minimum": 0,
@@ -159,9 +132,54 @@
         }
       },
       "required": [
-        "mandatory",
-        "defaults"
+        "mandatory"
       ],
+      "additionalProperties": false
+    },
+    "encounterSetRules": {
+      "type": "object",
+      "properties": {
+        "standard": {
+          "type": "object",
+          "properties": {
+            "fixed": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "fixed"
+          ],
+          "additionalProperties": false
+        },
+        "expert": {
+          "type": "object",
+          "properties": {
+            "fixed": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "fixed"
+          ],
+          "additionalProperties": false
+        }
+      },
       "additionalProperties": false
     },
     "tokens": {

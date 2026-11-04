@@ -67,7 +67,6 @@ const fakeDefinition: ScenarioDefinition = {
   },
   modularEncounterSets: {
     mandatory: ['fake'],
-    defaults: { SKIRMISH: [], STANDARD: [], EXPERT: [] },
   },
 };
 

@@ -73,6 +73,8 @@ describe('Scenario Plugin Registry & Multi-Entity Accessors', () => {
   it('initializes Main Scheme to Stage 1B with canonical card via plugin setup', () => {
     const createBaseState = (): GameState => ({
       id: 'test_game',
+      expertMode: false,
+      encounterSets: { standard: null, expert: null },
       roundNumber: 1,
       firstPlayerIndex: 0,
       activePlayerIndex: 0,

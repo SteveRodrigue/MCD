@@ -289,6 +289,7 @@ _Objective: Overhaul the Scenario Plug-In architecture and Scenario Editor GUI, 
   - Conditional additional boost card Forced Interrupts ([Issue #292](https://github.com/SteveRodrigue/MCD/issues/292)), sonic convergence attachments, and minion horde spawning.
 - [ ] **Ultron Scenario (`ultron` - 22 cards, [Issue #352](https://github.com/SteveRodrigue/MCD/issues/352)) & Under Attack (`under_attack` - 4 cards, [Issue #354](https://github.com/SteveRodrigue/MCD/issues/354)):**
   - Facedown Drone minion state machine, mixed per-player + run-once steps ([Issue #272](https://github.com/SteveRodrigue/MCD/issues/272)).
+- [ ] **Encounter Set Selection ([Issue #561](https://github.com/SteveRodrigue/MCD/issues/561), [ADR-0094](decisions/0094-encounter-set-selection.md)):** Standard, Standard II, Standard III, Expert and Expert II chosen at setup, after a difficulty the scenario supports.
 - [ ] **Remaining Core Modular Sets ([Issue #265](https://github.com/SteveRodrigue/MCD/issues/265)):**
   - _Legions of Hydra_ (`01180`–`01182`, [Issue #355](https://github.com/SteveRodrigue/MCD/issues/355)) and _The Doomsday Chair_ (`01183`–`01185`, [Issue #356](https://github.com/SteveRodrigue/MCD/issues/356), [Issue #262](https://github.com/SteveRodrigue/MCD/issues/262)).
 

@@ -19,6 +19,9 @@ export function startPlayerPhase(state: GameState): GameState {
   delete state.activeBoostCard;
   delete state.pendingActivations;
   delete state.pendingThreatPlacements;
+  const firstPlayer = state.players[state.firstPlayerIndex];
+  if (firstPlayer)
+    kernel.dispatchTrigger(state, 'PLAYER_TURN_BEGAN', { targetPlayerId: firstPlayer.id });
 
   // Phase-level ability limits start over (PHASE effects already ended with the previous phase)
   for (const player of state.players) {

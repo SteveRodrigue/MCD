@@ -60,6 +60,13 @@ const EXPECTED_GATE_FIELDS = {
     { key: 'filter', label: 'Card Criteria', type: 'card-filter', required: false },
     NEGATE,
   ],
+  IF_COUNTERS: [
+    { key: 'cardCode', label: 'Card Code', type: 'string', required: true },
+    { key: 'counterType', label: 'Counter Type', type: 'string', required: true },
+    { key: 'atLeast', label: 'At Least', type: 'number', required: false, defaultValue: 1 },
+    FORM_QUALIFIER,
+    NEGATE,
+  ],
   IF_ALL_ALLIES_MATCH: [
     { key: 'filter', label: 'Ally Criteria', type: 'card-filter', required: true },
     NEGATE,
@@ -105,6 +112,7 @@ const EXPECTED_HAS_REQUIRED = {
   IF_RESOURCE_MATCH: true,
   IF_UNDEFENDED_ATTACK: false,
   IF_ACTIVATION_DEALT_DAMAGE: false,
+  IF_COUNTERS: true,
 } as const;
 
 describe('Step Gate Registry and Param Schemas (ADR-0080, Issues #289, #290)', () => {
@@ -120,6 +128,7 @@ describe('Step Gate Registry and Param Schemas (ADR-0080, Issues #289, #290)', (
       'IF_RESOURCE_MATCH',
       'IF_UNDEFENDED_ATTACK',
       'IF_ACTIVATION_DEALT_DAMAGE',
+      'IF_COUNTERS',
     ];
     for (const gate of canonicalGates) {
       expect(StepGateSchema.safeParse(gate).success).toBe(true);

@@ -213,6 +213,23 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
         </div>
       )}
 
+      <label className="block bg-yellow-50/50 p-2.5 border-2 border-black rounded-sm shadow-comic-xs">
+        <span className="font-bold text-xs text-black">Mode-Only Side (Double-Sided Card)</span>
+        <select
+          data-testid="mode-only-select"
+          value={supplemental.modeOnly ?? ''}
+          onChange={(e) => {
+            const { modeOnly: _dropped, ...rest } = supplemental;
+            onChange(e.target.value ? { ...rest, modeOnly: e.target.value } : rest);
+          }}
+          className="block w-full mt-1 bg-white border border-black p-1 text-xs rounded-sm"
+        >
+          <option value="">Not mode-only</option>
+          <option value="STANDARD">Standard Mode Only</option>
+          <option value="EXPERT">Expert Mode Only</option>
+        </select>
+      </label>
+
       <div className="bg-yellow-50/50 p-2.5 border-2 border-black rounded-sm shadow-comic-xs">
         <label className="flex items-center gap-2 cursor-pointer select-none">
           <input

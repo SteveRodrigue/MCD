@@ -1,3 +1,4 @@
+import { kernel } from '../../kernel';
 import { CardType } from '../../models';
 import { getPlayer } from '../legality-checker';
 import { expireLastingEffects } from '../player-phase';
@@ -50,6 +51,9 @@ export const handleEndPlayerTurn: ActionHandler<'END_PLAYER_TURN'> = (nextState,
     };
   } else {
     nextState.activePlayerIndex = nextIndex;
+    kernel.dispatchTrigger(nextState, 'PLAYER_TURN_BEGAN', {
+      targetPlayerId: nextState.players[nextIndex].id,
+    });
     const nextPlayer = nextState.players[nextIndex];
     return {
       state: nextState,

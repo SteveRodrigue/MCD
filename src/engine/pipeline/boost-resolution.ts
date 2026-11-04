@@ -104,6 +104,36 @@ export function dealBoostCards(
   return queue;
 }
 
+type DeferredBoostAbility = NonNullable<
+  NonNullable<GameState['activeAttackContext']>['afterActivationAbilities']
+>[number];
+
+/** Queues a boost ability that waits until the activation has ended, and resolves the queue. */
+export function deferUntilAfterActivation(
+  holder: { afterActivationAbilities?: DeferredBoostAbility[] },
+  ability: CardAbility,
+  boostCard: CardInstance,
+): boolean {
+  if (!ability.afterActivation) return false;
+  const deferred = (holder.afterActivationAbilities ??= []);
+  if (!deferred.some((d) => d.ability === ability && d.sourceCardInstance === boostCard)) {
+    deferred.push({ ability, sourceCardInstance: boostCard });
+  }
+  return true;
+}
+
+export function resolveAfterActivationAbilities(
+  state: GameState,
+  holder: { afterActivationAbilities?: DeferredBoostAbility[] },
+  playerId: string,
+): void {
+  const deferred = holder.afterActivationAbilities ?? [];
+  holder.afterActivationAbilities = [];
+  for (const { ability, sourceCardInstance } of deferred) {
+    kernel.executeEffect(state, ability, { playerId, sourceCardInstance });
+  }
+}
+
 /** The star boost abilities of a card that resolve now (the caller may defer some). */
 function starAbilities(boostCard: CardInstance, options: ResumeBoostCardsOptions): CardAbility[] {
   if (!boostCard.card.boostStar) return [];

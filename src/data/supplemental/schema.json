@@ -52,6 +52,9 @@
                   "type": "string",
                   "enum": [
                     "WHEN_REVEALED",
+                    "COUNTER_PLACED",
+                    "CARD_FLIPPED",
+                    "PLAYER_TURN_BEGAN",
                     "ENEMY_INITIATES_ATTACK",
                     "DAMAGE_WOULD_BE_TAKEN",
                     "CARD_PLAYED",
@@ -90,6 +93,32 @@
                 "triggerFilter": {
                   "type": "object",
                   "properties": {
+                    "countersHere": {
+                      "type": "object",
+                      "properties": {
+                        "counterType": {
+                          "type": "string",
+                          "minLength": 1,
+                          "label": "Counter Type"
+                        },
+                        "atLeast": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991,
+                          "label": "At Least"
+                        },
+                        "plusPlayerCount": {
+                          "label": "Plus the Number of Players",
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "counterType",
+                        "atLeast"
+                      ],
+                      "additionalProperties": false,
+                      "label": "Counters Here"
+                    },
                     "attackerKind": {
                       "type": "string",
                       "enum": [
@@ -396,6 +425,9 @@
                 "forEachPlayer": {
                   "type": "boolean"
                 },
+                "afterActivation": {
+                  "type": "boolean"
+                },
                 "errata": {
                   "type": [
                     "string",
@@ -415,6 +447,8 @@
                         "type": "string",
                         "enum": [
                           "DRAW",
+                          "ACTIVATE_MINIONS",
+                          "FLIP_CARD",
                           "ADD_ACCELERATION",
                           "ADD_COUNTERS",
                           "ADD_STATUS",
@@ -498,6 +532,7 @@
                           "IF_PLAYER_HAS_TRAIT",
                           "IF_ZONE_EMPTY",
                           "IF_CARD_IN_PLAY",
+                          "IF_COUNTERS",
                           "IF_ALL_ALLIES_MATCH",
                           "IF_RESOURCE_MATCH",
                           "IF_UNDEFENDED_ATTACK",

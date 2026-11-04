@@ -61,8 +61,23 @@ export const EFFECT_PARAM_SCHEMAS = {
       }),
       amount: optional(AMOUNT, { label: 'Counter Amount', defaultValue: 1, primary: true }),
       target: target('Target', 'SELF'),
+      targetCardCode: optional(z.string().min(1), {
+        label: 'Named Card Code',
+        description: 'The in-play encounter card that receives the counters ("on Pursued by the Past").',
+      }),
     })
     .strict(),
+  ACTIVATE_MINIONS: z
+    .object({
+      filter: optional(UniversalCardFilterSchema, {
+        label: 'Minion Filter',
+        widget: 'card-filter',
+        description: 'The minions in play that activate against this player.',
+        primary: true,
+      }),
+    })
+    .strict(),
+  FLIP_CARD: effectOnly(),
   ADD_STATUS: z
     .object({
       status: optional(CharacterStatusSchema, {
@@ -859,6 +874,8 @@ export const EFFECT_DESCRIPTIONS: Record<EffectType, string> = {
   DOUBLE_RESOURCE_FOR_ASPECT: "Double resource generation when paying for a matching aspect card.",
   ADD_ACCELERATION: "Place acceleration tokens on the main scheme (+1 threat per token each villain phase).",
   ADD_COUNTERS: "Add multiple counter tokens to target card.",
+  ACTIVATE_MINIONS: "Each matching minion in play activates against this player: attacks a hero, schemes against an alter-ego.",
+  FLIP_CARD: "Flip the source card to its other side (RR v1.8 Flip), then CARD_FLIPPED triggers on it.",
   REMOVE_COUNTERS: "Remove multiple counters from target card.",
   REMOVE_COUNTERS_MATCHING_FILTER: "Remove counters across cards matching a trait or zone filter.",
   SPEND_COUNTERS: "Spend counter tokens to pay cost or resolve effect.",

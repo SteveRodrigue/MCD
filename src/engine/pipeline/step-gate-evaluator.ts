@@ -11,6 +11,7 @@ import { getStepGateParams, GATE_KINDS } from '../../data/supplemental/runtime';
 import type { AttackerKind, ResultFact, UniversalCardFilter } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
 import { hasPlayerTrait } from './stat-calculator';
+import { findEncounterCardInPlayByCode } from '../state/environment';
 import { bindKernel } from '../kernel';
 
 /**
@@ -156,6 +157,13 @@ export function evaluateStepGate(
         ].some(matchesCard),
       );
       gateSatisfied = Boolean(inSideSchemes || inVillainAttachments || inPlayerZones);
+      break;
+    }
+
+    case 'IF_COUNTERS': {
+      const holder = findEncounterCardInPlayByCode(state, gateParams.cardCode as string);
+      const held = holder?.counters?.[gateParams.counterType as string] ?? 0;
+      gateSatisfied = held >= ((gateParams.atLeast as number | undefined) ?? 1);
       break;
     }
 

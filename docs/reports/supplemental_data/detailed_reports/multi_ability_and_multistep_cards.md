@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-## 1. Cards with Multiple Abilities (2+ Declared Abilities — 41 Cards)
+## 1. Cards with Multiple Abilities (2+ Declared Abilities — 45 Cards)
 
 | Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -46,9 +46,13 @@
 | `24050` | **Dark Dealings** | `treachery` | `hood_encounter` | **2** | • `dark_dealings_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `dark_dealings_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `24052` | **Overwhelming Force** | `treachery` | `hood_encounter` | **2** | • `overwhelming_force_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `overwhelming_force_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `24054` | **Total Annihilation** | `treachery` | `hood_encounter` | **2** | • `total_annihilation_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `total_annihilation_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `45076` | **Dark Designs** | `treachery` | `aoa_encounter` | **2** | • `dark_designs_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `dark_designs_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `45078` | **Evil Alliance** | `treachery` | `aoa_encounter` | **2** | • `evil_alliance_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `evil_alliance_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `45079` | **Nowhere is Safe** | `treachery` | `aoa_encounter` | **2** | • `nowhere_is_safe_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `nowhere_is_safe_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `45080` | **Drawing Near** | `obligation` | `aoa_encounter` | **2** | • `drawing_near_turn_begins` (`FORCED_RESPONSE` / `PLAYER_TURN_BEGAN`, **2 steps**)<br/>• `drawing_near_action` (`ALTER_EGO_ACTION`, **1 step**) |
 | `45109` | **The Fittest** | `attachment` | `aoa_encounter` | **2** | • `the_fittest_hit_points` (`CONSTANT`, **1 step**)<br/>• `the_fittest_tough` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**) |
 
-## 2. Multi-Step Execution Pipelines (2+ Steps — 51 Pipelines Across 50 Cards)
+## 2. Multi-Step Execution Pipelines (2+ Steps — 58 Pipelines Across 57 Cards)
 
 | Card Code | Card Name | Pack | Ability ID | Timing | Steps | Pipeline Execution Sequence |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -103,5 +107,12 @@
 | `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` | `WHEN_REVEALED` | **3** | `[1] DISCARD ➔ [2] VILLAIN_AND_ENGAGED_MINIONS_ATTACK ➔ [3] SURGE` |
 | `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` | `WHEN_REVEALED` | **4** | `[1] PUT_INTO_PLAY ➔ [2] PUT_INTO_PLAY ➔ [3] SHUFFLE_INTO_DECK ➔ [4] SURGE` |
 | `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_when_revealed` | `WHEN_REVEALED` | **2** | `[1] GRANT_ATTACK_KEYWORD ➔ [2] VILLAIN_ATTACKS` |
+| `45075a` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_threshold` | `FORCED_RESPONSE` | **3** | `[1] REMOVE_COUNTERS ➔ [2] ACTIVATE_MINIONS ➔ [3] FLIP_CARD` |
+| `45075b` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_flipped` | `FORCED_RESPONSE` | **4** | `[1] SEARCH ➔ [2] PUT_INTO_PLAY ➔ [3] SHUFFLE_INTO_DECK ➔ [4] FLIP_CARD` |
+| `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_when_revealed` | `WHEN_REVEALED` | **2** | `[1] ADD_COUNTERS ➔ [2] VILLAIN_SCHEMES` |
+| `45077` | **Sinister Strike (treachery)** | `aoa_encounter` | `sinister_strike_when_revealed` | `WHEN_REVEALED` | **3** | `[1] ADD_COUNTERS ➔ [2] SURGE ➔ [3] VILLAIN_ATTACKS` |
+| `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_when_revealed` | `WHEN_REVEALED` | **2** | `[1] ACTIVATE_MINIONS ➔ [2] ADD_COUNTERS` |
+| `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed` | `WHEN_REVEALED` | **2** | `[1] ADD_COUNTERS ➔ [2] DISCARD` |
+| `45080` | **Drawing Near (obligation)** | `aoa_encounter` | `drawing_near_turn_begins` | `FORCED_RESPONSE` | **2** | `[1] DISCARD ➔ [2] ADD_COUNTERS` |
 
 [← Back to Main Usage Report](../usage_report.md)

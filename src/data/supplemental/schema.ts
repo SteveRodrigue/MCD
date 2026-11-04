@@ -124,6 +124,8 @@ export const CardAbilitySchema: z.ZodType<CardAbility> = z
     cost: AbilityCostSchema.optional(),
     limit: z.enum(['ONCE_PER_ROUND', 'ONCE_PER_PHASE']).optional(),
     forEachPlayer: z.boolean().optional(),
+    /** A boost ability that resolves "after this activation resolves". */
+    afterActivation: z.boolean().optional(),
     errata: z.string().nullable().optional(),
     steps: z.array(AbilityStepSchema).min(1),
   })

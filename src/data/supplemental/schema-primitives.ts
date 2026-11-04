@@ -82,6 +82,9 @@ export const TimingTypeSchema = z.enum([
  */
 export const TriggerTypeSchema = z.enum([
   'WHEN_REVEALED',
+  'COUNTER_PLACED',
+  'CARD_FLIPPED',
+  'PLAYER_TURN_BEGAN',
   'ENEMY_INITIATES_ATTACK',
   'DAMAGE_WOULD_BE_TAKEN',
   'CARD_PLAYED',
@@ -262,6 +265,15 @@ export const UniversalCardFilterSchema: z.ZodType<UniversalCardFilter> = CardCri
 
 export const TriggerFilterSchema = z
   .object({
+    countersHere: z
+      .object({
+        counterType: z.string().min(1).meta({ label: 'Counter Type' }),
+        atLeast: z.number().int().nonnegative().meta({ label: 'At Least' }),
+        plusPlayerCount: z.boolean().optional().meta({ label: 'Plus the Number of Players' }),
+      })
+      .strict()
+      .meta({ label: 'Counters Here' })
+      .optional(),
     attackerKind: z
       .enum(['VILLAIN', 'MINION', 'ANY_ENEMY'])
       .meta({ label: 'Attacker Kind' })

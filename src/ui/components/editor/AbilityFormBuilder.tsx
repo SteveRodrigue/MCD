@@ -36,7 +36,8 @@ const TRIGGER_TIMINGS: ReadonlySet<string> = new Set([
   'BOOST',
 ]);
 
-type AbilityChipKey = 'cost' | 'triggerFilter' | 'limit' | 'zone' | 'forEachPlayer' | 'errata';
+type AbilityChipKey =
+  'cost' | 'triggerFilter' | 'limit' | 'zone' | 'forEachPlayer' | 'afterActivation' | 'errata';
 
 /** Optional ability keys offered as chips, with the value a freshly added chip starts at. */
 const ABILITY_CHIPS: ReadonlyArray<{ key: AbilityChipKey; label: string; initial: unknown }> = [
@@ -45,6 +46,7 @@ const ABILITY_CHIPS: ReadonlyArray<{ key: AbilityChipKey; label: string; initial
   { key: 'limit', label: 'Usage Limit (RR v1.8 p. 21)', initial: 'ONCE_PER_ROUND' },
   { key: 'zone', label: 'Activation Zone', initial: 'HAND' },
   { key: 'forEachPlayer', label: 'For Each Player', initial: true },
+  { key: 'afterActivation', label: 'After This Activation', initial: true },
   { key: 'errata', label: 'Ability Errata (Official FFG Ruling)', initial: '' },
 ];
 
@@ -543,6 +545,22 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                             }
                           />
                           Resolve for each player, in player order (forEachPlayer)
+                        </label>
+                      )}
+                      {chip.key === 'afterActivation' && (
+                        /* A boost ability that waits for the attack or scheme to end */
+                        <label className="flex items-center gap-1 text-xs font-bold cursor-pointer">
+                          <input
+                            type="checkbox"
+                            data-testid={`ability-after-activation-${aIdx}`}
+                            checked={ability.afterActivation === true}
+                            onChange={(e) =>
+                              handleUpdateAbility(aIdx, {
+                                afterActivation: e.target.checked ? true : undefined,
+                              })
+                            }
+                          />
+                          Resolve after this activation resolves (afterActivation)
                         </label>
                       )}
                       {chip.key === 'errata' && (

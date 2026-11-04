@@ -49,6 +49,8 @@ export interface CardAbility {
   id: string;
   timing: AbilityTiming;
   trigger?: TriggerType;
+  /** A boost ability that resolves "after this activation resolves". */
+  afterActivation?: boolean;
   triggerFilter?: TriggerFilter;
   zone?: 'HAND' | 'PLAY' | 'DISCARD';
   limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE';

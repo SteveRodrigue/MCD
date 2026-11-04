@@ -4,7 +4,7 @@
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (68 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (72 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -76,6 +76,10 @@
 | `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_when_revealed` |
 | `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
 | `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_when_revealed` |
+| `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_when_revealed` |
+| `45077` | **Sinister Strike (treachery)** | `aoa_encounter` | `sinister_strike_when_revealed` |
+| `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_when_revealed` |
+| `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed` |
 
 ### <a id="constant"></a>`CONSTANT` (33 Cards)
 
@@ -151,7 +155,7 @@
 | `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_discard` |
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_discard` |
 
-### <a id="forced-response"></a>`FORCED_RESPONSE` (22 Cards)
+### <a id="forced-response"></a>`FORCED_RESPONSE` (25 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -176,9 +180,12 @@
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 | `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks`, `madame_hydra_schemes` |
+| `45075a` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_threshold` |
+| `45075b` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_flipped` |
+| `45080` | **Drawing Near (obligation)** | `aoa_encounter` | `drawing_near_turn_begins` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
-### <a id="boost"></a>`BOOST` (21 Cards)
+### <a id="boost"></a>`BOOST` (24 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -203,6 +210,9 @@
 | `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_boost` |
 | `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_boost` |
 | `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_boost` |
+| `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_boost` |
+| `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_boost` |
+| `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_boost` |
 
 ### <a id="action"></a>`ACTION` (20 Cards)
 
@@ -260,7 +270,7 @@
 | `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
 | `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
 
-### <a id="alter-ego-action"></a>`ALTER_EGO_ACTION` (6 Cards)
+### <a id="alter-ego-action"></a>`ALTER_EGO_ACTION` (7 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -270,6 +280,7 @@
 | `01034` | **Stark Tower (support)** | `core` | `stark_tower_retrieve` |
 | `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
 | `01045` | **The Golden City (support)** | `core` | `golden_city` |
+| `45080` | **Drawing Near (obligation)** | `aoa_encounter` | `drawing_near_action` |
 
 ### <a id="resource"></a>`RESOURCE` (6 Cards)
 
@@ -324,9 +335,9 @@
 | :--- | :--- | :--- | :--- |
 | `01008` | **Web-Shooter (upgrade)** | `core` | `web_shooter_resource` |
 
-## 2. Trigger Windows (`TriggerTypeSchema` — 25/34 In Use)
+## 2. Trigger Windows (`TriggerTypeSchema` — 28/37 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (69 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (73 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -398,9 +409,13 @@
 | `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_when_revealed` |
 | `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
 | `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_when_revealed` |
+| `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_when_revealed` |
+| `45077` | **Sinister Strike (treachery)** | `aoa_encounter` | `sinister_strike_when_revealed` |
+| `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_when_revealed` |
+| `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
-### <a id="boost"></a>`BOOST` (21 Cards)
+### <a id="boost"></a>`BOOST` (24 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -425,6 +440,9 @@
 | `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_boost` |
 | `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_boost` |
 | `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_boost` |
+| `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_boost` |
+| `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_boost` |
+| `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_boost` |
 
 ### <a id="enters-play"></a>`ENTERS_PLAY` (10 Cards)
 
@@ -527,6 +545,12 @@
 | :--- | :--- | :--- | :--- |
 | `01024` | **One-Two Punch (event)** | `core` | `one_two_punch_response` |
 
+### <a id="card-flipped"></a>`CARD_FLIPPED` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `45075b` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_flipped` |
+
 ### <a id="card-played"></a>`CARD_PLAYED` (1 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -538,6 +562,12 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
+
+### <a id="counter-placed"></a>`COUNTER_PLACED` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `45075a` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_threshold` |
 
 ### <a id="damage-taken"></a>`DAMAGE_TAKEN` (1 Cards)
 
@@ -568,6 +598,12 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_schemes` |
+
+### <a id="player-turn-began"></a>`PLAYER_TURN_BEGAN` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `45080` | **Drawing Near (obligation)** | `aoa_encounter` | `drawing_near_turn_begins` |
 
 ### <a id="round-ended"></a>`ROUND_ENDED` (1 Cards)
 

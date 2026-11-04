@@ -78,6 +78,16 @@ const stepIdParam = z.string().min(1).meta({ label: 'Step ID', widget: 'step' })
 const negateParam = z.boolean().meta({ label: 'Negate (NOT)' }).optional();
 const formQualifierParam = IdentityFormSchema.meta({ label: 'Form Qualifier' }).optional();
 
+export const IfCountersGateParamsSchema = z
+  .object({
+    cardCode: z.string().min(1).meta({ label: 'Card Code', primary: true }),
+    counterType: z.string().min(1).meta({ label: 'Counter Type', primary: true }),
+    atLeast: z.number().int().positive().optional().meta({ label: 'At Least', defaultValue: 1 }),
+    form: formQualifierParam,
+    negate: negateParam,
+  })
+  .strict();
+
 export const ThenGateParamsSchema = z
   .object({
     step: stepIdParam,
@@ -200,6 +210,7 @@ export const GATE_REGISTRY: Record<StepGate, GateDefinition> = {
   IF_PLAYER_HAS_TRAIT: defineGate('IF_PLAYER_HAS_TRAIT', IfPlayerHasTraitGateParamsSchema),
   IF_ZONE_EMPTY: defineGate('IF_ZONE_EMPTY', IfZoneEmptyGateParamsSchema),
   IF_CARD_IN_PLAY: defineGate('IF_CARD_IN_PLAY', IfCardInPlayGateParamsSchema),
+  IF_COUNTERS: defineGate('IF_COUNTERS', IfCountersGateParamsSchema),
   IF_ALL_ALLIES_MATCH: defineGate('IF_ALL_ALLIES_MATCH', IfAllAlliesMatchGateParamsSchema),
   IF_RESOURCE_MATCH: defineGate('IF_RESOURCE_MATCH', IfResourceMatchGateParamsSchema),
   IF_UNDEFENDED_ATTACK: defineGate('IF_UNDEFENDED_ATTACK', IfUndefendedAttackGateParamsSchema,

@@ -256,3 +256,19 @@ Not covered yet: a whole card that cannot be canceled (#286) and the global "Tre
 - **At most once per reveal:** the keyword and the effect share one helper that sets a flag on the active encounter context, so a card that prints Surge and also gains it by effect surges once.
 - **Cancelled When Revealed:** Surge is a When Revealed ability, so cancelling the card's When Revealed effects (Enhanced Spider-Sense `01004`, Get Behind Me! `01078`) cancels the surge too.
 - A conditional surge is the ordinary effect followed by a gated `SURGE` step; card-named composites are banned by ADR-0021.
+
+---
+
+### `ACTIVATE_MINIONS`
+
+- **References:** _Evil Alliance_ `45078`
+- **Description:** Each minion in play that matches `filter` activates against this player, whoever it is engaged with: it attacks a hero and schemes against an alter-ego.
+
+### `FLIP_CARD`
+
+- **References:** _Pursued by the Past_ `45075a`
+- **Description:** Flips the source card to its other side (RR v1.8 Flip). A side of the same card type keeps its tokens. `CARD_FLIPPED` then triggers on the card.
+
+### Boosts after the activation
+
+A `BOOST` ability with `afterActivation: true` resolves "after this activation resolves", once the attack or scheme has ended.

@@ -74,11 +74,12 @@ export function matchesCardFilter(
     return false;
   }
 
-  // Sets: PLAYER_NEMESIS is the nemesis set of the context player's hero
+  // Sets: PLAYER_NEMESIS is the nemesis set of the context player's hero, ANY_NEMESIS any nemesis set
   if (filter.sets?.length) {
     const heroSetCode = context?.player?.hero.setCode;
     const matchesSet = filter.sets.some((set) => {
       const target = normalize(set);
+      if (target === 'any_nemesis') return Boolean(card.setCode?.endsWith('_nemesis'));
       if (target === 'player_nemesis') {
         return Boolean(heroSetCode) && card.setCode === `${heroSetCode}_nemesis`;
       }

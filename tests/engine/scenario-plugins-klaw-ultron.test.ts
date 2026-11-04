@@ -43,10 +43,10 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
       expect(getActiveVillain(state).card.code).toBe('01113');
       expect(getActiveVillain(state).health).toBe(12);
 
-      // Defense Network (01125) side scheme put into play with 2 threat
+      // Defense Network (01125) side scheme put into play with 2 base threat + 1 per hero (Issue #605)
       expect(state.sideSchemes.some((s) => s.card.code === '01125')).toBe(true);
       const defenseNetwork = state.sideSchemes.find((s) => s.card.code === '01125')!;
-      expect(defenseNetwork.threat).toBe(2);
+      expect(defenseNetwork.threat).toBe(3);
 
       // Starting minion engaged with Player 1
       expect(state.players[0].engagedMinions.length).toBeGreaterThan(0);

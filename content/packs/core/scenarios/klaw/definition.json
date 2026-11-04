@@ -12,7 +12,7 @@
   "villainSetup": {
     "villainName": "Klaw",
     "stages": {
-      "SKIRMISH": ["01113"],
+      "SKIRMISH": ["01113", "01114", "01115"],
       "STANDARD": ["01113", "01114"],
       "EXPERT": ["01114", "01115"]
     }

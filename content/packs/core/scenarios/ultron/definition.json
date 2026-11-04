@@ -12,7 +12,7 @@
   "villainSetup": {
     "villainName": "Ultron",
     "stages": {
-      "SKIRMISH": ["01134"],
+      "SKIRMISH": ["01134", "01135", "01136"],
       "STANDARD": ["01134", "01135"],
       "EXPERT": ["01135", "01136"]
     }

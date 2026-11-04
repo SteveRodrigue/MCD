@@ -9,6 +9,7 @@ export interface ScenarioGameSetupOptions {
   deckOverrides?: Record<string, string[]>;
   standardSetCode?: string | null;
   expertSetCode?: string | null;
+  villainVersionCode?: string;
   modularSetCodes?: string[];
   skipMulligan?: boolean;
 }

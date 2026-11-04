@@ -21,7 +21,9 @@ import {
   findEncounterSetName,
   getVillainStages,
   listEncounterSets,
+  listVillainVersions,
   settleEncounterSetChoice,
+  settleVillainVersion,
 } from '../../../engine/scenarios';
 import type { EncounterSetInfo, EncounterSetSlot } from '../../../engine/scenarios';
 import { listStarterDecks } from '../../../engine/decks';
@@ -47,6 +49,8 @@ export interface SetupSelection {
   deckIds: string[];
   standardSetCode: string | null;
   expertSetCode: string | null;
+  /** The one villain version of a Skirmish game. */
+  villainVersionCode?: string;
   selectedModularSetCodes: string[];
 }
 
@@ -59,9 +63,12 @@ const DIFFICULTY_BUTTON_COLORS: Record<DifficultyMode, string> = {
 
 const DIFFICULTY_GRID_COLUMNS = ['grid-cols-1', 'grid-cols-2', 'grid-cols-3'];
 
+const printedVillainStage = (code: string) =>
+  (catalog.getCard(code) as VillainCard | undefined)?.stage;
+
 /** "Stage I Only" or "Stage I ➔ II", from the printed stages of the cards. */
 function describeVillainStages(codes: string[]): string {
-  const stages = codes.map((code) => (catalog.getCard(code) as VillainCard | undefined)?.stage);
+  const stages = codes.map(printedVillainStage);
   const [first] = stages;
   const last = stages[stages.length - 1];
   return stages.length === 1 ? `Stage ${first} Only` : `Stage ${first} ➔ ${last}`;
@@ -170,6 +177,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
     return supportedDifficulties.includes(wanted) ? wanted : supportedDifficulties[0];
   });
   const [heroicLevel, setHeroicLevel] = useState<number>(() => defaultHeroicLevel || 0);
+  const [villainVersionChoice, setVillainVersionChoice] = useState<string | undefined>(undefined);
 
   const scenarioIndex = scenarios.findIndex((s) => s.id === selectedScenarioId);
   const currentScenarioIndex = scenarioIndex >= 0 ? scenarioIndex : 0;
@@ -238,7 +246,20 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
     });
   };
 
-  const villainPreviewCard = catalog.getCard(getVillainStages(selectedScenario, difficulty)[0]);
+  // A version the next scenario does not offer gives way to its first, and returns with it.
+  const villainVersions = listVillainVersions(selectedScenario, difficulty);
+  const villainStagesOf = (mode: DifficultyMode) =>
+    getVillainStages(
+      selectedScenario,
+      mode,
+      settleVillainVersion(selectedScenario, mode, villainVersionChoice),
+    );
+  const villainVersionCode = settleVillainVersion(
+    selectedScenario,
+    difficulty,
+    villainVersionChoice,
+  );
+  const villainPreviewCard = catalog.getCard(villainStagesOf(difficulty)[0]);
 
   // Directly query Main Scheme Stage 1A from the catalog using type and stage metadata
   const mainSchemePreviewCard =
@@ -271,6 +292,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
       deckIds: activeDecks,
       standardSetCode,
       expertSetCode,
+      villainVersionCode,
       selectedModularSetCodes: hasModularSlot ? [resolvedModularCode] : [],
     });
   };
@@ -518,11 +540,41 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                 >
                   <div className="font-comic text-sm sm:text-base font-bold">{mode}</div>
                   <div className="text-micro font-medium leading-tight mt-0.5">
-                    {describeVillainStages(getVillainStages(selectedScenario, mode))}
+                    {describeVillainStages(villainStagesOf(mode))}
                   </div>
                 </button>
               ))}
             </div>
+
+            {/* Skirmish: the players choose any one version of the villain (RR v1.8 Modes of Play) */}
+            {villainVersions.length > 1 && (
+              <div className={`p-3.5 space-y-2 ${style.inset}`}>
+                <div id="villain-version-label" className="text-sm uppercase font-bold">
+                  Villain Version
+                </div>
+                <div
+                  role="group"
+                  aria-labelledby="villain-version-label"
+                  className={`flex gap-1.5 p-1 ${style.panel}`}
+                >
+                  {villainVersions.map((code) => (
+                    <button
+                      key={code}
+                      type="button"
+                      aria-pressed={villainVersionCode === code}
+                      onClick={() => setVillainVersionChoice(code)}
+                      className={`flex-1 py-1 text-center text-xs uppercase transition-all cursor-pointer font-bold ${
+                        villainVersionCode === code
+                          ? `${style.buttonShape} bg-comic-red text-white`
+                          : `opacity-80 hover:opacity-100 ${style.muted}`
+                      }`}
+                    >
+                      Stage {printedVillainStage(code)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Heroic Mode Variant (Optional Rule) */}
             <div className={`p-3.5 space-y-2 ${style.inset}`}>

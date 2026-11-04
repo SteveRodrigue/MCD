@@ -12,7 +12,7 @@
   "villainSetup": {
     "villainName": "Rhino",
     "stages": {
-      "SKIRMISH": ["01094"],
+      "SKIRMISH": ["01094", "01095", "01096"],
       "STANDARD": ["01094", "01095"],
       "EXPERT": ["01095", "01096"]
     }

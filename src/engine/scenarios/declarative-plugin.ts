@@ -144,7 +144,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
   }
 
   onGameSetup(state: GameState, options: ScenarioGameSetupOptions): GameState {
-    const { difficulty, expertMode, encounterSets } = resolveScenarioSetup(
+    const { difficulty, expertMode, encounterSets, villainStages } = resolveScenarioSetup(
       this.definition,
       options,
     );
@@ -155,8 +155,8 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     state.scenarioId = this.definition.id;
     state.scenarioCardCode = this.definition.scenarioCardCode;
 
-    // 1. The first villain stage of the difficulty
-    const startingStageCode = getVillainStages(this.definition, difficulty)[0];
+    // 1. The first villain stage of the game
+    const [startingStageCode] = villainStages;
     const villainCard = getCatalog(state).getCard(startingStageCode) as VillainCard | undefined;
     if (!villainCard) {
       throw new Error(
@@ -219,8 +219,9 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     const villain = getVillainById(state, defeatedVillainInstanceId) || getActiveVillain(state);
     const difficulty = state.difficulty || 'STANDARD';
 
-    // The next stage of this difficulty enters play; the last stage defeated wins the game
-    const stages = getVillainStages(this.definition, difficulty);
+    // The next stage of this difficulty enters play; the last stage defeated wins the game. In
+    // Skirmish the villain in play is the one version of the game, so it is the last stage.
+    const stages = getVillainStages(this.definition, difficulty, villain.card.code);
     const stageIndex = stages.indexOf(villain.card.code);
     const nextStageCode = stageIndex >= 0 ? stages[stageIndex + 1] : undefined;
     if (nextStageCode) {

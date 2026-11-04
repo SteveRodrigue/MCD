@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { GameBoard } from '../../src/ui/components/board/GameBoard';
 import { HeroZone } from '../../src/ui/components/board/HeroZone';
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
 import { cardCatalog } from '../../src/data/importer/card-loader';
@@ -9,23 +10,23 @@ import { TestSession } from '../support/render-with-session';
 
 // Plan #352 S1 and #613 S1: with no art pack, a Drone shows a card back labelled "Drone". With or
 // without one (`art-packs-board.test.tsx`), the real card under it stays hidden.
+const DRONE = '[data-card-view="ultron_drone"]';
+
 describe('Drone minion on the board', () => {
-  function ultronGame(): GameState {
+  function ultronGame(heroes = 1): GameState {
     return setupGame({
       catalog: cardCatalog,
       scenarioId: 'ultron',
       difficulty: 'STANDARD',
       seed: 'ultron-drone-board',
       skipMulligan: true,
-      players: [
-        {
-          id: 'p1',
-          name: 'Peter Parker',
-          hero: cardCatalog.getCard('01001a') as HeroCard,
-          alterEgo: cardCatalog.getCard('01001b') as AlterEgoCard,
-          deckCards: Array(15).fill(cardCatalog.getCard('01005')!),
-        },
-      ],
+      players: ['01001', '01029'].slice(0, heroes).map((code, i) => ({
+        id: `p${i + 1}`,
+        name: i === 0 ? 'Peter Parker' : 'Tony Stark',
+        hero: cardCatalog.getCard(`${code}a`) as HeroCard,
+        alterEgo: cardCatalog.getCard(`${code}b`) as AlterEgoCard,
+        deckCards: Array(15).fill(cardCatalog.getCard('01005')!),
+      })),
     });
   }
 
@@ -54,5 +55,43 @@ describe('Drone minion on the board', () => {
     // One card back for the Drone: the tucked card does not peek out as a second one
     expect(zone.querySelector('[data-testid="underneath-facedown-card"]')).toBeNull();
     expect(container.innerHTML).not.toContain('Swinging Web Kick');
+  });
+
+  // #619 S1: the seat strip scrolls sideways, so it clips whatever rises above it.
+  it('floats a hovered Drone above the seat strip in a two-hero game', () => {
+    const state = ultronGame(2);
+
+    const { container } = render(
+      <GameSettingsProvider>
+        <TestSession state={state}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
+      </GameSettingsProvider>,
+    );
+
+    fireEvent.mouseEnter(screen.getAllByTestId('threat-zone-minions')[0].querySelector(DRONE)!);
+
+    const zoom = document.body.querySelector('[data-card-zoom-layer="ultron_drone"]');
+    expect(zoom).not.toBeNull();
+    expect(container.contains(zoom)).toBe(false);
+  });
+
+  // #619 S2: its fan drops to the table the moment the pointer leaves, so a card still shrinking
+  // would fall behind the Drones next to it.
+  it('puts a Drone back in its slot at once when the pointer leaves it', () => {
+    const state = ultronGame();
+
+    render(
+      <GameSettingsProvider>
+        <TestSession state={state}>
+          <HeroZone player={state.players[0]} seatNumber={1} isFocused={true} isMultiHero={false} />
+        </TestSession>
+      </GameSettingsProvider>,
+    );
+
+    const face = screen.getByTestId('threat-zone-minions').querySelector(DRONE)!.firstElementChild!;
+    expect(face.className).toContain('group-hover:scale-(--card-zoom-scale)');
+    expect(face.className.split(' ')).toContain('duration-0');
+    expect(face.className).toContain('group-hover:duration-200');
   });
 });

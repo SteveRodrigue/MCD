@@ -39,6 +39,7 @@ import type { ResourceCost } from '../../../data/supplemental/schema';
 import { peekDecisionPrompt } from '../../../engine/pipeline';
 import { optionOwnResourceCost, optionRequiresPayment } from '../../utils/option-requires-payment';
 import { useModalStyle } from '../../theme/useModalStyle';
+import { CardZoomLayerContext } from '../../context/card-zoom-layer';
 
 interface GameBoardProps {
   onReset: () => void;
@@ -501,15 +502,17 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                               : 'opacity-60 grayscale-35 hover:opacity-95 hover:grayscale-0 z-table transition-all duration-300 cursor-pointer'
                           }`}
                         >
-                          {/* Hero Play Area */}
-                          <HeroZone
-                            player={player}
-                            seatNumber={idx + 1}
-                            isFocused={isFocused}
-                            isMultiHero={true}
-                            onFocus={() => handleSelectSeat(idx)}
-                            onInitiateAction={handleSelectNewspaperAction}
-                          />
+                          {/* Hero Play Area: the track clips and dims, so its zooms float (#619) */}
+                          <CardZoomLayerContext.Provider value={true}>
+                            <HeroZone
+                              player={player}
+                              seatNumber={idx + 1}
+                              isFocused={isFocused}
+                              isMultiHero={true}
+                              onFocus={() => handleSelectSeat(idx)}
+                              onInitiateAction={handleSelectNewspaperAction}
+                            />
+                          </CardZoomLayerContext.Provider>
 
                           {/* Hero Hand Tray */}
                           <PlayerHandTray

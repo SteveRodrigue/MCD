@@ -246,7 +246,8 @@ We use [Conventional Commits](https://www.conventionalcommits.org/). Scopes: `en
 
 1. **Unconstrained Z-Axis Elevation for Interactive Elements:**
    - Interactive card containers (such as `PlayerHandTray` and tabletop zones) must maintain `overflow-visible` so elevated/hovered elements can project into the 3D Z-axis without triggering clipping boundaries or scrollbar spawning.
-   - Never place `overflow-x: auto` or `overflow: hidden` on a container whose child elements perform scale transforms on hover (`hover:scale-[1.85]`).
+   - Never place `overflow-x: auto` or `overflow: hidden` on a container whose child elements perform scale transforms on hover (`hover:scale-[1.85]`). A surface that must clip or dim (a modal body, the multi-hero seat track) wraps its cards in `CardZoomLayerContext`, so their zoom draws in a portal on `document.body`.
+   - An inline hover zoom grows with a transition and returns at once (`duration-0 hover:duration-200`): its raised z-index ends when the pointer leaves, so a card still shrinking would fall behind its neighbours.
 2. **Layering (Z-Index) Hierarchy (ADR-0082):**
    - Use only the named scale from `src/ui/styles/z-layers.ts` (`z-table` 0, `z-content` 100, `z-raised` 200, `z-zoom` 400, `z-drawer` 600, `z-modal` 700, `z-banner` 800, `z-menu` 900, `z-critical` 1000). Numeric or arbitrary z classes and numeric `zIndex` literals fail `tests/ui/z-literal-guard.test.ts`.
    - Every modal, drawer or banner renders through `ModalLayer` (portal to `document.body`), never inline.

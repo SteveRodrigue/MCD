@@ -270,12 +270,12 @@ const CardViewImpl: React.FC<CardViewProps> = ({
             '--card-zoom-scale': effectiveZoomScale,
           } as React.CSSProperties
         }
-        className={`relative rounded-xl overflow-hidden border-comic border-comic-black shadow-comic transition-all duration-200 ease-out transform ${originClass} ${
+        className={`relative rounded-xl overflow-hidden border-comic border-comic-black shadow-comic transition-all ease-out transform ${originClass} ${
           enableHoverZoom && !floatZoom
-            ? 'group-hover:scale-(--card-zoom-scale) group-hover:-translate-y-4 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.85)] group-hover:border-4'
-            : enableHoverLift
-              ? 'group-hover:-translate-y-1'
-              : ''
+            ? // Grows in 200 ms, returns at once: a fan drops to the table when the pointer leaves,
+              // so a card still shrinking would fall behind its neighbours (#619).
+              'duration-0 group-hover:duration-200 group-hover:scale-(--card-zoom-scale) group-hover:-translate-y-4 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.85)] group-hover:border-4'
+            : `duration-200 ${enableHoverLift ? 'group-hover:-translate-y-1' : ''}`
         } ${sizeClasses} ${
           isPlayable === false || isUsable === false
             ? 'filter grayscale contrast-75 brightness-90 group-hover:grayscale-0 group-hover:contrast-100 group-hover:brightness-100'

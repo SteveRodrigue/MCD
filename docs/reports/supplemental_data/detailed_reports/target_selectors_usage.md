@@ -46,6 +46,21 @@
 | `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_ally_limit` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
+### <a id="villain"></a>`VILLAIN` (10 Cards, 12 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01011` | **Spider-Woman (ally)** | `core` | `spider_woman_enters_play` |
+| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
+| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
+| `01124` | **Sound Manipulation (treachery)** | `core_encounter` | `sound_manipulation_when_revealed` |
+| `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
+| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
+| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
+| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed`, `repair_sequence_boost` |
+| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
+| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
+
 ### <a id="chosen-scheme"></a>`CHOSEN_SCHEME` (10 Cards, 11 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -91,21 +106,7 @@
 | `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
 | `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
 
-### <a id="villain"></a>`VILLAIN` (9 Cards, 10 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01011` | **Spider-Woman (ally)** | `core` | `spider_woman_enters_play` |
-| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
-| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
-| `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
-| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
-| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
-| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed`, `repair_sequence_boost` |
-| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
-| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
-
-### <a id="self-hero"></a>`SELF_HERO` (6 Cards, 6 Declarations)
+### <a id="self-hero"></a>`SELF_HERO` (7 Cards, 7 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -113,6 +114,7 @@
 | `01035` | **Arc Reactor (upgrade)** | `core` | `arc_reactor_ready` |
 | `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
 | `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_boost` |
+| `01124` | **Sound Manipulation (treachery)** | `core_encounter` | `sound_manipulation_when_revealed` |
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
 
@@ -152,6 +154,15 @@
 | `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
 | `01150` | **Ultron's Imperative (side_scheme)** | `core_encounter` | `ultrons_imperative_when_revealed` |
 
+### <a id="host"></a>`HOST` (4 Cards, 4 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01119` | **Solid-Sound Body (attachment)** | `core_encounter` | `solid_sound_body_retaliate` |
+| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_tough` |
+| `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
+| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
+
 ### <a id="main-scheme"></a>`MAIN_SCHEME` (3 Cards, 4 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -182,14 +193,6 @@
 | :--- | :--- | :--- | :--- |
 | `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response`, `radioactive_man_boost` |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
-
-### <a id="host"></a>`HOST` (3 Cards, 3 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_tough` |
-| `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
-| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
 ### <a id="all-controlled-characters"></a>`ALL_CONTROLLED_CHARACTERS` (2 Cards, 2 Declarations)
 

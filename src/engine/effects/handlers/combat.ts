@@ -309,8 +309,8 @@ function handleEnemyAttacks(
 }
 
 /**
- * "Each nemesis minion activates against you" (RR v1.8 Activation). The first activates now; the
- * others queue, as they do for a group attack, since an attack can stop at a decision.
+ * "Each nemesis minion activates against you" (RR v1.8 Activation): an attack for a hero, a scheme
+ * for an alter-ego, whoever the minion is engaged with.
  */
 function handleActivateMinions(
   state: GameState,
@@ -323,23 +323,35 @@ function handleActivateMinions(
     .flatMap((p) => p.engagedMinions)
     .filter((m) => !filter || matchesCardFilter(m, filter, { player, state }));
   if (minions.length === 0) return { state, success: true, mutatedState: false, value: 0 };
-  const [first, ...rest] = minions;
-  state.pendingActivations = [
-    ...(state.pendingActivations ?? []),
-    ...rest.map((m) => ({
-      type: 'MINION' as const,
-      playerId: player.id,
-      minionInstanceId: m.instanceId,
-    })),
-  ];
-  const next = executeMinionActivationAgainstPlayer(state, first, player);
+  let current = state;
+  for (const [index, minion] of minions.entries()) {
+    current = executeMinionActivationAgainstPlayer(current, minion, player);
+    // An attack that stops at a decision holds the others; they resume when it ends.
+    if (current.activeAttackContext || current.activeSchemeContext) {
+      current.pendingActivations = [
+        ...(current.pendingActivations ?? []),
+        ...minions.slice(index + 1).map((m) => ({
+          type: 'MINION' as const,
+          playerId: player.id,
+          minionInstanceId: m.instanceId,
+        })),
+      ];
+      return {
+        state: current,
+        success: true,
+        mutatedState: true,
+        value: minions.length,
+        onomatopoeia: 'ACTIVATE!',
+        attackPending: true,
+      };
+    }
+  }
   return {
-    state: next,
+    state: current,
     success: true,
     mutatedState: true,
     value: minions.length,
     onomatopoeia: 'ACTIVATE!',
-    ...(next.activeAttackContext || next.activeSchemeContext ? { attackPending: true } : {}),
   };
 }
 

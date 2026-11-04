@@ -199,6 +199,44 @@ describe('Standard III', () => {
     });
   });
 
+  describe('Evil Alliance with two nemesis minions', () => {
+    const withTwo = () => {
+      const state = game([player('p1', '01001a', '01001b'), player('p2', '01029a', '01029b')]);
+      fill(state);
+      const mine = nemesisMinionOf(state, 0);
+      const theirs = nemesisMinionOf(state, 1);
+      state.players[0].engagedMinions = [mine as never];
+      state.players[1].engagedMinions = [theirs as never];
+      return { state, mine, theirs };
+    };
+
+    it('both attack a hero, one after the other, then the counters stay untouched', () => {
+      const { state, mine, theirs } = withTwo();
+      const first = reveal(state, '45078');
+      expect(first.activeAttackContext?.attackerCard?.instanceId).toBe(mine.instanceId);
+      const second = resolveDefenderDeclaration(first, { type: 'UNDEFENDED', playerId: 'p1' });
+      expect(second.activeAttackContext?.attackerCard?.instanceId).toBe(theirs.instanceId);
+      expect(second.activeAttackContext?.targetPlayerId).toBe('p1');
+      const done = kernel.resumePendingSequence(
+        resolveDefenderDeclaration(second, { type: 'UNDEFENDED', playerId: 'p1' }),
+      );
+      expect(done.activeAttackContext).toBeUndefined();
+      expect(counters(done)).toBe(0);
+    });
+
+    it('both scheme against an alter-ego', () => {
+      const { state, mine, theirs } = withTwo();
+      const p = state.players[0];
+      p.currentForm = 'alter_ego';
+      p.activeFormCard = p.alterEgo;
+      const before = getActiveMainScheme(state).threat;
+      const after = reveal(state, '45078');
+      const scheme = (m: CardInstance) => (m.card as { scheme?: number }).scheme ?? 0;
+      expect(getActiveMainScheme(after).threat).toBe(before + scheme(mine) + scheme(theirs));
+      expect(after.pendingActivations ?? []).toHaveLength(0);
+    });
+  });
+
   it('nowhere is safe discards an upgrade or support while counters remain', () => {
     const state = game();
     fill(state);

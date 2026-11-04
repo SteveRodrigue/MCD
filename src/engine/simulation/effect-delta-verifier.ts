@@ -25,6 +25,8 @@ export type StateDigest = Record<DeltaDomain, string>;
  * through the log; for those the check is deliberately soft (the log also records the ability use).
  */
 export const EFFECT_DELTA_CONTRACTS: Record<EffectType, readonly DeltaDomain[]> = {
+  ACTIVATE_MINIONS: ['HEALTH', 'THREAT', 'PROMPT', 'LOG'],
+  FLIP_CARD: ['ZONES', 'LOG'],
   DEAL_DAMAGE: ['HEALTH', 'ZONES', 'PROMPT'],
   DISTRIBUTE_AMOUNT: ['HEALTH', 'THREAT', 'COUNTERS', 'PROMPT'],
   HEAL_DAMAGE: ['HEALTH', 'PROMPT'],

@@ -22,6 +22,8 @@ import {
 import { popDecisionPrompt } from './prompt-queue';
 import {
   dealBoostCards,
+  deferUntilAfterActivation,
+  resolveAfterActivationAbilities,
   enqueueBoostRevealPrompt,
   finishPausedBoostCard,
   resolveBoostCards,
@@ -714,6 +716,7 @@ function attackBoostOptions(
       (attackContext.revealedBoostCards ??= []).push(boostCard);
     },
     onDeferred: (ability, boostCard) => {
+      if (deferUntilAfterActivation(attackContext, ability, boostCard)) return true;
       if (!ability.steps?.some((s) => s.gate === 'IF_ACTIVATION_DEALT_DAMAGE')) return false;
       const deferred = (attackContext.deferredBoostAbilities ??= []);
       if (!deferred.some((d) => d.ability === ability && d.sourceCardInstance === boostCard)) {
@@ -1395,6 +1398,8 @@ function step7_resolvePostAttackAndRetaliate(
       }
     }
   }
+
+  resolveAfterActivationAbilities(state, attackContext, attackContext.targetPlayerId);
 
   // Post-Defense Responses (e.g. Indomitable 01082 ready hero, Counter-Punch 01077)
   const defenderType = attackContext.heroDefended ? 'HERO' : attackContext.defender?.type;

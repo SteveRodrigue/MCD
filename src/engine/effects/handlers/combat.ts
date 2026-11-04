@@ -7,11 +7,11 @@ import {
   PendingActivation,
   CardInstance,
 } from '@engine/models';
-import { matchesCardFilter } from '../../filters/card-filter';
 import {
   executeVillainAttackAgainstPlayer,
   executeVillainSchemeAgainstPlayer,
   executeMinionAttackAgainstPlayer,
+  executeMinionActivationAgainstPlayer,
 } from '../../pipeline/villain-phase';
 import { drawEncounterCard } from '../../pipeline/deck-exhaustion';
 import {
@@ -19,6 +19,7 @@ import {
   grantKeywordToAttack,
   resolveDefenderDeclaration,
 } from '../../pipeline/combat-pipeline';
+import { matchesCardFilter } from '../../filters/card-filter';
 import { recordBasicAction } from '../../pipeline/stats';
 import { appendLog } from '../../state/game-log';
 import { EffectExecutionContext, EffectResult, attackOutcome } from '../index';
@@ -307,6 +308,41 @@ function handleEnemyAttacks(
   };
 }
 
+/**
+ * "Each nemesis minion activates against you" (RR v1.8 Activation). The first activates now; the
+ * others queue, as they do for a group attack, since an attack can stop at a decision.
+ */
+function handleActivateMinions(
+  state: GameState,
+  step: TypedStep<'ACTIVATE_MINIONS'>,
+  _context: EffectExecutionContext,
+  player: PlayerState,
+): EffectResult {
+  const { filter } = getStepEffectParams(step);
+  const minions = state.players
+    .flatMap((p) => p.engagedMinions)
+    .filter((m) => !filter || matchesCardFilter(m, filter, { player, state }));
+  if (minions.length === 0) return { state, success: true, mutatedState: false, value: 0 };
+  const [first, ...rest] = minions;
+  state.pendingActivations = [
+    ...(state.pendingActivations ?? []),
+    ...rest.map((m) => ({
+      type: 'MINION' as const,
+      playerId: player.id,
+      minionInstanceId: m.instanceId,
+    })),
+  ];
+  const next = executeMinionActivationAgainstPlayer(state, first, player);
+  return {
+    state: next,
+    success: true,
+    mutatedState: true,
+    value: minions.length,
+    onomatopoeia: 'ACTIVATE!',
+    ...(next.activeAttackContext || next.activeSchemeContext ? { attackPending: true } : {}),
+  };
+}
+
 function handleVillainAndEngagedMinionsAttack(
   state: GameState,
   _step: TypedStep<'VILLAIN_AND_ENGAGED_MINIONS_ATTACK'>,
@@ -340,6 +376,7 @@ function handleVillainAndEngagedMinionsAttack(
 }
 
 export const COMBAT_HANDLERS = {
+  ACTIVATE_MINIONS: handleActivateMinions,
   GRANT_ATTACK_KEYWORD: handleGrantAttackKeyword,
   CANCEL_ATTACK: handleCancelAttack,
   GIVE_ADDITIONAL_BOOST_CARD: handleGiveAdditionalBoostCard,

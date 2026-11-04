@@ -27,6 +27,7 @@ import {
   requestedStatuses,
   stepTarget,
 } from '../step-selection';
+import { findEncounterCardInPlayByCode } from '../../state/environment';
 import { appendLog } from '../../state/game-log';
 import {
   EffectExecutionContext,
@@ -641,23 +642,33 @@ function handleAddCounters(
   const targetParam = (params.target as string) || 'SELF';
   const counterType = (params.counterType as string) || 'all_purpose';
   const amount = resolveNumericAmount(params.amount, context, 1, { state, player });
+  const recipient = params.targetCardCode
+    ? findEncounterCardInPlayByCode(state, params.targetCardCode)
+    : context.sourceCardInstance;
+
+  if (params.targetCardCode && !recipient) return { state, success: true, value: 0 };
 
   if (targetParam === 'IDENTITY') {
     player.counters = player.counters || {};
     player.counters[counterType] = (player.counters[counterType] || 0) + amount;
-  } else if (context.sourceCardInstance) {
-    context.sourceCardInstance.counters = context.sourceCardInstance.counters || {};
-    context.sourceCardInstance.counters[counterType] =
-      (context.sourceCardInstance.counters[counterType] || 0) + amount;
-    if (!context.sourceCardInstance.tokens) {
-      context.sourceCardInstance.tokens = {
+  } else if (recipient) {
+    recipient.counters = recipient.counters || {};
+    recipient.counters[counterType] = (recipient.counters[counterType] || 0) + amount;
+    if (!recipient.tokens) {
+      recipient.tokens = {
         damage: 0,
         threat: 0,
         counters: 0,
       };
     }
-    context.sourceCardInstance.tokens.counters =
-      (context.sourceCardInstance.tokens.counters || 0) + amount;
+    recipient.tokens.counters = (recipient.tokens.counters || 0) + amount;
+    if (amount > 0) {
+      kernel.dispatchTrigger(state, 'COUNTER_PLACED', {
+        targetPlayerId: player.id,
+        sourceInstanceId: recipient.instanceId,
+        playerCount: state.players.length,
+      });
+    }
   }
   return {
     state,
@@ -677,7 +688,16 @@ function handleSpendCounters(
   const params = getStepEffectParams(step);
   const targetParam = (params.target as string) || 'SELF';
   const counterType = (params.counterType as string) || 'all_purpose';
-  const amount = resolveNumericAmount(params.amount, context, 1, { state, player });
+  const held =
+    targetParam === 'IDENTITY'
+      ? playerCounterCount(player, counterType)
+      : context.sourceCardInstance
+        ? cardCounterCount(context.sourceCardInstance, counterType)
+        : 0;
+  const amount =
+    params.amount === 'ALL'
+      ? held
+      : resolveNumericAmount(params.amount, context, 1, { state, player });
 
   if (targetParam === 'IDENTITY') {
     player.counters = player.counters || {};
@@ -703,6 +723,32 @@ function handleSpendCounters(
     value: amount,
     onomatopoeia: `-${amount} ${counterType.toUpperCase()} COUNTERS!`,
   };
+}
+
+/** RR v1.8 Flip: a card that keeps its type keeps its tokens; another type discards them. */
+function handleFlipCard(
+  state: GameState,
+  _step: TypedStep<'FLIP_CARD'>,
+  context: EffectExecutionContext,
+  player: PlayerState,
+): EffectResult {
+  const instance = context.sourceCardInstance;
+  if (!instance) return { state, success: true };
+  const { code, backLink } = instance.card;
+  const otherSide = state.options?.catalog?.getCard(backLink ?? code.replace(/b$/, 'a'));
+  if (!otherSide || otherSide.code === code) return { state, success: true };
+  if (otherSide.type !== instance.card.type) {
+    delete instance.counters;
+    delete instance.tokens;
+    state.encounterDiscard.push(...(instance.attachments ?? []));
+    instance.attachments = [];
+  }
+  instance.card = otherSide;
+  kernel.dispatchTrigger(state, 'CARD_FLIPPED', {
+    targetPlayerId: player.id,
+    sourceInstanceId: instance.instanceId,
+  });
+  return { state, success: true, mutatedState: true, onomatopoeia: 'FLIP!' };
 }
 
 function handleRemoveCountersMatchingFilter(
@@ -771,4 +817,5 @@ export const STATE_HANDLERS = {
   SPEND_COUNTERS: handleSpendCounters,
   REMOVE_COUNTERS: handleSpendCounters,
   REMOVE_COUNTERS_MATCHING_FILTER: handleRemoveCountersMatchingFilter,
+  FLIP_CARD: handleFlipCard,
 } satisfies Partial<StepHandlerMap>;

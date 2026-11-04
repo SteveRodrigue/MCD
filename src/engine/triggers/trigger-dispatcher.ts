@@ -122,6 +122,12 @@ export function matchesTriggerFilter(
 
   if (!filter) return true;
 
+  if (filter.countersHere) {
+    const { counterType, atLeast, plusPlayerCount } = filter.countersHere;
+    const needed = atLeast + (plusPlayerCount ? (context.playerCount ?? 0) : 0);
+    if ((cardInst?.counters?.[counterType] ?? 0) < needed) return false;
+  }
+
   if (filter.targetScope) {
     if (filter.targetScope === 'HOST') {
       if (!hostId) {
@@ -304,6 +310,8 @@ export interface AttackSource {
 
 export interface TriggerContext {
   targetPlayerId: string;
+  /** The number of players, for a filter that scales with it. */
+  playerCount?: number;
   sourceInstanceId?: string;
   sourceCardCode?: string;
   damageAmount?: number;
@@ -946,7 +954,12 @@ function scanCardInstanceTriggerAbilities(
         continue;
       }
       // Universal guard for self-referential in-play play/entry triggers (ADR-0050):
-      if (trigger === 'ENTERS_PLAY' || trigger === 'CARD_PLAYED') {
+      if (
+        trigger === 'ENTERS_PLAY' ||
+        trigger === 'CARD_PLAYED' ||
+        trigger === 'COUNTER_PLACED' ||
+        trigger === 'CARD_FLIPPED'
+      ) {
         if (context.sourceInstanceId && context.sourceInstanceId !== cardInst.instanceId) {
           continue;
         }
@@ -1191,9 +1204,12 @@ function scanEncounterTriggerAbilities(
   const isEnemyAttackEvent =
     trigger === 'ENEMY_INITIATES_ATTACK' ||
     (trigger === 'ATTACK_RESOLVED' && context.attackSource?.kind === 'ENEMY');
+  // "After you place a counter here": "you" is the player whose effect placed it.
+  const isPlayerCardEvent = trigger === 'COUNTER_PLACED' || trigger === 'CARD_FLIPPED';
   const controller =
-    (isEnemyAttackEvent ? state.players.find((p) => p.id === context.targetPlayerId) : undefined) ??
-    firstPlayer;
+    (isEnemyAttackEvent || isPlayerCardEvent
+      ? state.players.find((p) => p.id === context.targetPlayerId)
+      : undefined) ?? firstPlayer;
 
   const encounterCards: CardInstance[] = [
     ...getVillainsInPlay(state)

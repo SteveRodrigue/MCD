@@ -438,6 +438,8 @@ export const EFFECTS_WITHOUT_AFFECT_RULE: Readonly<Record<string, readonly Effec
     'DRAW',
     'ADD_ACCELERATION',
     'ADD_COUNTERS',
+    'ACTIVATE_MINIONS',
+    'FLIP_CARD',
     'ATTACHMENT_DAMAGE_SHIELD',
     'ATTACH_FACEDOWN_CARDS_FROM_HAND',
     'CANCEL_ATTACK',

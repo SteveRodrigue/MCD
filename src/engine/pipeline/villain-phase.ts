@@ -36,6 +36,8 @@ export type { CombatOptions };
 import { drawEncounterCard } from './deck-exhaustion';
 import {
   dealBoostCards,
+  deferUntilAfterActivation,
+  resolveAfterActivationAbilities,
   resolveBoostCards,
   finishPausedBoostCard,
   resumeBoostCards,
@@ -140,6 +142,8 @@ function schemeBoostOptions(
     },
     activatorInstanceId: schemer.instanceId ?? schemeContext.schemerVillainId ?? 'villain',
     playerId: schemeContext.targetPlayerId,
+    onDeferred: (ability, boostCard) =>
+      deferUntilAfterActivation(schemeContext, ability, boostCard),
     pauseBefore: stepping
       ? (boostCard) => {
           schemeContext.currentBoostCard = boostCard;
@@ -201,6 +205,7 @@ function finishSchemeAfterBoosts(
   }
 
   state.activeSchemeContext = undefined;
+  resolveAfterActivationAbilities(state, schemeContext, schemeContext.targetPlayerId);
   return state;
 }
 
@@ -799,6 +804,19 @@ export function resolveActiveEncounterCardAfterInterrupt(
   isCancelled: boolean,
 ): void {
   const card = cardInstance.card;
+  // A card revealed by the card being resolved has its own reveal; the outer one goes on after it.
+  const outerReveal =
+    state.activeEncounterContext &&
+    state.activeEncounterContext.encounterInstanceId !== cardInstance.instanceId
+      ? state.activeEncounterContext
+      : undefined;
+  if (outerReveal) {
+    state.activeEncounterContext = {
+      encounterInstanceId: cardInstance.instanceId,
+      encounterCard: cardInstance,
+      targetPlayerId: player.id,
+    };
+  }
   if (!isCancelled) recordCardPlay(state, card.code);
 
   // "Cancel the effects of that card and discard it" (Black Widow 01075): the card does not enter
@@ -817,7 +835,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
       params: { card: card.name },
       onomatopoeia: 'CANCELLED!',
     });
-    state.activeEncounterContext = undefined;
+    state.activeEncounterContext = outerReveal;
     return;
   }
 
@@ -897,7 +915,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
     dealSurgeCard(state, player, card.name);
   }
 
-  state.activeEncounterContext = undefined;
+  state.activeEncounterContext = outerReveal;
 }
 
 /**

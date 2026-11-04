@@ -416,6 +416,10 @@
 		"name": "Standard II"
 	},
 	{
+		"code": "standard_iii",
+		"name": "Standard III"
+	},
+	{
 		"code": "state_of_emergency",
 		"name": "State of Emergency"
 	},

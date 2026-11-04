@@ -2,11 +2,11 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Effects In Use:** **51/59**
+> **Active Effects In Use:** **54/61**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
-### <a id="discard"></a>`DISCARD` (31 Cards, 34 Step Occurrences)
+### <a id="discard"></a>`DISCARD` (33 Cards, 37 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -41,6 +41,8 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `24030` | **Ruination (treachery)** | `hood_encounter` | `ruination_when_revealed` |
 | `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` |
 | `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_when_revealed` |
+| `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed` |
+| `45080` | **Drawing Near (obligation)** | `aoa_encounter` | `drawing_near_turn_begins`, `drawing_near_action` |
 
 ### <a id="deal-damage"></a>`DEAL_DAMAGE` (27 Cards, 30 Step Occurrences)
 
@@ -158,6 +160,27 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_when_revealed` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 
+### <a id="surge"></a>`SURGE` (16 Cards, 16 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
+| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
+| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
+| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
+| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
+| `01124` | **Sound Manipulation (treachery)** | `core_encounter` | `sound_manipulation_when_revealed` |
+| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
+| `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
+| `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
+| `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
+| `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
+| `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` |
+| `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
+| `45077` | **Sinister Strike (treachery)** | `aoa_encounter` | `sinister_strike_when_revealed` |
+
 ### <a id="execute-special"></a>`EXECUTE_SPECIAL` (15 Cards, 15 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -178,27 +201,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
 | `01150` | **Ultron's Imperative (side_scheme)** | `core_encounter` | `ultrons_imperative_when_revealed` |
 
-### <a id="surge"></a>`SURGE` (15 Cards, 15 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
-| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
-| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
-| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
-| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
-| `01124` | **Sound Manipulation (treachery)** | `core_encounter` | `sound_manipulation_when_revealed` |
-| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed` |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
-| `01179` | **Yon-Rogg's Treason (treachery)** | `core_encounter` | `yon_roggs_treason_when_revealed` |
-| `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
-| `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
-| `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
-| `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` |
-| `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
-
-### <a id="search"></a>`SEARCH` (14 Cards, 14 Step Occurrences)
+### <a id="search"></a>`SEARCH` (15 Cards, 15 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -216,6 +219,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
 | `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
 | `24031` | **Seek and Destroy (treachery)** | `hood_encounter` | `seek_and_destroy_when_revealed` |
+| `45075b` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_flipped` |
 
 ### <a id="remove-threat"></a>`REMOVE_THREAT` (10 Cards, 12 Step Occurrences)
 
@@ -262,6 +266,17 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 | `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
 
+### <a id="add-counters"></a>`ADD_COUNTERS` (6 Cards, 9 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01018` | **Energy Channel (upgrade)** | `core` | `energy_channel_add` |
+| `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_when_revealed`, `dark_designs_boost` |
+| `45077` | **Sinister Strike (treachery)** | `aoa_encounter` | `sinister_strike_when_revealed` |
+| `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_when_revealed`, `evil_alliance_boost` |
+| `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed`, `nowhere_is_safe_boost` |
+| `45080` | **Drawing Near (obligation)** | `aoa_encounter` | `drawing_near_turn_begins` |
+
 ### <a id="grant-keyword"></a>`GRANT_KEYWORD` (7 Cards, 7 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -286,7 +301,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
 
-### <a id="villain-attacks"></a>`VILLAIN_ATTACKS` (6 Cards, 6 Step Occurrences)
+### <a id="villain-attacks"></a>`VILLAIN_ATTACKS` (7 Cards, 7 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -296,6 +311,16 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
 | `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
 | `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_when_revealed` |
+| `45077` | **Sinister Strike (treachery)** | `aoa_encounter` | `sinister_strike_when_revealed` |
+
+### <a id="put-into-play"></a>`PUT_INTO_PLAY` (4 Cards, 6 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
+| `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
+| `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
+| `45075b` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_flipped` |
 
 ### <a id="change-form"></a>`CHANGE_FORM` (5 Cards, 5 Step Occurrences)
 
@@ -306,14 +331,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01165` | **Eviction Notice (obligation)** | `core_encounter` | `eviction_notice_resolve` |
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
-
-### <a id="put-into-play"></a>`PUT_INTO_PLAY` (3 Cards, 5 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
-| `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
-| `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
 
 ### <a id="ready"></a>`READY` (5 Cards, 5 Step Occurrences)
 
@@ -368,6 +385,15 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_boost` |
 | `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_boost` |
 
+### <a id="villain-schemes"></a>`VILLAIN_SCHEMES` (4 Cards, 4 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
+| `01186` | **Advance (treachery)** | `core_encounter` | `advance_when_revealed` |
+| `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_when_revealed` |
+| `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_when_revealed` |
+
 ### <a id="attach-to-host"></a>`ATTACH_TO_HOST` (3 Cards, 3 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -407,13 +433,20 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01061` | **Great Responsibility (event)** | `core` | `great_responsibility_interrupt` |
 | `01085` | **Emergency (event)** | `core` | `emergency_interrupt` |
 
-### <a id="villain-schemes"></a>`VILLAIN_SCHEMES` (3 Cards, 3 Step Occurrences)
+### <a id="shuffle-into-deck"></a>`SHUFFLE_INTO_DECK` (3 Cards, 3 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01145` | **Rage of Ultron (treachery)** | `core_encounter` | `rage_of_ultron_when_revealed` |
-| `01186` | **Advance (treachery)** | `core_encounter` | `advance_when_revealed` |
-| `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_when_revealed` |
+| `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
+| `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
+| `45075b` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_flipped` |
+
+### <a id="activate-minions"></a>`ACTIVATE_MINIONS` (2 Cards, 2 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `45075a` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_threshold` |
+| `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_when_revealed` |
 
 ### <a id="add-trait"></a>`ADD_TRAIT` (2 Cards, 2 Step Occurrences)
 
@@ -428,6 +461,13 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | :--- | :--- | :--- | :--- |
 | `01004` | **Enhanced Spider-Sense (event)** | `core` | `enhanced_spider_sense` |
 | `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
+
+### <a id="flip-card"></a>`FLIP_CARD` (2 Cards, 2 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `45075a` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_threshold` |
+| `45075b` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_flipped` |
 
 ### <a id="modify-ally-limit"></a>`MODIFY_ALLY_LIMIT` (2 Cards, 2 Step Occurrences)
 
@@ -457,25 +497,12 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01020` | **Hellcat (ally)** | `core` | `hellcat_return` |
 | `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
 
-### <a id="shuffle-into-deck"></a>`SHUFFLE_INTO_DECK` (2 Cards, 2 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
-| `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
-
 ### <a id="villain-and-engaged-minions-attack"></a>`VILLAIN_AND_ENGAGED_MINIONS_ATTACK` (2 Cards, 2 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
 | `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` |
-
-### <a id="add-counters"></a>`ADD_COUNTERS` (1 Cards, 1 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01018` | **Energy Channel (upgrade)** | `core` | `energy_channel_add` |
 
 ### <a id="attach-facedown-cards-from-hand"></a>`ATTACH_FACEDOWN_CARDS_FROM_HAND` (1 Cards, 1 Step Occurrences)
 
@@ -524,6 +551,12 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01071` | **Make the Call (event)** | `core` | `make_the_call` |
+
+### <a id="remove-counters"></a>`REMOVE_COUNTERS` (1 Cards, 1 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `45075a` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_threshold` |
 
 ### <a id="remove-from-game"></a>`REMOVE_FROM_GAME` (1 Cards, 1 Step Occurrences)
 

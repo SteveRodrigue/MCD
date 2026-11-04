@@ -342,6 +342,8 @@ export interface AttackExecutionContext {
   finalDamage?: number;
   /** Boost abilities gated on the activation's damage; resolved after step 6 (#221). */
   deferredBoostAbilities?: DeferredBoostAbility[];
+  /** Boost abilities that wait until this attack has ended ("after this activation resolves"). */
+  afterActivationAbilities?: DeferredBoostAbility[];
   /** Who took the activation's damage, recorded in step 6 for DAMAGED_CHARACTER. */
   damagedCharacter?: DamagedCharacter;
   cancelled?: boolean;
@@ -350,6 +352,8 @@ export interface AttackExecutionContext {
 }
 
 export interface SchemeExecutionContext {
+  /** Boost abilities that wait until this scheme has ended ("after this activation resolves"). */
+  afterActivationAbilities?: DeferredBoostAbility[];
   schemeId: string;
   schemerType: 'VILLAIN' | 'MINION';
   schemerCard?: CardInstance;

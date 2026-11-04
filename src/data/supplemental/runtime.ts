@@ -9,6 +9,8 @@ import type { EffectParamsMap } from './effect-params.ts';
 /** Every effect a step can execute (ADR-0046). */
 export const EFFECT_TYPES = [
   'DRAW',
+  'ACTIVATE_MINIONS',
+  'FLIP_CARD',
   'ADD_ACCELERATION',
   'ADD_COUNTERS',
   'ADD_STATUS',
@@ -87,6 +89,7 @@ export const GATE_KINDS = {
   IF_PLAYER_HAS_TRAIT: 'STATE',
   IF_ZONE_EMPTY: 'STATE',
   IF_CARD_IN_PLAY: 'STATE',
+  IF_COUNTERS: 'STATE',
   IF_ALL_ALLIES_MATCH: 'STATE',
   IF_RESOURCE_MATCH: 'CONTEXT',
   IF_UNDEFENDED_ATTACK: 'CONTEXT',

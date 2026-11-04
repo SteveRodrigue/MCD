@@ -1,6 +1,289 @@
 {
   "$schema": "../../../../src/data/supplemental/schema.json",
   "cards": {
+    "45076": {
+      "abilities": [
+        {
+          "id": "dark_designs_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "counterType": "pursuit",
+                "amount": 1,
+                "targetCardCode": "45075a"
+              }
+            },
+            {
+              "effect": "VILLAIN_SCHEMES",
+              "effectParams": {},
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "45075a",
+                "counterType": "pursuit"
+              }
+            }
+          ]
+        },
+        {
+          "id": "dark_designs_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "afterActivation": true,
+          "steps": [
+            {
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "counterType": "pursuit",
+                "amount": 1,
+                "targetCardCode": "45075a"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:30:00Z",
+        "updatedAt": "2026-11-04T14:30:00Z",
+        "reviewedAt": "2026-11-04T14:30:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>When Revealed</b>: Place 1 pursuit counter on Pursued by the Past. Then, if it has any counters on it, the villain schemes.\n[star] <b>Boost</b>: After this activation resolves, place 1 pursuit counter on Pursued by the Past."
+      }
+    },
+    "45077": {
+      "abilities": [
+        {
+          "id": "sinister_strike_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "counterType": "pursuit",
+                "amount": 1,
+                "targetCardCode": "45075a"
+              }
+            },
+            {
+              "id": "sinister_strike_surge",
+              "effect": "SURGE",
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "45075a",
+                "counterType": "pursuit",
+                "form": "ALTER_EGO"
+              }
+            },
+            {
+              "id": "sinister_strike_attack",
+              "effect": "VILLAIN_ATTACKS",
+              "effectParams": {},
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "45075a",
+                "counterType": "pursuit",
+                "form": "HERO"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:30:00Z",
+        "updatedAt": "2026-11-04T14:30:00Z",
+        "reviewedAt": "2026-11-04T14:30:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>When Revealed (Alter-Ego)</b>: Place 1 pursuit counter on Pursued by the Past. Then, if it has any counters on it, this card gains surge.\n<b>When Revealed (Hero)</b>: Place 1 pursuit counter on Pursued by the Past. Then, if it has any counters on it, the villain attacks you."
+      }
+    },
+    "45078": {
+      "abilities": [
+        {
+          "id": "evil_alliance_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "evil_alliance_activate",
+              "effect": "ACTIVATE_MINIONS",
+              "effectParams": {
+                "filter": {
+                  "types": ["minion"],
+                  "sets": ["ANY_NEMESIS"]
+                }
+              }
+            },
+            {
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "counterType": "pursuit",
+                "amount": 3,
+                "targetCardCode": "45075a"
+              },
+              "id": "evil_alliance_counters",
+              "gate": "THEN",
+              "gateParams": {
+                "step": "evil_alliance_activate",
+                "negate": true
+              }
+            }
+          ]
+        },
+        {
+          "id": "evil_alliance_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "afterActivation": true,
+          "steps": [
+            {
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "counterType": "pursuit",
+                "amount": 1,
+                "targetCardCode": "45075a"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:30:00Z",
+        "updatedAt": "2026-11-04T14:30:00Z",
+        "reviewedAt": "2026-11-04T14:30:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>When Revealed</b>: Each nemesis minion in play activates against you. If no minions activated this way, place 3 pursuit counters on Pursued by the Past.\n[star] <b>Boost</b>: After this activation resolves, place 1 pursuit counter on Pursued by the Past."
+      }
+    },
+    "45079": {
+      "abilities": [
+        {
+          "id": "nowhere_is_safe_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "counterType": "pursuit",
+                "amount": 1,
+                "targetCardCode": "45075a"
+              }
+            },
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "TABLEAU",
+                "filter": {
+                  "types": ["upgrade", "support"]
+                }
+              },
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "45075a",
+                "counterType": "pursuit"
+              }
+            }
+          ]
+        },
+        {
+          "id": "nowhere_is_safe_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "afterActivation": true,
+          "steps": [
+            {
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "counterType": "pursuit",
+                "amount": 1,
+                "targetCardCode": "45075a"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:30:00Z",
+        "updatedAt": "2026-11-04T14:30:00Z",
+        "reviewedAt": "2026-11-04T14:30:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>When Revealed</b>: Place 1 pursuit counter on Pursued by the Past. Then, if it has any counters on it, discard an upgrade or support you control.\n<hr />\n[star] <b>Boost</b>: After this activation resolves, place 1 pursuit counter on Pursued by the Past."
+      }
+    },
+    "45080": {
+      "abilities": [
+        {
+          "id": "drawing_near_turn_begins",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "PLAYER_TURN_BEGAN",
+          "steps": [
+            {
+              "id": "drawing_near_discard",
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "DECK",
+                "count": 1
+              }
+            },
+            {
+              "id": "drawing_near_counters",
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "counterType": "pursuit",
+                "amount": {
+                  "from": "DISCARDED_CARDS",
+                  "discardAttribute": "RESOURCE_ICONS"
+                },
+                "targetCardCode": "45075a"
+              }
+            }
+          ]
+        },
+        {
+          "id": "drawing_near_action",
+          "timing": "ALTER_EGO_ACTION",
+          "steps": [
+            {
+              "id": "drawing_near_discard_self",
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "SELF"
+              }
+            }
+          ],
+          "cost": {
+            "discardCard": {
+              "count": 1,
+              "from": "HAND",
+              "mode": "CHOSEN",
+              "filter": {
+                "isIdentitySpecific": true
+              }
+            }
+          }
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:30:00Z",
+        "updatedAt": "2026-11-04T14:30:00Z",
+        "reviewedAt": "2026-11-04T14:30:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>Forced Response</b>: After your turn begins, discard the top card of your deck. Place 1 pursuit counter on Pursued by the Past for each printed resource icon on that card.\n<b>Alter-Ego Action</b>: Discard an identity-specific card from your hand → discard this card."
+      }
+    },
     "45109": {
       "attachTo": {
         "host": {
@@ -50,6 +333,123 @@
         "rulesVersion": "v1.8",
         "confidence": 95,
         "originalText": "Attach to the minion with the highest printed hit points and give it a tough status card. Otherwise, this card gains surge.\nAttached enemy gets +5 hit points."
+      }
+    },
+    "45075a": {
+      "abilities": [
+        {
+          "id": "pursued_by_the_past_threshold",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "COUNTER_PLACED",
+          "triggerFilter": {
+            "countersHere": {
+              "counterType": "pursuit",
+              "atLeast": 3,
+              "plusPlayerCount": true
+            }
+          },
+          "steps": [
+            {
+              "id": "pursued_remove_counters",
+              "effect": "REMOVE_COUNTERS",
+              "effectParams": {
+                "counterType": "pursuit",
+                "amount": "ALL"
+              }
+            },
+            {
+              "id": "pursued_activate_nemesis",
+              "effect": "ACTIVATE_MINIONS",
+              "effectParams": {
+                "filter": {
+                  "types": ["minion"],
+                  "sets": ["PLAYER_NEMESIS"]
+                }
+              }
+            },
+            {
+              "id": "pursued_flip",
+              "effect": "FLIP_CARD",
+              "gate": "THEN",
+              "gateParams": {
+                "step": "pursued_activate_nemesis",
+                "negate": true
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:30:00Z",
+        "updatedAt": "2026-11-04T14:30:00Z",
+        "reviewedAt": "2026-11-04T14:30:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "Permanent. Setup.\n<b>Forced Response</b>: After you place a pursuit counter here, if the number of counters here is at least 3 more than the number of players, remove each counter here → if your nemesis minion is in play, it activates against you. Otherwise, flip this card over."
+      }
+    },
+    "45075b": {
+      "abilities": [
+        {
+          "id": "pursued_by_the_past_flipped",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "CARD_FLIPPED",
+          "steps": [
+            {
+              "id": "pursued_find_minion",
+              "effect": "SEARCH",
+              "effectParams": {
+                "source": ["ENCOUNTER_DECK", "ENCOUNTER_DISCARD", "SET_ASIDE"],
+                "filter": {
+                  "types": ["minion"],
+                  "sets": ["PLAYER_NEMESIS"]
+                },
+                "takeCount": 1,
+                "selectedDestination": "REVEAL",
+                "shuffleAfter": true,
+                "autoSelectIfUnambiguous": true
+              }
+            },
+            {
+              "id": "pursued_reveal_scheme",
+              "effect": "PUT_INTO_PLAY",
+              "effectParams": {
+                "from": "SET_ASIDE",
+                "to": "SIDE_SCHEMES",
+                "reveal": true,
+                "filter": {
+                  "types": ["side_scheme"],
+                  "sets": ["PLAYER_NEMESIS"]
+                }
+              }
+            },
+            {
+              "id": "pursued_shuffle_rest",
+              "effect": "SHUFFLE_INTO_DECK",
+              "effectParams": {
+                "from": "SET_ASIDE",
+                "toDeck": "ENCOUNTER_DECK",
+                "filter": {
+                  "sets": ["PLAYER_NEMESIS"]
+                }
+              }
+            },
+            {
+              "id": "pursued_flip_back",
+              "effect": "FLIP_CARD"
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:30:00Z",
+        "updatedAt": "2026-11-04T14:30:00Z",
+        "reviewedAt": "2026-11-04T14:30:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "Permanent.\n<b>Forced Response</b>: After you flip to this side, find your nemesis minion and reveal it. Search the set-aside area for your nemesis side scheme and reveal it. Shuffle your remaining set-aside nemesis set into the encounter deck. Flip this card over."
       }
     }
   }

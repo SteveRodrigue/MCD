@@ -210,6 +210,11 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
                 .replace(/Acceleration icon/gis, '')
                 .replace(/Crisis icon/gis, '')
                 .replace(/Boost icon/gis, '')
+                // Klaw unconditional additional boost card handled in card-loader.ts (ADR-0019, #292)
+                .replace(
+                  /\[star\]\s*<b>Forced Interrupt<\/b>:\s*When Klaw attacks, give him 1 additional boost card for this activation\./gis,
+                  '',
+                )
                 .trim();
 
               const hasActiveTrigger = [

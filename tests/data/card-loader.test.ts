@@ -365,9 +365,12 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         'black_panther_nemesis',
       ]);
 
-      // Single cards modelled ahead of their set's scan (#244: Weapons Runner; Plan R9: Klaw II, Immortal Klaw)
+      // Single cards modelled ahead of their set's scan (#244: Weapons Runner; Plan R9: Klaw II, Immortal Klaw; Issue #604: Klaw I, III, Armored Guard)
       const scannedEncounterCards = new Set([
+        '01113',
         '01114',
+        '01115',
+        '01120',
         '01121',
         '01127',
         // main scheme Setup and When Revealed abilities (Klaw, Ultron)
@@ -397,8 +400,8 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         }
       });
 
-      // Verify that unscanned card Klaw (01113) returns undefined from getCardEnrichment
-      expect(getCardEnrichment('01113')).toBeUndefined();
+      // Verify that unscanned card Ultron I (01134) returns undefined from getCardEnrichment
+      expect(getCardEnrichment('01134')).toBeUndefined();
     });
   });
 

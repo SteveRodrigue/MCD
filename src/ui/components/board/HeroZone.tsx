@@ -53,6 +53,7 @@ import {
   getEffectiveMinionScheme,
 } from '../../../engine/pipeline/stat-calculator';
 import { canInitiateAbility } from '../../../engine/pipeline/legality-checker';
+import { allyArtStats, minionArtStats } from '../../services/card-art-stats';
 import { getAvailableResources } from '../../../engine/pipeline/cost-engine';
 import { useGameSession } from '../../context/GameStateContext';
 import { useModalStyle } from '../../theme/useModalStyle';
@@ -470,24 +471,15 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                           attachments={minion.attachments}
                           cardsUnderneath={tuckedCards}
                         >
-                          <div className="relative">
-                            <CardView
-                              card={minion.card}
-                              instance={minion}
-                              size="sm"
-                              enableHoverZoom={true}
-                              isFacedown={minion.isShell}
-                              cardBackType={minion.isShell ? 'player' : undefined}
-                            />
-                            {minion.isShell && (
-                              <span
-                                data-testid="drone-shell-label"
-                                className={`absolute inset-x-0 top-1/2 -translate-y-1/2 mx-auto w-fit -rotate-6 bg-comic-yellow text-comic-black text-xs font-black uppercase tracking-wider px-1.5 py-0.5 pointer-events-none ${style.badge}`}
-                              >
-                                {minion.card.name}
-                              </span>
-                            )}
-                          </div>
+                          <CardView
+                            card={minion.card}
+                            instance={minion}
+                            size="sm"
+                            enableHoverZoom={true}
+                            isFacedown={minion.isShell}
+                            cardBackType={minion.isShell ? 'player' : undefined}
+                            artStats={minionArtStats(gameState, minion)}
+                          />
                         </CardAttachmentFan>
                         <div className="flex items-center gap-1 flex-wrap justify-center z-raised">
                           <span
@@ -934,6 +926,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                             <CardView
                               card={ally.card}
                               instance={ally}
+                              artStats={allyArtStats(gameState, ally)}
                               dynamicTraits={allyTraitsDetails.dynamicTraits}
                               effectiveTraits={allyTraitsDetails.traits}
                               size="sm"

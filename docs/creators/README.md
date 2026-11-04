@@ -11,6 +11,7 @@ Everything the game plays comes from **packs**. A pack is a folder in `content/p
 | Look up an ability, trigger, cost or effect                             | [supplemental-reference/](supplemental-reference/README.md) |
 | Edit rules data in the browser                                          | [editor.md](editor.md)                                      |
 | Share a pack, or install someone else's                                 | [sharing-and-installing.md](sharing-and-installing.md)      |
+| Use alternate images on any card, without changing the game             | [art-packs.md](art-packs.md)                                |
 
 ## Your first pack
 

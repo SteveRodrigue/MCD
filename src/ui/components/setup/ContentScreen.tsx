@@ -1,4 +1,5 @@
 import React from 'react';
+import { ART_PACK_FAILURE_PREFIX } from '../../../data/content/loader';
 import { getLoadedContent } from '../../../data/content/store';
 import type { PackState } from '../../../data/content/types';
 import { ThemedButton } from '../../theme/kit/controls';
@@ -19,7 +20,11 @@ interface ContentScreenProps {
 /** Every pack found on disk with its state and, when it did not load, the loader's reason. */
 export const ContentScreen: React.FC<ContentScreenProps> = ({ onBack }) => {
   const { style } = useModalStyle();
-  const { descriptions } = getLoadedContent();
+  const { descriptions, artPacks, artPackWarnings, failures } = getLoadedContent();
+  const artPackProblems = [
+    ...failures.filter((failure) => failure.packId.startsWith(ART_PACK_FAILURE_PREFIX)),
+    ...artPackWarnings,
+  ];
 
   return (
     <div className="max-w-4xl w-full mx-auto my-6 p-4 space-y-4">
@@ -56,6 +61,28 @@ export const ContentScreen: React.FC<ContentScreenProps> = ({ onBack }) => {
             </li>
           ))}
         </ul>
+      )}
+      {(artPacks.length > 0 || artPackProblems.length > 0) && (
+        <section data-testid="art-packs" className="space-y-2">
+          <h2 className="font-bangers text-2xl text-comic-red tracking-wide">ART PACKS</h2>
+          <ul className={`divide-y divide-current/20 ${style.panel} ${style.text}`}>
+            {artPacks.map((artPack) => (
+              <li key={artPack.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 p-3">
+                <span className="font-comic text-lg">{artPack.name}</span>
+                <span className={`text-xs ${style.muted}`}>
+                  Art by {artPack.credit.author}
+                  {artPack.credit.unofficial && ' (unofficial)'}
+                </span>
+              </li>
+            ))}
+            {artPackProblems.map((problem) => (
+              <li key={`${problem.packId}:${problem.reason}`} className="p-3 text-sm" role="alert">
+                <strong>{problem.packId.slice(ART_PACK_FAILURE_PREFIX.length)}:</strong>{' '}
+                {problem.reason}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );

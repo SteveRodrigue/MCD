@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Marvel Champions Digital - Art Pack",
+  "description": "Optional local images for any card (content/art-packs/<id>/art-pack.json).",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{1,31}$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "credit": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "unofficial": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "author",
+        "sourceUrl",
+        "unofficial"
+      ],
+      "additionalProperties": false
+    },
+    "cards": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "minItems": 1,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9_-]+\\.png$"
+            },
+            "attack": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "hitPoints": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "file"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "credit",
+    "cards"
+  ],
+  "additionalProperties": false
+}

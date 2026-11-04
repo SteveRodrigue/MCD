@@ -1,4 +1,5 @@
 import type { CardEnrichment, MarvelCDBDeck, RawUpstreamCard } from '@engine/models';
+import type { ArtPackManifest } from '../packs/art-pack';
 import type { ModularSets, ScenarioDefinition } from '../packs/scenario-definition';
 import type { PackManifest } from '../packs/pack-manifest';
 
@@ -66,9 +67,18 @@ export interface LoadedContent {
   failures: PackLoadFailure[];
   /** Every pack folder on disk, loaded or not. */
   descriptions: PackDescription[];
+  /** Local art packs that loaded, ordered by folder name (empty unless requested, ADR-0093). */
+  artPacks: ArtPackManifest[];
+  /** Problems with a loaded art pack that do not stop it, such as a card that is not loaded. */
+  artPackWarnings: PackLoadFailure[];
 }
 
 export interface LoadContentOptions {
   /** Packs to load instead of the ones listed in `config.json`. */
   packs?: string[];
+  /**
+   * Also read `art-packs/`. Only the app asks for this: tests and scripts never depend on the
+   * images a developer has installed locally.
+   */
+  artPacks?: boolean;
 }

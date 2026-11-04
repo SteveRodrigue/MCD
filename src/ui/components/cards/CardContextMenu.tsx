@@ -13,6 +13,7 @@ import { ResetCardStatsConfirmModal } from './ResetCardStatsConfirmModal';
 import { useOptionalGameSession } from '../../context/GameStateContext';
 import { useGameSettings } from '../../context/useGameSettings';
 import { getAllTimeStats, resetCardStats } from '../../services/stats-storage-service';
+import { artPackArt } from '../../../data/content/card-art';
 
 interface CardContextMenuProps {
   card: NormalizedCard;
@@ -105,6 +106,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
     setAllTimeStats(updated);
   };
 
+  const artCredit = artPackArt(card.code)?.credit;
   const gameCardStats = gameState?.stats?.cards?.[card.code];
   const allTimeCardStats = allTimeStats?.cards?.[card.code];
 
@@ -161,6 +163,16 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
+
+          {artCredit && (
+            <p
+              data-testid="art-pack-credit"
+              className={`px-3 py-1.5 text-mini rounded-none! border-x-0! border-t-0! ${style.inset}`}
+            >
+              Art by <b>{artCredit.author}</b>
+              {artCredit.unofficial && ' (unofficial)'}
+            </p>
+          )}
 
           {/* Quick Stats Recap */}
           <div

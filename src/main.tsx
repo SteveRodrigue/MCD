@@ -11,7 +11,8 @@ import { FetchDriver } from './data/content/drivers/fetch';
 async function start(): Promise<void> {
   // Content (cards, supplemental data, decks, modular sets) is loaded at runtime before the first
   // render. A failure disables the pack; the Content screen shows it with the reason (ADR-0092).
-  await bootContent(new FetchDriver('/__content'));
+  // Only the app reads local art packs (ADR-0093).
+  await bootContent(new FetchDriver('/__content'), { artPacks: true });
 
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>

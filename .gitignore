@@ -74,6 +74,9 @@ __pycache__/
 # Disposable content cache (images, raw sync downloads)
 content/.cache/
 
+# Optional local art packs: third-party images are never committed (ADR-0093)
+content/art-packs/
+
 # Official PDFs are never tracked (leak:check); download them yourself, see references/SETUP.md
 references/**/*.pdf
 references/*.pdf

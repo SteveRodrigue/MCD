@@ -1,4 +1,5 @@
 import type { CardEnrichment, MarvelCDBDeck, RawUpstreamCard } from '@engine/models';
+import { ArtPackManifestSchema, type ArtPackManifest } from '../packs/art-pack';
 import { ContentConfigSchema } from '../packs/content-config';
 import { ClaimRegistry } from '../packs/identity';
 import { PackDeckSchema } from '../packs/pack-deck';
@@ -20,6 +21,12 @@ import type {
 } from './types';
 
 const CONTENT_FAILURE_ID = '(content)';
+
+/** Prefix of a failure's `packId` when it names an art pack rather than a content pack. */
+export const ART_PACK_FAILURE_PREFIX = 'art-pack:';
+
+/** Card types whose current stats can select a stat image. */
+const STAT_IMAGE_CARD_TYPES = new Set(['minion', 'ally', 'villain']);
 
 function describeError(error: unknown): string {
   if (error instanceof Error) return error.message;
@@ -218,7 +225,55 @@ export async function loadContent(
 
   const packs = order.map((id) => outcome.get(id) as LoadedPack);
   const descriptions = await describePacks(driver, packs, failures);
-  return { packs, failures, descriptions };
+  const { artPacks, artPackWarnings } = options.artPacks
+    ? await readArtPacks(driver, packs, failures)
+    : { artPacks: [], artPackWarnings: [] };
+  return { packs, failures, descriptions, artPacks, artPackWarnings };
+}
+
+/**
+ * Reads every folder in `art-packs/`. Art packs are cosmetic: a bad one is listed as a failure and
+ * skipped, and what it lists never stops a game from starting (ADR-0093).
+ */
+async function readArtPacks(
+  driver: ContentDriver,
+  packs: LoadedPack[],
+  failures: PackLoadFailure[],
+): Promise<Pick<LoadedContent, 'artPacks' | 'artPackWarnings'>> {
+  const cardTypes = new Map<string, string | undefined>();
+  for (const pack of packs) {
+    for (const card of pack.cards) cardTypes.set(card.code, card.type_code);
+    for (const scenario of pack.scenarios) {
+      for (const token of scenario.tokens ?? []) cardTypes.set(token.code, token.type);
+    }
+  }
+
+  const artPacks: ArtPackManifest[] = [];
+  const artPackWarnings: PackLoadFailure[] = [];
+  const claimedBy = new Map<string, string>();
+  for (const id of await driver.listDirs('art-packs')) {
+    const packId = `${ART_PACK_FAILURE_PREFIX}${id}`;
+    try {
+      const manifest = ArtPackManifestSchema.parse(
+        await driver.readJson(`art-packs/${id}/art-pack.json`),
+      );
+      if (manifest.id !== id) throw new Error(`id "${manifest.id}" must equal the folder name`);
+      artPacks.push(manifest);
+      for (const [code, images] of Object.entries(manifest.cards)) {
+        const warn = (reason: string) => artPackWarnings.push({ packId, reason });
+        const owner = claimedBy.get(code);
+        if (owner) warn(`card ${code} is also listed by "${owner}", which is the one used`);
+        else claimedBy.set(code, id);
+        if (!cardTypes.has(code)) warn(`card ${code} is not loaded`);
+        else if (images[0].attack !== undefined && !STAT_IMAGE_CARD_TYPES.has(cardTypes.get(code) ?? '')) {
+          warn(`card ${code} cannot follow stats, so it always shows its lowest image`);
+        }
+      }
+    } catch (error) {
+      failures.push({ packId, reason: describeError(error) });
+    }
+  }
+  return { artPacks, artPackWarnings };
 }
 
 async function readLockedScenarios(

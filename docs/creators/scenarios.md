@@ -44,6 +44,7 @@ The manifest defines the static properties, stages, and modular sets. Properties
 | `villainSetup`          | yes      | `villainName` and `stages`: villain card codes per difficulty.                                          |
 | `mainSchemeSetup`       | yes      | Main scheme `stages` plus `startingThreat`, `targetThreatPerPlayer`, `escalationThreatPerPlayer`.       |
 | `modularEncounterSets`  | yes      | `mandatory` and per-difficulty `defaults` set codes; optional `slotCount` and `recommendedModularSets`. |
+| `tokens`                | no       | Minions with no printed card that a pack script puts into play (`code`, `name`, `type`, `packCode`, `traits`, `scheme`, `attack`, `health`). An [art pack](art-packs.md) can give a token images. |
 
 Unknown properties are rejected. Example:
 

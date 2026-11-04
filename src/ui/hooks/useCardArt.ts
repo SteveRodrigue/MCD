@@ -1,5 +1,5 @@
 import { getCardArtUrl } from '../services/card-cache-service';
-import { CardArtIdentifier } from '../../data/content/card-art';
+import { artPackArt, CardArtIdentifier, CardArtStats } from '../../data/content/card-art';
 import { useAsyncData } from './useAsyncData';
 
 export interface UseCardArtResult {
@@ -8,17 +8,27 @@ export interface UseCardArtResult {
   error: Error | null;
 }
 
-export function useCardArt(cardOrCode: CardArtIdentifier | string | undefined): UseCardArtResult {
+export interface UseCardArtOptions {
+  artStats?: CardArtStats;
+  officialArt?: boolean;
+}
+
+export function useCardArt(
+  cardOrCode: CardArtIdentifier | string | undefined,
+  { artStats, officialArt }: UseCardArtOptions = {},
+): UseCardArtResult {
   const code = typeof cardOrCode === 'string' ? cardOrCode : cardOrCode?.code;
   const type = typeof cardOrCode === 'object' ? cardOrCode?.type : undefined;
   const stage = typeof cardOrCode === 'object' ? cardOrCode?.stage : undefined;
+  // Keyed by the image, not the stats: a stat change that keeps the same image fetches nothing.
+  const artPackUrl = code && !officialArt ? artPackArt(code, artStats)?.url : undefined;
 
   const {
     data: artUrl,
     loading,
     error,
-  } = useAsyncData(code ? JSON.stringify([code, type, stage]) : null, () =>
-    getCardArtUrl({ code: code as string, type, stage }),
+  } = useAsyncData(code ? JSON.stringify([code, type, stage, artPackUrl]) : null, () =>
+    getCardArtUrl({ code: code as string, type, stage, artStats, officialArt }),
   );
 
   return { artUrl, loading, error };

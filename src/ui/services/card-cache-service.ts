@@ -5,7 +5,12 @@
  */
 
 import { NormalizedCard } from '../../engine/models';
-import { CardArtIdentifier, CardBackType, localArtUrl } from '../../data/content/card-art';
+import {
+  artPackImageUrls,
+  CardArtIdentifier,
+  CardBackType,
+  localArtUrl,
+} from '../../data/content/card-art';
 
 const CACHE_NAME = 'mcd-card-art-v2';
 
@@ -50,7 +55,15 @@ export async function isCardArtCached(card: CardArtIdentifier | string): Promise
  * 3. Returns the image directly from the cache.
  */
 export async function getCardArtUrl(card: CardArtIdentifier | string): Promise<string> {
-  const localUrl = localArtUrl(card);
+  return cachedArtUrl(localArtUrl(card));
+}
+
+/** Loads every art pack image of these cards, so a stat image shows at once when it is reached. */
+export async function preloadArtPackImages(codes: string[]): Promise<void> {
+  await Promise.all(codes.flatMap(artPackImageUrls).map(cachedArtUrl));
+}
+
+async function cachedArtUrl(localUrl: string): Promise<string> {
   if (!localUrl) return '';
 
   // 1. Check in-memory object URL cache (fastest, 0ms)

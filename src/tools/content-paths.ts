@@ -10,6 +10,7 @@
  *   content/packs/<code>/{scenarios,decks,modular-sets.json,pack.json}
  *   content/packs/<code>/assets/cards/<file>.png   art shipped by the pack
  *   content/.cache/images/<code>/<file>.png        art fetched on demand (disposable)
+ *   content/art-packs/<id>/{art-pack.json,<file>.png}  optional local art, never committed
  *
  * A "stem" is an upstream file name without extension: `core`, `core_encounter`, `aoa_encounter`.
  * Scripts, tools, tests and the editor middleware use this module instead of spelling paths.
@@ -39,6 +40,11 @@ export function packDir(code: string, base?: string): string {
 /** Art a pack ships itself. */
 export function packAssetDir(code: string, base?: string): string {
   return path.join(packDir(code, base), 'assets', 'cards');
+}
+
+/** A local art pack's folder, which is never committed (ADR-0093). */
+export function artPackDir(id: string, base?: string): string {
+  return path.join(contentRoot(base), 'art-packs', id);
 }
 
 /** Disposable folder of the art fetched for a pack; `_backs` holds the generic card backs. */

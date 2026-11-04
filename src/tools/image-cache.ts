@@ -4,7 +4,8 @@
  * The one place that finds a card image on disk or fetches it: a file the pack ships itself,
  * then the disposable cache under `content/.cache/images/<pack>/`, then (official packs only) the
  * MarvelCDB CDN, written through a temporary file. Used by the dev and preview servers and by
- * `npm run cache:cards`. Official art is never written anywhere else.
+ * `npm run cache:cards`. Official art is never written anywhere else. A local art pack's images
+ * are served from its own folder and never downloaded (ADR-0093).
  */
 
 import * as fs from 'fs';
@@ -12,12 +13,13 @@ import * as path from 'path';
 import http from 'http';
 import https from 'https';
 import {
+  ART_PACK_DIR_PREFIX,
   CARD_ART_FILE_PATTERN,
   CARD_BACKS_DIR,
   marvelCdbImageUrl,
 } from '../data/content/card-art.ts';
 import { PACK_ID_PATTERN, PackManifestSchema } from '../data/packs/pack-manifest.ts';
-import { imageCacheDir, packAssetDir, packDir } from './content-paths.ts';
+import { artPackDir, imageCacheDir, packAssetDir, packDir } from './content-paths.ts';
 
 const USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 MCD/1.0';
@@ -129,6 +131,13 @@ export async function resolveCardImage(
     const remote = CARD_BACK_REMOTE_URLS[fileName];
     if (fs.existsSync(filePath)) return filePath;
     return remote && (await downloadFile(remote, filePath)) ? filePath : null;
+  }
+
+  if (packId.startsWith(ART_PACK_DIR_PREFIX)) {
+    const artPackId = packId.slice(ART_PACK_DIR_PREFIX.length);
+    if (!PACK_ID_PATTERN.test(artPackId)) return null;
+    const filePath = path.join(artPackDir(artPackId, base), fileName);
+    return fs.existsSync(filePath) ? filePath : null;
   }
 
   const origin = packOrigin(packId, base);

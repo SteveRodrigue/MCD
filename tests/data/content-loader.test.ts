@@ -37,7 +37,13 @@ afterEach(() => {
 describe('loadContent', () => {
   it('boots with zero packs from an empty content root', async () => {
     fresh();
-    expect(await loadContent(driver())).toEqual({ packs: [], failures: [], descriptions: [] });
+    expect(await loadContent(driver())).toEqual({
+      packs: [],
+      failures: [],
+      descriptions: [],
+      artPacks: [],
+      artPackWarnings: [],
+    });
   });
 
   it('boots with zero packs when none is enabled', async () => {

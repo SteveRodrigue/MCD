@@ -7,7 +7,8 @@ import { setupGame } from '../../src/engine/state/game-setup';
 import { AlterEgoCard, GameState, HeroCard } from '../../src/engine/models';
 import { TestSession } from '../support/render-with-session';
 
-// Plan #352 S1: a Drone shows a card back labelled "Drone"; the real card under it stays hidden.
+// Plan #352 S1 and #613 S1: with no art pack, a Drone shows a card back labelled "Drone". With or
+// without one (`art-packs-board.test.tsx`), the real card under it stays hidden.
 describe('Drone minion on the board', () => {
   function ultronGame(): GameState {
     return setupGame({

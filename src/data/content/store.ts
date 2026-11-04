@@ -1,6 +1,12 @@
 import type { LoadedContent } from './types.ts';
 
-const EMPTY: LoadedContent = { packs: [], failures: [], descriptions: [] };
+const EMPTY: LoadedContent = {
+  packs: [],
+  failures: [],
+  descriptions: [],
+  artPacks: [],
+  artPackWarnings: [],
+};
 let current: LoadedContent = EMPTY;
 
 /** What `applyContent` last put into the engine singletons (empty before the first boot). */

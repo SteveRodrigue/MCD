@@ -5,6 +5,7 @@ import path from 'path';
 import http from 'http';
 import type { AddressInfo } from 'net';
 import { handleCardArtRequest } from '../../src/tools/card-art-middleware';
+import { buildContentIndex } from '../../src/tools/content-middleware';
 import { hasCardImage, resolveCardImage } from '../../src/tools/image-cache';
 
 function writePack(base: string, id: string, origin: 'official-sync' | 'user'): void {
@@ -57,6 +58,49 @@ describe('image cache (shipped asset, disk cache, MarvelCDB)', () => {
   const options = () => ({
     base,
     remoteUrl: (pack: string, file: string) => `${remoteBase}/${pack}/${file}`,
+  });
+
+  describe('art packs', () => {
+    function writeArtPackImage(id: string, file: string): string {
+      const dir = path.join(base, 'content', 'art-packs', id);
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, file), 'png');
+      return path.join(dir, file);
+    }
+
+    it('S2: serves an image from its own folder through the card art route', async () => {
+      const file = writeArtPackImage('tokens', 'mk1.png');
+      const answer = await handleCardArtRequest('/card-art/_art-tokens/mk1.png', options());
+      expect(answer).toEqual({ status: 200, filePath: file });
+    });
+
+    it('S2: the browser can discover a manifest, but the index never lists an image', () => {
+      writeArtPackImage('tokens', 'mk1.png');
+      writeArtPackImage('tokens', 'art-pack.json');
+      const index = buildContentIndex(base);
+      expect(index).toContain('art-packs/tokens/art-pack.json');
+      expect(index).not.toContain('art-packs/tokens/mk1.png');
+    });
+
+    it('S4: a missing image is a 404 and is never downloaded', async () => {
+      writeArtPackImage('tokens', 'mk1.png');
+      const answer = await handleCardArtRequest('/card-art/_art-tokens/mk2.png', options());
+      expect(answer?.status).toBe(404);
+      expect(requests).toEqual([]);
+    });
+
+    it.each(['_art-..', '_art-', '_art-UPPER', '_art-a%2f..%2f..'])(
+      'S4: refuses the art pack id %s',
+      async (dir) => {
+        expect(await resolveCardImage(dir, 'mk1.png', options())).toBeNull();
+        expect(requests).toEqual([]);
+      },
+    );
+
+    it('S4: refuses a file name that leaves the folder', async () => {
+      writeArtPackImage('tokens', 'mk1.png');
+      expect(await resolveCardImage('_art-tokens', '../mk1.png', options())).toBeNull();
+    });
   });
 
   const cachePath = (pack: string, file: string) =>

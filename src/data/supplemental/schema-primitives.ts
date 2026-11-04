@@ -234,6 +234,7 @@ const CardCriteriaSchema = z
     resourceIcons: z.array(ResourceTypeSchema).optional(),
     hasKeyword: KeywordSchema.optional(),
     isExhausted: z.boolean().optional(),
+    isFacedown: z.boolean().optional(),
     hasStatus: z.array(CharacterStatusSchema).optional(),
   })
   .strict();
@@ -673,9 +674,9 @@ export const PlayCardFromZoneParamsSchema = z
 export type AbilityCost = z.infer<typeof AbilityCostSchema>;
 
 /**
- * Canonical Duration Schema (RR v1.8 - PHASE, ROUND, TURN)
+ * Canonical Duration Schema (RR v1.8 - PHASE, ROUND, TURN, and ATTACK: until the end of the attack)
  */
-export const DurationSchema = z.enum(['PHASE', 'ROUND', 'TURN']);
+export const DurationSchema = z.enum(['PHASE', 'ROUND', 'TURN', 'ATTACK']);
 export type Duration = z.infer<typeof DurationSchema>;
 
 /**

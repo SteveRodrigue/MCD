@@ -157,6 +157,46 @@ describe('S8: Wakanda Forever! vs Drones', () => {
     expect(codesIn(pantherAfter.tableau)).toContain(ENERGY_DAGGERS);
   });
 
+  it('S8-b: Energy Daggers deals 0 to Ultron III while a Drone is in play; Claws first then Daggers hits him for 2', () => {
+    const ultronIII = () => cardCatalog.getCard('01136') as never;
+
+    // Energy Daggers alone: one effect, so the Drone is still in play when Ultron is dealt damage
+    const alone = ultronGame();
+    getActiveVillain(alone).card = ultronIII();
+    alone.players[0].tableau = [instance(ENERGY_DAGGERS)];
+    dronesFrom(alone, 'p2', [WEB_SHOOTER]);
+    const hpAlone = getActiveVillain(alone).health;
+
+    const dealt = chooseDaggersPlayer(playWakandaForever(alone).state, 'p2');
+
+    expect(getActiveVillain(dealt).health).toBe(hpAlone);
+    expect(dealt.players[1].engagedMinions).toHaveLength(0);
+    expect(codesIn(dealt.players[1].discard)).toEqual([WEB_SHOOTER]);
+
+    // Panther Claws first: it cannot target Ultron, kills the last Drone, then Daggers hits him
+    const both = ultronGame();
+    getActiveVillain(both).card = ultronIII();
+    const claws = instance(PANTHER_CLAWS);
+    const daggers = instance(ENERGY_DAGGERS);
+    both.players[0].tableau = [claws, daggers];
+    const [drone] = dronesFrom(both, 'p2', [WEB_SHOOTER]);
+    const hpBoth = getActiveVillain(both).health;
+
+    const ordered = answer(playWakandaForever(both).state, {
+      sequenceOrder: [claws.instanceId, daggers.instanceId],
+    });
+    const prompt = peekDecisionPrompt(ordered);
+    // The only valid target is resolved without a choice, or offered alone: never Ultron
+    expect(prompt?.options.some((o) => o.id === getActiveVillain(ordered).instanceId)).toBeFalsy();
+    const afterClaws = prompt?.options.some((o) => o.id === drone.instanceId)
+      ? answer(ordered, { selectedOptionId: drone.instanceId })
+      : ordered;
+    expect(afterClaws.players[1].engagedMinions).toHaveLength(0);
+
+    const after = chooseDaggersPlayer(afterClaws, 'p2');
+    expect(getActiveVillain(after).health).toBe(hpBoth - 2);
+  });
+
   it('S8-a: Wakanda Forever is unplayable when the only Black Panther upgrade is a facedown Drone', () => {
     const state = ultronGame();
     const panther = state.players[0];

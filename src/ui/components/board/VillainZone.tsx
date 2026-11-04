@@ -43,6 +43,7 @@ interface VillainZoneProps {
   villain: VillainState;
   mainScheme: MainSchemeState;
   sideSchemes: SideSchemeState[];
+  environments?: CardInstance[];
   /** Nothing is out of play, so the board draws no Out of Play box: the header badges it. */
   outOfPlayEmpty: boolean;
   encounterDeck: CardInstance[];
@@ -70,6 +71,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
   villain,
   mainScheme,
   sideSchemes,
+  environments = [],
   outOfPlayEmpty,
   encounterDeck,
   encounterDiscard,
@@ -432,6 +434,40 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
           </div>
 
           {/* 4. Active Side Schemes: right of the main scheme, taking the remaining width. Not drawn while empty (badge in the header) */}
+          {environments.length > 0 && (
+            <div
+              data-testid="environments-panel"
+              className={`flex-1 min-w-[200px] flex flex-col gap-2 p-3 relative z-content hover:z-zoom focus-within:z-zoom ${style.inset}`}
+            >
+              <div
+                className={`flex items-center gap-1.5 text-xs font-bold uppercase border-b border-current/20 pb-1.5 ${style.muted}`}
+              >
+                <span>Environment ({environments.length})</span>
+              </div>
+              <div className="flex flex-wrap gap-3 items-center pt-1 overflow-visible">
+                {environments.map((environment) => {
+                  const { extraBottomPx, extraLeftClass } = getStaircaseExpansion(
+                    environment.attachments,
+                  );
+                  return (
+                    <div
+                      key={environment.instanceId}
+                      className={`relative z-content hover:z-zoom focus-within:z-zoom ${extraLeftClass}`}
+                      style={extraBottomPx > 0 ? { marginBottom: `${extraBottomPx}px` } : undefined}
+                    >
+                      <CardAttachmentFan
+                        attachments={environment.attachments}
+                        onSelectAttachment={onSelectAttachment}
+                      >
+                        <CardView card={environment.card} size="sm" enableHoverZoom={true} />
+                      </CardAttachmentFan>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {sideSchemes.length > 0 && (
             <div
               data-testid="side-schemes-panel"

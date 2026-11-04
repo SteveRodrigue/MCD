@@ -131,12 +131,14 @@ export function evaluateStepGate(
     case 'IF_CARD_IN_PLAY': {
       const cardCode = (gateParams.cardCode ?? (gateParams as Record<string, unknown>).cardId) as
         string | undefined;
-      if (!cardCode || !state) {
+      const filter = gateParams.filter as UniversalCardFilter | undefined;
+      if ((!cardCode && !filter) || !state) {
         gateSatisfied = false;
         break;
       }
       const matchesCard = (c: { card?: { code?: string; id?: string } } | undefined) =>
-        c?.card?.code === cardCode || c?.card?.id === cardCode;
+        (!cardCode || c?.card?.code === cardCode || c?.card?.id === cardCode) &&
+        (!filter || (Boolean(c?.card) && matchesCardFilter(c as never, filter, { state })));
 
       const inSideSchemes = state.sideSchemes?.some(matchesCard);
       const inVillainAttachments = getVillainsInPlay(state).some((v) =>

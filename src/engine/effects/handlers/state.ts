@@ -10,6 +10,7 @@ import {
   getActiveVillain,
 } from '@engine/models';
 import { getStepEffectParams } from '../../../data/supplemental/runtime';
+import type { DynamicValueSource } from '../../../data/supplemental/schema';
 import { hasEntityKeyword } from '../../pipeline/stat-calculator';
 import { nextEngineId } from '../../state/rng';
 import {
@@ -285,6 +286,15 @@ function handleModifyStat(
   const stepParams = getStepEffectParams(step);
   const targetParam =
     (stepParams.target as string) || (step.effectParams?.target as string) || 'SELF';
+  if (stepParams.duration === 'ATTACK') {
+    // Until the end of the attack: the attack keeps the formula and reads it when it needs the value
+    const modifiers = state.pendingAttackModifiers ?? state.activeAttackContext?.attackModifiers;
+    modifiers?.push({
+      amount: stepParams.amount as number | DynamicValueSource,
+      playerId: context.playerId || player.id,
+    });
+    return { state, success: true, mutatedState: Boolean(modifiers) };
+  }
   const duration =
     (stepParams.duration as 'PHASE' | 'ROUND') ||
     (step.effectParams?.duration as 'PHASE' | 'ROUND') ||

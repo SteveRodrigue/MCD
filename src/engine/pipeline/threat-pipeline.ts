@@ -192,6 +192,7 @@ function placeThreat(
   let currentThreat = 0;
   let targetThreat: number | undefined;
   let stageCompleted = false;
+  let placedOnMainSchemeId: string | undefined;
   let onomatopoeia = 'SCHEME!';
 
   // ---------------------------------------------------------------------------
@@ -248,6 +249,7 @@ function placeThreat(
     // ---------------------------------------------------------------------------
     // STEP 3: Main Scheme Threshold Check & Stage Progression
     // ---------------------------------------------------------------------------
+    placedOnMainSchemeId = mainScheme.instanceId;
     if (mainScheme.targetThreat && mainScheme.threat >= mainScheme.targetThreat) {
       stageCompleted = true;
       state = handleMainSchemeCompletion(state, mainScheme.instanceId);
@@ -287,8 +289,9 @@ function placeThreat(
     targetPlayerId:
       sourcePlayerId || state.players[state.activePlayerIndex]?.id || state.players[0]?.id || '',
     targetType,
-    targetInstanceId,
+    targetInstanceId: targetInstanceId ?? placedOnMainSchemeId,
     threatAmount: finalThreat,
+    threatSource: sourceType,
   });
 
   return {

@@ -12,6 +12,7 @@ export interface InPlayCard {
   card: NormalizedCard;
   exhausted?: boolean;
   statusCards?: string[];
+  isShell?: boolean;
 }
 
 /** What a filter is evaluated on: a card definition, or a card in play. */
@@ -118,6 +119,10 @@ export function matchesCardFilter(
   // In-play criteria hold only for a card in play
   if (filter.isExhausted !== undefined) {
     if (!instance || Boolean(instance.exhausted) !== filter.isExhausted) return false;
+  }
+  // A shell's only face is the facedown card: what is under it is hidden (FAQ, Steve Rogers)
+  if (filter.isFacedown !== undefined) {
+    if (!instance || Boolean(instance.isShell) !== filter.isFacedown) return false;
   }
   if (filter.hasStatus?.length) {
     const statusCards: string[] = instance?.statusCards || [];

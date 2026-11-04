@@ -13,7 +13,7 @@ import { AbilityStep, AbilityCost, StepGate, CardAbility, StepResolutionResult }
 import { GameStats } from './stats';
 import type { CardRepository } from './card-repository';
 import type { LogEvents } from './log-events';
-import type { UniversalCardFilter } from '../../data/supplemental/schema';
+import type { DynamicValueSource, UniversalCardFilter } from '../../data/supplemental/schema';
 
 /**
  * Runtime card instance in a zone (hand, deck, discard, or play)
@@ -92,7 +92,16 @@ export interface PlayerState {
   deckEmptiedWithEmptyDiscard?: boolean;
 }
 
-export type Duration = 'PHASE' | 'ROUND' | 'TURN';
+export type Duration = 'PHASE' | 'ROUND' | 'TURN' | 'ATTACK';
+
+/**
+ * A lasting effect "until the end of the attack" on the attacker's ATK. The amount stays a formula
+ * read for `playerId`, the player the attack was initiated against (FAQ, Ultron II).
+ */
+export interface AttackModifier {
+  amount: number | DynamicValueSource;
+  playerId: string;
+}
 
 export interface ActiveStatModifier {
   id?: string;
@@ -310,6 +319,8 @@ export interface AttackExecutionContext {
   targetPlayerId: string;
   phase: CombatPhase;
   baseAttack: number;
+  /** "Until the end of the attack" modifiers; `getAttackValue` adds them to the base attack. */
+  attackModifiers?: AttackModifier[];
   revealedBoostCards?: CardInstance[];
   totalBoostIcons: number;
   defender?: DefenderDeclaration;
@@ -654,6 +665,8 @@ export interface GameState {
   /** Next-card cost reductions in effect, shared by the table (e.g. Helicarrier, Avengers Tower) */
   activeCostReductions?: ActiveCostReduction[];
   environments: CardInstance[];
+  /** "Until the end of the attack" modifiers made by the initiation triggers, before the attack context exists. */
+  pendingAttackModifiers?: AttackModifier[];
   encounterDeck: CardInstance[];
   encounterDiscard: CardInstance[];
   victoryDisplay: CardInstance[];

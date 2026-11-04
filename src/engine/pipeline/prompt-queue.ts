@@ -905,6 +905,7 @@ export function resolveDecisionPrompt(
   if (
     player &&
     paymentOptions &&
+    !selectedOption?.cost &&
     ((paymentOptions.generatorInstanceIds && paymentOptions.generatorInstanceIds.length > 0) ||
       (paymentOptions.paymentCardInstanceIds && paymentOptions.paymentCardInstanceIds.length > 0))
   ) {

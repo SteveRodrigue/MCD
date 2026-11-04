@@ -117,10 +117,14 @@ export const IfZoneEmptyGateParamsSchema = z
 
 export const IfCardInPlayGateParamsSchema = z
   .object({
-    cardCode: z.string().min(1).meta({ label: 'Card Code' }),
+    cardCode: z.string().min(1).meta({ label: 'Card Code' }).optional(),
+    filter: UniversalCardFilterSchema.meta({ label: 'Card Criteria', widget: 'card-filter' }).optional(),
     negate: negateParam,
   })
-  .strict();
+  .strict()
+  .refine((params) => Boolean(params.cardCode || params.filter), {
+    message: 'IF_CARD_IN_PLAY needs a cardCode or a filter',
+  });
 
 export const IfAllAlliesMatchGateParamsSchema = z
   .object({

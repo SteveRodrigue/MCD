@@ -49,6 +49,7 @@ export interface CardCriteria {
   // Keywords & In-Play States
   hasKeyword?: Keyword;
   isExhausted?: boolean;
+  isFacedown?: boolean;
   hasStatus?: ('STUNNED' | 'CONFUSED' | 'TOUGH')[];
 }
 
@@ -77,6 +78,7 @@ export type UniversalCardFilter = CardCriteria & {
 | `resourceIcons`      | `ResourceType[]`    | Matches cards bearing printed resource icons (`"physical"`, `"energy"`, `"mental"`, `"wild"`).                                                                                                                                                     | `{ "resourceIcons": ["mental"] }`     |
 | `hasKeyword`         | `Keyword`           | Matches cards with the specified active keyword (`"Guard"`, `"Overkill"`, `"Quickstrike"`, `"Ranged"`, `"Retaliate"`, `"Toughness"`, etc.; any value of the engine `Keyword` enum). `Toughness` is the printed keyword, not the tough status card. | `{ "hasKeyword": "Guard" }`           |
 | `isExhausted`        | `boolean`           | When evaluating cards in play, matches exhaustion orientation.                                                                                                                                                                                     | `{ "isExhausted": true }`             |
+| `isFacedown`         | `boolean`           | When evaluating cards in play, matches a facedown shell such as a Drone minion. It reads only the shell, never the card under it.                                                                                                                  | `{ "isFacedown": true }`              |
 | `hasStatus`          | `CharacterStatus[]` | When evaluating characters in play, matches attached status cards (`"STUNNED"`, `"CONFUSED"`, `"TOUGH"`).                                                                                                                                          | `{ "hasStatus": ["TOUGH"] }`          |
 
 ---

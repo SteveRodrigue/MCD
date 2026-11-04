@@ -680,6 +680,7 @@ describe('AbilityFormBuilder progressive disclosure (Phase 4)', () => {
     ['limit', 'ONCE_PER_ROUND'],
     ['zone', 'HAND'],
     ['forEachPlayer', true],
+    ['afterActivation', true],
     ['errata', ''],
   ];
 

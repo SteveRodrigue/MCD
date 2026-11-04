@@ -40,6 +40,11 @@ export interface CardInstance {
   facedownBoostCards?: CardInstance[];
   /** Host card instance ID if this card is attached as an attachment */
   hostInstanceId?: string;
+  /**
+   * A stand-in with no physical card of its own (a Drone minion, whose real card is tucked under
+   * it). A shell is removed, never piled, when it leaves play.
+   */
+  isShell?: true;
 }
 
 export type IdentityFormType = 'hero' | 'alter_ego';

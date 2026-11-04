@@ -378,6 +378,16 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         '01116b',
         '01117a',
         '01137a',
+        // Issue #352, PR A: the Ultron cards that create Drones (the set scan comes with PR C)
+        '01137b',
+        '01138a',
+        '01139a',
+        '01140',
+        '01143',
+        '01144a',
+        '01144b',
+        '01144c',
+        '01150',
       ]);
 
       coreEncounterPack.forEach((card) => {

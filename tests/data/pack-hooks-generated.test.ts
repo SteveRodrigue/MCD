@@ -21,8 +21,11 @@ describe('generated pack hook map', () => {
     expect(Object.keys(packHooks).sort()).toEqual(packsWithHooks(REPO_ROOT));
   });
 
-  it('gives the Core pack its Wakanda Forever handler', () => {
-    expect(packHooks.core.specialHandlers?.map((h) => h.id)).toEqual(['WAKANDA_FOREVER']);
+  it('gives the Core pack its Wakanda Forever and Ultron Drone handlers', () => {
+    expect(packHooks.core.specialHandlers?.map((h) => h.id)).toEqual([
+      'WAKANDA_FOREVER',
+      'ULTRON_DRONE',
+    ]);
   });
 
   it('generates an empty map for a content folder without scripts', () => {

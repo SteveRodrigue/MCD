@@ -1112,6 +1112,236 @@
         "originalText": "<b>Contents</b>: Ultron (I) and Ultron (II). <i>(Ultron (II) and Ultron (III) instead for expert mode.)</i> Ultron and Standard encounter sets. One modular encounter set <i>(recommended: Under Attack).</i>\n<b>Setup</b>: Put the Ultron Drones environment into play. Shuffle the encounter deck. Advanced to stage 1B."
       }
     },
+    "01137b": {
+      "abilities": [
+        {
+          "id": "ultron_crimson_cowl_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "EXECUTE_SPECIAL",
+              "effectParams": {
+                "specialId": "ULTRON_DRONE",
+                "target": "ALL_PLAYERS"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-03T12:00:00Z",
+        "updatedAt": "2026-11-03T12:00:00Z",
+        "reviewedAt": "2026-11-03T12:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Each player puts the top card of their deck into play facedown, engaged with them as a [[Drone]] minion."
+      }
+    },
+    "01138a": {
+      "abilities": [
+        {
+          "id": "ultron_assault_norad_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "EXECUTE_SPECIAL",
+              "effectParams": {
+                "specialId": "ULTRON_DRONE",
+                "target": "ALL_PLAYERS"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-03T12:00:00Z",
+        "updatedAt": "2026-11-03T12:00:00Z",
+        "reviewedAt": "2026-11-03T12:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Each player puts the top card of their deck into play facedown, engaged with them as a [[Drone]] minion. Advance to stage 2B."
+      }
+    },
+    "01139a": {
+      "abilities": [
+        {
+          "id": "ultron_countdown_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "EXECUTE_SPECIAL",
+              "effectParams": {
+                "specialId": "ULTRON_DRONE",
+                "target": "ALL_PLAYERS"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-03T12:00:00Z",
+        "updatedAt": "2026-11-03T12:00:00Z",
+        "reviewedAt": "2026-11-03T12:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Each player puts the top card of their deck into play facedown, engaged with them as a [[Drone]] minion. Advance to stage 3B."
+      }
+    },
+    "01140": {
+      "noSupplementalNeeded": true,
+      "abilities": [],
+      "audit": {
+        "createdAt": "2026-11-03T12:00:00Z",
+        "updatedAt": "2026-11-03T12:00:00Z",
+        "reviewedAt": "2026-11-03T12:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Each facedown [[Drone]] minion engaged with a player has a base SCH of 1, a base ATK of 1, and a base hit points of 1.\n<b>Forced Response</b>: After a facedown [[Drone]] minion is defeated, place that card in it's owners discard pile."
+      }
+    },
+    "01143": {
+      "abilities": [
+        {
+          "id": "advanced_ultron_drone_defeated",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "DEFEATED",
+          "steps": [
+            {
+              "effect": "EXECUTE_SPECIAL",
+              "effectParams": {
+                "specialId": "ULTRON_DRONE",
+                "target": "ENGAGED_PLAYER"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-03T12:00:00Z",
+        "updatedAt": "2026-11-03T12:00:00Z",
+        "reviewedAt": "2026-11-03T12:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Guard.\n<b>Forced Interrupt</b>: When Advanced Ultron Drone is defeated, the engaged player puts the top card of their deck into play facedown, engaged with them as a [[Drone]] minion."
+      }
+    },
+    "01144a": {
+      "abilities": [
+        {
+          "id": "android_efficiency_a_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "EXECUTE_SPECIAL",
+              "effectParams": {
+                "specialId": "ULTRON_DRONE",
+                "target": "ALL_PLAYERS"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-03T12:00:00Z",
+        "updatedAt": "2026-11-03T12:00:00Z",
+        "reviewedAt": "2026-11-03T12:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 60,
+        "originalText": "<b>When Revealed</b>: Each player puts the top card of their deck into play facedown, engaged with them as a [[Drone]] minion.\n<hr />\n[star] <b>Boost</b>: Choose to either spend a [energy] resource or put the top card of the deck into play facedown, engaged with you as a [[Drone]] minion."
+      }
+    },
+    "01144b": {
+      "abilities": [
+        {
+          "id": "android_efficiency_b_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "EXECUTE_SPECIAL",
+              "effectParams": {
+                "specialId": "ULTRON_DRONE",
+                "target": "ALL_PLAYERS"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-03T12:00:00Z",
+        "updatedAt": "2026-11-03T12:00:00Z",
+        "reviewedAt": "2026-11-03T12:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 60,
+        "originalText": "<b>When Revealed</b>: Each player puts the top card of their deck into play facedown, engaged with them as a [[Drone]] minion.\n<hr />\n[star] <b>Boost</b>: Choose to either spend a [mental] resource or put the top card of the deck into play facedown, engaged with you as a [[Drone]] minion."
+      }
+    },
+    "01144c": {
+      "abilities": [
+        {
+          "id": "android_efficiency_c_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "EXECUTE_SPECIAL",
+              "effectParams": {
+                "specialId": "ULTRON_DRONE",
+                "target": "ALL_PLAYERS"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-03T12:00:00Z",
+        "updatedAt": "2026-11-03T12:00:00Z",
+        "reviewedAt": "2026-11-03T12:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 60,
+        "originalText": "<b>When Revealed</b>: Each player puts the top card of their deck into play facedown, engaged with them as a [[Drone]] minion.\n<hr />\n[star] <b>Boost</b>: Choose to either spend a [physical] resource or put the top card of the deck into play facedown, engaged with you as a [[Drone]] minion."
+      }
+    },
+    "01150": {
+      "abilities": [
+        {
+          "id": "ultrons_imperative_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "EXECUTE_SPECIAL",
+              "effectParams": {
+                "specialId": "ULTRON_DRONE",
+                "target": "FIRST_PLAYER",
+                "count": 2
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-03T12:00:00Z",
+        "updatedAt": "2026-11-03T12:00:00Z",
+        "reviewedAt": "2026-11-03T12:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: The first player puts the top 2 cards of their deck into play facedown, engaged with them as [[Drone]] minions."
+      }
+    },
     "01151": {
       "abilities": [
         {

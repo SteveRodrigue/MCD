@@ -143,19 +143,19 @@ Searching a deck shuffles it afterwards (Search rule), so a `SEARCH` step needs 
 
 ---
 
-## 💻 Step 2: Scenario script (only when a rule cannot be data)
+## 💻 Step 2: Pack script (only when a rule cannot be data)
 
-An official pack can ship a script that gives a scenario code for what its cards and `definition.json` cannot express yet. The script exports `ScenarioHooks` (`src/engine/scenarios/types.ts`), and the pack's `a pack's script index` lists them by scenario id in `PackHooks.scenarioHooks`:
+An official pack can ship a script for what its cards and `definition.json` cannot express yet. The script exports a special handler (`SpecialAbilityHandler`, `src/engine/specials/special-registry.ts`), the pack's script index lists it in `PackHooks.specialHandlers`, and card data calls it with `EXECUTE_SPECIAL`:
 
 ```typescript
 // content/packs/<pack>/scripts/scenarios/my_custom_scenario.ts
-import type { ScenarioHooks } from '@engine/plugin-api';
+import type { SpecialAbilityHandler } from '@engine/plugin-api';
 
-export const myCustomScenarioHooks: ScenarioHooks = {
-  // Runs after the main scheme's own B-side When Revealed abilities and before the villain's reveal.
-  resolveStage1BReveal(state) {
+export const myHandler: SpecialAbilityHandler = {
+  id: 'MY_SPECIAL',
+  execute: (state, context, params) => {
     // ...change the state...
-    return state;
+    return { state, success: true };
   },
 };
 ```
@@ -163,13 +163,17 @@ export const myCustomScenarioHooks: ScenarioHooks = {
 ```typescript
 // content/packs/<pack>/scripts/index.ts
 const hooks: PackHooks = {
-  scenarioHooks: { my_custom_scenario: myCustomScenarioHooks },
+  specialHandlers: [myHandler],
 };
+```
+
+```json
+{ "effect": "EXECUTE_SPECIAL", "effectParams": { "specialId": "MY_SPECIAL" } }
 ```
 
 After adding a script, run `npm run schema:generate`: it rebuilds the hook map (`src/data/content/pack-hooks.generated.ts`) that lets the build find the pack's hooks. `npm run pack:validate -- content/packs` fails an official pack that has `scripts/` but no map entry.
 
-**How the Ultron script works.** Ultron's stage 1B says each player puts the top card of their deck into play facedown, engaged, as a Drone minion. The engine has no facedown-minion concept yet, so `content/packs/core/scripts/scenarios/ultron.ts` does it in code: it takes each player's top deck card, builds a 1/1/1 Drone minion from it and engages it with that player. Everything else about Ultron (his stages, the Ultron Drones environment, the sound effect) is data. When a second scenario needs the same concept (Vision), the script can be revisited.
+**How the Ultron script works.** Many Ultron cards say a player puts the top card of their deck into play facedown, engaged with them, as a Drone minion. `content/packs/core/scripts/scenarios/ultron.ts` exports the `ULTRON_DRONE` handler for this, and each card calls it from its data with `target` and `count` (see `EXECUTE_SPECIAL` in the supplemental reference). A Drone is a minion shell (`isShell`: "Drone", SCH 1 / ATK 1 / HP 1, Drone trait) with the real card tucked under it, owned by the player whose deck it came from. When the shell leaves play it is removed, and the tucked card goes to its owner's discard pile through the normal tucked-card cleanup. Everything else about Ultron (his stages, the Ultron Drones environment, the sound effect) is data. When a second scenario needs the same concept (Vision), the script can be revisited.
 
 > [!NOTE]
 > **User packs cannot ship scripts.** They are JSON-only until a sandbox ADR exists (`pack:validate` rejects a user pack with `scripts/`). A scenario in a user pack uses `definition.json` and supplemental data only.

@@ -3,7 +3,6 @@ import { EffectExecutionContext, EffectResult } from '../effects';
 
 export interface SpecialAbilityHandler {
   id: string;
-  validatePlayCondition: (state: GameState, context: EffectExecutionContext) => boolean;
   execute: (
     state: GameState,
     context: EffectExecutionContext,

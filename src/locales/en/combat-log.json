@@ -85,7 +85,7 @@
     "PLAYER_TABLEAU_DISCARDED": "{{actor}} discarded {{card}} from their tableau.",
     "RETALIATE_DAMAGE": "{{actor}} retaliated for {{amount}} damage.",
     "scenario.setup": "Scenario {{scenario}} is set up by {{actor}}.",
-    "scenario.setup.drone": "{{actor}} puts a Drone into play.",
+    "minion.drone.created": "{{actor}} puts a Drone into play.",
     "environment.entersPlay": "Environment {{card}} enters play.",
     "scenario.setup.minion": "{{card}} is set up engaged with {{actor}}.",
     "scenario.setup.sideScheme": "Side Scheme {{card}} enters play.",

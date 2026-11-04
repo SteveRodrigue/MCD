@@ -27,11 +27,6 @@ function getSpecialAbility(state: GameState, upgrade: CardInstance): CardAbility
 
 export const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
   id: 'WAKANDA_FOREVER',
-  validatePlayCondition: (state: GameState, context: EffectExecutionContext): boolean => {
-    const player = state.players.find((p) => p.id === context.playerId) || state.players[0];
-    const upgrades = getPlayerBlackPantherUpgrades(player);
-    return upgrades.length > 0;
-  },
   execute: (
     state: GameState,
     context: EffectExecutionContext,

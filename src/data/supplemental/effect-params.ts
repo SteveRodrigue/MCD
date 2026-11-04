@@ -302,6 +302,16 @@ export const EFFECT_PARAM_SCHEMAS = {
         label: 'Sequence Order (instance ids)',
         widget: 'string-list',
       }),
+      target: optional(z.enum(['SELF', 'ALL_PLAYERS', 'FIRST_PLAYER', 'ENGAGED_PLAYER']), {
+        label: 'Players',
+        defaultValue: 'SELF',
+        description: 'The players the handler acts for (ULTRON_DRONE).',
+      }),
+      count: optional(z.number().int().min(1), {
+        label: 'Count per Player',
+        defaultValue: 1,
+        description: 'How many times the handler acts for each player (ULTRON_DRONE).',
+      }),
     })
     .strict(),
   EXHAUST: z

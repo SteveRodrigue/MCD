@@ -682,6 +682,8 @@ export interface GameState {
   activeSchemeContext?: SchemeExecutionContext;
   activeEncounterContext?: EncounterExecutionContext;
   lastCombatOutcome?: CombatResolutionSummary;
+  /** The threat the last villain scheme a step started placed ("for each threat placed this way"). */
+  lastSchemeThreatPlaced?: number;
   villainPhaseStepEvent?: VillainPhaseStepEvent;
   winner: 'HEROES' | 'VILLAIN' | null;
   log: GameLogEntry[];

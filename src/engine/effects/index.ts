@@ -970,15 +970,21 @@ export function hasPendingSequence(state: GameState): boolean {
  */
 function joinAttackOutcome(state: GameState, pending: PendingSequence): void {
   const facts = kernel.getAttackOutcomeFacts(state);
+  const value = state.lastSchemeThreatPlaced ?? facts.damageDealt;
   if (pending.previousResult) {
     pending.previousResult = {
       ...pending.previousResult,
+      value,
       facts: { ...(pending.previousResult.facts as StepFacts), ...facts },
     };
   }
   const fromContext = pending.context.previousResult as StepResolutionResult | undefined;
   if (fromContext) {
-    pending.context.previousResult = { ...fromContext, facts: { ...fromContext.facts, ...facts } };
+    pending.context.previousResult = {
+      ...fromContext,
+      value,
+      facts: { ...fromContext.facts, ...facts },
+    };
   }
 }
 
@@ -989,6 +995,7 @@ export function resumePendingSequence(state: GameState): GameState {
     if (
       peekPendingSequence(currentState)?.awaitsAttackOutcome &&
       (currentState.activeAttackContext ||
+        currentState.activeSchemeContext ||
         (currentState.pendingActivations && currentState.pendingActivations.length > 0))
     ) {
       break;
@@ -1327,10 +1334,11 @@ export function executeSequence(
 export function attackOutcome(
   state: GameState,
   attacked: boolean,
-): Pick<EffectResult, 'facts' | 'attackPending'> {
+): Pick<EffectResult, 'facts' | 'attackPending' | 'value'> {
   if (!attacked) return {};
   if (state.activeAttackContext) return { attackPending: true };
-  return { facts: kernel.getAttackOutcomeFacts(state) };
+  const facts = kernel.getAttackOutcomeFacts(state);
+  return { facts, value: facts.damageDealt };
 }
 
 export function recordAttackedEnemy(
@@ -2084,7 +2092,13 @@ export function executeDiscard(
   const source = (params.source as string) || 'HAND';
   const rawCount = params.count;
   const isCountAll = rawCount === 'ALL';
-  const count = typeof rawCount === 'number' ? rawCount : 1;
+  const count =
+    typeof rawCount === 'number'
+      ? rawCount
+      : rawCount && typeof rawCount === 'object'
+        ? resolveNumericAmount(rawCount, context, 0, { state, player })
+        : 1;
+  if (count === 0) return { state, success: true, mutatedState: false, value: 0 };
   const mode =
     (params.mode as string) ||
     (source === 'DECK' || source === 'ENCOUNTER_DECK' ? 'TOP' : 'CHOSEN');

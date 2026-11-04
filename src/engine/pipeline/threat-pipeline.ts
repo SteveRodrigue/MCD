@@ -282,6 +282,8 @@ function placeThreat(
     }
   }
 
+  if (sourceType === 'VILLAIN_SCHEME') state.lastSchemeThreatPlaced = finalThreat;
+
   // ---------------------------------------------------------------------------
   // STEP 4: Post-Placement Triggers
   // ---------------------------------------------------------------------------
@@ -353,10 +355,14 @@ export function finishPendingThreatPlacements(state: GameState): GameState {
 const MAIN_SCHEME_BLOCK_LOG: Record<
   MainSchemeThreatBlock,
   {
-    key: 'card.effect.threatBlockedByCrisis' | 'card.effect.threatBlockedByPatrol';
+    key:
+      | 'card.effect.threatBlockedByScheme'
+      | 'card.effect.threatBlockedByCrisis'
+      | 'card.effect.threatBlockedByPatrol';
     onomatopoeia: string;
   }
 > = {
+  NO_REMOVAL: { key: 'card.effect.threatBlockedByScheme', onomatopoeia: 'NO REMOVAL!' },
   CRISIS: { key: 'card.effect.threatBlockedByCrisis', onomatopoeia: 'CRISIS BLOCKS!' },
   PATROL: { key: 'card.effect.threatBlockedByPatrol', onomatopoeia: 'PATROL BLOCKS!' },
 };

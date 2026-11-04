@@ -194,6 +194,13 @@
 | `01022` | **Ground Stomp (event)** | `core` | `ground_stomp_action` |
 | `01030` | **War Machine (ally)** | `core` | `war_machine_action` |
 
+### <a id="all-side-schemes"></a>`ALL_SIDE_SCHEMES` (2 Cards, 2 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_after_scheme` |
+| `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
+
 ### <a id="chosen-ally"></a>`CHOSEN_ALLY` (2 Cards, 2 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -278,12 +285,6 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01037` | **Mark V Helmet (upgrade)** | `core` | `mark_v_helmet` |
-
-### <a id="all-side-schemes"></a>`ALL_SIDE_SCHEMES` (1 Cards, 1 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 
 ### <a id="chosen-character"></a>`CHOSEN_CHARACTER` (1 Cards, 1 Declarations)
 

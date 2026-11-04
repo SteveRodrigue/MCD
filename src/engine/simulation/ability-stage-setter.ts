@@ -35,7 +35,7 @@ import {
 import type { UniversalCardFilter } from '../../data/supplemental/schema';
 import { attachStepOf } from '../../data/supplemental/runtime';
 import { isImmuneToDamage } from '../pipeline/damage-immunity';
-import { getDefenderRestriction } from '../pipeline/target-restrictions';
+import { getDefenderRestriction, getMainSchemeThreatBlock } from '../pipeline/target-restrictions';
 import { applyThreatPlacement } from '../pipeline/threat-pipeline';
 import { namedSchemeCode } from '../effects/step-selection';
 import { matchesCardFilter } from '../filters/card-filter';
@@ -966,6 +966,14 @@ const SCENARIOS: Record<string, Scenario> = {
   MINION_ENTERS_PLAY: (stage) => revealFixture(stage, stage.fixtures.minion),
   ENCOUNTER_CARD_REVEALED: (stage) => revealFixture(stage, stage.fixtures.treachery),
   THREAT_PLACED: (stage) => step1_placeThreat(stage.state),
+  VILLAIN_SCHEMED: (stage) => {
+    // Its effect names side schemes, so one has to be in play
+    const sideScheme = stage.options.allCards.find((c) => c.type === CardType.SIDE_SCHEME);
+    if (sideScheme && stage.state.sideSchemes.length === 0) {
+      installInPlay(stage, createCardInstance(sideScheme, PLAYER_ID), CardType.SIDE_SCHEME);
+    }
+    return executeVillainSchemeAgainstPlayer(stage.state, player1(stage));
+  },
   THREAT_WOULD_BE_PLACED: (stage) => {
     executeVillainSchemeAgainstPlayer(stage.state, player1(stage));
     return stage.state;
@@ -1323,6 +1331,13 @@ function exerciseConstant(
     swap = (to) => {
       villain.card = to as VillainCard;
     };
+  } else if (card.type === CardType.MAIN_SCHEME) {
+    const scheme = getActiveMainScheme(state);
+    scheme.card = card as MainSchemeCard;
+    placedEntity = scheme;
+    swap = (to) => {
+      scheme.card = to as MainSchemeCard;
+    };
   } else {
     const inst = createCardInstance(card, PLAYER_ID);
     installInPlay(stage, inst, card.type);
@@ -1369,7 +1384,9 @@ function exerciseConstant(
       }),
     );
   };
-  const withAbility = digestDerivedStats(state) + immunityProbe() + defenseRestrictionProbe();
+  const removalProbe = (): string => String(getMainSchemeThreatBlock(state, p));
+  const withAbility =
+    digestDerivedStats(state) + immunityProbe() + defenseRestrictionProbe() + removalProbe();
   const keywords = target.ability.steps.every((step) => step.effect === 'GRANT_KEYWORD');
   if (keywords && grantedKeywordsEffective(stage, target)) {
     // The printed card can state the same keyword, so removing the ability changes nothing: the
@@ -1377,7 +1394,8 @@ function exerciseConstant(
     return { ok: true, variant, evidence: 'digest-delta' };
   }
   swap(stripped);
-  const withoutIt = digestDerivedStats(state) + immunityProbe() + defenseRestrictionProbe();
+  const withoutIt =
+    digestDerivedStats(state) + immunityProbe() + defenseRestrictionProbe() + removalProbe();
   swap(card);
   if (withAbility === withoutIt) {
     return { ok: false, variant, reason: 'derived stats do not change with the ability' };

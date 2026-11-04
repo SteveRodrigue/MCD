@@ -1,4 +1,4 @@
-import { Keyword, hasKeyword, getActiveVillain } from '@engine/models';
+import { Keyword, hasKeyword, getActiveMainScheme, getActiveVillain } from '@engine/models';
 import type {
   AttackExecutionContext,
   CardAbility,
@@ -10,12 +10,12 @@ import { hasCrisisInPlay } from './icons';
 
 /**
  * The restrictions that make a scheme or villain an illegal target for one acting player's cards:
- * Crisis and Patrol (main scheme threat removal), Guard (villain attack). Every caller that asks
+ * a scheme that forbids removal, Crisis and Patrol (main scheme threat removal), Guard (villain attack). Every caller that asks
  * "is this target blocked?" asks here (the legality gate, the target enumeration, the action
  * checks and the thwart executor), so a rule is written once (ADR-0090, #331).
  */
 
-export type MainSchemeThreatBlock = 'CRISIS' | 'PATROL';
+export type MainSchemeThreatBlock = 'NO_REMOVAL' | 'CRISIS' | 'PATROL';
 
 export interface MainSchemeThreatBlockOptions {
   /** False for an encounter card's ability: Crisis and Patrol limit player cards only. */
@@ -26,6 +26,7 @@ export interface MainSchemeThreatBlockOptions {
 
 /** What the player is told when the block stops a thwart or a threat removal. */
 export const MAIN_SCHEME_BLOCK_REASON: Record<MainSchemeThreatBlock, string> = {
+  NO_REMOVAL: 'Threat cannot be removed from this scheme.',
   CRISIS: 'Cannot thwart the main scheme while a Crisis icon is in play.',
   PATROL: 'Cannot thwart the main scheme while an engaged minion with Patrol is in play.',
 };
@@ -34,8 +35,9 @@ export const GUARD_BLOCK_REASON =
   'Cannot attack the villain while an engaged minion with Guard is in play.';
 
 /**
- * Why this player's cards cannot remove threat from the main scheme right now (RR v1.8 "Crisis
- * Icon", "Patrol"): a Crisis icon anywhere in play, or a Patrol minion engaged with this player.
+ * Why threat cannot be removed from the main scheme right now: the scheme itself forbids it, from
+ * any source (Countdown to Oblivion 3B); or, for this player's cards (RR v1.8 "Crisis Icon",
+ * "Patrol"), a Crisis icon anywhere in play or a Patrol minion engaged with this player.
  */
 export function getMainSchemeThreatBlock(
   state: GameState,
@@ -43,6 +45,12 @@ export function getMainSchemeThreatBlock(
   options: MainSchemeThreatBlockOptions = {},
 ): MainSchemeThreatBlock | undefined {
   const { isPlayerSource = true, ignoresCrisis = false } = options;
+  const forbidsRemoval = getActiveMainScheme(state)?.card?.enrichment?.abilities?.some(
+    (ability) =>
+      ability.timing === 'CONSTANT' &&
+      ability.steps?.some((step) => step.effect === 'THREAT_CANNOT_BE_REMOVED'),
+  );
+  if (forbidsRemoval) return 'NO_REMOVAL';
   if (!isPlayerSource) return undefined;
   if (actingPlayer.engagedMinions.some((m) => hasKeyword(m.card, Keyword.PATROL))) return 'PATROL';
   if (!ignoresCrisis && hasCrisisInPlay(state)) return 'CRISIS';

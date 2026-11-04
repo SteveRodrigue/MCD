@@ -346,6 +346,7 @@ describe('Card Loader & Normalizer Unit Tests', () => {
       // Check Scanned Encounter Sets (Rhino, Modular Sets, Standard, Expert, All 5 Core Hero Nemesis sets)
       const scannedEncounterSets = new Set([
         'rhino',
+        'ultron',
         'bomb_scare',
         'masters_of_evil',
         'under_attack',
@@ -375,31 +376,11 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         '01125',
         '01126',
         '01127',
-        // main scheme Setup and When Revealed abilities (Klaw, Ultron)
+        // main scheme Setup and When Revealed abilities (Klaw)
         '01116a',
         '01116b',
         '01117a',
         '01117b',
-        '01137a',
-        // Issue #352, PR A: the Ultron cards that create Drones (the set scan comes with PR C)
-        '01137b',
-        '01138a',
-        '01139a',
-        '01140',
-        '01143',
-        '01144a',
-        '01144b',
-        '01144c',
-        '01150',
-        // Issue #352, PR B: the Ultron cards that read Drones
-        '01134',
-        '01135',
-        '01136',
-        '01138b',
-        '01142',
-        '01146',
-        '01147',
-        '01148',
       ]);
 
       coreEncounterPack.forEach((card) => {
@@ -422,8 +403,8 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         }
       });
 
-      // Verify that an unscanned card, Invasive AI (01149), returns undefined from getCardEnrichment
-      expect(getCardEnrichment('01149')).toBeUndefined();
+      // Verify that an unscanned card, Sonic Converter (01118), returns undefined from getCardEnrichment
+      expect(getCardEnrichment('01118')).toBeUndefined();
     });
   });
 

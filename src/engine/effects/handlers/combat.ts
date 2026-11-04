@@ -123,8 +123,16 @@ function handleVillainSchemes(
   _context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
+  state.lastSchemeThreatPlaced = 0;
   executeVillainSchemeAgainstPlayer(state, player);
-  return { state, success: true, onomatopoeia: 'VILLAIN SCHEMES!' };
+  // A boost reveal or a threat interrupt can pause the scheme: the amount joins the result on resume
+  const paused = Boolean(state.activeSchemeContext || state.pendingThreatPlacements?.length);
+  return {
+    state,
+    success: true,
+    onomatopoeia: 'VILLAIN SCHEMES!',
+    ...(paused ? { attackPending: true } : { value: state.lastSchemeThreatPlaced }),
+  };
 }
 
 function handleVillainAttacks(

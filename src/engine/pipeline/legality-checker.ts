@@ -40,8 +40,10 @@ import { findInPlayCardInstance } from '../state/state-validator';
 import {
   GUARD_BLOCK_REASON,
   MAIN_SCHEME_BLOCK_REASON,
+  PERIL_BLOCK_REASON,
   getDefenderRestriction,
   getMainSchemeThreatBlock,
+  isBlockedByPeril,
   isVillainAttackBlockedByGuard,
 } from './target-restrictions';
 
@@ -1031,6 +1033,7 @@ export function canPlayCard(
 ): { allowed: boolean; reason?: string; cardToPlay?: NormalizedCard } {
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
+  if (isBlockedByPeril(state, playerId)) return { allowed: false, reason: PERIL_BLOCK_REASON };
 
   const targetCardInstance =
     typeof cardInstanceOrId === 'string'

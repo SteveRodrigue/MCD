@@ -159,7 +159,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
         keywords: [{ keyword: 'Retaliate', amount: 1 }],
       });
       expect(getEffectiveRetaliate(state.players[0])).toBe(1);
-      expect(hasEntityKeyword(state.players[0], 'Retaliate')).toBe(true);
+      expect(hasEntityKeyword(state.players[0], 'Retaliate', state)).toBe(true);
 
       // Add upgrade in tableau with structured Retaliate 1
       const mockUpgrade: any = {
@@ -222,7 +222,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
       getActiveVillain(state).attachments.push(mockConcussionBlasters);
 
       expect(getEffectiveRetaliate(getActiveVillain(state))).toBe(1);
-      expect(hasEntityKeyword(getActiveVillain(state), 'Retaliate')).toBe(true);
+      expect(hasEntityKeyword(getActiveVillain(state), 'Retaliate', state)).toBe(true);
     });
 
     it('correctly calculates Retaliate on Black Panther (01040a) from catalog', () => {
@@ -237,7 +237,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
       };
 
       expect(getEffectiveRetaliate(bpPlayer)).toBe(1);
-      expect(hasEntityKeyword(bpPlayer, 'Retaliate')).toBe(true);
+      expect(hasEntityKeyword(bpPlayer, 'Retaliate', state)).toBe(true);
     });
 
     it('correctly calculates Retaliate on Whiplash (01172) from catalog', () => {
@@ -246,7 +246,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
       const whiplashInstance = createCardInstance(whiplashCard);
 
       expect(getEffectiveRetaliate(whiplashInstance)).toBe(1);
-      expect(hasEntityKeyword(whiplashInstance, 'Retaliate')).toBe(true);
+      expect(hasEntityKeyword(whiplashInstance, 'Retaliate', state)).toBe(true);
     });
   });
 

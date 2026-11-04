@@ -14,7 +14,11 @@ import {
   executeMinionAttackAgainstPlayer,
 } from '../../pipeline/villain-phase';
 import { drawEncounterCard } from '../../pipeline/deck-exhaustion';
-import { beginEnemyAttack, resolveDefenderDeclaration } from '../../pipeline/combat-pipeline';
+import {
+  beginEnemyAttack,
+  grantKeywordToAttack,
+  resolveDefenderDeclaration,
+} from '../../pipeline/combat-pipeline';
 import { recordBasicAction } from '../../pipeline/stats';
 import { appendLog } from '../../state/game-log';
 import { EffectExecutionContext, EffectResult, attackOutcome } from '../index';
@@ -36,6 +40,12 @@ function handleGrantAttackKeyword(
       success: false,
       error: 'GRANT_ATTACK_KEYWORD requires effectParams.keyword',
     };
+  }
+  // A boost card joins the running enemy attack ("if the villain is attacking, this attack gains
+  // overkill"); during a scheme there is no attack to gain it.
+  if (context.ability?.timing === 'BOOST') {
+    grantKeywordToAttack(state.activeAttackContext, keyword);
+    return { state, success: true };
   }
   context.grantedAttackKeywords = [...(context.grantedAttackKeywords ?? []), keyword];
   return { state, success: true };
@@ -119,12 +129,14 @@ function handleDeclareDefender(
 
 function handleVillainSchemes(
   state: GameState,
-  _step: TypedStep<'VILLAIN_SCHEMES'>,
+  step: TypedStep<'VILLAIN_SCHEMES'>,
   _context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
   state.lastSchemeThreatPlaced = 0;
-  executeVillainSchemeAgainstPlayer(state, player);
+  executeVillainSchemeAgainstPlayer(state, player, {
+    schemeBonus: getStepEffectParams(step).schemeBonus,
+  });
   // A boost reveal or a threat interrupt can pause the scheme: the amount joins the result on resume
   const paused = Boolean(state.activeSchemeContext || state.pendingThreatPlacements?.length);
   return {
@@ -138,10 +150,12 @@ function handleVillainSchemes(
 function handleVillainAttacks(
   state: GameState,
   _step: TypedStep<'VILLAIN_ATTACKS'>,
-  _context: EffectExecutionContext,
+  context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const begun = beginEnemyAttack(state, { type: 'VILLAIN' }, player.id);
+  const begun = beginEnemyAttack(state, { type: 'VILLAIN' }, player.id, {
+    grantedKeywords: context.grantedAttackKeywords,
+  });
   return {
     state: begun.state,
     success: true,

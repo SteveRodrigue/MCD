@@ -50,4 +50,5 @@ export const KEYWORD_VALUES = [
   'Villainous',
   'Incite',
   'Hinder',
+  'Peril',
 ] as const;

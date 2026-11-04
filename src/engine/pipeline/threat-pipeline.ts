@@ -517,7 +517,7 @@ export function applyThwart(
   // ---------------------------------------------------------------------------
   // STEP 1: Confused Status Replacement Check (RR v1.8 p. 28)
   // ---------------------------------------------------------------------------
-  if (thwarterEntity && consumeEntityStatusCards(thwarterEntity, StatusCard.CONFUSED)) {
+  if (thwarterEntity && consumeEntityStatusCards(thwarterEntity, StatusCard.CONFUSED, state)) {
     const onomatopoeia = 'CONFUSION CLEARED!';
     appendLog(state, {
       key: 'status.confused.cleared',

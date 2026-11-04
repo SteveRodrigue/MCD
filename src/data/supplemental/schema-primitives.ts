@@ -564,6 +564,7 @@ export const DiscardParamsSchema = z
     target: TargetSelectorSchema.optional(),
     filter: UniversalCardFilterSchema.optional(),
     untilFilter: UniversalCardFilterSchema.optional(),
+    selection: z.enum(['HIGHEST_COST', 'LOWEST_COST']).optional(),
     fallback: z.enum(['SURGE', 'NONE']).optional(),
     matchingDestination: z.enum(['HAND', 'PLAY', 'DISCARD', 'REVEAL']).optional(),
   })
@@ -605,6 +606,7 @@ const SearchZoneSchema = z.enum([
   'PLAYER_DISCARD',
   'ENCOUNTER_DISCARD',
   'PLAYER_HAND',
+  'SET_ASIDE',
 ]);
 
 export type SearchZone = z.infer<typeof SearchZoneSchema>;

@@ -82,7 +82,7 @@ export function dealBoostCards(
   delete entity.facedownBoostCards;
 
   const dealsBaseCard =
-    entity.card.type === CardType.VILLAIN || hasEntityKeyword(entity, 'Villainous');
+    entity.card.type === CardType.VILLAIN || hasEntityKeyword(entity, 'Villainous', state);
   if (!dealsBaseCard) return queue;
 
   const baseCard = drawEncounterCard(state);

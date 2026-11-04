@@ -47,6 +47,7 @@ export function routeCardInstances(
       else if (zone === 'PLAYER_HAND') player.hand.push(...group);
       else if (zone === 'ENCOUNTER_DECK') state.encounterDeck.unshift(...group);
       else if (zone === 'ENCOUNTER_DISCARD') state.encounterDiscard.push(...group);
+      else if (zone === 'SET_ASIDE') player.setAsideCards.push(...group);
       else player.deck.unshift(...group);
     }
   } else if (destination === 'REVEAL') {

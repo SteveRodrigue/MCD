@@ -21,7 +21,9 @@ import { isImmuneToDamage } from '../pipeline/damage-immunity';
 import { isStepGateClosedByState } from '../pipeline/step-gate-evaluator';
 import {
   GUARD_BLOCK_REASON,
+  PERIL_BLOCK_REASON,
   getMainSchemeThreatBlock,
+  isBlockedByPeril,
   isVillainAttackBlockedByGuard,
 } from '../pipeline/target-restrictions';
 import { nextEngineId } from '../state/rng';
@@ -282,7 +284,7 @@ const AFFECT_RULES: Partial<Record<EffectType, AffectRule>> = {
     ),
   TRANSFER_DAMAGE: (state, _step, target, sourceCard) =>
     !(target.kind === 'character' && isImmuneToDamage(state, target.entity, sourceCard)),
-  ADD_STATUS: (_state, step, target) => {
+  ADD_STATUS: (state, step, target) => {
     if (target.kind !== 'character') return false;
     const entity = target.entity;
     const status = String(step.effectParams?.status ?? 'STUNNED').toUpperCase();
@@ -293,8 +295,8 @@ const AFFECT_RULES: Partial<Record<EffectType, AffectRule>> = {
           ? StatusCard.CONFUSED
           : StatusCard.STUNNED;
     const isStunOrConfuse = statusCard !== StatusCard.TOUGH;
-    if (isStunOrConfuse && hasEntityKeyword(entity, 'Stalwart')) return false;
-    const limit = isStunOrConfuse && hasEntityKeyword(entity, 'Steady') ? 2 : 1;
+    if (isStunOrConfuse && hasEntityKeyword(entity, 'Stalwart', state)) return false;
+    const limit = isStunOrConfuse && hasEntityKeyword(entity, 'Steady', state) ? 2 : 1;
     const held = ((entity.statusCards ?? []) as StatusCard[]).filter((s) => s === statusCard);
     return held.length < limit;
   },
@@ -387,7 +389,7 @@ const STEP_RULES: Partial<Record<EffectType, StepRule>> = {
       case 'ENCOUNTER_DECK':
         return state.encounterDeck.length + state.encounterDiscard.length > 0;
       case 'TABLEAU':
-        return discardableTableauCards(state, player, filter).length > 0;
+        return discardableTableauCards(state, player, filter, source?.card).length > 0;
       case 'SELF':
         return source !== undefined;
       case 'HOST':
@@ -603,7 +605,7 @@ export function chooseInitialTarget(
   sourceCardInstance: CardInstance | undefined,
   namedTargetId?: string,
 ): InitialTargetChoice {
-  if (namedTargetId || abilities.some((a) => isCancelledByOwnStatus(player, a))) {
+  if (namedTargetId || abilities.some((a) => isCancelledByOwnStatus(state, player, a))) {
     return { kind: 'NONE' };
   }
   const isOpen = (step: AbilityStep) =>
@@ -785,12 +787,16 @@ const NO_VALID_TARGET_REASON: Partial<Record<EffectType, string>> = {
  * Stunned, Confused). That is a change to the board: the status card is the target, so the ability
  * is valid even when its own target is missing.
  */
-export const isCancelledByOwnStatus = (player: PlayerState, ability: CardAbility): boolean =>
+export const isCancelledByOwnStatus = (
+  state: GameState,
+  player: PlayerState,
+  ability: CardAbility,
+): boolean =>
   Boolean(
     (ability.labels?.includes('ATTACK') &&
-      isEntityIncapacitatedByStatus(player, StatusCard.STUNNED)) ||
+      isEntityIncapacitatedByStatus(player, StatusCard.STUNNED, state)) ||
     (ability.labels?.includes('THWART') &&
-      isEntityIncapacitatedByStatus(player, StatusCard.CONFUSED)),
+      isEntityIncapacitatedByStatus(player, StatusCard.CONFUSED, state)),
   );
 
 export type TargetCheck = { allowed: true } | { allowed: false; reason: string };
@@ -812,7 +818,10 @@ export function checkAbilityTargets(
   sourceCardInstance?: CardInstance,
   eventTarget?: EventTarget,
 ): TargetCheck {
-  if (isCancelledByOwnStatus(player, ability)) return { allowed: true };
+  if (isBlockedByPeril(state, player.id, ability.timing)) {
+    return { allowed: false, reason: PERIL_BLOCK_REASON };
+  }
+  if (isCancelledByOwnStatus(state, player, ability)) return { allowed: true };
   const unmet = unmetChoiceSteps(
     state,
     player,

@@ -37,7 +37,7 @@ export const handleBasicAttack: ActionHandler<'BASIC_ATTACK'> = (nextState, stat
   player.exhausted = true;
 
   // 1. Stunned Status Replacement Check (RR v1.8 p. 28, taking into account Steady)
-  if (consumeEntityStatusCards(player, StatusCard.STUNNED)) {
+  if (consumeEntityStatusCards(player, StatusCard.STUNNED, state)) {
     const onomatopoeia = 'STUN CLEARED!';
     appendLog(nextState, {
       key: 'status.stunned.cleared',

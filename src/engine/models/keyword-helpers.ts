@@ -49,7 +49,8 @@ export function hasKeyword(
         const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
           step as AbilityStep & { effect: 'GRANT_KEYWORD' },
         );
-        if (stepParams.keyword) {
+        // A grant to others ("the villain gains steady") is not a keyword of this card
+        if (stepParams.keyword && (stepParams.target ?? 'SELF') === 'SELF') {
           const parsed = parseKeywordItem({
             keyword: stepParams.keyword,
             amount: stepParams.amount,
@@ -114,7 +115,8 @@ export function getKeywordValue(
         const stepParams = getStepEffectParams<'GRANT_KEYWORD'>(
           step as AbilityStep & { effect: 'GRANT_KEYWORD' },
         );
-        if (stepParams.keyword) {
+        // A grant to others ("the villain gains steady") is not a keyword of this card
+        if (stepParams.keyword && (stepParams.target ?? 'SELF') === 'SELF') {
           const parsed = parseKeywordItem({
             keyword: stepParams.keyword,
             amount: stepParams.amount,

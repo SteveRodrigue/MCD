@@ -1,0 +1,14 @@
+[
+  {
+    "code": "standard_ii",
+    "kind": "standard",
+    "name": "Standard II",
+    "description": "A harder Standard set. The villain gains steady, or each enemy in expert mode."
+  },
+  {
+    "code": "expert_ii",
+    "kind": "expert",
+    "name": "Expert II",
+    "description": "A harder Expert set of peril treacheries."
+  }
+]

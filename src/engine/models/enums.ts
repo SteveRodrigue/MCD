@@ -64,6 +64,7 @@ export enum Keyword {
   VILLAINOUS = 'Villainous',
   INCITE = 'Incite',
   HINDER = 'Hinder',
+  PERIL = 'Peril',
 }
 
 export enum StatusCard {

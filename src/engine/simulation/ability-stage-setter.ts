@@ -1236,7 +1236,7 @@ function digestDerivedStats(state: GameState): string {
     ]),
     state.players
       .flatMap((p) => p.engagedMinions)
-      .map((m) => KEYWORDS.map((k) => hasEntityKeyword(m, k))),
+      .map((m) => KEYWORDS.map((k) => hasEntityKeyword(m, k, state))),
     state.villains.map((v) => [
       attempt(() => getEffectiveVillainStats(state, v)),
       attempt(() => getEffectiveVillainMaxHealth(state, v)),
@@ -1266,7 +1266,8 @@ function grantedKeywordsEffective(stage: Stage, target: AbilityTarget): boolean 
   return target.ability.steps.every((step) => {
     const keyword = String((step.effectParams as { keyword?: string } | undefined)?.keyword ?? '');
     return (
-      keyword !== '' && hasEntityKeyword(entity as Parameters<typeof hasEntityKeyword>[0], keyword)
+      keyword !== '' &&
+      hasEntityKeyword(entity as Parameters<typeof hasEntityKeyword>[0], keyword, stage.state)
     );
   });
 }

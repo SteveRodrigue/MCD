@@ -59,7 +59,7 @@ const reveal = (state: GameState, playerId = 'p1') => {
 describe('Imminent Overload (01171) (Issue #132)', () => {
   it('data: acceleration icon, fixed base threat 3, and no Crisis icon', () => {
     const card = cardCatalog.getCard('01171') as SideSchemeCard;
-    expect(card.hasAcceleration).toBe(true);
+    expect(card.scheme_acceleration).toBe(1);
     expect(getCrisisIconCount(card)).toBe(0);
     expect(card.baseThreat).toBe(3);
     expect(card.baseThreatFixed).toBe(true);

@@ -1,4 +1,4 @@
-import type { CardRepository } from '@engine/models';
+import type { CardRepository, NormalizedCard } from '@engine/models';
 import type { EncounterSetKind, EncounterSets } from '../../data/packs/scenario-definition';
 
 export interface EncounterSetInfo {
@@ -16,6 +16,14 @@ export function setEncounterSets(sets: EncounterSets): void {
   encounterSets = sets;
 }
 
+/**
+ * The cards a set adds to a deck, by printed quantity. The back of a double-sided card is the same
+ * physical card, so it is not a card of its own.
+ */
+export function listEncounterDeckCards(catalog: CardRepository, setCode: string): NormalizedCard[] {
+  return catalog.getExpandedCardsBySet(setCode).filter((card) => !card.raw?.hidden);
+}
+
 /** The codes of the enabled packs' sets of one kind, in load order (Core first). */
 export function listEncounterSetCodes(kind: EncounterSetKind): string[] {
   return encounterSets.filter((set) => set.kind === kind).map((set) => set.code);
@@ -31,7 +39,7 @@ export function listEncounterSets(
 ): EncounterSetInfo[] {
   return encounterSets
     .filter((set) => set.kind === kind)
-    .map((set) => ({ ...set, cardCount: catalog.getExpandedCardsBySet(set.code).length }));
+    .map((set) => ({ ...set, cardCount: listEncounterDeckCards(catalog, set.code).length }));
 }
 
 /** The display name a pack gives an encounter set, if it lists that set. */

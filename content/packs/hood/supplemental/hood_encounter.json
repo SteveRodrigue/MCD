@@ -1,0 +1,488 @@
+{
+  "$schema": "../../../../src/data/supplemental/schema.json",
+  "cards": {
+    "24029": {
+      "abilities": [
+        {
+          "id": "cruel_intentions_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "cruel_intentions_deal_each",
+              "effect": "DEAL_FACEDOWN_ENCOUNTER_CARD",
+              "effectParams": {
+                "target": "ALL_PLAYERS",
+                "count": 1
+              }
+            },
+            {
+              "id": "cruel_intentions_villain_boost",
+              "effect": "DEAL_FACEDOWN_ENCOUNTER_CARD",
+              "effectParams": {
+                "target": "VILLAIN",
+                "count": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "cruel_intentions_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "DEAL_FACEDOWN_ENCOUNTER_CARD",
+              "effectParams": {
+                "target": "ACTIVE_PLAYER",
+                "count": 1
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:00:00Z",
+        "updatedAt": "2026-11-04T14:00:00Z",
+        "reviewedAt": "2026-11-04T14:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "Peril. Surge.\n<b>When Revealed</b>: Deal each player 1 facedown encounter card. Give the villain 1 facedown boost card.\n<hr />\n[star] <b>Boost</b>: Deal yourself 1 facedown encounter card."
+      }
+    },
+    "24030": {
+      "abilities": [
+        {
+          "id": "ruination_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "ruination_discard_until_side_scheme",
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "mode": "UNTIL_MATCH",
+                "untilFilter": {
+                  "types": ["side_scheme"]
+                },
+                "matchingDestination": "REVEAL"
+              }
+            },
+            {
+              "id": "ruination_threat_each_scheme",
+              "effect": "ADD_THREAT",
+              "effectParams": {
+                "amount": 2,
+                "target": "ALL_SCHEMES"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:00:00Z",
+        "updatedAt": "2026-11-04T14:00:00Z",
+        "reviewedAt": "2026-11-04T14:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "Incite 1. Peril.\n<b>When Revealed</b>: Discard cards from the top of the encounter deck until a side scheme is discarded. Reveal that card. Place 2 threat on each scheme in play."
+      }
+    },
+    "24031": {
+      "abilities": [
+        {
+          "id": "seek_and_destroy_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "SEARCH",
+              "effectParams": {
+                "source": ["ENCOUNTER_DECK", "ENCOUNTER_DISCARD", "SET_ASIDE"],
+                "filter": {
+                  "types": ["minion"],
+                  "sets": ["PLAYER_NEMESIS"]
+                },
+                "takeCount": 1,
+                "selectedDestination": "TABLEAU",
+                "shuffleAfter": true,
+                "autoSelectIfUnambiguous": true
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:00:00Z",
+        "updatedAt": "2026-11-04T14:00:00Z",
+        "reviewedAt": "2026-11-04T14:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "Incite 1. Peril.\n<b>When Revealed</b>: Search the encounter deck, discard pile, and set-aside area for your nemesis minion and put it into play engaged with you. <i>(Shuffle.)</i>"
+      }
+    },
+    "24032": {
+      "abilities": [
+        {
+          "id": "slug_it_out_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "slug_it_out_exhaust",
+              "effect": "EXHAUST",
+              "effectParams": {
+                "target": "SELF_IDENTITY"
+              }
+            },
+            {
+              "id": "slug_it_out_damage",
+              "effect": "DEAL_DAMAGE",
+              "effectParams": {
+                "amount": 2,
+                "target": "SELF_IDENTITY"
+              }
+            }
+          ]
+        },
+        {
+          "id": "slug_it_out_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "id": "slug_it_out_boost_damage",
+              "effect": "DEAL_DAMAGE",
+              "effectParams": {
+                "amount": 1,
+                "target": "ALL_CONTROLLED_CHARACTERS"
+              }
+            },
+            {
+              "id": "slug_it_out_boost_card",
+              "effect": "GIVE_ADDITIONAL_BOOST_CARD"
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:00:00Z",
+        "updatedAt": "2026-11-04T14:00:00Z",
+        "reviewedAt": "2026-11-04T14:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "Peril. Surge.\n<b>When Revealed</b>: Exhaust your identity. Take 2 damage.\n<hr />\n[star] <b>Boost</b>: Deal 1 damage to each character you control. Give the villain 1 additional boost card for this activation."
+      }
+    },
+    "24050": {
+      "abilities": [
+        {
+          "id": "dark_dealings_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "VILLAIN_SCHEMES",
+              "effectParams": {
+                "schemeBonus": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "dark_dealings_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "GIVE_ADDITIONAL_BOOST_CARD"
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:00:00Z",
+        "updatedAt": "2026-11-04T14:00:00Z",
+        "reviewedAt": "2026-11-04T14:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>When Revealed</b>: The villain schemes with +1 SCH.\n<hr />\n[star] <b>Boost</b>: Give the villain 1 additional boost card for this activation."
+      }
+    },
+    "24051": {
+      "abilities": [
+        {
+          "id": "mob_mentality_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "mob_mentality_alter_ego_discard",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "ALTER_EGO"
+              },
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "mode": "TOP",
+                "count": 7,
+                "filter": {
+                  "types": ["minion"]
+                },
+                "matchingDestination": "PLAY"
+              }
+            },
+            {
+              "id": "mob_mentality_hero_attack",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "HERO"
+              },
+              "effect": "VILLAIN_AND_ENGAGED_MINIONS_ATTACK",
+              "effectParams": {}
+            },
+            {
+              "id": "mob_mentality_hero_surge",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "HERO"
+              },
+              "effect": "SURGE"
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:00:00Z",
+        "updatedAt": "2026-11-04T14:00:00Z",
+        "reviewedAt": "2026-11-04T14:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>When Revealed (Alter-Ego)</b>: Discard the top 7 cards from the encounter deck. Put the first minion discarded this way into play engaged with you.\n<b>When Revealed (Hero)</b>: The villain and each minion engaged with you attacks you. This card gains surge."
+      }
+    },
+    "24052": {
+      "abilities": [
+        {
+          "id": "overwhelming_force_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "TABLEAU",
+                "filter": {
+                  "types": ["upgrade", "support"]
+                },
+                "selection": "HIGHEST_COST",
+                "fallback": "SURGE",
+                "target": "ACTIVE_PLAYER"
+              }
+            }
+          ]
+        },
+        {
+          "id": "overwhelming_force_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "GIVE_ADDITIONAL_BOOST_CARD"
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:00:00Z",
+        "updatedAt": "2026-11-04T14:00:00Z",
+        "reviewedAt": "2026-11-04T14:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>When Revealed</b>: Discard the highest-cost upgrade or support you control. If no card was discarded this way, this card gains surge.\n<hr />\n[star] <b>Boost</b>: Give the villain 1 additional boost card for this activation."
+      }
+    },
+    "24053": {
+      "abilities": [
+        {
+          "id": "shadow_of_the_past_ii_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "step_1_spawn_nemesis_minion",
+              "effect": "PUT_INTO_PLAY",
+              "effectParams": {
+                "from": "SET_ASIDE",
+                "to": "ENGAGED_WITH_PLAYER",
+                "reveal": true,
+                "filter": {
+                  "types": ["minion"],
+                  "sets": ["PLAYER_NEMESIS"]
+                }
+              }
+            },
+            {
+              "id": "step_2_spawn_nemesis_scheme",
+              "effect": "PUT_INTO_PLAY",
+              "effectParams": {
+                "from": "SET_ASIDE",
+                "to": "SIDE_SCHEMES",
+                "reveal": true,
+                "filter": {
+                  "types": ["side_scheme"],
+                  "sets": ["PLAYER_NEMESIS"]
+                }
+              }
+            },
+            {
+              "id": "step_3_shuffle_remaining_cards",
+              "effect": "SHUFFLE_INTO_DECK",
+              "effectParams": {
+                "from": "SET_ASIDE",
+                "toDeck": "ENCOUNTER_DECK",
+                "filter": {
+                  "sets": ["PLAYER_NEMESIS"]
+                }
+              }
+            },
+            {
+              "id": "step_4_fallback_surge",
+              "effect": "SURGE",
+              "gate": "THEN",
+              "gateParams": {
+                "step": "step_1_spawn_nemesis_minion",
+                "negate": true
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:00:00Z",
+        "updatedAt": "2026-11-04T14:00:00Z",
+        "reviewedAt": "2026-11-04T14:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>When Revealed</b>: Reveal your set-aside nemesis minion and put it into play engaged with you. Reveal your set-aside nemesis side scheme and put it into play. Shuffle the rest of your set-aside nemesis encounter set into the encounter deck. If your nemesis minion does not enter the game this way, this card gains surge."
+      }
+    },
+    "24054": {
+      "abilities": [
+        {
+          "id": "total_annihilation_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "total_annihilation_overkill",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "HERO"
+              },
+              "effect": "GRANT_ATTACK_KEYWORD",
+              "effectParams": {
+                "keyword": "Overkill"
+              }
+            },
+            {
+              "id": "total_annihilation_attack",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "HERO"
+              },
+              "effect": "VILLAIN_ATTACKS",
+              "effectParams": {}
+            }
+          ]
+        },
+        {
+          "id": "total_annihilation_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "GRANT_ATTACK_KEYWORD",
+              "effectParams": {
+                "keyword": "Overkill"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:00:00Z",
+        "updatedAt": "2026-11-04T14:00:00Z",
+        "reviewedAt": "2026-11-04T14:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "Surge.\n<b>When Revealed (Hero)</b>: The villain attacks you. That attack gains overkill.\n<hr />\n[star] <b>Boost</b>: If the villain is attacking, this attack gains overkill."
+      }
+    },
+    "24049a": {
+      "modeOnly": "STANDARD",
+      "abilities": [
+        {
+          "id": "formidable_foe_steady",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "GRANT_KEYWORD",
+              "effectParams": {
+                "keyword": "Steady",
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:00:00Z",
+        "updatedAt": "2026-11-04T14:00:00Z",
+        "reviewedAt": "2026-11-04T14:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b><i>Standard Mode Only.</i></b>\nPermanent. Setup.\nThe villain gains steady. <i>(Steady characters require 2 status cards of the same type to be stunned or confused.)</i>"
+      }
+    },
+    "24049b": {
+      "modeOnly": "EXPERT",
+      "abilities": [
+        {
+          "id": "formidable_foe_steady",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "GRANT_KEYWORD",
+              "effectParams": {
+                "keyword": "Steady",
+                "target": "ALL_ENEMIES"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T14:00:00Z",
+        "updatedAt": "2026-11-04T14:00:00Z",
+        "reviewedAt": "2026-11-04T14:00:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b><i>Expert Mode Only.</i></b>\nPermanent. Setup.\nEach enemy gains steady. <i>(Steady characters require 2 status cards of the same type to be stunned or confused.)</i>"
+      }
+    }
+  }
+}

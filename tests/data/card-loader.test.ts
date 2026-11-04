@@ -244,7 +244,7 @@ describe('Card Loader & Normalizer Unit Tests', () => {
       const sideScheme = catalog.getCard('01109') as SideSchemeCard;
       expect(sideScheme).toBeDefined();
       expect(sideScheme?.type).toBe(CardType.SIDE_SCHEME);
-      expect(sideScheme?.hasAcceleration).toBe(true);
+      expect(sideScheme?.scheme_acceleration).toBeGreaterThan(0);
 
       // Hydra Bomber Minion (01110)
       const bomber = catalog.getCard('01110');

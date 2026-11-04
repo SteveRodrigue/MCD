@@ -343,9 +343,10 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         ).toBe(true);
       });
 
-      // Check Scanned Encounter Sets (Rhino, Modular Sets, Standard, Expert, All 5 Core Hero Nemesis sets)
+      // Check Scanned Encounter Sets (Rhino, Klaw, Ultron, Modular Sets, Standard, Expert, All 5 Core Hero Nemesis sets)
       const scannedEncounterSets = new Set([
         'rhino',
+        'klaw',
         'ultron',
         'bomb_scare',
         'masters_of_evil',
@@ -366,27 +367,8 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         'black_panther_nemesis',
       ]);
 
-      // Single cards modelled ahead of their set's scan (#244: Weapons Runner; Plan R9: Klaw II, Immortal Klaw; Issue #604: Klaw I, III, Armored Guard; Issue #605: Klaw Schemes; Issue #606: Attack Dealt Damage; Issue #607: Modifier & Heal)
-      const scannedEncounterCards = new Set([
-        '01113',
-        '01114',
-        '01115',
-        '01118',
-        '01119',
-        '01120',
-        '01121',
-        '01122',
-        '01123',
-        '01124',
-        '01125',
-        '01126',
-        '01127',
-        // main scheme Setup and When Revealed abilities (Klaw)
-        '01116a',
-        '01116b',
-        '01117a',
-        '01117b',
-      ]);
+      // Single cards modelled ahead of their set's scan
+      const scannedEncounterCards = new Set<string>();
 
       coreEncounterPack.forEach((card) => {
         const enrichment = supplementalRegistry[card.code];

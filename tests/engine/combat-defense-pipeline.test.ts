@@ -115,6 +115,7 @@ function createInitialTestState(): GameState {
     accelerationTokens: 0,
     targetThreat: 10,
     mainSchemeDeck: [],
+    mainSchemes: [],
     sideSchemes: [],
     villains: [
       {

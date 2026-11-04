@@ -11,6 +11,7 @@ import {
 } from '../models';
 import { type EffectExecutionContext } from '../effects';
 import { drawEncounterCard } from './deck-exhaustion';
+import { countAmplifyIconsInPlay } from './icons';
 import { hasEntityKeyword } from './stat-calculator';
 import { appendLog } from '../state/game-log';
 import { nextEngineId } from '../state/rng';
@@ -138,7 +139,10 @@ function finishBoostCard(
     });
   }
 
-  const icons = boostCard.card.boostIcons ?? 0;
+  // Each amplify icon in play adds one boost icon to the card (RR v1.8 Amplify Icon, #293).
+  const printedIcons = boostCard.card.boostIcons ?? 0;
+  const amplify = countAmplifyIconsInPlay(state);
+  const icons = printedIcons + amplify;
   appendLog(state, {
     category,
     actor,
@@ -148,6 +152,8 @@ function finishBoostCard(
       card: boostCard.card.name,
       amount: icons,
       boostIcons: icons,
+      printedIcons,
+      amplify,
     },
     onomatopoeia: 'BOOST REVEALED!',
   });

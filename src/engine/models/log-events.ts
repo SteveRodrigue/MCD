@@ -308,6 +308,8 @@ export interface LogEvents {
     card: string;
     amount: number;
     boostIcons?: number;
+    printedIcons?: number;
+    amplify?: number;
   };
   'villain.boost.starResolved': { card: string; source?: string; abilityId?: string };
   'villain.stageAdvance': { actor: string; stage: string | number; health?: number };

@@ -133,6 +133,7 @@ export interface NormalizedCard {
   orientation: 'portrait' | 'landscape';
   scheme_crisis?: number;
   scheme_hazard?: number;
+  scheme_amplify?: number;
   enrichment?: import('./abilities').CardEnrichment;
   meta?: Record<string, unknown>;
   /** Powers printed as a dash (–): cannot be used, treated as an unmodifiable 0 (RR v1.8 "Dash (Value)"). */

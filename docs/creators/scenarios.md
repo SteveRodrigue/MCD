@@ -42,7 +42,7 @@ The manifest defines the static properties, stages, and modular sets. Properties
 | `setupOnomatopoeia`     | no       | Comic sound effect shown with the setup log entry.                                                                                                                                                |
 | `supportedDifficulties` | yes      | The difficulties the player can pick, in button order: `SKIRMISH`, `STANDARD`, `EXPERT`. Each needs villain stages.                                                                               |
 | `villainSetup`          | yes      | `villainName` and `stages`: villain card codes per difficulty. `SKIRMISH` lists the versions the players choose from; the game plays one, and the first is the default.                           |
-| `mainSchemeSetup`       | yes      | Main scheme `stages` plus `startingThreat`, `targetThreatPerPlayer`, `escalationThreatPerPlayer`.                                                                                                 |
+| `mainSchemeSetup`       | yes      | Main scheme `stages` (card codes). Threat, escalation and target threat are read directly from card metadata.                     |
 | `modularEncounterSets`  | yes      | `mandatory` set codes; optional `slotCount` (0: no modular slot) and `recommendedModularSets`.                                                                                                    |
 | `encounterSetRules`     | no       | Only for a scenario that breaks the usual Standard or Expert set rule, see below.                                                                                                                 |
 | `tokens`                | no       | Minions with no printed card that a pack script puts into play (`code`, `name`, `type`, `packCode`, `traits`, `scheme`, `attack`, `health`). An [art pack](art-packs.md) can give a token images. |
@@ -71,10 +71,7 @@ Unknown properties are rejected. Example:
   },
 
   "mainSchemeSetup": {
-    "stages": ["custom_ms1a", "custom_ms1b"],
-    "startingThreat": 0,
-    "targetThreatPerPlayer": 6,
-    "escalationThreatPerPlayer": 1
+    "stages": ["custom_ms1a", "custom_ms1b"]
   },
 
   "modularEncounterSets": {

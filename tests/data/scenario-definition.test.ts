@@ -27,10 +27,10 @@ describe('ScenarioDefinitionSchema', () => {
     expect(JSON.stringify(result.error?.issues)).toContain('EXPERT');
   });
 
-  it('rejects an unknown property and a non-numeric threat', () => {
+  it('rejects an unknown property at root and in mainSchemeSetup', () => {
     expect(ScenarioDefinitionSchema.safeParse({ ...rhino, typo: 1 }).success).toBe(false);
     const broken = structuredClone(rhino);
-    broken.mainSchemeSetup.startingThreat = 'zero';
+    broken.mainSchemeSetup.startingThreat = 0;
     expect(ScenarioDefinitionSchema.safeParse(broken).success).toBe(false);
   });
 });

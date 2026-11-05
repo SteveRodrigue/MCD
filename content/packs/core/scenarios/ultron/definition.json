@@ -19,10 +19,7 @@
   },
 
   "mainSchemeSetup": {
-    "stages": ["01137a", "01137b", "01138a", "01138b", "01139a", "01139b"],
-    "startingThreat": 0,
-    "targetThreatPerPlayer": 3,
-    "escalationThreatPerPlayer": 1
+    "stages": ["01137a", "01137b", "01138a", "01138b", "01139a", "01139b"]
   },
 
   "modularEncounterSets": {

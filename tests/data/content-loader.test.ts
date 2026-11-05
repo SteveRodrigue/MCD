@@ -165,9 +165,6 @@ describe('loadContent', () => {
       },
       mainSchemeSetup: {
         stages: ['00101a', '00101b'],
-        startingThreat: 0,
-        targetThreatPerPlayer: 1,
-        escalationThreatPerPlayer: 1,
       },
       modularEncounterSets: { mandatory: [] },
       ...extra,

@@ -29,31 +29,9 @@ An open-source, faithful digital adaptation of **Marvel Champions: The Card Game
 
 ---
 
-## 🏗️ Architecture & Dataflow
+## 🏗️ Architecture & Documentation
 
-```mermaid
-flowchart TD
-    subgraph UI ["🎨 Presentation Layer (src/ui/)"]
-        UserAction["User Interaction<br/>(Click Card / Suit Up / Attack)"]
-        ReactViews["React Tabletop Components<br/>(VillainZone, HeroZone, HandTray)"]
-    end
-
-    subgraph Dispatch ["⚡ Action Dispatch"]
-        ActionPayload["Action Object<br/>{ type: 'PLAY_CARD', playerId, ... }"]
-    end
-
-    subgraph Engine ["🧠 Headless Rules Engine (src/engine/)"]
-        Pipeline["Trigger Pipeline & Priority Machine<br/>(Legality ➔ Interrupts ➔ Resolution ➔ Responses)"]
-        Reducers["State Reducers & Mechanics<br/>(Health, Threat, Status Tokens, Piles)"]
-        NewState["Immutable New GameState"]
-    end
-
-    UserAction -->|Dispatches| ActionPayload
-    ActionPayload --> Pipeline
-    Pipeline --> Reducers
-    Reducers --> NewState
-    NewState -->|Rerenders Tabletop| ReactViews
-```
+A headless, deterministic rules engine in `src/engine/` takes actions and returns a new immutable game state. The React UI in `src/ui/` only dispatches actions and renders state. Flow diagrams are in the **[Architecture Atlas](docs/engine/architecture.md)**.
 
 - **[Architecture Decision Records (ADRs)](docs/decisions/README.md)** — Comprehensive centralized registry of all architectural, technical, and gameplay design decisions (ADR-0001 onward).
 - **[Algorithmic Rules Reference](docs/engine/algorithmic_rules_reference.md)** — Precise mathematical state machine and timing pipeline specifications derived from RR v1.8.

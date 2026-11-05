@@ -230,9 +230,11 @@ export function canAttack(
   }
 
   if (targetType === 'villain') {
-    const activeVillain = getActiveVillain(state);
-    if (activeVillain && isEntityImmuneToAttacks(activeVillain)) {
-      return { allowed: false, reason: `${activeVillain.card.name} cannot be attacked.` };
+    if (state.villains?.length) {
+      const activeVillain = getActiveVillain(state);
+      if (activeVillain && isEntityImmuneToAttacks(activeVillain)) {
+        return { allowed: false, reason: `${activeVillain.card.name} cannot be attacked.` };
+      }
     }
     if (isVillainAttackBlockedByGuard(player)) {
       return { allowed: false, reason: GUARD_BLOCK_REASON };

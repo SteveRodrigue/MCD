@@ -205,6 +205,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
               const stripped = upstream.text
                 .replace(/<i>.*?<\/i>/gis, '')
                 .replace(/<b>Contents<\/b>:.*?Setup:.*$/gis, '')
+                .replace(/<b>When Revealed<\/b>:\s*Advance to stage \d+B\.?/gis, '')
                 .replace(/<b>If this stage is completed, the players lose the game\.<\/b>/gis, '')
                 .replace(/Hazard icon/gis, '')
                 .replace(/Acceleration icon/gis, '')

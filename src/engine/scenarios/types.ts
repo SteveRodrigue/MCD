@@ -32,12 +32,6 @@ export interface ScenarioPlugin {
   onGameSetup(state: GameState, options: ScenarioGameSetupOptions): GameState;
 
   /**
-   * Stage 1A Declarative Setup Hook (Step 10 of Rules Reference v1.8):
-   * Places starting side schemes, environments, and attachments into play.
-   */
-  resolveStage1ASetup?(state: GameState, options: ScenarioGameSetupOptions): GameState;
-
-  /**
    * Invoked when a villain reaches 0 HP.
    * Handles stage transitions (Stage I -> II -> III), HP reset, When Revealed effects,
    * active villain rotation, or declaring 'HEROES' victory.

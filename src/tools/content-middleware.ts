@@ -25,12 +25,32 @@ function isArtPackImage(rel: string): boolean {
   return /^art-packs\/[^/]+\/[^/]+\.png$/i.test(rel);
 }
 
-function collect(dir: string, relDir: string, out: string[]): void {
+/**
+ * Walks one folder. A symbolic link (a junction on Windows, which Node reports the same way) is
+ * not `isDirectory()` or `isFile()`, so it is resolved with `fs.stat` first. `ancestors` holds the
+ * real paths of the folders being walked, so a link back up the tree is skipped, not followed.
+ */
+function collect(dir: string, relDir: string, out: string[], ancestors: Set<string>): void {
+  const real = fs.realpathSync(dir);
+  if (ancestors.has(real)) return;
+  const chain = new Set(ancestors).add(real);
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (EXCLUDED_DIRS.has(entry.name)) continue;
     const rel = relDir ? `${relDir}/${entry.name}` : entry.name;
-    if (entry.isDirectory()) collect(path.join(dir, entry.name), rel, out);
-    else if (entry.isFile() && (entry.name.endsWith('.json') || isArtPackImage(rel))) out.push(rel);
+    const full = path.join(dir, entry.name);
+    let isDir = entry.isDirectory();
+    let isFile = entry.isFile();
+    if (entry.isSymbolicLink()) {
+      try {
+        const target = fs.statSync(full);
+        isDir = target.isDirectory();
+        isFile = target.isFile();
+      } catch {
+        continue; // dangling link
+      }
+    }
+    if (isDir) collect(full, rel, out, chain);
+    else if (isFile && (entry.name.endsWith('.json') || isArtPackImage(rel))) out.push(rel);
   }
 }
 
@@ -39,7 +59,7 @@ export function buildContentIndex(base?: string): string[] {
   const root = contentRoot(base);
   if (!fs.existsSync(root)) return [];
   const files: string[] = [];
-  collect(root, '', files);
+  collect(root, '', files, new Set());
   return files.sort();
 }
 

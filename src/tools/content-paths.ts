@@ -101,9 +101,20 @@ export function listPackCodes(base?: string): string[] {
   if (!fs.existsSync(root)) return [];
   return fs
     .readdirSync(root, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
+    .filter((d) => isDirectoryEntry(root, d))
     .map((d) => d.name)
     .sort();
+}
+
+/** True for a folder, or a link (junction on Windows) that points at one. */
+export function isDirectoryEntry(parent: string, entry: fs.Dirent): boolean {
+  if (entry.isDirectory()) return true;
+  if (!entry.isSymbolicLink()) return false;
+  try {
+    return fs.statSync(path.join(parent, entry.name)).isDirectory();
+  } catch {
+    return false;
+  }
 }
 
 /** Every card file of every pack, sorted by stem. */

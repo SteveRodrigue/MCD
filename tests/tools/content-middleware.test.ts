@@ -148,3 +148,43 @@ describe('content endpoint writes (editor Save, M9)', () => {
     expect(run(false)).toEqual({ status: 0, nextCalled: true });
   });
 });
+
+describe('content index through links', () => {
+  const linkType = process.platform === 'win32' ? 'junction' : 'dir';
+  let root: string;
+  const put = (file: string, data = '{}') => {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, data);
+  };
+
+  beforeAll(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), 'mcd-content-links-'));
+    // The "private" store holds the art packs (generated stand-in files, not real images).
+    const store = path.join(root, 'private', 'art-packs');
+    put(path.join(store, 'fan', 'art-pack.json'));
+    put(path.join(store, 'fan', 'hero.png'), 'generated');
+    put(path.join(store, 'fan', 'notes.txt'), 'text');
+    // A loop back to the store itself must not hang the walk.
+    fs.symlinkSync(store, path.join(store, 'fan', 'loop'), linkType);
+    // A linked single file counts as a file.
+    fs.symlinkSync(
+      path.join(store, 'fan', 'art-pack.json'),
+      path.join(store, 'fan', 'alias.json'),
+      'file',
+    );
+    put(path.join(root, 'ws', 'content', 'config.json'));
+    fs.symlinkSync(store, path.join(root, 'ws', 'content', 'art-packs'), linkType);
+  });
+  afterAll(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it('lists the files of an art-packs folder that is a link', () => {
+    expect(buildContentIndex(path.join(root, 'ws'))).toEqual([
+      'art-packs/fan/alias.json',
+      'art-packs/fan/art-pack.json',
+      'art-packs/fan/hero.png',
+      'config.json',
+    ]);
+  });
+});

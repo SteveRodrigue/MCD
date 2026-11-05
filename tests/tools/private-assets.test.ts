@@ -72,6 +72,34 @@ describe('linkOrCopyDirectory', () => {
   });
 });
 
+describe('linkOrCopyDirectory --copy over an existing link', () => {
+  it('replaces a link to the same source with a real copy', () => {
+    const src = path.join(centralDir, 'references', 'rulesheets');
+    const dst = path.join(workspaceDir, 'references', 'rulesheets');
+
+    if (linkOrCopyDirectory(src, dst, false) !== 'linked') return; // no link support here
+    expect(linkOrCopyDirectory(src, dst, true)).toBe('copied');
+    expect(isSymlinkOrJunction(dst)).toBe(false);
+    expect(fs.readFileSync(path.join(dst, 'sheet1.pdf'), 'utf8')).toBe('SHEET1');
+    // The central copy must be untouched.
+    expect(fs.existsSync(path.join(src, 'sheet1.pdf'))).toBe(true);
+  });
+
+  it('replaces a link to a different source with a real copy', () => {
+    const other = path.join(tempDir, 'other');
+    write(path.join(other, 'x.pdf'), 'X');
+    const src = path.join(centralDir, 'references', 'rulesheets');
+    const dst = path.join(workspaceDir, 'references', 'rulesheets');
+
+    if (linkOrCopyDirectory(other, dst, false) !== 'linked') return;
+    expect(linkOrCopyDirectory(src, dst, true)).toBe('copied');
+    expect(isSymlinkOrJunction(dst)).toBe(false);
+    expect(fs.existsSync(path.join(dst, 'sheet1.pdf'))).toBe(true);
+    expect(fs.existsSync(path.join(dst, 'x.pdf'))).toBe(false);
+    expect(fs.existsSync(path.join(other, 'x.pdf'))).toBe(true);
+  });
+});
+
 describe('linkOrCopyFile', () => {
   it('links or copies file to destination', () => {
     const src = path.join(centralDir, 'references', 'mc_rulesreference_v18_compressed.pdf');

@@ -21,6 +21,7 @@ import { fileURLToPath } from 'url';
 import {
   contentRoot,
   defaultPrivateAssetsDir,
+  isDirectoryEntry,
   referencesDir,
   rulesheetsDir,
 } from '../src/tools/content-paths';
@@ -95,6 +96,16 @@ export function getLinkTarget(targetPath: string): string | undefined {
   }
 }
 
+/** Removes a symlink or Windows junction without touching its target. */
+function removeLink(linkPath: string): void {
+  try {
+    fs.unlinkSync(linkPath);
+  } catch {
+    // Windows can refuse unlink on a junction; rmdir removes the junction only.
+    fs.rmdirSync(linkPath);
+  }
+}
+
 export function linkOrCopyDirectory(
   sourceDir: string,
   destinationDir: string,
@@ -110,10 +121,11 @@ export function linkOrCopyDirectory(
       ? path.resolve(path.dirname(destinationDir), existingTarget)
       : '';
     const resolvedSource = path.resolve(sourceDir);
-    if (resolvedTarget.toLowerCase() === resolvedSource.toLowerCase()) {
+    if (!copy && resolvedTarget.toLowerCase() === resolvedSource.toLowerCase()) {
       return 'already-linked';
     }
-    fs.unlinkSync(destinationDir);
+    // --copy over a link: drop only the link itself (never the files it points at), then copy.
+    removeLink(destinationDir);
   }
 
   if (copy) {
@@ -374,7 +386,7 @@ export function getAssetStatus(
     try {
       artPacksCount = fs
         .readdirSync(wsArtPacks, { withFileTypes: true })
-        .filter((d) => d.isDirectory()).length;
+        .filter((d) => isDirectoryEntry(wsArtPacks, d)).length;
     } catch {
       // Directory read error
     }

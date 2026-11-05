@@ -20,11 +20,21 @@ export class NodeFsDriver implements ContentDriver, ContentWriter {
 
   async listDirs(dir: string): Promise<string[]> {
     try {
-      const entries = await readdir(this.resolve(dir), { withFileTypes: true });
-      return entries
-        .filter((entry) => entry.isDirectory())
-        .map((entry) => entry.name)
-        .sort();
+      const base = this.resolve(dir);
+      const entries = await readdir(base, { withFileTypes: true });
+      const names: string[] = [];
+      for (const entry of entries) {
+        // A link (a junction on Windows) is not isDirectory(); follow it.
+        if (entry.isDirectory()) names.push(entry.name);
+        else if (entry.isSymbolicLink()) {
+          try {
+            if ((await stat(path.join(base, entry.name))).isDirectory()) names.push(entry.name);
+          } catch {
+            // dangling link
+          }
+        }
+      }
+      return names.sort();
     } catch {
       return [];
     }

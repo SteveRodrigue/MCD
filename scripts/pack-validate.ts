@@ -27,7 +27,7 @@ import {
   ScenarioDefinitionSchema,
 } from '../src/data/packs/scenario-definition';
 import { SupplementalPackSchema } from '../src/data/supplemental/schema';
-import { metaFile, metaSchemaFile } from '../src/tools/content-paths';
+import { isDirectoryEntry, metaFile, metaSchemaFile } from '../src/tools/content-paths';
 import { packHooks } from '../src/data/content/pack-hooks.generated';
 
 const PLACEHOLDER_CODE = '00000';
@@ -94,7 +94,7 @@ export function validatePackSet(packsRoot: string, options: ValidatePackOptions)
 
   const packs: LoadedPack[] = fs
     .readdirSync(packsRoot, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
+    .filter((d) => isDirectoryEntry(packsRoot, d))
     .map((d) => ({
       dir: path.join(packsRoot, d.name),
       name: d.name,

@@ -4,6 +4,8 @@ import { BoostEffectModal } from '../../src/ui/components/board/BoostEffectModal
 import { PendingDecisionPrompt } from '../../src/engine/models';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { createCardInstance } from '../../src/engine/state/game-setup';
+import { ModalStyleProvider } from '../../src/ui/theme/ModalStyleContext';
+import { getModalStyle } from '../../src/ui/theme/modal-styles';
 
 describe('BoostEffectModal Component (Issue #503)', () => {
   const tigerSharkCard = cardCatalog.getCard('01131')!;
@@ -146,5 +148,25 @@ describe('BoostEffectModal Component (Issue #503)', () => {
     );
 
     expect(container.firstChild).toBeNull();
+  });
+
+  it('renders ability text with theme-conforming style.text under Night Edition theme without text-comic-black', () => {
+    const nightStyle = getModalStyle('night')!;
+    render(
+      <ModalStyleProvider style={nightStyle}>
+        <BoostEffectModal
+          isOpen={true}
+          prompt={samplePrompt}
+          pacing="manual"
+          isAutoPlaying={false}
+          onContinue={vi.fn()}
+        />
+      </ModalStyleProvider>,
+    );
+
+    const callout = screen.getByText(/Give the villain a tough status card/i).closest('div');
+    expect(callout).not.toBeNull();
+    expect(callout?.className).toContain(nightStyle.text);
+    expect(callout?.className).not.toContain('text-comic-black');
   });
 });

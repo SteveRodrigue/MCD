@@ -21,6 +21,14 @@ describe('FormattedCardText & MarvelCDB HTML/Token Formatter', () => {
     expect(formatted).toContain('⭐ Wild');
   });
 
+  it('formats trait tokens wrapped in double brackets', () => {
+    const traitText = 'Engaged with you as a [[Drone]] minion.';
+    const formatted = formatCardTextHtml(traitText);
+
+    expect(formatted).toContain('<b><i>Drone</i></b>');
+    expect(formatted).not.toContain('[[Drone]]');
+  });
+
   it('handles empty or undefined input gracefully', () => {
     expect(formatCardTextHtml('')).toBe('');
     expect(formatCardTextHtml(undefined)).toBe('');

@@ -40,5 +40,7 @@ export function formatCardTextHtml(rawText?: string): string {
       .replace(/\[acceleration\]/gi, '⏩')
       .replace(/\[crisis\]/gi, '🔴')
       .replace(/\[amplify\]/gi, '🔊')
+      // Traits
+      .replace(/\[\[(.*?)\]\]/g, '<b><i>$1</i></b>')
   );
 }

@@ -117,12 +117,12 @@ export const BoostEffectModal: React.FC<BoostEffectModalProps> = ({
           ) : null}
 
           {/* Ability Text Box Callout */}
-          <div className={`p-4 flex-1 space-y-2 rounded-lg border-2 ${style.inset}`}>
-            <div className="flex items-center gap-1.5 text-xs font-black uppercase text-comic-red">
+          <div className={`p-4 flex-1 space-y-2 ${style.inset}`}>
+            <div className="flex items-center gap-1.5 text-xs font-black uppercase text-comic-red dark:text-red-400">
               <Sparkles className="w-4 h-4" />
               <span>Upcoming Boost Effect</span>
             </div>
-            <div className="font-bold text-sm leading-relaxed text-comic-black">
+            <div className={`font-bold text-sm leading-relaxed ${style.text}`}>
               ★ <FormattedCardText text={boostAbilityText} />
             </div>
           </div>

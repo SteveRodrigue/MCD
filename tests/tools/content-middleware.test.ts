@@ -152,6 +152,8 @@ describe('content endpoint writes (editor Save, M9)', () => {
 describe('content index through links', () => {
   const linkType = process.platform === 'win32' ? 'junction' : 'dir';
   let root: string;
+  let linksSupported = false;
+  let hasFileLink = false;
   const put = (file: string, data = '{}') => {
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, data);
@@ -164,27 +166,38 @@ describe('content index through links', () => {
     put(path.join(store, 'fan', 'art-pack.json'));
     put(path.join(store, 'fan', 'hero.png'), 'generated');
     put(path.join(store, 'fan', 'notes.txt'), 'text');
-    // A loop back to the store itself must not hang the walk.
-    fs.symlinkSync(store, path.join(store, 'fan', 'loop'), linkType);
-    // A linked single file counts as a file.
-    fs.symlinkSync(
-      path.join(store, 'fan', 'art-pack.json'),
-      path.join(store, 'fan', 'alias.json'),
-      'file',
-    );
     put(path.join(root, 'ws', 'content', 'config.json'));
-    fs.symlinkSync(store, path.join(root, 'ws', 'content', 'art-packs'), linkType);
+    try {
+      // A loop back to the store itself must not hang the walk.
+      fs.symlinkSync(store, path.join(store, 'fan', 'loop'), linkType);
+      fs.symlinkSync(store, path.join(root, 'ws', 'content', 'art-packs'), linkType);
+      linksSupported = true;
+      try {
+        fs.symlinkSync(
+          path.join(store, 'fan', 'art-pack.json'),
+          path.join(store, 'fan', 'alias.json'),
+          'file',
+        );
+        hasFileLink = true;
+      } catch {
+        // Windows unprivileged environments without Developer Mode throw EPERM on file symlinks.
+      }
+    } catch {
+      // Environment does not support symlinks/junctions (e.g. sandbox or restricted Windows).
+    }
   });
   afterAll(() => {
     fs.rmSync(root, { recursive: true, force: true });
   });
 
   it('lists the files of an art-packs folder that is a link', () => {
-    expect(buildContentIndex(path.join(root, 'ws'))).toEqual([
-      'art-packs/fan/alias.json',
+    if (!linksSupported) return;
+    const expected = [
+      ...(hasFileLink ? ['art-packs/fan/alias.json'] : []),
       'art-packs/fan/art-pack.json',
       'art-packs/fan/hero.png',
       'config.json',
-    ]);
+    ];
+    expect(buildContentIndex(path.join(root, 'ws'))).toEqual(expected);
   });
 });

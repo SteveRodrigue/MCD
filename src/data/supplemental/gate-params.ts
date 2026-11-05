@@ -81,7 +81,7 @@ const formQualifierParam = IdentityFormSchema.meta({ label: 'Form Qualifier' }).
 
 export const IfCountersGateParamsSchema = z
   .object({
-    cardCode: z.string().min(1).meta({ label: 'Card Code' }).optional(),
+    cardCode: z.string().min(1).meta({ label: 'Card Code', primary: true }),
     counterType: z.string().min(1).meta({ label: 'Counter Type', primary: true }),
     atLeast: z.number().int().min(0).optional().meta({ label: 'At Least', defaultValue: 1 }),
     atMost: z.number().int().min(0).optional().meta({ label: 'At Most' }),

@@ -166,7 +166,8 @@ function handleVillainAttacks(
   player: PlayerState,
 ): EffectResult {
   const params = getStepEffectParams(step);
-  const targetSelector = params?.target as string | undefined;
+  const targetSelector = ((params as Record<string, unknown> | undefined)?.targetPlayer ??
+    (params as Record<string, unknown> | undefined)?.target) as string | undefined;
   let targetPlayer: PlayerState | undefined = player;
   if (targetSelector) {
     const resolved = resolveTargets(state, targetSelector as TargetSelector, context);

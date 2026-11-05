@@ -45,6 +45,7 @@
                     "SPECIAL",
                     "SETUP",
                     "WHEN_REVEALED",
+                    "WHEN_COMPLETED",
                     "BOOST"
                   ]
                 },

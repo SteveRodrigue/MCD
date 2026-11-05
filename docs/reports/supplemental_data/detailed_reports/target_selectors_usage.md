@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Target Selectors In Use:** **38/50**
+> **Active Target Selectors In Use:** **37/50**
 
 ### <a id="environment"></a>`ENVIRONMENT` (13 Cards, 35 Declarations)
 
@@ -365,12 +365,6 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01080` | **Med Team (support)** | `core` | `med_team_heal` |
-
-### <a id="hero-with-fewest-hit-points"></a>`HERO_WITH_FEWEST_HIT_POINTS` (1 Cards, 1 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `02013` | **Mad Genius (treachery)** | `gob_encounter` | `mad_genius_green_goblin` |
 
 ### <a id="host-enemy"></a>`HOST_ENEMY` (1 Cards, 1 Declarations)
 

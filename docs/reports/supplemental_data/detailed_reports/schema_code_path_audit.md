@@ -135,7 +135,7 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 | `HOST` | ✅ Yes | **5** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 5 card(s). |
 | `HOST_ENEMY` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 1 card(s). |
 | `ENVIRONMENT` | ✅ Yes | **35** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 35 card(s). |
-| `HERO_WITH_FEWEST_HIT_POINTS` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 1 card(s). |
+| `HERO_WITH_FEWEST_HIT_POINTS` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/effects/target-resolver.ts`; 0 cards currently declare this. |
 
 ### 3. Step Gates (`StepGateSchema` — 100.0% Engine Coverage)
 

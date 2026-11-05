@@ -71,6 +71,8 @@ const EXPECTED_GATE_FIELDS = {
     { key: 'cardCode', label: 'Card Code', type: 'string', required: true },
     { key: 'counterType', label: 'Counter Type', type: 'string', required: true },
     { key: 'atLeast', label: 'At Least', type: 'number', required: false, defaultValue: 1 },
+    { key: 'atMost', label: 'At Most', type: 'number', required: false },
+    { key: 'count', label: 'Exact Count', type: 'number', required: false },
     FORM_QUALIFIER,
     NEGATE,
   ],

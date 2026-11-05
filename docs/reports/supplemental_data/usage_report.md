@@ -15,7 +15,7 @@
 | **False-Vanilla Violations** | **1** | 🚨 ALERT | Cards marked `noSupplementalNeeded` that have printed rules text |
 | **Overall Schema Engine Coverage** | **100.0%** | [Matrix](detailed_reports/schema_code_path_audit.md) | Percentage of all schema primitives with active engine code paths |
 | **Effect Types Code Path Coverage** | **100.0%** | **62/62** | [56 In Use](detailed_reports/effects_usage.md) |
-| **Target Selectors Code Path Coverage** | **100.0%** | **50/50** | [38 In Use](detailed_reports/target_selectors_usage.md) |
+| **Target Selectors Code Path Coverage** | **100.0%** | **50/50** | [37 In Use](detailed_reports/target_selectors_usage.md) |
 | **Step Gates Code Path Coverage** | **100.0%** | **11/11** | [11 In Use](detailed_reports/step_gates_usage.md) |
 | **Trigger Types Code Path Coverage** | **100.0%** | **40/40** | [31 In Use](detailed_reports/timing_and_triggers_usage.md) |
 | **Timing Types Code Path Coverage** | **100.0%** | **20/20** | [16 In Use](detailed_reports/timing_and_triggers_usage.md) |
@@ -83,7 +83,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | `THIS_SIDE_SCHEME` | **8** | 8 | [Inspect Cards](detailed_reports/target_selectors_usage.md#this-side-scheme) |
 | `HOST` | **5** | 5 | [Inspect Cards](detailed_reports/target_selectors_usage.md#host) |
 
-> 🔗 **[View all 38 Target Selectors in Use →](detailed_reports/target_selectors_usage.md)**
+> 🔗 **[View all 37 Target Selectors in Use →](detailed_reports/target_selectors_usage.md)**
 
 ---
 
@@ -92,7 +92,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | Mechanism | In Use | Schema Total | Coverage | Detailed Breakdown |
 | :--- | :---: | :---: | :---: | :--- |
 | **Step Gates** | **11** | 11 | 100.0% | [View Gates Breakdown](detailed_reports/step_gates_usage.md) |
-| **Gate Parameters** | **15** | - | - | `cardCode` (53), `counterType` (32), `form` (22), `step` (13), `negate` (11), `filter` (2), `trait` (4), `resource` (5), `count` (2), `result` (13), `target` (2), `attackerKind` (2), `zone` (1), `controller` (3), `atMost` (28) |
+| **Gate Parameters** | **15** | - | - | `cardCode` (57), `counterType` (32), `form` (22), `step` (13), `negate` (11), `filter` (2), `trait` (4), `resource` (5), `count` (2), `result` (13), `target` (2), `attackerKind` (2), `zone` (1), `controller` (3), `atMost` (28) |
 
 ---
 
@@ -147,7 +147,7 @@ Every schema primitive is verified for a matching engine handler. Check the comp
 | Category | Schema Total | Unused in Cards (0 Cards) | Missing Engine Handler |
 | :--- | :---: | :---: | :---: |
 | **Effects** | 62 | 6 | 🟢 0 |
-| **Targets** | 50 | 12 | 🟢 0 |
+| **Targets** | 50 | 13 | 🟢 0 |
 | **Gates** | 11 | 0 | 🟢 0 |
 | **Triggers** | 40 | 9 | 🟢 0 |
 | **Timings** | 20 | 4 | 🟢 0 |

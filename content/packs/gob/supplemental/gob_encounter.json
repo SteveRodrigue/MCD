@@ -589,6 +589,7 @@
             {
               "gate": "IF_COUNTERS",
               "gateParams": {
+                "cardCode": "02006a",
                 "counterType": "infamy",
                 "atMost": 0
               },
@@ -600,6 +601,7 @@
             {
               "gate": "IF_COUNTERS",
               "gateParams": {
+                "cardCode": "02006a",
                 "counterType": "infamy",
                 "atMost": 0
               },
@@ -657,6 +659,7 @@
             {
               "gate": "IF_COUNTERS",
               "gateParams": {
+                "cardCode": "02006b",
                 "counterType": "madness",
                 "atMost": 0
               },
@@ -668,6 +671,7 @@
             {
               "gate": "IF_COUNTERS",
               "gateParams": {
+                "cardCode": "02006b",
                 "counterType": "madness",
                 "atMost": 0
               },
@@ -1175,7 +1179,7 @@
               },
               "effect": "VILLAIN_ATTACKS",
               "effectParams": {
-                "target": "HERO_WITH_FEWEST_HIT_POINTS",
+                "targetPlayer": "HERO_WITH_FEWEST_HIT_POINTS",
                 "surgeIfNoAttack": true
               }
             }

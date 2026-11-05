@@ -845,7 +845,10 @@ export const EFFECT_PARAM_SCHEMAS = {
   VILLAIN_AND_ENGAGED_MINIONS_ATTACK: effectOnly(),
   VILLAIN_ATTACKS: z
     .object({
-      target: target('Target Player', 'SELF'),
+      targetPlayer: optional(TargetSelectorSchema, {
+        label: 'Target Player',
+        description: 'The player or hero attacked by the villain.',
+      }),
       surgeIfNoAttack: optional(z.boolean(), {
         label: 'Surge If No Attack',
         description: 'If no attack was made, gains surge.',

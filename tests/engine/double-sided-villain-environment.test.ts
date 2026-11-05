@@ -229,4 +229,28 @@ describe('Double-Sided Villain & Environment Mechanics (MC02 Risky Business)', (
       expect(state.villains[0].statusCards).toContain(StatusCard.STUNNED);
     });
   });
+
+  describe('Declarative abilities and triggers coverage', () => {
+    it('verifies WOULD_ATTACK, WOULD_SCHEME, CANNOT_BE_ATTACKED, and WHEN_COMPLETED abilities', () => {
+      const norman = cardCatalog.getCard('02001a')!;
+      const abilities = norman.enrichment?.abilities ?? [];
+      const cannotBeAttacked = abilities.find((a) =>
+        a.steps?.some((s) => s.effect === 'CANNOT_BE_ATTACKED'),
+      );
+      expect(cannotBeAttacked).toBeDefined();
+
+      const wouldAttack = abilities.find((a) => a.trigger === 'WOULD_ATTACK');
+      expect(wouldAttack).toBeDefined();
+
+      const goblin = cardCatalog.getCard('02001b')!;
+      const wouldScheme = goblin.enrichment?.abilities?.find((a) => a.trigger === 'WOULD_SCHEME');
+      expect(wouldScheme).toBeDefined();
+
+      const scheme = cardCatalog.getCard('02004b')!;
+      const whenCompleted = scheme.enrichment?.abilities?.find(
+        (a) => a.timing === 'WHEN_COMPLETED',
+      );
+      expect(whenCompleted).toBeDefined();
+    });
+  });
 });

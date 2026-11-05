@@ -236,7 +236,7 @@ export default defineConfig(({ command }) => ({
     strictPort: true,
     open: false,
     watch: {
-      ignored: ['**/logs/**', '**/cache/**', '**/.cache/**', '**/stats/**'],
+      ignored: ['**/logs/**', '**/cache/**', '**/.cache/**', '**/stats/**', '**/temp/**'],
     },
   },
 }));

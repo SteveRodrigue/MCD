@@ -38,6 +38,10 @@ and the post-task procedure is in
 - **Supplemental Card Comments Policy:** The `comment` field resides strictly inside `audit.comment` and is reserved for human/user notes. Agents must never autonomously add or update `audit.comment`. If explicitly instructed by the user to add or update a comment, the agent must clearly state the reason in the review recap and commit message. Card ambiguities or defects must be resolved with user interaction or in `docs/ambiguities/`, never by embedding informal notes in `audit.comment`.
 - **ADHD Mode Default Policy:** `i-have-adhd` mode is on by default in this project. On Claude Code, the SessionStart hook `.claude/hooks/adhd-default.mjs` injects the skill rules. On other hosts, agents must read `.agents/skills/i-have-adhd/SKILL.md` and apply it from the first turn. It turns off only when the user says "stop adhd mode" or "normal mode".
 
+## Git worktrees
+
+Every worktree lives in `temp/worktrees/<name>` inside the repository (git-ignored; agents may not be able to write outside the repo folder). Create one with `git worktree add -b <branch> temp/worktrees/<name> origin/main`; never use a sibling folder. Claude Code's own built-in worktrees (`.claude/worktrees`, git-ignored) are allowed. Before removing a worktree, delete its `node_modules` junction first (PowerShell: `[System.IO.Directory]::Delete(path)`) and stop any dev server you started there. A `PreToolUse` hook (`.claude/hooks/worktree-location.mjs`) blocks `git worktree add` anywhere else.
+
 ## Claude Code setup
 
 Skills live in `.agents/skills/`. Claude Code only reads `.claude/skills/`, so that path must be a link to `.agents/skills`. If it is missing, create it before anything else (setup steps in [`CONTRIBUTING.md`](CONTRIBUTING.md)): `New-Item -ItemType Junction -Path .claude\skills -Target .agents\skills`.

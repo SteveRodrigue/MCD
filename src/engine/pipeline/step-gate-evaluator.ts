@@ -21,6 +21,7 @@ import { bindKernel } from '../kernel';
 export interface StepGateContext {
   playerId: string;
   player?: PlayerState;
+  sourceCardInstance?: CardInstance;
   resourcesSpent?: string[];
   discardedCards?: CardInstance[];
   /** Who is making the attack being resolved (set while resolving boost cards). */
@@ -176,9 +177,17 @@ export function evaluateStepGate(
     }
 
     case 'IF_COUNTERS': {
-      const holder = findEncounterCardInPlayByCode(state, gateParams.cardCode as string);
+      const holder = gateParams.cardCode
+        ? findEncounterCardInPlayByCode(state, gateParams.cardCode as string)
+        : context.sourceCardInstance;
       const held = holder?.counters?.[gateParams.counterType as string] ?? 0;
-      gateSatisfied = held >= ((gateParams.atLeast as number | undefined) ?? 1);
+      if (gateParams.count !== undefined) {
+        gateSatisfied = held === gateParams.count;
+      } else if (gateParams.atMost !== undefined) {
+        gateSatisfied = held <= gateParams.atMost;
+      } else {
+        gateSatisfied = held >= ((gateParams.atLeast as number | undefined) ?? 1);
+      }
       break;
     }
 

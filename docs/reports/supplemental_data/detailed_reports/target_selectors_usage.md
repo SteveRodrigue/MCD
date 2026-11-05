@@ -2,9 +2,33 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Target Selectors In Use:** **36/48**
+> **Active Target Selectors In Use:** **37/49**
 
-### <a id="villain"></a>`VILLAIN` (14 Cards, 17 Declarations)
+### <a id="self"></a>`SELF` (19 Cards, 21 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
+| `01018` | **Energy Channel (upgrade)** | `core` | `energy_channel_add` |
+| `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
+| `01051` | **Tigra (ally)** | `core` | `tigra_defeat_heal` |
+| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
+| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
+| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response` |
+| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
+| `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
+| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
+| `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
+| `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
+| `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
+| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_cannot_be_attacked` |
+| `02006a` | **Criminal Enterprise (environment)** | `gob_encounter` | `criminal_enterprise_action` |
+| `02006b` | **State of Madness (environment)** | `gob_encounter` | `state_of_madness_action` |
+| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_ally_limit` |
+| `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
+
+### <a id="villain"></a>`VILLAIN` (18 Cards, 21 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -18,6 +42,10 @@
 | `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed`, `repair_sequence_boost` |
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
+| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_damage_interrupt` |
+| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_scheme_interrupt` |
+| `02006a` | **Criminal Enterprise (environment)** | `gob_encounter` | `criminal_enterprise_action` |
+| `02006b` | **State of Madness (environment)** | `gob_encounter` | `state_of_madness_action` |
 | `02036` | **Regenerative Healing (treachery)** | `gob_encounter` | `regenerative_healing_when_revealed`, `regenerative_healing_boost` |
 | `02045` | **Shock Therapy (treachery)** | `gob_encounter` | `shock_therapy_when_revealed` |
 | `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_when_revealed` |
@@ -43,27 +71,6 @@
 | `01058` | **Daredevil (ally)** | `core` | `daredevil_after_thwart` |
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 | `01087` | **Haymaker (event)** | `core` | `haymaker` |
-
-### <a id="self"></a>`SELF` (16 Cards, 16 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
-| `01018` | **Energy Channel (upgrade)** | `core` | `energy_channel_add` |
-| `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
-| `01051` | **Tigra (ally)** | `core` | `tigra_defeat_heal` |
-| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
-| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
-| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response` |
-| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
-| `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
-| `01157` | **Killmonger (minion)** | `core_encounter` | `killmonger_immunity` |
-| `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
-| `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
-| `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
-| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
-| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_ally_limit` |
-| `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
 ### <a id="all-players"></a>`ALL_PLAYERS` (14 Cards, 14 Declarations)
 
@@ -140,6 +147,13 @@
 | `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
 | `02037` | **A Mess of Things (side_scheme)** | `gob_encounter` | `a_mess_of_things_when_revealed` |
 
+### <a id="environment"></a>`ENVIRONMENT` (2 Cards, 5 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_attack_interrupt`, `norman_osborn_damage_interrupt` |
+| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_scheme_interrupt` |
+
 ### <a id="host"></a>`HOST` (5 Cards, 5 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -149,6 +163,15 @@
 | `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
 | `02033` | **Goblin Glider (attachment)** | `gob_encounter` | `goblin_glider_atk_bonus` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
+
+### <a id="all-heroes"></a>`ALL_HEROES` (4 Cards, 4 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01096` | **Rhino (villain)** | `core_encounter` | `rhino_stage_iii_when_revealed` |
+| `01103` | **Shocker (minion)** | `core_encounter` | `shocker_when_revealed` |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
+| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_when_revealed` |
 
 ### <a id="all-minions"></a>`ALL_MINIONS` (2 Cards, 4 Declarations)
 
@@ -224,14 +247,6 @@
 | `01022` | **Ground Stomp (event)** | `core` | `ground_stomp_action` |
 | `01030` | **War Machine (ally)** | `core` | `war_machine_action` |
 | `24049b` | **Formidable Foe (environment)** | `hood_encounter` | `formidable_foe_steady` |
-
-### <a id="all-heroes"></a>`ALL_HEROES` (3 Cards, 3 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01096` | **Rhino (villain)** | `core_encounter` | `rhino_stage_iii_when_revealed` |
-| `01103` | **Shocker (minion)** | `core_encounter` | `shocker_when_revealed` |
-| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
 
 ### <a id="defending-player"></a>`DEFENDING_PLAYER` (2 Cards, 3 Declarations)
 

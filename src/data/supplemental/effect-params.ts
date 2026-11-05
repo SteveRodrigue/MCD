@@ -81,7 +81,15 @@ export const EFFECT_PARAM_SCHEMAS = {
       }),
     })
     .strict(),
-  FLIP_CARD: effectOnly(),
+  FLIP_CARD: z
+    .object({
+      target: optional(z.enum(['SELF', 'VILLAIN', 'ENVIRONMENT']), {
+        label: 'Target',
+        defaultValue: 'SELF',
+        primary: true,
+      }),
+    })
+    .strict(),
   ADD_STATUS: z
     .object({
       status: optional(CharacterStatusSchema, {
@@ -139,7 +147,7 @@ export const EFFECT_PARAM_SCHEMAS = {
   CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER: effectOnly(),
   CANNOT_TAKE_DAMAGE: z
     .object({
-      target: optional(z.enum(['SELF']), { label: 'Target', defaultValue: 'SELF' }),
+      target: optional(z.enum(['SELF', 'VILLAIN']), { label: 'Target', defaultValue: 'SELF' }),
       sourceCardType: optional(z.enum(['UPGRADE', 'ALLY', 'EVENT', 'SUPPORT', 'RESOURCE']), {
         label: 'Source Card Type',
         description: 'Only damage from a card of this type is ignored (empty: any source)',
@@ -150,6 +158,11 @@ export const EFFECT_PARAM_SCHEMAS = {
         description: 'Only damage from a card with this trait is ignored (empty: any source)',
         primary: true,
       }),
+    })
+    .strict(),
+  CANNOT_BE_ATTACKED: z
+    .object({
+      target: optional(z.enum(['SELF', 'VILLAIN']), { label: 'Target', defaultValue: 'SELF' }),
     })
     .strict(),
   CHANGE_FORM: z
@@ -921,6 +934,7 @@ export const EFFECT_DESCRIPTIONS: Record<EffectType, string> = {
   CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER: "Cancel When Revealed effect and reveal another encounter card.",
   THREAT_CANNOT_BE_REMOVED: "CONSTANT on a main scheme: no effect can remove threat from it, whatever the source.",
   CANNOT_TAKE_DAMAGE: "CONSTANT: the host cannot take damage. Optional source filter: only damage from a card of this type and/or trait is ignored (Killmonger: Black Panther upgrades). No Tough, shield or Retaliate is used, and the host is not a valid target of a damage-only ability from such a source.",
+  CANNOT_BE_ATTACKED: "CONSTANT: the character cannot be attacked.",
   CANCEL_ATTACK: "Cancel incoming enemy attack before boost cards or damage are resolved.",
   DECLARE_DEFENDER: "Prompt player to declare a defender against an incoming enemy attack.",
   EXECUTE_SPECIAL: "Execute signature card-specific special logic.",

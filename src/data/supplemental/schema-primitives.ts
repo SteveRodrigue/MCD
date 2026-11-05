@@ -97,6 +97,8 @@ export const TriggerTypeSchema = z.enum([
   'SCHEME_DEFEATED',
   'SCHEME_THREAT_REDUCED_TO_ZERO',
   'HOST_WOULD_ATTACK',
+  'WOULD_ATTACK',
+  'WOULD_SCHEME',
   'HOST_ATTACK_ENDED',
   'THREAT_WOULD_BE_PLACED',
   'BASIC_ATTACK_PERFORMED',
@@ -173,6 +175,7 @@ export const TargetSelectorSchema = z.enum([
   'TRIGGERING_ENEMY',
   'HOST',
   'HOST_ENEMY',
+  'ENVIRONMENT',
 ]);
 
 export type TargetSelector = z.infer<typeof TargetSelectorSchema>;

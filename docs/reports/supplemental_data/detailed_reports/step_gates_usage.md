@@ -37,6 +37,18 @@
 | `02040` | **Tail Sweep (treachery)** | `gob_encounter` | `tail_sweep_when_revealed` |
 | `02043` | **Electromagnetic Pulse (treachery)** | `gob_encounter` | `electromagnetic_pulse_when_revealed` |
 
+### <a id="if-counters"></a>`IF_COUNTERS` (7 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_damage_interrupt` |
+| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_scheme_interrupt` |
+| `02006a` | **Criminal Enterprise (environment)** | `gob_encounter` | `criminal_enterprise_action` |
+| `02006b` | **State of Madness (environment)** | `gob_encounter` | `state_of_madness_action` |
+| `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_when_revealed` |
+| `45077` | **Sinister Strike (treachery)** | `aoa_encounter` | `sinister_strike_when_revealed` |
+| `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed` |
+
 ### <a id="if-card-in-play"></a>`IF_CARD_IN_PLAY` (10 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -82,14 +94,6 @@
 | `01013` | **Photonic Blast (event)** | `core` | `photonic_blast` |
 | `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
 | `01053` | **Relentless Assault (event)** | `core` | `relentless_assault` |
-
-### <a id="if-counters"></a>`IF_COUNTERS` (3 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_when_revealed` |
-| `45077` | **Sinister Strike (treachery)** | `aoa_encounter` | `sinister_strike_when_revealed` |
-| `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed` |
 
 ### <a id="if-player-has-trait"></a>`IF_PLAYER_HAS_TRAIT` (3 Cards)
 

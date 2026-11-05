@@ -1014,6 +1014,11 @@ function resolveEnemyAndMinionTarget(
       return [];
     }
 
+    case 'ENVIRONMENT': {
+      const env = state.environments?.[0];
+      return env ? [{ kind: 'card', entity: env, id: env.instanceId }] : [];
+    }
+
     case 'HOST':
     case 'HOST_ENEMY': {
       if (context?.sourceCardInstance) {

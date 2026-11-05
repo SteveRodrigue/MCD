@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Effects In Use:** **54/61**
+> **Active Effects In Use:** **56/62**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
@@ -55,7 +55,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed` |
 | `45080` | **Drawing Near (obligation)** | `aoa_encounter` | `drawing_near_turn_begins`, `drawing_near_action` |
 
-### <a id="deal-damage"></a>`DEAL_DAMAGE` (30 Cards, 33 Step Occurrences)
+### <a id="deal-damage"></a>`DEAL_DAMAGE` (31 Cards, 34 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -85,6 +85,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed`, `concussive_blast_boost` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
+| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_when_revealed` |
 | `02034` | **Pumpkin Bombs (attachment)** | `gob_encounter` | `pumpkin_bombs_damage_response` |
 | `02042` | **Electro (minion)** | `gob_encounter` | `electro_attack_response` |
 | `02044` | **Lightning Bolt (treachery)** | `gob_encounter` | `lightning_bolt_when_revealed` |
@@ -310,16 +311,28 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
-### <a id="add-counters"></a>`ADD_COUNTERS` (6 Cards, 9 Step Occurrences)
+### <a id="add-counters"></a>`ADD_COUNTERS` (7 Cards, 10 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01018` | **Energy Channel (upgrade)** | `core` | `energy_channel_add` |
+| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_attack_interrupt` |
 | `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_when_revealed`, `dark_designs_boost` |
 | `45077` | **Sinister Strike (treachery)** | `aoa_encounter` | `sinister_strike_when_revealed` |
 | `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_when_revealed`, `evil_alliance_boost` |
 | `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed`, `nowhere_is_safe_boost` |
 | `45080` | **Drawing Near (obligation)** | `aoa_encounter` | `drawing_near_turn_begins` |
+
+### <a id="flip-card"></a>`FLIP_CARD` (6 Cards, 10 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_damage_interrupt` |
+| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_scheme_interrupt` |
+| `02006a` | **Criminal Enterprise (environment)** | `gob_encounter` | `criminal_enterprise_action` |
+| `02006b` | **State of Madness (environment)** | `gob_encounter` | `state_of_madness_action` |
+| `45075a` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_threshold` |
+| `45075b` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_flipped` |
 
 ### <a id="grant-keyword"></a>`GRANT_KEYWORD` (7 Cards, 7 Step Occurrences)
 
@@ -421,6 +434,15 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
 | `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_when_revealed` |
 
+### <a id="spend-counters"></a>`SPEND_COUNTERS` (4 Cards, 4 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_damage_interrupt` |
+| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_scheme_interrupt` |
+| `02006a` | **Criminal Enterprise (environment)** | `gob_encounter` | `criminal_enterprise_action` |
+| `02006b` | **State of Madness (environment)** | `gob_encounter` | `state_of_madness_action` |
+
 ### <a id="villain-schemes"></a>`VILLAIN_SCHEMES` (4 Cards, 4 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -506,13 +528,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01004` | **Enhanced Spider-Sense (event)** | `core` | `enhanced_spider_sense` |
 | `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
 
-### <a id="flip-card"></a>`FLIP_CARD` (2 Cards, 2 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `45075a` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_threshold` |
-| `45075b` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_flipped` |
-
 ### <a id="modify-ally-limit"></a>`MODIFY_ALLY_LIMIT` (2 Cards, 2 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -564,6 +579,12 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
+
+### <a id="cannot-be-attacked"></a>`CANNOT_BE_ATTACKED` (1 Cards, 1 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_cannot_be_attacked` |
 
 ### <a id="distribute-amount"></a>`DISTRIBUTE_AMOUNT` (1 Cards, 1 Step Occurrences)
 

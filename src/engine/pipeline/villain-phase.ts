@@ -275,6 +275,29 @@ export function executeVillainSchemeAgainstPlayer(
     });
     return state;
   }
+  // Check environments, attachments, and villain for WOULD_SCHEME forced interrupts
+  const wouldSchemeCards = [...(state.environments || []), ...(villain.attachments || []), villain];
+  for (const card of wouldSchemeCards) {
+    const ability = card.card?.enrichment?.abilities?.find(
+      (a) =>
+        (a.timing === 'FORCED_INTERRUPT' || a.timing === 'INTERRUPT') &&
+        a.trigger === 'WOULD_SCHEME',
+    );
+    if (ability) {
+      kernel.executeEffect(state, ability, {
+        playerId: player.id,
+        sourceCardInstance: 'instanceId' in card ? (card as CardInstance) : undefined,
+      });
+      appendLog(state, {
+        category: 'scheme',
+        key: 'villain.scheme.cancelled',
+        params: { actor: villain.card.name, source: card.card.name },
+        onomatopoeia: 'SCHEME REPLACED!',
+      });
+      return state;
+    }
+  }
+
   recordBasicAction(state, 'villainScheme', villain.card?.code);
 
   const stepping =
@@ -725,7 +748,7 @@ export function placeInciteThreat(
  * Resolves the When Revealed abilities of a card: all of them, or only the effects that cannot be
  * canceled when the reveal was cancelled.
  */
-function resolveWhenRevealedAbilities(
+export function resolveWhenRevealedAbilities(
   state: GameState,
   cardInstance: CardInstance,
   player: PlayerState,
@@ -1388,4 +1411,8 @@ function runVillainPhaseOnDraft(nextState: GameState, options?: CombatOptions): 
   return continueVillainPhase(nextState, options);
 }
 
-bindKernel({ resolveActiveEncounterCardAfterInterrupt, continueSchemeAfterBoost });
+bindKernel({
+  resolveActiveEncounterCardAfterInterrupt,
+  continueSchemeAfterBoost,
+  resolveWhenRevealedAbilities,
+});

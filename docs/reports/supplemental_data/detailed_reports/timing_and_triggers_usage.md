@@ -4,7 +4,7 @@
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (81 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (82 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -66,6 +66,7 @@
 | `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
+| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_when_revealed` |
 | `02035` | **Intimidation (treachery)** | `gob_encounter` | `intimidation_when_revealed` |
 | `02036` | **Regenerative Healing (treachery)** | `gob_encounter` | `regenerative_healing_when_revealed` |
 | `02037` | **A Mess of Things (side_scheme)** | `gob_encounter` | `a_mess_of_things_when_revealed` |
@@ -90,7 +91,7 @@
 | `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_when_revealed` |
 | `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed` |
 
-### <a id="constant"></a>`CONSTANT` (34 Cards)
+### <a id="constant"></a>`CONSTANT` (35 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -123,6 +124,7 @@
 | `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
 | `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
+| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_cannot_be_attacked` |
 | `02033` | **Goblin Glider (attachment)** | `gob_encounter` | `goblin_glider_atk_bonus` |
 | `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_ally_limit` |
 | `24049a` | **Formidable Foe (environment)** | `hood_encounter` | `formidable_foe_steady` |
@@ -237,7 +239,7 @@
 | `45080` | **Drawing Near (obligation)** | `aoa_encounter` | `drawing_near_turn_begins` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
-### <a id="action"></a>`ACTION` (21 Cards)
+### <a id="action"></a>`ACTION` (23 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -260,10 +262,12 @@
 | `01086` | **First Aid (event)** | `core` | `first_aid` |
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
+| `02006a` | **Criminal Enterprise (environment)** | `gob_encounter` | `criminal_enterprise_action` |
+| `02006b` | **State of Madness (environment)** | `gob_encounter` | `state_of_madness_action` |
 | `02048` | **All Tied Up (attachment)** | `gob_encounter` | `all_tied_up_discard_action` |
 | `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
 
-### <a id="forced-interrupt"></a>`FORCED_INTERRUPT` (18 Cards)
+### <a id="forced-interrupt"></a>`FORCED_INTERRUPT` (20 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -278,6 +282,8 @@
 | `01143` | **Advanced Ultron Drone (minion)** | `core_encounter` | `advanced_ultron_drone_defeated` |
 | `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
 | `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
+| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_attack_interrupt`, `norman_osborn_damage_interrupt` |
+| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_scheme_interrupt` |
 | `02041` | **Power Drain (side_scheme)** | `gob_encounter` | `power_drain_when_defeated` |
 | `04134` | **Master Strategist (attachment)** | `trors_encounter` | `master_strategist_forced_interrupt_activation` |
 | `16103` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_i_forced_interrupt_boost` |
@@ -370,9 +376,9 @@
 | :--- | :--- | :--- | :--- |
 | `01008` | **Web-Shooter (upgrade)** | `core` | `web_shooter_resource` |
 
-## 2. Trigger Windows (`TriggerTypeSchema` — 29/38 In Use)
+## 2. Trigger Windows (`TriggerTypeSchema` — 31/40 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (82 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (83 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -434,6 +440,7 @@
 | `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
+| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_when_revealed` |
 | `02035` | **Intimidation (treachery)** | `gob_encounter` | `intimidation_when_revealed` |
 | `02036` | **Regenerative Healing (treachery)** | `gob_encounter` | `regenerative_healing_when_revealed` |
 | `02037` | **A Mess of Things (side_scheme)** | `gob_encounter` | `a_mess_of_things_when_revealed` |
@@ -563,6 +570,15 @@
 | `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
 | `02041` | **Power Drain (side_scheme)** | `gob_encounter` | `power_drain_when_defeated` |
 
+### <a id="damage-would-be-taken"></a>`DAMAGE_WOULD_BE_TAKEN` (4 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01003` | **Backflip (event)** | `core` | `backflip` |
+| `01017` | **Cosmic Flight (upgrade)** | `core` | `cosmic_flight_prevent` |
+| `01098` | **Armored Rhino Suit (attachment)** | `core_encounter` | `armored_rhino_suit_shield` |
+| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_damage_interrupt` |
+
 ### <a id="character-defeated"></a>`CHARACTER_DEFEATED` (3 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -570,14 +586,6 @@
 | `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_defeat_trigger` |
 | `01051` | **Tigra (ally)** | `core` | `tigra_defeat_heal` |
 | `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
-
-### <a id="damage-would-be-taken"></a>`DAMAGE_WOULD_BE_TAKEN` (3 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01003` | **Backflip (event)** | `core` | `backflip` |
-| `01017` | **Cosmic Flight (upgrade)** | `core` | `cosmic_flight_prevent` |
-| `01098` | **Armored Rhino Suit (attachment)** | `core_encounter` | `armored_rhino_suit_shield` |
 
 ### <a id="encounter-card-revealed"></a>`ENCOUNTER_CARD_REVEALED` (3 Cards)
 
@@ -698,5 +706,17 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_after_scheme` |
+
+### <a id="would-attack"></a>`WOULD_ATTACK` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_attack_interrupt` |
+
+### <a id="would-scheme"></a>`WOULD_SCHEME` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_scheme_interrupt` |
 
 [← Back to Main Usage Report](../usage_report.md)

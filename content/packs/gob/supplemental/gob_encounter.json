@@ -1,6 +1,251 @@
 {
   "$schema": "../../../../src/data/supplemental/schema.json",
   "cards": {
+    "02001a": {
+      "abilities": [
+        {
+          "id": "norman_osborn_cannot_be_attacked",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "CANNOT_BE_ATTACKED",
+              "effectParams": {
+                "target": "SELF"
+              }
+            }
+          ]
+        },
+        {
+          "id": "norman_osborn_attack_interrupt",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "WOULD_ATTACK",
+          "steps": [
+            {
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "infamy",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "norman_osborn_damage_interrupt",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "DAMAGE_WOULD_BE_TAKEN",
+          "steps": [
+            {
+              "effect": "SPEND_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "infamy",
+                "amount": {
+                  "from": "INTERCEPTED_VALUE"
+                }
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006a",
+                "counterType": "infamy",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "ENVIRONMENT"
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006a",
+                "counterType": "infamy",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Norman Osborn cannot be attacked.\n[star] <b>Forced Interrupt</b>: When Norman Osborn would attack, place 1 infamy counter on Criminal Enterprise instead.\n<b>Forced Interrupt</b>: When Norman Osborn would take any amount of damage, remove that many infamy counters from Criminal Enterprise instead."
+      }
+    },
+    "02001b": {
+      "abilities": [
+        {
+          "id": "green_goblin_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "effectParams": {
+                "target": "ALL_HEROES",
+                "amount": 3
+              }
+            }
+          ]
+        },
+        {
+          "id": "green_goblin_scheme_interrupt",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "WOULD_SCHEME",
+          "steps": [
+            {
+              "effect": "SPEND_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "madness",
+                "amount": 1
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "ENVIRONMENT"
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Deal 3 indirect damage to each player in hero form.\n[star] <b>Forced Interrupt</b>: When Green Goblin would scheme, remove 1 madness counter from State of Madness instead."
+      }
+    },
+    "02006a": {
+      "abilities": [
+        {
+          "id": "criminal_enterprise_action",
+          "timing": "ACTION",
+          "steps": [
+            {
+              "effect": "SPEND_COUNTERS",
+              "effectParams": {
+                "target": "SELF",
+                "counterType": "infamy",
+                "amount": 2
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "counterType": "infamy",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "SELF"
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "counterType": "infamy",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Criminal Enterprise enters play with 2[per_hero] infamy counters on it. If there are no infamy counters here, flip Norman Osborn and Criminal Enterprise."
+      }
+    },
+    "02006b": {
+      "abilities": [
+        {
+          "id": "state_of_madness_action",
+          "timing": "ACTION",
+          "steps": [
+            {
+              "effect": "SPEND_COUNTERS",
+              "effectParams": {
+                "target": "SELF",
+                "counterType": "madness",
+                "amount": 2
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "SELF"
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "State of Madness enters play with 2[per_hero] madness counters on it. If there are no madness counters here, flip Green Goblin and State of Madness."
+      }
+    },
     "02033": {
       "attachTo": {
         "host": {

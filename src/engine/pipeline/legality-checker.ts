@@ -10,6 +10,7 @@ import {
   getKeywordValue,
   CardAbility,
   getActiveMainScheme,
+  getActiveVillain,
   hasDashPower,
   CharacterPower,
   getVillainsInPlay,
@@ -189,6 +190,16 @@ function checkActorCanAct(
   return { allowed: true };
 }
 
+export function isEntityImmuneToAttacks(entity: unknown): boolean {
+  const abilities = (entity as { card?: { enrichment?: { abilities?: CardAbility[] } } })?.card
+    ?.enrichment?.abilities;
+  return Boolean(
+    abilities?.some(
+      (a) => a.timing === 'CONSTANT' && a.steps?.some((s) => s.effect === 'CANNOT_BE_ATTACKED'),
+    ),
+  );
+}
+
 /**
  * Checks if the hero or an ally can attack the villain or a minion (RR v1.8 p. 5-6, 15 "Guard").
  */
@@ -213,10 +224,19 @@ export function canAttack(
       .flatMap((p) => p.engagedMinions)
       .find((m) => m.instanceId === targetInstanceId);
     if (!minion) return { allowed: false, reason: 'Target minion is not in play.' };
+    if (isEntityImmuneToAttacks(minion)) {
+      return { allowed: false, reason: `${minion.card.name} cannot be attacked.` };
+    }
   }
 
-  if (targetType === 'villain' && isVillainAttackBlockedByGuard(player)) {
-    return { allowed: false, reason: GUARD_BLOCK_REASON };
+  if (targetType === 'villain') {
+    const activeVillain = getActiveVillain(state);
+    if (activeVillain && isEntityImmuneToAttacks(activeVillain)) {
+      return { allowed: false, reason: `${activeVillain.card.name} cannot be attacked.` };
+    }
+    if (isVillainAttackBlockedByGuard(player)) {
+      return { allowed: false, reason: GUARD_BLOCK_REASON };
+    }
   }
 
   return { allowed: true };

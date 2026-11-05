@@ -114,6 +114,7 @@ export const SELECTOR_CLASS: Readonly<Record<TargetSelector, SelectorClass>> = {
   TRIGGERING_ENEMY: 'EVENT',
   HOST: 'DEPENDENT',
   HOST_ENEMY: 'DEPENDENT',
+  ENVIRONMENT: 'FIXED',
 };
 
 /**

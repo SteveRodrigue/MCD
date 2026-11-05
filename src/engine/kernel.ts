@@ -24,6 +24,7 @@ import type {
 import type {
   resolveActiveEncounterCardAfterInterrupt,
   continueSchemeAfterBoost,
+  resolveWhenRevealedAbilities,
 } from './pipeline/villain-phase';
 import type {
   continueAttackAfterInitiation,
@@ -56,6 +57,7 @@ export interface Kernel {
   peekDecisionPrompt: typeof peekDecisionPrompt;
   refreshPromptOptionAvailability: typeof refreshPromptOptionAvailability;
   resolveActiveEncounterCardAfterInterrupt: typeof resolveActiveEncounterCardAfterInterrupt;
+  resolveWhenRevealedAbilities: typeof resolveWhenRevealedAbilities;
   continueAttackAfterInitiation: typeof continueAttackAfterInitiation;
   continueAttackAfterBoost: typeof continueAttackAfterBoost;
   continueSchemeAfterBoost: typeof continueSchemeAfterBoost;
@@ -88,6 +90,7 @@ export const KERNEL_ENTRIES: readonly KernelEntry[] = [
   'peekDecisionPrompt',
   'refreshPromptOptionAvailability',
   'resolveActiveEncounterCardAfterInterrupt',
+  'resolveWhenRevealedAbilities',
   'continueAttackAfterInitiation',
   'continueAttackAfterBoost',
   'continueSchemeAfterBoost',

@@ -2,7 +2,7 @@ import { describe, it, expect, afterAll, beforeAll } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
 import { ContentScreen } from '../../src/ui/components/setup/ContentScreen';
 import { FailedPacksNotice } from '../../src/ui/components/setup/FailedPacksNotice';
@@ -35,6 +35,10 @@ beforeAll(async () => {
   write('packs/mine/cards/c.json', [
     { code: '99001', name: 'A', pack_code: 'mine', position: 1, quantity: 1 },
   ]);
+  write('packs/second/pack.json', manifest('second', 'Second Pack'));
+  write('packs/second/cards/c.json', [
+    { code: '99002', name: 'B', pack_code: 'second', position: 1, quantity: 1 },
+  ]);
   write('packs/broken/pack.json', '{ not json');
   write('packs/gg/pack.json', manifest('gg', 'Green Goblin', { dependsOn: ['missing'] }));
   write('packs/gg/scenarios/goblin/definition.json', { id: 'goblin', name: 'Goblin Raid' });
@@ -54,7 +58,7 @@ describe('Content screen', () => {
       </GameSettingsProvider>,
     );
     expect(screen.getByText('My Pack')).toBeTruthy();
-    expect(screen.getByText('Data only')).toBeTruthy();
+    expect(screen.getAllByText('Data only').length).toBeGreaterThan(0);
     expect(screen.getByText('Failed')).toBeTruthy();
     expect(screen.getByText('Needs pack')).toBeTruthy();
     expect(screen.getByText(/needs "missing"/)).toBeTruthy();
@@ -66,7 +70,7 @@ describe('Content screen', () => {
         <ContentScreen onBack={() => {}} />
       </GameSettingsProvider>,
     );
-    expect(screen.getByText('Data only').className).toContain('bg-comic-yellow');
+    expect(screen.getAllByText('Data only')[0].className).toContain('bg-comic-yellow');
     expect(screen.getByText('Needs pack').className).toContain('bg-orange-500');
     expect(screen.getByText('Failed').className).toContain('bg-comic-red');
   });
@@ -97,5 +101,55 @@ describe('Content screen', () => {
     );
     expect(screen.getByText('Green Goblin')).toBeTruthy();
     expect(screen.getByText(/was not loaded: .*missing/)).toBeTruthy();
+  });
+
+  it('disables the switch for packs with failed state or missing dependency', () => {
+    render(
+      <GameSettingsProvider>
+        <ContentScreen onBack={() => {}} />
+      </GameSettingsProvider>,
+    );
+    const brokenSwitch = screen.getByRole('switch', { name: 'Enable broken' }) as HTMLButtonElement;
+    expect(brokenSwitch.disabled).toBe(true);
+    const ggSwitch = screen.getByRole('switch', {
+      name: 'Enable Green Goblin',
+    }) as HTMLButtonElement;
+    expect(ggSwitch.disabled).toBe(true);
+  });
+
+  it('toggles an unenabled ready pack on, writing config.json and updating state', async () => {
+    render(
+      <GameSettingsProvider>
+        <ContentScreen onBack={() => {}} />
+      </GameSettingsProvider>,
+    );
+    const secondSwitch = screen.getByRole('switch', {
+      name: 'Enable Second Pack',
+    }) as HTMLButtonElement;
+    expect(secondSwitch.getAttribute('aria-checked')).toBe('false');
+
+    fireEvent.click(secondSwitch);
+
+    await waitFor(() => {
+      expect(secondSwitch.getAttribute('aria-checked')).toBe('true');
+    });
+
+    const savedConfig = JSON.parse(fs.readFileSync(path.join(root, 'config.json'), 'utf-8'));
+    expect(savedConfig.enabledPacks).toContain('second');
+  });
+
+  it('resets enabled packs to default core on Reset to Default button click', async () => {
+    render(
+      <GameSettingsProvider>
+        <ContentScreen onBack={() => {}} />
+      </GameSettingsProvider>,
+    );
+    const resetButton = screen.getByRole('button', { name: 'Reset to Default' });
+    fireEvent.click(resetButton);
+
+    await waitFor(() => {
+      const savedConfig = JSON.parse(fs.readFileSync(path.join(root, 'config.json'), 'utf-8'));
+      expect(savedConfig.enabledPacks).toEqual(['core']);
+    });
   });
 });

@@ -34,7 +34,7 @@ export interface TriggerPattern {
 export const TRIGGER_PATTERNS: TriggerPattern[] = [
   {
     regex: /when (?:the )?villain initiates an attack against you/i,
-    trigger: 'ENEMY_INITIATES_ATTACK',
+    trigger: 'INITIATES_ATTACK',
   },
   {
     regex: /when you would take (?:any amount of )?damage from an attack/i,
@@ -52,18 +52,19 @@ export const TRIGGER_PATTERNS: TriggerPattern[] = [
   { regex: /when attached minion is defeated/i, trigger: 'CHARACTER_DEFEATED' },
   { regex: /after a minion is defeated/i, trigger: 'CHARACTER_DEFEATED' },
   { regex: /after you change to this form/i, trigger: 'FORM_CHANGED' },
-  { regex: /when attached enemy would attack/i, trigger: 'ENEMY_INITIATES_ATTACK' },
+  { regex: /when attached enemy would attack/i, trigger: 'HOST_WOULD_ATTACK' },
 ];
 
 export interface LimitPattern {
   regex: RegExp;
-  limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE';
+  limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE' | 'ONCE_PER_ACTIVATION';
 }
 
 export const LIMIT_PATTERNS: LimitPattern[] = [
   { regex: /\(Limit once per round\.?\)/i, limit: 'ONCE_PER_ROUND' },
   { regex: /\(Limit once per phase\.?\)/i, limit: 'ONCE_PER_PHASE' },
   { regex: /\(Limit (\d+) times? per round\.?\)/i, limit: 'ONCE_PER_ROUND' },
+  { regex: /\((?:Max|Limit) (?:once|1) per activation\.?\)/i, limit: 'ONCE_PER_ACTIVATION' },
 ];
 
 export function extractCostClause(costText: string): AbilityCost | undefined {

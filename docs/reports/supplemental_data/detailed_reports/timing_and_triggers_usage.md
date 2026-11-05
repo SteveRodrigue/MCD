@@ -239,6 +239,28 @@
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
 | `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
 
+### <a id="forced-interrupt"></a>`FORCED_INTERRUPT` (17 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_defeat_trigger` |
+| `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
+| `01098` | **Armored Rhino Suit (attachment)** | `core_encounter` | `armored_rhino_suit_shield` |
+| `01113` | **Klaw (villain)** | `core_encounter` | `klaw_stage_i_forced_interrupt_boost` |
+| `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_forced_interrupt_boost` |
+| `01115` | **Klaw (villain)** | `core_encounter` | `klaw_stage_iii_forced_interrupt_boost` |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
+| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
+| `01143` | **Advanced Ultron Drone (minion)** | `core_encounter` | `advanced_ultron_drone_defeated` |
+| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
+| `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
+| `04134` | **Master Strategist (attachment)** | `trors_encounter` | `master_strategist_forced_interrupt_activation` |
+| `16103` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_i_forced_interrupt_boost` |
+| `16104` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_ii_forced_interrupt_boost` |
+| `16105` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_iii_forced_interrupt_boost` |
+| `50165b` | **Baron Zemo (villain)** | `aos_encounter` | `baron_zemo_a2_forced_interrupt_activation` |
+| `50166b` | **Baron Zemo (villain)** | `aos_encounter` | `baron_zemo_b2_forced_interrupt_activation` |
+
 ### <a id="response"></a>`RESPONSE` (13 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -256,19 +278,6 @@
 | `01077` | **Counter-Punch (event)** | `core` | `counter_punch_response` |
 | `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
-
-### <a id="forced-interrupt"></a>`FORCED_INTERRUPT` (8 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_defeat_trigger` |
-| `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
-| `01098` | **Armored Rhino Suit (attachment)** | `core_encounter` | `armored_rhino_suit_shield` |
-| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
-| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
-| `01143` | **Advanced Ultron Drone (minion)** | `core_encounter` | `advanced_ultron_drone_defeated` |
-| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
-| `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
 
 ### <a id="alter-ego-action"></a>`ALTER_EGO_ACTION` (7 Cards)
 
@@ -335,7 +344,7 @@
 | :--- | :--- | :--- | :--- |
 | `01008` | **Web-Shooter (upgrade)** | `core` | `web_shooter_resource` |
 
-## 2. Trigger Windows (`TriggerTypeSchema` — 28/37 In Use)
+## 2. Trigger Windows (`TriggerTypeSchema` — 29/38 In Use)
 
 ### <a id="when-revealed"></a>`WHEN_REVEALED` (73 Cards)
 
@@ -459,6 +468,28 @@
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 
+### <a id="initiates-activation"></a>`INITIATES_ACTIVATION` (6 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `04134` | **Master Strategist (attachment)** | `trors_encounter` | `master_strategist_forced_interrupt_activation` |
+| `16103` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_i_forced_interrupt_boost` |
+| `16104` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_ii_forced_interrupt_boost` |
+| `16105` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_iii_forced_interrupt_boost` |
+| `50165b` | **Baron Zemo (villain)** | `aos_encounter` | `baron_zemo_a2_forced_interrupt_activation` |
+| `50166b` | **Baron Zemo (villain)** | `aos_encounter` | `baron_zemo_b2_forced_interrupt_activation` |
+
+### <a id="initiates-attack"></a>`INITIATES_ATTACK` (6 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
+| `01113` | **Klaw (villain)** | `core_encounter` | `klaw_stage_i_forced_interrupt_boost` |
+| `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_forced_interrupt_boost` |
+| `01115` | **Klaw (villain)** | `core_encounter` | `klaw_stage_iii_forced_interrupt_boost` |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
+| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
+
 ### <a id="defeated"></a>`DEFEATED` (4 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -508,14 +539,6 @@
 | `01004` | **Enhanced Spider-Sense (event)** | `core` | `enhanced_spider_sense` |
 | `01075` | **Black Widow (ally)** | `core` | `black_widow_cancel` |
 | `01078` | **Get Behind Me! (event)** | `core` | `get_behind_me_interrupt` |
-
-### <a id="enemy-initiates-attack"></a>`ENEMY_INITIATES_ATTACK` (3 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
-| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
-| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
 
 ### <a id="threat-would-be-placed"></a>`THREAT_WOULD_BE_PLACED` (3 Cards)
 

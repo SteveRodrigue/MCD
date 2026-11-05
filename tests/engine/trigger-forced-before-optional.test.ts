@@ -330,7 +330,7 @@ describe('Forced ordering pauses and resumes the attack initiation (#361)', () =
           {
             id,
             timing: 'FORCED_RESPONSE',
-            trigger: 'ENEMY_INITIATES_ATTACK',
+            trigger: 'INITIATES_ATTACK',
             steps: [{ effect: 'DRAW', effectParams: { count: 1 } }],
           },
         ],

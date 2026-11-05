@@ -1,0 +1,89 @@
+{
+  "$schema": "../../../../src/data/supplemental/schema.json",
+  "cards": {
+    "16103": {
+      "abilities": [
+        {
+          "id": "ronan_stage_i_forced_interrupt_boost",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "INITIATES_ACTIVATION",
+          "steps": [
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "16149",
+                "controller": "TARGET_PLAYER"
+              },
+              "effect": "GIVE_ADDITIONAL_BOOST_CARD"
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T18:35:00Z",
+        "updatedAt": "2026-11-04T18:35:00Z",
+        "reviewedAt": "2026-11-04T18:35:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Toughness.\n[star] <b>Forced Interrupt</b>: When Ronan the Accuser activates against you, give him 1 additional boost card if you control the Power Stone."
+      }
+    },
+    "16104": {
+      "abilities": [
+        {
+          "id": "ronan_stage_ii_forced_interrupt_boost",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "INITIATES_ACTIVATION",
+          "steps": [
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "16149",
+                "controller": "TARGET_PLAYER"
+              },
+              "effect": "GIVE_ADDITIONAL_BOOST_CARD"
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T18:35:00Z",
+        "updatedAt": "2026-11-04T18:35:00Z",
+        "reviewedAt": "2026-11-04T18:35:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Toughness.\n<b>When Revealed</b>: Search the encounter deck and discard pile for the Cut the Power side scheme and reveal it. <i>(Shuffle.)</i>\n[star] <b>Forced Interrupt</b>: When Ronan the Accuser activates against you, give him 1 additional boost card if you control the Power Stone."
+      }
+    },
+    "16105": {
+      "abilities": [
+        {
+          "id": "ronan_stage_iii_forced_interrupt_boost",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "INITIATES_ACTIVATION",
+          "steps": [
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "16149",
+                "controller": "TARGET_PLAYER"
+              },
+              "effect": "GIVE_ADDITIONAL_BOOST_CARD"
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T18:35:00Z",
+        "updatedAt": "2026-11-04T18:35:00Z",
+        "reviewedAt": "2026-11-04T18:35:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Retaliate 1. Toughness.\n<b>When Revealed</b>: Search the encounter deck and discard pile for the Superior Tactics side scheme and reveal it. <i>(Shuffle.)</i>\n[star] <b>Forced Interrupt</b>: When Ronan the Accuser activates against you, give him 1 additional boost card if you control the Power Stone."
+      }
+    }
+  }
+}

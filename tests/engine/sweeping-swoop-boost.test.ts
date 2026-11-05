@@ -220,7 +220,16 @@ describe('Sweeping Swoop (01168): boost stuns the friendly character the activat
       // Two boost cards (Swoop and a 2-icon card): 4 damage, so Cosmic Flight leaves 1.
       getActiveVillain(state).card = {
         ...getActiveVillain(state).card,
-        additionalBoostCards: 1,
+        enrichment: {
+          abilities: [
+            {
+              id: 'extra_boost',
+              timing: 'FORCED_INTERRUPT',
+              trigger: 'INITIATES_ATTACK',
+              steps: [{ effect: 'GIVE_ADDITIONAL_BOOST_CARD' }],
+            },
+          ],
+        },
       } as any;
       stack(swoop(), filler('two', 2));
       executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED', {
@@ -262,7 +271,16 @@ describe('Sweeping Swoop (01168): boost stuns the friendly character the activat
   it('7. two copies revealed on one activation: two stuns resolve, the second is a no-op, no crash', () => {
     getActiveVillain(state).card = {
       ...getActiveVillain(state).card,
-      additionalBoostCards: 1,
+      enrichment: {
+        abilities: [
+          {
+            id: 'extra_boost',
+            timing: 'FORCED_INTERRUPT',
+            trigger: 'INITIATES_ATTACK',
+            steps: [{ effect: 'GIVE_ADDITIONAL_BOOST_CARD' }],
+          },
+        ],
+      },
     } as any;
     stack(swoop(), swoop());
 

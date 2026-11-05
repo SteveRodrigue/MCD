@@ -19,7 +19,7 @@ const sandman = (n: number): TriggerCallNode => ({
   cardName: 'Sandman',
 });
 const rhino: TriggerCallNode = {
-  trigger: 'ENEMY_INITIATES_ATTACK',
+  trigger: 'INITIATES_ATTACK',
   abilityId: 'rhino_charge',
   sourceInstanceId: 'inst_rhino',
   cardCode: '01094',
@@ -54,7 +54,7 @@ describe('InfiniteLoopModal shows the cards that cause the loop', () => {
     expect(loop.textContent).toContain(
       'sandman_1 (CHARACTER_DEFEATED), sandman_2 (CHARACTER_DEFEATED)',
     );
-    expect(loop.textContent).toContain('rhino_charge (ENEMY_INITIATES_ATTACK)');
+    expect(loop.textContent).toContain('rhino_charge (INITIATES_ATTACK)');
   });
 
   it('falls back to the engine message when the cycle names no card', () => {

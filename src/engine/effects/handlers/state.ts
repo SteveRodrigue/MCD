@@ -8,6 +8,7 @@ import {
   PlayerState,
   VillainState,
   getActiveVillain,
+  getVillainsInPlay,
 } from '@engine/models';
 import { getStepEffectParams } from '../../../data/supplemental/runtime';
 import type { DynamicValueSource } from '../../../data/supplemental/schema';
@@ -19,6 +20,7 @@ import {
   resolveEntityByInstanceId,
   type EffectContext,
 } from '../target-resolver';
+import { matchesCardFilter } from '../../filters/card-filter';
 import { checkAndDiscardZeroCounterCard } from '../../pipeline/cost-engine';
 import {
   cardCounterCount,
@@ -642,9 +644,17 @@ function handleAddCounters(
   const targetParam = (params.target as string) || 'SELF';
   const counterType = (params.counterType as string) || 'all_purpose';
   const amount = resolveNumericAmount(params.amount, context, 1, { state, player });
+  const filter = params.filter;
   const recipient = params.targetCardCode
     ? findEncounterCardInPlayByCode(state, params.targetCardCode)
-    : context.sourceCardInstance;
+    : filter
+      ? [
+          ...(state.environments || []),
+          ...(state.sideSchemes || []),
+          ...(state.mainSchemes || []),
+          ...getVillainsInPlay(state),
+        ].find((c) => matchesCardFilter(c as never, filter, { state, player }))
+      : context.sourceCardInstance;
 
   if (params.targetCardCode && !recipient) return { state, success: true, value: 0 };
 
@@ -652,22 +662,25 @@ function handleAddCounters(
     player.counters = player.counters || {};
     player.counters[counterType] = (player.counters[counterType] || 0) + amount;
   } else if (recipient) {
-    recipient.counters = recipient.counters || {};
-    recipient.counters[counterType] = (recipient.counters[counterType] || 0) + amount;
-    if (!recipient.tokens) {
-      recipient.tokens = {
-        damage: 0,
-        threat: 0,
-        counters: 0,
-      };
-    }
-    recipient.tokens.counters = (recipient.tokens.counters || 0) + amount;
-    if (amount > 0) {
-      kernel.dispatchTrigger(state, 'COUNTER_PLACED', {
-        targetPlayerId: player.id,
-        sourceInstanceId: recipient.instanceId,
-        playerCount: state.players.length,
-      });
+    const cardInst = 'card' in recipient ? (recipient as CardInstance) : undefined;
+    if (cardInst) {
+      cardInst.counters = cardInst.counters || {};
+      cardInst.counters[counterType] = (cardInst.counters[counterType] || 0) + amount;
+      if (!cardInst.tokens) {
+        cardInst.tokens = {
+          damage: 0,
+          threat: 0,
+          counters: 0,
+        };
+      }
+      cardInst.tokens.counters = (cardInst.tokens.counters || 0) + amount;
+      if (amount > 0) {
+        kernel.dispatchTrigger(state, 'COUNTER_PLACED', {
+          targetPlayerId: player.id,
+          sourceInstanceId: cardInst.instanceId,
+          playerCount: state.players.length,
+        });
+      }
     }
   }
   return {

@@ -144,6 +144,21 @@ export function evaluateStepGate(
         (!cardCode || c?.card?.code === cardCode || c?.card?.id === cardCode) &&
         (!filter || (Boolean(c?.card) && matchesCardFilter(c as never, filter, { state })));
 
+      const controllerScope = gateParams.controller as string | undefined;
+      if (controllerScope === 'TARGET_PLAYER' || controllerScope === 'SELF') {
+        const targetPlayer = state.players?.find((p) => p.id === context.playerId);
+        gateSatisfied = Boolean(
+          targetPlayer &&
+          [
+            ...(targetPlayer.tableau || []),
+            ...(targetPlayer.allies || []),
+            ...(targetPlayer.engagedMinions || []),
+            ...(targetPlayer.attachments || []),
+          ].some(matchesCard),
+        );
+        break;
+      }
+
       const inSideSchemes = state.sideSchemes?.some(matchesCard);
       const inVillainAttachments = getVillainsInPlay(state).some((v) =>
         v.attachments?.some(matchesCard),

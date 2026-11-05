@@ -80,7 +80,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       const prompt = peekDecisionPrompt(gameState);
       expect(prompt).toBeDefined();
       expect(prompt?.title).toBe('Do you want to use the following ability from Spider-Man?');
-      expect(prompt?.description).toBe('ENEMY_INITIATES_ATTACK -> DRAW (1)');
+      expect(prompt?.description).toBe('INITIATES_ATTACK -> DRAW (1)');
       expect(prompt?.isVoluntary).toBe(true);
       expect(prompt?.options.some((o) => o.label === 'Yes')).toBe(true);
       expect(prompt?.options.some((o) => o.label === 'No' || o.id === 'pass')).toBe(true);

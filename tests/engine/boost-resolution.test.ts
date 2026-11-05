@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import type { CardAbility } from '../../src/data/supplemental/schema';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import {
   GameState,
@@ -127,6 +128,9 @@ describe('Boost resolution: one shared helper for every activation (#263)', () =
       };
     }
     const minion = minionInstance(minionOver);
+    if (minionOver.facedownBoostCards) {
+      minion.facedownBoostCards = minionOver.facedownBoostCards as CardInstance[];
+    }
     p.engagedMinions = [minion];
     if (kind === 'minionAttack') {
       setForm('hero');
@@ -156,15 +160,30 @@ describe('Boost resolution: one shared helper for every activation (#263)', () =
     };
   };
 
-  /** Gives the enemy of the path `n` additional boost cards, as the importer does for Klaw. */
+  /** Gives the enemy of the path `n` additional boost cards via an INITIATES_ACTIVATION ability. */
   const setAdditional = (path: Path, n: number) => {
+    const ability: CardAbility = {
+      id: 'test_additional_boost',
+      timing: 'FORCED_INTERRUPT',
+      trigger: 'INITIATES_ACTIVATION',
+      steps: Array.from({ length: n }, () => ({
+        effect: 'GIVE_ADDITIONAL_BOOST_CARD',
+      })),
+    };
     if (path.kind.startsWith('minion')) {
       (path.entity as CardInstance).card = {
         ...path.entity.card,
-        additionalBoostCards: n,
+        enrichment: {
+          abilities: [ability],
+        },
       } as never;
     } else {
-      getActiveVillain(state).card = { ...getActiveVillain(state).card, additionalBoostCards: n };
+      getActiveVillain(state).card = {
+        ...getActiveVillain(state).card,
+        enrichment: {
+          abilities: [ability],
+        },
+      };
     }
   };
 
@@ -243,36 +262,27 @@ describe('Boost resolution: one shared helper for every activation (#263)', () =
 
   describe('2. additional boost cards', () => {
     for (const kind of ['villainAttack', 'villainScheme'] as PathKind[]) {
-      it(`${kind}: villain additionalBoostCards 1 plus an attachment with 1 deal 2 extra cards`, () => {
+      it(`${kind}: villain with additional boost ability deals 2 extra cards`, () => {
         const path = makePath(kind);
-        setAdditional(path, 1);
-        getActiveVillain(state).attachments = [
-          createCardInstance({
-            code: 't-att',
-            name: 'Boost Attachment',
-            type: 'attachment',
-            additionalBoostCards: 1,
-          } as never),
-        ];
+        setAdditional(path, 2);
         stack(filler('A', 1), filler('B', 1), filler('C', 1));
 
         const outcome = path.run();
 
         expect(outcome).toBe(path.base + 3);
-        expect(logCount('villain.boost.extra')).toBe(2);
         expect(state.encounterDiscard).toHaveLength(3);
       });
     }
 
     for (const kind of ['minionAttack', 'minionScheme'] as PathKind[]) {
-      it(`${kind}: a Villainous minion with additionalBoostCards 1 deals 1 extra card and logs it`, () => {
-        const path = makePath(kind, { additionalBoostCards: 1 });
+      it(`${kind}: a Villainous minion with additional boost ability deals 1 extra card`, () => {
+        const path = makePath(kind);
+        setAdditional(path, 1);
         stack(filler('A', 1), filler('B', 2));
 
         const outcome = path.run();
 
         expect(outcome).toBe(path.base + 3);
-        expect(logCount('villain.boost.extra')).toBe(1);
         expect(state.encounterDiscard).toHaveLength(2);
       });
     }
@@ -413,7 +423,7 @@ describe('Boost resolution: one shared helper for every activation (#263)', () =
           'Second',
           cardCatalog.getCard(FOLLOW_UP)!.name,
         ]);
-        expect(logCount('villain.boost.added')).toBe(1);
+        expect(logCount('villain.boost.added')).toBe(2);
         // Titania's Fury (1) + Second (1) + follow-up (2)
         expect(outcome).toBe(path.base + 1 + 1 + 2);
         expect(state.encounterDiscard.map((c) => c.instanceId)).toEqual([

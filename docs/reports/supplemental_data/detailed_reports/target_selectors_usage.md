@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Target Selectors In Use:** **36/47**
+> **Active Target Selectors In Use:** **36/48**
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 

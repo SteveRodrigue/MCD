@@ -65,6 +65,10 @@ export const EFFECT_PARAM_SCHEMAS = {
         label: 'Named Card Code',
         description: 'The in-play encounter card that receives the counters ("on Pursued by the Past").',
       }),
+      filter: optional(UniversalCardFilterSchema, {
+        label: 'Target Card Filter',
+        description: 'Filter for recipient cards (e.g. Board Member environments).',
+      }),
     })
     .strict(),
   ACTIVATE_MINIONS: z
@@ -383,7 +387,11 @@ export const EFFECT_PARAM_SCHEMAS = {
       }),
     })
     .strict(),
-  GIVE_ADDITIONAL_BOOST_CARD: effectOnly(),
+  GIVE_ADDITIONAL_BOOST_CARD: z
+    .object({
+      count: optional(AMOUNT, { label: 'Card Count', defaultValue: 1 }),
+    })
+    .strict(),
   GRANT_ATTACK_KEYWORD: z
     .object({
       keyword: optional(z.string().min(1), {

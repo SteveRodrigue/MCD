@@ -58,6 +58,13 @@ const EXPECTED_GATE_FIELDS = {
   IF_CARD_IN_PLAY: [
     { key: 'cardCode', label: 'Card Code', type: 'string', required: false },
     { key: 'filter', label: 'Card Criteria', type: 'card-filter', required: false },
+    {
+      key: 'controller',
+      label: 'Controlled By',
+      type: 'enum',
+      required: false,
+      options: TargetSelectorSchema.options,
+    },
     NEGATE,
   ],
   IF_COUNTERS: [

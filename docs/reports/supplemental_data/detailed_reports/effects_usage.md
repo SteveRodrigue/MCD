@@ -6,7 +6,7 @@
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
-### <a id="discard"></a>`DISCARD` (33 Cards, 37 Step Occurrences)
+### <a id="discard"></a>`DISCARD` (34 Cards, 38 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -38,6 +38,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
 | `01188` | **Caught Off Guard (treachery)** | `core_encounter` | `caught_off_guard_when_revealed` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
+| `04134` | **Master Strategist (attachment)** | `trors_encounter` | `master_strategist_forced_interrupt_activation` |
 | `24030` | **Ruination (treachery)** | `hood_encounter` | `ruination_when_revealed` |
 | `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` |
 | `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_when_revealed` |
@@ -98,6 +99,30 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 | `24030` | **Ruination (treachery)** | `hood_encounter` | `ruination_when_revealed` |
 
+### <a id="player-choice"></a>`PLAYER_CHOICE` (19 Cards, 19 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01068` | **Vision (ally)** | `core` | `vision_boost` |
+| `01084` | **Nick Fury (ally)** | `core` | `nick_fury_enters_play` |
+| `01110` | **Hydra Bomber (minion)** | `core_encounter` | `hydra_bomber_when_revealed` |
+| `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_when_revealed` |
+| `01134` | **Ultron (villain)** | `core_encounter` | `ultron_i_after_attack` |
+| `01138b` | **Assault on NORAD (main_scheme)** | `core_encounter` | `assault_on_norad_after_threat` |
+| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_boost` |
+| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_boost` |
+| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_boost` |
+| `01151` | **Under Attack (side_scheme)** | `core_encounter` | `under_attack_when_revealed` |
+| `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` |
+| `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` |
+| `01160` | **Legal Work (obligation)** | `core_encounter` | `legal_work_resolve` |
+| `01165` | **Eviction Notice (obligation)** | `core_encounter` | `eviction_notice_resolve` |
+| `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
+| `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_when_revealed` |
+| `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
+| `50165b` | **Baron Zemo (villain)** | `aos_encounter` | `baron_zemo_a2_forced_interrupt_activation` |
+| `50166b` | **Baron Zemo (villain)** | `aos_encounter` | `baron_zemo_b2_forced_interrupt_activation` |
+
 ### <a id="modify-stat"></a>`MODIFY_STAT` (16 Cards, 18 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -137,28 +162,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed`, `heart_shaped_herb_boost` |
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed`, `sweeping_swoop_boost` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
-
-### <a id="player-choice"></a>`PLAYER_CHOICE` (17 Cards, 17 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01068` | **Vision (ally)** | `core` | `vision_boost` |
-| `01084` | **Nick Fury (ally)** | `core` | `nick_fury_enters_play` |
-| `01110` | **Hydra Bomber (minion)** | `core_encounter` | `hydra_bomber_when_revealed` |
-| `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_when_revealed` |
-| `01134` | **Ultron (villain)** | `core_encounter` | `ultron_i_after_attack` |
-| `01138b` | **Assault on NORAD (main_scheme)** | `core_encounter` | `assault_on_norad_after_threat` |
-| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_boost` |
-| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_boost` |
-| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_boost` |
-| `01151` | **Under Attack (side_scheme)** | `core_encounter` | `under_attack_when_revealed` |
-| `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` |
-| `01159` | **Ritual Combat (treachery)** | `core_encounter` | `ritual_combat_when_revealed` |
-| `01160` | **Legal Work (obligation)** | `core_encounter` | `legal_work_resolve` |
-| `01165` | **Eviction Notice (obligation)** | `core_encounter` | `eviction_notice_resolve` |
-| `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
-| `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_when_revealed` |
-| `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 
 ### <a id="surge"></a>`SURGE` (16 Cards, 16 Step Occurrences)
 
@@ -251,6 +254,22 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01067` | **Maria Hill (ally)** | `core` | `maria_hill_enters_play` |
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
+
+### <a id="give-additional-boost-card"></a>`GIVE_ADDITIONAL_BOOST_CARD` (11 Cards, 11 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01113` | **Klaw (villain)** | `core_encounter` | `klaw_stage_i_forced_interrupt_boost` |
+| `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_forced_interrupt_boost` |
+| `01115` | **Klaw (villain)** | `core_encounter` | `klaw_stage_iii_forced_interrupt_boost` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
+| `04134` | **Master Strategist (attachment)** | `trors_encounter` | `master_strategist_forced_interrupt_activation` |
+| `16103` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_i_forced_interrupt_boost` |
+| `16104` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_ii_forced_interrupt_boost` |
+| `16105` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_iii_forced_interrupt_boost` |
+| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_boost` |
+| `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_boost` |
+| `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_boost` |
 
 ### <a id="heal-damage"></a>`HEAL_DAMAGE` (9 Cards, 11 Step Occurrences)
 
@@ -375,15 +394,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
 | `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
 | `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_when_revealed` |
-
-### <a id="give-additional-boost-card"></a>`GIVE_ADDITIONAL_BOOST_CARD` (4 Cards, 4 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
-| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_boost` |
-| `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_boost` |
-| `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_boost` |
 
 ### <a id="villain-schemes"></a>`VILLAIN_SCHEMES` (4 Cards, 4 Step Occurrences)
 

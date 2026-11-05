@@ -183,7 +183,7 @@ const LOOP_CYCLE: TriggerCallNode[] = [
     cardName: 'Sandman',
   },
   {
-    trigger: 'ENEMY_INITIATES_ATTACK',
+    trigger: 'INITIATES_ATTACK',
     abilityId: 'rhino_charge',
     sourceInstanceId: 'lab_rhino',
     cardCode: '01094',

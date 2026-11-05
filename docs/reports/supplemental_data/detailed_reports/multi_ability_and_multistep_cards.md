@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-## 1. Cards with Multiple Abilities (2+ Declared Abilities — 45 Cards)
+## 1. Cards with Multiple Abilities (2+ Declared Abilities — 46 Cards)
 
 | Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -16,11 +16,12 @@
 | `01084` | **Nick Fury** | `ally` | `core` | **2** | • `nick_fury_enters_play` (`FORCED_RESPONSE` / `ENTERS_PLAY`, **1 step**)<br/>• `nick_fury_round_end_discard` (`FORCED_RESPONSE` / `ROUND_ENDED`, **1 step**) |
 | `01099` | **Charge** | `attachment` | `core_encounter` | **3** | • `charge_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `charge_overkill` (`CONSTANT`, **1 step**)<br/>• `charge_discard` (`FORCED_RESPONSE` / `HOST_ATTACK_ENDED`, **1 step**) |
 | `01100` | **Enhanced Ivory Horn** | `attachment` | `core_encounter` | **2** | • `ivory_horn_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `ivory_horn_discard_action` (`HERO_ACTION`, **1 step**) |
+| `01114` | **Klaw** | `villain` | `core_encounter` | **2** | • `klaw_stage_ii_forced_interrupt_boost` (`FORCED_INTERRUPT` / `INITIATES_ATTACK`, **1 step**)<br/>• `klaw_stage_ii_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**) |
 | `01118` | **Sonic Converter** | `attachment` | `core_encounter` | **3** | • `sonic_converter_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `sonic_converter_stun_damaged` (`FORCED_RESPONSE` / `HOST_ATTACK_ENDED`, **1 step**)<br/>• `sonic_converter_discard_action` (`HERO_ACTION`, **1 step**) |
 | `01119` | **Solid-Sound Body** | `attachment` | `core_encounter` | **2** | • `solid_sound_body_retaliate` (`CONSTANT`, **1 step**)<br/>• `solid_sound_body_discard_action` (`HERO_ACTION`, **1 step**) |
 | `01123` | **Sonic Boom** | `treachery` | `core_encounter` | **2** | • `sonic_boom_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `sonic_boom_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01129` | **Radioactive Man** | `minion` | `core_encounter` | **2** | • `radioactive_man_forced_response` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**)<br/>• `radioactive_man_boost` (`BOOST` / `BOOST`, **1 step**) |
-| `01130` | **Whirlwind** | `minion` | `core_encounter` | **2** | • `whirlwind_interrupt_multi_hero_attack` (`FORCED_INTERRUPT` / `ENEMY_INITIATES_ATTACK`, **1 step**)<br/>• `whirlwind_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `01130` | **Whirlwind** | `minion` | `core_encounter` | **2** | • `whirlwind_interrupt_multi_hero_attack` (`FORCED_INTERRUPT` / `INITIATES_ATTACK`, **1 step**)<br/>• `whirlwind_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01131` | **Tiger Shark** | `minion` | `core_encounter` | **2** | • `tiger_shark_forced_response` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**)<br/>• `tiger_shark_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01132` | **Melter** | `minion` | `core_encounter` | **2** | • `melter_defend_with_ally_restriction` (`CONSTANT`, **1 step**)<br/>• `melter_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01136` | **Ultron** | `villain` | `core_encounter` | **2** | • `ultron_iii_drones` (`CONSTANT`, **3 steps**)<br/>• `ultron_iii_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**) |
@@ -52,7 +53,7 @@
 | `45080` | **Drawing Near** | `obligation` | `aoa_encounter` | **2** | • `drawing_near_turn_begins` (`FORCED_RESPONSE` / `PLAYER_TURN_BEGAN`, **2 steps**)<br/>• `drawing_near_action` (`ALTER_EGO_ACTION`, **1 step**) |
 | `45109` | **The Fittest** | `attachment` | `aoa_encounter` | **2** | • `the_fittest_hit_points` (`CONSTANT`, **1 step**)<br/>• `the_fittest_tough` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**) |
 
-## 2. Multi-Step Execution Pipelines (2+ Steps — 58 Pipelines Across 57 Cards)
+## 2. Multi-Step Execution Pipelines (2+ Steps — 59 Pipelines Across 58 Cards)
 
 | Card Code | Card Name | Pack | Ability ID | Timing | Steps | Pipeline Execution Sequence |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -99,6 +100,7 @@
 | `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` | `WHEN_REVEALED` | **2** | `[1] VILLAIN_AND_ENGAGED_MINIONS_ATTACK ➔ [2] SURGE` |
 | `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` | `WHEN_REVEALED` | **4** | `[1] PUT_INTO_PLAY ➔ [2] PUT_INTO_PLAY ➔ [3] SHUFFLE_INTO_DECK ➔ [4] SURGE` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` | `WHEN_REVEALED` | **2** | `[1] ADD_THREAT ➔ [2] DISCARD` |
+| `04134` | **Master Strategist (attachment)** | `trors_encounter` | `master_strategist_forced_interrupt_activation` | `FORCED_INTERRUPT` | **2** | `[1] GIVE_ADDITIONAL_BOOST_CARD ➔ [2] DISCARD` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DRAW ➔ [2] REMOVE_FROM_GAME` |
 | `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DEAL_FACEDOWN_ENCOUNTER_CARD ➔ [2] DEAL_FACEDOWN_ENCOUNTER_CARD` |
 | `24030` | **Ruination (treachery)** | `hood_encounter` | `ruination_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DISCARD ➔ [2] ADD_THREAT` |

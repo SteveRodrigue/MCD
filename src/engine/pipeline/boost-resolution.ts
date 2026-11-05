@@ -5,8 +5,6 @@ import {
   CardType,
   GameLogEntry,
   GameState,
-  MinionCard,
-  VillainCard,
   VillainState,
 } from '../models';
 import { type EffectExecutionContext } from '../effects';
@@ -53,30 +51,16 @@ export interface ResolveBoostCardsOptions extends BoostLogContext {
 /** The options a paused resolution resumes with: everything but the queue, which it already holds. */
 export type ResumeBoostCardsOptions = Omit<ResolveBoostCardsOptions, 'queue'>;
 
-type MayAddBoostCards = VillainCard | MinionCard;
-
-/** Additional boost cards the activating enemy and its attachments give (Klaw 01113, ADR-0019). */
-function getAdditionalBoostCardCount(
-  entity: BoostActivator,
-  attachments: CardInstance[] = [],
-): number {
-  let count = (entity.card as MayAddBoostCards).additionalBoostCards ?? 0;
-  for (const attachment of attachments) {
-    count += (attachment.card as MayAddBoostCards).additionalBoostCards ?? 0;
-  }
-  return count;
-}
-
 /**
  * Deals the boost cards of one activation, in the order they are turned up (RR v1.8 Attack step 3):
- * the facedown cards the enemy already holds, then the base card, then the additional cards.
+ * the facedown cards the enemy already holds, then the base card.
  * Only a villain or a Villainous minion is dealt a base card (RR v1.8 Attack step 1).
  * The held pile is emptied here, so a card added while the activation runs joins the queue instead.
  */
 export function dealBoostCards(
   state: GameState,
   entity: BoostActivator,
-  log: BoostLogContext,
+  _log?: BoostLogContext,
 ): CardInstance[] {
   const queue: CardInstance[] = [...(entity.facedownBoostCards ?? [])];
   delete entity.facedownBoostCards;
@@ -88,19 +72,6 @@ export function dealBoostCards(
   const baseCard = drawEncounterCard(state);
   if (baseCard) queue.push(baseCard);
 
-  const extraCount = getAdditionalBoostCardCount(entity, entity.attachments);
-  for (let i = 0; i < extraCount; i++) {
-    const extraCard = drawEncounterCard(state);
-    if (!extraCard) continue;
-    queue.push(extraCard);
-    appendLog(state, {
-      category: log.category,
-      actor: log.actor,
-      key: 'villain.boost.extra',
-      params: { actor: entity.card.name },
-      onomatopoeia: 'EXTRA BOOST DEALT!',
-    });
-  }
   return queue;
 }
 
@@ -230,7 +201,10 @@ function runBoostQueue(
  * Returns the boost icons of the cards resolved (all of them, unless `pauseBefore` paused it).
  */
 export function resolveBoostCards(state: GameState, options: ResolveBoostCardsOptions): number {
-  const outer = state.activeBoostResolution;
+  const outer =
+    state.activeBoostResolution && state.activeBoostResolution.queue === options.queue
+      ? undefined
+      : state.activeBoostResolution;
   state.activeBoostResolution = {
     queue: options.queue,
     activatorInstanceId: options.activatorInstanceId,

@@ -420,6 +420,16 @@ function resolvePlayerSelectorTarget(
       return [{ kind: 'player', entity: p, id: p.id }];
     }
 
+    case 'TARGET_PLAYER': {
+      const p =
+        (context?.playerId ? state.players.find((pl) => pl.id === context.playerId) : undefined) ||
+        (state.activeAttackContext?.targetPlayerId
+          ? state.players.find((pl) => pl.id === state.activeAttackContext!.targetPlayerId)
+          : undefined) ||
+        resolvingPlayer;
+      return [{ kind: 'player', entity: p, id: p.id }];
+    }
+
     case 'ENGAGED_PLAYER': {
       const sourceCard = context?.sourceCardInstance;
       const engagedPlayer = sourceCard

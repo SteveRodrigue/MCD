@@ -1,0 +1,47 @@
+{
+  "$schema": "../../../../src/data/supplemental/schema.json",
+  "cards": {
+    "04134": {
+      "abilities": [
+        {
+          "id": "master_strategist_forced_interrupt_activation",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "INITIATES_ACTIVATION",
+          "triggerFilter": {
+            "targetScope": "HOST"
+          },
+          "limit": "ONCE_PER_ACTIVATION",
+          "steps": [
+            {
+              "effect": "GIVE_ADDITIONAL_BOOST_CARD",
+              "effectParams": {
+                "count": {
+                  "from": "ENTITY_COUNT",
+                  "filter": {
+                    "types": ["side_scheme"]
+                  }
+                }
+              }
+            },
+            {
+              "gate": "THEN",
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "SELF"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T18:35:00Z",
+        "updatedAt": "2026-11-04T18:35:00Z",
+        "reviewedAt": "2026-11-04T18:35:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Attach to Red Skull.\n[star] <b>Forced Interrupt</b>: When Red Skull activates, give him an additional boost card for each side scheme in play. Then, discard this card. (Max once per activation.)"
+      }
+    }
+  }
+}

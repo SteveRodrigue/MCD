@@ -104,7 +104,7 @@ export interface CardAbility {
   triggerFilter?: TriggerFilter;
   zone?: 'HAND' | 'PLAY' | 'DISCARD';
   cost?: AbilityCost;
-  limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE';
+  limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE' | 'ONCE_PER_ACTIVATION';
   /** The whole step list resolves once per player in player order ("each player ... that player"). */
   forEachPlayer?: boolean;
   errata?: string | null;
@@ -122,7 +122,7 @@ export const CardAbilitySchema: z.ZodType<CardAbility> = z
     triggerFilter: TriggerFilterSchema.optional(),
     zone: z.enum(['HAND', 'PLAY', 'DISCARD']).optional(),
     cost: AbilityCostSchema.optional(),
-    limit: z.enum(['ONCE_PER_ROUND', 'ONCE_PER_PHASE']).optional(),
+    limit: z.enum(['ONCE_PER_ROUND', 'ONCE_PER_PHASE', 'ONCE_PER_ACTIVATION']).optional(),
     forEachPlayer: z.boolean().optional(),
     /** A boost ability that resolves "after this activation resolves". */
     afterActivation: z.boolean().optional(),

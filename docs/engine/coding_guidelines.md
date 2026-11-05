@@ -296,7 +296,7 @@ All card ability definitions in `src/data/supplemental/` and primitive handlers 
    - **Triggers (Events):** `[SUBJECT]_[VERB_TENSE]` (e.g. `DAMAGE_TAKEN`, `SCHEME_DEFEATED`, `ROUND_ENDED`).
    - **Effect Primitives (Commands):** `[IMPERATIVE_VERB]_[TARGET_OR_QUALIFIER]` (e.g. `DRAW`, `DEAL_DAMAGE`, `ADD_COUNTERS`, `REMOVE_THREAT`, `MODIFY_STAT`).
 3. **Temporal Verb Tenses (RR v1.8 Priority):**
-   - **Interrupts (Prospective/Pre-Resolution):** Subjunctive `_WOULD_BE_` or `_INITIATES_` (e.g. `DAMAGE_WOULD_BE_TAKEN`, `THREAT_WOULD_BE_PLACED`, `ENEMY_INITIATES_ATTACK`).
+   - **Interrupts (Prospective/Pre-Resolution):** Subjunctive `_WOULD_BE_` or `_INITIATES_` (e.g. `DAMAGE_WOULD_BE_TAKEN`, `THREAT_WOULD_BE_PLACED`, `INITIATES_ATTACK`, `INITIATES_ACTIVATION`).
    - **Responses (Post-Resolution):** Past participle (e.g. `DAMAGE_TAKEN`, `THREAT_PLACED`, `CARD_PLAYED`, `DEFEATED`, `ROUND_ENDED`).
 4. **Strict Pluralization for Multi-Entity Operations:** Operations that can affect 1 to $N$ items use plural names (e.g. `ADD_COUNTERS`, `REMOVE_COUNTERS`, `DRAW`, `DISCARD`). Dual single/plural variant names (like `ADD_COUNTER` / `ADD_COUNTERS`) are prohibited.
 5. **Zero Single-Use / Legacy Tech Debt:** Bespoke, single-card primitives are not allowed: express the card with composable primitives + `DynamicValueSource`.

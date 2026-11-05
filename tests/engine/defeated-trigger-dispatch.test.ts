@@ -99,7 +99,7 @@ describe('Canonical defeat trigger dispatch (ADR-0058)', () => {
           {
             id: 'spider_sense',
             timing: 'FORCED_RESPONSE',
-            trigger: 'ENEMY_INITIATES_ATTACK',
+            trigger: 'INITIATES_ATTACK',
             triggerFilter: {
               attackerKind: 'VILLAIN',
               targetPlayerScope: 'SELF',
@@ -110,7 +110,7 @@ describe('Canonical defeat trigger dispatch (ADR-0058)', () => {
       },
     });
 
-    dispatchTrigger(state, 'ENEMY_INITIATES_ATTACK', {
+    dispatchTrigger(state, 'INITIATES_ATTACK', {
       targetPlayerId: 'p1',
       attackerType: 'VILLAIN',
       sourceInstanceId: 'villain_1',
@@ -118,7 +118,7 @@ describe('Canonical defeat trigger dispatch (ADR-0058)', () => {
     });
     expect(state.players[0].counters?.all_purpose).toBe(1);
 
-    dispatchTrigger(state, 'ENEMY_INITIATES_ATTACK', {
+    dispatchTrigger(state, 'INITIATES_ATTACK', {
       targetPlayerId: 'p1',
       attackerType: 'MINION',
       sourceInstanceId: 'minion_1',

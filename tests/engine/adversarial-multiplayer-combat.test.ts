@@ -393,11 +393,21 @@ describe('Empirical Verification: Multiplayer Combat & Defense Scenarios', () =>
 
     // Give villain an attachment that grants +1 additional boost card (2 boost cards total)
     getActiveVillain(state).attachments.push({
+      instanceId: 'att_extra_boost_inst',
       card: {
         code: 'att_extra_boost',
         name: 'Extra Boost Attachment',
         type: 'attachment',
-        additionalBoostCards: 1,
+        enrichment: {
+          abilities: [
+            {
+              id: 'att_extra_boost',
+              timing: 'FORCED_INTERRUPT',
+              trigger: 'INITIATES_ATTACK',
+              steps: [{ effect: 'GIVE_ADDITIONAL_BOOST_CARD' }],
+            },
+          ],
+        },
       } as any,
     } as any);
 
@@ -461,8 +471,20 @@ describe('Empirical Verification: Multiplayer Combat & Defense Scenarios', () =>
     const p2 = state.players[1];
     const p3 = state.players[2];
 
-    // Villain has additionalBoostCards: 1
-    (getActiveVillain(state).card as any).additionalBoostCards = 1;
+    // Villain has additional boost ability
+    getActiveVillain(state).card = {
+      ...getActiveVillain(state).card,
+      enrichment: {
+        abilities: [
+          {
+            id: 'extra_boost',
+            timing: 'FORCED_INTERRUPT',
+            trigger: 'INITIATES_ATTACK',
+            steps: [{ effect: 'GIVE_ADDITIONAL_BOOST_CARD' }],
+          },
+        ],
+      },
+    };
 
     // Boost Card 1: 2 icons
     const boostCard1 = createMockCardInstance('boost_1', 'Heavy Blow', 'treachery', {
@@ -816,25 +838,25 @@ describe('Empirical Verification: Multiplayer Combat & Defense Scenarios', () =>
     const p2 = state.players[1];
     const p3 = state.players[2];
 
-    // 2 attachments granting +1 additional boost card each (total 3 boost cards)
-    getActiveVillain(state).attachments.push(
-      {
-        card: {
-          code: 'att_extra_1',
-          name: 'Extra Boost 1',
-          type: 'attachment',
-          additionalBoostCards: 1,
-        } as any,
+    // Attachment granting +2 additional boost cards (total 3 boost cards)
+    getActiveVillain(state).attachments.push({
+      instanceId: 'att_extra_boost_inst',
+      card: {
+        code: 'att_extra_boost',
+        name: 'Extra Boost 2',
+        type: 'attachment',
+        enrichment: {
+          abilities: [
+            {
+              id: 'att_extra_2_boost',
+              timing: 'FORCED_INTERRUPT',
+              trigger: 'INITIATES_ATTACK',
+              steps: [{ effect: 'GIVE_ADDITIONAL_BOOST_CARD', effectParams: { count: 2 } }],
+            },
+          ],
+        },
       } as any,
-      {
-        card: {
-          code: 'att_extra_2',
-          name: 'Extra Boost 2',
-          type: 'attachment',
-          additionalBoostCards: 1,
-        } as any,
-      } as any,
-    );
+    } as any);
 
     const boostCard1 = createMockCardInstance('b1', 'Boost 1', 'treachery', { boostIcons: 2 });
     const boostCard2 = createMockCardInstance('b2', 'Boost 2', 'treachery', { boostIcons: 2 });

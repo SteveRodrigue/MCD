@@ -117,7 +117,19 @@ describe('Boost Effect Reveal Prompt & Combat Resumption (Issue #503)', () => {
     state.encounterDeck = [tigerShark, whirlwind];
 
     // Give villain 1 additional boost card so 2 are dealt (like Klaw 01113)
-    getActiveVillain(state).card = { ...getActiveVillain(state).card, additionalBoostCards: 1 };
+    getActiveVillain(state).card = {
+      ...getActiveVillain(state).card,
+      enrichment: {
+        abilities: [
+          {
+            id: 'extra_boost',
+            timing: 'FORCED_INTERRUPT',
+            trigger: 'INITIATES_ATTACK',
+            steps: [{ effect: 'GIVE_ADDITIONAL_BOOST_CARD' }],
+          },
+        ],
+      },
+    };
 
     const initialHp = state.players[0].health;
     const s1 = initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1', {

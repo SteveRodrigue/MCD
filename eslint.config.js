@@ -27,7 +27,7 @@ const ACTION_HANDLER_BAN = [
 
 export default [
   {
-    ignores: ['dist/**', 'coverage/**', 'node_modules/**', 'cache/**', 'logs/**'],
+    ignores: ['dist/**', 'coverage/**', 'node_modules/**', 'cache/**', 'logs/**', 'temp/**'],
   },
   js.configs.recommended,
   {

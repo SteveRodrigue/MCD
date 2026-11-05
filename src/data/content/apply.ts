@@ -7,8 +7,8 @@ import { ScenarioRegistry } from '@engine/scenarios/registry';
 import { cardCatalog } from '../importer/card-loader';
 import { replaceSupplementalRegistry } from '../supplemental';
 import { packHooks } from './pack-hooks.generated';
-import { clearLoadedContent, setLoadedContent } from './store';
-import type { ContentDriver, LoadContentOptions, LoadedContent } from './types';
+import { clearLoadedContent, setActiveDriver, setLoadedContent } from './store';
+import type { ContentDriver, ContentWriter, LoadContentOptions, LoadedContent } from './types';
 import { loadContent } from './loader';
 
 /** Empties every singleton the content loader fills. */
@@ -52,5 +52,6 @@ export async function bootContent(
 ): Promise<LoadedContent> {
   const content = await loadContent(driver, options);
   applyContent(content);
+  setActiveDriver(driver as ContentDriver & ContentWriter);
   return content;
 }

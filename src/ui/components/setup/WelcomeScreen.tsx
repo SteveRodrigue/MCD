@@ -44,8 +44,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onOpenContent }) =
         <section className="space-y-1">
           <h2 className="font-comic text-xl">Sync official data</h2>
           <p className="text-sm">
-            Run this in a terminal in the project folder, then add the pack ids you want to{' '}
-            <code>enabledPacks</code> in <code>content/config.json</code> and reload.
+            Run this in a terminal in the project folder, then toggle the packs you want in the{' '}
+            Content screen.
           </p>
           <div className="flex items-center gap-2">
             <code className={`px-2 py-1 text-sm ${style.chip}`}>{SYNC_COMMAND}</code>

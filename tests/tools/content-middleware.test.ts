@@ -96,13 +96,31 @@ describe('content endpoint writes (editor Save, M9)', () => {
     ).toContain('"cards"');
   });
 
+  it('writes config.json when the payload is valid ContentConfig', () => {
+    const valid = JSON.stringify({
+      $schema: '../src/data/packs/content-config.schema.json',
+      enabledPacks: ['core', 'gob'],
+    });
+    expect(put('config.json', valid)?.status).toBe(200);
+    expect(fs.readFileSync(path.join(base, 'content/config.json'), 'utf-8')).toContain('"gob"');
+  });
+
+  it('refuses config.json with invalid JSON or schema', () => {
+    expect(put('config.json', '{ bad json')?.status).toBe(400);
+    expect(put('config.json', JSON.stringify({ enabledPacks: 'not-an-array' }))?.status).toBe(400);
+    expect(put('config.json', JSON.stringify({ enabledPacks: [''] }))?.status).toBe(400);
+    expect(
+      put('config.json', JSON.stringify({ enabledPacks: ['core'], extraField: 123 }))?.status,
+    ).toBe(400);
+  });
+
   it('refuses a synced pack, a pack without pack.json and any other path', () => {
     write('packs/synced/pack.json', manifest('official-sync'));
     expect(put('packs/synced/supplemental/s.json')?.status).toBe(403);
     expect(put('packs/ghost/supplemental/g.json')?.status).toBe(403);
     expect(put('packs/mine/pack.json')?.status).toBe(403);
     expect(put('packs/mine/cards/c.json')?.status).toBe(403);
-    expect(put('config.json')?.status).toBe(403);
+    expect(put('packs/mine/other.json')?.status).toBe(403);
     expect(put('packs/mine/supplemental/%2e%2e%2fpack.json')?.status).toBe(403);
     expect(put('packs/../supplemental/x.json')?.status).toBe(403);
   });

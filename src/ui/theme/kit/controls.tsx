@@ -97,10 +97,16 @@ export interface SwitchProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
   label: string;
+  disabled?: boolean;
 }
 
 /** On/off setting. The track uses the theme's primary colour when on. */
-export const ThemedSwitch: React.FC<SwitchProps> = ({ checked, onChange, label }) => {
+export const ThemedSwitch: React.FC<SwitchProps> = ({
+  checked,
+  onChange,
+  label,
+  disabled = false,
+}) => {
   const { style } = useModalStyle();
   return (
     <button
@@ -108,10 +114,11 @@ export const ThemedSwitch: React.FC<SwitchProps> = ({ checked, onChange, label }
       role="switch"
       aria-checked={checked}
       aria-label={label}
-      onClick={() => onChange(!checked)}
+      disabled={disabled}
+      onClick={() => !disabled && onChange(!checked)}
       className={`relative w-12 h-6 shrink-0 cursor-pointer transition-colors ${
         checked ? style.tileSelected : style.inset
-      } scale-100!`}
+      } ${disabled ? 'opacity-40 cursor-not-allowed!' : ''} scale-100!`}
     >
       <span
         aria-hidden="true"

@@ -1,4 +1,4 @@
-import type { LoadedContent } from './types.ts';
+import type { ContentDriver, ContentWriter, LoadedContent } from './types.ts';
 
 const EMPTY: LoadedContent = {
   packs: [],
@@ -20,6 +20,17 @@ export function setLoadedContent(content: LoadedContent): void {
 
 export function clearLoadedContent(): void {
   current = EMPTY;
+}
+
+let activeDriver: (ContentDriver & ContentWriter) | undefined;
+
+/** The driver passed to `bootContent` (Node in tests, Fetch in the browser). */
+export function getActiveDriver(): (ContentDriver & ContentWriter) | undefined {
+  return activeDriver;
+}
+
+export function setActiveDriver(driver: (ContentDriver & ContentWriter) | undefined): void {
+  activeDriver = driver;
 }
 
 let disabledArtPacks: ReadonlySet<string> = new Set();

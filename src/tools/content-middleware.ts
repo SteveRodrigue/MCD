@@ -13,6 +13,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { ContentConfigSchema } from '../data/packs/content-config.ts';
 import { SupplementalPackSchema } from '../data/supplemental/schema.ts';
 import { contentRoot } from './content-paths.ts';
 
@@ -123,11 +124,32 @@ export function handleContentWrite(
   } catch {
     return json(400, { error: 'Bad request path' });
   }
-  const match = WRITABLE_PATH.exec(relative);
-  if (!match)
-    return json(403, { error: 'Only packs/<id>/supplemental/<file>.json can be written' });
 
   const root = contentRoot(base);
+
+  if (relative === 'config.json') {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(body);
+    } catch {
+      return json(400, { error: 'Body is not valid JSON' });
+    }
+    const valid = ContentConfigSchema.safeParse(parsed);
+    if (!valid.success) return json(400, { error: valid.error.message });
+
+    const target = path.join(root, 'config.json');
+    const temp = `${target}.${process.pid}.tmp`;
+    fs.writeFileSync(temp, JSON.stringify(parsed, null, 2) + '\n', 'utf-8');
+    fs.renameSync(temp, target);
+    return json(200, { success: true });
+  }
+
+  const match = WRITABLE_PATH.exec(relative);
+  if (!match)
+    return json(403, {
+      error: 'Only packs/<id>/supplemental/<file>.json and config.json can be written',
+    });
+
   let origin: unknown;
   try {
     const manifest = JSON.parse(

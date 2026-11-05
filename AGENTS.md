@@ -40,7 +40,7 @@ and the post-task procedure is in
 
 ## Git worktrees
 
-Every worktree lives in `temp/worktrees/<name>` inside the repository (git-ignored; agents may not be able to write outside the repo folder). Create one with `git worktree add -b <branch> temp/worktrees/<name> origin/main`; never use `.claude/worktrees` or a sibling folder. Before removing a worktree, delete its `node_modules` junction first (PowerShell: `[System.IO.Directory]::Delete(path)`) and stop any dev server you started there. A `PreToolUse` hook (`.claude/hooks/worktree-location.mjs`) blocks `git worktree add` anywhere else.
+Every worktree lives in `temp/worktrees/<name>` inside the repository (git-ignored; agents may not be able to write outside the repo folder). Create one with `git worktree add -b <branch> temp/worktrees/<name> origin/main`; never use a sibling folder. Claude Code's own built-in worktrees (`.claude/worktrees`, git-ignored) are allowed. Before removing a worktree, delete its `node_modules` junction first (PowerShell: `[System.IO.Directory]::Delete(path)`) and stop any dev server you started there. A `PreToolUse` hook (`.claude/hooks/worktree-location.mjs`) blocks `git worktree add` anywhere else.
 
 ## Claude Code setup
 

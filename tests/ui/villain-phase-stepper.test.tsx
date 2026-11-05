@@ -1,6 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { VillainPhaseStepper } from '../../src/ui/components/board/VillainPhaseStepper';
+import { GameBoard } from '../../src/ui/components/board/GameBoard';
+import { OptionsMenu } from '../../src/ui/components/board/OptionsMenu';
+import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
+import { newRhinoGame } from '../support/game-fixtures';
 import { CombatBoostModal } from '../../src/ui/components/board/CombatBoostModal';
 import { ComicDamageSplash } from '../../src/ui/components/board/ComicDamageSplash';
 import { cardCatalog } from '../../src/data/importer/card-loader';
@@ -365,5 +369,55 @@ describe('VillainPhaseStepper panel variant', () => {
     expect(screen.getByText('3. DEAL CARDS')).toBeDefined();
     fireEvent.click(screen.getByText('Next Step'));
     expect(onNextStep).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('VillainPhaseStepper placement relative to villain stage', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    Element.prototype.scrollTo = vi.fn();
+    Element.prototype.scrollBy = vi.fn();
+  });
+
+  it('renders stepper ribbon under the villain stage and never above it when in villain phase', () => {
+    const state = newRhinoGame();
+    state.phase = GamePhase.VILLAIN_PHASE;
+    state.villainPhaseStep = VillainPhaseStep.MAIN_SCHEME_THREAT;
+
+    render(
+      <GameSettingsProvider>
+        <TestSession state={state}>
+          <GameBoard onReset={vi.fn()} />
+        </TestSession>
+      </GameSettingsProvider>,
+    );
+
+    const villainStage = screen.getByTestId('villain-stage');
+    const stepper = screen.getByTestId('villain-phase-stepper');
+
+    expect(stepper).toBeDefined();
+    // Stepper must follow the villain stage in document order (under, never over)
+    const position = villainStage.compareDocumentPosition(stepper);
+    expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('provides Left, Right, and Under options in the options menu', () => {
+    const state = newRhinoGame();
+
+    render(
+      <GameSettingsProvider>
+        <TestSession state={state}>
+          <OptionsMenu isOpen={true} onClose={vi.fn()} />
+        </TestSession>
+      </GameSettingsProvider>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Left' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Right' })).toBeDefined();
+    const underButton = screen.getByRole('button', { name: 'Under' });
+    expect(underButton).toBeDefined();
+
+    fireEvent.click(underButton);
+    expect(underButton.getAttribute('aria-pressed')).toBe('true');
   });
 });

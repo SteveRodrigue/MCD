@@ -152,6 +152,7 @@ const HEROIC_OPTIONS = [0, 1, 2, 3].map((lvl) => ({
 const STEPPER_SIDE_OPTIONS = [
   { value: 'left', label: 'Left' },
   { value: 'right', label: 'Right' },
+  { value: 'under', label: 'Under' },
 ] as const;
 
 const PACING_OPTIONS = [
@@ -347,7 +348,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
               onChange={setPhaseStepperSide}
             />
           }
-          description="Which side of the villain zone shows the villain phase steps, when there is room. On narrow screens the steps appear in a bar above the table."
+          description="Which side of the villain zone shows the villain phase steps, or under the villain. When a side is chosen but the slot is too narrow, steps appear under the villain zone."
         />
 
         <SettingPanel

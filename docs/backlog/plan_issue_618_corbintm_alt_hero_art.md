@@ -1,6 +1,6 @@
 # Plan: Art pack switch, description, Browse view and hero art check (Issue #618)
 
-> **Status:** Draft v4 for owner review. Nothing is implemented. Milestone: Gate 2 (as the issue).
+> **Status:** M1 and M2 implemented in this PR (validation, `description`, switch, Browse, docs). M3 (in-game check with the real pack) and M4 wait for the Tools project's pack. Milestone: Gate 2 (as the issue).
 > **Goal of the issue:** prove that the art pack engine (ADR-0093) works well with Hero and Alter-Ego cards, using a fan-made set (Corbintm's alternate identity cards, on r/marvelchampionslcg and Google Drive) that has an alternate card for every hero.
 > **Scope of this plan:** the MCD side only. Converting the fan files into a pack is done in the separate **MCD Art Pack Tools** project (private, Python), which hands over a finished pack folder. MCD's repository holds no converter, recipe, image library or fan art.
 > **Owner decisions (2026-11-05):**
@@ -123,7 +123,7 @@ One component, `ArtPackSettings`, rendered in two places: the in-game **Options 
 A modal opened by **Browse** shows every image of the pack, whether or not the pack is on:
 
 - Grouped by card, each tile labelled with the card code, the card's name and side (from the loaded card data), and, for stat images, the printed ATK and hit points. A code that no loaded card owns is shown with its code only and a warning mark.
-- Images load lazily from the existing `/card-art/_art-<id>/<file>.png` route, through the same cache as in-game art, so a pack of about 145 images does not load at once.
+- Images load lazily (`loading="lazy"`) from the existing `/card-art/_art-<id>/<file>.png` route, which the browser caches, so a pack of about 145 images does not load at once.
 - Clicking a tile enlarges the image (the existing card zoom where it fits, otherwise a simple enlarged view in the same modal). The image is shown whole and unaltered (rule 6).
 - Credit and description sit at the top. A text filter by card name or code is included because the Corbintm pack has about 145 images; nothing else (sorting, favourites) is added.
 - A broken or missing image shows a placeholder tile with its file name, not an error.

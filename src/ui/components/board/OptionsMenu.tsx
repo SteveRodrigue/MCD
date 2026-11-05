@@ -15,6 +15,7 @@ import {
   Clock,
   Trash2,
   Palette,
+  Images,
 } from 'lucide-react';
 import { useGameSettings } from '../../context/useGameSettings';
 import { logGameStateSnapshot } from '../../services/gamestate-logger-service';
@@ -23,6 +24,7 @@ import { resetAllStats } from '../../services/stats-storage-service';
 import { useGameSession } from '../../context/GameStateContext';
 import { ModalScaffold } from '../../theme/ModalScaffold';
 import { ThemePicker } from '../../theme/ThemePicker';
+import { ArtPackSettings } from '../setup/ArtPackSettings';
 import { useGameTheme } from '../../theme/useGameTheme';
 import { useModalStyle } from '../../theme/useModalStyle';
 
@@ -220,6 +222,15 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
         {/* Theme: a chosen theme, or a random one for every game */}
         <SettingPanel icon={<Palette className="w-5 h-5 text-comic-red" />} title="Theme">
           <ThemePicker themed game={{ activeThemeId, onReroll: () => rollGameTheme() }} />
+        </SettingPanel>
+
+        {/* Art packs: alternate card art, switched on or off per pack */}
+        <SettingPanel
+          icon={<Images className="w-5 h-5 text-comic-blue" />}
+          title="Art Packs"
+          description="Alternate art for cards. A pack that is switched off shows the official art again."
+        >
+          <ArtPackSettings />
         </SettingPanel>
 
         <SettingPanel

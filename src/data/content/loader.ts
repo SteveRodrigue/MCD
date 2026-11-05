@@ -258,11 +258,24 @@ async function readArtPacks(
         await driver.readJson(`art-packs/${id}/art-pack.json`),
       );
       if (manifest.id !== id) throw new Error(`id "${manifest.id}" must equal the folder name`);
-      artPacks.push(manifest);
+      const warn = (reason: string) => artPackWarnings.push({ packId, reason });
+      // An image the manifest lists but the folder lacks is not offered; a card left with no image
+      // keeps its official art. The pack itself stays usable.
+      const present = new Set(await driver.listFiles(`art-packs/${id}`));
+      const cards: ArtPackManifest['cards'] = {};
       for (const [code, images] of Object.entries(manifest.cards)) {
-        const warn = (reason: string) => artPackWarnings.push({ packId, reason });
+        const found = images.filter((image) => present.has(image.file));
+        for (const image of images) {
+          if (!present.has(image.file)) {
+            warn(`card ${code}: image ${image.file} is missing from the pack folder`);
+          }
+        }
+        if (found.length > 0) cards[code] = found;
+      }
+      artPacks.push({ ...manifest, cards });
+      for (const [code, images] of Object.entries(cards)) {
         const owner = claimedBy.get(code);
-        if (owner) warn(`card ${code} is also listed by "${owner}", which is the one used`);
+        if (owner) warn(`card ${code} is also listed by "${owner}", which comes first by folder name`);
         else claimedBy.set(code, id);
         if (!cardTypes.has(code)) warn(`card ${code} is not loaded`);
         else if (images[0].attack !== undefined && !STAT_IMAGE_CARD_TYPES.has(cardTypes.get(code) ?? '')) {

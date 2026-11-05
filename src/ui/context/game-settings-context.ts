@@ -18,6 +18,8 @@ export interface GameSettings extends ThemeSettings {
   phaseStepperSide: PhaseStepperSide;
   defaultDifficulty: DifficultyMode;
   defaultHeroicLevel: number;
+  /** Ids of the art packs the player switched off; a pack not listed is on (ADR-0093). */
+  disabledArtPacks: string[];
 }
 
 export interface GameSettingsContextType {
@@ -30,6 +32,7 @@ export interface GameSettingsContextType {
   phaseStepperSide: PhaseStepperSide;
   defaultDifficulty: DifficultyMode;
   defaultHeroicLevel: number;
+  disabledArtPacks: string[];
   setDevMode: (enabled: boolean) => void;
   toggleDevMode: () => void;
   setAutoResolveUnambiguous: (enabled: boolean) => void;
@@ -40,6 +43,7 @@ export interface GameSettingsContextType {
   setPhaseStepperSide: (side: PhaseStepperSide) => void;
   setDefaultDifficulty: (difficulty: DifficultyMode) => void;
   setDefaultHeroicLevel: (level: number) => void;
+  setArtPackEnabled: (id: string, enabled: boolean) => void;
   updateSettings: (partial: Partial<GameSettings>) => void;
 }
 
@@ -54,6 +58,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   phaseStepperSide: 'left',
   defaultDifficulty: 'STANDARD',
   defaultHeroicLevel: 0,
+  disabledArtPacks: [],
   ...DEFAULT_THEME_SETTINGS,
 };
 

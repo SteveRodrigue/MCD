@@ -59,6 +59,7 @@ describe('a Drone comes from Ultron scenario data', () => {
         {
           id: 'tokens',
           name: 'Tokens',
+          description: 'Tokens for the Ultron scenario.',
           credit: { author: 'A', sourceUrl: 'https://example.com/a', unofficial: true },
           cards: { ultron_drone: [{ file: 'mk1.png' }], '01001a': [{ file: 'hero.png' }] },
         },

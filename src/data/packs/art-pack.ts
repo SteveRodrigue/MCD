@@ -36,6 +36,8 @@ export const ArtPackManifestSchema = z
     $schema: z.string().optional(),
     id: z.string().regex(PACK_ID_PATTERN, 'must match ^[a-z][a-z0-9_-]{1,31}$'),
     name: z.string().min(1),
+    /** What the pack contains and when to use it; shown in the art pack list. */
+    description: z.string().trim().min(1).max(300),
     credit: z
       .object({
         author: z.string().min(1),

@@ -197,9 +197,7 @@
 :root {
   --font-comic: 'Body Digits', 'Bangers', Impact, system-ui, sans-serif;
   --font-body: Inter, system-ui, sans-serif;
-  --font-numbers:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-    monospace;
+  --font-numbers: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
 @layer base {
@@ -226,20 +224,16 @@
 @layer utilities {
   /* Ben-Day Halftone Dot Pattern */
   .bg-bendy-dots {
-    background-image:
-      radial-gradient(rgba(237, 29, 36, 0.08) 15%, transparent 16%),
-      radial-gradient(rgba(2, 132, 199, 0.08) 15%, transparent 16%);
+    background-image: radial-gradient(rgba(237, 29, 36, 0.08) 15%, transparent 16%), radial-gradient(rgba(2, 132, 199, 0.08) 15%, transparent 16%);
     background-size: 20px 20px;
-    background-position:
-      0 0,
-      10px 10px;
+    background-position: 0 0, 10px 10px;
   }
 
   /* Comic Panel Outline */
   .comic-panel {
     border: 3px solid #111111;
     box-shadow: 5px 5px 0px 0px #111111;
-    background-color: #ffffff;
+    background-color: #FFFFFF;
   }
 
   /* Comic Speech / Thought Bubble */
@@ -247,7 +241,7 @@
     border: 2px solid #111111;
     border-radius: 12px;
     box-shadow: 3px 3px 0px 0px #111111;
-    background-color: #ffffff;
+    background-color: #FFFFFF;
   }
 
   .font-bangers {

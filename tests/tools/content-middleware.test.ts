@@ -24,6 +24,10 @@ beforeAll(() => {
   write('packs/core/translations/fr/core.json', '[]');
   write('packs/core/README.md', '# not json');
   write('.cache/images/x.json', '{}');
+  write('art-packs/fan/art-pack.json', '{}');
+  write('art-packs/fan/hero.png', 'not really a png');
+  write('art-packs/fan/notes.txt', 'text');
+  write('packs/core/cards/x.png', 'a png outside an art pack');
   fs.writeFileSync(path.join(base, 'secret.json'), '{"secret":true}');
 });
 afterAll(() => {
@@ -31,8 +35,10 @@ afterAll(() => {
 });
 
 describe('content endpoint', () => {
-  it('indexes only JSON files outside .cache and translations', () => {
+  it('indexes JSON files outside .cache and translations, and the PNG files of art packs', () => {
     expect(buildContentIndex(base)).toEqual([
+      'art-packs/fan/art-pack.json',
+      'art-packs/fan/hero.png',
       'config.json',
       'packs/core/cards/core.json',
       'packs/core/pack.json',
@@ -46,6 +52,11 @@ describe('content endpoint', () => {
     expect(handleContentRequest('/__content/packs/core/pack.json', base)?.body).toBe(
       '{"id":"core"}',
     );
+  });
+
+  it('lists art pack images so the loader can check them, but never serves them here', () => {
+    expect(handleContentRequest('/__content/art-packs/fan/hero.png', base)?.status).toBe(404);
+    expect(handleContentRequest('/__content/art-packs/fan/art-pack.json', base)?.body).toBe('{}');
   });
 
   it('ignores requests outside /content/', () => {

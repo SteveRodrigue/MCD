@@ -4,10 +4,15 @@ import { HeroZone } from '../../src/ui/components/board/HeroZone';
 import { CardArtThumbnail } from '../../src/ui/components/cards/CardArtThumbnail';
 import { CardContextMenu } from '../../src/ui/components/cards/CardContextMenu';
 import { CardView } from '../../src/ui/components/cards/CardView';
+import { ArtPackSettings } from '../../src/ui/components/setup/ArtPackSettings';
 import { ContentScreen } from '../../src/ui/components/setup/ContentScreen';
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { getLoadedContent, setLoadedContent } from '../../src/data/content/store';
+import {
+  getLoadedContent,
+  setDisabledArtPacks,
+  setLoadedContent,
+} from '../../src/data/content/store';
 import type { ArtPackManifest } from '../../src/data/packs/art-pack';
 import {
   AlterEgoCard,
@@ -28,6 +33,7 @@ const mk = (n: number) => ({ file: `mk${n}.png`, attack: n, hitPoints: n });
 const tokens: ArtPackManifest = {
   id: 'tokens',
   name: 'Ultron tokens',
+  description: 'Tokens for the Ultron scenario.',
   credit: { author: 'A. Artist', sourceUrl: 'https://example.com/a', unofficial: true },
   cards: {
     ultron_drone: [mk(1), mk(2), mk(3), mk(4)],
@@ -92,6 +98,8 @@ beforeEach(() => {
 
 afterEach(() => {
   setLoadedContent(loaded);
+  setDisabledArtPacks([]);
+  localStorage.clear();
 });
 
 describe('S1: no art pack', () => {
@@ -148,7 +156,11 @@ describe('S2: art pack found', () => {
   });
 
   it('S2: the Content screen lists the art pack and its credit', () => {
-    render(<ContentScreen onBack={() => {}} />);
+    render(
+      <GameSettingsProvider>
+        <ContentScreen onBack={() => {}} />
+      </GameSettingsProvider>,
+    );
     expect(screen.getByTestId('art-packs').textContent).toContain('Ultron tokens');
     expect(screen.getByTestId('art-packs').textContent).toContain('A. Artist');
   });
@@ -258,7 +270,11 @@ describe('S4: a broken art pack never breaks the game', () => {
       failures: [{ packId: 'art-pack:bad', reason: 'credit is required' }],
       artPackWarnings: [{ packId: 'art-pack:tokens', reason: 'card 99999 is not loaded' }],
     });
-    render(<ContentScreen onBack={() => {}} />);
+    render(
+      <GameSettingsProvider>
+        <ContentScreen onBack={() => {}} />
+      </GameSettingsProvider>,
+    );
     expect(screen.getByTestId('art-packs').textContent).toContain('bad: credit is required');
     expect(screen.getByTestId('art-packs').textContent).toContain('card 99999 is not loaded');
   });
@@ -315,5 +331,31 @@ describe('S7: art packs never reveal hidden cards', () => {
     await new Promise((resolve) => setTimeout(resolve));
     expect(container.innerHTML).not.toContain('minion.png');
     expect(screen.queryByAltText(card.name)).toBeNull();
+  });
+});
+
+describe('S7: switching an art pack off and on in a running game', () => {
+  beforeEach(() => setLoadedContent({ ...loaded, artPacks: [tokens] }));
+
+  it('S7: the Drone goes back to the labelled card back, then to its token, without a restart', async () => {
+    const state = game();
+    render(
+      <GameSettingsProvider>
+        <ArtPackSettings />
+        <TestSession state={state}>
+          <HeroZone player={state.players[0]} seatNumber={1} isFocused={true} isMultiHero={false} />
+        </TestSession>
+      </GameSettingsProvider>,
+    );
+    await waitFor(() => expect(droneImage()?.getAttribute('src')).toBe(art('mk1.png')));
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Use Ultron tokens' }));
+    await waitFor(() => expect(droneImage()).toBeNull());
+    expect(screen.getByTestId('drone-shell-label').textContent).toBe('Drone');
+    expect(minionsZone().textContent).toContain('ATK 1');
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Use Ultron tokens' }));
+    await waitFor(() => expect(droneImage()?.getAttribute('src')).toBe(art('mk1.png')));
+    expect(screen.queryByTestId('drone-shell-label')).toBeNull();
   });
 });

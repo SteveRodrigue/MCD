@@ -74,12 +74,12 @@ describe('image cache (shipped asset, disk cache, MarvelCDB)', () => {
       expect(answer).toEqual({ status: 200, filePath: file });
     });
 
-    it('S2: the browser can discover a manifest, but the index never lists an image', () => {
+    it("S2: the index names a pack's manifest and images, so the loader can check them", () => {
       writeArtPackImage('tokens', 'mk1.png');
       writeArtPackImage('tokens', 'art-pack.json');
       const index = buildContentIndex(base);
       expect(index).toContain('art-packs/tokens/art-pack.json');
-      expect(index).not.toContain('art-packs/tokens/mk1.png');
+      expect(index).toContain('art-packs/tokens/mk1.png');
     });
 
     it('S4: a missing image is a 404 and is never downloaded', async () => {

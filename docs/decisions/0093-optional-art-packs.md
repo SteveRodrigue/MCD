@@ -41,16 +41,20 @@ Fan art rarely has a license that fits this public, MIT-licensed repository, and
 ### Decisions
 
 1. **Location.** `content/art-packs/<id>/` holds `art-pack.json` and PNG files. The folder is gitignored and is separate from `content/packs/`, because an art pack holds no game data.
-2. **Found means used.** The app lists the folder through the content driver, with no `config.json` entry. Listed cards use its images, and removing the folder restores the default. There is no picker or saved setting.
+2. **Found means available, used unless switched off.** The app lists the folder through the content driver, with no `config.json` entry. A pack found is on by default, and the player can switch each pack off in the Options menu or on the Content screen (amended 2026-11-05, Issue #618). The choice is a display setting stored in the browser (`disabledArtPacks`), never in `GameState`; the first pack that is on and lists a card is the one used. Removing the folder also restores the default.
 3. **Only the app reads them.** `loadContent` reads art packs only with `{ artPacks: true }`, which `main.tsx` passes. Tests and scripts get the same results with or without a developer's local art pack.
 4. **Serving.** Images use the existing route as `/card-art/_art-<id>/<file>.png`. The id and file name are validated, and nothing is ever downloaded for an art pack.
 5. **Any card.** A pack lists card codes. Two-sided cards are targeted through their own codes (`01001a`, `01137b`). A scenario token with no printed card is declared in `definition.json` (`tokens`), which also makes its stats data.
 6. **Stat images.** A card can list several images with printed `attack` and `hitPoints`. It shows the highest image whose printed values are both at or below its current values, otherwise the lowest. This applies to minions, allies and villains. The stat badges stay the source of truth.
 7. **Hidden information.** A facedown card always shows its back. Only a shell, whose only face is its own card, shows art while facedown.
 8. **Failure.** A failed image falls back to the official art, or to the labelled back for a token. An invalid `art-pack.json` is a load failure, and other problems are warnings. The Content screen lists them, and the game still starts.
-9. **Credit.** `art-pack.json` requires a credit. The card's right-click menu and the Content screen show it.
+9. **Credit and description.** `art-pack.json` requires a credit and a description (1 to 300 characters). The card's right-click menu, the art pack list and the Browse view show them.
 10. **Card Editor.** The editor always shows official art, because card data is reviewed against the printed card.
 11. **Loading with the scenario.** When a game starts, the UI preloads the images of the scenario's tokens, so the next stat image shows at once.
+
+12. **Load-time validation.** Beyond the manifest, the loader checks that every listed PNG exists in the pack folder (the dev server's content index names the PNG files of art packs, but never serves them through `/__content`). A missing file is a warning and the image is dropped, so its card keeps its official art. Image dimensions and shape are not checked at load: the driver reads no binary files, and a failed image already falls back (decision 8).
+13. **Browse.** A modal shows every image of a pack, on or off, with the card name, code and printed stats, a filter and an enlarged view. Images are shown whole and unaltered.
+14. **Conversion tooling is outside MCD.** Turning a fan release (print sheets, bleed, PDF pages) into an art pack is the pack author's job. The repository ships no converter, recipe or image library, and no fan art. The first large pack, Corbintm's alternate-art heroes, is built with a separate private tool.
 
 ### Rationale ("The Why")
 

@@ -5,8 +5,10 @@
  *   GET /__content/index.json     { files: [...] } every servable file, relative to the content root
  *   GET /__content/<relative>     one file from that list
  *
- * Only files that appear in the index are served, which keeps requests inside the content folder
- * (no `..`, no absolute paths, no `.cache`, no translations, no non-JSON files).
+ * Only JSON files in the index are served, which keeps requests inside the content folder (no `..`,
+ * no absolute paths, no `.cache`, no translations, no other file types). The index also names the
+ * PNG files of art packs, so the loader can check that a manifest's images exist; the images
+ * themselves are served by the card art route, never here.
  */
 
 import * as fs from 'fs';
@@ -18,12 +20,17 @@ const URL_PREFIX = '/__content/';
 /** Folders the browser never needs. */
 const EXCLUDED_DIRS = new Set(['.cache', 'translations']);
 
+/** A PNG directly inside `art-packs/<id>/`. */
+function isArtPackImage(rel: string): boolean {
+  return /^art-packs\/[^/]+\/[^/]+\.png$/i.test(rel);
+}
+
 function collect(dir: string, relDir: string, out: string[]): void {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (EXCLUDED_DIRS.has(entry.name)) continue;
     const rel = relDir ? `${relDir}/${entry.name}` : entry.name;
     if (entry.isDirectory()) collect(path.join(dir, entry.name), rel, out);
-    else if (entry.isFile() && entry.name.endsWith('.json')) out.push(rel);
+    else if (entry.isFile() && (entry.name.endsWith('.json') || isArtPackImage(rel))) out.push(rel);
   }
 }
 
@@ -59,7 +66,9 @@ export function handleContentRequest(requestPath: string, base?: string): Conten
   }
   const files = buildContentIndex(base);
   if (relative === 'index.json') return json(200, { files });
-  if (!files.includes(relative)) return json(404, { error: 'Not found' });
+  if (!files.includes(relative) || !relative.endsWith('.json')) {
+    return json(404, { error: 'Not found' });
+  }
   return {
     status: 200,
     contentType: 'application/json',

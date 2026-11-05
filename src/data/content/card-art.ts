@@ -8,7 +8,7 @@
 
 import type { CardType } from '../../engine/models/enums.ts';
 import type { ArtPackCredit, ArtPackImage, ArtPackManifest } from '../packs/art-pack.ts';
-import { getLoadedContent } from './store.ts';
+import { getArtPackVersion, getDisabledArtPacks, getLoadedContent } from './store.ts';
 import type { LoadedContent, LoadedPack } from './types.ts';
 
 /** Route served by the dev and preview servers: `/card-art/<packId>/<file>.png`. */
@@ -77,24 +77,30 @@ export function artFileName(
 }
 
 let indexedContent: LoadedContent | null = null;
+let indexedArtPackVersion = -1;
 let packByCode = new Map<string, LoadedPack>();
 let artPackByCode = new Map<string, ArtPackManifest>();
 
 function refreshCardArtIndex(): void {
   const content = getLoadedContent();
-  if (content === indexedContent) return;
+  const version = getArtPackVersion();
+  if (content === indexedContent && version === indexedArtPackVersion) return;
   packByCode = new Map();
   artPackByCode = new Map();
   for (const pack of content.packs) {
     for (const card of pack.cards) if (!packByCode.has(card.code)) packByCode.set(card.code, pack);
   }
-  // Art packs are ordered by folder name, so the first one listing a card is the one used.
+  // Art packs are ordered by folder name, so the first one that is switched on and lists a card
+  // is the one used. A pack the player switched off shows nothing.
+  const disabled = getDisabledArtPacks();
   for (const artPack of content.artPacks) {
+    if (disabled.has(artPack.id)) continue;
     for (const code of Object.keys(artPack.cards)) {
       if (!artPackByCode.has(code)) artPackByCode.set(code, artPack);
     }
   }
   indexedContent = content;
+  indexedArtPackVersion = version;
 }
 
 /** The loaded pack that owns a card code (its cards file sits in that pack). */
@@ -108,7 +114,8 @@ function artPackFor(code: string): ArtPackManifest | undefined {
   return artPackByCode.get(code.trim());
 }
 
-function artPackImageUrl(artPack: ArtPackManifest, image: ArtPackImage): string {
+/** The route URL of one image of an art pack (ADR-0093). */
+export function artPackImageUrl(artPack: ArtPackManifest, image: ArtPackImage): string {
   return `${CARD_ART_ROUTE}/${ART_PACK_DIR_PREFIX}${artPack.id}/${image.file}`;
 }
 

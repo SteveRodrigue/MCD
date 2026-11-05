@@ -11,7 +11,11 @@ import {
 } from '../../src/data/content/card-art';
 import { NodeFsDriver } from '../../src/data/content/drivers/node-fs';
 import { loadContent } from '../../src/data/content/loader';
-import { getLoadedContent, setLoadedContent } from '../../src/data/content/store';
+import {
+  getLoadedContent,
+  setDisabledArtPacks,
+  setLoadedContent,
+} from '../../src/data/content/store';
 import type { ArtPackManifest } from '../../src/data/packs/art-pack';
 import { ScenarioRegistry } from '../../src/engine/scenarios';
 
@@ -20,13 +24,14 @@ const mk = (n: number) => ({ file: `mk${n}.png`, attack: n, hitPoints: n });
 const manifest = (id: string, cards: ArtPackManifest['cards']): ArtPackManifest => ({
   id,
   name: id,
+  description: `The ${id} test pack.`,
   credit,
   cards,
 });
 
 let root: string | undefined;
 
-function contentFolder(artPacks: Record<string, unknown>): NodeFsDriver {
+function contentFolder(artPacks: Record<string, unknown>, skipFiles: string[] = []): NodeFsDriver {
   root = fs.mkdtempSync(path.join(os.tmpdir(), 'mcd-art-packs-'));
   const write = (rel: string, data: unknown) => {
     const file = path.join(root as string, rel);
@@ -47,7 +52,16 @@ function contentFolder(artPacks: Record<string, unknown>): NodeFsDriver {
     { code: '99001a', name: 'Hero', type_code: 'hero', pack_code: 'tmp', position: 1, quantity: 1 },
     { code: '99002', name: 'Ally', type_code: 'ally', pack_code: 'tmp', position: 2, quantity: 1 },
   ]);
-  for (const [id, data] of Object.entries(artPacks)) write(`art-packs/${id}/art-pack.json`, data);
+  for (const [id, data] of Object.entries(artPacks)) {
+    write(`art-packs/${id}/art-pack.json`, data);
+    // Every image a valid manifest lists exists on disk (empty files), except the ones `skipFiles` names.
+    const cards = (data as Partial<ArtPackManifest>).cards ?? {};
+    for (const images of Object.values(cards)) {
+      for (const image of images) {
+        if (!skipFiles.includes(image.file)) write(`art-packs/${id}/${image.file}`, '');
+      }
+    }
+  }
   return new NodeFsDriver(root);
 }
 
@@ -81,7 +95,13 @@ describe('loading art packs', () => {
 
   it.each([
     ['invalid JSON', '{ not json'],
-    ['a missing credit', { id: 'bad', name: 'bad', cards: {} }],
+    ['a missing credit', { id: 'bad', name: 'bad', description: 'x', cards: {} }],
+    [
+      'a missing description',
+      { id: 'bad', name: 'bad', credit, cards: { '99001a': [{ file: 'a.png' }] } },
+    ],
+    ['an empty description', { ...manifest('bad', {}), description: '  ' }],
+    ['a description over 300 characters', { ...manifest('bad', {}), description: 'x'.repeat(301) }],
     [
       'a file name that leaves its folder',
       manifest('bad', { '99001a': [{ file: '../../secret.png' }] }),
@@ -116,7 +136,34 @@ describe('loading art packs', () => {
     expect(artPackWarnings).toEqual([]);
   });
 
-  it('warns when two art packs list the same card, naming the one used', async () => {
+  it('warns about a listed image that is missing from the pack folder, and does not offer it', async () => {
+    const driver = contentFolder(
+      { one: manifest('one', { '99001a': [{ file: 'a.png' }], '99002': [mk(1), mk(2)] }) },
+      ['mk2.png'],
+    );
+    const content = await loadContent(driver, { artPacks: true });
+    expect(content.failures).toEqual([]);
+    expect(content.artPackWarnings).toMatchObject([
+      {
+        packId: 'art-pack:one',
+        reason: expect.stringMatching(/99002.*mk2\.png.*missing/),
+      },
+    ]);
+    // The pack stays usable: the images that exist are still listed, the missing one is dropped.
+    expect(content.artPacks[0].cards['99002'].map((image) => image.file)).toEqual(['mk1.png']);
+    expect(content.artPacks[0].cards['99001a']).toHaveLength(1);
+  });
+
+  it('drops a card whose images are all missing, so it keeps its official art', async () => {
+    const driver = contentFolder({ one: manifest('one', { '99001a': [{ file: 'a.png' }] }) }, [
+      'a.png',
+    ]);
+    const content = await loadContent(driver, { artPacks: true });
+    expect(content.artPacks[0].cards).toEqual({});
+    expect(content.artPackWarnings).toHaveLength(1);
+  });
+
+  it('warns when two art packs list the same card, naming the one that comes first', async () => {
     const driver = contentFolder({
       zeta: manifest('zeta', { '99002': [{ file: 'z.png' }] }),
       alpha: manifest('alpha', { '99002': [{ file: 'a.png' }] }),
@@ -142,7 +189,10 @@ describe('loading art packs', () => {
 
 describe('choosing an art pack image', () => {
   const loaded = getLoadedContent();
-  afterEach(() => setLoadedContent(loaded));
+  afterEach(() => {
+    setLoadedContent(loaded);
+    setDisabledArtPacks([]);
+  });
 
   function withArtPacks(...artPacks: ArtPackManifest[]) {
     setLoadedContent({ ...loaded, artPacks });
@@ -215,5 +265,64 @@ describe('choosing an art pack image', () => {
       manifest('zeta', { '01001a': [{ file: 'z.png' }] }),
     );
     expect(localArtUrl('01001a')).toBe('/card-art/_art-alpha/a.png');
+  });
+
+  describe('switching art packs off', () => {
+    const alpha = manifest('alpha', { '01001a': [{ file: 'a.png' }], '01002': [mk(1), mk(2)] });
+    const zeta = manifest('zeta', { '01001a': [{ file: 'z.png' }] });
+
+    it('a pack that is switched off shows no art, so the card keeps its official art', () => {
+      withArtPacks(alpha);
+      setDisabledArtPacks(['alpha']);
+      expect(artPackArt('01001a')).toBeUndefined();
+      expect(localArtUrl('01001a')).toBe('/card-art/core/01001a.png');
+      expect(artPackHasStatImages('01002')).toBe(false);
+      expect(artPackImageUrls('01002')).toEqual([]);
+    });
+
+    it('the first pack that is still on wins', () => {
+      withArtPacks(alpha, zeta);
+      expect(localArtUrl('01001a')).toBe('/card-art/_art-alpha/a.png');
+      setDisabledArtPacks(['alpha']);
+      expect(localArtUrl('01001a')).toBe('/card-art/_art-zeta/z.png');
+      setDisabledArtPacks(['alpha', 'zeta']);
+      expect(localArtUrl('01001a')).toBe('/card-art/core/01001a.png');
+    });
+
+    it('switching back on restores the art, and an unknown id is ignored', () => {
+      withArtPacks(alpha);
+      setDisabledArtPacks(['alpha', 'not_installed']);
+      expect(artPackArt('01001a')).toBeUndefined();
+      setDisabledArtPacks(['not_installed']);
+      expect(artPackArt('01001a')?.url).toBe('/card-art/_art-alpha/a.png');
+    });
+
+    it('a scenario token with its pack off has no art, which is the labelled card back', () => {
+      withArtPacks(tokens);
+      setDisabledArtPacks(['tokens']);
+      expect(localArtUrl('ultron_drone')).toBe('');
+    });
+  });
+});
+
+describe('identity cards', () => {
+  const loaded = getLoadedContent();
+  afterEach(() => setLoadedContent(loaded));
+
+  it('every identity side of a hero is its own card: several versions and a third face', () => {
+    const identities = manifest('heroes', {
+      '29001a': [{ file: '29001a.png' }],
+      '29002b': [{ file: '29002b.png' }],
+      '12001c': [{ file: '12001c.png' }],
+      '31001a': [{ file: '31001a.png' }],
+    });
+    setLoadedContent({ ...loaded, artPacks: [identities] });
+    const url = (file: string) => `/card-art/_art-heroes/${file}`;
+    expect(artPackArt('29001a')?.url).toBe(url('29001a.png'));
+    expect(artPackArt('29002b')?.url).toBe(url('29002b.png'));
+    expect(artPackArt('12001c')?.url).toBe(url('12001c.png'));
+    expect(artPackArt('31001a')?.url).toBe(url('31001a.png'));
+    expect(artPackArt('29001b')).toBeUndefined();
+    expect(artPackArt('01001a')).toBeUndefined();
   });
 });

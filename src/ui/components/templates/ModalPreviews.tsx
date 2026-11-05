@@ -59,6 +59,7 @@ const LabSettings: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       phaseStepperSide: settings.phaseStepperSide,
       defaultDifficulty: settings.defaultDifficulty,
       defaultHeroicLevel: settings.defaultHeroicLevel,
+      disabledArtPacks: settings.disabledArtPacks,
       setDevMode: (devMode) => update({ devMode }),
       toggleDevMode: () => setSettings((s) => ({ ...s, devMode: !s.devMode })),
       setAutoResolveUnambiguous: (autoResolveUnambiguous) => update({ autoResolveUnambiguous }),
@@ -70,6 +71,13 @@ const LabSettings: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       setPhaseStepperSide: (phaseStepperSide) => update({ phaseStepperSide }),
       setDefaultDifficulty: (defaultDifficulty) => update({ defaultDifficulty }),
       setDefaultHeroicLevel: (defaultHeroicLevel) => update({ defaultHeroicLevel }),
+      setArtPackEnabled: (id, enabled) =>
+        setSettings((s) => ({
+          ...s,
+          disabledArtPacks: enabled
+            ? s.disabledArtPacks.filter((disabledId) => disabledId !== id)
+            : [...s.disabledArtPacks.filter((disabledId) => disabledId !== id), id],
+        })),
       updateSettings: update,
     };
   }, [settings]);

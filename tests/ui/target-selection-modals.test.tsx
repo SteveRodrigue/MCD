@@ -33,6 +33,8 @@ const minion: EnemyTarget = {
   hasGuard: true,
   hasTough: false,
   code: '01102',
+  engagedPlayerId: 'p1',
+  engagedPlayerName: 'Spider-Man',
 };
 
 const mainScheme: SchemeTarget = {
@@ -108,6 +110,7 @@ describe('AttackTargetModal', () => {
     expect(screen.getByText('MINION')).toBeTruthy();
     expect(screen.getByText('GUARD')).toBeTruthy();
     expect(screen.getByText('TOUGH')).toBeTruthy();
+    expect(screen.getByText((_, el) => el?.textContent === 'Engaged with Spider-Man')).toBeTruthy();
     expect(screen.queryByText('(2 dmg)')).toBeNull();
     expect(screen.queryByText(/STRIKE/)).toBeNull();
     expect(screen.getAllByText('3 ATK')).toHaveLength(1);

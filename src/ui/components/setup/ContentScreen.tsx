@@ -14,6 +14,14 @@ const STATE_LABEL: Record<PackState, string> = {
   failed: 'Failed',
 };
 
+/** Tag colours by state, whatever the theme: green plays, yellow is data only, orange waits for a pack, red is broken. */
+const STATE_TONE: Record<PackState, string> = {
+  playable: 'bg-emerald-600 text-white',
+  'data-only': 'bg-comic-yellow text-comic-black',
+  'needs-pack': 'bg-orange-500 text-white',
+  failed: 'bg-comic-red text-white',
+};
+
 interface ContentScreenProps {
   onBack: () => void;
 }
@@ -52,7 +60,10 @@ export const ContentScreen: React.FC<ContentScreenProps> = ({ onBack }) => {
             <li key={pack.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 p-3">
               <span className="font-comic text-lg">{pack.name}</span>
               <span className={`text-xs ${style.muted}`}>{pack.id}</span>
-              <span className={`px-2 py-0.5 text-xs font-bold uppercase ${style.chip}`}>
+              <span
+                className={`px-2 py-0.5 text-xs font-bold uppercase ${style.badge} ${STATE_TONE[pack.state]}`}
+                data-state={pack.state}
+              >
                 {STATE_LABEL[pack.state]}
               </span>
               <span className={`text-xs ${style.muted}`}>

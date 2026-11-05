@@ -7,6 +7,7 @@ import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider'
 import { ContentScreen } from '../../src/ui/components/setup/ContentScreen';
 import { FailedPacksNotice } from '../../src/ui/components/setup/FailedPacksNotice';
 import { bootContent } from '../../src/data/content/apply';
+import { getLoadedContent, setLoadedContent } from '../../src/data/content/store';
 import { NodeFsDriver } from '../../src/data/content/drivers/node-fs';
 import { contentDriver } from '../helpers/content';
 
@@ -57,6 +58,35 @@ describe('Content screen', () => {
     expect(screen.getByText('Failed')).toBeTruthy();
     expect(screen.getByText('Needs pack')).toBeTruthy();
     expect(screen.getByText(/needs "missing"/)).toBeTruthy();
+  });
+
+  it('colours each state tag: green playable, yellow data only, orange needs pack, red failed', () => {
+    render(
+      <GameSettingsProvider>
+        <ContentScreen onBack={() => {}} />
+      </GameSettingsProvider>,
+    );
+    expect(screen.getByText('Data only').className).toContain('bg-comic-yellow');
+    expect(screen.getByText('Needs pack').className).toContain('bg-orange-500');
+    expect(screen.getByText('Failed').className).toContain('bg-comic-red');
+  });
+
+  it('colours a playable pack green', () => {
+    const loaded = getLoadedContent();
+    setLoadedContent({
+      ...loaded,
+      descriptions: [{ ...loaded.descriptions[0], state: 'playable', reason: undefined }],
+    });
+    try {
+      render(
+        <GameSettingsProvider>
+          <ContentScreen onBack={() => {}} />
+        </GameSettingsProvider>,
+      );
+      expect(screen.getByText('Playable').className).toContain('bg-emerald-600');
+    } finally {
+      setLoadedContent(loaded);
+    }
   });
 
   it('names a pack that did not load on the setup screens', () => {

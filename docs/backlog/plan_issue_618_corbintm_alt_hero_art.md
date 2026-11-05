@@ -1,8 +1,9 @@
 # Plan: Corbintm's alternate-art hero set as an art pack (Issue #618)
 
-> **Status:** Draft for owner review. Nothing is implemented. Milestone: Gate 2 (as the issue).
+> **Status:** Draft v2 for owner review. Nothing is implemented. Milestone: Gate 2 (as the issue).
 > **Goal of the issue:** prove that the art pack engine (ADR-0093) works well with Hero and Alter-Ego cards, using a fan-made set that has an alternate identity card for every hero.
 > **Source:** Corbintm's set on r/marvelchampionslcg, shared through Google Drive (links in the issue). The cloud sandbox cannot reach Reddit or Drive, so the first step is an inventory on the owner's PC (M0).
+> **Change from v1 (owner decision, 2026-11-05):** the converter that turns the fan files into a pack lives in the private repo `SteveRodrigue/mcd-private-content`, not in MCD. MCD defines and documents the pack format and proves the engine honors it; whoever makes a pack builds it by hand or with their own tooling. MCD gains no converter code, no image dependency and no recipe.
 
 ## 1. In-Game Scenario
 
@@ -20,34 +21,44 @@
 
 Read in the repository on `main` (checked 2026-11-05):
 
-| Piece                       | Where                                                                           | Status for this job                                                                                                                                      |
-| :-------------------------- | :------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Format and loader           | `src/data/packs/art-pack.ts`, `src/data/content/loader.ts`                      | Done. One entry per card code, PNG only, `id` 2 to 32 chars.                                                                                             |
-| Lookup and route            | `src/data/content/card-art.ts`, `src/tools/card-art-middleware.ts`              | Done. `localArtUrl` is the single path; any code can have an image, including `a`, `b` and `c` sides.                                                    |
-| Never committed             | `.gitignore` (`content/art-packs/`), `tools/audit/leak-guard.ts` (`image` rule) | Done. Any tracked PNG or JPG fails `leak:check`.                                                                                                         |
-| Private backup and sharing  | `scripts/private-assets.ts` (`assets:pull`, `assets:push`)                      | Done. Moves `content/art-packs/` to and from `SteveRodrigue/mcd-private-content`, junctions it into worktrees.                                           |
-| Tested on                   | Ultron Drone tokens (ADR-0093)                                                  | Tokens only. No identity card has ever used it.                                                                                                          |
-| **Image tooling**           | none                                                                            | **Missing.** `package.json` has no image library. The pack format needs final per-card PNGs, so sheets, bleed and fold panels must be turned into those. |
-| **Code to image mapping**   | none                                                                            | **Missing.** Nothing says which file is which identity card.                                                                                             |
-| **Coverage check**          | none                                                                            | **Missing.** Nothing says which identity cards have no art, or which files are unused.                                                                   |
-| **Identity cards in-game**  | `HeroZone`, hero select, deck builder, `CardView`                               | **Unverified.** They should go through `localArtUrl`; M3 proves it.                                                                                      |
+| Piece                      | Where                                                                           | Status for this job                                                                                                                                   |
+| :------------------------- | :------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Format and loader          | `src/data/packs/art-pack.ts`, `src/data/content/loader.ts`                      | Done. One entry per card code, PNG only, `id` 2 to 32 chars. The loader already validates the manifest and lists problems on the Content screen.      |
+| Lookup and route           | `src/data/content/card-art.ts`, `src/tools/card-art-middleware.ts`              | Done. `localArtUrl` is the single path; any code can have an image, including `a`, `b` and `c` sides.                                                 |
+| Never committed            | `.gitignore` (`content/art-packs/`), `tools/audit/leak-guard.ts` (`image` rule) | Done. Any tracked PNG or JPG fails `leak:check`.                                                                                                      |
+| Private backup and sharing | `scripts/private-assets.ts` (`assets:pull`, `assets:push`)                      | Done. The central folder `~/.mcd/private-content` is a git clone of the private repo; `assets:push` runs `git add .` there; `assets:pull` junctions `content/art-packs/` into every worktree. |
+| Tested on                  | Ultron Drone tokens (ADR-0093)                                                  | Tokens only. No identity card has ever used it.                                                                                                       |
+| **Identity cards in-game** | `HeroZone`, hero select, deck builder, `CardView`                               | **Unverified.** They should go through `localArtUrl`; M3 proves it.                                                                                   |
+| **Creator guidance**       | `docs/creators/art-packs.md`                                                    | **Missing** for identity cards: which codes exist, the shape and size an image must have, the triple-sided and multi-version cases.                   |
 
-The format itself needs no change. The work is a conversion tool, a mapping, a coverage report, an in-game check and documentation.
+The format needs no change. MCD's work is a test of the identity path, an in-game verification, and documentation. Producing the pack is the private repo's job.
 
 ## 3. Copyright and distribution rules (binding for every step)
 
-1. **No images in git, ever.** Not the originals, not the converted PNGs, not thumbnails, not contact sheets. `leak:check` stays green with no allowlist entry.
+1. **No images in git, ever, in MCD.** Not the originals, not the converted PNGs, not thumbnails, not contact sheets. `leak:check` stays green with no allowlist entry.
 2. **No screenshots** in the repository, the PR, issues, comments or docs. Visual checks are done by the owner on the PC; any report back is written in words.
-3. **Test images are synthetic.** Tests generate coloured rectangles in a temp folder at run time. No fan art or official art is used as a fixture.
-4. **Sources stay out of the pack folder.** Downloads go to `temp/art-sources/corbintm/` (ignored by git, skipped by lint and prettier). The loader lists every folder under `content/art-packs/` and reports one without an `art-pack.json` as a failure, so downloads must not go there.
-5. **MCD never downloads the set.** Each player gets the files from Corbintm's Drive and converts them locally. The repository holds the converter and a recipe (file names, crop numbers, card codes), which contain no pixels.
-6. **The watermark stays.** The small headshot top-left is the creator's unifying mark. The converter never crops it, blurs it or covers it. Cropping bleed must not reach into it (checked in M3).
+3. **Test images are synthetic.** MCD tests generate coloured rectangles in a temp folder at run time (the PNG bytes are written by the test, with no image library). No fan art or official art is used as a fixture.
+4. **Sources stay out of the pack folder.** Downloads go to `temp/art-sources/corbintm/` (ignored by git) or any folder outside `content/art-packs/`. The loader lists every folder under `content/art-packs/` and reports one without an `art-pack.json` as a failure.
+5. **MCD never downloads the set and never ships a converter for it.** Each player gets the files from Corbintm's Drive. The private repo holds the converter and the finished pack for the owner's use only. If the tool is released later, that is a separate decision with its own review (see section 10).
+6. **The watermark stays.** The small headshot top-left is the creator's unifying mark. No step crops it, blurs it or covers it. Trimming bleed must not reach into it (checked in M2 and M3).
 7. **Credit is required and visible.** `credit.author` is "Corbintm", `credit.sourceUrl` is the Reddit post, `credit.unofficial` is `true`. The card menu and Content screen already show it.
-8. **Permission.** The set is shared "to print and enjoy", with no license text. Local use by someone who downloaded it from the author is consistent with that. Redistribution is not, so the private backup repo stays private. Recommendation: Steve sends Corbintm one message (Reddit or Discord) saying MCD can display the set from local files and never ships it. This does not block the work.
+8. **Permission.** The set is shared "to print and enjoy", with no license text. Local use by someone who downloaded it from the author is consistent with that. Redistribution is not, so the private repo stays private. Recommendation: Steve sends Corbintm one message (Reddit or Discord) saying MCD can display the set from local files and never ships it. This does not block the work.
 
 ## 4. Design
 
-### 4.1 Source inventory comes first (M0)
+### 4.1 Where each piece lives
+
+| Piece                                                                      | Repository                | Why                                                                                       |
+| :------------------------------------------------------------------------- | :------------------------ | :---------------------------------------------------------------------------------------- |
+| Art pack format, loader, lookup, route, leak guard                         | MCD (exists)              | The contract every pack author honors.                                                    |
+| Creator guidance for identity cards, ADR amendment, tests, in-game check   | MCD                       | Proves and documents the contract.                                                        |
+| Converter (sheets, bleed, fold panels to per-card PNGs), recipe, coverage  | `mcd-private-content`     | Specific to one fan set's packaging. Needs an image library MCD should not carry.         |
+| Finished pack `content/art-packs/corbintm_alt_heroes/`                     | `mcd-private-content`     | Already the home of art packs (`assets:push`).                                            |
+| Downloaded originals                                                       | Nowhere in git (`temp/`)  | Not ours to keep or share.                                                                |
+
+The private repo's converter reads MCD's card data only through a path argument (`--mcd <MCD checkout>`, reading `content/packs/*/cards/*.json`). It imports no MCD code, so the two repos never depend on each other's builds. It validates its output against `src/data/packs/art-pack.schema.json` from that checkout (a JSON Schema, usable from any language), so the pack is checked against the real contract rather than a copy.
+
+### 4.2 Source inventory comes first (M0)
 
 Everything below depends on facts only the Drive folder can give. M0 collects them in one pass on the PC (Remote Control session, text output only):
 
@@ -57,11 +68,11 @@ Everything below depends on facts only the Drive folder can give. M0 collects th
 - How the third faces (Ant-Man, Wasp, Angel) are laid out and whether any panel is rotated or mirrored.
 - How Ironheart's three identity cards are named.
 - Which heroes the set covers (the post says Core Box to Civil War Box).
-- Whether the originals are PDFs. If so, M1 adds a rasterize step (see open decision 6).
+- Whether the originals are PDFs.
 
-The assumptions listed in section 8 are replaced with these facts before M1 starts.
+The assumptions in section 8 are replaced with these facts before M1 starts.
 
-### 4.2 Mapping images to card codes
+### 4.3 Mapping images to card codes
 
 The ground truth is the loaded identity cards (`type_code` `hero` or `alter_ego`), not file names, and not an assumed `a`/`b` pairing. Today that is 145 codes over about 70 heroes. Examples that break a naive rule:
 
@@ -69,89 +80,59 @@ The ground truth is the loaded identity cards (`type_code` `hero` or `alter_ego`
 - Ant-Man, Wasp and Angel have a third face with its own code: `12001c`, `13001c`, `42001c` (Archangel).
 - SP//dr's identity is `31001a` (hero) and `31002a` (alter-ego); their `b` codes are a support and an upgrade, not identity sides.
 
-The converter is driven by a **recipe** file, committed at `tools/art-recipes/corbintm_alt_heroes.json`:
+A pack maps each of these codes to a file named after the code (`29002a.png`), which satisfies `CARD_ART_FILE_PATTERN` and makes the pack easy to audit by eye.
 
-```json
-{
-  "id": "corbintm_alt_heroes",
-  "name": "Corbintm alternate art heroes",
-  "credit": {
-    "author": "Corbintm",
-    "sourceUrl": "<Reddit post URL from the issue>",
-    "unofficial": true
-  },
-  "output": { "maxWidth": 600 },
-  "sources": {
-    "ironheart_2.png": {
-      "trim": { "left": 38, "top": 38, "right": 38, "bottom": 38 },
-      "cards": [{ "code": "29002a" }]
-    },
-    "ant_man_trifold.png": {
-      "split": { "columns": 3 },
-      "cards": [{ "code": "12001a" }, { "code": "12001b" }, { "code": "12001c" }]
-    }
-  }
-}
-```
+### 4.4 The converter (private repo, outline only)
 
-(The numbers and names above are placeholders; M0 supplies the real ones.) A source is one of three shapes: a single card, a grid (`columns` x `rows`, listed in reading order, so full-bleed sheets are split by position), or explicit rectangles when a template is irregular. Each shape accepts `trim` (bleed), `rotate` (90, 180 or 270) and `flip`. The recipe generator can pre-fill a skeleton from the loaded identity cards (code, hero name, set), so the human only types file names.
+Its design belongs to that repo; this plan fixes only what MCD needs from it:
 
-### 4.3 The converter: `npm run artpack:build -- <recipe> <sourceDir>`
+- Input: the downloaded folder, a recipe (file name to card codes, bleed to trim, grid split, rotation), and the path to an MCD checkout.
+- Output: `content/art-packs/corbintm_alt_heroes/` with one `<code>.png` per mapped identity card and an `art-pack.json` that validates against MCD's schema.
+- Checks it must make: every recipe code exists in the loaded cards; no code is mapped twice; output aspect ratio matches the card's orientation in the data; trim never reaches the watermark (default safe margin 5% of the width). It prints which identity codes have no art, so uncovered heroes are visible.
+- Optional contact sheet written to an ignored folder (never committed, never attached) so the owner can check the mapping by eye.
+- Language and libraries are that repo's choice, not MCD's. Python with Pillow (or PyMuPDF if the sources are PDFs) is a natural fit for crop, split and resize work; Node with `sharp` also works. Whatever it uses, its dependencies stay in that repo, and its environment folder (`node_modules`, `.venv`) is ignored there, because `assets:push` runs `git add .` in the central folder. The only contract with MCD is the output pack and reading the card JSON.
+- The tool's own tests use generated images, like MCD's.
 
-New script `scripts/art-pack-build.ts`, local only:
+### 4.5 Special cases, one by one
 
-1. Parses and validates the recipe (zod, strict, same style as `ArtPackManifestSchema`).
-2. For each source file: trims bleed, splits into panels, rotates or flips as declared, resizes to `output.maxWidth` keeping the aspect ratio, writes `<code>.png` into `content/art-packs/<id>/`. File names are the card codes, which satisfy `CARD_ART_FILE_PATTERN` and keep the one-file-per-code rule easy to audit.
-3. Writes `art-pack.json` from the recipe's credit and the files it produced. The result is validated with `ArtPackManifestSchema` before it is saved.
-4. Prints a **coverage report** (also available alone as `--report`): every loaded identity code with its hero name and set, marked mapped or missing; recipe entries whose code does not exist; source files the recipe never uses; two sources claiming the same code. Exit code is non-zero for an unknown code, a duplicate, or a missing source file. Missing coverage is a warning, because the set may not cover every hero in the repository.
-5. Optional `--contact-sheet` writes `temp/art-sources/<id>/contact.html`: each converted image under its code and hero name, so the owner can check the mapping by eye in one scroll. It lives in ignored `temp/` and is never attached anywhere.
-6. Is idempotent: rebuilding replaces the pack folder content. A replaced image keeps its name, and the ADR notes the browser keeps images for a long time, so the build prints a reminder to clear the card-art cache storage or version the file names (open decision 7).
-
-Dependency: `sharp` as a `devDependency` (prebuilt binaries for Windows, macOS and Linux). It is used by this script only and never imported from `src/`. Owner approval needed (open decision 1).
-
-Image size: the maximum width comes from the largest on-screen size of an identity card (zoom or hero select) times a device pixel ratio of 2. Expected near 600 px; measured in M0/M3 rather than guessed. About 145 PNG files at that size is well under 150 MB.
-
-### 4.4 Special cases, one by one
-
-| Case                                   | Handling                                                                                                                                                                                                                                                                                                                       |
-| :------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hero and alter-ego                     | Two codes (`NNNNNa` and `NNNNNb`). The existing lookup already treats them as separate cards.                                                                                                                                                                                                                                  |
-| Several identity cards per hero        | Each version has its own code pair. The recipe maps each by file; no engine change. M3 checks that each version is selectable and shows its own image.                                                                                                                                                                         |
-| Triple-sided heroes                    | The third face is a normal card code (`12001c`, `13001c`, `42001c`). The recipe splits the fold strip into three panels. M3 checks which of the three the game can show; if the engine never displays a `c` face today, the art is still mapped (so it is ready) and a GitHub issue is opened for the missing form change. |
-| Full-bleed print sheets                | `trim` removes the bleed by pixel count taken from M0; `split` cuts sheets by grid. Output is the cut-line card, so the app's own rounded corners and border do not show a stray margin.                                                                                                                                       |
-| Watermark                              | Untouched (rule 6). The trim values are chosen from the bleed measured in M0, so they cannot reach the headshot, and a unit test asserts trim never exceeds a configurable safe margin (default 5% of the width).                                                                                                              |
-| Orientation                            | The pack image must have the shape the app expects for the card (ADR-0011). The importer compares the output aspect ratio with the card's `isLandscape` and fails the build on a mismatch. This also catches a panel that came out rotated.                                                                                |
-| Heroes missing from the set            | Keep official art. Reported by the coverage step, never an error.                                                                                                                                                                                                                                                              |
-| Card Editor                            | Still shows official art by design (ADR-0093, decision 10). No change.                                                                                                                                                                                                                                                         |
-| Worktrees and agents                   | `assets:push` stores the finished pack in the private repo; `assets:pull` junctions it into every worktree. Sources stay in `temp/art-sources/`, not synced.                                                                                                                                                                   |
+| Case                             | Handling                                                                                                                                                                                                                                                                                                                       |
+| :------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hero and alter-ego               | Two codes (`NNNNNa` and `NNNNNb`). The existing lookup already treats them as separate cards.                                                                                                                                                                                                                                  |
+| Several identity cards per hero  | Each version has its own code pair. The recipe maps each by file; no engine change. M3 checks that each version is selectable and shows its own image.                                                                                                                                                                         |
+| Triple-sided heroes              | The third face is a normal card code (`12001c`, `13001c`, `42001c`). The converter splits the fold strip into three panels. M3 checks which of the three the game can show; if the engine never displays a `c` face today, the art is still mapped (ready for later) and a GitHub issue is opened for the missing form change. |
+| Full-bleed print sheets          | The converter trims bleed by the pixel count measured in M0 and splits sheets by grid. Output is the cut-line card, so the app's own rounded corners and border do not show a stray margin.                                                                                                                                     |
+| Watermark                        | Untouched (rule 6).                                                                                                                                                                                                                                                                                                            |
+| Orientation                      | The pack image must have the shape the app expects for the card (ADR-0011). M0/M3 confirm whether identity cards are portrait in the app, from the loaded data.                                                                                                                                                                |
+| Heroes missing from the set      | Keep official art. Never an error.                                                                                                                                                                                                                                                                                             |
+| Card Editor                      | Still shows official art by design (ADR-0093, decision 10). No change.                                                                                                                                                                                                                                                         |
+| Worktrees and agents             | The finished pack lives in the central folder; `assets:pull` junctions it into every worktree. Sources are not synced.                                                                                                                                                                                                        |
 
 ## 5. Engine, schema and UI changes
 
 Expected: **none** in `src/engine`, none in the art pack schema. The risk is in the UI, so M3 is a verification gate, and any gap found there is fixed in its path (No Tech Debt Mandate), not deferred. Things M3 checks that could expose a gap:
 
 - Hero select, `HeroZone`, board zoom, the deck builder list and any identity thumbnail all call `localArtUrl`/`useCardArt` with the identity's own code.
-- Flip between hero and alter-ego swaps the image without a blank frame (the pack image is not preloaded the way scenario tokens are; if it flashes, add the identity codes to `preloadArtPackImages` at game start).
+- Flip between hero and alter-ego swaps the image without a blank frame (pack images are not preloaded like scenario tokens; if it flashes, add the identity codes to `preloadArtPackImages` at game start).
 - On-card UI (badges, name plates, damage counters) does not cover the watermark in a way that matters.
 - A missing or broken image falls back to official art (existing behaviour, retested for an identity card).
 
-## 6. Tests (written first)
+## 6. Tests in MCD (written first)
 
 All use synthetic images generated at run time in a temp folder.
 
-- `tests/tools/art-pack-build.test.ts`: recipe validation (unknown key, bad `trim`, duplicate code, unknown code fails); trim, split-by-grid, rotate and flip give the expected pixel positions (coloured quadrants); output is within `maxWidth`; produced `art-pack.json` passes `ArtPackManifestSchema`; aspect ratio mismatch fails; coverage report lists missing, unknown, unused and duplicate entries.
 - `tests/data/art-pack-identities.test.ts`: with a synthetic pack covering `29001a`, `29002b`, `12001c` and `31001a`, `artPackArt(code)` returns the pack URL for each, and an uncovered hero returns `undefined`.
 - UI: an identity `CardView` shows the pack URL, and falls back to the official URL when the image errors (extends the existing art pack tests).
-- Guards that already exist keep running: `leak:check`, `pack:validate`, docs check. No allowlist entry is added.
+- Existing guards keep running: `leak:check`, `pack:validate`, docs check. No allowlist entry is added.
 
 ## 7. Milestones
 
-| #  | Step                                                                                                                                                                                              | Where           | Done when                                                                      |
-| :- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------------- | :----------------------------------------------------------------------------- |
-| M0 | Download the Drive folder to `temp/art-sources/corbintm/`; produce the inventory (4.1); replace the assumptions in section 8. Steve answers the open decisions below.                              | Steve's PC (RC) | Inventory posted in words; section 8 updated.                                  |
-| M1 | Failing tests, then `scripts/art-pack-build.ts`, recipe schema, coverage report, `sharp` devDependency, npm script. Synthetic images only.                                                        | Cloud or PC     | Tests green; `npm run verify` green; no tracked image.                         |
-| M2 | Write the recipe for the real set, build the pack, drive coverage to every covered hero. Review the contact sheet with Steve.                                                                     | Steve's PC      | Coverage report shows zero unknown codes; Steve confirms the mapping by eye.   |
-| M3 | In-game check (checklist below). Fix what it finds in its path.                                                                                                                              | Steve's PC (RC) | All items pass; findings fixed or issued.                                      |
-| M4 | Docs and ADR amendment, changelog fragment, `assets:push` of the finished pack, delete this plan file in the delivering commit, close #618.                                                       | Cloud           | PR merged ("Merge" from Steve); #618 closed with `Fixes #618`.                 |
+| #  | Step                                                                                                                                                                         | Where               | Done when                                                                 |
+| :- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------ | :------------------------------------------------------------------------ |
+| M0 | Download the Drive folder to `temp/art-sources/corbintm/`; produce the inventory (4.2); replace the assumptions in section 8. Steve answers the open decisions.             | Steve's PC (RC)     | Inventory posted in words; section 8 updated.                             |
+| M1 | In the private repo: converter, recipe, tests. MCD: failing tests for the identity path (section 6).                                                                         | Private repo, MCD   | Private repo tests green; MCD tests written and failing for the right reason or passing. |
+| M2 | Build the pack from the real files, drive coverage to every covered hero, review the contact sheet with Steve.                                                               | Steve's PC          | Zero unknown codes; Steve confirms the mapping by eye.                    |
+| M3 | In-game check (list below). Fix what it finds in its path, in MCD.                                                                                                           | Steve's PC (RC)     | All items pass; findings fixed or issued.                                 |
+| M4 | MCD docs and ADR amendment, changelog fragment, `assets:push` of the converter and pack, delete this plan file in the delivering commit, close #618.                        | Cloud, PC           | PR merged ("Merge" from Steve); #618 closed with `Fixes #618`.            |
 
 **M3 checklist** (a person looks; nothing is captured):
 
@@ -167,24 +148,25 @@ All use synthetic images generated at run time in a temp folder.
 - Files are raster images, not PDFs only.
 - Bleed is uniform on all four sides.
 - Tri-fold faces sit side by side in one strip, in an order that needs a lookup (not necessarily a, b, c).
-- Identity cards are portrait in the app; the importer checks this per card from the loaded data.
+- Identity cards are portrait in the app.
 - The set covers Core through the Civil War heroes; later heroes in the repository stay official.
 
-## 9. Documentation
+## 9. Documentation (MCD)
 
-- `docs/creators/art-packs.md`: new section **Hero and alter-ego art** (code pairs, the three-version and three-face cases, the `trim`/`split` recipe, the watermark and credit rule, and a pointer to the converter). It stays generic: it describes the tool, and names Corbintm's set only as the worked example, like the Ultron tokens.
-- ADR-0093: short amendment (not a new ADR) recording that identity cards are supported, the converter and recipe exist, the images stay local, and the permission position (rule 8).
+- `docs/creators/art-packs.md`: new section **Hero and alter-ego art**: how identity codes work (pairs, several versions, third faces, SP//dr), the shape and size an image should have, bleed already removed, the watermark and credit expectation, and a statement that MCD ships no converter: make the PNGs by hand or with your own tooling. Corbintm's set appears only as the worked example, like the Ultron tokens, with no images.
+- ADR-0093: short amendment (not a new ADR) recording that identity cards are supported, that conversion tooling is deliberately outside MCD, and the permission position (rule 8).
 - `docs/backlog/teamwork_status_and_next_target.md`: update the queue.
-- `changes/unreleased/618-corbintm-alt-hero-art.md` (type `Added`).
+- `changes/unreleased/618-hero-art-packs.md` (type `Added`).
 - This plan file is deleted in the commit that delivers the work.
 
 ## 10. Parked (not needed to prove the engine)
 
+- Releasing the converter publicly. If done later it needs its own repository or release, a license decision on the tool, and a clear statement that it ships no fan art. Not planned now.
+- An MCD command that checks an art pack's PNGs against the loaded cards. The loader already validates the manifest; add a checker only if pack authors ask.
 - A Content-screen switch to turn a pack off, or a choice between several packs for one card (found means used stays, ADR-0093 decision 2).
 - Browser or desktop import of the Drive zip (M11/Tauri are parked).
 - Art for non-identity cards, localisation of art, replacing card backs.
 - Automatic watermark handling of any kind (rule 6).
-- Rasterizing PDFs, unless M0 shows PDF-only sources.
 
 ## 11. Debt removed
 
@@ -192,12 +174,10 @@ None found. Looked at: `art-pack.ts`, `art-pack.schema.json`, `card-art.ts`, `im
 
 ## 12. Open decisions for the owner
 
-| # | Decision | Recommendation |
-| :- | :------- | :------------- |
-| 1 | Add `sharp` as a `devDependency` for the converter. Alternative: pure JavaScript (`pngjs` plus `jpeg-js`), slower and no resize quality. | Yes, `sharp`. |
-| 2 | Commit the recipe (file names, crop numbers, card codes; no pixels) at `tools/art-recipes/`, so anyone with the Drive can rebuild the pack. Alternative: keep it only in the private repo. | Commit it. |
-| 3 | Send Corbintm one message asking if local display is fine (section 3, rule 8). | Yes, in parallel; not blocking. |
-| 4 | Keep the finished pack in the private repo via `assets:push` as a backup. Sources stay only in `temp/`. | Yes. |
-| 5 | Keep "found means used": the pack replaces official art for every covered hero with no off switch. | Yes for now; park the switch until it hurts. |
-| 6 | If the Drive turns out PDF-only, add a rasterize step (`pdftoppm` or a PDF library) in M1. | Decide after M0. |
-| 7 | Cache busting: version file names (`29001a.v2.png` is rejected by the pattern, so `29001a_v2.png`) or ask the user to clear the browser cache after a rebuild. | Document the clear-cache step; version names only if it keeps biting. |
+| # | Decision                                                                                                                                                                                  | Recommendation                                  |
+| :- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------- |
+| 1 | Where the converter sits inside `mcd-private-content`: a `tools/art-pack-build/` folder with its own dependency file and a `.gitignore` for its environment. Language is free; recommendation: Python with Pillow.                               | Yes; `assets:push` then carries it as is.       |
+| 2 | Send Corbintm one message asking if local display is fine (section 3, rule 8).                                                                                                            | Yes, in parallel; not blocking.                 |
+| 3 | If the Drive turns out PDF-only, the private converter rasterizes PDFs itself.                                                                                                            | Decide after M0.                                |
+| 4 | Cache busting after a rebuild: ADR-0093 notes the browser keeps images for a long time. Document the clear-cache step, or version file names (`29001a_v2.png`).                          | Document the clear-cache step.                  |
+| 5 | Keep "found means used": the pack replaces official art for every covered hero with no off switch.                                                                                        | Yes for now; park the switch until it hurts.    |

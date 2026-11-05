@@ -283,8 +283,8 @@ _Objective: Overhaul the Scenario Plug-In architecture and Scenario Editor GUI, 
 
 ### Milestones & Tasks:
 
-- [ ] **[Issue #275](https://github.com/SteveRodrigue/MCD/issues/275) — Scenario Plug-In & Scenario Editor Overhaul:**
-  - Authoritative Zod `ScenarioDefinitionSchema`, 100% declarative `definition.json` + Main Scheme `1A` (`SETUP`) / `1B` (`WHEN_REVEALED`) execution (zero per-scenario TypeScript `plugin.ts` setup code), and a visual **Scenario Editor** tab in `/editor` (`/api/scenarios/*`).
+- [x] **[Issue #275](https://github.com/SteveRodrigue/MCD/issues/275) — Scenario Plug-In Overhaul ✅ (Completed):**
+  - Authoritative Zod `ScenarioDefinitionSchema` and 100% declarative `definition.json` + Main Scheme `1A` (`SETUP`) / `1B` (`WHEN_REVEALED`) execution, with zero per-scenario TypeScript `plugin.ts` setup code. The visual Scenario Editor is deferred to [Issue #633](https://github.com/SteveRodrigue/MCD/issues/633), to be revisited with Wrecking Crew.
 - [x] **Klaw Scenario (`klaw` - 16 cards, [Issue #351](https://github.com/SteveRodrigue/MCD/issues/351)) & Masters of Evil (`masters_of_evil` - 6 cards, [Issue #353](https://github.com/SteveRodrigue/MCD/issues/353)) ✅ (Completed):**
   - Conditional additional boost card Forced Interrupts ([Issue #292](https://github.com/SteveRodrigue/MCD/issues/292)), sonic convergence attachments, and minion horde spawning.
 - [ ] **Ultron Scenario (`ultron` - 22 cards, [Issue #352](https://github.com/SteveRodrigue/MCD/issues/352)) & Under Attack (`under_attack` - 4 cards, [Issue #354](https://github.com/SteveRodrigue/MCD/issues/354)):**

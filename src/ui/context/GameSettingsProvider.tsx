@@ -81,7 +81,7 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setSettings((previous) => ({ ...previous, villainPhasePacing: pacing }));
     };
 
-    const setPhaseStepperSide = (side: 'left' | 'right') => {
+    const setPhaseStepperSide = (side: PhaseStepperSide) => {
       setSettings((previous) => ({ ...previous, phaseStepperSide: side }));
     };
 
@@ -128,8 +128,9 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
       edgeScrollSpeed: settings.edgeScrollSpeed || 'normal',
       cardZoomLevel: settings.cardZoomLevel || 'normal',
       villainPhasePacing: settings.villainPhasePacing || 'auto_normal',
-      phaseStepperSide: (settings.phaseStepperSide === 'right'
-        ? 'right'
+      phaseStepperSide: (settings.phaseStepperSide === 'right' ||
+      settings.phaseStepperSide === 'under'
+        ? settings.phaseStepperSide
         : 'left') as PhaseStepperSide,
       defaultDifficulty: settings.defaultDifficulty || 'STANDARD',
       defaultHeroicLevel: settings.defaultHeroicLevel || 0,

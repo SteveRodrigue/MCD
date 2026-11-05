@@ -97,7 +97,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
   const { edgeScrollSpeed, villainPhasePacing, setVillainPhasePacing, phaseStepperSide, devMode } =
     useGameSettings();
   // The villain phase steps fill the free space beside the villain zone when it is wide enough;
-  // otherwise they stay a bar above the table. Measuring the slot keeps the choice stable.
+  // otherwise they stay under the villain zone (never over). Measuring the slot keeps the choice stable.
   const stepperSlotRef = useRef<HTMLDivElement>(null);
   const [stepperSlotWidth, setStepperSlotWidth] = useState(0);
   useEffect(() => {
@@ -108,7 +108,8 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
     setStepperSlotWidth(slot.clientWidth);
     return () => observer.disconnect();
   }, [phaseStepperSide]);
-  const stepperAsPanel = stepperSlotWidth >= STEPPER_PANEL_MIN_WIDTH;
+  const stepperAsPanel =
+    phaseStepperSide !== 'under' && stepperSlotWidth >= STEPPER_PANEL_MIN_WIDTH;
   const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(true);
   const [activeCombatOutcome, setActiveCombatOutcome] = useState<CombatResolutionSummary | null>(
     null,
@@ -395,17 +396,6 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
 
           {/* 1. Panoramic Tabletop Main Stage */}
           <main className="flex-1 flex flex-col items-center justify-start p-2 md:p-4 gap-4 max-w-full">
-            {/* Villain Phase Stepper Ribbon (Issue #140): the compact bar when the side slot is too narrow */}
-            {gameState.phase === 'VILLAIN_PHASE' && !stepperAsPanel && (
-              <VillainPhaseStepper
-                pacing={villainPhasePacing}
-                onNextStep={handleNextVillainStep}
-                onToggleAutoPlay={() => setIsAutoPlaying((prev) => !prev)}
-                onSkip={handleSkipVillainPacing}
-                isAutoPlaying={isAutoPlaying}
-              />
-            )}
-
             {/* Scenario Main Villain & Out of Play Console */}
             <div
               data-testid="villain-stage"
@@ -476,6 +466,17 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                 />
               </div>
             </div>
+
+            {/* Villain Phase Stepper Ribbon: placed under the villain zone when 'under' is chosen or side slot is too narrow (never over) */}
+            {gameState.phase === 'VILLAIN_PHASE' && !stepperAsPanel && (
+              <VillainPhaseStepper
+                pacing={villainPhasePacing}
+                onNextStep={handleNextVillainStep}
+                onToggleAutoPlay={() => setIsAutoPlaying((prev) => !prev)}
+                onSkip={handleSkipVillainPacing}
+                isAutoPlaying={isAutoPlaying}
+              />
+            )}
 
             {/* Multi-Hero Panoramic Track (or Solo Play Area) */}
             {isMultiHero ? (

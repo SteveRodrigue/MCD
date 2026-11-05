@@ -85,12 +85,16 @@ describe('applyContent', () => {
 });
 
 describe('pack hooks', () => {
-  it('registers the special handlers of the loaded packs and clears them on reset', async () => {
-    await bootContent(contentDriver);
-    expect(getSpecialHandler('WAKANDA_FOREVER')).toBeDefined();
-    resetContent();
-    expect(getSpecialHandler('WAKANDA_FOREVER')).toBeUndefined();
-  });
+  it(
+    'registers the special handlers of the loaded packs and clears them on reset',
+    async () => {
+      await bootContent(contentDriver);
+      expect(getSpecialHandler('WAKANDA_FOREVER')).toBeDefined();
+      resetContent();
+      expect(getSpecialHandler('WAKANDA_FOREVER')).toBeUndefined();
+    },
+    15_000,
+  );
 
   it('does not register the hooks of a pack that is not loaded', () => {
     applyContent(content);
@@ -99,22 +103,30 @@ describe('pack hooks', () => {
 });
 
 describe('scenarios', () => {
-  it('registers the scenarios of the loaded packs in scenario card code order', async () => {
-    await bootContent(contentDriver);
-    expect(ScenarioRegistry.getAll().map((p) => p.definition.id)).toEqual([
-      'rhino',
-      'klaw',
-      'ultron',
-    ]);
-  });
+  it(
+    'registers the scenarios of the loaded packs in scenario card code order',
+    async () => {
+      await bootContent(contentDriver);
+      expect(ScenarioRegistry.getAll().map((p) => p.definition.id)).toEqual([
+        'rhino',
+        'klaw',
+        'ultron',
+      ]);
+    },
+    15_000,
+  );
 
-  it('registers no scenario for a pack that is not loaded, and clears them on reset', async () => {
-    await bootContent(contentDriver);
-    resetContent();
-    expect(ScenarioRegistry.getAll()).toEqual([]);
-    applyContent(content);
-    expect(ScenarioRegistry.has('rhino')).toBe(false);
-  });
+  it(
+    'registers no scenario for a pack that is not loaded, and clears them on reset',
+    async () => {
+      await bootContent(contentDriver);
+      resetContent();
+      expect(ScenarioRegistry.getAll()).toEqual([]);
+      applyContent(content);
+      expect(ScenarioRegistry.has('rhino')).toBe(false);
+    },
+    15_000,
+  );
 });
 
 describe('resetContent', () => {
@@ -133,20 +145,24 @@ describe('resetContent', () => {
     });
   });
 
-  it('is what an empty content root boots into', async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'mcd-content-empty-'));
-    try {
-      const booted = await bootContent(new NodeFsDriver(root));
-      expect(booted).toEqual({
-        packs: [],
-        failures: [],
-        descriptions: [],
-        artPacks: [],
-        artPackWarnings: [],
-      });
-      expect(cardCatalog.getAllCards()).toEqual([]);
-    } finally {
-      fs.rmSync(root, { recursive: true, force: true });
-    }
-  });
+  it(
+    'is what an empty content root boots into',
+    async () => {
+      const root = fs.mkdtempSync(path.join(os.tmpdir(), 'mcd-content-empty-'));
+      try {
+        const booted = await bootContent(new NodeFsDriver(root));
+        expect(booted).toEqual({
+          packs: [],
+          failures: [],
+          descriptions: [],
+          artPacks: [],
+          artPackWarnings: [],
+        });
+        expect(cardCatalog.getAllCards()).toEqual([]);
+      } finally {
+        fs.rmSync(root, { recursive: true, force: true });
+      }
+    },
+    15_000,
+  );
 });

@@ -4,7 +4,7 @@ import { DEFAULT_THEME_SETTINGS, type ThemeSettings } from '../theme/theme-setti
 
 export type EdgeScrollSpeed = 'slow' | 'normal' | 'fast';
 export type CardZoomLevel = 'small' | 'normal' | 'larger';
-export type PhaseStepperSide = 'left' | 'right';
+export type PhaseStepperSide = 'left' | 'right' | 'under';
 export type VillainPhasePacing = 'auto_normal' | 'auto_fast' | 'manual' | 'instant';
 
 export interface GameSettings extends ThemeSettings {

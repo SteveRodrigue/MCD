@@ -215,7 +215,13 @@ export function evaluateDynamicAmount(
     }
     case 'COUNTERS': {
       const cType = counterType || 'energy';
-      if (
+      if (target === 'ENVIRONMENT') {
+        const env = state?.environments?.[0];
+        baseValue = env?.counters?.[cType] ?? env?.tokens?.counters ?? 0;
+      } else if (target === 'VILLAIN') {
+        const v = state?.villains?.[0];
+        baseValue = v?.counters?.[cType] ?? v?.tokens?.counters ?? 0;
+      } else if (
         target === 'SELF_IDENTITY' ||
         target === 'TRIGGERING_HERO' ||
         (target as string) === 'IDENTITY' ||

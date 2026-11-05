@@ -275,6 +275,29 @@ export function executeVillainSchemeAgainstPlayer(
     });
     return state;
   }
+  // Check environments, attachments, and villain for WOULD_SCHEME forced interrupts
+  const wouldSchemeCards = [...(state.environments || []), ...(villain.attachments || []), villain];
+  for (const card of wouldSchemeCards) {
+    const ability = card.card?.enrichment?.abilities?.find(
+      (a) =>
+        (a.timing === 'FORCED_INTERRUPT' || a.timing === 'INTERRUPT') &&
+        a.trigger === 'WOULD_SCHEME',
+    );
+    if (ability) {
+      kernel.executeEffect(state, ability, {
+        playerId: player.id,
+        sourceCardInstance: 'instanceId' in card ? (card as CardInstance) : undefined,
+      });
+      appendLog(state, {
+        category: 'scheme',
+        key: 'villain.scheme.cancelled',
+        params: { actor: villain.card.name, source: card.card.name },
+        onomatopoeia: 'SCHEME REPLACED!',
+      });
+      return state;
+    }
+  }
+
   recordBasicAction(state, 'villainScheme', villain.card?.code);
 
   const stepping =
@@ -725,15 +748,21 @@ export function placeInciteThreat(
  * Resolves the When Revealed abilities of a card: all of them, or only the effects that cannot be
  * canceled when the reveal was cancelled.
  */
-function resolveWhenRevealedAbilities(
+export function resolveWhenRevealedAbilities(
   state: GameState,
   cardInstance: CardInstance,
   player: PlayerState,
   isCancelled: boolean,
 ): void {
   if (!isCancelled) placeInciteThreat(state, cardInstance, player);
-  for (const ability of getResolvingRevealAbilities(cardInstance, isCancelled)) {
-    kernel.executeEffect(state, ability, { playerId: player.id, sourceCardInstance: cardInstance });
+  const extraTimes = player.attachments?.filter((att) => att.card.code === '02049').length ?? 0;
+  for (let i = 0; i <= extraTimes; i++) {
+    for (const ability of getResolvingRevealAbilities(cardInstance, isCancelled)) {
+      kernel.executeEffect(state, ability, {
+        playerId: player.id,
+        sourceCardInstance: cardInstance,
+      });
+    }
   }
 }
 
@@ -748,8 +777,10 @@ export function completeEncounterAttachment(
   hostName: string,
   player: PlayerState,
   isCancelled: boolean,
+  hostKind?: string,
 ): void {
-  attachCardToHost(state, cardInstance, 'ENEMY', hostInstanceId);
+  const hostTargetType = hostKind === 'identity' ? 'IDENTITY' : 'ENEMY';
+  attachCardToHost(state, cardInstance, hostTargetType, hostInstanceId);
   appendLog(state, {
     key: 'encounter.reveal.attachment',
     params: { card: cardInstance.card.name, target: hostName },
@@ -771,7 +802,7 @@ function resolveRevealedAttachment(
   isCancelled: boolean,
 ): void {
   const card = cardInstance.card;
-  const resolution = resolveAttachmentHost(state, cardInstance, card.enrichment?.attachTo);
+  const resolution = resolveAttachmentHost(state, cardInstance, card.enrichment?.attachTo, player);
 
   if (resolution.kind === 'attach') {
     completeEncounterAttachment(
@@ -781,6 +812,7 @@ function resolveRevealedAttachment(
       resolution.host.name,
       player,
       isCancelled,
+      resolution.host.kind,
     );
   } else if (resolution.kind === 'surge' || resolution.kind === 'discard') {
     state.encounterDiscard.push(cardInstance);
@@ -1379,4 +1411,8 @@ function runVillainPhaseOnDraft(nextState: GameState, options?: CombatOptions): 
   return continueVillainPhase(nextState, options);
 }
 
-bindKernel({ resolveActiveEncounterCardAfterInterrupt, continueSchemeAfterBoost });
+bindKernel({
+  resolveActiveEncounterCardAfterInterrupt,
+  continueSchemeAfterBoost,
+  resolveWhenRevealedAbilities,
+});

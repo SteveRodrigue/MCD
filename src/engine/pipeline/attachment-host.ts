@@ -8,7 +8,7 @@ export interface AttachCandidate {
   name: string;
   /** The card instance (minion) or the villain's card holder. */
   attachments: CardInstance[];
-  kind: 'villain' | 'minion' | 'environment';
+  kind: 'villain' | 'minion' | 'environment' | 'identity';
   /** The player a minion is engaged with. */
   engagedPlayerId?: string;
   card: CardInstance['card'];
@@ -58,7 +58,22 @@ function findAttachCandidates(
   state: GameState,
   attachment: CardInstance,
   host: AttachHost,
+  player?: import('../models').PlayerState,
 ): AttachCandidate[] {
+  if (host.type === 'IDENTITY') {
+    const targetPlayer = player || state.players[0];
+    return [
+      {
+        instanceId: targetPlayer.id,
+        name: targetPlayer.activeFormCard?.name || targetPlayer.name,
+        attachments: targetPlayer.attachments ?? [],
+        kind: 'identity',
+        card: targetPlayer.activeFormCard,
+        engagedPlayerId: targetPlayer.id,
+      },
+    ];
+  }
+
   if (host.type === 'ENVIRONMENT') {
     return (state.environments || [])
       .filter((e) => matchesCardFilter(e, host.filter, { state }))
@@ -113,6 +128,7 @@ export function resolveAttachmentHost(
   state: GameState,
   attachment: CardInstance,
   attachTo: AttachTo | undefined,
+  player?: import('../models').PlayerState,
 ): AttachmentResolution {
   const fromCandidates = (candidates: AttachCandidate[]): AttachmentResolution | undefined => {
     if (candidates.length === 1) return { kind: 'attach', host: candidates[0] };
@@ -121,12 +137,14 @@ export function resolveAttachmentHost(
   };
 
   const declared = attachTo ?? { host: { type: 'VILLAIN' as const } };
-  const primary = fromCandidates(findAttachCandidates(state, attachment, declared.host));
+  const primary = fromCandidates(findAttachCandidates(state, attachment, declared.host, player));
   if (primary) return primary;
 
   if (declared.otherwise?.type === 'SURGE') return { kind: 'surge' };
   if (declared.otherwise) {
-    const fallback = fromCandidates(findAttachCandidates(state, attachment, declared.otherwise));
+    const fallback = fromCandidates(
+      findAttachCandidates(state, attachment, declared.otherwise, player),
+    );
     if (fallback) return fallback;
   }
 

@@ -15,6 +15,7 @@ import {
   executeMinionActivationAgainstPlayer,
 } from '../../pipeline/villain-phase';
 import { drawEncounterCard } from '../../pipeline/deck-exhaustion';
+import { dealSurgeCard } from '../../pipeline/surge';
 import {
   beginEnemyAttack,
   grantKeywordToAttack,
@@ -24,6 +25,8 @@ import { matchesCardFilter } from '../../filters/card-filter';
 import { recordBasicAction } from '../../pipeline/stats';
 import { appendLog } from '../../state/game-log';
 import { EffectExecutionContext, EffectResult, attackOutcome } from '../index';
+import { resolveTargets } from '../target-resolver';
+import type { TargetSelector } from '../../../data/supplemental/schema-primitives';
 import type { TypedStep, StepHandlerMap } from './types';
 import { getStepEffectParams } from '../../../data/supplemental/runtime';
 
@@ -158,13 +161,41 @@ function handleVillainSchemes(
 
 function handleVillainAttacks(
   state: GameState,
-  _step: TypedStep<'VILLAIN_ATTACKS'>,
+  step: TypedStep<'VILLAIN_ATTACKS'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const begun = beginEnemyAttack(state, { type: 'VILLAIN' }, player.id, {
+  const params = getStepEffectParams(step);
+  const targetSelector = ((params as Record<string, unknown> | undefined)?.targetPlayer ??
+    (params as Record<string, unknown> | undefined)?.target) as string | undefined;
+  let targetPlayer: PlayerState | undefined = player;
+  if (targetSelector) {
+    const resolved = resolveTargets(state, targetSelector as TargetSelector, context);
+    targetPlayer = resolved.find((r) => r.kind === 'player')?.entity as PlayerState | undefined;
+  }
+  if (!targetPlayer || targetPlayer.currentForm !== 'hero') {
+    if (params?.surgeIfNoAttack) {
+      dealSurgeCard(state, player, context.sourceCardInstance?.card.name);
+      return {
+        state,
+        success: true,
+        mutatedState: true,
+        onomatopoeia: 'SURGE!',
+      };
+    }
+    return {
+      state,
+      success: true,
+      mutatedState: false,
+      onomatopoeia: 'NO ATTACK MADE',
+    };
+  }
+  const begun = beginEnemyAttack(state, { type: 'VILLAIN' }, targetPlayer.id, {
     grantedKeywords: context.grantedAttackKeywords,
   });
+  if (!begun.attacked && params?.surgeIfNoAttack) {
+    dealSurgeCard(state, player, context.sourceCardInstance?.card.name);
+  }
   return {
     state: begun.state,
     success: true,

@@ -197,11 +197,14 @@ function handleDealDamage(
 
   const targetType =
     targetParam === 'ALL_HEROES' ||
+    targetParam === 'ALL_PLAYERS' ||
     (targetParam as string) === 'HERO' ||
     targetParam === 'SELF_IDENTITY' ||
     targetParam === 'SELF_HERO' ||
     (targetParam as string) === 'IDENTITY' ||
-    targetParam === 'SELF'
+    targetParam === 'SELF' ||
+    targetParam === 'ENGAGED_PLAYER' ||
+    (targetParam as string) === 'PLAYER'
       ? 'hero'
       : context.chosenTargetType || 'villain';
 
@@ -214,15 +217,38 @@ function handleDealDamage(
     targetParam === 'SELF_IDENTITY' ||
     targetParam === 'SELF_HERO' ||
     (targetParam as string) === 'IDENTITY' ||
-    targetParam === 'SELF'
+    targetParam === 'SELF' ||
+    targetParam === 'ENGAGED_PLAYER' ||
+    (targetParam as string) === 'PLAYER'
   ) {
-    state = applyAbilityDamage(state, playerTargetRef(player), amount, damageOpts).state;
+    const targetPlayer =
+      targetParam === 'ENGAGED_PLAYER'
+        ? (context.sourceCardInstance
+            ? state.players.find((pl) =>
+                pl.engagedMinions?.some(
+                  (m) => m.instanceId === context.sourceCardInstance?.instanceId,
+                ),
+              )
+            : undefined) || player
+        : player;
+    state = applyAbilityDamage(state, playerTargetRef(targetPlayer), amount, damageOpts).state;
     return {
       state,
       success: true,
       mutatedState: amount > 0,
       value: amount,
       onomatopoeia: `OUCH! ${amount} DAMAGE!`,
+    };
+  }
+
+  if (targetParam === 'ALL_PLAYERS') {
+    for (const p of [...state.players]) {
+      state = applyAbilityDamage(state, playerTargetRef(p), amount, damageOpts).state;
+    }
+    return {
+      state,
+      success: true,
+      onomatopoeia: `SHOCK! ${amount} DAMAGE TO ALL PLAYERS!`,
     };
   }
 

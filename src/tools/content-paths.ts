@@ -74,6 +74,10 @@ export function translationFile(locale: string, stem: string, base?: string): st
 }
 
 export function scenarioDefinitionFile(scenarioId: string, base?: string): string {
+  for (const code of listPackCodes(base)) {
+    const candidate = path.join(packDir(code, base), 'scenarios', scenarioId, 'definition.json');
+    if (fs.existsSync(candidate)) return candidate;
+  }
   return path.join(packDir('core', base), 'scenarios', scenarioId, 'definition.json');
 }
 

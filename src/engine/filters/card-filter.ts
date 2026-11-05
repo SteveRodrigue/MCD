@@ -126,8 +126,17 @@ export function matchesCardFilter(
     if (!instance || Boolean(instance.isShell) !== filter.isFacedown) return false;
   }
   if (filter.hasStatus?.length) {
-    const statusCards: string[] = instance?.statusCards || [];
-    if (!filter.hasStatus.every((status) => statusCards.includes(status))) return false;
+    const statusCards: string[] =
+      instance?.statusCards ||
+      (subject as unknown as { statusCards?: string[] })?.statusCards ||
+      [];
+    if (
+      !filter.hasStatus.every((status) =>
+        statusCards.some((s) => String(s).toLowerCase() === String(status).toLowerCase()),
+      )
+    ) {
+      return false;
+    }
   }
 
   return true;

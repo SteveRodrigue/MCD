@@ -149,6 +149,32 @@ function step1_preAttackAndStunCheck(
     }
   }
 
+  // Priority 3: Check attacker entity card for WOULD_ATTACK forced interrupts
+  const attackerAbilities = attackerEntity.card?.enrichment?.abilities || [];
+  const wouldAttackAbility = attackerAbilities.find(
+    (a) =>
+      (a.timing === 'FORCED_INTERRUPT' || a.timing === 'INTERRUPT') && a.trigger === 'WOULD_ATTACK',
+  );
+  if (wouldAttackAbility) {
+    const owner = targetPlayer || state.players[0];
+    kernel.executeEffect(state, wouldAttackAbility, {
+      playerId: owner.id,
+      sourceCardInstance:
+        'instanceId' in attackerEntity ? (attackerEntity as CardInstance) : undefined,
+      eventTargetInstanceId: attackerEntity.instanceId ?? 'villain',
+    });
+    appendLog(state, {
+      category: 'combat',
+      key: attackerType === 'VILLAIN' ? 'villain.attack.cancelled' : 'minion.attack.cancelled',
+      params: {
+        actor: attackerEntity.card.name,
+        source: attackerEntity.card.name,
+      },
+      onomatopoeia: 'ATTACK REPLACED!',
+    });
+    return true;
+  }
+
   return false;
 }
 
@@ -1420,6 +1446,8 @@ function step7_resolvePostAttackAndRetaliate(
         kernel.executeEffect(state, ability, {
           playerId: attackContext.targetPlayerId,
           sourceCardInstance: minion,
+          activationDamage: attackContext.finalDamage ?? 0,
+          damagedCharacter: attackContext.damagedCharacter,
         });
       }
     }

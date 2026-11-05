@@ -1,5 +1,5 @@
 import type { GameState, PlayerState, CardInstance, NormalizedCard } from '../models';
-import { getVillainsInPlay, getMainSchemesInPlay } from '../models';
+import { getVillainsInPlay, getMainSchemesInPlay, getActiveVillain } from '../models';
 import { ResourceType } from '../models/enums';
 import type { CardLocationSelector, CardInspectionAttribute } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
@@ -65,6 +65,8 @@ export function locateCard(
         }
         return undefined;
       }
+      case 'VILLAIN':
+        return getActiveVillain(state)?.card;
     }
   }
 
@@ -353,6 +355,17 @@ export function readCardAttribute(
     case 'WILD_RESOURCES': {
       const w = cardData?.resources?.wild ?? raw?.resource_wild;
       return typeof w === 'number' ? w : 0;
+    }
+
+    case 'STAGE_NUMBER': {
+      const stage =
+        (cardData as { stage?: string | number })?.stage ??
+        (cardObj as { stage?: string | number })?.stage;
+      if (stage === 'I') return 1;
+      if (stage === 'II') return 2;
+      if (stage === 'III') return 3;
+      if (stage === 'IV') return 4;
+      return typeof stage === 'number' ? stage : 1;
     }
 
     default:

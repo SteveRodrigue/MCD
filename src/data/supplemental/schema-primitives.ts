@@ -74,6 +74,7 @@ export const TimingTypeSchema = z.enum([
   'SPECIAL',
   'SETUP',
   'WHEN_REVEALED',
+  'WHEN_COMPLETED',
   'BOOST',
 ]);
 
@@ -97,6 +98,8 @@ export const TriggerTypeSchema = z.enum([
   'SCHEME_DEFEATED',
   'SCHEME_THREAT_REDUCED_TO_ZERO',
   'HOST_WOULD_ATTACK',
+  'WOULD_ATTACK',
+  'WOULD_SCHEME',
   'HOST_ATTACK_ENDED',
   'THREAT_WOULD_BE_PLACED',
   'BASIC_ATTACK_PERFORMED',
@@ -173,6 +176,8 @@ export const TargetSelectorSchema = z.enum([
   'TRIGGERING_ENEMY',
   'HOST',
   'HOST_ENEMY',
+  'ENVIRONMENT',
+  'HERO_WITH_FEWEST_HIT_POINTS',
 ]);
 
 export type TargetSelector = z.infer<typeof TargetSelectorSchema>;
@@ -359,6 +364,7 @@ export const CardLocationTargetSchema = z.enum([
   'TARGET_CARD',
   'ATTACHED_CARD',
   'HOST_CARD',
+  'VILLAIN',
 ]);
 export type CardLocationTarget = z.infer<typeof CardLocationTargetSchema>;
 
@@ -391,6 +397,7 @@ const CardInspectionAttributeSchema = z.enum([
   'ENERGY_RESOURCES',
   'MENTAL_RESOURCES',
   'WILD_RESOURCES',
+  'STAGE_NUMBER',
 ]);
 
 export type CardInspectionAttribute = z.infer<typeof CardInspectionAttributeSchema>;

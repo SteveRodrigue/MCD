@@ -1981,7 +1981,10 @@ function discardFromEncounterDeck(
     state,
     success: true,
     mutatedState: discardedCount > 0,
-    value: discardedCount,
+    value: params.matchingDestination === 'PLAY' ? (firstMatch ? 1 : 0) : discardedCount,
+    facts: {
+      amountZero: params.matchingDestination === 'PLAY' ? !firstMatch : discardedCount === 0,
+    },
     discardedCards,
     onomatopoeia: `DISCARDED ${discardedCount} ENCOUNTER CARDS!`,
   };
@@ -2136,6 +2139,22 @@ export function executeDiscard(
   }
 
   if (source === 'DECK') {
+    if (params.target === 'ALL_PLAYERS') {
+      let totalDiscarded = 0;
+      const allDiscarded: CardInstance[] = [];
+      for (const p of state.players) {
+        const res = discardFromPlayerDeck(state, p, params, count, filter);
+        totalDiscarded += res.value ?? 0;
+        if (res.discardedCards) allDiscarded.push(...res.discardedCards);
+      }
+      return {
+        state,
+        success: true,
+        mutatedState: totalDiscarded > 0,
+        value: totalDiscarded,
+        discardedCards: allDiscarded,
+      };
+    }
     return discardFromPlayerDeck(state, player, params, count, filter);
   }
 

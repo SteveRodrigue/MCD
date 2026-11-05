@@ -120,15 +120,32 @@ export function advanceVillainStage(
   nextStageCode: string,
   onRevealed?: (newVillain: VillainState) => void,
 ): { state: GameState; advancedStage: true } {
-  const nextCard = getCatalog(state).getCard(nextStageCode) as VillainCard | undefined;
+  let nextCard = getCatalog(state).getCard(nextStageCode) as VillainCard | undefined;
   if (!nextCard) {
     throw new Error(`Next villain stage card '${nextStageCode}' not found in catalog.`);
   }
 
   const defeated = getVillainById(state, defeatedInstanceId) ?? getActiveVillain(state);
   const instanceId = defeated.instanceId!;
+
+  // Preserve form side on double-sided villains
+  if (
+    (defeated.activeSide === 'b' || defeated.card.code.endsWith('b')) &&
+    nextCard.code.endsWith('a')
+  ) {
+    const altCardCode = nextCard.backLink ?? nextCard.code.replace(/a$/, 'b');
+    const altCard = getCatalog(state).getCard(altCardCode) as VillainCard | undefined;
+    if (altCard) nextCard = altCard;
+  }
+
   const maxHealth = villainStageHitPoints(nextCard, getPerPlayerCount(state));
-  const sameTitle = nextCard.name === defeated.card.name;
+  const sameTitle =
+    nextCard.name === defeated.card.name ||
+    nextCard.code.slice(0, -1) === defeated.card.code.slice(0, -1) ||
+    Boolean(
+      nextCard.backLink &&
+      (nextCard.backLink === defeated.card.code || defeated.card.backLink === nextCard.code),
+    );
 
   let next: VillainState;
   if (sameTitle) {

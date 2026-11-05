@@ -63,7 +63,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
   private resolveMainSchemeAbilities(
     state: GameState,
     card: NormalizedCard | undefined,
-    timing: 'SETUP' | 'WHEN_REVEALED',
+    timing: 'SETUP' | 'WHEN_REVEALED' | 'WHEN_COMPLETED',
   ): void {
     if (!card) return;
     const playerId = state.players[state.firstPlayerIndex ?? 0]?.id ?? state.players[0]?.id ?? '';
@@ -164,6 +164,15 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
       );
     }
     const maxHealth = villainStageHitPoints(villainCard, getPerPlayerCount(state));
+    const isDoubleSided = Boolean(villainCard.backLink);
+    const altCode =
+      villainCard.backLink ??
+      (startingStageCode.endsWith('a')
+        ? startingStageCode.replace(/a$/, 'b')
+        : startingStageCode.replace(/b$/, 'a'));
+    const alternateCard = isDoubleSided
+      ? (getCatalog(state).getCard(altCode) as VillainCard | undefined)
+      : undefined;
     const villain: VillainState = {
       instanceId: `villain_${nextEngineId(state, 'id')}_${startingStageCode}`,
       card: villainCard,
@@ -172,6 +181,12 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
       exhausted: false,
       statusCards: [],
       attachments: [],
+      ...(isDoubleSided
+        ? {
+            activeSide: startingStageCode.endsWith('b') ? ('b' as const) : ('a' as const),
+            alternateCard,
+          }
+        : {}),
     };
     state.villains = [villain];
     setActiveVillain(state, villain.instanceId!);
@@ -243,6 +258,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     _completedSchemeInstanceId: string,
   ): { state: GameState; advancedStage?: boolean; defeat?: boolean } {
     const current = getActiveMainScheme(state);
+    this.resolveMainSchemeAbilities(state, current.card, 'WHEN_COMPLETED');
     const stages = this.mainSchemeStagePairs(state);
     const currentIndex = stages.findIndex((stage) => stage.b.code === current.card.code);
     const next = currentIndex >= 0 ? stages[currentIndex + 1] : undefined;

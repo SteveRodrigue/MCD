@@ -280,6 +280,7 @@ export const PlayerRecipientSchema = z.discriminatedUnion('type', [
  */
 const AttachHostSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('VILLAIN') }).strict(),
+  z.object({ type: z.literal('IDENTITY') }).strict(),
   z
     .object({ type: z.literal('ENVIRONMENT'), filter: UniversalCardFilterSchema.optional() })
     .strict(),

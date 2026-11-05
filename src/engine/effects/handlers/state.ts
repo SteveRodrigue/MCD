@@ -7,6 +7,7 @@ import {
   CardType,
   PlayerState,
   VillainState,
+  VillainCard,
   getActiveVillain,
   getVillainsInPlay,
 } from '@engine/models';
@@ -477,10 +478,11 @@ function handleReady(
   for (const t of targets) {
     if (t.kind === 'character') {
       if (t.entityType === 'hero' || t.entityType === 'alter_ego') {
-        (t.entity as PlayerState).exhausted = false;
-        names.push(
-          (t.entity as PlayerState).activeFormCard?.name || (t.entity as PlayerState).name,
-        );
+        const p = t.entity as PlayerState;
+        if (!p.attachments?.some((a) => a.card.code === '02048')) {
+          p.exhausted = false;
+          names.push(p.activeFormCard?.name || p.name);
+        }
       } else if (t.entityType === 'villain') {
         (t.entity as VillainState).exhausted = false;
         names.push((t.entity as VillainState).card?.name || 'Villain');
@@ -647,14 +649,18 @@ function handleAddCounters(
   const filter = params.filter;
   const recipient = params.targetCardCode
     ? findEncounterCardInPlayByCode(state, params.targetCardCode)
-    : filter
-      ? [
-          ...(state.environments || []),
-          ...(state.sideSchemes || []),
-          ...(state.mainSchemes || []),
-          ...getVillainsInPlay(state),
-        ].find((c) => matchesCardFilter(c as never, filter, { state, player }))
-      : context.sourceCardInstance;
+    : targetParam === 'ENVIRONMENT'
+      ? state.environments?.[0]
+      : targetParam === 'VILLAIN'
+        ? getActiveVillain(state)
+        : filter
+          ? [
+              ...(state.environments || []),
+              ...(state.sideSchemes || []),
+              ...(state.mainSchemes || []),
+              ...getVillainsInPlay(state),
+            ].find((c) => matchesCardFilter(c as never, filter, { state, player }))
+          : context.sourceCardInstance;
 
   if (params.targetCardCode && !recipient) return { state, success: true, value: 0 };
 
@@ -701,11 +707,17 @@ function handleSpendCounters(
   const params = getStepEffectParams(step);
   const targetParam = (params.target as string) || 'SELF';
   const counterType = (params.counterType as string) || 'all_purpose';
+  const targetCardInst =
+    targetParam === 'ENVIRONMENT'
+      ? state.environments?.[0]
+      : targetParam === 'VILLAIN'
+        ? (getActiveVillain(state) as unknown as CardInstance)
+        : context.sourceCardInstance;
   const held =
     targetParam === 'IDENTITY'
       ? playerCounterCount(player, counterType)
-      : context.sourceCardInstance
-        ? cardCounterCount(context.sourceCardInstance, counterType)
+      : targetCardInst
+        ? cardCounterCount(targetCardInst, counterType)
         : 0;
   const amount =
     params.amount === 'ALL'
@@ -715,19 +727,16 @@ function handleSpendCounters(
   if (targetParam === 'IDENTITY') {
     player.counters = player.counters || {};
     player.counters[counterType] = Math.max(0, playerCounterCount(player, counterType) - amount);
-  } else if (context.sourceCardInstance) {
-    context.sourceCardInstance.counters = context.sourceCardInstance.counters || {};
-    const current = cardCounterCount(context.sourceCardInstance, counterType);
-    context.sourceCardInstance.counters[counterType] = Math.max(0, current - amount);
-    if (context.sourceCardInstance.tokens) {
-      context.sourceCardInstance.tokens.counters = Math.max(
-        0,
-        (context.sourceCardInstance.tokens.counters || 0) - amount,
-      );
+  } else if (targetCardInst) {
+    targetCardInst.counters = targetCardInst.counters || {};
+    const current = cardCounterCount(targetCardInst, counterType);
+    targetCardInst.counters[counterType] = Math.max(0, current - amount);
+    if (targetCardInst.tokens) {
+      targetCardInst.tokens.counters = Math.max(0, (targetCardInst.tokens.counters || 0) - amount);
     }
 
     // Check and discard if Uses counters reached 0 per RR v1.8 p. 30
-    checkAndDiscardZeroCounterCard(state, player, context.sourceCardInstance, counterType);
+    checkAndDiscardZeroCounterCard(state, player, targetCardInst, counterType);
   }
   return {
     state,
@@ -741,14 +750,44 @@ function handleSpendCounters(
 /** RR v1.8 Flip: a card that keeps its type keeps its tokens; another type discards them. */
 function handleFlipCard(
   state: GameState,
-  _step: TypedStep<'FLIP_CARD'>,
+  step: TypedStep<'FLIP_CARD'>,
   context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const instance = context.sourceCardInstance;
+  const params = getStepEffectParams(step);
+  const targetSelector = params.target || 'SELF';
+
+  if (targetSelector === 'VILLAIN') {
+    const villain = getActiveVillain(state);
+    if (!villain) return { state, success: true };
+    const { code, backLink } = villain.card;
+    const otherSideCode =
+      backLink ?? (code.endsWith('a') ? code.replace(/a$/, 'b') : code.replace(/b$/, 'a'));
+    const otherSide = state.options?.catalog?.getCard(otherSideCode) as VillainCard | undefined;
+    if (!otherSide || otherSide.code === code) return { state, success: true };
+
+    villain.card = otherSide;
+    villain.activeSide = otherSide.code.endsWith('b') ? 'b' : 'a';
+    kernel.dispatchTrigger(state, 'CARD_FLIPPED', {
+      targetPlayerId: player.id,
+      sourceInstanceId: villain.instanceId,
+    });
+    kernel.resolveWhenRevealedAbilities(
+      state,
+      { instanceId: villain.instanceId ?? 'villain', card: otherSide },
+      player,
+      false,
+    );
+    return { state, success: true, mutatedState: true, onomatopoeia: 'VILLAIN FLIPS!' };
+  }
+
+  const instance =
+    targetSelector === 'ENVIRONMENT' ? state.environments?.[0] : context.sourceCardInstance;
   if (!instance) return { state, success: true };
   const { code, backLink } = instance.card;
-  const otherSide = state.options?.catalog?.getCard(backLink ?? code.replace(/b$/, 'a'));
+  const otherSideCode =
+    backLink ?? (code.endsWith('a') ? code.replace(/a$/, 'b') : code.replace(/b$/, 'a'));
+  const otherSide = state.options?.catalog?.getCard(otherSideCode);
   if (!otherSide || otherSide.code === code) return { state, success: true };
   if (otherSide.type !== instance.card.type) {
     delete instance.counters;
@@ -761,6 +800,7 @@ function handleFlipCard(
     targetPlayerId: player.id,
     sourceInstanceId: instance.instanceId,
   });
+  kernel.resolveWhenRevealedAbilities(state, instance, player, false);
   return { state, success: true, mutatedState: true, onomatopoeia: 'FLIP!' };
 }
 

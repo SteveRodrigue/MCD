@@ -908,6 +908,32 @@ function resolveDamageForTargets(state: GameState, requests: DamageRequest[]): R
       }
     }
 
+    if (ctx.currentDamage > 0 && ctx.request.target.type !== 'player') {
+      const targetAbilities: CardAbility[] =
+        (ctx.request.target.entity as { card?: { enrichment?: { abilities?: CardAbility[] } } })
+          ?.card?.enrichment?.abilities || [];
+      const damageInterrupt = targetAbilities.find(
+        (a) =>
+          (a.timing === 'FORCED_INTERRUPT' || a.timing === 'INTERRUPT') &&
+          a.trigger === 'DAMAGE_WOULD_BE_TAKEN',
+      );
+      if (damageInterrupt) {
+        kernel.executeEffect(state, damageInterrupt, {
+          playerId: state.players[0]?.id ?? '',
+          damageAmount: ctx.currentDamage,
+          interceptedValue: ctx.currentDamage,
+        });
+        ctx.currentDamage = 0;
+        ctx.onomatopoeia = 'DAMAGE REPLACED!';
+        appendLog(state, {
+          category: 'combat',
+          key: 'damage.prevented.replacement',
+          params: { target: ctx.request.target.name },
+          onomatopoeia: ctx.onomatopoeia,
+        });
+      }
+    }
+
     if (ctx.request.target.type === 'player' && ctx.currentDamage > 0) {
       const player = ctx.request.target.entity as PlayerState;
       const opened = openWouldTakeWindow(state, ctx.request, player, ctx.currentDamage);
@@ -1498,6 +1524,32 @@ function resolveDamage(state: GameState, request: DamageRequest): ResolvedDamage
       onomatopoeia = absorbedByShield.discarded
         ? 'DAMAGE SHIELD SHATTERED!'
         : 'DAMAGE SHIELD ABSORBS DAMAGE!';
+    }
+  }
+
+  if (currentDamage > 0 && target.type !== 'player') {
+    const targetAbilities: CardAbility[] =
+      (target.entity as { card?: { enrichment?: { abilities?: CardAbility[] } } })?.card?.enrichment
+        ?.abilities || [];
+    const damageInterrupt = targetAbilities.find(
+      (a) =>
+        (a.timing === 'FORCED_INTERRUPT' || a.timing === 'INTERRUPT') &&
+        a.trigger === 'DAMAGE_WOULD_BE_TAKEN',
+    );
+    if (damageInterrupt) {
+      kernel.executeEffect(state, damageInterrupt, {
+        playerId: state.players[0]?.id ?? '',
+        damageAmount: currentDamage,
+        interceptedValue: currentDamage,
+      });
+      currentDamage = 0;
+      onomatopoeia = 'DAMAGE REPLACED!';
+      appendLog(state, {
+        category: 'combat',
+        key: 'damage.prevented.replacement',
+        params: { target: target.name },
+        onomatopoeia,
+      });
     }
   }
 

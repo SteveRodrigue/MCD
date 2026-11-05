@@ -1,0 +1,26 @@
+[
+  {
+    "code": "goblin_gimmicks",
+    "kind": "modular",
+    "name": "Goblin Gimmicks",
+    "description": "Green Goblin's signature weaponry, vehicles, and regeneration gear."
+  },
+  {
+    "code": "a_mess_of_things",
+    "kind": "modular",
+    "name": "A Mess of Things",
+    "description": "Scorpion and frantic citywide mayhem that stuns heroes and unleashes gang-up assaults."
+  },
+  {
+    "code": "power_drain",
+    "kind": "modular",
+    "name": "Power Drain",
+    "description": "Electro and devastating electrical discharges that siphon energy and shock heroes."
+  },
+  {
+    "code": "running_interference",
+    "kind": "modular",
+    "name": "Running Interference",
+    "description": "Tombstone, physical restraint, and media swarms that amplify villain schemes."
+  }
+]

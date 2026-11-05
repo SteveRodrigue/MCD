@@ -45,6 +45,7 @@
                     "SPECIAL",
                     "SETUP",
                     "WHEN_REVEALED",
+                    "WHEN_COMPLETED",
                     "BOOST"
                   ]
                 },
@@ -67,6 +68,8 @@
                     "SCHEME_DEFEATED",
                     "SCHEME_THREAT_REDUCED_TO_ZERO",
                     "HOST_WOULD_ATTACK",
+                    "WOULD_ATTACK",
+                    "WOULD_SCHEME",
                     "HOST_ATTACK_ENDED",
                     "THREAT_WOULD_BE_PLACED",
                     "BASIC_ATTACK_PERFORMED",
@@ -463,6 +466,7 @@
                           "CANCEL_WHEN_REVEALED",
                           "CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER",
                           "CANNOT_TAKE_DAMAGE",
+                          "CANNOT_BE_ATTACKED",
                           "THREAT_CANNOT_BE_REMOVED",
                           "CHANGE_FORM",
                           "DEAL_DAMAGE",
@@ -760,6 +764,19 @@
                     "properties": {
                       "type": {
                         "type": "string",
+                        "const": "IDENTITY"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
                         "const": "ENVIRONMENT"
                       },
                       "filter": {
@@ -829,6 +846,19 @@
                           "type": {
                             "type": "string",
                             "const": "VILLAIN"
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "IDENTITY"
                           }
                         },
                         "required": [

@@ -137,7 +137,9 @@ export function executePlayerCleanup(
   }
 
   // 3. Ready all cards controlled by player
-  player.exhausted = false;
+  if (!player.attachments?.some((a) => a.card.code === '02048')) {
+    player.exhausted = false;
+  }
   player.basicChangeFormUsedThisRound = false;
   player.formChangedThisRound = false;
   player.recoveryUsedThisRound = false;

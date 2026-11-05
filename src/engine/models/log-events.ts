@@ -176,6 +176,7 @@ export interface LogEvents {
     defended?: string | boolean;
   };
   'villain.attack.cancelled': { actor: string; source?: string };
+  'villain.scheme.cancelled': { actor: string; source?: string };
   'minion.attack.cancelled': { actor: string; source?: string };
   'ally.defeated.boost.undefended': { actor: string; target: string };
   'ally.defeated': { target: string };
@@ -219,6 +220,7 @@ export interface LogEvents {
   'damage.transferred': { actor: string; source: string; amount: number; target: string };
   'damage.prevented.immune': { target: string };
   'damage.prevented.tough': { target: string };
+  'damage.prevented.replacement': { target: string };
   'damage.tough.pierced': { target: string };
   'attachment.damageShield.absorbed': {
     target: string;
@@ -507,6 +509,7 @@ export const ALL_LOG_EVENT_KEYS = [
   'villain.attack.hit',
   'minion.attack.hit',
   'villain.attack.cancelled',
+  'villain.scheme.cancelled',
   'minion.attack.cancelled',
   'ally.defeated.boost.undefended',
   'ally.defeated',
@@ -520,6 +523,7 @@ export const ALL_LOG_EVENT_KEYS = [
   'damage.transferred',
   'damage.prevented.immune',
   'damage.prevented.tough',
+  'damage.prevented.replacement',
   'damage.tough.pierced',
   'attachment.damageShield.absorbed',
   'attachment.damageShield.broken',

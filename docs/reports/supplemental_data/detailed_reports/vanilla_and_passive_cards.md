@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Total Verified Vanilla Cards:** **18**
+> **Total Verified Vanilla Cards:** **20**
 
 These cards require zero declarative engine hooks (e.g. vanilla resources, base stats only, or passive encounter cards without triggers).
 
@@ -26,5 +26,7 @@ These cards require zero declarative engine hooks (e.g. vanilla resources, base 
 | `01167` | **Vulture** | `minion` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01172` | **Whiplash** | `minion` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01184` | **M.O.D.O.K.** | `minion` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
+| `02005a` | **Corporate Acquisition** | `main_scheme` | `encounter` | `gob_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
+| `02005b` | **Corporate Acquisition** | `main_scheme` | `encounter` | `gob_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 
 [← Back to Main Usage Report](../usage_report.md)

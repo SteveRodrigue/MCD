@@ -162,6 +162,14 @@ export interface VillainState {
   cardsUnderneath?: CardInstance[];
   /** Facedown boost cards held for the villain's next activation (see `CardInstance.facedownBoostCards`). */
   facedownBoostCards?: CardInstance[];
+  activeSide?: 'a' | 'b';
+  alternateCard?: VillainCard;
+  counters?: Record<string, number>;
+  tokens?: {
+    damage?: number;
+    threat?: number;
+    counters?: number;
+  };
 }
 
 export interface MainSchemeState {

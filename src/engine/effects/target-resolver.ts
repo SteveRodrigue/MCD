@@ -484,6 +484,13 @@ function resolvePlayerSelectorTarget(
       }));
     }
 
+    case 'HERO_WITH_FEWEST_HIT_POINTS': {
+      const heroes = (state.players || []).filter((p) => p.currentForm === 'hero');
+      if (heroes.length === 0) return [];
+      const sorted = [...heroes].sort((a, b) => a.health - b.health);
+      return [{ kind: 'player', entity: sorted[0], id: sorted[0].id }];
+    }
+
     default:
       return undefined;
   }
@@ -1012,6 +1019,11 @@ function resolveEnemyAndMinionTarget(
         ];
       }
       return [];
+    }
+
+    case 'ENVIRONMENT': {
+      const env = state.environments?.[0];
+      return env ? [{ kind: 'card', entity: env, id: env.instanceId }] : [];
     }
 
     case 'HOST':

@@ -17,11 +17,15 @@ An open-source, faithful digital adaptation of **Marvel Champions: The Card Game
 
 - **60s Comic Pop-Art Aesthetic:** Ben-Day halftone dot patterns, comic book panel playmats, speech bubbles, dynamic boundary-aware hover-zoom, and punchy onomatopoeia overlays (_POW!_, _BAM!_, _KAPOW!_, _THWIP!_).
 
-- **Data-Driven Architecture:** Ingests official card metadata directly from [`marvelsdb-json-data`](https://github.com/SteveRodrigue/marvelsdb-json-data).
+- **Data-Driven, Pack-Based Content:** Everything the game plays is loaded at runtime from **packs** in [`content/`](content/README.md) (cards, declarative rules data, scenarios). The Core Set is a pack, and so is yours. Card metadata is synced from [`zzorba/marvelsdb-json-data`](https://github.com/zzorba/marvelsdb-json-data) with `npm run content:sync`. With no packs enabled the game opens an empty-shell welcome screen.
+
+- **Create Your Own Content:** Add heroes, villains and scenarios as JSON-only packs, edit rules data in the in-browser supplemental editor, and swap card art with optional art packs. Start with the **[Creator Guide](docs/creators/README.md)**.
+
+- **No Official Art or PDFs Shipped:** Card images are fetched on demand from [MarvelCDB](https://marvelcdb.com) into a git-ignored local cache (`content/.cache/`). The official rulebook PDFs are not tracked either (see [`references/SETUP.md`](references/SETUP.md)).
 
 - **Developer Tooling & Inspectors:** Integrated Dev Mode with search, scrying, and multi-tier sorting for Player and Encounter decks.
 
-- **Platform:** Runs in modern web browsers. A native desktop build via **Tauri** is planned but not started ([#548](https://github.com/SteveRodrigue/MCD/issues/548)).
+- **Platform:** Runs in modern web browsers via the Vite dev server. A native desktop build via **Tauri** is parked ([#548](https://github.com/SteveRodrigue/MCD/issues/548)); so are browser-side pack import and zip install.
 
 ---
 
@@ -54,6 +58,7 @@ flowchart TD
 - **[Architecture Decision Records (ADRs)](docs/decisions/README.md)** — Comprehensive centralized registry of all architectural, technical, and gameplay design decisions (ADR-0001 onward).
 - **[Algorithmic Rules Reference](docs/engine/algorithmic_rules_reference.md)** — Precise mathematical state machine and timing pipeline specifications derived from RR v1.8.
 - **[Project Roadmap & Milestones](docs/roadmap_and_milestones.md)** — Detailed 5-phase iterative development plan and status.
+- **[Content Packs](content/README.md)** and **[Creator Guide](docs/creators/README.md)** — Pack layout, `pack.json` format, scenarios, the editor and art packs ([ADR-0092](docs/decisions/0092-content-packs-and-runtime-loading.md)).
 - **[Supplemental Specification Suite](docs/creators/supplemental-reference/README.md)** — The declarative card-data contract and its validation ([tooling notes](docs/engine/tools/supplemental_schema_validation.md)).
 - **[Coding Guidelines & Standards](docs/engine/coding_guidelines.md)** — Strict architectural boundaries, typing rules, UI layering standards, and TDD requirements.
 - **[Contributing: Setup & Commands](CONTRIBUTING.md#-setup--commands)** — Environment setup, Windows PATH and credential troubleshooting, and the command table.
@@ -65,7 +70,7 @@ flowchart TD
 
 ### Prerequisites
 
-- **Node.js:** v18.0.0 or higher
+- **Node.js:** v18.0.0 or higher (CI runs Node 22)
 - **npm:** v9.0.0 or higher
 
 > [!TIP]
@@ -90,6 +95,8 @@ npm run dev
 # Open http://localhost:3000/ in your browser
 ```
 
+The Core pack is enabled by default (`content/config.json`). Card art is downloaded from MarvelCDB the first time a card is shown; to fill the cache ahead of time run `npm run cache:cards`. Pull fresh upstream card data with `npm run content:sync`, and check packs with `npm run pack:validate -- content/packs`.
+
 ### Running Tests
 
 ```bash
@@ -108,6 +115,7 @@ npm run test:coverage
 ```bash
 npm run typecheck
 npm run lint
+npm run verify   # format, lint, typecheck, tests, coverage, build
 ```
 
 ---
@@ -117,33 +125,40 @@ npm run lint
 ```
 MCD/
 ├── .github/              # CI workflows, Issue & PR templates
-├── .vscode/              # Recommended IDE extensions and workspace settings
-├── docs/                 # Architectural documentation and Decision Records
-│   ├── decisions/        # Architecture Decision Records (ADRs & Index)
-│   ├── guidelines/       # Hero Creation Guide & Scenario Plugin Creation Guide
-│   ├── specifications/   # Modular Supplemental Data Schema Specification Suite
-│   └── ambiguities/      # Isolated card ambiguity reports & tracking issues
-├── references/           # Official rulebooks and JSON schema references
+├── changes/              # Unreleased changelog fragments
+├── content/              # Everything loaded at runtime (see content/README.md)
+│   ├── config.json       # Enabled packs
+│   ├── meta/             # Shared catalog data (packs, sets, factions, schemas)
+│   ├── packs/<id>/       # One pack: pack.json, cards/, supplemental/, scenarios/, decks/
+│   ├── art-packs/        # Optional local art (git-ignored)
+│   └── .cache/           # Card images and upstream downloads (git-ignored)
+├── docs/                 # Documentation
+│   ├── decisions/        # Architecture Decision Records
+│   ├── engine/           # Engine architecture, coding guidelines, tooling notes
+│   ├── creators/         # Creator Guide: packs, heroes, scenarios, editor, art packs
+│   ├── ambiguities/      # Card ambiguity reports
+│   └── backlog/          # Plans and handover notes
+├── references/           # Rules Reference as Markdown (rules/); PDFs are not tracked
+├── scripts/              # CLI scripts (content sync, pack validation, image cache)
+├── tools/                # Audit, schema generation and docs checks
 ├── src/
 │   ├── assets/           # Fonts, Ben-Day dot textures, comic style assets
-│   ├── data/             # Upstream importer & declarative supplemental packs
-│   │   ├── supplemental/ # Enriched executable card abilities & Zod validation schema
-│   │   └── importer/     # Normalized Card Catalog loader
+│   ├── data/             # Content loader, pack format, card catalog, supplemental schema
 │   ├── engine/           # 100% Headless Rules Engine (State tree, Triggers, Phases)
 │   │   ├── decks/        # Starter deck definitions & deck utilities
 │   │   ├── effects/      # Reusable composable effect primitives
 │   │   ├── models/       # Core TypeScript interfaces (Card, Hero, Villain, Effect)
 │   │   ├── pipeline/     # Action pipeline, Legality checker & Villain phase
-│   │   ├── scenarios/    # Modular Scenario Plugin Architecture (Official & Fan-Made)
+│   │   ├── scenarios/    # Scenario plugin architecture
 │   │   ├── simulation/   # Headless match simulator & player bot
 │   │   ├── specials/     # Hero Special ability plugin registry
 │   │   ├── state/        # Immutable GameState, Reducers & Setup
 │   │   └── triggers/     # Trigger dispatcher & lifecycle event routing
 │   └── ui/               # React UI & 60s Comic Pop-Art presentation layer
-│       ├── components/   # Card components, Tabletop zones, Modal dialogs
+│       ├── components/   # Card components, Tabletop zones, Modal dialogs, Welcome screen
 │       ├── context/      # Persistent UI settings and Dev Mode state
 │       ├── hooks/        # Card art, edge scrolling & hand fan layout hooks
-│       ├── services/     # Card image cache & gamestate logger services
+│       ├── services/     # Card image cache, editor and gamestate logger services
 │       ├── styles/       # Global stylesheet (index.css)
 │       └── utils/        # Presentation helpers (comic log formatter)
 └── tests/                # Automated Vitest test suites (TDD rules & schema validation)
@@ -160,5 +175,5 @@ We welcome community contributions! Please read our **[Contributing Guide](CONTR
 ## ⚖️ Legal Disclaimer
 
 _Marvel Champions: The Card Game_ is © Fantasy Flight Games and © MARVEL.
-Marvel Champions Digital is an unofficial fan project. It is not affiliated with, endorsed by or sponsored by Fantasy Flight Games or Marvel, and it ships no official card text or art.
+Marvel Champions Digital is an unofficial fan project. It is not affiliated with, endorsed by or sponsored by Fantasy Flight Games or Marvel. The repository does not include official card art or the official rulebook PDFs: card images are downloaded from [MarvelCDB](https://marvelcdb.com) to your own machine at runtime, and you need your own copy of the game to play it as intended.
 This project is an unofficial, open-source, non-commercial fan-made software intended purely for personal enjoyment. All card text, mechanics, and trademarks are the intellectual property of their respective owners. No monetization or commercial use is permitted.

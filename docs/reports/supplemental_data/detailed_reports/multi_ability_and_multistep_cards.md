@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-## 1. Cards with Multiple Abilities (2+ Declared Abilities — 46 Cards)
+## 1. Cards with Multiple Abilities (2+ Declared Abilities — 55 Cards)
 
 | Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -41,6 +41,15 @@
 | `01173` | **Electric Whip Attack** | `treachery` | `core_encounter` | **2** | • `electric_whip_attack_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `electric_whip_attack_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01178` | **Kree Manipulator** | `treachery` | `core_encounter` | **2** | • `kree_manipulator_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `kree_manipulator_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01181` | **Madame Hydra** | `minion` | `core_encounter` | **3** | • `madame_hydra_immunity` (`CONSTANT`, **1 step**)<br/>• `madame_hydra_attacks` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**)<br/>• `madame_hydra_schemes` (`FORCED_RESPONSE` / `MINION_SCHEMED`, **1 step**) |
+| `02033` | **Goblin Glider** | `attachment` | `gob_encounter` | **2** | • `goblin_glider_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `goblin_glider_discard` (`HERO_ACTION`, **1 step**) |
+| `02034` | **Pumpkin Bombs** | `attachment` | `gob_encounter` | **2** | • `pumpkin_bombs_damage_response` (`FORCED_RESPONSE` / `ATTACK_RESOLVED`, **2 steps**)<br/>• `pumpkin_bombs_discard` (`HERO_ACTION`, **1 step**) |
+| `02035` | **Intimidation** | `treachery` | `gob_encounter` | **2** | • `intimidation_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `intimidation_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `02036` | **Regenerative Healing** | `treachery` | `gob_encounter` | **2** | • `regenerative_healing_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `regenerative_healing_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `02040` | **Tail Sweep** | `treachery` | `gob_encounter` | **2** | • `tail_sweep_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `tail_sweep_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `02042` | **Electro** | `minion` | `gob_encounter` | **2** | • `electro_attack_response` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **2 steps**)<br/>• `electro_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `02043` | **Electromagnetic Pulse** | `treachery` | `gob_encounter` | **2** | • `electromagnetic_pulse_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `electromagnetic_pulse_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `02044` | **Lightning Bolt** | `treachery` | `gob_encounter` | **2** | • `lightning_bolt_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `lightning_bolt_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `02045` | **Shock Therapy** | `treachery` | `gob_encounter` | **2** | • `shock_therapy_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `shock_therapy_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `03024` | **Avengers Tower** | `support` | `cap` | **2** | • `avengers_tower_ally_limit` (`CONSTANT`, **1 step**)<br/>• `avengers_tower_action` (`ACTION`, **1 step**) |
 | `24029` | **Cruel Intentions** | `treachery` | `hood_encounter` | **2** | • `cruel_intentions_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `cruel_intentions_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `24032` | **Slug It Out** | `treachery` | `hood_encounter` | **2** | • `slug_it_out_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `slug_it_out_boost` (`BOOST` / `BOOST`, **2 steps**) |
@@ -53,7 +62,7 @@
 | `45080` | **Drawing Near** | `obligation` | `aoa_encounter` | **2** | • `drawing_near_turn_begins` (`FORCED_RESPONSE` / `PLAYER_TURN_BEGAN`, **2 steps**)<br/>• `drawing_near_action` (`ALTER_EGO_ACTION`, **1 step**) |
 | `45109` | **The Fittest** | `attachment` | `aoa_encounter` | **2** | • `the_fittest_hit_points` (`CONSTANT`, **1 step**)<br/>• `the_fittest_tough` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**) |
 
-## 2. Multi-Step Execution Pipelines (2+ Steps — 59 Pipelines Across 58 Cards)
+## 2. Multi-Step Execution Pipelines (2+ Steps — 68 Pipelines Across 67 Cards)
 
 | Card Code | Card Name | Pack | Ability ID | Timing | Steps | Pipeline Execution Sequence |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -100,6 +109,15 @@
 | `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` | `WHEN_REVEALED` | **2** | `[1] VILLAIN_AND_ENGAGED_MINIONS_ATTACK ➔ [2] SURGE` |
 | `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` | `WHEN_REVEALED` | **4** | `[1] PUT_INTO_PLAY ➔ [2] PUT_INTO_PLAY ➔ [3] SHUFFLE_INTO_DECK ➔ [4] SURGE` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` | `WHEN_REVEALED` | **2** | `[1] ADD_THREAT ➔ [2] DISCARD` |
+| `02034` | **Pumpkin Bombs (attachment)** | `gob_encounter` | `pumpkin_bombs_damage_response` | `FORCED_RESPONSE` | **2** | `[1] DISCARD ➔ [2] DEAL_DAMAGE` |
+| `02036` | **Regenerative Healing (treachery)** | `gob_encounter` | `regenerative_healing_when_revealed` | `WHEN_REVEALED` | **2** | `[1] HEAL_DAMAGE ➔ [2] SURGE` |
+| `02039` | **Gang-Up (treachery)** | `gob_encounter` | `gang_up_when_revealed` | `WHEN_REVEALED` | **2** | `[1] SURGE ➔ [2] VILLAIN_AND_ENGAGED_MINIONS_ATTACK` |
+| `02040` | **Tail Sweep (treachery)** | `gob_encounter` | `tail_sweep_when_revealed` | `WHEN_REVEALED` | **2** | `[1] ENEMY_ATTACKS ➔ [2] ADD_STATUS` |
+| `02041` | **Power Drain (side_scheme)** | `gob_encounter` | `power_drain_when_defeated` | `FORCED_INTERRUPT` | **2** | `[1] DISCARD ➔ [2] DISCARD` |
+| `02042` | **Electro (minion)** | `gob_encounter` | `electro_attack_response` | `FORCED_RESPONSE` | **2** | `[1] DISCARD ➔ [2] DEAL_DAMAGE` |
+| `02043` | **Electromagnetic Pulse (treachery)** | `gob_encounter` | `electromagnetic_pulse_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DISCARD ➔ [2] SURGE` |
+| `02044` | **Lightning Bolt (treachery)** | `gob_encounter` | `lightning_bolt_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DISCARD ➔ [2] DEAL_DAMAGE` |
+| `02045` | **Shock Therapy (treachery)** | `gob_encounter` | `shock_therapy_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DISCARD ➔ [2] HEAL_DAMAGE` |
 | `04134` | **Master Strategist (attachment)** | `trors_encounter` | `master_strategist_forced_interrupt_activation` | `FORCED_INTERRUPT` | **2** | `[1] GIVE_ADDITIONAL_BOOST_CARD ➔ [2] DISCARD` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DRAW ➔ [2] REMOVE_FROM_GAME` |
 | `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_when_revealed` | `WHEN_REVEALED` | **2** | `[1] DEAL_FACEDOWN_ENCOUNTER_CARD ➔ [2] DEAL_FACEDOWN_ENCOUNTER_CARD` |

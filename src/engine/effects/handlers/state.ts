@@ -477,10 +477,11 @@ function handleReady(
   for (const t of targets) {
     if (t.kind === 'character') {
       if (t.entityType === 'hero' || t.entityType === 'alter_ego') {
-        (t.entity as PlayerState).exhausted = false;
-        names.push(
-          (t.entity as PlayerState).activeFormCard?.name || (t.entity as PlayerState).name,
-        );
+        const p = t.entity as PlayerState;
+        if (!p.attachments?.some((a) => a.card.code === '02048')) {
+          p.exhausted = false;
+          names.push(p.activeFormCard?.name || p.name);
+        }
       } else if (t.entityType === 'villain') {
         (t.entity as VillainState).exhausted = false;
         names.push((t.entity as VillainState).card?.name || 'Villain');

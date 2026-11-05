@@ -1420,6 +1420,8 @@ function step7_resolvePostAttackAndRetaliate(
         kernel.executeEffect(state, ability, {
           playerId: attackContext.targetPlayerId,
           sourceCardInstance: minion,
+          activationDamage: attackContext.finalDamage ?? 0,
+          damagedCharacter: attackContext.damagedCharacter,
         });
       }
     }

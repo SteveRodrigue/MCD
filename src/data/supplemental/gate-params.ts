@@ -51,6 +51,7 @@ export const FACT_PRODUCERS: Record<ResultFact, string[] | 'ALL'> = {
 
 export function canEffectProduceFact(effect: string, fact: ResultFact): boolean {
   const producers = FACT_PRODUCERS[fact];
+  if (!producers) return false;
   if (producers === 'ALL') return true;
   return producers.includes(effect);
 }

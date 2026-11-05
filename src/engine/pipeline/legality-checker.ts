@@ -66,6 +66,13 @@ export function canChangeForm(
   const window = checkActionWindow(state, playerId);
   if (!window.allowed) return window;
 
+  if (player.attachments?.some((a) => a.card.code === '02048')) {
+    return {
+      allowed: false,
+      reason: 'Attached character cannot change form (All Tied Up).',
+    };
+  }
+
   if (player.basicChangeFormUsedThisRound || player.formChangedThisRound) {
     return {
       allowed: false,

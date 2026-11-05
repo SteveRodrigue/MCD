@@ -6,7 +6,7 @@
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 
-### <a id="discard"></a>`DISCARD` (34 Cards, 38 Step Occurrences)
+### <a id="discard"></a>`DISCARD` (44 Cards, 54 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -38,6 +38,16 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
 | `01188` | **Caught Off Guard (treachery)** | `core_encounter` | `caught_off_guard_when_revealed` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
+| `02033` | **Goblin Glider (attachment)** | `gob_encounter` | `goblin_glider_discard` |
+| `02034` | **Pumpkin Bombs (attachment)** | `gob_encounter` | `pumpkin_bombs_damage_response`, `pumpkin_bombs_discard` |
+| `02041` | **Power Drain (side_scheme)** | `gob_encounter` | `power_drain_when_defeated` |
+| `02042` | **Electro (minion)** | `gob_encounter` | `electro_attack_response`, `electro_boost` |
+| `02043` | **Electromagnetic Pulse (treachery)** | `gob_encounter` | `electromagnetic_pulse_when_revealed`, `electromagnetic_pulse_boost` |
+| `02044` | **Lightning Bolt (treachery)** | `gob_encounter` | `lightning_bolt_when_revealed`, `lightning_bolt_boost` |
+| `02045` | **Shock Therapy (treachery)** | `gob_encounter` | `shock_therapy_when_revealed`, `shock_therapy_boost` |
+| `02047` | **Tombstone (minion)** | `gob_encounter` | `tombstone_damage_response` |
+| `02048` | **All Tied Up (attachment)** | `gob_encounter` | `all_tied_up_discard_action` |
+| `02049` | **Media Coverage (attachment)** | `gob_encounter` | `media_coverage_discard_action` |
 | `04134` | **Master Strategist (attachment)** | `trors_encounter` | `master_strategist_forced_interrupt_activation` |
 | `24030` | **Ruination (treachery)** | `hood_encounter` | `ruination_when_revealed` |
 | `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` |
@@ -45,7 +55,7 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed` |
 | `45080` | **Drawing Near (obligation)** | `aoa_encounter` | `drawing_near_turn_begins`, `drawing_near_action` |
 
-### <a id="deal-damage"></a>`DEAL_DAMAGE` (27 Cards, 30 Step Occurrences)
+### <a id="deal-damage"></a>`DEAL_DAMAGE` (30 Cards, 33 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -75,31 +85,12 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
 | `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_when_revealed`, `concussive_blast_boost` |
 | `01174` | **Electromagnetic Backlash (treachery)** | `core_encounter` | `electromagnetic_backlash_when_revealed` |
+| `02034` | **Pumpkin Bombs (attachment)** | `gob_encounter` | `pumpkin_bombs_damage_response` |
+| `02042` | **Electro (minion)** | `gob_encounter` | `electro_attack_response` |
+| `02044` | **Lightning Bolt (treachery)** | `gob_encounter` | `lightning_bolt_when_revealed` |
 | `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_when_revealed`, `slug_it_out_boost` |
 
-### <a id="add-threat"></a>`ADD_THREAT` (17 Cards, 19 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01107` | **Breakin' & Takin' (side_scheme)** | `core_encounter` | `breakin_and_takin_when_revealed` |
-| `01109` | **Bomb Scare (side_scheme)** | `core_encounter` | `bomb_scare_when_revealed` |
-| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
-| `01125` | **Defense Network (side_scheme)** | `core_encounter` | `defense_network_when_revealed` |
-| `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
-| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_after_scheme` |
-| `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
-| `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
-| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
-| `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
-| `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
-| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
-| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
-| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
-| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks`, `madame_hydra_schemes` |
-| `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
-| `24030` | **Ruination (treachery)** | `hood_encounter` | `ruination_when_revealed` |
-
-### <a id="player-choice"></a>`PLAYER_CHOICE` (19 Cards, 19 Step Occurrences)
+### <a id="player-choice"></a>`PLAYER_CHOICE` (21 Cards, 21 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -120,10 +111,56 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_when_revealed` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
+| `02035` | **Intimidation (treachery)** | `gob_encounter` | `intimidation_when_revealed` |
+| `02046` | **Running Interference (side_scheme)** | `gob_encounter` | `running_interference_when_revealed` |
 | `50165b` | **Baron Zemo (villain)** | `aos_encounter` | `baron_zemo_a2_forced_interrupt_activation` |
 | `50166b` | **Baron Zemo (villain)** | `aos_encounter` | `baron_zemo_b2_forced_interrupt_activation` |
 
-### <a id="modify-stat"></a>`MODIFY_STAT` (16 Cards, 18 Step Occurrences)
+### <a id="add-status"></a>`ADD_STATUS` (16 Cards, 20 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
+| `01011` | **Spider-Woman (ally)** | `core` | `spider_woman_enters_play` |
+| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
+| `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
+| `01096` | **Rhino (villain)** | `core_encounter` | `rhino_stage_iii_when_revealed` |
+| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
+| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
+| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
+| `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_stun_damaged` |
+| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response`, `tiger_shark_boost` |
+| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_tough` |
+| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed`, `heart_shaped_herb_boost` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed`, `sweeping_swoop_boost` |
+| `02038` | **Scorpion (minion)** | `gob_encounter` | `scorpion_stun_on_damage` |
+| `02040` | **Tail Sweep (treachery)** | `gob_encounter` | `tail_sweep_when_revealed`, `tail_sweep_boost` |
+| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
+
+### <a id="add-threat"></a>`ADD_THREAT` (18 Cards, 20 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01107` | **Breakin' & Takin' (side_scheme)** | `core_encounter` | `breakin_and_takin_when_revealed` |
+| `01109` | **Bomb Scare (side_scheme)** | `core_encounter` | `bomb_scare_when_revealed` |
+| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
+| `01125` | **Defense Network (side_scheme)** | `core_encounter` | `defense_network_when_revealed` |
+| `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
+| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_after_scheme` |
+| `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
+| `01161` | **Personal Challenge (side_scheme)** | `core_encounter` | `personal_challenge_when_revealed` |
+| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
+| `01171` | **Imminent Overload (side_scheme)** | `core_encounter` | `imminent_overload_when_revealed` |
+| `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
+| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
+| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
+| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks`, `madame_hydra_schemes` |
+| `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
+| `02037` | **A Mess of Things (side_scheme)** | `gob_encounter` | `a_mess_of_things_when_revealed` |
+| `24030` | **Ruination (treachery)** | `hood_encounter` | `ruination_when_revealed` |
+
+### <a id="modify-stat"></a>`MODIFY_STAT` (17 Cards, 19 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -143,27 +180,9 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_scheme_bonus` |
 | `01142` | **Upgraded Drones (attachment)** | `core_encounter` | `upgraded_drones_constant` |
 | `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
+| `02033` | **Goblin Glider (attachment)** | `gob_encounter` | `goblin_glider_atk_bonus` |
 
-### <a id="add-status"></a>`ADD_STATUS` (14 Cards, 17 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01009` | **Webbed Up (upgrade)** | `core` | `webbed_up_interrupt` |
-| `01011` | **Spider-Woman (ally)** | `core` | `spider_woman_enters_play` |
-| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
-| `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
-| `01096` | **Rhino (villain)** | `core_encounter` | `rhino_stage_iii_when_revealed` |
-| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
-| `01106` | **Stampede (treachery)** | `core_encounter` | `stampede_attack` |
-| `01112` | **False Alarm (treachery)** | `core_encounter` | `false_alarm_confuse` |
-| `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_stun_damaged` |
-| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response`, `tiger_shark_boost` |
-| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_tough` |
-| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_when_revealed`, `heart_shaped_herb_boost` |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed`, `sweeping_swoop_boost` |
-| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
-
-### <a id="surge"></a>`SURGE` (16 Cards, 16 Step Occurrences)
+### <a id="surge"></a>`SURGE` (19 Cards, 19 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -180,6 +199,9 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01187` | **Assault (treachery)** | `core_encounter` | `assault_when_revealed` |
 | `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
 | `01190` | **Shadow of the Past (treachery)** | `core_encounter` | `shadow_of_the_past_when_revealed` |
+| `02036` | **Regenerative Healing (treachery)** | `gob_encounter` | `regenerative_healing_when_revealed` |
+| `02039` | **Gang-Up (treachery)** | `gob_encounter` | `gang_up_when_revealed` |
+| `02043` | **Electromagnetic Pulse (treachery)** | `gob_encounter` | `electromagnetic_pulse_when_revealed` |
 | `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` |
 | `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
 | `45077` | **Sinister Strike (treachery)** | `aoa_encounter` | `sinister_strike_when_revealed` |
@@ -224,6 +246,39 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `24031` | **Seek and Destroy (treachery)** | `hood_encounter` | `seek_and_destroy_when_revealed` |
 | `45075b` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_flipped` |
 
+### <a id="heal-damage"></a>`HEAL_DAMAGE` (11 Cards, 14 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01006` | **Aunt May (support)** | `core` | `aunt_may` |
+| `01051` | **Tigra (ally)** | `core` | `tigra_defeat_heal` |
+| `01080` | **Med Team (support)** | `core` | `med_team_heal` |
+| `01086` | **First Aid (event)** | `core` | `first_aid` |
+| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
+| `01124` | **Sound Manipulation (treachery)** | `core_encounter` | `sound_manipulation_when_revealed` |
+| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed`, `repair_sequence_boost` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
+| `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
+| `02036` | **Regenerative Healing (treachery)** | `gob_encounter` | `regenerative_healing_when_revealed`, `regenerative_healing_boost` |
+| `02045` | **Shock Therapy (treachery)** | `gob_encounter` | `shock_therapy_when_revealed` |
+
+### <a id="give-additional-boost-card"></a>`GIVE_ADDITIONAL_BOOST_CARD` (12 Cards, 12 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01113` | **Klaw (villain)** | `core_encounter` | `klaw_stage_i_forced_interrupt_boost` |
+| `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_forced_interrupt_boost` |
+| `01115` | **Klaw (villain)** | `core_encounter` | `klaw_stage_iii_forced_interrupt_boost` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
+| `02035` | **Intimidation (treachery)** | `gob_encounter` | `intimidation_boost` |
+| `04134` | **Master Strategist (attachment)** | `trors_encounter` | `master_strategist_forced_interrupt_activation` |
+| `16103` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_i_forced_interrupt_boost` |
+| `16104` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_ii_forced_interrupt_boost` |
+| `16105` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_iii_forced_interrupt_boost` |
+| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_boost` |
+| `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_boost` |
+| `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_boost` |
+
 ### <a id="remove-threat"></a>`REMOVE_THREAT` (10 Cards, 12 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -254,36 +309,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01067` | **Maria Hill (ally)** | `core` | `maria_hill_enters_play` |
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
-
-### <a id="give-additional-boost-card"></a>`GIVE_ADDITIONAL_BOOST_CARD` (11 Cards, 11 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01113` | **Klaw (villain)** | `core_encounter` | `klaw_stage_i_forced_interrupt_boost` |
-| `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_forced_interrupt_boost` |
-| `01115` | **Klaw (villain)** | `core_encounter` | `klaw_stage_iii_forced_interrupt_boost` |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
-| `04134` | **Master Strategist (attachment)** | `trors_encounter` | `master_strategist_forced_interrupt_activation` |
-| `16103` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_i_forced_interrupt_boost` |
-| `16104` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_ii_forced_interrupt_boost` |
-| `16105` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_iii_forced_interrupt_boost` |
-| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_boost` |
-| `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_boost` |
-| `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_boost` |
-
-### <a id="heal-damage"></a>`HEAL_DAMAGE` (9 Cards, 11 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01006` | **Aunt May (support)** | `core` | `aunt_may` |
-| `01051` | **Tigra (ally)** | `core` | `tigra_defeat_heal` |
-| `01080` | **Med Team (support)** | `core` | `med_team_heal` |
-| `01086` | **First Aid (event)** | `core` | `first_aid` |
-| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
-| `01124` | **Sound Manipulation (treachery)** | `core_encounter` | `sound_manipulation_when_revealed` |
-| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed`, `repair_sequence_boost` |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
-| `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
 
 ### <a id="add-counters"></a>`ADD_COUNTERS` (6 Cards, 9 Step Occurrences)
 
@@ -351,6 +376,16 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 
+### <a id="enemy-attacks"></a>`ENEMY_ATTACKS` (5 Cards, 5 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
+| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
+| `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
+| `02040` | **Tail Sweep (treachery)** | `gob_encounter` | `tail_sweep_when_revealed` |
+
 ### <a id="ready"></a>`READY` (5 Cards, 5 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -376,15 +411,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `01062` | **The Power of Justice (resource)** | `core` | `power_of_justice` |
 | `01072` | **The Power of Leadership (resource)** | `core` | `power_of_leadership` |
 | `01079` | **The Power of Protection (resource)** | `core` | `power_of_protection` |
-
-### <a id="enemy-attacks"></a>`ENEMY_ATTACKS` (4 Cards, 4 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
-| `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
-| `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
 
 ### <a id="exhaust"></a>`EXHAUST` (4 Cards, 4 Step Occurrences)
 
@@ -451,6 +477,14 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
 | `45075b` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_flipped` |
 
+### <a id="villain-and-engaged-minions-attack"></a>`VILLAIN_AND_ENGAGED_MINIONS_ATTACK` (3 Cards, 3 Step Occurrences)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
+| `02039` | **Gang-Up (treachery)** | `gob_encounter` | `gang_up_when_revealed` |
+| `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` |
+
 ### <a id="activate-minions"></a>`ACTIVATE_MINIONS` (2 Cards, 2 Step Occurrences)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -506,13 +540,6 @@ This detailed catalog groups cards declaring each effect primitive in `src/data/
 | :--- | :--- | :--- | :--- |
 | `01020` | **Hellcat (ally)** | `core` | `hellcat_return` |
 | `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
-
-### <a id="villain-and-engaged-minions-attack"></a>`VILLAIN_AND_ENGAGED_MINIONS_ATTACK` (2 Cards, 2 Step Occurrences)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01189` | **Gang-Up (treachery)** | `core_encounter` | `gang_up_when_revealed` |
-| `24051` | **Mob Mentality (treachery)** | `hood_encounter` | `mob_mentality_when_revealed` |
 
 ### <a id="attach-facedown-cards-from-hand"></a>`ATTACH_FACEDOWN_CARDS_FROM_HAND` (1 Cards, 1 Step Occurrences)
 

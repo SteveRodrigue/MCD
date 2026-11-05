@@ -1,0 +1,813 @@
+{
+  "$schema": "../../../../src/data/supplemental/schema.json",
+  "cards": {
+    "02033": {
+      "attachTo": {
+        "host": {
+          "type": "ENEMY",
+          "superlative": {
+            "stat": "PRINTED_HIT_POINTS",
+            "extreme": "HIGHEST"
+          },
+          "withoutCopyAttached": true
+        },
+        "otherwise": {
+          "type": "SURGE"
+        }
+      },
+      "abilities": [
+        {
+          "id": "goblin_glider_atk_bonus",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "MODIFY_STAT",
+              "effectParams": {
+                "stat": "ATTACK",
+                "amount": 1,
+                "target": "HOST"
+              }
+            }
+          ]
+        },
+        {
+          "id": "goblin_glider_discard",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "resourceCost": {
+              "energy": 2
+            }
+          },
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "SELF"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Attach to the enemy with the highest printed hit points and without another Goblin Glider attached. If you cannot, this card gains surge.\nAttached enemy gets +1 ATK.\n<b>Hero Action</b>: Spend [energy] [energy] resources → discard this card."
+      }
+    },
+    "02034": {
+      "attachTo": {
+        "host": {
+          "type": "VILLAIN"
+        }
+      },
+      "abilities": [
+        {
+          "id": "pumpkin_bombs_damage_response",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "ATTACK_RESOLVED",
+          "triggerFilter": {
+            "targetScope": "HOST"
+          },
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "SELF"
+              }
+            },
+            {
+              "effect": "DEAL_DAMAGE",
+              "effectParams": {
+                "amount": 2,
+                "target": "ENGAGED_PLAYER"
+              }
+            }
+          ]
+        },
+        {
+          "id": "pumpkin_bombs_discard",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "resourceCost": {
+              "physical": 2
+            }
+          },
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "SELF"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Attach to the villain.\n[star] <b>Forced Response</b>: After the villain attacks you, discard Pumpkin Bombs and take 2 indirect damage.\n<b>Hero Action</b>: Spend [physical] [physical] resources → discard this card."
+      }
+    },
+    "02035": {
+      "abilities": [
+        {
+          "id": "intimidation_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "options": [
+                  {
+                    "id": "spend_resources",
+                    "label": "Spend 2 resources of any type",
+                    "cost": {
+                      "resourceCost": {
+                        "any": 2
+                      }
+                    },
+                    "steps": []
+                  },
+                  {
+                    "id": "facedown_boost",
+                    "label": "Give the villain 1 facedown boost card",
+                    "steps": [
+                      {
+                        "effect": "DEAL_FACEDOWN_ENCOUNTER_CARD",
+                        "effectParams": {
+                          "target": "VILLAIN",
+                          "count": 1
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "intimidation_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "GIVE_ADDITIONAL_BOOST_CARD",
+              "effectParams": {
+                "count": 1
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Choose to either spend 2 resources of any type or give the villain 1 facedown boost card.\n<hr />\n[star] <b>Boost</b>: Give the villain 1 additional boost card for this activation."
+      }
+    },
+    "02036": {
+      "abilities": [
+        {
+          "id": "regenerative_healing_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "step_heal",
+              "effect": "HEAL_DAMAGE",
+              "effectParams": {
+                "target": "VILLAIN",
+                "amount": {
+                  "from": "CARD_ATTRIBUTE",
+                  "targetCard": {
+                    "target": "VILLAIN"
+                  },
+                  "attribute": "STAGE_NUMBER",
+                  "multiplier": 2
+                }
+              }
+            },
+            {
+              "gate": "IF_RESULT",
+              "gateParams": {
+                "step": "step_heal",
+                "result": "AMOUNT_ZERO"
+              },
+              "effect": "SURGE"
+            }
+          ]
+        },
+        {
+          "id": "regenerative_healing_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "HEAL_DAMAGE",
+              "effectParams": {
+                "target": "VILLAIN",
+                "amount": 2
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: The villain heals X damage, where X is equal to double the villain's stage number. If no damage was healed this way, this card gains surge.\n<hr />\n[star] <b>Boost</b>: The villain heals 2 damage."
+      }
+    },
+    "02037": {
+      "abilities": [
+        {
+          "id": "a_mess_of_things_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "ADD_THREAT",
+              "effectParams": {
+                "target": "THIS_SIDE_SCHEME",
+                "amount": {
+                  "from": "ENTITY_COUNT",
+                  "target": "ALL_FRIENDLY_CHARACTERS",
+                  "filter": {
+                    "hasStatus": [
+                      "STUNNED"
+                    ]
+                  },
+                  "multiplier": 2
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Place 2 additional threat here for each stunned friendly character."
+      }
+    },
+    "02038": {
+      "abilities": [
+        {
+          "id": "scorpion_stun_on_damage",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "MINION_ATTACKED",
+          "steps": [
+            {
+              "gate": "IF_ACTIVATION_DEALT_DAMAGE",
+              "effect": "ADD_STATUS",
+              "effectParams": {
+                "status": "STUNNED",
+                "target": "DAMAGED_CHARACTER"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Quickstrike. <i>(After this minion engages your hero, it attacks you.)</i>\n[star] <b>Forced Response</b>: After Scorpion attacks and damages a character, stun that character."
+      }
+    },
+    "02039": {
+      "abilities": [
+        {
+          "id": "gang_up_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "ALTER_EGO"
+              },
+              "effect": "SURGE"
+            },
+            {
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "HERO"
+              },
+              "effect": "VILLAIN_AND_ENGAGED_MINIONS_ATTACK"
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed (Alter-Ego)</b>: This card gains surge.\n<b>When Revealed (Hero)</b>: The villain and each minion engaged with you attacks you."
+      }
+    },
+    "02040": {
+      "abilities": [
+        {
+          "id": "tail_sweep_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "scorpion_attack_step",
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "02038"
+              },
+              "effect": "ENEMY_ATTACKS",
+              "effectParams": {
+                "enemy": "02038",
+                "target": "SELF_HERO"
+              }
+            },
+            {
+              "gate": "IF_RESULT",
+              "gateParams": {
+                "step": "scorpion_attack_step",
+                "result": "AMOUNT_ZERO"
+              },
+              "effect": "ADD_STATUS",
+              "effectParams": {
+                "status": "STUNNED",
+                "target": "SELF_HERO"
+              }
+            }
+          ]
+        },
+        {
+          "id": "tail_sweep_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "effectParams": {
+                "status": "STUNNED",
+                "target": "SELF_HERO"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Scorpion attacks your hero. If no attack was made this way, you are stunned.\n<hr />\n[star] <b>Boost</b>: You are stunned."
+      }
+    },
+    "02041": {
+      "abilities": [
+        {
+          "id": "power_drain_when_defeated",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "DEFEATED",
+          "steps": [
+            {
+              "id": "discard_encounter_cards",
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "count": 2
+              }
+            },
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "HAND",
+                "target": "ALL_PLAYERS",
+                "count": {
+                  "from": "DISCARDED_CARDS",
+                  "discardAttribute": "BOOST_ICONS"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Defeated</b>: Discard 2 cards from the encounter deck. Each player must choose and discard 1 resource of any type from their hand for each boost icon discarded this way."
+      }
+    },
+    "02042": {
+      "abilities": [
+        {
+          "id": "electro_attack_response",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "MINION_ATTACKED",
+          "steps": [
+            {
+              "id": "discard_encounter_card",
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "count": 1
+              }
+            },
+            {
+              "effect": "DEAL_DAMAGE",
+              "effectParams": {
+                "target": "ALL_PLAYERS",
+                "amount": {
+                  "from": "DISCARDED_CARDS",
+                  "discardAttribute": "BOOST_ICONS"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "electro_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "count": 3
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "[star] <b>Forced Response</b>: After Electro attacks you, discard 1 card from the encounter deck. Take 1 indirect damage for each boost icon discarded this way.\n<hr />\n[star] <b>Boost</b>: Discard 3 cards from the encounter deck."
+      }
+    },
+    "02043": {
+      "abilities": [
+        {
+          "id": "electromagnetic_pulse_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "discard_seven",
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "count": 7,
+                "matchingDestination": "PLAY",
+                "filter": {
+                  "codes": [
+                    "02042"
+                  ]
+                }
+              }
+            },
+            {
+              "gate": "IF_RESULT",
+              "gateParams": {
+                "step": "discard_seven",
+                "result": "AMOUNT_ZERO"
+              },
+              "effect": "SURGE"
+            }
+          ]
+        },
+        {
+          "id": "electromagnetic_pulse_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "count": 3
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Discard 7 cards from the encounter deck. If Electro was discarded this way, put him into play engaged with you. If Electro was not discarded this way, this card gains surge.\n<hr />\n[star] <b>Boost</b>: Discard 3 cards from the encounter deck."
+      }
+    },
+    "02044": {
+      "abilities": [
+        {
+          "id": "lightning_bolt_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "discard_two",
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "count": 2
+              }
+            },
+            {
+              "effect": "DEAL_DAMAGE",
+              "effectParams": {
+                "target": "ALL_PLAYERS",
+                "amount": {
+                  "from": "DISCARDED_CARDS",
+                  "discardAttribute": "BOOST_ICONS"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "lightning_bolt_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "count": 3
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Discard 2 cards from the encounter deck. Take 1 indirect damage for each boost icon discarded this way.\n<hr />\n[star] <b>Boost</b>: Discard 3 cards from the encounter deck."
+      }
+    },
+    "02045": {
+      "abilities": [
+        {
+          "id": "shock_therapy_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "discard_cards",
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "count": {
+                  "from": "ENTITY_COUNT",
+                  "target": "ALL_PLAYERS"
+                }
+              }
+            },
+            {
+              "effect": "HEAL_DAMAGE",
+              "effectParams": {
+                "target": "VILLAIN",
+                "amount": {
+                  "from": "DISCARDED_CARDS",
+                  "discardAttribute": "BOOST_ICONS"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "shock_therapy_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "count": 3
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Discard 1[per_hero] cards from the encounter deck. The villain heals 1 damage for each boost icon discarded this way.\n<hr />\n[star] <b>Boost</b>: Discard 3 cards from the encounter deck."
+      }
+    },
+    "02046": {
+      "abilities": [
+        {
+          "id": "running_interference_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "options": [
+                  {
+                    "id": "spend_resources",
+                    "label": "Spend [mental] [physical] resources",
+                    "cost": {
+                      "resourceCost": {
+                        "mental": 1,
+                        "physical": 1
+                      }
+                    },
+                    "steps": []
+                  },
+                  {
+                    "id": "add_threat",
+                    "label": "Place 2 threat here",
+                    "steps": [
+                      {
+                        "effect": "ADD_THREAT",
+                        "effectParams": {
+                          "target": "THIS_SIDE_SCHEME",
+                          "amount": 2
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Each player must choose to either spend [mental] [physical] resources or place 2 threat here."
+      }
+    },
+    "02047": {
+      "abilities": [
+        {
+          "id": "tombstone_damage_response",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "ATTACK_RESOLVED",
+          "triggerFilter": {
+            "targetScope": "HOST"
+          },
+          "steps": [
+            {
+              "gate": "IF_ACTIVATION_DEALT_DAMAGE",
+              "gateParams": {
+                "target": "SELF_HERO"
+              },
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "HAND",
+                "target": "ENGAGED_PLAYER",
+                "count": 1,
+                "filter": {
+                  "resourceIcons": [
+                    "mental",
+                    "physical"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "[star] <b>Forced Response</b>: After Tombstone attacks and damages you, discard a [mental] or a [physical] resource from your hand, if able."
+      }
+    },
+    "02048": {
+      "attachTo": {
+        "host": {
+          "type": "IDENTITY"
+        }
+      },
+      "abilities": [
+        {
+          "id": "all_tied_up_discard_action",
+          "timing": "ACTION",
+          "cost": {
+            "resourceCost": {
+              "mental": 1,
+              "physical": 1
+            }
+          },
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "SELF"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Attach to your identity card.\nAttached character cannot ready or change form.\n<b>Action</b>: Spend [mental] [physical] resources → discard this card."
+      }
+    },
+    "02049": {
+      "attachTo": {
+        "host": {
+          "type": "IDENTITY"
+        }
+      },
+      "abilities": [
+        {
+          "id": "media_coverage_discard_action",
+          "timing": "ALTER_EGO_ACTION",
+          "cost": {
+            "resourceCost": {
+              "mental": 1
+            }
+          },
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "SELF"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Attach to your identity card.\nResolve each \"<b>When Revealed</b>\" ability that you reveal 1 additional time.\n<b>Alter-Ego Action</b>: Spend a [mental] resource → discard this card."
+      }
+    }
+  }
+}

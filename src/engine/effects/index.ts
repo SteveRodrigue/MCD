@@ -1981,7 +1981,10 @@ function discardFromEncounterDeck(
     state,
     success: true,
     mutatedState: discardedCount > 0,
-    value: discardedCount,
+    value: params.matchingDestination === 'PLAY' ? (firstMatch ? 1 : 0) : discardedCount,
+    facts: {
+      amountZero: params.matchingDestination === 'PLAY' ? !firstMatch : discardedCount === 0,
+    },
     discardedCards,
     onomatopoeia: `DISCARDED ${discardedCount} ENCOUNTER CARDS!`,
   };

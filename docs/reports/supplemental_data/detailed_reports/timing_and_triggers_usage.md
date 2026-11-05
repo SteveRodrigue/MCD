@@ -4,7 +4,7 @@
 
 ## 1. Ability Timings (`TimingTypeSchema` — 15/19 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (72 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (81 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -66,6 +66,15 @@
 | `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
+| `02035` | **Intimidation (treachery)** | `gob_encounter` | `intimidation_when_revealed` |
+| `02036` | **Regenerative Healing (treachery)** | `gob_encounter` | `regenerative_healing_when_revealed` |
+| `02037` | **A Mess of Things (side_scheme)** | `gob_encounter` | `a_mess_of_things_when_revealed` |
+| `02039` | **Gang-Up (treachery)** | `gob_encounter` | `gang_up_when_revealed` |
+| `02040` | **Tail Sweep (treachery)** | `gob_encounter` | `tail_sweep_when_revealed` |
+| `02043` | **Electromagnetic Pulse (treachery)** | `gob_encounter` | `electromagnetic_pulse_when_revealed` |
+| `02044` | **Lightning Bolt (treachery)** | `gob_encounter` | `lightning_bolt_when_revealed` |
+| `02045` | **Shock Therapy (treachery)** | `gob_encounter` | `shock_therapy_when_revealed` |
+| `02046` | **Running Interference (side_scheme)** | `gob_encounter` | `running_interference_when_revealed` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 | `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_when_revealed` |
 | `24030` | **Ruination (treachery)** | `hood_encounter` | `ruination_when_revealed` |
@@ -81,7 +90,7 @@
 | `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_when_revealed` |
 | `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed` |
 
-### <a id="constant"></a>`CONSTANT` (33 Cards)
+### <a id="constant"></a>`CONSTANT` (34 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -114,12 +123,13 @@
 | `01162` | **Titania (minion)** | `core_encounter` | `titania_attack_x` |
 | `01163` | **Genetically Enhanced (attachment)** | `core_encounter` | `genetically_enhanced_hit_points` |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
+| `02033` | **Goblin Glider (attachment)** | `gob_encounter` | `goblin_glider_atk_bonus` |
 | `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_ally_limit` |
 | `24049a` | **Formidable Foe (environment)** | `hood_encounter` | `formidable_foe_steady` |
 | `24049b` | **Formidable Foe (environment)** | `hood_encounter` | `formidable_foe_steady` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
 
-### <a id="hero-action"></a>`HERO_ACTION` (31 Cards)
+### <a id="hero-action"></a>`HERO_ACTION` (33 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -154,8 +164,46 @@
 | `01142` | **Upgraded Drones (attachment)** | `core_encounter` | `upgraded_drones_discard` |
 | `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_discard` |
 | `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_discard` |
+| `02033` | **Goblin Glider (attachment)** | `gob_encounter` | `goblin_glider_discard` |
+| `02034` | **Pumpkin Bombs (attachment)** | `gob_encounter` | `pumpkin_bombs_discard` |
 
-### <a id="forced-response"></a>`FORCED_RESPONSE` (25 Cards)
+### <a id="boost"></a>`BOOST` (31 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
+| `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_boost` |
+| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_boost` |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
+| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
+| `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
+| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_boost` |
+| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_boost` |
+| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_boost` |
+| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_boost` |
+| `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
+| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
+| `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
+| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
+| `02035` | **Intimidation (treachery)** | `gob_encounter` | `intimidation_boost` |
+| `02036` | **Regenerative Healing (treachery)** | `gob_encounter` | `regenerative_healing_boost` |
+| `02040` | **Tail Sweep (treachery)** | `gob_encounter` | `tail_sweep_boost` |
+| `02042` | **Electro (minion)** | `gob_encounter` | `electro_boost` |
+| `02043` | **Electromagnetic Pulse (treachery)** | `gob_encounter` | `electromagnetic_pulse_boost` |
+| `02044` | **Lightning Bolt (treachery)** | `gob_encounter` | `lightning_bolt_boost` |
+| `02045` | **Shock Therapy (treachery)** | `gob_encounter` | `shock_therapy_boost` |
+| `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_boost` |
+| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_boost` |
+| `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_boost` |
+| `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_boost` |
+| `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_boost` |
+| `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_boost` |
+| `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_boost` |
+| `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_boost` |
+
+### <a id="forced-response"></a>`FORCED_RESPONSE` (29 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -180,41 +228,16 @@
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 | `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks`, `madame_hydra_schemes` |
+| `02034` | **Pumpkin Bombs (attachment)** | `gob_encounter` | `pumpkin_bombs_damage_response` |
+| `02038` | **Scorpion (minion)** | `gob_encounter` | `scorpion_stun_on_damage` |
+| `02042` | **Electro (minion)** | `gob_encounter` | `electro_attack_response` |
+| `02047` | **Tombstone (minion)** | `gob_encounter` | `tombstone_damage_response` |
 | `45075a` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_threshold` |
 | `45075b` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_flipped` |
 | `45080` | **Drawing Near (obligation)** | `aoa_encounter` | `drawing_near_turn_begins` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
-### <a id="boost"></a>`BOOST` (24 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
-| `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_boost` |
-| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_boost` |
-| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
-| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
-| `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
-| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_boost` |
-| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_boost` |
-| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_boost` |
-| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_boost` |
-| `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
-| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
-| `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
-| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
-| `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_boost` |
-| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_boost` |
-| `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_boost` |
-| `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_boost` |
-| `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_boost` |
-| `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_boost` |
-| `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_boost` |
-| `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_boost` |
-
-### <a id="action"></a>`ACTION` (20 Cards)
+### <a id="action"></a>`ACTION` (21 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -237,9 +260,10 @@
 | `01086` | **First Aid (event)** | `core` | `first_aid` |
 | `01091` | **Avengers Mansion (support)** | `core` | `avengers_mansion` |
 | `01092` | **Helicarrier (support)** | `core` | `helicarrier_action` |
+| `02048` | **All Tied Up (attachment)** | `gob_encounter` | `all_tied_up_discard_action` |
 | `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
 
-### <a id="forced-interrupt"></a>`FORCED_INTERRUPT` (17 Cards)
+### <a id="forced-interrupt"></a>`FORCED_INTERRUPT` (18 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -254,6 +278,7 @@
 | `01143` | **Advanced Ultron Drone (minion)** | `core_encounter` | `advanced_ultron_drone_defeated` |
 | `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
 | `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
+| `02041` | **Power Drain (side_scheme)** | `gob_encounter` | `power_drain_when_defeated` |
 | `04134` | **Master Strategist (attachment)** | `trors_encounter` | `master_strategist_forced_interrupt_activation` |
 | `16103` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_i_forced_interrupt_boost` |
 | `16104` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_ii_forced_interrupt_boost` |
@@ -279,7 +304,7 @@
 | `01082` | **Indomitable (upgrade)** | `core` | `indomitable_ready` |
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 
-### <a id="alter-ego-action"></a>`ALTER_EGO_ACTION` (7 Cards)
+### <a id="alter-ego-action"></a>`ALTER_EGO_ACTION` (8 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -289,6 +314,7 @@
 | `01034` | **Stark Tower (support)** | `core` | `stark_tower_retrieve` |
 | `01042` | **Ancestral Knowledge (event)** | `core` | `ancestral_knowledge_action` |
 | `01045` | **The Golden City (support)** | `core` | `golden_city` |
+| `02049` | **Media Coverage (attachment)** | `gob_encounter` | `media_coverage_discard_action` |
 | `45080` | **Drawing Near (obligation)** | `aoa_encounter` | `drawing_near_action` |
 
 ### <a id="resource"></a>`RESOURCE` (6 Cards)
@@ -346,7 +372,7 @@
 
 ## 2. Trigger Windows (`TriggerTypeSchema` — 29/38 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (73 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (82 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -408,6 +434,15 @@
 | `01191` | **Exhaustion (treachery)** | `core_encounter` | `exhaustion_when_revealed` |
 | `01192` | **Masterplan (treachery)** | `core_encounter` | `masterplan_when_revealed` |
 | `01193` | **Under Fire (treachery)** | `core_encounter` | `under_fire_when_revealed` |
+| `02035` | **Intimidation (treachery)** | `gob_encounter` | `intimidation_when_revealed` |
+| `02036` | **Regenerative Healing (treachery)** | `gob_encounter` | `regenerative_healing_when_revealed` |
+| `02037` | **A Mess of Things (side_scheme)** | `gob_encounter` | `a_mess_of_things_when_revealed` |
+| `02039` | **Gang-Up (treachery)** | `gob_encounter` | `gang_up_when_revealed` |
+| `02040` | **Tail Sweep (treachery)** | `gob_encounter` | `tail_sweep_when_revealed` |
+| `02043` | **Electromagnetic Pulse (treachery)** | `gob_encounter` | `electromagnetic_pulse_when_revealed` |
+| `02044` | **Lightning Bolt (treachery)** | `gob_encounter` | `lightning_bolt_when_revealed` |
+| `02045` | **Shock Therapy (treachery)** | `gob_encounter` | `shock_therapy_when_revealed` |
+| `02046` | **Running Interference (side_scheme)** | `gob_encounter` | `running_interference_when_revealed` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 | `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_when_revealed` |
 | `24030` | **Ruination (treachery)** | `hood_encounter` | `ruination_when_revealed` |
@@ -424,7 +459,7 @@
 | `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
 
-### <a id="boost"></a>`BOOST` (24 Cards)
+### <a id="boost"></a>`BOOST` (31 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -444,6 +479,13 @@
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
 | `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
+| `02035` | **Intimidation (treachery)** | `gob_encounter` | `intimidation_boost` |
+| `02036` | **Regenerative Healing (treachery)** | `gob_encounter` | `regenerative_healing_boost` |
+| `02040` | **Tail Sweep (treachery)** | `gob_encounter` | `tail_sweep_boost` |
+| `02042` | **Electro (minion)** | `gob_encounter` | `electro_boost` |
+| `02043` | **Electromagnetic Pulse (treachery)** | `gob_encounter` | `electromagnetic_pulse_boost` |
+| `02044` | **Lightning Bolt (treachery)** | `gob_encounter` | `lightning_bolt_boost` |
+| `02045` | **Shock Therapy (treachery)** | `gob_encounter` | `shock_therapy_boost` |
 | `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_boost` |
 | `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_boost` |
 | `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_boost` |
@@ -490,16 +532,7 @@
 | `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
 | `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
 
-### <a id="defeated"></a>`DEFEATED` (4 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01052` | **Chase Them Down (event)** | `core` | `chase_them_down` |
-| `01143` | **Advanced Ultron Drone (minion)** | `core_encounter` | `advanced_ultron_drone_defeated` |
-| `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
-| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
-
-### <a id="minion-attacked"></a>`MINION_ATTACKED` (4 Cards)
+### <a id="minion-attacked"></a>`MINION_ATTACKED` (6 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -507,14 +540,28 @@
 | `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response` |
 | `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks` |
+| `02038` | **Scorpion (minion)** | `gob_encounter` | `scorpion_stun_on_damage` |
+| `02042` | **Electro (minion)** | `gob_encounter` | `electro_attack_response` |
 
-### <a id="attack-resolved"></a>`ATTACK_RESOLVED` (3 Cards)
+### <a id="attack-resolved"></a>`ATTACK_RESOLVED` (5 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
 | `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
 | `01134` | **Ultron (villain)** | `core_encounter` | `ultron_i_after_attack` |
+| `02034` | **Pumpkin Bombs (attachment)** | `gob_encounter` | `pumpkin_bombs_damage_response` |
+| `02047` | **Tombstone (minion)** | `gob_encounter` | `tombstone_damage_response` |
+
+### <a id="defeated"></a>`DEFEATED` (5 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01052` | **Chase Them Down (event)** | `core` | `chase_them_down` |
+| `01143` | **Advanced Ultron Drone (minion)** | `core_encounter` | `advanced_ultron_drone_defeated` |
+| `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
+| `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
+| `02041` | **Power Drain (side_scheme)** | `gob_encounter` | `power_drain_when_defeated` |
 
 ### <a id="character-defeated"></a>`CHARACTER_DEFEATED` (3 Cards)
 

@@ -359,6 +359,7 @@ export const CardLocationTargetSchema = z.enum([
   'TARGET_CARD',
   'ATTACHED_CARD',
   'HOST_CARD',
+  'VILLAIN',
 ]);
 export type CardLocationTarget = z.infer<typeof CardLocationTargetSchema>;
 
@@ -391,6 +392,7 @@ const CardInspectionAttributeSchema = z.enum([
   'ENERGY_RESOURCES',
   'MENTAL_RESOURCES',
   'WILD_RESOURCES',
+  'STAGE_NUMBER',
 ]);
 
 export type CardInspectionAttribute = z.infer<typeof CardInspectionAttributeSchema>;

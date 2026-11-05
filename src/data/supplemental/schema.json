@@ -760,6 +760,19 @@
                     "properties": {
                       "type": {
                         "type": "string",
+                        "const": "IDENTITY"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
                         "const": "ENVIRONMENT"
                       },
                       "filter": {
@@ -829,6 +842,19 @@
                           "type": {
                             "type": "string",
                             "const": "VILLAIN"
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "IDENTITY"
                           }
                         },
                         "required": [

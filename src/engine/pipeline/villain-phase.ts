@@ -732,8 +732,14 @@ function resolveWhenRevealedAbilities(
   isCancelled: boolean,
 ): void {
   if (!isCancelled) placeInciteThreat(state, cardInstance, player);
-  for (const ability of getResolvingRevealAbilities(cardInstance, isCancelled)) {
-    kernel.executeEffect(state, ability, { playerId: player.id, sourceCardInstance: cardInstance });
+  const extraTimes = player.attachments?.filter((att) => att.card.code === '02049').length ?? 0;
+  for (let i = 0; i <= extraTimes; i++) {
+    for (const ability of getResolvingRevealAbilities(cardInstance, isCancelled)) {
+      kernel.executeEffect(state, ability, {
+        playerId: player.id,
+        sourceCardInstance: cardInstance,
+      });
+    }
   }
 }
 
@@ -748,8 +754,10 @@ export function completeEncounterAttachment(
   hostName: string,
   player: PlayerState,
   isCancelled: boolean,
+  hostKind?: string,
 ): void {
-  attachCardToHost(state, cardInstance, 'ENEMY', hostInstanceId);
+  const hostTargetType = hostKind === 'identity' ? 'IDENTITY' : 'ENEMY';
+  attachCardToHost(state, cardInstance, hostTargetType, hostInstanceId);
   appendLog(state, {
     key: 'encounter.reveal.attachment',
     params: { card: cardInstance.card.name, target: hostName },
@@ -771,7 +779,7 @@ function resolveRevealedAttachment(
   isCancelled: boolean,
 ): void {
   const card = cardInstance.card;
-  const resolution = resolveAttachmentHost(state, cardInstance, card.enrichment?.attachTo);
+  const resolution = resolveAttachmentHost(state, cardInstance, card.enrichment?.attachTo, player);
 
   if (resolution.kind === 'attach') {
     completeEncounterAttachment(
@@ -781,6 +789,7 @@ function resolveRevealedAttachment(
       resolution.host.name,
       player,
       isCancelled,
+      resolution.host.kind,
     );
   } else if (resolution.kind === 'surge' || resolution.kind === 'discard') {
     state.encounterDiscard.push(cardInstance);

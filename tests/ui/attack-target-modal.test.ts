@@ -76,13 +76,15 @@ describe('Attack Target Selection & Guard Invariants (RR v1.8 p. 5-6, 15)', () =
     expect(villainTarget.maxHealth).toBe(28);
   });
 
-  it('names a minion by card code', () => {
+  it('names a minion by card code and reports who it is engaged with', () => {
     const hydraBomber = createCardInstance(catalog.getCard('01110')!);
     gameState.players[0].engagedMinions.push(hydraBomber);
     const minionTarget = getValidAttackTargets(gameState, 'p1', 'hero').find(
       (t) => t.type === 'minion',
     );
     expect(minionTarget?.code).toBe('01110');
+    expect(minionTarget?.engagedPlayerId).toBe('p1');
+    expect(minionTarget?.engagedPlayerName).toBe('Spider-Man');
   });
 
   it('returns Villain AND Minions when minions are engaged without Guard', () => {

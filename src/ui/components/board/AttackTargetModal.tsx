@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Crosshair, ShieldAlert, Skull } from 'lucide-react';
 import { EnemyTarget } from './attack-target-utils';
 import { TargetSelectionModal, type TargetRow } from './TargetSelectionModal';
@@ -33,6 +33,14 @@ const toRow = (target: EnemyTarget): TargetRow => {
         <span>
           HP: <strong className="font-black">{target.health}</strong> / {target.maxHealth}
         </span>
+        {target.engagedPlayerName && (
+          <>
+            <span aria-hidden="true">•</span>
+            <span>
+              Engaged with <strong className="font-black">{target.engagedPlayerName}</strong>
+            </span>
+          </>
+        )}
       </>
     ),
   };

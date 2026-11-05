@@ -21,6 +21,10 @@ export interface EnemyTarget {
   hasTough: boolean;
   /** Card code of the target, for its thumbnail. */
   code?: string;
+  /** ID of the player the minion is engaged with, if this is a minion. */
+  engagedPlayerId?: string;
+  /** Name of the player the minion is engaged with, if this is a minion. */
+  engagedPlayerName?: string;
 }
 
 export function getValidAttackTargets(
@@ -82,6 +86,11 @@ export function getValidAttackTargets(
         const mHealth = Math.max(0, mMax - mDamage);
         const hasGuard = hasKeyword(minion.card, Keyword.GUARD);
         const hasTough = (minion.statusCards || []).includes(StatusCard.TOUGH);
+        const heroName = playerState.hero?.name;
+        const sameHeroCount = heroName
+          ? state.players.filter((p) => (p.hero?.name || p.name) === heroName).length
+          : 0;
+        const engagedPlayerName = heroName && sameHeroCount <= 1 ? heroName : playerState.name;
 
         targets.push({
           id: minion.instanceId,
@@ -95,6 +104,8 @@ export function getValidAttackTargets(
           traits: minion.card.traits || [],
           hasGuard: !!hasGuard,
           hasTough,
+          engagedPlayerId: playerState.id,
+          engagedPlayerName,
         });
       }
     }

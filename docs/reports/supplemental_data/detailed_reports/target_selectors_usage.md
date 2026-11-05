@@ -2,9 +2,59 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Active Target Selectors In Use:** **37/49**
+> **Active Target Selectors In Use:** **38/50**
 
-### <a id="self"></a>`SELF` (19 Cards, 21 Declarations)
+### <a id="environment"></a>`ENVIRONMENT` (13 Cards, 35 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_attack_interrupt`, `norman_osborn_damage_interrupt` |
+| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_scheme_interrupt` |
+| `02002a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_ii_attack_interrupt`, `norman_osborn_ii_damage_interrupt` |
+| `02002b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_ii_scheme_interrupt` |
+| `02003a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_iii_attack_interrupt`, `norman_osborn_iii_damage_interrupt` |
+| `02003b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_iii_scheme_interrupt` |
+| `02004a` | **Hostile Takeover (main_scheme)** | `gob_encounter` | `hostile_takeover_1a_setup` |
+| `02004b` | **Hostile Takeover (main_scheme)** | `gob_encounter` | `hostile_takeover_1b_when_completed` |
+| `02007` | **Hired Gun (minion)** | `gob_encounter` | `hired_gun_boost` |
+| `02008` | **Private Security Specialist (minion)** | `gob_encounter` | `private_security_specialist_boost` |
+| `02009` | **Collapsing Bridge (side_scheme)** | `gob_encounter` | `collapsing_bridge_boost` |
+| `02011` | **Payoff (side_scheme)** | `gob_encounter` | `payoff_boost` |
+| `02012` | **All in a Day's Work (treachery)** | `gob_encounter` | `all_in_a_days_work_when_revealed`, `all_in_a_days_work_boost` |
+
+### <a id="villain"></a>`VILLAIN` (27 Cards, 31 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01011` | **Spider-Woman (ally)** | `core` | `spider_woman_enters_play` |
+| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
+| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
+| `01124` | **Sound Manipulation (treachery)** | `core_encounter` | `sound_manipulation_when_revealed` |
+| `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
+| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
+| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
+| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed`, `repair_sequence_boost` |
+| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
+| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
+| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_damage_interrupt` |
+| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_scheme_interrupt` |
+| `02002a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_ii_damage_interrupt` |
+| `02002b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_ii_scheme_interrupt` |
+| `02003a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_iii_damage_interrupt` |
+| `02003b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_iii_scheme_interrupt` |
+| `02006a` | **Criminal Enterprise (environment)** | `gob_encounter` | `criminal_enterprise_action` |
+| `02006b` | **State of Madness (environment)** | `gob_encounter` | `state_of_madness_action` |
+| `02007` | **Hired Gun (minion)** | `gob_encounter` | `hired_gun_boost` |
+| `02008` | **Private Security Specialist (minion)** | `gob_encounter` | `private_security_specialist_boost` |
+| `02009` | **Collapsing Bridge (side_scheme)** | `gob_encounter` | `collapsing_bridge_boost` |
+| `02011` | **Payoff (side_scheme)** | `gob_encounter` | `payoff_boost` |
+| `02012` | **All in a Day's Work (treachery)** | `gob_encounter` | `all_in_a_days_work_when_revealed`, `all_in_a_days_work_boost` |
+| `02036` | **Regenerative Healing (treachery)** | `gob_encounter` | `regenerative_healing_when_revealed`, `regenerative_healing_boost` |
+| `02045` | **Shock Therapy (treachery)** | `gob_encounter` | `shock_therapy_when_revealed` |
+| `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_when_revealed` |
+| `24049a` | **Formidable Foe (environment)** | `hood_encounter` | `formidable_foe_steady` |
+
+### <a id="self"></a>`SELF` (21 Cards, 25 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -23,33 +73,34 @@
 | `01176` | **The Psyche-Magnitron (side_scheme)** | `core_encounter` | `psyche_magnitron_when_revealed` |
 | `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
 | `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_cannot_be_attacked` |
-| `02006a` | **Criminal Enterprise (environment)** | `gob_encounter` | `criminal_enterprise_action` |
-| `02006b` | **State of Madness (environment)** | `gob_encounter` | `state_of_madness_action` |
+| `02002a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_ii_cannot_be_attacked` |
+| `02003a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_iii_cannot_be_attacked` |
+| `02006a` | **Criminal Enterprise (environment)** | `gob_encounter` | `criminal_enterprise_when_revealed`, `criminal_enterprise_action` |
+| `02006b` | **State of Madness (environment)** | `gob_encounter` | `state_of_madness_when_revealed`, `state_of_madness_action` |
 | `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_ally_limit` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
 
-### <a id="villain"></a>`VILLAIN` (18 Cards, 21 Declarations)
+### <a id="all-players"></a>`ALL_PLAYERS` (17 Cards, 17 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01011` | **Spider-Woman (ally)** | `core` | `spider_woman_enters_play` |
-| `01104` | **Hard to Keep Down (treachery)** | `core_encounter` | `hard_to_keep_down_heal` |
-| `01105` | **"I'm Tough" (treachery)** | `core_encounter` | `im_tough_status` |
-| `01124` | **Sound Manipulation (treachery)** | `core_encounter` | `sound_manipulation_when_revealed` |
-| `01127` | **The "Immortal" Klaw (side_scheme)** | `core_encounter` | `the_immortal_klaw_hit_points` |
-| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
-| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
-| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_when_revealed`, `repair_sequence_boost` |
-| `01153` | **Concussion Blasters (attachment)** | `core_encounter` | `concussion_blasters_retaliate` |
-| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
-| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_damage_interrupt` |
-| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_scheme_interrupt` |
-| `02006a` | **Criminal Enterprise (environment)** | `gob_encounter` | `criminal_enterprise_action` |
-| `02006b` | **State of Madness (environment)** | `gob_encounter` | `state_of_madness_action` |
-| `02036` | **Regenerative Healing (treachery)** | `gob_encounter` | `regenerative_healing_when_revealed`, `regenerative_healing_boost` |
-| `02045` | **Shock Therapy (treachery)** | `gob_encounter` | `shock_therapy_when_revealed` |
+| `01067` | **Maria Hill (ally)** | `core` | `maria_hill_enters_play` |
+| `01137b` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_when_revealed` |
+| `01138a` | **Assault on NORAD (main_scheme)** | `core_encounter` | `ultron_assault_norad_when_revealed` |
+| `01139a` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `ultron_countdown_when_revealed` |
+| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_when_revealed` |
+| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_when_revealed` |
+| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_when_revealed` |
+| `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
+| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
+| `02002b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_ii_when_revealed` |
+| `02003b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_iii_when_revealed` |
+| `02004b` | **Hostile Takeover (main_scheme)** | `gob_encounter` | `hostile_takeover_1b_when_completed` |
+| `02041` | **Power Drain (side_scheme)** | `gob_encounter` | `power_drain_when_defeated` |
+| `02042` | **Electro (minion)** | `gob_encounter` | `electro_attack_response` |
+| `02044` | **Lightning Bolt (treachery)** | `gob_encounter` | `lightning_bolt_when_revealed` |
+| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
 | `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_when_revealed` |
-| `24049a` | **Formidable Foe (environment)** | `hood_encounter` | `formidable_foe_steady` |
 
 ### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
 
@@ -71,25 +122,6 @@
 | `01058` | **Daredevil (ally)** | `core` | `daredevil_after_thwart` |
 | `01083` | **Mockingbird (ally)** | `core` | `mockingbird_enters_play` |
 | `01087` | **Haymaker (event)** | `core` | `haymaker` |
-
-### <a id="all-players"></a>`ALL_PLAYERS` (14 Cards, 14 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01067` | **Maria Hill (ally)** | `core` | `maria_hill_enters_play` |
-| `01137b` | **The Crimson Cowl (main_scheme)** | `core_encounter` | `ultron_crimson_cowl_when_revealed` |
-| `01138a` | **Assault on NORAD (main_scheme)** | `core_encounter` | `ultron_assault_norad_when_revealed` |
-| `01139a` | **Countdown to Oblivion (main_scheme)** | `core_encounter` | `ultron_countdown_when_revealed` |
-| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_when_revealed` |
-| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_when_revealed` |
-| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_when_revealed` |
-| `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
-| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
-| `02041` | **Power Drain (side_scheme)** | `gob_encounter` | `power_drain_when_defeated` |
-| `02042` | **Electro (minion)** | `gob_encounter` | `electro_attack_response` |
-| `02044` | **Lightning Bolt (treachery)** | `gob_encounter` | `lightning_bolt_when_revealed` |
-| `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
-| `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_when_revealed` |
 
 ### <a id="self-identity"></a>`SELF_IDENTITY` (11 Cards, 12 Declarations)
 
@@ -135,7 +167,7 @@
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
 | `02040` | **Tail Sweep (treachery)** | `gob_encounter` | `tail_sweep_when_revealed`, `tail_sweep_boost` |
 
-### <a id="this-side-scheme"></a>`THIS_SIDE_SCHEME` (7 Cards, 7 Declarations)
+### <a id="this-side-scheme"></a>`THIS_SIDE_SCHEME` (8 Cards, 8 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -145,14 +177,8 @@
 | `01126` | **Illegal Arms Factory (side_scheme)** | `core_encounter` | `illegal_arms_factory_when_revealed` |
 | `01148` | **Drone Factory (side_scheme)** | `core_encounter` | `drone_factory_when_revealed` |
 | `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
+| `02010` | **Oscorp Manufacturing (side_scheme)** | `gob_encounter` | `oscorp_manufacturing_when_revealed` |
 | `02037` | **A Mess of Things (side_scheme)** | `gob_encounter` | `a_mess_of_things_when_revealed` |
-
-### <a id="environment"></a>`ENVIRONMENT` (2 Cards, 5 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_attack_interrupt`, `norman_osborn_damage_interrupt` |
-| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_scheme_interrupt` |
 
 ### <a id="host"></a>`HOST` (5 Cards, 5 Declarations)
 
@@ -339,6 +365,12 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01080` | **Med Team (support)** | `core` | `med_team_heal` |
+
+### <a id="hero-with-fewest-hit-points"></a>`HERO_WITH_FEWEST_HIT_POINTS` (1 Cards, 1 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `02013` | **Mad Genius (treachery)** | `gob_encounter` | `mad_genius_green_goblin` |
 
 ### <a id="host-enemy"></a>`HOST_ENEMY` (1 Cards, 1 Declarations)
 

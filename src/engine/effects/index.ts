@@ -2139,6 +2139,22 @@ export function executeDiscard(
   }
 
   if (source === 'DECK') {
+    if (params.target === 'ALL_PLAYERS') {
+      let totalDiscarded = 0;
+      const allDiscarded: CardInstance[] = [];
+      for (const p of state.players) {
+        const res = discardFromPlayerDeck(state, p, params, count, filter);
+        totalDiscarded += res.value ?? 0;
+        if (res.discardedCards) allDiscarded.push(...res.discardedCards);
+      }
+      return {
+        state,
+        success: true,
+        mutatedState: totalDiscarded > 0,
+        value: totalDiscarded,
+        discardedCards: allDiscarded,
+      };
+    }
     return discardFromPlayerDeck(state, player, params, count, filter);
   }
 

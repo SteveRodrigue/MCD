@@ -843,7 +843,15 @@ export const EFFECT_PARAM_SCHEMAS = {
     })
     .strict(),
   VILLAIN_AND_ENGAGED_MINIONS_ATTACK: effectOnly(),
-  VILLAIN_ATTACKS: effectOnly(),
+  VILLAIN_ATTACKS: z
+    .object({
+      target: target('Target Player', 'SELF'),
+      surgeIfNoAttack: optional(z.boolean(), {
+        label: 'Surge If No Attack',
+        description: 'If no attack was made, gains surge.',
+      }),
+    })
+    .strict(),
   VILLAIN_SCHEMES: z
     .object({
       target: target('Target Player', 'SELF'),

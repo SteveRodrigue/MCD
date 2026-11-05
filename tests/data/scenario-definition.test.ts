@@ -7,7 +7,7 @@ import {
   ScenarioDefinitionSchema,
 } from '../../src/data/packs/scenario-definition';
 
-const definitions: [string, any][] = ['rhino', 'klaw', 'ultron'].map((id) => [
+const definitions: [string, any][] = ['rhino', 'klaw', 'ultron', 'risky_business'].map((id) => [
   id,
   JSON.parse(fs.readFileSync(scenarioDefinitionFile(id), 'utf8')),
 ]);

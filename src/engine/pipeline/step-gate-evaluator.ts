@@ -161,6 +161,8 @@ export function evaluateStepGate(
       }
 
       const inSideSchemes = state.sideSchemes?.some(matchesCard);
+      const inEnvironments = state.environments?.some(matchesCard);
+      const inVillains = getVillainsInPlay(state).some((v) => matchesCard({ card: v.card }));
       const inVillainAttachments = getVillainsInPlay(state).some((v) =>
         v.attachments?.some(matchesCard),
       );
@@ -172,7 +174,9 @@ export function evaluateStepGate(
           ...(p.attachments || []),
         ].some(matchesCard),
       );
-      gateSatisfied = Boolean(inSideSchemes || inVillainAttachments || inPlayerZones);
+      gateSatisfied = Boolean(
+        inSideSchemes || inEnvironments || inVillains || inVillainAttachments || inPlayerZones,
+      );
       break;
     }
 

@@ -74,6 +74,7 @@ export const TimingTypeSchema = z.enum([
   'SPECIAL',
   'SETUP',
   'WHEN_REVEALED',
+  'WHEN_COMPLETED',
   'BOOST',
 ]);
 
@@ -176,6 +177,7 @@ export const TargetSelectorSchema = z.enum([
   'HOST',
   'HOST_ENEMY',
   'ENVIRONMENT',
+  'HERO_WITH_FEWEST_HIT_POINTS',
 ]);
 
 export type TargetSelector = z.infer<typeof TargetSelectorSchema>;

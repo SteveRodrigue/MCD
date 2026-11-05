@@ -4,6 +4,49 @@
 
 ## Step Gates (`StepGateSchema` — 11/11 In Use)
 
+### <a id="if-counters"></a>`IF_COUNTERS` (16 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_damage_interrupt` |
+| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_scheme_interrupt` |
+| `02002a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_ii_damage_interrupt` |
+| `02002b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_ii_scheme_interrupt` |
+| `02003a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_iii_damage_interrupt` |
+| `02003b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_iii_scheme_interrupt` |
+| `02006a` | **Criminal Enterprise (environment)** | `gob_encounter` | `criminal_enterprise_action` |
+| `02006b` | **State of Madness (environment)** | `gob_encounter` | `state_of_madness_action` |
+| `02007` | **Hired Gun (minion)** | `gob_encounter` | `hired_gun_boost` |
+| `02008` | **Private Security Specialist (minion)** | `gob_encounter` | `private_security_specialist_boost` |
+| `02009` | **Collapsing Bridge (side_scheme)** | `gob_encounter` | `collapsing_bridge_boost` |
+| `02011` | **Payoff (side_scheme)** | `gob_encounter` | `payoff_boost` |
+| `02012` | **All in a Day's Work (treachery)** | `gob_encounter` | `all_in_a_days_work_when_revealed`, `all_in_a_days_work_boost` |
+| `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_when_revealed` |
+| `45077` | **Sinister Strike (treachery)** | `aoa_encounter` | `sinister_strike_when_revealed` |
+| `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed` |
+
+### <a id="if-card-in-play"></a>`IF_CARD_IN_PLAY` (17 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
+| `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_drones` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
+| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
+| `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
+| `02007` | **Hired Gun (minion)** | `gob_encounter` | `hired_gun_boost` |
+| `02008` | **Private Security Specialist (minion)** | `gob_encounter` | `private_security_specialist_boost` |
+| `02009` | **Collapsing Bridge (side_scheme)** | `gob_encounter` | `collapsing_bridge_boost` |
+| `02010` | **Oscorp Manufacturing (side_scheme)** | `gob_encounter` | `oscorp_manufacturing_when_revealed` |
+| `02011` | **Payoff (side_scheme)** | `gob_encounter` | `payoff_boost` |
+| `02012` | **All in a Day's Work (treachery)** | `gob_encounter` | `all_in_a_days_work_when_revealed`, `all_in_a_days_work_boost` |
+| `02013` | **Mad Genius (treachery)** | `gob_encounter` | `mad_genius_green_goblin`, `mad_genius_norman_osborn` |
+| `02040` | **Tail Sweep (treachery)** | `gob_encounter` | `tail_sweep_when_revealed` |
+| `16103` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_i_forced_interrupt_boost` |
+| `16104` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_ii_forced_interrupt_boost` |
+| `16105` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_iii_forced_interrupt_boost` |
+
 ### <a id="if-form"></a>`IF_FORM` (10 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -36,33 +79,6 @@
 | `02036` | **Regenerative Healing (treachery)** | `gob_encounter` | `regenerative_healing_when_revealed` |
 | `02040` | **Tail Sweep (treachery)** | `gob_encounter` | `tail_sweep_when_revealed` |
 | `02043` | **Electromagnetic Pulse (treachery)** | `gob_encounter` | `electromagnetic_pulse_when_revealed` |
-
-### <a id="if-counters"></a>`IF_COUNTERS` (7 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `02001a` | **Norman Osborn (villain)** | `gob_encounter` | `norman_osborn_damage_interrupt` |
-| `02001b` | **Green Goblin (villain)** | `gob_encounter` | `green_goblin_scheme_interrupt` |
-| `02006a` | **Criminal Enterprise (environment)** | `gob_encounter` | `criminal_enterprise_action` |
-| `02006b` | **State of Madness (environment)** | `gob_encounter` | `state_of_madness_action` |
-| `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_when_revealed` |
-| `45077` | **Sinister Strike (treachery)** | `aoa_encounter` | `sinister_strike_when_revealed` |
-| `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed` |
-
-### <a id="if-card-in-play"></a>`IF_CARD_IN_PLAY` (10 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01111` | **Explosion (treachery)** | `core_encounter` | `explosion_when_revealed` |
-| `01136` | **Ultron (villain)** | `core_encounter` | `ultron_iii_drones` |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_when_revealed` |
-| `01180` | **Legions of Hydra (side_scheme)** | `core_encounter` | `legions_of_hydra_when_revealed` |
-| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_immunity` |
-| `01183` | **The Doomsday Chair (side_scheme)** | `core_encounter` | `the_doomsday_chair_when_revealed` |
-| `02040` | **Tail Sweep (treachery)** | `gob_encounter` | `tail_sweep_when_revealed` |
-| `16103` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_i_forced_interrupt_boost` |
-| `16104` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_ii_forced_interrupt_boost` |
-| `16105` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_iii_forced_interrupt_boost` |
 
 ### <a id="then"></a>`THEN` (8 Cards)
 

@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../../../src/data/packs/scenario.schema.json",
+  "id": "risky_business",
+  "name": "Risky Business",
+  "scenarioCardCode": "02001a",
+  "author": "Fantasy Flight Games",
+  "version": "1.0.0",
+  "description": "Norman Osborn is running a criminal enterprise under the guise of legitimate business. Drain his infamy to force him to reveal his true face as the Green Goblin!",
+  "setupOnomatopoeia": "CRIMINAL ENTERPRISE BEGINS!",
+  "supportedDifficulties": ["SKIRMISH", "STANDARD", "EXPERT"],
+
+  "villainSetup": {
+    "villainName": "Norman Osborn",
+    "stages": {
+      "SKIRMISH": ["02001a", "02002a", "02003a"],
+      "STANDARD": ["02001a", "02002a"],
+      "EXPERT": ["02002a", "02003a"]
+    }
+  },
+
+  "mainSchemeSetup": {
+    "stages": ["02004a", "02004b", "02005a", "02005b"],
+    "startingThreat": 2,
+    "targetThreatPerPlayer": 7,
+    "escalationThreatPerPlayer": 1
+  },
+
+  "modularEncounterSets": {
+    "mandatory": ["risky_business"],
+    "slotCount": 1,
+    "recommendedModularSets": ["goblin_gimmicks"]
+  }
+}

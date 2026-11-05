@@ -115,6 +115,7 @@ export const SELECTOR_CLASS: Readonly<Record<TargetSelector, SelectorClass>> = {
   HOST: 'DEPENDENT',
   HOST_ENEMY: 'DEPENDENT',
   ENVIRONMENT: 'FIXED',
+  HERO_WITH_FEWEST_HIT_POINTS: 'FIXED',
 };
 
 /**

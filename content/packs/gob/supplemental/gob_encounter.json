@@ -148,8 +148,432 @@
         "originalText": "<b>When Revealed</b>: Deal 3 indirect damage to each player in hero form.\n[star] <b>Forced Interrupt</b>: When Green Goblin would scheme, remove 1 madness counter from State of Madness instead."
       }
     },
+    "02002a": {
+      "abilities": [
+        {
+          "id": "norman_osborn_ii_cannot_be_attacked",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "CANNOT_BE_ATTACKED",
+              "effectParams": {
+                "target": "SELF"
+              }
+            }
+          ]
+        },
+        {
+          "id": "norman_osborn_ii_attack_interrupt",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "WOULD_ATTACK",
+          "steps": [
+            {
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "infamy",
+                "amount": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "norman_osborn_ii_damage_interrupt",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "DAMAGE_WOULD_BE_TAKEN",
+          "steps": [
+            {
+              "effect": "SPEND_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "infamy",
+                "amount": {
+                  "from": "INTERCEPTED_VALUE"
+                }
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006a",
+                "counterType": "infamy",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "ENVIRONMENT"
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006a",
+                "counterType": "infamy",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "[star] <b>Forced Interrupt</b>: When Norman Osborn would attack, place 2 infamy counter on Criminal Enterprise instead.\n<b>Forced Interrupt</b>: When Norman Osborn would take any amount of damage, remove that many infamy counters from Criminal Enterprise instead."
+      }
+    },
+    "02002b": {
+      "abilities": [
+        {
+          "id": "green_goblin_ii_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "effectParams": {
+                "target": "ALL_PLAYERS",
+                "amount": 3
+              }
+            }
+          ]
+        },
+        {
+          "id": "green_goblin_ii_scheme_interrupt",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "WOULD_SCHEME",
+          "steps": [
+            {
+              "effect": "SPEND_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "madness",
+                "amount": 1
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "ENVIRONMENT"
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Deal 3 indirect damage to each player.\n[star] <b>Forced Interrupt</b>: When Green Goblin would scheme, remove 1 madness counter from State of Madness instead."
+      }
+    },
+    "02003a": {
+      "abilities": [
+        {
+          "id": "norman_osborn_iii_cannot_be_attacked",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "CANNOT_BE_ATTACKED",
+              "effectParams": {
+                "target": "SELF"
+              }
+            }
+          ]
+        },
+        {
+          "id": "norman_osborn_iii_attack_interrupt",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "WOULD_ATTACK",
+          "steps": [
+            {
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "infamy",
+                "amount": 3
+              }
+            }
+          ]
+        },
+        {
+          "id": "norman_osborn_iii_damage_interrupt",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "DAMAGE_WOULD_BE_TAKEN",
+          "steps": [
+            {
+              "effect": "SPEND_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "infamy",
+                "amount": {
+                  "from": "INTERCEPTED_VALUE"
+                }
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006a",
+                "counterType": "infamy",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "ENVIRONMENT"
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006a",
+                "counterType": "infamy",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "[star] <b>Forced Interrupt</b>: When Norman Osborn would attack, place 3 infamy counter on Criminal Enterprise instead.\n<b>Forced Interrupt</b>: When Norman Osborn would take any amount of damage, remove that many infamy counters from Criminal Enterprise instead."
+      }
+    },
+    "02003b": {
+      "abilities": [
+        {
+          "id": "green_goblin_iii_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "effectParams": {
+                "target": "ALL_PLAYERS",
+                "amount": 4
+              }
+            }
+          ]
+        },
+        {
+          "id": "green_goblin_iii_scheme_interrupt",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "WOULD_SCHEME",
+          "steps": [
+            {
+              "effect": "SPEND_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "madness",
+                "amount": 2
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "ENVIRONMENT"
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Deal 4 damage to each player.\n[star] <b>Forced Interrupt</b>: When Green Goblin would scheme, remove 2 madness counters from State of Madness instead."
+      }
+    },
+    "02004a": {
+      "abilities": [
+        {
+          "id": "hostile_takeover_1a_setup",
+          "timing": "SETUP",
+          "steps": [
+            {
+              "effect": "SEARCH",
+              "effectParams": {
+                "source": ["ENCOUNTER_DECK"],
+                "filter": {
+                  "codes": ["02006a"]
+                },
+                "takeCount": 1,
+                "selectedDestination": "TABLEAU",
+                "shuffleAfter": true
+              }
+            },
+            {
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "infamy",
+                "amount": {
+                  "from": "ENTITY_COUNT",
+                  "target": "ALL_PLAYERS",
+                  "multiplier": 2
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>Contents</b>: Norman Osborn (I) and Norman Osborn (II). <i>(Norman Osborn (II) and Norman Osborn (III) instead for expert mode.)</i> Risky Business and Standard encounter sets. One modular encounter set <i>(recommended: Goblin Gimmicks)</i>.\n<b>Setup</b>: Put the Criminal Enterprise environment into play. Shuffle the encounter deck. Advance to stage 1B."
+      }
+    },
+    "02004b": {
+      "abilities": [
+        {
+          "id": "hostile_takeover_1b_when_completed",
+          "timing": "WHEN_COMPLETED",
+          "steps": [
+            {
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "infamy",
+                "amount": {
+                  "from": "ENTITY_COUNT",
+                  "target": "ALL_PLAYERS",
+                  "multiplier": 1
+                }
+              }
+            },
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "DECK",
+                "mode": "TOP",
+                "target": "ALL_PLAYERS",
+                "count": {
+                  "from": "COUNTERS",
+                  "target": "ENVIRONMENT",
+                  "counterType": "infamy"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Completed</b>: Place 1[per_hero] infamy counters on Criminal Enterprise. Then discard 1 card from each player's deck for each infamy counter on Criminal Enterprise."
+      }
+    },
+    "02005a": {
+      "noSupplementalNeeded": true,
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Advance to stage 2B."
+      }
+    },
+    "02005b": {
+      "noSupplementalNeeded": true,
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>If this stage is completed, the players lose the game.</b>"
+      }
+    },
     "02006a": {
       "abilities": [
+        {
+          "id": "criminal_enterprise_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "target": "SELF",
+                "counterType": "infamy",
+                "amount": {
+                  "from": "ENTITY_COUNT",
+                  "target": "ALL_PLAYERS",
+                  "multiplier": 2
+                }
+              }
+            }
+          ]
+        },
         {
           "id": "criminal_enterprise_action",
           "timing": "ACTION",
@@ -200,6 +624,25 @@
     "02006b": {
       "abilities": [
         {
+          "id": "state_of_madness_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "target": "SELF",
+                "counterType": "madness",
+                "amount": {
+                  "from": "ENTITY_COUNT",
+                  "target": "ALL_PLAYERS",
+                  "multiplier": 2
+                }
+              }
+            }
+          ]
+        },
+        {
           "id": "state_of_madness_action",
           "timing": "ACTION",
           "steps": [
@@ -244,6 +687,532 @@
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "State of Madness enters play with 2[per_hero] madness counters on it. If there are no madness counters here, flip Green Goblin and State of Madness."
+      }
+    },
+    "02007": {
+      "abilities": [
+        {
+          "id": "hired_gun_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Hired Gun",
+                "description": "Choose to either give the villain 1 facedown boost card or place 2 infamy counters on Criminal Enterprise:",
+                "options": [
+                  {
+                    "id": "facedown_boost",
+                    "label": "Give Villain 1 Boost Card",
+                    "description": "Give the villain 1 facedown boost card.",
+                    "effect": "DEAL_FACEDOWN_ENCOUNTER_CARD",
+                    "params": {
+                      "target": "VILLAIN",
+                      "count": 1
+                    }
+                  },
+                  {
+                    "id": "add_infamy",
+                    "label": "Place 2 Infamy Counters",
+                    "description": "Place 2 infamy counters on Criminal Enterprise.",
+                    "effect": "ADD_COUNTERS",
+                    "params": {
+                      "target": "ENVIRONMENT",
+                      "counterType": "infamy",
+                      "amount": 2
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "hired_gun_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "afterActivation": true,
+          "steps": [
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "02006a"
+              },
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "infamy",
+                "amount": 1
+              }
+            },
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "02006b"
+              },
+              "effect": "SPEND_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "madness",
+                "amount": 1
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "ENVIRONMENT"
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Choose to either give the villain 1 facedown boost card or place 2 infamy counters on Criminal Enterprise.\n[star] <b>Boost</b>: Place 1 infamy counter on Criminal Enterprise. If you cannot, remove 1 madness counter from State of Madness."
+      }
+    },
+    "02008": {
+      "abilities": [
+        {
+          "id": "private_security_specialist_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "afterActivation": true,
+          "steps": [
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "02006a"
+              },
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "infamy",
+                "amount": 1
+              }
+            },
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "02006b"
+              },
+              "effect": "SPEND_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "madness",
+                "amount": 1
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "ENVIRONMENT"
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Guard. <i>(While this minion is engaged with you, you cannot attack the villain.)</i>\n[star] <b>Boost</b>: Place 1 infamy counter on Criminal Enterprise. If you cannot, remove 1 madness counter from State of Madness."
+      }
+    },
+    "02009": {
+      "abilities": [
+        {
+          "id": "collapsing_bridge_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "afterActivation": true,
+          "steps": [
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "02006a"
+              },
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "infamy",
+                "amount": 1
+              }
+            },
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "02006b"
+              },
+              "effect": "SPEND_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "madness",
+                "amount": 1
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "ENVIRONMENT"
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "[star] <b>Boost</b>: Place 1 infamy counter on Criminal Enterprise. If you cannot, remove 1 madness counter from State of Madness."
+      }
+    },
+    "02010": {
+      "abilities": [
+        {
+          "id": "oscorp_manufacturing_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "02006a"
+              },
+              "effect": "ADD_THREAT",
+              "effectParams": {
+                "target": "THIS_SIDE_SCHEME",
+                "amount": {
+                  "from": "ENTITY_COUNT",
+                  "target": "ALL_PLAYERS",
+                  "multiplier": 1
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed (Norman Osborn)</b>: Place an additional 1[per_hero] threat here."
+      }
+    },
+    "02011": {
+      "abilities": [
+        {
+          "id": "payoff_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "afterActivation": true,
+          "steps": [
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "02006a"
+              },
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "infamy",
+                "amount": 1
+              }
+            },
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "02006b"
+              },
+              "effect": "SPEND_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "madness",
+                "amount": 1
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "ENVIRONMENT"
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "[star] <b>Boost</b>: Place 1 infamy counter on Criminal Enterprise. If you cannot, remove 1 madness counter from State of Madness."
+      }
+    },
+    "02012": {
+      "abilities": [
+        {
+          "id": "all_in_a_days_work_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "02006a"
+              },
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "infamy",
+                "amount": 2
+              }
+            },
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "02006b"
+              },
+              "effect": "SPEND_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "madness",
+                "amount": 2
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "ENVIRONMENT"
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        },
+        {
+          "id": "all_in_a_days_work_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "afterActivation": true,
+          "steps": [
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "02006a"
+              },
+              "effect": "ADD_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "infamy",
+                "amount": 1
+              }
+            },
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "02006b"
+              },
+              "effect": "SPEND_COUNTERS",
+              "effectParams": {
+                "target": "ENVIRONMENT",
+                "counterType": "madness",
+                "amount": 1
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "ENVIRONMENT"
+              }
+            },
+            {
+              "gate": "IF_COUNTERS",
+              "gateParams": {
+                "cardCode": "02006b",
+                "counterType": "madness",
+                "atMost": 0
+              },
+              "effect": "FLIP_CARD",
+              "effectParams": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed</b>: Place 2 infamy counters on Criminal Enterprise. If you cannot, remove 2 madness counters from State of Madness.\n[star] <b>Boost</b>: Place 1 infamy counter on Criminal Enterprise. If you cannot, remove 1 madness counter from State of Madness."
+      }
+    },
+    "02013": {
+      "abilities": [
+        {
+          "id": "mad_genius_green_goblin",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "02006b"
+              },
+              "effect": "VILLAIN_ATTACKS",
+              "effectParams": {
+                "target": "HERO_WITH_FEWEST_HIT_POINTS",
+                "surgeIfNoAttack": true
+              }
+            }
+          ]
+        },
+        {
+          "id": "mad_genius_norman_osborn",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "02006a"
+              },
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "DECK",
+                "mode": "TOP",
+                "count": {
+                  "from": "COUNTERS",
+                  "target": "ENVIRONMENT",
+                  "counterType": "infamy"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T22:00:00Z",
+        "updatedAt": "2026-11-04T22:00:00Z",
+        "reviewedAt": "2026-11-04T22:00:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "<b>When Revealed (Green Goblin)</b>: Green Goblin attacks the hero with the fewest hit points remaining. If no attack was made this way, this card gains surge.\n<b>When Revealed (Norman Osborn)</b>: Discard the top card of your deck for each infamy counter on Criminal Enterprise."
       }
     },
     "02033": {

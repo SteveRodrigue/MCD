@@ -410,12 +410,6 @@ export function normalizeRawCard(
       } as AlterEgoCard;
     }
     case CardType.VILLAIN: {
-      const villainText = (raw.text || '').toLowerCase();
-      const additionalBoostCards =
-        villainText.includes('give him 1 additional boost card') ||
-        villainText.includes('additional boost card')
-          ? 1
-          : undefined;
       return {
         ...base,
         type: CardType.VILLAIN,
@@ -426,7 +420,6 @@ export function normalizeRawCard(
         schemeStar: !!raw.scheme_star,
         attack: raw.attack ?? 0,
         attackStar: !!raw.attack_star,
-        additionalBoostCards,
         ...dashPowersField(raw, ['attack', 'scheme']),
       } as VillainCard;
     }

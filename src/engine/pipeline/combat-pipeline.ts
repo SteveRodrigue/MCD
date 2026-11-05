@@ -162,18 +162,31 @@ function step2_dispatchInitiationTriggers(
   targetPlayerId: string,
   attackerCard?: CardInstance,
   options?: CombatOptions,
+  attackerVillain?: VillainState,
 ): TriggerDispatchResult {
-  return kernel.dispatchTrigger(state, 'ENEMY_INITIATES_ATTACK', {
+  const targetInstanceId = attackerCard?.instanceId ?? attackerVillain?.instanceId ?? 'villain';
+  const sourceCardCode = attackerCard?.card?.code ?? attackerVillain?.card?.code;
+  const context = {
     targetPlayerId,
     attackerType,
     attackerKind: attackerType,
     attackerCard,
-    targetInstanceId: attackerCard?.instanceId,
-    sourceCardCode: attackerCard?.card?.code,
-    sourceInstanceId: attackerCard?.instanceId,
+    targetInstanceId,
+    sourceCardCode,
+    sourceInstanceId: targetInstanceId,
+    activationType: 'ATTACK' as const,
     isSecondaryAttack: options?.isSecondaryAttack,
     acceptOptionalTriggers: options?.acceptOptionalTriggers,
-  });
+  };
+
+  const attackResult = kernel.dispatchTrigger(state, 'INITIATES_ATTACK', context);
+  const activationResult = kernel.dispatchTrigger(state, 'INITIATES_ACTIVATION', context);
+
+  return {
+    state,
+    hasPendingPrompt: attackResult.hasPendingPrompt || activationResult.hasPendingPrompt,
+    cancelled: attackResult.cancelled || activationResult.cancelled,
+  };
 }
 
 /**
@@ -248,6 +261,15 @@ export function beginEnemyAttack(
   if (attackerVillain) recordBasicAction(state, 'villainAttack', attackerVillain.card?.code);
   else if (attacker.card) recordBasicAction(state, 'minionAttack', attacker.card.card.code);
 
+  const attackerEntity = attacker.type === 'VILLAIN' ? attackerVillain : attacker.card;
+  const activatorInstanceId = attackerEntity?.instanceId ?? 'villain';
+  const boostQueue = attackerEntity ? dealBoostCards(state, attackerEntity) : [];
+  state.activeBoostResolution = {
+    queue: boostQueue,
+    activatorInstanceId,
+    targetPlayerId,
+  };
+
   // Step 2: Initiation Triggers (Spider-Sense draws card BEFORE defender is declared)
   state.pendingAttackModifiers = [];
   const initResult = step2_dispatchInitiationTriggers(
@@ -256,6 +278,7 @@ export function beginEnemyAttack(
     targetPlayerId,
     attacker.card,
     options,
+    attackerVillain,
   );
   const attackModifiers = state.pendingAttackModifiers;
   delete state.pendingAttackModifiers;
@@ -285,6 +308,7 @@ export function beginEnemyAttack(
     phase: initResult.hasPendingPrompt ? 'INITIATION' : 'DECLARE_DEFENDER',
     baseAttack,
     attackModifiers,
+    boostQueue,
     totalBoostIcons: 0,
     hasOverkill,
     hasPiercing,
@@ -874,7 +898,9 @@ export function step4_and_5_dealAndResolveBoostCards(
   if (!attacker) return;
 
   const options = attackBoostOptions(attackContext, attacker);
-  attackContext.boostQueue = dealBoostCards(state, attacker, options);
+  if (!attackContext.boostQueue) {
+    attackContext.boostQueue = dealBoostCards(state, attacker, options);
+  }
   attackContext.totalBoostIcons += resolveBoostCards(state, {
     ...options,
     queue: attackContext.boostQueue,

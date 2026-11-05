@@ -146,7 +146,7 @@ const CASES: Case[] = [
             cardName: 'Sandman',
           },
           {
-            trigger: 'ENEMY_INITIATES_ATTACK',
+            trigger: 'INITIATES_ATTACK',
             abilityId: 'b',
             sourceInstanceId: 'i2',
             cardCode: '01094',

@@ -129,6 +129,7 @@ export const IfCardInPlayGateParamsSchema = z
   .object({
     cardCode: z.string().min(1).meta({ label: 'Card Code' }).optional(),
     filter: UniversalCardFilterSchema.meta({ label: 'Card Criteria', widget: 'card-filter' }).optional(),
+    controller: TargetSelectorSchema.optional().meta({ label: 'Controlled By' }),
     negate: negateParam,
   })
   .strict()

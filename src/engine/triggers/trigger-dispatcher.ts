@@ -336,6 +336,7 @@ export interface TriggerContext {
   defenderName?: string;
   defenderType?: 'HERO' | 'ALLY' | 'UNDEFENDED';
   isSecondaryAttack?: boolean;
+  activationType?: 'ATTACK' | 'SCHEME';
   /** What placed the threat, for THREAT_WOULD_BE_PLACED (e.g. 'VILLAIN_SCHEME' for Emergency). */
   threatSource?: NonNullable<TriggerFilter['threatSource']>;
   /** What dealt the damage, for DAMAGE_WOULD_BE_TAKEN (Backflip: 'ATTACK'). Absent never matches. */
@@ -789,6 +790,13 @@ function scanIdentityTriggerAbilities(
         ) {
           continue;
         }
+        if (
+          ability.limit === 'ONCE_PER_ACTIVATION' &&
+          (state.activeAttackContext?.usedAbilitiesThisActivation?.[ability.id] ||
+            state.activeBoostResolution?.usedAbilitiesThisActivation?.[ability.id])
+        ) {
+          continue;
+        }
 
         const isForced = isForcedTiming(ability.timing);
         if (isForced !== (scanState.pass === 'FORCED')) continue;
@@ -816,6 +824,15 @@ function scanIdentityTriggerAbilities(
                 identityPlayer.usedAbilitiesThisPhase = {};
               identityPlayer.usedAbilitiesThisPhase[ability.id] =
                 (identityPlayer.usedAbilitiesThisPhase[ability.id] || 0) + 1;
+            } else if (ability.limit === 'ONCE_PER_ACTIVATION') {
+              if (state.activeAttackContext) {
+                state.activeAttackContext.usedAbilitiesThisActivation ??= {};
+                state.activeAttackContext.usedAbilitiesThisActivation[ability.id] = 1;
+              }
+              if (state.activeBoostResolution) {
+                state.activeBoostResolution.usedAbilitiesThisActivation ??= {};
+                state.activeBoostResolution.usedAbilitiesThisActivation[ability.id] = 1;
+              }
             }
             const effCtx: EffectExecutionContext = {
               playerId: identityPlayer.id,
@@ -1006,6 +1023,16 @@ function scanCardInstanceTriggerAbilities(
           };
           const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
           if (ability.cost) executeAbilityCost(state, controller, ability, cardInst);
+          if (ability.limit === 'ONCE_PER_ACTIVATION') {
+            if (state.activeAttackContext) {
+              state.activeAttackContext.usedAbilitiesThisActivation ??= {};
+              state.activeAttackContext.usedAbilitiesThisActivation[ability.id] = 1;
+            }
+            if (state.activeBoostResolution) {
+              state.activeBoostResolution.usedAbilitiesThisActivation ??= {};
+              state.activeBoostResolution.usedAbilitiesThisActivation[ability.id] = 1;
+            }
+          }
           const effCtx: EffectExecutionContext = {
             playerId: controller.id,
             sourceCardInstance: cardInst,
@@ -1070,6 +1097,13 @@ function scanCardInstanceTriggerAbilities(
           continue;
         }
         if (ability.limit === 'ONCE_PER_PHASE' && controller.usedAbilitiesThisPhase?.[ability.id]) {
+          continue;
+        }
+        if (
+          ability.limit === 'ONCE_PER_ACTIVATION' &&
+          (state.activeAttackContext?.usedAbilitiesThisActivation?.[ability.id] ||
+            state.activeBoostResolution?.usedAbilitiesThisActivation?.[ability.id])
+        ) {
           continue;
         }
 
@@ -1202,7 +1236,8 @@ function scanEncounterTriggerAbilities(
   if (!firstPlayer) return;
   // "When/After [enemy] attacks you": the attacked player resolves it, whoever defends (RR Attack).
   const isEnemyAttackEvent =
-    trigger === 'ENEMY_INITIATES_ATTACK' ||
+    trigger === 'INITIATES_ATTACK' ||
+    trigger === 'INITIATES_ACTIVATION' ||
     (trigger === 'ATTACK_RESOLVED' && context.attackSource?.kind === 'ENEMY');
   // "After you place a counter here": "you" is the player whose effect placed it.
   const isPlayerCardEvent = trigger === 'COUNTER_PLACED' || trigger === 'CARD_FLIPPED';
@@ -1665,7 +1700,8 @@ export function dispatchTrigger(
     trigger === 'DAMAGE_WOULD_BE_TAKEN' ||
     trigger === 'MINION_ENTERS_PLAY' ||
     trigger === 'ENCOUNTER_CARD_REVEALED' ||
-    trigger === 'ENEMY_INITIATES_ATTACK';
+    trigger === 'INITIATES_ATTACK' ||
+    trigger === 'INITIATES_ACTIVATION';
 
   // "After you defeat ..." belongs to the player who defeated, not to the one the enemy engaged.
   const playersToScan: PlayerState[] =

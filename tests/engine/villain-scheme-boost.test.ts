@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { overrideCard } from '../support/card-overrides';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import {
   GameState,
@@ -159,8 +158,20 @@ describe('Villain Scheme Boost Resolution & Villainous Activations (Issue #188)'
     expect(state.encounterDiscard[0].instanceId).toBe('star_boost_01');
   });
 
-  it('3. Multiple Boost Cards: Villain with additionalBoostCards deals and resolves multiple boost cards during scheme', () => {
-    overrideCard(state, getActiveVillain(state).card, { additionalBoostCards: 1 });
+  it('3. Multiple Boost Cards: Villain with additional boost ability deals and resolves multiple boost cards during scheme', () => {
+    getActiveVillain(state).card = {
+      ...getActiveVillain(state).card,
+      enrichment: {
+        abilities: [
+          {
+            id: 'extra_boost',
+            timing: 'FORCED_INTERRUPT',
+            trigger: 'INITIATES_ACTIVATION',
+            steps: [{ effect: 'GIVE_ADDITIONAL_BOOST_CARD' }],
+          },
+        ],
+      },
+    };
 
     const boost1: CardInstance = {
       instanceId: 'boost_01',

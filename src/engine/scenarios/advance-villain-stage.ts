@@ -41,6 +41,13 @@ export function revealVillainStage(state: GameState, villain: VillainState): voi
 function endVillainActivation(state: GameState, defeatedInstanceId: string): void {
   const attack = state.activeAttackContext;
   if (attack?.attackerType === 'VILLAIN' && attack.attackerVillainId === defeatedInstanceId) {
+    if (attack.boostQueue?.length) {
+      for (const card of attack.boostQueue) {
+        if (!state.encounterDiscard.includes(card)) {
+          state.encounterDiscard.push(card);
+        }
+      }
+    }
     delete state.activeAttackContext;
     const queue = state.pendingDecisionQueue;
     if (queue) {
@@ -49,8 +56,7 @@ function endVillainActivation(state: GameState, defeatedInstanceId: string): voi
           !prompt.options.some(
             (option) =>
               option.effect === 'DECLARE_DEFENDER' ||
-              (option.params?.ability as CardAbility | undefined)?.trigger ===
-                'ENEMY_INITIATES_ATTACK',
+              (option.params?.ability as CardAbility | undefined)?.trigger === 'INITIATES_ATTACK',
           ),
       );
       state.pendingDecisionQueue.forEach((prompt, i, remaining) => {
@@ -60,6 +66,13 @@ function endVillainActivation(state: GameState, defeatedInstanceId: string): voi
     }
   }
   if (state.activeBoostResolution?.activatorInstanceId === defeatedInstanceId) {
+    if (state.activeBoostResolution.queue?.length) {
+      for (const card of state.activeBoostResolution.queue) {
+        if (!state.encounterDiscard.includes(card)) {
+          state.encounterDiscard.push(card);
+        }
+      }
+    }
     delete state.activeBoostResolution;
   }
 }

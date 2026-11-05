@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Total Verified Vanilla Cards:** **20**
+> **Total Verified Vanilla Cards:** **18**
 
 These cards require zero declarative engine hooks (e.g. vanilla resources, base stats only, or passive encounter cards without triggers).
 
@@ -19,8 +19,6 @@ These cards require zero declarative engine hooks (e.g. vanilla resources, base 
 | `01097b` | **The Break-In!** | `main_scheme` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01102` | **Sandman** | `minion` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01108` | **Crowd Control** | `side_scheme` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
-| `01113` | **Klaw** | `villain` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
-| `01115` | **Klaw** | `villain` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01117b` | **Secret Rendezvous** | `main_scheme` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01120` | **Armored Guard** | `minion` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01140` | **Ultron Drones** | `environment` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |

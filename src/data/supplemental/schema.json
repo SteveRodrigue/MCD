@@ -55,7 +55,8 @@
                     "COUNTER_PLACED",
                     "CARD_FLIPPED",
                     "PLAYER_TURN_BEGAN",
-                    "ENEMY_INITIATES_ATTACK",
+                    "INITIATES_ATTACK",
+                    "INITIATES_ACTIVATION",
                     "DAMAGE_WOULD_BE_TAKEN",
                     "CARD_PLAYED",
                     "ENTERS_PLAY",
@@ -419,7 +420,8 @@
                   "type": "string",
                   "enum": [
                     "ONCE_PER_ROUND",
-                    "ONCE_PER_PHASE"
+                    "ONCE_PER_PHASE",
+                    "ONCE_PER_ACTIVATION"
                   ]
                 },
                 "forEachPlayer": {

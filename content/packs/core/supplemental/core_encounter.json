@@ -607,12 +607,22 @@
       }
     },
     "01113": {
-      "noSupplementalNeeded": true,
-      "abilities": [],
+      "abilities": [
+        {
+          "id": "klaw_stage_i_forced_interrupt_boost",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "INITIATES_ATTACK",
+          "steps": [
+            {
+              "effect": "GIVE_ADDITIONAL_BOOST_CARD"
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-11-04T01:14:00Z",
-        "updatedAt": "2026-11-04T01:14:00Z",
-        "reviewedAt": "2026-11-04T01:14:00Z",
+        "updatedAt": "2026-11-04T18:35:00Z",
+        "reviewedAt": "2026-11-04T18:35:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -621,6 +631,16 @@
     },
     "01114": {
       "abilities": [
+        {
+          "id": "klaw_stage_ii_forced_interrupt_boost",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "INITIATES_ATTACK",
+          "steps": [
+            {
+              "effect": "GIVE_ADDITIONAL_BOOST_CARD"
+            }
+          ]
+        },
         {
           "id": "klaw_stage_ii_when_revealed",
           "timing": "WHEN_REVEALED",
@@ -644,8 +664,8 @@
       ],
       "audit": {
         "createdAt": "2026-10-19T22:25",
-        "updatedAt": "2026-10-19T22:25",
-        "reviewedAt": "2026-10-19T22:25",
+        "updatedAt": "2026-11-04T18:35:00Z",
+        "reviewedAt": "2026-11-04T18:35:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -653,12 +673,22 @@
       }
     },
     "01115": {
-      "noSupplementalNeeded": true,
-      "abilities": [],
+      "abilities": [
+        {
+          "id": "klaw_stage_iii_forced_interrupt_boost",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "INITIATES_ATTACK",
+          "steps": [
+            {
+              "effect": "GIVE_ADDITIONAL_BOOST_CARD"
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-11-04T01:14:00Z",
-        "updatedAt": "2026-11-04T01:14:00Z",
-        "reviewedAt": "2026-11-04T01:14:00Z",
+        "updatedAt": "2026-11-04T18:35:00Z",
+        "reviewedAt": "2026-11-04T18:35:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -1287,7 +1317,7 @@
         {
           "id": "whirlwind_interrupt_multi_hero_attack",
           "timing": "FORCED_INTERRUPT",
-          "trigger": "ENEMY_INITIATES_ATTACK",
+          "trigger": "INITIATES_ATTACK",
           "triggerFilter": {
             "attackerKind": "MINION",
             "targetScope": "SELF",
@@ -1515,7 +1545,7 @@
         {
           "id": "ultron_ii_when_attacks",
           "timing": "FORCED_INTERRUPT",
-          "trigger": "ENEMY_INITIATES_ATTACK",
+          "trigger": "INITIATES_ATTACK",
           "triggerFilter": {
             "attackerKind": "VILLAIN"
           },

@@ -314,6 +314,7 @@ export interface BoostResolution {
   /** Instance id of the activating enemy ("the villain", "the activating enemy"). */
   activatorInstanceId: string;
   targetPlayerId: string;
+  usedAbilitiesThisActivation?: Record<string, number>;
 }
 
 export interface AttackExecutionContext {
@@ -338,6 +339,7 @@ export interface AttackExecutionContext {
   synchronousPolicy?: 'HERO_IF_READY' | 'ALLY_CHUMP_BLOCK' | 'AUTO_OPTIMAL' | 'TAKE_UNDEFENDED';
   stepping?: boolean;
   boostQueue?: CardInstance[];
+  usedAbilitiesThisActivation?: Record<string, number>;
   currentBoostCard?: CardInstance;
   finalDamage?: number;
   /** Boost abilities gated on the activation's damage; resolved after step 6 (#221). */

@@ -44,7 +44,7 @@ describe('Card Text Parser', () => {
       expect(() => CardEnrichmentSchema.parse(result.enrichment)).not.toThrow();
     });
 
-    it('parses Spider-Man (01001a) — Interrupt timing, ENEMY_INITIATES_ATTACK trigger, DRAW', () => {
+    it('parses Spider-Man (01001a) — Interrupt timing, INITIATES_ATTACK trigger, DRAW', () => {
       const text =
         'Spider-Sense — <b>Interrupt</b>: When the villain initiates an attack against you, draw 1 card.';
       const result = parseCardText(text, '01001a');
@@ -56,7 +56,7 @@ describe('Card Text Parser', () => {
       const ability = result.enrichment.abilities![0];
       expect(ability.id).toBe('spider_sense');
       expect(ability.timing).toBe('INTERRUPT');
-      expect(ability.trigger).toBe('ENEMY_INITIATES_ATTACK');
+      expect(ability.trigger).toBe('INITIATES_ATTACK');
       expect(ability.steps[0]).toEqual({
         effect: 'DRAW',
         effectParams: { count: 1 },

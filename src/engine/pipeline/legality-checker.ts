@@ -731,6 +731,16 @@ export function canInitiateAbility(
       reason: `Ability '${ability.id}' has already been used this phase (Limit: once per phase).`,
     };
   }
+  if (
+    ability.limit === 'ONCE_PER_ACTIVATION' &&
+    ((state.activeAttackContext?.usedAbilitiesThisActivation?.[abilityKey] || 0) >= 1 ||
+      (state.activeBoostResolution?.usedAbilitiesThisActivation?.[abilityKey] || 0) >= 1)
+  ) {
+    return {
+      allowed: false,
+      reason: `Ability '${ability.id}' has already been used this activation (Limit: once per activation).`,
+    };
+  }
 
   // 4. Cost Validation
   const costCheck = canPayAbilityCost(state, player, ability, sourceCardInst, options);

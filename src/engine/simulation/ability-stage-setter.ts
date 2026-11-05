@@ -981,12 +981,15 @@ const SCENARIOS: Record<string, Scenario> = {
   },
   DAMAGE_WOULD_BE_TAKEN: damageTarget,
   DAMAGE_TAKEN: damageTarget,
-  ENEMY_INITIATES_ATTACK: (stage, ctx) => {
+  INITIATES_ATTACK: (stage, ctx) => {
     setForm(player1(stage), 'hero');
     if (stage.state.players[1]) setForm(stage.state.players[1], 'hero');
     return ctx.target.card.type === CardType.MINION
       ? executeMinionAttackAgainstPlayer(stage.state, ctx.source, player1(stage))
       : villainAttack(stage, ctx);
+  },
+  INITIATES_ACTIVATION: (stage, ctx) => {
+    return villainAttack(stage, ctx);
   },
   HOST_WOULD_ATTACK: villainAttack,
   HOST_ATTACK_ENDED: villainAttack,

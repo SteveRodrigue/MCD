@@ -293,6 +293,20 @@ export function executeVillainSchemeAgainstPlayer(
 
   const boostOptions = schemeBoostOptions(schemeContext, villain);
   const queue = dealBoostCards(state, villain, boostOptions);
+  state.activeBoostResolution = {
+    queue,
+    activatorInstanceId: villain.instanceId ?? 'villain',
+    targetPlayerId: player.id,
+  };
+  kernel.dispatchTrigger(state, 'INITIATES_ACTIVATION', {
+    activationType: 'SCHEME',
+    targetPlayerId: player.id,
+    attackerType: 'VILLAIN',
+    attackerKind: 'VILLAIN',
+    sourceInstanceId: villain.instanceId,
+    sourceCardCode: villain.card?.code,
+    targetInstanceId: villain.instanceId,
+  });
   schemeContext.totalBoostIcons += resolveBoostCards(state, {
     ...boostOptions,
     queue,
@@ -374,6 +388,21 @@ export function executeMinionSchemeAgainstPlayer(
 
   const boostOptions = schemeBoostOptions(schemeContext, minion);
   const queue = dealBoostCards(state, minion, boostOptions);
+  state.activeBoostResolution = {
+    queue,
+    activatorInstanceId: minion.instanceId,
+    targetPlayerId: player.id,
+  };
+  kernel.dispatchTrigger(state, 'INITIATES_ACTIVATION', {
+    activationType: 'SCHEME',
+    targetPlayerId: player.id,
+    attackerType: 'MINION',
+    attackerKind: 'MINION',
+    attackerCard: minion,
+    sourceInstanceId: minion.instanceId,
+    sourceCardCode: minion.card?.code,
+    targetInstanceId: minion.instanceId,
+  });
   schemeContext.totalBoostIcons += resolveBoostCards(state, {
     ...boostOptions,
     queue,

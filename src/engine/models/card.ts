@@ -205,7 +205,6 @@ export interface VillainCard extends NormalizedCard {
   schemeStar?: boolean;
   attack: number;
   attackStar?: boolean;
-  additionalBoostCards?: number;
 }
 
 /**
@@ -251,5 +250,4 @@ export interface MinionCard extends NormalizedCard {
   health: number;
   boostIcons?: number;
   boostStar?: boolean;
-  additionalBoostCards?: number;
 }

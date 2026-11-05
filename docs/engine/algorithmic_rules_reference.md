@@ -330,7 +330,7 @@ For each card, mechanics are broken down using the following standard schema:
 
 - **MarvelCDB Link:** [https://marvelcdb.com/card/01001a](https://marvelcdb.com/card/01001a)
 - **Official Printed Text:** _"Spider-Sense — **Interrupt**: When the villain initiates an attack against you, draw 1 card."_
-- **Ability Timing & Trigger:** `INTERRUPT` @ `ENEMY_INITIATES_ATTACK`
+- **Ability Timing & Trigger:** `INTERRUPT` @ `INITIATES_ATTACK`
 - **Step-by-Step Resolution:**
   1. **Trigger Window:** Fires immediately when the Villain targets this Hero for an attack (Step 2 of Villain Phase or via encounter cards like _Assault_).
   2. **Timing Precedence:** Resolves **BEFORE** defenders are declared, before boost cards are dealt, and before damage is calculated (RR v1.8 p. 12).

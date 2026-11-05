@@ -108,7 +108,19 @@ describe('Scheme Boost Reveal Prompt & Stepping Resumption (Issue #527)', () => 
     state.encounterDeck = [tigerShark, whirlwind];
 
     // Give villain 1 additional boost card so 2 are dealt
-    getActiveVillain(state).card = { ...getActiveVillain(state).card, additionalBoostCards: 1 };
+    getActiveVillain(state).card = {
+      ...getActiveVillain(state).card,
+      enrichment: {
+        abilities: [
+          {
+            id: 'extra_boost',
+            timing: 'FORCED_INTERRUPT',
+            trigger: 'INITIATES_ACTIVATION',
+            steps: [{ effect: 'GIVE_ADDITIONAL_BOOST_CARD' }],
+          },
+        ],
+      },
+    };
 
     const initialThreat = getActiveMainScheme(state).threat;
     const initialHp = state.players[0].health;

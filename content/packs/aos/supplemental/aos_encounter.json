@@ -1,0 +1,97 @@
+{
+  "$schema": "../../../../src/data/supplemental/schema.json",
+  "cards": {
+    "50165b": {
+      "abilities": [
+        {
+          "id": "baron_zemo_a2_forced_interrupt_activation",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "INITIATES_ACTIVATION",
+          "steps": [
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Baron Zemo",
+                "description": "When Baron Zemo activates against you, choose:",
+                "options": [
+                  {
+                    "id": "place_counters",
+                    "label": "Place 1 secret counter on a Board Member card",
+                    "effect": "ADD_COUNTERS",
+                    "params": {
+                      "counterType": "secret",
+                      "amount": 1,
+                      "filter": {
+                        "traits": ["Board Member"]
+                      }
+                    }
+                  },
+                  {
+                    "id": "additional_boost",
+                    "label": "Give Baron Zemo an additional boost card",
+                    "effect": "GIVE_ADDITIONAL_BOOST_CARD"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T18:35:00Z",
+        "updatedAt": "2026-11-04T18:35:00Z",
+        "reviewedAt": "2026-11-04T18:35:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "[star] <b>Forced Interrupt</b>: When Baron Zemo activates against you, either place 1 secret counter on a [[Board Member]] card or give Baron Zemo an additional boost card for this activation."
+      }
+    },
+    "50166b": {
+      "abilities": [
+        {
+          "id": "baron_zemo_b2_forced_interrupt_activation",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "INITIATES_ACTIVATION",
+          "steps": [
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Baron Zemo",
+                "description": "When Baron Zemo activates against you, choose:",
+                "options": [
+                  {
+                    "id": "place_counters",
+                    "label": "Place 2 secret counters on a Board Member card",
+                    "effect": "ADD_COUNTERS",
+                    "params": {
+                      "counterType": "secret",
+                      "amount": 2,
+                      "filter": {
+                        "traits": ["Board Member"]
+                      }
+                    }
+                  },
+                  {
+                    "id": "additional_boost",
+                    "label": "Give Baron Zemo an additional boost card",
+                    "effect": "GIVE_ADDITIONAL_BOOST_CARD"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-04T18:35:00Z",
+        "updatedAt": "2026-11-04T18:35:00Z",
+        "reviewedAt": "2026-11-04T18:35:00Z",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Steady.\n[star] <b>Forced Interrupt</b>: When Baron Zemo activates against you, either place 2 secret counters on a [[Board Member]] card or give Baron Zemo an additional boost card for this activation."
+      }
+    }
+  }
+}

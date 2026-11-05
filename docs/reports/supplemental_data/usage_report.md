@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Source Packs Scanned:** `aoa_encounter, cap, core, core_encounter, cw_encounter, hood_encounter, mts`
+> **Source Packs Scanned:** `aoa_encounter, aos_encounter, cap, core, core_encounter, cw_encounter, gmw_encounter, hood_encounter, mts, trors_encounter`
 
 ---
 
@@ -8,20 +8,20 @@
 
 | Metric | Count | Health / Coverage | Description |
 | :--- | :---: | :---: | :--- |
-| **Total Cards Registered** | **231** | 100% | Total cards present in `src/data/supplemental/` |
-| **Active Declared Cards** | **210** | - | Cards with executable `abilities: [...]` |
-| **No Supplemental Needed** | [20](detailed_reports/vanilla_and_passive_cards.md) | Verified | Vanilla / passive cards explicitly requiring no supplemental hooks |
+| **Total Cards Registered** | **237** | 100% | Total cards present in `src/data/supplemental/` |
+| **Active Declared Cards** | **218** | - | Cards with executable `abilities: [...]` |
+| **No Supplemental Needed** | [18](detailed_reports/vanilla_and_passive_cards.md) | Verified | Vanilla / passive cards explicitly requiring no supplemental hooks |
 | **Open Ambiguity Reports** | **3** | Blocked | Cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🟢 0 | Cards marked `noSupplementalNeeded` that have printed rules text |
 | **Overall Schema Engine Coverage** | **100.0%** | [Matrix](detailed_reports/schema_code_path_audit.md) | Percentage of all schema primitives with active engine code paths |
 | **Effect Types Code Path Coverage** | **100.0%** | **61/61** | [54 In Use](detailed_reports/effects_usage.md) |
-| **Target Selectors Code Path Coverage** | **100.0%** | **47/47** | [36 In Use](detailed_reports/target_selectors_usage.md) |
+| **Target Selectors Code Path Coverage** | **100.0%** | **48/48** | [36 In Use](detailed_reports/target_selectors_usage.md) |
 | **Step Gates Code Path Coverage** | **100.0%** | **11/11** | [11 In Use](detailed_reports/step_gates_usage.md) |
-| **Trigger Types Code Path Coverage** | **100.0%** | **37/37** | [28 In Use](detailed_reports/timing_and_triggers_usage.md) |
+| **Trigger Types Code Path Coverage** | **100.0%** | **38/38** | [29 In Use](detailed_reports/timing_and_triggers_usage.md) |
 | **Timing Types Code Path Coverage** | **100.0%** | **19/19** | [15 In Use](detailed_reports/timing_and_triggers_usage.md) |
-| **Total Abilities Declared** | **260** | - | Total individual ability definitions declared |
-| **Multi-Step Pipelines (2+ Steps)** | [58](detailed_reports/multi_ability_and_multistep_cards.md) | - | Abilities decomposed into sequenced execution pipelines |
-| **Cards with Multiple Abilities (2+)** | [45](detailed_reports/multi_ability_and_multistep_cards.md) | - | Cards declaring more than 1 distinct ability header |
+| **Total Abilities Declared** | **269** | - | Total individual ability definitions declared |
+| **Multi-Step Pipelines (2+ Steps)** | [59](detailed_reports/multi_ability_and_multistep_cards.md) | - | Abilities decomposed into sequenced execution pipelines |
+| **Cards with Multiple Abilities (2+)** | [46](detailed_reports/multi_ability_and_multistep_cards.md) | - | Cards declaring more than 1 distinct ability header |
 
 ---
 
@@ -41,7 +41,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 
 | Category | Active Count | Detailed Breakdown |
 | :--- | :---: | :--- |
-| **Vanilla / Passive Cards** | **20** | [View Full List](detailed_reports/vanilla_and_passive_cards.md) |
+| **Vanilla / Passive Cards** | **18** | [View Full List](detailed_reports/vanilla_and_passive_cards.md) |
 | **Play Requirements** | **2** | `identityForm` (1), `controlFilter` (4) |
 | **Card Uses & Counters** | **6** | `uses (web)` (1), `uses (energy)` (1), `uses (attack)` (1), `uses (snoop)` (1), `uses (arrow)` (1), `uses (medical)` (1) |
 | **Player Recipient Overrides** | **1** | `FIRST_PLAYER` (1) |
@@ -54,10 +54,10 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | Component | In Use | Schema Total | Coverage | Detailed Report |
 | :--- | :---: | :---: | :---: | :--- |
 | **Ability Timings** | **15** | 19 | 100.0% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md) |
-| **Trigger Windows** | **28** | 37 | 100.0% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md#2-trigger-windows-triggertypeschema) |
-| **Trigger Filters** | **13** | - | - | `countersHere` (1), `attackerKind` (3), `targetPlayerScope` (3), `damageSource` (1), `cardFilter` (2), `targetScope` (5), `attackedBy` (2), `sourceCardCode` (1), `targetType` (3), `defeatedByAttackOf` (3), `defenderType` (2), `threatSource` (2), `isSecondaryAttack` (1) |
+| **Trigger Windows** | **29** | 38 | 100.0% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md#2-trigger-windows-triggertypeschema) |
+| **Trigger Filters** | **13** | - | - | `countersHere` (1), `attackerKind` (3), `targetPlayerScope` (3), `damageSource` (1), `cardFilter` (2), `targetScope` (6), `attackedBy` (2), `sourceCardCode` (1), `targetType` (3), `defeatedByAttackOf` (3), `defenderType` (2), `threatSource` (2), `isSecondaryAttack` (1) |
 | **Cost Primitives** | **9** | - | - | `discardCard` (3), `exhaustSelf` (21), `spendCounters` (5), `resourceCost` (14), `heal` (1), `discardSelf` (5), `damageHero` (1), `damageSelf` (1), `exhaustCard` (3) |
-| **Multi-Ability Cards (2+)** | **45** | - | - | [View 45 Cards](detailed_reports/multi_ability_and_multistep_cards.md) |
+| **Multi-Ability Cards (2+)** | **46** | - | - | [View 46 Cards](detailed_reports/multi_ability_and_multistep_cards.md) |
 
 ---
 
@@ -85,7 +85,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | Mechanism | In Use | Schema Total | Coverage | Detailed Breakdown |
 | :--- | :---: | :---: | :---: | :--- |
 | **Step Gates** | **11** | 11 | 100.0% | [View Gates Breakdown](detailed_reports/step_gates_usage.md) |
-| **Gate Parameters** | **13** | - | - | `cardCode` (10), `counterType` (4), `form` (20), `step` (10), `negate` (11), `filter` (2), `trait` (4), `resource` (5), `count` (2), `result` (10), `target` (1), `attackerKind` (2), `zone` (1) |
+| **Gate Parameters** | **14** | - | - | `cardCode` (13), `counterType` (4), `form` (20), `step` (10), `negate` (11), `filter` (2), `trait` (4), `resource` (5), `count` (2), `result` (10), `target` (1), `attackerKind` (2), `zone` (1), `controller` (3) |
 
 ---
 
@@ -95,9 +95,9 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 
 | Effect Primitive | Declaring Cards | Occurrences | Detailed Card List |
 | :--- | :---: | :---: | :--- |
-| `DISCARD` | **33 cards** | 37 steps | [View Cards](detailed_reports/effects_usage.md#discard) |
+| `DISCARD` | **34 cards** | 38 steps | [View Cards](detailed_reports/effects_usage.md#discard) |
 | `DEAL_DAMAGE` | **27 cards** | 30 steps | [View Cards](detailed_reports/effects_usage.md#deal-damage) |
-| `PLAYER_CHOICE` | **17 cards** | 17 steps | [View Cards](detailed_reports/effects_usage.md#player-choice) |
+| `PLAYER_CHOICE` | **19 cards** | 19 steps | [View Cards](detailed_reports/effects_usage.md#player-choice) |
 | `ADD_THREAT` | **17 cards** | 19 steps | [View Cards](detailed_reports/effects_usage.md#add-threat) |
 | `SURGE` | **16 cards** | 16 steps | [View Cards](detailed_reports/effects_usage.md#surge) |
 | `MODIFY_STAT` | **16 cards** | 18 steps | [View Cards](detailed_reports/effects_usage.md#modify-stat) |
@@ -105,6 +105,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | `EXECUTE_SPECIAL` | **15 cards** | 15 steps | [View Cards](detailed_reports/effects_usage.md#execute-special) |
 | `ADD_STATUS` | **14 cards** | 17 steps | [View Cards](detailed_reports/effects_usage.md#add-status) |
 | `DRAW` | **11 cards** | 11 steps | [View Cards](detailed_reports/effects_usage.md#draw) |
+| `GIVE_ADDITIONAL_BOOST_CARD` | **11 cards** | 11 steps | [View Cards](detailed_reports/effects_usage.md#give-additional-boost-card) |
 | `REMOVE_THREAT` | **10 cards** | 12 steps | [View Cards](detailed_reports/effects_usage.md#remove-threat) |
 | `HEAL_DAMAGE` | **9 cards** | 11 steps | [View Cards](detailed_reports/effects_usage.md#heal-damage) |
 | `VILLAIN_ATTACKS` | **7 cards** | 7 steps | [View Cards](detailed_reports/effects_usage.md#villain-attacks) |
@@ -123,20 +124,20 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | Feature | In Use | Declared Keys / Resolvers |
 | :--- | :---: | :--- |
 | **Dynamic Value Sources** | **15** | `DISCARDED_CARDS (attr: RESOURCE_ICONS)`, `HAS_IDENTITY`, `RESOURCES_SPENT`, `COUNTERS (counter: energy)`, `STAT_VALUE (stat: SUFFERED_DAMAGE)`, `DISCARDED_CARDS (attr: COUNT)` *(+9 more)* |
-| **Filter Criteria Keys** | **7** | `types` (46), `sets` (12), `isIdentitySpecific` (1), `traits` (29), `resourceIcons` (2), `codes` (8), `isFacedown` (2) |
+| **Filter Criteria Keys** | **7** | `types` (48), `sets` (12), `isIdentitySpecific` (1), `traits` (29), `resourceIcons` (2), `codes` (8), `isFacedown` (2) |
 | **Filter Compositions** | **0** | *(None declared)* |
 
 ---
 
 ## ⚠️ 9. Code Path Verification & Zero-Usage Detection
 
-Every schema primitive is verified for a matching engine handler. Check the complete **[Schema Primitives Code Path Matrix](detailed_reports/schema_code_path_audit.md)** for status on all 175 schema definitions.
+Every schema primitive is verified for a matching engine handler. Check the complete **[Schema Primitives Code Path Matrix](detailed_reports/schema_code_path_audit.md)** for status on all 177 schema definitions.
 
 ### Summary of Unhandled or Zero-Usage Primitives:
 | Category | Schema Total | Unused in Cards (0 Cards) | Missing Engine Handler |
 | :--- | :---: | :---: | :---: |
 | **Effects** | 61 | 7 | 🟢 0 |
-| **Targets** | 47 | 11 | 🟢 0 |
+| **Targets** | 48 | 12 | 🟢 0 |
 | **Gates** | 11 | 0 | 🟢 0 |
-| **Triggers** | 37 | 9 | 🟢 0 |
+| **Triggers** | 38 | 9 | 🟢 0 |
 | **Timings** | 19 | 4 | 🟢 0 |

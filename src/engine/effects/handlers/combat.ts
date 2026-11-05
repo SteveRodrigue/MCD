@@ -7,6 +7,7 @@ import {
   PendingActivation,
   CardInstance,
 } from '@engine/models';
+import { kernel } from '../../kernel';
 import {
   executeVillainAttackAgainstPlayer,
   executeVillainSchemeAgainstPlayer,
@@ -81,15 +82,22 @@ function handleCancelAttack(
 
 function handleGiveAdditionalBoostCard(
   state: GameState,
-  _step: TypedStep<'GIVE_ADDITIONAL_BOOST_CARD'>,
-  _context: EffectExecutionContext,
-  _player: PlayerState,
+  step: TypedStep<'GIVE_ADDITIONAL_BOOST_CARD'>,
+  context: EffectExecutionContext,
+  player: PlayerState,
 ): EffectResult {
-  // Adds a card to the boost queue of the running activation: an attack or a scheme.
+  // Adds cards to the boost queue of the running activation: an attack or a scheme.
   const boostResolution = state.activeBoostResolution;
   if (boostResolution) {
-    const extraCard = drawEncounterCard(state);
-    if (extraCard) {
+    const params = getStepEffectParams(step);
+    const rawCount = params.count;
+    const count =
+      rawCount !== undefined
+        ? kernel.evaluateDynamicAmount(rawCount, context, { state, player })
+        : 1;
+    for (let i = 0; i < count; i++) {
+      const extraCard = drawEncounterCard(state);
+      if (!extraCard) break;
       boostResolution.queue.push(extraCard);
       appendLog(state, {
         category: state.activeAttackContext ? 'combat' : 'scheme',

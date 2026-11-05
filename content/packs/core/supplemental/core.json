@@ -15,7 +15,7 @@
         {
           "id": "spider_sense",
           "timing": "INTERRUPT",
-          "trigger": "ENEMY_INITIATES_ATTACK",
+          "trigger": "INITIATES_ATTACK",
           "triggerFilter": {
             "attackerKind": "VILLAIN",
             "targetPlayerScope": "SELF"

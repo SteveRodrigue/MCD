@@ -56,7 +56,7 @@ describe('Issue #604: Klaw attack-hook and keyword cards (01113, 01115, 01120)',
     it('deals 2 boost cards (1 base + 1 additional) during an undefended attack', () => {
       const klawI = cardCatalog.getCard('01113') as VillainCard;
       expect(klawI).toBeDefined();
-      expect(klawI.additionalBoostCards).toBe(1);
+      expect(klawI.enrichment?.abilities?.some((a) => a.trigger === 'INITIATES_ATTACK')).toBe(true);
 
       const villain = getActiveVillain(state);
       villain.card = klawI;
@@ -87,7 +87,9 @@ describe('Issue #604: Klaw attack-hook and keyword cards (01113, 01115, 01120)',
       const klawIII = cardCatalog.getCard('01115') as VillainCard;
       expect(klawIII).toBeDefined();
       expect(klawIII.keywords).toContain(Keyword.TOUGHNESS);
-      expect(klawIII.additionalBoostCards).toBe(1);
+      expect(klawIII.enrichment?.abilities?.some((a) => a.trigger === 'INITIATES_ATTACK')).toBe(
+        true,
+      );
 
       const villain = getActiveVillain(state);
       villain.card = klawIII;

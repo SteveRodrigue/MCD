@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { AlterEgoCard, CardInstance, GameState, HeroCard, getActiveVillain } from '@engine/models';
+import {
+  AlterEgoCard,
+  CardInstance,
+  GameState,
+  HeroCard,
+  StatusCard,
+  getActiveMainScheme,
+  getActiveVillain,
+} from '@engine/models';
 import { createCardInstance, setupGame } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
@@ -11,6 +19,11 @@ import { evaluatePlayRequirements } from '@engine/pipeline/legality-checker';
 const WAKANDA_FOREVER = '01043a';
 const ENERGY_DAGGERS = '01046';
 const PANTHER_CLAWS = '01047';
+const TACTICAL_GENIUS = '01048';
+const VIBRANIUM_SUIT = '01049';
+const CHASE_THEM_DOWN = '01052';
+const ADVANCED_ULTRON_DRONE = '01143';
+const WHIPLASH = '01172';
 const WEB_SHOOTER = '01008';
 const SWINGING_WEB_KICK = '01005';
 const FILLER = '01044'; // Vibranium, a basic resource
@@ -210,5 +223,255 @@ describe('S8: Wakanda Forever! vs Drones', () => {
     // Control: the same card in the tableau makes it playable
     panther.tableau = [instance(PANTHER_CLAWS)];
     expect(evaluatePlayRequirements(state, panther, wakanda).allowed).toBe(true);
+  });
+});
+
+// Plan #640: Vibranium Suit chooses its enemy, and the Specials keep their printed labels.
+describe('#640: Vibranium Suit and the labels of the Specials', () => {
+  function damagedPanther(state: GameState, damage = 3) {
+    const panther = state.players[0];
+    panther.health -= damage;
+    return panther;
+  }
+  const optionIds = (state: GameState) => peekDecisionPrompt(state)!.options.map((o) => o.id);
+  const ultronId = (state: GameState) => getActiveVillain(state).instanceId!;
+
+  it('S1: Vibranium Suit asks for an enemy and moves the damage to the chosen Drone', () => {
+    const state = ultronGame();
+    const panther = damagedPanther(state);
+    panther.tableau = [instance(VIBRANIUM_SUIT)];
+    const [drone] = dronesFrom(state, 'p1', [WEB_SHOOTER, SWINGING_WEB_KICK]);
+    const [otherDrone] = dronesFrom(state, 'p2', [WEB_SHOOTER]);
+    const health = panther.health;
+    const ultronHp = getActiveVillain(state).health;
+
+    const played = playWakandaForever(state).state;
+
+    const prompt = peekDecisionPrompt(played)!;
+    expect(prompt.title).toBe('Vibranium Suit: Choose an Enemy');
+    expect(prompt.options.map((o) => o.id)).toEqual(
+      expect.arrayContaining([ultronId(played), drone.instanceId, otherDrone.instanceId]),
+    );
+    expect(prompt.options).toHaveLength(4);
+
+    const after = answer(played, { selectedOptionId: drone.instanceId });
+
+    // The only upgrade is the final step: 2 damage moves, and the Drone is defeated
+    expect(after.players[0].health).toBe(health + 2);
+    expect(getActiveVillain(after).health).toBe(ultronHp);
+    expect(after.players[0].engagedMinions.map((m) => m.instanceId)).not.toContain(
+      drone.instanceId,
+    );
+    expect(codesIn(after.players[0].discard)).toContain(WEB_SHOOTER);
+  });
+
+  it('S1-a: Drones in the prompt name the hero they are engaged with', () => {
+    const state = ultronGame();
+    damagedPanther(state).tableau = [instance(VIBRANIUM_SUIT)];
+    dronesFrom(state, 'p1', [WEB_SHOOTER]);
+    dronesFrom(state, 'p2', [WEB_SHOOTER]);
+
+    const prompt = peekDecisionPrompt(playWakandaForever(state).state)!;
+
+    expect(prompt.options.map((o) => o.label)).toEqual(
+      expect.arrayContaining([
+        'Drone (engaged with Black Panther)',
+        'Drone (engaged with Spider-Man)',
+      ]),
+    );
+  });
+
+  it('S1-b: the log names the villain the damage moved to', () => {
+    const state = ultronGame();
+    damagedPanther(state).tableau = [instance(VIBRANIUM_SUIT)];
+    dronesFrom(state, 'p1', [WEB_SHOOTER]);
+
+    const played = playWakandaForever(state).state;
+    const after = answer(played, { selectedOptionId: ultronId(played) });
+
+    const moved = after.log.find((l) => l.key === 'damage.transferred')!;
+    expect(moved.params).toMatchObject({ target: getActiveVillain(after).card.name, amount: 2 });
+  });
+
+  it('S2: Suit first pauses the sequence, Claws keeps its finisher', () => {
+    const state = ultronGame();
+    const panther = damagedPanther(state);
+    const suit = instance(VIBRANIUM_SUIT);
+    const claws = instance(PANTHER_CLAWS);
+    panther.tableau = [suit, claws];
+    const [drone] = dronesFrom(state, 'p1', [WEB_SHOOTER, SWINGING_WEB_KICK]);
+    const health = panther.health;
+    const ultronHp = getActiveVillain(state).health;
+
+    const ordered = answer(playWakandaForever(state).state, {
+      sequenceOrder: [suit.instanceId, claws.instanceId],
+    });
+
+    // Nothing has resolved while the Suit waits for its target
+    expect(peekDecisionPrompt(ordered)!.sourceCardName).toBe('Vibranium Suit');
+    expect(getActiveVillain(ordered).health).toBe(ultronHp);
+
+    const afterSuit = answer(ordered, { selectedOptionId: drone.instanceId });
+    expect(afterSuit.players[0].health).toBe(health + 1);
+    expect(peekDecisionPrompt(afterSuit)!.sourceCardName).toBe('Panther Claws');
+
+    const after = answer(afterSuit, { selectedOptionId: ultronId(afterSuit) });
+    expect(getActiveVillain(after).health).toBe(ultronHp - 4);
+    expect(peekDecisionPrompt(after)).toBeUndefined();
+  });
+
+  it('S2-a: Suit last moves 2 after the choice', () => {
+    const state = ultronGame();
+    const panther = damagedPanther(state);
+    const suit = instance(VIBRANIUM_SUIT);
+    const claws = instance(PANTHER_CLAWS);
+    panther.tableau = [claws, suit];
+    dronesFrom(state, 'p1', [WEB_SHOOTER]);
+    const health = panther.health;
+    const ultronHp = getActiveVillain(state).health;
+
+    const ordered = answer(playWakandaForever(state).state, {
+      sequenceOrder: [claws.instanceId, suit.instanceId],
+    });
+    const afterClaws = answer(ordered, { selectedOptionId: ultronId(ordered) });
+    const after = answer(afterClaws, { selectedOptionId: ultronId(afterClaws) });
+
+    expect(after.players[0].health).toBe(health + 2);
+    expect(getActiveVillain(after).health).toBe(ultronHp - 2 - 2);
+  });
+
+  it('S3: with a Guard minion engaged, Suit and Claws do not offer Ultron', () => {
+    for (const code of [VIBRANIUM_SUIT, PANTHER_CLAWS]) {
+      const state = ultronGame();
+      const panther = damagedPanther(state);
+      panther.tableau = [instance(code)];
+      const guard = instance(ADVANCED_ULTRON_DRONE);
+      panther.engagedMinions.push(guard);
+      const [drone] = dronesFrom(state, 'p1', [WEB_SHOOTER]);
+
+      const played = playWakandaForever(state).state;
+
+      expect(optionIds(played)).toEqual(
+        expect.arrayContaining([guard.instanceId, drone.instanceId]),
+      );
+      expect(optionIds(played)).not.toContain(ultronId(played));
+    }
+  });
+
+  it('S3-b: the Guard minion as the only valid target is used without asking', () => {
+    const state = ultronGame();
+    const panther = damagedPanther(state);
+    panther.tableau = [instance(VIBRANIUM_SUIT)];
+    const guard = instance(ADVANCED_ULTRON_DRONE);
+    panther.engagedMinions.push(guard);
+    const ultronHp = getActiveVillain(state).health;
+
+    const played = playWakandaForever(state).state;
+
+    expect(peekDecisionPrompt(played)).toBeUndefined();
+    expect(guard.tokens?.damage).toBe(2);
+    expect(getActiveVillain(played).health).toBe(ultronHp);
+  });
+
+  it('S3-a: a Guard minion on another player does not block Ultron', () => {
+    const state = ultronGame();
+    damagedPanther(state).tableau = [instance(VIBRANIUM_SUIT)];
+    state.players[1].engagedMinions.push(instance(ADVANCED_ULTRON_DRONE));
+
+    const played = playWakandaForever(state).state;
+
+    expect(optionIds(played)).toContain(ultronId(played));
+  });
+
+  it('S4: at full health Suit opens no prompt and the sequence continues', () => {
+    const state = ultronGame();
+    const panther = state.players[0];
+    const suit = instance(VIBRANIUM_SUIT);
+    const claws = instance(PANTHER_CLAWS);
+    panther.tableau = [suit, claws];
+    const [drone] = dronesFrom(state, 'p1', [WEB_SHOOTER, SWINGING_WEB_KICK]);
+    const health = panther.health;
+
+    const ordered = answer(playWakandaForever(state).state, {
+      sequenceOrder: [suit.instanceId, claws.instanceId],
+    });
+
+    expect(peekDecisionPrompt(ordered)!.sourceCardName).toBe('Panther Claws');
+    expect(ordered.players[0].health).toBe(health);
+    expect(ordered.log.some((l) => l.key === 'damage.transferred')).toBe(false);
+    expect(drone.tokens?.damage ?? 0).toBe(0);
+  });
+
+  it('S5: Stun cancels only the first attack Special and is removed', () => {
+    const state = ultronGame();
+    const panther = damagedPanther(state);
+    panther.statusCards = [StatusCard.STUNNED];
+    const claws = instance(PANTHER_CLAWS);
+    const suit = instance(VIBRANIUM_SUIT);
+    panther.tableau = [claws, suit];
+    const health = panther.health;
+    const ultronHp = getActiveVillain(state).health;
+
+    const after = answer(playWakandaForever(state).state, {
+      sequenceOrder: [claws.instanceId, suit.instanceId],
+    });
+
+    expect(after.players[0].statusCards).not.toContain(StatusCard.STUNNED);
+    // Claws did nothing; the Suit, final step, moved 2 to the only enemy
+    expect(after.players[0].health).toBe(health + 2);
+    expect(getActiveVillain(after).health).toBe(ultronHp - 2);
+  });
+
+  it('S5-a: Confused cancels Tactical Genius; Energy Daggers is not cancelled by Stun', () => {
+    const thwart = ultronGame();
+    const confused = thwart.players[0];
+    confused.statusCards = [StatusCard.CONFUSED];
+    confused.tableau = [instance(TACTICAL_GENIUS)];
+    getActiveMainScheme(thwart).threat = 4;
+
+    const afterThwart = playWakandaForever(thwart).state;
+
+    expect(getActiveMainScheme(afterThwart).threat).toBe(4);
+    expect(afterThwart.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
+
+    const daggers = ultronGame();
+    const stunned = daggers.players[0];
+    stunned.statusCards = [StatusCard.STUNNED];
+    stunned.tableau = [instance(ENERGY_DAGGERS)];
+    const hp = getActiveVillain(daggers).health;
+
+    const afterDaggers = chooseDaggersPlayer(playWakandaForever(daggers).state, 'p1');
+
+    expect(getActiveVillain(afterDaggers).health).toBe(hp - 2);
+    expect(afterDaggers.players[0].statusCards).toContain(StatusCard.STUNNED);
+  });
+
+  it('S6: Suit on Whiplash provokes Retaliate inside Wakanda Forever!', () => {
+    const state = ultronGame();
+    const panther = damagedPanther(state);
+    panther.tableau = [instance(VIBRANIUM_SUIT)];
+    const whiplash = instance(WHIPLASH);
+    panther.engagedMinions.push(whiplash);
+    const health = panther.health;
+
+    const played = playWakandaForever(state).state;
+    const after = answer(played, { selectedOptionId: whiplash.instanceId });
+
+    expect(after.log.some((l) => l.key === 'retaliate.hit')).toBe(true);
+    expect(after.players[0].health).toBe(health + 2 - 1);
+  });
+
+  it('S6-a: Claws defeating an enemy offers Chase Them Down', () => {
+    const state = ultronGame();
+    const panther = state.players[0];
+    panther.tableau = [instance(PANTHER_CLAWS)];
+    panther.hand = [createCardInstance(cardCatalog.getCard(CHASE_THEM_DOWN)!, 'p1')];
+    getActiveMainScheme(state).threat = 4;
+    const [drone] = dronesFrom(state, 'p1', [WEB_SHOOTER]);
+
+    const played = playWakandaForever(state).state;
+    const after = answer(played, { selectedOptionId: drone.instanceId });
+
+    expect(peekDecisionPrompt(after)?.sourceCardCode).toBe(CHASE_THEM_DOWN);
   });
 });

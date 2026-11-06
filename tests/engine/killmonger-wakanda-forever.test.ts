@@ -47,7 +47,7 @@ function buildGame(): { state: GameState; killmonger: CardInstance; guard: CardI
   player.currentForm = 'hero';
   player.activeFormCard = cardCatalog.getCard('01040a')!;
   const killmonger = createCardInstance(cardCatalog.getCard('01157')!);
-  const guard = createCardInstance(cardCatalog.getCard('01096')!); // Armored Guard
+  const guard = createCardInstance(cardCatalog.getCard('01130')!); // Whirlwind (6 HP, no Guard)
   player.engagedMinions = [killmonger, guard];
   return { state, killmonger, guard };
 }
@@ -108,7 +108,7 @@ describe('Killmonger 01157 vs Wakanda Forever! (#297)', () => {
     const claws = upgrade(PANTHER_CLAWS);
     state.players[0].tableau = [claws];
     const hp = getActiveVillain(state).health;
-    // Armored Guard is a valid target too, so the player chooses; Killmonger is never offered.
+    // Whirlwind is a valid target too, so the player chooses; Killmonger is never offered.
     const res = playWakandaForever(state, [claws.instanceId]);
     const after = chooseVillain(res.state);
 
@@ -127,7 +127,7 @@ describe('Killmonger 01157 vs Wakanda Forever! (#297)', () => {
     expect(ids).not.toContain(killmonger.instanceId);
   });
 
-  it('W3. Energy Daggers alone (final, 2 damage): villain and Armored Guard take 2, Killmonger 0', () => {
+  it('W3. Energy Daggers alone (final, 2 damage): villain and Whirlwind take 2, Killmonger 0', () => {
     const { state, killmonger, guard } = buildGame();
     const daggers = upgrade(ENERGY_DAGGERS);
     state.players[0].tableau = [daggers];

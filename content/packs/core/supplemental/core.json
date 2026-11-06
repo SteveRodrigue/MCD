@@ -1882,7 +1882,8 @@
               "effect": "TRANSFER_DAMAGE",
               "effectParams": {
                 "amount": 1,
-                "finisherBonus": 1
+                "finisherBonus": 1,
+                "target": "CHOSEN_ENEMY"
               }
             }
           ]
@@ -1890,7 +1891,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-10-07T12:00",
+        "updatedAt": "2026-11-06T12:00",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",

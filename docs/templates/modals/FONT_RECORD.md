@@ -3,7 +3,7 @@
 One page to check which fonts a theme has, which ones can be changed, and which cannot (yet). The table
 "What each theme uses today" is generated from `src/ui/theme/modal-styles.ts` (`npm run docs:fonts`) and a
 test fails when it is stale. The rest is written by hand and checked by `tests/tools/fonts-record.test.ts`.
-The plan for the remaining font work is [PLAN_fonts.md](./PLAN_fonts.md).
+The player font choice is issue #374.
 
 **Legend:** ✅ can be set today · ❌ cannot be set today (reason given) · 🔒 fixed on purpose.
 

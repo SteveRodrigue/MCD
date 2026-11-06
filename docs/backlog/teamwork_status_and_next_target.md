@@ -1,8 +1,8 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-10-27 (code audit AUD-20261017-232534 remediated; R1–R16 delivered; #268 delivered; #309 moved to Tech Debt & Tooling after initial strategic bot `02a57dbd`)
+> **Last updated:** 2026-11-06 (Gate 1 milestone has no open issue; finished plans removed from the repository)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
-> **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino, Standard and Expert).
+> **Active gate:** the open `Gate N` milestone with the lowest N that still has open issues (today Gate 2, Klaw & Ultron).
 > **Verification baseline:** run `npm run verify` (tests, types, lint, format, build). The pre-push hook enforces 0 failed and 0 skipped tests; no test count is recorded here because it goes stale with every commit.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
@@ -10,21 +10,22 @@
 
 ## 1. Where we are
 
-Phases 1 to 5 track A (combat flow, ability legality, shared gating, audit cleanups, reported card bugs) and the core card reviews (`effectParams` audit, core player cards Tier 1 and 2, core encounter read-through) are done. What is left of Gate 1 is listed in section 3, in order.
+The Gate 1 milestone has no open issue. The only open issue in Gate 2 is #618 (art packs). Then Gate 3.
 
 Open work lives in **GitHub milestones**, one per release gate. Every open issue belongs to exactly one:
 
 | Milestone                                                                                    | Scope                                                                       |
 | :------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
-| [Gate 1 — Rhino Release](https://github.com/SteveRodrigue/MCD/milestone/2)                   | **Active.** Core heroes vs Rhino, rules-verified, 100-game simulation       |
-| [Gate 2 — Klaw & Ultron](https://github.com/SteveRodrigue/MCD/milestone/3)                   | Klaw, Ultron, 4 Core modular sets, Scenario Plug-In & Editor overhaul       |
+| [Gate 1 — Rhino Release](https://github.com/SteveRodrigue/MCD/milestone/2)                   | Core heroes vs Rhino, rules-verified, 100-game simulation. No open issue    |
+| [Gate 2 — Klaw & Ultron](https://github.com/SteveRodrigue/MCD/milestone/3)                   | **Active.** Klaw, Ultron, 4 Core modular sets, Scenario Plug-In & Editor overhaul |
 | [Gate 3 — Green Goblin (MC02)](https://github.com/SteveRodrigue/MCD/milestone/4)             | MC02 double-sided villain form flip (#470), Risky Business, Mutagen Formula |
 | [Gate 4 — Wrecking Crew (MC03)](https://github.com/SteveRodrigue/MCD/milestone/5)            | MC03 multi-villain scenario, per-villain decks/schemes, active counter      |
 | [Gate 5 — Expansions & Advanced Mechanics](https://github.com/SteveRodrigue/MCD/milestone/7) | Advanced mechanics not yet implemented or incomplete                        |
 | [Tech Debt & Tooling](https://github.com/SteveRodrigue/MCD/milestone/6)                      | Refactors, guards, tooling; no gate depends on them                         |
 | [Undetermined — Multiplayer Co-op](https://github.com/SteveRodrigue/MCD/milestone/8)         | Far future: 2–4 player tabletop, Alliance, Team-Up, cross-player triggers   |
+| [UI theming](https://github.com/SteveRodrigue/MCD/milestone/9)                               | Theme follow-ups: font choice, naming, thumbnail frame                      |
 
-New issues get a milestone at triage. Scope rule (roadmap): Gate 1 work targets only Core Set player cards and Rhino encounter cards (Rhino, Standard, Expert, Bomb Scare, the 5 core nemesis sets).
+New issues get a milestone at triage.
 
 ---
 
@@ -42,7 +43,7 @@ Sources: [AGENTS.md](../../AGENTS.md), `.agents/rules/*.md` (shared quality gate
 8. **Out-of-scope gaps become GitHub issues** (with printed text, evidence, acceptance criteria and a milestone), not silent notes.
 9. **Gates before reporting done:** `npm test`, `npm run typecheck`, `npm run lint`, `npx prettier --check "src/**/*.{ts,tsx}" "tests/**/*.{ts,tsx}"` (all green), then `npm run report:declarations` after any supplemental change.
 10. **After each item:** add a changelog fragment `changes/unreleased/<issue>-<slug>.md` (format: `changes/README.md`; never edit `CHANGELOG.md`), delete the plan file in the same commit, and update this file: remove the finished row from section 3 (do not keep a "done" list here; the commit and changelog are the record).
-11. **Deliver only when the owner asks.** `main` is protected: branch, commit, push, pull request, CI, squash-merge (the `commit-and-push` skill does the chain). Conventional Commits, one commit per issue where possible, `Fixes #N` only when the issue is fully done (`Refs #N` otherwise), end with the `Co-Authored-By` line used in recent commits. Verify the issue state after the merge.
+11. **Delivery** runs when the owner asks, or automatically once an approved plan is implemented and verified. `main` is protected: branch, commit, push, pull request, CI, squash-merge (the `commit-and-push` skill does the chain). Conventional Commits, one commit per issue where possible, `Fixes #N` only when the issue is fully done (`Refs #N` otherwise), end with the `Co-Authored-By` line used in recent commits. Verify the issue state after the merge.
 
 ### Practical pitfalls
 
@@ -58,48 +59,17 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 
 ---
 
-## 3. Gate 1 work queue (ordered; the first open row is the next task)
+## 3. Work queue (ordered; the first open row is the next task)
 
-Every row needs a plan file and the owner's approval before code (rule 1). Rows marked **owner decision** wait for an answer in chat (section 5). Chores outside the gates (Dependabot alerts, dependency updates) are not tracked here. Estimates are for one plan + TDD + gates cycle.
+Every row needs a plan file and the owner's approval before code (rule 1). Rows marked **owner decision** wait for an answer in chat (section 5). Chores outside the gates (Dependabot alerts, dependency updates) are not tracked here.
 
-### 3.1 Bugs seen in real Rhino games (do first)
-
-No open row.
-
-
-### 3.2 Rules gaps that affect core cards
-
-No open row.
-
-
-### 3.3 Release gate: 100-game simulation (roadmap 1.4)
-
-No open row.
-
-### 3.4 UI should-haves
-
-No open row.
-
-### 3.5 Code audit AUD-20261017-232534: delivered
-
-The 21 findings were remediated on 2026-10-17/18 (`94ebc97..f6e470f`, pushed) and the follow-up plans R1 to R16 are all delivered. No audit work remains; the table is kept as the record of what each row delivered.
-
-| #   | Item                                                                                                    | Gate / milestone | Tier | Estimate | Plan |
-| --- | ------------------------------------------------------------------------------------------------------- | ---------------- | ---- | -------- | ---- |
-| R13 | Remove `state.villain` / `mainScheme` (F016, #215) — **done 2026-10-20** (plan deleted)                 | Gate 4           | 3    | 1 day    | —    |
-| R14 | Shared test fixtures; drop unused execution stack (F013) — **done 2026-10-20** (plan deleted)           | Tech Debt        | 1    | 1 day    | —    |
-| R15 | Audit open questions: log growth, art fallback CORS, bundled packs — **done 2026-10-21** (plan deleted) | Tech Debt        | 1    | 2–4 h    | —    |
-| R16 | Review all documentation (ADRs, specs, guides) against the code — **done 2026-10-21** (plan deleted)    | Tech Debt        | 1    | 1–2 days | —    |
-
-Follow-up from R11 (delivered): [#339](https://github.com/SteveRodrigue/MCD/issues/339) extends the import-cycle audit to the `@data`, `@ui` and `@assets` aliases (Tech Debt, P3, about 20 minutes).
-
-**Gate 1 is done when** sections 3.1 to 3.4 are empty (R2, the last Gate 1 row of section 3.5, is delivered), the Gate 1 milestone has no open issue, and `npm run simulate` passes the 100-game gate.
+No open row. `next-task` falls back on the active gate milestone.
 
 ---
 
 ## 4. Handoff protocol
 
-Run the `next-task` skill (it reads this file). Plan anatomy and owner preferences: [README.md](README.md). Work outside Gate 1 (the other milestones) starts only when the owner asks.
+Run the `next-task` skill (it reads this file). Plan anatomy and owner preferences: [README.md](README.md). Work outside the active gate starts only when the owner asks.
 
 ---
 
@@ -109,13 +79,13 @@ Nothing is waiting for your answer.
 
 Decisions taken are recorded in the row they affect (section 3) and on the issue.
 
-### Filed outside Gate 1 (not queued)
+### Filed outside the active gate (not queued)
 
-Milestone Tech Debt & Tooling, simulation follow-ups: [#309](https://github.com/SteveRodrigue/MCD/issues/309) further win-rate tuning beyond the two 4-iteration passes (`02a57dbd`, notes in `plan_issue_309_strategic_player_bot.md`).
+Milestone Undetermined — Multiplayer Co-op, simulation follow-ups: [#309](https://github.com/SteveRodrigue/MCD/issues/309) further win-rate tuning beyond the two 4-iteration passes (`02a57dbd`; pass results in `git show f617608f:docs/backlog/plan_issue_309_strategic_player_bot.md`, sections 9 to 11).
 
 Milestone Tech Debt & Tooling, from the legality gate review (ADR-0090): all delivered (#365 to #367, #457 and #370 to #372).
 
-Milestone Tech Debt & Tooling, from the theming work (plans in `docs/templates/modals/`): #364 and #373 delivered; open: [#374](https://github.com/SteveRodrigue/MCD/issues/374) player font choice (N7); [#375](https://github.com/SteveRodrigue/MCD/issues/375) rename `ModalStyle` to `ThemeStyle`; [#376](https://github.com/SteveRodrigue/MCD/issues/376) `CardArtThumbnail` frame follows the theme.
+Milestone UI theming: [#374](https://github.com/SteveRodrigue/MCD/issues/374) player font choice (N7; earlier analysis in `git show c2f517f6:docs/templates/modals/PLAN_fonts.md` and `PLAN_game_integration.md`); [#375](https://github.com/SteveRodrigue/MCD/issues/375) rename `ModalStyle` to `ThemeStyle`; [#376](https://github.com/SteveRodrigue/MCD/issues/376) `CardArtThumbnail` frame follows the theme.
 
 Milestone Gate 5:
 

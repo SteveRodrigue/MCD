@@ -5,7 +5,7 @@
 * **Authors:** MCD Core Team
 * **Deciders:** Project Maintainer
 * **Supersedes in part:** [ADR-0011](0011-card-orientation-and-art-caching.md) (image cache location), [ADR-0015](0015-user-content-and-deck-storage-architecture.md) (folder layout)
-* **Related:** [ADR-0006](0006-local-first-card-data-architecture.md), [ADR-0033](0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md), [Content Folder Refactor plan](../backlog/plan_content_folder_refactor.md) (decisions Q3 to Q40)
+* **Related:** [ADR-0006](0006-local-first-card-data-architecture.md), [ADR-0033](0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md), Content Folder Refactor plan (decisions Q3 to Q40; removed after delivery, read it with `git show c2f517f6:docs/backlog/plan_content_folder_refactor.md`)
 
 ---
 
@@ -99,7 +99,7 @@ points keeps the hook contract small and testable.
 
 ## References
 
-* [Content Folder Refactor plan](../backlog/plan_content_folder_refactor.md), with milestone plans for M0 to M2
+* Content Folder Refactor plan and its milestone plans: removed after delivery, in git history at `c2f517f6` (`docs/backlog/plan_content_*.md`)
 * [ADR-0006: Local-First Card Data Architecture](0006-local-first-card-data-architecture.md)
 * [ADR-0011: Card Orientation & Cache-First Art Resolution](0011-card-orientation-and-art-caching.md)
 * [ADR-0015: User Content & Deck Storage Architecture](0015-user-content-and-deck-storage-architecture.md)

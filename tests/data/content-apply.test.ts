@@ -28,6 +28,7 @@ const content: LoadedContent = {
   descriptions: [],
   artPacks: [],
   artPackWarnings: [],
+  artPackCardLabels: {},
   packs: [
     {
       id: 'tmp',
@@ -77,7 +78,7 @@ describe('applyContent', () => {
 
   it('replaces earlier content instead of adding to it', () => {
     applyContent(content);
-    applyContent({ packs: [], failures: [], descriptions: [], artPacks: [], artPackWarnings: [] });
+    applyContent({ packs: [], failures: [], descriptions: [], artPacks: [], artPackWarnings: [], artPackCardLabels: {} });
     expect(cardCatalog.getAllCards()).toEqual([]);
     expect(getCardEnrichment('99001')).toBeUndefined();
     expect(listStarterDecks()).toEqual([]);
@@ -106,7 +107,7 @@ describe('scenarios', () => {
   it(
     'registers the scenarios of the loaded packs in scenario card code order',
     async () => {
-      await bootContent(contentDriver);
+      await bootContent(contentDriver, { packs: ['core'] });
       expect(ScenarioRegistry.getAll().map((p) => p.definition.id)).toEqual([
         'rhino',
         'klaw',
@@ -142,6 +143,7 @@ describe('resetContent', () => {
       descriptions: [],
       artPacks: [],
       artPackWarnings: [],
+      artPackCardLabels: {},
     });
   });
 
@@ -157,6 +159,7 @@ describe('resetContent', () => {
           descriptions: [],
           artPacks: [],
           artPackWarnings: [],
+          artPackCardLabels: {},
         });
         expect(cardCatalog.getAllCards()).toEqual([]);
       } finally {

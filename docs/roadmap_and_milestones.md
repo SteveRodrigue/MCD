@@ -11,8 +11,8 @@ To maximize delivery velocity, eliminate scope dispersion, and ship our first co
 - **🏁 Gate 1: The "Rhino Release" (no open issue):**
   - **Objective:** Deliver a 100% polished, complete, and rules-verified playable vertical slice featuring **all 5 Core Heroes (101 Player Cards: Spider-Man, Captain Marvel, She-Hulk, Iron Man, Black Panther + 4 Aspects + Basic)** battling against the **Rhino Scenario (34 Encounter Cards: Rhino I/II/III, Standard, Expert, Bomb Scare, and 5 Nemesis Sets)**.
   - **Scope Boundary Invariant:** ALL active tasks, bug fixes, engine primitives, and card integrations must strictly target Core Set Player cards or Rhino Encounter cards. Non-Rhino villains (Klaw, Ultron) and expansion mechanics are strictly deferred. Localized technical debt or refactors are explicitly accepted to achieve complete vertical slice closure.
-- **📦 Gate 2: Core Boss Expansion (Klaw & Ultron) (Active):** Scenario Plug-In & Scenario Editor overhaul ([#275](https://github.com/SteveRodrigue/MCD/issues/275)); Klaw scenario + Masters of Evil modular set; Ultron scenario + Under Attack modular set; Legions of Hydra & The Doomsday Chair.
-- **📦 Gate 3: Green Goblin Scenario Pack (MC02):** _Risky Business_ (Norman Osborn / Green Goblin flip, Criminal Enterprise / State of Madness) & _Mutagen Formula_ scenarios + 4 Goblin modular sets (_Goblin Gimmicks_, _A Mess of Things_, _Power Drain_, _Running Interference_).
+- **📦 Gate 2: Core Boss Expansion (Klaw & Ultron) (no open issue):** Scenario Plug-In & Scenario Editor overhaul ([#275](https://github.com/SteveRodrigue/MCD/issues/275)); Klaw scenario + Masters of Evil modular set; Ultron scenario + Under Attack modular set; Legions of Hydra & The Doomsday Chair.
+- **📦 Gate 3: Green Goblin Scenario Pack (MC02) (Active):** _Risky Business_ (Norman Osborn / Green Goblin flip, Criminal Enterprise / State of Madness) & _Mutagen Formula_ scenarios + 4 Goblin modular sets (_Goblin Gimmicks_, _A Mess of Things_, _Power Drain_, _Running Interference_).
 - **📦 Gate 4: Wrecking Crew Scenario Pack (MC03):** Multi-villain scenario (_Breakout_) with 4 simultaneous villains, per-villain encounter decks and signature side schemes, and active counter movement.
 - **📦 Gate 5: Expansions & Advanced Mechanics:** Advanced mechanics not yet implemented or incomplete (non-side-scheme acceleration icons, player-deck obligations, `Permanent` on player elimination, generic value-comparison gates, card-level uncancellable flags, and `CARD_DISCARDED` / `WHEN_BOOST_CARD_REVEALED` / `CARD_LEFT_PLAY` triggers).
 - **⏳ Undetermined (Far Future): Multiplayer Co-op (2–4 Player Tabletop):** Ask-another-player triggers, Alliance pooling, and Team-Up prerequisites.
@@ -277,7 +277,7 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
 
 ---
 
-## 📦 Gate 2: The Core Boss Expansion (Klaw & Ultron) 🚧 (Active)
+## 📦 Gate 2: The Core Boss Expansion (Klaw & Ultron) (no open issue)
 
 _Objective: Overhaul the Scenario Plug-In architecture and Scenario Editor GUI, and expand the Core Set scenario catalog to include Klaw, Ultron, and all 4 remaining Core modular sets ([Milestone #3](https://github.com/SteveRodrigue/MCD/milestone/3), [ADR-0033](decisions/0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md))._
 
@@ -295,7 +295,7 @@ _Objective: Overhaul the Scenario Plug-In architecture and Scenario Editor GUI, 
 
 ---
 
-## 📦 Gate 3: Green Goblin Scenario Pack (MC02) 📅 (Planned)
+## 📦 Gate 3: Green Goblin Scenario Pack (MC02) 🚧 (Active)
 
 _Objective: Integrate the MC02 Green Goblin Scenario Pack ([Milestone #4](https://github.com/SteveRodrigue/MCD/milestone/4)) following Core Set completion._
 

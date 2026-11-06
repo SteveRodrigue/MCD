@@ -45,7 +45,17 @@ function renderSettings() {
 
 beforeEach(() => {
   localStorage.clear();
-  setLoadedContent({ ...loaded, artPacks: [heroes, tokens], artPackWarnings: [] });
+  setLoadedContent({
+    ...loaded,
+    artPacks: [heroes, tokens],
+    artPackWarnings: [],
+    artPackCardLabels: {
+      '01001a': { name: cardCatalog.getCard('01001a')!.name, type: 'hero', source: 'card' },
+      '01001b': { name: cardCatalog.getCard('01001b')!.name, type: 'alter_ego', source: 'card' },
+      '12001a': { name: 'Ant-Man', type: 'hero', source: 'off-pack' },
+      ultron_drone: { name: 'Drone', type: 'minion', source: 'token' },
+    },
+  });
 });
 afterEach(() => {
   setLoadedContent(loaded);
@@ -76,7 +86,9 @@ describe('the art pack list', () => {
     setLoadedContent({
       ...loaded,
       artPacks: [heroes],
-      artPackWarnings: [{ packId: 'art-pack:heroes', reason: 'card 99999 is not loaded' }],
+      artPackWarnings: [
+        { packId: 'art-pack:heroes', reason: 'card 99999 is in no installed pack' },
+      ],
     });
     renderSettings();
     expect(screen.getByTestId('art-pack-row-heroes').textContent).toContain('1 problem');
@@ -165,12 +177,58 @@ describe('browsing a pack', () => {
     expect(modal.textContent).toContain('Art by A. Artist (unofficial)');
   });
 
-  it('marks a code that no loaded card owns, and shows scenario tokens by name', () => {
+  it('S2: an unknown code shows the code and "not in any installed pack"', () => {
     renderSettings();
     const unknown = within(browse('heroes'))
       .getAllByTestId('art-pack-tile')
       .find((tile) => tile.textContent?.includes('99999'))!;
-    expect(unknown.textContent).toContain('not a loaded card');
+    expect(unknown.textContent).toContain('not in any installed pack');
+    expect(unknown.textContent).not.toContain('pack off');
+  });
+
+  it('shows a scenario token by name', () => {
+    renderSettings();
+    const [tile] = within(browse('tokens')).getAllByTestId('art-pack-tile');
+    expect(tile.textContent).toContain('Drone');
+    expect(tile.textContent).toContain('Token');
+  });
+
+  describe('a card of a pack that is off', () => {
+    const offPackHeroes: ArtPackManifest = {
+      ...heroes,
+      cards: { '12001a': [{ file: '12001a.png' }], '01001a': [{ file: '01001a.png' }] },
+    };
+
+    beforeEach(() => {
+      setLoadedContent({ ...getLoadedContent(), artPacks: [offPackHeroes] });
+    });
+
+    it('S2: shows its name and "pack off"', () => {
+      renderSettings();
+      const tile = within(browse('heroes'))
+        .getAllByTestId('art-pack-tile')
+        .find((candidate) => candidate.textContent?.includes('12001a'))!;
+      expect(tile.textContent).toContain('Ant-Man');
+      expect(tile.textContent).toContain('Hero');
+      expect(tile.textContent).toContain('pack off');
+    });
+
+    it('S2: the filter finds it by name', () => {
+      renderSettings();
+      const modal = browse('heroes');
+      fireEvent.change(within(modal).getByRole('searchbox'), { target: { value: 'ant-man' } });
+      const tiles = within(modal).getAllByTestId('art-pack-tile');
+      expect(tiles).toHaveLength(1);
+      expect(tiles[0].textContent).toContain('12001a');
+    });
+
+    it('S2: a card of a loaded pack does not say "pack off"', () => {
+      renderSettings();
+      const tile = within(browse('heroes'))
+        .getAllByTestId('art-pack-tile')
+        .find((candidate) => candidate.textContent?.includes('01001a'))!;
+      expect(tile.textContent).not.toContain('pack off');
+    });
   });
 
   it('works for a pack that is switched off', () => {
@@ -231,7 +289,9 @@ describe('the Content screen', () => {
     setLoadedContent({
       ...loaded,
       artPacks: [heroes],
-      artPackWarnings: [{ packId: 'art-pack:heroes', reason: 'card 99999 is not loaded' }],
+      artPackWarnings: [
+        { packId: 'art-pack:heroes', reason: 'card 99999 is in no installed pack' },
+      ],
     });
     render(
       <GameSettingsProvider>
@@ -240,7 +300,9 @@ describe('the Content screen', () => {
     );
     const section = screen.getByTestId('art-packs');
     expect(within(section).getByRole('switch')).toBeTruthy();
-    expect(within(section).getByRole('alert').textContent).toContain('card 99999 is not loaded');
+    expect(within(section).getByRole('alert').textContent).toContain(
+      'card 99999 is in no installed pack',
+    );
   });
 
   it('shows the empty state with no art pack installed', () => {

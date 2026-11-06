@@ -109,7 +109,8 @@ A bad art pack never stops a game. The loader checks, and the Content screen lis
 
 - `art-pack.json` matches the format above, including `description`, and its `id` equals the folder name. Otherwise the pack is skipped.
 - Each listed PNG exists in the pack folder. A missing file is a warning, and that image is not used or shown in Browse.
-- Each listed card code is a loaded card or a scenario token, and stat images are only on cards that have stats.
+- Each listed card code belongs to an installed pack, on or off, or is a scenario token. A pack may list cards of packs that are off: their images wait until that pack is on, with no warning, and Browse shows them as "pack off". Reading the packs that are off happens only when an art pack needs it.
+- Stat images are only on cards that have stats.
 
 It does not open the images, so their size and shape are up to you (see below).
 
@@ -120,7 +121,7 @@ It does not open the images, so their size and shape are up to you (see below).
 | Invalid `art-pack.json`                       | The pack is skipped. The Content screen shows why.                            |
 | A listed PNG is missing from the folder       | A warning on the Content screen; that image is not used.                      |
 | A PNG fails to load                           | The card shows its official art, or the labelled card back for a token.       |
-| A listed card is not loaded                   | The entry is ignored, with a warning on the Content screen.                   |
+| A listed card is in no installed pack         | A warning on the Content screen; its image shows in Browse under its code.    |
 | Two packs list the same card                  | The first by folder name wins, with a warning on the Content screen.          |
 | Stat images on a card with no stats to follow | The card always shows its lowest image, with a warning on the Content screen. |
 
@@ -134,6 +135,7 @@ Identity cards work like any other card: one code per side, one image per code.
 - Not every `b` code is an identity side. SP//dr's identity is `31001a` (hero) and `31002a` (alter-ego).
 - Use the printed card's shape (check with `npm run card:get -- <code>`), with the bleed already cut off, and leave the artist's watermark and signature as they are. Name each file after its card code, such as `29002a.png`.
 - A hero the pack does not list keeps its official art.
+- Only heroes with a starter deck can start a game today (the five Core heroes). The others show in Browse, and their art is ready for when they are playable. Third faces and Ironheart's later versions do not come up in a game yet.
 
 The game ships no converter. Make the PNGs by hand or with your own tools.
 

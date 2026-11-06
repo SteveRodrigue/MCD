@@ -5,13 +5,13 @@ import type { ArtPackImage, ArtPackManifest } from '../../../data/packs/art-pack
 import { ModalScaffold } from '../../theme/ModalScaffold';
 import { ThemedButton } from '../../theme/kit/controls';
 import { useModalStyle } from '../../theme/useModalStyle';
-import { describeArtPackCard, type ArtPackCardLabel } from './art-pack-card-label';
+import { describeArtPackCard, type ArtPackCardDescription } from './art-pack-card-label';
 
 interface BrowseItem {
   code: string;
   image: ArtPackImage;
   url: string;
-  label: ArtPackCardLabel;
+  label: ArtPackCardDescription;
 }
 
 function browseItems(artPack: ArtPackManifest): BrowseItem[] {
@@ -72,7 +72,8 @@ const Tile: React.FC<{ item: BrowseItem; onSelect: (item: BrowseItem) => void }>
           {item.code}
           {item.label.kind && ` · ${item.label.kind}`}
           {stats && ` · ${stats}`}
-          {!item.label.known && ' · not a loaded card'}
+          {item.label.packOff && ' · pack off'}
+          {!item.label.known && ' · not in any installed pack'}
         </div>
       </button>
     </li>

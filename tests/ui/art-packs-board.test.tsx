@@ -22,7 +22,11 @@ import {
   createCardInstance,
   setupGame,
 } from '../../src/engine';
-import { clearCardArtCache, preloadArtPackImages } from '../../src/ui/services/card-cache-service';
+import {
+  clearCardArtCache,
+  gameArtCodes,
+  preloadArtPackImages,
+} from '../../src/ui/services/card-cache-service';
 import { TestSession } from '../support/render-with-session';
 
 const UPGRADED_DRONES = '01142';
@@ -268,7 +272,9 @@ describe('S4: a broken art pack never breaks the game', () => {
     setLoadedContent({
       ...loaded,
       failures: [{ packId: 'art-pack:bad', reason: 'credit is required' }],
-      artPackWarnings: [{ packId: 'art-pack:tokens', reason: 'card 99999 is not loaded' }],
+      artPackWarnings: [
+        { packId: 'art-pack:tokens', reason: 'card 99999 is in no installed pack' },
+      ],
     });
     render(
       <GameSettingsProvider>
@@ -276,7 +282,9 @@ describe('S4: a broken art pack never breaks the game', () => {
       </GameSettingsProvider>,
     );
     expect(screen.getByTestId('art-packs').textContent).toContain('bad: credit is required');
-    expect(screen.getByTestId('art-packs').textContent).toContain('card 99999 is not loaded');
+    expect(screen.getByTestId('art-packs').textContent).toContain(
+      'card 99999 is in no installed pack',
+    );
   });
 });
 
@@ -319,6 +327,116 @@ describe('S6: alternate art on any card', () => {
     await waitFor(() =>
       expect(screen.getByAltText(card.name).getAttribute('src')).toBe('/card-art/core/01001a.png'),
     );
+  });
+});
+
+describe('S3: identity art on the hero zone', () => {
+  const heroArt = (file: string) => `/card-art/_art-heroes/${file}`;
+  const heroes: ArtPackManifest = {
+    id: 'heroes',
+    name: 'Alternate heroes',
+    description: 'Alternate identity cards.',
+    credit: tokens.credit,
+    cards: Object.fromEntries(
+      ['01001a', '01001b', '29002a', '29002b', '12001c', '42001c', '31001a'].map((code) => [
+        code,
+        [{ file: `${code}.png` }],
+      ]),
+    ),
+  };
+  const identityImage = (code: string) => document.querySelector(`[data-card-view="${code}"] img`);
+
+  beforeEach(() => setLoadedContent({ ...loaded, artPacks: [heroes] }));
+
+  it('S3: the hero zone swaps the image when the hero changes form, and back', async () => {
+    const alterEgoState = game();
+    const heroState = structuredClone(alterEgoState);
+    heroState.players[0].activeFormCard = heroState.players[0].hero;
+    heroState.players[0].currentForm = 'hero';
+    const zone = (state: GameState) => (
+      <GameSettingsProvider>
+        <TestSession state={state}>
+          <HeroZone player={state.players[0]} seatNumber={1} isFocused={true} isMultiHero={false} />
+        </TestSession>
+      </GameSettingsProvider>
+    );
+    const view = render(zone(alterEgoState));
+    await waitFor(() =>
+      expect(identityImage('01001b')?.getAttribute('src')).toBe(heroArt('01001b.png')),
+    );
+    view.rerender(zone(heroState));
+    await waitFor(() =>
+      expect(identityImage('01001a')?.getAttribute('src')).toBe(heroArt('01001a.png')),
+    );
+    view.rerender(zone(alterEgoState));
+    await waitFor(() =>
+      expect(identityImage('01001b')?.getAttribute('src')).toBe(heroArt('01001b.png')),
+    );
+  });
+
+  // The heroes outside Core have no starter deck, so the board gets their code directly.
+  it.each([
+    ['29002a', '01001a'],
+    ['29002b', '01001b'],
+    ['12001c', '01001a'],
+    ['42001c', '01001a'],
+    ['31001a', '01001a'],
+  ])('S3: the hero zone shows the own image of identity %s', async (code, printedAs) => {
+    const state = game();
+    state.players[0].activeFormCard = { ...cardCatalog.getCard(printedAs)!, code };
+    renderZone(state);
+    await waitFor(() =>
+      expect(identityImage(code)?.getAttribute('src')).toBe(heroArt(`${code}.png`)),
+    );
+  });
+
+  it('S3: a hero the pack does not list keeps official art', async () => {
+    setLoadedContent({ ...loaded, artPacks: [{ ...heroes, cards: {} }] });
+    renderZone(game());
+    await waitFor(() =>
+      expect(identityImage('01001b')?.getAttribute('src')).toBe('/card-art/core/01001b.png'),
+    );
+  });
+
+  describe('starting a game', () => {
+    async function preloaded(): Promise<string[]> {
+      const stored: string[] = [];
+      vi.stubGlobal('caches', {
+        open: async () => ({
+          match: async () => null,
+          put: async (url: string) => stored.push(url),
+        }),
+        delete: async () => true,
+      });
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => new Response('png')),
+      );
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:identity');
+      vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+      try {
+        await clearCardArtCache();
+        await preloadArtPackImages(gameArtCodes(game(), []));
+        return stored.sort();
+      } finally {
+        await clearCardArtCache();
+        vi.unstubAllGlobals();
+        vi.restoreAllMocks();
+      }
+    }
+
+    it('S3: preloads both faces of each hero', async () => {
+      expect(await preloaded()).toEqual([heroArt('01001a.png'), heroArt('01001b.png')]);
+    });
+
+    it('S3: preloads nothing for a pack that is off', async () => {
+      setDisabledArtPacks(['heroes']);
+      expect(await preloaded()).toEqual([]);
+    });
+
+    it('S3: keeps the scenario tokens in the list', () => {
+      expect(gameArtCodes(game(), ['ultron_drone'])).toEqual(['ultron_drone', '01001a', '01001b']);
+    });
   });
 });
 

@@ -4,7 +4,7 @@
  * art come from `src/data/content/card-art.ts`.
  */
 
-import { NormalizedCard } from '../../engine/models';
+import { GameState, NormalizedCard } from '../../engine/models';
 import {
   artPackImageUrls,
   CardArtIdentifier,
@@ -58,7 +58,15 @@ export async function getCardArtUrl(card: CardArtIdentifier | string): Promise<s
   return cachedArtUrl(localArtUrl(card));
 }
 
-/** Loads every art pack image of these cards, so a stat image shows at once when it is reached. */
+/** The cards whose art pack images load with a game: scenario tokens and each player's identities. */
+export function gameArtCodes(state: GameState, tokenCodes: string[]): string[] {
+  return [
+    ...tokenCodes,
+    ...state.players.flatMap((player) => player.availableForms.map((form) => form.code)),
+  ];
+}
+
+/** Loads every art pack image of these cards, so the next stat image or form shows at once. */
 export async function preloadArtPackImages(codes: string[]): Promise<void> {
   await Promise.all(codes.flatMap(artPackImageUrls).map(cachedArtUrl));
 }

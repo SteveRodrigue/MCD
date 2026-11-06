@@ -43,6 +43,7 @@ describe('loadContent', () => {
       descriptions: [],
       artPacks: [],
       artPackWarnings: [],
+      artPackCardLabels: {},
     });
   });
 

@@ -1,8 +1,8 @@
 # MCD Backlog: Status and Work Queue
 
-> **Last updated:** 2026-11-06 (Gate 1 milestone has no open issue; finished plans removed from the repository)
+> **Last updated:** 2026-11-06 (Gates 1 and 2 have no open issue; #618 delivered)
 > **Repository state:** `main`. Check `git log -1` and `git status` first.
-> **Active gate:** the open `Gate N` milestone with the lowest N that still has open issues (today Gate 2, Klaw & Ultron).
+> **Active gate:** the open `Gate N` milestone with the lowest N that still has open issues (today Gate 3, Green Goblin).
 > **Verification baseline:** run `npm run verify` (tests, types, lint, format, build). The pre-push hook enforces 0 failed and 0 skipped tests; no test count is recorded here because it goes stale with every commit.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Run the `next-task` skill: it takes the first open row of section 3, or falls back on the active gate milestone when the queue is empty.
 
@@ -10,15 +10,15 @@
 
 ## 1. Where we are
 
-The Gate 1 milestone has no open issue. The only open issue in Gate 2 is #618 (art packs). Then Gate 3.
+The Gate 1 and Gate 2 milestones have no open issue. The only open issue in Gate 3 is #291.
 
 Open work lives in **GitHub milestones**, one per release gate. Every open issue belongs to exactly one:
 
 | Milestone                                                                                    | Scope                                                                       |
 | :------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
 | [Gate 1 — Rhino Release](https://github.com/SteveRodrigue/MCD/milestone/2)                   | Core heroes vs Rhino, rules-verified, 100-game simulation. No open issue    |
-| [Gate 2 — Klaw & Ultron](https://github.com/SteveRodrigue/MCD/milestone/3)                   | **Active.** Klaw, Ultron, 4 Core modular sets, Scenario Plug-In & Editor overhaul |
-| [Gate 3 — Green Goblin (MC02)](https://github.com/SteveRodrigue/MCD/milestone/4)             | MC02 double-sided villain form flip (#470), Risky Business, Mutagen Formula |
+| [Gate 2 — Klaw & Ultron](https://github.com/SteveRodrigue/MCD/milestone/3)                   | Klaw, Ultron, 4 Core modular sets, Scenario Plug-In & Editor overhaul. No open issue |
+| [Gate 3 — Green Goblin (MC02)](https://github.com/SteveRodrigue/MCD/milestone/4)             | **Active.** MC02 double-sided villain form flip (#470), Risky Business, Mutagen Formula |
 | [Gate 4 — Wrecking Crew (MC03)](https://github.com/SteveRodrigue/MCD/milestone/5)            | MC03 multi-villain scenario, per-villain decks/schemes, active counter      |
 | [Gate 5 — Expansions & Advanced Mechanics](https://github.com/SteveRodrigue/MCD/milestone/7) | Advanced mechanics not yet implemented or incomplete                        |
 | [Tech Debt & Tooling](https://github.com/SteveRodrigue/MCD/milestone/6)                      | Refactors, guards, tooling; no gate depends on them                         |

@@ -12,6 +12,7 @@ import {
 } from '../packs/scenario-definition';
 import { SupplementalPackSchema } from '../supplemental/schema';
 import type {
+  ArtPackCardLabel,
   ContentDriver,
   LoadContentOptions,
   LoadedContent,
@@ -225,10 +226,52 @@ export async function loadContent(
 
   const packs = order.map((id) => outcome.get(id) as LoadedPack);
   const descriptions = await describePacks(driver, packs, failures);
-  const { artPacks, artPackWarnings } = options.artPacks
+  const artContent = options.artPacks
     ? await readArtPacks(driver, packs, failures)
-    : { artPacks: [], artPackWarnings: [] };
-  return { packs, failures, descriptions, artPacks, artPackWarnings };
+    : { artPacks: [], artPackWarnings: [], artPackCardLabels: {} };
+  return { packs, failures, descriptions, ...artContent };
+}
+
+function addCardLabels(
+  known: Map<string, ArtPackCardLabel>,
+  cards: RawUpstreamCard[],
+  scenarios: ScenarioDefinition[],
+  packIsOff: boolean,
+): void {
+  for (const card of cards) {
+    known.set(card.code, {
+      name: card.name,
+      type: card.type_code,
+      source: packIsOff ? 'off-pack' : 'card',
+    });
+  }
+  for (const scenario of scenarios) {
+    for (const token of scenario.tokens ?? []) {
+      known.set(token.code, {
+        name: token.name,
+        type: token.type,
+        source: packIsOff ? 'off-pack' : 'token',
+      });
+    }
+  }
+}
+
+/** Adds the cards of the installed packs that are not loaded. A pack is read once, and only here. */
+async function addOffPackLabels(
+  driver: ContentDriver,
+  packs: LoadedPack[],
+  known: Map<string, ArtPackCardLabel>,
+): Promise<void> {
+  const loaded = new Set(packs.map((pack) => pack.id));
+  for (const id of await driver.listDirs('packs')) {
+    if (loaded.has(id)) continue;
+    try {
+      const { cards } = await readCards(driver, id);
+      addCardLabels(known, cards, await readScenarios(driver, id), true);
+    } catch {
+      // An unreadable pack names no card here; its own problem is reported when it is enabled.
+    }
+  }
 }
 
 /**
@@ -239,17 +282,21 @@ async function readArtPacks(
   driver: ContentDriver,
   packs: LoadedPack[],
   failures: PackLoadFailure[],
-): Promise<Pick<LoadedContent, 'artPacks' | 'artPackWarnings'>> {
-  const cardTypes = new Map<string, string | undefined>();
-  for (const pack of packs) {
-    for (const card of pack.cards) cardTypes.set(card.code, card.type_code);
-    for (const scenario of pack.scenarios) {
-      for (const token of scenario.tokens ?? []) cardTypes.set(token.code, token.type);
+): Promise<Pick<LoadedContent, 'artPacks' | 'artPackWarnings' | 'artPackCardLabels'>> {
+  const known = new Map<string, ArtPackCardLabel>();
+  for (const pack of packs) addCardLabels(known, pack.cards, pack.scenarios, false);
+  let offPacksRead = false;
+  const labelOf = async (code: string): Promise<ArtPackCardLabel | undefined> => {
+    if (!known.has(code) && !offPacksRead) {
+      offPacksRead = true;
+      await addOffPackLabels(driver, packs, known);
     }
-  }
+    return known.get(code);
+  };
 
   const artPacks: ArtPackManifest[] = [];
   const artPackWarnings: PackLoadFailure[] = [];
+  const artPackCardLabels: Record<string, ArtPackCardLabel> = {};
   const claimedBy = new Map<string, string>();
   for (const id of await driver.listDirs('art-packs')) {
     const packId = `${ART_PACK_FAILURE_PREFIX}${id}`;
@@ -277,8 +324,13 @@ async function readArtPacks(
         const owner = claimedBy.get(code);
         if (owner) warn(`card ${code} is also listed by "${owner}", which comes first by folder name`);
         else claimedBy.set(code, id);
-        if (!cardTypes.has(code)) warn(`card ${code} is not loaded`);
-        else if (images[0].attack !== undefined && !STAT_IMAGE_CARD_TYPES.has(cardTypes.get(code) ?? '')) {
+        const label = await labelOf(code);
+        if (!label) {
+          warn(`card ${code} is in no installed pack`);
+          continue;
+        }
+        artPackCardLabels[code] = label;
+        if (images[0].attack !== undefined && !STAT_IMAGE_CARD_TYPES.has(label.type ?? '')) {
           warn(`card ${code} cannot follow stats, so it always shows its lowest image`);
         }
       }
@@ -286,7 +338,7 @@ async function readArtPacks(
       failures.push({ packId, reason: describeError(error) });
     }
   }
-  return { artPacks, artPackWarnings };
+  return { artPacks, artPackWarnings, artPackCardLabels };
 }
 
 async function readLockedScenarios(

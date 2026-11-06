@@ -10,25 +10,24 @@ const TYPE_LABEL: Record<string, string> = {
   side_scheme: 'Side scheme',
 };
 
-export interface ArtPackCardLabel {
-  /** The card's printed name, or the code when no loaded card owns it. */
+export interface ArtPackCardDescription {
+  /** The card's printed name, or the code when no installed pack owns it. */
   name: string;
   /** Hero, Alter-ego and so on; empty for an unknown code. */
   kind: string;
   known: boolean;
+  /** The card belongs to an installed pack that is off, so the game does not use it now. */
+  packOff: boolean;
 }
 
-/** What to call a code in the browser: a card of a loaded pack, a scenario token, or just the code. */
-export function describeArtPackCard(code: string): ArtPackCardLabel {
-  for (const pack of getLoadedContent().packs) {
-    const card = pack.cards.find((candidate) => candidate.code === code);
-    if (card) {
-      return { name: card.name, kind: TYPE_LABEL[card.type_code ?? ''] ?? '', known: true };
-    }
-    for (const scenario of pack.scenarios) {
-      const token = scenario.tokens?.find((candidate) => candidate.code === code);
-      if (token) return { name: token.name, kind: 'Token', known: true };
-    }
-  }
-  return { name: code, kind: '', known: false };
+/** What to call a code in the browser: a card of an installed pack, a scenario token, or the code. */
+export function describeArtPackCard(code: string): ArtPackCardDescription {
+  const label = getLoadedContent().artPackCardLabels[code];
+  if (!label) return { name: code, kind: '', known: false, packOff: false };
+  return {
+    name: label.name,
+    kind: label.source === 'token' ? 'Token' : (TYPE_LABEL[label.type ?? ''] ?? ''),
+    known: true,
+    packOff: label.source === 'off-pack',
+  };
 }

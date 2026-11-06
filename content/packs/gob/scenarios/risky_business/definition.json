@@ -19,10 +19,7 @@
   },
 
   "mainSchemeSetup": {
-    "stages": ["02004a", "02004b", "02005a", "02005b"],
-    "startingThreat": 2,
-    "targetThreatPerPlayer": 7,
-    "escalationThreatPerPlayer": 1
+    "stages": ["02004a", "02004b", "02005a", "02005b"]
   },
 
   "modularEncounterSets": {

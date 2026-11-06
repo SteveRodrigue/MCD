@@ -29,9 +29,6 @@ describe('Fan-Made Custom Scenario Extensibility (Universal Scenario Package For
     },
     mainSchemeSetup: {
       stages: ['01097a'],
-      startingThreat: 1,
-      targetThreatPerPlayer: 5,
-      escalationThreatPerPlayer: 1,
     },
     modularEncounterSets: {
       mandatory: ['rhino'],

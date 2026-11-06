@@ -85,28 +85,10 @@
             "type": "string",
             "minLength": 1
           }
-        },
-        "startingThreat": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 9007199254740991
-        },
-        "targetThreatPerPlayer": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 9007199254740991
-        },
-        "escalationThreatPerPlayer": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 9007199254740991
         }
       },
       "required": [
-        "stages",
-        "startingThreat",
-        "targetThreatPerPlayer",
-        "escalationThreatPerPlayer"
+        "stages"
       ],
       "additionalProperties": false
     },

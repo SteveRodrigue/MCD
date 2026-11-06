@@ -74,18 +74,14 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     }
   }
 
-  private toMainScheme(
-    state: GameState,
-    card: MainSchemeCard,
-    startingThreat: number,
-  ): MainSchemeState {
+  private toMainScheme(state: GameState, card: MainSchemeCard): MainSchemeState {
     const players = getPerPlayerCount(state) || 1;
+    const baseThreat = (card.baseThreat ?? 0) * (card.baseThreatFixed ? 1 : players);
     return {
       instanceId: `main_scheme_${nextEngineId(state, 'id')}_${card.code}`,
       card,
-      threat: card.baseThreat || startingThreat,
-      targetThreat:
-        (card.targetThreat || this.definition.mainSchemeSetup.targetThreatPerPlayer) * players,
+      threat: baseThreat,
+      targetThreat: card.targetThreat * players,
       stage: card.stage?.toUpperCase() || '1B',
     };
   }
@@ -197,11 +193,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     if (!firstScheme) {
       throw new Error(`Main scheme stage '1B' not found for scenario '${this.definition.id}'.`);
     }
-    const mainScheme = this.toMainScheme(
-      state,
-      firstScheme,
-      this.definition.mainSchemeSetup.startingThreat,
-    );
+    const mainScheme = this.toMainScheme(state, firstScheme);
     replaceActiveMainScheme(state, mainScheme);
 
     // 3. Encounter deck, Appendix II step 11 (Setup cards), then step 12: (a) the Setup abilities of
@@ -268,7 +260,7 @@ export class DeclarativeScenarioPlugin implements ScenarioPlugin {
     // then resolve When Revealed on the B side.
     if (next) {
       this.resolveMainSchemeAbilities(state, next.a, 'WHEN_REVEALED');
-      const nextScheme = this.toMainScheme(state, next.b, 0);
+      const nextScheme = this.toMainScheme(state, next.b);
       replaceActiveMainScheme(state, nextScheme);
       appendLog(state, {
         category: 'scheme',

@@ -61,9 +61,6 @@ const fakeDefinition: ScenarioDefinition = {
   },
   mainSchemeSetup: {
     stages: ['fake_scheme_1a', 'fake_scheme_1b'],
-    startingThreat: 0,
-    targetThreatPerPlayer: 7,
-    escalationThreatPerPlayer: 1,
   },
   modularEncounterSets: {
     mandatory: ['fake'],

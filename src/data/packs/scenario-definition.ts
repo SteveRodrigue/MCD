@@ -50,9 +50,6 @@ export const ScenarioDefinitionSchema = z
     mainSchemeSetup: z
       .object({
         stages: CardCodeList,
-        startingThreat: z.number().int().nonnegative(),
-        targetThreatPerPlayer: z.number().int().nonnegative(),
-        escalationThreatPerPlayer: z.number().int().nonnegative(),
       })
       .strict(),
     modularEncounterSets: z

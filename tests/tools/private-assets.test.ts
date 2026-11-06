@@ -133,7 +133,8 @@ describe('ensureCentralRepo', () => {
     expect(commands.length).toBe(1);
     expect(commands[0][0]).toBe('git');
     expect(commands[0][1]).toBe('clone');
-    expect(commands[0][3]).toBe(missingDir);
+    expect(commands[0]).toContain('--progress');
+    expect(commands[0]).toContain(missingDir);
   });
 
   it('calls git pull when central directory exists', () => {
@@ -146,7 +147,17 @@ describe('ensureCentralRepo', () => {
     ensureCentralRepo(centralDir, mockRunner);
     expect(commands.length).toBe(1);
     expect(commands[0][0]).toBe('git');
-    expect(commands[0][3]).toBe('pull');
+    expect(commands[0]).toContain('pull');
+    expect(commands[0]).toContain('--progress');
+  });
+
+  it('logs progress messages when verbose option is provided', () => {
+    const logs: string[] = [];
+    const missingDir = path.join(tempDir, 'missing-central-verbose');
+    ensureCentralRepo(missingDir, () => '', { log: (msg) => logs.push(msg) });
+
+    expect(logs.length).toBeGreaterThan(0);
+    expect(logs[0]).toContain('Cloning private repository');
   });
 });
 
@@ -168,6 +179,18 @@ describe('pullAssets and getAssetStatus', () => {
     expect(status.rulesReferencePdf.exists).toBe(true);
     expect(status.artPacks.exists).toBe(true);
     expect(status.artPacks.packCount).toBe(1);
+  });
+
+  it('runs cleanly with verbose output enabled', () => {
+    const mockRunner = () => '';
+    const pullResult = pullAssets({
+      centralDir,
+      workspaceDir,
+      runner: mockRunner,
+      verbose: true,
+    });
+
+    expect(pullResult.success).toBe(true);
   });
 });
 

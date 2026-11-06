@@ -33,13 +33,12 @@ export interface CommandRunner {
 }
 
 export const defaultRunner: CommandRunner = (cmd, args, opts) => {
-  return childProcess
-    .execFileSync(cmd, args, {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-      ...opts,
-    })
-    .toString();
+  const result = childProcess.execFileSync(cmd, args, {
+    encoding: 'utf8',
+    stdio: opts?.stdio ?? ['ignore', 'pipe', 'pipe'],
+    ...opts,
+  });
+  return result ? result.toString() : '';
 };
 
 export interface AssetStatus {
@@ -70,6 +69,7 @@ export interface PullOptions {
   workspaceDir?: string;
   copy?: boolean;
   runner?: CommandRunner;
+  verbose?: boolean;
 }
 
 export interface PushOptions {
@@ -77,6 +77,7 @@ export interface PushOptions {
   workspaceDir?: string;
   message?: string;
   runner?: CommandRunner;
+  verbose?: boolean;
 }
 
 export function isSymlinkOrJunction(targetPath: string): boolean {
@@ -110,6 +111,7 @@ export function linkOrCopyDirectory(
   sourceDir: string,
   destinationDir: string,
   copy: boolean = false,
+  log?: (msg: string) => void,
 ): 'linked' | 'copied' | 'already-linked' {
   if (!fs.existsSync(sourceDir)) {
     return 'copied';
@@ -129,6 +131,7 @@ export function linkOrCopyDirectory(
   }
 
   if (copy) {
+    log?.(`  -> Copying directory ${sourceDir} to ${destinationDir}...`);
     if (!fs.existsSync(destinationDir)) {
       fs.mkdirSync(destinationDir, { recursive: true });
     }
@@ -149,6 +152,7 @@ export function linkOrCopyDirectory(
       fs.rmdirSync(destinationDir);
     } else {
       // Destination has files: copy missing files into source first, then replace with junction
+      log?.(`  -> Preserving existing files in ${destinationDir} to source...`);
       fs.cpSync(destinationDir, sourceDir, { recursive: true, force: false });
       fs.rmSync(destinationDir, { recursive: true, force: true });
     }
@@ -160,6 +164,7 @@ export function linkOrCopyDirectory(
     return 'linked';
   } catch {
     // Fallback to copy if symlink/junction fails (e.g. sandbox or unsupported filesystem)
+    log?.(`  -> Junction creation failed, falling back to copy for ${destinationDir}...`);
     if (!fs.existsSync(destinationDir)) {
       fs.mkdirSync(destinationDir, { recursive: true });
     }
@@ -172,6 +177,7 @@ export function linkOrCopyFile(
   sourceFile: string,
   destinationFile: string,
   copy: boolean = false,
+  log?: (msg: string) => void,
 ): 'linked' | 'copied' | 'skipped' {
   if (!fs.existsSync(sourceFile)) {
     return 'skipped';
@@ -199,6 +205,7 @@ export function linkOrCopyFile(
       return 'linked';
     } catch {
       // Fallback to copy if hard link fails (e.g. across drives)
+      log?.(`  -> Hard link failed, copying ${sourceFile} to ${destinationFile}...`);
     }
   }
 
@@ -209,14 +216,19 @@ export function linkOrCopyFile(
 export function ensureCentralRepo(
   centralDir: string,
   runner: CommandRunner = defaultRunner,
+  options: { verbose?: boolean; log?: (msg: string) => void } = {},
 ): { updated: boolean; error?: string } {
+  const log = options.log ?? (options.verbose ? console.log : undefined);
+  const gitOpts: childProcess.ExecFileSyncOptions = options.verbose ? { stdio: 'inherit' } : {};
+
   if (!fs.existsSync(centralDir)) {
     try {
       const parent = path.dirname(centralDir);
       if (!fs.existsSync(parent)) {
         fs.mkdirSync(parent, { recursive: true });
       }
-      runner('git', ['clone', PRIVATE_REPO_URL, centralDir]);
+      log?.(`Cloning private repository from ${PRIVATE_REPO_URL} into ${centralDir}...`);
+      runner('git', ['clone', '--progress', PRIVATE_REPO_URL, centralDir], gitOpts);
       return { updated: true };
     } catch (err) {
       return {
@@ -228,7 +240,8 @@ export function ensureCentralRepo(
 
   // Central directory exists: update it
   try {
-    runner('git', ['-C', centralDir, 'pull', '--ff-only']);
+    log?.(`Checking for latest changes in ${centralDir}...`);
+    runner('git', ['-C', centralDir, 'pull', '--progress', '--ff-only'], gitOpts);
     return { updated: true };
   } catch (err) {
     return {
@@ -242,8 +255,12 @@ export function pullAssets(options: PullOptions = {}): { success: boolean; messa
   const runner = options.runner ?? defaultRunner;
   const centralDir = options.centralDir ?? defaultPrivateAssetsDir();
   const workspaceDir = options.workspaceDir ?? process.cwd();
+  const verbose = options.verbose ?? false;
+  const log = verbose ? console.log : undefined;
 
-  const repoCheck = ensureCentralRepo(centralDir, runner);
+  log?.('==> Synchronizing MCD private assets...');
+  log?.(`[1/4] Central repository: ${centralDir}`);
+  const repoCheck = ensureCentralRepo(centralDir, runner, { verbose, log });
   if (!repoCheck.updated && !fs.existsSync(centralDir)) {
     return {
       success: false,
@@ -253,24 +270,31 @@ export function pullAssets(options: PullOptions = {}): { success: boolean; messa
     };
   }
 
+  log?.('[2/4] Linking rulesheets directory...');
   const centralRulesheets = path.join(centralDir, 'references', 'rulesheets');
   const workspaceRulesheets = rulesheetsDir(workspaceDir);
   const rulesheetsResult = linkOrCopyDirectory(
     centralRulesheets,
     workspaceRulesheets,
     options.copy,
+    log,
   );
+  log?.(`  - Rulesheets: ${rulesheetsResult}`);
 
+  log?.('[3/4] Linking Rules Reference PDF...');
   const centralPdf = path.join(centralDir, 'references', 'mc_rulesreference_v18_compressed.pdf');
   const workspacePdf = path.join(
     referencesDir(workspaceDir),
     'mc_rulesreference_v18_compressed.pdf',
   );
-  const pdfResult = linkOrCopyFile(centralPdf, workspacePdf, options.copy);
+  const pdfResult = linkOrCopyFile(centralPdf, workspacePdf, options.copy, log);
+  log?.(`  - Rules Reference PDF: ${pdfResult}`);
 
+  log?.('[4/4] Linking art packs directory...');
   const centralArtPacks = path.join(centralDir, 'content', 'art-packs');
   const workspaceArtPacks = path.join(contentRoot(workspaceDir), 'art-packs');
-  const artPacksResult = linkOrCopyDirectory(centralArtPacks, workspaceArtPacks, options.copy);
+  const artPacksResult = linkOrCopyDirectory(centralArtPacks, workspaceArtPacks, options.copy, log);
+  log?.(`  - Art packs: ${artPacksResult}`);
 
   return {
     success: true,
@@ -282,6 +306,8 @@ export function pushAssets(options: PushOptions = {}): { success: boolean; messa
   const runner = options.runner ?? defaultRunner;
   const centralDir = options.centralDir ?? defaultPrivateAssetsDir();
   const workspaceDir = options.workspaceDir ?? process.cwd();
+  const verbose = options.verbose ?? false;
+  const log = verbose ? console.log : undefined;
 
   if (!fs.existsSync(centralDir)) {
     return {
@@ -290,6 +316,8 @@ export function pushAssets(options: PushOptions = {}): { success: boolean; messa
     };
   }
 
+  log?.('==> Pushing changes to MCD private assets repository...');
+  log?.('[1/3] Syncing local additions into central repository...');
   // If workspace folders are not junctions, sync modifications into central repo first
   const workspaceRulesheets = rulesheetsDir(workspaceDir);
   const centralRulesheets = path.join(centralDir, 'references', 'rulesheets');
@@ -312,6 +340,7 @@ export function pushAssets(options: PushOptions = {}): { success: boolean; messa
     fs.cpSync(workspaceArtPacks, centralArtPacks, { recursive: true, force: false });
   }
 
+  log?.('[2/3] Checking git status in central repository...');
   // Check git status in central directory
   try {
     const statusOutput = runner('git', ['-C', centralDir, 'status', '--porcelain']).trim();
@@ -322,19 +351,21 @@ export function pushAssets(options: PushOptions = {}): { success: boolean; messa
       };
     }
 
+    log?.('[3/3] Staging, committing, and pushing changes...');
     const commitMsg = options.message ?? 'chore: update private assets and reference documentation';
     runner('git', ['-C', centralDir, 'add', '.']);
     runner('git', ['-C', centralDir, 'commit', '-m', commitMsg]);
-    runner('git', ['-C', centralDir, 'push', 'origin', 'main']);
+    const gitOpts: childProcess.ExecFileSyncOptions = verbose ? { stdio: 'inherit' } : {};
+    runner('git', ['-C', centralDir, 'push', 'origin', 'main'], gitOpts);
 
     return {
       success: true,
-      message: `Pushed changes to ${PRIVATE_REPO_URL}:\n${statusOutput}`,
+      message: `Pushed changes to private assets repository at ${centralDir} with message: "${commitMsg}"`,
     };
   } catch (err) {
     return {
       success: false,
-      message: `Failed to push private assets: ${String(err)}`,
+      message: `Failed to push changes to private repository: ${String(err)}`,
     };
   }
 }
@@ -460,7 +491,7 @@ Commands:
   }
 
   if (command === 'pull') {
-    const result = pullAssets({ centralDir: dir, copy });
+    const result = pullAssets({ centralDir: dir, copy, verbose: true });
     console.log(result.message);
     if (!result.success) {
       process.exit(1);
@@ -469,7 +500,7 @@ Commands:
   }
 
   if (command === 'push') {
-    const result = pushAssets({ centralDir: dir, message });
+    const result = pushAssets({ centralDir: dir, message, verbose: true });
     console.log(result.message);
     if (!result.success) {
       process.exit(1);

@@ -4,7 +4,12 @@ import { getPlayer } from '../legality-checker';
 import { expireLastingEffects } from '../player-phase';
 import { initiatePlayerPhaseCleanup } from '../player-phase-cleanup';
 import { peekDecisionPrompt } from '../prompt-queue';
-import { advanceVillainPhaseStep, placeInciteThreat, resolveQuickstrike } from '../villain-phase';
+import {
+  advanceVillainPhaseStep,
+  engageMinion,
+  placeInciteThreat,
+  resolveQuickstrike,
+} from '../villain-phase';
 import { appendLog } from '../../state/game-log';
 import type { ActionHandler } from './types';
 
@@ -108,10 +113,7 @@ export const handleMinionEngagesPlayer: ActionHandler<'MINION_ENGAGES_PLAYER'> =
 
   const minionInst = action.minionInstance;
   if (minionInst) {
-    player.engagedMinions.push(minionInst);
-
-    // Quickstrike Keyword check (RR v1.8 p. 18)
-    const updated = resolveQuickstrike(nextState, minionInst, player, {
+    const updated = engageMinion(nextState, minionInst, player, {
       synchronousPolicy: 'TAKE_UNDEFENDED',
     });
     if (updated) return { state: updated, result: { success: true, onomatopoeia: 'QUICKSTRIKE!' } };

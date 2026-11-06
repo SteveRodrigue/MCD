@@ -147,6 +147,7 @@ export function resolveMinionDefeat(
     targetInstanceId: minion.instanceId,
     targetType: 'MINION',
     defeatSource,
+    defeatedCard: minion,
   };
 }
 

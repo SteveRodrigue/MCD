@@ -76,8 +76,14 @@ export const EFFECT_PARAM_SCHEMAS = {
       filter: optional(UniversalCardFilterSchema, {
         label: 'Minion Filter',
         widget: 'card-filter',
-        description: 'The minions in play that activate against this player.',
+        description: 'The minions in play that activate.',
         primary: true,
+      }),
+      against: optional(z.enum(['RESOLVING_PLAYER', 'ENGAGED_PLAYER']), {
+        label: 'Activates Against',
+        defaultValue: 'RESOLVING_PLAYER',
+        description:
+          'RESOLVING_PLAYER: "activates against you". ENGAGED_PLAYER: "activates against the player it is engaged with".',
       }),
     })
     .strict(),
@@ -163,6 +169,24 @@ export const EFFECT_PARAM_SCHEMAS = {
   CANNOT_BE_ATTACKED: z
     .object({
       target: optional(z.enum(['SELF', 'VILLAIN']), { label: 'Target', defaultValue: 'SELF' }),
+    })
+    .strict(),
+  CANNOT_HAVE_STATUS: z
+    .object({
+      status: annotated(z.enum(['STUNNED', 'CONFUSED']), { label: 'Status', primary: true }),
+    })
+    .strict(),
+  ENGAGE_MINION: z
+    .object({
+      target: optional(z.enum(['SELF']), {
+        label: 'Minion',
+        defaultValue: 'SELF',
+        description: 'The minion that engages: the source card.',
+      }),
+      engagePlayer: annotated(z.enum(['HERO_WITH_FEWEST_HIT_POINTS']), {
+        label: 'Player To Engage',
+        primary: true,
+      }),
     })
     .strict(),
   CHANGE_FORM: z
@@ -254,7 +278,7 @@ export const EFFECT_PARAM_SCHEMAS = {
         label: 'Matching Destination',
         defaultValue: 'DISCARD',
         description:
-          'Destination for discarded cards matching filter (e.g. HAND for Black Cat, REVEAL for the card found by an encounter deck UNTIL_MATCH)',
+          'Destination for discarded cards matching filter (e.g. HAND for Black Cat, REVEAL for the card found by an encounter deck UNTIL_MATCH, DEAL_FACEDOWN to deal each match from the encounter deck to the resolving player)',
       }),
     })
     .strict(),
@@ -590,7 +614,7 @@ export const EFFECT_PARAM_SCHEMAS = {
         defaultValue: 'SET_ASIDE',
         primary: true,
       }),
-      to: optional(z.enum(['TABLEAU', 'ENGAGED_WITH_PLAYER', 'SIDE_SCHEMES']), {
+      to: optional(z.enum(['TABLEAU', 'ENGAGED_WITH_PLAYER', 'SIDE_SCHEMES', 'ATTACHED']), {
         label: 'Destination Zone',
         defaultValue: 'TABLEAU',
         primary: true,
@@ -906,7 +930,7 @@ export const EFFECT_DESCRIPTIONS: Record<EffectType, string> = {
   DOUBLE_RESOURCE_FOR_ASPECT: "Double resource generation when paying for a matching aspect card.",
   ADD_ACCELERATION: "Place acceleration tokens on the main scheme (+1 threat per token each villain phase).",
   ADD_COUNTERS: "Add multiple counter tokens to target card.",
-  ACTIVATE_MINIONS: "Each matching minion in play activates against this player: attacks a hero, schemes against an alter-ego.",
+  ACTIVATE_MINIONS: "Each matching minion in play activates against the resolving player or the player it is engaged with: attacks a hero, schemes against an alter-ego.",
   FLIP_CARD: "Flip the source card to its other side (RR v1.8 Flip), then CARD_FLIPPED triggers on it.",
   REMOVE_COUNTERS: "Remove multiple counters from target card.",
   REMOVE_COUNTERS_MATCHING_FILTER: "Remove counters across cards matching a trait or zone filter.",
@@ -946,6 +970,8 @@ export const EFFECT_DESCRIPTIONS: Record<EffectType, string> = {
   THREAT_CANNOT_BE_REMOVED: "CONSTANT on a main scheme: no effect can remove threat from it, whatever the source.",
   CANNOT_TAKE_DAMAGE: "CONSTANT: the host cannot take damage. Optional source filter: only damage from a card of this type and/or trait is ignored (Killmonger: Black Panther upgrades). No Tough, shield or Retaliate is used, and the host is not a valid target of a damage-only ability from such a source.",
   CANNOT_BE_ATTACKED: "CONSTANT: the character cannot be attacked.",
+  CANNOT_HAVE_STATUS: "CONSTANT: the character cannot be given this status card (\"cannot be stunned\"). Stalwart covers both stunned and confused.",
+  ENGAGE_MINION: "The source minion engages another player (RR v1.8 Engage). Nothing happens if it is already engaged with them. Ties are settled by the first player.",
   CANCEL_ATTACK: "Cancel incoming enemy attack before boost cards or damage are resolved.",
   DECLARE_DEFENDER: "Prompt player to declare a defender against an incoming enemy attack.",
   EXECUTE_SPECIAL: "Execute signature card-specific special logic.",

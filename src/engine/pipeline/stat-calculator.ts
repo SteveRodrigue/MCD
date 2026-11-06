@@ -872,6 +872,30 @@ export function getEffectiveRetaliate(
 }
 
 /**
+ * Whether a status card cannot be given to this entity: Stalwart for stunned and confused (RR v1.8
+ * Stalwart), or its own CONSTANT `CANNOT_HAVE_STATUS` step ("cannot be stunned").
+ */
+export function isImmuneToStatus(
+  entity: StatEntity | undefined | null,
+  status: StatusCard,
+  state: GameState,
+): boolean {
+  if (status === StatusCard.TOUGH) return false;
+  if (hasEntityKeyword(entity, 'Stalwart', state)) return true;
+  const abilities = (entity as { card?: NormalizedCard } | undefined | null)?.card?.enrichment
+    ?.abilities;
+  return (abilities ?? []).some(
+    (ability) =>
+      ability.timing === 'CONSTANT' &&
+      ability.steps?.some(
+        (step) =>
+          step.effect === 'CANNOT_HAVE_STATUS' &&
+          String(step.effectParams?.status).toLowerCase() === status.toLowerCase(),
+      ),
+  );
+}
+
+/**
  * Checks if an entity (Player, Villain, Minion, CardInstance, or Card) has a specific keyword (ADR-0054).
  */
 export function hasEntityKeyword(

@@ -15,6 +15,7 @@ import {
   getEffectiveMaxHealth,
   getEffectivePlayerTraits,
   hasEntityKeyword,
+  isImmuneToStatus,
   isEntityIncapacitatedByStatus,
 } from '../pipeline/stat-calculator';
 import { isImmuneToDamage } from '../pipeline/damage-immunity';
@@ -298,7 +299,7 @@ const AFFECT_RULES: Partial<Record<EffectType, AffectRule>> = {
           ? StatusCard.CONFUSED
           : StatusCard.STUNNED;
     const isStunOrConfuse = statusCard !== StatusCard.TOUGH;
-    if (isStunOrConfuse && hasEntityKeyword(entity, 'Stalwart', state)) return false;
+    if (isImmuneToStatus(entity, statusCard, state)) return false;
     const limit = isStunOrConfuse && hasEntityKeyword(entity, 'Steady', state) ? 2 : 1;
     const held = ((entity.statusCards ?? []) as StatusCard[]).filter((s) => s === statusCard);
     return held.length < limit;
@@ -449,6 +450,8 @@ export const EFFECTS_WITHOUT_AFFECT_RULE: Readonly<Record<string, readonly Effec
     'CANCEL_WHEN_REVEALED',
     'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER',
     'CANNOT_BE_ATTACKED',
+    'CANNOT_HAVE_STATUS',
+    'ENGAGE_MINION',
     'CANNOT_TAKE_DAMAGE',
     'THREAT_CANNOT_BE_REMOVED',
     'CHANGE_FORM',

@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-## 1. Cards with Multiple Abilities (2+ Declared Abilities — 66 Cards)
+## 1. Cards with Multiple Abilities (2+ Declared Abilities — 71 Cards)
 
 | Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -72,8 +72,13 @@
 | `45079` | **Nowhere is Safe** | `treachery` | `aoa_encounter` | **2** | • `nowhere_is_safe_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `nowhere_is_safe_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `45080` | **Drawing Near** | `obligation` | `aoa_encounter` | **2** | • `drawing_near_turn_begins` (`FORCED_RESPONSE` / `PLAYER_TURN_BEGAN`, **2 steps**)<br/>• `drawing_near_action` (`ALTER_EGO_ACTION`, **1 step**) |
 | `45109` | **The Fittest** | `attachment` | `aoa_encounter` | **2** | • `the_fittest_hit_points` (`CONSTANT`, **1 step**)<br/>• `the_fittest_tough` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**) |
+| `90001` | **Ronan the Accuser** | `minion` | `ron_encounter` | **3** | • `ronan_cannot_be_stunned` (`CONSTANT`, **1 step**)<br/>• `ronan_engage_fewest` (`FORCED_INTERRUPT` / `VILLAIN_PHASE_BEGAN`, **1 step**)<br/>• `ronan_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `90002` | **Judge, Jury, Executioner** | `side_scheme` | `ron_encounter` | **2** | • `judge_jury_defeat` (`FORCED_RESPONSE` / `CHARACTER_DEFEATED`, **1 step**)<br/>• `judge_jury_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `90003` | **The Accused** | `attachment` | `ron_encounter` | **3** | • `accused_atk` (`FORCED_INTERRUPT` / `INITIATES_ATTACK`, **1 step**)<br/>• `accused_discard` (`FORCED_RESPONSE` / `CHARACTER_DEFEATED`, **1 step**)<br/>• `accused_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `90004` | **Bring the Hammer Down** | `treachery` | `ron_encounter` | **2** | • `hammer_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `hammer_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `90005` | **You Dare Oppose Me?** | `treachery` | `ron_encounter` | **2** | • `you_dare_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `you_dare_boost` (`BOOST` / `BOOST`, **1 step**) |
 
-## 2. Multi-Step Execution Pipelines (2+ Steps — 84 Pipelines Across 82 Cards)
+## 2. Multi-Step Execution Pipelines (2+ Steps — 85 Pipelines Across 83 Cards)
 
 | Card Code | Card Name | Pack | Ability ID | Timing | Steps | Pipeline Execution Sequence |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -161,5 +166,6 @@
 | `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_when_revealed` | `WHEN_REVEALED` | **2** | `[1] ACTIVATE_MINIONS ➔ [2] ADD_COUNTERS` |
 | `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed` | `WHEN_REVEALED` | **2** | `[1] ADD_COUNTERS ➔ [2] DISCARD` |
 | `45080` | **Drawing Near (obligation)** | `aoa_encounter` | `drawing_near_turn_begins` | `FORCED_RESPONSE` | **2** | `[1] DISCARD ➔ [2] ADD_COUNTERS` |
+| `90004` | **Bring the Hammer Down (treachery)** | `ron_encounter` | `hammer_revealed` | `WHEN_REVEALED` | **2** | `[1] ACTIVATE_MINIONS ➔ [2] SURGE` |
 
 [← Back to Main Usage Report](../usage_report.md)

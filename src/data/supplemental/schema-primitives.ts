@@ -316,7 +316,7 @@ export const TriggerFilterSchema = z
       .optional(),
     attackedBy: z.enum(['YOUR_HERO', 'THIS_CARD']).meta({ label: 'Attacked By' }).optional(),
     defeatedByAttackOf: z
-      .enum(['YOUR_HERO', 'THIS_CARD'])
+      .enum(['YOUR_HERO', 'THIS_CARD', 'ANY_ENEMY'])
       .meta({ label: 'Defeated By Attack Of' })
       .optional(),
     isEngaged: z.boolean().meta({ label: 'Enemy Engaged With You' }).optional(),
@@ -587,7 +587,7 @@ export const DiscardParamsSchema = z
     untilFilter: UniversalCardFilterSchema.optional(),
     selection: z.enum(['HIGHEST_COST', 'LOWEST_COST']).optional(),
     fallback: z.enum(['SURGE', 'NONE']).optional(),
-    matchingDestination: z.enum(['HAND', 'PLAY', 'DISCARD', 'REVEAL']).optional(),
+    matchingDestination: z.enum(['HAND', 'PLAY', 'DISCARD', 'REVEAL', 'DEAL_FACEDOWN']).optional(),
   })
   .strict();
 

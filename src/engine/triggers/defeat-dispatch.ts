@@ -1,5 +1,5 @@
 import { kernel } from '../kernel';
-import type { GameState } from '../models';
+import type { CardInstance, GameState } from '../models';
 import type { DefeatSource } from './trigger-dispatcher';
 
 export interface DefeatDispatch {
@@ -8,6 +8,7 @@ export interface DefeatDispatch {
   entityType?: 'CHARACTER' | 'SCHEME';
   targetType?: 'VILLAIN' | 'MINION' | 'ALLY' | 'HERO' | 'SCHEME';
   defeatSource?: DefeatSource;
+  defeatedCard?: CardInstance;
 }
 
 /**
@@ -27,6 +28,7 @@ export function dispatchDefeat(state: GameState, defeat: DefeatDispatch): void {
     entityType,
     targetType: defeat.targetType,
     ...(defeat.defeatSource ? { defeatSource: defeat.defeatSource } : {}),
+    ...(defeat.defeatedCard ? { defeatedCard: defeat.defeatedCard } : {}),
   };
   kernel.dispatchTrigger(state, 'DEFEATED', context);
   kernel.dispatchTrigger(

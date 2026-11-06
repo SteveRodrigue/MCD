@@ -4,7 +4,7 @@
 
 ## 1. Ability Timings (`TimingTypeSchema` — 16/20 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (90 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (92 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -98,8 +98,56 @@
 | `45077` | **Sinister Strike (treachery)** | `aoa_encounter` | `sinister_strike_when_revealed` |
 | `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_when_revealed` |
 | `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed` |
+| `90004` | **Bring the Hammer Down (treachery)** | `ron_encounter` | `hammer_revealed` |
+| `90005` | **You Dare Oppose Me? (treachery)** | `ron_encounter` | `you_dare_revealed` |
 
-### <a id="constant"></a>`CONSTANT` (37 Cards)
+### <a id="boost"></a>`BOOST` (41 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
+| `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_boost` |
+| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_boost` |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
+| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
+| `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
+| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_boost` |
+| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_boost` |
+| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_boost` |
+| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_boost` |
+| `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
+| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
+| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
+| `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
+| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
+| `02007` | **Hired Gun (minion)** | `gob_encounter` | `hired_gun_boost` |
+| `02008` | **Private Security Specialist (minion)** | `gob_encounter` | `private_security_specialist_boost` |
+| `02009` | **Collapsing Bridge (side_scheme)** | `gob_encounter` | `collapsing_bridge_boost` |
+| `02011` | **Payoff (side_scheme)** | `gob_encounter` | `payoff_boost` |
+| `02012` | **All in a Day's Work (treachery)** | `gob_encounter` | `all_in_a_days_work_boost` |
+| `02035` | **Intimidation (treachery)** | `gob_encounter` | `intimidation_boost` |
+| `02036` | **Regenerative Healing (treachery)** | `gob_encounter` | `regenerative_healing_boost` |
+| `02040` | **Tail Sweep (treachery)** | `gob_encounter` | `tail_sweep_boost` |
+| `02042` | **Electro (minion)** | `gob_encounter` | `electro_boost` |
+| `02043` | **Electromagnetic Pulse (treachery)** | `gob_encounter` | `electromagnetic_pulse_boost` |
+| `02044` | **Lightning Bolt (treachery)** | `gob_encounter` | `lightning_bolt_boost` |
+| `02045` | **Shock Therapy (treachery)** | `gob_encounter` | `shock_therapy_boost` |
+| `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_boost` |
+| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_boost` |
+| `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_boost` |
+| `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_boost` |
+| `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_boost` |
+| `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_boost` |
+| `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_boost` |
+| `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_boost` |
+| `90001` | **Ronan the Accuser (minion)** | `ron_encounter` | `ronan_boost` |
+| `90002` | **Judge, Jury, Executioner (side_scheme)** | `ron_encounter` | `judge_jury_boost` |
+| `90003` | **The Accused (attachment)** | `ron_encounter` | `accused_boost` |
+| `90004` | **Bring the Hammer Down (treachery)** | `ron_encounter` | `hammer_boost` |
+| `90005` | **You Dare Oppose Me? (treachery)** | `ron_encounter` | `you_dare_boost` |
+
+### <a id="constant"></a>`CONSTANT` (38 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -140,47 +188,43 @@
 | `24049a` | **Formidable Foe (environment)** | `hood_encounter` | `formidable_foe_steady` |
 | `24049b` | **Formidable Foe (environment)** | `hood_encounter` | `formidable_foe_steady` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_hit_points` |
+| `90001` | **Ronan the Accuser (minion)** | `ron_encounter` | `ronan_cannot_be_stunned` |
 
-### <a id="boost"></a>`BOOST` (36 Cards)
+### <a id="forced-response"></a>`FORCED_RESPONSE` (31 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
-| `01121` | **Weapons Runner (minion)** | `core_encounter` | `weapons_runner_boost` |
-| `01123` | **Sonic Boom (treachery)** | `core_encounter` | `sonic_boom_boost` |
-| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_boost` |
-| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_boost` |
-| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_boost` |
-| `01132` | **Melter (minion)** | `core_encounter` | `melter_boost` |
-| `01144a` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_a_boost` |
-| `01144b` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_b_boost` |
-| `01144c` | **Android Efficiency (treachery)** | `core_encounter` | `android_efficiency_c_boost` |
-| `01146` | **Repair Sequence (treachery)** | `core_encounter` | `repair_sequence_boost` |
-| `01154` | **Concussive Blast (treachery)** | `core_encounter` | `concussive_blast_boost` |
-| `01158` | **Heart-Shaped Herb (treachery)** | `core_encounter` | `heart_shaped_herb_boost` |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
-| `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
-| `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
-| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
-| `02007` | **Hired Gun (minion)** | `gob_encounter` | `hired_gun_boost` |
-| `02008` | **Private Security Specialist (minion)** | `gob_encounter` | `private_security_specialist_boost` |
-| `02009` | **Collapsing Bridge (side_scheme)** | `gob_encounter` | `collapsing_bridge_boost` |
-| `02011` | **Payoff (side_scheme)** | `gob_encounter` | `payoff_boost` |
-| `02012` | **All in a Day's Work (treachery)** | `gob_encounter` | `all_in_a_days_work_boost` |
-| `02035` | **Intimidation (treachery)** | `gob_encounter` | `intimidation_boost` |
-| `02036` | **Regenerative Healing (treachery)** | `gob_encounter` | `regenerative_healing_boost` |
-| `02040` | **Tail Sweep (treachery)** | `gob_encounter` | `tail_sweep_boost` |
-| `02042` | **Electro (minion)** | `gob_encounter` | `electro_boost` |
-| `02043` | **Electromagnetic Pulse (treachery)** | `gob_encounter` | `electromagnetic_pulse_boost` |
-| `02044` | **Lightning Bolt (treachery)** | `gob_encounter` | `lightning_bolt_boost` |
-| `02045` | **Shock Therapy (treachery)** | `gob_encounter` | `shock_therapy_boost` |
-| `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_boost` |
-| `24032` | **Slug It Out (treachery)** | `hood_encounter` | `slug_it_out_boost` |
-| `24050` | **Dark Dealings (treachery)** | `hood_encounter` | `dark_dealings_boost` |
-| `24052` | **Overwhelming Force (treachery)** | `hood_encounter` | `overwhelming_force_boost` |
-| `24054` | **Total Annihilation (treachery)** | `hood_encounter` | `total_annihilation_boost` |
-| `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_boost` |
-| `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_boost` |
-| `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_boost` |
+| `01002` | **Black Cat (ally)** | `core` | `black_cat_when_played` |
+| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
+| `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
+| `01084` | **Nick Fury (ally)** | `core` | `nick_fury_enters_play`, `nick_fury_round_end_discard` |
+| `01099` | **Charge (attachment)** | `core_encounter` | `charge_discard` |
+| `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_stun_damaged` |
+| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response` |
+| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response` |
+| `01134` | **Ultron (villain)** | `core_encounter` | `ultron_i_after_attack` |
+| `01138b` | **Assault on NORAD (main_scheme)** | `core_encounter` | `assault_on_norad_after_threat` |
+| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_after_scheme` |
+| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_tough` |
+| `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` |
+| `01160` | **Legal Work (obligation)** | `core_encounter` | `legal_work_resolve` |
+| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
+| `01165` | **Eviction Notice (obligation)** | `core_encounter` | `eviction_notice_resolve` |
+| `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
+| `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
+| `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
+| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
+| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks`, `madame_hydra_schemes` |
+| `02034` | **Pumpkin Bombs (attachment)** | `gob_encounter` | `pumpkin_bombs_damage_response` |
+| `02038` | **Scorpion (minion)** | `gob_encounter` | `scorpion_stun_on_damage` |
+| `02042` | **Electro (minion)** | `gob_encounter` | `electro_attack_response` |
+| `02047` | **Tombstone (minion)** | `gob_encounter` | `tombstone_damage_response` |
+| `45075a` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_threshold` |
+| `45075b` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_flipped` |
+| `45080` | **Drawing Near (obligation)** | `aoa_encounter` | `drawing_near_turn_begins` |
+| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
+| `90002` | **Judge, Jury, Executioner (side_scheme)** | `ron_encounter` | `judge_jury_defeat` |
+| `90003` | **The Accused (attachment)** | `ron_encounter` | `accused_discard` |
 
 ### <a id="hero-action"></a>`HERO_ACTION` (33 Cards)
 
@@ -220,41 +264,7 @@
 | `02033` | **Goblin Glider (attachment)** | `gob_encounter` | `goblin_glider_discard` |
 | `02034` | **Pumpkin Bombs (attachment)** | `gob_encounter` | `pumpkin_bombs_discard` |
 
-### <a id="forced-response"></a>`FORCED_RESPONSE` (29 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01002` | **Black Cat (ally)** | `core` | `black_cat_when_played` |
-| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
-| `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
-| `01084` | **Nick Fury (ally)** | `core` | `nick_fury_enters_play`, `nick_fury_round_end_discard` |
-| `01099` | **Charge (attachment)** | `core_encounter` | `charge_discard` |
-| `01118` | **Sonic Converter (attachment)** | `core_encounter` | `sonic_converter_stun_damaged` |
-| `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response` |
-| `01131` | **Tiger Shark (minion)** | `core_encounter` | `tiger_shark_forced_response` |
-| `01134` | **Ultron (villain)** | `core_encounter` | `ultron_i_after_attack` |
-| `01138b` | **Assault on NORAD (main_scheme)** | `core_encounter` | `assault_on_norad_after_threat` |
-| `01141` | **Program Transmitter (attachment)** | `core_encounter` | `program_transmitter_after_scheme` |
-| `01152` | **Vibranium Armor (attachment)** | `core_encounter` | `vibranium_armor_tough` |
-| `01155` | **Affairs of State (obligation)** | `core_encounter` | `affairs_of_state_resolve` |
-| `01160` | **Legal Work (obligation)** | `core_encounter` | `legal_work_resolve` |
-| `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_when_revealed` |
-| `01165` | **Eviction Notice (obligation)** | `core_encounter` | `eviction_notice_resolve` |
-| `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
-| `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
-| `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
-| `01177` | **Yon-Rogg (minion)** | `core_encounter` | `yon_rogg_response` |
-| `01181` | **Madame Hydra (minion)** | `core_encounter` | `madame_hydra_attacks`, `madame_hydra_schemes` |
-| `02034` | **Pumpkin Bombs (attachment)** | `gob_encounter` | `pumpkin_bombs_damage_response` |
-| `02038` | **Scorpion (minion)** | `gob_encounter` | `scorpion_stun_on_damage` |
-| `02042` | **Electro (minion)** | `gob_encounter` | `electro_attack_response` |
-| `02047` | **Tombstone (minion)** | `gob_encounter` | `tombstone_damage_response` |
-| `45075a` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_threshold` |
-| `45075b` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_flipped` |
-| `45080` | **Drawing Near (obligation)** | `aoa_encounter` | `drawing_near_turn_begins` |
-| `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
-
-### <a id="forced-interrupt"></a>`FORCED_INTERRUPT` (24 Cards)
+### <a id="forced-interrupt"></a>`FORCED_INTERRUPT` (26 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -282,6 +292,8 @@
 | `16105` | **Ronan the Accuser (villain)** | `gmw_encounter` | `ronan_stage_iii_forced_interrupt_boost` |
 | `50165b` | **Baron Zemo (villain)** | `aos_encounter` | `baron_zemo_a2_forced_interrupt_activation` |
 | `50166b` | **Baron Zemo (villain)** | `aos_encounter` | `baron_zemo_b2_forced_interrupt_activation` |
+| `90001` | **Ronan the Accuser (minion)** | `ron_encounter` | `ronan_engage_fewest` |
+| `90003` | **The Accused (attachment)** | `ron_encounter` | `accused_atk` |
 
 ### <a id="action"></a>`ACTION` (23 Cards)
 
@@ -402,9 +414,9 @@
 | :--- | :--- | :--- | :--- |
 | `02004b` | **Hostile Takeover (main_scheme)** | `gob_encounter` | `hostile_takeover_1b_when_completed` |
 
-## 2. Trigger Windows (`TriggerTypeSchema` — 31/40 In Use)
+## 2. Trigger Windows (`TriggerTypeSchema` — 32/40 In Use)
 
-### <a id="when-revealed"></a>`WHEN_REVEALED` (91 Cards)
+### <a id="when-revealed"></a>`WHEN_REVEALED` (93 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -499,8 +511,10 @@
 | `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_when_revealed` |
 | `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_when_revealed` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
+| `90004` | **Bring the Hammer Down (treachery)** | `ron_encounter` | `hammer_revealed` |
+| `90005` | **You Dare Oppose Me? (treachery)** | `ron_encounter` | `you_dare_revealed` |
 
-### <a id="boost"></a>`BOOST` (36 Cards)
+### <a id="boost"></a>`BOOST` (41 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -540,6 +554,11 @@
 | `45076` | **Dark Designs (treachery)** | `aoa_encounter` | `dark_designs_boost` |
 | `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_boost` |
 | `45079` | **Nowhere is Safe (treachery)** | `aoa_encounter` | `nowhere_is_safe_boost` |
+| `90001` | **Ronan the Accuser (minion)** | `ron_encounter` | `ronan_boost` |
+| `90002` | **Judge, Jury, Executioner (side_scheme)** | `ron_encounter` | `judge_jury_boost` |
+| `90003` | **The Accused (attachment)** | `ron_encounter` | `accused_boost` |
+| `90004` | **Bring the Hammer Down (treachery)** | `ron_encounter` | `hammer_boost` |
+| `90005` | **You Dare Oppose Me? (treachery)** | `ron_encounter` | `you_dare_boost` |
 
 ### <a id="enters-play"></a>`ENTERS_PLAY` (10 Cards)
 
@@ -555,6 +574,18 @@
 | `01165` | **Eviction Notice (obligation)** | `core_encounter` | `eviction_notice_resolve` |
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
+
+### <a id="initiates-attack"></a>`INITIATES_ATTACK` (7 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
+| `01113` | **Klaw (villain)** | `core_encounter` | `klaw_stage_i_forced_interrupt_boost` |
+| `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_forced_interrupt_boost` |
+| `01115` | **Klaw (villain)** | `core_encounter` | `klaw_stage_iii_forced_interrupt_boost` |
+| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
+| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
+| `90003` | **The Accused (attachment)** | `ron_encounter` | `accused_atk` |
 
 ### <a id="damage-would-be-taken"></a>`DAMAGE_WOULD_BE_TAKEN` (6 Cards)
 
@@ -578,17 +609,6 @@
 | `50165b` | **Baron Zemo (villain)** | `aos_encounter` | `baron_zemo_a2_forced_interrupt_activation` |
 | `50166b` | **Baron Zemo (villain)** | `aos_encounter` | `baron_zemo_b2_forced_interrupt_activation` |
 
-### <a id="initiates-attack"></a>`INITIATES_ATTACK` (6 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01001a` | **Spider-Man (hero)** | `core` | `spider_sense` |
-| `01113` | **Klaw (villain)** | `core_encounter` | `klaw_stage_i_forced_interrupt_boost` |
-| `01114` | **Klaw (villain)** | `core_encounter` | `klaw_stage_ii_forced_interrupt_boost` |
-| `01115` | **Klaw (villain)** | `core_encounter` | `klaw_stage_iii_forced_interrupt_boost` |
-| `01130` | **Whirlwind (minion)** | `core_encounter` | `whirlwind_interrupt_multi_hero_attack` |
-| `01135` | **Ultron (villain)** | `core_encounter` | `ultron_ii_when_attacks` |
-
 ### <a id="minion-attacked"></a>`MINION_ATTACKED` (6 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -610,6 +630,16 @@
 | `02034` | **Pumpkin Bombs (attachment)** | `gob_encounter` | `pumpkin_bombs_damage_response` |
 | `02047` | **Tombstone (minion)** | `gob_encounter` | `tombstone_damage_response` |
 
+### <a id="character-defeated"></a>`CHARACTER_DEFEATED` (5 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_defeat_trigger` |
+| `01051` | **Tigra (ally)** | `core` | `tigra_defeat_heal` |
+| `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
+| `90002` | **Judge, Jury, Executioner (side_scheme)** | `ron_encounter` | `judge_jury_defeat` |
+| `90003` | **The Accused (attachment)** | `ron_encounter` | `accused_discard` |
+
 ### <a id="defeated"></a>`DEFEATED` (5 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -619,14 +649,6 @@
 | `01166` | **Highway Robbery (side_scheme)** | `core_encounter` | `highway_robbery_when_defeated` |
 | `01182` | **Hydra Soldier (minion)** | `core_encounter` | `hydra_soldier_when_defeated` |
 | `02041` | **Power Drain (side_scheme)** | `gob_encounter` | `power_drain_when_defeated` |
-
-### <a id="character-defeated"></a>`CHARACTER_DEFEATED` (3 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01007` | **Spider-Tracer (upgrade)** | `core` | `spider_tracer_defeat_trigger` |
-| `01051` | **Tigra (ally)** | `core` | `tigra_defeat_heal` |
-| `01063` | **Interrogation Room (support)** | `core` | `interrogation_room_response` |
 
 ### <a id="encounter-card-revealed"></a>`ENCOUNTER_CARD_REVEALED` (3 Cards)
 
@@ -757,6 +779,12 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01058` | **Daredevil (ally)** | `core` | `daredevil_after_thwart` |
+
+### <a id="villain-phase-began"></a>`VILLAIN_PHASE_BEGAN` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `90001` | **Ronan the Accuser (minion)** | `ron_encounter` | `ronan_engage_fewest` |
 
 ### <a id="villain-schemed"></a>`VILLAIN_SCHEMED` (1 Cards)
 

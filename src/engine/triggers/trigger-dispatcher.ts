@@ -111,8 +111,9 @@ export function matchesTriggerFilter(
   const targetId = context.targetInstanceId || (isDefeat ? context.sourceInstanceId : undefined);
 
   // Universal attachment defeat guard:
-  // Attachments in play must only trigger when their attached host is defeated
-  if (hostId && isDefeat) {
+  // Attachments in play must only trigger when their attached host is defeated, unless the ability
+  // names the card it waits for ("After Ronan the Accuser is defeated").
+  if (hostId && isDefeat && !filter?.cardFilter) {
     if (targetId && targetId !== hostId) {
       return false;
     }
@@ -170,9 +171,7 @@ export function matchesTriggerFilter(
   }
 
   if (filter.cardFilter) {
-    const subject = context.encounterCardInstance?.card
-      ? context.encounterCardInstance
-      : context.attackerCard;
+    const subject = context.defeatedCard ?? context.encounterCardInstance ?? context.attackerCard;
     if (!subject?.card) return false;
     if (!matchesCardFilter(subject, filter.cardFilter, { player })) {
       return false;
@@ -219,7 +218,9 @@ export function matchesTriggerFilter(
     const typeMatches =
       filter.targetType === 'ENEMY'
         ? actualType === 'VILLAIN' || actualType === 'MINION'
-        : actualType === filter.targetType;
+        : filter.targetType === 'CHARACTER'
+          ? ['VILLAIN', 'MINION', 'ALLY', 'HERO', 'CHARACTER'].includes(actualType ?? '')
+          : actualType === filter.targetType;
     if (!actualType || !typeMatches) {
       return false;
     }
@@ -232,6 +233,8 @@ export function matchesTriggerFilter(
     if (!source || !source.byAttack) return false;
     if (filter.defeatedByAttackOf === 'YOUR_HERO') {
       if (source.kind !== 'HERO' || !player || source.playerId !== player.id) return false;
+    } else if (filter.defeatedByAttackOf === 'ANY_ENEMY') {
+      if (source.kind !== 'ENEMY') return false;
     } else if (!cardInst || source.instanceId !== cardInst.instanceId) {
       return false;
     }
@@ -347,6 +350,8 @@ export interface TriggerContext {
   targetMaxHp?: number;
   /** For DEFEATED / CHARACTER_DEFEATED: what defeated the character. */
   defeatSource?: DefeatSource;
+  /** For DEFEATED / CHARACTER_DEFEATED of a minion: the card, already out of play ("After X is defeated"). */
+  defeatedCard?: CardInstance;
   /** For ATTACK_RESOLVED: who made the attack. */
   attackSource?: AttackSource;
   /** Active chain of trigger nodes leading to this invocation (ADR-0053) */

@@ -203,7 +203,8 @@
                       "type": "string",
                       "enum": [
                         "YOUR_HERO",
-                        "THIS_CARD"
+                        "THIS_CARD",
+                        "ANY_ENEMY"
                       ],
                       "label": "Defeated By Attack Of"
                     },
@@ -467,6 +468,8 @@
                           "CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER",
                           "CANNOT_TAKE_DAMAGE",
                           "CANNOT_BE_ATTACKED",
+                          "CANNOT_HAVE_STATUS",
+                          "ENGAGE_MINION",
                           "THREAT_CANNOT_BE_REMOVED",
                           "CHANGE_FORM",
                           "DEAL_DAMAGE",
@@ -542,7 +545,8 @@
                           "IF_ALL_ALLIES_MATCH",
                           "IF_RESOURCE_MATCH",
                           "IF_UNDEFENDED_ATTACK",
-                          "IF_ACTIVATION_DEALT_DAMAGE"
+                          "IF_ACTIVATION_DEALT_DAMAGE",
+                          "IF_ACTIVATION_DEFEATED_CHARACTER"
                         ]
                       },
                       "cannotBeCanceled": {

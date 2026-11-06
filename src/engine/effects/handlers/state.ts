@@ -13,7 +13,7 @@ import {
 } from '@engine/models';
 import { getStepEffectParams } from '../../../data/supplemental/runtime';
 import type { DynamicValueSource } from '../../../data/supplemental/schema';
-import { hasEntityKeyword } from '../../pipeline/stat-calculator';
+import { hasEntityKeyword, isImmuneToStatus } from '../../pipeline/stat-calculator';
 import { nextEngineId } from '../../state/rng';
 import {
   resolveTargets,
@@ -59,7 +59,7 @@ function handleAddStatus(
   let alreadyHadStatus = false;
   let isImmune = false;
 
-  // Helper to apply status to a target entity considering Stalwart and Steady
+  // Helper to apply status to a target entity considering status immunity and Steady
   const applyStatusToEntity = (
     entity:
       | ({ statusCards?: StatusCard[] } & Record<string, unknown>)
@@ -71,11 +71,7 @@ function handleAddStatus(
     if (!entity) return;
     if (!entity.statusCards) entity.statusCards = [];
 
-    // Stalwart check (RR v1.8 p. 28)
-    if (
-      (status === StatusCard.STUNNED || status === StatusCard.CONFUSED) &&
-      hasEntityKeyword(entity, 'Stalwart', state)
-    ) {
+    if (isImmuneToStatus(entity, status, state)) {
       isImmune = true;
       return;
     }
@@ -146,7 +142,7 @@ function handleAddStatus(
           : 'alter_ego';
 
   const onomatopoeia = isImmune
-    ? 'IMMUNE! (STALWART)'
+    ? 'IMMUNE!'
     : mutatedState
       ? status === StatusCard.STUNNED
         ? 'STUNNED!'

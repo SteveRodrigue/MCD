@@ -33,6 +33,7 @@ export interface StepGateContext {
    * prevention). Set only while a deferred boost ability resolves after step 6.
    */
   activationDamage?: number;
+  activationDefeatedCharacter?: boolean;
   /** Who took the activation's damage (hero or ally). */
   damagedCharacter?: DamagedCharacter;
 }
@@ -272,6 +273,11 @@ export function evaluateStepGate(
       } else {
         gateSatisfied = true;
       }
+      break;
+    }
+
+    case 'IF_ACTIVATION_DEFEATED_CHARACTER': {
+      gateSatisfied = context.activationDefeatedCharacter === true;
       break;
     }
 

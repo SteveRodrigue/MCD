@@ -1,6 +1,6 @@
 ---
 name: next-task
-description: 'Picks the next task fast: the oldest open bug of the active gate milestone, else the first open row of the backlog queue, else the top-ranked open issue of the gate. Then writes the plan and stops for approval. Trigger when asking what to work on next, when continuing work, or prefixed with "next-task".'
+description: 'Picks the next task fast: the oldest open bug of the active gate milestone, else the top-ranked open issue of the gate. Then writes the plan and stops for approval. Trigger when asking what to work on next, when continuing work, or prefixed with "next-task".'
 hooks:
   PreToolUse:
     - matcher: 'Edit|Write'
@@ -33,13 +33,11 @@ Pick first, analyze later. Do no research before the task is chosen.
    ```sh
    gh issue list --milestone "<gate>" --state open --label bug --search "sort:created-asc" --limit 1 --json number,title,url
    ```
-3. **No open bug: deeper pick**, in this order:
-   1. The first open row of section 3 of [`docs/backlog/teamwork_status_and_next_target.md`](../../../docs/backlog/teamwork_status_and_next_target.md) (owner's order; never re-rank it). Skip a row whose issue is closed (remove the row) or that waits for an owner decision in section 5.
-   2. Otherwise the top open issue of the gate: priority label (`P0` > `P1` > `P2` > `P3` > none), then oldest first.
-   3. Never pick from `Tech Debt & Tooling` or a later gate unless the user asks.
+3. **No open bug:** the top open issue of the gate: priority label (`P0` > `P1` > `P2` > `P3` > none), then oldest first.
+   Never pick from `Tech Debt & Tooling` or a later gate unless the user asks.
 4. **Gate empty:** before saying a gate is done, `gh issue list --milestone "<gate>" --state open` must be empty and `rtk npm run docs:check -- --github` must report no open issue without a milestone. Then say so and name the next gate.
 
-Report the pick in one line: issue number, title, and why (`oldest bug in Gate N`, `queue row 1`, or `top P1 in Gate N`). Name the runner-up in the same line. Do not wait for a choice.
+Report the pick in one line: issue number, title, and why (`oldest bug in Gate N` or `top P1 in Gate N`). Name the runner-up in the same line. Do not wait for a choice.
 
 ## Step 3: Plan and stop
 

@@ -70,7 +70,7 @@ If a check fails in Step 4, 5 or 7, go back to the step named on that check line
 
 ### Step 1: Scope & GitHub Issue Linkage
 
-1. Identify the controlling Roadmap Milestone in [`docs/roadmap_and_milestones.md`](../../../docs/roadmap_and_milestones.md) (e.g. Milestone 2C, Milestone 2D, Phase 3).
+1. Identify the controlling gate in the GitHub milestones; [`docs/roadmap_and_milestones.md`](../../../docs/roadmap_and_milestones.md) states each gate's goal.
 2. Check existing open GitHub issues (`gh issue list`) or create a new tracked feature issue:
 
    ```bash
@@ -180,7 +180,7 @@ rtk npx prettier --check <changed-files> && rtk npm run lint && rtk npm run type
 ### Step 8: Post-Task Hygiene & Delivery Recap
 
 1. **Execute Post-Task Protocol:**
-   Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to Tier 2/3: add a CHANGELOG fragment in `changes/unreleased/`, synchronize specs and docs (run `rtk npm run docs:check` and search `docs/` and `.agents/` for every changed name), verify Card Editor alignment, and check off roadmap tasks in `docs/roadmap_and_milestones.md`.
+   Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to Tier 2/3: add a CHANGELOG fragment in `changes/unreleased/`, synchronize specs and docs (run `rtk npm run docs:check` and search `docs/` and `.agents/` for every changed name), and verify Card Editor alignment.
 2. **Recap and deliver:** Present the recap per [`post-task-checklist.md`](../../rules/post-task-checklist.md) (**Try it in game**, **Decisions I made**, **Debt removed**, verification logs), then deliver through `commit-and-push` with `Closes #<NUM>`. The approved plan authorizes delivery ([Delivery authorization](../../rules/shared-quality-gates.md#delivery-authorization)).
 
 

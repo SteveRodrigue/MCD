@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -65,6 +65,29 @@ function contentFolder(artPacks: Record<string, unknown>, skipFiles: string[] = 
   return new NodeFsDriver(root);
 }
 
+/** An installed pack that config.json leaves off. Its cards file is whatever the test passes. */
+function writeOffPack(
+  cards: unknown = [
+    { code: '12001a', name: 'Ant-Man', type_code: 'hero', pack_code: 'off', position: 1, quantity: 1 },
+  ],
+) {
+  const dir = path.join(root as string, 'packs/off');
+  fs.mkdirSync(path.join(dir, 'cards'), { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, 'pack.json'),
+    JSON.stringify({
+      id: 'off',
+      name: 'off',
+      kind: 'hero',
+      origin: 'official-bundled',
+      apiVersion: 1,
+      version: '1.0.0',
+      dependsOn: [],
+    }),
+  );
+  fs.writeFileSync(path.join(dir, 'cards/off.json'), JSON.stringify(cards));
+}
+
 afterEach(() => {
   if (root) fs.rmSync(root, { recursive: true, force: true });
   root = undefined;
@@ -117,11 +140,52 @@ describe('loading art packs', () => {
     expect(content.packs.map((p) => p.id)).toEqual(['tmp']);
   });
 
-  it('warns about a card that is not loaded', async () => {
+  it('S1: a code in no installed pack gives one warning', async () => {
     const driver = contentFolder({ one: manifest('one', { '99999': [{ file: 'a.png' }] }) });
+    writeOffPack();
     const content = await loadContent(driver, { artPacks: true });
     expect(content.artPacks).toHaveLength(1);
-    expect(content.artPackWarnings[0].reason).toContain('99999');
+    expect(content.artPackWarnings.map((w) => w.reason)).toEqual([
+      'card 99999 is in no installed pack',
+    ]);
+    expect(content.artPackCardLabels['99999']).toBeUndefined();
+  });
+
+  it('S1: a card of an installed pack that is off gives no warning', async () => {
+    const driver = contentFolder({ one: manifest('one', { '12001a': [{ file: 'a.png' }] }) });
+    writeOffPack();
+    const content = await loadContent(driver, { artPacks: true });
+    expect(content.artPackWarnings).toEqual([]);
+    expect(content.packs.map((p) => p.id)).toEqual(['tmp']);
+    expect(content.artPackCardLabels['12001a']).toEqual({
+      name: 'Ant-Man',
+      type: 'hero',
+      source: 'off-pack',
+    });
+  });
+
+  it('S1: no off pack is read when every listed code is loaded', async () => {
+    const driver = contentFolder({ one: manifest('one', { '99001a': [{ file: 'a.png' }] }) });
+    writeOffPack();
+    const read = vi.spyOn(driver, 'readJson');
+    const content = await loadContent(driver, { artPacks: true });
+    expect(content.artPackCardLabels['99001a']).toEqual({
+      name: 'Hero',
+      type: 'hero',
+      source: 'card',
+    });
+    expect(read.mock.calls.filter(([file]) => file.startsWith('packs/off/cards'))).toEqual([]);
+  });
+
+  it('S1: an unreadable off pack does not stop the load', async () => {
+    const driver = contentFolder({ one: manifest('one', { '12001a': [{ file: 'a.png' }] }) });
+    writeOffPack('not a list of cards');
+    const content = await loadContent(driver, { artPacks: true });
+    expect(content.failures).toEqual([]);
+    expect(content.packs.map((p) => p.id)).toEqual(['tmp']);
+    expect(content.artPackWarnings.map((w) => w.reason)).toEqual([
+      'card 12001a is in no installed pack',
+    ]);
   });
 
   it('warns about stat images on a card type that has no stats to follow', async () => {

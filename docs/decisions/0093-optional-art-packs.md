@@ -50,11 +50,12 @@ Fan art rarely has a license that fits this public, MIT-licensed repository, and
 8. **Failure.** A failed image falls back to the official art, or to the labelled back for a token. An invalid `art-pack.json` is a load failure, and other problems are warnings. The Content screen lists them, and the game still starts.
 9. **Credit and description.** `art-pack.json` requires a credit and a description (1 to 300 characters). The card's right-click menu, the art pack list and the Browse view show them.
 10. **Card Editor.** The editor always shows official art, because card data is reviewed against the printed card.
-11. **Loading with the scenario.** When a game starts, the UI preloads the images of the scenario's tokens, so the next stat image shows at once.
+11. **Loading with the game.** When a game starts, the UI preloads the images of the scenario's tokens and of each player's identity forms, so the next stat image or form shows at once (amended 2026-11-06, Issue #618). A pack that is off loads nothing.
 
 12. **Load-time validation.** Beyond the manifest, the loader checks that every listed PNG exists in the pack folder (the dev server's content index names the PNG files of art packs, but never serves them through `/__content`). A missing file is a warning and the image is dropped, so its card keeps its official art. Image dimensions and shape are not checked at load: the driver reads no binary files, and a failed image already falls back (decision 8).
-13. **Browse.** A modal shows every image of a pack, on or off, with the card name, code and printed stats, a filter and an enlarged view. Images are shown whole and unaltered.
+13. **Browse.** A modal shows every image of a pack, on or off, with the card name, code and printed stats, a filter and an enlarged view. Images are shown whole and unaltered. A card of an installed pack that is off is named and marked "pack off" (amended 2026-11-06, Issue #618).
 14. **Conversion tooling is outside MCD.** Turning a fan release (print sheets, bleed, PDF pages) into an art pack is the pack author's job. The repository ships no converter, recipe or image library, and no fan art. The first large pack, Corbintm's alternate-art heroes, is built with a separate private tool.
+15. **Cards of packs that are off.** An art pack may list cards of any installed pack, because a full-collection pack is normal and most packs are off by default. Such a card is not a warning; only a code in no installed pack is. To tell them apart and to name them, the loader reads the card files of the packs that are off, once per load, and only when an art pack lists a code outside the enabled packs (amended 2026-11-06, Issue #618).
 
 ### Rationale ("The Why")
 

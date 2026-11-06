@@ -6,6 +6,7 @@ const EMPTY: LoadedContent = {
   descriptions: [],
   artPacks: [],
   artPackWarnings: [],
+  artPackCardLabels: {},
 };
 let current: LoadedContent = EMPTY;
 

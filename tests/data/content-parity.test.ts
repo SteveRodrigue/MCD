@@ -26,7 +26,7 @@ describe('content loader parity with the files on disk', () => {
     ).toEqual([...expected].sort());
   });
 
-  it('registers the Core supplemental data of the enabled packs only', () => {
+  it('registers the Core supplemental data only', () => {
     const expected = Object.keys({
       ...read(supplementalFile('core')).cards,
       ...read(supplementalFile('core_encounter')).cards,
@@ -62,7 +62,7 @@ describe('content loader parity with the files on disk', () => {
     expect(listEncounterSets(cardCatalog, 'modular').map((s) => s.code)).toEqual(expected);
   });
 
-  it('loads only the packs enabled in content/config.json, without failures', () => {
+  it('runs the suite on the Core pack only, without failures', () => {
     const loaded = getLoadedContent();
     expect(loaded.failures).toEqual([]);
     expect(loaded.packs.map((p) => p.id)).toEqual(['core']);

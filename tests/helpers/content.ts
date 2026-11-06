@@ -8,7 +8,7 @@ import { getLoadedContent } from '../../src/data/content/store';
 /** The repository's content folder, read through the same driver the setup file uses. */
 export const contentDriver = new NodeFsDriver(path.resolve(__dirname, '../../content'));
 
-/** Raw cards of packs the setup file already loaded (the packs enabled in content/config.json). */
+/** Raw cards of packs the setup file already loaded (the Core pack). */
 export function loadedRawCards(...packIds: string[]): RawUpstreamCard[] {
   const loaded = getLoadedContent().packs;
   return packIds.flatMap((id) => {
@@ -29,7 +29,7 @@ export async function rawCardsOf(...packIds: string[]): Promise<RawUpstreamCard[
 /**
  * Re-fills the engine singletons (catalog, supplemental registry, modular sets, starter decks)
  * with another pack set for the rest of the test file, for tests that need a pack outside
- * content/config.json.
+ * the Core pack.
  */
 export async function bootPacks(...packIds: string[]): Promise<void> {
   const content = await bootContent(contentDriver, { packs: packIds });

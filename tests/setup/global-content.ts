@@ -11,11 +11,14 @@ declare module 'vitest' {
 }
 
 /**
- * Reads and validates the packs enabled in content/config.json once per run, instead of once per
- * test file; `load-content.ts` applies the result in every file.
+ * Reads and validates the Core pack once per run, instead of once per test file;
+ * `load-content.ts` applies the result in every file. The pack is named here because
+ * content/config.json is a developer's local choice (the Content screen writes it).
  */
 export default async function setup(project: TestProject): Promise<void> {
-  const content = await loadContent(new NodeFsDriver(path.resolve(__dirname, '../../content')));
+  const content = await loadContent(new NodeFsDriver(path.resolve(__dirname, '../../content')), {
+    packs: ['core'],
+  });
 
   // A pack that fails to load is disabled, never thrown (so the app keeps running); a test run
   // should stop and say why instead of running against an empty catalog.

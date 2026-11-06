@@ -61,6 +61,13 @@ export interface PackDescription {
   lockedScenarios: { id: string; name: string }[];
 }
 
+/** What a code listed by an art pack is: a loaded card, a scenario token, or a card of a pack that is off. */
+export interface ArtPackCardLabel {
+  name: string;
+  type?: string;
+  source: 'card' | 'token' | 'off-pack';
+}
+
 export interface LoadedContent {
   /** Packs in dependency order (dependencies first). */
   packs: LoadedPack[];
@@ -69,8 +76,10 @@ export interface LoadedContent {
   descriptions: PackDescription[];
   /** Local art packs that loaded, ordered by folder name (empty unless requested, ADR-0093). */
   artPacks: ArtPackManifest[];
-  /** Problems with a loaded art pack that do not stop it, such as a card that is not loaded. */
+  /** Problems with a loaded art pack that do not stop it, such as a code in no installed pack. */
   artPackWarnings: PackLoadFailure[];
+  /** Every code the art packs list that an installed pack owns (ADR-0093). */
+  artPackCardLabels: Record<string, ArtPackCardLabel>;
 }
 
 export interface LoadContentOptions {

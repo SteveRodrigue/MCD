@@ -3,7 +3,7 @@ import path from 'path';
 import { describe, it, expect } from 'vitest';
 
 /**
- * Board theming (docs/templates/modals/PLAN_board_theming.md): a migrated screen takes its panels,
+ * Board theming: a migrated screen takes its panels,
  * borders, shadows, radii and surface text colours from the theme tokens. Colours that carry a game
  * meaning stay: a text colour is allowed next to a fixed background colour in the same class list
  * (a dark word on a yellow pill), but never alone on a theme surface.

@@ -2,7 +2,7 @@
  * leak:check - fails when forbidden official material is tracked by git.
  *
  * Path rules: pdf, image, cache, size. Text rule: upstream card JSON outside content/packs.
- * Spec: docs/backlog/content_coupling_audit.md section 6. Allowlist: tools/audit/leak-guard.allow.json.
+ * Allowlist: tools/audit/leak-guard.allow.json.
  * Exported `runLeakGuard` is used by the CLI below and by tests/tools/leak-guard.test.ts.
  */
 import fs from 'fs';

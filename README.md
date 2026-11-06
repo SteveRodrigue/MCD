@@ -35,7 +35,7 @@ A headless, deterministic rules engine in `src/engine/` takes actions and return
 
 - **[Architecture Decision Records (ADRs)](docs/decisions/README.md)** — Comprehensive centralized registry of all architectural, technical, and gameplay design decisions (ADR-0001 onward).
 - **[Algorithmic Rules Reference](docs/engine/algorithmic_rules_reference.md)** — Precise mathematical state machine and timing pipeline specifications derived from RR v1.8.
-- **[Project Roadmap & Milestones](docs/roadmap_and_milestones.md)** — Detailed 5-phase iterative development plan and status.
+- **[Project Roadmap](docs/roadmap_and_milestones.md)** — The goals of each release gate. Status and open issues are in [GitHub milestones](https://github.com/SteveRodrigue/MCD/milestones).
 - **[Content Packs](content/README.md)** and **[Creator Guide](docs/creators/README.md)** — Pack layout, `pack.json` format, scenarios, the editor and art packs ([ADR-0092](docs/decisions/0092-content-packs-and-runtime-loading.md)).
 - **[Supplemental Specification Suite](docs/creators/supplemental-reference/README.md)** — The declarative card-data contract and its validation ([tooling notes](docs/engine/tools/supplemental_schema_validation.md)).
 - **[Coding Guidelines & Standards](docs/engine/coding_guidelines.md)** — Strict architectural boundaries, typing rules, UI layering standards, and TDD requirements.

@@ -1,18 +1,17 @@
 # docs/backlog
 
-Working space for the current gate. It holds two kinds of file only:
+Working space for the change in flight. It holds this file and plans only:
 
 | File                                                                     | Role                                                                     |
 | :----------------------------------------------------------------------- | :----------------------------------------------------------------------- |
-| [teamwork_status_and_next_target.md](teamwork_status_and_next_target.md) | State, ordered work queue, open owner decisions. Update after each item. |
 | `plan_issue_<n>_<slug>.md`                                               | Plan of one change in flight. Delete it in the commit that delivers it.  |
 | `plan_audit_r<nn>_<slug>.md`                                             | Plan of one remaining code-audit item (no issue yet). Same lifecycle.    |
 
-Open work lives in the GitHub milestones (one per gate). Long-lived designs go to `docs/specifications/`, decisions to `docs/decisions/`. Policies are in [AGENTS.md](../../AGENTS.md) and `.agents/rules/`.
+Status, open issues and the work in each gate live in the GitHub milestones (one per gate); no local file tracks them. [The roadmap](../roadmap_and_milestones.md) holds coarse goals only and changes only when a goal changes. Long-lived designs go to `docs/specifications/`, decisions to `docs/decisions/`. Policies are in [AGENTS.md](../../AGENTS.md) and `.agents/rules/`.
 
 ## Starting a session
 
-Prompt: `next-task`. The skill checks the baseline, takes the oldest open bug of the active gate milestone (or, when the gate has no open bug, the first open row of section 3 of the status file, then the top-ranked gate issue), writes the plan and stops for approval. Once approved, the agent implements, verifies and delivers without further stops unless the code cannot follow the plan.
+Prompt: `next-task`. The skill checks the baseline, takes the oldest open bug of the active gate milestone (or, when the gate has no open bug, the top-ranked gate issue), writes the plan and stops for approval. Once approved, the agent implements, verifies and delivers without further stops unless the code cannot follow the plan.
 
 ## Plan anatomy
 

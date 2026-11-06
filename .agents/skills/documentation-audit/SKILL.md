@@ -322,7 +322,7 @@ Apply fixes in this order so later edits build on corrected facts:
 7. Remaining `docs/**/*.md` files not covered above.
 8. Root-level `*.md` files (`README.md`, `AGENTS.md`, `CONTRIBUTING.md`,
    `SECURITY.md`, `CODE_OF_CONDUCT.md`): paths, scripts, counts.
-9. `docs/roadmap_and_milestones.md`: checkboxes and milestone badges.
+9. `docs/roadmap_and_milestones.md`: coarse goals and milestone links only. Report any status, issue or progress recorded in it as a defect.
 
 Editing standards:
 

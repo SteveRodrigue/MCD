@@ -62,7 +62,7 @@ Assess two independent dimensions. Roadmap alignment affects priority, not eligi
 
 1. **Current roadmap and milestone impact:** Determine whether the defect blocks an active gate,
    acceptance criterion, release workflow, or work already scheduled in
-   `docs/roadmap_and_milestones.md`. Bugs with greater impact on current delivery normally receive
+   the GitHub milestones. Bugs with greater impact on current delivery normally receive
    higher priority.
 2. **Long-term risk:** Determine whether leaving the defect would create compounding technical debt,
    corrupt state or data, weaken a shared contract, spread an incorrect pattern, block a future

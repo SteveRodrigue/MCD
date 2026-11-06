@@ -1,6 +1,6 @@
 /**
  * docs:check - mechanical documentation checks (links, paths, scripts, symbols, ADR index,
- * orphans, tombstones, volatile numbers, roadmap vs GitHub).
+ * orphans, tombstones, volatile numbers, untriaged issues).
  *
  * Exported `runDocsCheck` is used by the CLI below and by tests/tools/docs-check.test.ts.
  * See docs/decisions/README.md for the ADR index it validates.
@@ -29,7 +29,7 @@ export interface AllowEntry {
 
 export interface DocsCheckOptions {
   allow?: AllowEntry[];
-  /** Query GitHub (roadmap checkboxes, untriaged issues, allowlist `until`). Needs `gh`. */
+  /** Query GitHub (untriaged issues, allowlist `until`). Needs `gh`. */
   github?: boolean;
 }
 
@@ -328,34 +328,6 @@ export function runDocsCheck(root: string, options: DocsCheckOptions = {}): Find
       ),
     ) as { number: number; state: string; milestone: { title: string } | null }[];
     const byNum = new Map(issues.map((i) => [i.number, i]));
-    const road = docs.get('docs/roadmap_and_milestones.md');
-    road?.lines.forEach((line, i) => {
-      const box = line.match(/^\s*- \[( |x)\]/);
-      if (!box) return;
-      const nums = [
-        ...new Set(
-          [...line.matchAll(/issues\/(\d+)|Issue #(\d+)|\(#(\d+)\)/g)].map((m) =>
-            Number(m[1] ?? m[2] ?? m[3]),
-          ),
-        ),
-      ].filter((n) => byNum.has(n));
-      if (!nums.length) return;
-      const open = nums.filter((n) => byNum.get(n)?.state === 'OPEN');
-      if (box[1] === 'x' && open.length)
-        findings.push({
-          file: road.file,
-          line: i + 1,
-          check: 'roadmap',
-          message: `checked, but open: ${open.map((n) => '#' + n).join(', ')}`,
-        });
-      if (box[1] === ' ' && open.length === 0)
-        findings.push({
-          file: road.file,
-          line: i + 1,
-          check: 'roadmap',
-          message: `unchecked, but all closed: ${nums.map((n) => '#' + n).join(', ')}`,
-        });
-    });
     for (const i of issues)
       if (i.state === 'OPEN' && !i.milestone)
         findings.push({

@@ -58,8 +58,8 @@ Then deliver per [Delivery authorization](shared-quality-gates.md#delivery-autho
 
 ### 7. Roadmap and Milestones
 
-- Check `docs/roadmap_and_milestones.md` when the task affects roadmap work or milestone status.
-- Synchronize completed tasks, active milestone badges, and release scope when applicable.
+- Status, open issues and the work in each gate live in GitHub milestones. Give a new issue its milestone there.
+- `docs/roadmap_and_milestones.md` holds coarse goals only. Do not record progress in it; change it only when a goal changes.
 
 ### 8. Card Integration and Declarations
 

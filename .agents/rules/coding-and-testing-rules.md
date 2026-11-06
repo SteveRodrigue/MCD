@@ -53,6 +53,15 @@ Enforceable summary. Explanations, examples, naming tables and architecture live
 - Run Prettier only on the files you changed (`npx prettier --write <files>`). On a folder it rewrites unrelated JSON and README files.
 - Pack JSON under `content/packs/<code>/supplemental/` uses CRLF. Edit textually and check that `git diff --stat` stays small.
 
+## Practical pitfalls
+
+- Heredocs that contain apostrophes can break in the shell tool. Write multi-line files and scripts with the file-writing tool.
+- A supplemental `target` must be a member of `TargetSelectorSchema`, and every `effectParams` key must be in `src/data/supplemental/effect-params.ts` (guard `tests/data/effect-params-keys.test.ts`). The reverse check (every key the engine reads is in the table) does not exist yet (#285), so verify by hand that the engine really reads a key you use.
+- Every schema member needs a reader in code and a test (`tests/data/schema-member-coverage.test.ts`; temporary exceptions in the known-gaps table of `tools/audit/schema-member-coverage.ts`).
+- Keyword tags come only from printed keywords (`hasPrintedKeyword`, `getPrintedKeywordValue`); Crisis is an icon count, not a keyword.
+- Quick data lookups: `npm run card:get -- <code>` (upstream plus supplemental), `npm run rule -- <term>`.
+- Test helpers worth reusing: reveal path `step4_revealEncounterCards` (see `tests/engine/self-hero-cards.test.ts`), attack path `executeEnemyAttackSynchronously` (see `tests/engine/kree-manipulator-boost.test.ts`), ability use `dispatchAction({ type: 'USE_CARD_ABILITY' })` (see `tests/engine/mark-v-helmet.test.ts`).
+
 ## Commits
 
 - Conventional Commits (`feat`, `fix`, `test`, `docs`, `refactor`, `chore`).

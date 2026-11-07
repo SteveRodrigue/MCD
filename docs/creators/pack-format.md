@@ -17,7 +17,15 @@ content/packs/<id>/
   scripts/index.ts          official packs only, never in a user pack
 ```
 
-Every part except `pack.json` is optional. A pack with cards and no `supplemental/` is shown as **Data only**; with supplemental data it is **Playable**. A pack whose `dependsOn` pack is missing is **Needs pack**, and a pack that fails validation is **Failed** with the reason on the Content screen.
+Every part except `pack.json` is optional. The Content screen shows each pack's state with the reason:
+
+- **Playable:** every card has supplemental data, or the pack has no cards.
+- **Incomplete:** only some cards have it. The pack can be switched on.
+- **Error:** no card has it. The Content screen will not switch the pack on, but a pack you list in `config.json` by hand still loads, so the [editor](editor.md) can write its first data.
+- **Needs pack:** a pack in `dependsOn` is missing.
+- **Failed:** the pack fails validation.
+
+The screen also says when a pack has no image on disk: "no images" for a user pack, and "no images downloaded yet" for an official pack, which downloads each image the first time its card is shown. Images never change a pack's state. Art packs do not count.
 
 ## pack.json
 

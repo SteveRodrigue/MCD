@@ -11,7 +11,7 @@ A pack is a folder, so sharing is copying a folder.
 1. Read its `pack.json` first. A user pack is JSON only and cannot run code, but you still decide whether you trust the author.
 2. Put the folder in `content/packs/` (the folder name must equal the pack `id`).
 3. Add its id to `enabledPacks` in `content/config.json`, and any pack it lists in `dependsOn` must be present too.
-4. Run `npm run pack:validate -- content/packs`, then reload the game. The Content screen shows the pack as **Playable**, **Data only**, **Needs pack** or **Failed**, with the reason.
+4. Run `npm run pack:validate -- content/packs`, then reload the game. The Content screen shows the pack as **Playable**, **Incomplete**, **Error**, **Needs pack** or **Failed**, with the reason.
 
 ## Not built yet
 

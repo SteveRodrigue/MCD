@@ -11,7 +11,7 @@ The editor is where you give cards their rules data (abilities, costs, triggers)
 
 On the left, the card list with a **Pack** selector and filters (set, faction, hero, status, search). In the middle, the card as the game shows it. On the right, the supplemental builder: a **Form** view and a **Raw JSON** view with live validation.
 
-Only packs enabled in `content/config.json` are listed. If your pack is missing, enable it and reload.
+Only packs enabled in `content/config.json` are listed. If your pack is missing, enable it and reload. A pack with no supplemental data yet must be added to `config.json` by hand, because the Content screen will not switch it on.
 
 ## Saving
 

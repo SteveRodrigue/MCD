@@ -7,8 +7,9 @@
  *
  * Only JSON files in the index are served, which keeps requests inside the content folder (no `..`,
  * no absolute paths, no `.cache`, no translations, no other file types). The index also names the
- * PNG files of art packs, so the loader can check that a manifest's images exist; the images
- * themselves are served by the card art route, never here.
+ * PNG files of art packs, a pack's shipped art and the art cache, so the loader can check that a
+ * manifest's images exist and tell whether a pack has images; the images themselves are served by
+ * the card art route, never here.
  */
 
 import * as fs from 'fs';
@@ -21,10 +22,11 @@ const URL_PREFIX = '/__content/';
 /** Folders the browser never needs. */
 const EXCLUDED_DIRS = new Set(['.cache', 'translations']);
 
-/** A PNG directly inside `art-packs/<id>/`. */
-function isArtPackImage(rel: string): boolean {
-  return /^art-packs\/[^/]+\/[^/]+\.png$/i.test(rel);
-}
+/** Where images live: `art-packs/<id>/`, `packs/<id>/assets/cards/` and `.cache/images/<id>/`. */
+const INDEXED_IMAGE =
+  /^(art-packs\/[^/]+|packs\/[^/]+\/assets\/cards|\.cache\/images\/[^/]+)\/[^/]+\.png$/i;
+/** The art cache, walked for its images only: no JSON under `.cache` is ever indexed. */
+const IMAGE_CACHE_DIR = '.cache/images';
 
 /**
  * Walks one folder. A symbolic link (a junction on Windows, which Node reports the same way) is
@@ -51,8 +53,12 @@ function collect(dir: string, relDir: string, out: string[], ancestors: Set<stri
       }
     }
     if (isDir) collect(full, rel, out, chain);
-    else if (isFile && (entry.name.endsWith('.json') || isArtPackImage(rel))) out.push(rel);
+    else if (isFile && isIndexed(rel)) out.push(rel);
   }
+}
+
+function isIndexed(rel: string): boolean {
+  return INDEXED_IMAGE.test(rel) || (rel.endsWith('.json') && !rel.startsWith('.cache/'));
 }
 
 /** Every file the endpoint may serve, as forward-slash paths relative to the content root. */
@@ -61,6 +67,8 @@ export function buildContentIndex(base?: string): string[] {
   if (!fs.existsSync(root)) return [];
   const files: string[] = [];
   collect(root, '', files, new Set());
+  const imageCache = path.join(root, ...IMAGE_CACHE_DIR.split('/'));
+  if (fs.existsSync(imageCache)) collect(imageCache, IMAGE_CACHE_DIR, files, new Set());
   return files.sort();
 }
 

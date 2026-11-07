@@ -47,11 +47,11 @@ describe('creators example pack (docs/creators/examples/first-pack)', () => {
     }
   });
 
-  it('loads as Data only, then becomes Playable once it has supplemental data', async () => {
+  it('loads tagged Error, then becomes Playable once it has supplemental data', async () => {
     install(false);
     let content = await loadContent(new NodeFsDriver(root));
     expect(content.failures).toEqual([]);
-    expect(content.descriptions).toMatchObject([{ id: 'first-pack', state: 'data-only' }]);
+    expect(content.descriptions).toMatchObject([{ id: 'first-pack', state: 'no-supplemental' }]);
     expect(content.packs[0].cards.map((c) => c.code)).toContain('first-pack-0001a');
 
     fs.rmSync(root, { recursive: true, force: true });

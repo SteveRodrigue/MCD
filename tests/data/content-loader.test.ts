@@ -53,7 +53,7 @@ describe('loadContent', () => {
     write('packs/core/pack.json', manifest('core'));
     const content = await loadContent(driver());
     expect({ packs: content.packs, failures: content.failures }).toEqual({ packs: [], failures: [] });
-    expect(content.descriptions).toMatchObject([{ id: 'core', enabled: false, state: 'data-only' }]);
+    expect(content.descriptions).toMatchObject([{ id: 'core', enabled: false, state: 'playable' }]);
   });
 
   it('loads the enabled packs with cards, supplemental data, modular sets and decks', async () => {
@@ -241,19 +241,134 @@ describe('loadContent', () => {
 });
 
 describe('pack descriptions (what the Content screen shows)', () => {
-  it('marks an enabled pack with supplemental data Playable and one without it Data only', async () => {
+  const threeCardPack = (id: string, covered: string[]) => {
+    write(`packs/${id}/pack.json`, manifest(id));
+    write(`packs/${id}/cards/${id}.json`, [card(`${id}1`), card(`${id}2`), card(`${id}3`)]);
+    write(`packs/${id}/supplemental/${id}.json`, {
+      cards: Object.fromEntries(covered.map((code) => [code, {}])),
+    });
+  };
+  const describeOnly = async (id: string) =>
+    (await loadContent(driver())).descriptions.find((d) => d.id === id);
+
+  it('a hand-listed pack with no supplemental data still loads, tagged no-supplemental', async () => {
     fresh();
-    config(['core', 'aoa']);
+    config(['core', 'thor']);
     write('packs/core/pack.json', manifest('core', { kind: 'core', name: 'Core Set' }));
     write('packs/core/cards/core.json', [card('00001')]);
     write('packs/core/supplemental/core.json', { cards: { '00001': {} } });
-    write('packs/aoa/pack.json', manifest('aoa', { dependsOn: ['core'] }));
-    write('packs/aoa/cards/aoa.json', [card('45001')]);
-    const { descriptions } = await loadContent(driver());
-    expect(descriptions).toMatchObject([
-      { id: 'aoa', enabled: true, state: 'data-only', cardCount: 1 },
+    write('packs/thor/pack.json', manifest('thor', { dependsOn: ['core'] }));
+    write('packs/thor/cards/thor.json', [card('45001')]);
+    const content = await loadContent(driver());
+    expect(ids(content)).toEqual(['core', 'thor']);
+    expect(content.failures).toEqual([]);
+    expect(content.descriptions).toMatchObject([
       { id: 'core', name: 'Core Set', enabled: true, state: 'playable', supplementalCount: 1 },
+      {
+        id: 'thor',
+        enabled: true,
+        state: 'no-supplemental',
+        reason: 'no supplemental data',
+        cardCount: 1,
+      },
     ]);
+  });
+
+  it('a switched-off pack with cards and no supplemental data is no-supplemental', async () => {
+    fresh();
+    config([]);
+    write('packs/thor/pack.json', manifest('thor'));
+    write('packs/thor/cards/thor.json', [card('45001')]);
+    expect(await describeOnly('thor')).toMatchObject({
+      enabled: false,
+      state: 'no-supplemental',
+      reason: 'no supplemental data',
+    });
+  });
+
+  it('Green Goblin-style partial data is incomplete with the count, on or off', async () => {
+    fresh();
+    threeCardPack('gob', ['gob1', 'gob2']);
+    const partial = { state: 'incomplete', reason: '2 of 3 cards have supplemental data' };
+    config([]);
+    expect(await describeOnly('gob')).toMatchObject({ ...partial, enabled: false });
+    config(['gob']);
+    expect(await describeOnly('gob')).toMatchObject({ ...partial, enabled: true });
+  });
+
+  it('a complete pack is playable, on or off', async () => {
+    fresh();
+    threeCardPack('core', ['core1', 'core2', 'core3']);
+    config([]);
+    expect(await describeOnly('core')).toMatchObject({ state: 'playable', enabled: false });
+    config(['core']);
+    expect(await describeOnly('core')).toMatchObject({ state: 'playable', enabled: true });
+  });
+
+  it('supplemental data for another pack does not make a pack complete', async () => {
+    fresh();
+    config(['aoa']);
+    write('packs/aoa/pack.json', manifest('aoa'));
+    write('packs/aoa/cards/aoa.json', [card('45001')]);
+    write('packs/aoa/supplemental/aoa.json', { cards: { '01001': {} } });
+    expect(await describeOnly('aoa')).toMatchObject({ state: 'no-supplemental' });
+  });
+
+  it('a pack with no cards is playable', async () => {
+    fresh();
+    config([]);
+    write('packs/decks/pack.json', manifest('decks'));
+    const description = await describeOnly('decks');
+    expect(description).toMatchObject({ state: 'playable' });
+    expect(description?.reason).toBeUndefined();
+    expect(description?.imageNote).toBeUndefined();
+  });
+
+  it('a switched-off pack with broken supplemental data is failed with the reason', async () => {
+    fresh();
+    config([]);
+    write('packs/bad/pack.json', manifest('bad'));
+    write('packs/bad/cards/bad.json', [card('45001')]);
+    write('packs/bad/supplemental/bad.json', { cards: { '45001': { abilities: 5 } } });
+    const description = await describeOnly('bad');
+    expect(description).toMatchObject({ state: 'failed', enabled: false });
+    expect(description?.reason).toContain('supplemental/bad.json');
+  });
+
+  it('an official pack with no image on disk notes "no images downloaded yet" and stays playable', async () => {
+    fresh();
+    threeCardPack('core', ['core1', 'core2', 'core3']);
+    config([]);
+    expect(await describeOnly('core')).toMatchObject({
+      state: 'playable',
+      imageCount: 0,
+      imageNote: 'no images downloaded yet',
+    });
+  });
+
+  it('a user pack with no image on disk notes "no images" and stays playable', async () => {
+    fresh();
+    threeCardPack('mine', ['mine1', 'mine2', 'mine3']);
+    write('packs/mine/pack.json', manifest('mine', { origin: 'user' }));
+    config([]);
+    expect(await describeOnly('mine')).toMatchObject({
+      state: 'playable',
+      imageCount: 0,
+      imageNote: 'no images',
+    });
+  });
+
+  it.each([
+    ['in the pack assets', 'packs/core/assets/cards/core1.png'],
+    ['in the cache', '.cache/images/core/core1.png'],
+  ])('a pack with one image %s has no image note', async (_where, file) => {
+    fresh();
+    threeCardPack('core', ['core1', 'core2', 'core3']);
+    write(file, 'generated');
+    config([]);
+    const description = await describeOnly('core');
+    expect(description?.imageCount).toBe(1);
+    expect(description?.imageNote).toBeUndefined();
   });
 
   it('marks a pack Needs pack when its dependency is disabled, and lists its scenarios as locked', async () => {

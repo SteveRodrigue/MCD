@@ -25,8 +25,8 @@ The folder [`examples/first-pack/`](examples/first-pack/pack.json) is a complete
    ```
 
 3. **Check it** with `npm run pack:validate -- content/packs/first-pack`. No output other than `pack:validate passed.` means the manifest, card codes and card fields are sound.
-4. **Start the game** (`npm run dev`) and open the Content screen. The pack is listed as **Data only**: the engine knows the cards but no rules, so they cannot be played yet.
-5. **Add rules data.** Create `content/packs/first-pack/supplemental/` and copy `supplemental.sample.json` into it as `first_pack.json`. The sample marks the hero as needing no ability code. Reload: the pack is now **Playable**. Use `npm run pack:status` to see the same states in a terminal.
+4. **Start the game** (`npm run dev`) and open the Content screen. The pack is listed as **Error** with "no supplemental data": the engine knows the cards but no rules, so they cannot be played yet. It loads because you listed it in `config.json`; the Content screen's own switch refuses a pack with no supplemental data.
+5. **Add rules data.** Create `content/packs/first-pack/supplemental/` and copy `supplemental.sample.json` into it as `first_pack.json`. The sample marks both sides of the hero as needing no ability code. Reload: the pack is now **Playable**. Use `npm run pack:status` to see the same states in a terminal.
 6. **Make it yours.** Change the names and stats in `cards/my_hero.json`, then give the hero real abilities with the [editor](editor.md) or by hand, following [cards-and-heroes.md](cards-and-heroes.md).
 
 ## Ground rules

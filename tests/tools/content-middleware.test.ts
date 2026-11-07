@@ -28,6 +28,9 @@ beforeAll(() => {
   write('art-packs/fan/hero.png', 'not really a png');
   write('art-packs/fan/notes.txt', 'text');
   write('packs/core/cards/x.png', 'a png outside an art pack');
+  write('packs/core/assets/cards/01001.png', 'shipped art');
+  write('.cache/images/core/01002.png', 'fetched art');
+  write('.cache/images/core/notes.json', '{}');
   fs.writeFileSync(path.join(base, 'secret.json'), '{"secret":true}');
 });
 afterAll(() => {
@@ -35,14 +38,23 @@ afterAll(() => {
 });
 
 describe('content endpoint', () => {
-  it('indexes JSON files outside .cache and translations, and the PNG files of art packs', () => {
+  it('indexes JSON files outside .cache and translations, and art pack, pack asset and cached PNGs', () => {
     expect(buildContentIndex(base)).toEqual([
+      '.cache/images/core/01002.png',
       'art-packs/fan/art-pack.json',
       'art-packs/fan/hero.png',
       'config.json',
+      'packs/core/assets/cards/01001.png',
       'packs/core/cards/core.json',
       'packs/core/pack.json',
     ]);
+  });
+
+  it('never serves a pack asset or cached PNG here', () => {
+    expect(handleContentRequest('/__content/packs/core/assets/cards/01001.png', base)?.status).toBe(
+      404,
+    );
+    expect(handleContentRequest('/__content/.cache/images/core/01002.png', base)?.status).toBe(404);
   });
 
   it('serves the index and an indexed file', () => {
@@ -70,6 +82,7 @@ describe('content endpoint', () => {
     ['/__content/packs/core/README.md'],
     ['/__content/packs/core/translations/fr/core.json'],
     ['/__content/.cache/images/x.json'],
+    ['/__content/.cache/images/core/notes.json'],
     ['/__content//etc/passwd'],
   ])('refuses %s', (url) => {
     expect(handleContentRequest(url, base)?.status).toBe(404);

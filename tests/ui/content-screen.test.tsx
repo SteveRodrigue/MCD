@@ -2,7 +2,7 @@ import { describe, it, expect, afterAll, beforeAll } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
 import { ContentScreen } from '../../src/ui/components/setup/ContentScreen';
 import { FailedPacksNotice } from '../../src/ui/components/setup/FailedPacksNotice';
@@ -39,6 +39,17 @@ beforeAll(async () => {
   write('packs/second/cards/c.json', [
     { code: '99002', name: 'B', pack_code: 'second', position: 1, quantity: 1 },
   ]);
+  write('packs/second/supplemental/c.json', { cards: { '99002': {} } });
+  write('packs/partial/pack.json', manifest('partial', 'Partial Pack'));
+  write('packs/partial/cards/c.json', [
+    { code: '99003', name: 'C', pack_code: 'partial', position: 1, quantity: 1 },
+    { code: '99004', name: 'D', pack_code: 'partial', position: 2, quantity: 1 },
+  ]);
+  write('packs/partial/supplemental/c.json', { cards: { '99003': {} } });
+  write('packs/thor/pack.json', manifest('thor', 'Thor', { origin: 'official-bundled' }));
+  write('packs/thor/cards/c.json', [
+    { code: '99005', name: 'E', pack_code: 'thor', position: 1, quantity: 1 },
+  ]);
   write('packs/broken/pack.json', '{ not json');
   write('packs/gg/pack.json', manifest('gg', 'Green Goblin', { dependsOn: ['missing'] }));
   write('packs/gg/scenarios/goblin/definition.json', { id: 'goblin', name: 'Goblin Raid' });
@@ -58,19 +69,22 @@ describe('Content screen', () => {
       </GameSettingsProvider>,
     );
     expect(screen.getByText('My Pack')).toBeTruthy();
-    expect(screen.getAllByText('Data only').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Error').length).toBeGreaterThan(0);
+    expect(screen.getByText('Incomplete')).toBeTruthy();
+    expect(screen.getByText('1 of 2 cards have supplemental data')).toBeTruthy();
     expect(screen.getByText('Failed')).toBeTruthy();
     expect(screen.getByText('Needs pack')).toBeTruthy();
     expect(screen.getByText(/needs "missing"/)).toBeTruthy();
   });
 
-  it('colours each state tag: green playable, yellow data only, orange needs pack, red failed', () => {
+  it('colours each state tag: yellow incomplete, orange needs pack, red error and failed', () => {
     render(
       <GameSettingsProvider>
         <ContentScreen onBack={() => {}} />
       </GameSettingsProvider>,
     );
-    expect(screen.getAllByText('Data only')[0].className).toContain('bg-comic-yellow');
+    expect(screen.getByText('Incomplete').className).toContain('bg-comic-yellow');
+    expect(screen.getAllByText('Error')[0].className).toContain('bg-comic-red');
     expect(screen.getByText('Needs pack').className).toContain('bg-orange-500');
     expect(screen.getByText('Failed').className).toContain('bg-comic-red');
   });
@@ -103,26 +117,53 @@ describe('Content screen', () => {
     expect(screen.getByText(/was not loaded: .*missing/)).toBeTruthy();
   });
 
-  it('disables the switch for packs with failed state or missing dependency', () => {
+  it('refuses to switch on a pack with no supplemental data', () => {
     render(
       <GameSettingsProvider>
         <ContentScreen onBack={() => {}} />
       </GameSettingsProvider>,
     );
-    const brokenSwitch = screen.getByRole('switch', { name: 'Enable broken' }) as HTMLButtonElement;
-    expect(brokenSwitch.disabled).toBe(true);
-    const ggSwitch = screen.getByRole('switch', {
-      name: 'Enable Green Goblin',
-    }) as HTMLButtonElement;
-    expect(ggSwitch.disabled).toBe(true);
+    const thorSwitch = screen.getByRole('switch', { name: 'Enable Thor' }) as HTMLButtonElement;
+    expect(thorSwitch.disabled).toBe(true);
   });
 
-  it('toggles an unenabled ready pack on, writing config.json and updating state', async () => {
+  it('shows the image line beside the supplemental reason on an Error pack', () => {
     render(
       <GameSettingsProvider>
         <ContentScreen onBack={() => {}} />
       </GameSettingsProvider>,
     );
+    const row = within(screen.getByTestId('pack-row-thor'));
+    expect(row.getByText('Error')).toBeTruthy();
+    expect(row.getByText('no supplemental data')).toBeTruthy();
+    expect(row.getByText('no images downloaded yet')).toBeTruthy();
+  });
+
+  it('lets a partial pack be switched on and tags it Incomplete', async () => {
+    render(
+      <GameSettingsProvider>
+        <ContentScreen onBack={() => {}} />
+      </GameSettingsProvider>,
+    );
+    const partialSwitch = screen.getByRole('switch', {
+      name: 'Enable Partial Pack',
+    }) as HTMLButtonElement;
+    fireEvent.click(partialSwitch);
+    await waitFor(() => {
+      expect(partialSwitch.getAttribute('aria-checked')).toBe('true');
+    });
+    expect(within(screen.getByTestId('pack-row-partial')).getByText('Incomplete')).toBeTruthy();
+  });
+
+  it('a Playable pack with no images can still be switched on', async () => {
+    render(
+      <GameSettingsProvider>
+        <ContentScreen onBack={() => {}} />
+      </GameSettingsProvider>,
+    );
+    const row = within(screen.getByTestId('pack-row-second'));
+    expect(row.getByText('Playable')).toBeTruthy();
+    expect(row.getByText('no images')).toBeTruthy();
     const secondSwitch = screen.getByRole('switch', {
       name: 'Enable Second Pack',
     }) as HTMLButtonElement;
@@ -136,6 +177,37 @@ describe('Content screen', () => {
 
     const savedConfig = JSON.parse(fs.readFileSync(path.join(root, 'config.json'), 'utf-8'));
     expect(savedConfig.enabledPacks).toContain('second');
+  });
+
+  it('lets a Failed, Needs pack or Error pack that is on be switched off', async () => {
+    render(
+      <GameSettingsProvider>
+        <ContentScreen onBack={() => {}} />
+      </GameSettingsProvider>,
+    );
+    for (const [packId, label] of [
+      ['broken', 'Enable broken'],
+      ['gg', 'Enable Green Goblin'],
+      ['mine', 'Enable My Pack'],
+    ]) {
+      const packSwitch = screen.getByRole('switch', { name: label }) as HTMLButtonElement;
+      expect(packSwitch.disabled).toBe(false);
+      fireEvent.click(packSwitch);
+      await waitFor(() => {
+        const saved = JSON.parse(fs.readFileSync(path.join(root, 'config.json'), 'utf-8'));
+        expect(saved.enabledPacks).not.toContain(packId);
+      });
+      await waitFor(() => {
+        expect(packSwitch.getAttribute('aria-checked')).toBe('false');
+      });
+    }
+    // Off again: broken and without supplemental data, so neither can be switched back on.
+    expect(
+      (screen.getByRole('switch', { name: 'Enable broken' }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+    expect(
+      (screen.getByRole('switch', { name: 'Enable My Pack' }) as HTMLButtonElement).disabled,
+    ).toBe(true);
   });
 
   it('resets enabled packs to default core on Reset to Default button click', async () => {

@@ -73,7 +73,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     player.health = 8; // Max 11, taken 3 damage
 
     // Setup 1 minion engaged
-    const minion = createCardInstance(cardCatalog.getCard('01096')!); // Armored Guard (6 HP)
+    const minion = createCardInstance(cardCatalog.getCard('01130')!); // Whirlwind (6 HP, no Guard)
     player.engagedMinions = [minion];
 
     // Main scheme starts with 4 threat
@@ -120,7 +120,15 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
 
     expect(result.success).toBe(true);
 
-    // Panther Claws deals its finisher to "an enemy": Rhino and Armored Guard are both valid,
+    // Panther Suit moves damage to "an enemy" and the sequence waits for the choice (#640). Choose Rhino.
+    expect(peekDecisionPrompt(result.state)!.sourceCardName).toBe('Vibranium Suit');
+    result.state = dispatchAction(result.state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: getActiveVillain(result.state).instanceId!,
+    }).state;
+
+    // Panther Claws deals its finisher to "an enemy": Rhino and Whirlwind are both valid,
     // so the player chooses (#234). Choose Rhino.
     const targetPrompt = peekDecisionPrompt(result.state)!;
     expect(targetPrompt.options.map((o) => o.id)).toContain(
@@ -433,6 +441,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
             effectParams: {
               amount: 1,
               finisherBonus: 1,
+              target: 'CHOSEN_ENEMY',
             },
           },
         ],

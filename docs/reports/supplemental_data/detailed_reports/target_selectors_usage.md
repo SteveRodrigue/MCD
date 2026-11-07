@@ -102,7 +102,7 @@
 | `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_action` |
 | `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_when_revealed` |
 
-### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (16 Cards, 16 Declarations)
+### <a id="chosen-enemy"></a>`CHOSEN_ENEMY` (17 Cards, 17 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -116,6 +116,7 @@
 | `01032` | **Supersonic Punch (event)** | `core` | `supersonic_punch` |
 | `01038` | **Powered Gauntlets (upgrade)** | `core` | `powered_gauntlets` |
 | `01047` | **Panther Claws (upgrade)** | `core` | `panther_claws_special` |
+| `01049` | **Vibranium Suit (upgrade)** | `core` | `vibranium_suit_special` |
 | `01050` | **Hulk (ally)** | `core` | `hulk_smash_response` |
 | `01054` | **Uppercut (event)** | `core` | `uppercut` |
 | `01056` | **Tac Team (support)** | `core` | `tac_team_action` |

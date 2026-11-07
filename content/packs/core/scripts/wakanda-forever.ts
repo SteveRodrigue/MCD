@@ -1,6 +1,11 @@
 import { kernel } from '@engine/kernel';
-import { GameState, CardInstance, AbilityStep, CardAbility, getCatalog } from '@engine/models';
-import { EffectExecutionContext, EffectResult, executeSequence } from '@engine/effects';
+import { GameState, CardInstance, CardAbility, getCatalog } from '@engine/models';
+import {
+  EffectExecutionContext,
+  EffectResult,
+  SequenceStep,
+  executeSequence,
+} from '@engine/effects';
 import type { SpecialAbilityHandler } from '@engine/specials/special-registry';
 import { nextEngineId } from '@engine/state/rng';
 
@@ -44,26 +49,24 @@ export const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
     }
 
     const startSequence = (upgrades: CardInstance[]): EffectResult => {
-      const allSteps: AbilityStep[] = [];
-      for (let i = 0; i < upgrades.length; i++) {
-        const upg = upgrades[i];
-        const isFinal = i === upgrades.length - 1;
+      // Each upgrade resolves its whole Special as an ability, so its printed "(attack)" or
+      // "(thwart)" label applies (RR v1.8 "Labeled Ability"): Stunned, Confused, Guard, Retaliate.
+      const specials: SequenceStep[] = [];
+      upgrades.forEach((upg, i) => {
         const special = getSpecialAbility(state, upg);
-        if (special?.steps) {
-          for (const step of special.steps) {
-            allSteps.push({
-              ...step,
-              sourceCardInstance: upg,
-              isFinalStep: isFinal,
-            } as unknown as AbilityStep);
-          }
+        const [firstStep] = special?.steps ?? [];
+        if (special && firstStep) {
+          specials.push({
+            ...firstStep,
+            ability: special,
+            sourceCardInstance: upg,
+            isFinalStep: i === upgrades.length - 1,
+          });
         }
-      }
-      const seqRes = executeSequence(state, allSteps, {
+      });
+      const seqRes = executeSequence(state, specials, {
         playerId: player.id,
-        chosenTargetInstanceId:
-          (payload?.targetEnemyId as string | undefined) ||
-          (payload?.targetSchemeId as string | undefined),
+        chosenTargetInstanceId: payload?.targetSchemeId as string | undefined,
       });
       return {
         ...seqRes,

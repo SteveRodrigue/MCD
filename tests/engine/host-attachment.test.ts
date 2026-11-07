@@ -90,7 +90,7 @@ describe('resolveChosenHostAttachment (R6b)', () => {
       expect(m.attachments?.map((a) => a.instanceId)).toEqual([played.instanceId]);
       const log = attachLog(state);
       expect(log).toHaveLength(1);
-      expect(log[0].params).toMatchObject({ host: `${m.card.name} (Player p2)` });
+      expect(log[0].params).toMatchObject({ host: `${m.card.name} (engaged with Captain Marvel)` });
     });
 
     it('attaches directly when exactly one minion is engaged', () => {
@@ -99,7 +99,9 @@ describe('resolveChosenHostAttachment (R6b)', () => {
 
       expect(run('CHOSEN_MINION')).toBeUndefined();
       expect(m.attachments).toHaveLength(1);
-      expect(attachLog(state)[0].params).toMatchObject({ host: `${m.card.name} (Player p1)` });
+      expect(attachLog(state)[0].params).toMatchObject({
+        host: `${m.card.name} (engaged with Spider-Man)`,
+      });
     });
 
     it('prompts when several minions are engaged, across players', () => {
@@ -114,7 +116,7 @@ describe('resolveChosenHostAttachment (R6b)', () => {
       expect(prompt.options.map((o) => o.id)).toEqual(['m1', 'm2']);
       expect(prompt.options.every((o) => o.params?.isAttachmentMinionChoice)).toBe(true);
       expect(prompt.options[0].label).toBe(
-        `${state.players[0].engagedMinions[0].card.name} (Player p1)`,
+        `${state.players[0].engagedMinions[0].card.name} (engaged with Spider-Man)`,
       );
     });
 
@@ -137,7 +139,7 @@ describe('resolveChosenHostAttachment (R6b)', () => {
 
       expect(run('CHOSEN_ALLY', 'a1')).toBeUndefined();
       expect(a.attachments).toHaveLength(1);
-      expect(attachLog(state)[0].params).toMatchObject({ host: `${a.card.name} (Player p2)` });
+      expect(attachLog(state)[0].params).toMatchObject({ host: `${a.card.name} (Captain Marvel)` });
     });
 
     it('attaches directly when exactly one ally is in play', () => {
@@ -176,7 +178,9 @@ describe('resolveChosenHostAttachment (R6b)', () => {
 
       expect(run('CHOSEN_ENEMY', 'm1')).toBeUndefined();
       expect(m.attachments).toHaveLength(1);
-      expect(attachLog(state)[0].params).toMatchObject({ host: `${m.card.name} (Player p2)` });
+      expect(attachLog(state)[0].params).toMatchObject({
+        host: `${m.card.name} (engaged with Captain Marvel)`,
+      });
     });
 
     it('attaches directly to the villain when it is the only enemy', () => {

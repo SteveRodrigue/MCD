@@ -165,13 +165,13 @@ describe('Powered Gauntlets (01038) Ability Cost & Resolution Contract (RR v1.8 
     const prompt = activationRes.state.pendingDecisionQueue![0];
     expect(prompt.title).toBe('Choose Target for Powered Gauntlets');
 
-    // Labels should identify the enemy only, without seat prefix leakage like (Hero Seat 1 (Black Panther))
+    // Labels name the enemy and its engaged hero, without seat prefix leakage like (Hero Seat 1 (Black Panther))
     const labels = prompt.options.map((o) => o.label);
-    expect(labels).toContain('Sandman');
-    expect(labels).toContain('Hydra Mercenary');
+    expect(labels).toContain('Sandman (engaged with Black Panther)');
+    expect(labels).toContain('Hydra Mercenary (engaged with Iron Man)');
     expect(labels.some((l) => l.includes('Hero Seat'))).toBe(false);
 
-    // Duplicate minions with identical names disambiguate with engaged hero
+    // Duplicate minions with identical names stay told apart by their engaged hero
     const nextState = thaw(activationRes.state);
     const hydraMerc2 = createCardInstance(cardCatalog.getCard('01101')!);
     nextState.players[0].engagedMinions.push(hydraMerc2);
@@ -191,7 +191,7 @@ describe('Powered Gauntlets (01038) Ability Cost & Resolution Contract (RR v1.8 
     expect(dupRes.result.success).toBe(true);
     const dupPrompt = dupRes.state.pendingDecisionQueue![1];
     const dupLabels = dupPrompt.options.map((o) => o.label);
-    expect(dupLabels).toContain('Sandman');
+    expect(dupLabels).toContain('Sandman (engaged with Black Panther)');
     expect(dupLabels).toContain('Hydra Mercenary (engaged with Black Panther)');
     expect(dupLabels).toContain('Hydra Mercenary (engaged with Iron Man)');
     expect(dupLabels.some((l) => l.includes('Hero Seat'))).toBe(false);

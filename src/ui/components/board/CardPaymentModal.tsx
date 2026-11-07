@@ -7,7 +7,7 @@ import {
   CardType,
   VillainState,
 } from '../../../engine/models';
-import { getPlayTargetChoice } from '../../../engine/effects/target-choice';
+import { describeTargetAmong, getPlayTargetChoice } from '../../../engine/effects/target-choice';
 import type { ResolvedTarget } from '../../../engine/effects/target-resolver';
 import { getCardEnrichment } from '../../../data/supplemental';
 import {
@@ -140,6 +140,8 @@ interface TargetChoicesProps {
   tone: TargetTone;
   targets: TargetChoice[];
   selectedId?: string;
+  /** No target is chosen yet and the card cannot be played without one. */
+  isMissing: boolean;
   onSelect: (id: string) => void;
 }
 
@@ -150,6 +152,7 @@ const TargetChoices: React.FC<TargetChoicesProps> = ({
   tone,
   targets,
   selectedId,
+  isMissing,
   onSelect,
 }) => {
   const { style } = useModalStyle();
@@ -159,6 +162,7 @@ const TargetChoices: React.FC<TargetChoicesProps> = ({
       <label className="text-xs font-black uppercase flex items-center space-x-1">
         {icon}
         <span>{title}</span>
+        {isMissing && <span className="text-comic-red">Choose one to play this card</span>}
       </label>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {targets.map((t) => {
@@ -259,21 +263,17 @@ interface TargetOption {
   detail?: string;
 }
 
-/** How one engine-resolved target is named and summarised in a picker. */
+/** How one engine-resolved target of a choice is named and summarised in a picker. */
 function describeTarget(
   gameState: GameState,
   player: PlayerState,
   target: ResolvedTarget,
+  targets: readonly ResolvedTarget[],
 ): TargetOption {
   const whoseAlly = (owner: PlayerState | undefined, name: string) => {
     if (!owner || owner.id === player.id) return `${name} (Ally)`;
     const ownerName = owner.hero?.name || owner.name;
     return `${name} (${ownerName}'s Ally)`;
-  };
-  const whoseMinion = (owner: PlayerState | undefined, name: string) => {
-    if (!owner || owner.id === player.id) return `${name} (Minion)`;
-    const ownerName = owner.hero?.name || owner.name;
-    return `${name} (engaged with ${ownerName})`;
   };
 
   if (target.kind === 'scheme') {
@@ -323,8 +323,12 @@ function describeTarget(
     return {
       id: target.id,
       code: inst.card.code,
-      name: whoseMinion(target.player, inst.card.name),
-      detail: `${Math.max(0, getEffectiveMinionHitPoints(gameState, inst) - (inst.tokens?.damage || 0))} HP`,
+      name: describeTargetAmong(target, targets).label,
+      // Two Drones look alike: what is attached is how the player tells them apart.
+      detail: [
+        `${Math.max(0, getEffectiveMinionHitPoints(gameState, inst) - (inst.tokens?.damage || 0))} HP`,
+        ...(inst.attachments ?? []).map((attached) => attached.card.name),
+      ].join(' • '),
     };
   }
   return {
@@ -337,14 +341,13 @@ function describeTarget(
 
 /**
  * What the modal starts with for `cardToPlay`: the matching "The Power of..." cards for its cost, and
- * the likeliest target of its event.
+ * its target when only one is valid. With several, the player must choose (RR v1.8 "Choose").
  */
 function getDefaultSelection(
   gameState: GameState,
   player: PlayerState,
   cardToPlay: CardInstance,
 ): { handCardIds: string[]; targetId: string | undefined } {
-  let targetId: string | undefined;
   // Auto-select "The Power of [Aspect]" matching resource cards as a QoL improvement
   const autoSelectedHandIds: string[] = [];
   const cardCost = getEffectiveCardCost(gameState, player, cardToPlay).effectiveCost;
@@ -372,9 +375,11 @@ function getDefaultSelection(
     }
   }
 
-  // Default target: the first valid target of what the card runs when played
-  targetId = getPlayTargetChoice(gameState, player, cardToPlay)?.targets[0]?.id;
-  return { handCardIds: autoSelectedHandIds, targetId };
+  const targets = getPlayTargetChoice(gameState, player, cardToPlay)?.targets ?? [];
+  return {
+    handCardIds: autoSelectedHandIds,
+    targetId: targets.length === 1 ? targets[0].id : undefined,
+  };
 }
 
 export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
@@ -717,7 +722,10 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   );
   const playTargetPicker = playTargetChoice && getTargetPicker(playTargetChoice.selector);
   const playTargets = useMemo(
-    () => (playTargetChoice?.targets ?? []).map((t) => describeTarget(gameState, player, t)),
+    () =>
+      (playTargetChoice?.targets ?? []).map((t, _index, targets) =>
+        describeTarget(gameState, player, t, targets),
+      ),
     [playTargetChoice, gameState, player],
   );
 
@@ -753,8 +761,10 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     );
   };
 
+  const isTargetMissing = playTargets.length > 1 && !selectedTargetId;
+
   const handleConfirm = () => {
-    if (!isCostCovered) return;
+    if (!isCostCovered || isTargetMissing) return;
     onConfirmPlay(
       selectedHandCardIds,
       selectedGeneratorIds,
@@ -785,7 +795,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
 
           <button
             type="button"
-            disabled={!isCostCovered}
+            disabled={!isCostCovered || isTargetMissing}
             onClick={handleConfirm}
             className={`px-6 py-2.5 font-black uppercase text-sm flex items-center space-x-2 cursor-pointer disabled:cursor-not-allowed ${style.btnGo}`}
           >
@@ -890,6 +900,24 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
               {reductions.map((r) => r.sourceCardName).join(', ')}: -{totalReduction})!
             </span>
           </div>
+        )}
+
+        {/* Target Selector: the target an event or an attachment's host asks for */}
+        {playTargetPicker && (
+          <TargetChoices
+            title={playTargetPicker.title}
+            icon={playTargetPicker.icon}
+            tone={playTargetPicker.tone}
+            selectedId={selectedTargetId}
+            isMissing={isTargetMissing}
+            onSelect={setSelectedTargetId}
+            targets={playTargets.map((t) => ({
+              id: t.id,
+              code: t.code,
+              name: t.name,
+              trailing: t.detail ? () => <span>{t.detail}</span> : undefined,
+            }))}
+          />
         )}
 
         {/* Discard Hand Cards as Cost Section */}
@@ -1110,23 +1138,6 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
               })}
             </div>
           </div>
-        )}
-
-        {/* Target Selector: the target an event or an attachment's host asks for */}
-        {playTargetPicker && (
-          <TargetChoices
-            title={playTargetPicker.title}
-            icon={playTargetPicker.icon}
-            tone={playTargetPicker.tone}
-            selectedId={selectedTargetId}
-            onSelect={setSelectedTargetId}
-            targets={playTargets.map((t) => ({
-              id: t.id,
-              code: t.code,
-              name: t.name,
-              trailing: t.detail ? () => <span>{t.detail}</span> : undefined,
-            }))}
-          />
         )}
       </div>
     </ModalScaffold>

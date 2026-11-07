@@ -139,6 +139,20 @@ describe('Content screen', () => {
     expect(row.getByText('no images downloaded yet')).toBeTruthy();
   });
 
+  it('keeps the switch at the right of a pack row when the text is long', () => {
+    render(
+      <GameSettingsProvider>
+        <ContentScreen onBack={() => {}} />
+      </GameSettingsProvider>,
+    );
+    const row = screen.getByTestId('pack-row-partial');
+    const [text, toggle] = Array.from(row.children);
+    expect(row.className).not.toContain('flex-wrap');
+    expect(text.className).toContain('flex-1');
+    expect(text.className).toContain('min-w-0');
+    expect(toggle).toBe(screen.getByRole('switch', { name: 'Enable Partial Pack' }));
+  });
+
   it('lets a partial pack be switched on and tags it Incomplete', async () => {
     render(
       <GameSettingsProvider>

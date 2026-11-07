@@ -370,7 +370,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
             return (
               <div
                 key={direction}
-                className={`absolute ${direction === 'prev' ? 'left-2' : 'right-2'} top-72 -translate-y-1/2 z-zoom pointer-events-none`}
+                className={`absolute ${direction === 'prev' ? 'left-2' : 'right-2'} top-72 -translate-y-1/2 z-lifted pointer-events-none`}
               >
                 <button
                   type="button"
@@ -413,7 +413,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
               </div>
 
               {/* Villain Card Display */}
-              <div className="py-2 transform transition-transform hover:scale-105 duration-200">
+              <div className="py-2">
                 {villainPreviewCard ? (
                   <CardView card={villainPreviewCard} size="md" />
                 ) : (
@@ -451,7 +451,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
               </div>
 
               {/* Main Scheme Card Display */}
-              <div className="py-2 transform transition-transform hover:scale-105 duration-200 max-w-full">
+              <div className="py-2 max-w-full">
                 {mainSchemePreviewCard ? (
                   <CardView card={mainSchemePreviewCard} size="md" />
                 ) : (
@@ -774,7 +774,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                 return (
                   <div
                     key={index}
-                    className={`p-3 transition-all relative hover:z-zoom ${
+                    className={`p-3 transition-all relative ${
                       isAssigned ? style.tileSelected : `${style.tile} border-dashed`
                     }`}
                   >
@@ -782,7 +782,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                       /* Occupied Seat Card Tile */
                       <div className="flex items-start gap-3">
                         {/* Hero Card Miniature Thumbnail (Hero Form) */}
-                        <div className="shrink-0 relative z-content hover:z-zoom">
+                        <div className="shrink-0 relative z-content">
                           {heroCard ? (
                             <CardView card={heroCard} size="sm" />
                           ) : (

@@ -98,7 +98,6 @@ export const SetupKit: React.FC = () => {
                   card={cardCatalog.getCard(card.code)!}
                   size="hand"
                   enableContextMenu={false}
-                  enableHoverZoom={false}
                   onClick={() => toggle(card.code)}
                 />
               </CardSelectFrame>

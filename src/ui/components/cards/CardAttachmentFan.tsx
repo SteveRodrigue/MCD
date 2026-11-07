@@ -39,7 +39,7 @@ const CardAttachmentFanImpl: React.FC<CardAttachmentFanProps> = ({
   // Local order (isolated): underneath 1..m < attachments m+1..m+n < host m+n+1 < hovered attachment m+n+2.
   return (
     <div
-      className={`relative isolate flex flex-col items-center hover:z-zoom focus-within:z-zoom ${className}`}
+      className={`relative isolate flex flex-col items-center hover:z-lifted focus-within:z-lifted ${className}`}
     >
       <div className="relative flex flex-col items-center" style={{ zIndex: m + n + 1 }}>
         {children}
@@ -72,7 +72,6 @@ const CardAttachmentFanImpl: React.FC<CardAttachmentFanProps> = ({
                   onMouseEnter={() => setHoveredAttachmentId(key)}
                   onMouseLeave={() => setHoveredAttachmentId(null)}
                 >
-                  {/* CardView with Dynamic Hover Zoom (unrotated even if host exhausted) */}
                   <div
                     onClick={(e) => {
                       e.stopPropagation();
@@ -86,7 +85,6 @@ const CardAttachmentFanImpl: React.FC<CardAttachmentFanProps> = ({
                       isExhausted={att.exhausted ?? false}
                       size="sm"
                       enableHoverZoom={true}
-                      zoomOrigin="bottom-left"
                     />
 
                     {/* Interactive Action Available Badge */}

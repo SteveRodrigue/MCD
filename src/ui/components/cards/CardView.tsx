@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { NormalizedCard, CardInstance, StatusCard, CardType } from '../../../engine/models';
 import { getEffectiveCardTraitsDetails } from '../../../engine/pipeline/stat-calculator';
@@ -18,7 +18,7 @@ import {
 import { FormattedCardText } from './FormattedCardText';
 import { useOptionalGameSettings } from '../../context/useGameSettings';
 import { CardContextMenu } from './CardContextMenu';
-import { useFloatingCardZoom } from '../../context/card-zoom-layer';
+import { CARD_ZOOM_MARGIN, cardZoomScale } from './card-zoom';
 import { Z_CLASS } from '../../styles/z-layers';
 import { useModalStyle } from '../../theme/useModalStyle';
 
@@ -46,21 +46,16 @@ export interface CardViewProps {
   onClick?: () => void;
   showTokens?: boolean;
   enableHoverZoom?: boolean;
-  /** Without zoom, lift the card slightly on hover. Turn off where the card must stay still. */
-  enableHoverLift?: boolean;
   enableContextMenu?: boolean;
-  zoomOrigin?:
-    | 'bottom'
-    | 'top'
-    | 'center'
-    | 'left'
-    | 'right'
-    | 'bottom-left'
-    | 'bottom-right'
-    | 'top-left'
-    | 'top-right';
   className?: string;
 }
+
+const isLandscapeCard = (card: NormalizedCard): boolean =>
+  card.isLandscape === true ||
+  card.orientation === 'landscape' ||
+  card.type === CardType.MAIN_SCHEME ||
+  card.type === CardType.SIDE_SCHEME ||
+  (card.type as string) === 'player_side_scheme';
 
 const CardViewImpl: React.FC<CardViewProps> = ({
   card,
@@ -84,15 +79,10 @@ const CardViewImpl: React.FC<CardViewProps> = ({
   onClick,
   showTokens = true,
   enableHoverZoom = true,
-  enableHoverLift = true,
   enableContextMenu = true,
-  zoomOrigin = 'center',
   className = '',
 }) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [dynamicOrigin, setDynamicOrigin] = useState<string | null>(null);
-  const floatZoom = useFloatingCardZoom() && enableHoverZoom;
-  const [floatRect, setFloatRect] = useState<DOMRect | null>(null);
+  const [isZoomed, setIsZoomed] = useState(false);
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
 
   const { style } = useModalStyle();
@@ -131,14 +121,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
     }
   };
 
-  const cardZoomLevel = useOptionalGameSettings()?.cardZoomLevel ?? 'normal';
-
-  const isLandscape =
-    card.isLandscape === true ||
-    card.orientation === 'landscape' ||
-    card.type === CardType.MAIN_SCHEME ||
-    card.type === CardType.SIDE_SCHEME ||
-    (card.type as string) === 'player_side_scheme';
+  const isLandscape = isLandscapeCard(card);
 
   const activeDynamicTraits =
     dynamicTraits ??
@@ -163,122 +146,33 @@ const CardViewImpl: React.FC<CardViewProps> = ({
         xl: 'w-72 h-[410px] text-lg font-body',
       }[size];
 
-  // Scale Factors to achieve a UNIFIED CONSTANT ZOOM SIZE across all UI locations (~308px portrait width, ~440px landscape width at 100%)
-  const zoomScaleFactors: Record<
-    'portrait' | 'landscape',
-    Record<'sm' | 'md' | 'lg' | 'xl' | 'hand', number>
-  > = {
-    portrait: {
-      sm: 2.75, // 112px * 2.75 = 308px
-      hand: 2.37, // 130px * 2.37 = 308px
-      md: 1.75, // 176px * 1.75 = 308px
-      lg: 1.375, // 224px * 1.375 = 308px
-      xl: 1.07, // 288px * 1.07 = 308px
-    },
-    landscape: {
-      sm: 2.5, // 176px * 2.5 = 440px
-      hand: 2.18, // 202px * 2.18 = 440px
-      md: 1.72, // 256px * 1.72 = 440px
-      lg: 1.375, // 320px * 1.375 = 440px
-      xl: 1.07, // 410px * 1.07 = 438px
-    },
-  };
-
-  const baseZoomScale = zoomScaleFactors[isLandscape ? 'landscape' : 'portrait'][size];
-  const zoomMultiplier = cardZoomLevel === 'small' ? 0.9 : cardZoomLevel === 'larger' ? 1.1 : 1.0;
-  const effectiveZoomScale = Number((baseZoomScale * zoomMultiplier).toFixed(3));
-
-  // Dynamic Viewport Boundary Detection on Hover
-  const handleMouseEnter = () => {
-    if (!enableHoverZoom || !cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    if (floatZoom) setFloatRect(rect);
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    const scale = effectiveZoomScale;
-    const scaledWidth = rect.width * scale;
-    const scaledHeight = rect.height * scale;
-
-    const overflowLeft = rect.left - (scaledWidth - rect.width) / 2 < 16;
-    const overflowRight = rect.right + (scaledWidth - rect.width) / 2 > viewportWidth - 16;
-    const overflowTop = rect.top - (scaledHeight - rect.height) / 2 < 55;
-    const overflowBottom = rect.bottom + (scaledHeight - rect.height) / 2 > viewportHeight - 16;
-
-    let vAlign = 'center';
-    let hAlign = 'center';
-
-    if (overflowTop) vAlign = 'top';
-    else if (overflowBottom) vAlign = 'bottom';
-
-    if (overflowLeft) hAlign = 'left';
-    else if (overflowRight) hAlign = 'right';
-
-    if (vAlign === 'center' && hAlign === 'center') {
-      setDynamicOrigin(zoomOrigin);
-    } else if (vAlign === 'center') {
-      setDynamicOrigin(hAlign);
-    } else if (hAlign === 'center') {
-      setDynamicOrigin(vAlign);
-    } else {
-      setDynamicOrigin(`${vAlign}-${hAlign}`);
-    }
-  };
-
   const handleContextMenu = (e: React.MouseEvent) => {
     if (!enableContextMenu) return;
     e.preventDefault();
     e.stopPropagation();
+    setIsZoomed(false);
     setContextMenuPos({ x: e.clientX, y: e.clientY });
   };
-
-  const activeOrigin = dynamicOrigin || zoomOrigin;
-  const originClass =
-    {
-      bottom: 'origin-bottom',
-      top: 'origin-top',
-      center: 'origin-center',
-      left: 'origin-left',
-      right: 'origin-right',
-      'bottom-left': 'origin-bottom-left',
-      'bottom-right': 'origin-bottom-right',
-      'top-left': 'origin-top-left',
-      'top-right': 'origin-top-right',
-    }[activeOrigin] || 'origin-center';
 
   const exhaustedState = isExhausted !== undefined ? isExhausted : Boolean(instance?.exhausted);
   const showFallback = imageFailed || error || (!artUrl && !loading);
 
   return (
     <div
-      ref={cardRef}
       data-card-view={card.code}
       onClick={onClick}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={floatZoom ? () => setFloatRect(null) : undefined}
+      onMouseEnter={() => setIsZoomed(true)}
+      onMouseLeave={() => setIsZoomed(false)}
       onContextMenu={handleContextMenu}
-      className={`relative inline-block transition-all duration-200 select-none group cursor-pointer z-table hover:z-zoom ${
-        exhaustedState
-          ? 'rotate-30 filter brightness-95 hover:rotate-0 hover:brightness-100'
-          : 'rotate-0'
+      className={`relative inline-block transition-all duration-200 select-none cursor-pointer z-table ${
+        exhaustedState ? 'rotate-30 filter brightness-95 hover:brightness-100' : 'rotate-0'
       } ${className}`}
     >
-      {/* Outer Comic Card Container with Dynamic Hover Zoom */}
+      {/* Outer Comic Card Container */}
       <div
-        style={
-          {
-            '--card-zoom-scale': effectiveZoomScale,
-          } as React.CSSProperties
-        }
-        className={`relative rounded-xl overflow-hidden border-comic border-comic-black shadow-comic transition-all ease-out transform ${originClass} ${
-          enableHoverZoom && !floatZoom
-            ? // Grows in 200 ms, returns at once: a fan drops to the table when the pointer leaves,
-              // so a card still shrinking would fall behind its neighbours (#619).
-              'duration-0 group-hover:duration-200 group-hover:scale-(--card-zoom-scale) group-hover:-translate-y-4 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.85)] group-hover:border-4'
-            : `duration-200 ${enableHoverLift ? 'group-hover:-translate-y-1' : ''}`
-        } ${sizeClasses} ${
+        className={`relative rounded-xl overflow-hidden border-comic border-comic-black shadow-comic transition-all duration-200 ease-out ${sizeClasses} ${
           isPlayable === false || isUsable === false
-            ? 'filter grayscale contrast-75 brightness-90 group-hover:grayscale-0 group-hover:contrast-100 group-hover:brightness-100'
+            ? 'filter grayscale contrast-75 brightness-90'
             : ''
         } ${
           isMulliganSelected
@@ -300,7 +194,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
         {/* Unplayable / Inactive Form Indicator Tag */}
         {!isFacedown && (isPlayable === false || isUsable === false) && (
           <div
-            className="absolute top-1.5 right-1.5 z-content bg-slate-900/90 text-white text-nano px-1.5 py-0.5 rounded-sm border border-comic-black shadow-xs font-bold uppercase pointer-events-none group-hover:hidden"
+            className="absolute top-1.5 right-1.5 z-content bg-slate-900/90 text-white text-nano px-1.5 py-0.5 rounded-sm border border-comic-black shadow-xs font-bold uppercase pointer-events-none"
             title={
               unusableReason || unplayableReason
                 ? `Cannot use: ${unusableReason || unplayableReason}`
@@ -516,42 +410,18 @@ const CardViewImpl: React.FC<CardViewProps> = ({
         )}
       </div>
 
-      {/* Floating hover zoom: a copy of the card in a body-level portal, so no panel can clip it */}
-      {floatZoom &&
-        floatRect &&
-        createPortal(
-          <div
-            aria-hidden="true"
-            data-card-zoom-layer={card.code}
-            className={`fixed pointer-events-none ${Z_CLASS.menu}`}
-            style={{
-              left: floatRect.left,
-              top: floatRect.top,
-              width: floatRect.width,
-              height: floatRect.height,
-              transformOrigin: activeOrigin.replace('-', ' '),
-              transform: `translateY(-1rem) scale(${effectiveZoomScale})`,
-            }}
-          >
-            <CardViewImpl
-              card={card}
-              instance={instance}
-              isFacedown={isFacedownProp}
-              cardBackType={cardBackType}
-              artStats={artStats}
-              officialArtOnly={officialArtOnly}
-              dynamicTraits={dynamicTraits}
-              isExhausted={false}
-              size={size}
-              showTokens={showTokens}
-              enableHoverZoom={false}
-              enableHoverLift={false}
-              enableContextMenu={false}
-              className="shadow-[0_25px_50px_-12px_rgba(0,0,0,0.85)]"
-            />
-          </div>,
-          document.body,
-        )}
+      {enableHoverZoom && isZoomed && (
+        <CardHoverZoom
+          card={card}
+          instance={instance}
+          isFacedown={isFacedownProp}
+          cardBackType={cardBackType}
+          artStats={artStats}
+          officialArtOnly={officialArtOnly}
+          dynamicTraits={dynamicTraits}
+          showTokens={showTokens}
+        />
+      )}
 
       {/* Tabletop Right-Click Context Menu */}
       {contextMenuPos && (
@@ -562,6 +432,59 @@ const CardViewImpl: React.FC<CardViewProps> = ({
         />
       )}
     </div>
+  );
+};
+
+type CardHoverZoomProps = Pick<
+  CardViewProps,
+  | 'card'
+  | 'instance'
+  | 'isFacedown'
+  | 'cardBackType'
+  | 'artStats'
+  | 'officialArtOnly'
+  | 'dynamicTraits'
+  | 'showTokens'
+>;
+
+/**
+ * The one hover zoom (ADR-0082): an upright copy of the card pinned to the top right corner, in a
+ * body-level portal above every layer. It ignores the pointer, so whatever is underneath stays usable.
+ */
+export const CardHoverZoom: React.FC<CardHoverZoomProps> = (props) => {
+  const level = useOptionalGameSettings()?.cardZoomLevel ?? 'normal';
+  const isLandscape = isLandscapeCard(props.card);
+
+  // Runs before paint: the copy's unscaled size is only known once it is laid out.
+  const fitToViewport = (el: HTMLDivElement | null) => {
+    if (!el) return;
+    const scale = cardZoomScale(
+      isLandscape,
+      level,
+      { width: el.offsetWidth, height: el.offsetHeight },
+      { width: window.innerWidth, height: window.innerHeight },
+    );
+    el.style.transform = `scale(${scale})`;
+  };
+
+  return createPortal(
+    <div
+      ref={fitToViewport}
+      aria-hidden="true"
+      data-card-zoom-layer={props.card.code}
+      className={`fixed flex pointer-events-none ${Z_CLASS.zoom}`}
+      style={{ top: CARD_ZOOM_MARGIN, right: CARD_ZOOM_MARGIN, transformOrigin: 'top right' }}
+    >
+      <CardViewImpl
+        {...props}
+        isExhausted={false}
+        size="sm"
+        enableHoverZoom={false}
+        enableContextMenu={false}
+        className="shadow-[0_25px_50px_-12px_rgba(0,0,0,0.85)]"
+      />
+    </div>,
+    document.body,
   );
 };
 

@@ -134,7 +134,7 @@ describe('Tableau Card Actionability Graying (Issue #185)', () => {
     const tableau = screen.getByTestId('tableau-section');
     expect(tableau.querySelector('.filter.grayscale')).toBeNull();
 
-    const cardEl = tableau.querySelector('.group') as HTMLElement;
+    const cardEl = tableau.querySelector('[data-card-view]') as HTMLElement;
     fireEvent.click(cardEl);
     expect(screen.queryByText(/Select an ability to activate/i)).not.toBeNull();
   });

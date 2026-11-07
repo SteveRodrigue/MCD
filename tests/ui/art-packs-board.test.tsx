@@ -6,6 +6,7 @@ import { CardContextMenu } from '../../src/ui/components/cards/CardContextMenu';
 import { CardView } from '../../src/ui/components/cards/CardView';
 import { ArtPackSettings } from '../../src/ui/components/setup/ArtPackSettings';
 import { ContentScreen } from '../../src/ui/components/setup/ContentScreen';
+import { CardArtHeroes, CardArtSeat } from '../../src/ui/context/CardArtHeroContext';
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import {
@@ -24,7 +25,7 @@ import {
 } from '../../src/engine';
 import {
   clearCardArtCache,
-  gameArtCodes,
+  gameArtCards,
   preloadArtPackImages,
 } from '../../src/ui/services/card-cache-service';
 import { TestSession } from '../support/render-with-session';
@@ -416,7 +417,7 @@ describe('S3: identity art on the hero zone', () => {
       vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
       try {
         await clearCardArtCache();
-        await preloadArtPackImages(gameArtCodes(game(), []));
+        await preloadArtPackImages(gameArtCards(game(), []));
         return stored.sort();
       } finally {
         await clearCardArtCache();
@@ -434,9 +435,116 @@ describe('S3: identity art on the hero zone', () => {
       expect(await preloaded()).toEqual([]);
     });
 
-    it('S3: keeps the scenario tokens in the list', () => {
-      expect(gameArtCodes(game(), ['ultron_drone'])).toEqual(['ultron_drone', '01001a', '01001b']);
+    it.each([
+      ['the seated hero', '01001a', [heroArt('01001a.png'), heroArt('01001b.png')]],
+      ['another hero', '01029a', []],
+    ])('S8: a pack tied to %s preloads accordingly', async (_name, hero, expected) => {
+      setLoadedContent({ ...loaded, artPacks: [{ ...heroes, heroes: [hero] }] });
+      expect(await preloaded()).toEqual(expected);
     });
+
+    it('S3: keeps the scenario tokens in the list', () => {
+      expect(gameArtCards(game(), ['ultron_drone'])).toEqual([
+        { code: 'ultron_drone' },
+        { code: '01001a', heroCode: '01001a' },
+        { code: '01001b', heroCode: '01001a' },
+      ]);
+    });
+  });
+});
+
+describe('S8: a pack tied to a hero shows only on that hero', () => {
+  const IRON_MAN = '01029a';
+  const SHE_HULK = '01019a';
+  const SHARED = '01002';
+  const packArt = (id: string) => `/card-art/_art-${id}/shared.png`;
+  const heroPack = (id: string, hero: string): ArtPackManifest => ({
+    ...tokens,
+    id,
+    name: id,
+    heroes: [hero],
+    cards: { [SHARED]: [{ file: 'shared.png' }] },
+  });
+  const seats = [
+    { id: 'p1', hero: { code: IRON_MAN } },
+    { id: 'p2', hero: { code: SHE_HULK } },
+  ];
+  const shared = () => cardCatalog.getCard(SHARED)!;
+  const images = () => screen.getAllByAltText(shared().name).map((i) => i.getAttribute('src'));
+
+  beforeEach(() =>
+    setLoadedContent({
+      ...loaded,
+      artPacks: [heroPack('op_iron_man', IRON_MAN), heroPack('op_she_hulk', SHE_HULK)],
+    }),
+  );
+
+  it('S8: Iron Man and She-Hulk each show their own pack on the shared card', async () => {
+    render(
+      <CardArtHeroes players={seats}>
+        <CardArtSeat playerId="p1">
+          <CardView card={shared()} size="sm" />
+        </CardArtSeat>
+        <CardArtSeat playerId="p2">
+          <CardView card={shared()} size="sm" />
+        </CardArtSeat>
+      </CardArtHeroes>,
+    );
+    await waitFor(() => expect(images()).toEqual([packArt('op_iron_man'), packArt('op_she_hulk')]));
+  });
+
+  it('S8: a card owned by another seat shows its owner�s pack, wherever it sits', async () => {
+    render(
+      <CardArtHeroes players={seats}>
+        <CardArtSeat playerId="p1">
+          <CardView card={shared()} instance={createCardInstance(shared(), 'p2')} size="sm" />
+        </CardArtSeat>
+      </CardArtHeroes>,
+    );
+    await waitFor(() => expect(images()).toEqual([packArt('op_she_hulk')]));
+  });
+
+  it('S8: a card with no seat keeps its official art, and so does a hero not in the game', async () => {
+    render(
+      <>
+        <CardView card={shared()} size="sm" />
+        <CardArtSeat heroCode="01001a">
+          <CardView card={shared()} size="sm" />
+        </CardArtSeat>
+      </>,
+    );
+    await waitFor(() =>
+      expect(images()).toEqual(['/card-art/core/01002.png', '/card-art/core/01002.png']),
+    );
+  });
+
+  it('S8: the setup preview of a seat shows the pack of the hero picked for it', async () => {
+    render(
+      <CardArtSeat heroCode={SHE_HULK}>
+        <CardView card={shared()} size="sm" />
+      </CardArtSeat>,
+    );
+    await waitFor(() => expect(images()).toEqual([packArt('op_she_hulk')]));
+  });
+
+  it('S8: a thumbnail and the card menu follow the seat�s hero pack', async () => {
+    render(
+      <GameSettingsProvider>
+        <CardArtSeat heroCode={IRON_MAN}>
+          <CardArtThumbnail cardCode={SHARED} cardName="Shared" />
+          <CardContextMenu
+            card={shared()}
+            position={{ x: 0, y: 0 }}
+            onClose={() => {}}
+            heroCode={IRON_MAN}
+          />
+        </CardArtSeat>
+      </GameSettingsProvider>,
+    );
+    await waitFor(() =>
+      expect(screen.getByAltText('Shared').getAttribute('src')).toBe(packArt('op_iron_man')),
+    );
+    expect(screen.getByTestId('art-pack-credit').textContent).toBe('Art by A. Artist (unofficial)');
   });
 });
 

@@ -58,17 +58,22 @@ export async function getCardArtUrl(card: CardArtIdentifier | string): Promise<s
   return cachedArtUrl(localArtUrl(card));
 }
 
-/** The cards whose art pack images load with a game: scenario tokens and each player's identities. */
-export function gameArtCodes(state: GameState, tokenCodes: string[]): string[] {
+/**
+ * The cards whose art pack images load with a game: scenario tokens and each player's identities,
+ * with the hero that owns them so only that hero's art pack loads.
+ */
+export function gameArtCards(state: GameState, tokenCodes: string[]): CardArtIdentifier[] {
   return [
-    ...tokenCodes,
-    ...state.players.flatMap((player) => player.availableForms.map((form) => form.code)),
+    ...tokenCodes.map((code) => ({ code })),
+    ...state.players.flatMap((player) =>
+      player.availableForms.map((form) => ({ code: form.code, heroCode: player.hero.code })),
+    ),
   ];
 }
 
 /** Loads every art pack image of these cards, so the next stat image or form shows at once. */
-export async function preloadArtPackImages(codes: string[]): Promise<void> {
-  await Promise.all(codes.flatMap(artPackImageUrls).map(cachedArtUrl));
+export async function preloadArtPackImages(cards: (CardArtIdentifier | string)[]): Promise<void> {
+  await Promise.all(cards.flatMap(artPackImageUrls).map(cachedArtUrl));
 }
 
 async function cachedArtUrl(localUrl: string): Promise<string> {

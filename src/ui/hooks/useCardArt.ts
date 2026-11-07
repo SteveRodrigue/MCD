@@ -13,11 +13,13 @@ export interface UseCardArtResult {
 export interface UseCardArtOptions {
   artStats?: CardArtStats;
   officialArt?: boolean;
+  /** Hero of the seat that owns the card, which selects art packs tied to a hero. */
+  heroCode?: string;
 }
 
 export function useCardArt(
   cardOrCode: CardArtIdentifier | string | undefined,
-  { artStats, officialArt }: UseCardArtOptions = {},
+  { artStats, officialArt, heroCode }: UseCardArtOptions = {},
 ): UseCardArtResult {
   // Switching an art pack on or off re-renders every card that shows art.
   useSyncExternalStore(subscribeArtPacks, getArtPackVersion);
@@ -25,14 +27,15 @@ export function useCardArt(
   const type = typeof cardOrCode === 'object' ? cardOrCode?.type : undefined;
   const stage = typeof cardOrCode === 'object' ? cardOrCode?.stage : undefined;
   // Keyed by the image, not the stats: a stat change that keeps the same image fetches nothing.
-  const artPackUrl = code && !officialArt ? artPackArt(code, artStats)?.url : undefined;
+  const artPackUrl =
+    code && !officialArt ? artPackArt({ code, artStats, heroCode })?.url : undefined;
 
   const {
     data: artUrl,
     loading,
     error,
   } = useAsyncData(code ? JSON.stringify([code, type, stage, artPackUrl]) : null, () =>
-    getCardArtUrl({ code: code as string, type, stage, artStats, officialArt }),
+    getCardArtUrl({ code: code as string, type, stage, artStats, officialArt, heroCode }),
   );
 
   return { artUrl, loading, error };

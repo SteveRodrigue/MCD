@@ -27,6 +27,7 @@ import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 import { locateCard, readCardResources } from '../../../engine/queries/card-inspector';
 import { isHandCardIneligibleForCost, isGeneratorIneligibleForCost } from './payment-eligibility';
 import { useGameSession } from '../../context/GameStateContext';
+import { CardArtSeat } from '../../context/CardArtHeroContext';
 import { useOnChange } from '../../hooks/useOnChange';
 import { AccentStripe } from '../../theme/AccentStripe';
 import { CardRef } from '../../theme/CardRef';
@@ -382,7 +383,14 @@ function getDefaultSelection(
   };
 }
 
-export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
+/** The payment is made by one player, so its cards show that hero's art pack (ADR-0093). */
+export const CardPaymentModal: React.FC<CardPaymentModalProps> = (props) => (
+  <CardArtSeat playerId={props.player.id}>
+    <CardPaymentModalBody {...props} />
+  </CardArtSeat>
+);
+
+const CardPaymentModalBody: React.FC<CardPaymentModalProps> = ({
   isOpen,
   onClose,
   cardToPlay,

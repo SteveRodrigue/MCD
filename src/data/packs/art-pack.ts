@@ -46,6 +46,16 @@ export const ArtPackManifestSchema = z
         unofficial: z.boolean(),
       })
       .strict(),
+    /**
+     * Hero card codes this pack is tied to (several versions of one hero, or several heroes). The
+     * pack shows only on cards owned by a seat whose hero is listed; a pack without it shows on
+     * every card it lists (ADR-0093, decision 16).
+     */
+    heroes: z
+      .array(z.string().min(1))
+      .min(1)
+      .refine((codes) => new Set(codes).size === codes.length, 'hero codes must be unique')
+      .optional(),
     /** Card code (a printed card or a scenario token) to the images that replace its art. */
     cards: z.record(z.string().min(1), ArtPackCardImagesSchema),
   })

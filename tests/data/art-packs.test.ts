@@ -276,7 +276,7 @@ describe('choosing an art pack image', () => {
     [4, 4, 'mk4.png'],
   ])('S3: ATK %i and %i hit points show their mark', (attack, hitPoints, file) => {
     withArtPacks(tokens);
-    expect(artPackArt('ultron_drone', { attack, hitPoints })?.url).toBe(url(file));
+    expect(artPackArt({ code: 'ultron_drone', artStats: { attack, hitPoints } })?.url).toBe(url(file));
   });
 
   it.each([
@@ -286,7 +286,7 @@ describe('choosing an art pack image', () => {
     ['stats above every mark', 7, 7, 'mk4.png'],
   ])('S3 edge: %s', (_name, attack, hitPoints, file) => {
     withArtPacks(tokens);
-    expect(artPackArt('ultron_drone', { attack, hitPoints })?.url).toBe(url(file));
+    expect(artPackArt({ code: 'ultron_drone', artStats: { attack, hitPoints } })?.url).toBe(url(file));
   });
 
   it('S3: with no known stats, shows the lowest image', () => {
@@ -388,5 +388,171 @@ describe('identity cards', () => {
     expect(artPackArt('31001a')?.url).toBe(url('31001a.png'));
     expect(artPackArt('29001b')).toBeUndefined();
     expect(artPackArt('01001a')).toBeUndefined();
+  });
+});
+
+
+describe('packs tied to a hero', () => {
+  const loaded = getLoadedContent();
+  afterEach(() => {
+    setLoadedContent(loaded);
+    setDisabledArtPacks([]);
+  });
+
+  const IRON_MAN = '01029a';
+  const SHE_HULK = '01019a';
+  const BLACK_PANTHER = '01040a';
+  const SHURI = '45001a';
+  const SHARED_CARD = '01002';
+  const heroPack = (id: string, heroes: string[], cards: ArtPackManifest['cards']) => ({
+    ...manifest(id, cards),
+    heroes,
+  });
+  const ironMan = heroPack('op_iron_man', [IRON_MAN], {
+    [IRON_MAN]: [{ file: 'iron_man.png' }],
+    [SHARED_CARD]: [{ file: 'iron_man_shared.png' }],
+  });
+  const sheHulk = heroPack('op_she_hulk', [SHE_HULK], {
+    [SHE_HULK]: [{ file: 'she_hulk.png' }],
+    [SHARED_CARD]: [{ file: 'she_hulk_shared.png' }],
+  });
+  const url = (id: string, file: string) => `/card-art/_art-${id}/${file}`;
+
+  function withArtPacks(...artPacks: ArtPackManifest[]) {
+    setLoadedContent({ ...loaded, artPacks });
+  }
+
+  it('Iron Man and She-Hulk seated: each hero shows its own hero pack on the shared card', () => {
+    withArtPacks(ironMan, sheHulk);
+    expect(artPackArt({ code: SHARED_CARD, heroCode: IRON_MAN })?.url).toBe(
+      url('op_iron_man', 'iron_man_shared.png'),
+    );
+    expect(artPackArt({ code: SHARED_CARD, heroCode: SHE_HULK })?.url).toBe(
+      url('op_she_hulk', 'she_hulk_shared.png'),
+    );
+  });
+
+  it('She-Hulk alone: the Iron Man pack never applies, even when it is on', () => {
+    withArtPacks(ironMan);
+    expect(artPackArt({ code: SHARED_CARD, heroCode: SHE_HULK })).toBeUndefined();
+    expect(localArtUrl({ code: IRON_MAN, heroCode: SHE_HULK })).toBe('/card-art/core/01029a.png');
+    expect(artPackImageUrls({ code: SHARED_CARD, heroCode: SHE_HULK })).toEqual([]);
+    expect(artPackHasStatImages({ code: SHARED_CARD, heroCode: SHE_HULK })).toBe(false);
+  });
+
+  it('a card with no hero owner never shows a pack tied to a hero, and a pack with none still does', () => {
+    withArtPacks(ironMan, manifest('tokens', { [SHARED_CARD]: [{ file: 'plain.png' }] }));
+    expect(artPackArt({ code: SHARED_CARD })?.url).toBe(url('tokens', 'plain.png'));
+    expect(artPackArt({ code: IRON_MAN })).toBeUndefined();
+  });
+
+  it('the hero pack wins for its hero over a pack tied to no hero', () => {
+    withArtPacks(
+      manifest('aaa_plain', { [SHARED_CARD]: [{ file: 'plain.png' }] }),
+      ironMan,
+    );
+    expect(artPackArt({ code: SHARED_CARD, heroCode: IRON_MAN })?.url).toBe(
+      url('op_iron_man', 'iron_man_shared.png'),
+    );
+    expect(artPackArt({ code: SHARED_CARD, heroCode: SHE_HULK })?.url).toBe(
+      url('aaa_plain', 'plain.png'),
+    );
+  });
+
+  it('one pack listing both Black Panther versions applies to either, not to She-Hulk', () => {
+    withArtPacks(
+      heroPack('op_black_panther', [BLACK_PANTHER, SHURI], {
+        [SHARED_CARD]: [{ file: 'panther.png' }],
+      }),
+    );
+    expect(artPackArt({ code: SHARED_CARD, heroCode: BLACK_PANTHER })?.url).toBe(
+      url('op_black_panther', 'panther.png'),
+    );
+    expect(artPackArt({ code: SHARED_CARD, heroCode: SHURI })?.url).toBe(
+      url('op_black_panther', 'panther.png'),
+    );
+    expect(artPackArt({ code: SHARED_CARD, heroCode: SHE_HULK })).toBeUndefined();
+  });
+
+  it('two Black Panther packs, one per version: each applies only to its version', () => {
+    withArtPacks(
+      heroPack('op_tchalla', [BLACK_PANTHER], { [SHARED_CARD]: [{ file: 't.png' }] }),
+      heroPack('op_shuri', [SHURI], { [SHARED_CARD]: [{ file: 's.png' }] }),
+    );
+    expect(artPackArt({ code: SHARED_CARD, heroCode: BLACK_PANTHER })?.url).toBe(
+      url('op_tchalla', 't.png'),
+    );
+    expect(artPackArt({ code: SHARED_CARD, heroCode: SHURI })?.url).toBe(url('op_shuri', 's.png'));
+  });
+
+  it('a hero pack that is switched off shows official art, with its hero seated', () => {
+    withArtPacks(ironMan);
+    setDisabledArtPacks(['op_iron_man']);
+    expect(localArtUrl({ code: IRON_MAN, heroCode: IRON_MAN })).toBe('/card-art/core/01029a.png');
+  });
+
+  it('two packs for one hero: the first by folder name wins a shared card', () => {
+    withArtPacks(
+      heroPack('op_a', [IRON_MAN], { [SHARED_CARD]: [{ file: 'a.png' }] }),
+      heroPack('op_b', [IRON_MAN], { [SHARED_CARD]: [{ file: 'b.png' }] }),
+    );
+    expect(artPackArt({ code: SHARED_CARD, heroCode: IRON_MAN })?.url).toBe(url('op_a', 'a.png'));
+  });
+});
+
+describe('loading packs tied to a hero', () => {
+  it.each([
+    ['an empty hero list', []],
+    ['a duplicate hero code', ['99001a', '99001a']],
+  ])('%s is an invalid art pack', async (_name, heroes) => {
+    const driver = contentFolder({
+      bad: { ...manifest('bad', { '99002': [{ file: 'a.png' }] }), heroes },
+    });
+    const content = await loadContent(driver, { artPacks: true });
+    expect(content.failures.map((f) => f.packId)).toEqual(['art-pack:bad']);
+  });
+
+  it('a hero code in no installed pack, or on a card that is not a hero, gives one warning each', async () => {
+    const driver = contentFolder({
+      one: {
+        ...manifest('one', { '99002': [{ file: 'a.png' }] }),
+        heroes: ['99001a', '99999a', '99002'],
+      },
+    });
+    const content = await loadContent(driver, { artPacks: true });
+    expect(content.artPackWarnings.map((w) => w.reason)).toEqual([
+      'hero 99999a is in no installed pack',
+      'hero 99002 is not a hero card',
+    ]);
+  });
+
+  it('the hero of an installed pack that is off gives no warning', async () => {
+    const driver = contentFolder({
+      one: { ...manifest('one', { '99002': [{ file: 'a.png' }] }), heroes: ['12001a'] },
+    });
+    writeOffPack();
+    const content = await loadContent(driver, { artPacks: true });
+    expect(content.artPackWarnings).toEqual([]);
+  });
+
+  it('packs tied to different heroes may list the same card without a warning', async () => {
+    const driver = contentFolder({
+      alpha: { ...manifest('alpha', { '99002': [{ file: 'a.png' }] }), heroes: ['99001a'] },
+      zeta: { ...manifest('zeta', { '99002': [{ file: 'z.png' }] }), heroes: ['12001a'] },
+    });
+    writeOffPack();
+    const content = await loadContent(driver, { artPacks: true });
+    expect(content.artPackWarnings).toEqual([]);
+  });
+
+  it('packs that share a hero, and a card, still warn about the one that comes second', async () => {
+    const driver = contentFolder({
+      alpha: { ...manifest('alpha', { '99002': [{ file: 'a.png' }] }), heroes: ['99001a'] },
+      zeta: { ...manifest('zeta', { '99002': [{ file: 'z.png' }] }), heroes: ['99001a'] },
+    });
+    const content = await loadContent(driver, { artPacks: true });
+    expect(content.artPackWarnings).toMatchObject([
+      { packId: 'art-pack:zeta', reason: expect.stringContaining('"alpha"') },
+    ]);
   });
 });

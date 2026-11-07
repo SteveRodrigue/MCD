@@ -75,6 +75,23 @@ describe('the art pack list', () => {
     expect(within(screen.getByTestId('art-pack-row-tokens')).getByRole('switch')).toBeTruthy();
   });
 
+  it('says which heroes a pack is for, and nothing for a pack that is not tied to one', () => {
+    setLoadedContent({
+      ...loaded,
+      artPacks: [{ ...heroes, heroes: ['01001a', '12001a'] }, tokens],
+      artPackCardLabels: {
+        ...loaded.artPackCardLabels,
+        '01001a': { name: 'Spider-Man', type: 'hero', source: 'card' },
+        '12001a': { name: 'Ant-Man', type: 'hero', source: 'off-pack' },
+      },
+    });
+    renderSettings();
+    expect(screen.getByTestId('art-pack-heroes-heroes').textContent).toBe(
+      'For: Spider-Man (01001a), Ant-Man (12001a)',
+    );
+    expect(screen.queryByTestId('art-pack-heroes-tokens')).toBeNull();
+  });
+
   it('says so, without an error, when no art pack is installed', () => {
     setLoadedContent({ ...loaded, artPacks: [] });
     renderSettings();

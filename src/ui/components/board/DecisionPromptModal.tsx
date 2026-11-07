@@ -17,6 +17,7 @@ import { useModalStyle } from '../../theme/useModalStyle';
 import { useOptionalGameSession } from '../../context/GameStateContext';
 import { getHeroColorPalette, getContrastTextColor } from '../../utils/hero-theme';
 import { resolvePlayerSeatInfo } from '../../utils/player-seat';
+import { CardArtSeat } from '../../context/CardArtHeroContext';
 
 interface DecisionPromptModalProps {
   prompt?: PendingDecisionPrompt;
@@ -24,7 +25,14 @@ interface DecisionPromptModalProps {
   players?: PlayerState[];
 }
 
-export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
+/** The prompt belongs to one player's seat, so its cards show that hero's art pack (ADR-0093). */
+export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = (props) => (
+  <CardArtSeat playerId={props.prompt?.playerId}>
+    <DecisionPromptModalBody {...props} />
+  </CardArtSeat>
+);
+
+const DecisionPromptModalBody: React.FC<DecisionPromptModalProps> = ({
   prompt,
   onSelectOption,
   players: propsPlayers,

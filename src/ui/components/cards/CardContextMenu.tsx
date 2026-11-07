@@ -19,9 +19,16 @@ interface CardContextMenuProps {
   card: NormalizedCard;
   position: { x: number; y: number };
   onClose: () => void;
+  /** Hero of the seat that owns the card, so the credit names the art pack it really shows. */
+  heroCode?: string;
 }
 
-export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position, onClose }) => {
+export const CardContextMenu: React.FC<CardContextMenuProps> = ({
+  card,
+  position,
+  onClose,
+  heroCode,
+}) => {
   const later = useTimeout();
   const { style } = useModalStyle();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -106,7 +113,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
     setAllTimeStats(updated);
   };
 
-  const artCredit = artPackArt(card.code)?.credit;
+  const artCredit = artPackArt({ code: card.code, heroCode })?.credit;
   const gameCardStats = gameState?.stats?.cards?.[card.code];
   const allTimeCardStats = allTimeStats?.cards?.[card.code];
 

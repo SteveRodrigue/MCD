@@ -18,6 +18,7 @@ import { VillainZone } from './VillainZone';
 import { RemovedFromGameBox } from './RemovedFromGameBox';
 import { HeroZone } from './HeroZone';
 import { PlayerHandTray } from './PlayerHandTray';
+import { CardArtSeat } from '../../context/CardArtHeroContext';
 import { DevStepErrorBanner } from './DevStepErrorBanner';
 import { GameOverScreen } from './GameOverScreen';
 import { DecisionPromptModal } from './DecisionPromptModal';
@@ -502,30 +503,32 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                               : 'opacity-60 grayscale-35 hover:opacity-95 hover:grayscale-0 z-table transition-all duration-300 cursor-pointer'
                           }`}
                         >
-                          {/* Hero Play Area */}
-                          <HeroZone
-                            player={player}
-                            seatNumber={idx + 1}
-                            isFocused={isFocused}
-                            isMultiHero={true}
-                            onFocus={() => handleSelectSeat(idx)}
-                            onInitiateAction={handleSelectNewspaperAction}
-                          />
+                          <CardArtSeat playerId={player.id}>
+                            {/* Hero Play Area */}
+                            <HeroZone
+                              player={player}
+                              seatNumber={idx + 1}
+                              isFocused={isFocused}
+                              isMultiHero={true}
+                              onFocus={() => handleSelectSeat(idx)}
+                              onInitiateAction={handleSelectNewspaperAction}
+                            />
 
-                          {/* Hero Hand Tray */}
-                          <PlayerHandTray
-                            hand={player.hand}
-                            deck={player.deck}
-                            discard={player.discard}
-                            setAsideCards={player.setAsideCards}
-                            heroName={player.name}
-                            handSizeLimit={getEffectiveHandSize(player, gameState)}
-                            seatNumber={idx + 1}
-                            isFocused={isFocused}
-                            isMultiHero={true}
-                            player={player}
-                            onFocus={() => handleSelectSeat(idx)}
-                          />
+                            {/* Hero Hand Tray */}
+                            <PlayerHandTray
+                              hand={player.hand}
+                              deck={player.deck}
+                              discard={player.discard}
+                              setAsideCards={player.setAsideCards}
+                              heroName={player.name}
+                              handSizeLimit={getEffectiveHandSize(player, gameState)}
+                              seatNumber={idx + 1}
+                              isFocused={isFocused}
+                              isMultiHero={true}
+                              player={player}
+                              onFocus={() => handleSelectSeat(idx)}
+                            />
+                          </CardArtSeat>
                         </div>
                       );
                     })}
@@ -535,25 +538,27 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
             ) : (
               /* Single Player (Solo Mode Tabletop) */
               <div className="max-w-5xl lg:max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-6 space-y-6">
-                <HeroZone
-                  player={singlePlayer}
-                  seatNumber={1}
-                  isFocused={true}
-                  isMultiHero={false}
-                  onInitiateAction={handleSelectNewspaperAction}
-                />
-                <PlayerHandTray
-                  hand={singlePlayer.hand}
-                  deck={singlePlayer.deck}
-                  discard={singlePlayer.discard}
-                  setAsideCards={singlePlayer.setAsideCards}
-                  heroName={singlePlayer.name}
-                  handSizeLimit={getEffectiveHandSize(singlePlayer, gameState)}
-                  seatNumber={1}
-                  isFocused={true}
-                  isMultiHero={false}
-                  player={singlePlayer}
-                />
+                <CardArtSeat playerId={singlePlayer.id}>
+                  <HeroZone
+                    player={singlePlayer}
+                    seatNumber={1}
+                    isFocused={true}
+                    isMultiHero={false}
+                    onInitiateAction={handleSelectNewspaperAction}
+                  />
+                  <PlayerHandTray
+                    hand={singlePlayer.hand}
+                    deck={singlePlayer.deck}
+                    discard={singlePlayer.discard}
+                    setAsideCards={singlePlayer.setAsideCards}
+                    heroName={singlePlayer.name}
+                    handSizeLimit={getEffectiveHandSize(singlePlayer, gameState)}
+                    seatNumber={1}
+                    isFocused={true}
+                    isMultiHero={false}
+                    player={singlePlayer}
+                  />
+                </CardArtSeat>
               </div>
             )}
           </main>

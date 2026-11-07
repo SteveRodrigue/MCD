@@ -6,6 +6,7 @@ import { useGameSettings } from '../../context/useGameSettings';
 import { ThemedButton, ThemedSwitch } from '../../theme/kit/controls';
 import { useModalStyle } from '../../theme/useModalStyle';
 import { ArtPackBrowser } from './ArtPackBrowser';
+import { describeArtPackHeroes } from './art-pack-card-label';
 
 function imageCount(artPack: ArtPackManifest): number {
   return Object.values(artPack.cards).reduce((total, images) => total + images.length, 0);
@@ -47,6 +48,11 @@ export const ArtPackSettings: React.FC = () => {
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="font-comic text-lg">{artPack.name}</div>
                 <p className="text-sm">{artPack.description}</p>
+                {describeArtPackHeroes(artPack) && (
+                  <p className="text-sm font-bold" data-testid={`art-pack-heroes-${artPack.id}`}>
+                    {describeArtPackHeroes(artPack)}
+                  </p>
+                )}
                 <p className={`text-xs ${style.muted}`}>
                   Art by {artPack.credit.author}
                   {artPack.credit.unofficial && ' (unofficial)'} · {imageCount(artPack)}{' '}

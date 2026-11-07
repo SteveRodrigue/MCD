@@ -298,7 +298,7 @@ async function readArtPacks(
   const artPacks: ArtPackManifest[] = [];
   const artPackWarnings: PackLoadFailure[] = [];
   const artPackCardLabels: Record<string, ArtPackCardLabel> = {};
-  const claimedBy = new Map<string, string>();
+  const claims = new Map<string, { id: string; heroes: string[] | undefined }[]>();
   for (const id of await driver.listDirs('art-packs')) {
     const packId = `${ART_PACK_FAILURE_PREFIX}${id}`;
     try {
@@ -321,10 +321,24 @@ async function readArtPacks(
         if (found.length > 0) cards[code] = found;
       }
       artPacks.push({ ...manifest, cards });
+      for (const hero of manifest.heroes ?? []) {
+        const label = await labelOf(hero);
+        if (!label) warn(`hero ${hero} is in no installed pack`);
+        else {
+          if (label.type !== 'hero') warn(`hero ${hero} is not a hero card`);
+          artPackCardLabels[hero] = label;
+        }
+      }
       for (const [code, images] of Object.entries(cards)) {
-        const owner = claimedBy.get(code);
-        if (owner) warn(`card ${code} is also listed by "${owner}", which comes first by folder name`);
-        else claimedBy.set(code, id);
+        // Packs tied to different heroes may list the same card; only overlapping scopes compete.
+        const rival = (claims.get(code) ?? []).find(
+          (claim) =>
+            claim.heroes === undefined || manifest.heroes === undefined
+              ? claim.heroes === manifest.heroes
+              : claim.heroes.some((hero) => manifest.heroes?.includes(hero)),
+        );
+        if (rival) warn(`card ${code} is also listed by "${rival.id}", which comes first by folder name`);
+        claims.set(code, [...(claims.get(code) ?? []), { id, heroes: manifest.heroes }]);
         const label = await labelOf(code);
         if (!label) {
           warn(`card ${code} is in no installed pack`);

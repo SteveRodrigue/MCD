@@ -46,6 +46,28 @@ describe('Supplemental pack guards: every entry belongs to a card', () => {
   });
 });
 
+describe('Supplemental pack guards: resource costs name real resource types', () => {
+  it('no resourceCost at any depth uses a key other than physical, energy, mental or wild', () => {
+    const valid = new Set(['physical', 'energy', 'mental', 'wild']);
+    const invalid: string[] = [];
+    const walk = (node: unknown, where: string) => {
+      if (!node || typeof node !== 'object') return;
+      for (const [key, value] of Object.entries(node)) {
+        if (key === 'resourceCost' && value && typeof value === 'object') {
+          invalid.push(
+            ...Object.keys(value)
+              .filter((type) => !valid.has(type))
+              .map((type) => `${where}: ${type}`),
+          );
+        }
+        walk(value, where);
+      }
+    };
+    entries.forEach(({ file, code, entry }) => walk(entry, `${file}:${code}`));
+    expect(invalid).toEqual([]);
+  });
+});
+
 describe('Supplemental pack guards: removed fields stay removed (data-level regression guard)', () => {
   it('scans every supplemental pack', () => {
     expect(packs.length).toBeGreaterThanOrEqual(5);

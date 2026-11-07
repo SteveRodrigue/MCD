@@ -25,14 +25,17 @@ import {
   getEffectiveMinionAttack,
   getEffectiveMinionScheme,
   getEffectiveVillainStats,
-  getGeneratorProvidedResources,
+  countResourcesTowardCost,
   getLegalActionsForPlayer,
   getHandCardResourceValue,
+  getResourceCostTotal,
   getVillainPhaseThreatToAdd,
   HERO_ACTOR,
+  listCardResources,
+  listGeneratorResources,
 } from '../pipeline';
 import { getStepEffectParams } from '../../data/supplemental/runtime';
-import type { AbilityStep } from '../../data/supplemental/schema';
+import type { AbilityStep, ResourceCost } from '../../data/supplemental/schema';
 import { isGuardMinion } from '../pipeline/target-restrictions';
 import { matchesCardFilter } from '../filters/card-filter';
 import { abilityKey, scarcityOf, untestedWeight, type ScarcityLedger } from './ability-coverage';
@@ -186,25 +189,33 @@ function choosePayment(
   return payResources(state, player, effectiveCost, card, ledger);
 }
 
-/** Pays `cost` resources (a card's cost or an ability's resource cost) at the least value given up. */
+/**
+ * Pays `cost` resources (a card's cost or an ability's resource cost) at the least value given up.
+ * `required` names the types of a typed ability cost; a card's cost takes any resources.
+ */
 function payResources(
   state: GameState,
   player: PlayerState,
   cost: number,
   played: CardInstance | undefined,
   ledger?: ScarcityLedger,
+  required?: ResourceCost,
+  requirePrinted?: boolean,
 ): Payment | undefined {
   const generatorInstanceIds: string[] = [];
-  let missing = cost;
+  const generated: string[] = [];
+  const paidWith = (resources: string[]) =>
+    countResourcesTowardCost(resources, required, requirePrinted);
   for (const id of [IDENTITY_GENERATOR, ...player.tableau.map((c) => c.instanceId)]) {
-    if (missing <= 0) break;
+    if (paidWith(generated) >= cost) break;
     if (id === played?.instanceId) continue;
-    const provided = getGeneratorProvidedResources(state, player, id);
-    if (provided > 0) {
+    const resources = listGeneratorResources(state, player, id);
+    if (paidWith([...generated, ...resources]) > paidWith(generated)) {
       generatorInstanceIds.push(id);
-      missing -= provided;
+      generated.push(...resources);
     }
   }
+  const missing = cost - paidWith(generated);
   if (missing <= 0) return { paymentCardInstanceIds: [], generatorInstanceIds, price: 0 };
 
   const priceShare =
@@ -214,7 +225,9 @@ function payResources(
   let best: { ids: string[]; price: number } | undefined;
   for (let mask = 1; mask < 1 << others.length; mask++) {
     const chosen = others.filter((_, i) => mask & (1 << i));
-    const provided = chosen.reduce((sum, c) => sum + getHandCardResourceValue(c, played?.card), 0);
+    const provided = required
+      ? paidWith([...generated, ...chosen.flatMap(listCardResources)]) - paidWith(generated)
+      : chosen.reduce((sum, c) => sum + getHandCardResourceValue(c, played?.card), 0);
     if (provided < missing) continue;
     const price =
       priceShare * chosen.reduce((sum, c) => sum + keepValue(c, played?.card, ledger), 0) +
@@ -258,9 +271,17 @@ function payAbilityCost(
 
   const payment: AbilityPayment = {};
   let spentCardIds = new Set<string>();
-  const resources = Object.values(cost.resourceCost ?? {}).reduce((sum, n) => sum + (n ?? 0), 0);
+  const resources = getResourceCostTotal(cost.resourceCost ?? {});
   if (resources > 0) {
-    const pay = payResources(state, player, resources, source.instance, ledger);
+    const pay = payResources(
+      state,
+      player,
+      resources,
+      source.instance,
+      ledger,
+      cost.resourceCost,
+      cost.requirePrinted,
+    );
     if (!pay) return undefined;
     payment.paymentCardInstanceIds = pay.paymentCardInstanceIds;
     if (pay.generatorInstanceIds.length > 0)

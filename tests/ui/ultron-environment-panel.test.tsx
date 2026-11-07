@@ -96,6 +96,19 @@ describe('A choice option with its own resource cost', () => {
 
   it('asks for payment, with the type and amount of the cost', () => {
     expect(optionRequiresPayment(option)).toBe(true);
-    expect(optionOwnResourceCost(option)).toEqual({ resourceType: 'energy', amount: 1 });
+    expect(optionOwnResourceCost(option)).toEqual({ resources: { energy: 1 }, amount: 1 });
+  });
+
+  it('Sonic Boom asks for all 3 resources of its spend option', () => {
+    const sonicBoom = {
+      id: 'spend_resources',
+      label: 'Spend',
+      cost: { resourceCost: { energy: 1, mental: 1, physical: 1 } },
+    } as never;
+
+    expect(optionOwnResourceCost(sonicBoom)).toEqual({
+      resources: { energy: 1, mental: 1, physical: 1 },
+      amount: 3,
+    });
   });
 });

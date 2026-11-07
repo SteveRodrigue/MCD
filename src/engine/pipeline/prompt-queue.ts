@@ -7,8 +7,8 @@ import {
   ActionResult,
   CardAbility,
   AbilityStep,
-  ResourceType,
 } from '../models';
+import type { ResourceCost } from '../../data/supplemental/schema';
 import { type EffectExecutionContext, type EffectResult } from '../effects';
 import {
   executeAbilityCost,
@@ -914,7 +914,7 @@ export function resolveDecisionPrompt(
   ) {
     const optParams = selectedOption?.params as
       | {
-          resourceCost?: number | { amount?: number; resourceType?: ResourceType };
+          resourceCost?: number | { amount?: number; resources?: ResourceCost };
           amount?: number;
           requiresPayment?: boolean;
         }
@@ -930,13 +930,12 @@ export function resolveDecisionPrompt(
         ? optParams.amount
         : undefined) ??
       1;
-    const reqType = costObj?.resourceType;
 
     executeResourceCostPayment(
       nextState,
       player,
       reqAmount,
-      reqType,
+      costObj?.resources,
       false,
       paymentOptions,
       promptCardInst,

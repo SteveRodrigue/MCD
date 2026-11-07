@@ -626,7 +626,7 @@ function scanHandReactions(
               requiresPayment: hasCost,
               costCardInstanceId: card.instanceId,
               resourceCost: hasCost
-                ? { amount: reqAmount, resourceType: resCost.requiredType }
+                ? { amount: reqAmount, resources: resCost.requiredResources }
                 : undefined,
             },
           },

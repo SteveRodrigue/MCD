@@ -35,7 +35,11 @@ import {
   LegalActionItem,
 } from '../../../engine/pipeline/legal-actions-generator';
 import { getEffectiveHandSize } from '../../../engine/pipeline/stat-calculator';
-import { getDiscardCostBounds } from '../../../engine/pipeline/cost-engine';
+import {
+  extractResourceCost,
+  getDiscardCostBounds,
+  getResourceCostTotal,
+} from '../../../engine/pipeline/cost-engine';
 import type { ResourceCost } from '../../../data/supplemental/schema';
 import { peekDecisionPrompt } from '../../../engine/pipeline';
 import { optionOwnResourceCost, optionRequiresPayment } from '../../utils/option-requires-payment';
@@ -89,7 +93,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
     card: CardInstance;
     abilityCost: {
       amount: number;
-      resourceType?: 'physical' | 'energy' | 'mental' | 'wild';
+      resources?: ResourceCost;
       requirePrinted?: boolean;
     };
   } | null>(null);
@@ -600,10 +604,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                         (a) => a.id === (pendingPaymentAction.action as any).abilityId,
                       );
                       if (!ab?.cost) return undefined;
-                      const reqType = ab.cost.resourceCost
-                        ? (Object.keys(ab.cost.resourceCost)[0] as keyof ResourceCost | undefined)
-                        : undefined;
-                      const amount = reqType ? ab.cost.resourceCost?.[reqType] || 1 : 0;
+                      const amount = extractResourceCost(ab.cost).requiredAmount;
                       const discardBounds =
                         ab.cost.discardCard?.from === 'HAND'
                           ? getDiscardCostBounds(ab.cost.discardCard)
@@ -619,7 +620,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                       if (amount > 0 || discardCount > 0) {
                         return {
                           amount,
-                          resourceType: reqType,
+                          resources: ab.cost.resourceCost,
                           requirePrinted: ab.cost.requirePrinted,
                           scalesWithResources,
                           title: pendingPaymentAction.headline,
@@ -751,12 +752,13 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
 
                 const resCost = optParams?.resourceCost ?? optionOwnResourceCost(selectedOption);
                 const ability = optParams?.ability;
-                const costAmount = resCost?.amount ?? inPlayCard?.card?.cost ?? 1;
-                const resourceType =
-                  resCost?.resourceType ??
-                  (ability?.cost?.resourceCost
-                    ? Object.keys(ability.cost.resourceCost)[0]
-                    : undefined);
+                const resources: ResourceCost | undefined =
+                  resCost?.resources ?? ability?.cost?.resourceCost;
+                const costAmount =
+                  resCost?.amount ??
+                  (resources ? getResourceCostTotal(resources) : undefined) ??
+                  inPlayCard?.card?.cost ??
+                  1;
 
                 // Fallback synthetic card if prompt is from an encounter card or villain attachment
                 const paymentCard = inPlayCard || {
@@ -776,7 +778,7 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
                   card: paymentCard as CardInstance,
                   abilityCost: {
                     amount: costAmount,
-                    resourceType: resourceType as any,
+                    resources,
                     requirePrinted: ability?.cost?.requirePrinted,
                   },
                 });

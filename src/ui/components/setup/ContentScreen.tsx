@@ -140,9 +140,9 @@ export const ContentScreen: React.FC<ContentScreenProps> = ({ onBack, driver }) 
               <li
                 key={pack.id}
                 data-testid={`pack-row-${pack.id}`}
-                className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 p-3"
+                className="flex items-center gap-x-3 p-3"
               >
-                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span className="font-comic text-lg">{pack.name}</span>
                   <span className={`text-xs ${style.muted}`}>{pack.id}</span>
                   <span
@@ -168,14 +168,12 @@ export const ContentScreen: React.FC<ContentScreenProps> = ({ onBack, driver }) 
                     </span>
                   )}
                 </div>
-                <div className="flex items-center">
-                  <ThemedSwitch
-                    checked={pack.enabled}
-                    disabled={!canToggle || isUpdating}
-                    onChange={(next) => void handleTogglePack(pack.id, next)}
-                    label={`Enable ${pack.name}`}
-                  />
-                </div>
+                <ThemedSwitch
+                  checked={pack.enabled}
+                  disabled={!canToggle || isUpdating}
+                  onChange={(next) => void handleTogglePack(pack.id, next)}
+                  label={`Enable ${pack.name}`}
+                />
               </li>
             );
           })}
